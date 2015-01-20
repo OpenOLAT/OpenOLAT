@@ -63,6 +63,7 @@ import org.olat.course.condition.Condition;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.CourseTreeVisitor;
+import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -141,7 +142,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 					folderVOs.add(folder);
 				}
 			}
-		});
+		}, new VisibleTreeFilter());
 
 		FolderVOes voes = new FolderVOes();
 		voes.setFolders(folderVOs.toArray(new FolderVO[folderVOs.size()]));
@@ -281,7 +282,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		}
 
 		UserRequest ureq = getUserRequest(httpRequest);
-		boolean accessible = (new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment())).isAccessible(courseNode);
+		boolean accessible = (new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment())).isAccessible(courseNode, new VisibleTreeFilter());
 		if(accessible) {
 			Set<String> subscribed = new HashSet<String>();
 			NotificationsManager man = NotificationsManager.getInstance();

@@ -31,6 +31,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.impressum.ImpressumInformations;
 import org.olat.core.commons.controllers.impressum.ImpressumMainController;
 import org.olat.core.commons.controllers.impressum.ImpressumModule;
+import org.olat.core.commons.fullWebApp.TopNavController;
 import org.olat.core.commons.services.help.HelpLinkSPI;
 import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.UserRequest;
@@ -45,6 +46,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
+import org.olat.core.id.OLATResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -53,7 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author patrickb
  */
-public class OlatGuestTopNavController extends BasicController {
+public class OlatGuestTopNavController extends BasicController implements TopNavController {
 
 	private Link loginLink, impressumLink;
 
@@ -86,6 +88,16 @@ public class OlatGuestTopNavController extends BasicController {
 		loginLink.setTooltip("topnav.login.alt");
 
 		putInitialPanel(vc);
+	}
+	
+	@Override
+	public void lockResource(OLATResourceable resource) {
+		//
+	}
+
+	@Override
+	public void unlockResource() {
+		//
 	}
 
 	@Override

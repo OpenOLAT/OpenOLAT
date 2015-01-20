@@ -25,17 +25,23 @@
 
 package org.olat.login;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 
-import org.olat.core.configuration.AbstractOLATModule;
-import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.configuration.AbstractSpringModule;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.StartupException;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.login.auth.AuthenticationProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Initial Date:  04.08.2004
@@ -43,89 +49,137 @@ import org.olat.login.auth.AuthenticationProvider;
  * @author Mike Stock
  * @author guido
  */
-public class LoginModule extends AbstractOLATModule {
-
-	private static final String CONF_ATTACK_ENABLED = "AttackPreventionEnabled";
-	private static final String CONF_ATTACK_MAXATTEMPTS = "AttackPreventionMaxattempts";
-	private static final String CONF_ATTACK_TIMEOUTMIN = "AttackPreventionTimeoutmin";
-	private static final String CONF_GUESTLINKS_ENABLED = "GuestLoginLinksEnabled";
-	private static final String CONF_INVITATION_ENABLED = "InvitationEnabled";
-	private static final String ALLOW_LOGIN_USING_EMAIL = "allowLoginUsingEmail";
-
-	private static Map<String, AuthenticationProvider> authenticationProviders;
-	private static boolean attackPreventionEnabled;
-	private static int attackPreventionMaxAttempts;
-	private static int attackPreventionTimeout;
-	private static boolean guestLoginLinksEnabled;
-	private static CacheWrapper<String,Integer> failedLoginCache;
-	private static String defaultProviderName;
-	private static boolean allowLoginUsingEmail;
-	private CoordinatorManager coordinatorManager;
-	private static boolean invitationEnabled ;
+@Service("loginModule")
+public class LoginModule extends AbstractSpringModule {
 	
-	/**
-	 * [used by spring]
-	 */
-	private LoginModule() {
-		//
+	private static final OLog log = Tracing.createLoggerFor(LoginModule.class);
+
+	@Autowired
+	private List<AuthenticationProvider> authenticationProviders;
+	
+	@Value("${login.attackPreventionEnabled:true}")
+	private boolean attackPreventionEnabled;
+	@Value("${login.AttackPreventionMaxattempts:5}")
+	private int attackPreventionMaxAttempts;
+	@Value("${login.AttackPreventionTimeoutmin:5}")
+	private int attackPreventionTimeout;
+
+	@Value("${invitation.login:enabled}")
+	private String invitationEnabled;
+	@Value("${guest.login:enabled}")
+	private String guestLoginEnabled;
+	@Value("${guest.login.links:enabled}")
+	private String guestLoginLinksEnabled;
+	
+	private String defaultProviderName = "OLAT";
+	@Value("${login.using.username.or.email.enabled:true}")
+	private boolean allowLoginUsingEmail;
+
+	private CoordinatorManager coordinatorManager;
+	private CacheWrapper<String,Integer> failedLoginCache;
+
+	@Autowired
+	public LoginModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
+		this.coordinatorManager = coordinatorManager;
+	}
+	
+	@Override
+	public void init() {
+		// configure timed cache default params: refresh 1 minute, timeout according to configuration
+		failedLoginCache = coordinatorManager.getCoordinator().getCacher().getCache(LoginModule.class.getSimpleName(), "blockafterfailedattempts");
+				
+		updateProperties();
+		
+		boolean defaultProviderFound = false;
+		for (Iterator<AuthenticationProvider> iterator = authenticationProviders.iterator(); iterator.hasNext();) {
+			AuthenticationProvider provider = iterator.next();
+			if (provider.isDefault()) {
+				defaultProviderFound = true;
+				defaultProviderName = provider.getName();
+				log.info("Using default authentication provider '" + defaultProviderName + "'.");
+			}
+		}
+		
+		if (!defaultProviderFound) {
+			throw new StartupException("Defined DefaultAuthProvider::" + defaultProviderName + " not existent or not enabled. Please fix.");
+		}
+	}
+
+	@Override
+	protected void initFromChangedProperties() {
+		updateProperties();
 	}
 	
 	@Override
 	protected void initDefaultProperties() {
-		attackPreventionEnabled = getBooleanConfigParameter(CONF_ATTACK_ENABLED, true);
+		super.initDefaultProperties();
 		if (attackPreventionEnabled) {
-			logInfo("Attack prevention enabled. Max number of attempts: " + attackPreventionMaxAttempts + ", timeout: " + attackPreventionTimeout + " minutes.");
+			log.info("Attack prevention enabled. Max number of attempts: " + attackPreventionMaxAttempts + ", timeout: " + attackPreventionTimeout + " minutes.");
 		} else {
-			logInfo("Attack prevention is disabled.");
-		}
-		attackPreventionMaxAttempts = getIntConfigParameter(CONF_ATTACK_MAXATTEMPTS, 5);
-		attackPreventionTimeout = getIntConfigParameter(CONF_ATTACK_TIMEOUTMIN, 5);
-		
-		guestLoginLinksEnabled = getBooleanConfigParameter(CONF_GUESTLINKS_ENABLED, true);
-		if (guestLoginLinksEnabled) {
-			logInfo("Guest login links on login page enabled");
-		} else {
-			guestLoginLinksEnabled = false;
-			logInfo("Guest login links on login page disabled or not properly configured. ");
-		}
-		invitationEnabled = getBooleanConfigParameter(CONF_INVITATION_ENABLED, true);
-		if (invitationEnabled) {
-			logInfo("Invitation login enabled");
-		} else {
-			logInfo("Invitation login disabled");
+			log.info("Attack prevention is disabled.");
 		}
 		
+		//compatibility with older settings
+		if("true".equals(guestLoginEnabled)) {
+			guestLoginEnabled = "enabled";
+		} else if("false".equals(guestLoginEnabled)) {
+			guestLoginEnabled = "disabled";
+		}
 		
-		allowLoginUsingEmail = getBooleanConfigParameter(ALLOW_LOGIN_USING_EMAIL, true);
+		if("true".equals(guestLoginLinksEnabled)) {
+			guestLoginLinksEnabled = "enabled";
+		} else if("false".equals(guestLoginLinksEnabled)) {
+			guestLoginLinksEnabled = "disabled";
+		}
 		
+		if("true".equals(invitationEnabled)) {
+			invitationEnabled = "enabled";
+		} else if("false".equals(guestLoginLinksEnabled)) {
+			invitationEnabled = "disabled";
+		}
 		
+		if (isGuestLoginEnabled()) {
+			log.info("Guest login on login page enabled");
+		} else {
+			log.info("Guest login on login page disabled or not properly configured. ");
+		}
 		
+		if (isInvitationEnabled()) {
+			log.info("Invitation login enabled");
+		} else {
+			log.info("Invitation login disabled");
+		}
 	}
 	
-	/**
-	 * [used by spring]
-	 * @param coordinatorManager
-	 */
-	public void setCoordinator(CoordinatorManager coordinatorManager) {
-		this.coordinatorManager = coordinatorManager;
-	}
-	
-	/**
-	 * [used by spring]
-	 * @param authProviders
-	 */
-	public void setAuthenticaionProviders(Map<String, AuthenticationProvider> authProviders) {
-		LoginModule.authenticationProviders = authProviders;
+	private void updateProperties() {
+		//set properties
+		String invitation = getStringPropertyValue("invitation.login", true);
+		if(StringHelper.containsNonWhitespace(invitation)) {
+			invitationEnabled = invitation;
+		}
+		String guestLogin = getStringPropertyValue("guest.login", true);
+		if(StringHelper.containsNonWhitespace(guestLogin)) {
+			guestLoginEnabled = guestLogin;
+		}
+		String guestLoginLinks = getStringPropertyValue("guest.login.links", true);
+		if(StringHelper.containsNonWhitespace(guestLoginLinks)) {
+			guestLoginLinksEnabled = guestLoginLinks;
+		}
+		String usernameOrEmailLogin = getStringPropertyValue("login.using.username.or.email.enabled", true);
+		if(StringHelper.containsNonWhitespace(usernameOrEmailLogin)) {
+			allowLoginUsingEmail = "true".equals(usernameOrEmailLogin);
+		}
 	}
 
 	/**
 	 * @return The configured default login provider.
 	 */
-	public static String getDefaultProviderName() {
+	public String getDefaultProviderName() {
 		return defaultProviderName;
 	}
 	
-	public static Encoder.Algorithm getDefaultHashAlgorithm() {
+	public Encoder.Algorithm getDefaultHashAlgorithm() {
 		return Encoder.Algorithm.sha512;
 	}
 	
@@ -133,15 +187,21 @@ public class LoginModule extends AbstractOLATModule {
 	 * @param provider
 	 * @return AuthenticationProvider implementation.
 	 */
-	public static AuthenticationProvider getAuthenticationProvider(String provider) {
-		return authenticationProviders.get(provider);
+	public AuthenticationProvider getAuthenticationProvider(String provider) {
+		AuthenticationProvider authenticationProvider = null;
+		for(AuthenticationProvider authProvider:authenticationProviders) {
+			if(authProvider.getName().equals(provider)) {
+				authenticationProvider = authProvider;
+			}
+		}
+		return authenticationProvider;
 	}
 	
 	/**
 	 * @return Collection of available AuthenticationProviders
 	 */
-	public static Collection<AuthenticationProvider> getAuthenticationProviders() {
-		return authenticationProviders.values();
+	public Collection<AuthenticationProvider> getAuthenticationProviders() {
+		return new ArrayList<>(authenticationProviders);
 	}
 	
 	/**
@@ -150,7 +210,7 @@ public class LoginModule extends AbstractOLATModule {
 	 * @param login
 	 * @return True if further logins will be prevented (i.e. max attempts reached).
 	 */
-	public static final boolean registerFailedLoginAttempt(String login) {
+	public final boolean registerFailedLoginAttempt(String login) {
 		if (!attackPreventionEnabled) return false;
 		Integer numAttempts = failedLoginCache.get(login);
 		
@@ -168,9 +228,10 @@ public class LoginModule extends AbstractOLATModule {
 	 * Clear all failed login attempts for a given login.
 	 * @param login
 	 */
-	public static final void clearFailedLoginAttempts(String login) {
-		if (!attackPreventionEnabled) return;
-		failedLoginCache.remove(login);
+	public final void clearFailedLoginAttempts(String login) {
+		if (attackPreventionEnabled) {
+			failedLoginCache.remove(login);
+		}
 	}
 	
 	/**
@@ -178,7 +239,7 @@ public class LoginModule extends AbstractOLATModule {
 	 * @param login
 	 * @return True if login is blocked by attack prevention mechanism
 	 */
-	public static final boolean isLoginBlocked(String login) {
+	public final boolean isLoginBlocked(String login) {
 		if (!attackPreventionEnabled) return false;
 		Integer numAttempts = failedLoginCache.get(login);
 		
@@ -187,58 +248,52 @@ public class LoginModule extends AbstractOLATModule {
 	}
 	
 	/**
-	 * @return True if guest login links must be shown on login screen, false
+	 * @return True if guest login must be shown on login screen, false
 	 *         otherwise
 	 */
-	public static final boolean isGuestLoginLinksEnabled() {
-		return guestLoginLinksEnabled;
+	public boolean isGuestLoginEnabled() {
+		return "enabled".equals(guestLoginEnabled);
 	}
 	
-	public static final boolean isInvitationEnabled() {
-		return invitationEnabled;
+	public void setGuestLoginEnabled(boolean enabled) {
+		guestLoginEnabled = enabled ? "enabled" : "disabled";
+		setStringProperty("guest.login", guestLoginEnabled, true);
+	}
+	
+	public boolean isGuestLoginLinksEnabled() {
+		return "enabled".equalsIgnoreCase(guestLoginLinksEnabled);
+	}
+	
+	public void setGuestLoginLinksEnabled(boolean enabled) {
+		guestLoginLinksEnabled = enabled ? "enabled" : "disabled";
+		setStringProperty("guest.login.links", guestLoginLinksEnabled, true);
+	}
+	
+	public boolean isInvitationEnabled() {
+		return "enabled".equals(invitationEnabled);
+	}
+	
+	public void setInvitationEnabled(boolean enabled) {
+		invitationEnabled = enabled ? "enabled" : "disabled";
+		setStringProperty("invitation.login", invitationEnabled, true);
 	}
 	
 	/**
 	 * @return Number of minutes a login gets blocked after too many attempts.
 	 */
-	public static Integer getAttackPreventionTimeoutMin() {
+	public Integer getAttackPreventionTimeoutMin() {
 		return new Integer(attackPreventionTimeout);
 	}
 	
 	/**
 	 * @return True if login with email is allowed (set in olat.properties)
 	 */
-	public static boolean allowLoginUsingEmail() {
+	public boolean isAllowLoginUsingEmail() {
 		return allowLoginUsingEmail;
 	}
-
-	@Override
-	public void init() {
-		boolean defaultProviderFound = false;
-		for (Iterator<AuthenticationProvider> iterator = authenticationProviders.values().iterator(); iterator.hasNext();) {
-			AuthenticationProvider provider = iterator.next();
-			if (provider.isDefault()) {
-				defaultProviderFound = true;
-				defaultProviderName = provider.getName();
-				logInfo("Using default authentication provider '" + defaultProviderName + "'.");
-			}
-		}
-		
-		if (!defaultProviderFound) {
-			throw new StartupException("Defined DefaultAuthProvider::" + defaultProviderName + " not existent or not enabled. Please fix.");
-		}
-		
-		// configure timed cache default params: refresh 1 minute, timeout according to configuration
-		failedLoginCache = coordinatorManager.getCoordinator().getCacher().getCache(LoginModule.class.getSimpleName(), "blockafterfailedattempts");
-	}
-
-	@Override
-	protected void initFromChangedProperties() {
-		//
-	}
-
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
+	
+	public void setAllowLoginUsingEmail(boolean allow) {
+		allowLoginUsingEmail = allow;
+		setStringProperty("login.using.username.or.email.enabled", Boolean.toString(allow), true);
 	}
 }

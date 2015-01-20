@@ -25,11 +25,10 @@
 
 package org.olat.course.nodes.sp;
 
-import org.olat.commons.file.filechooser.FileChooseCreateEditController;
-import org.olat.commons.file.filechooser.LinkChooseCreateEditController;
+
+import org.olat.core.commons.controllers.filechooser.LinkFileCombiCalloutController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -39,10 +38,13 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptionsConfigurationController;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
+import org.olat.course.editor.CourseEditorHelper;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -69,6 +71,8 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 	public static final String CONFIG_KEY_DELIVERYOPTIONS = "deliveryOptions";
 	/** configuration key: should relative links like ../otherfolder/my.css be allowed? **/
 	public static final String CONFIG_KEY_ALLOW_RELATIVE_LINKS = "allowRelativeLinks";
+	/** configuration key: should the students be allowed to edit the page? */
+	public static final String CONFIG_KEY_ALLOW_COACH_EDIT = "allowCoachEdit";
 
 	private static final String[] paneKeys = {PANE_TAB_SPCONFIG, PANE_TAB_ACCESSIBILITY};
 	
@@ -78,16 +82,14 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 	
 	private ModuleConfiguration moduleConfiguration;
 	private VelocityContainer myContent;
-	private Panel fcPanel;
 		
 	private SPCourseNode courseNode;
-	private Boolean allowRelativeLinks;
-
+	private VFSContainer courseFolderBaseContainer;
 	private ConditionEditController accessibilityCondContr;
-	private FileChooseCreateEditController fccecontr;
 	private DeliveryOptionsConfigurationController deliveryOptionsCtrl;
 	private TabbedPane myTabbedPane;
-
+	private LinkFileCombiCalloutController combiLinkCtr;
+	private SecuritySettingsForm securitySettingForm;
 	
 	/**
 	 * Constructor for single page editor controller
@@ -101,33 +103,47 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 	public SPEditController(ModuleConfiguration config, UserRequest ureq,
 			WindowControl wControl, SPCourseNode spCourseNode, ICourse course, UserCourseEnvironment euce) {
 		super(ureq, wControl);
-		this.moduleConfiguration = config;
-		this.courseNode = spCourseNode;				
-		
-		myContent = createVelocityContainer("edit");
-		
-		config.remove("iniframe");//on the fly remove deprecated stuff
-		config.remove("statefulMicroWeb");
-		String chosenFile = (String) config.get(CONFIG_KEY_FILE);
-		allowRelativeLinks  = moduleConfiguration.getBooleanEntry(CONFIG_KEY_ALLOW_RELATIVE_LINKS);
+		moduleConfiguration = config;
+		courseNode = spCourseNode;				
+		courseFolderBaseContainer = course.getCourseFolderContainer();
 
-		fccecontr = new LinkChooseCreateEditController(ureq, getWindowControl(), chosenFile, allowRelativeLinks, course.getCourseFolderContainer(), new CourseInternalLinkTreeModel(course.getEditorTreeModel()) );		
-		listenTo(fccecontr);
-		fccecontr.setAllFileSuffixesAllowed(true);
+		myContent = createVelocityContainer("edit");
+		myContent.contextPut("fieldSetLegend", getTranslator().translate("fieldSetLegend"));
 		
-		fcPanel = new Panel("filechoosecreateedit");
-		Component fcContent = fccecontr.getInitialComponent();
-		fcPanel.setContent(fcContent);
-		myContent.put(fcPanel.getComponentName(), fcPanel);
+		moduleConfiguration.remove("iniframe");//on the fly remove deprecated stuff
+		moduleConfiguration.remove("statefulMicroWeb");
+
+		// Read configuration
+		String relFilePath = (String) moduleConfiguration.get(CONFIG_KEY_FILE);		
+		boolean relFilPathIsProposal = false;
+		boolean allowRelativeLinks = moduleConfiguration.getBooleanSafe(CONFIG_KEY_ALLOW_RELATIVE_LINKS, false);
+		boolean allowCoachEdit = moduleConfiguration.getBooleanSafe(CONFIG_KEY_ALLOW_COACH_EDIT, false);
+
+		if(relFilePath == null){
+			// Use calculated file and folder name as default when not yet configured
+			relFilePath = CourseEditorHelper.createUniqueRelFilePathFromShortTitle(courseNode, this.courseFolderBaseContainer);
+			relFilPathIsProposal = true;
+		}
+		// File create/select controller
+		combiLinkCtr = new LinkFileCombiCalloutController(ureq, wControl, courseFolderBaseContainer, relFilePath, relFilPathIsProposal, allowRelativeLinks, new CourseInternalLinkTreeModel(course.getEditorTreeModel()));
+		listenTo(combiLinkCtr);
+		myContent.put("combiCtr", combiLinkCtr.getInitialComponent());		
+		myContent.contextPut("editorEnabled", combiLinkCtr.isEditorEnabled());
 		
+		// Security configuration form
+		securitySettingForm = new SecuritySettingsForm(ureq, wControl, allowRelativeLinks, allowCoachEdit);
+		listenTo(securitySettingForm);
+		myContent.put("allowRelativeLinksForm", securitySettingForm.getInitialComponent());
+		
+		// Access conditions
 		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
-		//Accessibility precondition
 		Condition accessCondition = courseNode.getPreConditionAccess();
 		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), accessCondition,
 				AssessmentHelper.getAssessableNodes(editorModel, spCourseNode), euce);		
 		listenTo(accessibilityCondContr);
 
-		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(CONFIG_KEY_DELIVERYOPTIONS);
+		// Delivery options form
+		DeliveryOptions deliveryOptions = (DeliveryOptions)moduleConfiguration.get(CONFIG_KEY_DELIVERYOPTIONS);
 		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), deliveryOptions);
 		listenTo(deliveryOptionsCtrl);
 	}
@@ -143,35 +159,16 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
-		if (source == accessibilityCondContr) {
+		if (source instanceof NodeEditController) {
+			if(combiLinkCtr != null && combiLinkCtr.isDoProposal()){
+				combiLinkCtr.setRelFilePath(CourseEditorHelper.createUniqueRelFilePathFromShortTitle(courseNode, courseFolderBaseContainer));
+			}
+		} else if (source == accessibilityCondContr) {
 			if (event == Event.CHANGED_EVENT) {
 				Condition cond = accessibilityCondContr.getCondition();
 				courseNode.setPreConditionAccess(cond);
-				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
-		}
-		else if (source == fccecontr) {
-			if (event == FileChooseCreateEditController.FILE_CHANGED_EVENT) {
-				String chosenFile = fccecontr.getChosenFile();
-				if (chosenFile != null) {
-				    moduleConfiguration.set(CONFIG_KEY_FILE, fccecontr.getChosenFile());
-				} else {
-				    moduleConfiguration.remove(CONFIG_KEY_FILE);
-				}
-				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
-				if(fccecontr.isEditorEnabled()) {
-					if(!myTabbedPane.containsTab(deliveryOptionsCtrl.getInitialComponent())) {
-						myTabbedPane.addTab(translate(PANE_TAB_DELIVERYOPTIONS), deliveryOptionsCtrl.getInitialComponent());
-					}
-				} else {
-					myTabbedPane.removeTab(deliveryOptionsCtrl.getInitialComponent());
-				}
-			} else if (event == FileChooseCreateEditController.FILE_CONTENT_CHANGED_EVENT) {
-				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			} else if (event == FileChooseCreateEditController.ALLOW_RELATIVE_LINKS_CHANGED_EVENT) {
-				allowRelativeLinks = fccecontr.getAllowRelativeLinks();
-				courseNode.getModuleConfiguration().setBooleanEntry(CONFIG_KEY_ALLOW_RELATIVE_LINKS, allowRelativeLinks.booleanValue());
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		} else if(source == deliveryOptionsCtrl) {
@@ -181,6 +178,24 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 					moduleConfiguration.set(CONFIG_KEY_DELIVERYOPTIONS, config);
 					fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 				}
+			}
+		} else if(source == combiLinkCtr){
+			if(event == Event.DONE_EVENT){
+				String relPath = VFSManager.getRelativeItemPath(combiLinkCtr.getFile(), courseFolderBaseContainer, null);
+				moduleConfiguration.set(CONFIG_KEY_FILE, relPath);
+				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				if(!myTabbedPane.containsTab(deliveryOptionsCtrl.getInitialComponent())) {
+					myTabbedPane.addTab(translate(PANE_TAB_DELIVERYOPTIONS), deliveryOptionsCtrl.getInitialComponent());
+				}
+				myContent.contextPut("editorEnabled", combiLinkCtr.isEditorEnabled());
+			}
+		}else if(source == securitySettingForm){
+			if(event == Event.DONE_EVENT){
+				boolean allowRelativeLinks = securitySettingForm.getAllowRelativeLinksConfig();
+				moduleConfiguration.set(CONFIG_KEY_ALLOW_RELATIVE_LINKS, allowRelativeLinks);
+				moduleConfiguration.set(CONFIG_KEY_ALLOW_COACH_EDIT, securitySettingForm.getAllowCoachEditConfig());
+				combiLinkCtr.setAllowEditorRelativeLinks(allowRelativeLinks);
+				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		}
 	}
@@ -192,7 +207,7 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 		myTabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate(NLS_CONDITION_ACCESSIBILITY_TITLE)));
 		tabbedPane.addTab(translate(PANE_TAB_SPCONFIG), myContent);
-		if(fccecontr != null && fccecontr.isEditorEnabled()) {
+		if(combiLinkCtr != null && combiLinkCtr.isEditorEnabled()) {
 			tabbedPane.addTab(translate(PANE_TAB_DELIVERYOPTIONS), deliveryOptionsCtrl.getInitialComponent());
 		}
 	}
@@ -202,7 +217,7 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
 	protected void doDispose() {
-    //child controllers registered with listenTo() get disposed in BasicController
+		//child controllers registered with listenTo() get disposed in BasicController
 	}
 
 	public String[] getPaneKeys() {

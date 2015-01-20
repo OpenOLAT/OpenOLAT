@@ -30,9 +30,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.course.assessment.AssessmentMode;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ImsQTI21Resource;
@@ -105,17 +107,17 @@ public class QTI21AssessmentHandler extends FileHandler {
 	}
 
 	@Override
+	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
+		return null;
+	}
+
+	@Override
 	public RepositoryEntry copy(RepositoryEntry source, RepositoryEntry target) {
 		return null;
 	}
 
 	@Override
 	public boolean supportsDownload() {
-		return true;
-	}
-
-	@Override
-	public boolean supportsLaunch() {
 		return true;
 	}
 
@@ -130,7 +132,8 @@ public class QTI21AssessmentHandler extends FileHandler {
 		return new RepositoryEntryRuntimeController(ureq, wControl, re, reSecurity,
 				new RuntimeControllerCreator() {
 					@Override
-					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry, RepositoryEntrySecurity security) {
+					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
+							RepositoryEntry entry, RepositoryEntrySecurity reSecurity, AssessmentMode mode) {
 						return new QTI21DisplayController(uureq, wwControl, entry);
 					}
 				});

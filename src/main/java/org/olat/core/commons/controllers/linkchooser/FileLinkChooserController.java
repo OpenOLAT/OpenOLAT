@@ -192,9 +192,16 @@ public class FileLinkChooserController extends BasicController {
 			if (event instanceof FolderEvent) {
 				FolderEvent folderEvent = (FolderEvent) event;
 				if (isFileSuffixOk(folderEvent.getFilename())) {
-					fireEvent(ureq, new URLChoosenEvent(folderEvent
-							.getFilename()));
-					return;
+					Size size = null;
+					VFSItem item = folderEvent.getItem();
+					if(item != null) {
+						size = getSize(item, item.getName());
+					}
+					if(size != null) {
+						fireEvent(ureq, new URLChoosenEvent(folderEvent.getFilename(), null, null, null, size.getWidth(), size.getHeight()));
+					} else {
+						fireEvent(ureq, new URLChoosenEvent(folderEvent.getFilename()));
+					}
 				} else {
 					setErrorMessage(folderEvent.getFilename());
 				}

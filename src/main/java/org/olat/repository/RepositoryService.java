@@ -50,7 +50,7 @@ public interface RepositoryService {
 	public RepositoryEntry create(String initialAuthor, String resourceName,
 			String displayname, String description, OLATResource resource);
 	
-	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname, String description);
+	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname);
 	
 	public RepositoryEntry loadByKey(Long key);
 	
@@ -123,7 +123,7 @@ public interface RepositoryService {
 	
 	public void removeRole(Identity identity, RepositoryEntry re, String role);
 	
-	public void removeMembers(RepositoryEntry re);
+	public void removeMembers(RepositoryEntry re, String... roles);
 	
 	public List<RepositoryEntry> searchByIdAndRefs(String id);
 	

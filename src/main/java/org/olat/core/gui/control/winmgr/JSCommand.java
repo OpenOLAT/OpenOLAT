@@ -38,25 +38,6 @@ import org.olat.core.logging.AssertException;
  */
 public class JSCommand extends Command {
 
-// TODO: commented out since not implemented in functions.js: execute a
-// method on a json object with some data
-//	/**
-//	 * @param command
-//	 */
-//	public JSCommand(Component target, String fktName, JSONObject data) {
-//		super(1); // do not change this command id, it is in js also
-//		String jsObjectName = "o_jso"+target.getDispatchID();
-//		JSONObject subjo = new JSONObject();
-//		try {
-//			subjo.put("jso", jsObjectName);
-//			subjo.put("f", fktName);
-//			subjo.put("data", data);
-//		} catch (JSONException e) {
-//			throw new AssertException("json exception:", e);
-//		}
-//		setSubJSON(subjo);		
-//	}
-
 	/**
 	 * Create a command that executes arbitrary JS code
 	 * @param javaScriptCode
@@ -71,5 +52,4 @@ public class JSCommand extends Command {
 		}
 		setSubJSON(subjo);		
 	}
-
 }

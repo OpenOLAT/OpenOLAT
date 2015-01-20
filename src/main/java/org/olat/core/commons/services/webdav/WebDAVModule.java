@@ -60,7 +60,9 @@ public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 	@Value("${webdav.termsfolders.enabled:true}")
 	private boolean termsFoldersEnabled;
 
+	@Value("${webdav.learners.bookmarks.enabled:true}")
 	private boolean enableLearnersBookmarksCourse;
+	@Value("${webdav.learners.participatingCourses.enabled:true}")
 	private boolean enableLearnersParticipatingCourses;
 	
 	@Autowired
@@ -92,9 +94,13 @@ public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 		}
 		
 		String learnersBookmarksCourseObj = getStringPropertyValue(LEARNERS_BOOKMARKS_COURSE, true);
-		enableLearnersBookmarksCourse = "true".equals(learnersBookmarksCourseObj);
+		if(StringHelper.containsNonWhitespace(learnersBookmarksCourseObj)) {
+			enableLearnersBookmarksCourse = "true".equals(learnersBookmarksCourseObj);
+		}
 		String learnersParticipatingCoursesObj = getStringPropertyValue(LEARNERS_PARTICIPATING_COURSES, true);
-		enableLearnersParticipatingCourses = "true".equals(learnersParticipatingCoursesObj);
+		if(StringHelper.containsNonWhitespace(learnersParticipatingCoursesObj)) {
+			enableLearnersParticipatingCourses = "true".equals(learnersParticipatingCoursesObj);
+		}
 	}
 	
 	@Override

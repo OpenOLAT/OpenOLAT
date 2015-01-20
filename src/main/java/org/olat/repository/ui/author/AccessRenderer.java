@@ -19,6 +19,7 @@
  */
 package org.olat.repository.ui.author;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
@@ -40,7 +41,7 @@ public class AccessRenderer implements FlexiCellRenderer {
 	private final boolean guestLoginEnabled;
 	
 	public AccessRenderer() {
-		guestLoginEnabled = LoginModule.isGuestLoginLinksEnabled();
+		guestLoginEnabled = CoreSpringFactory.getImpl(LoginModule.class).isGuestLoginLinksEnabled();
 	}
 
 	@Override

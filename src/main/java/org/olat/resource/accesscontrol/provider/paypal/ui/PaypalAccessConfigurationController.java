@@ -22,22 +22,26 @@ package org.olat.resource.accesscontrol.provider.paypal.ui;
 
 import java.math.BigDecimal;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.model.AccessMethod;
+import org.olat.resource.accesscontrol.model.Offer;
 import org.olat.resource.accesscontrol.model.OfferAccess;
 import org.olat.resource.accesscontrol.model.Price;
 import org.olat.resource.accesscontrol.model.PriceImpl;
 import org.olat.resource.accesscontrol.provider.paypal.PaypalModule;
 import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
+import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -51,11 +55,9 @@ import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
 public class PaypalAccessConfigurationController extends AbstractConfigurationMethodController {
 	
 	private final OfferAccess link;
-	private final PaypalModule paypalModule;
-	private final AccessControlModule acModule;
 
-	private TextElement descEl;
-	private TextElement priceEl;
+	private TextElement descEl, priceEl;
+	private DateChooser dateFrom, dateTo;
 	private SingleSelection currencyEl;
 	private MultipleSelectionElement vatEnabledEl;
 	
@@ -88,12 +90,16 @@ public class PaypalAccessConfigurationController extends AbstractConfigurationMe
 		"USD"
 	};
 	
+	@Autowired
+	private PaypalModule paypalModule;
+	@Autowired
+	private AccessControlModule acModule;
+	
 	public PaypalAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link, boolean edit) {
 		super(ureq, wControl, edit);
 		this.link = link;
-		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
-		paypalModule = CoreSpringFactory.getImpl(PaypalModule.class);
 		vatValues = new String[]{ translate("vat.on") };
+		setTranslator(Util.createPackageTranslator(AccessConfigurationController.class, getLocale(), getTranslator()));
 		initForm(ureq);
 	}
 
@@ -143,6 +149,9 @@ public class PaypalAccessConfigurationController extends AbstractConfigurationMe
 		}
 		vatEnabledEl.setEnabled(false);
 		
+		dateFrom = uifactory.addDateChooser("from_" + link.getKey(), "from", link.getValidFrom(), formLayout);
+		dateTo = uifactory.addDateChooser("to_" + link.getKey(), "to", link.getValidTo(), formLayout);
+		
 		super.initForm(formLayout, listener, ureq);
 	}
 	
@@ -158,8 +167,14 @@ public class PaypalAccessConfigurationController extends AbstractConfigurationMe
 		PriceImpl price = new PriceImpl();
 		price.setAmount(amount);
 		price.setCurrencyCode(currencyCode);
-		link.getOffer().setPrice(price);
-		link.getOffer().setDescription(descEl.getValue());
+		
+		Offer offer = link.getOffer();
+		offer.setPrice(price);
+		offer.setDescription(descEl.getValue());
+		offer.setValidFrom(dateFrom.getDate());
+		offer.setValidTo(dateTo.getDate());
+		link.setValidFrom(dateFrom.getDate());
+		link.setValidTo(dateTo.getDate());
 		return link;
 	}
 

@@ -28,8 +28,10 @@ package org.olat.basesecurity;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -37,7 +39,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpSession;
 
 import org.olat.basesecurity.manager.GroupDAO;
-import org.olat.commons.rss.RSSUtil;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts;
@@ -66,6 +67,9 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.session.UserSessionManager;
+import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.login.AuthBFWCParts;
 import org.olat.login.GuestBFWCParts;
 import org.olat.portfolio.manager.InvitationDAO;
@@ -304,15 +308,23 @@ public class AuthHelper {
 			return LOGIN_NOTAVAILABLE;
 		}
 		
-		// set authprovider
-		//usess.getIdentityEnvironment().setAuthProvider(authProvider);
+		//need to block the all things for assessment?
+		if(usess.getRoles() != null && usess.getRoles().isOLATAdmin()) {
+			usess.setAssessmentModes(Collections.<TransientAssessmentMode>emptyList());
+		} else {
+			AssessmentModeManager assessmentManager = CoreSpringFactory.getImpl(AssessmentModeManager.class);
+			List<AssessmentMode> modes = assessmentManager.getAssessmentModeFor(identity);
+			if(modes.isEmpty()) {
+				usess.setAssessmentModes(Collections.<TransientAssessmentMode>emptyList());
+			} else {
+				usess.setAssessmentModes(TransientAssessmentMode.create(modes));
+			}
+		}
 		
 		//set the language
 		usess.setLocale( I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage()) );
 		// update fontsize in users session globalsettings
 		Windows.getWindows(ureq).getWindowManager().setFontSize(Integer.parseInt(identity.getUser().getPreferences().getFontsize() ));		
-		// put users personal rss token into session
-		RSSUtil.putPersonalRssTokenInSession(ureq);
 		// calculate session info and attach it to the user session
 		setSessionInfoFor(identity, authProvider, ureq, rest);
 		//confirm signedOn
@@ -394,14 +406,16 @@ public class AuthHelper {
 	 * @param ureq
 	 */
 	public static void doLogout(UserRequest ureq) {
-		//clear session settings of replayable urls / load performance mode 
-		//XX:GUIInterna.setLoadPerformanceMode(null);
-		Boolean wasGuest = ureq.getUserSession().getRoles().isGuestOnly();
+		if(ureq == null) return;
+
+		boolean wasGuest = false;
+		UserSession usess = ureq.getUserSession();
+		if(usess != null && usess.getRoles() != null) {
+			wasGuest = ureq.getUserSession().getRoles().isGuestOnly();
+		}
+		
 		String lang = I18nManager.getInstance().getLocaleKey(ureq.getLocale());
 		HttpSession session = ureq.getHttpReq().getSession(false);
-		//session.removeAttribute(SessionListener.SESSIONLISTENER_KEY);
-		//TODO: i assume tomcat, after s.invalidate(), lets the GC do the work
-		// if not, then do a s.removeAttribute....
 		// next line fires a valueunbound event to UserSession, which does some
 		// stuff on logout
 		if (session != null) {

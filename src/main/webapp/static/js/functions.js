@@ -936,7 +936,7 @@ function o_scrollToElement(elem) {
 
 function o_popover(id, contentId, loc) {
 	if(typeof(loc)==='undefined') loc = 'bottom';
-
+	
 	jQuery('#' + id).popover({
     	placement : loc,
     	html: true,
@@ -946,6 +946,27 @@ function o_popover(id, contentId, loc) {
 	}).on('shown.bs.popover', function () {
 		var clickListener = function (e) {
 			jQuery('#' + id).popover('hide');
+			jQuery('body').unbind('click', clickListener);
+		};
+		setTimeout(function() {
+			jQuery('body').on('click', clickListener);
+		},5);
+	});
+}
+
+function o_popoverWithTitle(id, contentId, title, loc) {
+	if(typeof(loc)==='undefined') loc = 'bottom';
+
+	return jQuery('#' + id).popover({
+    	placement : loc,
+    	html: true,
+    	title: title,
+    	trigger: 'click',
+    	container: 'body',
+    	content: function() { return jQuery('#' + contentId).clone().html(); }
+	}).on('shown.bs.popover', function () {
+		var clickListener = function (e) {
+			jQuery('#' + id).popover('destroy');
 			jQuery('body').unbind('click', clickListener);
 		};
 		setTimeout(function() {

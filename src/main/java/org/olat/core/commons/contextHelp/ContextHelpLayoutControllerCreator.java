@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts;
+import org.olat.core.commons.fullWebApp.TopNavController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayout;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -55,29 +56,35 @@ class ContextHelpLayoutControllerCreator implements BaseFullWebappPopupLayout {
 	/**
 	 * @see org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayout#getFullWebappParts()
 	 */
+	@Override
 	public BaseFullWebappControllerParts getFullWebappParts() {
-		return new BaseFullWebappControllerParts() {
 		
+		return new BaseFullWebappControllerParts() {
+
+			@Override
 			public List<SiteInstance> getSiteInstances(UserRequest ureq, WindowControl control) {
 				// no static sites
 				return null;
 			}
-		
+
+			@Override
 			public Controller getContentController(UserRequest ureq, WindowControl wControl) {
 				// the content for the Pop-up Window
 				return contentControllerCreator.createController(ureq, wControl);
 			}
-		
-			public Controller createTopNavController(UserRequest ureq, WindowControl wControl) {
-				Controller topnavCtr = null;
+
+			@Override
+			public TopNavController createTopNavController(UserRequest ureq, WindowControl wControl) {
+				TopNavController topnavCtr = null;
 				// ----------- topnav, optional (e.g. for imprint, logout) ------------------		
 				if (CoreSpringFactory.containsBean("fullWebApp.ContextHelpTopNavControllerCreator")) {
 					ControllerCreator topnavControllerCreator = (ControllerCreator) CoreSpringFactory.getBean("fullWebApp.ContextHelpTopNavControllerCreator");
-					topnavCtr = topnavControllerCreator.createController(ureq, wControl);
+					topnavCtr = (TopNavController)topnavControllerCreator.createController(ureq, wControl);
 				}
 				return topnavCtr;
 			}
-		
+
+			@Override
 			public Controller createHeaderController(UserRequest ureq, WindowControl control) {
 				Controller headerCtr = null;
 				// ----------- header, optional (e.g. for logo, advertising ) ------------------		
@@ -87,7 +94,8 @@ class ContextHelpLayoutControllerCreator implements BaseFullWebappPopupLayout {
 				}
 				return headerCtr;
 			}
-		
+
+			@Override
 			public Controller createFooterController(UserRequest ureq, WindowControl control) {
 				Controller footerCtr = null;
 				// ----------- footer, optional (e.g. for copyright, powerd by) ------------------

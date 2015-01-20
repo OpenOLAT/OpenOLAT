@@ -721,8 +721,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		for(AuthoringEntryRow row:rows) {
 			RepositoryEntry sourceEntry = repositoryService.loadByKey(row.getKey());
 			String displayname = "Copy of " + sourceEntry.getDisplayname();
-			String description = sourceEntry.getDescription();
-			repositoryService.copy(sourceEntry, getIdentity(), displayname, description);
+			repositoryService.copy(sourceEntry, getIdentity(), displayname);
 		}
 		
 		showInfo("details.copy.success", new String[]{ Integer.toString(rows.size()) });
@@ -884,7 +883,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private void launch(UserRequest ureq, AuthoringEntryRow row) {
 		try {
 			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(row.getResourceType());
-			if(handler != null && handler.supportsLaunch()) {
+			if(handler != null) {
 				String businessPath = "[RepositoryEntry:" + row.getKey() + "]";
 				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 			}
@@ -906,7 +905,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	
 	private void launchEditDescription(UserRequest ureq, RepositoryEntry re) {
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(re);
-		if(handler != null && handler.supportsLaunch()) {
+		if(handler != null) {
 			String businessPath = "[RepositoryEntry:" + re.getKey() + "][EditDescription:0]";
 			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 		}

@@ -336,23 +336,6 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 		return new GuiStackNiceImpl(this, initialComponent);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.control.WindowBackOffice#invokeLater(java.lang.Runnable)
-	 */
-	@Override
-	public void invokeLater(Runnable runnable) {
-		// brasato:::: verify that this is now as it should be.
-		// improve by handling those tasks after a ongoing dispatch/render is finished,
-		// or when handleDirties is called.
-		// the current solution below blocks the async caller - e.g. a user firing an eventbus message may then wait for all users to complete their
-		// rendering process - normally way below 0.1 sec, but if we have 100 users which happen to just being rendered when the notifications takes place.
-		// -> 10 seconds delay! this is not very probable but possible.
-		
-		synchronized(window) {//cluster_ok
-			runnable.run();
-		}
-	}
-
 	public void fireCycleEvent(Event cycleEvent) {
 		for (GenericEventListener gel : cycleListeners) {
 			gel.event(cycleEvent);

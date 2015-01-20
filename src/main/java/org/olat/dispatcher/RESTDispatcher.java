@@ -226,10 +226,10 @@ public class RESTDispatcher implements Dispatcher {
 			}
 		} else {
 			//prepare for redirect
-			//fxdiff FXOLAT-113: business path in DMZ
+			LoginModule loginModule = CoreSpringFactory.getImpl(LoginModule.class);
 			setBusinessPathInUserSession(usess, businessPath, ureq.getParameter(WINDOW_SETTINGS));
 			String invitationAccess = ureq.getParameter(AuthenticatedDispatcher.INVITATION);
-			if (invitationAccess != null && LoginModule.isInvitationEnabled()) {
+			if (invitationAccess != null && loginModule.isInvitationEnabled()) {
 			// try to log in as anonymous
 				// use the language from the lang paramter if available, otherwhise use the system default locale
 				Locale guestLoc = getLang(ureq);
@@ -249,7 +249,7 @@ public class RESTDispatcher implements Dispatcher {
 				}
 			} else {
 				String guestAccess = ureq.getParameter(AuthenticatedDispatcher.GUEST);
-				if (guestAccess == null || !LoginModule.isGuestLoginLinksEnabled()) {
+				if (guestAccess == null || !loginModule.isGuestLoginLinksEnabled()) {
 					DispatcherModule.redirectToDefaultDispatcher(response);
 					return;
 				} else if (guestAccess.equals(AuthenticatedDispatcher.TRUE)) {

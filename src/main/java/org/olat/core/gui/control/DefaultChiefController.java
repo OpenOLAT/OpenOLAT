@@ -29,6 +29,7 @@ package org.olat.core.gui.control;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 
 /**
@@ -64,7 +65,12 @@ public abstract class DefaultChiefController extends DefaultController implement
 	}
 
 	@Override
-	public boolean wishReload(boolean erase) {
+	public boolean wishAsyncReload(UserRequest ureq, boolean erase) {
+		return false;
+	}
+
+	@Override
+	public boolean wishReload(UserRequest ureq, boolean erase) {
 		return false;
 	}
 
@@ -72,26 +78,31 @@ public abstract class DefaultChiefController extends DefaultController implement
 	public ScreenMode getScreenMode() {
 		return screenMode;
 	}
+	
+	@Override
+	public OLATResourceable getLockResource() {
+		return null;
+	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
+	public void lockResource(OLATResourceable resource) {
+		//
+	}
+
+	@Override
 	public abstract void event(UserRequest ureq, Component source, Event event);
 
-	/**
-	 * @see org.olat.core.gui.control.Controller#addControllerListener(org.olat.core.gui.control.ControllerEventListener)
-	 */
+	@Override
 	public void addControllerListener(ControllerEventListener el) {
 		throw new AssertException("cannot listen to a chiefcontroller");
 	}
 
+	@Override
 	protected void setInitialComponent(Component initialComponent) {
 		throw new AssertException("please use getWindow().setContentPane() instead!");
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.Controller#getInitialComponent()
-	 */
+	@Override
 	public Component getInitialComponent() {
 		throw new AssertException("please use getWindow().getContentPane() instead!");
 	}
@@ -100,6 +111,7 @@ public abstract class DefaultChiefController extends DefaultController implement
 	 * overrides the method in DefaultController since here we need the original WindowControl
 	 * @see org.olat.core.gui.control.ChiefController#getWindowControl()
 	 */
+	@Override
 	public WindowControl getWindowControl() {
 		return windowControl;
 	}

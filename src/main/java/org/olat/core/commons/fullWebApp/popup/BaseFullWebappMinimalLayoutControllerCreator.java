@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts;
+import org.olat.core.commons.fullWebApp.TopNavController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -69,12 +70,12 @@ class BaseFullWebappMinimalLayoutControllerCreator implements BaseFullWebappPopu
 				return contentControllerCreator.createController(ureq, wControl);
 			}
 		
-			public Controller createTopNavController(UserRequest ureq, WindowControl wControl) {
-				Controller topnavCtr = null;
+			public TopNavController createTopNavController(UserRequest ureq, WindowControl wControl) {
+				TopNavController topnavCtr = null;
 				// ----------- topnav, optional (e.g. for imprint, logout) ------------------		
 				if (CoreSpringFactory.containsBean("fullWebApp.MinimalTopNavControllerCreator")) {
 					ControllerCreator topnavControllerCreator = (ControllerCreator) CoreSpringFactory.getBean("fullWebApp.MinimalTopNavControllerCreator");
-					topnavCtr = topnavControllerCreator.createController(ureq, wControl);
+					topnavCtr = (TopNavController)topnavControllerCreator.createController(ureq, wControl);
 				}
 				return topnavCtr;
 			}

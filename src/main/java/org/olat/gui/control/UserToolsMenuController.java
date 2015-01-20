@@ -29,6 +29,7 @@ import org.olat.admin.user.tools.UserToolCategory;
 import org.olat.admin.user.tools.UserToolExtension;
 import org.olat.admin.user.tools.UserToolsModule;
 import org.olat.basesecurity.AuthHelper;
+import org.olat.core.commons.fullWebApp.TopNavController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -36,6 +37,7 @@ import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.prefs.Preferences;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UserToolsMenuController extends BasicController  {
+public class UserToolsMenuController extends BasicController implements TopNavController  {
 
 	private static final String ACTION_LOGOUT = "logout";
 	
@@ -115,6 +117,17 @@ public class UserToolsMenuController extends BasicController  {
 		menuVC.contextPut("configs", configLinksName);
 		menuVC.contextPut("systems", systemLinksName);
 		menuVC.contextPut("searchs", searchLinksName);
+		menuVC.contextPut("locked", Boolean.FALSE);
+	}
+	
+	@Override
+	public void lockResource(OLATResourceable resource) {
+		menuVC.contextPut("locked", Boolean.TRUE);
+	}
+
+	@Override
+	public void unlockResource() {
+		menuVC.contextPut("locked", Boolean.FALSE);	
 	}
 
 	@Override

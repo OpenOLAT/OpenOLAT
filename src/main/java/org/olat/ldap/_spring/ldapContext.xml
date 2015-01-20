@@ -163,7 +163,7 @@
 
 	<!-- LDAP admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" id="sysadmin.menupoint.syscfg.ldapcfg" init-method="initExtensionPoints">
-		<property name="order" value="7214" />
+		<property name="order" value="8820" />
 		<property name="enabled" value="${ldap.enable}" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
@@ -179,6 +179,6 @@
 				<value>org.olat.admin.SystemAdminMainController</value>		
 			</list>
 		</property>
-		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
+		<property name="parentTreeNodeIdentifier" value="loginAndSecurityParent" /> 
 	</bean>
 </beans>

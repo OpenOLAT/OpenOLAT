@@ -62,6 +62,7 @@ import org.junit.runners.Suite;
 	org.olat.core.util.FormatterTest.class,
 	org.olat.core.util.EncoderTest.class,
 	org.olat.core.util.SimpleHtmlParserTest.class,
+	org.olat.core.util.IPUtilsTest.class,
 	org.olat.core.util.mail.manager.MailManagerTest.class,
 	org.olat.core.id.context.BusinessControlFactoryTest.class,
 	org.olat.core.id.context.HistoryManagerTest.class,
@@ -121,6 +122,7 @@ import org.junit.runners.Suite;
 	org.olat.course.nodes.en.EnrollmentManagerTest.class,//ok
 	org.olat.course.assessment.AssessmentManagerTest.class,//ok
 	org.olat.course.assessment.manager.UserCourseInformationsManagerTest.class,//ok
+	org.olat.course.assessment.manager.AssessmentModeManagerTest.class,//ok
 	org.olat.course.certificate.manager.CertificatesManagerTest.class,
 	org.olat.course.config.CourseConfigManagerImplTest.class,//ok
 	org.olat.course.groupsandrights.CourseGroupManagementTest.class,//ok

@@ -26,9 +26,11 @@
 
 package org.olat.core.gui.control;
 
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Window;
-import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
+import org.olat.core.gui.control.navigation.SiteInstance;
+import org.olat.core.id.OLATResourceable;
 /**
  * Description: <br>
  * 
@@ -47,7 +49,30 @@ public interface ChiefController extends Controller {
 	
 	public ScreenMode getScreenMode();
 	
-	public boolean wishReload(boolean erase);
+	/**
+	 * The method is called by the poller thread.
+	 * 
+	 * @param ureq
+	 * @param erase
+	 * @return
+	 */
+	public boolean wishAsyncReload(UserRequest ureq, boolean erase);
+	
+	/**
+	 * The method is resolved on click
+	 * @param ureq
+	 * @param erase
+	 * @return
+	 */
+	public boolean wishReload(UserRequest ureq, boolean erase);
+	
+	/**
+	 * 
+	 * @param resource
+	 */
+	public void lockResource(OLATResourceable resource);
+	
+	public OLATResourceable getLockResource();
 	
 	/**
 	 * Set a class to the &lt;body&gt;

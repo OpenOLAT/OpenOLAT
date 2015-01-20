@@ -1,7 +1,17 @@
 $r.render("nodeDisplayConfigFormController")
 
-#if ($editorEnabled)
-	$r.render("filechoosecreateedit")
-#end
 
+#if ($r.available("combiCtr")) 
+<fieldset>
+	<legend>
+		$r.contextHelpWithWrapper("org.olat.course.nodes.sp","ced-sp-choose.html", "help.choose.file")
+		$r.translate("fieldset.chosecreateeditfile")
+	</legend>
+	$r.render("combiCtr")
+</fieldset>
+	
+	#if ($editorEnabled)
+		$r.render("allowRelativeLinksForm")
+	#end
+#end
 

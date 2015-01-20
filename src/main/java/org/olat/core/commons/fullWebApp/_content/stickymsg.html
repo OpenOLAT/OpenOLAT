@@ -1,6 +1,11 @@
 #if($hasStickyMessage)
-<div id="o_msg_sticky" class="o_scrollblock clearfix">
-	<i class="o_icon o_icon_info_msg"></i> 
-	$stickyMessage
+<div id="o_msg_sticky" class="o_scrollblock clearfix #if($screenMode.fullScreen) o_msg_sticky_fullscreen #end">
+	<i class="o_icon o_icon_info_msg"></i>
+	#if($stickyMessage && !$stickyMessage.empty) 
+		$stickyMessage
+	#end
+	#if($stickyCmpName && !$stickyCmpName.empty) 
+		$r.render($stickyCmpName)
+	#end
 </div>
 #end

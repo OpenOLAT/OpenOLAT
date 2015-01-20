@@ -118,11 +118,7 @@ public interface ACService {
 	
 	public List<OfferAccess> getOfferAccessByResource(Collection<Long> resourceKeys, boolean valid, Date atDate);
 	
-
-	
 	public OfferAccess saveOfferAccess(OfferAccess link);
-	
-	public void saveOfferAccess(List<OfferAccess> links);
 	
 	public AccessResult accessResource(Identity identity, OfferAccess link, Object argument);
 

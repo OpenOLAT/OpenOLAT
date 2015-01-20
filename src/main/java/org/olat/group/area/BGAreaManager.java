@@ -86,7 +86,7 @@ public interface BGAreaManager {
 	 * 
 	 * @param area
 	 */
-	public abstract void deleteBGArea(BGArea area);
+	public void deleteBGArea(BGArea area);
 
 	/**
 	 * Add a business group to a business group area. Does not check it this
@@ -95,7 +95,7 @@ public interface BGAreaManager {
 	 * @param group
 	 * @param area
 	 */
-	public abstract void addBGToBGArea(BusinessGroup group, BGArea area);
+	public void addBGToBGArea(BusinessGroup group, BGArea area);
 
 	/**
 	 * Remove a business group from a business group area. If no such relation
@@ -104,7 +104,7 @@ public interface BGAreaManager {
 	 * @param group
 	 * @param area
 	 */
-	public abstract void removeBGFromArea(BusinessGroup group, BGArea area);
+	public void removeBGFromArea(BusinessGroup group, BGArea area);
 
 	/**
 	 * Deletes all business group to area relations from the given business group

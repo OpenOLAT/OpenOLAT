@@ -64,6 +64,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.filters.VFSItemSuffixFilter;
+import org.olat.course.assessment.AssessmentMode;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.WikiResource;
@@ -200,11 +201,6 @@ public class WikiHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public boolean supportsLaunch() {
-		return true;
-	}
-
-	@Override
 	public EditionSupport supportsEdit(OLATResourceable resource) {
 		return EditionSupport.embedded;
 	}
@@ -247,7 +243,8 @@ public class WikiHandler implements RepositoryHandler {
 		RepositoryEntryRuntimeController runtime = new RepositoryEntryRuntimeController(ureq, wControl, re, reSecurity,
 			new RuntimeControllerCreator() {
 				@Override
-				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry, RepositoryEntrySecurity security) {
+				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
+						RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
 					Controller controller;
 					if ( ce != null ) { //jump to a certain context
 						OLATResourceable ores = ce.getOLATResourceable();

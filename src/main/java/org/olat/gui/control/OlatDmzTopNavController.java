@@ -30,6 +30,7 @@ import org.olat.core.commons.contextHelp.ContextHelpModule;
 import org.olat.core.commons.controllers.impressum.ImpressumDmzMainController;
 import org.olat.core.commons.controllers.impressum.ImpressumInformations;
 import org.olat.core.commons.controllers.impressum.ImpressumModule;
+import org.olat.core.commons.fullWebApp.TopNavController;
 import org.olat.core.commons.services.help.HelpLinkSPI;
 import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.UserRequest;
@@ -44,9 +45,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
+import org.olat.core.id.OLATResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class OlatDmzTopNavController extends BasicController {
+public class OlatDmzTopNavController extends BasicController implements TopNavController {
 	
 	private static final Boolean contextHelpEnabled = Boolean.valueOf(ContextHelpModule.isContextHelpEnabled());
 	private Link impressumLink;
@@ -89,6 +91,16 @@ public class OlatDmzTopNavController extends BasicController {
 		//
 		vc.put("languageChooser", languageChooserC.getInitialComponent());
 		putInitialPanel(vc);		
+	}
+
+	@Override
+	public void lockResource(OLATResourceable resource) {
+		//
+	}
+
+	@Override
+	public void unlockResource() {
+		//
 	}
 
 	@Override

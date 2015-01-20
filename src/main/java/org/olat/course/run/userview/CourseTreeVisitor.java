@@ -52,9 +52,9 @@ public class CourseTreeVisitor {
 		this.ienv = ienv;
 	}
 	
-	public boolean isAccessible(CourseNode node) {
+	public boolean isAccessible(CourseNode node, TreeFilter filter) {
 		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
-		NodeEvaluation ne = node.eval(uce.getConditionInterpreter(), new TreeEvaluation());
+		NodeEvaluation ne = node.eval(uce.getConditionInterpreter(), new TreeEvaluation(), filter);
 
 		boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(ne);
 		if(mayAccessWholeTreeUp) {
@@ -63,21 +63,21 @@ public class CourseTreeVisitor {
 		return false;
 	}
 	
-	public void visit(Visitor visitor) {
+	public void visit(Visitor visitor, TreeFilter filter) {
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, courseEnv);
 		TreeEvaluation treeEval = new TreeEvaluation();
 		CourseNode rootNode = courseEnv.getRunStructure().getRootNode();
-		visit(visitor, rootNode, userCourseEnv, treeEval);
+		visit(visitor, rootNode, userCourseEnv, treeEval, filter);
 	}
 	
-	private void visit(Visitor visitor, CourseNode node, UserCourseEnvironment userCourseEnv, TreeEvaluation treeEval) {
-		NodeEvaluation ne = node.eval(userCourseEnv.getConditionInterpreter(), treeEval);
+	private void visit(Visitor visitor, CourseNode node, UserCourseEnvironment userCourseEnv, TreeEvaluation treeEval, TreeFilter filter) {
+		NodeEvaluation ne = node.eval(userCourseEnv.getConditionInterpreter(), treeEval, filter);
 		boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(ne);
 		if(mayAccessWholeTreeUp) {
 			visitor.visit(node);
 			for(int i=0; i<node.getChildCount(); i++) {
 				CourseNode childNode = (CourseNode)node.getChildAt(i);
-				visit(visitor, childNode, userCourseEnv, treeEval);
+				visit(visitor, childNode, userCourseEnv, treeEval, filter);
 			}	
 		}
 	}

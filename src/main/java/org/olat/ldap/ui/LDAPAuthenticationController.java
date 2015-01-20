@@ -79,6 +79,8 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 	private final OLATAuthManager olatAuthenticationSpi;
 	
 	@Autowired
+	private LoginModule loginModule;
+	@Autowired
 	private LDAPLoginModule ldapLoginModule;
 
 	public LDAPAuthenticationController(UserRequest ureq, WindowControl control) {
@@ -142,9 +144,9 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 			String login = loginForm.getLogin();
 			String pass = loginForm.getPass();
 
-			if (LoginModule.isLoginBlocked(login)) {
+			if (loginModule.isLoginBlocked(login)) {
 				// do not proceed when already blocked
-				showError("login.blocked", LoginModule.getAttackPreventionTimeoutMin().toString());
+				showError("login.blocked", loginModule.getAttackPreventionTimeoutMin().toString());
 				getLogger().audit("Login attempt on already blocked login for " + login + ". IP::" + ureq.getHttpReq().getRemoteAddr(), null);
 				return;
 			}
@@ -176,9 +178,9 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 			}
 			// Still not found? register for hacking attempts
 			if (authenticatedIdentity == null) {
-				if (LoginModule.registerFailedLoginAttempt(login)) {
+				if (loginModule.registerFailedLoginAttempt(login)) {
 					logAudit("Too many failed login attempts for " + login + ". Login blocked. IP::" + ureq.getHttpReq().getRemoteAddr(), null);
-					showError("login.blocked", LoginModule.getAttackPreventionTimeoutMin().toString());
+					showError("login.blocked", loginModule.getAttackPreventionTimeoutMin().toString());
 					return;
 				} else {
 					showError("login.error", ldapError.get());
@@ -196,7 +198,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 				}
 			}
 
-			LoginModule.clearFailedLoginAttempts(login);
+			loginModule.clearFailedLoginAttempts(login);
 
 			// Check if disclaimer has been accepted
 			if (RegistrationManager.getInstance().needsToConfirmDisclaimer(authenticatedIdentity)) {

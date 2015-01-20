@@ -117,7 +117,7 @@ public class IQManager implements UserDataDeletable {
 	 *  
 	 */
 	public Controller createIQDisplayController(ModuleConfiguration moduleConfiguration, IQSecurityCallback secCallback, UserRequest ureq,
-			WindowControl wControl, long callingResId, String callingResDetail, NavigatorDelegate delegate) {
+			WindowControl wControl, long courseResId, String courseNodeIdent, NavigatorDelegate delegate) {
 		
 		//two cases:
 		// -- VERY RARE CASE -- 1) qti is open in an editor session right now on the screen (or session on the way to timeout)
@@ -133,7 +133,7 @@ public class IQManager implements UserDataDeletable {
 					translator.translate("status.currently.locked", new String[] { fullName }));
 		}else{
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(re, OlatResourceableType.iq));
-			return new IQDisplayController(moduleConfiguration, secCallback, ureq, wControl, callingResId, callingResDetail, delegate);
+			return new IQDisplayController(moduleConfiguration, secCallback, ureq, wControl, courseResId, courseNodeIdent, delegate);
 		}
 	}
 

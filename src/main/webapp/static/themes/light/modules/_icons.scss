@@ -24,6 +24,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_accessibility:before { content: $fa-var-wheelchair; }
 .o_icon_actions:before { content: $fa-var-gears;}
 .o_icon_archive_tool:before { content: $fa-var-download;}
+.o_icon_assessment_mode:before { content: $fa-var-pencil-square-o;}
 .o_icon_assessment_tool:before { content: $fa-var-trophy;}
 .o_icon_attempt_limit:before { content: $fa-var-refresh; }
 .o_icon_accept:before { content: $fa-var-check; color: $brand-success; }
@@ -335,6 +336,12 @@ $fa-css-prefix: "o_icon" !default;
 .o_mi_qtikprim:before { content: $fa-var-check-square;  }
 .o_mi_qtifib:before { content: $fa-var-ellipsis-h; }
 .o_mi_qtiessay:before { content: $fa-var-align-left; }
+
+.o_as_mode_none { }
+.o_as_mode_leadtime:before { content: $fa-var-clock-o; }
+.o_as_mode_assessment:before { content: $fa-var-play; }
+.o_as_mode_followup:before { content: $fa-var-ban; }
+.o_as_mode_closed:before { content: '-'; }
 
 /* coaching */
 .o_black_led:before { content: $fa-var-circle; color: $brand-primary; }

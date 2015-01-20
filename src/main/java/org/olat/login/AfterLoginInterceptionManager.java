@@ -25,7 +25,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.springframework.stereotype.Service;
 
 /**
  * Used to manage a list of all Controllers to be presented afterLogin.
@@ -35,31 +37,13 @@ import org.olat.core.manager.BasicManager;
  * 
  * @author Roman Haag, roman.haag@frentix.com, www.frentix.com
  */
-public class AfterLoginInterceptionManager extends BasicManager{
-	private static AfterLoginInterceptionManager INSTANCE;
+@Service("afterLoginInterceptionManager")
+public class AfterLoginInterceptionManager {
+	private static final OLog log = Tracing.createLoggerFor(AfterLoginInterceptionManager.class);
+	
 	private List<Map<String, Object>> afterLoginControllerList;
 
-	/**
-	 * 
-	 * @return
-	 */
-	public static AfterLoginInterceptionManager getInstance() {
-		return INSTANCE;
-	}
-
-	/**
-	 *  [used by spring]
-	 */
-	private AfterLoginInterceptionManager() {
-		INSTANCE = this;
-	}
-
-	
-	/**
-	 * 
-	 */
 	protected static List<Map<String,Object>> sortControllerListByOrder(List<Map<String,Object>> list2order){
-		
 	    int n = list2order.size();
 	    for (int pass=1; pass < n; pass++) {  // count how many times
 	        // This next loop becomes shorter and shorter
@@ -82,7 +66,6 @@ public class AfterLoginInterceptionManager extends BasicManager{
 	    }
 		return list2order;
 	}
-	
 	
 	/**
 	 * @return Returns the afterLoginControllerList.
@@ -114,14 +97,14 @@ public class AfterLoginInterceptionManager extends BasicManager{
 		if (afterLoginControllerList == null) {
 			afterLoginControllerList = new ArrayList<Map<String, Object>>();
 		}
-		logInfo("added one or more afterLoginControllers to the list.");
+		log.info("added one or more afterLoginControllers to the list.");
 		List<Map<String, Object>> ctrlList = aLConf.getAfterLoginControllerList();
 		for (Iterator<Map<String, Object>> iterator = ctrlList.iterator(); iterator.hasNext();) {
 			Map<String, Object> map = iterator.next();
-			if (map.containsKey("controller-instance")) logInfo("  controller-instance: " + map.get("controller-instance"));
-			if (map.containsKey("controller")) logInfo("  controller-key to instantiate: " + map.get("controller"));
-			if (map.containsKey("forceUser")) logInfo("  force User: " + map.get("forceUser"));
-			if (map.containsKey("redoTimeout")) logInfo("  redo-Timeout: " + map.get("redoTimeout"));
+			if (map.containsKey("controller-instance")) log.info("  controller-instance: " + map.get("controller-instance"));
+			if (map.containsKey("controller")) log.info("  controller-key to instantiate: " + map.get("controller"));
+			if (map.containsKey("forceUser")) log.info("  force User: " + map.get("forceUser"));
+			if (map.containsKey("redoTimeout")) log.info("  redo-Timeout: " + map.get("redoTimeout"));
 		}
 		afterLoginControllerList.addAll(aLConf.getAfterLoginControllerList());
 	}
@@ -133,5 +116,4 @@ public class AfterLoginInterceptionManager extends BasicManager{
 			return false;
 		}
 	}
-
 }

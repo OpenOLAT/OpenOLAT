@@ -86,6 +86,7 @@ import org.olat.course.assessment.AssessmentMainController;
 import org.olat.course.assessment.CoachingGroupAccessAssessmentCallback;
 import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.assessment.FullAccessAssessmentCallback;
+import org.olat.course.assessment.ui.AssessmentModeListController;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
 import org.olat.course.certificate.ui.CertificatesOptionsController;
 import org.olat.course.config.CourseConfig;
@@ -148,7 +149,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		//my course
 		efficiencyStatementsLink, calendarLink, noteLink, chatLink,
 		//glossary
-		openGlossaryLink, enableGlossaryLink;
+		openGlossaryLink, enableGlossaryLink,
+		//assessment
+		assessmentModeLink;
 	private Link currentUserCountLink;
 	private Dropdown myCourse, glossary;
 	
@@ -161,6 +164,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private AssessmentMainController assessmentToolCtr;
 	private MembersManagementMainController membersCtrl;
 	private StatisticCourseNodesController statsToolCtr;
+	private AssessmentModeListController assessmentModeCtrl;
 	private CourseLayoutGeneratorController courseLayoutCtrl;
 	private CertificatesOptionsController certificatesOptionsCtrl;
 
@@ -325,10 +329,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
 		
 		toolbarPanel.removeAllTools();
-		
-		initTools(toolsDropdown, course, uce);
-		initSettingsTools(settingsDropdown);
-		initEditionTools(settingsDropdown);
+		if(!isAssessmentLock()) {
+			initTools(toolsDropdown, course, uce);
+			initSettingsTools(settingsDropdown);
+			initEditionTools(settingsDropdown);
+		}
 		initToolsMyCourse(course, uce);
 		initGeneralTools(course);
 		
@@ -350,9 +355,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
 				boolean managed = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent);
+				boolean closed = repositoryManager.createRepositoryEntryStatus(getRepositoryEntry().getStatusCode()).isClosed();
 				editLink = LinkFactory.createToolLink("edit.cmd", translate("command.openeditor"), this, "o_icon_courseeditor");
 				editLink.setElementCssClass("o_sel_course_editor");
-				editLink.setEnabled(!corrupted && !managed);
+				editLink.setEnabled(!corrupted && !managed && !closed);
+				editLink.setVisible(!closed);
 				tools.addComponent(editLink);
 				
 				folderLink = LinkFactory.createToolLink("cfd", translate("command.coursefolder"), this, "o_icon_coursefolder");
@@ -439,6 +446,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			accessLink.setEnabled(!managed);
 			settings.addComponent(accessLink);
 			
+			assessmentModeLink = LinkFactory.createToolLink("assessment.mode.cmd", translate("command.assessment.mode"), this, "o_icon_assessment_mode");
+			assessmentModeLink.setElementCssClass("o_sel_course_assessment_mode");
+			assessmentModeLink.setEnabled(!managed);
+			settings.addComponent(assessmentModeLink);
+			
 			catalogLink = LinkFactory.createToolLink("access.cmd", translate("command.catalog"), this, "o_icon_catalog");
 			catalogLink.setElementCssClass("o_sel_course_catalog");
 			catalogLink.setVisible(repositoryModule.isCatalogEnabled());
@@ -463,6 +475,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 	
 	private void initToolsMyCourse(ICourse course, UserCourseEnvironmentImpl uce) {
+		boolean assessmentLock = isAssessmentLock();
 
 		myCourse = new Dropdown("myCourse", "header.tools.mycourse", false, getTranslator());
 		myCourse.setElementCssClass("dropdown-menu-right");
@@ -470,7 +483,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 		// Personal tools on right side
 		CourseConfig cc = course.getCourseConfig();
-		if ((course.hasAssessableNodes() || cc.isCertificateEnabled()) && !isGuestOnly && uce != null) {
+		if ((course.hasAssessableNodes() || cc.isCertificateEnabled()) && !isGuestOnly && !assessmentLock && uce != null) {
 			// link to efficiency statements should
 			// - not appear when not configured in course configuration
 			// - not appear when configured in course configuration but no assessable
@@ -488,7 +501,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			}
 		}
 		
-		if (!isGuestOnly) {
+		if (!isGuestOnly && !assessmentLock) {
 			noteLink = LinkFactory.createToolLink("personalnote",translate("command.personalnote"), this, "o_icon_notes");
 			noteLink.setPopup(new LinkPopupSettings(750, 550, "notes"));
 			myCourse.addComponent(noteLink);
@@ -513,6 +526,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), "group", StringHelper.escapeHtml(group.getName()), this);
 					link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
 					link.setUserObject(group);
+					link.setEnabled(!assessmentLock);
 					myCourse.addComponent(link);
 					
 				}
@@ -524,6 +538,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), "group", StringHelper.escapeHtml(group.getName()), this);
 					link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
 					link.setUserObject(group);
+					link.setEnabled(!assessmentLock);
 					myCourse.addComponent(link);
 				}
 			}
@@ -547,33 +562,37 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 	
 	private void initGeneralTools(ICourse course) {
+		boolean assessmentLock = isAssessmentLock();
+
 		CourseConfig cc = course.getCourseConfig();
-		if (showInfos) {
+		if (!assessmentLock && showInfos) {
 			detailsLink = LinkFactory.createToolLink("courseconfig",translate("command.courseconfig"), this, "o_icon_details");
 			toolbarPanel.addTool(detailsLink);
 		}		
-		if (!isGuestOnly && calendarModule.isEnabled() && calendarModule.isEnableCourseToolCalendar()) {
+		if (!assessmentLock && !isGuestOnly && calendarModule.isEnabled() && calendarModule.isEnableCourseToolCalendar()) {
 			calendarLink = LinkFactory.createToolLink("calendar",translate("command.calendar"), this, "o_icon_calendar");
 			calendarLink.setPopup(new LinkPopupSettings(950, 750, "cal"));
 			calendarLink.setVisible(cc.isCalendarEnabled());
 			toolbarPanel.addTool(calendarLink);
 		}
 		
-		glossary = new Dropdown("glossary", "command.glossary", false, getTranslator());
-		glossary.setIconCSS("o_icon o_FileResource-GLOSSARY_icon");
-		glossary.setVisible(cc.hasGlossary());
-
-		openGlossaryLink = LinkFactory.createToolLink("command.glossary.open", translate("command.glossary.open"), this);
-		openGlossaryLink.setPopup(new LinkPopupSettings(950, 750, "gloss"));
-		glossary.addComponent(openGlossaryLink);
-
-		enableGlossaryLink = LinkFactory.createToolLink("command.glossary.on.off", translate("command.glossary.on.alt"), this);
-		glossary.addComponent(enableGlossaryLink);
-		toolbarPanel.addTool(glossary);
+		if(!assessmentLock) {
+			glossary = new Dropdown("glossary", "command.glossary", false, getTranslator());
+			glossary.setIconCSS("o_icon o_FileResource-GLOSSARY_icon");
+			glossary.setVisible(cc.hasGlossary());
+	
+			openGlossaryLink = LinkFactory.createToolLink("command.glossary.open", translate("command.glossary.open"), this);
+			openGlossaryLink.setPopup(new LinkPopupSettings(950, 750, "gloss"));
+			glossary.addComponent(openGlossaryLink);
+	
+			enableGlossaryLink = LinkFactory.createToolLink("command.glossary.on.off", translate("command.glossary.on.alt"), this);
+			glossary.addComponent(enableGlossaryLink);
+			toolbarPanel.addTool(glossary);
+		}
 		
 		//add group chat to toolbox
 		InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
-		boolean chatIsEnabled = !isGuestOnly && imModule.isEnabled() && imModule.isCourseEnabled();
+		boolean chatIsEnabled = !assessmentLock && !isGuestOnly && imModule.isEnabled() && imModule.isCourseEnabled();
 		if(chatIsEnabled) {
 			chatLink = LinkFactory.createToolLink("chat",translate("command.coursechat"), this, "o_icon_chat");
 			chatLink.setVisible(CourseModule.isCourseChatEnabled() && cc.isChatEnabled());
@@ -639,6 +658,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doLayout(ureq);
 		} else if(optionsLink == source) {
 			doOptions(ureq);
+		} else if(assessmentModeLink == source) {
+			doAssessmentMode(ureq);
 		} else if(certificatesOptionsLink == source) {
 			doCertificatesOptions(ureq);
 		} else if(archiverLink == source) {
@@ -712,6 +733,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					switch(delayedClose) {
 						case access: doAccess(ureq); break;
 						case archive: doArchive(ureq); break;
+						case assessmentMode: doAssessmentMode(ureq); break;
 						case assessmentSurveyStatistics: doAssessmentSurveyStatistics(ureq); break;
 						case assessmentTestStatistics: doAssessmentTestStatistics(ureq); break;
 						case assessmentTool: doAssessmentTool(ureq);
@@ -864,7 +886,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	@Override
 	protected void doEdit(UserRequest ureq) {
-		if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
+		if ((reSecurity.isEntryAdmin()
+				|| hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) &&
+				!repositoryManager.createRepositoryEntryStatus(getRepositoryEntry().getStatusCode()).isClosed()) {
 			removeCustomCSS(ureq);
 			popToRoot(ureq);
 			cleanUp();
@@ -958,6 +982,21 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			}
 		} else {
 			delayedClose = Delayed.options;
+		}
+	}
+	
+	private void doAssessmentMode(UserRequest ureq) {
+		if(delayedClose == Delayed.assessmentMode || requestForClose(ureq)) {
+			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
+				removeCustomCSS(ureq);
+				AssessmentModeListController ctrl = new AssessmentModeListController(ureq, getWindowControl(),
+						toolbarPanel, getRepositoryEntry());
+				assessmentModeCtrl = pushController(ureq, translate("command.assessment.mode"), ctrl);
+				setActiveTool(assessmentModeLink);
+				currentToolCtr = assessmentModeCtrl;
+			}
+		} else {
+			delayedClose = Delayed.assessmentMode;
 		}
 	}
 	
@@ -1164,6 +1203,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 	
 	private void setGlossaryLinkTitle(UserRequest ureq, Boolean state) {
+		if(enableGlossaryLink == null) return;
+		
 		String oresName = ICourse.class.getSimpleName();
 		Long courseID = getOlatResourceable().getResourceableId();
 		// must work with SP and CP nodes, IFrameDisplayController listens to this event and expects "ICourse" resources.
@@ -1425,6 +1466,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private enum Delayed {
 		access,
 		archive,
+		assessmentMode,
 		assessmentSurveyStatistics,
 		assessmentTestStatistics,
 		assessmentTool,

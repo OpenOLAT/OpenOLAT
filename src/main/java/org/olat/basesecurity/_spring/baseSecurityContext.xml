@@ -10,28 +10,28 @@
 
 	<context:component-scan base-package="org.olat.basesecurity.manager" />
 
-<!-- manager -->
-<bean id="baseSecurityManager" class="org.olat.basesecurity.BaseSecurityManager" init-method="init" 
-	depends-on="database, i18nModule, triggerI18nModuleInit">
-	<property name="resourceManager" ref="resourceManager"/>
-	<property name="dbInstance" ref="database"/>
-	<property name="invitationDao" ref="invitationDao" />
-	<property name="dbVendor" value="${db.vendor}" />
-</bean>
+	<!-- manager -->
+	<bean id="baseSecurityManager" class="org.olat.basesecurity.BaseSecurityManager" init-method="init" 
+		depends-on="database, i18nModule, triggerI18nModuleInit">
+		<property name="resourceManager" ref="resourceManager"/>
+		<property name="loginModule" ref="loginModule"/>
+		<property name="dbInstance" ref="database"/>
+		<property name="invitationDao" ref="invitationDao" />
+		<property name="dbVendor" value="${db.vendor}" />
+	</bean>
 
-<!-- module -->
-<bean id="baseSecurityModule" class="org.olat.basesecurity.BaseSecurityModule">
-	<constructor-arg type="java.lang.String" value="${default.auth.provider.identifier}" />
-	<property name="persistedProperties">
-	  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
-	    <constructor-arg index="0" ref="coordinatorManager"/>
-	    <constructor-arg index="1" ref="baseSecurityModule" />
-	  </bean>
-	</property>
-	
-</bean>
+	<!-- module -->
+	<bean id="baseSecurityModule" class="org.olat.basesecurity.BaseSecurityModule">
+		<constructor-arg type="java.lang.String" value="${default.auth.provider.identifier}" />
+		<property name="persistedProperties">
+		  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
+		    <constructor-arg index="0" ref="coordinatorManager"/>
+		    <constructor-arg index="1" ref="baseSecurityModule" />
+		  </bean>
+		</property>	
+	</bean>
                        
-       <bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="targetObject" ref="baseSecurityModule" />
         <property name="targetMethod" value="init" />
         <property name="arguments">

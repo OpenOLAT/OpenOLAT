@@ -50,7 +50,6 @@ import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
-import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
@@ -150,8 +149,6 @@ public class ClusterAdminControllerCluster extends BasicController {
 		
 		mainVc.put("busmsgs", busMsgs);
 		// let a thread repeatively dump all messages
-		//final Formatter f = Formatter.getInstance(ureq.getLocale());
-		final WindowBackOffice wbo = getWindowControl().getWindowBackOffice();
 		Thread pollThread = new Thread(new Runnable(){
 			public void run() {
 				while (!disposed) {
@@ -160,21 +157,18 @@ public class ClusterAdminControllerCluster extends BasicController {
 					} catch (InterruptedException e) {
 						// ignore
 					}
-					wbo.invokeLater(new Runnable() {
-						public void run() {
-							// simple reput the new lists into the velocity container.
-							// the container is then dirty and automatically rerendered since polling has been turned on here.
-							busMsgs.contextPut("time", Formatter.formatDatetime(new Date()));
-							busMsgs.contextPut("recmsgs", clusBus.getListOfReceivedMsgs());
-							busMsgs.contextPut("sentmsgs", clusBus.getListOfSentMsgs());
-							// also let node infos refresh
-							updateNodeInfos();
-							// also let perf infos refresh
-							updatePerfInfos();
-							// update cache info
-							updateCacheInfo();
-						}
-					});
+					
+					// simple reput the new lists into the velocity container.
+					// the container is then dirty and automatically rerendered since polling has been turned on here.
+					busMsgs.contextPut("time", Formatter.formatDatetime(new Date()));
+					busMsgs.contextPut("recmsgs", clusBus.getListOfReceivedMsgs());
+					busMsgs.contextPut("sentmsgs", clusBus.getListOfSentMsgs());
+					// also let node infos refresh
+					updateNodeInfos();
+					// also let perf infos refresh
+					updatePerfInfos();
+					// update cache info
+					updateCacheInfo();
 				}
 			}});
 		pollThread.setDaemon(true);

@@ -70,6 +70,7 @@ import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.cp.CPRunController;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
+import org.olat.course.run.userview.TreeFilter;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -90,6 +91,7 @@ public class NavigationHandler implements Disposable {
 	private final boolean previewMode;
 	
 	private String selectedCourseNodeId;
+	private TreeFilter filter;
 	private Set<String> openCourseNodeIds = new HashSet<String>();
 	private List<String> openTreeNodeIds = new ArrayList<String>();
 	private Map<String,SubTree> externalTreeModels = new HashMap<String,SubTree>();
@@ -98,9 +100,10 @@ public class NavigationHandler implements Disposable {
 	 * @param userCourseEnv
 	 * @param previewMode
 	 */
-	public NavigationHandler(UserCourseEnvironment userCourseEnv, boolean previewMode) {
+	public NavigationHandler(UserCourseEnvironment userCourseEnv, TreeFilter filter, boolean previewMode) {
 		this.userCourseEnv = userCourseEnv;
 		this.previewMode = previewMode;
+		this.filter = filter;
 	}
 
 	/**
@@ -266,7 +269,7 @@ public class NavigationHandler implements Disposable {
 		TreeEvaluation treeEval = new TreeEvaluation();
 		GenericTreeModel treeModel = new GenericTreeModel();
 		CourseNode rootCn = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
-		NodeEvaluation rootNodeEval = rootCn.eval(userCourseEnv.getConditionInterpreter(), treeEval);
+		NodeEvaluation rootNodeEval = rootCn.eval(userCourseEnv.getConditionInterpreter(), treeEval, filter);
 		TreeNode treeRoot = rootNodeEval.getTreeNode();
 		treeModel.setRootNode(treeRoot);
 		
@@ -312,7 +315,7 @@ public class NavigationHandler implements Disposable {
 		TreeEvaluation treeEval = new TreeEvaluation();
 		GenericTreeModel treeModel = new GenericTreeModel();
 		CourseNode rootCn = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
-		NodeEvaluation rootNodeEval = rootCn.eval(userCourseEnv.getConditionInterpreter(), treeEval);
+		NodeEvaluation rootNodeEval = rootCn.eval(userCourseEnv.getConditionInterpreter(), treeEval, filter);
 		TreeNode treeRoot = rootNodeEval.getTreeNode();
 		treeModel.setRootNode(treeRoot);
 
@@ -395,9 +398,11 @@ public class NavigationHandler implements Disposable {
 						child = courseNode.getChildAt(i);
 						if (child instanceof CourseNode) {
 							CourseNode cn = (CourseNode) child;
-							NodeEvaluation cnEval = cn.eval(userCourseEnv.getConditionInterpreter(), treeEval);
-							if (cnEval.isVisible()) return this.doEvaluateJumpTo(ureq, wControl, cn, listeningController, nodecmd, nodeSubCmd,
+							NodeEvaluation cnEval = cn.eval(userCourseEnv.getConditionInterpreter(), treeEval, filter);
+							if (cnEval.isVisible()) {
+								return doEvaluateJumpTo(ureq, wControl, cn, listeningController, nodecmd, nodeSubCmd,
 									currentNodeController);
+							}
 						}
 					}
 				}

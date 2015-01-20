@@ -129,8 +129,26 @@ ul.o_dropdown {
 
 /* HTML editor */
 .o_htmleditor {
-	.o_lastmodified {
-		color: $text-muted;	
+	.o_metadata {
+		/* match tinymce style */
+		border: 1px solid #999;
+		border-top-left-radius: 3px;
+		border-top-right-radius: 3px;
+		border-bottom: 0;
+		background: #eee;
+		position: relative;
+		top: 1px;
+		padding: 5px;
+
+		#o_filename {
+			float: left;
+		}
+		.o_lastmodified {
+			float: right;
+			color: $text-muted;	
+			@extend %o_small;
+			line-height: $line-height-base;
+		}
 	}
 	#o_save {
 		margin-top: 10px;

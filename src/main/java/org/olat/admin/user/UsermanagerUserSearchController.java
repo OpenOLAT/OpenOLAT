@@ -648,6 +648,8 @@ class UsermanagerUserSearchForm extends FormBasicController {
 	private final boolean isAdministrativeUser;
 	
 	@Autowired
+	private LoginModule loginModule;
+	@Autowired
 	private OAuthLoginModule oauthLoginModule;
 	
 	/**
@@ -701,7 +703,7 @@ class UsermanagerUserSearchForm extends FormBasicController {
 		List <String>authKeyList = new ArrayList<String>();
 		List <String>authValueList = new ArrayList<String>();
 		
-		Collection<AuthenticationProvider> providers = LoginModule.getAuthenticationProviders();
+		Collection<AuthenticationProvider> providers = loginModule.getAuthenticationProviders();
 		for (AuthenticationProvider provider:providers) {
 			if (provider.isEnabled()) {
 				authKeyList.add(provider.getName());

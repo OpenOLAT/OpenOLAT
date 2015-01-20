@@ -65,6 +65,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.FOCourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.userview.CourseTreeVisitor;
+import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumManager;
@@ -130,7 +131,7 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 					forumVOs.add(forum);
 				}
 			}
-		});
+		}, new VisibleTreeFilter());
 
 		ForumVOes voes = new ForumVOes();
 		voes.setForums(forumVOs.toArray(new ForumVO[forumVOs.size()]));
@@ -236,7 +237,7 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 
 		UserRequest ureq = getUserRequest(httpRequest);
 		CourseTreeVisitor courseVisitor = new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment());
-		if(courseVisitor.isAccessible(courseNode)) {
+		if(courseVisitor.isAccessible(courseNode, new VisibleTreeFilter())) {
 			FOCourseNode forumNode = (FOCourseNode)courseNode;
 
 			Set<Long> subscriptions = new HashSet<Long>();
@@ -271,7 +272,7 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 		
 		UserRequest ureq = getUserRequest(request);
 		CourseTreeVisitor courseVisitor = new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment());
-		if(courseVisitor.isAccessible(courseNode)) {
+		if(courseVisitor.isAccessible(courseNode, new VisibleTreeFilter())) {
 			FOCourseNode forumNode = (FOCourseNode)courseNode;
 			Forum forum = forumNode.loadOrCreateForum(course.getCourseEnvironment());	
 			return new ForumWebService(forum);

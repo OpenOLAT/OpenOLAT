@@ -43,6 +43,7 @@ import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Form controller to configure the access and publish settings of a repository
@@ -78,6 +79,8 @@ public class AuthoringEntryPublishController extends FormBasicController {
 	private static final String MEMBERSONLY_KEY = "m";
 	private String[] publishedKeys;
 
+	@Autowired
+	private LoginModule loginModule;
 	
 	/**
 	 * The details form is initialized with data collected from entry and
@@ -97,7 +100,7 @@ public class AuthoringEntryPublishController extends FormBasicController {
 			handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(typeName);
 		}
 		
-		if (LoginModule.isGuestLoginLinksEnabled()) {
+		if (loginModule.isGuestLoginLinksEnabled()) {
 			publishedKeys = new String[]{OAU_KEY, OAUG_KEY, MEMBERSONLY_KEY};
 		} else {
 			publishedKeys = new String[]{OAU_KEY, MEMBERSONLY_KEY};
@@ -216,7 +219,7 @@ public class AuthoringEntryPublishController extends FormBasicController {
 		uifactory.addSpacerElement("authorSpacer", authorConfigLayout, true);
 
 		String[] publishedValues;
-		if (LoginModule.isGuestLoginLinksEnabled()) {
+		if (loginModule.isGuestLoginLinksEnabled()) {
 			publishedValues = new String[]{translate("cif.access.users"), translate("cif.access.users_guests"), translate("cif.access.membersonly")};
 		} else {
 			publishedValues = new String[]{translate("cif.access.users"), translate("cif.access.membersonly")};
@@ -253,14 +256,14 @@ public class AuthoringEntryPublishController extends FormBasicController {
 		if (entry.getAccess() == RepositoryEntry.ACC_USERS) {
 			publishedForUsers.select(OAU_KEY, true);
 			usersSwitch.select(YES_KEY, true);
-		} else if (LoginModule.isGuestLoginLinksEnabled() && entry.getAccess() == RepositoryEntry.ACC_USERS_GUESTS){
+		} else if (loginModule.isGuestLoginLinksEnabled() && entry.getAccess() == RepositoryEntry.ACC_USERS_GUESTS){
 			publishedForUsers.select(OAUG_KEY, true);			
 			usersSwitch.select(YES_KEY, true);
 		} else if (entry.isMembersOnly()) {
 			publishedForUsers.select(MEMBERSONLY_KEY, true);
 			usersSwitch.select(YES_KEY, true);
 		} else {
-			if (LoginModule.isGuestLoginLinksEnabled()) {
+			if (loginModule.isGuestLoginLinksEnabled()) {
 				publishedForUsers.select(OAUG_KEY, false);
 			} else {
 				publishedForUsers.select(OAU_KEY, true);
@@ -285,7 +288,7 @@ public class AuthoringEntryPublishController extends FormBasicController {
 		} else {
 			// reset to default
 			publishedForUsers.select(OAU_KEY, true);
-			if (LoginModule.isGuestLoginLinksEnabled()) {
+			if (loginModule.isGuestLoginLinksEnabled()) {
 				publishedForUsers.select(OAUG_KEY, false);
 			}
 			publishedForUsers.select(MEMBERSONLY_KEY, false);

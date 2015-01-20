@@ -35,6 +35,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.StateSite;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.CourseRuntimeController;
 import org.olat.course.run.RunMainController;
@@ -42,6 +43,7 @@ import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -118,7 +120,7 @@ public class CourseSite extends AbstractSiteInstance {
 				CourseNode rootNode = course.getRunStructure().getRootNode();
 				UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course
 						.getCourseEnvironment());
-				NodeEvaluation nodeEval = rootNode.eval(uce.getConditionInterpreter(), new TreeEvaluation());
+				NodeEvaluation nodeEval = rootNode.eval(uce.getConditionInterpreter(), new TreeEvaluation(), new VisibleTreeFilter());
 				boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(nodeEval);
 				hasAccess = mayAccessWholeTreeUp && nodeEval.isVisible();
 			}
@@ -134,9 +136,9 @@ public class CourseSite extends AbstractSiteInstance {
 				new RuntimeControllerCreator() {
 					@Override
 					public Controller create(UserRequest uureq, WindowControl wwControl,
-							TooledStackedPanel toolbarPanel, RepositoryEntry re, RepositoryEntrySecurity security) {
+							TooledStackedPanel toolbarPanel, RepositoryEntry re, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
 						return new RunMainController(uureq, wwControl, toolbarPanel,
-								CourseFactory.loadCourse(re.getOlatResource()), re, security);
+								CourseFactory.loadCourse(re.getOlatResource()), re, security, assessmentMode);
 					}
 				}, false, true);
 			

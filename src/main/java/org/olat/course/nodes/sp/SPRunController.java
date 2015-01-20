@@ -139,6 +139,11 @@ public class SPRunController extends BasicController {
 				repositoryManager.isInstitutionalRessourceManagerFor(getIdentity(), roles, cgm.getCourseEntry())) {
 				return true;
 			}
+			if(config.getBooleanSafe(SPEditController.CONFIG_KEY_ALLOW_COACH_EDIT, false)){
+				if(cgm.isIdentityCourseCoach(ureq.getIdentity())){
+					return true;
+				}
+			}
 			return cgm.isIdentityCourseAdministrator(getIdentity())
 					|| cgm.hasRight(getIdentity(), CourseRights.RIGHT_COURSEEDITOR);
 		}

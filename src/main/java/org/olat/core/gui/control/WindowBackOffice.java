@@ -110,13 +110,6 @@ public interface WindowBackOffice extends Disposable{
 	 * @return
 	 */
 	public GuiStack createGuiStack(Component initialComponent);
-	
-	/**
-	 * Use this method for asynchronous updates to the gui. <br>
-	 * invokes the runnable at a time when it is safe, that is the dispatching and rendering of the window is not disturbed.
-	 * @param runnable the runnable
-	 */
-	public void invokeLater(Runnable runnable);
 
 	/**
 	 * @param wco the Command to be sent to the client (all requests are queued and sent in a batch at the end of the request)

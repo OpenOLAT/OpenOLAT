@@ -124,7 +124,11 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 		STCourseNodeEditController childTabCntrllr = new STCourseNodeEditController(ureq, wControl, this, course.getCourseFolderContainer(),
 				course.getEditorTreeModel(), euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
+		NodeEditController nodeEditController = new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
+		// special case: listen to st edit controller, must be informed when the short title is being modified
+		nodeEditController.addControllerListener(childTabCntrllr); 
+		return nodeEditController;
+
 	}
 
 	/**
@@ -156,8 +160,10 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 					relPath, allowRelativeLinks.booleanValue(), ores, deliveryOptions);
 			// check if user is allowed to edit the page in the run view
 			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-			boolean hasEditRights = (cgm.isIdentityCourseAdministrator(ureq.getIdentity()) || cgm.hasRight(ureq.getIdentity(),
-					CourseRights.RIGHT_COURSEEDITOR));
+			boolean hasEditRights = (cgm.isIdentityCourseAdministrator(ureq.getIdentity()) 
+					|| cgm.hasRight(ureq.getIdentity(),CourseRights.RIGHT_COURSEEDITOR))
+					|| (getModuleConfiguration().getBooleanSafe(SPEditController.CONFIG_KEY_ALLOW_COACH_EDIT, false) && cgm.isIdentityCourseCoach(ureq.getIdentity()));
+			
 			if (hasEditRights) {
 				spCtr.allowPageEditing();
 				// set the link tree model to internal for the HTML editor

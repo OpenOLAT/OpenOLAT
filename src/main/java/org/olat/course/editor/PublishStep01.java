@@ -49,6 +49,7 @@ import org.olat.login.LoginModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -104,6 +105,9 @@ class PublishStep01 extends BasicStep {
 
 		private SingleSelection accessSelbox;
 		private String selectedAccess;
+		
+		@Autowired
+		private LoginModule loginModule;
 
 		PublishStep01AccessForm(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
 			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
@@ -140,7 +144,7 @@ class PublishStep01 extends BasicStep {
 			keyList.add(Integer.toString(RepositoryEntry.ACC_OWNERS));
 			keyList.add(Integer.toString(RepositoryEntry.ACC_OWNERS_AUTHORS));
 			keyList.add(Integer.toString(RepositoryEntry.ACC_USERS));
-			if(LoginModule.isGuestLoginLinksEnabled()) {
+			if(loginModule.isGuestLoginLinksEnabled()) {
 				keyList.add(Integer.toString(RepositoryEntry.ACC_USERS_GUESTS));
 			}
 			keyList.add(RepositoryEntry.MEMBERS_ONLY);
@@ -150,7 +154,7 @@ class PublishStep01 extends BasicStep {
 			valueList.add(pt.translate("cif.access.owners"));
 			valueList.add(pt.translate("cif.access.owners_authors"));
 			valueList.add(pt.translate("cif.access.users"));
-			if(LoginModule.isGuestLoginLinksEnabled()) {
+			if(loginModule.isGuestLoginLinksEnabled()) {
 				valueList.add(pt.translate("cif.access.users_guests"));
 			}
 			valueList.add(pt.translate("cif.access.membersonly"));
@@ -159,7 +163,7 @@ class PublishStep01 extends BasicStep {
 			//use the addDropDownSingleselect method with null as label i18n - key, because there is no label to set. OLAT-3682
 			accessSelbox = uifactory.addDropdownSingleselect("accessBox",null, fic, keys, values, null);
 			accessSelbox.setElementCssClass("o_sel_course_publish_access");
-			if(!LoginModule.isGuestLoginLinksEnabled() && "4".equals(selectedAccess)) {//no guest but BARG
+			if(!loginModule.isGuestLoginLinksEnabled() && "4".equals(selectedAccess)) {//no guest but BARG
 				accessSelbox.select("3", true);//-> set BAR-
 			} else {
 				accessSelbox.select(selectedAccess, true);

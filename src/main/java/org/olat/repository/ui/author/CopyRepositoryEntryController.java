@@ -21,26 +21,18 @@ package org.olat.repository.ui.author;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.logging.activity.LearningResourceLoggingAction;
-import org.olat.core.logging.activity.OlatResourceableType;
-import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.handlers.RepositoryHandler;
-import org.olat.repository.handlers.RepositoryHandlerFactory;
-import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
-import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -52,7 +44,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CopyRepositoryEntryController extends FormBasicController {
 
 	private TextElement displaynameEl;
-	private RichTextElement descriptionEl;
 	
 	private RepositoryEntry copyEntry;
 	private final RepositoryEntry sourceEntry;
@@ -75,13 +66,10 @@ public class CopyRepositoryEntryController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String sourceName = StringHelper.escapeHtml(sourceEntry.getDisplayname());
+		sourceName += " " + translate("copy.suffix");
 		displaynameEl = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, sourceName, formLayout);
 		displaynameEl.setDisplaySize(30);
 		displaynameEl.setMandatory(true);
-
-		descriptionEl = uifactory.addRichTextElementForStringData("cif.description", "cif.description",
-				"", 10, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
-		descriptionEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 		
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add("buttonContainer", buttonContainer);
@@ -101,13 +89,13 @@ public class CopyRepositoryEntryController extends FormBasicController {
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
-		doCopy();
+		String displayname = displaynameEl.getValue();
+		copyEntry = repositoryService.copy(sourceEntry, getIdentity(), displayname);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	
 	@Override
 	protected void formCancelled(UserRequest ureq) {
-		doCleanUp();
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
@@ -125,31 +113,5 @@ public class CopyRepositoryEntryController extends FormBasicController {
 		}
 
 		return allOk & super.validateFormLogic(ureq);
-	}
-	
-	private void doCopy() {
-		String displayname = displaynameEl.getValue();
-		String description = descriptionEl.getValue();
-		
-		OLATResource sourceResource = sourceEntry.getOlatResource();
-		OLATResource copyResource = resourceManager.createOLATResourceInstance(sourceResource.getResourceableTypeName());
-		copyEntry = repositoryService.create(getIdentity(), null, sourceEntry.getResourcename(), displayname,
-				description, copyResource, RepositoryEntry.ACC_OWNERS);
-	
-		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(sourceEntry);
-		copyEntry = handler.copy(sourceEntry, copyEntry);
-		
-		//copy the image
-		RepositoryManager.getInstance().copyImage(sourceEntry, copyEntry);
-
-		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CREATE, getClass(),
-				LoggingResourceable.wrap(copyEntry, OlatResourceableType.genRepoEntry));
-		
-		repositoryManager.triggerIndexer(copyEntry);
-	}
-
-	
-	private void doCleanUp() {
-		//remove repo
 	}
 }

@@ -89,43 +89,35 @@ class EventAgency {
 		// -> avoid dead lock (see OLAT-3681)
 		//no sync during firing to listeners (potentially "long" taking - although recommendation is to keep event methods short.
 		
-			for (int i = 0; i < liArr.length; i++) {
-				try {
-					final GenericEventListener listener = liArr[i];
-					
-					//make sure GenericEvents are only sent when controller is not yet disposed
-					if (listener instanceof Controller) {
-						Controller dCtrl = (Controller)listener;
-						if (!dCtrl.isDisposed()) {
-							ThreadLocalUserActivityLoggerInstaller.runWithUserActivityLogger(new Runnable() {
-								public void run() {
-									listener.event(event);
-								}
-							}, UserActivityLoggerImpl.newLoggerForEventBus(dCtrl));
-						}
-					} else {
-						if(log.isDebug()){
-							log.debug("fireEvent: Non-Controller: "+listener);
-						}
-						//is there a need to differ the events sent on one VM and in cluster mode?
+		for (int i = 0; i < liArr.length; i++) {
+			try {
+				final GenericEventListener listener = liArr[i];
+				
+				//make sure GenericEvents are only sent when controller is not yet disposed
+				if (listener instanceof Controller) {
+					Controller dCtrl = (Controller)listener;
+					if (!dCtrl.isDisposed()) {
 						ThreadLocalUserActivityLoggerInstaller.runWithUserActivityLogger(new Runnable() {
 							public void run() {
 								listener.event(event);
 							}
-						}, ThreadLocalUserActivityLoggerInstaller.createEmptyUserActivityLogger());
+						}, UserActivityLoggerImpl.newLoggerForEventBus(dCtrl));
 					}
-				} catch (RuntimeException e) {
-					log.error("Error while sending generic event! Removing listener: "+liArr[i], e);
-					//don't remove it!!! removeListener(liArr[i]);
+				} else {
+					if(log.isDebug()){
+						log.debug("fireEvent: Non-Controller: "+listener);
+					}
+					//is there a need to differ the events sent on one VM and in cluster mode?
+					ThreadLocalUserActivityLoggerInstaller.runWithUserActivityLogger(new Runnable() {
+						public void run() {
+							listener.event(event);
+						}
+					}, ThreadLocalUserActivityLoggerInstaller.createEmptyUserActivityLogger());
 				}
+			} catch (RuntimeException e) {
+				log.error("Error while sending generic event: "+liArr[i], e);
 			}
-
-		// remember the latest event for a while so e.g. controller which link to resources res (link called res') can catch up on missed updates.
-		/*if (ttl != 0) {
-			latestEvent = event;
-			latestEventTimestamp = System.currentTimeMillis();
-		}*/
-		
+		}
 	}
 
 	/**

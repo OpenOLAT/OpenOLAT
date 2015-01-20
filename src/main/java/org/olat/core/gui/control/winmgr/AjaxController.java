@@ -45,6 +45,8 @@ import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.UserRequestImpl;
+import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.panel.Panel;
@@ -108,7 +110,6 @@ public class AjaxController extends DefaultController {
 		pollPeriodContent.contextPut("pollperiod", new Integer(pollperiod));
 		
 		myContent = new VelocityContainer("jsserverpart", VELOCITY_ROOT + "/serverpart.html", null, this);
-		myContent.contextPut("highlight", Boolean.FALSE);
 		myContent.contextPut("pollperiod", new Integer(pollperiod));
 		
 		//more debug information: OLAT-3529
@@ -120,17 +121,33 @@ public class AjaxController extends DefaultController {
 			public MediaResource handle(String relPath, HttpServletRequest request) {
 				pollCount++;
 				statsManager.incrementAuthenticatedPollerClick();
+
+				String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
+				UserRequest ureq = new UserRequestImpl(uriPrefix, request, null);
+				boolean reload = false;
+				Windows ws = Windows.getWindows(ureq);
+				if(ws != null && ws.getChiefController() != null) {
+					ChiefController cc = ws.getChiefController();
+					reload = cc.wishAsyncReload(ureq, false);
+				}
+				
 				// check for dirty components now.
 				wboImpl.fireCycleEvent(Window.BEFORE_INLINE_RENDERING);
 				Command updateDirtyCom = window.handleDirties();
 				wboImpl.fireCycleEvent(Window.AFTER_INLINE_RENDERING);
+				
 				if (updateDirtyCom != null) {
 					synchronized (windowcommands) { //o_clusterOK by:fj
 						windowcommands.add(new WindowCommand(wboImpl, updateDirtyCom));
+						if(reload) {
+							String timestampID = ureq.getTimestampID();
+							String reRenderUri = window.buildURIFor(window, timestampID, null);
+							Command rmrcom = CommandFactory.createParentRedirectTo(reRenderUri);
+							windowcommands.add(new WindowCommand(wboImpl, rmrcom));
+						}
 					}
 				}
-				MediaResource mr = extractMediaResource(false);
-				return mr;
+				return extractMediaResource(false);
 			}
 		};
 

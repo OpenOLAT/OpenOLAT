@@ -22,6 +22,7 @@ package org.olat.repository.ui.author;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -33,11 +34,13 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
  *
  */
 class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<AuthoringEntryRow> {
-	
+
+	private final RepositoryManager repositoryManager;
 	private final RepositoryHandlerFactory handlerFactory;
 	
 	public AuthoringEntryDataModel(AuthoringEntryDataSource source, FlexiTableColumnModel columnModel) {
 		super(source, columnModel);
+		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		handlerFactory = CoreSpringFactory.getImpl(RepositoryHandlerFactory.class);
 	}
 
@@ -83,13 +86,21 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 			case mark: return item.getMarkLink();
 			case detailsSupported: {
 				RepositoryHandler handler = handlerFactory.getRepositoryHandler(item.getResourceType());
-				return (handler != null && handler.supportsLaunch()) ? Boolean.TRUE : Boolean.FALSE;
+				return (handler != null) ? Boolean.TRUE : Boolean.FALSE;
 			}
 			case tools: return item.getToolsLink();
 			case editionSupported: {
 				RepositoryHandler handler = handlerFactory.getRepositoryHandler(item.getResourceType());
-				return (handler == null || handler.supportsEdit(item.getOLATResourceable()) == EditionSupport.no)
-						? Boolean.FALSE : Boolean.TRUE;
+				if(handler == null) {
+					return Boolean.FALSE;
+				}
+				if(handler.supportsEdit(item.getOLATResourceable()) == EditionSupport.no) {
+					return Boolean.FALSE;
+				}
+				if(repositoryManager.createRepositoryEntryStatus(item.getStatusCode()).isClosed()) {
+					return Boolean.FALSE;
+				}
+				return Boolean.TRUE;
 			}
 		}
 		return null;

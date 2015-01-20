@@ -39,6 +39,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
@@ -47,6 +48,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.course.assessment.AssessmentMode;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.AnimationFileResource;
 import org.olat.fileresource.types.DocFileResource;
@@ -187,13 +189,13 @@ public class WebDocumentHandler extends FileHandler {
 	}
 
 	@Override
-	public String getSupportedType() {
-		return supportedType;
+	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
+		return FileResourceManager.getInstance().getAsDownloadeableMediaResource(res);
 	}
 
 	@Override
-	public boolean supportsLaunch() {
-		return true;
+	public String getSupportedType() {
+		return supportedType;
 	}
 
 	@Override
@@ -216,7 +218,7 @@ public class WebDocumentHandler extends FileHandler {
 		return new RepositoryEntryRuntimeController(ureq, wControl, re, reSecurity, new RuntimeControllerCreator() {
 			@Override
 			public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
-					RepositoryEntry entry, RepositoryEntrySecurity rereSecurity) {
+					RepositoryEntry entry, RepositoryEntrySecurity rereSecurity, AssessmentMode assessmentMode) {
 				return new WebDocumentRunController(uureq, wwControl, entry);
 			}
 		});

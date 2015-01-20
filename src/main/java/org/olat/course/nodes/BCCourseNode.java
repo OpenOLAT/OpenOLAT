@@ -64,6 +64,7 @@ import org.olat.course.nodes.bc.BCPreviewController;
 import org.olat.course.nodes.bc.FolderNodeCallback;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -189,7 +190,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		boolean isGuestOnly = ienv.getRoles().isGuestOnly();
 		
 		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
-		NodeEvaluation ne = node.eval(uce.getConditionInterpreter(), new TreeEvaluation());
+		NodeEvaluation ne = node.eval(uce.getConditionInterpreter(), new TreeEvaluation(), new VisibleTreeFilter());
 
 		OlatNamedContainerImpl container = getNodeFolderContainer(node, courseEnv);
 		VFSSecurityCallback secCallback = new FolderNodeCallback(container.getRelPath(), ne, isOlatAdmin, isGuestOnly, null);

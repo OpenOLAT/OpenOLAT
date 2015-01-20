@@ -26,6 +26,7 @@
 package org.olat.core.commons.fullWebApp;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -51,6 +52,7 @@ import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.Window;
+import org.olat.core.gui.components.countdown.CountDownComponent;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.htmlheader.jscss.CustomJSComponent;
 import org.olat.core.gui.components.link.Link;
@@ -69,7 +71,6 @@ import org.olat.core.gui.control.VetoableCloseController;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.dtabs.DTab;
 import org.olat.core.gui.control.generic.dtabs.DTabImpl;
@@ -81,6 +82,7 @@ import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.control.util.ZIndexWrapper;
 import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.themes.Theme;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -95,13 +97,21 @@ import org.olat.core.logging.JavaScriptTracingController;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.AssessmentMode.Status;
+import org.olat.course.assessment.AssessmentModeNotificationEvent;
+import org.olat.course.assessment.model.TransientAssessmentMode;
+import org.olat.course.assessment.ui.AssessmentModeGuardController;
+import org.olat.course.assessment.ui.ChooseAssessmentModeEvent;
 import org.olat.gui.control.UserToolsMenuController;
 import org.olat.home.HomeSite;
+import org.olat.login.AfterLoginInterceptionController;
 
 /**
  * Description:<br>
@@ -115,7 +125,6 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	private static final String PRESENTED_AFTER_LOGIN_WORKFLOW = "presentedAfterLoginWorkflow";
 	
 	//Base chief
-	
 	private Panel contentPanel;
 	private Controller jsServerC;
 	private Controller debugC;
@@ -134,10 +143,16 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	private GUIMessage guiMessage;
 	private OncePanel guimsgPanel;
 	private Panel cssHolder, guimsgHolder, currentMsgHolder;
-	private VelocityContainer guimsgVc, stickymsgVc, mainVc, navSitesVc, navTabsVc;
+	private VelocityContainer guimsgVc, mainVc, navSitesVc, navTabsVc;
+	private StickyMessageComponent stickyMessageCmp;
 
+	private LockStatus lockStatus;
+	private OLATResourceable lockResource;
+	private TransientAssessmentMode lockMode;
+	
 	// NEW FROM FullChiefController
-	private Controller topnavCtr, footerCtr;
+	private TopNavController topnavCtr;
+	private Controller footerCtr;
 	private UserToolsMenuController userToolsMenuCtrl;
 	private SiteInstance curSite;
 	private DTab curDTab;
@@ -152,21 +167,22 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	// used as link id which is load url safe (e.g. replayable
 	private int dtabCreateCounter = 0;
 	// the sites list
-	
 	private SiteInstance userTools;
 	private List<SiteInstance> sites;
 	private Map<SiteInstance, BornSiteInstance> siteToBornSite = new HashMap<SiteInstance, BornSiteInstance>();
-	//fxdiff BAKS-7 Resume function
 	private Map<SiteInstance,HistoryPoint> siteToBusinessPath = new HashMap<SiteInstance,HistoryPoint>();
 
-	//
 	private BaseFullWebappControllerParts baseFullWebappControllerParts;
 	protected Controller contentCtrl;
-	private Controller aftLHookCtr;
+	private AfterLoginInterceptionController aftLHookCtr;
+	private AssessmentModeGuardController assessmentGuardCtrl;
+	
 	private StackedPanel initialPanel;
 	private DTabs myDTabsImpl;
 	private static Integer MAX_TAB;
 	private WindowSettings wSettings;
+	
+	private final boolean isAdmin;
 	
 	public BaseFullWebappController(UserRequest ureq, BaseFullWebappControllerParts baseFullWebappControllerParts) {
 		// only-use-in-super-call, since we define our own
@@ -182,16 +198,16 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		String windowSettings = (String)ureq.getUserSession().removeEntryFromNonClearedStore(Dispatcher.WINDOW_SETTINGS);
 		WindowSettings settings = WindowSettings.parse(windowSettings);
 		wbo = winman.createWindowBackOffice("basechiefwindow", this, settings);
+		
+		if(ureq.getUserSession().getRoles() != null) {	
+			isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
+		} else {
+			isAdmin = false;
+		}
 
 		// define the new windowcontrol
 		WindowControl myWControl = new BaseFullWebappWindowControl(this, wbo);
 		overrideWindowControl(myWControl);
-
-		/*
-		 * BaseFullWebappController provides access to Dynamic Tabs
-		 * on the same window and not on all Windows! 
-		 * TODO:pb discuss with HJZ multi window concept.
-		 */
 		
 		// detach DTabs implementation from the controller - DTabs may be fetched from the window and locked on (synchronized access).
 		// if this is controller the controller is locked instead of only the DTabs part.
@@ -216,19 +232,25 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		// ------ all the frame preparation is finished ----
 		initializeBase(ureq, winman, initialPanel);
 		
-
-        // present an overlay with configured afterlogin-controllers or nothing if none configured.
-        // presented only once per session.
-    	Boolean alreadySeen = ((Boolean)ureq.getUserSession().getEntry(PRESENTED_AFTER_LOGIN_WORKFLOW));
-    	if (ureq.getUserSession().isAuthenticated() && alreadySeen == null) {
-    		aftLHookCtr = ((ControllerCreator) CoreSpringFactory.getBean("fullWebApp.AfterLoginInterceptionControllerCreator"))
-    				.createController(ureq, getWindowControl());
-    		listenTo(aftLHookCtr);
-    		aftLHookCtr.getInitialComponent();
-    		ureq.getUserSession().putEntry(PRESENTED_AFTER_LOGIN_WORKFLOW, Boolean.TRUE);
+		if(ureq.getUserSession().isAuthenticated() && !isAdmin && ureq.getUserSession().getAssessmentModes() != null && ureq.getUserSession().getAssessmentModes().size() > 0) {
+    		assessmentGuardCtrl = new AssessmentModeGuardController(ureq, getWindowControl(),
+    				ureq.getUserSession().getAssessmentModes(), false);
+    		listenTo(assessmentGuardCtrl);
+    		assessmentGuardCtrl.getInitialComponent();
+    		lockStatus = LockStatus.popup;
+    	} else {
+    		// present an overlay with configured afterlogin-controllers or nothing if none configured.
+    		// presented only once per session.
+    		Boolean alreadySeen = ((Boolean)ureq.getUserSession().getEntry(PRESENTED_AFTER_LOGIN_WORKFLOW));
+    		if (ureq.getUserSession().isAuthenticated() && alreadySeen == null) {
+    			aftLHookCtr = new AfterLoginInterceptionController(ureq, getWindowControl());
+    			listenTo(aftLHookCtr);
+    			aftLHookCtr.getInitialComponent();
+    			ureq.getUserSession().putEntry(PRESENTED_AFTER_LOGIN_WORKFLOW, Boolean.TRUE);
+	    	}
     	}
 		
-    	if(aftLHookCtr == null || aftLHookCtr.isDisposed()) {
+    	if(assessmentGuardCtrl == null && (aftLHookCtr == null || aftLHookCtr.isDisposed())) {
     		initializeDefaultSite(ureq);
     	}
 		
@@ -244,6 +266,9 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		//move to a i18nModule? languageManger? languageChooserController?
 		OLATResourceable wrappedLocale = OresHelper.createOLATResourceableType(Locale.class);
 		ureq.getUserSession().getSingleUserEventCenter().registerFor(this, getIdentity(), wrappedLocale);
+		//register for assessment mode
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.registerFor(this, getIdentity(), AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 		// register for global sticky message changed events
 		GlobalStickyMessage.registerForGlobalStickyMessage(this, ureq.getIdentity());	
 	}
@@ -370,8 +395,8 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		mainVc.put("customCssHolder", cssHolder);
 
 		// sticky maintenance message
-		stickymsgVc = createVelocityContainer("stickymsg");
-		mainVc.put("stickymsg", stickymsgVc);
+		stickyMessageCmp = new StickyMessageComponent("stickymsg", screenMode);
+		mainVc.put("stickymsg", stickyMessageCmp);
 		updateStickyMessage();
 		
 		dtabs = new ArrayList<>();
@@ -467,15 +492,13 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	}
 	
 	private void updateStickyMessage() {
-		String stickyMessage = GlobalStickyMessage.getGlobalStickyMessage();
-		stickymsgVc.contextPut("hasStickyMessage", (stickyMessage == null ? Boolean.FALSE : Boolean.TRUE));					
-		stickymsgVc.contextPut("stickyMessage", stickyMessage);			
+		stickyMessageCmp.setText(GlobalStickyMessage.getGlobalStickyMessage());
 	}
 
 	private void initializeDefaultSite(UserRequest ureq) {
 		if (sites != null && sites.size() > 0
 				&& curSite == null && curDTab == null
-				&& contentCtrl == null) {
+				&& contentCtrl == null && lockResource == null) {
 			SiteInstance s = sites.get(0);
 			//activate site only if no content was set -> allow content before activation of default site.
 			activateSite(s, ureq, null, false);
@@ -636,6 +659,14 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(aftLHookCtr == source) {
 			initializeDefaultSite(ureq);
+		} else if(assessmentGuardCtrl == source) {
+			if(event instanceof ChooseAssessmentModeEvent) {
+				lockStatus = LockStatus.locked;
+				removeAsListenerAndDispose(assessmentGuardCtrl);
+				assessmentGuardCtrl = null;
+			} else {
+				initializeDefaultSite(ureq);
+			}
 		} else {
 			int tabIndex = dtabsControllers.indexOf(source);
 			if (tabIndex > -1) {
@@ -697,6 +728,10 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			jsLoggerC.dispose();
 			jsLoggerC = null;
 		}
+
+		//deregister for assessment mode
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.deregisterFor(this, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 	}
 
 	private void setGuiStack(GuiStack guiStack) {
@@ -710,9 +745,18 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		modalPanel.setContent(modalStackP);
 	}
 
-	// FROM FULLCHIEFCONTROLLER
+	/**
+	 * Activate a site if not locked
+	 * 
+	 * @param s
+	 * @param ureq
+	 * @param entries
+	 * @param forceReload
+	 */
 	private void activateSite(SiteInstance s, UserRequest ureq,
 			List<ContextEntry> entries, boolean forceReload) {
+		if(lockResource != null) return;
+		
 		BornSiteInstance bs = siteToBornSite.get(s);
 		GuiStack gs;
 		Controller resC;
@@ -827,13 +871,20 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	}
 	
 	@Override
-	public boolean wishReload(boolean erase) {
+	public boolean wishReload(UserRequest ureq, boolean erase) {
 		boolean screen = getScreenMode().wishScreenModeSwitch(erase);
 		boolean r = (reload == null ? false : reload.booleanValue());
 		if(erase && reload != null) {
 			reload = null;
 		}
-		return r || screen;
+		boolean l = checkAssessmentGuard(ureq, lockMode);
+
+		return l || r || screen;
+	}
+
+	@Override
+	public boolean wishAsyncReload(UserRequest ureq, boolean erase) {
+		return checkAssessmentGuard(ureq, lockMode);
 	}
 
 	@Override
@@ -894,8 +945,6 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 				// closing one dtab in _browser tab one_ and then closing the same dtab
 				// once again in the _browser tab two_ leads to the case where dtabIndex
 				// is -1, e.g. not found causing the redscreen described in the issue.
-				// TODO:2008-07-25: pb: define concept of "multi windowing" "main windowing"
-				// and reconsider this place.
 				//
 				// NOTHING TO REMOVE, return
 				return;
@@ -918,7 +967,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			navTabsVc.remove(navTabsVc.getComponent("a" + delt.hashCode()));
 			navTabsVc.remove(navTabsVc.getComponent("ca" + delt.hashCode()));
 			navTabsVc.remove(navTabsVc.getComponent("cp" + delt.hashCode()));
-			if (delt == curDTab) { // if we close the current tab -> return to the previous
+			if (delt == curDTab && ureq != null) { // if we close the current tab -> return to the previous
 				popTheTabState(ureq);
 			} // else just remove the dtabs
 			delt.dispose();//dispose tab and controllers in tab
@@ -964,9 +1013,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	 * @param dt
 	 */
 	private void requestCloseTab(UserRequest ureq, DTab delt) {
-
-		Controller c = delt.getController(); // FIXME:fj: test
-		// vetoableclosecontroller
+		Controller c = delt.getController();
 		if (c instanceof VetoableCloseController) {
 			VetoableCloseController vcc = (VetoableCloseController) c;
 			// rembember current dtab, and swap to the temporary one
@@ -1009,11 +1056,17 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	 *      java.lang.String)
 	 */
 	public DTab createDTab(OLATResourceable ores, OLATResourceable repoOres, String title) {
+		final DTabImpl dt;
 		if (dtabs.size() >= getMaxTabs()) {
 			getWindowControl().setError(translate("warn.tabsfull"));
-			return null;
+			dt = null;
+		} else if(lockResource != null && (
+				!lockResource.getResourceableId().equals(ores.getResourceableId()) 
+				|| !lockResource.getResourceableTypeName().equals(ores.getResourceableTypeName()))) {
+			dt = null;
+		} else {
+			dt = new DTabImpl(ores, repoOres, title, getWindowControl());
 		}
-		DTabImpl dt = new DTabImpl(ores, repoOres, title, getWindowControl());
 		return dt;
 	}
 
@@ -1110,17 +1163,9 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		// in all other cases the "focus of interest" (where the calculation of the
 		// guipath is started) matches the controller which listens to the
 		// event caused by a user interaction.
-		// WindowBackOffice wboNew = getWindowControl().getWindowBackOffice(); //
 		// this is the starting point.
-		// getWindowControl().getWindowBackOffice().adjustGuiPathCenter(getWindowControl().getWindowControlInfo());
 	}
 
-	/**
-	 * FIXME:fj: change className to class
-	 * 
-	 * @see org.olat.core.gui.control.generic.dtabs.DTabs#activateStatic(org.olat.core.gui.UserRequest,
-	 *      java.lang.String, java.lang.String)
-	 */
 	public void activateStatic(UserRequest ureq, String className, List<ContextEntry> entries) {
 		if(className != null && className.endsWith("HomeSite")) {
 			activateSite(userTools, ureq, entries, false);
@@ -1136,6 +1181,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		}
 	}
 
+	@Override
 	public void event(Event event) {
 		if (event == Window.AFTER_VALIDATING) {
 			// now update the guimessage
@@ -1179,9 +1225,51 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		} else if (event instanceof ChiefControllerMessageEvent) {
 			// msg can be set to show only on one node or on all nodes
 			updateStickyMessage();
+		} else if (event instanceof AssessmentModeNotificationEvent) {
+			try {
+				processAssessmentModeNotificationEvent((AssessmentModeNotificationEvent)event);
+			} catch (Exception e) {
+				logError("", e);
+			}
+		}
+	}
+	
+	private void processAssessmentModeNotificationEvent(AssessmentModeNotificationEvent event) {
+		if(getIdentity() == null) return;
+		
+		String cmd = event.getCommand();
+		if(AssessmentModeNotificationEvent.STOP_WARNING.equals(cmd)) {
+			lockResourceMessage(event.getAssessementMode());
+		} else if(event.getAssessedIdentityKeys() != null && event.getAssessedIdentityKeys().contains(getIdentity().getKey())) {
+			switch(cmd) {
+				case AssessmentModeNotificationEvent.BEFORE:
+					if(asyncUnlockResource(event.getAssessementMode())) {
+						stickyMessageCmp.setDelegateComponent(null);
+					}
+					break;	
+				case AssessmentModeNotificationEvent.LEADTIME:
+					if(asyncLockResource(event.getAssessementMode())) {
+						stickyMessageCmp.setDelegateComponent(null);
+					}
+					break;
+				case AssessmentModeNotificationEvent.START_ASSESSMENT:
+					asyncLockResource(event.getAssessementMode());
+					break;
+				case AssessmentModeNotificationEvent.STOP_ASSESSMENT:
+					if(asyncLockResource(event.getAssessementMode())) {
+						stickyMessageCmp.setDelegateComponent(null);
+					}
+					break;
+				case AssessmentModeNotificationEvent.END:
+					if(asyncUnlockResource(event.getAssessementMode())) {
+						stickyMessageCmp.setDelegateComponent(null);
+					}
+					break;	
+			}
 		}
 	}
 
+	@Override
 	public boolean hasStaticSite(Class<? extends SiteInstance> type) {
 		boolean hasSite = false;
 		if(sites != null && sites.size() > 0) {
@@ -1192,6 +1280,121 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			}
 		}
 		return hasSite;
+	}
+	
+	@Override
+	public OLATResourceable getLockResource() {
+		return lockResource;
+	}
+
+	@Override
+	public void lockResource(OLATResourceable resource) {
+		this.lockResource = resource;
+		if(topnavCtr != null) {
+			topnavCtr.lockResource(resource);
+		}
+		if(userToolsMenuCtrl != null) {
+			userToolsMenuCtrl.lockResource(resource);
+		}
+		
+		if(navSitesVc.isVisible()) {
+			navSitesVc.setVisible(false);
+		}
+		for(int i=dtabsControllers.size(); i-->0; ) {
+			DTab tab = dtabs.get(i);
+			if(!lockResource.getResourceableId().equals(tab.getOLATResourceable().getResourceableId())) {
+				removeDTab(null, tab);
+			}
+		}
+	}
+
+	private void unlockResource() {
+		this.lockResource = null;
+		if(topnavCtr != null) {
+			topnavCtr.unlockResource();
+		}
+		if(userToolsMenuCtrl != null) {
+			userToolsMenuCtrl.unlockResource();
+		}
+		navSitesVc.setVisible(true);
+	}
+
+	private boolean asyncLockResource(TransientAssessmentMode mode) {
+		boolean lock;
+		if(isAdmin) {
+			lock = false;
+		} else if(lockResource == null) {
+			logAudit("Async lock resource for user: " + getIdentity().getName() + " (" + mode.getResource() + ")", null);
+			lockResource(mode.getResource());
+			lock = true;
+			lockMode = mode;
+			lockStatus = LockStatus.need;
+		} else if(lockResource != null && lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
+			if(mode.getStatus() == Status.leadtime) {
+				if(assessmentGuardCtrl == null) {
+					lockStatus = LockStatus.need;
+				}
+				lockMode = mode;
+			} else if(mode.getStatus() == Status.followup) {
+				if(assessmentGuardCtrl == null) {
+					lockStatus = LockStatus.need;
+				}
+				lockMode = mode;
+			}
+			lock = true;
+		} else {
+			lock = false;
+		}
+		return lock;
+	}
+	
+	private boolean asyncUnlockResource(TransientAssessmentMode mode) {
+		boolean unlock;
+		if(lockResource != null && lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
+			logAudit("Async unlock resource for user: " + getIdentity().getName() + " (" + mode.getResource() + ")", null);
+			unlockResource();
+			lockMode = null;
+			lockStatus = null;
+			unlock = true;
+		} else {
+			unlock = false;
+		}
+		return unlock;
+	}
+	
+	private void lockResourceMessage(TransientAssessmentMode mode) {
+		if(lockResource != null && lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
+			Translator trans = Util.createPackageTranslator(AssessmentModeGuardController.class, getLocale());
+			if(stickyMessageCmp.getDelegateComponent() instanceof CountDownComponent) {
+				CountDownComponent cmp = (CountDownComponent)stickyMessageCmp.getDelegateComponent();
+				cmp.setDate(mode.getEnd());
+			} else {
+				CountDownComponent cmp = new CountDownComponent("stickcountdown", mode.getEnd(), trans);
+				cmp.setI18nKey("assessment.countdown");
+				stickyMessageCmp.setDelegateComponent(cmp);
+			}
+		}
+	}
+	
+	private boolean checkAssessmentGuard(UserRequest ureq, TransientAssessmentMode mode) {
+		boolean needUpdate;
+		
+		if(assessmentGuardCtrl == null) {
+			if(lockStatus == LockStatus.need) {
+				assessmentGuardCtrl = new AssessmentModeGuardController(ureq, getWindowControl(),
+						Collections.singletonList(mode), true);
+				listenTo(assessmentGuardCtrl);
+				assessmentGuardCtrl.getInitialComponent();
+				lockStatus = LockStatus.popup;
+				needUpdate = true;
+			} else {
+				needUpdate = false;
+			}
+		} else {
+			needUpdate = assessmentGuardCtrl.updateAssessmentMode(ureq);
+		}
+		
+		return needUpdate;
 	}
 
 	/**
@@ -1219,11 +1422,18 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	 * 
 	 * @return
 	 */
-	public boolean isCanCloseDTab() {
-		boolean canClose = (sites != null && sites.size() > 0);
-		if(!canClose && dtabs != null) {
-			synchronized (dtabs) {
-				canClose = (dtabs != null && dtabs.size() > 1);
+	public boolean isCanCloseDTab(DTab dtab) {
+		boolean canClose = true;
+		if(lockResource != null
+				&& lockResource.getResourceableId().equals(dtab.getOLATResourceable().getResourceableId())
+				&& lockResource.getResourceableTypeName().equals(dtab.getOLATResourceable().getResourceableTypeName())) {
+			canClose = false;
+		} else {
+			canClose = (sites != null && sites.size() > 0);
+			if(!canClose && dtabs != null) {
+				synchronized (dtabs) {
+					canClose = (dtabs != null && dtabs.size() > 1);
+				}
 			}
 		}
 		return canClose;
@@ -1307,5 +1517,11 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		public SiteInstance getSite() {
 			return site;
 		}
+	}
+	
+	private enum LockStatus {
+		need,
+		popup,
+		locked
 	}
 }

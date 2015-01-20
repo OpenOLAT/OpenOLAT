@@ -464,8 +464,8 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		} else if (source == previewLink){
 			removeAsListenerAndDispose(previewLayoutCtr);
 			// handle preview
-			Controller previewController = iqManager.createIQDisplayController(moduleConfiguration, new IQPreviewSecurityCallback(), ureq, getWindowControl(), course
-					.getResourceableId().longValue(), courseNode.getIdent(), null);
+			long courseResId = course.getResourceableId().longValue();
+			Controller previewController = iqManager.createIQDisplayController(moduleConfiguration, new IQPreviewSecurityCallback(), ureq, getWindowControl(), courseResId, courseNode.getIdent(), null);
 			previewLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), previewController);
 			stackPanel.pushController(translate("preview"), previewLayoutCtr);
 			

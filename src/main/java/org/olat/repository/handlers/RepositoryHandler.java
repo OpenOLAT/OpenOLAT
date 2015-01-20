@@ -114,11 +114,6 @@ public interface RepositoryHandler {
 	 * @return true if this handler supports donwloading Resourceables of its type.
 	 */
 	public boolean supportsDownload();
-	
-	/**
-	 * @return true if this handler supports launching Resourceables of its type.
-	 */
-	public boolean supportsLaunch();
 
 	/**
 	 * @return true if this handler supports an editor for Resourceables of its type.

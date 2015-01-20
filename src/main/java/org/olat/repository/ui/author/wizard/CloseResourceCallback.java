@@ -20,6 +20,7 @@
 package org.olat.repository.ui.author.wizard;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,6 +34,10 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.logging.activity.CourseLoggingAction;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
@@ -56,6 +61,8 @@ import org.olat.repository.manager.CatalogManager;
  *
  */
 public class CloseResourceCallback implements StepRunnerCallback {
+	
+	private static final OLog log = Tracing.createLoggerFor(CloseResourceCallback.class);
 	
 	private RepositoryEntry repositoryEntry;
 	
@@ -104,7 +111,7 @@ public class CloseResourceCallback implements StepRunnerCallback {
 			}
 			ownerList.clear();
 		}
-		
+
 		//update status
 		repositoryEntry = repositoryService.loadByKey(repositoryEntry.getKey());
 		repositoryEntry.setStatusCode(RepositoryEntryStatus.REPOSITORY_STATUS_CLOSED);
@@ -120,6 +127,11 @@ public class CloseResourceCallback implements StepRunnerCallback {
 		if(cleanGroups != null && Boolean.TRUE.equals(cleanGroups)) {
 			doCleanGroups(ureq.getIdentity());
 		}
+		
+
+		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_CLOSE, getClass());
+		log.audit("Repository entry " + repositoryEntry.getDisplayname() + " ( " + repositoryEntry.getOlatResource() + " ) closed");
+		
 		return StepsMainRunController.DONE_MODIFIED;
 	}
 	
@@ -132,16 +144,22 @@ public class CloseResourceCallback implements StepRunnerCallback {
 			// LearningGroups
 			List<BusinessGroup> allGroups = course.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups();
 			for (BusinessGroup bGroup : allGroups) {
-				List<Identity> owners = businessGroupService.getMembers(bGroup, GroupRoles.coach.name());
-				businessGroupService.removeOwners(identity, owners, bGroup);
-
-				List<Identity> participants = businessGroupService.getMembers(bGroup, GroupRoles.participant.name());
-				businessGroupService.removeParticipants(identity, participants, bGroup, null);
-				
-				List<Identity> waitingList = businessGroupService.getMembers(bGroup, GroupRoles.waiting.name());
-				businessGroupService.removeFromWaitingList(identity, waitingList, bGroup, null);
+				List<BusinessGroup> bGroupList = Collections.singletonList(bGroup);
+				List<RepositoryEntry> entries = businessGroupService.findRepositoryEntries(bGroupList, 0, -1);
+				if(entries.contains(repositoryEntry) && entries.size() == 1) {
+					List<Identity> owners = businessGroupService.getMembers(bGroup, GroupRoles.coach.name());
+					businessGroupService.removeOwners(identity, owners, bGroup);
+	
+					List<Identity> participants = businessGroupService.getMembers(bGroup, GroupRoles.participant.name());
+					businessGroupService.removeParticipants(identity, participants, bGroup, null);
+					
+					List<Identity> waitingList = businessGroupService.getMembers(bGroup, GroupRoles.waiting.name());
+					businessGroupService.removeFromWaitingList(identity, waitingList, bGroup, null);
+				} else {
+					businessGroupService.removeResourceFrom(bGroupList, repositoryEntry);
+				}
 			}
-			repositoryService.removeMembers(repositoryEntry);
+			repositoryService.removeMembers(repositoryEntry, GroupRoles.coach.name(), GroupRoles.participant.name());
 		}
 	}
 }

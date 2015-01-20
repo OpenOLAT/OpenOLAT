@@ -61,7 +61,9 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.nodes.iq.IQEditController;
+import org.olat.course.nodes.iq.IQEvent;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.ims.qti.container.AssessmentContext;
 import org.olat.ims.qti.container.ItemsInput;
@@ -96,6 +98,8 @@ public class IQDisplayController extends DefaultController implements GenericEve
 	private Persister persister = null;
 	private final Locale locale;
 	private final Identity assessedIdentity;
+	
+	private volatile boolean stoppedFlag = false;
 	private volatile boolean retrievedFlag = false;
 	
 	private NavigatorDelegate delegate;
@@ -106,9 +110,9 @@ public class IQDisplayController extends DefaultController implements GenericEve
 	private IQManager iqm;
 	private IQSecurityCallback iqsec;
 	private ModuleConfiguration modConfig;	
-	// TODO: make nicer separation
-	private long callingResId = 0;
-	private String callingResDetail = "";
+
+	private long courseResId = 0;
+	private String courseNodeIdent = "";
 	private boolean ready;
 	private Link closeButton;
 	private OLATResourceable retrieveListenerOres; 
@@ -128,21 +132,24 @@ public class IQDisplayController extends DefaultController implements GenericEve
 	 * @param callingResDetail
 	 */
 	IQDisplayController(ModuleConfiguration moduleConfiguration, IQSecurityCallback secCallback, UserRequest ureq,
-			WindowControl wControl, long callingResId, String callingResDetail, NavigatorDelegate delegate) {
+			WindowControl wControl, long courseResId, String courseNodeIdent, NavigatorDelegate delegate) {
 		super(wControl);
 		
-		this.assessedIdentity = ureq.getIdentity();
-		this.locale = ureq.getLocale();
+		assessedIdentity = ureq.getIdentity();
+		locale = ureq.getLocale();
 		this.delegate = delegate;
 
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_OPEN, getClass());
 
 		this.modConfig = moduleConfiguration;
-		this.callingResId = callingResId;
-		this.callingResDetail = callingResDetail;
+		this.courseResId = courseResId;
+		this.courseNodeIdent = courseNodeIdent;
 		this.repositorySoftkey = (String) moduleConfiguration.get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
 		
 		init(secCallback, ureq);
+		
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.registerFor(this, assessedIdentity, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 	}
 
 	/**
@@ -185,7 +192,7 @@ public class IQDisplayController extends DefaultController implements GenericEve
 		this.translator = Util.createPackageTranslator(IQDisplayController.class, ureq.getLocale());
 		this.ready = false;
 
-		retrieveListenerOres =  new IQRetrievedEvent(ureq.getIdentity(), callingResId, callingResDetail);
+		retrieveListenerOres =  new IQRetrievedEvent(ureq.getIdentity(), courseResId, courseNodeIdent);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), retrieveListenerOres);
 
 		iqm = CoreSpringFactory.getImpl(IQManager.class);
@@ -263,12 +270,12 @@ public class IQDisplayController extends DefaultController implements GenericEve
 		AssessmentInstance ai = null;
 		if (repositorySoftkey != null) { // instantiate from repository
 			// build path information which will be used to store tempory qti file
-			String resourcePathInfo = callingResId + File.separator + callingResDetail; 
+			String resourcePathInfo = courseResId + File.separator + courseNodeIdent; 
 			ai = AssessmentFactory.createAssessmentInstance(ureq.getIdentity(), ureq.getHttpReq().getRemoteAddr(),
-					modConfig, iqsec.isPreview(), callingResId, callingResDetail, resourcePathInfo, this); 
+					modConfig, iqsec.isPreview(), courseResId, courseNodeIdent, resourcePathInfo, this); 
 		} else if (resolver != null) { // instantiate from given resolver
 			ai = AssessmentFactory.createAssessmentInstance(ureq.getIdentity(), ureq.getHttpReq().getRemoteAddr(),
-					callingResId, callingResDetail, resolver, persister, modConfig, this);
+					courseResId, courseNodeIdent, resolver, persister, modConfig, this);
 		}
 
 		// check for null instance or instance with no items
@@ -382,7 +389,6 @@ public class IQDisplayController extends DefaultController implements GenericEve
 	}
 	
 	@Override
-	//fxdiff BAKS-7 Resume function
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 
@@ -392,29 +398,46 @@ public class IQDisplayController extends DefaultController implements GenericEve
 	public void event(Event event) {
 		if(event instanceof IQRetrievedEvent) {
 			IQRetrievedEvent e = (IQRetrievedEvent)event;
-			if(e.isConcerned(assessedIdentity, callingResId, callingResDetail)) {
+			if(e.isConcerned(assessedIdentity, courseResId, courseNodeIdent)) {
 				//it's me -> it's finished
 				retrievedFlag = true;
+			}
+		} else if (event instanceof AssessmentModeNotificationEvent) {
+			try {
+				processAssessmentModeNotificationEvent((AssessmentModeNotificationEvent)event);
+			} catch (Exception e) {
+				log.error("", e);
+			}
+		}
+	}
+	
+	private void processAssessmentModeNotificationEvent(AssessmentModeNotificationEvent event) {
+		if(event.getAssessementMode().getResource().getResourceableId().equals(courseResId)) {
+			String cmd = event.getCommand();
+			if(cmd.equals(AssessmentModeNotificationEvent.STOP_ASSESSMENT) || cmd.equals(AssessmentModeNotificationEvent.END)) {
+				stoppedFlag = true;
 			}
 		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(retrievedFlag) {
-			fireEvent(ureq, new Event("test_stopped"));
+		if(retrievedFlag || stoppedFlag) {
+			fireEvent(ureq, new IQEvent(IQEvent.TEST_PULLED));
+		} else if(stoppedFlag) {
+			fireEvent(ureq, new IQEvent(IQEvent.TEST_STOPPED));
 		} else {
 			super.event(ureq, source, event);
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(retrievedFlag) {
-			fireEvent(ureq, new Event("test_stopped"));
+			fireEvent(ureq, new IQEvent(IQEvent.TEST_PULLED));
+			return;
+		} else if(retrievedFlag || stoppedFlag) {
+			fireEvent(ureq, new IQEvent(IQEvent.TEST_STOPPED));
 			return;
 		}
 
@@ -610,10 +633,10 @@ public class IQDisplayController extends DefaultController implements GenericEve
 				LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiParams, "", qtiDetails));
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, retrieveListenerOres);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.deregisterFor(this, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 	}
 }

@@ -102,6 +102,9 @@ public class OpenXMLDocument {
 	
 	public void setDocumentHeader(String header) {
 		documentHeader = header;
+		if(StringHelper.containsNonWhitespace(documentHeader)) {
+			documentHeader = documentHeader.replace("&", "&amp;");
+		}
 	}
 	
 	public VFSContainer getMediaContainer() {

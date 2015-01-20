@@ -48,13 +48,6 @@ public interface DTabs {
 
 	/**
 	 * @param ores
-	 * @param title
-	 * @return the tab or null if the headerbar is full. if null, the implementation of the DTabs should issue a warning to the current windowcontrol
-	 */
-	public DTab createDTab(OLATResourceable ores, String title);
-
-	/**
-	 * @param ores
 	 * @param repoOres
 	 * @param title
 	 * @return the tab or null if the headerbar is full. if null, the implementation of the DTabs should issue a warning to the current windowcontrol

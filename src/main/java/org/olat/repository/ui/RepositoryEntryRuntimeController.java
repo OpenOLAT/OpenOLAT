@@ -66,6 +66,9 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
+import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.course.run.RunMainController;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
@@ -88,6 +91,7 @@ import org.olat.repository.ui.author.RepositoryMembersController;
 import org.olat.repository.ui.author.wizard.CloseResourceCallback;
 import org.olat.repository.ui.author.wizard.Close_1_ExplanationStep;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
@@ -144,6 +148,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected boolean corrupted;
 	private RepositoryEntry re;
 	private LockResult lockResult;
+	private boolean assessmentLock;// by Assessment mode
+	private AssessmentMode assessmentMode;
 	private final RepositoryHandler handler;
 	
 	private HistoryPoint launchedFromPoint;
@@ -162,6 +168,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryHandlerFactory handlerFactory;
+	@Autowired
+	private AssessmentModeManager assessmentModeMgr;
 	
 	public RepositoryEntryRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re,
 			RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
@@ -178,6 +186,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		
 		//! check corrupted
 		corrupted = isCorrupted(re);
+		assessmentLock = isAssessmentLock(ureq, re);
 		
 		this.re = re;
 		this.showInfos = showInfos;
@@ -185,6 +194,12 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		this.runtimeControllerCreator = runtimeControllerCreator;
 		
 		UserSession session = ureq.getUserSession();
+		
+		if(assessmentLock) {
+			TransientAssessmentMode mode = ureq.getUserSession().getLockMode();
+			this.assessmentMode = assessmentModeMgr.getAssessmentModeById(mode.getModeKey());
+		}
+		
 		if(session != null &&  session.getHistoryStack() != null && session.getHistoryStack().size() >= 2) {
 			// Set previous business path as back link for this course - brings user back to place from which he launched the course
 			List<HistoryPoint> stack = session.getHistoryStack();
@@ -211,7 +226,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		// set up the components
 		toolbarPanel = new TooledStackedPanel("courseStackPanel", getTranslator(), this);
 		toolbarPanel.setInvisibleCrumb(0); // show root (course) level
-		toolbarPanel.setShowCloseLink(true, true);
+		toolbarPanel.setShowCloseLink(!assessmentLock, !assessmentLock);
+		toolbarPanel.getBackLink().setEnabled(!assessmentLock);
 		putInitialPanel(toolbarPanel);
 		doRun(ureq, reSecurity);
 		loadRights(reSecurity);
@@ -220,6 +236,18 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected boolean isCorrupted(RepositoryEntry entry) {
 		return entry == null;
+	}
+	
+	protected final boolean isAssessmentLock() {
+		return assessmentLock;
+	}
+	
+	private final boolean isAssessmentLock(UserRequest ureq, RepositoryEntry entry) {
+		OLATResource resource = entry.getOlatResource();
+		OLATResourceable lock = ureq.getUserSession().getLockResource();
+		return lock != null
+				&& lock.getResourceableId().equals(resource.getResourceableId())
+				&& lock.getResourceableTypeName().equals(resource.getResourceableTypeName());
 	}
 	
 	/**
@@ -405,7 +433,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		if(entries != null && entries.size() > 0) {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if("Editor".equalsIgnoreCase(type)) {
-				if(handler.supportsEdit(re) == EditionSupport.yes) {
+				if(handler.supportsEdit(re) == EditionSupport.yes
+						&& !repositoryManager.createRepositoryEntryStatus(re.getStatusCode()).isClosed()) {
 					doEdit(ureq);
 				}
 			} else if("Catalog".equalsIgnoreCase(type)) {
@@ -473,7 +502,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		} else if(downloadLink == source) {
 			doDownload(ureq);
 		} else if(closeLink == source) {
-			doCloseResource(ureq);
+			doCloseResourceWizard(ureq);
 		} else if(deleteLink == source) {
 			doDelete(ureq);
 		} else if(source == toolbarPanel) {
@@ -516,7 +545,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				removeAsListenerAndDispose(closeCtrl);
 				closeCtrl = null;
 				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-					closeLink.setVisible(false);
+					doCloseResource(ureq);
 				}
 			}
 		} else if(deleteDialogCtrl == source) {
@@ -779,7 +808,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		}
 	}
 	
-	private void doCloseResource(UserRequest ureq) {
+	private void doCloseResourceWizard(UserRequest ureq) {
 		removeAsListenerAndDispose(closeCtrl);
 
 		Step start = new Close_1_ExplanationStep(ureq, re);
@@ -788,6 +817,21 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				translate("wizard.closecourse.title"), "o_sel_checklist_wizard");
 		listenTo(closeCtrl);
 		getWindowControl().pushAsModalDialog(closeCtrl.getInitialComponent());
+	}
+	
+	/**
+	 * Remove close and edit tools, if in edit mode, pop-up-to root
+	 * @param ureq
+	 */
+	private void doCloseResource(UserRequest ureq) {
+		loadRepositoryEntry();
+		closeLink.setVisible(false);
+		if(editLink != null) {
+			editLink.setVisible(false);
+		}
+		if(currentToolCtr == editorCtrl) {
+			toolbarPanel.popUpToRootController(ureq);
+		}
 	}
 	
 	private void doDelete(UserRequest ureq) {
@@ -818,13 +862,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected void launchContent(UserRequest ureq, RepositoryEntrySecurity security) {
 		if(security.canLaunch()) {
-			if(handler.supportsLaunch()) {
-				runtimeController = runtimeControllerCreator.create(ureq, getWindowControl(), toolbarPanel, re, reSecurity);
-				listenTo(runtimeController);
-				toolbarPanel.rootController(re.getDisplayname(), runtimeController);
-			} else {
-				doDetails(ureq);
-			}
+			runtimeController = runtimeControllerCreator.create(ureq, getWindowControl(), toolbarPanel, re, reSecurity, assessmentMode);
+			listenTo(runtimeController);
+			toolbarPanel.rootController(re.getDisplayname(), runtimeController);
 		} else {
 			runtimeController = new AccessRefusedController(ureq, getWindowControl());
 			listenTo(runtimeController);
@@ -834,7 +874,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 
 	public interface RuntimeControllerCreator {
 		
-		public Controller create(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry, RepositoryEntrySecurity reSecurity);
+		public Controller create(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
+				RepositoryEntry entry, RepositoryEntrySecurity reSecurity, AssessmentMode mode);
 		
 	}
 	

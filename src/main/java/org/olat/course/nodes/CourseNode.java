@@ -49,6 +49,7 @@ import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
+import org.olat.course.run.userview.TreeFilter;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
@@ -275,7 +276,7 @@ public interface CourseNode extends INode, ShortName {
 	 * @param treeEval
 	 * @return NodeEvaluation
 	 */
-	public NodeEvaluation eval(ConditionInterpreter ci, TreeEvaluation treeEval);
+	public NodeEvaluation eval(ConditionInterpreter ci, TreeEvaluation treeEval, TreeFilter filter);
 
 	/**
 	 * @return true if the course node configuration is correct without the course

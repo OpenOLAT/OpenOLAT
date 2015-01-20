@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts;
+import org.olat.core.commons.fullWebApp.TopNavController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -36,10 +37,6 @@ import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.gui.control.OlatFooterController;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for DmzBFWCParts
- * 
- * <P>
  * Initial Date:  29.01.2008 <br>
  * @author patrickb
  */
@@ -48,9 +45,7 @@ public class DmzBFWCParts implements BaseFullWebappControllerParts {
 	private ControllerCreator contentControllerCreator;
 	private boolean showTopNav = true; // default
 
-	/**
-	 * @see org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts#createFooterController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
+	@Override
 	public Controller createFooterController(UserRequest ureq, WindowControl wControl) {
 		Controller footerCtr = null;
 		// ----------- footer, optional (e.g. for copyright, powered by) ------------------
@@ -63,9 +58,7 @@ public class DmzBFWCParts implements BaseFullWebappControllerParts {
 		return footerCtr;
 	}
 
-	/**
-	 * @see org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts#createHeaderController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
+	@Override
 	public Controller createHeaderController(UserRequest ureq, WindowControl wControl) {
 		Controller headerCtr = null;
 		// ----------- header, optional (e.g. for logo, advertising ) ------------------		
@@ -76,15 +69,13 @@ public class DmzBFWCParts implements BaseFullWebappControllerParts {
 		return headerCtr;
 	}
 
-	/**
-	 * @see org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts#createTopNavController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
-	public Controller createTopNavController(UserRequest ureq, WindowControl wControl) {
+	@Override
+	public TopNavController createTopNavController(UserRequest ureq, WindowControl wControl) {
 		if (showTopNav) {
-			Controller topNavCtr = null;
+			TopNavController topNavCtr = null;
 			if (CoreSpringFactory.containsBean("fullWebApp.DMZTopNavControllerCreator")) {
 				ControllerCreator headerControllerCreator = (ControllerCreator)  CoreSpringFactory.getBean("fullWebApp.DMZTopNavControllerCreator");
-				topNavCtr = headerControllerCreator.createController(ureq, wControl);
+				topNavCtr = (TopNavController)headerControllerCreator.createController(ureq, wControl);
 			}
 			return topNavCtr;
 		} else {
@@ -95,14 +86,14 @@ public class DmzBFWCParts implements BaseFullWebappControllerParts {
 	public void setContentControllerCreator(ControllerCreator contentControllerCreator){
 		this.contentControllerCreator = contentControllerCreator;
 	}
-	
+
+	@Override
 	public Controller getContentController(UserRequest ureq, WindowControl wControl) {
 		return contentControllerCreator.createController(ureq, wControl);
 	}
 
-	/**
-	 * @see org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts#getSiteInstances(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
+
+	@Override
 	public List<SiteInstance> getSiteInstances(UserRequest ureq, WindowControl wControl) {
 		return null;
 	}
@@ -116,5 +107,4 @@ public class DmzBFWCParts implements BaseFullWebappControllerParts {
 	public void showTopNav(boolean showTopNavController) {
 		this.showTopNav = showTopNavController ;
 	}
-
 }

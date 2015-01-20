@@ -176,7 +176,6 @@ public class CPManagerImpl extends CPManager {
 			File cpRoot = FileResourceManager.getInstance().unzipFileResource(ores);
 			logDebug("createNewCP: cpRoot=" + cpRoot);
 			logDebug("createNewCP: cpRoot.getAbsolutePath()=" + cpRoot.getAbsolutePath());
-			System.out.println("createNewCP: cpRoot.getAbsolutePath()=" + cpRoot.getAbsolutePath());
 			LocalFolderImpl vfsWrapper = new LocalFolderImpl(cpRoot);
 			ContentPackage cp = load(vfsWrapper, ores);
 

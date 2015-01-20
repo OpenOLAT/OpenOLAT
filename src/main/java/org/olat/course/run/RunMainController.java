@@ -75,6 +75,7 @@ import org.olat.course.CourseModule;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentChangedEvent;
+import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.config.CourseConfig;
@@ -85,7 +86,10 @@ import org.olat.course.run.glossary.CourseGlossaryFactory;
 import org.olat.course.run.glossary.CourseGlossaryToolLinkController;
 import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.navigation.NodeClickedRef;
+import org.olat.course.run.userview.AssessmentModeTreeFilter;
+import org.olat.course.run.userview.TreeFilter;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
@@ -125,6 +129,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 	private CourseNode currentCourseNode;
 	private TreeModel treeModel;
+	private TreeFilter treeFilter;
 	private boolean needsRebuildAfter = false;
 	private boolean needsRebuildAfterPublish = false;
 	private boolean needsRebuildAfterRunDone = false;
@@ -156,9 +161,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 * @param offerBookmark - whether to offer bookmarks or not
 	 * @param showCourseConfigLink  Flag to enable/disable link to detail-page in tool menu. 
 	 */
-	public RunMainController(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel toolbarPanel, ICourse course,
-			RepositoryEntry re, RepositoryEntrySecurity reSecurity) {
+	public RunMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
+			ICourse course, RepositoryEntry re, RepositoryEntrySecurity reSecurity, AssessmentMode assessmentMode) {
 
 		// Use repository package as fallback translator
 		super(ureq, wControl, Util.createPackageTranslator(RepositoryEntry.class, ureq.getLocale()));
@@ -183,7 +187,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		luTree.setElementCssClass("o_course_menu");
 		contentP = new Panel("building_block_content");
 
-		// preload user assessment data in assessmnt properties cache to speed up
+		// preload user assessment data in assessment properties cache to speed up
 		// course loading
 		course.getCourseEnvironment().getAssessmentManager().preloadCache(identity);
 
@@ -193,7 +197,13 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 		// build score now
 		uce.getScoreAccounting().evaluateAll();
-		navHandler = new NavigationHandler(uce, false);
+		
+		if(assessmentMode != null && assessmentMode.isRestrictAccessElements()) {
+			treeFilter = new AssessmentModeTreeFilter(assessmentMode);
+		} else {
+			treeFilter = new VisibleTreeFilter();
+		}
+		navHandler = new NavigationHandler(uce, treeFilter, false);
 
 		updateTreeAndContent(ureq, currentCourseNode, null);
 		
@@ -488,7 +498,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 						null, null, null);
 				// build score now
 				uce.getScoreAccounting().evaluateAll();
-				navHandler = new NavigationHandler(uce, false);
+				navHandler = new NavigationHandler(uce, treeFilter, false);
 				
 				// rebuild and jump to root node
 				updateTreeAndContent(ureq, null, null);

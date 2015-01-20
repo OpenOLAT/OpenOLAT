@@ -5,16 +5,6 @@
   http://www.springframework.org/schema/beans 
   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<!--
-		**************************************************************************
-		*** Configure the controller-workflow which should be presented		   ***
-		*** right after a user logged in.                                      ***
-		*** See comment in AfterLoginInterceptorController                     ***
-		**************************************************************************
-	-->
-	<bean id="fullWebApp.AfterLoginInterceptionControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator" >
-		<property name="className" value="org.olat.login.AfterLoginInterceptionController"/>
-	</bean>
 	
 	<!-- the specifed creator is responsible for the frameworks popup browser window layout.
 	     Special layouts must be implemented by wrapping the content into a content-layouting controller -->

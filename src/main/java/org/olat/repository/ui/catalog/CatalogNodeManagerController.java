@@ -74,14 +74,15 @@ import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.login.LoginModule;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.CatalogEntry;
+import org.olat.repository.CatalogEntry.Style;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.CatalogEntry.Style;
 import org.olat.repository.controllers.RepositorySearchController;
 import org.olat.repository.manager.CatalogManager;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
@@ -149,6 +150,8 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private LoginModule loginModule;
+	@Autowired
 	private AccessControlModule acModule;
 	@Autowired
 	private RepositoryModule repositoryModule;
@@ -204,7 +207,9 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		flc.contextPut("catalogLevel", level);
 		
 		String url = Settings.getServerContextPathURI() + "/url/CatalogEntry/" + catalogEntry.getKey();
-		flc.contextPut("guestExtLink", url + "?guest=true&amp;lang=" + getLocale().getLanguage());
+		if(loginModule.isGuestLoginLinksEnabled()) {
+			flc.contextPut("guestExtLink", url + "?guest=true&amp;lang=" + getLocale().getLanguage());
+		}
 		if (!isGuest) {
 			flc.contextPut("extLink", url);
 		}

@@ -21,6 +21,7 @@ package org.olat.repository.ui;
 
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -42,7 +43,7 @@ public class RepositoryEntryAccessColumnDescriptor implements CustomCellRenderer
 	
 	public RepositoryEntryAccessColumnDescriptor(Translator translator) {
 		this.translator = translator;
-		guestLoginEnabled = LoginModule.isGuestLoginLinksEnabled();
+		guestLoginEnabled = CoreSpringFactory.getImpl(LoginModule.class).isGuestLoginLinksEnabled();
 	}
 
 	@Override

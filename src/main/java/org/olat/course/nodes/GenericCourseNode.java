@@ -59,6 +59,7 @@ import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
+import org.olat.course.run.userview.TreeFilter;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
@@ -269,15 +270,15 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		this.moduleConfiguration = moduleConfiguration;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#eval(org.olat.course.condition.interpreter.ConditionInterpreter,
-	 *      org.olat.course.run.userview.TreeEvaluation)
-	 */
-	public NodeEvaluation eval(ConditionInterpreter ci, TreeEvaluation treeEval) {
+	@Override
+	public NodeEvaluation eval(ConditionInterpreter ci, TreeEvaluation treeEval, TreeFilter filter) {
 		// each CourseNodeImplementation has the full control over all children eval.
 		// default behaviour is to eval all visible children
 		NodeEvaluation nodeEval = new NodeEvaluation(this);
 		calcAccessAndVisibility(ci, nodeEval);
+		if(filter != null && !filter.isVisible(this)) {
+			nodeEval.setVisible(false);
+		}
 		
 		nodeEval.build();
 		treeEval.cacheCourseToTreeNode(this, nodeEval.getTreeNode());
@@ -287,7 +288,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 			int childcnt = getChildCount();
 			for (int i = 0; i < childcnt; i++) {
 				CourseNode cn = (CourseNode)getChildAt(i);
-				NodeEvaluation chdEval = cn.eval(ci, treeEval);
+				NodeEvaluation chdEval = cn.eval(ci, treeEval, filter);
 				if (chdEval.isVisible()) { // child is visible
 					nodeEval.addNodeEvaluationChild(chdEval);
 				}

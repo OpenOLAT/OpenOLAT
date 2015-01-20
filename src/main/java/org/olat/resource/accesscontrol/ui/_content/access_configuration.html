@@ -1,4 +1,4 @@
-<fieldset class="o_form form-horizontal" role="form">
+<fieldset class="o_form form-horizontal o_ac_configuration" role="form">
 #if ($off_title) 
 	<legend>
 		$off_title
@@ -15,27 +15,18 @@
 		#if ($off_info) <div class="o_info">$off_info</div> #end
 	</div></div>
 #end
-	
-	#if($methods) 
-	<div class="o_button_group o_button_group_right">
-		<div class="btn-group">
-			<button type="button" class="btn btn-default dropdown-toggle o_sel_accesscontrol_create" data-toggle="dropdown">$r.translate("add.accesscontrol") <span class="caret"></span></button>
-			<ul class="dropdown-menu dropdown-menu-right" role="menu">
-				#foreach($method in $methods)
-					<li>$r.render($method.component.componentName)</li>
-				#end
-			</ul>
-		</div>
-	</div>
-	#end
-	<div class="clearfix">
-		$r.render("conf-controllers")
-	</div>
-	#if($r.available("buttonLayout"))
 	<div class="form-group">
-	 	<div class="col-sm-9 col-sm-offset-3">
-			$r.render("buttonLayout")
-		</div>
+		<label class="control-label col-sm-3">$r.translate("ac.methods.label")</label>
+		<div class="col-sm-9">$r.render("conf-controllers")</div>
 	</div>
+	#if($methods) 
+	<div class="form-group"><div class="col-sm-9 col-sm-offset-3"><div class="btn-group">
+		<button type="button" class="btn btn-default dropdown-toggle o_sel_accesscontrol_create" data-toggle="dropdown">$r.translate("add.accesscontrol") <span class="caret"></span></button>
+		<ul class="dropdown-menu dropdown-menu-right" role="menu">
+			#foreach($method in $methods)
+				<li>$r.render($method.component.componentName)</li>
+			#end
+		</ul>
+	</div></div></div>
 	#end
 </fieldset>

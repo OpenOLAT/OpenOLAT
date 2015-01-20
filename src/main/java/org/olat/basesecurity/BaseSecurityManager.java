@@ -84,6 +84,7 @@ import org.olat.user.UserManager;
  */
 public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	private DB dbInstance;
+	private LoginModule loginModule;
 	private OLATResourceManager orm;
 	private InvitationDAO invitationDao;
 	private String dbVendor = "";
@@ -104,6 +105,10 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 */
 	public static BaseSecurity getInstance() {
 		return INSTANCE;
+	}
+	
+	public void setLoginModule(LoginModule loginModule) {
+		this.loginModule = loginModule;
 	}
 	
 	/**
@@ -686,7 +691,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		IdentityImpl iimpl = new IdentityImpl(username, user);
 		dbInstance.getCurrentEntityManager().persist(iimpl);
 		if (provider != null) { 
-			createAndPersistAuthentication(iimpl, provider, authusername, credential, LoginModule.getDefaultHashAlgorithm());
+			createAndPersistAuthentication(iimpl, provider, authusername, credential, loginModule.getDefaultHashAlgorithm());
 		}
 		notifyNewIdentityCreated(iimpl);
 		return iimpl;
@@ -729,7 +734,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		iimpl.setExternalId(externalId);
 		dbInstance.getCurrentEntityManager().persist(iimpl);
 		if (provider != null) { 
-			createAndPersistAuthentication(iimpl, provider, authusername, credential, LoginModule.getDefaultHashAlgorithm());
+			createAndPersistAuthentication(iimpl, provider, authusername, credential, loginModule.getDefaultHashAlgorithm());
 		}
 		notifyNewIdentityCreated(iimpl);
 		return iimpl;
@@ -853,11 +858,11 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	@Override
 	public SecurityGroup findSecurityGroupByName(String securityGroupName) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select sgi from ").append(NamedGroupImpl.class.getName()).append(" as ngroup, ")
-		  .append(SecurityGroupImpl.class.getName()).append("  as sgi ")
-		  .append(" where ngroup.groupName=:groupName and ngroup.securityGroup=sgi");
+		sb.append("select sgi from ").append(NamedGroupImpl.class.getName()).append(" as ngroup ")
+		  .append(" inner join ngroup.securityGroup sgi")
+		  .append(" where ngroup.groupName=:groupName");
 
-		List<SecurityGroup> group = this.dbInstance.getCurrentEntityManager()
+		List<SecurityGroup> group = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), SecurityGroup.class)
 				.setParameter("groupName", securityGroupName)
 				.setHint("org.hibernate.cacheable", Boolean.TRUE)
@@ -1370,7 +1375,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		boolean hasAuthProviders = (params.getAuthProviders() != null && params.getAuthProviders().length > 0);
 
 		// select identity and inner join with user to optimize query
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(5000);
 		if (hasAuthProviders) {
 			// I know, it looks wrong but I need to do the join reversed since it is not possible to 
 			// do this query with a left join that starts with the identity using hibernate HQL. A left
@@ -1378,26 +1383,30 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 			// providers (e.g. when searching for users that do not have any authentication providers at all!).
 			// It took my quite a while to make this work, so think twice before you change anything here!
 			if(count) {
-				sb = new StringBuilder("select count(distinct ident.key) from org.olat.basesecurity.AuthenticationImpl as auth right join auth.identity as ident ");			
+				sb.append("select count(distinct ident.key) from org.olat.basesecurity.AuthenticationImpl as auth  ")
+				  .append(" right join auth.identity as ident")
+				  .append(" inner join ident.user as user ");
 			} else {
-				sb = new StringBuilder("select distinct ident from org.olat.basesecurity.AuthenticationImpl as auth right join auth.identity as ident ");			
+				sb.append("select distinct ident from org.olat.basesecurity.AuthenticationImpl as auth ")
+				  .append(" right join auth.identity as ident")
+				  .append(" inner join fetch ident.user as user ");
 			}
 		} else {
 			if(count) {
-				sb = new StringBuilder("select count(distinct ident.key) from org.olat.core.id.Identity as ident ");
+				sb.append("select count(distinct ident.key) from org.olat.core.id.Identity as ident ")
+				  .append(" inner join ident.user as user ");
 			} else {
-				sb = new StringBuilder("select distinct ident from org.olat.core.id.Identity as ident ");
+				sb.append("select distinct ident from org.olat.core.id.Identity as ident ")
+				  .append(" inner join fetch ident.user as user ");
 			}
 		}
 		// In any case join with the user. Don't join-fetch user, this breaks the query
 		// because of the user fields (don't know exactly why this behaves like
 		// this)
-		sb.append(" join ident.user as user ");
-		
+
 		if (hasGroups) {
 			// join over security group memberships
-	    sb.append(" ,org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi ");
-
+			sb.append(" ,org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi ");
 		}
 		if (hasPermissionOnResources) {
 			// join over policies
@@ -1461,23 +1470,27 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	
 				// handle email fields special: search in all email fields
 				if (!emailProperties.isEmpty()) {
-					needsUserPropertiesJoin = checkIntersectionInUserProperties(sb,needsUserPropertiesJoin, params.isUserPropertiesAsIntersectionSearch());
+					needsUserPropertiesJoin = checkIntersectionInUserProperties(sb, needsUserPropertiesJoin, params.isUserPropertiesAsIntersectionSearch());
 					boolean moreThanOne = emailProperties.size() > 1;
 					if (moreThanOne) sb.append("(");
 					boolean needsOr = false;
 					for (String key : emailProperties.keySet()) {
 						if (needsOr) sb.append(" or ");
-						//fxdiff
+						
+						sb.append(" exists (select prop").append(key).append(".value from userproperty prop").append(key).append(" where ")
+						  .append(" prop").append(key).append(".propertyId.userId=user.key and prop").append(key).append(".propertyId.name ='").append(key).append("'")
+						  .append(" and ");
 						if(dbVendor.equals("mysql")) {
-							sb.append(" user.userProperties['").append(key).append("'] like :").append(key).append("_value ");
+							sb.append(" prop").append(key).append(".value like :").append(key).append("_value ");
 						} else {
-							sb.append(" lower(user.userProperties['").append(key).append("']) like :").append(key).append("_value ");
+							sb.append(" lower(prop").append(key).append(".value) like :").append(key).append("_value ");
 						}
 						if(dbVendor.equals("oracle")) {
 							sb.append(" escape '\\'");
 						}
+						sb.append(")");
 						needsOr = true;
-				}
+					}
 					if (moreThanOne) sb.append(")");
 					// cleanup
 					emailProperties.clear();
@@ -1485,15 +1498,19 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	
 				// add other fields
 				for (String key : otherProperties.keySet()) {
-					needsUserPropertiesJoin = checkIntersectionInUserProperties(sb,needsUserPropertiesJoin, params.isUserPropertiesAsIntersectionSearch());
+					needsUserPropertiesJoin = checkIntersectionInUserProperties(sb, needsUserPropertiesJoin, params.isUserPropertiesAsIntersectionSearch());
+					sb.append(" exists (select prop").append(key).append(".value from userproperty prop").append(key).append(" where ")
+					  .append(" prop").append(key).append(".propertyId.userId=user.key and prop").append(key).append(".propertyId.name ='").append(key).append("'")
+					  .append(" and ");
 					if(dbVendor.equals("mysql")) {
-						sb.append(" user.userProperties['").append(key).append("'] like :").append(key).append("_value ");
+						sb.append(" prop").append(key).append(".value like :").append(key).append("_value ");
 					} else {
-						sb.append(" lower(user.userProperties['").append(key).append("']) like :").append(key).append("_value ");
+						sb.append(" lower(prop").append(key).append(".value) like :").append(key).append("_value ");
 					}
 					if(dbVendor.equals("oracle")) {
 						sb.append(" escape '\\'");
 					}
+					sb.append(")");
 					needsAnd = true;
 				}
 				// cleanup

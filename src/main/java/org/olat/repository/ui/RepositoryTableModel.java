@@ -85,6 +85,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	private static final int COLUMN_COUNT = 7;
 	private final Translator translator; // package-local to avoid synthetic accessor method.
 	private final ACService acService;
+	private final LoginModule loginModule;
 	private final AccessControlModule acModule;
 	private final RepositoryModule repositoryModule;
 	private final RepositoryEntryLifecycleDAO lifecycleDao;
@@ -102,10 +103,11 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 		this.translator = translator;
 
 		acService = CoreSpringFactory.getImpl(ACService.class);
+		loginModule = CoreSpringFactory.getImpl(LoginModule.class);
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
 		repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
 		lifecycleDao = CoreSpringFactory.getImpl(RepositoryEntryLifecycleDAO.class);
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
 	}
 
 	/**
@@ -287,7 +289,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 					case RepositoryEntry.ACC_OWNERS_AUTHORS: return translator.translate("table.header.access.author");
 					case RepositoryEntry.ACC_USERS: return translator.translate("table.header.access.user");
 					case RepositoryEntry.ACC_USERS_GUESTS: {
-						if(!LoginModule.isGuestLoginLinksEnabled()) {
+						if(!loginModule.isGuestLoginLinksEnabled()) {
 							return translator.translate("table.header.access.user");
 						}
 						return translator.translate("table.header.access.guest");

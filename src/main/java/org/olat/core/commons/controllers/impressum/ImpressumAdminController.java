@@ -201,13 +201,13 @@ public class ImpressumAdminController extends FormBasicController {
 			impressumCont.setVisible(enabled);
 			
 			getWindowControl().getWindowBackOffice().getWindow().setDirty(true);
-			Windows.getWindows(ureq).getChiefController().wishReload(true);
+			Windows.getWindows(ureq).getChiefController().wishReload(ureq, true);
 		} else if(positionEl == source) {
 			if(positionEl.isOneSelected()) {
 				String key = positionEl.getSelectedKey();
 				impressumModule.setPosition(key);
 				getWindowControl().getWindowBackOffice().getWindow().setDirty(true);
-				Windows.getWindows(ureq).getChiefController().wishReload(true);
+				Windows.getWindows(ureq).getChiefController().wishReload(ureq, true);
 			}
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
