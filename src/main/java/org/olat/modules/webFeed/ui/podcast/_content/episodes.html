@@ -58,13 +58,12 @@
 			</div>
 			
 			<div class="o_content">
-				 $!helper.getItemDescriptionForBrowser($episode) 
-
+				$!helper.getItemDescriptionForBrowser($episode)
+				 
+				#set($podId = $r.getUniqueId())
 				#if ($!episode.getEnclosure())								
 				<div class="o_block_large_top">
-					<div id="o_podcast_episode_$velocityCount" name="o_podcast_episode_$velocityCount" class="o_podcast_$!helper.getMediaType($episode.getEnclosure())" >
-						<a href="http://www.macromedia.com/go/getflashplayer">Get the Flash Player</a> to see this media file.
-					</div>
+					<div id="o_podcast_${podId}_episode" class="o_podcast_$!helper.getMediaType($episode.getEnclosure())"></div>
 					
 					<div class="o_block_top">
 						<a href="$!helper.getMediaUrl($episode)" target="_blank">
@@ -76,9 +75,9 @@
 					<script type="text/javascript">
 					/* <![CDATA[ */
 					#if ($!helper.getMediaType($episode.getEnclosure()) == "video")
-						BPlayer.insertPlayer("$!helper.getMediaUrl($episode)","o_podcast_episode_$velocityCount",$!helper.getWidth($episode),$!helper.getHeight($episode),false,null,"video");
+						BPlayer.insertPlayer("$!helper.getMediaUrl($episode)","o_podcast_${podId}_episode",$!helper.getWidth($episode),$!helper.getHeight($episode),false,null,"video");
 					#else
-						BPlayer.insertPlayer("$!helper.getMediaUrl($episode)","o_podcast_episode_$velocityCount",400,24,false,null,"sound");
+						BPlayer.insertPlayer("$!helper.getMediaUrl($episode)","o_podcast_${podId}_episode",400,24,false,null,"sound");
 					#end
 					/* ]]> */
 					</script>
