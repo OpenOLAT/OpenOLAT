@@ -71,7 +71,6 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalImpl;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -765,41 +764,14 @@ public class FileUploadController extends FormBasicController {
 	 */
 	public void setUploadRelPath(String uploadRelPath) {
 		this.uploadRelPath = uploadRelPath;
-		// reset to current base container as default
-		uploadVFSContainer = currentContainer;
-		// resolve upload dir from rel upload path
-		if (StringHelper.containsNonWhitespace(uploadRelPath)) {
-			// try to resolve given rel path from current container
-			VFSItem uploadDir = currentContainer.resolve(uploadRelPath);
-			if (uploadDir != null) {
-				// make sure this is really a container and not a file!
-				if (uploadDir instanceof VFSContainer) {
-					uploadVFSContainer = (VFSContainer) uploadDir;
-				} else {
-					// fallback to current base 
-					uploadVFSContainer = currentContainer;
-				}
-			} else {
-				// does not yet exist - create subdir
-				if (VFSConstants.YES.equals(currentContainer.canWrite())) {
-					String[] pathSegments = uploadRelPath.split("/");
-					for (int i = 0; i < pathSegments.length; i++) {
-						String segment = pathSegments[i];
-						if (StringHelper.containsNonWhitespace(segment)) {
-							VFSContainer newUploadContainer = uploadVFSContainer.createChildContainer(segment.trim());
-							if (newUploadContainer == null) {
-								// Huh? don't know what to do, use last folder level that could be created
-								logError("Could not create container with name::" + segment + " in relPath::" + uploadRelPath, null);
-								break;
-							} else {
-								uploadVFSContainer = newUploadContainer;					
-							}
-						}
-					}
-				}
-			}
-		}		
-		// update the destination path in the GUI
+		// Set upload directory from path
+		uploadVFSContainer = VFSManager.resolveOrCreateContainerFromPath(currentContainer, uploadRelPath);
+		if (uploadVFSContainer == null) {
+			logError("Can not create upload rel path::" + uploadRelPath + ", fall back to current container", null);
+			uploadVFSContainer = currentContainer;
+		}
+		
+		// Update the destination path in the GUI
 		if (showTargetPath) {			
 			String path = "/ " + currentContainer.getName() + (uploadRelPath == null ? "" : " / " + uploadRelPath);
 			VFSContainer container = currentContainer.getParentContainer();

@@ -233,23 +233,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 	
 	private void doOpenWysiwygEditor(UserRequest ureq) {
 		if(relFilPathIsProposal){
-			file = (VFSLeaf) baseContainer.resolve(relFilePath);
-			if (file == null) {
-				// Expected: file does not exist, create it now. 
-				String[] pathSegments = relFilePath.split("/");
-				VFSContainer parent = baseContainer;
-				for (int i = 0; i < pathSegments.length; i++) {
-					String segment = pathSegments[i];
-					if (StringHelper.containsNonWhitespace(segment)) {
-						if (i == pathSegments.length -1) {
-							// last one is leaf
-							file = parent.createChildLeaf(segment);											
-						} else {
-							parent = parent.createChildContainer(segment);
-						}						
-					}
-				}
-			}
+			file = VFSManager.resolveOrCreateLeafFromPath(baseContainer, relFilePath);
 		}
 		if (file == null) {
 			// huh? no idea what happend, do nothing and log error

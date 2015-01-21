@@ -39,6 +39,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 
 /**
  * Description:
@@ -209,36 +210,12 @@ public class FileCreatorController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// 1: Get parent container for new file
-		VFSContainer parentContainer = baseContainer;
 		String uploadRelPath = targetSubPath.getValue();
-		if (StringHelper.containsNonWhitespace(uploadRelPath)){
-			// Try to resolve given rel path from current container
-			VFSItem resolvedPath = baseContainer.resolve(uploadRelPath);
-			if (resolvedPath == null) {
-				// Does not yet exist - create subdir
-				String[] pathSegments = uploadRelPath.split("/");
-				for (int i = 0; i < pathSegments.length; i++) {
-					String segment = pathSegments[i];
-					if (StringHelper.containsNonWhitespace(segment)) {
-						VFSContainer newParentContainer = parentContainer.createChildContainer(segment.trim());
-						if (newParentContainer == null) {
-							// Huh? don't know what to do, use last folder level that could be created
-							logError("Could not create container with name::" + segment + " in relPath::" + uploadRelPath, null);
-							break;
-						} else {
-							parentContainer = newParentContainer;					
-						}
-					}
-				} 
-			} else {
-				// Parent dir already exists,  make sure this is really a container and not a file!
-				if (resolvedPath instanceof VFSContainer) {
-					parentContainer = (VFSContainer) resolvedPath;
-				}				
-				// else: boy, don't know what to do. just use base container
-			}
+		VFSContainer parentContainer = VFSManager.resolveOrCreateContainerFromPath(baseContainer, uploadRelPath);
+		if (parentContainer == null) {
+			logError("Can not create target sub path::" + uploadRelPath + ", fall back to base container", null);
+			parentContainer = baseContainer;
 		}
-		// else: no rel path - use base as default parent
 
 		// 2: Create empty file in parent
 		String fileName = fileNameElement.getValue();
