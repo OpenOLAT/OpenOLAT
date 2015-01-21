@@ -680,8 +680,8 @@ public class FileUploadController extends FormBasicController {
 	/**
 	 * Internal helper to finish the upload and add metadata
 	 */
-	private void finishSuccessfullUpload(String fileName, UserRequest ureq) {
-		VFSItem item = currentContainer.resolve(fileName);
+	private void finishSuccessfullUpload(String filePath, UserRequest ureq) {
+		VFSItem item = currentContainer.resolve(filePath);
 		if (item instanceof OlatRootFileImpl) {
 			OlatRootFileImpl relPathItem = (OlatRootFileImpl) item;
 			// create meta data
@@ -693,7 +693,7 @@ public class FileUploadController extends FormBasicController {
 			meta.clearThumbnails();//if overwrite an older file
 			meta.write();
 		}
-		ThreadLocalUserActivityLogger.log(FolderLoggingAction.FILE_UPLOADED, getClass(), CoreLoggingResourceable.wrapUploadFile(fileName));
+		ThreadLocalUserActivityLogger.log(FolderLoggingAction.FILE_UPLOADED, getClass(), CoreLoggingResourceable.wrapUploadFile(filePath));
 
 		// Notify listeners about upload
 		fireEvent(ureq, new FolderEvent(FolderEvent.UPLOAD_EVENT, item));
@@ -786,7 +786,14 @@ public class FileUploadController extends FormBasicController {
 					for (int i = 0; i < pathSegments.length; i++) {
 						String segment = pathSegments[i];
 						if (StringHelper.containsNonWhitespace(segment)) {
-							uploadVFSContainer = uploadVFSContainer.createChildContainer(segment);
+							VFSContainer newUploadContainer = uploadVFSContainer.createChildContainer(segment.trim());
+							if (newUploadContainer == null) {
+								// Huh? don't know what to do, use last folder level that could be created
+								logError("Could not create container with name::" + segment + " in relPath::" + uploadRelPath, null);
+								break;
+							} else {
+								uploadVFSContainer = newUploadContainer;					
+							}
 						}
 					}
 				}

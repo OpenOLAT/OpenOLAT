@@ -21,8 +21,8 @@
 
 <div class="form-group">
 	<div class="col-sm-offset-3 col-sm-9">
-	#if ($r.available("editLink")) 
-		$r.render("editLink")
+	#if ($r.available("command.edit")) 
+		$r.render("command.edit")
 	#end
 		$r.render("calloutTriggerLink")
 	</div>

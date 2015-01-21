@@ -399,7 +399,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 			} else {
 				editLink.setCustomDisplayText(translate("command.edit"));				
 			}
-			contentVC.put("editLink", editLink);
+			contentVC.put("command.edit", editLink);
 		} else {
 			contentVC.remove(editLink);
 		}
@@ -449,19 +449,15 @@ public class LinkFileCombiCalloutController extends BasicController {
 	}
 	
 	public boolean isEditorEnabled() {
-		if(relFilPathIsProposal){
-			return true;
-		}
-		
-		if(file != null){
-			String fileName = file.getName().toLowerCase();
-			if (fileName.endsWith(".html") || fileName.endsWith(".htm")) {
+		// enable html editor for html files
+		if(StringHelper.containsNonWhitespace(relFilePath)) {
+			String lowercase = relFilePath.toLowerCase().trim();
+			if (lowercase.endsWith(".html") || lowercase.endsWith(".htm")) {
 				return true;
-			} else {
-				return false;
 			}
 		}
-		return false;
+		// disable html editor for all other cases
+		return false;		
 	}
 
 	@Override

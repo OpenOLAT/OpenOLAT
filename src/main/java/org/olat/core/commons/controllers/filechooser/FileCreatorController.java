@@ -220,7 +220,14 @@ public class FileCreatorController extends FormBasicController {
 				for (int i = 0; i < pathSegments.length; i++) {
 					String segment = pathSegments[i];
 					if (StringHelper.containsNonWhitespace(segment)) {
-						parentContainer = parentContainer.createChildContainer(segment);
+						VFSContainer newParentContainer = parentContainer.createChildContainer(segment.trim());
+						if (newParentContainer == null) {
+							// Huh? don't know what to do, use last folder level that could be created
+							logError("Could not create container with name::" + segment + " in relPath::" + uploadRelPath, null);
+							break;
+						} else {
+							parentContainer = newParentContainer;					
+						}
 					}
 				} 
 			} else {
