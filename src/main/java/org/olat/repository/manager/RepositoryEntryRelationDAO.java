@@ -107,6 +107,7 @@ public class RepositoryEntryRelationDAO {
 	 * @return
 	 */
 	public boolean hasRole(IdentityRef identity, RepositoryEntryRef re, String... roles) {
+		if(identity == null || re == null || re.getKey() == null) return false;
 		List<String> roleList = GroupRoles.toList(roles);
 		
 		StringBuilder sb = new StringBuilder();

@@ -187,7 +187,7 @@ var BPlayer = {
 			} else if(extension == 'm4a') {
 				mimeType = "audio/m4a";
 				config.provider = "sound";
-			} else if(config.file.indexOf('www.vimeo.com') > -1) {
+			} else if(config.file.indexOf('vimeo.com') > -1) {
 				mimeType = "video/vimeo";
 			} else if(config.file.indexOf('youtube.com') > -1 || config.file.indexOf('youtube.be')) {
 				mimeType = "video/youtube";
