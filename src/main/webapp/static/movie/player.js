@@ -154,6 +154,10 @@ var BPlayer = {
 		if(config.provider == 'sound') {
 			if(extension == 'mp3') {
 				mimeType = "audio/mp3";
+			} else if(extension == 'aac') {
+				mimeType = "audio/aac";
+			} else if(extension == 'm4a') {
+				mimeType = "audio/m4a";
 			}
 		} else if(config.provider == 'youtube') {
 			mimeType = "video/youtube";
@@ -191,7 +195,6 @@ var BPlayer = {
 				mimeType = "video/vimeo";
 			} else if(config.file.indexOf('youtube.com') > -1 || config.file.indexOf('youtube.be')) {
 				mimeType = "video/youtube";
-				
 			} else {
 				alert('Something go badly wrong!' + config.provider + "  " + extension);
 			}
