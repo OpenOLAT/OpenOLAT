@@ -126,8 +126,6 @@ var BPlayer = {
 			pluginPath: mediaElementBaseUrl,
 			flashName: 'flashmediaelement.swf',
 			silverlightName: 'silverlightmediaelement.xap',
-			loop: config.repeat,
-			pauseOtherPlayers: true,
 			success: function(mediaElement, originalNode, player) {
 				if(config.autostart) {
 					try {
@@ -154,6 +152,11 @@ var BPlayer = {
 		if(config.provider == 'sound') {
 			if(extension == 'mp3') {
 				mimeType = "audio/mp3";
+			} else if(extension == 'aac') {
+				mimeType = "audio/aac";
+				meConfig.pluginVars = 'isvideo=true';
+			} else if(extension == 'm4a') {
+				mimeType = "audio/m4a";
 			}
 		} else if(config.provider == 'youtube') {
 			mimeType = "video/youtube";
@@ -181,6 +184,7 @@ var BPlayer = {
 			} else if(extension == 'aac') {
 				mimeType = "audio/aac";
 				config.provider = "sound";
+				meConfig.pluginVars = 'isvideo=true';
 			} else if(extension == 'mp3') {
 				mimeType = "audio/mp3";
 				config.provider = "sound";
@@ -191,7 +195,6 @@ var BPlayer = {
 				mimeType = "video/vimeo";
 			} else if(config.file.indexOf('youtube.com') > -1 || config.file.indexOf('youtube.be')) {
 				mimeType = "video/youtube";
-				
 			} else {
 				alert('Something go badly wrong!' + config.provider + "  " + extension);
 			}
@@ -207,8 +210,7 @@ var BPlayer = {
 			if(config.width) {
 				meConfig.audioWidth = config.width;
 			}
-			content = "<audio id='" + mediaDomId + "' controls='controls' preload='none'>";
-			content += "<source type='" +mimeType + "' src='" + config.file + "' /></audio>";
+			content = "<audio id='" + mediaDomId + "' controls='controls' type='" +mimeType + "' src='" + config.file + "'></audio>";
 		} else {
 			//controls are mandatory for Safari at least
 			content = "<video id='" + mediaDomId + "' controls='controls' preload='none'";

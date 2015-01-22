@@ -53,6 +53,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.Filter;
@@ -108,6 +109,10 @@ public class VelocityRenderDecorator implements Closeable {
 		StringOutput sb = StringOutputPool.allocStringBuilder(24);
 		sb.append("o_s").append(prefix).append(vc.getDispatchID());
 		return StringOutputPool.freePop(sb);
+	}
+	
+	public String getUniqueId() {
+		return Long.toString(CodeHelper.getRAMUniqueID());
 	}
 
 	/**
