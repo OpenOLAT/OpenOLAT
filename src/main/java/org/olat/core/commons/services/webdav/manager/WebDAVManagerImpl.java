@@ -130,7 +130,9 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 		MergeSource vfsRoot = new MergeSource(null, "webdav");
 		for (Map.Entry<String, WebDAVProvider> entry : webdavModule.getWebDAVProviders().entrySet()) {
 			WebDAVProvider provider = entry.getValue();
-			vfsRoot.addContainer(new WebDAVProviderNamedContainer(identityEnv, provider));
+			if(provider.hasAccess(identityEnv)) {
+				vfsRoot.addContainer(new WebDAVProviderNamedContainer(identityEnv, provider));
+			}
 		}
 		return vfsRoot;
 	}
@@ -139,9 +141,7 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 		//create the / folder
 		VirtualContainer rootContainer = new VirtualContainer("");
 		rootContainer.setLocalSecurityCallback(new ReadOnlyCallback());
-
-		VFSResourceRoot fdc = new VFSResourceRoot(usess.getIdentity(), rootContainer);
-		return fdc;
+		return new VFSResourceRoot(usess.getIdentity(), rootContainer);
 	}
 
 	/**

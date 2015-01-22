@@ -68,6 +68,11 @@ public class CustomStaticFolderManager implements InitializingBean, WebDAVProvid
 	public String getMountPoint() {
 		return MOUNT_POINT;
 	}
+	
+	@Override
+	public boolean hasAccess(IdentityEnvironment identityEnv) {
+		return identityEnv != null && identityEnv.getRoles() != null && identityEnv.getRoles().isOLATAdmin();
+	}
 
 	@Override
 	public VFSContainer getContainer(IdentityEnvironment identityEnv) {

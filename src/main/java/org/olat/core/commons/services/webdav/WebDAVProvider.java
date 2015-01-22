@@ -30,6 +30,8 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.vfs.VFSContainer;
 
 public interface WebDAVProvider {
+	
+	public boolean hasAccess(IdentityEnvironment identityEnv);
 
 	/**
 	 * Get a name under which this provider would like to list its container as at the root level of the WebDAV mount point

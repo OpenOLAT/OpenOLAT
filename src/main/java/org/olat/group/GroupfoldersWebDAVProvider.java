@@ -46,6 +46,11 @@ public class GroupfoldersWebDAVProvider implements WebDAVProvider {
 	public void setCollaborationManager(CollaborationManager collaborationManager) {
 		this.collaborationManager = collaborationManager;
 	}
+	
+	@Override
+	public boolean hasAccess(IdentityEnvironment identityEnv) {
+		return identityEnv != null;
+	}
 
 	@Override
 	public String getMountPoint() {

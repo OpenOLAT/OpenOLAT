@@ -36,7 +36,8 @@ import org.olat.core.util.vfs.VFSContainer;
 public class BriefcaseWebDAVProvider implements WebDAVProvider {
 
 	private static final String MOUNTPOINT = "home";
-	
+
+	@Override
 	public String getMountPoint() {
 		return MOUNTPOINT;
 	}
@@ -44,6 +45,11 @@ public class BriefcaseWebDAVProvider implements WebDAVProvider {
 	public VFSContainer getContainer(Identity identity) {
 		// merge /public and /private
 		return new BriefcaseWebDAVMergeSource(identity);
+	}
+
+	@Override
+	public boolean hasAccess(IdentityEnvironment identityEnv) {
+		return identityEnv != null;
 	}
 
 	/**
