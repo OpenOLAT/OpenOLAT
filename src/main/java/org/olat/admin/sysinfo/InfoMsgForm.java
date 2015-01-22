@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTex
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.helpers.Settings;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -102,7 +103,8 @@ public class InfoMsgForm extends FormBasicController {
 		// add style buttons to make alert style available
 		richTextConfig.setContentCSSFromTheme(getWindowControl().getWindowBackOffice().getWindow().getGuiTheme());
 		richTextConfig.enableStyleSelection();
-		richTextConfig.setLinkBrowserAbsolutFilePath("/raw/static/");
+		String path = Settings.getServerContextPath() + "/raw/static/";
+		richTextConfig.setLinkBrowserAbsolutFilePath(path);
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);
