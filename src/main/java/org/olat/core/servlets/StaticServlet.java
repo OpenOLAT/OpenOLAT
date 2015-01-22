@@ -27,6 +27,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.olat.admin.sysinfo.manager.CustomStaticFolderManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
@@ -81,6 +83,18 @@ public class StaticServlet extends HttpServlet {
 		if (pathInfo.indexOf(NOVERSION) != -1) {
 			// no version provided - only remove mapper
 			staticRelPath = pathInfo.substring(NOVERSION.length() + 1, pathInfo.length());
+		} else if (pathInfo.startsWith(STATIC_DIR_NAME)) {
+			staticRelPath = pathInfo.substring(STATIC_DIR_NAME.length() + 1, pathInfo.length());
+			//customizing 
+			CustomStaticFolderManager folderManager = CoreSpringFactory.getImpl(CustomStaticFolderManager.class);
+			File file = new File(folderManager.getRootFile(), staticRelPath);
+			if(file.exists()) {
+				MediaResource resource = new FileMediaResource(file);
+		    	ServletUtil.serveResource(request, response, resource);
+			} else {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND);
+			}
+			return;
 		} else {
 			// version provided - remove it
 			String version;

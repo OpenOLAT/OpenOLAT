@@ -139,6 +139,7 @@ public class RichTextConfiguration implements Disposable {
 	private VFSContainer linkBrowserBaseContainer;
 	private String linkBrowserUploadRelPath;
 	private String linkBrowserRelativeFilePath;
+	private String linkBrowserAbsolutFilePath;
 	private CustomLinkTreeModel linkBrowserCustomTreeModel;	
 	// DOM ID of the flexi form element
 	private String domID;
@@ -698,6 +699,14 @@ public class RichTextConfiguration implements Disposable {
 		return linkBrowserRelativeFilePath;
 	}
 	
+	public String getLinkBrowserAbsolutFilePath() {
+		return linkBrowserAbsolutFilePath;
+	}
+
+	public void setLinkBrowserAbsolutFilePath(String linkBrowserAbsolutFilePath) {
+		this.linkBrowserAbsolutFilePath = linkBrowserAbsolutFilePath;
+	}
+
 	/**
 	 * Get the optional custom link browser tree model
 	 * @return the model or NULL if not defined

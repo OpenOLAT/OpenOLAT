@@ -1,4 +1,3 @@
-
 #if ($infoEdit)
 	<h3>$r.translate("infomsgEdit")</h3>
 	#if ($cluster)
@@ -14,3 +13,7 @@
 		$r.render("maintenanceMsgForm")
 	#end
 #end
+
+<h3>$r.translate("staticFolder")</h3>
+<div class="o_copy_code">$extlink</div>
+$r.render("staticFolder")

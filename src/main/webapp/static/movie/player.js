@@ -25,7 +25,7 @@ var BPlayer = {
 	
 	insertHTML5Player : function (address, domId, width, height, start, duration, provider, streamer, autostart, repeat, controlbar, poster) {
 		var videoUrl = address
-		if(address.indexOf('://') < 0 && (address.indexOf('/secstatic/qtieditor/') >= 0 || address.indexOf('/secstatic/qti/') >= 0)) {
+		if(address.indexOf('://') < 0 && (address.indexOf('/raw/static/') == 0 || address.indexOf('/secstatic/qtieditor/') >= 0 || address.indexOf('/secstatic/qti/') >= 0)) {
 			videoUrl = address;
 		} else if(address.indexOf('://') < 0 && ((provider != "rtmp" && provider != "http") ||
 				((provider == "rtmp" || provider == "http") && (streamer == undefined || streamer.length == 0)))) {
