@@ -42,7 +42,6 @@ public class AccessRefusedController extends BasicController {
 		VelocityContainer mainVC = createVelocityContainer("access_refused");
 		StackedPanel contentP = new SimpleStackedPanel("");
 		contentP.setContent(mainVC);
-		wControl.setWarning(translate("course.closed"));
 		putInitialPanel(contentP);
 	}
 
