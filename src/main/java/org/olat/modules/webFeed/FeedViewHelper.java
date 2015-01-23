@@ -390,9 +390,10 @@ public class FeedViewHelper {
 	}
 
 	/**
+	 * @param item the target item for the jumpInLink null if not want to refer to a specific post
 	 * @return The jump in link
 	 */
-	public String getJumpInLink() {
+	public String getJumpInLink(Item item) {
 		String jumpInLink = null;
 		RepositoryManager resMgr = RepositoryManager.getInstance();
 		if (courseId != null && nodeId != null) {
@@ -415,6 +416,9 @@ public class FeedViewHelper {
 				final List<ContextEntry> ceList = bCF.createCEListFromString(feedBP);
 				jumpInLink = bCF.getAsURIString(ceList, true);
 			}
+		}
+		if(item != null && jumpInLink != null){
+			jumpInLink += "/item=" + item.getGuid() +"/0";
 		}
 		return jumpInLink;
 	}

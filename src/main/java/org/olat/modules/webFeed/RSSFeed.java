@@ -69,7 +69,7 @@ public class RSSFeed extends SyndFeedImpl {
 		strippedDescription = strippedDescription.replaceAll("&nbsp;", " "); // TODO: remove when filter
 		// does it
 		setDescription(strippedDescription);
-		setLink(helper.getJumpInLink());
+		setLink(helper.getJumpInLink(null));
 
 		setPublishedDate(feed.getLastModified());
 		// The image
@@ -96,7 +96,7 @@ public class RSSFeed extends SyndFeedImpl {
 			// enclosure, then the enclosure url is used.
 			// Use jump-in link far all entries. This will be overriden if the item
 			// has an enclosure.
-			entry.setLink(helper.getJumpInLink() + "#" + item.getGuid());
+			entry.setLink(helper.getJumpInLink(item));
 			entry.setPublishedDate(item.getPublishDate());
 			entry.setUpdatedDate(item.getLastModified());
 

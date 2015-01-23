@@ -25,11 +25,10 @@ import java.util.List;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -46,7 +45,7 @@ import org.olat.core.util.Formatter;
  * 
  * @author gnaegi
  */
-class RichTextElementRenderer implements ComponentRenderer {
+class RichTextElementRenderer extends DefaultComponentRenderer {
 
 	/**
 	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
@@ -85,7 +84,7 @@ class RichTextElementRenderer implements ComponentRenderer {
 			sb.append("\" >");
 			sb.append(Formatter.formatLatexFormulas(value));
 			sb.append("</div>");
-		} else if(teC.isUseTiny4()) {
+		} else {
 			renderTinyMCE_4(sb, domID, teC, ubu, source.getTranslator());
 		}
 	}
@@ -165,32 +164,4 @@ class RichTextElementRenderer implements ComponentRenderer {
 		sb.append(StringEscapeUtils.escapeHtml(value));
 		sb.append("</textarea>");
 	}
-
-	/**
-	 * @see org.olat.core.gui.components.ComponentRenderer#renderBodyOnLoadJSFunctionCall(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.RenderingState)
-	 */
-	@Override
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer,
-			StringOutput sb, Component source, RenderingState rstate) {
-		// nothing to load
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.ComponentRenderer#renderHeaderIncludes(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder,
-	 *      org.olat.core.gui.translator.Translator,
-	 *      org.olat.core.gui.render.RenderingState)
-	 */
-	@Override
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb,
-			Component source, URLBuilder ubu, Translator translator,
-			RenderingState rstate) {
-		// no headers to include
-	}
-
 }

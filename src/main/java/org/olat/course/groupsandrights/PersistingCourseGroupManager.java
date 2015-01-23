@@ -239,9 +239,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		return businessGroupService.isIdentityInBusinessGroup(identity, null, true, false, getCourseEntry());
 	}
 	
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityCourseCoach(org.olat.core.id.Identity)
-	 */
+	@Override
 	public boolean isIdentityCourseParticipant(Identity identity) {
 		boolean participant = repositoryService.hasRole(identity, getCourseEntry(), GroupRoles.participant.name());
 		if (participant) {// don't check any further
@@ -250,18 +248,13 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		return businessGroupService.isIdentityInBusinessGroup(identity, null, false, true, getCourseEntry());
 	}
 
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityCourseAdministrator(org.olat.core.id.Identity)
-	 */
+	@Override
 	public boolean isIdentityCourseAdministrator(Identity identity) {
 		// not really a group management method, for your convenience we have a
 		// shortcut here...
 		return repositoryService.hasRole(identity, getCourseEntry(), GroupRoles.owner.name());
 	}
 
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#deleteCourseGroupmanagement()
-	 */
 	@Override
 	public void deleteCourseGroupmanagement() {
 		//delete permission group to course

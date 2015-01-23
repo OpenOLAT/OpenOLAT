@@ -79,8 +79,14 @@ public class SharedFolderWebDAVProvider implements WebDAVProvider {
 	/**
 	 * @see org.olat.core.commons.services.webdav.WebDAVProvider#getMountPoint()
 	 */
+	@Override
 	public String getMountPoint() {
 		return "sharedfolders";
+	}
+	
+	@Override
+	public boolean hasAccess(IdentityEnvironment identityEnv) {
+		return identityEnv != null;
 	}
 
 	/**

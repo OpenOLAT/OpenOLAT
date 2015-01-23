@@ -664,6 +664,58 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		conn.close();
 	}
 	
+	@Test
+	public void customizingFolder()
+	throws IOException, URISyntaxException {
+		Identity admin = JunitTestHelper.createAndPersistIdentityAsAdmin("admin-webdav");
+		dbInstance.commitAndCloseSession();
+		
+		WebDAVConnection conn = new WebDAVConnection();
+		conn.setCredentials(admin.getName(), "A6B7C8");
+
+		//Has access?
+		URI customizingUri = conn.getBaseURI().path("webdav").path("customizing").build();
+		String customizingXml = conn.propfind(customizingUri, 2);
+		Assert.assertTrue(customizingXml.contains("<D:href>/webdav/customizing/</D:href>"));
+
+		//PUT in the folder
+		URI textUri = conn.getBaseURI().path("webdav").path("customizing").path("infos.txt").build();
+		HttpPut put = conn.createPut(textUri);
+		InputStream dataStream = WebDAVCommandsTest.class.getResourceAsStream("text.txt");
+		InputStreamEntity entity = new InputStreamEntity(dataStream, -1);
+		put.setEntity(entity);
+		HttpResponse putResponse = conn.execute(put);
+		Assert.assertEquals(201, putResponse.getStatusLine().getStatusCode());
+		
+		//GET
+		HttpGet get = conn.createGet(textUri);
+		HttpResponse getResponse = conn.execute(get);
+		Assert.assertEquals(200, getResponse.getStatusLine().getStatusCode());
+		String text = EntityUtils.toString(getResponse.getEntity());
+		Assert.assertEquals("Small text", text);
+
+		conn.close();
+	}
+	
+	@Test
+	public void customizingFolder_permission()
+	throws IOException, URISyntaxException {
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("user-webdav");
+		dbInstance.commitAndCloseSession();
+		
+		WebDAVConnection conn = new WebDAVConnection();
+		conn.setCredentials(user.getName(), "A6B7C8");
+
+		URI customizingUri = conn.getBaseURI().path("webdav").path("customizing").build();
+		HttpPropFind propfind = new HttpPropFind(customizingUri);
+		propfind.addHeader("Depth", Integer.toString(2));
+		HttpResponse response = conn.execute(propfind);
+		Assert.assertEquals(404, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+
+		conn.close();
+	}
+	
 	private VFSItem createFile(VFSContainer container, String filename) throws IOException {
 		VFSLeaf testLeaf = container.createChildLeaf(filename);
 		InputStream in = WebDAVCommandsTest.class.getResourceAsStream("text.txt");

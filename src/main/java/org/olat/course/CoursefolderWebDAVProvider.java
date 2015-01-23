@@ -40,6 +40,11 @@ public class CoursefolderWebDAVProvider implements WebDAVProvider {
 	public String getMountPoint() {
 		return MOUNTPOINT;
 	}
+	
+	@Override
+	public boolean hasAccess(IdentityEnvironment identityEnv) {
+		return identityEnv != null;
+	}
 
 	@Override
 	public VFSContainer getContainer(IdentityEnvironment identityEnv) {

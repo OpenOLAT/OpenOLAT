@@ -55,17 +55,17 @@ import org.olat.restapi.system.vo.UserStatisticsVO;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class OpenOLATStatisticsWebService implements Sampler {
-	
+
 	private final IndexerWebService indexerWebService = new IndexerWebService();
-	
+
 	/**
 	 * Return the statistics about OpenOLAT, users count, courses count... 
 	 * @response.representation.200.qname {http://www.example.com}releaseVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The verison of the instance
-   * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_OO_STATSVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The verison of the instance
+	 * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_OO_STATSVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @param request The HTTP request
+	 * @param request The HTTP request
 	 * @return The statistics about OpenOLAT
 	 */
 	@GET
@@ -78,15 +78,15 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		stats.setIndexerStatistics(indexerWebService.getIndexerStatistics());
 		return Response.ok(stats).build();
 	}
-	
+
 	/**
 	 * Return the statistics about OpenOLAT users
 	 * @response.representation.200.qname {http://www.example.com}releaseVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The verison of the instance
-   * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_OO_USERSSTATSVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The verison of the instance
+	 * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_OO_USERSSTATSVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @param request The HTTP request
+	 * @param request The HTTP request
 	 * @return The statistics about OpenOLAT users
 	 */
 	@GET
@@ -96,15 +96,15 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		UserStatisticsVO stats = getUserStatisticsVO();
 		return Response.ok(stats).build();
 	}
-	
+
 	/**
 	 * Return the statistics about the repository, courses count, published courses... 
 	 * @response.representation.200.qname {http://www.example.com}releaseVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The verison of the instance
-   * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_OO_REPOSTATSVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The verison of the instance
+	 * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_OO_REPOSTATSVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @param request The HTTP request
+	 * @param request The HTTP request
 	 * @return The statistics about the repository
 	 */
 	@GET
@@ -114,15 +114,15 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		RepositoryStatisticsVO stats = getRepositoryStatisticsVO();
 		return Response.ok(stats).build();
 	}
-	
+
 	/**
 	 * Return the statistics about the indexer
 	 * @response.representation.200.qname {http://www.example.com}releaseVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The verison of the instance
-   * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_OO_INDEXERSTATSVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The verison of the instance
+	 * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_OO_INDEXERSTATSVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @param request The HTTP request
+	 * @param request The HTTP request
 	 * @return The statistics about the indexer
 	 */
 	@Path("indexer")
@@ -133,11 +133,11 @@ public class OpenOLATStatisticsWebService implements Sampler {
 	/**
 	 * Return some statistics about session.
 	 * @response.representation.200.qname {http://www.example.com}sessionVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc A short summary about sessions
-   * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_SESSIONVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc A short summary about sessions
+	 * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_SESSIONVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @param request The HTTP request
+	 * @param request The HTTP request
 	 * @return The statistics about sessions
 	 */
 	@GET
@@ -147,15 +147,15 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		SessionsVO vo = getSessionsVO();
 		return Response.ok(vo).build();
 	}
-	
+
 	/**
 	 * Return some statistics about long running tasks.
 	 * @response.representation.200.qname {http://www.example.com}taskVOes
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc A short summary about sessions
-   * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_SESSIONVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc A short summary about sessions
+	 * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_SESSIONVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @param request The HTTP request
+	 * @param request The HTTP request
 	 * @return The statistics about sessions
 	 */
 	@GET
@@ -165,7 +165,7 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		TasksVO vo = getTasksVO();
 		return Response.ok(vo).build();
 	}
-	
+
 	private UserStatisticsVO getUserStatisticsVO() {
 		UserStatisticsVO stats = new UserStatisticsVO();
 		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
@@ -173,25 +173,25 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		// activeUserCount="88" // registered and activated identities, same as in GUI
 		long countActiveUsers = securityManager.countIdentitiesByPowerSearch(null, null, false, null, null, null, null, null, null, null, Constants.USERSTATUS_ACTIVE);
 		stats.setActiveUserCount(countActiveUsers);
-		
-		// active last week
+
+		// active last day
 		Calendar lastDay = Calendar.getInstance();
 		lastDay.add(Calendar.DATE, -1);
 		long activeUserCountDay = securityManager.countUniqueUserLoginsSince(lastDay.getTime());
 		stats.setActiveUserCountLastDay(activeUserCountDay);
-		
+
 		// active last week
 		Calendar lastWeek = Calendar.getInstance();
 		lastWeek.add(Calendar.DATE, -7);
 		long activeUserCountWeek = securityManager.countUniqueUserLoginsSince(lastWeek.getTime());
 		stats.setActiveUserCountLastWeek(activeUserCountWeek);
-		
+
 		// active last month
 		Calendar lastMonth = Calendar.getInstance();
 		lastMonth.add(Calendar.MONTH, -1);
 		long activeUserCountMonth = securityManager.countUniqueUserLoginsSince(lastMonth.getTime());
 		stats.setActiveUserCountLastMonth(activeUserCountMonth);
-		
+
 		// active last 6 month
 		Calendar last6Month = Calendar.getInstance();
 		last6Month.add(Calendar.MONTH, -6);
@@ -201,14 +201,14 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		// externalUserCount="12" // EP invite identities, later maybe also used in courses for MOOCS, external experts etc)
 		long invitationsCount = CoreSpringFactory.getImpl(InvitationDAO.class).countInvitations();
 		stats.setExternalUserCount(invitationsCount);
-		
+
 		// blockedUserCount="0" // identities in login blocked state
 		long blockedUserCount = securityManager.countIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, Identity.STATUS_LOGIN_DENIED);	
 		stats.setBlockedUserCount(blockedUserCount);
 		// deletedUserCount="943" // deleted identities
 		long deletedUserCount = securityManager.countIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, Identity.STATUS_DELETED);	
 		stats.setDeletedUserCount(deletedUserCount);
-		
+
 		// totalUserCount="1043" // Sum of all above
 		long countUsers = securityManager.countIdentitiesByPowerSearch(null, null, false, null, null, null, null, null, null, null, null);
 		stats.setTotalUserCount(countUsers);
@@ -218,7 +218,7 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		stats.setTotalGroupCount(countGroups);
 		return stats;
 	}
-	
+
 	private RepositoryStatisticsVO getRepositoryStatisticsVO() {
 		RepositoryStatisticsVO stats = new RepositoryStatisticsVO();
 		RepositoryManager repoMgr = CoreSpringFactory.getImpl(RepositoryManager.class);
@@ -228,7 +228,7 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		stats.setPublishedCoursesCount(publishedCourses);
 		return stats;
 	}
-	
+
 	private TasksVO getTasksVO() {
 		TasksVO tasks = new TasksVO();
 		List<String> longRunningTaskList = WorkThreadInformations.getLongRunningTasks();
@@ -236,7 +236,7 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		tasks.setLongRunningTasks(longRunningTasks);
 		return tasks;
 	}
-	
+
 	private SessionsVO getSessionsVO() {
 		SessionsVO vo = new SessionsVO();
 
@@ -270,7 +270,7 @@ public class OpenOLATStatisticsWebService implements Sampler {
 				}
 			}
 		}
-		
+
 		vo.setAuthenticatedCount(authenticatedcount);
 		vo.setSecureAuthenticatedCount(secureAuthenticatedCount);
 		vo.setWebdavCount(webdavcount);
@@ -291,10 +291,10 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		vo.setConcurrentDispatchThreads(sessionStatsManager.getConcurrentCounter());	
 		return vo;
 	}
-	
-  @Override
+
+	@Override
 	public void takeSample() {
-  	SessionStatsManager manager = CoreSpringFactory.getImpl(SessionStatsManager.class);
+		SessionStatsManager manager = CoreSpringFactory.getImpl(SessionStatsManager.class);
 		if(manager != null) {//check if the manager is loaded
 			manager.takeSample();
 		}

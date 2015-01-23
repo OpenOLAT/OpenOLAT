@@ -45,6 +45,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
@@ -77,6 +78,7 @@ public class FileLinkChooserController extends BasicController {
 
 	private final String fileName;
 	private String[] suffixes;
+	private final String absolutePath;
 	private VFSContainer rootDir;
 	@Autowired
 	private MovieService movieService;
@@ -93,11 +95,12 @@ public class FileLinkChooserController extends BasicController {
 	 *          index.html
 	 */
 	public FileLinkChooserController(UserRequest ureq, WindowControl wControl,
-			VFSContainer rootDir, String uploadRelPath, String[] suffixes, String fileName) {
+			VFSContainer rootDir, String uploadRelPath, String absolutePath, String[] suffixes, String fileName) {
 		super(ureq, wControl);
 		this.fileName = fileName;
 		this.suffixes = suffixes;
 		this.rootDir = rootDir;
+		this.absolutePath = absolutePath;
 		this.mainVC = createVelocityContainer("filechooser");
 
 		// file uploads are relative to the currently edited file 
@@ -174,19 +177,12 @@ public class FileLinkChooserController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// no events to catch
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == uploadCtr) {
 			if (event instanceof FolderEvent) {
@@ -197,10 +193,16 @@ public class FileLinkChooserController extends BasicController {
 					if(item != null) {
 						size = getSize(item, item.getName());
 					}
+					
+					String relPath = folderEvent.getFilename();
+					if(StringHelper.containsNonWhitespace(absolutePath)) {
+						relPath = absolutePath + relPath;
+					}
+					
 					if(size != null) {
-						fireEvent(ureq, new URLChoosenEvent(folderEvent.getFilename(), null, null, null, size.getWidth(), size.getHeight()));
+						fireEvent(ureq, new URLChoosenEvent(relPath, null, null, null, size.getWidth(), size.getHeight()));
 					} else {
-						fireEvent(ureq, new URLChoosenEvent(folderEvent.getFilename()));
+						fireEvent(ureq, new URLChoosenEvent(relPath));
 					}
 				} else {
 					setErrorMessage(folderEvent.getFilename());
@@ -224,6 +226,9 @@ public class FileLinkChooserController extends BasicController {
 				String relPath = FileChooserUIFactory
 						.getSelectedRelativeItemPath(fileEvent, rootDir, fileName);
 				// notify parent controller
+				if(StringHelper.containsNonWhitespace(absolutePath)) {
+					relPath = absolutePath + relPath;
+				}
 				
 				if(size != null) {
 					fireEvent(ureq, new URLChoosenEvent(relPath, null, null, null, size.getWidth(), size.getHeight()));
@@ -249,13 +254,13 @@ public class FileLinkChooserController extends BasicController {
 		return size;
 	}
 
-	private boolean isFileSuffixOk(String fileName) {
+	private boolean isFileSuffixOk(String filename) {
 		if (suffixes == null) {
 			// no defined suffixes => all allowed
 			return true;
 		} else {
 			// check if siffix one of allowed suffixes
-			String suffix = getSuffix(fileName);
+			String suffix = getSuffix(filename);
 			for (String allowedSuffix : suffixes) {
 				if (allowedSuffix.equals(suffix)) {
 					return true;
@@ -280,13 +285,14 @@ public class FileLinkChooserController extends BasicController {
 										allowedSuffixes.toString() }));
 	}
 
-	private String getSuffix(String fileName) {
-		return fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+	private String getSuffix(String filename) {
+		return filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		// controllers autodisposed by basic controller
 	}

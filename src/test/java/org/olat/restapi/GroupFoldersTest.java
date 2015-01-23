@@ -40,6 +40,7 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -50,6 +51,7 @@ import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
@@ -71,6 +73,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.restapi.support.vo.FileMetadataVO;
 import org.olat.restapi.support.vo.FileVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
@@ -268,7 +271,7 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 			file = newFolder1.createChildLeaf("portrait.jpg");
 			OutputStream out = file.getOutputStream(true);
 			InputStream in = GroupFoldersTest.class.getResourceAsStream("portrait.jpg");
-			FileUtils.copy(in, out, file.getSize());
+			FileUtils.copy(in, out);
 			FileUtils.closeSafely(in);
 			FileUtils.closeSafely(out);
 		}
@@ -280,9 +283,44 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		InputStream body = response.getEntity().getContent();
-		assertNotNull(body);
-		assertTrue(10 > body.available());
-		assertEquals(new Long(file.getSize()), new Long(body.available()));
+		byte[] byteArr = IOUtils.toByteArray(body);
+		Assert.assertNotNull(byteArr);
+		Assert.assertEquals(file.getSize(), byteArr.length);
+	}
+	
+	@Test
+	public void testGetFileMetadata() throws IOException, URISyntaxException {
+		//create some sub folders and copy file
+		CollaborationTools collabTools2 = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(g2);
+		String folderRelPath = collabTools2.getFolderRelPath();
+		OlatRootFolderImpl folder = new OlatRootFolderImpl(folderRelPath, null);
+		VFSContainer newFolder1 = folder.createChildContainer("Metadata folder");
+		if(newFolder1 == null) {
+			newFolder1 = (VFSContainer)folder.resolve("Metadata folder");
+		}
+		VFSLeaf file = (VFSLeaf)newFolder1.resolve("portrait.jpg");
+		if(file == null) {
+			file = newFolder1.createChildLeaf("portrait.jpg");
+			OutputStream out = file.getOutputStream(true);
+			InputStream in = GroupFoldersTest.class.getResourceAsStream("portrait.jpg");
+			FileUtils.copy(in, out);
+			FileUtils.closeSafely(in);
+			FileUtils.closeSafely(out);
+		}
+		
+		// get the file
+		assertTrue(conn.login("rest-one", "A6B7C8"));
+		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g2.getKey() + "/folder/metadata/Metadata_folder/portrait.jpg").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		FileMetadataVO fileMetadataVO = conn.parse(response, FileMetadataVO.class);
+		Assert.assertNotNull(fileMetadataVO);
+		Assert.assertEquals("portrait.jpg", fileMetadataVO.getFileName());
+		Assert.assertNotNull(fileMetadataVO.getSize());
+		Assert.assertEquals(file.getSize(), fileMetadataVO.getSize().longValue());
+		Assert.assertNotNull(fileMetadataVO.getHref());
+		Assert.assertNotNull(fileMetadataVO.getLastModified());
 	}
 	
 	@Test

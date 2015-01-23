@@ -38,6 +38,12 @@ public class CalendarWebDAVProvider implements WebDAVProvider {
 
 	private static final String MOUNT_POINT = "calendars";
 	
+	@Override
+	public boolean hasAccess(IdentityEnvironment identityEnv) {
+		return identityEnv != null;
+	}
+	
+	@Override
 	public VFSContainer getContainer(IdentityEnvironment identityEnv) {
 		VirtualContainer calendars = new VirtualContainer("calendars");
 		calendars.setLocalSecurityCallback(new ReadOnlyCallback());
@@ -48,8 +54,8 @@ public class CalendarWebDAVProvider implements WebDAVProvider {
 		return calendars;
 	}
 
+	@Override
 	public String getMountPoint() {
 		return MOUNT_POINT;
 	}
-
 }

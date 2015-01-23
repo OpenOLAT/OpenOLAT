@@ -65,8 +65,8 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.config.CourseConfig;
 import org.olat.restapi.repository.course.CoursesWebService;
+import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,16 +96,13 @@ public class CourseCalendarTest extends OlatJerseyTestCase {
 		try {
 			// create course and persist as OLATResourceImpl
 			auth1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-course-cal-one");
-			course1 = CoursesWebService.createEmptyCourse(auth1, "course calendar", "course with calendar for REST API testing", null);
+			CourseConfigVO config = new CourseConfigVO();
+			config.setCalendar(Boolean.TRUE);
+			course1 = CoursesWebService.createEmptyCourse(auth1, "course calendar", "course with calendar for REST API testing", config);
+			dbInstance.commit();
 			
-			dbInstance.commit();
-			ICourse course = CourseFactory.openCourseEditSession(course1.getResourceableId());
-			CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
-			courseConfig.setCalendarEnabled(true);
-			CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
-			CourseFactory.closeCourseEditSession(course.getResourceableId(),true);
-
-			dbInstance.commit();
+			ICourse course = CourseFactory.loadCourse(course1.getResourceableId());
+			Assert.assertTrue(course.getCourseConfig().isCalendarEnabled());
 			
 			CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
 			KalendarRenderWrapper calendarWrapper = calendarManager.getCourseCalendar(course);

@@ -547,6 +547,22 @@ public class CoursesWebService {
 			if(StringHelper.containsNonWhitespace(courseConfigVO.getSharedFolderSoftKey())) {
 				courseConfig.setSharedFolderSoftkey(courseConfigVO.getSharedFolderSoftKey());
 			}
+			if(courseConfigVO.getCalendar() != null) {
+				courseConfig.setCalendarEnabled(courseConfigVO.getCalendar().booleanValue());
+			}
+			if(courseConfigVO.getChat() != null) {
+				courseConfig.setChatIsEnabled(courseConfigVO.getChat().booleanValue());
+			}
+			if(courseConfigVO.getEfficencyStatement() != null) {
+				courseConfig.setEfficencyStatementIsEnabled(courseConfigVO.getEfficencyStatement().booleanValue());
+			}
+			if(StringHelper.containsNonWhitespace(courseConfigVO.getCssLayoutRef())) {
+				courseConfig.setCssLayoutRef(courseConfigVO.getCssLayoutRef());
+			}
+			if(StringHelper.containsNonWhitespace(courseConfigVO.getGlossarySoftkey())) {
+				courseConfig.setGlossarySoftKey(courseConfigVO.getGlossarySoftkey());
+			}
+			CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 		}
 
 		CourseFactory.saveCourse(course.getResourceableId());

@@ -29,6 +29,7 @@
 
 package org.olat.admin.sysinfo;
 
+import org.olat.admin.sysinfo.manager.CustomStaticFolderManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -38,6 +39,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTex
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.helpers.Settings;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  Apr 30, 2004
@@ -49,7 +52,10 @@ import org.olat.core.gui.control.WindowControl;
 public class InfoMsgForm extends FormBasicController {
 	
 	private RichTextElement msg;
-	private String infomsg;
+	private final String infomsg;
+
+	@Autowired
+	private CustomStaticFolderManager staticFolderMgr;
 	
 	/**
 	 * @param name
@@ -73,7 +79,6 @@ public class InfoMsgForm extends FormBasicController {
 		msg.setValue("");
 	}
 
-
 	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, Event.DONE_EVENT);
@@ -86,9 +91,9 @@ public class InfoMsgForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		msg = uifactory.addRichTextElementForStringData("msg", "infomsg", infomsg, 20, 70, true, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		msg = uifactory.addRichTextElementForStringData("msg", "infomsg", infomsg, 20, 70, true, staticFolderMgr.getRootContainer(), null, formLayout, ureq.getUserSession(), getWindowControl());
 		msg.setMaxLength(1024);
-		
+
 		RichTextConfiguration richTextConfig = msg.getEditorConfiguration();
 		// manually enable the source edit button
 		richTextConfig.enableCode();
@@ -98,6 +103,8 @@ public class InfoMsgForm extends FormBasicController {
 		// add style buttons to make alert style available
 		richTextConfig.setContentCSSFromTheme(getWindowControl().getWindowBackOffice().getWindow().getGuiTheme());
 		richTextConfig.enableStyleSelection();
+		String path = Settings.getServerContextPath() + "/raw/static/";
+		richTextConfig.setLinkBrowserAbsolutFilePath(path);
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);
@@ -109,5 +116,4 @@ public class InfoMsgForm extends FormBasicController {
 	protected void doDispose() {
 		//
 	}
-
 }

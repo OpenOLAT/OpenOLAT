@@ -64,7 +64,7 @@ public class MediaChooserController extends LinkChooserController {
 	 */
 	public MediaChooserController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir, String uploadRelPath, String[] suffixes, String fileName,
 			CustomLinkTreeModel customLinkTreeModel) {
-		super(ureq, wControl, rootDir, uploadRelPath, suffixes, fileName, customLinkTreeModel);
+		super(ureq, wControl, rootDir, uploadRelPath, null, suffixes, fileName, customLinkTreeModel);
 	}
 
 	/**

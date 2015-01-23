@@ -75,13 +75,21 @@ public class FullIndexerStatus {
 	/**
 	 * @return Returns the lastFullIndexTime.
 	 */
-	public String getLastFullIndexTime() {
-		if (lastFullIndexTime != 0) {
+	public String getLastFullIndexDateString() {
+		if (lastFullIndexTime > 0) {
 			return new Date(lastFullIndexTime).toString();
 		} else {
 			// not finished yet
 			return "-";
 		}
+	}
+	
+	public long getLastFullIndexTime() {
+		return lastFullIndexTime;
+	}
+	
+	public void setLastFullIndexTime(long time) {
+		lastFullIndexTime = time;
 	}
 
 	/**
@@ -116,7 +124,7 @@ public class FullIndexerStatus {
    * reset full-index document-counter and all document-counters. 
    */
 	public void indexingStarted() {
-		this.fullIndexStartedAt = System.currentTimeMillis();
+		fullIndexStartedAt = System.currentTimeMillis();
 		setStatus(STATUS_RUNNING);
 		setDocumentCount(0);//Reset FullIndex-DocumentCounter
 		resetAllDocumentCounters();
@@ -138,8 +146,8 @@ public class FullIndexerStatus {
    * Indexing finished. Set end time, calculate duration and set status to 'finished'. 
    */
 	public void indexingFinished() {
-		this.lastFullIndexTime = System.currentTimeMillis();
-		indexingTime = this.lastFullIndexTime - this.fullIndexStartedAt;
+		lastFullIndexTime = System.currentTimeMillis();
+		indexingTime = lastFullIndexTime - fullIndexStartedAt;
 		setStatus(STATUS_FINISHED);
 	}
 

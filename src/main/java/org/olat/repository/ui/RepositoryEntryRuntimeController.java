@@ -186,7 +186,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		
 		//! check corrupted
 		corrupted = isCorrupted(re);
-		assessmentLock = isAssessmentLock(ureq, re);
+		assessmentLock = isAssessmentLock(ureq, re, reSecurity);
 		
 		this.re = re;
 		this.showInfos = showInfos;
@@ -242,10 +242,10 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		return assessmentLock;
 	}
 	
-	private final boolean isAssessmentLock(UserRequest ureq, RepositoryEntry entry) {
+	private final boolean isAssessmentLock(UserRequest ureq, RepositoryEntry entry, RepositoryEntrySecurity reSec) {
 		OLATResource resource = entry.getOlatResource();
 		OLATResourceable lock = ureq.getUserSession().getLockResource();
-		return lock != null
+		return lock != null && !reSec.isOwner() && !ureq.getUserSession().getRoles().isOLATAdmin()
 				&& lock.getResourceableId().equals(resource.getResourceableId())
 				&& lock.getResourceableTypeName().equals(resource.getResourceableTypeName());
 	}

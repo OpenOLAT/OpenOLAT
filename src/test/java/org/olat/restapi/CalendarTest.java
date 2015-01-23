@@ -100,16 +100,13 @@ public class CalendarTest extends OlatJerseyTestCase {
 		if(course1 == null) {
 			//create a course with a calendar
 			CourseConfigVO config = new CourseConfigVO();
+			config.setCalendar(Boolean.TRUE);
 			course1 = CoursesWebService.createEmptyCourse(id1, "Cal course", "Cal course", config);
-
 			dbInstance.commit();
-			ICourse course = CourseFactory.openCourseEditSession(course1.getResourceableId());
+			
+			ICourse course = CourseFactory.loadCourse(course1.getResourceableId());
 			CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
-			courseConfig.setCalendarEnabled(true);
-			CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
-			CourseFactory.closeCourseEditSession(course.getResourceableId(),true);
-
-			dbInstance.commit();
+			Assert.assertTrue(courseConfig.isCalendarEnabled());
 
 			CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
 			KalendarRenderWrapper calendarWrapper = calendarManager.getCourseCalendar(course);
@@ -142,22 +139,16 @@ public class CalendarTest extends OlatJerseyTestCase {
 		if(course2 == null) {
 			//create a course with a calendar
 			CourseConfigVO config = new CourseConfigVO();
+			config.setCalendar(Boolean.TRUE);
 			course2 = CoursesWebService.createEmptyCourse(id2, "Cal course - 2", "Cal course - 2", config);
-
 			dbInstance.commit();
-			ICourse course = CourseFactory.openCourseEditSession(course2.getResourceableId());
-			CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
-			courseConfig.setCalendarEnabled(true);
-			CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
-			CourseFactory.closeCourseEditSession(course.getResourceableId(),true);
-			
+
 			CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
 			KalendarRenderWrapper calendarWrapper = calendarManager.getCourseCalendar(course2);
 			Assert.assertNotNull(calendarWrapper);
 
 			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(course2, false);
 			entry = repositoryManager.setAccess(entry, RepositoryEntry.ACC_USERS, false);
-
 			dbInstance.commit();
 		}
 	}

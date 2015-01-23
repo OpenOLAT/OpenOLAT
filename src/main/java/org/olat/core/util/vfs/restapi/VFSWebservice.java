@@ -64,6 +64,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.vo.File64VO;
+import org.olat.restapi.support.vo.FileMetadataVO;
 import org.olat.restapi.support.vo.FileVO;
 
 public class VFSWebservice {
@@ -125,6 +126,23 @@ public class VFSWebservice {
 	@Produces({"*/*", MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_HTML, MediaType.APPLICATION_OCTET_STREAM})
 	public Response listFiles(@PathParam("path") List<PathSegment> path, @Context UriInfo uriInfo, @Context Request request) {
 		return get(path, uriInfo, request);
+	}
+	
+	/**
+	 * This retrieves some metadata of a specific file in a folder
+	 * The metadata are: filename, size, date of last modification, MIME-type and file href for downloading via REST 
+	 * @response.representation.200.doc The metadata of the file
+	 * @response.representation.200.qname {http://www.example.com}fileMetadataVO
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_FILE_METADATA}
+	 * @param path the path to the file
+	 * @param uriInfo The uri infos
+	 * @return 
+	 */
+	@GET
+	@Path("metadata/{path:.*}")
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	public Response getFileMetadata(@PathParam("path") List<PathSegment> path, @Context UriInfo uriInfo) {
+		return getFMetadata(path, uriInfo);
 	}
 	
 	/**
@@ -435,6 +453,24 @@ public class VFSWebservice {
 			}
 			return response.build();
 			
+		}
+		return Response.serverError().status(Status.BAD_REQUEST).build();
+	}
+	
+	protected Response getFMetadata(List<PathSegment> path, UriInfo uriInfo) {
+		VFSItem vItem = resolveFile(path);
+		if(vItem == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		} else if (vItem instanceof VFSContainer) {
+			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
+		} else if (vItem instanceof VFSLeaf) {
+			VFSLeaf leaf = (VFSLeaf)vItem;
+			UriBuilder builder = uriInfo.getAbsolutePathBuilder();
+			String uri = builder.build().toString();
+			String[] uriArray = uri.split("metadata/");
+			uri = uriArray[0] + uriArray[1];
+			FileMetadataVO metaVo = new FileMetadataVO(uri, leaf);
+			return Response.ok(metaVo).build();
 		}
 		return Response.serverError().status(Status.BAD_REQUEST).build();
 	}

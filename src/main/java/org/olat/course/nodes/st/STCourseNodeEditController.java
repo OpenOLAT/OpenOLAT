@@ -113,7 +113,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 
 	private VFSContainer courseFolderContainer;
 	private String chosenFile;
-	private Boolean allowRelativeLinks;
+	private boolean allowRelativeLinks;
 	private DeliveryOptions deliveryOptions;
 
 	private LinkFileCombiCalloutController combiLinkCtr;
@@ -311,7 +311,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 				// update the module configuration
 				ModuleConfiguration moduleConfig = stNode.getModuleConfiguration();
 				nodeDisplayConfigFormController.updateModuleConfiguration(moduleConfig);
-				allowRelativeLinks = moduleConfig.getBooleanEntry(CONFIG_KEY_ALLOW_RELATIVE_LINKS);
+				allowRelativeLinks = moduleConfig.getBooleanSafe(CONFIG_KEY_ALLOW_RELATIVE_LINKS);
 				// update some class vars
 				if (CONFIG_VALUE_DISPLAY_FILE.equals(moduleConfig.getStringValue(CONFIG_KEY_DISPLAY_TYPE))) {
 					editorEnabled = true;

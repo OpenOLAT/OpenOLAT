@@ -52,9 +52,9 @@
 				<script type="text/javascript">
 				/* <![CDATA[ */
 				#if ($!helper.getMediaType($item.getEnclosure()) == "video")
-					BPlayer.insertPlayer("$!helper.getMediaUrl($item)","o_podcast_episode_$velocityCount",$!helper.getWidth($item),$!helper.getHeight($item),"video");
+					BPlayer.insertPlayer("$!helper.getMediaUrl($item)","o_podcast_episode_$velocityCount",$!helper.getWidth($item),$!helper.getHeight($item),false,null,"video");
 				#else
-					BPlayer.insertPlayer("$!helper.getMediaUrl($item)","o_podcast_episode_$velocityCount",400,24,"sound");
+					BPlayer.insertPlayer("$!helper.getMediaUrl($item)","o_podcast_episode_$velocityCount",400,24,false,null,"sound");
 				#end
 				/* ]]> */
 				</script>

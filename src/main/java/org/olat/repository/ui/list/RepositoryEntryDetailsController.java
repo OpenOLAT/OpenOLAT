@@ -344,7 +344,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				} else {
 					String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
 					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
-					startLink.setEnabled(false);
+					//startLink.setEnabled(false);
 					startLink.setElementCssClass("o_start btn-block");
 					startLink.setVisible(!guestOnly);
 				}

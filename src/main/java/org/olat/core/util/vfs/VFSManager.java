@@ -42,6 +42,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.util.ContainerAndFile;
 
@@ -183,6 +184,123 @@ public class VFSManager extends BasicManager {
 		return null;
 	}
 
+	/**
+	 * Resolves a directory path in the base container or creates this
+	 * directory. The method creates any missing directories.
+	 * 
+	 * @param baseContainer
+	 *            The base directory. User must have write permissions on this
+	 *            container
+	 * @param relContainerPath
+	 *            The path relative to the base container. Must start with a
+	 *            '/'. To separate sub directories use '/'
+	 * @return The resolved or created container or NULL if a problem happened
+	 */
+	public static VFSContainer resolveOrCreateContainerFromPath(VFSContainer baseContainer, String relContainerPath) {		
+		VFSContainer resultContainer = baseContainer;
+		if (!VFSConstants.YES.equals(baseContainer.canWrite())) {
+			log.error("Could not create relPath::" + relContainerPath + ", base container::" + getRealPath(baseContainer) + " not writable", null);
+			resultContainer = null;
+		} else if (StringHelper.containsNonWhitespace(relContainerPath)){
+			// Try to resolve given rel path from current container
+			VFSItem resolvedPath = baseContainer.resolve(relContainerPath.trim());
+			if (resolvedPath == null) {
+				// Does not yet exist - create subdir
+				String[] pathSegments = relContainerPath.split("/");
+				for (int i = 0; i < pathSegments.length; i++) {
+					String segment = pathSegments[i].trim();
+					if (StringHelper.containsNonWhitespace(segment)) {
+						resolvedPath = resultContainer.resolve(segment);
+						if (resolvedPath == null) {
+							resultContainer = resultContainer.createChildContainer(segment);
+							if (resultContainer == null) {
+								log.error("Could not create container with name::" + segment + " in relPath::" + relContainerPath + " in base container::" + getRealPath(baseContainer), null);
+								break;
+							}						
+						} else {
+							if (resolvedPath instanceof VFSContainer) {
+								resultContainer = (VFSContainer) resolvedPath;							
+							} else {
+								resultContainer = null;
+								log.error("Could not create container with name::" + segment + " in relPath::" + relContainerPath + ", a file with this name exists (but not a directory) in base container::" + getRealPath(baseContainer), null);
+								break;
+							}
+						}
+					}
+				} 
+			} else {
+				// Parent dir already exists,  make sure this is really a container and not a file!
+				if (resolvedPath instanceof VFSContainer) {
+					resultContainer = (VFSContainer) resolvedPath;
+				} else {
+					resultContainer = null;
+					log.error("Could not create relPath::" + relContainerPath + ", a file with this name exists (but not a directory) in base container::" + getRealPath(baseContainer), null);
+				}
+				
+			}
+		}
+		return resultContainer;
+	}
+	
+	/**
+	 * Resolves a file path in the base container or creates this file under the
+	 * given path. The method creates any missing directories.
+	 * 
+	 * @param baseContainer
+	 *            The base directory. User must have write permissions on this
+	 *            container
+	 * @param relFilePath
+	 *            The path relative to the base container. Must start with a
+	 *            '/'. To separate sub directories use '/'
+	 * @return The resolved or created leaf or NULL if a problem happened
+	 */
+	public static VFSLeaf resolveOrCreateLeafFromPath(VFSContainer baseContainer, String relFilePath) {
+		if (StringHelper.containsNonWhitespace(relFilePath)) {
+			int lastSlash = relFilePath.lastIndexOf("/");
+			String relDirPath = relFilePath;
+			String fileName = null;
+			if (lastSlash == -1) {
+				// relFilePath is the file name - no directories involved
+				relDirPath = null;
+				fileName = relFilePath;				
+			} if (lastSlash == 0) {
+				// Remove start slash from file name
+				relDirPath = null;
+				fileName = relFilePath.substring(1, relFilePath.length());				
+			} else {
+				relDirPath = relFilePath.substring(0, lastSlash-1);
+				fileName = relFilePath.substring(lastSlash);
+			}
+			
+			// Create missing directories and set parent dir for later file creation
+			VFSContainer parent = baseContainer;
+			if (StringHelper.containsNonWhitespace(relDirPath)) {
+				parent = resolveOrCreateContainerFromPath(baseContainer, relDirPath);				
+			}
+			// Now create file in that dir
+			if (StringHelper.containsNonWhitespace(fileName)) {			
+				VFSLeaf leaf = null;
+				VFSItem resolvedFile = parent.resolve(fileName);
+				if (resolvedFile == null) {
+					leaf = parent.createChildLeaf(fileName);
+					if (leaf == null) {
+						log.error("Could not create leaf with relPath::" + relFilePath + " in base container::" + getRealPath(baseContainer), null);
+					}
+				} else {
+					if (resolvedFile instanceof VFSLeaf) {
+						leaf = (VFSLeaf) resolvedFile;
+					} else {
+						leaf = null;
+						log.error("Could not create relPath::" + relFilePath + ", a directory with this name exists (but not a file) in base container::" + getRealPath(baseContainer), null);
+					}
+				}
+				return leaf;			
+			}
+		}
+		return null;
+	}
+	
+	
 	/**
 	 * Get the security callback which affects this item. This searches up the path
 	 * of parents to see wether it can find any callback. If no callback

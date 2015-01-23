@@ -90,7 +90,7 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			//read only view
 			sb.append("<span id=\"").append(id).append("\" ")
 			  .append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()))
-			  .append("title=\"").append(htmlVal) //the uncutted value in tooltip
+			  .append(" title=\"").append(htmlVal) //the uncutted value in tooltip
 			  .append("\" ").append(" >");
 			// use the longer from display size or real value length
 			int size = (te.displaySize > value.length() ? te.displaySize : value.length());

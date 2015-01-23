@@ -25,21 +25,23 @@
 package org.olat.admin.sysinfo;
 
 import org.olat.admin.AdminModule;
-import org.olat.core.CoreSpringFactory;
+import org.olat.admin.sysinfo.manager.CustomStaticFolderManager;
 import org.olat.core.commons.fullWebApp.util.GlobalStickyMessage;
+import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.StackedPanel;
-import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.helpers.Settings;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -51,10 +53,18 @@ import org.olat.properties.PropertyManager;
  */
 public class InfoMessageControllerSingleVM extends BasicController {
 	
-	private Link infomsgEditButton,infomsgClearButton, maintenancemsgEditButton,maintenancemsgClearButton;
-	private VelocityContainer infoMsgView, infoMsgEdit;
-	private InfoMsgForm infoMsgForm, maintenanceMsgForm;
-	private StackedPanel container;
+	private final Link infomsgEditButton,infomsgClearButton, maintenancemsgEditButton, maintenancemsgClearButton;
+	private final VelocityContainer infoMsgView, infoMsgEdit;
+	private final InfoMsgForm infoMsgForm, maintenanceMsgForm;
+	private final FolderRunController staticFolderCtrl;
+	private final StackedPanel container;
+	
+	@Autowired
+	private PropertyManager pm;
+	@Autowired
+	private InfoMessageManager mrg;
+	@Autowired
+	private CustomStaticFolderManager staticFolderMgr;
 	
 	/**
 	 * 
@@ -63,12 +73,11 @@ public class InfoMessageControllerSingleVM extends BasicController {
 	 */
 	public InfoMessageControllerSingleVM(UserRequest ureq, WindowControl control) {
 		super(ureq, control);
-		container = new SimpleStackedPanel("container");
 		infoMsgView = createVelocityContainer("infomsg");
 		infoMsgEdit = createVelocityContainer("infomsgEdit");
 		infoMsgView.contextPut("cluster", Boolean.FALSE);
 		infoMsgEdit.contextPut("cluster", Boolean.FALSE);
-		PropertyManager pm = PropertyManager.getInstance();
+
 		Property p = pm.findProperty(null, null, null, AdminModule.SYSTEM_PROPERTY_CATEGORY, AdminModule.PROPERTY_MAINTENANCE_MESSAGE);
 		String adminToken = (p == null ? "" : p.getStringValue());
 		infoMsgView.contextPut("admintoken", adminToken);
@@ -78,15 +87,13 @@ public class InfoMessageControllerSingleVM extends BasicController {
 		maintenancemsgEditButton = LinkFactory.createButton("maintenancemsgEdit", infoMsgView, this);
 		maintenancemsgClearButton = LinkFactory.createButton("maintenancemsgClear", infoMsgView, this);
 		
-		//info message stuff
-		InfoMessageManager mrg = (InfoMessageManager)CoreSpringFactory.getBean(InfoMessageManager.class);
+		//login
 		String infoMsg = mrg.getInfoMessage();
 		if (infoMsg != null && infoMsg.length() > 0) {
 			infoMsgView.contextPut("infomsg", infoMsg);
 		}
 		infoMsgForm = new InfoMsgForm(ureq, control, infoMsg);
 		listenTo(infoMsgForm);
-		
 		infoMsgEdit.put("infoMsgForm", infoMsgForm.getInitialComponent());
 		
 		//maintenance message stuff
@@ -98,47 +105,48 @@ public class InfoMessageControllerSingleVM extends BasicController {
 		listenTo(maintenanceMsgForm);
 		infoMsgEdit.put("maintenanceMsgForm", maintenanceMsgForm.getInitialComponent());
 		
-		container.setContent(infoMsgView);
+		// /customizing/static/
+		staticFolderCtrl = new FolderRunController(staticFolderMgr.getRootContainer(), true, ureq, control);
+		listenTo(staticFolderCtrl);
+		infoMsgEdit.put("staticFolder", staticFolderCtrl.getInitialComponent());
+		
+		String url = Settings.getServerContextPathURI() + "/raw/static/";
+		infoMsgEdit.contextPut("extlink", url);
 
-		putInitialPanel(container);
+		container = putInitialPanel(infoMsgView);
 	}
 
-	
+	@Override
+	protected void doDispose() {
+		//
+	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == infomsgEditButton){
 			infoMsgEdit.contextPut("infoEdit", Boolean.TRUE);
 			infoMsgEdit.contextPut("cluster", Boolean.FALSE);
 			container.pushContent(infoMsgEdit);
-		}
-		else if (source == maintenancemsgEditButton){
+		} else if (source == maintenancemsgEditButton){
 			infoMsgEdit.contextPut("infoEdit", Boolean.FALSE);
 			infoMsgEdit.contextPut("cluster", Boolean.FALSE);
 			container.pushContent(infoMsgEdit);
-		}
-		
-		// clear buttons
-		else if (source == maintenancemsgClearButton){
+		} else if (source == maintenancemsgClearButton){
 			GlobalStickyMessage.setGlobalStickyMessage("", true);
 			infoMsgView.contextRemove("maintenanceMsgAllNodes");
 			maintenanceMsgForm.reset();
-		}
-		else if (source == infomsgClearButton){
-			InfoMessageManager mrg = (InfoMessageManager)CoreSpringFactory.getBean(InfoMessageManager.class);
+		} else if (source == infomsgClearButton){
 			mrg.setInfoMessage("");
 			infoMsgView.contextRemove("infomsg");
 			infoMsgForm.reset();
 		}
 	}
 		
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == infoMsgForm && event == Event.DONE_EVENT) {
+		if (source == infoMsgForm) {
+			if(event == Event.DONE_EVENT) {
 				String infoMsg = infoMsgForm.getInfoMsg();
-				InfoMessageManager mrg = (InfoMessageManager)CoreSpringFactory.getBean(InfoMessageManager.class);
 				mrg.setInfoMessage(infoMsg);
 				if (infoMsg != null && infoMsg.length() > 0) {
 					infoMsgView.contextPut("infomsg", infoMsg);
@@ -146,8 +154,10 @@ public class InfoMessageControllerSingleVM extends BasicController {
 				} else {
 					infoMsgView.contextRemove("infomsg");
 				}
-				container.popContent();
-		} else if (source == maintenanceMsgForm && event == Event.DONE_EVENT) {
+			}
+			container.popContent();
+		} else if (source == maintenanceMsgForm) {
+			if(event == Event.DONE_EVENT) {
 				String maintenanceMsg = maintenanceMsgForm.getInfoMsg();
 				GlobalStickyMessage.setGlobalStickyMessage(maintenanceMsg, true);
 				if (maintenanceMsg != null && maintenanceMsg.length() > 0) {
@@ -156,38 +166,24 @@ public class InfoMessageControllerSingleVM extends BasicController {
 				} else {
 					infoMsgView.contextRemove("maintenanceMsgAllNodes");
 				}
-				container.popContent();
-		}
-		
-		if (event == Event.CANCELLED_EVENT && (source == infoMsgForm || source == maintenanceMsgForm)) {
+			}
 			container.popContent();
 		}
-		
 	}
 	
 	protected VelocityContainer getViewContainer() {
 		return infoMsgView;
 	}
+	
 	protected VelocityContainer getEditContainer() {
 		return infoMsgEdit;
 	}
+	
 	protected StackedPanel getMainContainer() {
 		return container;
 	}
+	
 	protected InfoMsgForm getMaintenanceMsgForm() {
 		return maintenanceMsgForm;
 	}
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
-	@Override
-	protected void doDispose() {
-	// TODO Auto-generated method stub
-
-	}
-
-
-
-
 }

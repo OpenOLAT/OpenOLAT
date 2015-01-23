@@ -36,10 +36,55 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "courseVO")
 public class CourseConfigVO {
 	
+	private Boolean calendar;
+	private Boolean chat;
+	private String cssLayoutRef;
+	private Boolean efficencyStatement;
+	private String glossarySoftkey;
 	private String sharedFolderSoftKey;
 	
 	public CourseConfigVO() {
 		//make JAXB happy
+	}
+
+	public Boolean getCalendar() {
+		return calendar;
+	}
+
+	public void setCalendar(Boolean calendar) {
+		this.calendar = calendar;
+	}
+
+	public Boolean getChat() {
+		return chat;
+	}
+
+	public void setChat(Boolean chat) {
+		this.chat = chat;
+	}
+
+	public String getCssLayoutRef() {
+		return cssLayoutRef;
+	}
+
+	public void setCssLayoutRef(String cssLayoutRef) {
+		this.cssLayoutRef = cssLayoutRef;
+	}
+	
+	public Boolean getEfficencyStatement() {
+		return efficencyStatement;
+	}
+
+	public void setEfficencyStatement(Boolean efficencyStatement) {
+		this.efficencyStatement = efficencyStatement;
+	}
+
+	public String getGlossarySoftkey() {
+		return glossarySoftkey;
+	}
+
+	public void setGlossarySoftkey(String glossarySoftkey) {
+		this.glossarySoftkey = glossarySoftkey;
 	}
 
 	public String getSharedFolderSoftKey() {

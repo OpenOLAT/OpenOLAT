@@ -233,23 +233,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 	
 	private void doOpenWysiwygEditor(UserRequest ureq) {
 		if(relFilPathIsProposal){
-			file = (VFSLeaf) baseContainer.resolve(relFilePath);
-			if (file == null) {
-				// Expected: file does not exist, create it now. 
-				String[] pathSegments = relFilePath.split("/");
-				VFSContainer parent = baseContainer;
-				for (int i = 0; i < pathSegments.length; i++) {
-					String segment = pathSegments[i];
-					if (StringHelper.containsNonWhitespace(segment)) {
-						if (i == pathSegments.length -1) {
-							// last one is leaf
-							file = parent.createChildLeaf(segment);											
-						} else {
-							parent = parent.createChildContainer(segment);
-						}						
-					}
-				}
-			}
+			file = VFSManager.resolveOrCreateLeafFromPath(baseContainer, relFilePath);
 		}
 		if (file == null) {
 			// huh? no idea what happend, do nothing and log error
@@ -399,7 +383,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 			} else {
 				editLink.setCustomDisplayText(translate("command.edit"));				
 			}
-			contentVC.put("editLink", editLink);
+			contentVC.put("command.edit", editLink);
 		} else {
 			contentVC.remove(editLink);
 		}
@@ -449,19 +433,15 @@ public class LinkFileCombiCalloutController extends BasicController {
 	}
 	
 	public boolean isEditorEnabled() {
-		if(relFilPathIsProposal){
-			return true;
-		}
-		
-		if(file != null){
-			String fileName = file.getName().toLowerCase();
-			if (fileName.endsWith(".html") || fileName.endsWith(".htm")) {
+		// enable html editor for html files
+		if(StringHelper.containsNonWhitespace(relFilePath)) {
+			String lowercase = relFilePath.toLowerCase().trim();
+			if (lowercase.endsWith(".html") || lowercase.endsWith(".htm")) {
 				return true;
-			} else {
-				return false;
 			}
 		}
-		return false;
+		// disable html editor for all other cases
+		return false;		
 	}
 
 	@Override
