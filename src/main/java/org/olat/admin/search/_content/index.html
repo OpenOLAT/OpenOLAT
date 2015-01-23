@@ -10,7 +10,7 @@
 	$r.translate("fullindexer.label.running.indexer") : $searchstatus.fullIndexerStatus.NumberRunningFolderIndexer<br />
 	$r.translate("fullindexer.label.available.indexer") : $searchstatus.fullIndexerStatus.NumberAvailableFolderIndexer<br />	
 	<br />
-	$r.translate("fullindexer.label.finished") : $searchstatus.fullIndexerStatus.lastFullIndexTime<br />
+	$r.translate("fullindexer.label.finished") : #if($searchstatus.fullIndexerStatus.lastFullIndexTime > 1) $searchstatus.fullIndexerStatus.lastFullIndexDateString #else - #end<br />
 	$r.translate("fullindexer.label.time") : $searchstatus.fullIndexerStatus.indexingTime ms<br />
 	$r.translate("fullindexer.label.size") : $searchstatus.fullIndexerStatus.IndexSize
 </fieldset>

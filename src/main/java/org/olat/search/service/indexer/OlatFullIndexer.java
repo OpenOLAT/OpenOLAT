@@ -27,10 +27,17 @@ package org.olat.search.service.indexer;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.lucene.LucenePackage;
 import org.apache.lucene.analysis.Analyzer;
@@ -65,6 +72,7 @@ public class OlatFullIndexer {
 	private static final int MAX_SIZE_QUEUE = 500;
 	private int numberIndexWriter = 5;
 
+	private String  indexPath;
 	private String  tempIndexPath;
 
 	/**
@@ -116,15 +124,43 @@ public class OlatFullIndexer {
 		this.index = index;
 		this.mainIndexer = mainIndexer;
 		this.coordinatorManager = coordinatorManager;
+		indexPath = searchModuleConfig.getFullIndexPath();
 		tempIndexPath = searchModuleConfig.getFullTempIndexPath();
 		indexInterval = searchModuleConfig.getIndexInterval();
 		numberIndexWriter = searchModuleConfig.getNumberIndexWriter();
 		documentsPerInterval = searchModuleConfig.getDocumentsPerInterval();
 		ramBufferSizeMB = searchModuleConfig.getRAMBufferSizeMB();
-		fullIndexerStatus = new FullIndexerStatus(numberIndexWriter);    
+		fullIndexerStatus = new FullIndexerStatus(numberIndexWriter);
 		stopIndexing = true;
 		documentQueue = new Vector<Document>();
+		initStatus();
 		resetDocumentCounters();
+	}
+	
+	private void initStatus() {
+		File indexDir = new File(indexPath);
+		if (indexDir.exists()) {
+			final AtomicLong last = new AtomicLong(1);
+			try {
+				Files.walkFileTree(indexDir.toPath(), new SimpleFileVisitor<Path>(){
+					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+						if(attrs.isRegularFile()) {
+							FileTime time = attrs.lastModifiedTime();
+							long timeInMillis = time.toMillis();
+							if(timeInMillis > 0 && last.longValue() < timeInMillis) {
+								last.set(timeInMillis);
+							}
+						}
+				        return FileVisitResult.CONTINUE;
+					}
+				});
+			} catch (IOException e) {
+				log.error("", e);
+			}
+			fullIndexerStatus.setLastFullIndexTime(last.get());
+		} else {
+			fullIndexerStatus.setLastFullIndexTime(1);
+		}
 	}
 	
 	/**
@@ -267,7 +303,7 @@ public class OlatFullIndexer {
 	 */
 	public void run() {
 		try {
-		  //TODO: Workround : does not start immediately
+			//TODO: Workround : does not start immediately
 			Thread.sleep(10000);
 
 			log.info("full indexing starts... Lucene-version:" + LucenePackage.get().getImplementationVersion());
@@ -286,7 +322,7 @@ public class OlatFullIndexer {
 			log.info("full indexing summary: started:           "+status.getFullIndexStartedAt());
 			log.info("full indexing summary: counter:           "+status.getDocumentCount());
 			log.info("full indexing summary: index.per.minute:  "+status.getIndexPerMinute());
-			log.info("full indexing summary: finished:          "+status.getLastFullIndexTime());
+			log.info("full indexing summary: finished:          "+status.getLastFullIndexDateString());
 			log.info("full indexing summary: time:              "+status.getIndexingTime()+" ms");
 			log.info("full indexing summary: size:              "+status.getIndexSize());
 			
@@ -446,7 +482,7 @@ public class OlatFullIndexer {
 	}
 	
 	private void resetDocumentCounters() {
-    documentCounters = new Hashtable<String,Integer>();
-    fileTypeCounters = new Hashtable<String,Integer>();		
+		documentCounters = new Hashtable<String,Integer>();
+		fileTypeCounters = new Hashtable<String,Integer>();		
 	}
 }
