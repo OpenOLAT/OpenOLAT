@@ -385,7 +385,7 @@ class CompMenuForm extends FormBasicController {
 
 	CompMenuForm(UserRequest ureq, WindowControl wControl, Boolean compMenuConfig) {
 		super(ureq, wControl);
-		compMenuConfig = compMenuConfig == null ? true:compMenuConfig.booleanValue();
+		this.compMenuConfig = compMenuConfig == null ? true:compMenuConfig.booleanValue();
 		initForm(ureq);
 	}
 
