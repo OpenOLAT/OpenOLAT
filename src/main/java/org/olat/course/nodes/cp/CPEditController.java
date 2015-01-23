@@ -400,7 +400,7 @@ class CompMenuForm extends FormBasicController {
 	
 	CompMenuForm(UserRequest ureq, WindowControl wControl, Boolean compMenuConfig, Boolean compNavButtons, String contentEncoding, String jsEncoding) {
 		super(ureq, wControl);
-		compMenuConfig = compMenuConfig == null ? true:compMenuConfig.booleanValue();
+		this.compMenuConfig = compMenuConfig == null ? true:compMenuConfig.booleanValue();
 		//fxdiff VCRP-13: cp navigation
 		compNavButtonsConfig = compNavButtons == null ? true:compNavButtons.booleanValue();
 		initForm(ureq);
