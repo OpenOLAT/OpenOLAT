@@ -177,5 +177,11 @@ public interface CourseEditorEnv {
 	 */
 	public CourseNode getNode(String nodeId);
 	// </OLATCE-91>
+	
+	/**
+	 *
+	 * @return The ident of the course editor root node
+	 */
+	public String getRootNodeId();
 
 }
