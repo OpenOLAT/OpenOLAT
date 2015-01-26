@@ -291,7 +291,7 @@ public class QTIWordExport implements MediaResource {
 		String title = section.getTitle();
 		document.appendHeading1(title, null);
 		String objectives = section.getObjectives();
-		document.appendText(objectives, true);
+		document.appendHtmlText(objectives, true);
 	}
 	
 	public static void renderAssessment(Assessment assessment, OpenXMLDocument document, Translator translator) {
