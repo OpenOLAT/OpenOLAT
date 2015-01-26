@@ -840,7 +840,10 @@ public class FileUtils {
 		nameFirstPass = nameFirstPass.replace("\u00E4", "ae");
 		nameFirstPass = nameFirstPass.replace("\u00F6", "oe");
 		nameFirstPass = nameFirstPass.replace("\u00FC", "ue");
-		String nameNormalized = Normalizer.normalize(nameFirstPass, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+","");
+		nameFirstPass = nameFirstPass.replace("\u00DF", "ss");
+		nameFirstPass = nameFirstPass.replace("\u00F8", "o");
+		nameFirstPass = nameFirstPass.replace("\u00E6", "ae");
+		String nameNormalized = Normalizer.normalize(nameFirstPass, Normalizer.Form.NFKD).replaceAll("\\p{InCombiningDiacriticalMarks}+","");
 		String nameSanitized = nameNormalized.replaceAll("\\W+", "");
 		return nameSanitized;
 	}
