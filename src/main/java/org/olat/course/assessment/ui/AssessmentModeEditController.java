@@ -370,7 +370,7 @@ public class AssessmentModeEditController extends FormBasicController {
 				save(ureq, true);
 			}
 		} else if(cmc == source) {
-			cmc.deactivate();
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
