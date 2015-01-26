@@ -84,6 +84,7 @@ import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.themes.Theme;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -199,8 +200,9 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		WindowSettings settings = WindowSettings.parse(windowSettings);
 		wbo = winman.createWindowBackOffice("basechiefwindow", this, settings);
 		
-		if(ureq.getUserSession().getRoles() != null) {	
-			isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
+		IdentityEnvironment identityEnv = ureq.getUserSession().getIdentityEnvironment();
+		if(identityEnv != null && identityEnv.getRoles() != null) {	
+			isAdmin = identityEnv.getRoles().isOLATAdmin();
 		} else {
 			isAdmin = false;
 		}

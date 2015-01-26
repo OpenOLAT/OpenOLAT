@@ -409,9 +409,9 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			this.continueButton = continueButton;
 		}
 		
-		public void sync(String status, String errors, TransientAssessmentMode mode, Locale locale) {
-			this.errors = errors;
-			this.status = status;
+		public void sync(String newStatus, String newErrors, TransientAssessmentMode mode, Locale locale) {
+			errors = newErrors;
+			status = newStatus;
 			
 			reference = mode;
 			name = mode.getName();

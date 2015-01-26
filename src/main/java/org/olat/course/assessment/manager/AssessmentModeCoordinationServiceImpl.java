@@ -182,7 +182,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	public boolean canStart(AssessmentMode assessmentMode) {
 		boolean canStart;
 		Status status = assessmentMode.getStatus();
-		if(status == Status.end) {
+		if(status == Status.end || status == Status.assessment) {
 			canStart = false;
 		} else {
 			canStart = true;
