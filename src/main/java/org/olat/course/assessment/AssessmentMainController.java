@@ -647,6 +647,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			CertificateLight certificate = certificatesManager.getCertificateLightById(certificateKey);
 			((AssessedIdentitiesTableDataModel)userListCtr
 					.getTableDataModel()).putCertificate(certificate);
+			userChoose.setDirty(true);
 		}
 	}
 	
