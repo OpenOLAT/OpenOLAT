@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.search.service.document.file.utils;
+package org.olat.core.util.io;
 
 import java.io.IOException;
 import java.io.InputStream;
