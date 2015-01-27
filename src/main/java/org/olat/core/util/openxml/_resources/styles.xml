@@ -365,6 +365,14 @@
 		<w:semiHidden />
 		<w:unhideWhenUsed />
 	</w:style>
+	<w:style w:type="paragraph" w:styleId="ListParagraph">
+		<w:name w:val="List Paragraph"/>
+  		<w:basedOn w:val="Normal"/>
+		<w:pPr>
+			<w:ind w:left="720"/>
+			<w:contextualSpacing/>
+		</w:pPr>
+	</w:style>
 	<w:style w:type="character" w:customStyle="1" w:styleId="ooHeading1Zeichen">
 		<w:name w:val="Überschrift 1 Zeichen" />
 		<w:basedOn w:val="Absatzstandardschriftart" />
