@@ -48,10 +48,10 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.io.ShieldInputStream;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
-import org.olat.search.service.document.file.utils.ShieldInputStream;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -80,11 +80,13 @@ public class OpenXMLDocument {
 	private final OpenXMLStyles styles;
 	
 	private int currentId = 4;
+	private int currentNumberingId = 0;
 	private String documentHeader;
 	private Map<File, DocReference> fileToImagesMap = new HashMap<File, DocReference>();
 	
-	private List<Node> cursorStack = new ArrayList<Node>();
-	private List<HeaderReference> headers = new ArrayList<HeaderReference>();
+	private List<Node> cursorStack = new ArrayList<>();
+	private List<ListParagraph> numbering = new ArrayList<>();
+	private List<HeaderReference> headers = new ArrayList<>();
 	
 	private VFSContainer mediaContainer;
 	
@@ -129,6 +131,10 @@ public class OpenXMLDocument {
 	
 	public Collection<HeaderReference> getHeaders() {
 		return headers;
+	}
+	
+	public Collection<ListParagraph> getNumbering() {
+		return numbering;
 	}
 	
 	public Node getCursor() {
@@ -639,6 +645,104 @@ public class OpenXMLDocument {
 		return cellEl;	
 	}
 	
+	public ListParagraph createListParagraph() {
+		int abstractNumberingId = currentNumberingId++;
+		int numberingId = currentNumberingId++;
+		ListParagraph lp = new ListParagraph(abstractNumberingId, numberingId);
+		numbering.add(lp);
+		return lp;
+	}
+	
+	/*
+<w:p>
+  <w:pPr>
+    <w:pStyle w:val="ListParagraph"/>
+    <w:numPr>
+      <w:ilvl w:val="0"/>
+      <w:numId w:val="1"/>
+    </w:numPr>
+  </w:pPr>
+  <w:r>
+    <w:t>One</w:t>
+  </w:r>
+</w:p>
+	 */
+	public Element createListParagraph(ListParagraph def) {
+		Element paragraphEl = document.createElement("w:p");
+		Element listEl = (Element)paragraphEl.appendChild(document.createElement("w:pPr"));
+		Element pStyleEl = (Element)listEl.appendChild(document.createElement("w:pStyle"));
+		pStyleEl.setAttribute("w:val", "ListParagraph");
+		Element numberingEl = (Element)listEl.appendChild(document.createElement("w:numPr"));
+		Element ilvlEl = (Element)numberingEl.appendChild(document.createElement("w:ilvl"));
+		ilvlEl.setAttribute("w:val", "0");
+		Element numIdEl = (Element)numberingEl.appendChild(document.createElement("w:numId"));
+		numIdEl.setAttribute("w:val", Integer.toString(def.getNumId()));
+		return paragraphEl;
+	}
+	
+	/*
+<w:abstractNum w:abstractNumId="0">
+  <w:lvl w:ilvl="0">
+    <w:start w:val="1"/>
+    <w:numFmt w:val="bullet"/>
+    <w:lvlText w:val="o"/>
+    <w:lvlJc w:val="left"/>
+    <w:pPr>
+      <w:ind w:left="720"
+             w:hanging="360"/>
+    </w:pPr>
+    <w:rPr>
+      <w:rFonts w:ascii="Symbol"
+                w:hAnsi="Symbol"
+                w:hint="default"/>
+    </w:rPr>
+  </w:lvl>
+	 */
+	public Element createAbstractNumbering(ListParagraph def, Document doc) {
+		Element numEl = doc.createElement("w:abstractNum");
+		numEl.setAttribute("w:abstractNumId", Integer.toString(def.getAbstractNumId()));
+		numEl.appendChild(createNumberingLevel(doc));
+		return numEl;
+	}
+	
+	private Element createNumberingLevel(Document numberingDoc) {
+		Element levelEl = numberingDoc.createElement("w:lvl");
+		levelEl.setAttribute("w:ilvl", "0");
+		Element startEl = (Element)levelEl.appendChild(numberingDoc.createElement("w:start"));
+		startEl.setAttribute("w:val", "1");
+		Element numFmtEl = (Element)levelEl.appendChild(numberingDoc.createElement("w:numFmt"));
+		numFmtEl.setAttribute("w:val", "bullet");
+		Element lvlTextEl = (Element)levelEl.appendChild(numberingDoc.createElement("w:lvlText"));
+		lvlTextEl.setAttribute("w:val", Character.toString((char)0xB7));//bullet
+		Element lvlJcEl = (Element)levelEl.appendChild(numberingDoc.createElement("w:lvlJc"));
+		lvlJcEl.setAttribute("w:val", "left");
+		//pPr
+		Element pPrEl = (Element)levelEl.appendChild(numberingDoc.createElement("w:pPr"));
+		Element indEl = (Element)pPrEl.appendChild(numberingDoc.createElement("w:ind"));
+		indEl.setAttribute("w:left", "720");
+		indEl.setAttribute("w:hanging", "360");
+		//rPr
+		Element rPrEl = (Element)levelEl.appendChild(numberingDoc.createElement("w:rPr"));
+		Element rFontsEl = (Element)rPrEl.appendChild(numberingDoc.createElement("w:rFonts"));
+		rFontsEl.setAttribute("w:ascii", "Symbol");
+		rFontsEl.setAttribute("w:hAnsi", "Symbol");
+		rFontsEl.setAttribute("w:hint", "default");
+		return levelEl;
+	}
+	
+	/*
+  <w:num w:numId="1">
+    <w:abstractNumId w:val="0"/>
+  </w:num>
+	 */
+	public Element createNumbering(ListParagraph def, Document numberingDoc) {
+		Element numEl = numberingDoc.createElement("w:num");
+		numEl.setAttribute("w:numId", Integer.toString(def.getNumId()));
+		Element abstractNumEl = (Element)numEl.appendChild(numberingDoc.createElement("w:abstractNumId"));
+		abstractNumEl.setAttribute("w:val", Integer.toString(def.getAbstractNumId()));
+		return numEl;
+	}
+	
 /*
 <w:shd w:val="solid" w:color="E9EAF2" w:fill="auto" />
  */
@@ -990,6 +1094,25 @@ public class OpenXMLDocument {
 		
 		public String getHeader() {
 			return header;
+		}
+	}
+	
+	public static class ListParagraph {
+		
+		private final int abstractNumId;
+		private final int numId;
+		
+		public ListParagraph(int abstractNumId, int numId) {
+			this.abstractNumId = abstractNumId;
+			this.numId = numId;
+		}
+		
+		public int getAbstractNumId() {
+			return abstractNumId;
+		}
+		
+		public int getNumId() {
+			return numId;
 		}
 	}
 }
