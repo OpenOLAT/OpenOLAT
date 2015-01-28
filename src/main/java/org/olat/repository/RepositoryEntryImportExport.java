@@ -164,8 +164,10 @@ public class RepositoryEntryImportExport {
 		// export resource
 		RepositoryHandler rh = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
 		MediaResource mr = rh.getAsMediaResource(re.getOlatResource(), false);
-
-		try(FileOutputStream fOut = new FileOutputStream(new File(baseDirectory, CONTENT_FILE))) {
+		
+		FileOutputStream fOut = null;
+		try {
+			fOut = new FileOutputStream(new File(baseDirectory, CONTENT_FILE));
 			InputStream in = mr.getInputStream();
 			if(in == null) {
 				HttpServletResponse hres = new HttpServletResponseOutputStream(fOut);
@@ -177,6 +179,7 @@ public class RepositoryEntryImportExport {
 		} catch (IOException fnfe) {
 			return false;
 		} finally {
+			IOUtils.closeQuietly(fOut);
 			mr.release();
 		}
 		return true;
