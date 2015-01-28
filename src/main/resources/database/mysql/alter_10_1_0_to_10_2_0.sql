@@ -53,3 +53,6 @@ alter table o_as_mode_course_to_group add constraint as_modetogroup_mode_idx for
 
 alter table o_as_mode_course_to_area add constraint as_modetoarea_area_idx foreign key (fk_area_id) references o_gp_bgarea (area_id);
 alter table o_as_mode_course_to_area add constraint as_modetoarea_mode_idx foreign key (fk_assessment_mode_id) references o_as_mode_course (id);
+
+
+alter table o_repositoryentry add column allowtoleave varchar(16);

@@ -30,6 +30,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -51,6 +52,7 @@ public class AuthoringEditAccessController extends BasicController {
 	private VelocityContainer editproptabpubVC;
 	
 	private AuthoringEntryPublishController propPupForm;
+	private final AuthoringEditAllowToLeaveOptionController leaveForm;
 	private AccessConfigurationController acCtr;
 	
 	private RepositoryEntry entry;
@@ -67,6 +69,10 @@ public class AuthoringEditAccessController extends BasicController {
 		propPupForm = new AuthoringEntryPublishController(ureq, wControl, entry);
 		listenTo(propPupForm);
 		editproptabpubVC.put("proppupform", propPupForm.getInitialComponent());
+		
+		leaveForm = new AuthoringEditAllowToLeaveOptionController(ureq, wControl, entry);
+		listenTo(leaveForm);
+		editproptabpubVC.put("leaveform", leaveForm.getInitialComponent());
 
 		boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
 		acCtr = new AccessConfigurationController(ureq, getWindowControl(), entry.getOlatResource(), entry.getDisplayname(), true, !managedBookings);
@@ -123,6 +129,15 @@ public class AuthoringEditAccessController extends BasicController {
 				// inform anybody interested about this change
 				MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess);
 				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, entry);			
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+		} else if(source == leaveForm) {
+			if (event == Event.DONE_EVENT) {
+				RepositoryEntryAllowToLeaveOptions leaveSetting = leaveForm.getSelectedLeaveSetting();
+				entry = repositoryManager.setLeaveSetting(entry, leaveSetting);	
+
+				MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess);
+				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, entry);	
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		}

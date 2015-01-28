@@ -666,6 +666,19 @@ public class RepositoryManager extends BasicManager {
 		return updatedRe;
 	}
 	
+	public RepositoryEntry setLeaveSetting(final RepositoryEntry re,
+			RepositoryEntryAllowToLeaveOptions setting) {
+		RepositoryEntry reloadedRe = loadForUpdate(re);
+		reloadedRe.setAllowToLeaveOption(setting);
+		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+		updatedRe.getStatistics().getLaunchCounter();
+		if(updatedRe.getLifecycle() != null) {
+			updatedRe.getLifecycle().getKey();
+		}
+		dbInstance.commit();
+		return updatedRe;
+	} 
+	
 	/**
 	 * This method doesn't update empty and null values! ( Reserved to unit tests
 	 * and REST API)
@@ -698,6 +711,9 @@ public class RepositoryManager extends BasicManager {
 		}
 		if(StringHelper.containsNonWhitespace(managedFlags)) {
 			reloadedRe.setManagedFlagsString(managedFlags);
+			if(RepositoryEntryManagedFlag.isManaged(reloadedRe, RepositoryEntryManagedFlag.membersmanagement)) {
+				reloadedRe.setAllowToLeaveOption(RepositoryEntryAllowToLeaveOptions.never);
+			}
 		}
 		
 		RepositoryEntryLifecycle cycleToDelete = null;
@@ -1412,6 +1428,15 @@ public class RepositoryManager extends BasicManager {
 			dbQuery.setParameter("identityKey", identity.getKey());
 		}
 		return dbQuery;
+	}
+	
+	public void leave(Identity identity, RepositoryEntry re, LeavingStatusList status, MailPackage mailing) {
+		if(RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.membersmanagement)) {
+			status.setWarningManagedCourse(true);
+		} else {
+			List<Identity> removeIdentities = Collections.singletonList(identity);
+			removeParticipants(identity, removeIdentities, re, mailing, true);
+		}
 	}
 	
 	/**

@@ -102,6 +102,7 @@ import org.olat.group.right.BGRightsRole;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.properties.PropertyManager;
+import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -801,6 +802,23 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Override
 	public List<Identity> getMembersOf(RepositoryEntryRef resource, boolean owner, boolean attendee) {
 		return businessGroupRelationDAO.getMembersOf(resource, owner, attendee);
+	}
+
+	@Override
+	public void leave(Identity identity, RepositoryEntry entry, LeavingStatusList status, MailPackage mailing) {
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.setIdentity(identity);
+		params.setAttendee(true);
+		List<BusinessGroup> groups = businessGroupDAO.findBusinessGroups(params, entry, 0, -1);
+		for(BusinessGroup group:groups) {
+			if(BusinessGroupManagedFlag.isManaged(group, BusinessGroupManagedFlag.membersmanagement)) {
+				status.setWarningManagedGroup(true);
+			} else if(businessGroupRelationDAO.countResources(group) > 1) {
+				status.setWarningGroupWithMultipleResources(true);
+			} else {
+				removeParticipant(identity, identity, group, mailing, null);
+			}
+		}
 	}
 
 	@Override

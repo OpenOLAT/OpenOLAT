@@ -144,6 +144,12 @@
 							</td>
 						</tr>
 						#end
+						#if($r.available("sign.out"))
+						<tr class="o_signout">					
+							<th></th>
+							<td>$r.render("sign.out")</td>
+						</tr>
+						#end
 					</tbody>
 					</table>
 				</div>

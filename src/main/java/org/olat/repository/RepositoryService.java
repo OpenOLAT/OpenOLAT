@@ -101,6 +101,12 @@ public interface RepositoryService {
 	public int countMembers(RepositoryEntryRef re, String... roles);
 	
 	/**
+	 * @param re The repository entry
+	 * @return True if the configuration allowed user to leave the entry right now
+	 */
+	public boolean isParticipantAllowedToLeave(RepositoryEntry re);
+	
+	/**
 	 * Return the primary keys of the authors
 	 */
 	public List<Long> getAuthors(RepositoryEntryRef re);
