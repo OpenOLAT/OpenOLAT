@@ -35,11 +35,16 @@ public class FileUtilsTest {
 	public void normalizeFilename_umlaut() {
 		String normalizedUmlaut = FileUtils.normalizeFilename("S\u00E4l\u00FCt toi");
 		Assert.assertEquals(normalizedUmlaut, "Saeluet_toi");
+		
+		String normalizedAccents = FileUtils.normalizeFilename("Dépéchons-nous!");
+		Assert.assertEquals(normalizedAccents, "Depechonsnous");
+		
 	}
 	
 	@Test
 	public void normalizedFilename_danischDish() {
-		String normalized = FileUtils.normalizeFilename("Sm\u2205rrebr\u2205d");
-		Assert.assertEquals(normalized, "Smrrebrd");
+		String smorrebrod = "Sm\u2205rrebr\u00F8d";
+		String normalized = FileUtils.normalizeFilename(smorrebrod);
+		Assert.assertEquals(normalized, "Smorrebrod");
 	}
 }
