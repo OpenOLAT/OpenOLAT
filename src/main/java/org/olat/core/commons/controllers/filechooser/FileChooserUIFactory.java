@@ -20,6 +20,7 @@
 
 package org.olat.core.commons.controllers.filechooser;
 
+import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -144,6 +145,28 @@ public class FileChooserUIFactory {
 	public static String getSelectedRelativeItemPath(FileChoosenEvent event, VFSContainer rootContainer, String relativeBasePath) {
 		// 1) Create path absolute to the root container
 		VFSItem selectedItem = event.getSelectedItem();
+		return VFSManager.getRelativeItemPath(selectedItem, rootContainer, relativeBasePath);
+	}
+	
+	/**
+	 * Get the path as string of the selected item relative to the root
+	 * container and the relative base path
+	 * 
+	 * @param event The folder event
+	 * @param rootContainer
+	 *            The root container for which the relative path should be
+	 *            calculated
+	 * @param relativeBasePath
+	 *            when NULL, the path will be calculated relative to the
+	 *            rootContainer; when NULL, the relativeBasePath must
+	 *            represent a relative path within the root container that
+	 *            serves as the base. In this case, the calculated relative item
+	 *            path will start from this relativeBasePath
+	 * @return 
+	 */
+	public static String getSelectedRelativeItemPath(FolderEvent event, VFSContainer rootContainer, String relativeBasePath) {
+		// 1) Create path absolute to the root container
+		VFSItem selectedItem = event.getItem();
 		return VFSManager.getRelativeItemPath(selectedItem, rootContainer, relativeBasePath);
 	}
 }

@@ -187,6 +187,7 @@ public class FileLinkChooserController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == uploadCtr) {
 			if (event instanceof FolderEvent) {
@@ -194,13 +195,19 @@ public class FileLinkChooserController extends BasicController {
 				if (isFileSuffixOk(folderEvent.getFilename())) {
 					Size size = null;
 					VFSItem item = folderEvent.getItem();
+					
+					String relPath;
 					if(item != null) {
 						size = getSize(item, item.getName());
+						relPath = FileChooserUIFactory
+								.getSelectedRelativeItemPath(folderEvent, rootDir, fileName);
+					} else {
+						relPath = folderEvent.getFilename();
 					}
 					if(size != null) {
-						fireEvent(ureq, new URLChoosenEvent(folderEvent.getFilename(), null, null, null, size.getWidth(), size.getHeight()));
+						fireEvent(ureq, new URLChoosenEvent(relPath, null, null, null, size.getWidth(), size.getHeight()));
 					} else {
-						fireEvent(ureq, new URLChoosenEvent(folderEvent.getFilename()));
+						fireEvent(ureq, new URLChoosenEvent(relPath));
 					}
 				} else {
 					setErrorMessage(folderEvent.getFilename());
