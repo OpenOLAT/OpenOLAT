@@ -51,6 +51,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
+import org.olat.course.certificate.CertificatesManager;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuthorView;
@@ -106,6 +107,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 	@Autowired
 	private OLATResourceManager resourceManager;
+	@Autowired
+	private CertificatesManager certificatesManager;
 	@Autowired
 	private UserCourseInformationsManager userCourseInformationsManager;
 
@@ -268,6 +271,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 		return null;
 	}
 	
+	@Override
 	public ErrorList delete(RepositoryEntry entry, Identity identity, Roles roles, Locale locale) {
 		ErrorList errors = new ErrorList();
 		
@@ -284,10 +288,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 			return errors;
 		}
 
-		// start transaction
-		// delete entry picture
-		
 		userCourseInformationsManager.deleteUserCourseInformations(entry);
+		certificatesManager.deleteRepositoryEntry(entry);
 		
 		// delete all bookmarks referencing deleted entry
 		CoreSpringFactory.getImpl(MarkManager.class).deleteMarks(entry);

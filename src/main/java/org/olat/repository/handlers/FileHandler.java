@@ -28,7 +28,6 @@ package org.olat.repository.handlers;
 import java.io.File;
 import java.util.Locale;
 
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
