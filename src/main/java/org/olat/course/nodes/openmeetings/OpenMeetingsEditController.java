@@ -58,6 +58,7 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 	public static final String CONFIG_ROOM_RECORDING = "roomRecording";
 	public static final String CONFIG_ROOM_COMMENT = "roomComment";
 	public static final String CONFIG_ROOM_TYPE = "roomType";
+	public static final String CONFIG_ROOM_AUDIO_ONLY = "roomAudioOnly";
 
 	private VelocityContainer editVc;
 	private ConditionEditController accessibilityCondContr;
@@ -123,6 +124,7 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 					moduleConfiguration.set(CONFIG_ROOM_SIZE, new Long(room.getSize()));
 					moduleConfiguration.set(CONFIG_ROOM_MODERATION, new Boolean(room.isModerated()));
 					moduleConfiguration.set(CONFIG_ROOM_RECORDING, new Boolean(room.isRecordingAllowed()));
+					moduleConfiguration.set(CONFIG_ROOM_AUDIO_ONLY, new Boolean(room.isAudioOnly()));
 					moduleConfiguration.set(CONFIG_ROOM_COMMENT, room.getComment());
 					moduleConfiguration.set(CONFIG_ROOM_TYPE, new Long(room.getType()));
 				}
@@ -156,6 +158,9 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 		if(moderated instanceof Boolean) {
 			room.setModerated(((Boolean)moderated).booleanValue());
 		}
+		else if (moderated == null) {
+			room.setModerated(true);
+		}
 		Object recording = moduleConfiguration.get(CONFIG_ROOM_RECORDING);
 		if(recording instanceof Boolean) {
 			room.setRecordingAllowed(((Boolean)recording).booleanValue());
@@ -168,6 +173,17 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 		Object type = moduleConfiguration.get(CONFIG_ROOM_TYPE);
 		if(type instanceof Long) {
 			room.setType(((Long)type).longValue());
+		}
+		else if (type == null) {
+			room.setType(3);
+		}
+
+		Object isAudioOnly = moduleConfiguration.get(CONFIG_ROOM_AUDIO_ONLY);
+		if(isAudioOnly instanceof Boolean) {
+			room.setAudioOnly(((Boolean)isAudioOnly).booleanValue());
+		}
+		else if (isAudioOnly == null) {
+			room.setAudioOnly(true);
 		}
 		return room;
 	}
