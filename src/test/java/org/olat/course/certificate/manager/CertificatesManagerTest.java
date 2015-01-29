@@ -25,6 +25,7 @@ import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -32,16 +33,19 @@ import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -57,6 +61,8 @@ public class CertificatesManagerTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private CertificatesManager certificatesManager;
 	@Autowired
@@ -339,5 +345,96 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Assert.assertNotNull(lastCertificate);
 		Assert.assertEquals(certificate.getKey(), lastCertificate.getKey());
 		Assert.assertEquals(reloadedCertificate, lastCertificate);
+	}
+	
+	/**
+	 * Create a course, add a certificate to it and delete the course.
+	 * The certificate stays.
+	 * 
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void deleteCourse()  throws URISyntaxException  {
+		//create a course with a certificate
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-del-2");
+		RepositoryEntry entry = JunitTestHelper.deployDemoCourse(identity);
+		dbInstance.commitAndCloseSession();
+		Long resourceKey = entry.getOlatResource().getKey();
+		
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		URL certificateUrl = CertificatesManagerTest.class.getResource("template.pdf");
+		File certificateFile = new File(certificateUrl.toURI());
+		Certificate certificate = certificatesManager.uploadCertificate(identity, cal.getTime(), entry.getOlatResource(), certificateFile);
+		Assert.assertNotNull(certificate);
+		dbInstance.commitAndCloseSession();
+		
+		//delete the course
+		Roles roles = new Roles(true, false, false, false, false, false, false);
+		repositoryService.delete(entry, identity, roles, Locale.ENGLISH);
+		dbInstance.commitAndCloseSession();
+		
+		//retrieve the certificate
+		Certificate reloadedCertificate = certificatesManager.getCertificateById(certificate.getKey());
+		Assert.assertNotNull(reloadedCertificate);
+		Assert.assertEquals(certificate, reloadedCertificate);
+		Assert.assertNotNull(reloadedCertificate.getArchivedResourceKey());
+		Assert.assertEquals(resourceKey, reloadedCertificate.getArchivedResourceKey());
+	}
+	
+	
+	/**
+	 * Create 2 courses, add a certificate to them and delete the first course.
+	 * Check that a certificate loose the relation to the deleted course but not
+	 * the other. The two certificates stay.
+	 * 
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void deleteCourse_paranoiaCheck()  throws URISyntaxException  {
+		//create a course with a certificate
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-del-3");
+		RepositoryEntry entryToDelete = JunitTestHelper.deployDemoCourse(identity);
+		RepositoryEntry entry = JunitTestHelper.deployDemoCourse(identity);
+		dbInstance.commitAndCloseSession();
+		Long resourceKeyToDelete = entryToDelete.getOlatResource().getKey();
+		Long resourceKey = entry.getOlatResource().getKey();
+		
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		URL certificateUrl = CertificatesManagerTest.class.getResource("template.pdf");
+		File certificateFile = new File(certificateUrl.toURI());
+		//certificate linked to the course which will be deleted
+		Certificate certificateDeletedCourse = certificatesManager.uploadCertificate(identity, cal.getTime(), entryToDelete.getOlatResource(), certificateFile);
+		Assert.assertNotNull(certificateDeletedCourse);
+		//certificate of the staying course
+		Certificate certificate = certificatesManager.uploadCertificate(identity, cal.getTime(), entry.getOlatResource(), certificateFile);
+		Assert.assertNotNull(certificate);
+		dbInstance.commitAndCloseSession();
+		
+		//delete the course
+		Roles roles = new Roles(true, false, false, false, false, false, false);
+		repositoryService.delete(entryToDelete, identity, roles, Locale.ENGLISH);
+		dbInstance.commitAndCloseSession();
+		
+		//retrieve the certificate of the deleted course
+		Certificate reloadedCertificateDeletedCourse = certificatesManager.getCertificateById(certificateDeletedCourse.getKey());
+		Assert.assertNotNull(reloadedCertificateDeletedCourse);
+		Assert.assertEquals(certificateDeletedCourse, reloadedCertificateDeletedCourse);
+		Assert.assertNotNull(reloadedCertificateDeletedCourse.getArchivedResourceKey());
+		Assert.assertNull(((CertificateImpl)reloadedCertificateDeletedCourse).getOlatResource());
+		Assert.assertEquals(resourceKeyToDelete, reloadedCertificateDeletedCourse.getArchivedResourceKey());
+		
+		//retrieve the certificate of the staying course
+		Certificate reloadedCertificate = certificatesManager.getCertificateById(certificate.getKey());
+		Assert.assertNotNull(reloadedCertificate);
+		Assert.assertEquals(certificate, reloadedCertificate);
+		Assert.assertNotNull(reloadedCertificate.getArchivedResourceKey());
+		Assert.assertEquals(resourceKey, reloadedCertificate.getArchivedResourceKey());
+		Assert.assertEquals(entry.getOlatResource(), ((CertificateImpl)reloadedCertificate).getOlatResource());
 	}
 }

@@ -59,6 +59,9 @@ public interface CertificatesManager {
 	
 	public void markPublisherNews(Identity ident, ICourse course);
 	
+	//repository maintenance
+	public int deleteRepositoryEntry(RepositoryEntry re);
+	
 	//templates management
 	public List<CertificateTemplate> getTemplates();
 	

@@ -283,6 +283,16 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 	
 	@Override
+	public int deleteRepositoryEntry(RepositoryEntry re) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("update certificate set olatResource = null where olatResource.key=:resourceKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("resourceKey", re.getOlatResource().getKey())
+				.executeUpdate();
+	}
+
+	@Override
 	public VFSLeaf getCertificateLeaf(Certificate certificate) {
 		VFSContainer cerContainer = getCertificateRootContainer();
 		VFSItem cerItem = null;
