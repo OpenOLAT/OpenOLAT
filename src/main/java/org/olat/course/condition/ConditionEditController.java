@@ -127,6 +127,7 @@ public class ConditionEditController extends BasicController {
 		// <OLATCE-91>
 		CourseEditorEnv courseEnv = euce.getCourseEditorEnv();
 		CourseNode courseNode = courseEnv.getNode(courseEnv.getCurrentCourseNodeId());
+		boolean isRootNode = courseEnv.getRootNodeId().equals(courseNode.getIdent());
 		if(showPasswordAccess && courseNode instanceof AbstractAccessableCourseNode){
 			AbstractAccessableCourseNode accessableCourseNode = (AbstractAccessableCourseNode)courseNode;
 			for(AdditionalCondition addCond : accessableCourseNode.getAdditionalConditions()){
@@ -134,12 +135,21 @@ public class ConditionEditController extends BasicController {
 					passwordCondition = (PasswordCondition) addCond;
 				}
 			}
-			if(passwordCondition == null) {
+			if ((passwordCondition == null) && (!isRootNode)) {
 				passwordCondition = new PasswordCondition();
 				accessableCourseNode.getAdditionalConditions().add(passwordCondition);
 			}
-			passwordConditionEditController = passwordCondition.getEditorComponent(ureq, wControl);
-			listenTo(passwordConditionEditController);
+			if ((passwordCondition != null) && (isRootNode)) {
+				String pass = passwordCondition.getPassword();
+				if ((pass == null) || (pass.length() == 0)) {
+					accessableCourseNode.getAdditionalConditions().remove(passwordCondition);
+					passwordCondition = null;
+				}
+			}
+			if (passwordCondition != null) {
+				passwordConditionEditController = passwordCondition.getEditorComponent(ureq, wControl);
+				listenTo(passwordConditionEditController);
+			}
 		}
 		// </OLATCE-91>
 		

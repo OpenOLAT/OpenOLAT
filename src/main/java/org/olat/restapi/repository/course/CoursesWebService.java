@@ -67,6 +67,8 @@ import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -444,6 +446,8 @@ public class CoursesWebService {
 			} else {
 				preparedEntry.setAccess(access);
 			}
+			preparedEntry.setAllowToLeaveOption(src.getAllowToLeaveOption());
+
 			repositoryService.update(preparedEntry);
 			
 			// copy image if available
@@ -520,6 +524,11 @@ public class CoursesWebService {
 		addedEntry.setExternalId(externalId);
 		addedEntry.setExternalRef(externalRef);
 		addedEntry.setManagedFlagsString(managedFlags);
+		if(RepositoryEntryManagedFlag.isManaged(addedEntry, RepositoryEntryManagedFlag.membersmanagement)) {
+			addedEntry.setAllowToLeaveOption(RepositoryEntryAllowToLeaveOptions.never);
+		} else {
+			addedEntry.setAllowToLeaveOption(RepositoryEntryAllowToLeaveOptions.atAnyTime);//default
+		}
 		return addedEntry;//!!!no update at this point
 	}
 	

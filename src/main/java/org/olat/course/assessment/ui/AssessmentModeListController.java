@@ -71,7 +71,7 @@ public class AssessmentModeListController extends FormBasicController implements
 	private AssessmentModeListModel model;
 	private final TooledStackedPanel toolbarPanel;
 
-	private DialogBoxController deleteDialogBox;
+	private DialogBoxController startDialogBox, stopDialogBox,deleteDialogBox;
 	private AssessmentModeEditController editCtrl;
 	
 	private final RepositoryEntry entry;
@@ -161,11 +161,20 @@ public class AssessmentModeListController extends FormBasicController implements
 			removeAsListenerAndDispose(editCtrl);
 			editCtrl = null;
 		} else if(deleteDialogBox == source) {
-			if(DialogBoxUIFactory.isYesEvent(event)) {
+			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				@SuppressWarnings("unchecked")
 				List<AssessmentMode> rows = (List<AssessmentMode>)deleteDialogBox.getUserObject();
 				doDelete(rows);
-				loadModel();
+			}
+		} else if(startDialogBox == source) {
+			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				AssessmentMode row = (AssessmentMode)startDialogBox.getUserObject();
+				doStart(row);
+			}
+		} else if(stopDialogBox == source) {
+			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				AssessmentMode row = (AssessmentMode)stopDialogBox.getUserObject();
+				doStop(row);
 			}
 		}
 		super.event(ureq, source, event);
@@ -208,9 +217,9 @@ public class AssessmentModeListController extends FormBasicController implements
 				if("edit".equals(cmd)) {
 					doEdit(ureq, row);
 				} else if("start".equals(cmd)) {
-					doStart(ureq, row);
+					doConfirmStart(ureq, row);
 				} else if("stop".equals(cmd)) {
-					doStop(ureq, row);
+					doConfirmStop(ureq, row);
 				}
 			}
 		}
@@ -248,6 +257,7 @@ public class AssessmentModeListController extends FormBasicController implements
 		for(AssessmentMode modeToDelete:modesToDelete) {
 			assessmentModeMgr.delete(modeToDelete);
 		}
+		loadModel();
 	}
 	
 	private void doEdit(UserRequest ureq, AssessmentMode mode) {
@@ -256,13 +266,27 @@ public class AssessmentModeListController extends FormBasicController implements
 		listenTo(editCtrl);
 		toolbarPanel.pushController(translate("new.mode"), editCtrl);
 	}
+	
+	private void doConfirmStart(UserRequest ureq, AssessmentMode mode) {
+		String title = translate("confirm.start.title");
+		String text = translate("confirm.start.text");
+		startDialogBox = activateYesNoDialog(ureq, title, text, startDialogBox);
+		startDialogBox.setUserObject(mode);
+	}
 
-	private void doStart(UserRequest ureq, AssessmentMode mode) {
+	private void doStart(AssessmentMode mode) {
 		assessmentModeCoordinationService.startAssessment(mode);
 		loadModel();
 	}
 	
-	private void doStop(UserRequest ureq, AssessmentMode mode) {
+	private void doConfirmStop(UserRequest ureq, AssessmentMode mode) {
+		String title = translate("confirm.stop.title");
+		String text = translate("confirm.stop.text");
+		stopDialogBox = activateYesNoDialog(ureq, title, text, stopDialogBox);
+		stopDialogBox.setUserObject(mode);
+	}
+	
+	private void doStop(AssessmentMode mode) {
 		assessmentModeCoordinationService.stopAssessment(mode);
 		loadModel();
 	}

@@ -35,6 +35,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.io.IOUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.media.MediaResource;
@@ -43,6 +45,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.io.HttpServletResponseOutputStream;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -161,14 +164,22 @@ public class RepositoryEntryImportExport {
 		// export resource
 		RepositoryHandler rh = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
 		MediaResource mr = rh.getAsMediaResource(re.getOlatResource(), false);
+		
 		FileOutputStream fOut = null;
 		try {
 			fOut = new FileOutputStream(new File(baseDirectory, CONTENT_FILE));
-			IOUtils.copy(mr.getInputStream(), fOut);
+			InputStream in = mr.getInputStream();
+			if(in == null) {
+				HttpServletResponse hres = new HttpServletResponseOutputStream(fOut);
+				mr.prepare(hres);	
+			} else {
+				IOUtils.copy(mr.getInputStream(), fOut);
+			}
+			fOut.flush();
 		} catch (IOException fnfe) {
 			return false;
 		} finally {
-			FileUtils.closeSafely(fOut);
+			IOUtils.closeQuietly(fOut);
 			mr.release();
 		}
 		return true;

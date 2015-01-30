@@ -833,14 +833,19 @@ public class FileUtils {
 	}
 	
 	public static String normalizeFilename(String name) {
-		String nameFirstPass = name.replace(" ", "_");
-		nameFirstPass = nameFirstPass.replace("\u00C4", "Ae");
-		nameFirstPass = nameFirstPass.replace("\u00D6", "Oe");
-		nameFirstPass = nameFirstPass.replace("\u00DC", "Ue");
-		nameFirstPass = nameFirstPass.replace("\u00E4", "ae");
-		nameFirstPass = nameFirstPass.replace("\u00F6", "oe");
-		nameFirstPass = nameFirstPass.replace("\u00FC", "ue");
-		String nameNormalized = Normalizer.normalize(nameFirstPass, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+","");
+		String nameFirstPass = name.replace(" ", "_")
+				.replace("\u00C4", "Ae")
+				.replace("\u00D6", "Oe")
+				.replace("\u00DC", "Ue")
+				.replace("\u00E4", "ae")
+				.replace("\u00F6", "oe")
+				.replace("\u00FC", "ue")
+				.replace("\u00DF", "ss")
+				.replace("\u00F8", "o")
+				.replace("\u2205", "o")
+				.replace("\u00E6", "ae");
+		String nameNormalized = Normalizer.normalize(nameFirstPass, Normalizer.Form.NFKD)
+				.replaceAll("\\p{InCombiningDiacriticalMarks}+","");
 		String nameSanitized = nameNormalized.replaceAll("\\W+", "");
 		return nameSanitized;
 	}

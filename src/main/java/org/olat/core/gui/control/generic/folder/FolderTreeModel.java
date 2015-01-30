@@ -75,16 +75,11 @@ public class FolderTreeModel extends GenericTreeModel {
 		this.selectableFolders = selectableFolders;
 		this.fileFilter = fileFilter;
 
-		GenericTreeNode newRoot = new GenericTreeNode(rootContainer.getName(), rootContainer.getName());
+		GenericTreeNode newRoot = new GenericTreeNode(rootContainer.getName(), "/");
 		newRoot.setIconCssClass("o_filetype_folder");
+		newRoot.setSelected(allowRootFolderSelect);
 		setRootNode(newRoot);
-		if (allowRootFolderSelect) { // include root folder as selection
-			GenericTreeNode effectiveRoot = new GenericTreeNode("/", "/");
-			newRoot.addChild(effectiveRoot);
-			buildTree(effectiveRoot, rootContainer, "/");
-		} else {
-			buildTree(getRootNode(), rootContainer, "/");
-		}
+		buildTree(newRoot, rootContainer, "/");
 	}
 	
 	/**

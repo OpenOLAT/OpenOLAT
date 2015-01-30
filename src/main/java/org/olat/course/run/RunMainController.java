@@ -199,7 +199,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		uce.getScoreAccounting().evaluateAll();
 		
 		if(assessmentMode != null && assessmentMode.isRestrictAccessElements()) {
-			treeFilter = new AssessmentModeTreeFilter(assessmentMode);
+			treeFilter = new AssessmentModeTreeFilter(assessmentMode, uce.getCourseEnvironment().getRunStructure());
 		} else {
 			treeFilter = new VisibleTreeFilter();
 		}

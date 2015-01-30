@@ -318,6 +318,7 @@ create table if not exists o_repositoryentry (
    accesscode integer not null default 0,
    membersonly bit default 0,
    statuscode integer,
+   allowtoleave varchar(16),
    canlaunch bit not null,
    candownload bit not null,
    cancopy bit not null,

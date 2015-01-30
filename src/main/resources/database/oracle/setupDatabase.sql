@@ -371,6 +371,7 @@ CREATE TABLE o_repositoryentry (
   accesscode number(11) NOT NULL,
   membersonly number default 0,
   statuscode number(11),
+  allowtoleave varchar2(16 char),
   canlaunch number NOT NULL,
   candownload number NOT NULL,
   cancopy number NOT NULL,

@@ -90,6 +90,7 @@ import org.olat.repository.ui.author.RepositoryEditDescriptionController;
 import org.olat.repository.ui.author.RepositoryMembersController;
 import org.olat.repository.ui.author.wizard.CloseResourceCallback;
 import org.olat.repository.ui.author.wizard.Close_1_ExplanationStep;
+import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
@@ -538,6 +539,10 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		} else if(descriptionCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
 				re = descriptionCtrl.getEntry();
+			}
+		} else if(detailsCtrl == source) {
+			if(event instanceof LeavingEvent) {
+				doClose(ureq);
 			}
 		} else if(closeCtrl == source) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {

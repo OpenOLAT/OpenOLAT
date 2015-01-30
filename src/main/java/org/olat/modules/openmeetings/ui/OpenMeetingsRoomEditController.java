@@ -53,6 +53,7 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 	private TextElement roomNameEl;
 	private SingleSelection roomTypeEl;
 	private SingleSelection roomSizeEl;
+	private SingleSelection avModeEl;
 	private SingleSelection moderationModeEl;
 	private MultipleSelectionElement recordingEl;
 	private TextElement commentEl;
@@ -61,6 +62,7 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 	private final String[] roomSizes;
 	private final String[] moderationModeKeys;
 	private final String[] recordingKeys = {"xx"};
+	private final String[] avModeKeys;
 
 	private final BusinessGroup group;
 	private final OLATResourceable ores;
@@ -85,6 +87,7 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 				RoomType.conference.typeStr(), RoomType.restricted.typeStr(), RoomType.interview.typeStr()
 		};
 		moderationModeKeys = new String[]{"yes", "no"};
+		avModeKeys = new String[]{"audio", "video"};
 		
 		openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
 		try {
@@ -178,6 +181,16 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 		} else if(defaultSettings != null) {
 			recordingEl.select(recordingKeys[0], defaultSettings.isRecordingAllowed());
 		}
+		String[] avModeValues = new String[]{ translate("room.av.audio"), translate("room.av.video") };
+		avModeEl = uifactory.addDropdownSingleselect("avmode", "room.av.mode", formLayout, avModeKeys, avModeValues, null);
+		if(room != null) {
+			String key = room.isAudioOnly() ? avModeKeys[0] : avModeKeys[1];
+			avModeEl.select(key, true);
+			avModeEl.setEnabled(false);
+		} else if(defaultSettings != null) {
+			String key = defaultSettings.isAudioOnly() ? avModeKeys[0] : avModeKeys[1];
+			avModeEl.select(key, true);
+		}
 
 		String comment = room == null ? (defaultSettings == null ? null : defaultSettings.getComment()) : room.getComment();
 		commentEl = uifactory.addRichTextElementForStringData("roomcomment", "room.comment", comment == null ? "" : comment,
@@ -211,6 +224,7 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 				room.setSize(16l);
 			}
 		}
+		room.setAudioOnly(avModeEl.isOneSelected() && avModeEl.isSelected(0));
 		if(roomTypeEl.isOneSelected()) {
 			String type = roomTypeEl.getSelectedKey();
 			long roomType = Long.parseLong(type);

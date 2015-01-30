@@ -316,6 +316,7 @@ create table o_repositoryentry (
    accesscode int4 not null,
    membersonly boolean default false,
    statuscode int4,
+   allowtoleave varchar(16),
    canlaunch bool not null,
    candownload bool not null,
    cancopy bool not null,

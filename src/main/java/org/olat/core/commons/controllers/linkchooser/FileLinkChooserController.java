@@ -190,11 +190,16 @@ public class FileLinkChooserController extends BasicController {
 				if (isFileSuffixOk(folderEvent.getFilename())) {
 					Size size = null;
 					VFSItem item = folderEvent.getItem();
+					
+					String relPath;
 					if(item != null) {
 						size = getSize(item, item.getName());
+						relPath = FileChooserUIFactory
+								.getSelectedRelativeItemPath(folderEvent, rootDir, fileName);
+					} else {
+						relPath = folderEvent.getFilename();
 					}
 					
-					String relPath = folderEvent.getFilename();
 					if(StringHelper.containsNonWhitespace(absolutePath)) {
 						relPath = absolutePath + relPath;
 					}
