@@ -33,6 +33,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.IPUtils;
 import org.olat.core.util.StringHelper;
@@ -66,6 +68,8 @@ import org.springframework.stereotype.Service;
  */
 @Service("assessmentModeManager")
 public class AssessmentModeManagerImpl implements AssessmentModeManager {
+	
+	private static final OLog log = Tracing.createLoggerFor(AssessmentModeManagerImpl.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -338,6 +342,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	@Override
 	public boolean isSafelyAllowed(HttpServletRequest request, String safeExamBrowserKeys) {
 		boolean safe = false;
+		boolean debug = log.isDebug();
 		if(StringHelper.containsNonWhitespace(safeExamBrowserKeys)) {
 			String safeExamHash = request.getHeader("x-safeexambrowser-requesthash");
 			String url = request.getRequestURL().toString();
@@ -346,6 +351,9 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 				String hash = Encoder.sha256Exam(url + safeExamBrowserKey);
 				if(safeExamHash != null && safeExamHash.equals(hash)) {
 					safe = true;
+				}
+				if(debug) {
+					log.debug((safeExamHash.equals(hash) ? "Success" : "Failed") + " : " + safeExamHash +" (Header) " + hash + " (Calculated)");
 				}
 			}
 		} else {

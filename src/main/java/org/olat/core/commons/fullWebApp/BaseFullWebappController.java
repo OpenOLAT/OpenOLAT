@@ -152,8 +152,8 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	private TransientAssessmentMode lockMode;
 	
 	// NEW FROM FullChiefController
-	private TopNavController topnavCtr;
-	private Controller footerCtr;
+	private LockableController topnavCtr;
+	private LockableController footerCtr;
 	private UserToolsMenuController userToolsMenuCtrl;
 	private SiteInstance curSite;
 	private DTab curDTab;
@@ -378,6 +378,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		// nav is not a controller part because it is a fundamental part of the BaseFullWebAppConroller.
 		navSitesVc = createVelocityContainer("nav_sites");
 		navSitesVc.setDomReplacementWrapperRequired(false);
+		navSitesVc.contextPut("visible", Boolean.TRUE);
 		mainVc.put("sitesComponent", navSitesVc);
 		
 		navTabsVc = createVelocityContainer("nav_tabs");
@@ -475,7 +476,6 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			Component footerCmp = footerCtr.getInitialComponent();
 			mainVc.put("footerComponent", footerCmp);
 		}
-		
 		
 		contentCtrl = baseFullWebappControllerParts.getContentController(ureq, getWindowControl());
 		if (contentCtrl != null) {
@@ -1295,19 +1295,23 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		if(topnavCtr != null) {
 			topnavCtr.lockResource(resource);
 		}
+		if(footerCtr != null) {
+			footerCtr.lockResource(resource);
+		}
+		
 		if(userToolsMenuCtrl != null) {
 			userToolsMenuCtrl.lockResource(resource);
 		}
 		
-		if(navSitesVc.isVisible()) {
-			navSitesVc.setVisible(false);
-		}
 		for(int i=dtabsControllers.size(); i-->0; ) {
 			DTab tab = dtabs.get(i);
 			if(!lockResource.getResourceableId().equals(tab.getOLATResourceable().getResourceableId())) {
 				removeDTab(null, tab);
 			}
 		}
+		navSitesVc.contextPut("visible", Boolean.FALSE);
+		navSitesVc.setDirty(true);
+		navTabsVc.setDirty(true);
 	}
 
 	private void unlockResource() {
@@ -1315,10 +1319,15 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		if(topnavCtr != null) {
 			topnavCtr.unlockResource();
 		}
+		if(footerCtr != null) {
+			footerCtr.unlockResource();
+		}
 		if(userToolsMenuCtrl != null) {
 			userToolsMenuCtrl.unlockResource();
 		}
-		navSitesVc.setVisible(true);
+		navSitesVc.contextPut("visible", Boolean.TRUE);
+		navSitesVc.setDirty(true);
+		navTabsVc.setDirty(true);
 	}
 
 	private boolean asyncLockResource(TransientAssessmentMode mode) {

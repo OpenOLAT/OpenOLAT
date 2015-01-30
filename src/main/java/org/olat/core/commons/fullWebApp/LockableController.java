@@ -28,7 +28,7 @@ import org.olat.core.id.OLATResourceable;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface TopNavController extends Controller {
+public interface LockableController extends Controller {
 	
 	public void lockResource(OLATResourceable resource);
 	

@@ -22,7 +22,7 @@ package org.olat.core.commons.fullWebApp.popup;
 import java.util.List;
 
 import org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts;
-import org.olat.core.commons.fullWebApp.TopNavController;
+import org.olat.core.commons.fullWebApp.LockableController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -59,7 +59,7 @@ class BaseFullWebappPrintLayoutControllerCreator implements BaseFullWebappPopupL
 			}
 
 			@Override
-			public TopNavController createTopNavController(UserRequest ureq, WindowControl wControl) {
+			public LockableController createTopNavController(UserRequest ureq, WindowControl wControl) {
 				return null;
 			}
 
@@ -69,7 +69,7 @@ class BaseFullWebappPrintLayoutControllerCreator implements BaseFullWebappPopupL
 			}
 
 			@Override
-			public Controller createFooterController(UserRequest ureq, WindowControl control) {
+			public LockableController createFooterController(UserRequest ureq, WindowControl control) {
 				return null;
 			}
 		};

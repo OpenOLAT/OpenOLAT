@@ -24,7 +24,7 @@
 */
 package org.olat.gui.control;
 
-import org.olat.core.commons.fullWebApp.TopNavController;
+import org.olat.core.commons.fullWebApp.LockableController;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
@@ -48,7 +48,7 @@ import org.olat.core.id.OLATResourceable;
  * Initial Date:  15.02.2008 <br>
  * @author patrickb
  */
-public class OlatMinimalTopNavController extends BasicController implements TopNavController {
+public class OlatMinimalTopNavController extends BasicController implements LockableController {
 
 	private final Link closeLink;
 

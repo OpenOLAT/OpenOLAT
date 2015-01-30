@@ -27,7 +27,7 @@ import java.util.Set;
 import org.olat.admin.user.tools.UserTool;
 import org.olat.admin.user.tools.UserToolExtension;
 import org.olat.admin.user.tools.UserToolsModule;
-import org.olat.core.commons.fullWebApp.TopNavController;
+import org.olat.core.commons.fullWebApp.LockableController;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.extensions.ExtManager;
 import org.olat.core.gui.UserRequest;
@@ -56,7 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class OlatTopNavController extends BasicController implements TopNavController {
+public class OlatTopNavController extends BasicController implements LockableController {
 	
 	private Link loginLink;
 	private VelocityContainer topNavVC;

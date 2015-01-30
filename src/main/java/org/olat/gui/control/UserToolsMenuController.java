@@ -29,7 +29,7 @@ import org.olat.admin.user.tools.UserToolCategory;
 import org.olat.admin.user.tools.UserToolExtension;
 import org.olat.admin.user.tools.UserToolsModule;
 import org.olat.basesecurity.AuthHelper;
-import org.olat.core.commons.fullWebApp.TopNavController;
+import org.olat.core.commons.fullWebApp.LockableController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -48,7 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UserToolsMenuController extends BasicController implements TopNavController  {
+public class UserToolsMenuController extends BasicController implements LockableController  {
 
 	private static final String ACTION_LOGOUT = "logout";
 	

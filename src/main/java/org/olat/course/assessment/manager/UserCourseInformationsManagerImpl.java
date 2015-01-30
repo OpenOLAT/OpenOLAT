@@ -145,8 +145,8 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 				@Override
 				public void execute() {
 					try {
-						UltraLightInfos ulInfos = getUserCourseInformationsKey(courseResourceableId, identity);
-						if(ulInfos == null) {
+						UltraLightInfos reloadedUlInfos = getUserCourseInformationsKey(courseResourceableId, identity);
+						if(reloadedUlInfos == null) {
 							OLATResource courseResource = resourceManager.findResourceable(courseResourceableId, "CourseModule");
 							UserCourseInfosImpl infos = new UserCourseInfosImpl();
 							infos.setIdentity(identity);
@@ -157,8 +157,8 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 							infos.setVisit(1);
 							infos.setResource(courseResource);
 							dbInstance.getCurrentEntityManager().persist(infos);
-						} else if(strict || needUpdate(ulInfos)) {
-							UserCourseInfosImpl infos = loadById(ulInfos.getKey());
+						} else if(strict || needUpdate(reloadedUlInfos)) {
+							UserCourseInfosImpl infos = loadById(reloadedUlInfos.getKey());
 							if(infos != null) {
 								infos.setVisit(infos.getVisit() + 1);
 								infos.setRecentLaunch(new Date());

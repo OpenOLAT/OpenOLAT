@@ -28,7 +28,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts;
-import org.olat.core.commons.fullWebApp.TopNavController;
+import org.olat.core.commons.fullWebApp.LockableController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayout;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -74,12 +74,12 @@ class ContextHelpLayoutControllerCreator implements BaseFullWebappPopupLayout {
 			}
 
 			@Override
-			public TopNavController createTopNavController(UserRequest ureq, WindowControl wControl) {
-				TopNavController topnavCtr = null;
+			public LockableController createTopNavController(UserRequest ureq, WindowControl wControl) {
+				LockableController topnavCtr = null;
 				// ----------- topnav, optional (e.g. for imprint, logout) ------------------		
 				if (CoreSpringFactory.containsBean("fullWebApp.ContextHelpTopNavControllerCreator")) {
 					ControllerCreator topnavControllerCreator = (ControllerCreator) CoreSpringFactory.getBean("fullWebApp.ContextHelpTopNavControllerCreator");
-					topnavCtr = (TopNavController)topnavControllerCreator.createController(ureq, wControl);
+					topnavCtr = (LockableController)topnavControllerCreator.createController(ureq, wControl);
 				}
 				return topnavCtr;
 			}
@@ -96,14 +96,14 @@ class ContextHelpLayoutControllerCreator implements BaseFullWebappPopupLayout {
 			}
 
 			@Override
-			public Controller createFooterController(UserRequest ureq, WindowControl control) {
+			public LockableController createFooterController(UserRequest ureq, WindowControl control) {
 				Controller footerCtr = null;
 				// ----------- footer, optional (e.g. for copyright, powerd by) ------------------
 				if (CoreSpringFactory.containsBean("fullWebApp.ContextHelpFooterControllerCreator")) {
 					ControllerCreator footerCreator = (ControllerCreator) CoreSpringFactory.getBean("fullWebApp.ContextHelpFooterControllerCreator");
 					footerCtr = footerCreator.createController(ureq, control);
 				}
-				return footerCtr;
+				return (LockableController)footerCtr;
 			}
 		};
 	}
