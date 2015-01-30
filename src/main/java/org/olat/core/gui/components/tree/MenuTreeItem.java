@@ -40,11 +40,20 @@ import org.olat.course.tree.TreePosition;
 public class MenuTreeItem extends FormItemImpl {
 	
 	private final MenuTree treeCmp;
+	private boolean noDirtyCheckOnClick = false;
 	private Set<String> visibleNodeIds = new HashSet<>();
 	
 	public MenuTreeItem(String name, ComponentEventListener listener) {
 		super(name);
 		treeCmp = new MenuTree(null, name + "_CMP", listener, this);
+	}
+
+	public boolean isNoDirtyCheckOnClick() {
+		return noDirtyCheckOnClick;
+	}
+
+	public void setNoDirtyCheckOnClick(boolean noDirtyCheckOnClick) {
+		this.noDirtyCheckOnClick = noDirtyCheckOnClick;
 	}
 
 	@Override

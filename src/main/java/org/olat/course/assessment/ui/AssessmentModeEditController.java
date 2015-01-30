@@ -636,7 +636,7 @@ public class AssessmentModeEditController extends FormBasicController {
 		listenTo(chooseElementsCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", chooseElementsCtrl.getInitialComponent(),
-				true, getTranslator().translate("popup.chooseelements"));
+				true, translate("popup.chooseelements"), false);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -647,8 +647,8 @@ public class AssessmentModeEditController extends FormBasicController {
 		chooseStartElementCtrl = new ChooseStartElementController(ureq, getWindowControl(), startElementKey, courseOres);
 		listenTo(chooseStartElementCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", chooseStartElementCtrl.getInitialComponent(),
-				true, getTranslator().translate("popup.choosestartelement"));
+		cmc = new CloseableModalController(getWindowControl(), null, chooseStartElementCtrl.getInitialComponent(),
+				true, translate("popup.choosestartelement"), false);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -661,8 +661,8 @@ public class AssessmentModeEditController extends FormBasicController {
 		areaChooseCtrl = new AreaSelectionController(ureq, getWindowControl(), true, groupManager, areaKeys);
 		listenTo(areaChooseCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", areaChooseCtrl.getInitialComponent(),
-				true, getTranslator().translate("popup.chooseareas"));
+		cmc = new CloseableModalController(getWindowControl(), null, areaChooseCtrl.getInitialComponent(),
+				true, translate("popup.chooseareas"), false);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -675,8 +675,8 @@ public class AssessmentModeEditController extends FormBasicController {
 		groupChooseCtrl = new GroupSelectionController(ureq, getWindowControl(), true, groupManager, groupKeys);
 		listenTo(groupChooseCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), "close", groupChooseCtrl.getInitialComponent(),
-				true, translate("popup.choosegroups"));
+		cmc = new CloseableModalController(getWindowControl(), null, groupChooseCtrl.getInitialComponent(),
+				true, translate("popup.choosegroups"), false);
 		listenTo(cmc);
 		cmc.activate();
 	}

@@ -352,7 +352,11 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		}
 		
 		// add css class to identify level, FireFox script
-		target.append("<a onclick='o2cl_secure()' href=\"");					
+		if(tree.getMenuTreeItem() != null && tree.getMenuTreeItem().isNoDirtyCheckOnClick()) {
+			target.append("<a onclick='o2cl_noDirtyCheck()' href=\"");		
+		} else {
+			target.append("<a onclick='o2cl_secure()' href=\"");		
+		}			
 		
 		// Build menu item URI
 		if (iframePostEnabled) {
