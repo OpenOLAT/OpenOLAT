@@ -48,6 +48,11 @@
 		.o_comment { 
 			@extend %o_small;
 		}
+		/* a reply to a comment */		
+		.o_comment_wrapper {
+			margin-left: $padding-large-horizontal; 		
+		}
+		
 	}
 } 
 
