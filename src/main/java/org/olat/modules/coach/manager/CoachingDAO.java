@@ -19,6 +19,7 @@
  */
 package org.olat.modules.coach.manager;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,6 +38,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.NativeQueryBuilder;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
@@ -61,6 +64,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class CoachingDAO {
+	
+	private static final OLog log = Tracing.createLoggerFor(CoachingDAO.class);
 
 	@Autowired
 	private DB dbInstance;
@@ -655,19 +660,8 @@ public class CoachingDAO {
 		for(Object rawObject:rawList) {
 			Object[] rawStat = (Object[])rawObject;
 			StudentStatEntry entry = new StudentStatEntry(((Number)rawStat[0]).longValue());
-			
-			String repoIds = (String)rawStat[1]; {
-			if(StringHelper.containsNonWhitespace(repoIds))
-				for(String repoId:repoIds.split(",")) {
-					entry.getRepoIds().add(repoId);
-				}
-			}
-			String launchIds = (String)rawStat[2];
-			if(StringHelper.containsNonWhitespace(launchIds)) {
-				for(String launchId:launchIds.split(",")) {
-					entry.getLaunchIds().add(launchId);
-				}
-			}
+			appendArrayToSet(rawStat[1], entry.getRepoIds());
+			appendArrayToSet(rawStat[2], entry.getLaunchIds());
 			map.put(entry.getStudentKey(), entry);
 		}
 		return rawList.size() > 0;
@@ -706,21 +700,39 @@ public class CoachingDAO {
 				entry = new StudentStatEntry(identityKey);
 				map.put(identityKey, entry);
 			}
-			String repoIds = (String)rawStat[1];
-			if(StringHelper.containsNonWhitespace(repoIds)) {
-				for(String repoId:repoIds.split(",")) {
-					entry.getRepoIds().add(repoId);
-				}
-			}
-			String launchIds = (String)rawStat[2];
-			if(StringHelper.containsNonWhitespace(launchIds)) {
-				for(String launchId:launchIds.split(",")) {
-					entry.getLaunchIds().add(launchId);
-				}
-			}
+			appendArrayToSet(rawStat[1], entry.getRepoIds());
+			appendArrayToSet(rawStat[2], entry.getLaunchIds());
 			stats.put(entry.getStudentKey(), entry);
 		}
 		return rawList.size() > 0;
+	}
+	
+	/**
+	 * Catch null value, strings and blob
+	 * 
+	 * @param rawObject
+	 * @param ids
+	 */
+	private void appendArrayToSet(Object rawObject, Set<String> ids) {
+		String rawString = null;
+		if(rawObject instanceof String) {
+			rawString = (String)rawObject;
+		} else if(rawObject instanceof byte[]) {
+			try {
+				byte[] rawByteArr = (byte[])rawObject;
+				rawString = new String(rawByteArr, "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				log.error("", e);
+			}
+		} else if (rawObject != null) {
+			log.error("Unkown format: " + rawObject.getClass().getName() + " / " + rawObject);
+		}
+		
+		if(StringHelper.containsNonWhitespace(rawString)) {
+			for(String launchId:rawString.split(",")) {
+				ids.add(launchId);
+			}
+		}
 	}
 	
 	private boolean getStudentsStatisticStatement(IdentityRef coach, Map<Long,StudentStatEntry> stats) {

@@ -371,9 +371,9 @@ public class CourseWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		ICourse course = CourseFactory.openCourseEditSession(courseId);
+		ICourse editedCourse = CourseFactory.openCourseEditSession(courseId);
 		//change course config
-		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
+		CourseConfig courseConfig = editedCourse.getCourseEnvironment().getCourseConfig();
 		if(calendar != null) {
 			courseConfig.setCalendarEnabled(calendar.booleanValue());
 		}
@@ -393,10 +393,10 @@ public class CourseWebService {
 			courseConfig.setSharedFolderSoftkey(sharedFolderSoftkey);
 		}
 
-		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
-		CourseFactory.closeCourseEditSession(course.getResourceableId(),true);
+		CourseFactory.setCourseConfig(editedCourse.getResourceableId(), courseConfig);
+		CourseFactory.closeCourseEditSession(editedCourse.getResourceableId(),true);
 		
-		CourseConfigVO vo = ObjectFactory.getConfig(course);
+		CourseConfigVO vo = ObjectFactory.getConfig(editedCourse);
 		return Response.ok(vo).build();
 	}
 	
@@ -487,6 +487,47 @@ public class CourseWebService {
 		return Response.ok(authors).build();
 	}
 	
+	/**
+	 * Get all coaches of the course (don't follow the groups)
+	 * @response.representation.200.qname {http://www.example.com}userVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The array of coaches
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The course not found
+	 * @param httpRequest The HTTP request
+	 * @return It returns an array of <code>UserVO</code>
+	 */
+	@GET
+	@Path("tutors")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getTutors(@Context HttpServletRequest httpRequest) {
+		if (!isAuthorEditor(course, httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		RepositoryManager rm = RepositoryManager.getInstance();
+		RepositoryEntry repositoryEntry = rm.lookupRepositoryEntry(course, true);
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		List<Identity> coachList = repositoryService.getMembers(repositoryEntry, GroupRoles.coach.name());
+		
+		int count = 0;
+		UserVO[] coaches = new UserVO[coachList.size()];
+		for(Identity coach:coachList) {
+			coaches[count++] = UserVOFactory.get(coach);
+		}
+		return Response.ok(coaches).build();
+	}
+	
+	/**
+	 * Get all participants of the course (don't follow the groups)
+	 * @response.representation.200.qname {http://www.example.com}userVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The array of participants
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The course not found
+	 * @param httpRequest The HTTP request
+	 * @return It returns an array of <code>UserVO</code>
+	 */
 	@GET
 	@Path("participants")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
