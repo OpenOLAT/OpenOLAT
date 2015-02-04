@@ -127,10 +127,6 @@
 		<class>org.olat.instantMessaging.model.InstantMessageNotificationImpl</class>
 		<class>org.olat.ims.qti.statistics.model.QTIStatisticResult</class>
 		<class>org.olat.ims.qti.statistics.model.QTIStatisticResultSet</class>
-		<class>org.olat.modules.coach.model.EfficiencyStatementGroupStatEntry</class>
-		<class>org.olat.modules.coach.model.EfficiencyStatementCourseStatEntry</class>
-		<class>org.olat.modules.coach.model.EfficiencyStatementStudentStatEntry</class>
-		<class>org.olat.modules.coach.model.EfficiencyStatementIdentityStatEntry</class>
 		<class>org.olat.modules.qpool.model.PoolImpl</class>
 		<class>org.olat.modules.qpool.model.PoolToItem</class>
 		<class>org.olat.modules.qpool.model.PoolItemShortView</class>

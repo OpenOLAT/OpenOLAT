@@ -86,6 +86,7 @@ import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.restapi.support.vo.CourseVO;
+import org.olat.restapi.support.vo.OlatResourceVO;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 
@@ -204,6 +205,17 @@ public class CourseWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		CourseVO vo = ObjectFactory.get(course);
+		return Response.ok(vo).build();
+	}
+	
+	@GET
+	@Path("resource")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getOlatResource(@Context HttpServletRequest request) {
+		if(!isAuthor(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		OlatResourceVO vo = new OlatResourceVO(course);
 		return Response.ok(vo).build();
 	}
 	
@@ -464,8 +476,6 @@ public class CourseWebService {
 		
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry repositoryEntry = rm.lookupRepositoryEntry(course, true);
-
-
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		List<Identity> owners = repositoryService.getMembers(repositoryEntry, GroupRoles.owner.name());
 		
@@ -475,6 +485,27 @@ public class CourseWebService {
 			authors[count++] = UserVOFactory.get(owner);
 		}
 		return Response.ok(authors).build();
+	}
+	
+	@GET
+	@Path("participants")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getParticipants(@Context HttpServletRequest httpRequest) {
+		if (!isAuthorEditor(course, httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		RepositoryManager rm = RepositoryManager.getInstance();
+		RepositoryEntry repositoryEntry = rm.lookupRepositoryEntry(course, true);
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		List<Identity> participantList = repositoryService.getMembers(repositoryEntry, GroupRoles.participant.name());
+		
+		int count = 0;
+		UserVO[] participants = new UserVO[participantList.size()];
+		for(Identity participant:participantList) {
+			participants[count++] = UserVOFactory.get(participant);
+		}
+		return Response.ok(participants).build();
 	}
 	
 	/**

@@ -36,6 +36,12 @@ import org.olat.core.id.Persistable;
 
 public interface DB {
 	
+	public boolean isMySQL();
+	
+	public boolean isPostgreSQL();
+	
+	public boolean isOracle();
+	
 	/**
 	 * Close the database session.
 	 */

@@ -1200,7 +1200,7 @@ public class RepositoryManager extends BasicManager {
 	 * @param roles
 	 * @return
 	 */
-	public static boolean appendAccessSubSelects(StringBuilder sb, Identity identity, Roles roles) {
+	public static boolean appendAccessSubSelects(StringBuilder sb, IdentityRef identity, Roles roles) {
 		sb.append("(v.access >= ");
 		if (roles.isAuthor()) {
 			sb.append(RepositoryEntry.ACC_OWNERS_AUTHORS);
