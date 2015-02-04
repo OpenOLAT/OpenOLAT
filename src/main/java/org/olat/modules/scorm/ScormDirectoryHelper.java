@@ -40,7 +40,11 @@ public class ScormDirectoryHelper {
  */
 	public static VFSContainer getScormRootFolder() {
 		VFSContainer canonicalRoot = new LocalFolderImpl(new File(FolderConfig.getCanonicalRoot()));
-		return (VFSContainer)canonicalRoot.resolve("scorm");
+		VFSContainer scormContainer = (VFSContainer)canonicalRoot.resolve("scorm");
+		if (scormContainer == null) {
+			scormContainer = canonicalRoot.createChildContainer("scorm");
+		}
+		return scormContainer;
 	}
 	
 	/**
