@@ -64,6 +64,17 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 		return values;
 	}
 
+	@Override
+	public void setUserProperty(User user, String value) {
+		if(value != null) {
+			if("m".equals(value)) {
+				value = "male";
+			} else if("f".equals(value)) {
+				value = "female";
+			}	
+		}
+		super.setUserProperty(user, value);
+	}
 
 	/**
 	 * @see org.olat.user.AbstractUserPropertyHandler#getUserProperty(org.olat.core.id.User, java.util.Locale)
