@@ -367,6 +367,9 @@ ul.o_certificates li {
 			}
 		}
 	}
+	.o_content {
+		@include clearfix();
+	}
 }
 
 /* Glossary */

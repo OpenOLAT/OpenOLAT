@@ -2,14 +2,19 @@
 	<ul class="list-unstyled">
 	#foreach($link in $linkList)
 		<li class="o_block">
-			<a href="#if($link.intern) $mapperBaseUrl$link.getTarget() #else $link.getTarget() #end" target="$link.getHtmlTarget()">
-				$link.getDescription()
-				#if($link.getHtmlTarget() == "_blank")
-					<i class="o_icon o_icon_external_link"> </i>
-				#end
-			</a>
+			<h5>
+				<a href="#if($link.intern) $mapperBaseUrl$link.getTarget() #else $link.getTarget() #end" target="$link.getHtmlTarget()" class="o_desc">
+					$link.getDescription()
+					<small>
+						#if($link.intern) $mapperBaseUrl$link.getTarget() #else $link.getTarget() #end
+						#if($link.getHtmlTarget() == "_blank")
+							<i class="o_icon o_icon_external_link"> </i>
+						#end
+					</small>
+				</a>
+			</h5>
 			#if($showLinkComments)
-			<div class="text-muted">
+			<div class="o_comment">
 				$link.getComment()
 			</div>
 			#end

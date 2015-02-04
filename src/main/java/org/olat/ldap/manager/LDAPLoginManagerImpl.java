@@ -1140,12 +1140,16 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		List<Identity> currentMembers = businessGroupRelationDao
 				.getMembers(businessGroup, GroupRoles.coach.name(), GroupRoles.participant.name());
 
+		int count = 0;
 		for(String member:members) {
 			LDAPUser ldapUser = getLDAPUser(ctx, member, dnToIdentityKeyMap, errors);
 			if(ldapUser != null) {
 				Identity identity = ldapUser.getCachedIdentity();
 				syncMembership(businessGroup, identity, ldapUser.isCoach());
 				currentMembers.remove(identity);
+				if(++count % 20 == 0) {
+					dbInstance.commitAndCloseSession();
+				}
 			}
 		}
 		
@@ -1153,6 +1157,9 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			List<String> roles = businessGroupRelationDao.getRoles(currentMember, businessGroup);
 			for(String role:roles) {
 				businessGroupRelationDao.removeRole(currentMember, businessGroup, role);
+				if(++count % 20 == 0) {
+					dbInstance.commitAndCloseSession();
+				}
 			}
 		}
 	}
