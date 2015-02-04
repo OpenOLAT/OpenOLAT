@@ -564,6 +564,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			}
 			
 			if(repositoryService.isParticipantAllowedToLeave(getRepositoryEntry())
+					&& !assessmentLock
 					&& (uce.isParticipant() || !uce.getParticipatingGroups().isEmpty())) {
 				leaveLink = LinkFactory.createToolLink("sign.out", "leave", translate("sign.out"), this);
 				leaveLink.setIconLeftCSS("o_icon o_icon-fw o_icon_sign_out");

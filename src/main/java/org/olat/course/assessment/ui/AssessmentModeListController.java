@@ -258,6 +258,7 @@ public class AssessmentModeListController extends FormBasicController implements
 			assessmentModeMgr.delete(modeToDelete);
 		}
 		loadModel();
+		tableEl.deselectAll();
 	}
 	
 	private void doEdit(UserRequest ureq, AssessmentMode mode) {
