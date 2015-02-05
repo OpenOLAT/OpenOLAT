@@ -11,68 +11,72 @@ $r.render("backLink")
 <h4>$r.translate("detailview.title")</h4>
 #end
 
-#if($identityInfosVisible)
-<div class="panel panel-default">
-	<ul class="list-group">
-		<li class="list-group-item">
-			<span><i class="o_icon o_icon_user"> </i> $r.escapeHtml($user.getProperty("firstName", $locale)) $r.escapeHtml($user.getProperty("lastName", $locale))</span>
-		</li>
-		<li class="list-group-item">
-			#if ($user.getProperty("institutionalName", $locale) && $user.getProperty("institutionalName", $locale).length() > 0)
-				#set ($inst = $r.escapeHtml($user.getProperty("institutionalName", $locale)))
-			#end
-			#if ($user.getProperty("institutionalUserIdentifier", $locale) && $user.getProperty("institutionalUserIdentifier", $locale).length() > 0)
-				#set ($matnr = $r.escapeHtml($user.getProperty("institutionalUserIdentifier", $locale)))
-			#end
-			<span><i class="o_icon o_icon_mail"> </i> 
-			<a href="mailto:$user.getProperty("email", $locale)">$user.getProperty("email", $locale)</a> 
-			#if ($user.getProperty("institutionalEmail", $locale) && $user.getProperty("institutionalEmail", $locale) != "" && $user.getProperty("email", $locale) != $user.getProperty("institutionalEmail", $locale))
-			 / <a href="mailto:$user.getProperty("institutionalEmail", $locale)">$user.getProperty("institutionalEmail", $locale)</a>
-			#end</span>
-		</li>
-		#if ($inst)
-			<li class="list-group-item"><span><i class="o_icon o_icon_institution"> </i> $inst</span></li>
-		#end
-		#if ($matnr)
-			<li class="list-group-item"><span>$matnr</span></li>
-		#end
-		<li class="list-group-item">
-			<span><i class="o_icon o_icon_group"> </i> $r.translate("participantgroups.title")</span>
-		</li>
-		#if($participantGroups.size() > 0)
-		<li class="list-group-item">
-			#foreach($group in $participantGroups)
-				$r.escapeHtml($group.getName())
-				#if ($velocityCount < $participantGroups.size())
-			,
+#if($r.available("subDetailsCmp"))
+	$r.render("subDetailsCmp")
+#else
+	#if($identityInfosVisible)
+	<div class="panel panel-default">
+		<ul class="list-group">
+			<li class="list-group-item">
+				<span><i class="o_icon o_icon_user"> </i> $r.escapeHtml($user.getProperty("firstName", $locale)) $r.escapeHtml($user.getProperty("lastName", $locale))</span>
+			</li>
+			<li class="list-group-item">
+				#if ($user.getProperty("institutionalName", $locale) && $user.getProperty("institutionalName", $locale).length() > 0)
+					#set ($inst = $r.escapeHtml($user.getProperty("institutionalName", $locale)))
 				#end
+				#if ($user.getProperty("institutionalUserIdentifier", $locale) && $user.getProperty("institutionalUserIdentifier", $locale).length() > 0)
+					#set ($matnr = $r.escapeHtml($user.getProperty("institutionalUserIdentifier", $locale)))
+				#end
+				<span><i class="o_icon o_icon_mail"> </i> 
+				<a href="mailto:$user.getProperty("email", $locale)">$user.getProperty("email", $locale)</a> 
+				#if ($user.getProperty("institutionalEmail", $locale) && $user.getProperty("institutionalEmail", $locale) != "" && $user.getProperty("email", $locale) != $user.getProperty("institutionalEmail", $locale))
+				 / <a href="mailto:$user.getProperty("institutionalEmail", $locale)">$user.getProperty("institutionalEmail", $locale)</a>
+				#end</span>
+			</li>
+			#if ($inst)
+				<li class="list-group-item"><span><i class="o_icon o_icon_institution"> </i> $inst</span></li>
 			#end
-		</li>
-		#end
-	</ul>
-</div>
-#end
-
-#if ($infoCoach && $infoCoach != "")
-	<div class="o_course_run_disclaimer">
-		<h4>$r.translate("title.infocoach")</h4>
-		$infoCoach
+			#if ($matnr)
+				<li class="list-group-item"><span>$matnr</span></li>
+			#end
+			<li class="list-group-item">
+				<span><i class="o_icon o_icon_group"> </i> $r.translate("participantgroups.title")</span>
+			</li>
+			#if($participantGroups.size() > 0)
+			<li class="list-group-item">
+				#foreach($group in $participantGroups)
+					$r.escapeHtml($group.getName())
+					#if ($velocityCount < $participantGroups.size())
+				,
+					#end
+				#end
+			</li>
+			#end
+		</ul>
+	</div>
+	#end
+	
+	#if ($infoCoach && $infoCoach != "")
+		<div class="o_course_run_disclaimer">
+			<h4>$r.translate("title.infocoach")</h4>
+			$infoCoach
+		</div>
+	#end
+	
+	#if ($hasDetails)
+		$r.render("detailsController")
+	#end
+	
+	$r.render("assessmentform")
+	
+	#if($showLog && $log)
+		<div class="o_course_run_log">
+			<h4>$r.translate("log.title")</h4>
+			$r.render("command.hidelog")
+			<pre>$log</pre>
+		</div>
+	#elseif ($log)
+		$r.render("command.showlog")
+	#end
 	</div>
 #end
-
-#if ($hasDetails)
-	$r.render("detailsController")
-#end
-
-$r.render("assessmentform")
-
-#if($showLog && $log)
-	<div class="o_course_run_log">
-		<h4>$r.translate("log.title")</h4>
-		$r.render("command.hidelog")
-		<pre>$log</pre>
-	</div>
-#elseif ($log)
-	$r.render("command.showlog")
-#end
-</div>

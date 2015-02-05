@@ -64,6 +64,7 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
+import org.olat.ims.qti.QTI12ResultDetailsController;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.QTIResultSet;
 import org.olat.ims.qti.export.QTIExportFormatter;
@@ -82,6 +83,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 
+import de.bps.ims.qti.QTIResultDetailsController;
 import de.bps.onyx.plugin.OnyxExportManager;
 import de.bps.onyx.plugin.OnyxModule;
 
@@ -527,8 +529,15 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	 */
 	@Override
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, UserCourseEnvironment userCourseEnvironment) {
-		return IQUIFactory.createIQTestDetailsEditController(userCourseEnvironment.getCourseEnvironment().getCourseResourceableId(), this.getIdent(),
-				userCourseEnvironment.getIdentityEnvironment().getIdentity(), this.getReferencedRepositoryEntry(), AssessmentInstance.QMD_ENTRY_TYPE_ASSESS, ureq, wControl);
+		RepositoryEntry ref = getReferencedRepositoryEntry();
+		Long courseResourceableId = userCourseEnvironment.getCourseEnvironment().getCourseResourceableId();
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		boolean onyx = OnyxModule.isOnyxTest(ref.getOlatResource());
+		if(onyx) {
+			return new QTIResultDetailsController(courseResourceableId, getIdent(), assessedIdentity, ref, AssessmentInstance.QMD_ENTRY_TYPE_ASSESS, ureq, wControl);
+		} else {
+			return new QTI12ResultDetailsController(ureq, wControl, courseResourceableId, getIdent(), assessedIdentity, ref, AssessmentInstance.QMD_ENTRY_TYPE_ASSESS);
+		}
 	}
 
 	/**
