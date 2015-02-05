@@ -21,8 +21,10 @@ package org.olat.course.assessment.ui;
 
 import java.util.List;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.model.TransientAssessmentMode;
@@ -33,7 +35,7 @@ import org.olat.course.assessment.model.TransientAssessmentMode;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentModeListModel extends DefaultFlexiTableDataModel<AssessmentMode> {
+public class AssessmentModeListModel extends DefaultFlexiTableDataModel<AssessmentMode> implements SortableFlexiTableDataModel<AssessmentMode> {
 	
 	private final AssessmentModeCoordinationService coordinationService;
 	
@@ -50,6 +52,11 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 	@Override
 	public Object getValueAt(int row, int col) {
 		AssessmentMode mode = getObject(row);
+		return getValueAt(mode, col);
+	}
+		
+	@Override
+	public Object getValueAt(AssessmentMode mode, int col) {
 		switch(Cols.values()[col]) {
 			case status: return mode.getStatus();
 			case name: return mode.getName();
@@ -76,6 +83,14 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 		return null;
 	}
 	
+	@Override
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<AssessmentMode> views = new AssessmentModeListModelSort(orderBy, this, null).sort();
+			super.setObjects(views);
+		}
+	}
+
 	public boolean updateModeStatus(TransientAssessmentMode modeToUpdate) {
 		boolean updated = false;
 		

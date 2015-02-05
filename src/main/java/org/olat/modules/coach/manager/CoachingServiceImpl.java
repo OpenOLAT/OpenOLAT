@@ -19,15 +19,11 @@
  */
 package org.olat.modules.coach.manager;
 
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.UserEfficiencyStatement;
@@ -37,6 +33,7 @@ import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GroupStatEntry;
+import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,47 +65,33 @@ public class CoachingServiceImpl implements CoachingService {
 	}
 
 	@Override
-	public Map<Long, String> getIdentities(Collection<Long> identityNames) {
-		Map<Long,String> identityMap = new HashMap<Long,String>();
-		
-		List<IdentityShort> identities = securityManager.findShortIdentitiesByKey(identityNames);
-		for(IdentityShort identity:identities) {
-			String fullName = identity.getFirstName()	+ " " + identity.getLastName();
-			identityMap.put(identity.getKey(), fullName);
-		}
-		return identityMap;
+	public List<RepositoryEntry> getStudentsCourses(Identity coach, Identity student) {
+		return coachingDao.getStudentsCourses(coach, student);
 	}
-
+	
 	@Override
-	public List<RepositoryEntry> getStudentsCourses(Identity coach, Identity student, int firstResult, int maxResults) {
-		return coachingDao.getStudentsCourses(coach, student, firstResult, maxResults);
+	public List<StudentStatEntry> getUsersStatistics(SearchCoachedIdentityParams params) {
+		return coachingDao.getUsersStatisticsNative(params);
 	}
 
 	@Override
 	public List<StudentStatEntry> getStudentsStatistics(Identity coach) {
-		return coachingDao.getStudentsStatistics(coach);
-	}
-	
-	
-
-	@Override
-	public List<StudentStatEntry> getUsersStatistics(List<? extends IdentityRef> identities) {
-		return coachingDao.getUsersStatistics(identities);
+		return coachingDao.getStudentsStatisticsNative(coach);
 	}
 
 	@Override
-	public List<RepositoryEntry> getUserCourses(Identity student, int firstResult, int maxResults) {
-		return coachingDao.getUserCourses(student, firstResult, maxResults);
+	public List<RepositoryEntry> getUserCourses(Identity student) {
+		return coachingDao.getUserCourses(student);
 	}
 
 	@Override
 	public List<CourseStatEntry> getCoursesStatistics(Identity coach) {
-		return coachingDao.getCoursesStatistics(coach);
+		return coachingDao.getCoursesStatisticsNative(coach);
 	}
 
 	@Override
 	public List<GroupStatEntry> getGroupsStatistics(Identity coach) {
-		return coachingDao.getGroupsStatistics(coach);
+		return coachingDao.getGroupsStatisticsNative(coach);
 	}
 
 	@Override

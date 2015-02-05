@@ -123,6 +123,7 @@ var BPlayer = {
 	insertHTML5MediaElementPlayerWorker: function(domId, config) {
 		var mediaElementBaseUrl = BPlayer.mediaElementBaseUrl();
 		var meConfig = {
+			loop: config.repeat,
 			pluginPath: mediaElementBaseUrl,
 			flashName: 'flashmediaelement.swf',
 			silverlightName: 'silverlightmediaelement.xap',
@@ -210,10 +211,17 @@ var BPlayer = {
 			if(config.width) {
 				meConfig.audioWidth = config.width;
 			}
-			content = "<audio id='" + mediaDomId + "' controls='controls' type='" +mimeType + "' src='" + config.file + "'></audio>";
+			content = "<audio id='" + mediaDomId + "' controls='controls'";
+			if(typeof config.repeat != 'undefined' && config.repeat) {
+				content += " loop='loop'";
+			}
+			content += " type='" +mimeType + "' src='" + config.file + "'></audio>";
 		} else {
 			//controls are mandatory for Safari at least
 			content = "<video id='" + mediaDomId + "' controls='controls' preload='none'";
+			if(typeof config.repeat != 'undefined' && config.repeat) {
+				content += " loop='loop'";
+			}
 			var objContent = "<object id='" + objectDomId + "' type='application/x-shockwave-flash'";
 			if(typeof config.height != 'undefined') {
 				content += " height='" + config.height + "'";

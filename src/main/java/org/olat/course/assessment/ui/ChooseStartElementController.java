@@ -67,6 +67,7 @@ public class ChooseStartElementController extends FormBasicController {
 		treeModel = course.getEditorTreeModel();
 		selectTree = uifactory.addTreeMultiselect("elements", null, formLayout, treeModel, this);
 		selectTree.setSelectedKeys(Collections.singletonList(preSelectedKey));
+		selectTree.setNoDirtyCheckOnClick(true);
 		
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("ok", formLayout);

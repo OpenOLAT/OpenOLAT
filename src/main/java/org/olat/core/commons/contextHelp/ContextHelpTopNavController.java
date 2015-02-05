@@ -25,7 +25,7 @@ import java.util.Locale;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.chiefcontrollers.LanguageChangedEvent;
 import org.olat.core.commons.fullWebApp.DefaultMinimalTopNavController;
-import org.olat.core.commons.fullWebApp.TopNavController;
+import org.olat.core.commons.fullWebApp.LockableController;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
@@ -65,7 +65,7 @@ import org.olat.search.ui.SearchInputController;
  * 
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
   */
-public class ContextHelpTopNavController extends FormBasicController implements TopNavController {
+public class ContextHelpTopNavController extends FormBasicController implements LockableController {
 	static final OLATResourceable CHANGE_LANG_RESOURCE = OresHelper.createOLATResourceableType("ContextHelp:ChangeLanguageChannel");
 
 	private SingleSelection langSelection;

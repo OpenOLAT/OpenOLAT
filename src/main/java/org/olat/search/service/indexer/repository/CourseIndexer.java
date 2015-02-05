@@ -204,7 +204,7 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 			return courseNodeIndexer.checkAccess(bcContextEntry, businessControl, identity, roles)
 					&& super.checkAccess(bcContextEntry, businessControl, identity, roles);		
 		} else {
-  		return false;
+			return false;
 		}
 	}
 	

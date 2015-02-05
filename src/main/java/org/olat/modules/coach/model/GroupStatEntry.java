@@ -19,6 +19,9 @@
  */
 package org.olat.modules.coach.model;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * 
  * Dummy bean to transport statistic values about group
@@ -26,31 +29,40 @@ package org.olat.modules.coach.model;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class GroupStatEntry {
-	// s.repoKey, 
-	private Long groupKey;
-	private String groupName;
-	private int countCourses;
-	private int countStudents;
-	private int countPassed;
-	private int countFailed;
-	private int countNotAttempted;
+
+	private final Long groupKey;
+	private final String groupName;
+	private int countCourses = 0;
+	private int countStudents = 0;
+	private int countDistinctStudents = 0;
+	private int countPassed = 0;
+	private int countFailed = 0;
+	private int countNotAttempted = 0;
 	private Float averageScore;
-	private int initialLaunch;
+	private double sumScore = 0.0d;
+	private int initialLaunch = 0;
+	
+	private Set<Long> repoIds = new HashSet<>();
+	
+	public GroupStatEntry(Long groupKey, String groupName) {
+		this.groupKey = groupKey;
+		this.groupName = groupName;
+	}
 	
 	public Long getGroupKey() {
 		return groupKey;
-	}
-
-	public void setGroupKey(Long groupKey) {
-		this.groupKey = groupKey;
 	}
 
 	public String getGroupName() {
 		return groupName;
 	}
 
-	public void setGroupName(String groupName) {
-		this.groupName = groupName;
+	public Set<Long> getRepoIds() {
+		return repoIds;
+	}
+
+	public void setRepoIds(Set<Long> repoIds) {
+		this.repoIds = repoIds;
 	}
 
 	public int getCountCourses() {
@@ -70,11 +82,11 @@ public class GroupStatEntry {
 	}
 	
 	public int getCountDistinctStudents() {
-		return countStudents;
+		return countDistinctStudents;
 	}
 	
-	public void setCountDistinctStudents(int countStudents) {
-		this.countStudents = countStudents;
+	public void setCountDistinctStudents(int countDistinctStudents) {
+		this.countDistinctStudents = countDistinctStudents;
 	}
 	
 	public int getCountPassed() {
@@ -107,6 +119,14 @@ public class GroupStatEntry {
 	
 	public void setAverageScore(Float averageScore) {
 		this.averageScore = averageScore;
+	}
+
+	public double getSumScore() {
+		return sumScore;
+	}
+
+	public void setSumScore(double sumScore) {
+		this.sumScore = sumScore;
 	}
 
 	public int getInitialLaunch() {

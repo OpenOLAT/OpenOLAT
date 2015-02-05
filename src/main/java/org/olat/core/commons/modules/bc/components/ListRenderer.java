@@ -143,7 +143,7 @@ public class ListRenderer {
 		sb.append("</th><th>");
 
 		sb.append("<a href=\"");																																							// file type column
-		ubu.buildURI(sb, new String[] { PARAM_SORTID }, new String[] { FolderComponent.SORT_TYPE }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
+		ubu.buildURI(sb, new String[] { PARAM_SORTID }, new String[] { FolderComponent.SORT_DATE }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 		sb.append("\"");
 		if (iframePostEnabled) { // add ajax iframe target
 			StringOutput so = new StringOutput();

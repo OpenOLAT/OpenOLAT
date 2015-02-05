@@ -60,7 +60,7 @@ import org.olat.social.SocialModule;
  */
 
 public class ShareLinkController extends BasicController {
-	private VelocityContainer shareLinkVC;
+	private final VelocityContainer shareLinkVC;
 	
 	/**
 	 * Standard constructor for the share link controller
@@ -70,22 +70,17 @@ public class ShareLinkController extends BasicController {
 	public ShareLinkController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		// For simplicity we use only one velocity template
-		this.shareLinkVC = createVelocityContainer("shareLink");
+		shareLinkVC = createVelocityContainer("shareLink");
 		// Add the OpenOLAT base URL from the config
 		shareLinkVC.contextPut("baseURL", Settings.getServerContextPathURI());
 		// Load configured share link buttons from the SocialModule configuration
 		SocialModule socialModule = (SocialModule) CoreSpringFactory.getBean("socialModule");
-		this.shareLinkVC.contextPut("shareLinks", socialModule.getEnabledShareLinkButtons());
+		shareLinkVC.contextPut("shareLinks", socialModule.getEnabledShareLinkButtons());
 		// Tell if user is logged in
-		this.shareLinkVC.contextPut("isUser", ureq.getUserSession().isAuthenticated() && !ureq.getUserSession().getRoles().isGuestOnly());
-		//
-		putInitialPanel(this.shareLinkVC);
+		shareLinkVC.contextPut("isUser", ureq.getUserSession().isAuthenticated() && !ureq.getUserSession().getRoles().isGuestOnly());
+		putInitialPanel(shareLinkVC);
 	}
 
-
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == shareLinkVC && event.getCommand().equals("setLandingPage") && ureq.getUserSession().isAuthenticated()) {
@@ -107,12 +102,8 @@ public class ShareLinkController extends BasicController {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		// nothing to do
 	}
-
 }

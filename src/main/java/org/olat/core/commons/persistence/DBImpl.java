@@ -87,7 +87,22 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	protected static DBImpl getInstance() {
 		return INSTANCE;
 	}
-	
+
+	@Override
+	public boolean isMySQL() {
+		return "mysql".equals(dbVendor);
+	}
+
+	@Override
+	public boolean isPostgreSQL() {
+		return "postgresql".equals(dbVendor);
+	}
+
+	@Override
+	public boolean isOracle() {
+		return "oracle".equals(dbVendor);
+	}
+
 	@Override
 	public String getDbVendor() {
 		return dbVendor;

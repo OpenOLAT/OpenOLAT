@@ -35,7 +35,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.resource.OresHelper;
@@ -54,7 +55,9 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service("userCourseInformationsManager")
-public class UserCourseInformationsManagerImpl extends BasicManager implements UserCourseInformationsManager {
+public class UserCourseInformationsManagerImpl implements UserCourseInformationsManager {
+	
+	private static final OLog log = Tracing.createLoggerFor(UserCourseInformationsManagerImpl.class);
 
 	@Autowired
 	private DB dbInstance;
@@ -81,7 +84,7 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 			}
 			return infoList.get(0);
 		} catch (Exception e) {
-			logError("Cannot retrieve course informations for: " + identity + " from " + identity, e);
+			log.error("Cannot retrieve course informations for: " + identity + " from " + identity, e);
 			return null;
 		}
 	}
@@ -108,7 +111,7 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 			List<UserCourseInformations> infoList = query.getResultList();
 			return infoList;
 		} catch (Exception e) {
-			logError("Cannot retrieve course informations for: " + identity + " from " + identity, e);
+			log.error("Cannot retrieve course informations for: " + identity + " from " + identity, e);
 			return null;
 		}
 	}
@@ -145,8 +148,8 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 				@Override
 				public void execute() {
 					try {
-						UltraLightInfos ulInfos = getUserCourseInformationsKey(courseResourceableId, identity);
-						if(ulInfos == null) {
+						UltraLightInfos reloadedUlInfos = getUserCourseInformationsKey(courseResourceableId, identity);
+						if(reloadedUlInfos == null) {
 							OLATResource courseResource = resourceManager.findResourceable(courseResourceableId, "CourseModule");
 							UserCourseInfosImpl infos = new UserCourseInfosImpl();
 							infos.setIdentity(identity);
@@ -157,8 +160,8 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 							infos.setVisit(1);
 							infos.setResource(courseResource);
 							dbInstance.getCurrentEntityManager().persist(infos);
-						} else if(strict || needUpdate(ulInfos)) {
-							UserCourseInfosImpl infos = loadById(ulInfos.getKey());
+						} else if(strict || needUpdate(reloadedUlInfos)) {
+							UserCourseInfosImpl infos = loadById(reloadedUlInfos.getKey());
 							if(infos != null) {
 								infos.setVisit(infos.getVisit() + 1);
 								infos.setRecentLaunch(new Date());
@@ -167,7 +170,7 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 							}
 						}
 					} catch (Exception e) {
-						logError("Cannot update course informations for: " + identity + " from " + identity, e);
+						log.error("Cannot update course informations for: " + identity + " from " + identity, e);
 					}
 				}
 			});
@@ -196,7 +199,7 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 			}
 			return infoList.get(0);
 		} catch (Exception e) {
-			logError("Cannot retrieve course informations for: " + id, e);
+			log.error("Cannot retrieve course informations for: " + id, e);
 			return null;
 		}
 	}
@@ -222,7 +225,7 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 			
 			return new UltraLightInfos((Long)infos[0], (Date)infos[1]);
 		} catch (Exception e) {
-			logError("Cannot retrieve course informations for: " + identity + " from " + identity, e);
+			log.error("Cannot retrieve course informations for: " + identity + " from " + identity, e);
 			return null;
 		}
 	}
@@ -284,7 +287,7 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 			}
 			return infoList.get(0);
 		} catch (Exception e) {
-			logError("Cannot retrieve course informations for: " + courseResourceId, e);
+			log.error("Cannot retrieve course informations for: " + courseResourceId, e);
 			return null;
 		}
 	}
@@ -331,7 +334,7 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 			}
 			return dateMap;
 		} catch (Exception e) {
-			logError("Cannot retrieve course informations for: " + courseResourceId, e);
+			log.error("Cannot retrieve course informations for: " + courseResourceId, e);
 			return Collections.emptyMap();
 		}
 	}
@@ -350,7 +353,7 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 					.executeUpdate();
 			return count;
 		} catch (Exception e) {
-			logError("Cannot Delete course informations for: " + entry, e);
+			log.error("Cannot Delete course informations for: " + entry, e);
 			return -1;
 		}
 	}

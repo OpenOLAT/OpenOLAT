@@ -17,21 +17,34 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.fullWebApp;
+package org.olat.modules.coach.model;
 
-import org.olat.core.gui.control.Controller;
-import org.olat.core.id.OLATResourceable;
+import java.util.Map;
 
 /**
  * 
- * Initial date: 18.12.2014<br>
+ * Initial date: 02.02.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface TopNavController extends Controller {
+public class SearchCoachedIdentityParams {
 	
-	public void lockResource(OLATResourceable resource);
+	private String login;
+	private Map<String,String> userProperties;
 	
-	public void unlockResource();
-
+	public String getLogin() {
+		return login;
+	}
+	
+	public void setLogin(String login) {
+		this.login = login;
+	}
+	
+	public Map<String, String> getUserProperties() {
+		return userProperties;
+	}
+	
+	public void setUserProperties(Map<String, String> userProperties) {
+		this.userProperties = userProperties;
+	}
 }

@@ -28,6 +28,8 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchResult;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.ldap.model.LDAPGroup;
 
 /**
@@ -37,6 +39,8 @@ import org.olat.ldap.model.LDAPGroup;
  *
  */
 public class LDAPGroupVisitor implements LDAPVisitor {
+	
+	private static final OLog log = Tracing.createLoggerFor(LDAPGroupVisitor.class);
 
 	private final List<LDAPGroup> groups = new ArrayList<LDAPGroup>();
 	
@@ -65,7 +69,7 @@ public class LDAPGroupVisitor implements LDAPVisitor {
 				}
 			}
 		} catch (NamingException e) {
-			e.printStackTrace();
+			log.error("", e);
 		}
 		group.setMembers(members);
 		groups.add(group);

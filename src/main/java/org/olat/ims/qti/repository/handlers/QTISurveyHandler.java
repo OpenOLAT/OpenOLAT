@@ -172,11 +172,8 @@ public class QTISurveyHandler extends QTIHandler {
 		fr.overrideResourceableId(res.getResourceableId());
 		
 		//check if we can edit in restricted mode -> only typos 
-		ReferenceManager refM = ReferenceManager.getInstance();
-		List<ReferenceImpl> referencees = refM.getReferencesTo(res);
-		//String referencesSummary = refM.getReferencesToSummary(res, ureq.getLocale());
-		//boolean restrictedEdit = referencesSummary != null;
-		QTIEditorMainController editor =  new QTIEditorMainController(referencees,ureq, wControl, fr);
+		List<ReferenceImpl> referencees = ReferenceManager.getInstance().getReferencesTo(res);
+		QTIEditorMainController editor =  new QTIEditorMainController(ureq, wControl, re, referencees, fr);
 		if (editor.isLockedSuccessfully()) {
 			return editor;
 		} else {

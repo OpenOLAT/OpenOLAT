@@ -556,11 +556,10 @@ public class CourseFactory extends BasicManager {
 				true, Locale.ENGLISH, exportedCourseZIPFile, exportedCourseZIPFile.getName());
 		
 		re.setSoftkey(softKey);
-		re.setAccess(access);
 		repositoryService.update(re);
 		
 		ICourse course = CourseFactory.loadCourse(re.getOlatResource());
-		CourseFactory.publishCourse(course, RepositoryEntry.ACC_USERS, false,  null, Locale.ENGLISH);
+		CourseFactory.publishCourse(course, access, false,  null, Locale.ENGLISH);
 		return re;
 	}
 

@@ -65,8 +65,9 @@ public interface BusinessControl {
 	public String getAsString();
 	
 
-	//fxdiff BAKS-7 Resume function
 	public List<ContextEntry> getEntries();
+	
+	public List<ContextEntry> getEntriesDownTheControls();
 	
 	/**
 	 * pop context entry for further processing, this is used for spawning controllers
@@ -97,8 +98,4 @@ public interface BusinessControl {
 	 * @return
 	 */
 	public boolean hasContextEntry();
-	
-	
-	
-	//public int getStackedCount();
 }

@@ -19,6 +19,9 @@
  */
 package org.olat.modules.coach.model;
 
+import java.util.HashSet;
+import java.util.Set;
+
 
 /**
  * 
@@ -28,24 +31,23 @@ package org.olat.modules.coach.model;
  */
 public class StudentStatEntry {
 	
-	private Long studentKey;
-	private int countRepo;
-	private int countPassed;
-	private int countFailed;
-	private int countNotAttempted;
-	private int initialLaunch;
+	private final Long studentKey;
+	private int countRepo = 0;
+	private int countPassed = 0;
+	private int countFailed = 0;
+	private int countNotAttempted = 0;
+	private int initialLaunch = 0;
+	
+	private Set<String> repoIds = new HashSet<>();
+	private Set<String> launchIds = new HashSet<>();
 	
 	
-	public StudentStatEntry() {
-		//
+	public StudentStatEntry(Long studentKey) {
+		this.studentKey = studentKey;
 	}
 
 	public Long getStudentKey() {
 		return studentKey;
-	}
-	
-	public void setStudentKey(Long studentKey) {
-		this.studentKey = studentKey;
 	}
 	
 	public int getCountRepo() {
@@ -54,6 +56,22 @@ public class StudentStatEntry {
 	
 	public void setCountRepo(int countRepo) {
 		this.countRepo = countRepo;
+	}
+
+	public Set<String> getRepoIds() {
+		return repoIds;
+	}
+
+	public void setRepoIds(Set<String> repoIds) {
+		this.repoIds = repoIds;
+	}
+
+	public Set<String> getLaunchIds() {
+		return launchIds;
+	}
+
+	public void setLaunchIds(Set<String> launchIds) {
+		this.launchIds = launchIds;
 	}
 
 	public int getCountPassed() {
@@ -86,13 +104,5 @@ public class StudentStatEntry {
 
 	public void setInitialLaunch(int initialLaunch) {
 		this.initialLaunch = initialLaunch;
-	}
-	
-	public void add(StudentStatEntry entry) {
-		countRepo += entry.getCountRepo();
-		countPassed += entry.getCountPassed();
-		countFailed += entry.getCountFailed();
-		countNotAttempted += entry.getCountNotAttempted();
-		initialLaunch += entry.getInitialLaunch();
 	}
 }

@@ -219,8 +219,8 @@ public class StudentCoursesController extends BasicController implements Activat
 	}
 	
 	private List<EfficiencyStatementEntry> loadModel() {
-		List<RepositoryEntry> courses = fullAccess ? coachingService.getUserCourses(student, 0, -1)
-				: coachingService.getStudentsCourses(getIdentity(), student, 0, -1);
+		List<RepositoryEntry> courses = fullAccess ? coachingService.getUserCourses(student)
+				: coachingService.getStudentsCourses(getIdentity(), student);
 		List<EfficiencyStatementEntry> statements = coachingService.getEfficencyStatements(student, courses);
 		
 		List<CertificateLight> certificates = certificatesManager.getLastCertificates(student);

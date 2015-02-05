@@ -1,15 +1,14 @@
-## ---- START sites tabs ---
 <ul id="$r.getCId()" class="o_navbar_sites nav o_navbar-nav">
-#foreach ($site in $sites)
-	#set ($siteEl = $r.getComponent("$site"))
-	#set ($navel = $siteEl.userObject.getNavElement())
-	<li class='#if($tabhelper.isSiteActive($siteEl.userObject)) active #end $!navel.getIconCSSClass()'>
-		$r.render("$site")
-	</li>
+#if($visible)
+	#foreach ($site in $sites)
+		#set ($siteEl = $r.getComponent("$site"))
+		#set ($navel = $siteEl.userObject.getNavElement())
+		<li class='#if($tabhelper.isSiteActive($siteEl.userObject)) active #end $!navel.getIconCSSClass()'>
+			$r.render("$site")
+		</li>
+	#end
 #end
 </ul>
-## ---- END sites tabs ---
-
 <script type="text/javascript">
 /* <![CDATA[ */ 
     jQuery(document).trigger("oo.nav.sites.modified");

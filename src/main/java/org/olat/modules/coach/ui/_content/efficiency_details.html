@@ -1,4 +1,6 @@
-$r.render("segments")
+#if($r.available("segments"))
+	$r.render("segments")
+#end
 #if($r.available("segmentCmp"))
 	$r.render("segmentCmp")
 #end

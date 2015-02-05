@@ -120,6 +120,31 @@
 	}
 }
 
+/* link list course element */
+.o_ll_container {
+	h5 {
+		margin-bottom: 5px;
+		a.o_desc {
+			color: $o-content-h5-color;	
+			small {
+				display: none;
+			}
+	
+			&:hover {
+				color: darken($o-content-h5-color,10%);				
+				text-decoration: none;
+				small {
+					color: darken($o-content-dimmed-color,10%);				
+					display: inline;
+				}
+			}		
+		}
+	}
+	div.o_comment {
+		color: $o-content-dimmed-color;
+	}
+}
+
 /* statistics */
 .o_course_stats .o_desc {
 	@extend %o_note

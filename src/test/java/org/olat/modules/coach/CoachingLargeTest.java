@@ -19,13 +19,11 @@
  */
 package org.olat.modules.coach;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -36,34 +34,37 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.course.ICourse;
+import org.olat.course.CourseFactory;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
+import org.olat.modules.coach.manager.CoachingDAO;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GroupStatEntry;
+import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
+ * This is mainly a test with a large number of courses and groups.
+ * It check if the rights courses are seen, but not details of the
+ * statistics.
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class CoachingServiceTest extends OlatTestCase {
+public class CoachingLargeTest extends OlatTestCase {
 	
 	private static boolean isInitialized = false;
+	private static final Random rnd = new Random();
 	
 	private static int NUM_OF_COURSES = 5;
 	private static int NUM_OF_STUDENTS = 15;
@@ -83,26 +84,24 @@ public class CoachingServiceTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private CoachingDAO coachingDao;
+	@Autowired
 	private CoachingService coachingService;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
-	private BaseSecurity securityManager;
+	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
-	@Autowired
-	private BusinessGroupService businessGroupService;
-	
-
 	
 	@Before
 	public void setUp() throws Exception {
 		if(isInitialized) return;
 		
 		//author
-		author = JunitTestHelper.createAndPersistIdentityAsAuthor("author_" + getUUID());
+		author = JunitTestHelper.createAndPersistIdentityAsAuthor("author_" + UUID.randomUUID());
 		//r1 set of coach
 		coach10 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-10");
 		coach11 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-11");
@@ -131,8 +130,11 @@ public class CoachingServiceTest extends OlatTestCase {
 
 		//create courses with members
 		for(int i=0; i<NUM_OF_COURSES; i++) {
-			ICourse course = CoursesWebService.createEmptyCourse(author, "Coaching - " + i, "Coaching - " + i, null);
-			RepositoryEntry re = repositoryManager.lookupRepositoryEntry(course, false);
+			
+			URL courseWithForumsUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+			File courseWithForums = new File(courseWithForumsUrl.toURI());
+			String softKey = UUID.randomUUID().toString();
+			RepositoryEntry re = CourseFactory.deployCourseFromZIP(courseWithForums, softKey, 3);
 			if(i == 0) {
 				course10 = re;
 			}
@@ -170,8 +172,11 @@ public class CoachingServiceTest extends OlatTestCase {
 		
 		//create courses with members
 		for(int i=0; i<NUM_OF_COURSES; i++) {
-			ICourse course = CoursesWebService.createEmptyCourse(author, "Coaching - " + i, "Coaching - " + i, null);
-			RepositoryEntry re = repositoryManager.lookupRepositoryEntry(course, false);
+			
+			URL courseWithForumsUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+			File courseWithForums = new File(courseWithForumsUrl.toURI());
+			String softKey = UUID.randomUUID().toString();
+			RepositoryEntry re = CourseFactory.deployCourseFromZIP(courseWithForums, softKey, 3);
 			// create groups without waiting list
 			BusinessGroup g1 = businessGroupService.createBusinessGroup(author, "coach-g1", null, new Integer(0), new Integer(10), false, false, re);
 			BusinessGroup g2 = businessGroupService.createBusinessGroup(author, "coach-g2", null, new Integer(0), new Integer(10), false, false, re);
@@ -236,7 +241,7 @@ public class CoachingServiceTest extends OlatTestCase {
 		if(!coachToGroupCourseMap.containsKey(coachKey)) {
 			coachToGroupCourseMap.put(coachKey, new ArrayList<Long>());
 		}
-		coachToGroupCourseMap.get(coachKey).add(re.getKey());
+		coachToGroupCourseMap.get(coachKey).add(group.getKey());
 	}
 	
 	private void addStudentToCourse(Identity student, RepositoryEntry re) {
@@ -255,8 +260,6 @@ public class CoachingServiceTest extends OlatTestCase {
 		studentToCourseMap.get(student).add(re);
 	}
 	
-	private Random rnd = new Random();
-	
 	public List<Identity> reservoirSample(Iterable<Identity> items, int m) {   
 		List<Identity> res = new ArrayList<Identity>(m);   
 		int count = 0;   
@@ -274,74 +277,82 @@ public class CoachingServiceTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testManagers() {
-		assertNotNull(coachingService);
-		assertNotNull(repositoryManager);
-		assertNotNull(securityManager);
-		assertNotNull(businessGroupService);
-	}
-	
-	@Test
 	public void getStudentsStatistics() {
 		List<StudentStatEntry> statEntries = coachingService.getStudentsStatistics(coach10);
-		assertNotNull(statEntries);
+		Assert.assertNotNull(statEntries);
 	}
 	
 	@Test
 	public void getCoursesStatistics() {
-		List<CourseStatEntry> statEntries = coachingService.getCoursesStatistics(coach10);
-		assertNotNull(statEntries);
-		List<Long> myCourses = coachToCourseMap.get(coach10.getKey());
-		assertNotNull(myCourses);
-		assertEquals(myCourses.size(), statEntries.size());
+		List<CourseStatEntry> courseStatEntries = coachingService.getCoursesStatistics(coach10);
+		Assert.assertNotNull(courseStatEntries);
+		List<Long> coachedCourses = coachToCourseMap.get(coach10.getKey());
+		Assert.assertNotNull(coachedCourses);
+		Assert.assertEquals(coachedCourses.size(), courseStatEntries.size());
+		
+		List<Long> courseStatsKeys = new ArrayList<>();
+		for(CourseStatEntry statEntry:courseStatEntries) {
+			courseStatsKeys.add(statEntry.getRepoKey());
+		}
+		Assert.assertTrue(courseStatsKeys.containsAll(coachedCourses));
+		Assert.assertTrue(coachedCourses.containsAll(courseStatsKeys));
 	}
 	
 	@Test
 	public void getGroupsStatistics() {
-		List<GroupStatEntry> statEntries = coachingService.getGroupsStatistics(coach10);
-		assertNotNull(statEntries);
-		List<Long> myCourses = coachToGroupCourseMap.get(coach10.getKey());
-		assertNotNull(myCourses);
+		List<GroupStatEntry> groupStatEntries = coachingService.getGroupsStatistics(coach10);
+		Assert.assertNotNull(groupStatEntries);
+		List<Long> coachedGroups = coachToGroupCourseMap.get(coach10.getKey());
+		Assert.assertNotNull(coachedGroups);
+		Assert.assertEquals(coachedGroups.size(), groupStatEntries.size());
 		
-		assertEquals(myCourses.size(), statEntries.size());
+		List<Long> groupStatsKeys = new ArrayList<>();
+		for(GroupStatEntry statEntry:groupStatEntries) {
+			groupStatsKeys.add(statEntry.getGroupKey());
+		}
+		
+		Assert.assertTrue(groupStatsKeys.containsAll(coachedGroups));
+		Assert.assertTrue(coachedGroups.containsAll(groupStatsKeys));
 	}
 	
 	@Test
 	public void getCourse() {
-		List<Long> myCourses = coachToCourseMap.get(coach10.getKey());
-		assertNotNull(myCourses);
+		List<Long> coachedCourses = coachToCourseMap.get(coach10.getKey());
+		Assert.assertNotNull(coachedCourses);
 
 		List<EfficiencyStatementEntry> statEntries = coachingService.getCourse(coach10, course10);
-		assertNotNull(statEntries);
-		assertFalse(statEntries.isEmpty());
-		assertTrue(myCourses.contains(course10.getKey()));
+		Assert.assertNotNull(statEntries);
+		Assert.assertFalse(statEntries.isEmpty());
+		Assert.assertTrue(coachedCourses.contains(course10.getKey()));
 
 		for(EfficiencyStatementEntry statEntry:statEntries) {
-			assertNotNull(statEntry.getCourse());
-			assertEquals(course10.getKey(), statEntry.getCourse().getKey());
+			Assert.assertNotNull(statEntry.getCourse());
+			Assert.assertEquals(course10.getKey(), statEntry.getCourse().getKey());
 		}
 	}
 	
 	@Test
 	public void getStudentsCourses() {
-		List<RepositoryEntry> courses = coachingService.getStudentsCourses(coach10, student10, 0, -1);
-		assertNotNull(courses);
+		List<RepositoryEntry> courses = coachingService.getStudentsCourses(coach10, student10);
+		Assert.assertNotNull(courses);
 		
 		List<Long> myCourses = coachToCourseMap.get(coach10.getKey());
-		assertNotNull(myCourses);
+		Assert.assertNotNull(myCourses);
 	}
 	
 	@Test
 	public void getUserCourses() {
-		List<RepositoryEntry> courses = coachingService.getUserCourses(student10, 0, -1);
+		List<RepositoryEntry> courses = coachingService.getUserCourses(student10);
 		Assert.assertNotNull(courses);
 		Assert.assertEquals(studentToCourseMap.get(student10).size(), courses.size());
 	}
 	
 	@Test
 	public void getUsersStatistics() {
-		List<IdentityRef> identities = Collections.<IdentityRef>singletonList(student10);
-		List<StudentStatEntry> statEntries = coachingService.getUsersStatistics(identities);
+		SearchCoachedIdentityParams params = new SearchCoachedIdentityParams();
+		params.setLogin(student10.getName());
+		
+		List<StudentStatEntry> statEntries = coachingService.getUsersStatistics(params);
 		Assert.assertNotNull(statEntries);
 		Assert.assertEquals(1, statEntries.size());
 		
@@ -349,9 +360,4 @@ public class CoachingServiceTest extends OlatTestCase {
 		Assert.assertEquals(student10.getKey(), statEntry.getStudentKey());
 		Assert.assertEquals(studentToCourseMap.get(student10).size(), statEntry.getCountRepo());
 	}
-	
-	private String getUUID() {
-		return UUID.randomUUID().toString().replace("-", "");
-	}
-
 }

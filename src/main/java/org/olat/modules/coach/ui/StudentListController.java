@@ -50,6 +50,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.modules.coach.ui.StudentsTableDataModel.Columns;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -72,6 +73,9 @@ public class StudentListController extends BasicController implements Activateab
 	private boolean hasChanged;
 	
 	private final Map<Long,String> identityFullNameMap= new HashMap<Long,String>();
+	
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -111,14 +115,14 @@ public class StudentListController extends BasicController implements Activateab
 	
 	private void loadModel() {
 		List<StudentStatEntry> students = coachingService.getStudentsStatistics(getIdentity());
-		Set<Long> studentNames = new HashSet<Long>();
+		Set<Long> identityKeys = new HashSet<Long>();
 		for(StudentStatEntry student:students) {
 			if(!identityFullNameMap.containsKey(student.getStudentKey())) {
-				studentNames.add(student.getStudentKey());
+				identityKeys.add(student.getStudentKey());
 			}
 		}
-		if(!studentNames.isEmpty()) {
-			Map<Long,String> newIdentityFullNameMap = coachingService.getIdentities(studentNames);
+		if(!identityKeys.isEmpty()) {
+			Map<Long,String> newIdentityFullNameMap = userManager.getUserDisplayNamesByKey(identityKeys);
 			identityFullNameMap.putAll(newIdentityFullNameMap);
 		}
 		TableDataModel<StudentStatEntry> model = new StudentsTableDataModel(students, identityFullNameMap);

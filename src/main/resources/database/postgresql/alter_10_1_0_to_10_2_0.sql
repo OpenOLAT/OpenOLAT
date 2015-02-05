@@ -55,3 +55,9 @@ create index idx_as_modetoarea_mode_idx on o_as_mode_course_to_area (fk_assessme
 
 
 alter table o_repositoryentry add column allowtoleave varchar(16);
+
+-- refactoring coaching
+drop view if exists o_as_eff_statement_identity_v;
+drop view if exists o_as_eff_statement_students_v;
+drop view if exists o_as_eff_statement_courses_v;
+drop view if exists o_as_eff_statement_groups_v;

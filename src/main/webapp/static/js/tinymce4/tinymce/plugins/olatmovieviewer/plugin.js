@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '2.1.1'
+				version : '2.2'
 			};
 		},
 
@@ -56,7 +56,7 @@
 				s += getStr(null, 'starttime');
 				s += getBool(null, 'autostart');
 				s += getBool(null, 'repeat');
-				s += getBool(null, 'controlbar');
+				s += 'controlbar:true,';
 				s += getStr(null, 'provider');
 				s += getStr(null, 'width');
 				s += getStr(null, 'height');
@@ -74,7 +74,6 @@
 					setStr(pl, null, 'starttime');
 					setBool(pl, null, 'autostart');
 					setBool(pl, null, 'repeat');
-					setBool(pl, null, 'controlbar');
 					setStr(pl, null, 'provider');
 					setStr(pl, null, 'width');
 					setStr(pl, null, 'height');
@@ -296,8 +295,7 @@
 					    	items: [
 					    	    { name: 'starttime', type: 'textbox', checked: true, label: translator().translate('olatmovieviewer.starttime')},
 					    	    { name: 'autostart', type: 'checkbox', checked: false, label: translator().translate('olatmovieviewer.autostart'), text:''},
-					    	    { name: 'repeat', type: 'checkbox', checked: false, label: translator().translate('olatmovieviewer.repeat'), text:''},
-					    	    { name: 'controlbar', type: 'checkbox', checked: false, label: translator().translate('olatmovieviewer.controlbar'), text:''}
+					    	    { name: 'repeat', type: 'checkbox', checked: false, label: translator().translate('olatmovieviewer.repeat'), text:''}
 					    	]
 					    }],
 					onSubmit: insertVideo
@@ -329,7 +327,7 @@
 				pl += 'starttime:' + settingsArr[4] + ',';
 				pl += 'autostart:' + settingsArr[8] + ',';
 				pl += 'repeat:' + settingsArr[9] + ',';
-				pl += 'controlbar:' + settingsArr[10] + ',';
+				pl += 'controlbar:true,';
 				pl += 'provider:' + settingsArr[6] + ',';
 				pl += 'width:' + (settingsArr[2] - playerOffsetWidth) + ',';
 				pl += 'height:' + (settingsArr[3] - playerOffsetHeight);
@@ -347,7 +345,7 @@
 				var starttime = typeof(p.starttime) != "undefined" ? '"' + p.starttime + '"' : 0;
 				var autostart = typeof(p.autostart) != "undefined" ? p.autostart : 'false';
 				var repeat = typeof(p.repeat) != "undefined" ? p.repeat : 'false';
-				var controlbar = typeof(p.controlbar) != "undefined" ? p.controlbar : 'true';
+				var controlbar = 'true';
 				var provider = typeof(p.provider) != "undefined" ? '"' + p.provider + '"' : 'undefined';
 				var streamer = typeof(p.streamer) != "undefined" ? '"' + p.streamer + '"' : 'undefined';
 				var domIdentity = typeof(p.domIdentity) != "undefined" ? p.domIdentity : getNextDomId();
@@ -357,7 +355,12 @@
 				h += '<script type="text/javascript" defer="defer">';
 				h += 'BPlayer.insertPlayer("' + p.address + '","' + domIdentity + '",' + playerWidth + ',' + playerHeight + ',' + starttime + ',0,' + provider + ',' + streamer +',' + autostart + ',' + repeat + ',' + controlbar + ');';
 				h += '</script>';
-				var node = ed.dom.create("span", {id:domIdentity,name:domIdentity,"class":"olatFlashMovieViewer",style:'display:block;border:solid 1px #000; width:' + playerWidth + 'px; height:' + playerHeight + 'px;'},h);
+				var node = ed.dom.create("span", {
+					id:domIdentity,
+					name:domIdentity,
+					"class":"olatFlashMovieViewer",
+					"style":'display:block;border:solid 1px #000; width:' + playerWidth + 'px; height:' + playerHeight + 'px;'
+				},h);
 				return node;
 			};
 
@@ -443,10 +446,18 @@
 					} catch (exception) {
 						movieSettings = {};
 					}
-					var imgNode = ed.dom.create("img", {id:movieSettings.domIdentity,name:movieSettings.domIdentity,"class":"mceItemOlatMovieViewer", src:imgUrl, title:movieSettingsString});
+
+					var imgNode = ed.dom.create("img", {
+						id:movieSettings.domIdentity,
+						name:movieSettings.domIdentity,
+						"class":"mceItemOlatMovieViewer",
+						src:imgUrl,
+						title:movieSettingsString
+					});
 					//for ie8
 					imgNode.width = typeof(movieSettings.width) == 'undefined' ? 320 : movieSettings.width;
 					imgNode.height = typeof(movieSettings.height) == 'undefined' ? 240 : movieSettings.height;
+					imgNode.style = 'width:' + imgNode.width + 'px; height:' + imgNode.height + 'px;'
 					//  ...and replace the div by the new img.
 					ed.dom.replace(imgNode, node, false);
 			    });

@@ -69,7 +69,7 @@ public interface BaseFullWebappControllerParts {
 	 * @param wControl
 	 * @return
 	 */
-	public TopNavController createTopNavController(UserRequest ureq, WindowControl wControl);
+	public LockableController createTopNavController(UserRequest ureq, WindowControl wControl);
 	
 	/**
 	 * footer controller (user count, logged in user, logo, verson info, etc)
@@ -77,6 +77,6 @@ public interface BaseFullWebappControllerParts {
 	 * @param wControl
 	 * @return
 	 */
-	public Controller createFooterController(UserRequest ureq, WindowControl wControl);
+	public LockableController createFooterController(UserRequest ureq, WindowControl wControl);
 	
 }

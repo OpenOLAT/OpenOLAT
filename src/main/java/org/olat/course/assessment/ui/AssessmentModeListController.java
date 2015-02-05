@@ -114,16 +114,16 @@ public class AssessmentModeListController extends FormBasicController implements
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status.i18nKey(), Cols.status.ordinal(),
-				new ModeStatusCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18nKey(), Cols.name.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.begin.i18nKey(), Cols.begin.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.end.i18nKey(), Cols.end.ordinal()));
+				true, Cols.status.name(), new ModeStatusCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18nKey(), Cols.name.ordinal(), true, Cols.name.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.begin.i18nKey(), Cols.begin.ordinal(), true, Cols.begin.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.end.i18nKey(), Cols.end.ordinal(), true, Cols.end.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.leadTime.i18nKey(), Cols.leadTime.ordinal(),
-				new TimeCellRenderer(getTranslator())));
+				true, Cols.leadTime.name(), new TimeCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.followupTime.i18nKey(), Cols.followupTime.ordinal(),
-				new TimeCellRenderer(getTranslator())));
+				true, Cols.followupTime.name(), new TimeCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.target.i18nKey(), Cols.target.ordinal(),
-				new TargetAudienceCellRenderer(getTranslator())));
+				true, Cols.target.name(), new TargetAudienceCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("start", Cols.start.ordinal(), "start",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("start"), "start"), null)));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("stop", Cols.stop.ordinal(), "stop",
@@ -258,6 +258,7 @@ public class AssessmentModeListController extends FormBasicController implements
 			assessmentModeMgr.delete(modeToDelete);
 		}
 		loadModel();
+		tableEl.deselectAll();
 	}
 	
 	private void doEdit(UserRequest ureq, AssessmentMode mode) {

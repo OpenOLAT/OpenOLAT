@@ -32,6 +32,7 @@ import org.olat.core.commons.controllers.impressum.ImpressumInformations;
 import org.olat.core.commons.controllers.impressum.ImpressumMainController;
 import org.olat.core.commons.controllers.impressum.ImpressumModule;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
+import org.olat.core.commons.fullWebApp.LockableController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
@@ -47,6 +48,7 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -67,11 +69,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author patrickb
  */
-public class OlatFooterController extends BasicController { 
+public class OlatFooterController extends BasicController implements LockableController { 
 	
-	private Link impressumLink;
+	private final Link impressumLink;
 	private final VelocityContainer olatFootervc;
+	private ShareLinkController shareLinkCtr;
 	
+	@Autowired
+	private SocialModule socialModule;
 	@Autowired
 	private LayoutModule layoutModule;
 	@Autowired
@@ -92,11 +97,9 @@ public class OlatFooterController extends BasicController {
 		olatFootervc.put("userCounter", userCounter);
 
 		// share links
-		SocialModule socialModule = CoreSpringFactory.getImpl(SocialModule.class);
 		if (socialModule.isShareEnabled() && socialModule.getEnabledShareLinkButtons().size() > 0) {
-			Controller shareLinkCtr = new ShareLinkController(ureq, wControl);
-			listenTo(shareLinkCtr); // for auto-dispose
-			// push to view
+			shareLinkCtr = new ShareLinkController(ureq, wControl);
+			listenTo(shareLinkCtr);
 			olatFootervc.put("shareLink", shareLinkCtr.getInitialComponent());
 		}
 		
@@ -106,7 +109,6 @@ public class OlatFooterController extends BasicController {
 		impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-lg");
 		impressumLink.setAjaxEnabled(false);
 		impressumLink.setTarget("_blank");
-
 
 		// Push information about user
 		if (!isGuest && ureq.getUserSession().isAuthenticated()) {
@@ -139,6 +141,20 @@ public class OlatFooterController extends BasicController {
 	}
 
 	@Override
+	public void lockResource(OLATResourceable resource) {
+		if(shareLinkCtr != null) {
+			olatFootervc.remove(shareLinkCtr.getInitialComponent());
+		}
+	}
+
+	@Override
+	public void unlockResource() {
+		if(shareLinkCtr != null) {
+			olatFootervc.put("shareLink", shareLinkCtr.getInitialComponent());
+		}
+	}
+
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(impressumLink == source) {
 			doOpenImpressum(ureq);
@@ -147,6 +163,7 @@ public class OlatFooterController extends BasicController {
 	
 	protected void doOpenImpressum(UserRequest ureq) {
 		ControllerCreator impressumControllerCreator = new ControllerCreator() {
+			@Override
 			public Controller createController(UserRequest lureq, WindowControl lwControl) {
 				return new ImpressumMainController(lureq, lwControl);
 			}
@@ -159,5 +176,4 @@ public class OlatFooterController extends BasicController {
 		}
 		popupBrowserWindow.open(ureq);
 	}
-
 }

@@ -21,7 +21,6 @@ package org.olat.modules.coach.ui;
 
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -44,10 +43,10 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CourseStatEntry;
+import org.olat.modules.coach.ui.CoursesTableDataModel.Columns;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-
-import org.olat.modules.coach.ui.CoursesTableDataModel.Columns;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -68,14 +67,13 @@ public class CourseListController extends BasicController implements Activateabl
 	
 	private boolean hasChanged = false;
 	
-	private final CoachingService coachingService;
-	private final RepositoryManager repositoryManager;
+	@Autowired
+	private CoachingService coachingService;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	
 	public CourseListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		
-		coachingService = CoreSpringFactory.getImpl(CoachingService.class);
-		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("error.no.found"));
