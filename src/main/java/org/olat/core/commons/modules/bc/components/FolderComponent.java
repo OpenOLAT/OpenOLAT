@@ -43,7 +43,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.Event;
-import org.olat.core.gui.control.generic.folder.FolderHelper;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
@@ -66,7 +65,6 @@ public class FolderComponent extends AbstractComponent {
 	public static final String SORT_NAME = "name";
 	public static final String SORT_SIZE = "size";
 	public static final String SORT_DATE = "date";
-	public static final String SORT_TYPE = "type";
 	public static final String SORT_REV = "revision";
 	public static final String SORT_LOCK = "lock";
 	
@@ -265,24 +263,6 @@ public class FolderComponent extends AbstractComponent {
 					else  																																		// if two leafes, sort after size
 						if (sortAsc) return ((leaf1.getSize() < leaf2.getSize()) ? -1 :  1);
 						else				 return ((leaf1.getSize() < leaf2.getSize()) ?  1 : -1);
-				}
-			};
-		} else if (col.equals(SORT_TYPE)) {																							// sort after file type, folders always on top
-			comparator = new Comparator<VFSItem>() {
-				public int compare(VFSItem o1, VFSItem o2) {
-					String type1 = FolderHelper.extractFileType(o1.getName(), translator.getLocale());
-					String type2 = FolderHelper.extractFileType(o2.getName(), translator.getLocale());
-					if (o1 instanceof VFSLeaf) {
-						if (!FolderHelper.isKnownFileType(type1)) type1 = translator.translate("UnknownFile"); 
-					} else {
-						type1 = (sortAsc) ? "" : "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ";		// it's a folder
-					}
-					if (o2 instanceof VFSLeaf) {
-						if (!FolderHelper.isKnownFileType(type2)) type2 = translator.translate("UnknownFile"); 
-					} else {
-						type2 = (sortAsc) ? "" : "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ";		// it's a folder
-					}
-					return (sortAsc) ? collator.compare(type1, type2) : collator.compare(type2, type1);
 				}
 			};
 		} else if (col.equals(SORT_REV)) {																							// sort after revision number, folders always on top
