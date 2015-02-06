@@ -338,7 +338,8 @@ public class TableController extends BasicController {
 				applyAndcheckChangedColumnsChoice(ureq, colsChoice.getSelectedRows());
 			} else if (event == Choice.EVNT_FORM_RESETED) {
 				//sideeffect on table and prefs
-				applyAndcheckChangedColumnsChoice(ureq, colsChoice.getAllRows());
+				List<Integer> visibleCols = table.getDefaultVisibleColumns();
+				applyAndcheckChangedColumnsChoice(ureq, visibleCols);
 			} else { // cancelled
 				cmc.deactivate();
 			}
@@ -515,6 +516,7 @@ public class TableController extends BasicController {
 		if (tableModel != null) {
 			contentVc.contextPut("tableEmpty", tableModel.getRowCount() == 0 ? Boolean.TRUE : Boolean.FALSE);
 			contentVc.contextPut("numberOfElements", String.valueOf(table.getUnfilteredRowCount()));
+			contentVc.contextPut("rowCounts", String.valueOf(table.getRowCount()));
 			if (table.isTableFiltered()) {
 				contentVc.contextPut("numberFilteredElements", String.valueOf(table.getRowCount()));
 				contentVc.contextPut(VC_VAR_IS_FILTERED, Boolean.TRUE); 

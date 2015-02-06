@@ -11,8 +11,8 @@
 		</div>
 		<div class="col-sm-3 col-xs-4 o_table_row_count">
 		#if ($tableConfig.isDisplayRowCount())
-			$numberOfElements
-			#if ($numberOfElements == "1")
+			$rowCounts
+			#if ($rowCounts == "1")
 				$r.translate("table.entry")
 			#else
 				$r.translate("table.entries")

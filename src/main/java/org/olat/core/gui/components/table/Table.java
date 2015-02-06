@@ -109,10 +109,11 @@ public class Table extends AbstractComponent {
 
 	// order of left-to-right presentation of Columns (visible columndescriptors):
 	// list of columndescriptors
-	List<ColumnDescriptor> columnOrder; // default visibility to improve speed, not private
+	private List<ColumnDescriptor> columnOrder; // default visibility to improve speed, not private
 
 	// all column descriptors whether visible or not
-	List<ColumnDescriptor> allCDs; // default visibility to improve speed, not private
+	private List<ColumnDescriptor> allCDs; // default visibility to improve speed, not private
+	private List<ColumnDescriptor> defaultVisibleCDs;
 
 	private TableDataModel tableDataModel;
 	// DO NOT REFERENCE filteredTableDataModel directly, use always getFilteredTableDataModel() because lazy init!
@@ -156,6 +157,7 @@ public class Table extends AbstractComponent {
 		super(id, name, translator);
 		columnOrder = new ArrayList<ColumnDescriptor>(INITIAL_COLUMNSIZE);
 		allCDs = new ArrayList<ColumnDescriptor>(INITIAL_COLUMNSIZE);
+		defaultVisibleCDs = new ArrayList<ColumnDescriptor>(INITIAL_COLUMNSIZE);
 		sorter = new ArrayList<Integer>(DEFAULT_RESULTS_PER_PAGE);
 		selectedRowId = NO_ROW_SELECTED;
 		currentPageId = Integer.valueOf(1);
@@ -281,10 +283,9 @@ public class Table extends AbstractComponent {
 			} else {
 				columnOrder.add(cd);
 			}
+			defaultVisibleCDs.add(cd);
 		}
 	}
-
-	// public boolean isColumnDescriptorVisible()
 
 	/**
 	 * @param cd
@@ -648,6 +649,17 @@ public class Table extends AbstractComponent {
 	 */
 	protected ChoiceModel createChoiceModel() {
 		return new ChoiceTableDataModel(isMultiSelect(), allCDs, columnOrder, getTranslator());
+	}
+	
+	protected List<Integer> getDefaultVisibleColumns() {
+		List<Integer> indexList = new ArrayList<>();
+		for(ColumnDescriptor defaultVisibleCD:defaultVisibleCDs) {
+			int index = allCDs.indexOf(defaultVisibleCD);
+			if(index >= 0) {
+				indexList.add(index);
+			}
+		}
+		return indexList;
 	}
 
 	/**
