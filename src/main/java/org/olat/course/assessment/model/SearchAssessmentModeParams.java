@@ -17,32 +17,43 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment.manager;
+package org.olat.course.assessment.model;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.scheduler.JobWithDB;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
+import java.util.Date;
 
 /**
  * 
- * Initial date: 18.12.2014<br>
+ * Initial date: 06.02.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentModeNotificationJob extends JobWithDB {
+public class SearchAssessmentModeParams {
 	
-	private static final OLog log = Tracing.createLoggerFor(AssessmentModeNotificationJob.class);
+	private Date date;
+	private String idAndRefs;
+	private String name;
 
-	@Override
-	public void executeWithDB(JobExecutionContext context)
-	throws JobExecutionException {
-		try {
-			CoreSpringFactory.getImpl(AssessmentModeCoordinationServiceImpl.class).beat();
-		} catch (Exception e) {
-			log.error("", e);
-		}
+	public Date getDate() {
+		return date;
+	}
+
+	public void setDate(Date date) {
+		this.date = date;
+	}
+
+	public String getIdAndRefs() {
+		return idAndRefs;
+	}
+
+	public void setIdAndRefs(String id) {
+		this.idAndRefs = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 }

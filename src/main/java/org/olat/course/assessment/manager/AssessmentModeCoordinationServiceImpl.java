@@ -30,6 +30,7 @@ import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.model.AssessmentModeImpl;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,17 +48,20 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private AssessmentModule assessmentModule;
+	@Autowired
 	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private AssessmentModeManagerImpl assessmentModeManager;
 	
 	protected void beat() {
-		Date now = now();
-		List<AssessmentMode> currentModes = assessmentModeManager.getAssessmentModes(now);
-		for(AssessmentMode currentMode:currentModes) {
-			sendEvent(currentMode, now, false);
+		if(assessmentModule.isAssessmentModeEnabled()) {
+			Date now = now();
+			List<AssessmentMode> currentModes = assessmentModeManager.getAssessmentModes(now);
+			for(AssessmentMode currentMode:currentModes) {
+				sendEvent(currentMode, now, false);
+			}
 		}
-		System.out.println("Beat: " + now() + " and " + new Date());
 	}
 	
 	private Date now() {

@@ -69,6 +69,7 @@ import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.login.AuthBFWCParts;
 import org.olat.login.GuestBFWCParts;
@@ -312,12 +313,15 @@ public class AuthHelper {
 		if(usess.getRoles() != null && usess.getRoles().isOLATAdmin()) {
 			usess.setAssessmentModes(Collections.<TransientAssessmentMode>emptyList());
 		} else {
-			AssessmentModeManager assessmentManager = CoreSpringFactory.getImpl(AssessmentModeManager.class);
-			List<AssessmentMode> modes = assessmentManager.getAssessmentModeFor(identity);
-			if(modes.isEmpty()) {
-				usess.setAssessmentModes(Collections.<TransientAssessmentMode>emptyList());
-			} else {
-				usess.setAssessmentModes(TransientAssessmentMode.create(modes));
+			AssessmentModule assessmentModule = CoreSpringFactory.getImpl(AssessmentModule.class);
+			if(assessmentModule.isAssessmentModeEnabled()) {
+				AssessmentModeManager assessmentManager = CoreSpringFactory.getImpl(AssessmentModeManager.class);
+				List<AssessmentMode> modes = assessmentManager.getAssessmentModeFor(identity);
+				if(modes.isEmpty()) {
+					usess.setAssessmentModes(Collections.<TransientAssessmentMode>emptyList());
+				} else {
+					usess.setAssessmentModes(TransientAssessmentMode.create(modes));
+				}
 			}
 		}
 		

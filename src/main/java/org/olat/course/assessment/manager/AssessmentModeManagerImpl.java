@@ -19,6 +19,8 @@
  */
 package org.olat.course.assessment.manager;
 
+import static org.olat.core.commons.persistence.PersistenceHelper.*;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -28,11 +30,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.persistence.TemporalType;
+import javax.persistence.TypedQuery;
 import javax.servlet.http.HttpServletRequest;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
@@ -47,6 +52,7 @@ import org.olat.course.assessment.AssessmentModeToGroup;
 import org.olat.course.assessment.model.AssessmentModeImpl;
 import org.olat.course.assessment.model.AssessmentModeToAreaImpl;
 import org.olat.course.assessment.model.AssessmentModeToGroupImpl;
+import org.olat.course.assessment.model.SearchAssessmentModeParams;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.group.area.BGArea;
@@ -142,7 +148,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		((AssessmentModeImpl)assessmentMode).setBeginWithLeadTime(beginWithLeadTime);
 		
 		Date end = assessmentMode.getEnd();
-		Date endWithFollowupTime = this.evaluateFollowupTime(end, assessmentMode.getFollowupTime());
+		Date endWithFollowupTime = evaluateFollowupTime(end, assessmentMode.getFollowupTime());
 		((AssessmentModeImpl)assessmentMode).setEndWithFollowupTime(endWithFollowupTime);
 
 		AssessmentMode reloadedMode;
@@ -177,6 +183,68 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 			.getResultList();
 		
 		return modes == null || modes.isEmpty() ? null : modes.get(0);
+	}
+
+	@Override
+	public List<AssessmentMode> findAssessmentMode(SearchAssessmentModeParams params) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select mode from courseassessmentmode mode")
+		  .append(" inner join fetch mode.repositoryEntry v")
+		  .append(" inner join fetch v.olatResource res");
+		
+		boolean where = false;
+		
+		Date date = params.getDate();
+		if(date != null) {
+			where = appendAnd(sb, where);
+			sb.append(":date between mode.beginWithLeadTime and mode.endWithFollowupTime");
+		}
+		
+		String name = params.getName();
+		if(StringHelper.containsNonWhitespace(name)) {
+			name = PersistenceHelper.makeFuzzyQueryString(name);
+			where = appendAnd(sb, where);
+			sb.append("(");
+			appendFuzzyLike(sb, "v.displayname", "name", dbInstance.getDbVendor());
+			sb.append(" or ");
+			appendFuzzyLike(sb, "mode.name", "name", dbInstance.getDbVendor());
+			sb.append(")");
+		}
+		
+		Long id = null;
+		String refs = null;
+		if(StringHelper.containsNonWhitespace(params.getIdAndRefs())) {
+			refs = params.getIdAndRefs();
+			where = appendAnd(sb, where);
+			sb.append(" (v.externalId=:ref or v.externalRef=:ref or v.softkey=:ref");
+			if(StringHelper.isLong(refs)) {
+				try {
+					id = Long.parseLong(refs);
+					sb.append(" or v.key=:vKey or res.resId=:vKey");
+				} catch (NumberFormatException e) {
+					//
+				}
+			}
+			sb.append(")");	
+		}
+		
+		sb.append(" order by mode.beginWithLeadTime desc ");
+
+		TypedQuery<AssessmentMode> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentMode.class);
+		if(StringHelper.containsNonWhitespace(params.getName())) {
+			query.setParameter("name", name);
+		}
+		if(id != null) {
+			query.setParameter("vKey", id);
+		}
+		if(refs != null) {
+			query.setParameter("ref", refs);
+		}
+		if(date != null) {
+			query.setParameter("date", date, TemporalType.TIMESTAMP);
+		}
+		return query.getResultList();
 	}
 
 	@Override

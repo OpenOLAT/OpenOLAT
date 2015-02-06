@@ -107,6 +107,15 @@ public class PersistenceHelper {
 		return result;
 	}
 	
+	public static boolean appendAnd(StringBuilder sb, boolean where) {
+		if(where) {
+			sb.append(" and ");
+		} else {
+			sb.append(" where ");
+		}
+		return true;
+	}
+	
 	public static boolean appendGroupBy(StringBuilder sb, String dbRef, SortKey... orderBy) {
 		boolean appended = false;
 		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {

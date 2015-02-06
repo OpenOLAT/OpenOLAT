@@ -88,6 +88,7 @@ import org.olat.course.archiver.FullAccessArchiverCallback;
 import org.olat.course.area.CourseAreasController;
 import org.olat.course.assessment.AssessmentChangedEvent;
 import org.olat.course.assessment.AssessmentMainController;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CoachingGroupAccessAssessmentCallback;
 import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.assessment.FullAccessAssessmentCallback;
@@ -186,6 +187,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private AssessmentModule assessmentModule;
 	@Autowired
 	private EfficiencyStatementManager efficiencyStatementManager;
 	
@@ -456,6 +459,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			assessmentModeLink = LinkFactory.createToolLink("assessment.mode.cmd", translate("command.assessment.mode"), this, "o_icon_assessment_mode");
 			assessmentModeLink.setElementCssClass("o_sel_course_assessment_mode");
 			assessmentModeLink.setEnabled(!managed);
+			assessmentModeLink.setVisible(assessmentModule.isAssessmentModeEnabled());
 			settings.addComponent(assessmentModeLink);
 			
 			catalogLink = LinkFactory.createToolLink("access.cmd", translate("command.catalog"), this, "o_icon_catalog");
