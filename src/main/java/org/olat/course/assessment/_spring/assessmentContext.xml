@@ -23,7 +23,7 @@
 	
 	<bean id="assessmentNotificationsTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
 	    <property name="jobDetail" ref="assessmentNotificationsJob" />
-	    <property name="cronExpression" value="55 * * * * ?" />
+	    <property name="cronExpression" value="1 * * * * ?" />
 	    <property name="startDelay" value="55000" />
 	</bean>
 	

@@ -1341,12 +1341,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			lockMode = mode;
 			lockStatus = LockStatus.need;
 		} else if(lockResource != null && lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
-			if(mode.getStatus() == Status.leadtime) {
-				if(assessmentGuardCtrl == null) {
-					lockStatus = LockStatus.need;
-				}
-				lockMode = mode;
-			} else if(mode.getStatus() == Status.followup) {
+			if(mode.getStatus() == Status.leadtime || mode.getStatus() == Status.followup) {
 				if(assessmentGuardCtrl == null) {
 					lockStatus = LockStatus.need;
 				}

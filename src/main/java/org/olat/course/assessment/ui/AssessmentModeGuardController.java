@@ -136,9 +136,11 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	private void syncAssessmentModes(UserRequest ureq) {
 		List<ResourceGuard> modeWrappers = new ArrayList<ResourceGuard>();
 		for(TransientAssessmentMode mode:modes) {
-			ResourceGuard wrapper = syncAssessmentMode(ureq, mode);
-			if(wrapper != null) {
-				modeWrappers.add(wrapper);
+			if(mode != null) {
+				ResourceGuard wrapper = syncAssessmentMode(ureq, mode);
+				if(wrapper != null) {
+					modeWrappers.add(wrapper);
+				}
 			}
 		}
 		guards.setList(modeWrappers);

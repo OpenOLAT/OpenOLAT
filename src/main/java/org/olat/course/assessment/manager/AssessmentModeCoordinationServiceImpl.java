@@ -57,20 +57,14 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		for(AssessmentMode currentMode:currentModes) {
 			sendEvent(currentMode, now, false);
 		}
+		System.out.println("Beat: " + now() + " and " + new Date());
 	}
 	
 	private Date now() {
 		Calendar cal = Calendar.getInstance();
+		//round to minute
 		cal.set(Calendar.MILLISECOND, 0);
-		int second = cal.get(Calendar.SECOND);
-		if(second > 30) {
-			//round to the next minute
-			cal.set(Calendar.SECOND, 0);
-			cal.add(Calendar.MINUTE, 1);
-		} else {
-			cal.set(Calendar.SECOND, 0);
-		}
-		
+		cal.set(Calendar.SECOND, 0);
 		return cal.getTime();
 	}
 	
@@ -90,7 +84,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		Date endWithFollowupTime = assessmentModeManager.evaluateFollowupTime(end, followup);
 		if(beginWithLeadTime.compareTo(now) > 0) {
 			status = Status.none;
-		} else if(beginWithLeadTime.compareTo(now) <= 0 && begin.compareTo(now) >= 0) {
+		} else if(beginWithLeadTime.compareTo(now) <= 0 && begin.compareTo(now) >= 0 && !beginWithLeadTime.equals(begin)) {
 			status = Status.leadtime;
 		} else if(begin.compareTo(now) <= 0 && end.compareTo(now) >= 0) {
 			status = Status.assessment;
@@ -114,7 +108,8 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 			mode = ensureStatusOfMode(mode, Status.none);
 			sendEvent(AssessmentModeNotificationEvent.BEFORE, mode,
 					assessmentModeManager.getAssessedIdentityKeys(mode));
-		} else if(mode.getBeginWithLeadTime().compareTo(now) <= 0 && mode.getBegin().compareTo(now) >= 0) {
+		} else if(mode.getBeginWithLeadTime().compareTo(now) <= 0 && mode.getBegin().compareTo(now) >= 0
+				&& mode.getBeginWithLeadTime().compareTo(mode.getBegin()) != 0) {
 			mode = ensureStatusOfMode(mode, Status.leadtime);
 			sendEvent(AssessmentModeNotificationEvent.LEADTIME, mode,
 					assessmentModeManager.getAssessedIdentityKeys(mode));
