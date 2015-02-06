@@ -21,6 +21,7 @@ package org.olat.course.assessment.ui;
 
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -32,16 +33,23 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.course.CorruptedCourseException;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.model.SearchAssessmentModeParams;
 import org.olat.course.assessment.ui.AssessmentModeListModel.Cols;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -96,7 +104,11 @@ public class AssessmentModeAdminListController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status.i18nKey(), Cols.status.ordinal(),
 				true, Cols.status.name(), new ModeStatusCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.course.i18nKey(), Cols.course.ordinal(), true, Cols.course.name()));
+		FlexiCellRenderer renderer = new StaticFlexiCellRenderer("select", new TextFlexiCellRenderer());
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(Cols.course.i18nKey(), Cols.course.ordinal(), "select",
+				true, Cols.course.name(), renderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.externalId.i18nKey(), Cols.externalId.ordinal(), true, Cols.externalId.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.externalRef.i18nKey(), Cols.externalRef.ordinal(), true, Cols.externalRef.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18nKey(), Cols.name.ordinal(), true, Cols.name.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.begin.i18nKey(), Cols.begin.ordinal(), true, Cols.begin.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.end.i18nKey(), Cols.end.ordinal(), true, Cols.end.name()));
@@ -110,6 +122,7 @@ public class AssessmentModeAdminListController extends FormBasicController {
 		model = new AssessmentModeListModel(columnsModel, assessmentModeCoordinationService);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setMultiSelect(false);
+		tableEl.setAndLoadPersistedPreferences(ureq, "assessment-mode-admin");
 	}
 	
 	private void loadModel() {
@@ -130,6 +143,16 @@ public class AssessmentModeAdminListController extends FormBasicController {
 			params.setIdAndRefs(idAndRefsEl.getValue());
 			params.setName(nameEl.getValue());
 			loadModel();
+		} else if(tableEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				AssessmentMode row = model.getObject(se.getIndex());
+				if("select".equals(cmd)) {
+					launch(ureq, row.getRepositoryEntry());
+				}
+			}
+			
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -137,5 +160,15 @@ public class AssessmentModeAdminListController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void launch(UserRequest ureq, RepositoryEntry entry) {
+		try {
+			String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		} catch (CorruptedCourseException e) {
+			logError("Course corrupted: " + entry.getKey() + " (" + entry.getOlatResource().getResourceableId() + ")", e);
+			showError("cif.error.corrupted");
+		}
 	}
 }

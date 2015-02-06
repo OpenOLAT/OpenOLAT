@@ -60,6 +60,8 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 		switch(Cols.values()[col]) {
 			case status: return mode.getStatus();
 			case course: return mode.getRepositoryEntry().getDisplayname();
+			case externalId: return mode.getRepositoryEntry().getExternalId();
+			case externalRef: return mode.getRepositoryEntry().getExternalRef();
 			case name: return mode.getName();
 			case begin: return mode.getBegin();
 			case end: return mode.getEnd();
@@ -111,6 +113,8 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 	public enum Cols {
 		status("table.header.status"),
 		course("table.header.course"),
+		externalId("table.header.externalId"),
+		externalRef("table.header.externalRef"),
 		name("table.header.name"),
 		begin("table.header.begin"),
 		end("table.header.end"),

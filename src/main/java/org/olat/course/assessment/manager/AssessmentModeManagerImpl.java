@@ -213,10 +213,14 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		
 		Long id = null;
 		String refs = null;
+		String fuzzyRefs = null;
 		if(StringHelper.containsNonWhitespace(params.getIdAndRefs())) {
 			refs = params.getIdAndRefs();
+			fuzzyRefs = PersistenceHelper.makeFuzzyQueryString(refs);
 			where = appendAnd(sb, where);
-			sb.append(" (v.externalId=:ref or v.externalRef=:ref or v.softkey=:ref");
+			sb.append(" (v.externalId=:ref or ");
+			PersistenceHelper.appendFuzzyLike(sb, "v.externalRef", "fuzzyRefs", dbInstance.getDbVendor());
+			sb.append(" or v.softkey=:ref");
 			if(StringHelper.isLong(refs)) {
 				try {
 					id = Long.parseLong(refs);
@@ -240,6 +244,9 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		}
 		if(refs != null) {
 			query.setParameter("ref", refs);
+		}
+		if(fuzzyRefs != null) {
+			query.setParameter("fuzzyRefs", fuzzyRefs);
 		}
 		if(date != null) {
 			query.setParameter("date", date, TemporalType.TIMESTAMP);
