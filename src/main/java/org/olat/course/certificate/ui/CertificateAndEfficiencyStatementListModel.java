@@ -19,6 +19,8 @@
  */
 package org.olat.course.certificate.ui;
 
+import java.util.Date;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.course.assessment.AssessmentHelper;
@@ -51,6 +53,7 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 				Float score = statement.getScore();
 				return AssessmentHelper.getRoundedScore(score);
 			case passed: return statement.getPassed();
+			case lastModified: return statement.getLastModified();
 			case certificate:
 				return statement.getCertificate();
 			case efficiencyStatement: return statement.getEfficiencyStatementKey();
@@ -63,6 +66,7 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 		displayName("table.header.course"),
 		score("table.header.score"),
 		passed("table.header.passed"),
+		lastModified("table.header.lastScoreDate"),
 		efficiencyStatement("table.header.certificate"),
 		certificate("table.header.certificate");
 		
@@ -81,6 +85,7 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 		
 		private Float score;
 		private Boolean passed;
+		private Date lastModified;
 		private String displayName;
 		
 		private Long resourceKey;
@@ -109,6 +114,14 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 
 		public void setPassed(Boolean passed) {
 			this.passed = passed;
+		}
+
+		public Date getLastModified() {
+			return lastModified;
+		}
+
+		public void setLastModified(Date lastModified) {
+			this.lastModified = lastModified;
 		}
 
 		public CertificateLight getCertificate() {

@@ -30,6 +30,7 @@ import java.util.Map;
 public class SearchCoachedIdentityParams {
 	
 	private String login;
+	private Long identityKey;
 	private Map<String,String> userProperties;
 	
 	public String getLogin() {
@@ -40,6 +41,14 @@ public class SearchCoachedIdentityParams {
 		this.login = login;
 	}
 	
+	public Long getIdentityKey() {
+		return identityKey;
+	}
+
+	public void setIdentityKey(Long identityKey) {
+		this.identityKey = identityKey;
+	}
+
 	public Map<String, String> getUserProperties() {
 		return userProperties;
 	}

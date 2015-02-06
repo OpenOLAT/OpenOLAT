@@ -803,7 +803,7 @@ public class CoachingDAO {
 	
 	private boolean getUsersStatisticsInfos(SearchCoachedIdentityParams params, Map<Long, StudentStatEntry> map) {
 		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
-		Map<String,String> queryParams = new HashMap<>();
+		Map<String,Object> queryParams = new HashMap<>();
 		sb.append("select ")
 		  .append(" sg_participant.fk_identity_id as part_id, ")
 		  .append("  count(distinct sg_re.repositoryentry_id) as re_count, ")
@@ -820,7 +820,7 @@ public class CoachingDAO {
 		  .append(" group by sg_participant.fk_identity_id ");
 
 		Query query = dbInstance.getCurrentEntityManager().createNativeQuery(sb.toString());
-		for(Map.Entry<String, String> entry:queryParams.entrySet()) {
+		for(Map.Entry<String, Object> entry:queryParams.entrySet()) {
 			query.setParameter(entry.getKey(), entry.getValue());
 		}
 		
@@ -839,7 +839,7 @@ public class CoachingDAO {
 	
 	private boolean getUsersStatisticsStatements(SearchCoachedIdentityParams params, Map<Long,StudentStatEntry> map) {
 		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
-		Map<String,String> queryParams = new HashMap<>();
+		Map<String,Object> queryParams = new HashMap<>();
 		sb.append("select ")
 		  .append(" fin_statement.fk_identity, ")
 		  .append(" sum(case when fin_statement.passed=").appendTrue().append(" then 1 else 0 end) as num_of_passed, ")
@@ -858,7 +858,7 @@ public class CoachingDAO {
 		  .append("group by fin_statement.fk_identity ");
 		
 		Query query = dbInstance.getCurrentEntityManager().createNativeQuery(sb.toString());
-		for(Map.Entry<String, String> entry:queryParams.entrySet()) {
+		for(Map.Entry<String, Object> entry:queryParams.entrySet()) {
 			query.setParameter(entry.getKey(), entry.getValue());
 		}
 		
@@ -879,7 +879,12 @@ public class CoachingDAO {
 		return rawList.size() > 0;
 	}
 	
-	private NativeQueryBuilder appendUsersStatisticsSearchParams(SearchCoachedIdentityParams params, Map<String,String> queryParams, NativeQueryBuilder sb) {
+	private NativeQueryBuilder appendUsersStatisticsSearchParams(SearchCoachedIdentityParams params, Map<String,Object> queryParams, NativeQueryBuilder sb) {
+		if(params.getIdentityKey() != null) {
+			sb.append(" and id_participant.id like :identityKey");
+			queryParams.put("identityKey", params.getIdentityKey());
+		}
+		
 		if(StringHelper.containsNonWhitespace(params.getLogin())) {
 			String login = PersistenceHelper.makeFuzzyQueryString(params.getLogin());
 			if (login.contains("_") && dbInstance.isOracle()) {
