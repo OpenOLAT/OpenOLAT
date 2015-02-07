@@ -19,20 +19,30 @@
  */
 package org.olat.course.assessment.manager;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.gui.control.Event;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.model.AssessmentModeImpl;
+import org.olat.course.assessment.model.CoordinatedAssessmentMode;
 import org.olat.course.assessment.model.TransientAssessmentMode;
+import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,7 +53,9 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoordinationService {
+public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoordinationService, GenericEventListener {
+	
+	private static final OLog log = Tracing.createLoggerFor(AssessmentModeCoordinationServiceImpl.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -54,12 +66,36 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	@Autowired
 	private AssessmentModeManagerImpl assessmentModeManager;
 	
-	protected void beat() {
+	private Map<Long,CoordinatedAssessmentMode> coordinatedModes = new ConcurrentHashMap<>();
+	
+	protected synchronized void beat() {
 		if(assessmentModule.isAssessmentModeEnabled()) {
 			Date now = now();
+			List<Long> currentModeKeys = new ArrayList<>();
 			List<AssessmentMode> currentModes = assessmentModeManager.getAssessmentModes(now);
 			for(AssessmentMode currentMode:currentModes) {
-				sendEvent(currentMode, now, false);
+				try {
+					sendEvent(currentMode, now, false);
+					currentModeKeys.add(currentMode.getKey());
+				} catch (Exception e) {
+					log.error("", e);
+				}
+			}
+			
+			//remove coordinated mode 
+			List<Long> coordinatedModeKeys = new ArrayList<>(coordinatedModes.keySet());
+			for(Long coordinatedModeKey:coordinatedModeKeys) {
+				if(!currentModeKeys.contains(coordinatedModeKey)) {
+					CoordinatedAssessmentMode decoordinatedMode = coordinatedModes.remove(coordinatedModeKey);
+					if(decoordinatedMode != null) {
+						coordinatorManager.getCoordinator().getEventBus()
+							.deregisterFor(this, decoordinatedMode.getListenerRes());
+					}
+				}
+			}
+			
+			if(coordinatedModes.size() > 250) {
+				log.error("Seem to be a leak of coordinated modes");
 			}
 		}
 	}
@@ -80,6 +116,69 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		return sendEvent(mode, now(), true);
 	}
 	
+	private void manageListenersOfCoordinatedMode(AssessmentMode mode) {
+		try {
+			Status status = mode.getStatus();
+			if(status == Status.leadtime || status == Status.assessment || status == Status.followup) {
+				//add listeners
+				CoordinatedAssessmentMode coordinateMode = coordinatedModes.get(mode.getKey());
+				if(coordinateMode == null) {
+					coordinateMode = new CoordinatedAssessmentMode(mode);
+					coordinatedModes.put(mode.getKey(), coordinateMode);
+				}
+				coordinatorManager.getCoordinator().getEventBus()
+					.registerFor(this, null, coordinateMode.getListenerRes());
+				
+			} else if(coordinatedModes.containsKey(mode.getKey())) {
+				CoordinatedAssessmentMode decoordinateMode = coordinatedModes.remove(mode.getKey());
+				if(decoordinateMode != null) {
+					coordinatorManager.getCoordinator().getEventBus()
+						.deregisterFor(this, decoordinateMode.getListenerRes());
+				}
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+	}
+	
+	@Override
+	public void event(Event event) {
+		if(event instanceof BusinessGroupModifiedEvent) {
+			try {
+				BusinessGroupModifiedEvent mod = (BusinessGroupModifiedEvent)event;
+				if(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT.equals(mod.getCommand())) {
+					Long identityKey = mod.getAffectedIdentityKey();
+					sendEventAfterMembershipChange(identityKey);
+				}
+			} catch (Exception e) {
+				log.error("", e);
+			}
+		}
+	}
+	
+	private void sendEventAfterMembershipChange(final Long identityKey) {
+		List<AssessmentMode> modes = assessmentModeManager.getAssessmentModeFor(new IdentityRef() {
+			@Override
+			public Long getKey() {
+				return identityKey;
+			}
+		});
+		for(AssessmentMode mode:modes) {
+			Status status = mode.getStatus();
+			if(status == Status.leadtime ) {
+				sendEvent(AssessmentModeNotificationEvent.LEADTIME, mode,
+						assessmentModeManager.getAssessedIdentityKeys(mode));
+			} else if(status == Status.assessment) {
+				sendEvent(AssessmentModeNotificationEvent.START_ASSESSMENT, mode,
+						assessmentModeManager.getAssessedIdentityKeys(mode));
+			} else if(status == Status.followup) {
+				sendEvent(AssessmentModeNotificationEvent.END, mode,
+						assessmentModeManager.getAssessedIdentityKeys(mode));
+			}
+		}
+	}
+
+	@Override
 	public Status evaluateStatus(Date begin, int leadtime, Date end, int followup) {
 		Status status;
 		Date now = now();
@@ -157,6 +256,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 						assessmentModeManager.getAssessedIdentityKeys(mode));
 			}
 		}
+		manageListenersOfCoordinatedMode(mode);
 		return mode;
 	}
 	
