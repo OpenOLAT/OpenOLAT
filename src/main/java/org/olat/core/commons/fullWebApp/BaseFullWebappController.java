@@ -666,8 +666,11 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 				lockStatus = LockStatus.locked;
 				removeAsListenerAndDispose(assessmentGuardCtrl);
 				assessmentGuardCtrl = null;
-			} else {
+			} else if("continue".equals(event.getCommand())) {
 				initializeDefaultSite(ureq);
+				removeAsListenerAndDispose(assessmentGuardCtrl);
+				assessmentGuardCtrl = null;
+				lockStatus = null;
 			}
 		} else {
 			int tabIndex = dtabsControllers.indexOf(source);
@@ -1359,8 +1362,13 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		if(lockResource != null && lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
 			logAudit("Async unlock resource for user: " + getIdentity().getName() + " (" + mode.getResource() + ")", null);
 			unlockResource();
+			if(lockMode != null) {
+				//check if there is a locked resource first
+				lockStatus = LockStatus.need;
+			} else {
+				lockStatus = null;
+			}
 			lockMode = null;
-			lockStatus = null;
 			unlock = true;
 		} else {
 			unlock = false;
@@ -1385,10 +1393,15 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	private boolean checkAssessmentGuard(UserRequest ureq, TransientAssessmentMode mode) {
 		boolean needUpdate;
 		
+		if(this.getIdentity() != null) {
+			System.out.println(getIdentity().getName() + " Lock status " + lockStatus);
+		}
 		if(assessmentGuardCtrl == null) {
 			if(lockStatus == LockStatus.need) {
+				List<TransientAssessmentMode> modes = mode == null ?
+						Collections.<TransientAssessmentMode>emptyList() : Collections.singletonList(mode);
 				assessmentGuardCtrl = new AssessmentModeGuardController(ureq, getWindowControl(),
-						Collections.singletonList(mode), true);
+						modes , true);
 				listenTo(assessmentGuardCtrl);
 				assessmentGuardCtrl.getInitialComponent();
 				lockStatus = LockStatus.popup;
