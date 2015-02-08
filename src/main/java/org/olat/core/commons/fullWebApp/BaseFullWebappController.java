@@ -1392,10 +1392,6 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	
 	private boolean checkAssessmentGuard(UserRequest ureq, TransientAssessmentMode mode) {
 		boolean needUpdate;
-		
-		if(this.getIdentity() != null) {
-			System.out.println(getIdentity().getName() + " Lock status " + lockStatus);
-		}
 		if(assessmentGuardCtrl == null) {
 			if(lockStatus == LockStatus.need) {
 				List<TransientAssessmentMode> modes = mode == null ?
