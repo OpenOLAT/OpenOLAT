@@ -671,6 +671,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 				removeAsListenerAndDispose(assessmentGuardCtrl);
 				assessmentGuardCtrl = null;
 				lockStatus = null;
+				lockMode = null;
 			}
 		} else {
 			int tabIndex = dtabsControllers.indexOf(source);
