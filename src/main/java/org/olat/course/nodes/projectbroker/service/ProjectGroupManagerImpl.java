@@ -364,5 +364,14 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 		List<Identity> candidates = securityManager.getIdentitiesOfSecurityGroup(candidateGroup);
 		return candidates.isEmpty();
 	}
+	
+	
+	public boolean isDeselectionAllowed(Project project){
+		return project.getProjectGroup().isAllowToLeave();
+	}
+	
+	public void setDeselectionAllowed(Project project, boolean allow){
+		project.getProjectGroup().setAllowToLeave(allow);
+	}
 
 }
