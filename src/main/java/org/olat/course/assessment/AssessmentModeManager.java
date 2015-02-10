@@ -26,6 +26,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.course.assessment.model.SearchAssessmentModeParams;
 import org.olat.group.BusinessGroup;
 import org.olat.group.area.BGArea;
 import org.olat.repository.RepositoryEntry;
@@ -66,6 +67,19 @@ public interface AssessmentModeManager {
 	
 	public AssessmentMode getAssessmentModeById(Long key);
 	
+	/**
+	 * Search the whole assessment modes on the system.
+	 * 
+	 * @param params
+	 * @return A list of assessment modes
+	 */
+	public List<AssessmentMode> findAssessmentMode(SearchAssessmentModeParams params);
+	
+	/**
+	 * 
+	 * @param entry The course
+	 * @return The list of assessment modes for the specified course
+	 */
 	public List<AssessmentMode> getAssessmentModeFor(RepositoryEntryRef entry);
 	
 	/**

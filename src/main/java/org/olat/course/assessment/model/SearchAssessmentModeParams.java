@@ -17,43 +17,43 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.coach.model;
+package org.olat.course.assessment.model;
 
-import java.util.Map;
+import java.util.Date;
 
 /**
  * 
- * Initial date: 02.02.2015<br>
+ * Initial date: 06.02.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SearchCoachedIdentityParams {
+public class SearchAssessmentModeParams {
 	
-	private String login;
-	private Long identityKey;
-	private Map<String,String> userProperties;
-	
-	public String getLogin() {
-		return login;
-	}
-	
-	public void setLogin(String login) {
-		this.login = login;
-	}
-	
-	public Long getIdentityKey() {
-		return identityKey;
+	private Date date;
+	private String idAndRefs;
+	private String name;
+
+	public Date getDate() {
+		return date;
 	}
 
-	public void setIdentityKey(Long identityKey) {
-		this.identityKey = identityKey;
+	public void setDate(Date date) {
+		this.date = date;
 	}
 
-	public Map<String, String> getUserProperties() {
-		return userProperties;
+	public String getIdAndRefs() {
+		return idAndRefs;
 	}
-	
-	public void setUserProperties(Map<String, String> userProperties) {
-		this.userProperties = userProperties;
+
+	public void setIdAndRefs(String id) {
+		this.idAndRefs = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 }

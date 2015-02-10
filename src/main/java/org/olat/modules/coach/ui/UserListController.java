@@ -112,6 +112,10 @@ public class UserListController extends BasicController implements Activateable2
 		//
 	}
 	
+	public int size() {
+		return tableCtr.getRowCount();
+	}
+	
 	private void reloadModel() {
 		if(hasChanged) {
 			loadModel();
@@ -138,8 +142,8 @@ public class UserListController extends BasicController implements Activateable2
 		tableCtr.setTableDataModel(model);
 	}
 
-	public void search(SearchCoachedIdentityParams searchParams) {
-		this.searchParams = searchParams;
+	public void search(SearchCoachedIdentityParams searchParameters) {
+		this.searchParams = searchParameters;
 		loadModel();
 	}
 
@@ -181,6 +185,13 @@ public class UserListController extends BasicController implements Activateable2
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//do nothing
+	}
+	
+	protected void selectUniqueStudent(UserRequest ureq) {
+		if(tableCtr.getRowCount() > 0) {
+			StudentStatEntry studentStat = (StudentStatEntry)tableCtr.getTableDataModel().getObject(0);
+			selectStudent(ureq, studentStat);
+		}
 	}
 	
 	protected void previousStudent(UserRequest ureq) {

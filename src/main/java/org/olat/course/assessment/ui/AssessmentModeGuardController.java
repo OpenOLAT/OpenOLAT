@@ -354,6 +354,8 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		
 		boolean canContinue = guards.getSize() == 0;
 		if(canContinue) {
+			cmc.deactivate();
+			
 			fireEvent(ureq, new Event("continue"));
 			String businessPath = "[MyCoursesSite:0]";
 			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
@@ -370,6 +372,8 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	 * @param mode
 	 */
 	private void launchAssessmentMode(UserRequest ureq, TransientAssessmentMode mode) {
+		cmc.deactivate();
+		
 		ureq.getUserSession().setAssessmentModes(null);
 		OLATResourceable resource = mode.getResource();
 		ureq.getUserSession().setLockResource(resource, mode);

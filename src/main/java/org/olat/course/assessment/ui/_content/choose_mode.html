@@ -1,4 +1,9 @@
-<div class="o_info">$r.translate("current.mode.desc")</div>
+#if($guards.list.empty)
+	<div class="o_info">$r.translate("current.mode.end.info")</div>
+#else
+	<div class="o_info">$r.translate("current.mode.desc")</div>
+#end
+
 #foreach($mode in $guards.list)
 	<h2>$mode.name <small>$r.translate("current.mode.course", $mode.displayName)</small></h2>
 	<p><em>$r.translate("current.mode.datetimes", $mode.begin, $mode.end)</em>

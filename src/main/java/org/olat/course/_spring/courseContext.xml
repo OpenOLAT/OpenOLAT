@@ -137,7 +137,7 @@
 		--> 
 	</bean>
 	
-	<!-- Business group admin. panel -->
+	<!-- Certificates admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="8206" />
 		<property name="actionController">	
