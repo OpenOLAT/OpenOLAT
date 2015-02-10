@@ -752,7 +752,13 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				initToolbar();
 				toolControllerDone(ureq);
 			}
-		} else if(source == editorCtrl && source instanceof VetoableCloseController) {
+		} else if(source == leaveDialogBox) {
+			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				doLeave(ureq);
+			}
+		}
+		
+		if(editorCtrl == source && source instanceof VetoableCloseController) {
 			if(event == Event.DONE_EVENT) {
 				if(delayedClose != null) {
 					switch(delayedClose) {
@@ -783,11 +789,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					fireEvent(ureq, Event.DONE_EVENT);
 				}
 			}
-		} else if(source == leaveDialogBox) {
-			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
-				doLeave(ureq);
-			}
-		}
+		} 
 		
 		super.event(ureq, source, event);
 	}
