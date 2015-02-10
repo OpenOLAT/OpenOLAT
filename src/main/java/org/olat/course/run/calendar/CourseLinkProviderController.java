@@ -77,11 +77,6 @@ public class CourseLinkProviderController extends FormBasicController implements
 		courseNodeTreeModel = new CourseNodeSelectionTreeModel(courses);
 
 		initForm(ureq);
-		
-		TreeNode rootNode = courseNodeTreeModel.getRootNode();
-		for(int i=rootNode.getChildCount(); i-->0; ) {
-			multiSelectTree.open((TreeNode)rootNode.getChildAt(i));
-		}
 	}
 
 	@Override
