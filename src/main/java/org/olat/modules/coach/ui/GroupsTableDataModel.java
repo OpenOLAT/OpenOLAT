@@ -72,7 +72,7 @@ public class GroupsTableDataModel implements TableDataModel<GroupStatEntry> {
 			case initialLaunch: {
 				int count = g.getCountCourses() * g.getCountStudents();
 				if(count == 0) {
-					return new LightedValue("", Light.grey);
+					return new LightedValue(null, Light.grey);
 				}
 
 				int launch = g.getInitialLaunch();
@@ -82,11 +82,11 @@ public class GroupsTableDataModel implements TableDataModel<GroupStatEntry> {
 				} else if (launch == 0) {
 					light = Light.red;
 				}
-				return new LightedValue(Integer.toString(launch), light);
+				return new LightedValue(launch, light);
 			}
 			case countPassed: {
 				if(numOfStudents == 0) {
-					return new LightedValue("", Light.grey);
+					return numOfStudents;
 				}
 				
 				ProgressValue val = new ProgressValue();
@@ -96,7 +96,7 @@ public class GroupsTableDataModel implements TableDataModel<GroupStatEntry> {
 			}
 			case countPassedLight: {
 				if(numOfStudents == 0) {
-					return new LightedValue("", Light.grey);
+					return new LightedValue(null, Light.grey);
 				}
 				
 				int passed = g.getCountPassed();
@@ -106,7 +106,7 @@ public class GroupsTableDataModel implements TableDataModel<GroupStatEntry> {
 				} else if (passed == 0) {
 					light = Light.red;
 				}
-				return new LightedValue(Integer.toString(passed), light);
+				return new LightedValue(passed, light);
 			}
 			case averageScore: return g.getAverageScore();
 			case statistics: {

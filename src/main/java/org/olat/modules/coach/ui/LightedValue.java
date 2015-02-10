@@ -23,22 +23,42 @@ package org.olat.modules.coach.ui;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class LightedValue {
+public class LightedValue implements Comparable<LightedValue> {
 	
-	private final String value;
+	private final Integer value;
 	private final Light light;
 	
-	public LightedValue(String value, Light light) {
+	public LightedValue(Integer value, Light light) {
 		this.value = value;
 		this.light = light;
 	}
 
 	public String getValue() {
-		return value;
+		return value == null ? "" : Integer.toString(value.intValue());
 	}
 
 	public Light getLight() {
 		return light;
+	}
+	
+	@Override
+	public int compareTo(LightedValue o) {
+		int color1 = light == null ? 0 : light.ordinal();
+		int color2 = o.light == null ? 0 : o.light.ordinal();
+		if(color1 < color2) {
+			return -1;
+		} else if(color2 < color1) {
+			return 1;
+		}
+		
+		int val1 = value == null ? 0 : value.intValue();
+		int val2 = o.value == null ? 0 : o.value.intValue();
+		if(val2 < val1) {
+			return -1;
+		} else if(val1 < val2) {
+			return 1;
+		}
+		return 0;
 	}
 
 	public enum Light {
