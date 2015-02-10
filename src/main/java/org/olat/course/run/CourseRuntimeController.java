@@ -32,7 +32,6 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.glossary.GlossaryMainController;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.UserRequest;
@@ -995,8 +994,6 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		repositoryManager.leave(getIdentity(), getRepositoryEntry(), status, reMailing);
 		//leave groups
 		businessGroupService.leave(getIdentity(), getRepositoryEntry(), status, reMailing);
-		//reload this but make sure all changes are committed before reload
-		DBFactory.getInstance().commit();
 		
 		if(status.isWarningManagedGroup() || status.isWarningManagedCourse()) {
 			showWarning("sign.out.warning.managed");

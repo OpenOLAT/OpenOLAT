@@ -45,6 +45,7 @@ import javax.persistence.TypedQuery;
 import org.hibernate.FlushMode;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBQuery;
@@ -194,6 +195,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 * @param identity
 	 * @return List of Subscriber Objects which belong to the identity
 	 */
+	@Override
 	public List<Subscriber> getSubscribers(Identity identity) {
 		return getSubscribers(identity, Collections.<String>emptyList());
 	}
@@ -206,20 +208,43 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 * @return List of Subscriber Objects which belong to the identity
 	 */
 	@Override
-	public List<Subscriber> getSubscribers(Identity identity, List<String> types) {
+	public List<Subscriber> getSubscribers(IdentityRef identity, List<String> types) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select sub from notisub as sub ")
 		  .append("inner join fetch sub.publisher as publisher ")
-		  .append("where sub.identity = :anIdentity");
+		  .append("where sub.identity.key = :identityKey");
 		if(types != null && !types.isEmpty()) {
 			sb.append(" and publisher.type in (:types)");
 		}
-		TypedQuery<Subscriber> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Subscriber.class);
-		query.setParameter("anIdentity", identity);
+		TypedQuery<Subscriber> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Subscriber.class)
+				.setParameter("identityKey", identity.getKey());
 		if(types != null && !types.isEmpty()) {
 			query.setParameter("types", types);
 		}
 		return query.getResultList();
+	}
+
+	/**
+	 * subscribers for ONE person (e.g. subscribed to 5 forums -> 5 subscribers
+	 * belonging to this person) restricted to the specified Olat resourceable id
+	 * 
+	 * @param identity
+	 * @param resId
+	 * @return List of Subscriber Objects which belong to the identity
+	 */
+	@Override
+	public List<Subscriber> getSubscribers(IdentityRef identity, long resId) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select sub from notisub as sub ")
+		  .append("inner join fetch sub.publisher as publisher ")
+		  .append("where sub.identity.key = :identityKey")
+		  .append(" and publisher.resId = :resId)");
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Subscriber.class)
+			.setParameter("identityKey", identity.getKey())
+			.setParameter("resId", resId)
+			.getResultList();
 	}
 
 	/**
@@ -890,6 +915,14 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			deleteSubscriber(foundSub);
 		} else {
 			logWarn("could not unsubscribe " + s.getIdentity().getName() + " from publisher:" + s.getPublisher().getResName() + ","	+ s.getPublisher().getResId() + "," + s.getPublisher().getSubidentifier(), null);
+		}
+	}
+
+	@Override
+	public void unsubscribeAllForIdentityAndResId(IdentityRef identity, Long resId) {
+		List<Subscriber> subscribers = getSubscribers(identity, resId.longValue());
+		for (Subscriber sub:subscribers) {
+			unsubscribe (sub);
 		}
 	}
 

@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.control.Event;
 import org.olat.core.logging.OLog;
@@ -157,12 +157,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	}
 	
 	private void sendEventAfterMembershipChange(final Long identityKey) {
-		List<AssessmentMode> modes = assessmentModeManager.getAssessmentModeFor(new IdentityRef() {
-			@Override
-			public Long getKey() {
-				return identityKey;
-			}
-		});
+		List<AssessmentMode> modes = assessmentModeManager.getAssessmentModeFor(new IdentityRefImpl(identityKey));
 		for(AssessmentMode mode:modes) {
 			Status status = mode.getStatus();
 			if(status == Status.leadtime ) {

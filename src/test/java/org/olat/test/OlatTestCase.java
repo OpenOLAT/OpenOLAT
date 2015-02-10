@@ -29,6 +29,10 @@ package org.olat.test;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.After;
 import org.junit.Before;
@@ -135,6 +139,41 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 			System.err.println("Could not load properties files from classpath! Exception=" + e);
 		}
 		
+	}
+	
+	protected boolean waitForCondition(final Callable<Boolean> condition, final int timeoutInMilliseconds) {
+		final CountDownLatch countDown = new CountDownLatch(1);
+		final AtomicBoolean result = new AtomicBoolean(false);
+		
+		new Thread(){
+			@Override
+			public void run() {
+				
+				try {
+					int numOfTry = (timeoutInMilliseconds / 100) + 2;
+					for(int i=0; i<numOfTry; i++) {
+						Boolean test = condition.call();
+						if(test != null && test.booleanValue()) {
+							result.set(true);
+							break;
+						} else {
+							result.set(false);
+						}
+					}
+				} catch (Exception e) {
+					log.error("", e);
+					result.set(false);
+				}
+				countDown.countDown();
+			}
+		}.start();
+
+		try {
+			countDown.await(timeoutInMilliseconds, TimeUnit.MILLISECONDS);
+		} catch (InterruptedException e) {
+			log.error("", e);
+		}
+		return result.get();
 	}
 	
 	protected void sleep(int milliSeconds) {
