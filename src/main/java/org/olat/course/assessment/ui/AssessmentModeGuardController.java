@@ -151,11 +151,13 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	private ResourceGuard syncAssessmentMode(UserRequest ureq, TransientAssessmentMode mode) {
 		Date now = new Date();
 		Date beginWithLeadTime = mode.getBeginWithLeadTime();
-		if(!mode.isManual() && beginWithLeadTime.after(now)) {
+		Date endWithFollowupTime = mode.getEndWithFollowupTime();
+		//check if the mode must not be guarded anymore
+		if(mode.isManual() && (Status.end.equals(mode.getStatus()) || Status.none.equals(mode.getStatus()))) {
 			return null;
-		} else if(mode.isManual() && (Status.end.equals(mode.getStatus()) || Status.none.equals(mode.getStatus()))) {
+		} else if(!mode.isManual() && (beginWithLeadTime.after(now) || now.after(endWithFollowupTime))) {
 			return null;
-		}
+		} 
 		
 		ResourceGuard guard = guards.getGuardFor(mode);
 		if(guard == null) {
