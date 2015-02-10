@@ -17,21 +17,34 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.fullWebApp;
+package org.olat.core.util;
 
-import org.olat.core.gui.control.Controller;
-import org.olat.core.id.OLATResourceable;
+import junit.framework.Assert;
+
+import org.junit.Test;
 
 /**
  * 
- * Initial date: 18.12.2014<br>
+ * Initial date: 26.01.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface TopNavController extends Controller {
+public class FileUtilsTest {
 	
-	public void lockResource(OLATResourceable resource);
+	@Test
+	public void normalizeFilename_umlaut() {
+		String normalizedUmlaut = FileUtils.normalizeFilename("S\u00E4l\u00FCt toi");
+		Assert.assertEquals(normalizedUmlaut, "Saeluet_toi");
+		
+		String normalizedAccents = FileUtils.normalizeFilename("Dépéchons-nous!");
+		Assert.assertEquals(normalizedAccents, "Depechonsnous");
+		
+	}
 	
-	public void unlockResource();
-
+	@Test
+	public void normalizedFilename_danischDish() {
+		String smorrebrod = "Sm\u2205rrebr\u00F8d";
+		String normalized = FileUtils.normalizeFilename(smorrebrod);
+		Assert.assertEquals(normalized, "Smorrebrod");
+	}
 }

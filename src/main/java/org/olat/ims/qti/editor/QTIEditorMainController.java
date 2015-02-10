@@ -91,6 +91,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
@@ -133,6 +134,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.references.ReferenceImpl;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description: <br>
@@ -254,24 +256,37 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private StepsMainRunController importTableWizard;
 	private InsertNodeController moveCtrl, copyCtrl, insertCtrl;
 
-	private final UserManager userManager;
-	private final QTIQPoolServiceProvider qtiQpoolServiceProvider;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private QTIResultManager qtiResultManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private QTIQPoolServiceProvider qtiQpoolServiceProvider;
 	
-	public QTIEditorMainController(List<ReferenceImpl> referencees, UserRequest ureq, WindowControl wControl, FileResource fileResource) {
+	public QTIEditorMainController(UserRequest ureq, WindowControl wControl, RepositoryEntry qtiEntry, List<ReferenceImpl> referencees, FileResource fileResource) {
 		super(ureq, wControl);
-		
-		qtiQpoolServiceProvider = (QTIQPoolServiceProvider)CoreSpringFactory.getBean("qtiPoolServiceProvider");
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
 
 		for(Iterator<ReferenceImpl> iter = referencees.iterator(); iter.hasNext(); ) {
 			ReferenceImpl ref = iter.next();
 			if ("CourseModule".equals(ref.getSource().getResourceableTypeName())) {
-				ICourse course = CourseFactory.loadCourse(ref.getSource().getResourceableId());
-				CourseNode courseNode = course.getEditorTreeModel().getCourseNode(ref.getUserdata());
-				String repositorySoftKey = (String) courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
-				Long repKey = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true).getKey();
-				restrictedEdit = ((CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(course, null))
-						|| QTIResultManager.getInstance().countResults(course.getResourceableId(), courseNode.getIdent(), repKey) > 0) ? true : false;
+				try {
+					ICourse course = CourseFactory.loadCourse(ref.getSource().getResourceableId());
+					CourseNode courseNode = course.getEditorTreeModel().getCourseNode(ref.getUserdata());
+					String repositorySoftKey = (String) courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
+					//check softly that the setting if ok
+					if(qtiEntry.getSoftkey().equals(repositorySoftKey)) {
+						restrictedEdit = ((CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(course, null))
+							|| qtiResultManager.countResults(course.getResourceableId(), courseNode.getIdent(), qtiEntry.getKey()) > 0) ? true : false;
+					} else {
+						logError("The course node soft key doesn't match the test/survey sotf key. Course resourceable id: "
+					      + course.getResourceableId() + " (" + course.getCourseTitle() + ") course node: " + courseNode.getIdent() + " (" + courseNode.getShortTitle() + " )"
+					      + " soft key of test/survey in course: " + repositorySoftKey + "  test/survey soft key: " + qtiEntry.getSoftkey(), null);
+					}
+				} catch(CorruptedCourseException e) {
+					logError("", e);
+				}
 			}
 			if(restrictedEdit) {
 				break;
@@ -1198,10 +1213,17 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		for (Iterator<ReferenceImpl> iter = referencees.iterator(); iter.hasNext();) {
 			ReferenceImpl element = iter.next();
 			if ("CourseModule".equals(element.getSource().getResourceableTypeName())) {
-				ICourse course = CourseFactory.loadCourse(element.getSource().getResourceableId());
-				if(course == null) {
+				ICourse course = null;
+				try {
+					course = CourseFactory.loadCourse(element.getSource().getResourceableId());
+					if(course == null) {
+						continue;
+					}
+				} catch(CorruptedCourseException ex) {
+					logError("", ex);
 					continue;
 				}
+				
 				String courseTitle = course.getCourseTitle();
 				StringBuilder stakeHolders = new StringBuilder();
 				

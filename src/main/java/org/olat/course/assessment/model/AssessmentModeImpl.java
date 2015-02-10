@@ -56,7 +56,7 @@ import org.olat.repository.RepositoryEntry;
 @Table(name="o_as_mode_course")
 @NamedQueries({
 	@NamedQuery(name="assessmentModeById", query="select mode from courseassessmentmode mode where mode.key=:modeKey"),
-	@NamedQuery(name="assessmentModeByRepoEntry", query="select mode from courseassessmentmode mode where mode.repositoryEntry.key=:entryKey")
+	@NamedQuery(name="assessmentModeByRepoEntry", query="select mode from courseassessmentmode mode where mode.repositoryEntry.key=:entryKey order by mode.begin desc")
 })
 public class AssessmentModeImpl implements Persistable, AssessmentMode {
 

@@ -54,6 +54,7 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
+import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -66,7 +67,11 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.EventBus;
+import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.mail.MailPackage;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -77,6 +82,7 @@ import org.olat.group.GroupLoggingAction;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryMembership;
+import org.olat.repository.model.RepositoryEntryMembershipModifiedEvent;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.model.RepositoryEntryShortImpl;
@@ -123,6 +129,8 @@ public class RepositoryManager extends BasicManager {
 	private ACReservationDAO reservationDao;
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
+	@Autowired
+	private NotificationsManager notificationsManager;
 
 	/**
 	 * @return Singleton.
@@ -666,6 +674,19 @@ public class RepositoryManager extends BasicManager {
 		return updatedRe;
 	}
 	
+	public RepositoryEntry setLeaveSetting(final RepositoryEntry re,
+			RepositoryEntryAllowToLeaveOptions setting) {
+		RepositoryEntry reloadedRe = loadForUpdate(re);
+		reloadedRe.setAllowToLeaveOption(setting);
+		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+		updatedRe.getStatistics().getLaunchCounter();
+		if(updatedRe.getLifecycle() != null) {
+			updatedRe.getLifecycle().getKey();
+		}
+		dbInstance.commit();
+		return updatedRe;
+	} 
+	
 	/**
 	 * This method doesn't update empty and null values! ( Reserved to unit tests
 	 * and REST API)
@@ -698,6 +719,9 @@ public class RepositoryManager extends BasicManager {
 		}
 		if(StringHelper.containsNonWhitespace(managedFlags)) {
 			reloadedRe.setManagedFlagsString(managedFlags);
+			if(RepositoryEntryManagedFlag.isManaged(reloadedRe, RepositoryEntryManagedFlag.membersmanagement)) {
+				reloadedRe.setAllowToLeaveOption(RepositoryEntryAllowToLeaveOptions.never);
+			}
 		}
 		
 		RepositoryEntryLifecycle cycleToDelete = null;
@@ -805,21 +829,6 @@ public class RepositoryManager extends BasicManager {
 		     .append(" where v.access > 0 and (")
 		     .append("   membership.identity.key=:editorKey and membership.role='").append(GroupRoles.owner.name()).append("'")
 		     .append(" )");
-		/*
-		 //TODO groups match policy
-		     .append(" and ((")
-		     .append("  ownerGroup in (select ownerSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ownerSgmsi where ownerSgmsi.identity.key=:editorKey)")
-		     .append(" ) or (")
-		     .append("  reResource in (select groupRelation.resource from ").append(BGResourceRelation.class.getName()).append(" as groupRelation, ")
-		     .append("    ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi,")
-		     .append("    ").append(PolicyImpl.class.getName()).append(" as poi,")
-		     .append("    ").append(OLATResourceImpl.class.getName()).append(" as ori")
-		     .append("     where sgmsi.identity.key = :editorKey and sgmsi.securityGroup = poi.securityGroup")
-		     .append("     and poi.permission = 'bgr.editor' and poi.olatResource = ori")
-		     .append("     and groupRelation.resource=ori")
-		     .append("  )")
-		     .append(" ))");
-		*/
 		
 		if(resourceTypes != null && resourceTypes.length > 0) {
 			query.append(" and reResource.resName in (:resnames)");
@@ -1184,7 +1193,7 @@ public class RepositoryManager extends BasicManager {
 	 * @param roles
 	 * @return
 	 */
-	public static boolean appendAccessSubSelects(StringBuilder sb, Identity identity, Roles roles) {
+	public static boolean appendAccessSubSelects(StringBuilder sb, IdentityRef identity, Roles roles) {
 		sb.append("(v.access >= ");
 		if (roles.isAuthor()) {
 			sb.append(RepositoryEntry.ACC_OWNERS_AUTHORS);
@@ -1415,6 +1424,26 @@ public class RepositoryManager extends BasicManager {
 	}
 	
 	/**
+	 * Leave the course, commit to the database and send events
+	 * 
+	 * @param identity
+	 * @param re
+	 * @param status
+	 * @param mailing
+	 */
+	public void leave(Identity identity, RepositoryEntry re, LeavingStatusList status, MailPackage mailing) {
+		if(RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.membersmanagement)) {
+			status.setWarningManagedCourse(true);
+		} else {
+			List<RepositoryEntryMembershipModifiedEvent> deferredEvents = new ArrayList<>();
+			removeParticipant(identity, identity, re, mailing, true);
+			deferredEvents.add(RepositoryEntryMembershipModifiedEvent.removed(identity, re));
+			dbInstance.commit();
+			sendDeferredEvents(deferredEvents, re);
+		}
+	}
+	
+	/**
 	 * add provided list of identities as owners to the repo entry. silently ignore
 	 * if some identities were already owners before.
 	 * @param ureqIdentity
@@ -1452,20 +1481,39 @@ public class RepositoryManager extends BasicManager {
 	 * @param logger
 	 */
 	public void removeOwners(Identity ureqIdentity, List<Identity> removeIdentities, RepositoryEntry re){
-    for (Identity identity : removeIdentities) {
-    	repositoryEntryRelationDao.removeRole(identity, re, GroupRoles.owner.name());
+		List<RepositoryEntryMembershipModifiedEvent> deferredEvents = new ArrayList<>();
+		
+		for (Identity identity : removeIdentities) {
+			removeOwner(ureqIdentity, identity, re);
+			deferredEvents.add(RepositoryEntryMembershipModifiedEvent.removed(identity, re));
+		}
+		
+		dbInstance.commit();
+		sendDeferredEvents(deferredEvents, re);
+	}
+	
+	private void sendDeferredEvents(List<? extends MultiUserEvent> events, OLATResourceable ores) {
+		EventBus eventBus = CoordinatorManager.getInstance().getCoordinator().getEventBus();
+		for(MultiUserEvent event:events) {
+			eventBus.fireEventToListenersOf(event, ores);
+			eventBus.fireEventToListenersOf(event, OresHelper.lookupType(RepositoryEntry.class));
+		}
+	}
+	
+	private void removeOwner(Identity ureqIdentity, Identity identity, RepositoryEntry re) {
+		repositoryEntryRelationDao.removeRole(identity, re, GroupRoles.owner.name());
 
-			ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
-			ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
-			try{
-				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_REMOVED, getClass(),
-						LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
-			} finally {
-				ThreadLocalUserActivityLogger.setStickyActionType(actionType);
-			}
-			logAudit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getName()
-					+ "' from repositoryentry with key " + re.getKey());
-    }
+
+		ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
+		ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
+		try{
+			ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_REMOVED, getClass(),
+					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
+		} finally {
+			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
+		}
+		logAudit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getName()
+				+ "' from repositoryentry with key " + re.getKey());
 	}
 	
 	public void acceptPendingParticipation(Identity ureqIdentity, Identity identityToAdd, OLATResource resource, ResourceReservation reservation) {
@@ -1558,21 +1606,29 @@ public class RepositoryManager extends BasicManager {
 	 * @param re
 	 * @param logger
 	 */
-	public void removeTutors(Identity ureqIdentity, List<Identity> removeIdentities, RepositoryEntry re){
+	public void removeTutors(Identity ureqIdentity, List<Identity> removeIdentities, RepositoryEntry re) {
+		List<RepositoryEntryMembershipModifiedEvent> deferredEvents = new ArrayList<>();
 		for (Identity identity : removeIdentities) {
-			repositoryEntryRelationDao.removeRole(identity, re, GroupRoles.coach.name());
-    	
-			ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
-			ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
-			try{
-				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_REMOVED, getClass(),
-						LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
-			} finally {
-				ThreadLocalUserActivityLogger.setStickyActionType(actionType);
-			}
-			logAudit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getName()
-					+ "' from repositoryentry with key " + re.getKey());
+			removeTutor(ureqIdentity, identity, re);
+			deferredEvents.add(RepositoryEntryMembershipModifiedEvent.removed(identity, re));
 		}
+		dbInstance.commit();
+		sendDeferredEvents(deferredEvents, re);
+	}
+	
+	private void removeTutor(Identity ureqIdentity, Identity identity, RepositoryEntry re) {
+		repositoryEntryRelationDao.removeRole(identity, re, GroupRoles.coach.name());
+		
+		ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
+		ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
+		try{
+			ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_REMOVED, getClass(),
+					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
+		} finally {
+			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
+		}
+		logAudit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getName()
+				+ "' from repositoryentry with key " + re.getKey());
 	}
 	
 	/**
@@ -1649,24 +1705,32 @@ public class RepositoryManager extends BasicManager {
 	 * @param logger
 	 */
 	public void removeParticipants(Identity ureqIdentity, List<Identity> removeIdentities, RepositoryEntry re, MailPackage mailing, boolean sendMail) {
+		List<RepositoryEntryMembershipModifiedEvent> deferredEvents = new ArrayList<>();
 		for (Identity identity : removeIdentities) {
-			repositoryEntryRelationDao.removeRole(identity, re, GroupRoles.participant.name());
-
-			if(sendMail) {
-				RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeParticipant, mailing);
-			}
-
-			ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
-			ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
-			try{
-				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_REMOVED, getClass(),
-						LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
-			} finally {
-				ThreadLocalUserActivityLogger.setStickyActionType(actionType);
-			}
-			logAudit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getName()
-					+ "' from repositoryentry with key " + re.getKey());
+			removeParticipant(ureqIdentity, identity, re, mailing, sendMail);
+			deferredEvents.add(RepositoryEntryMembershipModifiedEvent.removed(identity, re));
 		}
+		dbInstance.commit();
+		sendDeferredEvents(deferredEvents, re);
+	}
+	
+	private void removeParticipant(Identity ureqIdentity, Identity identity, RepositoryEntry re, MailPackage mailing, boolean sendMail) {
+		repositoryEntryRelationDao.removeRole(identity, re, GroupRoles.participant.name());
+		
+		if(sendMail) {
+			RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeParticipant, mailing);
+		}
+
+		ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
+		ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
+		try{
+			ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_REMOVED, getClass(),
+					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
+		} finally {
+			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
+		}
+		logAudit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getName()
+				+ "' from repositoryentry with key " + re.getKey());
 	}
 	
 	/**
@@ -1697,6 +1761,14 @@ public class RepositoryManager extends BasicManager {
 		}
 
 		boolean allOk = repositoryEntryRelationDao.removeMembers(re, members);
+		if (allOk) {
+			List<RepositoryEntryMembershipModifiedEvent> deferredEvents = new ArrayList<>();
+			for(Identity identity:members) {
+				deferredEvents.add(RepositoryEntryMembershipModifiedEvent.removed(identity, re));
+			}
+			dbInstance.commit();
+			sendDeferredEvents(deferredEvents, re);
+		}
 		if (allOk) {
 			// do logging - not optimal but 
 			StringBuilder sb = new StringBuilder();
@@ -2112,31 +2184,46 @@ public class RepositoryManager extends BasicManager {
 		return entries;
 	}
 	
-	public void updateRepositoryEntryMembership(Identity ureqIdentity, Roles ureqRoles, RepositoryEntry re,
+	public void updateRepositoryEntryMemberships(Identity ureqIdentity, Roles ureqRoles, RepositoryEntry re,
 			List<RepositoryEntryPermissionChangeEvent> changes, MailPackage mailing) {
+
+		List<RepositoryEntryMembershipModifiedEvent> deferredEvents = new ArrayList<>();
 		for(RepositoryEntryPermissionChangeEvent e:changes) {
-			if(e.getRepoOwner() != null) {
-				if(e.getRepoOwner().booleanValue()) {
-					addOwners(ureqIdentity, new IdentitiesAddEvent(e.getMember()), re);
-				} else {
-					removeOwners(ureqIdentity, Collections.singletonList(e.getMember()), re);
-				}
+			updateRepositoryEntryMembership(ureqIdentity, ureqRoles, re, e, mailing, deferredEvents);
+		}
+
+		dbInstance.commit();
+		sendDeferredEvents(deferredEvents, re);
+	}
+	
+	private void updateRepositoryEntryMembership(Identity ureqIdentity, Roles ureqRoles, RepositoryEntry re,
+			RepositoryEntryPermissionChangeEvent changes, MailPackage mailing,
+			List<RepositoryEntryMembershipModifiedEvent> deferredEvents) {
+		
+		if(changes.getRepoOwner() != null) {
+			if(changes.getRepoOwner().booleanValue()) {
+				addOwners(ureqIdentity, new IdentitiesAddEvent(changes.getMember()), re);
+			} else {
+				removeOwner(ureqIdentity, changes.getMember(), re);
+				deferredEvents.add(RepositoryEntryMembershipModifiedEvent.removed(changes.getMember(), re));
 			}
-			
-			if(e.getRepoTutor() != null) {
-				if(e.getRepoTutor().booleanValue()) {
-					addTutors(ureqIdentity, ureqRoles, new IdentitiesAddEvent(e.getMember()), re, mailing);
-				} else {
-					removeTutors(ureqIdentity, Collections.singletonList(e.getMember()), re);
-				}
+		}
+		
+		if(changes.getRepoTutor() != null) {
+			if(changes.getRepoTutor().booleanValue()) {
+				addTutors(ureqIdentity, ureqRoles, new IdentitiesAddEvent(changes.getMember()), re, mailing);
+			} else {
+				removeTutor(ureqIdentity, changes.getMember(), re);
+				deferredEvents.add(RepositoryEntryMembershipModifiedEvent.removed(changes.getMember(), re));
 			}
-			
-			if(e.getRepoParticipant() != null) {
-				if(e.getRepoParticipant().booleanValue()) {
-					addParticipants(ureqIdentity, ureqRoles, new IdentitiesAddEvent(e.getMember()), re, mailing);
-				} else {
-					removeParticipants(ureqIdentity, Collections.singletonList(e.getMember()), re, mailing, true);
-				}
+		}
+		
+		if(changes.getRepoParticipant() != null) {
+			if(changes.getRepoParticipant().booleanValue()) {
+				addParticipants(ureqIdentity, ureqRoles, new IdentitiesAddEvent(changes.getMember()), re, mailing);
+			} else {
+				removeParticipant(ureqIdentity, changes.getMember(), re, mailing, true);
+				deferredEvents.add(RepositoryEntryMembershipModifiedEvent.removed(changes.getMember(), re));
 			}
 		}
 	}

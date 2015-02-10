@@ -30,6 +30,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -335,7 +336,12 @@ public class EnrollmentManagerTest extends OlatTestCase implements WindowControl
 
 			@Override
 			public List<ContextEntry> getEntries() {
-				return null;
+				return Collections.<ContextEntry>emptyList();
+			}
+			
+			@Override
+			public List<ContextEntry> getEntriesDownTheControls() {
+				return Collections.<ContextEntry>emptyList();
 			}
 
 			@Override

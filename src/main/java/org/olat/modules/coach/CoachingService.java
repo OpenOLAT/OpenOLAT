@@ -19,17 +19,15 @@
  */
 package org.olat.modules.coach;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
-import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GroupStatEntry;
+import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.repository.RepositoryEntry;
 
@@ -44,16 +42,15 @@ public interface CoachingService {
 
 	public boolean isCoach(Identity coach);
 	
-	public Map<Long, String> getIdentities(Collection<Long> identityNames);
 
-	public List<RepositoryEntry> getStudentsCourses(Identity coach, Identity student, int firstResult, int maxResults);
+	public List<RepositoryEntry> getStudentsCourses(Identity coach, Identity student);
 	
 	public List<StudentStatEntry> getStudentsStatistics(Identity coach);
 	
 	
-	public List<StudentStatEntry> getUsersStatistics(List<? extends IdentityRef> identities);
+	public List<StudentStatEntry> getUsersStatistics(SearchCoachedIdentityParams params);
 	
-	public List<RepositoryEntry> getUserCourses(Identity student, int firstResult, int maxResults);
+	public List<RepositoryEntry> getUserCourses(Identity student);
 	
 	
 	public List<CourseStatEntry> getCoursesStatistics(Identity coach);

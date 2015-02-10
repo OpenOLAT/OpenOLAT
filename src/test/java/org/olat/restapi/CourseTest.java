@@ -342,6 +342,33 @@ public class CourseTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
+	public void testGetTutors() throws IOException, URISyntaxException {
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("Course-coach");
+		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(course1, true);
+		repositoryService.addRole(coach, repositoryEntry, GroupRoles.coach.name());
+		dbInstance.intermediateCommit();
+		
+		//get them
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		URI uri = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course1.getResourceableId() + "/tutors").build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		Assert.assertNotNull(body);
+		
+		List<UserVO> tutorVOs = parseUserArray(body);
+		Assert.assertNotNull(tutorVOs);
+		boolean found = false;
+		for(UserVO tutorVo:tutorVOs) {
+			if(tutorVo.getKey().equals(coach.getKey())) {
+				found = true;
+			}
+		}
+		Assert.assertTrue(found);
+	}
+	
+	@Test
 	public void testAddCoach() throws IOException, URISyntaxException {
 		assertTrue(conn.login("administrator", "openolat"));
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course1.getResourceableId() + "/tutors/" + auth1.getKey()).build();
@@ -355,6 +382,33 @@ public class CourseTest extends OlatJerseyTestCase {
 		boolean isTutor = repositoryService.hasRole(auth1, repositoryEntry, GroupRoles.coach.name());
 		dbInstance.intermediateCommit();
 		assertTrue(isTutor);
+	}
+	
+	@Test
+	public void testGetParticipants() throws IOException, URISyntaxException {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Course-participant");
+		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(course1, true);
+		repositoryService.addRole(participant, repositoryEntry, GroupRoles.participant.name());
+		dbInstance.intermediateCommit();
+		
+		//get them
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		URI uri = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course1.getResourceableId() + "/participants").build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		Assert.assertNotNull(body);
+		
+		List<UserVO> participantVOs = parseUserArray(body);
+		Assert.assertNotNull(participantVOs);
+		boolean found = false;
+		for(UserVO participantVo:participantVOs) {
+			if(participantVo.getKey().equals(participant.getKey())) {
+				found = true;
+			}
+		}
+		Assert.assertTrue(found);
 	}
 	
 	@Test

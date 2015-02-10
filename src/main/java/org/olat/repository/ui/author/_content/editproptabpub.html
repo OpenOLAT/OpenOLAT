@@ -6,7 +6,9 @@ $r.render("proppupform")
 	$r.translate("cif.access.users_guests.warning")
 </div>
 #end
-
+#if($r.available("leaveform"))
+	$r.render("leaveform")
+#end
 #if($r.available("accesscontrol"))
 	$r.render("accesscontrol")
 #end

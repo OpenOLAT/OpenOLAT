@@ -31,6 +31,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.tree.MenuTreeItem;
+import org.olat.core.gui.components.tree.TreeModel;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -38,8 +40,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.nodes.CourseNode;
-import org.olat.course.tree.CourseEditorTreeModel;
 
 /**
  * 
@@ -50,7 +50,7 @@ import org.olat.course.tree.CourseEditorTreeModel;
 public class ChooseElementsController extends FormBasicController {
 
 	private MenuTreeItem selectTree;
-	private CourseEditorTreeModel treeModel;
+	private TreeModel treeModel;
 	private FormLink selectAll, deselectAll;
 
 	private final OLATResourceable ores;
@@ -71,7 +71,7 @@ public class ChooseElementsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		ICourse course = CourseFactory.loadCourse(ores);
-		treeModel = course.getEditorTreeModel();
+		treeModel = new CourseNodeSelectionTreeModel(course);
 		selectTree = uifactory.addTreeMultiselect("elements", null, formLayout, treeModel, this);
 		selectTree.setMultiSelect(true);
 		selectTree.setSelectedKeys(preSelectedKeys);
@@ -93,11 +93,11 @@ public class ChooseElementsController extends FormBasicController {
 		List<String> names = new ArrayList<>(selectedKeys.size());
 		for(String selectedKey:selectedKeys) {
 			
-			CourseNode node = treeModel.getCourseNode(selectedKey);
+			TreeNode node = treeModel.getNodeById(selectedKey);
 			if(node == null) {
 				//not published??
 			} else {
-				names.add(node.getShortTitle());
+				names.add(node.getTitle());
 			}
 		}
 		

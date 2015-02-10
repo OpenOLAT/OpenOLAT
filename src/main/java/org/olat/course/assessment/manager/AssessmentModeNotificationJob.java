@@ -21,6 +21,8 @@ package org.olat.course.assessment.manager;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -31,10 +33,16 @@ import org.quartz.JobExecutionException;
  *
  */
 public class AssessmentModeNotificationJob extends JobWithDB {
+	
+	private static final OLog log = Tracing.createLoggerFor(AssessmentModeNotificationJob.class);
 
 	@Override
 	public void executeWithDB(JobExecutionContext context)
 	throws JobExecutionException {
-		CoreSpringFactory.getImpl(AssessmentModeCoordinationServiceImpl.class).beat();
+		try {
+			CoreSpringFactory.getImpl(AssessmentModeCoordinationServiceImpl.class).beat();
+		} catch (Exception e) {
+			log.error("", e);
+		}
 	}
 }

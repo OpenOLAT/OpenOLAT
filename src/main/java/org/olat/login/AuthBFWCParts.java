@@ -29,7 +29,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts;
-import org.olat.core.commons.fullWebApp.TopNavController;
+import org.olat.core.commons.fullWebApp.LockableController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -53,14 +53,14 @@ public class AuthBFWCParts implements BaseFullWebappControllerParts {
 	 * @see org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts#createFooterController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
 	@Override
-	public Controller createFooterController(UserRequest ureq, WindowControl wControl) {
+	public LockableController createFooterController(UserRequest ureq, WindowControl wControl) {
 		Controller footerCtr = null;
 		// ----------- footer, optional (e.g. for copyright, powerd by) ------------------
 		if (CoreSpringFactory.containsBean("fullWebApp.FooterControllerCreator")) {
 			ControllerCreator footerCreator = (ControllerCreator) CoreSpringFactory.getBean("fullWebApp.FooterControllerCreator");
 			footerCtr = footerCreator.createController(ureq, wControl);
 		}
-		return footerCtr;
+		return (LockableController)footerCtr;
 	}
 
 	/**
@@ -81,14 +81,14 @@ public class AuthBFWCParts implements BaseFullWebappControllerParts {
 	 * @see org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts#createTopNavController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
 	@Override
-	public TopNavController createTopNavController(UserRequest ureq, WindowControl wControl) {
+	public LockableController createTopNavController(UserRequest ureq, WindowControl wControl) {
 		Controller topnavCtr = null;
 		// ----------- topnav, optional (e.g. for imprint, logout) ------------------		
 		if (CoreSpringFactory.containsBean("fullWebApp.TopNavControllerCreator")) {
 			ControllerCreator topnavControllerCreator = (ControllerCreator) CoreSpringFactory.getBean("fullWebApp.TopNavControllerCreator");
 			topnavCtr = topnavControllerCreator.createController(ureq, wControl);
 		}
-		return (TopNavController)topnavCtr;
+		return (LockableController)topnavCtr;
 	}
 
 	/**

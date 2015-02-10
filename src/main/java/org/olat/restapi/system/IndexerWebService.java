@@ -131,7 +131,7 @@ public class IndexerWebService {
 			stats.setDocumentQueueSize(fStatus.getDocumentQueueSize());
 			stats.setRunningFolderIndexerCount(fStatus.getNumberRunningFolderIndexer());
 			stats.setAvailableFolderIndexerCount(fStatus.getNumberAvailableFolderIndexer());
-			stats.setLastFullIndexTime(fStatus.getLastFullIndexTime());
+			stats.setLastFullIndexTime(fStatus.getLastFullIndexDateString());
 			stats.setStatus(status.getStatus());
 		} else {
 			stats.setStatus("disabled");

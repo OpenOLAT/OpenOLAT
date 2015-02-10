@@ -77,6 +77,8 @@ public class Rule {
 	}
 	
 	public boolean match(UserSession userSession) {
+		if(userSession == null || userSession.getRoles() == null) return false;
+		
 		boolean match = true;
 		
 		//match the role?

@@ -81,11 +81,11 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 	 * {conditionexpression,conditionexpression,...}) TODO: do we really need the
 	 * information splitted up by category and condition expression?
 	 */
-	Map<String,List<ConditionExpression>> softRefs = new HashMap<String,List<ConditionExpression>>();
+	private Map<String,List<ConditionExpression>> softRefs = new HashMap<String,List<ConditionExpression>>();
 	/**
 	 * book keeping of (courseNodeId, StatusDescription)
 	 */
-	Map<String,List<StatusDescription>> statusDescs = new HashMap<String,List<StatusDescription>>();
+	private Map<String,List<StatusDescription>> statusDescs = new HashMap<String,List<StatusDescription>>();
 	/**
 	 * current active condition expression, it is activated by a call to
 	 * <code>validateConditionExpression(..)</code> the condition interpreter is
@@ -94,15 +94,15 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 	 * <code>CourseEditorEnvImpl</code> to <code>pushError()</code> and
 	 * <code>addSoftReference()</code>.
 	 */
-	ConditionExpression currentConditionExpression = null;
+	private ConditionExpression currentConditionExpression = null;
 	/**
 	 * different organized info as in softRefs: (nodeId,{nodeid,nodeId,...})
 	 */
-	Map<String, Set<String>> nodeRefs = new HashMap<String, Set<String>>();
+	private Map<String, Set<String>> nodeRefs = new HashMap<String, Set<String>>();
 	/**
 	 * the condition interpreter for evaluating the condtion expressions.
 	 */
-	ConditionInterpreter ci = null;
+	private ConditionInterpreter ci = null;
 
 	public CourseEditorEnvImpl(CourseEditorTreeModel cetm, CourseGroupManager cgm, Locale editorLocale) {
 		this.cetm = cetm;
@@ -491,6 +491,10 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 	 */
 	public CourseGroupManager getCourseGroupManager() {
 		return cgm;
+	}
+	
+	public String getRootNodeId() {
+		return cetm.getRootNode().getIdent();
 	}
 
 

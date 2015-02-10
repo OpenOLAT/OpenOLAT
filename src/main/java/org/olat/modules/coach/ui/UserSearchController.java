@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.StackedPanel;
@@ -31,8 +30,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.id.Identity;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.modules.coach.CoachingService;
+import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -41,7 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UserSearchController extends BasicController {
+public class UserSearchController extends BasicController implements Activateable2 {
 	
 	private final UserSearchForm searchForm;
 	private final UserListController userListCtrl;
@@ -75,6 +77,17 @@ public class UserSearchController extends BasicController {
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry entry = entries.get(0);
+		if("Identity".equalsIgnoreCase(entry.getOLATResourceable().getResourceableTypeName())) {
+			Long identityKey = entry.getOLATResourceable().getResourceableId();
+			doSearchByIdentityKey(ureq, identityKey);
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(searchForm == source) {
 			if(event == Event.DONE_EVENT) {
@@ -88,23 +101,24 @@ public class UserSearchController extends BasicController {
 		super.event(ureq, source, event);
 	}
 	
+	private void doSearchByIdentityKey(UserRequest ureq, Long identityKey) {
+		SearchCoachedIdentityParams params = new SearchCoachedIdentityParams();
+		params.setIdentityKey(identityKey);
+		userListCtrl.search(params);
+		mainPanel.pushContent(userListCtrl.getInitialComponent());
+		if(userListCtrl.size() == 1) {
+			userListCtrl.selectUniqueStudent(ureq);
+		}
+	}
+	
 	private void doSearch() {
 		String login = searchForm.getLogin();
 		Map<String,String> searchProps = searchForm.getSearchProperties();
 		
-		SearchIdentityParams params = new SearchIdentityParams();
+		SearchCoachedIdentityParams params = new SearchCoachedIdentityParams();
 		params.setLogin(login);
 		params.setUserProperties(searchProps);
-		params.setUserPropertiesAsIntersectionSearch(true);
-		params.setStatus(Identity.STATUS_VISIBLE_LIMIT);
-		
-		long count = securityManager.countIdentitiesByPowerSearch(params);
-		if(count > 501) {
-			showWarning("error.search.form.too.many");
-		} else {
-			List<Identity> identities = securityManager.getIdentitiesByPowerSearch(params, 0, 501);
-			userListCtrl.loadModel(identities);
-			mainPanel.pushContent(userListCtrl.getInitialComponent());
-		}
+		userListCtrl.search(params);
+		mainPanel.pushContent(userListCtrl.getInitialComponent());
 	}
 }

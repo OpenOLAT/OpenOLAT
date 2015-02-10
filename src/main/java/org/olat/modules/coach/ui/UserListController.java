@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -46,13 +45,14 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.CoachingService;
+import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.modules.coach.ui.StudentsTableDataModel.Columns;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -70,9 +70,11 @@ public class UserListController extends BasicController implements Activateable2
 	private StudentCoursesController studentCtrl;
 	
 	private boolean hasChanged;
-	private List<IdentityRef> identityRefs;
+	private SearchCoachedIdentityParams searchParams;
 	private final Map<Long,String> identityFullNameMap = new HashMap<Long,String>();
 	
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -110,6 +112,10 @@ public class UserListController extends BasicController implements Activateable2
 		//
 	}
 	
+	public int size() {
+		return tableCtr.getRowCount();
+	}
+	
 	private void reloadModel() {
 		if(hasChanged) {
 			loadModel();
@@ -118,19 +124,26 @@ public class UserListController extends BasicController implements Activateable2
 	}
 	
 	private void loadModel() {
-		List<StudentStatEntry> stats = coachingService.getUsersStatistics(identityRefs);
+		List<StudentStatEntry> stats = coachingService.getUsersStatistics(searchParams);
+		
+		List<Long> identityKeys = new ArrayList<>(stats.size());
+		for(StudentStatEntry entry:stats) {
+			Long identityKey = entry.getStudentKey();
+			if(!identityFullNameMap.containsKey(identityKey)) {
+				identityKeys.add(identityKey);
+			}
+		}
+		Map<Long,String> maps = userManager.getUserDisplayNamesByKey(identityKeys);
+		if(maps.size() > 0) {
+			identityFullNameMap.putAll(maps);
+		}
+		
 		TableDataModel<StudentStatEntry> model = new StudentsTableDataModel(stats, identityFullNameMap);
 		tableCtr.setTableDataModel(model);
 	}
 
-	public void loadModel(List<Identity> identities) {
-		List<IdentityRef> refs = new ArrayList<>(identities.size());
-		for(Identity identity:identities) {
-			String fullName = identity.getUser().getProperty(UserConstants.FIRSTNAME, getLocale()) + " " + identity.getUser().getProperty(UserConstants.LASTNAME, getLocale());
-			identityFullNameMap.put(identity.getKey(), fullName);
-			refs.add(new IdentityRefImpl(identity.getKey()));
-		}
-		identityRefs = refs;
+	public void search(SearchCoachedIdentityParams searchParameters) {
+		this.searchParams = searchParameters;
 		loadModel();
 	}
 
@@ -174,6 +187,13 @@ public class UserListController extends BasicController implements Activateable2
 		//do nothing
 	}
 	
+	protected void selectUniqueStudent(UserRequest ureq) {
+		if(tableCtr.getRowCount() > 0) {
+			StudentStatEntry studentStat = (StudentStatEntry)tableCtr.getTableDataModel().getObject(0);
+			selectStudent(ureq, studentStat);
+		}
+	}
+	
 	protected void previousStudent(UserRequest ureq) {
 		StudentStatEntry currentEntry = studentCtrl.getEntry();
 		int previousIndex = tableCtr.getIndexOfSortedObject(currentEntry) - 1;
@@ -205,18 +225,5 @@ public class UserListController extends BasicController implements Activateable2
 		
 		listenTo(studentCtrl);
 		content.setContent(studentCtrl.getInitialComponent());
-	}
-	
-	private static class IdentityRefImpl implements IdentityRef {
-		private final Long key;
-		
-		public IdentityRefImpl(Long key) {
-			this.key = key;
-		}
-		
-		@Override
-		public Long getKey() {
-			return key;
-		}
 	}
 }

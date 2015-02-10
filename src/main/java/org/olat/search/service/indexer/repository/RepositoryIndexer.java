@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -42,6 +43,11 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.RepositoryEntryDocumentFactory;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.resource.accesscontrol.model.OfferAccess;
+import org.olat.resource.accesscontrol.provider.free.FreeAccessHandler;
+import org.olat.resource.accesscontrol.provider.paypal.PaypalAccessHandler;
 import org.olat.search.SearchModule;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.indexer.AbstractHierarchicalIndexer;
@@ -199,6 +205,25 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 			boolean isAllowedToLaunch = false;
 			if (!isOwner) {
 				isAllowedToLaunch = repositoryManager.isAllowedToLaunch(identity, roles, repositoryEntry);
+				if(isAllowedToLaunch) {
+					List<ContextEntry> entries = businessControl.getEntriesDownTheControls();
+					if(entries.size() > 1) {
+						boolean hasAccess = false;
+						ACService acService = CoreSpringFactory.getImpl(ACService.class);
+						AccessResult acResult = acService.isAccessible(repositoryEntry, identity, false); 
+						if (acResult.isAccessible()) {
+							hasAccess = true;
+						} else if (!acResult.getAvailableMethods().isEmpty()) {
+							for(OfferAccess offer:acResult.getAvailableMethods()) {
+								String type = offer.getMethod().getType();
+								if (type.equals(FreeAccessHandler.METHOD_TYPE) || type.equals(PaypalAccessHandler.METHOD_TYPE)) {
+									hasAccess = true;
+								}
+							}
+						}
+						isAllowedToLaunch = hasAccess;
+					}
+				}
 			}
 			if (debug) logDebug("isOwner=" + isOwner + "  isAllowedToLaunch=" + isAllowedToLaunch);
 			if (isOwner || isAllowedToLaunch) {

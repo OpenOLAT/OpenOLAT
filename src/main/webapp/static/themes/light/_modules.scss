@@ -18,6 +18,8 @@
 @import "modules/mixins";
 @import "modules/helpers";
 @import "modules/type";
+@import "modules/content_embedded";  /* add all styles that are created by html editor but can also be rendered in 
+   										main window, not in iframe (e.g. forum post, blog entry) */
 
 /* general layout */
 @import "modules/layout";

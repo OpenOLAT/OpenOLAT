@@ -29,14 +29,12 @@ import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
-import org.olat.core.id.Identity;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.repository.RepositoryEntry;
 
 public interface IQControllerCreator {
 
@@ -99,7 +97,4 @@ public interface IQControllerCreator {
 
 	public Controller createIQSurveyRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			IQSURVCourseNode courseNode);
-
-	public Controller createIQTestDetailsEditController(Long courseResourceableId, String ident, Identity identity,
-			RepositoryEntry referencedRepositoryEntry, String qmdEntryTypeAssess, UserRequest ureq, WindowControl wControl);
 }

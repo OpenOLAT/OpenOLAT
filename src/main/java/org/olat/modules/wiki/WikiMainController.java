@@ -161,7 +161,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 	private StackedPanel mainPanel;
 
 	private Dropdown wikiMenuDropdown, navigationDropdown, breadcrumpDropdown;
-	private GenericTreeNode navigationNode, navMainPageNode, navAZNode, navChangesNode, wikiMenuNode;
+	private GenericTreeNode navMainPageNode, navAZNode, navChangesNode, wikiMenuNode;
 	
 	public static final String ACTION_COMPARE = "compare";
 	public static final String ACTION_SHOW = "view.version";
@@ -391,22 +391,10 @@ public class WikiMainController extends BasicController implements CloneableCont
 		GenericTreeNode rootNode = new GenericTreeNode(root);
 		wikiMenuModel.setRootNode(rootNode);
 
-		//Navigation
-		String navItem = "nav-item-" + resId;
-		navigationNode = new GenericTreeNode(navItem, translate("navigation.navigation"), navItem);
-		rootNode.addChild(navigationNode);
-		
+		//Index
 		String navMainItem = "nav-main-item-" + resId;
 		navMainPageNode = new GenericTreeNode(navMainItem, translate("navigation.mainpage"), navMainItem);
-		navigationNode.addChild(navMainPageNode);
-		
-		String navAZItem = "nav-az-item-" + resId;
-		navAZNode = new GenericTreeNode(navAZItem, translate("navigation.a-z"), navAZItem);
-		navigationNode.addChild(navAZNode);
-		
-		String navChangesItem = "nav-changes-item-" + resId;
-		navChangesNode = new GenericTreeNode(navChangesItem, translate("navigation.changes"), navChangesItem);
-		navigationNode.addChild(navChangesNode);
+		rootNode.addChild(navMainPageNode);
 		
 		//Wiki-Menu
 		String wikiMenuTitle = translate("navigation.menu");
@@ -414,6 +402,14 @@ public class WikiMainController extends BasicController implements CloneableCont
 		wikiMenuNode = new GenericTreeNode(wikiMenuItem, wikiMenuTitle, wikiMenuItem);
 		rootNode.addChild(wikiMenuNode);
 		
+		String navAZItem = "nav-az-item-" + resId;
+		navAZNode = new GenericTreeNode(navAZItem, translate("navigation.a-z"), navAZItem);
+		rootNode.addChild(navAZNode);
+		
+		String navChangesItem = "nav-changes-item-" + resId;
+		navChangesNode = new GenericTreeNode(navChangesItem, translate("navigation.changes"), navChangesItem);
+		rootNode.addChild(navChangesNode);
+
 		updateWikiMenu(wiki);
 		
 		navigationDropdown.setVisible(false);
@@ -484,6 +480,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 		}
 	}
 
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 	
 		String command = event.getCommand();
@@ -830,16 +827,18 @@ public class WikiMainController extends BasicController implements CloneableCont
 				openLastChangesPage(ureq, wiki);
 			} else if(navMainPageNode.getIdent().equals(nodeId)) {
 				page = openIndexPage(ureq, wiki);
-			} else if(navigationNode.getIdent().equals(nodeId)) {
-				page = openIndexPage(ureq, wiki);
 			} else if(wikiMenuNode.getIdent().equals(nodeId)) {
-				openPage(ureq, WikiPage.WIKI_MENU_PAGE, wiki);
+				page = openPage(ureq, WikiPage.WIKI_MENU_PAGE, wiki);
 			} else {
 				TreeNode node = wikiMenuModel.getNodeById(nodeId);
 				if(node != null && node.getUserObject() instanceof String) {
 					String link = (String)node.getUserObject();
-					openPage(ureq, link, wiki);
+					page = openPage(ureq, link, wiki);
 				}
+			}
+			
+			if(page != null) {
+				this.pageId = page.getPageId();
 			}
 		} else if (source == versioningTableCtr) {
 			/*************************************************************************
@@ -1145,7 +1144,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 		} else {
 			clearPortfolioLink();
 		}
-		//fxdiff BAKS-7, FXOLAT-160 Resume function
+		
 		OLATResourceable pageRes = OresHelper.createOLATResourceableInstanceWithoutCheck("path=" + page.getPageName(), 0l);
 		addToHistory(ureq, pageRes, null);
 	}

@@ -430,6 +430,11 @@ public class RepositoryEntryListController extends FormBasicController
 				searchParams.setAuthor(null);
 				searchParams.setText(null);
 			}
+		} else if(detailsCtrl == source) {
+			if(event instanceof LeavingEvent) {
+				stackPanel.popUpToController(this);
+				tableEl.reset();
+			}
 		}
 		super.event(ureq, source, event);
 	}

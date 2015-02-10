@@ -21,8 +21,10 @@ package org.olat.course.assessment.ui;
 
 import java.util.List;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.model.TransientAssessmentMode;
@@ -33,7 +35,7 @@ import org.olat.course.assessment.model.TransientAssessmentMode;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentModeListModel extends DefaultFlexiTableDataModel<AssessmentMode> {
+public class AssessmentModeListModel extends DefaultFlexiTableDataModel<AssessmentMode> implements SortableFlexiTableDataModel<AssessmentMode> {
 	
 	private final AssessmentModeCoordinationService coordinationService;
 	
@@ -50,8 +52,16 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 	@Override
 	public Object getValueAt(int row, int col) {
 		AssessmentMode mode = getObject(row);
+		return getValueAt(mode, col);
+	}
+		
+	@Override
+	public Object getValueAt(AssessmentMode mode, int col) {
 		switch(Cols.values()[col]) {
 			case status: return mode.getStatus();
+			case course: return mode.getRepositoryEntry().getDisplayname();
+			case externalId: return mode.getRepositoryEntry().getExternalId();
+			case externalRef: return mode.getRepositoryEntry().getExternalRef();
 			case name: return mode.getName();
 			case begin: return mode.getBegin();
 			case end: return mode.getEnd();
@@ -76,6 +86,14 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 		return null;
 	}
 	
+	@Override
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<AssessmentMode> views = new AssessmentModeListModelSort(orderBy, this, null).sort();
+			super.setObjects(views);
+		}
+	}
+
 	public boolean updateModeStatus(TransientAssessmentMode modeToUpdate) {
 		boolean updated = false;
 		
@@ -94,6 +112,9 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 	
 	public enum Cols {
 		status("table.header.status"),
+		course("table.header.course"),
+		externalId("table.header.externalId"),
+		externalRef("table.header.externalRef"),
 		name("table.header.name"),
 		begin("table.header.begin"),
 		end("table.header.end"),

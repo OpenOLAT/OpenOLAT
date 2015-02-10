@@ -20,6 +20,7 @@
 package org.olat.repository.manager;
 
 import java.io.File;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -51,9 +52,11 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
+import org.olat.course.certificate.CertificatesManager;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuthorView;
+import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -61,6 +64,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
@@ -107,6 +111,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Autowired
 	private OLATResourceManager resourceManager;
 	@Autowired
+	private CertificatesManager certificatesManager;
+	@Autowired
 	private UserCourseInformationsManager userCourseInformationsManager;
 
 	@Autowired
@@ -146,6 +152,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 		re.setDisplayname(displayname);
 		re.setResourcename(StringHelper.containsNonWhitespace(resourceName) ? resourceName : "-");
 		re.setDescription(description == null ? "" : description);
+		re.setAllowToLeaveOption(RepositoryEntryAllowToLeaveOptions.atAnyTime);
 		if(resource == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", CodeHelper.getForeverUniqueID());
 			resource = resourceManager.createAndPersistOLATResourceInstance(ores);
@@ -268,6 +275,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 		return null;
 	}
 	
+	@Override
 	public ErrorList delete(RepositoryEntry entry, Identity identity, Roles roles, Locale locale) {
 		ErrorList errors = new ErrorList();
 		
@@ -284,10 +292,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 			return errors;
 		}
 
-		// start transaction
-		// delete entry picture
-		
 		userCourseInformationsManager.deleteUserCourseInformations(entry);
+		certificatesManager.deleteRepositoryEntry(entry);
 		
 		// delete all bookmarks referencing deleted entry
 		CoreSpringFactory.getImpl(MarkManager.class).deleteMarks(entry);
@@ -373,6 +379,35 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Override
 	public boolean hasRole(Identity identity, RepositoryEntryRef re, String... roles) {
 		return reToGroupDao.hasRole(identity, re, roles);
+	}
+
+	@Override
+	public boolean isParticipantAllowedToLeave(RepositoryEntry re) {
+		boolean allowed = false;
+		RepositoryEntryAllowToLeaveOptions setting = re.getAllowToLeaveOption();
+		if(setting == RepositoryEntryAllowToLeaveOptions.atAnyTime) {
+			allowed = true;
+		} else if(setting == RepositoryEntryAllowToLeaveOptions.afterEndDate) {
+			RepositoryEntryLifecycle lifecycle = re.getLifecycle();
+			if(lifecycle == null || lifecycle.getValidTo() == null) {
+				allowed = false;
+			} else {
+				Calendar cal = Calendar.getInstance();
+				cal.set(Calendar.HOUR, 0);
+				cal.set(Calendar.MINUTE, 0);
+				cal.set(Calendar.SECOND, 0);
+				cal.set(Calendar.MILLISECOND, 0);
+				Date now = cal.getTime();
+				if(now.compareTo(lifecycle.getValidTo()) >= 0) {
+					allowed = true;
+				} else {
+					allowed = false;
+				}
+			}
+		} else {
+			allowed = false;
+		}
+		return allowed;
 	}
 
 	@Override

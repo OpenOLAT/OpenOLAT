@@ -52,8 +52,6 @@ import org.olat.repository.RepositoryEntry;
 	@NamedQuery(name="relationByRepositoryEntryAndGroup",query="select rel from repoentrytogroup as rel where rel.entry.key=:repoKey and rel.group.key=:groupKey"),
 	@NamedQuery(name="relationByRepositoryEntry", query="select rel from repoentrytogroup as rel where rel.entry.key=:repoKey"),
 	@NamedQuery(name="relationByGroup", query="select rel from repoentrytogroup as rel where rel.group.key=:groupKey")
-	
-	
 })
 public class RepositoryEntryToGroupRelation implements Persistable {
 

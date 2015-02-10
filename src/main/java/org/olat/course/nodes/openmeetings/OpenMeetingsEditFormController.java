@@ -54,6 +54,7 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 	private FormLink editLink;
 	private StaticTextElement roomNameEl, roomTypeEl, roomSizeEl;
 	private StaticTextElement moderationModeEl, roomCommentEl;
+	private StaticTextElement avModeEl;
 	private MultipleSelectionElement recordingEl;
 	private CloseableModalController cmc;
 	private OpenMeetingsRoomEditController editController;
@@ -107,6 +108,7 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 		String[] recordingValues = new String[]{ translate("room.recording.enabled") };
 		recordingEl = uifactory.addCheckboxesHorizontal("recording", "room.recording", formLayout, recordingKeys, recordingValues);
 		recordingEl.setEnabled(false);
+		avModeEl = uifactory.addStaticTextElement("avmode", "room.av.mode", "", formLayout);
 		roomCommentEl = uifactory.addStaticTextElement("room.comment", "room.comment", "", formLayout);
 
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -145,6 +147,15 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 		moderationModeEl.setVisible(hasRoom);
 		recordingEl.select(recordingKeys[0], hasRoom && room.isRecordingAllowed());
 		recordingEl.setVisible(hasRoom);
+		String avVal;
+		if(hasRoom) {
+			avVal = room.isAudioOnly() ? translate("room.av.audio") : translate("room.av.video");
+		} else {
+			avVal = "";
+		}
+		avModeEl.setValue(avVal);
+		avModeEl.setVisible(hasRoom);
+		if (hasRoom) avModeEl.setEnabled(false);
 		roomCommentEl.setValue(hasRoom ? room.getComment() : "");
 		roomCommentEl.setVisible(hasRoom);
 		editLink.setI18nKey(hasRoom ? "edit.room" : "create.room");

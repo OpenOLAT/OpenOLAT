@@ -28,7 +28,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts;
-import org.olat.core.commons.fullWebApp.TopNavController;
+import org.olat.core.commons.fullWebApp.LockableController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -57,29 +57,34 @@ class BaseFullWebappMinimalLayoutControllerCreator implements BaseFullWebappPopu
 	/**
 	 * @see org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayout#getFullWebappParts()
 	 */
+	@Override
 	public BaseFullWebappControllerParts getFullWebappParts() {
 		return new BaseFullWebappControllerParts() {
-		
+
+			@Override
 			public List<SiteInstance> getSiteInstances(UserRequest ureq, WindowControl control) {
 				// no static sites
 				return null;
 			}
-		
+
+			@Override
 			public Controller getContentController(UserRequest ureq, WindowControl wControl) {
 				// the content for the Pop-up Window
 				return contentControllerCreator.createController(ureq, wControl);
 			}
-		
-			public TopNavController createTopNavController(UserRequest ureq, WindowControl wControl) {
-				TopNavController topnavCtr = null;
+
+			@Override
+			public LockableController createTopNavController(UserRequest ureq, WindowControl wControl) {
+				LockableController topnavCtr = null;
 				// ----------- topnav, optional (e.g. for imprint, logout) ------------------		
 				if (CoreSpringFactory.containsBean("fullWebApp.MinimalTopNavControllerCreator")) {
 					ControllerCreator topnavControllerCreator = (ControllerCreator) CoreSpringFactory.getBean("fullWebApp.MinimalTopNavControllerCreator");
-					topnavCtr = (TopNavController)topnavControllerCreator.createController(ureq, wControl);
+					topnavCtr = (LockableController)topnavControllerCreator.createController(ureq, wControl);
 				}
 				return topnavCtr;
 			}
-		
+
+			@Override
 			public Controller createHeaderController(UserRequest ureq, WindowControl control) {
 				Controller headerCtr = null;
 				// ----------- header, optional (e.g. for logo, advertising ) ------------------		
@@ -89,15 +94,16 @@ class BaseFullWebappMinimalLayoutControllerCreator implements BaseFullWebappPopu
 				}
 				return headerCtr;
 			}
-		
-			public Controller createFooterController(UserRequest ureq, WindowControl control) {
+
+			@Override
+			public LockableController createFooterController(UserRequest ureq, WindowControl control) {
 				Controller footerCtr = null;
 				// ----------- footer, optional (e.g. for copyright, powerd by) ------------------
 				if (CoreSpringFactory.containsBean("fullWebApp.MinimalFooterControllerCreator")) {
 					ControllerCreator footerCreator = (ControllerCreator) CoreSpringFactory.getBean("fullWebApp.MinimalFooterControllerCreator");
 					footerCtr = footerCreator.createController(ureq, control);
 				}
-				return footerCtr;
+				return (LockableController)footerCtr;
 			}
 		};
 	}

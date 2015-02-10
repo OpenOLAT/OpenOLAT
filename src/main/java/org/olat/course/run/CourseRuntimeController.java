@@ -56,6 +56,8 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.dtabs.DTab;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -68,6 +70,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.event.MultiUserEvent;
+import org.olat.core.util.mail.MailPackage;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
@@ -83,6 +87,7 @@ import org.olat.course.archiver.FullAccessArchiverCallback;
 import org.olat.course.area.CourseAreasController;
 import org.olat.course.assessment.AssessmentChangedEvent;
 import org.olat.course.assessment.AssessmentMainController;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CoachingGroupAccessAssessmentCallback;
 import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.assessment.FullAccessAssessmentCallback;
@@ -116,6 +121,7 @@ import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.note.NoteController;
+import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
@@ -147,7 +153,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		//settings
 		layoutLink, optionsLink, certificatesOptionsLink,
 		//my course
-		efficiencyStatementsLink, calendarLink, noteLink, chatLink,
+		efficiencyStatementsLink, calendarLink, noteLink, chatLink, leaveLink,
 		//glossary
 		openGlossaryLink, enableGlossaryLink,
 		//assessment
@@ -156,6 +162,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private Dropdown myCourse, glossary;
 	
 	private CourseAreasController areasCtrl;
+	private DialogBoxController leaveDialogBox;
 	private ArchiverMainController archiverCtrl;
 	private CustomDBMainController databasesCtrl;
 	private FolderRunController courseFolderCtrl;
@@ -179,6 +186,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private AssessmentModule assessmentModule;
 	@Autowired
 	private EfficiencyStatementManager efficiencyStatementManager;
 	
@@ -449,6 +458,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			assessmentModeLink = LinkFactory.createToolLink("assessment.mode.cmd", translate("command.assessment.mode"), this, "o_icon_assessment_mode");
 			assessmentModeLink.setElementCssClass("o_sel_course_assessment_mode");
 			assessmentModeLink.setEnabled(!managed);
+			assessmentModeLink.setVisible(assessmentModule.isAssessmentModeEnabled());
 			settings.addComponent(assessmentModeLink);
 			
 			catalogLink = LinkFactory.createToolLink("access.cmd", translate("command.catalog"), this, "o_icon_catalog");
@@ -555,6 +565,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					myCourse.addComponent(link);
 				}
 			}
+			
+			if(repositoryService.isParticipantAllowedToLeave(getRepositoryEntry())
+					&& !assessmentLock
+					&& (uce.isParticipant() || !uce.getParticipatingGroups().isEmpty())) {
+				leaveLink = LinkFactory.createToolLink("sign.out", "leave", translate("sign.out"), this);
+				leaveLink.setIconLeftCSS("o_icon o_icon-fw o_icon_sign_out");
+				myCourse.addComponent(new Spacer("leaving-space"));
+				myCourse.addComponent(leaveLink);
+			}
 		}
 		if(myCourse.size() > 0) {
 			toolbarPanel.addTool(myCourse, Align.right);
@@ -568,8 +587,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if (!assessmentLock && showInfos) {
 			detailsLink = LinkFactory.createToolLink("courseconfig",translate("command.courseconfig"), this, "o_icon_details");
 			toolbarPanel.addTool(detailsLink);
-		}		
-		if (!assessmentLock && !isGuestOnly && calendarModule.isEnabled() && calendarModule.isEnableCourseToolCalendar()) {
+		}
+		
+		boolean calendarIsEnabled =  !assessmentLock && !isGuestOnly && calendarModule.isEnabled()
+				&& calendarModule.isEnableCourseToolCalendar() && reSecurity.canLaunch();
+		if (calendarIsEnabled) {
 			calendarLink = LinkFactory.createToolLink("calendar",translate("command.calendar"), this, "o_icon_calendar");
 			calendarLink.setPopup(new LinkPopupSettings(950, 750, "cal"));
 			calendarLink.setVisible(cc.isCalendarEnabled());
@@ -592,7 +614,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		
 		//add group chat to toolbox
 		InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
-		boolean chatIsEnabled = !assessmentLock && !isGuestOnly && imModule.isEnabled() && imModule.isCourseEnabled();
+		boolean chatIsEnabled = !assessmentLock && !isGuestOnly && imModule.isEnabled()
+				&& imModule.isCourseEnabled() && reSecurity.canLaunch();
 		if(chatIsEnabled) {
 			chatLink = LinkFactory.createToolLink("chat",translate("command.coursechat"), this, "o_icon_chat");
 			chatLink.setVisible(CourseModule.isCourseChatEnabled() && cc.isChatEnabled());
@@ -688,6 +711,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			launchPersonalNotes(ureq);
 		} else if(openGlossaryLink == source) {
 			launchGlossary(ureq);
+		} else if(leaveLink == source) {
+			doConfirmLeave(ureq);
 		} else if(source instanceof Link && "group".equals(((Link)source).getCommand())) {
 			BusinessGroupRef ref = (BusinessGroupRef)((Link)source).getUserObject();
 			launchGroup(ureq, ref.getKey());
@@ -727,7 +752,13 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				initToolbar();
 				toolControllerDone(ureq);
 			}
-		} if(source == editorCtrl && source instanceof VetoableCloseController) {
+		} else if(source == leaveDialogBox) {
+			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				doLeave(ureq);
+			}
+		}
+		
+		if(editorCtrl == source && source instanceof VetoableCloseController) {
 			if(event == Event.DONE_EVENT) {
 				if(delayedClose != null) {
 					switch(delayedClose) {
@@ -758,7 +789,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					fireEvent(ureq, Event.DONE_EVENT);
 				}
 			}
-		}
+		} 
 		
 		super.event(ureq, source, event);
 	}
@@ -949,7 +980,34 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			delayedClose = Delayed.catalog;
 		}
 	}
+	
+	private void doConfirmLeave(UserRequest ureq) {
+		String reName = StringHelper.escapeHtml(getRepositoryEntry().getDisplayname());
+		String title = translate("sign.out");
+		String text = translate("sign.out.dialog.text", reName);
+		leaveDialogBox = activateYesNoDialog(ureq, title, text, leaveDialogBox);
+	}
+	
+	private void doLeave(UserRequest ureq) {
+		MailerResult result = new MailerResult();
+		MailPackage reMailing = new MailPackage(result, getWindowControl().getBusinessControl().getAsString(), true);
+		//leave course
+		LeavingStatusList status = new LeavingStatusList();
+		repositoryManager.leave(getIdentity(), getRepositoryEntry(), status, reMailing);
+		//leave groups
+		businessGroupService.leave(getIdentity(), getRepositoryEntry(), status, reMailing);
+		
+		if(status.isWarningManagedGroup() || status.isWarningManagedCourse()) {
+			showWarning("sign.out.warning.managed");
+		} else if(status.isWarningGroupWithMultipleResources()) {
+			showWarning("sign.out.warning.mutiple.resources");
+		} else {
+			showInfo("sign.out.success", new String[]{ getRepositoryEntry().getDisplayname() });
+		}
 
+		doClose(ureq);
+	}
+	
 	private void doLayout(UserRequest ureq) {
 		if(delayedClose == Delayed.layout || requestForClose(ureq)) {
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {

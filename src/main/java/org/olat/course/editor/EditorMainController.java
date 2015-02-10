@@ -87,6 +87,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.ICourse;
@@ -338,10 +339,14 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	@Override
 	public boolean requestForClose(UserRequest ureq) {
 		boolean immediateClose = true;
-		ICourse course = CourseFactory.loadCourse(ores.getResourceableId());
-		if(hasPublishableChanges(course)) {
-			doQuickPublish(ureq, course);
-			immediateClose = false;
+		try {
+			ICourse course = CourseFactory.loadCourse(ores.getResourceableId());
+			if(hasPublishableChanges(course)) {
+				doQuickPublish(ureq, course);
+				immediateClose = false;
+			}
+		} catch (CorruptedCourseException e) {
+			logError("", e);
 		}
 		return immediateClose;
 	}

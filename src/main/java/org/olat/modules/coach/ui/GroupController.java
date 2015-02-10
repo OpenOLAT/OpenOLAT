@@ -249,8 +249,8 @@ public class GroupController extends BasicController implements Activateable2, G
 			if(event instanceof TableEvent) {
 				TableEvent e = (TableEvent) event;
 				if("select".equals(e.getActionId())) {
-					EfficiencyStatementEntry entry = (EfficiencyStatementEntry)tableCtr.getTableDataModel().getObject(e.getRowId());
-					selectDetails(ureq, entry);
+					EfficiencyStatementEntry row = (EfficiencyStatementEntry)tableCtr.getTableDataModel().getObject(e.getRowId());
+					selectDetails(ureq, row);
 				}
 			}
 		} else if (source == toolbar) {
@@ -284,9 +284,9 @@ public class GroupController extends BasicController implements Activateable2, G
 		if("Identity".equals(ores.getResourceableTypeName())) {
 			Long identityKey = ores.getResourceableId();
 			for(int i=tableCtr.getRowCount(); i-->0; ) {
-				EfficiencyStatementEntry entry = (EfficiencyStatementEntry)tableCtr.getTableDataModel().getObject(i);
-				if(identityKey.equals(entry.getStudentKey())) {
-					selectDetails(ureq, entry);
+				EfficiencyStatementEntry row = (EfficiencyStatementEntry)tableCtr.getTableDataModel().getObject(i);
+				if(identityKey.equals(row.getStudentKey())) {
+					selectDetails(ureq, row);
 					statementCtrl.activate(ureq, entries.subList(1, entries.size()), ce.getTransientState());
 					break;
 				}
@@ -340,18 +340,18 @@ public class GroupController extends BasicController implements Activateable2, G
 		addToHistory(ureq);
 	}
 	
-	private void selectDetails(UserRequest ureq, EfficiencyStatementEntry entry) {
+	private void selectDetails(UserRequest ureq, EfficiencyStatementEntry statementEntry) {
 		removeAsListenerAndDispose(statementCtrl);
 		
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, entry.getStudentKey());
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, statementEntry.getStudentKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, entry);
+		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, statementEntry);
 		listenTo(statementCtrl);
 		mainVC.put("efficiencyDetails", statementCtrl.getInitialComponent());
 		
-		int index = tableCtr.getIndexOfSortedObject(entry) + 1;
+		int index = tableCtr.getIndexOfSortedObject(statementEntry) + 1;
 		String details = translate("students.details", new String[]{
-				entry.getStudentFullName(), String.valueOf(index), String.valueOf(tableCtr.getRowCount())
+				statementEntry.getStudentFullName(), String.valueOf(index), String.valueOf(tableCtr.getRowCount())
 		});
 		detailsCmp.setText(details);
 		setDetailsToolbarVisible(true);

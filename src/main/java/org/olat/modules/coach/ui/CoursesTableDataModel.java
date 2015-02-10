@@ -63,12 +63,12 @@ public class CoursesTableDataModel implements TableDataModel<CourseStatEntry> {
 				return c.getRepoDisplayName();
 			}
 			case countStudents: {
-				return new Integer(c.getCountDistinctStudents());
+				return new Integer(c.getCountStudents());
 			}
 			case initialLaunch: {
-				int count = c.getCountDistinctStudents();
+				int count = c.getCountStudents();
 				if(count == 0) {
-					return new LightedValue("", Light.grey);
+					return new LightedValue(null, Light.grey);
 				}
 
 				int launch = c.getInitialLaunch();
@@ -78,10 +78,10 @@ public class CoursesTableDataModel implements TableDataModel<CourseStatEntry> {
 				} else if (launch == 0) {
 					light = Light.red;
 				}
-				return new LightedValue(Integer.toString(launch), light);
+				return new LightedValue(launch, light);
 			}
 			case countPassed: {
-				int numOfStudents = c.getCountDistinctStudents();
+				int numOfStudents = c.getCountStudents();
 				if(numOfStudents == 0) {
 					return numOfStudents;
 				}
@@ -92,9 +92,9 @@ public class CoursesTableDataModel implements TableDataModel<CourseStatEntry> {
 				return val;
 			}
 			case countPassedLight: {
-				int count = c.getCountDistinctStudents();
+				int count = c.getCountStudents();
 				if(count == 0) {
-					return new LightedValue("", Light.grey);
+					return new LightedValue(null, Light.grey);
 				}
 				
 				int passed = c.getCountPassed();
@@ -104,7 +104,7 @@ public class CoursesTableDataModel implements TableDataModel<CourseStatEntry> {
 				} else if (passed == 0) {
 					light = Light.red;
 				}
-				return new LightedValue(Integer.toString(c.getCountPassed()), light);
+				return new LightedValue(c.getCountPassed(), light);
 			}
 			case averageScore: return c.getAverageScore();
 		}

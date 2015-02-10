@@ -51,6 +51,7 @@ import org.olat.core.id.Persistable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryStatistics;
@@ -164,6 +165,8 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	private boolean membersOnly;
 	@Column(name="statuscode", nullable=false, insertable=true, updatable=true)
 	private int statusCode;
+	@Column(name="allowToLeave", nullable=true, insertable=true, updatable=true)
+	private String allowToLeave;
 
 	
 	/**
@@ -425,7 +428,35 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	public void setMembersOnly(boolean membersOnly) {
 		this.membersOnly = membersOnly;
 	}
+
+	public String getAllowToLeave() {
+		return allowToLeave;
+	}
+
+	public void setAllowToLeave(String allowToLeave) {
+		this.allowToLeave = allowToLeave;
+	}
 	
+	public RepositoryEntryAllowToLeaveOptions getAllowToLeaveOption() {
+		RepositoryEntryAllowToLeaveOptions setting;
+		if(StringHelper.containsNonWhitespace(allowToLeave)) {
+			setting = RepositoryEntryAllowToLeaveOptions.valueOf(allowToLeave);
+		} else if(RepositoryEntryManagedFlag.isManaged(this, RepositoryEntryManagedFlag.membersmanagement)) {
+			setting = RepositoryEntryAllowToLeaveOptions.never;
+		} else {
+			setting = RepositoryEntryAllowToLeaveOptions.atAnyTime;
+		}
+		return setting;
+	}
+
+	public void setAllowToLeaveOption(RepositoryEntryAllowToLeaveOptions setting) {
+		if(setting == null) {
+			allowToLeave = null;
+		} else {
+			allowToLeave = setting.name();
+		}
+	}
+
 	/**
 	 * @return Returns the displayname.
 	 */

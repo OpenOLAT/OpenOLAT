@@ -41,6 +41,7 @@ import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -95,7 +96,8 @@ public class EnrollmentManager extends BasicManager {
 			// and: why can't we just have a group here and a max participants count and an identity to enrol?
 			// the group was chosen, so why do we need the groupNames and areaNames here???
 
-			EnrollState state = businessGroupService.enroll(identity, roles, identity, group, null);
+			MailPackage doNotSendmailPackage = new MailPackage(false);
+			EnrollState state = businessGroupService.enroll(identity, roles, identity, group, doNotSendmailPackage);
 			if(state.isFailed()) {
 				enrollStatus.setErrorMessage(trans.translate(state.getI18nErrorMessage()));
 			} else {
@@ -119,7 +121,8 @@ public class EnrollmentManager extends BasicManager {
 		// 1. Remove group membership, fire events, do loggin etc.
 		// Remove participant. This will also check if a waiting-list with auto-close-ranks is configurated
 		// and move the users accordingly
-		businessGroupService.removeParticipants(identity, Collections.singletonList(identity), enrolledGroup, null);
+		MailPackage doNotSendmailPackage = new MailPackage(false);
+		businessGroupService.removeParticipants(identity, Collections.singletonList(identity), enrolledGroup, doNotSendmailPackage);
 		logInfo("doCancelEnrollment in group " + enrolledGroup, identity.getName());
 
 		logInfo("doCancelEnrollment in group " + enrolledGroup, identity.getName());

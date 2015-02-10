@@ -71,6 +71,19 @@ public class CalendarFileUploadController extends FormBasicController {
 	}
 
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		uploadEl.clearError();
+		if(uploadEl.getUploadFile() == null) {
+			 uploadEl.setErrorKey("form.legende.mandatory", null);
+			 allOk &= false;
+		}
+		
+		return allOk & super.validateFormLogic(ureq);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		File uploadedFile = uploadEl.getUploadFile();
 

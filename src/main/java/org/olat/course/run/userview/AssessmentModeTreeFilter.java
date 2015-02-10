@@ -23,6 +23,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.nodes.INode;
+import org.olat.course.Structure;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.nodes.CourseNode;
 
@@ -37,14 +39,17 @@ public class AssessmentModeTreeFilter implements TreeFilter {
 	private final boolean enable;
 	private final Set<String> nodeIds = new HashSet<>();
 	
-	public AssessmentModeTreeFilter(AssessmentMode mode) {
+	public AssessmentModeTreeFilter(AssessmentMode mode, Structure structure) {
 		String nodes = mode.getElementList();
 		if(StringHelper.containsNonWhitespace(nodes)) {
 			enable = true;
 			
 			String[] nodeIdArr = nodes.split(",");
 			for(String nodeId:nodeIdArr) {
-				nodeIds.add(nodeId);
+				//allow the parent line
+				for(INode courseNode = structure.getNode(nodeId); courseNode != null; courseNode = courseNode.getParent()) {
+					nodeIds.add(courseNode.getIdent());
+				}
 			}
 		} else {
 			enable = false;
@@ -55,5 +60,4 @@ public class AssessmentModeTreeFilter implements TreeFilter {
 	public boolean isVisible(CourseNode node) {
 		return !enable || nodeIds.contains(node.getIdent());
 	}
-
 }

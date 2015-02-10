@@ -136,9 +136,11 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	private void syncAssessmentModes(UserRequest ureq) {
 		List<ResourceGuard> modeWrappers = new ArrayList<ResourceGuard>();
 		for(TransientAssessmentMode mode:modes) {
-			ResourceGuard wrapper = syncAssessmentMode(ureq, mode);
-			if(wrapper != null) {
-				modeWrappers.add(wrapper);
+			if(mode != null) {
+				ResourceGuard wrapper = syncAssessmentMode(ureq, mode);
+				if(wrapper != null) {
+					modeWrappers.add(wrapper);
+				}
 			}
 		}
 		guards.setList(modeWrappers);
@@ -149,11 +151,13 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	private ResourceGuard syncAssessmentMode(UserRequest ureq, TransientAssessmentMode mode) {
 		Date now = new Date();
 		Date beginWithLeadTime = mode.getBeginWithLeadTime();
-		if(!mode.isManual() && beginWithLeadTime.after(now)) {
+		Date endWithFollowupTime = mode.getEndWithFollowupTime();
+		//check if the mode must not be guarded anymore
+		if(mode.isManual() && (Status.end.equals(mode.getStatus()) || Status.none.equals(mode.getStatus()))) {
 			return null;
-		} else if(mode.isManual() && (Status.end.equals(mode.getStatus()) || Status.none.equals(mode.getStatus()))) {
+		} else if(!mode.isManual() && (beginWithLeadTime.after(now) || now.after(endWithFollowupTime))) {
 			return null;
-		}
+		} 
 		
 		ResourceGuard guard = guards.getGuardFor(mode);
 		if(guard == null) {
@@ -352,6 +356,8 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		
 		boolean canContinue = guards.getSize() == 0;
 		if(canContinue) {
+			cmc.deactivate();
+			
 			fireEvent(ureq, new Event("continue"));
 			String businessPath = "[MyCoursesSite:0]";
 			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
@@ -368,6 +374,8 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	 * @param mode
 	 */
 	private void launchAssessmentMode(UserRequest ureq, TransientAssessmentMode mode) {
+		cmc.deactivate();
+		
 		ureq.getUserSession().setAssessmentModes(null);
 		OLATResourceable resource = mode.getResource();
 		ureq.getUserSession().setLockResource(resource, mode);
@@ -409,9 +417,9 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			this.continueButton = continueButton;
 		}
 		
-		public void sync(String status, String errors, TransientAssessmentMode mode, Locale locale) {
-			this.errors = errors;
-			this.status = status;
+		public void sync(String newStatus, String newErrors, TransientAssessmentMode mode, Locale locale) {
+			errors = newErrors;
+			status = newStatus;
 			
 			reference = mode;
 			name = mode.getName();

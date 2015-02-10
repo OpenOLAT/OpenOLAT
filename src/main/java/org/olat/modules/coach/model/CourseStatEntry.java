@@ -30,13 +30,31 @@ public class CourseStatEntry {
 	private Long repoKey;
 	private String repoDisplayName;
 	private int countStudents;
-	private int countDistinctStudents;
 	private int countPassed;
 	private int countFailed;
 	private int countNotAttempted;
 	private Float averageScore;
 	private int initialLaunch;
 	
+	private double totalScore;
+	private int totalScoredStudents;
+	
+	public double getTotalScore() {
+		return totalScore;
+	}
+
+	public void setTotalScore(double totalScore) {
+		this.totalScore = totalScore;
+	}
+
+	public int getTotalScoredStudents() {
+		return totalScoredStudents;
+	}
+
+	public void setTotalScoredStudents(int totalScoredStudents) {
+		this.totalScoredStudents = totalScoredStudents;
+	}
+
 	public Long getRepoKey() {
 		return repoKey;
 	}
@@ -59,14 +77,6 @@ public class CourseStatEntry {
 	
 	public void setCountStudents(int countStudents) {
 		this.countStudents = countStudents;
-	}
-	
-	public int getCountDistinctStudents() {
-		return countDistinctStudents;
-	}
-
-	public void setCountDistinctStudents(int countDistinctStudents) {
-		this.countDistinctStudents = countDistinctStudents;
 	}
 
 	public int getCountPassed() {
@@ -107,24 +117,5 @@ public class CourseStatEntry {
 
 	public void setInitialLaunch(int initialLaunch) {
 		this.initialLaunch = initialLaunch;
-	}
-	
-	public void add(CourseStatEntry entry) {
-		countStudents += entry.getCountStudents();
-		countDistinctStudents += entry.getCountDistinctStudents();
-
-		float score1 = averageScore == null ? 0.0f : (averageScore * (countPassed + countFailed));
-		float score2 = entry.averageScore == null ? 0.0f : (entry.averageScore * (entry.countPassed + entry.countFailed));
-		float scores =  (score1 + score2);
-		if(scores <= 0.0f) {
-			averageScore = null;
-		} else {
-			averageScore = scores / (countPassed + countFailed + entry.countPassed + entry.countFailed);
-		}
-		
-		countPassed += entry.getCountPassed();
-		countFailed += entry.getCountFailed();
-		countNotAttempted += entry.getCountNotAttempted();
-		initialLaunch += entry.getInitialLaunch();
 	}
 }

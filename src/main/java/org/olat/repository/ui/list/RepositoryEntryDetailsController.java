@@ -26,6 +26,8 @@ import java.util.Map;
 
 import org.olat.NewControllerFactory;
 import org.olat.admin.restapi.RestapiAdminController;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
@@ -47,6 +49,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -56,6 +60,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.mail.MailPackage;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
@@ -71,8 +77,10 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.login.LoginModule;
 import org.olat.repository.CatalogEntry;
+import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -102,10 +110,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RepositoryEntryDetailsController extends FormBasicController {
 	
-	protected FormLink markLink, commentsLink, startLink;
+	protected FormLink markLink, commentsLink, startLink, leaveLink;
 	private RatingWithAverageFormItem ratingEl;
 	
 	private CloseableModalController cmc;
+	private DialogBoxController leaveDialogBox;
 	private UserCommentsController commentsCtrl;
 	
 	protected RepositoryEntry entry;
@@ -128,6 +137,8 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	protected CatalogManager catalogManager;
 	@Autowired
 	protected RepositoryModule repositoryModule;
+	@Autowired
+	protected RepositoryManager repositoryManager;
 	@Autowired
 	protected RepositoryService repositoryService;
 	@Autowired
@@ -286,9 +297,12 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			}
 			
 			//load memberships
-			boolean isMember = repositoryService.isMember(getIdentity(), entry);
+			List<String> memberRoles = repositoryService.getRoles(getIdentity(), entry);
             List<Long> authorKeys = repositoryService.getAuthors(entry);
             boolean isAuthor = false;
+            boolean isMember = memberRoles.contains(GroupRoles.owner.name())
+            		|| memberRoles.contains(GroupRoles.coach.name())
+            		|| memberRoles.contains(GroupRoles.participant.name());
 			if (isMember) {
 				isAuthor = authorKeys.contains(getIdentity().getKey());
 				layoutCont.contextPut("isEntryAuthor", new Boolean(isAuthor));
@@ -296,6 +310,11 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			// push roles to velocity as well
             Roles roles = ureq.getUserSession().getRoles();
 			layoutCont.contextPut("roles", roles);
+
+			if(memberRoles.contains(GroupRoles.participant.name()) && repositoryService.isParticipantAllowedToLeave(entry)) {
+				leaveLink = uifactory.addFormLink("sign.out", "leave", "sign.out", null, formLayout, Link.LINK);
+				leaveLink.setIconLeftCSS("o_icon o_icon_sign_out");
+			}
 
 			//access control
 			String accessI18n = null;
@@ -344,7 +363,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				} else {
 					String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
 					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
-					startLink.setEnabled(false);
+					//startLink.setEnabled(false);
 					startLink.setElementCssClass("o_start btn-block");
 					startLink.setVisible(!guestOnly);
 				}
@@ -478,6 +497,11 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				updateComments(commentsCtrl.getNumOfComments());
 			}
 			cleanUp();
+		} else if(leaveDialogBox == source) {
+			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				doLeave();
+				fireEvent(ureq, new LeavingEvent());
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -519,12 +543,40 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			} else if("owner".equals(cmd)) {
 				Long ownerKey = (Long)link.getUserObject();
 				doOpenVisitCard(ureq, ownerKey);
+			} else if("leave".equals(cmd)) {
+				doConfirmLeave(ureq);
 			}
 		} else if(ratingEl == source && event instanceof RatingFormEvent) {
 			RatingFormEvent ratingEvent = (RatingFormEvent)event;
 			doRating(ratingEvent.getRating());
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	protected void doConfirmLeave(UserRequest ureq) {
+		String reName = StringHelper.escapeHtml(entry.getDisplayname());
+		String title = translate("sign.out");
+		String text = translate("sign.out.dialog.text", reName);
+		leaveDialogBox = activateYesNoDialog(ureq, title, text, leaveDialogBox);
+	}
+	
+	protected void doLeave() {
+		MailerResult result = new MailerResult();
+		MailPackage reMailing = new MailPackage(result, getWindowControl().getBusinessControl().getAsString(), true);
+		LeavingStatusList status = new LeavingStatusList();
+		//leave course
+		repositoryManager.leave(getIdentity(), entry, status, reMailing);
+		//leave groups
+		businessGroupService.leave(getIdentity(), entry, status, reMailing);
+		DBFactory.getInstance().commit();//make sur all changes are committed
+		
+		if(status.isWarningManagedGroup() || status.isWarningManagedCourse()) {
+			showWarning("sign.out.warning.managed");
+		} else if(status.isWarningGroupWithMultipleResources()) {
+			showWarning("sign.out.warning.mutiple.resources");
+		} else {
+			showInfo("sign.out.success", new String[]{ entry.getDisplayname() });
+		}
 	}
 	
 	protected void doStart(UserRequest ureq) {

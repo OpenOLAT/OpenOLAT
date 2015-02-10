@@ -31,7 +31,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
@@ -43,15 +42,12 @@ import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.ims.qti.QTI12ResultDetailsController;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 
-import de.bps.ims.qti.QTIResultDetailsController;
-import de.bps.onyx.plugin.OnyxModule;
 import de.bps.onyx.plugin.run.OnyxRunController;
 
 /**
@@ -216,16 +212,5 @@ public class IQControllerCreatorOlat implements IQControllerCreator {
 			}
 		}
 		return controller;
-	}
-
-	@Override
-	public Controller createIQTestDetailsEditController(Long courseResourceableId, String ident, Identity identity,
-			RepositoryEntry referencedRepositoryEntry, String qmdEntryTypeAssess, UserRequest ureq, WindowControl wControl) {
-		boolean onyx = OnyxModule.isOnyxTest(referencedRepositoryEntry.getOlatResource());
-		if(onyx) {
-			return new QTIResultDetailsController(courseResourceableId, ident, identity, referencedRepositoryEntry, qmdEntryTypeAssess, ureq, wControl);
-		} else {
-			return new QTI12ResultDetailsController(ureq, wControl, courseResourceableId, ident, identity, referencedRepositoryEntry, qmdEntryTypeAssess);
-		}
 	}
 }

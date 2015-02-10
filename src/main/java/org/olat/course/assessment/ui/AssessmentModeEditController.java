@@ -145,17 +145,21 @@ public class AssessmentModeEditController extends FormBasicController {
 		}
 		setFormDescription("form.mode.description");
 		
+		Status status = assessmentMode.getStatus();
 		String name = assessmentMode.getName();
 		nameEl = uifactory.addTextElement("mode.name", "mode.name", 255, name, formLayout);
 		nameEl.setMandatory(true);
+		nameEl.setEnabled(status != Status.followup && status != Status.end);
 		
 		String desc = assessmentMode.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringData("mode.description", "mode.description",
 				desc, 6, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		descriptionEl.setEnabled(status != Status.followup && status != Status.end);
 		
 		beginEl = uifactory.addDateChooser("mode.begin", assessmentMode.getBegin(), formLayout);
 		beginEl.setDateChooserTimeEnabled(true);
 		beginEl.setMandatory(true);
+		beginEl.setEnabled(status == Status.none || status == Status.leadtime);
 		
 		int leadTime = assessmentMode.getLeadTime();
 		if(leadTime < 0) {
@@ -163,10 +167,12 @@ public class AssessmentModeEditController extends FormBasicController {
 		}
 		leadTimeEl = uifactory.addIntegerElement("mode.leadTime", leadTime, formLayout);
 		leadTimeEl.setDisplaySize(3);
+		leadTimeEl.setEnabled(status == Status.none || status == Status.leadtime);
 		
 		endEl = uifactory.addDateChooser("mode.end", assessmentMode.getEnd(), formLayout);
 		endEl.setDateChooserTimeEnabled(true);
 		endEl.setMandatory(true);
+		endEl.setEnabled(status != Status.end);
 		
 		int followupTime = assessmentMode.getFollowupTime();
 		if(followupTime < 0) {
@@ -174,6 +180,7 @@ public class AssessmentModeEditController extends FormBasicController {
 		}
 		followupTimeEl = uifactory.addIntegerElement("mode.followupTime", followupTime, formLayout);
 		followupTimeEl.setDisplaySize(3);
+		followupTimeEl.setEnabled(status != Status.end);
 		
 		String[] startModeValues = new String[] {
 				translate("mode.beginend.automatic"), translate("mode.beginend.manual")
@@ -184,6 +191,7 @@ public class AssessmentModeEditController extends FormBasicController {
 		} else {
 			startModeEl.select(startModeKeys[0], true);
 		}
+		startModeEl.setEnabled(status != Status.end);
 		
 		String[] audienceKeys = new String[] {
 			AssessmentMode.Target.courseAndGroups.name(),
@@ -196,6 +204,7 @@ public class AssessmentModeEditController extends FormBasicController {
 			translate("target.groups")
 		};
 		targetEl = uifactory.addRadiosVertical("audience", "mode.target", formLayout, audienceKeys, audienceValues);
+		targetEl.setEnabled(status != Status.end);
 		Target target = assessmentMode.getTargetAudience();
 		if(target != null) {
 			for(String audienceKey:audienceKeys) {
@@ -214,7 +223,9 @@ public class AssessmentModeEditController extends FormBasicController {
 		formLayout.add(chooseGroupsCont);
 		
 		chooseGroupsButton = uifactory.addFormLink("choose.groups", chooseGroupsCont, Link.BUTTON);
+		chooseGroupsButton.setEnabled(status != Status.end);
 		chooseAreasButton = uifactory.addFormLink("choose.areas", chooseGroupsCont, Link.BUTTON);
+		chooseAreasButton.setEnabled(status != Status.end);
 
 		groupKeys = new ArrayList<>();
 		groupNames = new ArrayList<>();
@@ -238,6 +249,7 @@ public class AssessmentModeEditController extends FormBasicController {
 		courseElementsRestrictionEl = uifactory.addCheckboxesHorizontal("cer", "mode.course.element.restriction", formLayout, onKeys, onValues);
 		courseElementsRestrictionEl.addActionListener(FormEvent.ONCHANGE);
 		courseElementsRestrictionEl.select(onKeys[0], assessmentMode.isRestrictAccessElements());
+		courseElementsRestrictionEl.setEnabled(status != Status.end);
 		
 		String coursePage = velocity_root + "/choose_elements.html";
 		chooseElementsCont = FormLayoutContainer.createCustomFormLayout("chooseElements", getTranslator(), coursePage);
@@ -260,6 +272,7 @@ public class AssessmentModeEditController extends FormBasicController {
 		chooseElementsCont.getFormItemComponent().contextPut("elementNames", elementNames);
 		
 		chooseElementsButton = uifactory.addFormLink("choose.elements", chooseElementsCont, Link.BUTTON);
+		chooseElementsButton.setEnabled(status != Status.end);
 		
 		startElementKey = assessmentMode.getStartElement();
 		String startElementName = "";
@@ -268,32 +281,41 @@ public class AssessmentModeEditController extends FormBasicController {
 		}
 		startElementEl = uifactory.addStaticTextElement("mode.start.element", "mode.start.element", startElementName, formLayout);
 		chooseStartElementButton = uifactory.addFormLink("choose.start.element", formLayout, Link.BUTTON);
+		chooseStartElementButton.setEnabled(status != Status.end);
 
 		//ips
 		ipsEl = uifactory.addCheckboxesHorizontal("ips", "mode.ips", formLayout, onKeys, onValues);
 		ipsEl.select(onKeys[0], assessmentMode.isRestrictAccessIps());
 		ipsEl.addActionListener(FormEvent.ONCHANGE);
+		ipsEl.setEnabled(status != Status.end);
 		String ipList = assessmentMode.getIpList();
 		ipListEl = uifactory.addTextAreaElement("mode.ips.list", "mode.ips.list", 4096, 4, 60, false, ipList, formLayout);
 		ipListEl.setVisible(assessmentMode.isRestrictAccessIps());
+		ipListEl.setEnabled(status != Status.end);
 		
 		safeExamBrowserEl = uifactory.addCheckboxesHorizontal("safeexam", "mode.safeexambrowser", formLayout, onKeys, onValues);
 		safeExamBrowserEl.select(onKeys[0], assessmentMode.isSafeExamBrowser());
 		safeExamBrowserEl.addActionListener(FormEvent.ONCHANGE);
+		safeExamBrowserEl.setEnabled(status != Status.end);
 		String key = assessmentMode.getSafeExamBrowserKey();
 		safeExamBrowserKeyEl = uifactory.addTextAreaElement("safeexamkey", "mode.safeexambrowser.key", 4096, 6, 60, false, key, formLayout);
 		safeExamBrowserKeyEl.setVisible(assessmentMode.isSafeExamBrowser());
+		safeExamBrowserKeyEl.setEnabled(status != Status.end);
 		String hint = assessmentMode.getSafeExamBrowserHint();
 		safeExamBrowserHintEl = uifactory.addRichTextElementForStringData("safeexamhint", "mode.safeexambrowser.hint",
 				hint, 10, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		safeExamBrowserHintEl.setVisible(assessmentMode.isSafeExamBrowser());
+		safeExamBrowserHintEl.setEnabled(status != Status.end);
 		
 		forCoachEl = uifactory.addCheckboxesHorizontal("forcoach", "mode.for.coach", formLayout, onKeys, onValues);
 		forCoachEl.select(onKeys[0], assessmentMode.isApplySettingsForCoach());
+		forCoachEl.setEnabled(status != Status.end);
 		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("button", getTranslator());
 		formLayout.add(buttonCont);
-		uifactory.addFormSubmitButton("save", buttonCont);
+		if(status != Status.end) {
+			uifactory.addFormSubmitButton("save", buttonCont);
+		}
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 	}
 	
@@ -348,7 +370,7 @@ public class AssessmentModeEditController extends FormBasicController {
 				save(ureq, true);
 			}
 		} else if(cmc == source) {
-			cmc.deactivate();
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
@@ -417,7 +439,24 @@ public class AssessmentModeEditController extends FormBasicController {
 			targetEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
-
+		
+		safeExamBrowserKeyEl.clearError();
+		if(safeExamBrowserEl.isAtLeastSelected(1)) {
+			String value = safeExamBrowserKeyEl.getValue();
+			if(!StringHelper.containsNonWhitespace(value)) {
+				safeExamBrowserKeyEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+		}
+		
+		ipListEl.clearError();
+		if(ipsEl.isAtLeastSelected(1)) {
+			String value = ipListEl.getValue();
+			if(!StringHelper.containsNonWhitespace(value)) {
+				ipListEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+		}
 		return allOk & super.validateFormLogic(ureq);
 	}
 
@@ -614,19 +653,21 @@ public class AssessmentModeEditController extends FormBasicController {
 		listenTo(chooseElementsCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", chooseElementsCtrl.getInitialComponent(),
-				true, getTranslator().translate("popup.chooseelements"));
+				true, translate("popup.chooseelements"), false);
 		listenTo(cmc);
 		cmc.activate();
 	}
 	
 	private void doChooseStartElement(UserRequest ureq) {
 		if(chooseElementsCtrl != null) return;
-
-		chooseStartElementCtrl = new ChooseStartElementController(ureq, getWindowControl(), startElementKey, courseOres);
+		
+		List<String> allowedKeys = courseElementsRestrictionEl.isAtLeastSelected(1)
+				? new ArrayList<>(elementKeys) : null;
+		chooseStartElementCtrl = new ChooseStartElementController(ureq, getWindowControl(), startElementKey, allowedKeys, courseOres);
 		listenTo(chooseStartElementCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", chooseStartElementCtrl.getInitialComponent(),
-				true, getTranslator().translate("popup.choosestartelement"));
+		cmc = new CloseableModalController(getWindowControl(), null, chooseStartElementCtrl.getInitialComponent(),
+				true, translate("popup.choosestartelement"), false);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -639,8 +680,8 @@ public class AssessmentModeEditController extends FormBasicController {
 		areaChooseCtrl = new AreaSelectionController(ureq, getWindowControl(), true, groupManager, areaKeys);
 		listenTo(areaChooseCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", areaChooseCtrl.getInitialComponent(),
-				true, getTranslator().translate("popup.chooseareas"));
+		cmc = new CloseableModalController(getWindowControl(), null, areaChooseCtrl.getInitialComponent(),
+				true, translate("popup.chooseareas"), false);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -653,8 +694,8 @@ public class AssessmentModeEditController extends FormBasicController {
 		groupChooseCtrl = new GroupSelectionController(ureq, getWindowControl(), true, groupManager, groupKeys);
 		listenTo(groupChooseCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), "close", groupChooseCtrl.getInitialComponent(),
-				true, translate("popup.choosegroups"));
+		cmc = new CloseableModalController(getWindowControl(), null, groupChooseCtrl.getInitialComponent(),
+				true, translate("popup.choosegroups"), false);
 		listenTo(cmc);
 		cmc.activate();
 	}

@@ -59,6 +59,7 @@ import org.junit.runners.Suite;
 	org.olat.core.helpers.SettingsTest.class,
 	org.olat.core.util.coordinate.LockEntryTest.class,
 	org.olat.core.util.StringHelperTest.class,
+	org.olat.core.util.FileUtilsTest.class,
 	org.olat.core.util.FormatterTest.class,
 	org.olat.core.util.EncoderTest.class,
 	org.olat.core.util.SimpleHtmlParserTest.class,
@@ -69,78 +70,80 @@ import org.junit.runners.Suite;
 	org.olat.core.id.IdentityEnvironmentTest.class,
 	org.olat.core.gui.render.VelocityTemplateTest.class,
 	org.olat.core.gui.control.generic.iframe.IFrameDeliveryMapperTest.class,
-	org.olat.note.NoteTest.class,//ok
-	org.olat.user.UserPropertiesPerformanceTest.class,//ok
+	org.olat.note.NoteTest.class,
+	org.olat.user.UserPropertiesPerformanceTest.class,
 	org.olat.user.EmailCheckPerformanceTest.class,//fail
-	org.olat.user.UserTest.class,//ok
-	org.olat.user.UserPropertiesTest.class,//ok
-	org.olat.commons.calendar.ICalFileCalendarManagerTest.class,//ok
-	org.olat.commons.calendar.CalendarImportTest.class,//ok
-	org.olat.commons.calendar.test.CalendarUtilsTest.class,//ok
+	org.olat.user.UserTest.class,
+	org.olat.user.UserPropertiesTest.class,
+	org.olat.commons.calendar.ICalFileCalendarManagerTest.class,
+	org.olat.commons.calendar.CalendarImportTest.class,
+	org.olat.commons.calendar.test.CalendarUtilsTest.class,
 	org.olat.commons.lifecycle.LifeCycleManagerTest.class,//fail christian fragen...
-	org.olat.commons.coordinate.cluster.jms.JMSTest.class,//ok
-	org.olat.commons.coordinate.cluster.lock.LockTest.class,//ok
-	org.olat.commons.coordinate.CoordinatorTest.class,//ok
-	org.olat.core.commons.services.help.spi.ConfluenceLinkSPITest.class,//ok
-	org.olat.core.commons.services.webdav.WebDAVCommandsTest.class,//ok
-	org.olat.core.commons.services.webdav.manager.WebDAVManagerTest.class,//ok
-	org.olat.core.commons.services.webdav.servlets.RequestUtilsTest.class,//ok
-	org.olat.core.commons.services.taskexecutor.PersistentTaskDAOTest.class,//ok
-	org.olat.core.commons.services.taskexecutor.TaskExecutorManagerTest.class,//ok
-	org.olat.admin.user.delete.service.UserDeletionManagerTest.class,//ok
-	org.olat.group.BusinessGroupManagedFlagsTest.class,//ok
-	org.olat.group.test.BGRightManagerTest.class,//ok
-	org.olat.group.test.BGAreaManagerTest.class,//ok
-	org.olat.group.test.BusinessGroupServiceTest.class,//ok
-	org.olat.group.test.BusinessGroupDAOTest.class,//ok
-	org.olat.group.test.BusinessGroupRelationDAOTest.class,//ok
-	org.olat.group.test.BusinessGroupConcurrentTest.class,//ok
-	org.olat.group.test.ContactDAOTest.class,//ok
-	org.olat.fileresource.FileResourceTest.class,//ok
-	org.olat.resource.lock.pessimistic.PLockTest.class,//ok
-	org.olat.resource.references.ReferenceManagerTest.class,//ok
-	org.olat.resource.OLATResourceManagerTest.class,//ok
-	org.olat.basesecurity.manager.GroupDAOTest.class,//ok
-	org.olat.basesecurity.SecurityManagerTest.class,//ok
-	org.olat.basesecurity.GetIdentitiesByPowerSearchTest.class,//ok
-	org.olat.basesecurity.BaseSecurityManagerTest.class,//ok
-	org.olat.user.UserManagerTest.class,//ok
-	org.olat.user.UserNameAndPasswordSyntaxCheckerWithRegexpTest.class,//ok
-	org.olat.repository.manager.RepositoryEntryDAOTest.class,//ok
-	org.olat.repository.manager.RepositoryEntryLifecycleDAOTest.class,//ok
-	org.olat.repository.manager.RepositoryEntryRelationDAOTest.class,//ok
-	org.olat.repository.manager.RepositoryServiceImplTest.class,//ok
-	org.olat.repository.manager.RepositoryEntryStatisticsDAOTest.class,//ok
-	org.olat.repository.manager.RepositoryEntryAuthorQueriesTest.class,//ok
-	org.olat.repository.manager.RepositoryEntryMyCourseQueriesTest.class,//ok
-	org.olat.repository.RepositoryManagerTest.class,//ok
-	org.olat.repository.RepositoryManagerQueryTest.class,//ok
-	org.olat.instantMessaging.InstantMessageDAOTest.class,//ok
-	org.olat.instantMessaging.InstantMessagePreferencesDAOTest.class,//ok
-	org.olat.instantMessaging.RosterDAOTest.class,//ok
-	org.olat.instantMessaging.InstantMessageServiceTest.class,//ok
-	org.olat.course.nodes.en.EnrollmentManagerTest.class,//ok
-	org.olat.course.assessment.AssessmentManagerTest.class,//ok
-	org.olat.course.assessment.manager.UserCourseInformationsManagerTest.class,//ok
-	org.olat.course.assessment.manager.AssessmentModeManagerTest.class,//ok
+	org.olat.commons.coordinate.cluster.jms.JMSTest.class,
+	org.olat.commons.coordinate.cluster.lock.LockTest.class,
+	org.olat.commons.coordinate.CoordinatorTest.class,
+	org.olat.core.commons.services.help.spi.ConfluenceLinkSPITest.class,
+	org.olat.core.commons.services.webdav.WebDAVCommandsTest.class,
+	org.olat.core.commons.services.webdav.manager.WebDAVManagerTest.class,
+	org.olat.core.commons.services.webdav.servlets.RequestUtilsTest.class,
+	org.olat.core.commons.services.taskexecutor.PersistentTaskDAOTest.class,
+	org.olat.core.commons.services.taskexecutor.TaskExecutorManagerTest.class,
+	org.olat.admin.user.delete.service.UserDeletionManagerTest.class,
+	org.olat.group.BusinessGroupManagedFlagsTest.class,
+	org.olat.group.test.BGRightManagerTest.class,
+	org.olat.group.test.BGAreaManagerTest.class,
+	org.olat.group.test.BusinessGroupServiceTest.class,
+	org.olat.group.test.BusinessGroupDAOTest.class,
+	org.olat.group.test.BusinessGroupRelationDAOTest.class,
+	org.olat.group.test.BusinessGroupConcurrentTest.class,
+	org.olat.group.test.ContactDAOTest.class,
+	org.olat.group.test.BusinessGroupMembershipProcessorTest.class,
+	org.olat.fileresource.FileResourceTest.class,
+	org.olat.resource.lock.pessimistic.PLockTest.class,
+	org.olat.resource.references.ReferenceManagerTest.class,
+	org.olat.resource.OLATResourceManagerTest.class,
+	org.olat.basesecurity.manager.GroupDAOTest.class,
+	org.olat.basesecurity.SecurityManagerTest.class,
+	org.olat.basesecurity.GetIdentitiesByPowerSearchTest.class,
+	org.olat.basesecurity.BaseSecurityManagerTest.class,
+	org.olat.user.UserManagerTest.class,
+	org.olat.user.UserNameAndPasswordSyntaxCheckerWithRegexpTest.class,
+	org.olat.repository.manager.RepositoryEntryDAOTest.class,
+	org.olat.repository.manager.RepositoryEntryLifecycleDAOTest.class,
+	org.olat.repository.manager.RepositoryEntryRelationDAOTest.class,
+	org.olat.repository.manager.RepositoryServiceImplTest.class,
+	org.olat.repository.manager.RepositoryEntryStatisticsDAOTest.class,
+	org.olat.repository.manager.RepositoryEntryAuthorQueriesTest.class,
+	org.olat.repository.manager.RepositoryEntryMyCourseQueriesTest.class,
+	org.olat.repository.manager.RepositoryEntryMembershipProcessorTest.class,
+	org.olat.repository.RepositoryManagerTest.class,
+	org.olat.repository.RepositoryManagerQueryTest.class,
+	org.olat.instantMessaging.InstantMessageDAOTest.class,
+	org.olat.instantMessaging.InstantMessagePreferencesDAOTest.class,
+	org.olat.instantMessaging.RosterDAOTest.class,
+	org.olat.instantMessaging.InstantMessageServiceTest.class,
+	org.olat.course.nodes.en.EnrollmentManagerTest.class,
+	org.olat.course.assessment.AssessmentManagerTest.class,
+	org.olat.course.assessment.manager.UserCourseInformationsManagerTest.class,
+	org.olat.course.assessment.manager.AssessmentModeManagerTest.class,
 	org.olat.course.certificate.manager.CertificatesManagerTest.class,
-	org.olat.course.config.CourseConfigManagerImplTest.class,//ok
-	org.olat.course.groupsandrights.CourseGroupManagementTest.class,//ok
-	org.olat.course.editor.PublishProcessTest.class,//ok
-	org.olat.course.CourseXStreamAliasesTest.class,//ok
-	org.olat.modules.iq.IQManagerTest.class,//ok
+	org.olat.course.config.CourseConfigManagerImplTest.class,
+	org.olat.course.groupsandrights.CourseGroupManagementTest.class,
+	org.olat.course.editor.PublishProcessTest.class,
+	org.olat.course.CourseXStreamAliasesTest.class,
+	org.olat.modules.iq.IQManagerTest.class,
 	org.olat.modules.fo.ForumManagerTest.class,//fail
-	org.olat.modules.wiki.WikiUnitTest.class,//ok
-	org.olat.modules.wiki.versioning.diff.CookbookDiffTest.class,//ok
+	org.olat.modules.wiki.WikiUnitTest.class,
+	org.olat.modules.wiki.versioning.diff.CookbookDiffTest.class,
 	org.olat.modules.wiki.gui.components.wikiToHtml.FilterUtilTest.class,
-	org.olat.modules.coach.CoachingDAOTest.class,//ok
-	org.olat.modules.coach.CoachingServiceTest.class,//ok
-	org.olat.properties.PropertyTest.class,//ok
+	org.olat.modules.coach.manager.CoachingDAOTest.class,
+	org.olat.modules.coach.CoachingLargeTest.class,
+	org.olat.properties.PropertyTest.class,
 	org.olat.search.service.document.file.FileDocumentFactoryTest.class,
 	org.olat.search.service.document.file.PDFDocumentTest.class,
 	org.olat.search.service.document.file.OfficeDocumentTest.class,
-	org.olat.core.commons.services.notifications.manager.NotificationsManagerTest.class,//fail
-	org.olat.registration.RegistrationManagerTest.class,//ok
+	org.olat.core.commons.services.notifications.manager.NotificationsManagerTest.class,
+	org.olat.registration.RegistrationManagerTest.class,
 	org.olat.course.nodes.projectbroker.ProjectBrokerManagerTest.class,
 	org.olat.core.commons.persistence.DBTest.class,
 	org.olat.modules.ims.cp.CPManagerTest.class,

@@ -77,17 +77,12 @@ public class CourseLinkProviderController extends FormBasicController implements
 		courseNodeTreeModel = new CourseNodeSelectionTreeModel(courses);
 
 		initForm(ureq);
-		
-		TreeNode rootNode = courseNodeTreeModel.getRootNode();
-		for(int i=rootNode.getChildCount(); i-->0; ) {
-			multiSelectTree.open((TreeNode)rootNode.getChildAt(i));
-		}
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		multiSelectTree = uifactory.addTreeMultiselect("seltree", null, formLayout, courseNodeTreeModel, this);
-		multiSelectTree.setRootVisible(false);
+		multiSelectTree.setRootVisible(availableCourses.size() == 1);
 		multiSelectTree.setMultiSelect(true);
 
 		saveButton = uifactory.addFormSubmitButton("ok", "cal.links.submit", formLayout);
@@ -164,8 +159,17 @@ public class CourseLinkProviderController extends FormBasicController implements
 				String nodeId = link.getId();
 				TreeNode node = courseNodeTreeModel.getNodeById(nodeId);
 				if(node == null) {
-					nodeId = availableCourses.get(0).getResourceableId() + "_" + nodeId;
-					node = courseNodeTreeModel.getNodeById(nodeId);
+					String fallBackNodeId = availableCourses.get(0).getResourceableId() + "_" + nodeId;
+					node = courseNodeTreeModel.getNodeById(fallBackNodeId);
+				}
+				if(node == null && nodeId.indexOf("_") < 0) {
+					//course selected -> map to root node
+					for(ICourse course: availableCourses) {
+						if(nodeId.equals(course.getResourceableId().toString())) {
+							String fallBackNodeId = course.getResourceableId() + "_" + course.getRunStructure().getRootNode().getIdent();
+							node = courseNodeTreeModel.getNodeById(fallBackNodeId);
+						}
+					}
 				}
 				if (node != null) {
 					node.setSelected(true);
@@ -209,21 +213,18 @@ public class CourseLinkProviderController extends FormBasicController implements
 		}
 		
 		private LinkTreeNode buildCourseTree(ICourse course) {
-			LinkTreeNode node = new LinkTreeNode(course.getCourseTitle(), course, null);
-			node.setAltText(course.getCourseTitle());
-			node.setIdent(course.getResourceableId().toString());
-			node.setIconCssClass("o_CourseModule_icon");
-
-			LinkTreeNode childNode = buildTree(course, course.getRunStructure().getRootNode());
-			node.addChild(childNode);
-			return node;
+			return buildTree(course, course.getRunStructure().getRootNode());
 		}
 
 		private LinkTreeNode buildTree(ICourse course, CourseNode courseNode) {
 			LinkTreeNode node = new LinkTreeNode(courseNode.getShortTitle(), course, courseNode);
 			node.setAltText(courseNode.getLongTitle());
 			node.setIdent(course.getResourceableId() + "_" + courseNode.getIdent());
-			node.setIconCssClass(("o_icon o_" + courseNode.getType() + "_icon").intern());
+			if(courseNode == course.getRunStructure().getRootNode()) {
+				node.setIconCssClass("o_CourseModule_icon");
+			} else {
+				node.setIconCssClass(("o_icon o_" + courseNode.getType() + "_icon").intern());
+			}
 			node.setUserObject(course);
 			for (int i = 0; i < courseNode.getChildCount(); i++) {
 				CourseNode childNode = (CourseNode)courseNode.getChildAt(i);

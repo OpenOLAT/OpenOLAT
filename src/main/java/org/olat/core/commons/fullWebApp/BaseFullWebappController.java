@@ -84,6 +84,7 @@ import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.themes.Theme;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -151,8 +152,8 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	private TransientAssessmentMode lockMode;
 	
 	// NEW FROM FullChiefController
-	private TopNavController topnavCtr;
-	private Controller footerCtr;
+	private LockableController topnavCtr;
+	private LockableController footerCtr;
 	private UserToolsMenuController userToolsMenuCtrl;
 	private SiteInstance curSite;
 	private DTab curDTab;
@@ -199,8 +200,9 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		WindowSettings settings = WindowSettings.parse(windowSettings);
 		wbo = winman.createWindowBackOffice("basechiefwindow", this, settings);
 		
-		if(ureq.getUserSession().getRoles() != null) {	
-			isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
+		IdentityEnvironment identityEnv = ureq.getUserSession().getIdentityEnvironment();
+		if(identityEnv != null && identityEnv.getRoles() != null) {	
+			isAdmin = identityEnv.getRoles().isOLATAdmin();
 		} else {
 			isAdmin = false;
 		}
@@ -376,6 +378,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		// nav is not a controller part because it is a fundamental part of the BaseFullWebAppConroller.
 		navSitesVc = createVelocityContainer("nav_sites");
 		navSitesVc.setDomReplacementWrapperRequired(false);
+		navSitesVc.contextPut("visible", Boolean.TRUE);
 		mainVc.put("sitesComponent", navSitesVc);
 		
 		navTabsVc = createVelocityContainer("nav_tabs");
@@ -473,7 +476,6 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			Component footerCmp = footerCtr.getInitialComponent();
 			mainVc.put("footerComponent", footerCmp);
 		}
-		
 		
 		contentCtrl = baseFullWebappControllerParts.getContentController(ureq, getWindowControl());
 		if (contentCtrl != null) {
@@ -664,8 +666,12 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 				lockStatus = LockStatus.locked;
 				removeAsListenerAndDispose(assessmentGuardCtrl);
 				assessmentGuardCtrl = null;
-			} else {
+			} else if("continue".equals(event.getCommand())) {
 				initializeDefaultSite(ureq);
+				removeAsListenerAndDispose(assessmentGuardCtrl);
+				assessmentGuardCtrl = null;
+				lockStatus = null;
+				lockMode = null;
 			}
 		} else {
 			int tabIndex = dtabsControllers.indexOf(source);
@@ -1293,19 +1299,23 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		if(topnavCtr != null) {
 			topnavCtr.lockResource(resource);
 		}
+		if(footerCtr != null) {
+			footerCtr.lockResource(resource);
+		}
+		
 		if(userToolsMenuCtrl != null) {
 			userToolsMenuCtrl.lockResource(resource);
 		}
 		
-		if(navSitesVc.isVisible()) {
-			navSitesVc.setVisible(false);
-		}
 		for(int i=dtabsControllers.size(); i-->0; ) {
 			DTab tab = dtabs.get(i);
 			if(!lockResource.getResourceableId().equals(tab.getOLATResourceable().getResourceableId())) {
 				removeDTab(null, tab);
 			}
 		}
+		navSitesVc.contextPut("visible", Boolean.FALSE);
+		navSitesVc.setDirty(true);
+		navTabsVc.setDirty(true);
 	}
 
 	private void unlockResource() {
@@ -1313,10 +1323,15 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		if(topnavCtr != null) {
 			topnavCtr.unlockResource();
 		}
+		if(footerCtr != null) {
+			footerCtr.unlockResource();
+		}
 		if(userToolsMenuCtrl != null) {
 			userToolsMenuCtrl.unlockResource();
 		}
-		navSitesVc.setVisible(true);
+		navSitesVc.contextPut("visible", Boolean.TRUE);
+		navSitesVc.setDirty(true);
+		navTabsVc.setDirty(true);
 	}
 
 	private boolean asyncLockResource(TransientAssessmentMode mode) {
@@ -1330,12 +1345,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			lockMode = mode;
 			lockStatus = LockStatus.need;
 		} else if(lockResource != null && lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
-			if(mode.getStatus() == Status.leadtime) {
-				if(assessmentGuardCtrl == null) {
-					lockStatus = LockStatus.need;
-				}
-				lockMode = mode;
-			} else if(mode.getStatus() == Status.followup) {
+			if(mode.getStatus() == Status.leadtime || mode.getStatus() == Status.followup) {
 				if(assessmentGuardCtrl == null) {
 					lockStatus = LockStatus.need;
 				}
@@ -1353,8 +1363,13 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		if(lockResource != null && lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
 			logAudit("Async unlock resource for user: " + getIdentity().getName() + " (" + mode.getResource() + ")", null);
 			unlockResource();
+			if(lockMode != null) {
+				//check if there is a locked resource first
+				lockStatus = LockStatus.need;
+			} else {
+				lockStatus = null;
+			}
 			lockMode = null;
-			lockStatus = null;
 			unlock = true;
 		} else {
 			unlock = false;
@@ -1378,11 +1393,12 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	
 	private boolean checkAssessmentGuard(UserRequest ureq, TransientAssessmentMode mode) {
 		boolean needUpdate;
-		
 		if(assessmentGuardCtrl == null) {
 			if(lockStatus == LockStatus.need) {
+				List<TransientAssessmentMode> modes = mode == null ?
+						Collections.<TransientAssessmentMode>emptyList() : Collections.singletonList(mode);
 				assessmentGuardCtrl = new AssessmentModeGuardController(ureq, getWindowControl(),
-						Collections.singletonList(mode), true);
+						modes , true);
 				listenTo(assessmentGuardCtrl);
 				assessmentGuardCtrl.getInitialComponent();
 				lockStatus = LockStatus.popup;

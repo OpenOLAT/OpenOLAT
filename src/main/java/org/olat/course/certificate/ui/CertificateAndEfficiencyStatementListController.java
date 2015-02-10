@@ -30,6 +30,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -40,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.control.Controller;
@@ -93,11 +95,13 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	
 	private FlexiTableElement tableEl;
 	private BreadcrumbPanel stackPanel;
+	private FormLink coachingToolButton;
 	private CertificateAndEfficiencyStatementListModel tableModel;
 
 	private DialogBoxController confirmDeleteCtr;
 	private ArtefactWizzardStepsController ePFCollCtrl;
 	
+	private final boolean linkToCoachingTool;
 	private Identity assessedIdentity;
 	
 	@Autowired
@@ -112,13 +116,15 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private CertificatesManager certificatesManager;
 	
 	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, ureq.getUserSession().getIdentity());
+		this(ureq, wControl, ureq.getUserSession().getIdentity(), false);
 	}
 	
-	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl,
+			Identity assessedIdentity, boolean linkToCoachingTool) {
+		super(ureq, wControl, "cert_statement_list");
 		setTranslator(Util.createPackageTranslator(IdentityAssessmentEditController.class, getLocale(), getTranslator()));
 		this.assessedIdentity = assessedIdentity;
+		this.linkToCoachingTool = linkToCoachingTool;
 		
 		initForm(ureq);
 		
@@ -161,6 +167,10 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(linkToCoachingTool) {
+			coachingToolButton = uifactory.addFormLink("coaching.tool", formLayout, Link.BUTTON);
+		}
+		
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName.i18n(), Cols.displayName.ordinal()));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.score.i18n(), Cols.score.ordinal()));
@@ -168,6 +178,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				new PassedCellRenderer()));
 		tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.show",
 				translate("table.header.show"), CMD_SHOW));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lastModified.i18n(), Cols.lastModified.ordinal()));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.certificate.i18n(), Cols.certificate.ordinal(),
 				new DownloadCertificateCellRenderer(assessedIdentity)));
 		tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.launchcourse",
@@ -199,6 +210,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			wrapper.setScore(efficiencyStatement.getScore());
 			wrapper.setEfficiencyStatementKey(efficiencyStatement.getKey());
 			wrapper.setResourceKey(efficiencyStatement.getArchivedResourceKey());
+			wrapper.setLastModified(efficiencyStatement.getLastModified());
 			
 			statments.add(wrapper);
 			resourceKeyToStatments.put(efficiencyStatement.getArchivedResourceKey(), wrapper);
@@ -247,6 +259,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 					doCollectArtefact(ureq, statement.getDisplayName(), statement.getEfficiencyStatementKey());
 				}
 			}
+		} else if(coachingToolButton == source) {
+			doLaunchCoachingTool(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -288,6 +302,11 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		loadModel();
 		tableEl.reset();
 		showInfo("info.efficiencyStatement.deleted");
+	}
+	
+	private void doLaunchCoachingTool(UserRequest ureq) {
+		String businessPath = "[CoachSite:0][search:0][Identity:" + assessedIdentity.getKey() + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 
 	private void doLaunchCourse(UserRequest ureq, Long resourceKey) {

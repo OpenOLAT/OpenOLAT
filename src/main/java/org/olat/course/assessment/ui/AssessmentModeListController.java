@@ -50,6 +50,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
@@ -71,7 +72,7 @@ public class AssessmentModeListController extends FormBasicController implements
 	private AssessmentModeListModel model;
 	private final TooledStackedPanel toolbarPanel;
 
-	private DialogBoxController deleteDialogBox;
+	private DialogBoxController startDialogBox, stopDialogBox,deleteDialogBox;
 	private AssessmentModeEditController editCtrl;
 	
 	private final RepositoryEntry entry;
@@ -114,16 +115,16 @@ public class AssessmentModeListController extends FormBasicController implements
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status.i18nKey(), Cols.status.ordinal(),
-				new ModeStatusCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18nKey(), Cols.name.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.begin.i18nKey(), Cols.begin.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.end.i18nKey(), Cols.end.ordinal()));
+				true, Cols.status.name(), new ModeStatusCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18nKey(), Cols.name.ordinal(), true, Cols.name.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.begin.i18nKey(), Cols.begin.ordinal(), true, Cols.begin.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.end.i18nKey(), Cols.end.ordinal(), true, Cols.end.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.leadTime.i18nKey(), Cols.leadTime.ordinal(),
-				new TimeCellRenderer(getTranslator())));
+				true, Cols.leadTime.name(), new TimeCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.followupTime.i18nKey(), Cols.followupTime.ordinal(),
-				new TimeCellRenderer(getTranslator())));
+				true, Cols.followupTime.name(), new TimeCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.target.i18nKey(), Cols.target.ordinal(),
-				new TargetAudienceCellRenderer(getTranslator())));
+				true, Cols.target.name(), new TargetAudienceCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("start", Cols.start.ordinal(), "start",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("start"), "start"), null)));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("stop", Cols.stop.ordinal(), "stop",
@@ -133,6 +134,7 @@ public class AssessmentModeListController extends FormBasicController implements
 		model = new AssessmentModeListModel(columnsModel, assessmentModeCoordinationService);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setMultiSelect(true);
+		tableEl.setSelectAllEnable(true);
 	}
 	
 	private void loadModel() {
@@ -161,11 +163,20 @@ public class AssessmentModeListController extends FormBasicController implements
 			removeAsListenerAndDispose(editCtrl);
 			editCtrl = null;
 		} else if(deleteDialogBox == source) {
-			if(DialogBoxUIFactory.isYesEvent(event)) {
+			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				@SuppressWarnings("unchecked")
 				List<AssessmentMode> rows = (List<AssessmentMode>)deleteDialogBox.getUserObject();
 				doDelete(rows);
-				loadModel();
+			}
+		} else if(startDialogBox == source) {
+			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				AssessmentMode row = (AssessmentMode)startDialogBox.getUserObject();
+				doStart(row);
+			}
+		} else if(stopDialogBox == source) {
+			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				AssessmentMode row = (AssessmentMode)stopDialogBox.getUserObject();
+				doStop(row);
 			}
 		}
 		super.event(ureq, source, event);
@@ -208,9 +219,9 @@ public class AssessmentModeListController extends FormBasicController implements
 				if("edit".equals(cmd)) {
 					doEdit(ureq, row);
 				} else if("start".equals(cmd)) {
-					doStart(ureq, row);
+					doConfirmStart(ureq, row);
 				} else if("stop".equals(cmd)) {
-					doStop(ureq, row);
+					doConfirmStop(ureq, row);
 				}
 			}
 		}
@@ -232,37 +243,65 @@ public class AssessmentModeListController extends FormBasicController implements
 	
 	private void doConfirmDelete(UserRequest ureq, List<AssessmentMode> modeToDelete) {
 		StringBuilder sb = new StringBuilder();
+		boolean canDelete = true;
 		for(AssessmentMode mode:modeToDelete) {
 			if(sb.length() > 0) sb.append(", ");
 			sb.append(mode.getName());
+			
+			Status status = mode.getStatus();
+			if(status == Status.leadtime || status == Status.assessment || status == Status.followup) {
+				canDelete = false;
+			}
 		}
 		
-		String names = StringHelper.escapeHtml(sb.toString());
-		String title = translate("confirm.delete.title");
-		String text = translate("confirm.delete.text", names);
-		deleteDialogBox = activateYesNoDialog(ureq, title, text, deleteDialogBox);
-		deleteDialogBox.setUserObject(modeToDelete);
+		if(canDelete) {
+			String names = StringHelper.escapeHtml(sb.toString());
+			String title = translate("confirm.delete.title");
+			String text = translate("confirm.delete.text", names);
+			deleteDialogBox = activateYesNoDialog(ureq, title, text, deleteDialogBox);
+			deleteDialogBox.setUserObject(modeToDelete);
+		} else {
+			showWarning("error.in.assessment");
+		}
 	}
 	
 	private void doDelete(List<AssessmentMode> modesToDelete) {
 		for(AssessmentMode modeToDelete:modesToDelete) {
 			assessmentModeMgr.delete(modeToDelete);
 		}
+		loadModel();
+		tableEl.deselectAll();
 	}
 	
 	private void doEdit(UserRequest ureq, AssessmentMode mode) {
 		removeAsListenerAndDispose(editCtrl);
 		editCtrl = new AssessmentModeEditController(ureq, getWindowControl(), entry.getOlatResource(), mode);
 		listenTo(editCtrl);
-		toolbarPanel.pushController(translate("new.mode"), editCtrl);
+		
+		String title = translate("form.mode.title", new String[]{ mode.getName() });
+		toolbarPanel.pushController(title, editCtrl);
+	}
+	
+	private void doConfirmStart(UserRequest ureq, AssessmentMode mode) {
+		String title = translate("confirm.start.title");
+		String text = translate("confirm.start.text");
+		startDialogBox = activateYesNoDialog(ureq, title, text, startDialogBox);
+		startDialogBox.setUserObject(mode);
 	}
 
-	private void doStart(UserRequest ureq, AssessmentMode mode) {
+	private void doStart(AssessmentMode mode) {
 		assessmentModeCoordinationService.startAssessment(mode);
 		loadModel();
 	}
 	
-	private void doStop(UserRequest ureq, AssessmentMode mode) {
+	private void doConfirmStop(UserRequest ureq, AssessmentMode mode) {
+		String title = translate("confirm.stop.title");
+		String text = translate("confirm.stop.text");
+		stopDialogBox = activateYesNoDialog(ureq, title, text, stopDialogBox);
+		stopDialogBox.setUserObject(mode);
+	}
+	
+	private void doStop(AssessmentMode mode) {
 		assessmentModeCoordinationService.stopAssessment(mode);
 		loadModel();
 	}

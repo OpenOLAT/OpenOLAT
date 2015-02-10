@@ -42,8 +42,7 @@ public class ProgressValue implements Comparable<ProgressValue> {
 	}
 	
 	public int getGreenPerCent() {
-		int green = Math.round(100.0f * ((float)getGreen() / (float)getTotal()));
-		return green;
+		return Math.round(100.0f * ((float)getGreen() / (float)getTotal()));
 	}
 	
 	public void setGreen(int green) {

@@ -49,13 +49,18 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 		this(headerKey, columnIndex, false, null);
 	}
 	
+	public DefaultFlexiColumnModel(String headerKey, int columnIndex, boolean sortable, String sortKey) {
+		this(true, headerKey, columnIndex, sortable, sortKey, FlexiColumnModel.ALIGNMENT_LEFT,  new TextFlexiCellRenderer());
+	}
+	
 	public DefaultFlexiColumnModel(String headerKey, int columnIndex, FlexiCellRenderer renderer) {
 		this(true, headerKey, columnIndex, false, null, FlexiColumnModel.ALIGNMENT_LEFT, renderer);
 	}
 	
-	public DefaultFlexiColumnModel(String headerKey, int columnIndex, boolean sortable, String sortKey) {
-		this(true, headerKey, columnIndex, sortable, sortKey, FlexiColumnModel.ALIGNMENT_LEFT,  new TextFlexiCellRenderer());
+	public DefaultFlexiColumnModel(String headerKey, int columnIndex, boolean sortable, String sortKey, FlexiCellRenderer renderer) {
+		this(true, headerKey, columnIndex, sortable, sortKey, FlexiColumnModel.ALIGNMENT_LEFT, renderer);
 	}
+	
 	public DefaultFlexiColumnModel(boolean defVisible, String headerKey, int columnIndex, boolean sortable, String sortKey) {
 		this(defVisible, headerKey, columnIndex, sortable, sortKey, FlexiColumnModel.ALIGNMENT_LEFT,  new TextFlexiCellRenderer());
 	}

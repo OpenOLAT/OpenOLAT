@@ -56,8 +56,6 @@ import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
 import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.assessment.IdentityAssessmentEditController;
@@ -66,6 +64,8 @@ import org.olat.course.assessment.portfolio.EfficiencyStatementArtefact;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.co.ContactFormController;
 import org.olat.portfolio.EPArtefactHandler;
 import org.olat.portfolio.PortfolioModule;
@@ -111,6 +111,8 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	private PortfolioModule portfolioModule;
 	@Autowired
 	private CertificatesManager certificatesManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	/**
 	 * The constructor shows the efficiency statement given as parameter for the current user
@@ -152,8 +154,8 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		this.businessGroup = businessGroup;
 
 		if(businessGroup == null && courseRepo != null) {
-			ICourse course = CourseFactory.loadCourse(courseRepo.getOlatResource());
-			List<BusinessGroup> groups = course.getCourseEnvironment().getCourseGroupManager().getParticipatingBusinessGroups(statementOwner);
+			SearchBusinessGroupParams params = new SearchBusinessGroupParams(statementOwner, false, true);
+			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, courseRepo, 0, -1);
 			if(groups.size() > 0) {
 				businessGroup = groups.get(0);
 			}

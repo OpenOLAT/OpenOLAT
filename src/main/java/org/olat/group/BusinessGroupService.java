@@ -39,6 +39,7 @@ import org.olat.group.model.EnrollState;
 import org.olat.group.model.LeaveOption;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryShort;
@@ -295,7 +296,7 @@ public interface BusinessGroupService {
 	
 	public void addResourcesTo(List<BusinessGroup> groups, List<RepositoryEntry> resources);
 	
-	public void removeResourceFrom(List<BusinessGroup> group, RepositoryEntry re);
+	public void removeResourceFrom(List<BusinessGroup> group, RepositoryEntryRef re);
 	
 	public void removeResource(RepositoryEntryRef resource);
 	
@@ -348,6 +349,16 @@ public interface BusinessGroupService {
 	public int getPositionInWaitingListFor(Identity identity, BusinessGroup businessGroup);
 	
 	//memberships
+	/**
+	 * The method follow the business groups of the specified entry
+	 * and remove the participant membership of the group where
+	 * the entry is the only resource.
+	 * 
+	 * @param identity
+	 * @param entry
+	 */
+	public void leave(Identity identity, RepositoryEntry entry, LeavingStatusList status, MailPackage mailing);
+	
 	/**
 	 * Adds a user to a group as owner and does all the magic that needs to be
 	 * done: - add to security group (optional) - add to jabber roster - fire multi user event

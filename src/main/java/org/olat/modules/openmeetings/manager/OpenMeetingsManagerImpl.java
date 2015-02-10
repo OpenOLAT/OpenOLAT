@@ -347,6 +347,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			if(omRoom != null) {
 				room.setComment(omRoom.getComment());
 				room.setModerated(omRoom.isIsModeratedRoom());
+				room.setRecordingAllowed(omRoom.isAllowRecording());
+				room.setAudioOnly(omRoom.isIsAudioOnly());
 				room.setName(omRoom.getName());
 				room.setRoomId(omRoom.getRoomsId());
 				room.setSize(omRoom.getNumberOfPartizipants());
@@ -478,7 +480,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			long returned = roomWs.addRoomWithModerationAndRecordingFlags(sid,
 					room.getName(), room.getType(), room.getComment(), room.getSize(), false, false,
 					false, 0, room.isModerated(), getOpenOLATExternalType(), true,
-					false, false, room.isRecordingAllowed());
+					room.isAudioOnly(), false, room.isRecordingAllowed());
 			if(returned >= 0) {
 				room.setRoomId(returned);
 				log.audit("Room created");
@@ -511,8 +513,9 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		try {
 			String sid = adminLogin();
 			RoomServicePortType roomWs = getRoomWebService();
-			long returned = roomWs.updateRoomWithModeration(sid, room.getRoomId(),
-					room.getName(), room.getType(), room.getComment(), room.getSize(), false, false, false, 0, room.isModerated());
+			long returned = roomWs.updateRoomWithModerationQuestionsAudioTypeAndHideOptions(sid, room.getRoomId(), 
+					room.getName(), room.getType(), room.getComment(), room.getSize(), false, false, false, 0, room.isModerated(), 
+					false, room.isAudioOnly(), false, false, false, false, false, false, false);
 			if(returned >= 0) {
 				log.audit("Room updated");
 				openMeetingsDao.updateReference(group, ores, subIdentifier, room);

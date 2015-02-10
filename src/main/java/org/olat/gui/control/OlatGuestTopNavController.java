@@ -31,7 +31,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.impressum.ImpressumInformations;
 import org.olat.core.commons.controllers.impressum.ImpressumMainController;
 import org.olat.core.commons.controllers.impressum.ImpressumModule;
-import org.olat.core.commons.fullWebApp.TopNavController;
+import org.olat.core.commons.fullWebApp.LockableController;
 import org.olat.core.commons.services.help.HelpLinkSPI;
 import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.UserRequest;
@@ -55,7 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author patrickb
  */
-public class OlatGuestTopNavController extends BasicController implements TopNavController {
+public class OlatGuestTopNavController extends BasicController implements LockableController {
 
 	private Link loginLink, impressumLink;
 

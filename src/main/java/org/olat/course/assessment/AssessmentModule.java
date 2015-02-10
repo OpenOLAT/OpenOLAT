@@ -31,17 +31,21 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
-import org.olat.core.configuration.Destroyable;
-import org.olat.core.configuration.Initializable;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.gui.control.Event;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.Structure;
 import org.olat.course.editor.PublishEvent;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Description:<br>
@@ -53,33 +57,37 @@ import org.olat.course.editor.PublishEvent;
  * 
  * @author patrickb
  */
-public class AssessmentModule implements Initializable, Destroyable, GenericEventListener {
+@Service("assessmentModule")
+public class AssessmentModule extends AbstractSpringModule implements GenericEventListener {
 	
 	private static final OLog log = Tracing.createLoggerFor(AssessmentModule.class);
 
 	private List<Long> upcomingWork;
+	
+	@Value("${assessment.mode:enabled}")
+	private String assessmentModeEnabled;
+	
+	@Autowired
 	private CourseModule courseModule;
+	@Autowired
 	private TaskExecutorManager taskExecutorManager;
 	
-	/**
-	 * [used by spring]
-	 */
-	private AssessmentModule(CourseModule courseModule) {
-		this.courseModule = courseModule;
+	@Autowired
+	public AssessmentModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
 	}
-	
-	/**
-	 * [user by Spring]
-	 * @param taskExecutorManager
-	 */
-	public void setTaskExecutorManager(TaskExecutorManager taskExecutorManager) {
-		this.taskExecutorManager = taskExecutorManager;
+
+	@Override
+	protected void initFromChangedProperties() {
+		updateProperties();
 	}
 
 	/**
 	 * @see org.olat.core.configuration.OLATModule#init(com.anthonyeden.lib.config.Configuration)
 	 */
+	@Override
 	public void init() {
+		updateProperties();
 		upcomingWork = new ArrayList<Long>();
 		/*
 		 * always last step, register for course events
@@ -89,10 +97,15 @@ public class AssessmentModule implements Initializable, Destroyable, GenericEven
 		 * no more code after here!
 		 */
 	}
+	
+	private void updateProperties() {
+		String enabledObj = getStringPropertyValue("assessment.mode", true);
+		if(StringHelper.containsNonWhitespace(enabledObj)) {
+			assessmentModeEnabled = enabledObj;
+		}
+	}
 
-	/**
-	 * @see org.olat.core.configuration.OLATModule#destroy()
-	 */
+	@Override
 	public void destroy() {
 		/*
 		 * first step in destroy, deregister for course events
@@ -113,6 +126,7 @@ public class AssessmentModule implements Initializable, Destroyable, GenericEven
 	 * Called at course publish.
 	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(Event event) {
 		if (event instanceof PublishEvent) {
 			PublishEvent pe = (PublishEvent) event;
@@ -185,5 +199,14 @@ public class AssessmentModule implements Initializable, Destroyable, GenericEven
 			upcomingWork.add(course.getResourceableId());
 		}
 		return;
+	}
+
+	public boolean isAssessmentModeEnabled() {
+		return "enabled".equals(assessmentModeEnabled);
+	}
+
+	public void setAssessmentModeEnabled(boolean enabled) {
+		assessmentModeEnabled = enabled ? "enabled" : "disabled";
+		setStringProperty("assessment.mode", assessmentModeEnabled, true);
 	}
 }

@@ -104,7 +104,6 @@ public class StackedBusinessControl implements BusinessControl {
 
 	@Override
 	public List<ContextEntry> getEntries() {
-		if(contextEntry == null) new ArrayList<ContextEntry>();
 		List<ContextEntry> entries = new ArrayList<ContextEntry>();
 		if(origBusinessControl != null) {
 			entries.addAll(origBusinessControl.getEntries());
@@ -113,6 +112,11 @@ public class StackedBusinessControl implements BusinessControl {
 			entries.add(contextEntry);
 		}
 		return entries;
+	}
+
+	@Override
+	public List<ContextEntry> getEntriesDownTheControls() {
+		return getEntries();
 	}
 
 	@Override

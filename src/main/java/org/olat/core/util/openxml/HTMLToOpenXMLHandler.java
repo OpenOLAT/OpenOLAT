@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 
+import org.olat.core.util.openxml.OpenXMLDocument.ListParagraph;
 import org.olat.core.util.openxml.OpenXMLDocument.Style;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -50,8 +51,9 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	private List<Node> content = new ArrayList<Node>();
 	private Deque<StyleStatus> styleStack = new ArrayDeque<StyleStatus>();
 	
-	private Element currentParagraph;
 	private Table currentTable;
+	private Element currentParagraph;
+	private ListParagraph currentListParagraph;
 	
 	public HTMLToOpenXMLHandler(OpenXMLDocument document, Element paragraph) {
 		this.factory = document;
@@ -72,6 +74,18 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 				addContent(currentParagraph);
 			}
 			currentParagraph = factory.createParagraphEl();
+		}
+		return currentParagraph;
+	}
+	
+	private Element getCurrentListParagraph(boolean create) {
+		if(create || currentParagraph == null) {
+			//flush the text
+			if(textBuffer != null) {
+				flushText();
+				addContent(currentParagraph);
+			}
+			currentParagraph = factory.createListParagraph(currentListParagraph);
 		}
 		return currentParagraph;
 	}
@@ -229,6 +243,8 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 				styles = setTextPreferences(cssStyles);
 			}
 			styleStack.add(new StyleStatus(tag, styles));
+		} else if("br".equals(tag)) {
+			closeParagraph();
 		} else if("em".equalsIgnoreCase(tag)) {
 			flushText();
 			Style[] styles = setTextPreferences(Style.italic);
@@ -249,6 +265,10 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			int colspan = OpenXMLUtils.getSpanAttribute("colspan", attributes);
 			int rowspan = OpenXMLUtils.getSpanAttribute("rowspan", attributes);
 			currentTable.addCellEl(colspan, rowspan);
+		} else if("ul".equals(tag) || "ol".equals(tag)) {
+			currentListParagraph = factory.createListParagraph();
+		} else if("li".equals(tag)) {
+			getCurrentListParagraph(true);
 		}
 	}
 
@@ -282,6 +302,8 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			if(currentTable != null) {
 				content.add(currentTable.getTableEl());
 			}
+			currentTable = null;
+			currentParagraph = null;
 		} else if("td".equals(tag) || "th".equals(tag)) {
 			flushText();
 			currentParagraph = addContent(currentParagraph);
@@ -292,6 +314,11 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			textBuffer = null;
 			latex = false;
 			currentParagraph = null;
+		} else if("ul".equals(tag) || "ol".equals(tag)) {
+			closeParagraph();
+			currentListParagraph = null;
+		} else if("li".equals(tag)) {
+			//do nothing
 		}
 	}
 	
@@ -452,6 +479,5 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		public void unDone() {
 			done = false;
 		}
-		
 	}
 }

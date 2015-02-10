@@ -222,6 +222,11 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 		final long msgId = ++latestSentMsgId;
 		final Integer nodeId = clusterConfig.getNodeId();
 		
+		if(ores != null && ores.getResourceableId() != null
+				&& ores.getResourceableId().equals(0l) && "BusinessGroup".equals(ores.getResourceableTypeName())) {
+			System.out.println();
+		}
+		
 		jmsExecutor.execute(new Runnable() {
 			public void run() {
 				try {
