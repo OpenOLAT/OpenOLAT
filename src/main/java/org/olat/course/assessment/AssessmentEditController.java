@@ -75,6 +75,7 @@ public class AssessmentEditController extends BasicController {
 	
 	private VelocityContainer detailView;
 	private AssessmentForm assessmentForm;
+	private Controller subDetailsController;
 	private Controller detailsEditController;
 	private AssessedIdentityWrapper assessedIdentityWrapper;
 	private AssessableCourseNode courseNode;
@@ -158,10 +159,11 @@ public class AssessmentEditController extends BasicController {
 			detailView.contextPut("courseNodeCss", CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass());
 
 			// push infos about users groups
-			List<BusinessGroup> participantGroups = course.getCourseEnvironment().getCourseGroupManager().getParticipatingBusinessGroups(
-					assessedIdentity);
+			List<BusinessGroup> participantGroups = course.getCourseEnvironment().getCourseGroupManager()
+					.getParticipatingBusinessGroups(assessedIdentity);
 			final Collator collator = Collator.getInstance(ureq.getLocale());
 			Collections.sort(participantGroups, new Comparator<BusinessGroup>() {
+				@Override
 				public int compare(BusinessGroup a, BusinessGroup b) {
 					return collator.compare(a.getName(), b.getName());
 				}
@@ -199,28 +201,34 @@ public class AssessmentEditController extends BasicController {
 			detailView.contextPut("titleVisible", new Boolean(visible));
 		}
 	}
-	
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == backLink){
-			releaseEditorLock();
-			fireEvent(ureq, Event.CANCELLED_EVENT);
+		if (source == backLink) {
+			if(subDetailsController != null) {
+				detailView.remove(subDetailsController.getInitialComponent());
+				removeAsListenerAndDispose(subDetailsController);
+				subDetailsController = null;
+			} else {
+				releaseEditorLock();
+				fireEvent(ureq, Event.CANCELLED_EVENT);
+			}
 		} else if (source == hideLogButton) {
 			detailView.contextPut("showLog", Boolean.FALSE);
 		} else if (source == showLogButton) {
 			detailView.contextPut("showLog", Boolean.TRUE);
 		}
-		
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == assessmentForm) {
 			if (event == Event.CANCELLED_EVENT) {
@@ -235,11 +243,18 @@ public class AssessmentEditController extends BasicController {
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		} else if (source == detailsEditController) {
-			//fxdiff FXOLAT-108: reset SCORM test
+			// reset SCORM test
 			if(event == Event.CHANGED_EVENT) {
 				assessmentForm.reloadData();
 			} else if(event == Event.DONE_EVENT) {
 				fireEvent(ureq, Event.DONE_EVENT);
+			} else if(event instanceof OpenSubDetailsEvent) {
+				removeAsListenerAndDispose(subDetailsController);
+				
+				OpenSubDetailsEvent detailsEvent = (OpenSubDetailsEvent)event;
+				subDetailsController = detailsEvent.getSubDetailsController();
+				listenTo(subDetailsController);
+				detailView.put("subDetailsCmp", subDetailsController.getInitialComponent());
 			}
 		} else if (source == alreadyLockedDialogController) {
 			if (event == Event.CANCELLED_EVENT || DialogBoxUIFactory.isOkEvent(event)) {

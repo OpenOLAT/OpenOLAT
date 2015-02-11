@@ -42,7 +42,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
@@ -51,6 +50,7 @@ import org.olat.core.util.i18n.I18nModule;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.OpenSubDetailsEvent;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -65,7 +65,6 @@ import org.olat.ims.qti.process.AssessmentFactory;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.FilePersister;
 import org.olat.ims.qti.process.Persister;
-import org.olat.ims.qti.render.LocalizedXSLTransformer;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQRetrievedEvent;
@@ -89,12 +88,11 @@ public class QTI12ResultDetailsController extends BasicController {
 	private final IQManager iqm;
 	private final QTIResultManager qrm;
 	
-	private VelocityContainer main, details;
-	private QTIResultTableModel tableModel;
+	private VelocityContainer main;
 	private TableController tableCtr;
+	private QTIResultTableModel tableModel;
 	private DialogBoxController retrieveConfirmationCtr;
-	
-	private CloseableModalController cmc;
+	private QTI12XSLTResultDetailsController xsltDetailsCtr;
 	
 	/**
 	 * @param courseResourceableId
@@ -105,8 +103,8 @@ public class QTI12ResultDetailsController extends BasicController {
 	 * @param ureq
 	 * @param wControl
 	 */
-	public QTI12ResultDetailsController(UserRequest ureq, WindowControl wControl, Long courseResourceableId, String nodeIdent, Identity assessedIdentity,
-			RepositoryEntry re, String type) {
+	public QTI12ResultDetailsController(UserRequest ureq, WindowControl wControl, Long courseResourceableId, String nodeIdent,
+			Identity assessedIdentity, RepositoryEntry re, String type) {
 		super(ureq, wControl);
 		this.courseResourceableId = courseResourceableId;
 		this.nodeIdent = nodeIdent;
@@ -144,7 +142,6 @@ public class QTI12ResultDetailsController extends BasicController {
 	
 	private void init(UserRequest ureq) {
 		main = createVelocityContainer("qtires");
-		details = createVelocityContainer("qtires_details");
 		
 		boolean hasEssay = checkEssay();
 		main.contextPut("warningEssay", new Boolean(hasEssay));
@@ -192,18 +189,10 @@ public class QTI12ResultDetailsController extends BasicController {
 				QTIResultSet resultSet = tableModel.getObject(tEvent.getRowId());
 				
 				try {
-					Document doc = FilePersister.retreiveResultsReporting(assessedIdentity, type, resultSet.getAssessmentID());
-					if (doc == null) {
-						showInfo("error.resreporting.na");
-						return;
-					}
-					StringBuilder resultsHTML = LocalizedXSLTransformer.getInstance(ureq.getLocale()).renderResults(doc);
-					details.contextPut("reshtml", resultsHTML);
-					
-					removeAsListenerAndDispose(cmc);
-					cmc = new CloseableModalController(getWindowControl(), getTranslator().translate("close"), details);
-					listenTo(cmc);
-					cmc.activate();
+					removeAsListenerAndDispose(xsltDetailsCtr);
+					xsltDetailsCtr = new QTI12XSLTResultDetailsController(ureq, getWindowControl(), assessedIdentity, type, resultSet);
+					listenTo(xsltDetailsCtr);
+					fireEvent(ureq, new OpenSubDetailsEvent(xsltDetailsCtr));
 				} catch (Exception e) {
 					logError("", e);
 					showError("error.resreporting.na");
@@ -217,10 +206,6 @@ public class QTI12ResultDetailsController extends BasicController {
 					retrieveConfirmationCtr = activateYesNoDialog(ureq, title, text, retrieveConfirmationCtr);
 				}
 			}
-		} else if (source == cmc) {
-			updateTableModel();
-			removeAsListenerAndDispose(cmc);
-			cmc = null;
 		} else if (source == retrieveConfirmationCtr) {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
 				if(tableModel.isTestRunning()) {
@@ -244,6 +229,7 @@ public class QTI12ResultDetailsController extends BasicController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		//
 	}

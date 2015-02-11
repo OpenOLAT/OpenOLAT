@@ -26,7 +26,6 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -55,13 +54,11 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 	private SingleSelection roomSizeEl;
 	private SingleSelection avModeEl;
 	private SingleSelection moderationModeEl;
-	private MultipleSelectionElement recordingEl;
 	private TextElement commentEl;
 	
 	private final String[] roomTypeKeys;
 	private final String[] roomSizes;
 	private final String[] moderationModeKeys;
-	private final String[] recordingKeys = {"xx"};
 	private final String[] avModeKeys;
 
 	private final BusinessGroup group;
@@ -174,19 +171,11 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 			moderationModeEl.select(key, true);
 		}
 
-		String[] recordingValues = new String[]{ translate("room.recording.enabled") };
-		recordingEl = uifactory.addCheckboxesHorizontal("recording", "room.recording", formLayout, recordingKeys, recordingValues);
-		if(room != null) {
-			recordingEl.select(recordingKeys[0], room.isRecordingAllowed());
-		} else if(defaultSettings != null) {
-			recordingEl.select(recordingKeys[0], defaultSettings.isRecordingAllowed());
-		}
 		String[] avModeValues = new String[]{ translate("room.av.audio"), translate("room.av.video") };
 		avModeEl = uifactory.addDropdownSingleselect("avmode", "room.av.mode", formLayout, avModeKeys, avModeValues, null);
 		if(room != null) {
 			String key = room.isAudioOnly() ? avModeKeys[0] : avModeKeys[1];
 			avModeEl.select(key, true);
-			avModeEl.setEnabled(false);
 		} else if(defaultSettings != null) {
 			String key = defaultSettings.isAudioOnly() ? avModeKeys[0] : avModeKeys[1];
 			avModeEl.select(key, true);
@@ -215,7 +204,6 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 		room.setComment(commentEl.getValue());
 		room.setModerated(moderationModeEl.isOneSelected() && moderationModeEl.isSelected(0));
 		room.setName(roomNameEl.getValue());
-		room.setRecordingAllowed(recordingEl.isAtLeastSelected(1));
 		if(roomSizeEl.isOneSelected()) {
 			String key = roomSizeEl.getSelectedKey();
 			if(StringHelper.isLong(key)) {

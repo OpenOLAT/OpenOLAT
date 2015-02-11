@@ -105,13 +105,9 @@ public class OpenMeetingsRoom {
 	public void setAudioOnly(boolean audioOnly) {
 		this.audioOnly = audioOnly;
 	}
-	
+
 	public boolean isRecordingAllowed() {
 		return recordingAllowed;
-	}
-	
-	public void setRecordingAllowed(boolean recordingAllowed) {
-		this.recordingAllowed = recordingAllowed;
 	}
 
 	public OpenMeetingsRoomReference getReference() {

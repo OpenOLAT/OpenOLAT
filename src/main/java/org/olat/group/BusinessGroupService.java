@@ -296,7 +296,7 @@ public interface BusinessGroupService {
 	
 	public void addResourcesTo(List<BusinessGroup> groups, List<RepositoryEntry> resources);
 	
-	public void removeResourceFrom(List<BusinessGroup> group, RepositoryEntry re);
+	public void removeResourceFrom(List<BusinessGroup> group, RepositoryEntryRef re);
 	
 	public void removeResource(RepositoryEntryRef resource);
 	

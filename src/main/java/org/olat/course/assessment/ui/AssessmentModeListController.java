@@ -50,6 +50,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
@@ -133,6 +134,7 @@ public class AssessmentModeListController extends FormBasicController implements
 		model = new AssessmentModeListModel(columnsModel, assessmentModeCoordinationService);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setMultiSelect(true);
+		tableEl.setSelectAllEnable(true);
 	}
 	
 	private void loadModel() {
@@ -241,16 +243,26 @@ public class AssessmentModeListController extends FormBasicController implements
 	
 	private void doConfirmDelete(UserRequest ureq, List<AssessmentMode> modeToDelete) {
 		StringBuilder sb = new StringBuilder();
+		boolean canDelete = true;
 		for(AssessmentMode mode:modeToDelete) {
 			if(sb.length() > 0) sb.append(", ");
 			sb.append(mode.getName());
+			
+			Status status = mode.getStatus();
+			if(status == Status.leadtime || status == Status.assessment || status == Status.followup) {
+				canDelete = false;
+			}
 		}
 		
-		String names = StringHelper.escapeHtml(sb.toString());
-		String title = translate("confirm.delete.title");
-		String text = translate("confirm.delete.text", names);
-		deleteDialogBox = activateYesNoDialog(ureq, title, text, deleteDialogBox);
-		deleteDialogBox.setUserObject(modeToDelete);
+		if(canDelete) {
+			String names = StringHelper.escapeHtml(sb.toString());
+			String title = translate("confirm.delete.title");
+			String text = translate("confirm.delete.text", names);
+			deleteDialogBox = activateYesNoDialog(ureq, title, text, deleteDialogBox);
+			deleteDialogBox.setUserObject(modeToDelete);
+		} else {
+			showWarning("error.in.assessment");
+		}
 	}
 	
 	private void doDelete(List<AssessmentMode> modesToDelete) {
@@ -265,7 +277,9 @@ public class AssessmentModeListController extends FormBasicController implements
 		removeAsListenerAndDispose(editCtrl);
 		editCtrl = new AssessmentModeEditController(ureq, getWindowControl(), entry.getOlatResource(), mode);
 		listenTo(editCtrl);
-		toolbarPanel.pushController(translate("new.mode"), editCtrl);
+		
+		String title = translate("form.mode.title", new String[]{ mode.getName() });
+		toolbarPanel.pushController(title, editCtrl);
 	}
 	
 	private void doConfirmStart(UserRequest ureq, AssessmentMode mode) {

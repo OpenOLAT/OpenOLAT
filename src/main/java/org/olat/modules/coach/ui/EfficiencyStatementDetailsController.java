@@ -169,7 +169,6 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 	}
 	
 	private void efficiencyStatementChanged() {
-		Identity assessedIdentity = securityManager.loadIdentityByKey(statementEntry.getStudentKey());
 		List<Identity> assessedIdentityList = Collections.singletonList(assessedIdentity);
 		RepositoryEntry re = statementEntry.getCourse();
 		efficiencyStatementManager.updateEfficiencyStatements(re.getOlatResource(), assessedIdentityList);

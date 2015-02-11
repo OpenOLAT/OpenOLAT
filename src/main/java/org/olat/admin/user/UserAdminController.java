@@ -315,7 +315,7 @@ public class UserAdminController extends BasicController implements Activateable
 		userTabP.addTab(translate(NLS_VIEW_COURSES), courseCtr.getInitialComponent());
 		
 		if (isOlatAdmin) {
-			efficicencyCtrl = new CertificateAndEfficiencyStatementListController(ureq, getWindowControl(), identity);
+			efficicencyCtrl = new CertificateAndEfficiencyStatementListController(ureq, getWindowControl(), identity, true);
 			BreadcrumbedStackedPanel stackPanel = new BreadcrumbedStackedPanel("statements", getTranslator(), efficicencyCtrl);
 			stackPanel.pushController(translate(NLS_VIEW_EFF_STATEMENTS), efficicencyCtrl);
 			efficicencyCtrl.setBreadcrumbPanel(stackPanel);

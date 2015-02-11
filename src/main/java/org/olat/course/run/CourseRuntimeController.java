@@ -32,7 +32,6 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.glossary.GlossaryMainController;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.UserRequest;
@@ -88,6 +87,7 @@ import org.olat.course.archiver.FullAccessArchiverCallback;
 import org.olat.course.area.CourseAreasController;
 import org.olat.course.assessment.AssessmentChangedEvent;
 import org.olat.course.assessment.AssessmentMainController;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CoachingGroupAccessAssessmentCallback;
 import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.assessment.FullAccessAssessmentCallback;
@@ -186,6 +186,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private AssessmentModule assessmentModule;
 	@Autowired
 	private EfficiencyStatementManager efficiencyStatementManager;
 	
@@ -456,6 +458,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			assessmentModeLink = LinkFactory.createToolLink("assessment.mode.cmd", translate("command.assessment.mode"), this, "o_icon_assessment_mode");
 			assessmentModeLink.setElementCssClass("o_sel_course_assessment_mode");
 			assessmentModeLink.setEnabled(!managed);
+			assessmentModeLink.setVisible(assessmentModule.isAssessmentModeEnabled());
 			settings.addComponent(assessmentModeLink);
 			
 			catalogLink = LinkFactory.createToolLink("access.cmd", translate("command.catalog"), this, "o_icon_catalog");
@@ -749,7 +752,13 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				initToolbar();
 				toolControllerDone(ureq);
 			}
-		} else if(source == editorCtrl && source instanceof VetoableCloseController) {
+		} else if(source == leaveDialogBox) {
+			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				doLeave(ureq);
+			}
+		}
+		
+		if(editorCtrl == source && source instanceof VetoableCloseController) {
 			if(event == Event.DONE_EVENT) {
 				if(delayedClose != null) {
 					switch(delayedClose) {
@@ -780,11 +789,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					fireEvent(ureq, Event.DONE_EVENT);
 				}
 			}
-		} else if(source == leaveDialogBox) {
-			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
-				doLeave(ureq);
-			}
-		}
+		} 
 		
 		super.event(ureq, source, event);
 	}
@@ -991,8 +996,6 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		repositoryManager.leave(getIdentity(), getRepositoryEntry(), status, reMailing);
 		//leave groups
 		businessGroupService.leave(getIdentity(), getRepositoryEntry(), status, reMailing);
-		//reload this but make sure all changes are committed before reload
-		DBFactory.getInstance().commit();
 		
 		if(status.isWarningManagedGroup() || status.isWarningManagedCourse()) {
 			showWarning("sign.out.warning.managed");

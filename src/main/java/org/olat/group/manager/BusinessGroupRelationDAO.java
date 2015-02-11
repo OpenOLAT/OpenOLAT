@@ -117,7 +117,7 @@ public class BusinessGroupRelationDAO {
 				.getResultList();
 	}
 	
-	public int countRoles(BusinessGroup group, String... role) {
+	public int countRoles(BusinessGroupRef group, String... role) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(membership) from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
 		  .append(" inner join bgroup.baseGroup as baseGroup")
@@ -179,6 +179,20 @@ public class BusinessGroupRelationDAO {
 				.setParameter("businessGroupKey", group.getKey())
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("role", role)
+				.getSingleResult();
+		return count == null ? false : count.intValue() > 0;
+	}
+	
+	public boolean hasAnyRole(IdentityRef identity, BusinessGroupRef group) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(membership) from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
+		  .append(" inner join bgroup.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where bgroup.key=:businessGroupKey and membership.identity.key=:identityKey");
+
+		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
+				.setParameter("businessGroupKey", group.getKey())
+				.setParameter("identityKey", identity.getKey())
 				.getSingleResult();
 		return count == null ? false : count.intValue() > 0;
 	}
@@ -252,7 +266,7 @@ public class BusinessGroupRelationDAO {
 		return members;
 	}
 	
-	public void deleteRelation(BusinessGroup group, RepositoryEntry entry) {
+	public void deleteRelation(BusinessGroup group, RepositoryEntryRef entry) {
 		repositoryEntryRelationDao.removeRelation(group.getBaseGroup(), entry);
 	}
 	

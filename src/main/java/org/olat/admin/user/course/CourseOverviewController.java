@@ -137,12 +137,16 @@ public class CourseOverviewController extends BasicController  {
 
 		courseListCtr = new TableController(config, ureq, wControl, getTranslator());
 		listenTo(courseListCtr);
-		courseListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(MSCols.key.i18n(), MSCols.key.ordinal(), null, getLocale()));
-		courseListCtr.addColumnDescriptor(new DefaultColumnDescriptor(MSCols.title.i18n(), MSCols.title.ordinal(), null, getLocale()));
+		courseListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(MSCols.key.i18n(), MSCols.key.ordinal(),
+				TABLE_ACTION_LAUNCH, getLocale()));
+		courseListCtr.addColumnDescriptor(new DefaultColumnDescriptor(MSCols.title.i18n(), MSCols.title.ordinal(),
+				TABLE_ACTION_LAUNCH, getLocale()));
 		if(repositoryModule.isManagedRepositoryEntries()) {
-			courseListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(MSCols.externalId.i18n(), MSCols.externalId.ordinal(), null, getLocale()));
+			courseListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(MSCols.externalId.i18n(), MSCols.externalId.ordinal(),
+					TABLE_ACTION_LAUNCH, getLocale()));
 		}
-		courseListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(MSCols.externalRef.i18n(), MSCols.externalRef.ordinal(), null, getLocale()));
+		courseListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(MSCols.externalRef.i18n(), MSCols.externalRef.ordinal(),
+				TABLE_ACTION_LAUNCH, getLocale()));
 		CustomCellRenderer roleRenderer = new CourseRoleCellRenderer();
 		courseListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(MSCols.role.i18n(), MSCols.role.ordinal(), null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer));
 		courseListCtr.addColumnDescriptor(new DefaultColumnDescriptor(MSCols.firstTime.i18n(), MSCols.firstTime.ordinal(), null, getLocale()));
@@ -287,7 +291,7 @@ public class CourseOverviewController extends BasicController  {
 				TableEvent te = (TableEvent) event;
 				CourseMemberView item = tableDataModel.getObject(te.getRowId());
 				if (TABLE_ACTION_LAUNCH.equals(te.getActionId())) {
-					NewControllerFactory.getInstance().launch("[RepositoryEntry:" + item.getRepoKey() + "]", ureq, getWindowControl());
+					launch(ureq, item.getRepoKey());
 				} else if (TABLE_ACTION_UNSUBSCRIBE.equals(te.getActionId())){
 					doLeave(ureq, Collections.singletonList(item));
 				} else if (TABLE_ACTION_EDIT.equals(te.getActionId())){
@@ -360,6 +364,10 @@ public class CourseOverviewController extends BasicController  {
 		cmc = null;
 	}
 	
+	private void launch(UserRequest ureq, Long repoKey) {
+		NewControllerFactory.getInstance().launch("[RepositoryEntry:" + repoKey + "]", ureq, getWindowControl());
+	}
+	
 	private void doOpenEdit(UserRequest ureq, CourseMemberView member) {
 		RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntry(member.getRepoKey());
 		editSingleMemberCtrl = new EditSingleMembershipController(ureq, getWindowControl(), editedIdentity, repoEntry, null);
@@ -391,7 +399,7 @@ public class CourseOverviewController extends BasicController  {
 		MailPackage mailing = new MailPackage(sendMail);
 		if(re != null) {
 			List<RepositoryEntryPermissionChangeEvent> changes = Collections.singletonList((RepositoryEntryPermissionChangeEvent)e);
-			repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), re, changes, mailing);
+			repositoryManager.updateRepositoryEntryMemberships(getIdentity(), ureq.getUserSession().getRoles(), re, changes, mailing);
 		}
 
 		businessGroupService.updateMemberships(getIdentity(), e.getGroupChanges(), mailing);
@@ -440,7 +448,7 @@ public class CourseOverviewController extends BasicController  {
 		}
 		List<RepositoryEntryPermissionChangeEvent> repoChanges = Collections.singletonList(changeEvent);
 		for(RepositoryEntry repoEntry:res) {
-			repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, repoChanges, reMailing);
+			repositoryManager.updateRepositoryEntryMemberships(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, repoChanges, reMailing);
 		}
 		
 		//make sure all is committed before loading the model again (I see issues without)

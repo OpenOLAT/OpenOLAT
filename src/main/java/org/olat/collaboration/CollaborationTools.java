@@ -641,7 +641,7 @@ public class CollaborationTools implements Serializable {
 			room.setComment(ores.getDescription());
 			room.setModerated(true);
 			room.setName(ores.getName());
-			room.setRecordingAllowed(true);
+			room.setAudioOnly(true);
 			room.setResourceName(ores.getName());
 			room.setSize(25);
 			room.setType(RoomType.conference.type());

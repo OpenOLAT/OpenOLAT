@@ -8,12 +8,7 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context.xsd">
 
-	<context:component-scan base-package="org.olat.course.assessment.manager" />
-
-	<bean id="assessmentModule" class="org.olat.course.assessment.AssessmentModule" init-method="init" destroy-method="destroy" >
-		<constructor-arg index="0" ref="courseModule" />
-		<property name="taskExecutorManager" ref="taskExecutorManager"/>
-	</bean>
+	<context:component-scan base-package="org.olat.course.assessment" />
 
 	<bean id="org.olat.course.assessment.EfficiencyStatementManager" class="org.olat.course.assessment.EfficiencyStatementManager">
 		<property name="dbInstance" ref="database"/>
@@ -23,11 +18,31 @@
 	
 	<bean id="assessmentNotificationsTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
 	    <property name="jobDetail" ref="assessmentNotificationsJob" />
-	    <property name="cronExpression" value="55 * * * * ?" />
+	    <property name="cronExpression" value="1 * * * * ?" />
 	    <property name="startDelay" value="55000" />
 	</bean>
 	
 	<bean id="assessmentNotificationsJob" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">
 		<property name="jobClass" value="org.olat.course.assessment.manager.AssessmentModeNotificationJob" />
+	</bean>
+	
+	<!-- Assessment modes admin panel -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="8206" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.course.assessment.ui.AssessmentModeAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="certificates" />
+		<property name="i18nActionKey" value="admin.menu.title"/>
+		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.course.assessment.ui"/>
+		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
 	</bean>
 </beans>

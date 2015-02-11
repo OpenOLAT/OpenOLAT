@@ -439,7 +439,24 @@ public class AssessmentModeEditController extends FormBasicController {
 			targetEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
-
+		
+		safeExamBrowserKeyEl.clearError();
+		if(safeExamBrowserEl.isAtLeastSelected(1)) {
+			String value = safeExamBrowserKeyEl.getValue();
+			if(!StringHelper.containsNonWhitespace(value)) {
+				safeExamBrowserKeyEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+		}
+		
+		ipListEl.clearError();
+		if(ipsEl.isAtLeastSelected(1)) {
+			String value = ipListEl.getValue();
+			if(!StringHelper.containsNonWhitespace(value)) {
+				ipListEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+		}
 		return allOk & super.validateFormLogic(ureq);
 	}
 
@@ -643,8 +660,10 @@ public class AssessmentModeEditController extends FormBasicController {
 	
 	private void doChooseStartElement(UserRequest ureq) {
 		if(chooseElementsCtrl != null) return;
-
-		chooseStartElementCtrl = new ChooseStartElementController(ureq, getWindowControl(), startElementKey, courseOres);
+		
+		List<String> allowedKeys = courseElementsRestrictionEl.isAtLeastSelected(1)
+				? new ArrayList<>(elementKeys) : null;
+		chooseStartElementCtrl = new ChooseStartElementController(ureq, getWindowControl(), startElementKey, allowedKeys, courseOres);
 		listenTo(chooseStartElementCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), null, chooseStartElementCtrl.getInitialComponent(),

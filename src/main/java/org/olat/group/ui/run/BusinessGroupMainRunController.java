@@ -757,7 +757,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		// 2. show participants if configured with Participants
 		if (businessGroup.isParticipantsVisibleIntern()) {
 			removeAsListenerAndDispose(gparticipantsC);
-			gparticipantsC = new GroupController(ureq, getWindowControl(), false, true, false, false, downloadAllowed, false, group, GroupRoles.participant.name());
+			gparticipantsC = new GroupController(ureq, getWindowControl(), false, true, true, false, downloadAllowed, false, group, GroupRoles.participant.name());
 			listenTo(gparticipantsC);
 			
 			membersVc.put("participants", gparticipantsC.getInitialComponent());
@@ -769,7 +769,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		membersVc.contextPut("hasWaitingList", new Boolean(businessGroup.getWaitingListEnabled()) );
 		if (businessGroup.isWaitingListVisibleIntern()) {
 			removeAsListenerAndDispose(waitingListController);
-			waitingListController = new GroupController(ureq, getWindowControl(), false, true, false, false, downloadAllowed, false, group, GroupRoles.waiting.name());
+			waitingListController = new GroupController(ureq, getWindowControl(), false, true, true, false, downloadAllowed, false, group, GroupRoles.waiting.name());
 			listenTo(waitingListController);
 			membersVc.put("waitingList", waitingListController.getInitialComponent());
 			membersVc.contextPut("showWaitingList", Boolean.TRUE);
