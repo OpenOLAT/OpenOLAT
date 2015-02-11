@@ -19,6 +19,8 @@
  */
 package org.olat.selenium.page.repository;
 
+import java.io.File;
+
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
@@ -144,6 +146,29 @@ public class AuthoringEnvPage {
 		//from description editor, back to details and launch the course
 		editDescription
 			.clickToolbarBack();
+	}
+	
+	public AuthoringEnvPage uploadResource(String title, File resource) {
+		WebElement importLink = browser.findElement(By.className("o_sel_author_import"));
+		Assert.assertTrue(importLink.isDisplayed());
+		importLink.click();
+		OOGraphene.waitBusy();
+		
+		By inputBy = By.cssSelector(".o_fileinput input[type='file']");
+		OOGraphene.uploadFile(inputBy, resource, browser);
+		OOGraphene.waitElement(By.className("o_sel_author_imported_name"));
+		
+		By titleBy = By.cssSelector(".o_sel_author_imported_name input");
+		WebElement titleEl = browser.findElement(titleBy);
+		titleEl.sendKeys(title);
+		
+		//save
+		By saveBy = By.cssSelector("div.o_sel_repo_save_details button.btn-primary");
+		WebElement saveButton = browser.findElement(saveBy);
+		saveButton.click();
+		OOGraphene.waitBusy();
+
+		return this;
 	}
 	
 	public enum ResourceType {
