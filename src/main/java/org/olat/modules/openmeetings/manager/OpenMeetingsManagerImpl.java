@@ -347,7 +347,6 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			if(omRoom != null) {
 				room.setComment(omRoom.getComment());
 				room.setModerated(omRoom.isIsModeratedRoom());
-				room.setRecordingAllowed(omRoom.isAllowRecording());
 				room.setAudioOnly(omRoom.isIsAudioOnly());
 				room.setName(omRoom.getName());
 				room.setRoomId(omRoom.getRoomsId());
@@ -480,7 +479,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			long returned = roomWs.addRoomWithModerationAndRecordingFlags(sid,
 					room.getName(), room.getType(), room.getComment(), room.getSize(), false, false,
 					false, 0, room.isModerated(), getOpenOLATExternalType(), true,
-					room.isAudioOnly(), false, room.isRecordingAllowed());
+					room.isAudioOnly(), false, true);
 			if(returned >= 0) {
 				room.setRoomId(returned);
 				log.audit("Room created");

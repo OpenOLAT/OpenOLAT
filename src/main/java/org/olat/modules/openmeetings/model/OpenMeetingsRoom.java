@@ -35,7 +35,6 @@ public class OpenMeetingsRoom {
 	private long size;
 	private boolean moderated;
 	private boolean audioOnly;
-	private boolean recordingAllowed;
 	private boolean closed;
 	
 	private transient OpenMeetingsRoomReference reference;
@@ -106,14 +105,6 @@ public class OpenMeetingsRoom {
 		this.audioOnly = audioOnly;
 	}
 	
-	public boolean isRecordingAllowed() {
-		return recordingAllowed;
-	}
-	
-	public void setRecordingAllowed(boolean recordingAllowed) {
-		this.recordingAllowed = recordingAllowed;
-	}
-
 	public OpenMeetingsRoomReference getReference() {
 		return reference;
 	}
