@@ -205,6 +205,15 @@ img.b_with_border {
 	@extend %o_video;
 } 
 
+/* movie player responsive fix */
+span.olatFlashMovieViewer {
+	max-width: 100%;
+	height: auto !important;
+}
+.mejs-container, .mejs-mediaelement video, .mejs-layers div {
+	max-width: 100%;
+}
+
 /* float clear classes */
 .b_clear_float, p.b_clear_float, div.b_clear_float { 
 	clear: both;
