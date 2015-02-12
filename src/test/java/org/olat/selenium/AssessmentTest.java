@@ -40,6 +40,7 @@ import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
+import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.qti.QTI12Page;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.JunitTestHelper;
@@ -146,7 +147,9 @@ public class AssessmentTest {
 			.endTest();
 		
 		//check results page
-		WebElement resultsEl = browser.findElement(By.id("o_qti_results"));
+		By resultsBy = By.id("o_qti_results");
+		OOGraphene.waitElement(resultsBy);
+		WebElement resultsEl = browser.findElement(resultsBy);
 		Assert.assertTrue(resultsEl.getText().contains(author.getFirstName()));
 		//close the test
 		testPage
