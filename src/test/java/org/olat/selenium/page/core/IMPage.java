@@ -51,6 +51,7 @@ public class IMPage {
 	 */
 	public IMPage openGroupChat() {
 		By openBy = By.className("o_sel_im_open_tool_chat");
+		OOGraphene.waitElement(openBy);
 		WebElement openButton = browser.findElement(openBy);
 		openButton.click();
 		OOGraphene.waitBusy();

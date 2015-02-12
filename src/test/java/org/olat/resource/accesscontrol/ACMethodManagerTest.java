@@ -34,6 +34,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.manager.ACMethodDAO;
@@ -58,6 +60,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ACMethodManagerTest extends OlatTestCase {
 	
+	private static final OLog log = Tracing.createLoggerFor(ACMethodManagerTest.class);
 
 	private static Identity ident1;
 	private static boolean isInitialized = false;
@@ -111,6 +114,9 @@ public class ACMethodManagerTest extends OlatTestCase {
 		Roles roles = new Roles(false, false, false, true, false, false, false);
 		List<AccessMethod> methods = acMethodManager.getAvailableMethods(ident1, roles);
 		assertNotNull(methods);
+		for(AccessMethod method:methods) {
+			log.info("testStandardMethods list: " + method.getClass() + " / " + method.getType() + " / " + method.getKey() + " / " + method.isEnabled() + " / " + method.isValid());
+		}
 		assertEquals(2, methods.size());
 		
 		boolean foundFree = false;
