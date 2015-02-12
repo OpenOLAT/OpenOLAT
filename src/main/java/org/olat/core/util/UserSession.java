@@ -304,6 +304,11 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		this.lockMode = mode;
 		this.lockResource = lockResource;
 	}
+	
+	public void unlockResource() {
+		lockMode = null;
+		lockResource = null;
+	}
 
 	public List<TransientAssessmentMode> getAssessmentModes() {
 		return assessmentModes;
