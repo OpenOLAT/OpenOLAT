@@ -28,6 +28,7 @@ package org.olat.course.nodes.projectbroker;
 import java.io.File;
 
 import org.olat.admin.quota.QuotaConstants;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
@@ -39,6 +40,7 @@ import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
+import org.olat.course.nodes.projectbroker.service.ProjectGroupManager;
 import org.olat.course.nodes.ta.DropboxController;
 import org.olat.course.nodes.ta.DropboxScoringViewController;
 import org.olat.course.nodes.ta.ReturnboxController;
@@ -51,7 +53,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 public class ProjectBrokerDropboxScoringViewController extends DropboxScoringViewController {
 
 	private Project project;
-
+	private final ProjectGroupManager projectGroupManager;
 	
 	/**
 	 * Scoring view of the dropbox.
@@ -64,11 +66,12 @@ public class ProjectBrokerDropboxScoringViewController extends DropboxScoringVie
 	public ProjectBrokerDropboxScoringViewController(Project project, UserRequest ureq, WindowControl wControl, CourseNode node, UserCourseEnvironment userCourseEnv) { 
 		super(ureq, wControl, node, userCourseEnv, false);	
 		this.project = project;
+		projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
 		this.setVelocityRoot(Util.getPackageVelocityRoot(DropboxScoringViewController.class));
 		Translator fallbackTranslator = Util.createPackageTranslator(this.getClass(), ureq.getLocale());
 		Translator myTranslator = Util.createPackageTranslator(DropboxScoringViewController.class, ureq.getLocale(), fallbackTranslator);
 		setTranslator(myTranslator);
-		boolean hasNotification = ( userCourseEnv.getCourseEnvironment().getCourseGroupManager().isIdentityCourseAdministrator(ureq.getIdentity())) || userCourseEnv.getCourseEnvironment().getCourseGroupManager().isIdentityCourseCoach(ureq.getIdentity());
+		boolean hasNotification = projectGroupManager.isProjectManagerOrAdministrator(ureq, userCourseEnv.getCourseEnvironment(), project);
 		init(ureq, hasNotification);
 	}
 	
