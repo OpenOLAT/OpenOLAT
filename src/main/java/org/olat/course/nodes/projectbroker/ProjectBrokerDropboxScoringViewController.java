@@ -68,7 +68,8 @@ public class ProjectBrokerDropboxScoringViewController extends DropboxScoringVie
 		Translator fallbackTranslator = Util.createPackageTranslator(this.getClass(), ureq.getLocale());
 		Translator myTranslator = Util.createPackageTranslator(DropboxScoringViewController.class, ureq.getLocale(), fallbackTranslator);
 		setTranslator(myTranslator);
-		init(ureq);
+		boolean hasNotification = ( userCourseEnv.getCourseEnvironment().getCourseGroupManager().isIdentityCourseAdministrator(ureq.getIdentity())) || userCourseEnv.getCourseEnvironment().getCourseGroupManager().isIdentityCourseCoach(ureq.getIdentity());
+		init(ureq, hasNotification);
 	}
 	
 	protected String getDropboxFilePath(String assesseeName) {

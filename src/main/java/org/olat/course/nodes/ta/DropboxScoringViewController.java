@@ -36,6 +36,7 @@ import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -99,6 +100,9 @@ public class DropboxScoringViewController extends BasicController {
 	private CloseableModalController cmc;
 	private IFrameDisplayController iFrameCtr;
 	private DialogBoxController dialogBoxController;
+	private boolean hasNotification = false;
+	private SubscriptionContext subsContext;
+	private ContextualSubscriptionController contextualSubscriptionCtr;
 	
 	/**
 	 * Scoring view of the dropbox.
@@ -129,6 +133,11 @@ public class DropboxScoringViewController extends BasicController {
 			init(ureq);
 		}
 	}
+	
+	protected void init(UserRequest ureq, boolean hasNotification){
+		this.hasNotification = hasNotification;
+		init(ureq);
+	}
 
 	protected void init(UserRequest ureq) {
 		myContent = createVelocityContainer("dropboxscoring");
@@ -152,6 +161,19 @@ public class DropboxScoringViewController extends BasicController {
 		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 		String assesseeFullName = StringHelper.escapeHtml(userManager.getUserDisplayName(assessee));
 
+		// notification
+		if (hasNotification) {
+		subsContext = DropboxFileUploadNotificationHandler.getSubscriptionContext(userCourseEnv.getCourseEnvironment(), node);
+			if (subsContext != null) {
+				String path = DropboxController.getDropboxPathRelToFolderRoot(userCourseEnv.getCourseEnvironment(), node);
+				contextualSubscriptionCtr = AbstractTaskNotificationHandler.createContextualSubscriptionController(ureq, this.getWindowControl(), path, subsContext, DropboxController.class);
+				myContent.put("subscription", contextualSubscriptionCtr.getInitialComponent());
+				myContent.contextPut("hasNotification", Boolean.TRUE);
+			}
+		} else {
+			myContent.contextPut("hasNotification", Boolean.FALSE);
+		}
+		
 		OlatRootFolderImpl rootDropbox = new OlatRootFolderImpl(getDropboxFilePath(assesseeName), null);
 		rootDropbox.setLocalSecurityCallback( getDropboxVfsSecurityCallback());
 		OlatNamedContainerImpl namedDropbox = new OlatNamedContainerImpl(assesseeFullName, rootDropbox);
