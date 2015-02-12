@@ -25,17 +25,18 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.manager.ACMethodDAO;
@@ -59,8 +60,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class ACMethodManagerTest extends OlatTestCase {
-	
-	private static final OLog log = Tracing.createLoggerFor(ACMethodManagerTest.class);
 
 	private static Identity ident1;
 	private static boolean isInitialized = false;
@@ -83,7 +82,7 @@ public class ACMethodManagerTest extends OlatTestCase {
 	@Before
 	public void setUp() {
 		if(!isInitialized) {
-			ident1 = JunitTestHelper.createAndPersistIdentityAsUser(UUID.randomUUID().toString().replace("-", ""));
+			ident1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ac-method-mgr");
 		}
 	}
 	
@@ -114,19 +113,22 @@ public class ACMethodManagerTest extends OlatTestCase {
 		Roles roles = new Roles(false, false, false, true, false, false, false);
 		List<AccessMethod> methods = acMethodManager.getAvailableMethods(ident1, roles);
 		assertNotNull(methods);
-		for(AccessMethod method:methods) {
-			log.info("testStandardMethods list: " + method.getClass() + " / " + method.getType() + " / " + method.getKey() + " / " + method.isEnabled() + " / " + method.isValid());
-		}
-		assertEquals(2, methods.size());
+		assertTrue(methods.size() >= 2);
+		
+		Set<String> duplicateTypes = new HashSet<>();
 		
 		boolean foundFree = false;
 		boolean foundToken = false;
 		for(AccessMethod method:methods) {
+			Assert.assertFalse(duplicateTypes.contains(method.getType()));	
 			if(method instanceof FreeAccessMethod) {
 				foundFree = true;
 			} else if(method instanceof TokenAccessMethod) {
 				foundToken = true;
 			}
+			assertTrue(method.isEnabled());
+			assertTrue(method.isValid());
+			duplicateTypes.add(method.getType());
 		}
 		assertTrue(foundFree);
 		assertTrue(foundToken);
