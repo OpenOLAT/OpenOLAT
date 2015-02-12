@@ -204,15 +204,21 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	private AssessmentMode sendEvent(AssessmentMode mode, Date now, boolean forceStatus) {
 		if(mode.getBeginWithLeadTime().compareTo(now) > 0) {
 			//none
-			mode = ensureStatusOfMode(mode, Status.none);
-			sendEvent(AssessmentModeNotificationEvent.BEFORE, mode,
-					assessmentModeManager.getAssessedIdentityKeys(mode));
+			Status status = mode.getStatus();
+			if(status != Status.leadtime && status != Status.assessment && status != Status.followup && status != Status.end) {
+				mode = ensureStatusOfMode(mode, Status.none);
+				sendEvent(AssessmentModeNotificationEvent.BEFORE, mode,
+						assessmentModeManager.getAssessedIdentityKeys(mode));
+			}
 		} else if(mode.getBeginWithLeadTime().compareTo(now) <= 0 && mode.getBegin().compareTo(now) > 0
 				&& mode.getBeginWithLeadTime().compareTo(mode.getBegin()) != 0) {
 			//leading time
-			mode = ensureStatusOfMode(mode, Status.leadtime);
-			sendEvent(AssessmentModeNotificationEvent.LEADTIME, mode,
-				assessmentModeManager.getAssessedIdentityKeys(mode));
+			Status status = mode.getStatus();
+			if(status != Status.assessment && status != Status.followup && status != Status.end) {
+				mode = ensureStatusOfMode(mode, Status.leadtime);
+				sendEvent(AssessmentModeNotificationEvent.LEADTIME, mode,
+						assessmentModeManager.getAssessedIdentityKeys(mode));
+			}
 		} else if(mode.isManualBeginEnd() && !forceStatus) {
 			//what to do in manual mode
 			if(mode.getStatus() == Status.followup) {

@@ -468,23 +468,27 @@ public class AssessmentModeEditController extends FormBasicController {
 		int leadTime = leadTimeEl.getIntValue();
 
 		Status currentStatus = assessmentMode.getStatus();
-		Status nextStatus = modeCoordinationService.evaluateStatus(begin, leadTime, end, followupTime);
-		
-		if(currentStatus == nextStatus) {
-			save(ureq, true);
+		if(startModeEl.isOneSelected() && startModeEl.isSelected(1)) {
+			//manual start don't change the status of the assessment
+			save(ureq, false);
 		} else {
-			String title = translate("confirm.status.change.title");
-
-			String text;
-			switch(nextStatus) {
-				case none: text = translate("confirm.status.change.none"); break;
-				case leadtime: text = translate("confirm.status.change.leadtime"); break;
-				case assessment: text = translate("confirm.status.change.assessment"); break;
-				case followup: text = translate("confirm.status.change.followup"); break;
-				case end: text = translate("confirm.status.change.end"); break;
-				default: text = "ERROR";
+			Status nextStatus = modeCoordinationService.evaluateStatus(begin, leadTime, end, followupTime);
+			if(currentStatus == nextStatus) {
+				save(ureq, true);
+			} else {
+				String title = translate("confirm.status.change.title");
+	
+				String text;
+				switch(nextStatus) {
+					case none: text = translate("confirm.status.change.none"); break;
+					case leadtime: text = translate("confirm.status.change.leadtime"); break;
+					case assessment: text = translate("confirm.status.change.assessment"); break;
+					case followup: text = translate("confirm.status.change.followup"); break;
+					case end: text = translate("confirm.status.change.end"); break;
+					default: text = "ERROR";
+				}
+				confirmCtrl = activateOkCancelDialog(ureq, title, text, confirmCtrl);
 			}
-			confirmCtrl = activateOkCancelDialog(ureq, title, text, confirmCtrl);
 		}
 	}
 	
