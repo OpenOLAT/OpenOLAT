@@ -44,7 +44,6 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
-import org.olat.course.nodes.projectbroker.datamodel.ProjectEvent;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
