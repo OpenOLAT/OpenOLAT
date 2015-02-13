@@ -207,6 +207,7 @@ public interface ProjectGroupManager {
   /**
    * Returns true when the leaving of the project group is allowed
    * @param project
+   * @param identity
    * @return
    */
   public boolean isDeselectionAllowed(Project project);

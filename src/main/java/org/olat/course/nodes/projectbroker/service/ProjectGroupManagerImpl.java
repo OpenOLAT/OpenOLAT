@@ -44,6 +44,7 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
+import org.olat.course.nodes.projectbroker.datamodel.ProjectEvent;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
@@ -365,13 +366,15 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 		return candidates.isEmpty();
 	}
 	
-	
+	@Override
 	public boolean isDeselectionAllowed(Project project){
 		return project.getProjectGroup().isAllowToLeave();
 	}
 	
+	@Override
 	public void setDeselectionAllowed(Project project, boolean allow){
 		project.getProjectGroup().setAllowToLeave(allow);
+		businessGroupService.updateAllowToLeaveBusinessGroup(project.getProjectGroup(), allow);
 	}
 
 }

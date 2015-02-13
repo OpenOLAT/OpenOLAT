@@ -219,14 +219,10 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		}
 		selectionMaxMembers.addActionListener(FormEvent.ONCLICK);
 		
-		allowDeselection = uifactory.addCheckboxesHorizontal("detailsform.allow.deselection", formLayout, keys, values);
-		if(projectGroupManager.isDeselectionAllowed(project)){
-			allowDeselection.select(keys[0], true);
-		}else{
-			allowDeselection.select(keys[0], false);
-		}
+		String[] deselectValues = new String[] {translate("detailsform.allow.deselection.hint")};
+		allowDeselection = uifactory.addCheckboxesHorizontal("detailsform.allow.deselection", formLayout, keys, deselectValues);
+		allowDeselection.select(keys[0], projectGroupManager.isDeselectionAllowed(project));
 		allowDeselection.addActionListener(FormEvent.ONCLICK);
-		
 		uifactory.addSpacerElement("spacer_1", formLayout, false);
 
 		// customfields
@@ -437,7 +433,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 				maxMembers.setIntValue(Project.MAX_MEMBERS_UNLIMITED);
 			}
 		} else if(source == allowDeselection){
-			if(!projectGroupManager.isDeselectionAllowed(project)){
+			if(allowDeselection.isSelected(0)){
 				projectGroupManager.setDeselectionAllowed(project, true);
 			}else{
 				projectGroupManager.setDeselectionAllowed(project, false);
