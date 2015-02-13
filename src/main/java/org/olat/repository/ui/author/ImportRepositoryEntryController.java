@@ -116,6 +116,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		displaynameEl.setDisplaySize(30);
 		displaynameEl.setMandatory(true);
 		displaynameEl.setVisible(false);
+		displaynameEl.setElementCssClass("o_sel_author_imported_name");
 
 		String[] refValues = new String[]{ translate("references.expl") };
 		referencesEl = uifactory.addCheckboxesHorizontal("references", "references", formLayout, refKeys, refValues);

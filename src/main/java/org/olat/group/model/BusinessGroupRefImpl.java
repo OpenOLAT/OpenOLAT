@@ -17,55 +17,42 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.coach.ui;
+package org.olat.group.model;
+
+import org.olat.group.BusinessGroupRef;
 
 /**
  * 
+ * Initial date: 09.02.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class LightedValue implements Comparable<LightedValue> {
+public final class BusinessGroupRefImpl implements BusinessGroupRef {
 	
-	private final Integer value;
-	private final Light light;
+	private final Long groupKey;
 	
-	public LightedValue(Integer value, Light light) {
-		this.value = value;
-		this.light = light;
+	public BusinessGroupRefImpl(Long groupKey) {
+		this.groupKey = groupKey;
 	}
 
-	public String getValue() {
-		return value == null ? "" : Integer.toString(value.intValue());
-	}
-
-	public Light getLight() {
-		return light;
-	}
-	
 	@Override
-	public int compareTo(LightedValue o) {
-		int color1 = light == null ? 0 : light.ordinal();
-		int color2 = o.light == null ? 0 : o.light.ordinal();
-		if(color1 < color2) {
-			return -1;
-		} else if(color2 < color1) {
-			return 1;
-		}
-		
-		int val1 = value == null ? 0 : value.intValue();
-		int val2 = o.value == null ? 0 : o.value.intValue();
-		if(val2 < val1) {
-			return -1;
-		} else if(val1 < val2) {
-			return 1;
-		}
-		return 0;
+	public Long getKey() {
+		return groupKey;
 	}
 
-	public enum Light {
-		grey,
-		green,
-		yellow,
-		red,
-		black,
+	@Override
+	public int hashCode() {
+		return groupKey == null ? 98376802 : groupKey.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		} else if(obj instanceof BusinessGroupRefImpl) {
+			BusinessGroupRefImpl ref = (BusinessGroupRefImpl)obj;
+			return groupKey != null && groupKey.equals(ref.groupKey);
+		}
+		return false;
 	}
 }

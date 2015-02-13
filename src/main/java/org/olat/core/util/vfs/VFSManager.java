@@ -268,7 +268,7 @@ public class VFSManager extends BasicManager {
 				relDirPath = null;
 				fileName = relFilePath.substring(1, relFilePath.length());				
 			} else {
-				relDirPath = relFilePath.substring(0, lastSlash-1);
+				relDirPath = relFilePath.substring(0, lastSlash);
 				fileName = relFilePath.substring(lastSlash);
 			}
 			

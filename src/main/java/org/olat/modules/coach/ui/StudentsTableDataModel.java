@@ -84,7 +84,7 @@ public class StudentsTableDataModel implements TableDataModel<StudentStatEntry> 
 				} else if (launched == 0) {
 					light = Light.red;
 				}
-				return new LightedValue(Integer.toString(launched), light);
+				return new LightedValue(launched, light);
 			}
 			case countPassed: {
 				if(countRepo == 0) {
@@ -107,7 +107,7 @@ public class StudentsTableDataModel implements TableDataModel<StudentStatEntry> 
 				} else if (passed == 0) {
 					light = Light.red;
 				}
-				return new LightedValue(Integer.toString(passed), light);
+				return new LightedValue(passed, light);
 			}
 		}
 		return null;

@@ -667,6 +667,8 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 				removeAsListenerAndDispose(assessmentGuardCtrl);
 				assessmentGuardCtrl = null;
 			} else if("continue".equals(event.getCommand())) {
+				//unlock session
+				ureq.getUserSession().unlockResource();
 				initializeDefaultSite(ureq);
 				removeAsListenerAndDispose(assessmentGuardCtrl);
 				assessmentGuardCtrl = null;
@@ -1482,39 +1484,47 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	private void updateBusinessPath(UserRequest ureq, SiteInstance site) {
 		if(site == null) return;
 
-		String businessPath = siteToBornSite.get(site).getController().getWindowControlForDebug().getBusinessControl().getAsString();
-		HistoryPoint point = ureq.getUserSession().getLastHistoryPoint();
-		int index = businessPath.indexOf(':');
-		if(index > 0 && point != null && point.getBusinessPath() != null) {
-			String start = businessPath.substring(0, index);
-			if(!point.getBusinessPath().startsWith(start)) {
-				//if a controller has not set its business path, don't pollute the mapping
-				List<ContextEntry> entries = siteToBornSite.get(site).getController().getWindowControlForDebug().getBusinessControl().getEntries();
-				siteToBusinessPath.put(site, new HistoryPointImpl(ureq.getUuid(), businessPath, entries));
-				return;
+		try {
+			String businessPath = siteToBornSite.get(site).getController().getWindowControlForDebug().getBusinessControl().getAsString();
+			HistoryPoint point = ureq.getUserSession().getLastHistoryPoint();
+			int index = businessPath.indexOf(':');
+			if(index > 0 && point != null && point.getBusinessPath() != null) {
+				String start = businessPath.substring(0, index);
+				if(!point.getBusinessPath().startsWith(start)) {
+					//if a controller has not set its business path, don't pollute the mapping
+					List<ContextEntry> entries = siteToBornSite.get(site).getController().getWindowControlForDebug().getBusinessControl().getEntries();
+					siteToBusinessPath.put(site, new HistoryPointImpl(ureq.getUuid(), businessPath, entries));
+					return;
+				}
 			}
+			
+			siteToBusinessPath.put(site, point);
+		} catch (Exception e) {
+			logError("", e);
 		}
-		
-		siteToBusinessPath.put(site, point);
 	}
 	
 	private void updateBusinessPath(UserRequest ureq, DTab tab) {
 		//dtabToBusinessPath is null if the controller is disposed
 		if(tab == null || dtabToBusinessPath == null) return;
 
-		String businessPath = tab.getController().getWindowControlForDebug().getBusinessControl().getAsString();
-		HistoryPoint point = ureq.getUserSession().getLastHistoryPoint();
-		int index = businessPath.indexOf(']');
-		if(index > 0 && point != null && point.getBusinessPath() != null) {
-			String start = businessPath.substring(0, index);
-			if(!point.getBusinessPath().startsWith(start)) {
-				//if a controller has not set its business path, don't pollute the mapping
-				List<ContextEntry> entries = tab.getController().getWindowControlForDebug().getBusinessControl().getEntries();
-				dtabToBusinessPath.put(tab, new HistoryPointImpl(ureq.getUuid(), businessPath, entries));
-				return;
+		try {
+			String businessPath = tab.getController().getWindowControlForDebug().getBusinessControl().getAsString();
+			HistoryPoint point = ureq.getUserSession().getLastHistoryPoint();
+			int index = businessPath.indexOf(']');
+			if(index > 0 && point != null && point.getBusinessPath() != null) {
+				String start = businessPath.substring(0, index);
+				if(!point.getBusinessPath().startsWith(start)) {
+					//if a controller has not set its business path, don't pollute the mapping
+					List<ContextEntry> entries = tab.getController().getWindowControlForDebug().getBusinessControl().getEntries();
+					dtabToBusinessPath.put(tab, new HistoryPointImpl(ureq.getUuid(), businessPath, entries));
+					return;
+				}
 			}
+			dtabToBusinessPath.put(tab, point);
+		} catch (Exception e) {
+			logError("", e);
 		}
-		dtabToBusinessPath.put(tab, point);
 	}
 	
 	private static class TabState {

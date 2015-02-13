@@ -151,11 +151,13 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	private ResourceGuard syncAssessmentMode(UserRequest ureq, TransientAssessmentMode mode) {
 		Date now = new Date();
 		Date beginWithLeadTime = mode.getBeginWithLeadTime();
-		if(!mode.isManual() && beginWithLeadTime.after(now)) {
+		Date endWithFollowupTime = mode.getEndWithFollowupTime();
+		//check if the mode must not be guarded anymore
+		if(mode.isManual() && (Status.end.equals(mode.getStatus()) || Status.none.equals(mode.getStatus()))) {
 			return null;
-		} else if(mode.isManual() && (Status.end.equals(mode.getStatus()) || Status.none.equals(mode.getStatus()))) {
+		} else if(!mode.isManual() && (beginWithLeadTime.after(now) || now.after(endWithFollowupTime))) {
 			return null;
-		}
+		} 
 		
 		ResourceGuard guard = guards.getGuardFor(mode);
 		if(guard == null) {
@@ -235,6 +237,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			Date beginWithLeadTime = mode.getBeginWithLeadTime();
 			Date end = mode.getEnd();
 			Date endWithLeadTime = mode.getEndWithFollowupTime();
+			
 			if(beginWithLeadTime.compareTo(now) <= 0 && begin.compareTo(now) > 0) {
 				state = Status.leadtime.name();
 				go.setEnabled(false);
@@ -247,13 +250,13 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 				go.setVisible(true);
 				cont.setEnabled(false);
 				cont.setVisible(false);
-			} else if(end.compareTo(now) <= 0 && endWithLeadTime.compareTo(now) >= 0) {
+			} else if(end.compareTo(now) <= 0 && endWithLeadTime.compareTo(now) > 0) {
 				state = Status.followup.name();
 				go.setEnabled(false);
 				go.setVisible(false);
 				cont.setEnabled(false);
 				cont.setVisible(false);
-			} else if(endWithLeadTime.before(now) || Status.end == mode.getStatus()) {
+			} else if(endWithLeadTime.compareTo(now) <= 0 || Status.end == mode.getStatus()) {
 				state = Status.end.name();
 				go.setEnabled(false);
 				go.setVisible(false);

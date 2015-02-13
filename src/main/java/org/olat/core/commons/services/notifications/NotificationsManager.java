@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -275,7 +276,16 @@ public abstract class NotificationsManager extends BasicManager {
 	 * @param types
 	 * @return
 	 */
-	public abstract List<Subscriber> getSubscribers(Identity identity, List<String> types);
+	public abstract List<Subscriber> getSubscribers(IdentityRef identity, List<String> types);
+
+	/**
+	 * subscribers for ONE person (e.g. subscribed to 5 forums -> 5 subscribers
+	 * belonging to this person) restricted to the specified types
+	 * 
+	 * @param identity
+	 * @return List of Subscriber Objects which belong to the identity
+	 */
+	public abstract List<Subscriber> getSubscribers(IdentityRef identity, long resId);
 	
 	/**
 	 * @param identity
@@ -299,6 +309,8 @@ public abstract class NotificationsManager extends BasicManager {
 
 	public abstract void unsubscribe(Subscriber s);
 	
+	public abstract void unsubscribeAllForIdentityAndResId(IdentityRef identity, Long resId);
+
 	/**
 	 * @param identity
 	 * @param subscriptionContext

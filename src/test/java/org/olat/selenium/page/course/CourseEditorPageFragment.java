@@ -180,6 +180,15 @@ public class CourseEditorPageFragment {
 	}
 	
 	/**
+	 * @see chooseResource
+	 * @param resourceTitle
+	 * @return
+	 */
+	public CourseEditorPageFragment chooseTest(String resourceTitle) {
+		return chooseResource(chooseTestButton, resourceTitle);
+	}
+	
+	/**
 	 * Click the choose button, which open the resource chooser. Select
 	 * the "My entries" segment, search the rows for the resource title,
 	 * and select it.

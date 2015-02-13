@@ -194,6 +194,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			importLink = LinkFactory.createLink("cmd.import.ressource", getTranslator(), this);
 			importLink.setDomReplacementWrapperRequired(false);
 			importLink.setIconLeftCSS("o_icon o_icon_import");
+			importLink.setElementCssClass("o_sel_author_import");
 			stackPanel.addTool(importLink, Align.left);
 			
 			List<OrderedRepositoryHandler> handlers = repositoryHandlerFactory.getOrderRepositoryHandlers();

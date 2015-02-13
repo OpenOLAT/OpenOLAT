@@ -399,7 +399,7 @@ public class CourseOverviewController extends BasicController  {
 		MailPackage mailing = new MailPackage(sendMail);
 		if(re != null) {
 			List<RepositoryEntryPermissionChangeEvent> changes = Collections.singletonList((RepositoryEntryPermissionChangeEvent)e);
-			repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), re, changes, mailing);
+			repositoryManager.updateRepositoryEntryMemberships(getIdentity(), ureq.getUserSession().getRoles(), re, changes, mailing);
 		}
 
 		businessGroupService.updateMemberships(getIdentity(), e.getGroupChanges(), mailing);
@@ -448,7 +448,7 @@ public class CourseOverviewController extends BasicController  {
 		}
 		List<RepositoryEntryPermissionChangeEvent> repoChanges = Collections.singletonList(changeEvent);
 		for(RepositoryEntry repoEntry:res) {
-			repositoryManager.updateRepositoryEntryMembership(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, repoChanges, reMailing);
+			repositoryManager.updateRepositoryEntryMemberships(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, repoChanges, reMailing);
 		}
 		
 		//make sure all is committed before loading the model again (I see issues without)

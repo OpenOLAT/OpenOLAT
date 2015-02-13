@@ -55,7 +55,6 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 	public static final String CONFIG_ROOM_NAME = "roomName";
 	public static final String CONFIG_ROOM_SIZE = "roomSize";
 	public static final String CONFIG_ROOM_MODERATION = "roomModeration";
-	public static final String CONFIG_ROOM_RECORDING = "roomRecording";
 	public static final String CONFIG_ROOM_COMMENT = "roomComment";
 	public static final String CONFIG_ROOM_TYPE = "roomType";
 	public static final String CONFIG_ROOM_AUDIO_ONLY = "roomAudioOnly";
@@ -123,7 +122,6 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 					moduleConfiguration.set(CONFIG_ROOM_NAME, room.getName());
 					moduleConfiguration.set(CONFIG_ROOM_SIZE, new Long(room.getSize()));
 					moduleConfiguration.set(CONFIG_ROOM_MODERATION, new Boolean(room.isModerated()));
-					moduleConfiguration.set(CONFIG_ROOM_RECORDING, new Boolean(room.isRecordingAllowed()));
 					moduleConfiguration.set(CONFIG_ROOM_AUDIO_ONLY, new Boolean(room.isAudioOnly()));
 					moduleConfiguration.set(CONFIG_ROOM_COMMENT, room.getComment());
 					moduleConfiguration.set(CONFIG_ROOM_TYPE, new Long(room.getType()));
@@ -160,10 +158,6 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 		}
 		else if (moderated == null) {
 			room.setModerated(true);
-		}
-		Object recording = moduleConfiguration.get(CONFIG_ROOM_RECORDING);
-		if(recording instanceof Boolean) {
-			room.setRecordingAllowed(((Boolean)recording).booleanValue());
 		}
 		Object comment = moduleConfiguration.get(CONFIG_ROOM_COMMENT);
 		if(comment instanceof String) {

@@ -24,7 +24,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -55,11 +54,8 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 	private StaticTextElement roomNameEl, roomTypeEl, roomSizeEl;
 	private StaticTextElement moderationModeEl, roomCommentEl;
 	private StaticTextElement avModeEl;
-	private MultipleSelectionElement recordingEl;
 	private CloseableModalController cmc;
 	private OpenMeetingsRoomEditController editController;
-	
-	private final String[] recordingKeys = {"xx"};
 	
 	private final OLATResourceable course;
 	private final OpenMeetingsCourseNode courseNode;
@@ -105,9 +101,6 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 		roomTypeEl = uifactory.addStaticTextElement("room.type", "room.type", "", formLayout);
 		roomSizeEl = uifactory.addStaticTextElement("room.size", "room.size", "", formLayout);
 		moderationModeEl = uifactory.addStaticTextElement("mod", "room.moderation.mode", "", formLayout);
-		String[] recordingValues = new String[]{ translate("room.recording.enabled") };
-		recordingEl = uifactory.addCheckboxesHorizontal("recording", "room.recording", formLayout, recordingKeys, recordingValues);
-		recordingEl.setEnabled(false);
 		avModeEl = uifactory.addStaticTextElement("avmode", "room.av.mode", "", formLayout);
 		roomCommentEl = uifactory.addStaticTextElement("room.comment", "room.comment", "", formLayout);
 
@@ -145,8 +138,6 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 		}
 		moderationModeEl.setValue(modVal);
 		moderationModeEl.setVisible(hasRoom);
-		recordingEl.select(recordingKeys[0], hasRoom && room.isRecordingAllowed());
-		recordingEl.setVisible(hasRoom);
 		String avVal;
 		if(hasRoom) {
 			avVal = room.isAudioOnly() ? translate("room.av.audio") : translate("room.av.video");
@@ -155,7 +146,6 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 		}
 		avModeEl.setValue(avVal);
 		avModeEl.setVisible(hasRoom);
-		if (hasRoom) avModeEl.setEnabled(false);
 		roomCommentEl.setValue(hasRoom ? room.getComment() : "");
 		roomCommentEl.setVisible(hasRoom);
 		editLink.setI18nKey(hasRoom ? "edit.room" : "create.room");

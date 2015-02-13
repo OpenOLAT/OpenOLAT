@@ -103,7 +103,9 @@ public class ContactMessage {
 	}
 	
 	private ContactList cleanEMailList(ContactList emailList) {
-		for (Identity identity: emailList.getIdentiEmails().values()) {
+		Identity[] identityMails = emailList.getIdentiEmails().values()
+				.toArray(new Identity[emailList.getIdentiEmails().size()]);
+		for (Identity identity:identityMails) {
 			if(MailHelper.isDisabledMailAddress(identity, null)) {
 				emailList.remove(identity);
 				if(!disabledIdentities.contains(identity)) {
