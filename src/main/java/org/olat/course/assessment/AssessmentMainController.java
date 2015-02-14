@@ -1265,12 +1265,14 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			gtn.setTitle(translate("menu.groupfocus"));
 			gtn.setUserObject(CMD_GROUPFOCUS);
 			gtn.setAltText(translate("menu.groupfocus.alt"));
+			gtn.setCssClass("o_sel_assessment_tool_groups");
 			root.addChild(gtn);
 	
 			gtn = new GenericTreeNode();
 			gtn.setTitle(translate("menu.nodefocus"));
 			gtn.setUserObject(CMD_NODEFOCUS);
 			gtn.setAltText(translate("menu.nodefocus.alt"));
+			gtn.setCssClass("o_sel_assessment_tool_nodes");
 			root.addChild(gtn);
 		}
 		
@@ -1279,6 +1281,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			gtn.setTitle(translate("menu.userfocus"));
 			gtn.setUserObject(CMD_USERFOCUS);
 			gtn.setAltText(translate("menu.userfocus.alt"));
+			gtn.setCssClass("o_sel_assessment_tool_users");
 			root.addChild(gtn);
 		}
 

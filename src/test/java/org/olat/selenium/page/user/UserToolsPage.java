@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
-import org.jboss.arquillian.graphene.page.Page;
 import org.junit.Assert;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.graphene.OOGraphene;
@@ -44,9 +43,14 @@ public class UserToolsPage {
 
 	@Drone
 	private WebDriver browser;
-
-	@Page
-	private UserSettingsPage userSettings;
+	
+	public UserToolsPage() {
+		//
+	}
+	
+	public UserToolsPage(WebDriver browser) {
+		this.browser = browser;
+	}
 	
 	/**
 	 * Check if the user menu is displayed.
@@ -75,8 +79,8 @@ public class UserToolsPage {
 			WebElement toolbarCaretLink = toolbarCaretLinks.get(0);
 			Assert.assertNotNull(toolbarCaretLink);
 			toolbarCaretLink.click();
-			OOGraphene.waitingTransition();
-			OOGraphene.waitElement(mySettingsClassName);
+			OOGraphene.waitingTransition(browser);
+			OOGraphene.waitElement(mySettingsClassName, browser);
 		}
 		assertOnUserTools();
 		return this;
@@ -91,16 +95,16 @@ public class UserToolsPage {
 		WebElement mySettingsLink = browser.findElement(mySettingsClassName);
 		Assert.assertTrue(mySettingsLink.isDisplayed());
 		mySettingsLink.click();
-		OOGraphene.waitBusy();
-		return userSettings;
+		OOGraphene.waitBusy(browser);
+		return new UserSettingsPage(browser);
 	}
 	
 	public UserSettingsPage openPassword() {
 		WebElement passwordLink = browser.findElement(By.className("o_sel_user_tools-mypassword"));
 		Assert.assertTrue(passwordLink.isDisplayed());
 		passwordLink.click();
-		OOGraphene.waitBusy();
-		return userSettings;
+		OOGraphene.waitBusy(browser);
+		return new UserSettingsPage(browser);
 	}
 	
 	public PortfolioPage openPortfolio() {
@@ -108,7 +112,7 @@ public class UserToolsPage {
 		WebElement passwordLink = browser.findElement(linkBy);
 		Assert.assertTrue(passwordLink.isDisplayed());
 		passwordLink.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		
 		WebElement main = browser.findElement(By.id("o_main"));
 		return Graphene.createPageFragment(PortfolioPage.class, main);
@@ -124,6 +128,6 @@ public class UserToolsPage {
 		By logoutBy = By.className("o_logout");
 		WebElement logoutLink = browser.findElement(logoutBy);
 		Graphene.guardHttp(logoutLink).click();
-		OOGraphene.waitElement(LoginPage.loginFormBy);
+		OOGraphene.waitElement(LoginPage.loginFormBy, browser);
 	}
 }

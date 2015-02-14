@@ -1,9 +1,29 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
 package org.olat.selenium.page.qti;
 
 import java.util.List;
 
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -31,11 +51,40 @@ public class QTI12Page {
 		return new QTI12Page(browser);
 	}
 	
+	public QTI12Page passE4(UserVO user) {
+		start()
+			.selectItem(0)
+			.answerSingleChoice(0)
+			.saveAnswer()
+			.selectItem(1)
+			.answerMultipleChoice(0, 2)
+			.saveAnswer()
+			.selectItem(2)
+			.answerKPrim(true, false, true, false)
+			.saveAnswer()
+			.selectItem(3)
+			.answerFillin("not")
+			.saveAnswer()
+			.endTest();
+		
+		//check results page
+		By resultsBy = By.id("o_qti_results");
+		OOGraphene.waitElement(resultsBy, browser);
+		WebElement resultsEl = browser.findElement(resultsBy);
+		Assert.assertTrue(resultsEl.getText().contains(user.getFirstName()));
+		//close the test
+		closeTest();
+		//all answers are correct -> passed
+		WebElement passedEl = browser.findElement(By.cssSelector("tr.o_state.o_passed"));
+		Assert.assertTrue(passedEl.isDisplayed());
+		return this;
+	}
+	
 	public QTI12Page start() {
 		By startBy = By.cssSelector("a.o_sel_start_qti12_test");
 		WebElement startButton = browser.findElement(startBy);
 		startButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -45,7 +94,7 @@ public class QTI12Page {
 		Assert.assertTrue(itemList.size() > position);
 		WebElement itemEl = itemList.get(position);
 		itemEl.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -55,7 +104,7 @@ public class QTI12Page {
 		Assert.assertTrue(optionList.size() > selectPosition);
 		WebElement optionEl = optionList.get(selectPosition);
 		optionEl.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -66,7 +115,7 @@ public class QTI12Page {
 			Assert.assertTrue(optionList.size() > selectPosition);
 			optionList.get(selectPosition).click();
 		}
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -83,7 +132,7 @@ public class QTI12Page {
 				optionFalseEl.click();
 			}
 		}
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -94,7 +143,7 @@ public class QTI12Page {
 		for(int i=0; i<texts.length; i++) {
 			holesList.get(i).sendKeys(texts[i]);
 		}
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -102,7 +151,7 @@ public class QTI12Page {
 		By saveAnswerBy = By.name("olat_fosm");
 		WebElement saveAnswerButton = browser.findElement(saveAnswerBy);
 		saveAnswerButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -121,7 +170,7 @@ public class QTI12Page {
 		By endBy = By.cssSelector("div.o_button_group.o_button_group_right a");
 		WebElement endButton = browser.findElement(endBy);
 		endButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 }

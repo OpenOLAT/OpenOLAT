@@ -59,7 +59,7 @@ public class RepositoryEditDescriptionPage {
 	
 	public void clickToolbarBack() {
 		browser.findElement(NavigationPage.toolbarBackBy).click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		
 		WebElement main = browser.findElement(By.id("o_main_wrapper"));
 		Assert.assertTrue(main.isDisplayed());

@@ -440,6 +440,6 @@ public class UserSettingsTest {
 		//we are in user management
 		browser.navigate().back();
 		//we are in "My courses", check
-		OOGraphene.waitElement(NavigationPage.myCoursesAssertBy);
+		OOGraphene.waitElement(NavigationPage.myCoursesAssertBy, browser);
 	}
 }

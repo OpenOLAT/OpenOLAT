@@ -202,7 +202,7 @@ public class CourseTest {
 		Assert.assertEquals(5, nodes.size());
 		for(WebElement node:nodes) {
 			node.click();
-			OOGraphene.waitBusy();
+			OOGraphene.waitBusy(browser);
 		}
 	}
 	

@@ -51,7 +51,7 @@ public class PortfolioPage {
 		WebElement myMapsLink = browser.findElement(myMapsBy);
 		Assert.assertTrue(myMapsLink.isDisplayed());
 		myMapsLink.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -64,7 +64,7 @@ public class PortfolioPage {
 		WebElement myMapsLink = browser.findElement(myMapsBy);
 		Assert.assertTrue(myMapsLink.isDisplayed());
 		myMapsLink.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -75,10 +75,10 @@ public class PortfolioPage {
 	 */
 	public ArtefactWizardPage createTextArtefact() {
 		By addTextArtefactBy = By.className("o_sel_add_text_artfeact");
-		OOGraphene.waitElement(addTextArtefactBy);
+		OOGraphene.waitElement(addTextArtefactBy, browser);
 		WebElement addTextArtefactLink = browser.findElement(addTextArtefactBy);
 		addTextArtefactLink.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		
 		return ArtefactWizardPage.getWizard(browser);
 	}
@@ -89,20 +89,20 @@ public class PortfolioPage {
 	 */
 	public ArtefactWizardPage createLearningJournal() {
 		By addJournalArtefactBy = By.className("o_sel_add_liveblog_artfeact");
-		OOGraphene.waitElement(addJournalArtefactBy);
+		OOGraphene.waitElement(addJournalArtefactBy, browser);
 		WebElement addJournalArtefactLink = browser.findElement(addJournalArtefactBy);
 		addJournalArtefactLink.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		
 		return ArtefactWizardPage.getWizard(browser);
 	}
 	
 	public ArtefactWizardPage createFileArtefact() {
 		By addJournalArtefactBy = By.className("o_sel_add_upload_artfeact");
-		OOGraphene.waitElement(addJournalArtefactBy);
+		OOGraphene.waitElement(addJournalArtefactBy, browser);
 		WebElement addJournalArtefactLink = browser.findElement(addJournalArtefactBy);
 		addJournalArtefactLink.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		
 		return ArtefactWizardPage.getWizard(browser);
 	}
@@ -116,7 +116,7 @@ public class PortfolioPage {
 		By linkArtefactBy = By.cssSelector("a.o_eportfolio_add_link.o_eportfolio_link");
 		WebElement linkArtefactLink = browser.findElement(linkArtefactBy);
 		linkArtefactLink.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -128,7 +128,7 @@ public class PortfolioPage {
 		By addAsArtefactBy = By.className("o_sel_add_artfeact");
 		WebElement addAsArtefactButton = browser.findElement(addAsArtefactBy);
 		addAsArtefactButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -147,11 +147,11 @@ public class PortfolioPage {
 		
 		//create default map
 		By createDefaultMapBy = By.className("o_sel_create_default_map");
-		OOGraphene.waitElement(createDefaultMapBy);
+		OOGraphene.waitElement(createDefaultMapBy, browser);
 		WebElement createDefaultMapLink = browser.findElement(createDefaultMapBy);
 		Assert.assertTrue(createDefaultMapLink.isDisplayed());
 		createDefaultMapLink.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		
 		//title
 		By titleBy = By.xpath("//div[contains(@class,'o_sel_add_map_window')]//form//input[@type='text']");
@@ -166,7 +166,7 @@ public class PortfolioPage {
 		WebElement saveButton = browser.findElement(saveBy);
 		Assert.assertTrue(saveButton.isDisplayed());
 		saveButton.click();
-		OOGraphene.waitElement(By.className("o_eportfolio_map"));
+		OOGraphene.waitElement(By.className("o_eportfolio_map"), browser);
 		return this;
 	}
 	
@@ -183,7 +183,7 @@ public class PortfolioPage {
 			WebElement editorButton = browser.findElement(editorBy);
 			Assert.assertTrue(editorButton.isDisplayed());
 			editorButton.click();
-			OOGraphene.waitBusy();
+			OOGraphene.waitBusy(browser);
 		}
 		return this;
 	}
@@ -199,7 +199,7 @@ public class PortfolioPage {
 		}
 		By editTemplateBy = By.className("o_sel_ep_edit_map");
 		browser.findElement(editTemplateBy).click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -211,7 +211,7 @@ public class PortfolioPage {
 		By toolsMenuCaretBy = By.cssSelector("a.o_sel_repository_tools");
 		browser.findElement(toolsMenuCaretBy).click();
 		By toolsMenuBy = By.cssSelector("ul.o_sel_repository_tools");
-		OOGraphene.waitElement(toolsMenuBy);
+		OOGraphene.waitElement(toolsMenuBy, browser);
 		return this;
 	}
 	
@@ -231,7 +231,7 @@ public class PortfolioPage {
 		Assert.assertNotNull(mapEl);
 		WebElement openLink = mapEl.findElement(openBy);
 		openLink.click();
-		OOGraphene.waitBusy();	
+		OOGraphene.waitBusy(browser);	
 		return this;
 	}
 	
@@ -253,7 +253,7 @@ public class PortfolioPage {
 		}
 		Assert.assertNotNull(selectedNode);
 		selectedNode.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -268,7 +268,7 @@ public class PortfolioPage {
 		}
 		Assert.assertNotNull(selectedStructLink);
 		selectedStructLink.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -283,7 +283,7 @@ public class PortfolioPage {
 		List<WebElement> level2Nodes = browser.findElements(pageNodeBy);
 		Assert.assertFalse(level2Nodes.isEmpty());
 		level2Nodes.get(0).click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -324,7 +324,7 @@ public class PortfolioPage {
 		By newStructureBy = By.cssSelector("div.o_ep_toc_editor a.o_eportfolio_add_link.o_ep_struct_icon");
 		WebElement newStructureButton = browser.findElement(newStructureBy);
 		newStructureButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		
 		//fill the form
 		return fillElementForm(title, description);
@@ -350,7 +350,7 @@ public class PortfolioPage {
 		By saveBy = By.cssSelector("form div.o_ep_struct_editor button.btn-primary");
 		WebElement saveButton = browser.findElement(saveBy);
 		saveButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 }

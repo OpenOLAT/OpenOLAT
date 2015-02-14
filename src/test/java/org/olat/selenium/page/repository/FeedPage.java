@@ -50,7 +50,7 @@ public class FeedPage {
 	
 	
 	public static FeedPage getFeedPage(WebDriver browser) {
-		OOGraphene.waitElement(feedBy);
+		OOGraphene.waitElement(feedBy, browser);
 		return new FeedPage(browser);
 	}
 	
@@ -97,7 +97,7 @@ public class FeedPage {
 	
 	private FeedPage newExternalFeed(By configureExternalButton, String url) {
 		browser.findElement(configureExternalButton).click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		//fill the URL input field
 		By urlField = By.xpath("(//div[contains(@class,'modal-body')]//form//input[@type='text'])[2]");
 		WebElement urlEl = browser.findElement(urlField);
@@ -109,7 +109,7 @@ public class FeedPage {
 		//save the settings
 		By saveButton = By.xpath("//div[contains(@class,'modal-body')]//form//button[contains(@class,'btn-primary')]");
 		browser.findElement(saveButton).click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -117,14 +117,14 @@ public class FeedPage {
 		//click the button to create a feed
 		By feedButton = By.xpath("//div[contains(@class,'o_blog_no_posts')]//a[contains(@href,'feed.make.internal')]");
 		browser.findElement(feedButton).click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public FeedPage addPost() {
 		By newItemButton = By.className("o_sel_feed_item_new");
 		browser.findElement(newItemButton).click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -142,7 +142,7 @@ public class FeedPage {
 	public FeedPage publishPost() {
 		By publishButton = By.cssSelector(".o_sel_blog_form button.btn-primary");
 		browser.findElement(publishButton).click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -154,7 +154,7 @@ public class FeedPage {
 		By addAsArtefactBy = By.className("o_eportfolio_add");
 		WebElement addAsArtefactButton = browser.findElement(addAsArtefactBy);
 		addAsArtefactButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return ArtefactWizardPage.getWizard(browser);
 	}
 	
@@ -167,7 +167,7 @@ public class FeedPage {
 		List<WebElement> monthLinks = browser.findElements(monthBy);
 		Assert.assertFalse(monthLinks.isEmpty());
 		monthLinks.get(0).click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 }

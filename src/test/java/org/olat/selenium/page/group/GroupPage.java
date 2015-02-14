@@ -59,7 +59,7 @@ public class GroupPage {
 		By adminBy = By.xpath("//div[contains(@class,'o_tree')]//a[contains(@href,'MENU_ADMINISTRATION')]");
 		WebElement adminLink = browser.findElement(adminBy);
 		adminLink.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -77,7 +77,7 @@ public class GroupPage {
 		By chatBy = By.cssSelector("li.o_sel_group_chat a");
 		WebElement chatNode = browser.findElement(chatBy);
 		chatNode.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return new IMPage(browser);
 	}
 	
@@ -87,7 +87,7 @@ public class GroupPage {
 		if(owners) {
 			showOwnersEl.click();
 		}
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		
 		By showParticipants = By.cssSelector(".o_sel_group_show_participants input[type='checkbox']");
 		WebElement showParticipantsEl = browser.findElement(showParticipants);
@@ -95,7 +95,7 @@ public class GroupPage {
 			showParticipantsEl.click();
 		}
 		
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -105,7 +105,7 @@ public class GroupPage {
 		Assert.assertFalse(checkTools.isEmpty());
 		for(WebElement checkTool:checkTools) {
 			checkTool.click();
-			OOGraphene.waitBusy();
+			OOGraphene.waitBusy(browser);
 		}
 		return this;
 	}
@@ -114,20 +114,20 @@ public class GroupPage {
 		By addMemberBy = By.className("o_sel_group_add_member");
 		WebElement addMemberButton = browser.findElement(addMemberBy);
 		addMemberButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return new MembersWizardPage(browser);
 	}
 	
 	private void openAdminTab(By marker) {
 		By navBarAdmin = By.cssSelector("div.o_tabbed_pane ul>li>a");
-		OOGraphene.waitElement(navBarAdmin);
+		OOGraphene.waitElement(navBarAdmin, browser);
 		List<WebElement> tabLinks = browser.findElements(navBarAdmin);
 		Assert.assertFalse(tabLinks.isEmpty());
 
 		boolean found = false;
 		for(WebElement tabLink:tabLinks) {
 			tabLink.click();
-			OOGraphene.waitBusy();
+			OOGraphene.waitBusy(browser);
 			List<WebElement> markerEls = browser.findElements(marker);
 			if(markerEls.size() > 0) {
 				found = true;

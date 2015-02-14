@@ -61,7 +61,7 @@ public class ArtefactWizardPage {
 		Assert.assertTrue(next.isDisplayed());
 		Assert.assertTrue(next.isEnabled());
 		next.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		OOGraphene.closeBlueMessageWindow(browser);
 		return this;
 	}
@@ -75,7 +75,7 @@ public class ArtefactWizardPage {
 		Assert.assertTrue(finish.isDisplayed());
 		Assert.assertTrue(finish.isEnabled());
 		finish.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		OOGraphene.closeBlueMessageWindow(browser);
 		return this;
 	}
@@ -140,6 +140,6 @@ public class ArtefactWizardPage {
 		}
 		Assert.assertNotNull(linkToClick);
 		linkToClick.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 	}
 }

@@ -17,55 +17,47 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.selenium.page.repository;
-
-import java.util.List;
+package org.olat.selenium.page.course;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.selenium.page.group.MembersWizardPage;
+import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 /**
- * Fragment to control the details view of a repository entry.
+ * 
+ * Drive the members management page in course
  * 
  * 
- * Initial date: 20.06.2014<br>
+ * Initial date: 12.02.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class RepositoryDetailsPage {
-	
-	public static final By launchBy = By.className("o_sel_author_launch");
-	public static final By editBy = By.className("o_sel_author_edit_entry");
-	
+public class MembersPage {
 
 	@Drone
 	private WebDriver browser;
 	
-	public RepositoryDetailsPage assertOnTitle(String displayName) {
-		List<WebElement> titleList = browser.findElements(By.tagName("h1"));
-		Assert.assertNotNull(titleList);
-		Assert.assertEquals(1, titleList.size());
-		
-		WebElement title = titleList.get(0);
-		Assert.assertTrue(title.isDisplayed());
-		Assert.assertTrue(title.getText().contains(displayName));
-		return this;
+	public MembersWizardPage addMember() {
+		By addMemberBy = By.className("o_sel_course_add_member");
+		WebElement addMemberButton = browser.findElement(addMemberBy);
+		addMemberButton.click();
+		OOGraphene.waitBusy(browser);
+		return new MembersWizardPage(browser);
 	}
 	
-	public void launch() {
-		browser.findElement(launchBy).click();
-		OOGraphene.waitBusy(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
-	}
-	
-	public void edit() {
-		browser.findElement(editBy).click();
-		OOGraphene.waitBusy(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
+	/**
+	 * Add a user by username as participant
+	 * 
+	 * @param user
+	 */
+	public void quickAdd(UserVO user) {
+		addMember()
+			.searchMember(user)
+			.next().next().next().finish();
 	}
 
 }

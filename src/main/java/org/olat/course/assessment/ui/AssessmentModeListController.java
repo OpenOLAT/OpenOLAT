@@ -107,7 +107,9 @@ public class AssessmentModeListController extends FormBasicController implements
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		addLink = uifactory.addFormLink("add", "add", "add.mode", null, formLayout, Link.BUTTON);
+		addLink.setElementCssClass("o_sel_assessment_mode_add");
 		addLink.setIconLeftCSS("o_icon o_icon_add");
+		
 		
 		deleteLink = uifactory.addFormLink("delete", "delete", "delete.mode", null, formLayout, Link.BUTTON);
 		deleteLink.setIconLeftCSS("o_icon o_icon_delete");

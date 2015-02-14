@@ -52,7 +52,7 @@ public class MyCoursesPage {
 		By searchBy = By.className("o_sel_mycourses_search");
 		WebElement searchLink = browser.findElement(searchBy);
 		searchLink.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -60,7 +60,7 @@ public class MyCoursesPage {
 		By catalogBy = By.className("o_sel_mycourses_catlog");
 		WebElement catalogLink = browser.findElement(catalogBy);
 		catalogLink.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -70,7 +70,7 @@ public class MyCoursesPage {
 		if(extendedSearchButtons.size() > 0 && extendedSearchButtons.get(0).isDisplayed()) {
 			WebElement extendedSearchButton = extendedSearchButtons.get(0);
 			extendedSearchButton.click();
-			OOGraphene.waitBusy();
+			OOGraphene.waitBusy(browser);
 		}
 
 		By titleBy = By.cssSelector(".o_sel_repo_search_displayname input[type='text']");
@@ -80,7 +80,7 @@ public class MyCoursesPage {
 		By searchButton = By.className("o_sel_repo_search_button");
 		WebElement searchEl = browser.findElement(searchButton);
 		searchEl.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -95,7 +95,7 @@ public class MyCoursesPage {
 		}
 		Assert.assertNotNull(linkToSelect);
 		linkToSelect.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -111,7 +111,7 @@ public class MyCoursesPage {
 		}
 		Assert.assertNotNull(selectCategory);
 		selectCategory.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -119,7 +119,7 @@ public class MyCoursesPage {
 		By startBy = By.className("o_start");
 		WebElement startLink = browser.findElement(startBy);
 		startLink.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 	}
 
 }

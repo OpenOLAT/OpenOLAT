@@ -70,7 +70,7 @@ public class ForumPage {
 		By newThreadBy = By.className("o_sel_forum_thread_new");
 		WebElement newThreadButton = browser.findElement(newThreadBy);
 		newThreadButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		
 		//fill the form
 		By titleBy = By.cssSelector("div.modal-content form input[type='text']");
@@ -83,7 +83,7 @@ public class ForumPage {
 		By saveBy = By.cssSelector("div.modal-content form button.btn-primary");
 		WebElement saveButton = browser.findElement(saveBy);
 		saveButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -95,8 +95,7 @@ public class ForumPage {
 		By addAsArtefactBy = By.className("o_eportfolio_add");
 		WebElement addAsArtefactButton = browser.findElement(addAsArtefactBy);
 		addAsArtefactButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return ArtefactWizardPage.getWizard(browser);
 	}
-
 }

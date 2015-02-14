@@ -97,7 +97,7 @@ public class LoginPage {
 		By loginBy = By.id("o_fiooolat_login_button");
 		WebElement loginButton = browser.findElement(loginBy);
 		Graphene.guardHttp(loginButton).click();
-		OOGraphene.waitElement(authOrDisclaimerXPath);
+		OOGraphene.waitElement(authOrDisclaimerXPath, browser);
 		
 		//wipe out disclaimer
 		List<WebElement> disclaimer = browser.findElements(disclaimerXPath);
@@ -107,7 +107,7 @@ public class LoginPage {
 			
 			WebElement acknowledgeButton = browser.findElement(disclaimerButtonXPath);
 			Graphene.guardHttp(acknowledgeButton).click();
-			OOGraphene.waitElement(authXPath);
+			OOGraphene.waitElement(authXPath, browser);
 		}
 		return this;
 	}
@@ -121,7 +121,7 @@ public class LoginPage {
 		Assert.assertTrue(resume.isDisplayed());
 		
 		resume.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -130,7 +130,7 @@ public class LoginPage {
 		if(resumes.size() > 0 && resumes.get(0).isDisplayed()) {
 			WebElement resume = resumes.get(0);
 			resume.click();
-			OOGraphene.waitBusy();
+			OOGraphene.waitBusy(browser);
 		}
 		return this;
 	}
