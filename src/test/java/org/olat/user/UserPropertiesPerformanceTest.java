@@ -28,9 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
-import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Constants;
 import org.olat.core.commons.persistence.DB;
@@ -42,6 +40,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <h3>Description:</h3>
@@ -59,6 +58,10 @@ public class UserPropertiesPerformanceTest extends OlatTestCase {
 
 	private static OLog log = Tracing.createLoggerFor(UserPropertiesPerformanceTest.class);
 	
+	@Autowired
+	private UserManager um;
+	@Autowired
+	private BaseSecurity securityManager;
 
 
 	/**
@@ -75,12 +78,9 @@ public class UserPropertiesPerformanceTest extends OlatTestCase {
 			
 		int numberUsers = 50000;
 		int measureSteps = 10000;
-		
-		UserManager um = UserManager.getInstance();
-		BaseSecurity sm = BaseSecurityManager.getInstance();
 
 		// create users group
-		sm.createAndPersistNamedSecurityGroup(Constants.GROUP_OLATUSERS);
+		securityManager.createAndPersistNamedSecurityGroup(Constants.GROUP_OLATUSERS);
 		
 		String username;
 		String institution;
@@ -112,7 +112,7 @@ public class UserPropertiesPerformanceTest extends OlatTestCase {
 			user.setProperty(UserConstants.INSTITUTIONALEMAIL, username + "@" + institution);
 			user.setProperty(UserConstants.INSTITUTIONALNAME, institution);
 			user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, username + "-" + institution);
-			AuthHelper.createAndPersistIdentityAndUserWithUserGroup(username, null, "hokuspokus", user);
+			securityManager.createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(username, null, "hokuspokus", user);
 
 			if (i % 10 == 0) {
 				// flush now to obtimize performance
@@ -132,7 +132,7 @@ public class UserPropertiesPerformanceTest extends OlatTestCase {
 				attributes.put(UserConstants.TELMOBILE, "123456");
 				String[] providers = new String[]{BaseSecurityModule.getDefaultAuthProviderIdentifier()};
 				long querystart = System.currentTimeMillis();
-				List<Identity> result = sm.getIdentitiesByPowerSearch(null, attributes, true, null, null, providers, null, null, null, null, null);
+				List<Identity> result = securityManager.getIdentitiesByPowerSearch(null, attributes, true, null, null, providers, null, null, null, null, null);
 				long querytime = System.currentTimeMillis() - querystart;
 				assertEquals(i/2, result.size());
 				DBFactory.getInstance().closeSession();
@@ -146,7 +146,7 @@ public class UserPropertiesPerformanceTest extends OlatTestCase {
 				// find all users with power search query. the query will match on all
 				// users since the user value search is a like '%value%' search
 				querystart = System.currentTimeMillis();
-				result = sm.getIdentitiesByPowerSearch(null, attributes, false, null, null, providers, null, null, null, null, null);
+				result = securityManager.getIdentitiesByPowerSearch(null, attributes, false, null, null, providers, null, null, null, null, null);
 				querytime = System.currentTimeMillis() - querystart;
 				assertEquals(i, result.size());
 				DBFactory.getInstance().closeSession();
@@ -160,7 +160,7 @@ public class UserPropertiesPerformanceTest extends OlatTestCase {
 				// find all users with an empty power search query: this should remove
 				// all joins from the query (except the user join)
 				querystart = System.currentTimeMillis();
-				result = sm.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, null);
+				result = securityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, null);
 				querytime = System.currentTimeMillis() - querystart;
 				assertEquals(i, result.size());
 				DBFactory.getInstance().closeSession();
@@ -175,7 +175,7 @@ public class UserPropertiesPerformanceTest extends OlatTestCase {
 				// attribute that limits the result to one user is the login name
 				attributes.put(UserConstants.GENDER, (i % 2 == 0 ? "m" : "f"));
 				querystart = System.currentTimeMillis();
-				result = sm.getIdentitiesByPowerSearch(i/2 + "test", attributes, true, null, null, providers, null, null, null, null, null);
+				result = securityManager.getIdentitiesByPowerSearch(i/2 + "test", attributes, true, null, null, providers, null, null, null, null, null);
 				querytime = System.currentTimeMillis() - querystart;
 				assertEquals(1, result.size());
 				DBFactory.getInstance().closeSession();
@@ -189,7 +189,7 @@ public class UserPropertiesPerformanceTest extends OlatTestCase {
 				// find one specific user via a dedicated search via login name. No
 				// joining is done (automatic by hibernate)
 				querystart = System.currentTimeMillis();
-				ident = sm.findIdentityByName(i/2 + "test");
+				ident = securityManager.findIdentityByName(i/2 + "test");
 				querytime = System.currentTimeMillis() - querystart;
 				assertNotNull(ident);
 				DBFactory.getInstance().closeSession();
@@ -209,10 +209,8 @@ public class UserPropertiesPerformanceTest extends OlatTestCase {
 				
 			}
 		}
-		DB db = DBFactory.getInstance();
-		db.closeSession();
+			DB db = DBFactory.getInstance();
+			db.closeSession();
 		}
 	}
-	
-
 }

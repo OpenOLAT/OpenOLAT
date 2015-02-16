@@ -43,6 +43,7 @@
 	<bean id="selfRegistrationManager" class="org.olat.registration.RegistrationManager">
 		<property name="registrationModule" ref="registrationModule" />
 		<property name="mailManager" ref="mailManager"/>
+		<property name="securityManager" ref="baseSecurityManager"/>
 	</bean>
 
 	<bean id="registrationPresetUsername.byEmail"
