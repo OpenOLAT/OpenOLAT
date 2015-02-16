@@ -97,8 +97,10 @@ public class COCourseNode extends AbstractAccessableCourseNode {
      *      org.olat.course.run.userview.UserCourseEnvironment,
      *      org.olat.course.run.userview.NodeEvaluation)
      */
+    @Override
     public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
             UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
+    	updateModuleConfigDefaults(false);
         Controller controller;
         // Do not allow guests to send anonymous emails
         Roles roles = ureq.getUserSession().getRoles();
@@ -203,7 +205,9 @@ public class COCourseNode extends AbstractAccessableCourseNode {
     /**
      * @see org.olat.course.nodes.CourseNode#isConfigValid()
      */
+    @Override
     public StatusDescription isConfigValid() {
+    	updateModuleConfigDefaults(false);
         /*
          * first check the one click cache
          */
