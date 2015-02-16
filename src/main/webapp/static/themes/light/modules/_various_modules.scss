@@ -348,8 +348,15 @@ ul.o_certificates li {
 		a {	
 			margin-right: 1.5em;
 		}
-		form {
-			margin-top: $padding-base-vertical;	
+		.form-group {
+			margin-bottom: $padding-small-vertical;
+		}
+		.form-control {
+			border: 0;
+			background: none;
+			padding: 0;
+			height: auto;
+			@include box-shadow(none);
 		}
 	}
 	.o_blog_posts {

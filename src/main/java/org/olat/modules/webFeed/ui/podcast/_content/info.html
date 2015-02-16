@@ -18,21 +18,23 @@
 		<div class="o_desc o_info">$!helper.getFeedDescriptionForBrowser()</div>
 		#end
 		
-		#if ( !$feed.isUndefined() && $helper.getFeedUrl() )
+		#if ( !$feed.isUndefined() && $helper.getFeedUrl() )			
 		<div class="o_subscription">
-			<a href="$!helper.getFeedUrl()" class="o_nowrap" target="_blank">
-				<i class="o_icon o_icon-fw o_icon_rss"></i> 
-				$r.translate("podcast.subscribe.to.this.feed")
-			</a>
-			<a href="$!helper.getITunesUrl()" class="o_nowrap" target="_blank">
-				<i class="o_icon o_icon-fw o_icon_apple"></i> 		
-				iTunes
-			</a>
-			<a href="$!helper.getYahooUrl()" class="o_nowrap" target="_blank">
-				<i class="o_icon o_icon-fw o_icon_yahoo"></i> 		
-				yahoo
-			</a>
 			$r.render("feedUrlComponent")
+		</div>
+		<div class="btn-group btn-group-xs">
+			<a href="$!helper.getFeedUrl()" class="btn btn-default " target="_blank" title="$r.translateInAttribute("podcast.subscribe.to.this.feed")">
+				<i class="o_icon o_icon-fw o_icon_rss"></i> 
+				$r.translate("podcast.subscribe.rss")
+			</a>
+			<a href="$!helper.getITunesUrl("itpc")" class="btn btn-default " target="_blank" title="$r.translateInAttribute("podcast.subscribe.to.this.feed")">
+				<i class="o_icon o_icon-fw o_icon_apple"></i> 		
+				$r.translate("podcast.subscribe.itunes")
+			</a>
+			<a href="$!helper.getITunesUrl("feed")" class="btn btn-default " target="_blank" title="$r.translateInAttribute("podcast.subscribe.to.this.feed")">
+				<i class="o_icon o_icon-fw o_icon_mobile"></i> 		
+				$r.translate("podcast.subscribe.feed")
+			</a>
 		</div>
 		#end	
 	</div>
