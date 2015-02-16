@@ -34,6 +34,8 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -60,9 +62,11 @@ import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.TemporaryKey;
+import org.olat.shibboleth.ShibbolethDispatcher;
 import org.olat.shibboleth.ShibbolethModule;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -115,12 +119,14 @@ class ImportStep00 extends BasicStep {
 		private List<TransientIdentity> newIdents;
 		private List<UserPropertyHandler> userPropertyHandlers;
 
-		private final UserManager um;
+		@Autowired
+		private UserManager um;
+		@Autowired
+		private BaseSecurity securityManager;
 
 		public ImportStepForm00(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
 			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
 			flc.setTranslator(getTranslator());
-			um = UserManager.getInstance();
 			initForm(ureq);
 		}
 
@@ -213,9 +219,17 @@ class ImportStep00 extends BasicStep {
 					if (parts.length > columnId) {
 						pwd = parts[columnId].trim();
 						if (StringHelper.containsNonWhitespace(pwd)) {
-							if(pwd.startsWith(UserImportController.SHIBBOLETH_MARKER)
-									&& ShibbolethModule.isEnableShibbolethLogins()) {
-								//something to check?
+							if(pwd.startsWith(UserImportController.SHIBBOLETH_MARKER) && ShibbolethModule.isEnableShibbolethLogins()) {
+								String authusername = pwd.substring(UserImportController.SHIBBOLETH_MARKER.length());
+								Authentication auth = securityManager.findAuthenticationByAuthusername(authusername, ShibbolethDispatcher.PROVIDER_SHIB);
+								if(auth != null) {
+									String authLogin = auth.getIdentity().getName();
+									if(!login.equals(authLogin)) {
+										textAreaElement.setErrorKey("error.shibbolet.name.inuse", new String[] { String.valueOf(i + 1), authusername });
+										importDataError = true;
+										break;
+									}
+								}
 							} else if (!UserManager.getInstance().syntaxCheckOlatPassword(pwd)) {
 								textAreaElement.setErrorKey("error.pwd", new String[] { String.valueOf(i + 1), pwd });
 								importDataError = true;

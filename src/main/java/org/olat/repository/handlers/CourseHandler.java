@@ -194,7 +194,7 @@ public class CourseHandler implements RepositoryHandler {
 				}
 			}
 			eval.setValid(visitor.isValid());
-		} catch (IOException e) {
+		} catch (IOException | IllegalArgumentException e) {
 			log.error("", e);
 		}
 		return eval;

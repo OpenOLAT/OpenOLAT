@@ -41,7 +41,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 public class PathUtils {
 	
 	public static Path visit(File file, String filename, FileVisitor<Path> visitor) 
-	throws IOException {
+	throws IOException, IllegalArgumentException {
 		if(!StringHelper.containsNonWhitespace(filename)) {
 			filename = file.getName();
 		}

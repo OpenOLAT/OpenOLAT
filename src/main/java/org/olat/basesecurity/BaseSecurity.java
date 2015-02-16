@@ -301,6 +301,33 @@ public interface BaseSecurity {
 	 * @return the new identity
 	 */
 	public Identity createAndPersistIdentityAndUser(String username, String externalId, User user, String provider, String authusername, String password);
+	
+	/**
+	 * Persists the given user, creates an identity for it and adds the user to
+	 * the users system group
+	 * 
+	 * @param loginName
+	 * @param externalId
+	 * @param pwd null: no OLAT authentication is generated. If not null, the password will be 
+	 *   encrypted and and an OLAT authentication is generated.
+	 * @param newUser unpersisted users
+	 * @return Identity
+	 */
+	public Identity createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(String loginName, String externalId, String pwd, User newUser);
+	
+	/**
+	 * Persists the given user, creates an identity for it and adds the user to
+	 * the users system group, create an authentication for an external provider
+	 * 
+	 * @param loginName
+	 * @param externalId
+	 * @param provider
+	 * @param authusername
+	 * @param newUser
+	 * @return
+	 */
+	public Identity createAndPersistIdentityAndUserWithUserGroup(String loginName, String externalId, String provider, String authusername, User newUser);
+	
 
 	/**
 	 * Return the List of associated Authentications.
