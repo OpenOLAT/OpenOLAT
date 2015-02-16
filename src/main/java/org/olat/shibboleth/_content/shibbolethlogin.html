@@ -166,7 +166,11 @@ wayf_additional_idps = [$additionalIDPs];
 function o_overrideShibSubmitButtonStyle() {
        jQuery( function() {              
                try {
-                       jQuery('#wayf_submit_button').addClass('btn btn-primary').css('float','left');
+            	   	   // add bootstrap styling to wayf pulldown
+                       jQuery('#wayf_submit_button').addClass('btn btn-primary o_small').css('float','left');
+   					   jQuery("#user_idp").addClass("form-control");
+					   jQuery("#wayf_div").width("auto").css({backgroundColor: 'transparent', border: 0, padding: 0});
+                       // make submit button durty when idp is selected
                        jQuery('#user_idp').on('change',function(){ jQuery('#wayf_submit_button').addClass('o_button_dirty')});
                } catch (e) {
                        // ignore, only style, not important
