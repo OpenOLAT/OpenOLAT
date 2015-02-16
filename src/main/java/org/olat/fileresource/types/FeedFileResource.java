@@ -96,7 +96,7 @@ public abstract class FeedFileResource extends FileResource {
 					eval.setDescription(feed.getDescription());
 				}
 			}
-		} catch (IOException e) {
+		} catch (IOException | IllegalArgumentException e) {
 			log.error("", e);
 		}
 		return eval;

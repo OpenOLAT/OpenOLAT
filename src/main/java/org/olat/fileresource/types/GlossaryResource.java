@@ -94,7 +94,7 @@ public class GlossaryResource extends FileResource {
 				eval.setValid(true);
 			}
 			eval.setValid(visitor.isValid());
-		} catch (IOException e) {
+		} catch (IOException | IllegalArgumentException e) {
 			log.error("", e);
 		}
 		return eval;
