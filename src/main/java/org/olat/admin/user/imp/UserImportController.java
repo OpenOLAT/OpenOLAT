@@ -32,10 +32,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
@@ -62,6 +60,7 @@ import org.olat.shibboleth.ShibbolethDispatcher;
 import org.olat.shibboleth.ShibbolethModule;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -84,12 +83,17 @@ public class UserImportController extends BasicController {
 	private Link startLink;
 	
 	private StepsMainRunController importStepsController;
-	
-	private final BaseSecurity securityManager;
-	private final OLATAuthManager olatAuthManager;
-	private final BusinessGroupService businessGroupService;
-	private final UserManager um;
-	private final DB dbInstance;
+
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private UserManager um;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private OLATAuthManager olatAuthManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
 	/**
 	 * @param ureq
@@ -99,11 +103,6 @@ public class UserImportController extends BasicController {
 	 */
 	public UserImportController(UserRequest ureq, WindowControl wControl, boolean canCreateOLATPassword) {
 		super(ureq, wControl);
-		um = UserManager.getInstance();
-		dbInstance = CoreSpringFactory.getImpl(DB.class);
-		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
-		olatAuthManager = CoreSpringFactory.getImpl(OLATAuthManager.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		this.canCreateOLATPassword = canCreateOLATPassword;
 		mainVC = createVelocityContainer("importindex");
 		startLink = LinkFactory.createButton("import.start", mainVC, this);
@@ -173,11 +172,11 @@ public class UserImportController extends BasicController {
 		Identity ident;
 		if(pwd != null && pwd.startsWith(SHIBBOLETH_MARKER) && ShibbolethModule.isEnableShibbolethLogins()) {
 			String uniqueID = pwd.substring(SHIBBOLETH_MARKER.length());
-			ident = AuthHelper.createAndPersistIdentityAndUserWithUserGroup(login, ShibbolethDispatcher.PROVIDER_SHIB, uniqueID, newUser);
+			ident = securityManager.createAndPersistIdentityAndUserWithUserGroup(login, null, ShibbolethDispatcher.PROVIDER_SHIB, uniqueID, newUser);
 			report.incrementCreatedUser();
 			report.incrementUpdatedShibboletAuthentication();
 		} else {
-			ident = AuthHelper.createAndPersistIdentityAndUserWithUserGroup(login, null, pwd, newUser);
+			ident = securityManager.createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(login, null, pwd, newUser);
 			report.incrementCreatedUser();
 		}
 		return ident;
@@ -221,23 +220,27 @@ public class UserImportController extends BasicController {
 		return userToUpdate.getIdentity();
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 	// child controllers disposed by basic controller
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source == startLink){
+		if (source == startLink) {
+			doOpenImportWizard(ureq);
+		}
+	}
+	
+	private void doOpenImportWizard(UserRequest ureq) {
 		// use fallback translator for user property translation
 		setTranslator(um.getPropertyHandlerTranslator(getTranslator()));
 		userPropertyHandlers = um.getUserPropertyHandlersFor(usageIdentifyer, true);
-		
+				
 		Step start = new ImportStep00(ureq, canCreateOLATPassword);
 		// callback executed in case wizard is finished.
 		StepRunnerCallback finish = new StepRunnerCallback() {
+			@Override
 			public Step execute(UserRequest ureq1, WindowControl wControl1, StepsRunContext runContext) {
 				// all information to do now is within the runContext saved
 				ImportReport report = new ImportReport();
@@ -293,10 +296,9 @@ public class UserImportController extends BasicController {
 		};
 
 		importStepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("title"), "o_sel_user_import_wizard");
+			translate("title"), "o_sel_user_import_wizard");
 		listenTo(importStepsController);
-			getWindowControl().pushAsModalDialog(importStepsController.getInitialComponent());
-		}
+		getWindowControl().pushAsModalDialog(importStepsController.getInitialComponent());
 	}
 	
 	private Collection<Identity> getIdentities(List<Identity> allIdents) {
@@ -376,7 +378,10 @@ public class UserImportController extends BasicController {
 		}
 
 		public void addError(String error) {
-			errors.add(error);
+			if(StringHelper.containsNonWhitespace(error)) {
+				errors.add(error);
+				hasErrors = true;
+			}
 		}
 
 		public int getNumOfUpdatedUser() {

@@ -23,7 +23,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
 import org.olat.core.commons.persistence.DB;
@@ -124,7 +123,7 @@ public class EmailCheckPerformanceTest extends OlatTestCase {
 				user.setProperty(UserConstants.INSTITUTIONALEMAIL, username + "@" + institution);
 				user.setProperty(UserConstants.INSTITUTIONALNAME, institution);
 				user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, username + "-" + institution);
-				AuthHelper.createAndPersistIdentityAndUserWithUserGroup(username, null, "hokuspokus", user);
+				securityManager.createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(username, null, "hokuspokus", user);
 	
 				if (i % 10 == 0) {
 					// flush now to obtimize performance

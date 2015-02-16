@@ -28,7 +28,6 @@ package org.olat.admin.user;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
@@ -63,6 +62,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.user.ChangePasswordForm;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *  Initial Date:  Jul 31, 2003
@@ -154,6 +154,9 @@ class NewUserForm extends FormBasicController {
 	private TextElement psw2TextElement;
 	private SingleSelection languageSingleSelection;
 	private SelectionElement authCheckbox;
+	
+	@Autowired
+	private BaseSecurity securityManager;
 
 	/**
 	 * 
@@ -343,7 +346,7 @@ class NewUserForm extends FormBasicController {
 		newUser.getPreferences().setLanguage(lang);
 		newUser.getPreferences().setInformSessionTimeout(true);
 		// Save everything in database
-		Identity ident = AuthHelper.createAndPersistIdentityAndUserWithUserGroup(username, null, pwd, newUser);
+		Identity ident = securityManager.createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(username, null, pwd, newUser);
 		return ident;
 	}
 	
