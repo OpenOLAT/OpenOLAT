@@ -424,7 +424,11 @@ public class RepositoryServiceImpl implements RepositoryService {
 	public int countMembers(RepositoryEntryRef re, String... roles) {
 		return reToGroupDao.countMembers(re, roles);
 	}
-	
+
+	@Override
+	public int countMembers(List<? extends RepositoryEntryRef> res) {
+		return reToGroupDao.countMembers(res);
+	}
 
 	@Override
 	public List<Long> getAuthors(RepositoryEntryRef re) {

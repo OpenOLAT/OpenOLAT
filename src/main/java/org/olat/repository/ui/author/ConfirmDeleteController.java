@@ -33,9 +33,15 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.repository.ErrorList;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.EntryChangedEvent.Change;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -48,43 +54,50 @@ public class ConfirmDeleteController extends FormBasicController {
 	private FormLink deleteButton;
 	private MultipleSelectionElement acknowledgeEl;
 	
+	private final int numOfMembers;
 	private final boolean notAllDeleteable;
-	private final List<AuthoringEntryRow> rows;
+	private final List<RepositoryEntry> rows;
 	
-	public ConfirmDeleteController(UserRequest ureq, WindowControl wControl, List<AuthoringEntryRow> rows, boolean notAllDeleteable) {
-		super(ureq, wControl);
+	@Autowired
+	private RepositoryService repositoryService;
+	
+	public ConfirmDeleteController(UserRequest ureq, WindowControl wControl, List<RepositoryEntry> rows, boolean notAllDeleteable) {
+		super(ureq, wControl, "confirm_delete");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		
 		this.rows = rows;
 		this.notAllDeleteable = notAllDeleteable;
+		numOfMembers = repositoryService.countMembers(rows);
 		
 		initForm(ureq);
 	}
 
-	public List<AuthoringEntryRow> getRows() {
-		return rows;
-	}
-
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(notAllDeleteable) {
-			setFormWarning("dialog.confirm.delete.notAllDeleteable");
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layout = (FormLayoutContainer)formLayout;
+			layout.contextPut("notAllDeleteable", new Boolean(notAllDeleteable));
+			layout.contextPut("numOfMembers", Integer.toString(numOfMembers));
+
+			FormLayoutContainer layoutCont = FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());
+			formLayout.add("confirm", layoutCont);
+			layoutCont.setRootForm(mainForm);
+			
+			StringBuilder message = new StringBuilder();
+			for(RepositoryEntry row:rows) {
+				if(message.length() > 0) message.append(", ");
+				message.append(StringHelper.escapeHtml(row.getDisplayname()));
+			}
+			uifactory.addStaticTextElement("rows", "details.delete.entries", message.toString(), layoutCont);
+			
+			String[] acknowledge = new String[] { translate("details.delete.acknowledge.msg") };
+			acknowledgeEl = uifactory.addCheckboxesHorizontal("confirm", "details.delete.acknowledge", layoutCont, new String[]{ "" },  acknowledge );
+			
+			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+			layoutCont.add(buttonsCont);
+			deleteButton = uifactory.addFormLink("details.delete", buttonsCont, Link.BUTTON);
+			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		}
-		
-		StringBuilder message = new StringBuilder();
-		for(AuthoringEntryRow row:rows) {
-			if(message.length() > 0) message.append(", ");
-			message.append(StringHelper.escapeHtml(row.getDisplayname()));
-		}
-		uifactory.addStaticTextElement("rows", "details.delete.entries", message.toString(), formLayout);
-		
-		String acknowledge = translate("details.delete.acknowledge.msg");
-		acknowledgeEl = uifactory.addCheckboxesHorizontal("confirm", "details.delete.acknowledge", formLayout, new String[]{ "" }, new String[] { acknowledge });
-		
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add(buttonsCont);
-		deleteButton = uifactory.addFormLink("details.delete", buttonsCont, Link.BUTTON);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
 	@Override
@@ -109,6 +122,7 @@ public class ConfirmDeleteController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(deleteButton == source) {
 			if(validateFormLogic(ureq)) {
+				doCompleteDelete(ureq);
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		}
@@ -122,5 +136,27 @@ public class ConfirmDeleteController extends FormBasicController {
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+	
+	private void doCompleteDelete(UserRequest ureq) {
+		boolean allOk = true;
+		Roles roles = ureq.getUserSession().getRoles();
+		for(RepositoryEntry row:rows) {
+			RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
+			if(entry != null) {
+				ErrorList errors = repositoryService.delete(entry, getIdentity(), roles, getLocale());
+				if (errors.hasErrors()) {
+					allOk = false;
+				} else {
+					fireEvent(ureq, new EntryChangedEvent(entry, getIdentity(), Change.deleted));
+				}
+			}
+		}
+		
+		if(allOk) {
+			showInfo("info.entry.deleted");
+		} else {
+			showWarning("info.could.not.delete.entry");
+		}
 	}
 }
