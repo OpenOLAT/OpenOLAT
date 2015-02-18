@@ -74,7 +74,7 @@
 	<div class="o_extlink clearfix o_block_large_bottom">
 		<h4>$r.translate("cat.externalLink")</h4>
 		#if($extLink)
-			<div class="o_copy_code">
+			<div class="o_copy_code o_nowrap">
 				<a href="javascript:;" id="o_extlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode"></i></a>
 				$extLink
 				<script type="text/javascript">
@@ -87,7 +87,7 @@
 			</div>
 		#end
 		#if($guestExtLink)
-			<div class="o_copy_code">
+			<div class="o_copy_code o_nowrap">
 				<a href="javascript:;" id="o_guestextlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode"></i></a>
 				${guestExtLink}
 				<script type="text/javascript">
