@@ -28,6 +28,11 @@
 		<h4 class="panel-title">$r.translate("dropbox.title")</h4>
 	</div>
 	<div id="collapseDropbox" class="panel-collapse collapse in">
+		#if($hasNotification == true)
+		<div class="panel-body">
+			$r.render("subscription")
+		</div>
+		#end
 		<div class="panel-body">
 			$r.render("dropbox")
 		</div>  	

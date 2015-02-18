@@ -43,7 +43,14 @@ public class CoursePageFragment {
 	public static final By courseRun = By.className("o_course_run");
 	public static final By toolsMenu = By.cssSelector("ul.o_sel_course_tools");
 	public static final By toolsMenuCaret = By.cssSelector("a.o_sel_course_tools");
+
+	public static final By settingsMenu = By.cssSelector("ul.o_sel_course_settings");
+	public static final By settingsMenuCaret = By.cssSelector("a.o_sel_course_settings");
+	
 	public static final By editCourseBy = By.className("o_sel_course_editor");
+	public static final By assessmentToolBy = By.className("o_sel_course_assessment_tool");
+	public static final By assessmentModeBy = By.className("o_sel_course_assessment_mode");
+	public static final By membersCourseBy = By.className("o_sel_course_members");
 	public static final By treeContainerBy = By.id("o_main_left_content");
 	
 	@Drone
@@ -60,12 +67,12 @@ public class CoursePageFragment {
 	
 	public static CoursePageFragment getCourse(WebDriver browser, URL deploymentUrl, CourseVO course) {
 		browser.navigate().to(deploymentUrl.toExternalForm() + "url/RepositoryEntry/" + course.getRepoEntryKey());
-		OOGraphene.waitElement(courseRun);
+		OOGraphene.waitElement(courseRun, browser);
 		return new CoursePageFragment(browser);
 	}
 	
 	public static CoursePageFragment getCourse(WebDriver browser) {
-		OOGraphene.waitElement(courseRun);
+		OOGraphene.waitElement(courseRun, browser);
 		return new CoursePageFragment(browser);
 	}
 	
@@ -102,7 +109,17 @@ public class CoursePageFragment {
 	 */
 	public CoursePageFragment openToolsMenu() {
 		browser.findElement(toolsMenuCaret).click();
-		OOGraphene.waitElement(toolsMenu);
+		OOGraphene.waitElement(toolsMenu, browser);
+		return this;
+	}
+	
+	/**
+	 * Open the settings drop-down
+	 * @return
+	 */
+	public CoursePageFragment openSettingsMenu() {
+		browser.findElement(settingsMenuCaret).click();
+		OOGraphene.waitElement(settingsMenu, browser);
 		return this;
 	}
 	
@@ -115,10 +132,48 @@ public class CoursePageFragment {
 			openToolsMenu();
 		}
 		browser.findElement(editCourseBy).click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		OOGraphene.closeBlueMessageWindow(browser);
 
 		WebElement main = browser.findElement(By.id("o_main"));
 		return Graphene.createPageFragment(CourseEditorPageFragment.class, main);
+	}
+	
+	/**
+	 * Click the members link in the tools drop-down
+	 * @return
+	 */
+	public MembersPage members() {
+		if(!browser.findElement(toolsMenu).isDisplayed()) {
+			openToolsMenu();
+		}
+		browser.findElement(membersCourseBy).click();
+		OOGraphene.waitBusy(browser);
+
+		WebElement main = browser.findElement(By.id("o_main"));
+		return Graphene.createPageFragment(MembersPage.class, main);
+	}
+	
+	public AssessmentToolPage assessmentTool() {
+		if(!browser.findElement(toolsMenu).isDisplayed()) {
+			openToolsMenu();
+		}
+		browser.findElement(assessmentToolBy).click();
+		OOGraphene.waitBusy(browser);
+
+		WebElement main = browser.findElement(By.id("o_main"));
+		Assert.assertTrue(main.isDisplayed());
+		return new AssessmentToolPage(browser);
+	}
+	
+	public AssessmentModePage assessmentConfiguration() {
+		if(!browser.findElement(settingsMenu).isDisplayed()) {
+			openSettingsMenu();
+		}
+		browser.findElement(assessmentModeBy).click();
+		OOGraphene.waitBusy(browser);
+
+		WebElement main = browser.findElement(By.id("o_main_container"));
+		return Graphene.createPageFragment(AssessmentModePage.class, main);
 	}
 }

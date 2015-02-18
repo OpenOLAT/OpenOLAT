@@ -182,17 +182,17 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		Date endWithFollowupTime = assessmentModeManager.evaluateFollowupTime(end, followup);
 		if(beginWithLeadTime.compareTo(now) > 0) {
 			status = Status.none;
-		} else if(beginWithLeadTime.compareTo(now) <= 0 && begin.compareTo(now) >= 0 && !beginWithLeadTime.equals(begin)) {
+		} else if(beginWithLeadTime.compareTo(now) <= 0 && begin.compareTo(now) > 0 && !beginWithLeadTime.equals(begin)) {
 			status = Status.leadtime;
-		} else if(begin.compareTo(now) <= 0 && end.compareTo(now) >= 0) {
+		} else if(begin.compareTo(now) <= 0 && end.compareTo(now) > 0) {
 			status = Status.assessment;
-		} else if(end.compareTo(now) <= 0 && endWithFollowupTime.compareTo(now) >= 0) {
+		} else if(end.compareTo(now) <= 0 && endWithFollowupTime.compareTo(now) > 0) {
 			if(followup > 0) {
 				status = Status.followup;
 			} else {
 				status = Status.end;
 			}
-		} else if(endWithFollowupTime.compareTo(now) < 0) {
+		} else if(endWithFollowupTime.compareTo(now) <= 0) {
 			status = Status.end;
 		} else {
 			status = null;
@@ -203,14 +203,22 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 
 	private AssessmentMode sendEvent(AssessmentMode mode, Date now, boolean forceStatus) {
 		if(mode.getBeginWithLeadTime().compareTo(now) > 0) {
-			mode = ensureStatusOfMode(mode, Status.none);
-			sendEvent(AssessmentModeNotificationEvent.BEFORE, mode,
-					assessmentModeManager.getAssessedIdentityKeys(mode));
-		} else if(mode.getBeginWithLeadTime().compareTo(now) <= 0 && mode.getBegin().compareTo(now) >= 0
+			//none
+			Status status = mode.getStatus();
+			if(status != Status.leadtime && status != Status.assessment && status != Status.followup && status != Status.end) {
+				mode = ensureStatusOfMode(mode, Status.none);
+				sendEvent(AssessmentModeNotificationEvent.BEFORE, mode,
+						assessmentModeManager.getAssessedIdentityKeys(mode));
+			}
+		} else if(mode.getBeginWithLeadTime().compareTo(now) <= 0 && mode.getBegin().compareTo(now) > 0
 				&& mode.getBeginWithLeadTime().compareTo(mode.getBegin()) != 0) {
-			mode = ensureStatusOfMode(mode, Status.leadtime);
-			sendEvent(AssessmentModeNotificationEvent.LEADTIME, mode,
-					assessmentModeManager.getAssessedIdentityKeys(mode));
+			//leading time
+			Status status = mode.getStatus();
+			if(status != Status.assessment && status != Status.followup && status != Status.end) {
+				mode = ensureStatusOfMode(mode, Status.leadtime);
+				sendEvent(AssessmentModeNotificationEvent.LEADTIME, mode,
+						assessmentModeManager.getAssessedIdentityKeys(mode));
+			}
 		} else if(mode.isManualBeginEnd() && !forceStatus) {
 			//what to do in manual mode
 			if(mode.getStatus() == Status.followup) {
@@ -221,7 +229,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 				}
 			}
 		} else {
-			if(mode.getBegin().compareTo(now) <= 0 && mode.getEnd().compareTo(now) >= 0) {
+			if(mode.getBegin().compareTo(now) <= 0 && mode.getEnd().compareTo(now) > 0) {
 				mode = ensureStatusOfMode(mode, Status.assessment);
 				sendEvent(AssessmentModeNotificationEvent.START_ASSESSMENT, mode,
 						assessmentModeManager.getAssessedIdentityKeys(mode));
@@ -235,7 +243,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 				if(now.after(cal.getTime())) {
 					sendEvent(AssessmentModeNotificationEvent.STOP_WARNING, mode, null);
 				}
-			} else if(mode.getEnd().compareTo(now) <= 0 && mode.getEndWithFollowupTime().compareTo(now) >= 0) {
+			} else if(mode.getEnd().compareTo(now) <= 0 && mode.getEndWithFollowupTime().compareTo(now) > 0) {
 				if(mode.getFollowupTime() > 0) {
 					mode = ensureStatusOfMode(mode, Status.followup);
 					sendEvent(AssessmentModeNotificationEvent.STOP_ASSESSMENT, mode,
@@ -245,7 +253,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 					sendEvent(AssessmentModeNotificationEvent.END, mode,
 							assessmentModeManager.getAssessedIdentityKeys(mode));
 				}
-			} else if(mode.getEndWithFollowupTime().compareTo(now) < 0) {
+			} else if(mode.getEndWithFollowupTime().compareTo(now) <= 0) {
 				mode = ensureStatusOfMode(mode, Status.end);
 				sendEvent(AssessmentModeNotificationEvent.END, mode,
 						assessmentModeManager.getAssessedIdentityKeys(mode));
@@ -276,7 +284,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	public boolean canStart(AssessmentMode assessmentMode) {
 		boolean canStart;
 		Status status = assessmentMode.getStatus();
-		if(status == Status.end || status == Status.assessment) {
+		if(status == Status.assessment || status == Status.followup || status == Status.end) {
 			canStart = false;
 		} else {
 			canStart = true;

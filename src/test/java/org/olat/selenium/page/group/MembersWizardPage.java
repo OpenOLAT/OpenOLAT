@@ -51,7 +51,7 @@ public class MembersWizardPage {
 		Assert.assertTrue(next.isDisplayed());
 		Assert.assertTrue(next.isEnabled());
 		next.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		OOGraphene.closeBlueMessageWindow(browser);
 		return this;
 	}
@@ -61,7 +61,7 @@ public class MembersWizardPage {
 		Assert.assertTrue(finish.isDisplayed());
 		Assert.assertTrue(finish.isEnabled());
 		finish.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		OOGraphene.closeBlueMessageWindow(browser);
 		return this;
 	}
@@ -74,7 +74,7 @@ public class MembersWizardPage {
 	public MembersWizardPage searchMember(UserVO user) {
 		//Search by username
 		By usernameBy = By.cssSelector(".o_sel_usersearch_searchform input[type='text']");
-		OOGraphene.waitElement(usernameBy);
+		OOGraphene.waitElement(usernameBy, browser);
 		
 		List<WebElement> searchFields = browser.findElements(usernameBy);
 		Assert.assertFalse(searchFields.isEmpty());
@@ -83,7 +83,7 @@ public class MembersWizardPage {
 		By searchBy = By.cssSelector(".o_sel_usersearch_searchform a.btn-default");
 		WebElement searchButton = browser.findElement(searchBy);
 		searchButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		
 		//check
 		By checkAllBy = By.cssSelector("div.modal div.o_table_wrapper input[type='checkbox']");

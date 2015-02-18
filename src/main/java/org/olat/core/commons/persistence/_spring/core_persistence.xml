@@ -22,7 +22,6 @@
 		<mapping-file>org/olat/group/BusinessGroupImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/group/model/BusinessGroupViewImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/lock/pessimistic/PLockImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/resource/references/ReferenceImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/OLATResourceImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/accesscontrol/model/Offer.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/accesscontrol/model/AccessMethod.hbm.xml</mapping-file>
@@ -120,6 +119,7 @@
 		<class>org.olat.repository.model.RepositoryEntryStatistics</class>
 		<class>org.olat.repository.model.RepositoryEntryLightImpl</class>
 		<class>org.olat.repository.model.RepositoryEntryMembership</class>
+		<class>org.olat.resource.references.ReferenceImpl</class>
 		<class>org.olat.instantMessaging.model.InstantMessageImpl</class>
 		<class>org.olat.instantMessaging.model.ImPreferencesImpl</class>
 		<class>org.olat.instantMessaging.model.RosterEntryImpl</class>

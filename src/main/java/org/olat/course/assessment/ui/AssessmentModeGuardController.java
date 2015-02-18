@@ -90,6 +90,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		mainVC.contextPut("guards", guards);
 		
 		mainContinueButton = LinkFactory.createCustomLink("continue-main", "continue-main", "current.mode.continue", Link.BUTTON, mainVC, this);
+		mainContinueButton.setElementCssClass("o_sel_assessment_continue");
 		mainContinueButton.setCustomEnabledLinkCSS("btn btn-primary");
 		mainContinueButton.setCustomDisabledLinkCSS("o_disabled btn btn-default");
 		mainContinueButton.setVisible(false);
@@ -237,6 +238,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			Date beginWithLeadTime = mode.getBeginWithLeadTime();
 			Date end = mode.getEnd();
 			Date endWithLeadTime = mode.getEndWithFollowupTime();
+			
 			if(beginWithLeadTime.compareTo(now) <= 0 && begin.compareTo(now) > 0) {
 				state = Status.leadtime.name();
 				go.setEnabled(false);
@@ -249,13 +251,13 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 				go.setVisible(true);
 				cont.setEnabled(false);
 				cont.setVisible(false);
-			} else if(end.compareTo(now) <= 0 && endWithLeadTime.compareTo(now) >= 0) {
+			} else if(end.compareTo(now) <= 0 && endWithLeadTime.compareTo(now) > 0) {
 				state = Status.followup.name();
 				go.setEnabled(false);
 				go.setVisible(false);
 				cont.setEnabled(false);
 				cont.setVisible(false);
-			} else if(endWithLeadTime.before(now) || Status.end == mode.getStatus()) {
+			} else if(endWithLeadTime.compareTo(now) <= 0 || Status.end == mode.getStatus()) {
 				state = Status.end.name();
 				go.setEnabled(false);
 				go.setVisible(false);
@@ -278,6 +280,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		String id = Long.toString(CodeHelper.getRAMUniqueID());
 
 		Link goButton = LinkFactory.createCustomLink("go-" + id, "go", "current.mode.start", Link.BUTTON, mainVC, this);
+		goButton.setElementCssClass("o_sel_assessment_start");
 		goButton.setCustomEnabledLinkCSS("btn btn-primary");
 		goButton.setCustomDisabledLinkCSS("o_disabled btn btn-default");
 		

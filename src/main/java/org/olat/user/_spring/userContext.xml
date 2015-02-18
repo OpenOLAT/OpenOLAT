@@ -289,6 +289,7 @@
 		<property name="baseSecurityManager" ref="baseSecurityManager" />
 		<property name="mailManager" ref="mailManager"/>
 		<property name="groupDao" ref="groupDao"/>
+		<property name="registrationManager" ref="selfRegistrationManager" />
 		<property name="keepUserLoginAfterDeletion" value="${keepUserLoginAfterDeletion}" />
 		<property name="keepUserEmailAfterDeletion" value="${keepUserEmailAfterDeletion}" />
 	</bean>

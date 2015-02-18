@@ -28,6 +28,7 @@ package org.olat.repository.handlers;
 import java.io.File;
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -70,7 +71,7 @@ public abstract class FileHandler implements RepositoryHandler {
 
 	@Override
 	public boolean readyToDelete(OLATResourceable res, Identity identity, Roles roles, Locale locale, ErrorList errors) {
-		String referencesSummary = ReferenceManager.getInstance().getReferencesToSummary(res, locale);
+		String referencesSummary = CoreSpringFactory.getImpl(ReferenceManager.class).getReferencesToSummary(res, locale);
 		if (referencesSummary != null) {
 			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);
 			errors.setError(translator.translate("details.delete.error.references",

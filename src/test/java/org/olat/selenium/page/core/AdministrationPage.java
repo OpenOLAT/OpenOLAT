@@ -54,11 +54,11 @@ public class AdministrationPage {
 		//system tree node
 		WebElement systemLink = browser.findElement(By.xpath("//div[contains(@class,'o_tree')]//a[contains(@href,'systemParent/')]"));
 		systemLink.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		//cache tree node
 		WebElement cacheLink = browser.findElement(By.cssSelector(".o_sel_caches span.o_tree_level_label_leaf>a"));
 		cacheLink.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		//table
 		WebElement emptyLink = null;
 		List<WebElement> rows = browser.findElements(By.cssSelector(".o_table_wrapper table>tbody>tr"));
@@ -70,11 +70,11 @@ public class AdministrationPage {
 		Assert.assertNotNull(emptyLink);
 		//click to empty
 		emptyLink.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		//confirm
 		WebElement yesLink = browser.findElement(By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@href,'link_0')]"));
 		yesLink.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 }

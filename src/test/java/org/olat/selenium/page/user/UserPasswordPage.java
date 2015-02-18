@@ -42,7 +42,7 @@ public class UserPasswordPage {
 	private WebDriver browser;
 	
 	public static UserPasswordPage getUserPasswordPage(WebDriver browser) {
-		OOGraphene.waitElement(oldPasswordBy);
+		OOGraphene.waitElement(oldPasswordBy, browser);
 		WebElement main = browser.findElement(By.id("o_main"));
 		return Graphene.createPageFragment(UserPasswordPage.class, main);
 	}
@@ -62,7 +62,7 @@ public class UserPasswordPage {
 		By saveButtonBy = By.cssSelector("div.form-inline.o_sel_home_pwd_buttons button");
 		WebElement saveButton = browser.findElement(saveButtonBy);
 		saveButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}

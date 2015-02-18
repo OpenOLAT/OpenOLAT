@@ -50,6 +50,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.Identity;
@@ -106,6 +108,9 @@ public class ProjectListController extends BasicController implements GenericEve
 	private int nbrSelectedProjects;
 	private boolean isParticipantInAnyProject;
 	private CloseableCalloutWindowController calloutCtrl;
+	private Project currentProject;
+	
+	private DialogBoxController noDeselectWarning;
 
 	private final ProjectBrokerMailer projectBrokerMailer;
 	private final ProjectGroupManager projectGroupManager;
@@ -257,12 +262,16 @@ public class ProjectListController extends BasicController implements GenericEve
 				mainPanel.popContent();
 				updateProjectListModelOf(tableController, urequest.getIdentity());			
 			}
+		} else if (source == noDeselectWarning) {
+			if(DialogBoxUIFactory.isOkEvent(event)){
+				handleEnrollAction(urequest, currentProject);
+			}
 		}	
 	}
 
 
 	private void handleTableEvent(UserRequest urequest, TableEvent te) {
-		Project currentProject = (Project)tableController.getTableDataModel().getObject(te.getRowId());
+		currentProject = (Project)tableController.getTableDataModel().getObject(te.getRowId());
 		if ( projectBrokerManager.existsProject( currentProject.getKey() ) ) {
 			handleTableEventForProject(urequest, te, currentProject);
 		} else {
@@ -278,6 +287,10 @@ public class ProjectListController extends BasicController implements GenericEve
 		} else if ( te.getActionId().equals(TABLE_ACTION_ACCOUNT_MANAGER)) {
 			activateUserController(currentProject, urequest, te);
 		} else if ( te.getActionId().equals(TABLE_ACTION_SELECT)) {
+			if(!projectGroupManager.isDeselectionAllowed(currentProject)){
+				noDeselectWarning = activateOkCancelDialog(urequest, translate("info.projectbroker.no.deselect.title"), translate("info.projectbroker.no.deselect"), noDeselectWarning);
+				return;
+			}
 			handleEnrollAction(urequest, currentProject);
 		} else if ( te.getActionId().equals(TABLE_ACTION_CANCEL_SELECT)) {
 			handleCancelEnrollmentAction(urequest, currentProject);

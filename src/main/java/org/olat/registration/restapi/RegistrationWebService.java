@@ -106,7 +106,7 @@ public class RegistrationWebService {
 		
 		MailManager mailM = CoreSpringFactory.getImpl(MailManager.class);
 		UserManager userManager = UserManager.getInstance();
-		RegistrationManager rm = RegistrationManager.getInstance();
+		RegistrationManager rm = CoreSpringFactory.getImpl(RegistrationManager.class);
 		
 		boolean foundUser = userManager.userExist(email);
 		// get remote address

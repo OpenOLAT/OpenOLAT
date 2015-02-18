@@ -340,10 +340,14 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 		if (!isEnrollmentDateOk(project,moduleConfig) ){
 			return false;
 		}
+		// disable deselection link
+		if(!projectGroupManager.isDeselectionAllowed(project)){
+			return false;
+		} else {
 		if (moduleConfig.isAcceptSelectionManually()) {
 		  // could only cancel enrollment, when projectleader did not accept yet
 			return projectGroupManager.isProjectCandidate(identity, project) && !project.getState().equals(Project.STATE_ASSIGNED);
-		} else {
+		}
 		  // could always cancel enrollment
 			return projectGroupManager.isProjectParticipant(identity, project); 
 		}

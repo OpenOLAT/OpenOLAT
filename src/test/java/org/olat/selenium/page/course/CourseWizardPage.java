@@ -60,7 +60,7 @@ public class CourseWizardPage {
 		Assert.assertTrue(next.isDisplayed());
 		Assert.assertTrue(next.isEnabled());
 		next.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		OOGraphene.closeBlueMessageWindow(browser);
 		return this;
 	}
@@ -74,7 +74,7 @@ public class CourseWizardPage {
 		Assert.assertTrue(finish.isDisplayed());
 		Assert.assertTrue(finish.isEnabled());
 		finish.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		OOGraphene.closeBlueMessageWindow(browser);
 		return this;
 	}
@@ -85,7 +85,7 @@ public class CourseWizardPage {
 		Assert.assertFalse(checkAll.isEmpty());
 		for(WebElement check:checkAll) {
 			check.click();
-			OOGraphene.waitBusy();
+			OOGraphene.waitBusy(browser);
 		}
 		
 		return this;

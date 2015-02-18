@@ -70,14 +70,11 @@ public class CourseEditorPageFragment {
 	@Drone
 	private WebDriver browser;
 	
-	@FindBy(id="o_main_left_content")
-	private WebElement treeContainer;
-	
 	@FindBy(className="o_course_editor")
 	private WebElement editor;
 	
 	public static CourseEditorPageFragment getEditor(WebDriver browser) {
-		OOGraphene.waitElement(editorBy);
+		OOGraphene.waitElement(editorBy, browser);
 		WebElement main = browser.findElement(By.id("o_main"));
 		return Graphene.createPageFragment(CourseEditorPageFragment.class, main);
 	}
@@ -96,7 +93,7 @@ public class CourseEditorPageFragment {
 		WebElement createButton = browser.findElement(createNodeButton);
 		Assert.assertTrue(createButton.isDisplayed());
 		createButton.click();
-		OOGraphene.waitElement(createNodeModalBy);
+		OOGraphene.waitElement(createNodeModalBy, browser);
 		
 		//modal
 		WebElement createNodeModal = browser.findElement(createNodeModalBy);
@@ -106,7 +103,7 @@ public class CourseEditorPageFragment {
 		WebElement createNodeLink = createNodeModal.findElement(node);
 		Assert.assertTrue(createNodeLink.isDisplayed());
 		createNodeLink.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -129,7 +126,7 @@ public class CourseEditorPageFragment {
 		
 		By saveButton = By.cssSelector("button.o_sel_node_editor_submit");
 		browser.findElement(saveButton).click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		
 		return this;
 	}
@@ -147,7 +144,7 @@ public class CourseEditorPageFragment {
 		a_a:
 		for(WebElement tabLink:tabLinks) {
 			tabLink.click();
-			OOGraphene.waitBusy();
+			OOGraphene.waitBusy(browser);
 			for(By chooseRepoEntriesButton: chooseRepoEntriesButtonList) {
 				List<WebElement> chooseRepoEntry = browser.findElements(chooseRepoEntriesButton);
 				if(chooseRepoEntry.size() > 0) {
@@ -180,6 +177,15 @@ public class CourseEditorPageFragment {
 	}
 	
 	/**
+	 * @see chooseResource
+	 * @param resourceTitle
+	 * @return
+	 */
+	public CourseEditorPageFragment chooseTest(String resourceTitle) {
+		return chooseResource(chooseTestButton, resourceTitle);
+	}
+	
+	/**
 	 * Click the choose button, which open the resource chooser. Select
 	 * the "My entries" segment, search the rows for the resource title,
 	 * and select it.
@@ -191,11 +197,11 @@ public class CourseEditorPageFragment {
 	 */
 	public CourseEditorPageFragment chooseResource(By chooseButton, String resourceTitle) {
 		browser.findElement(chooseButton).click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		//popup
 		WebElement popup = browser.findElement(By.className("o_sel_search_referenceable_entries"));
 		popup.findElement(By.cssSelector("a.o_sel_repo_popup_my_resources")).click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		
 		//find the row
 		WebElement selectRow = null;
@@ -212,7 +218,7 @@ public class CourseEditorPageFragment {
 		//find the select in the row
 		WebElement selectLink = selectRow.findElement(By.xpath("//a[contains(@href,'rtbSelectLink')]"));
 		selectLink.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		
 		//double check that the resource is selected (search the preview link)
 		By previewLink = By.xpath("//a/span[text()[contains(.,'" + resourceTitle + "')]]");
@@ -265,7 +271,7 @@ public class CourseEditorPageFragment {
 		By editBy = By.className("o_sel_edit_map");
 		WebElement editLink = browser.findElement(editBy);
 		editLink.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		
 		WebElement main = browser.findElement(By.id("o_main_wrapper"));
 		return Graphene.createPageFragment(PortfolioPage.class, main);
@@ -275,15 +281,15 @@ public class CourseEditorPageFragment {
 		OOGraphene.closeBlueMessageWindow(browser);
 		
 		browser.findElement(chooseButton).click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		//popup
 		WebElement popup = browser.findElement(By.className("o_sel_search_referenceable_entries"));
 		popup.findElement(By.cssSelector("a.o_sel_repo_popup_my_resources")).click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		
 		//click create
 		popup.findElement(By.className("o_sel_repo_popup_create_resource")).click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 
 		//fill the create form
 		return fillCreateForm(resourceTitle);
@@ -293,7 +299,7 @@ public class CourseEditorPageFragment {
 		WebElement modal = browser.findElement(By.cssSelector("div.modal.o_sel_author_create_popup"));
 		modal.findElement(AuthoringEnvPage.displayNameInput).sendKeys(displayName);
 		modal.findElement(AuthoringEnvPage.createSubmit).click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -308,7 +314,7 @@ public class CourseEditorPageFragment {
 		publishButton.click();
 		
 		By modalBy = By.className("modal");
-		OOGraphene.waitElement(modalBy);
+		OOGraphene.waitElement(modalBy, browser);
 		WebElement modal = browser.findElement(By.className("modal"));
 		return Graphene.createPageFragment(PublisherPageFragment.class, modal);
 	}
@@ -320,7 +326,7 @@ public class CourseEditorPageFragment {
 	 */
 	public CoursePageFragment clickToolbarBack() {
 		browser.findElement(toolbarBackBy).click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		OOGraphene.closeBlueMessageWindow(browser);
 		
 		WebElement main = browser.findElement(By.id("o_main"));

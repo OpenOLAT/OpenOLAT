@@ -20,10 +20,15 @@
 package org.olat.selenium.page.graphene;
 
 import java.io.File;
+import java.text.DateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.graphene.Graphene;
+import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.ElementNotVisibleException;
 import org.openqa.selenium.JavascriptExecutor;
@@ -41,16 +46,21 @@ public class OOGraphene {
 
 	private static final long poolingDuration = 25;
 	
-	public static void waitBusy() {
-		Graphene.waitModel().pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new BusyPredicate());
+	public static void waitBusy(WebDriver browser) {
+		Graphene.waitModel(browser).pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new BusyPredicate());
 	}
 	
-	public static void waitElement(By element) {
-		Graphene.waitModel().pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
+	public static void waitElement(By element, WebDriver browser) {
+		Graphene.waitModel(browser).pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
 	}
 	
-	public static void waitElement(WebElement element) {
-		Graphene.waitModel().pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
+	public static void waitElement(By element, int timeoutInSeconds, WebDriver browser) {
+		Graphene.waitModel(browser).withTimeout(timeoutInSeconds, TimeUnit.SECONDS)
+			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
+	}
+	
+	public static void waitElement(WebElement element, WebDriver browser) {
+		Graphene.waitModel(browser).pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
 	}
 	
 	public static final void tinymce(String content, WebDriver browser) {
@@ -58,8 +68,45 @@ public class OOGraphene {
 		((JavascriptExecutor)browser).executeScript("top.tinymce.activeEditor.setContent('" + content + "')");
 	}
 	
-	public static final void waitingTransition() {
-		Graphene.waitModel().pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new TransitionPredicate());
+	public static final void date(Date date, String seleniumCssClass, WebDriver browser) {
+		Locale locale = getLocale(browser);
+		String dateText = DateFormat.getDateInstance(DateFormat.SHORT, locale).format(date);
+		By dateBy = By.cssSelector("div." + seleniumCssClass + " input.o_date_day");
+		browser.findElement(dateBy).sendKeys(dateText);
+	}
+	
+	public static final void datetime(Date date, String seleniumCssClass, WebDriver browser) {
+		Locale locale = getLocale(browser);
+		String dateText = DateFormat.getDateInstance(DateFormat.SHORT, locale).format(date);
+		By dateBy = By.cssSelector("div." + seleniumCssClass + " input.o_date_day");
+		browser.findElement(dateBy).sendKeys(dateText);
+		
+		By timeBy = By.cssSelector("div." + seleniumCssClass + " input.o_date_ms");
+		List<WebElement> timeEls = browser.findElements(timeBy);
+		Assert.assertNotNull(timeEls);
+		Assert.assertEquals(2, timeEls.size());
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		int hour = cal.get(Calendar.HOUR_OF_DAY);
+		int minute = cal.get(Calendar.MINUTE);
+		timeEls.get(0).click();
+		timeEls.get(0).clear();
+		timeEls.get(0).sendKeys(Integer.toString(hour));
+		timeEls.get(1).clear();
+		timeEls.get(1).sendKeys(Integer.toString(minute));
+	}
+	
+	public static final Locale getLocale(WebDriver browser) {
+		String cssLanguage = browser.findElement(By.id("o_body")).getAttribute("class");
+		if(cssLanguage.contains("o_lang_de")) {
+			return Locale.GERMAN;
+		}
+		return Locale.ENGLISH;
+	}
+	
+	public static final void waitingTransition(WebDriver browser) {
+		Graphene.waitModel(browser).pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new TransitionPredicate());
 		waitingALittleBit();
 	}
 	

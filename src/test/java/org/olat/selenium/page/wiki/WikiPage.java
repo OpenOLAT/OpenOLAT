@@ -54,14 +54,14 @@ public class WikiPage {
 		
 		//fill the name of the new page
 		By pageNameBy = By.cssSelector("div.o_callout_content form input[type='text']");
-		OOGraphene.waitElement(pageNameBy);
+		OOGraphene.waitElement(pageNameBy, browser);
 		WebElement pageNameEl = browser.findElement(pageNameBy);
 		pageNameEl.sendKeys(name);
 		//search for it
 		By searchBy = By.cssSelector("div.popover-content form .o_sel_wiki_search button");
 		WebElement searchButton = browser.findElement(searchBy);
 		searchButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		
 		//not exist -> click the link to create the page
 		By notExistingBy = By.xpath("//div[contains(@class,'o_wikimod-article-box')]//a[@title='" + name + "']");
@@ -70,14 +70,14 @@ public class WikiPage {
 		
 		//fill the form
 		By textBy = By.cssSelector("div.o_wikimod_editform_wrapper form textarea");
-		OOGraphene.waitElement(textBy);
+		OOGraphene.waitElement(textBy, browser);
 		WebElement textEl = browser.findElement(textBy);
 		textEl.sendKeys(content);
 		//save the page
 		By saveAndCloseBy = By.className("o_sel_wiki_save_and_close");
 		WebElement saveAndCloseButton = browser.findElement(saveAndCloseBy);
 		saveAndCloseButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		
 		//assert
 		By pageTitleBy = By.className("o_wikimod_heading");
@@ -99,7 +99,7 @@ public class WikiPage {
 		By addAsArtefactBy = By.className("o_eportfolio_add");
 		WebElement addAsArtefactButton = browser.findElement(addAsArtefactBy);
 		addAsArtefactButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return ArtefactWizardPage.getWizard(browser);
 	}
 

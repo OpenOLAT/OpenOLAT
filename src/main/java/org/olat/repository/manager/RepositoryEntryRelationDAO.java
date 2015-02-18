@@ -19,6 +19,7 @@
  */
 package org.olat.repository.manager;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -249,6 +250,29 @@ public class RepositoryEntryRelationDAO {
 		Number count = query.getSingleResult();
 		return count == null ? 0 : count.intValue();
 	}
+	
+	public int countMembers(List<? extends RepositoryEntryRef> res) {
+		if(res == null || res.isEmpty()) return 0;
+		
+		List<Long> repoKeys = new ArrayList<>(res.size());
+		for(RepositoryEntryRef re:res) {
+			repoKeys.add(re.getKey());
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(distinct members.identity.key) from ").append(RepositoryEntry.class.getName()).append(" as v")
+		  .append(" inner join v.groups as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as members")
+		  .append(" where v.key in (:repoKeys)");
+
+		Number count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("repoKeys", repoKeys)
+				.getSingleResult();
+		return count == null ? 0 : count.intValue();
+	}
+	
 	
 	public List<Long> getAuthorKeys(RepositoryEntryRef re) {
 		

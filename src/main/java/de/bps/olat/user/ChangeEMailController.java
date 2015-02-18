@@ -37,6 +37,7 @@ import org.olat.registration.RegistrationManager;
 import org.olat.registration.TemporaryKeyImpl;
 import org.olat.user.ProfileAndHomePageEditController;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -56,9 +57,10 @@ public class ChangeEMailController extends DefaultController {
 	protected Translator pT;
 	protected String emKey;
 	protected TemporaryKeyImpl tempKey;
-	protected RegistrationManager rm = RegistrationManager.getInstance();
-
 	protected UserRequest userRequest;
+	
+	@Autowired
+	protected RegistrationManager rm;
 
 	/**
 	 * executed after click the link in email

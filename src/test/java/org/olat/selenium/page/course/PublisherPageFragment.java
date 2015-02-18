@@ -57,10 +57,15 @@ public class PublisherPageFragment {
 		return this;
 	}
 	
+
 	public void quickPublish() {
+		quickPublish(Access.guests);
+	}
+	
+	public void quickPublish(Access access) {
 		assertOnPublisher()
 			.next()
-			.selectAccess(Access.guests)
+			.selectAccess(access)
 			.next()
 			.selectCatalog(false)
 			.next() // -> no problem found
@@ -72,7 +77,7 @@ public class PublisherPageFragment {
 		Assert.assertTrue(next.isDisplayed());
 		Assert.assertTrue(next.isEnabled());
 		next.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		OOGraphene.closeBlueMessageWindow(browser);
 		return this;
 	}
@@ -82,7 +87,7 @@ public class PublisherPageFragment {
 		Assert.assertTrue(finish.isDisplayed());
 		Assert.assertTrue(finish.isEnabled());
 		finish.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		OOGraphene.closeBlueMessageWindow(browser);
 		return this;
 	}
@@ -103,7 +108,7 @@ public class PublisherPageFragment {
 		By addToCatalogBy = By.className("o_sel_publish_add_to_catalog");
 		WebElement addToCatalogButton = browser.findElement(addToCatalogBy);
 		addToCatalogButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		
 		if(parentNode != null) {
 			selectCatalogNode(parentNode);
@@ -113,7 +118,7 @@ public class PublisherPageFragment {
 		By selectBy = By.cssSelector(".o_sel_catalog_chooser_tree a.o_sel_catalog_add_select");
 		WebElement selectButton = browser.findElement(selectBy);
 		selectButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -129,7 +134,7 @@ public class PublisherPageFragment {
 		}
 		Assert.assertNotNull(namedNode);
 		namedNode.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 	}
 	
 	public enum Access {

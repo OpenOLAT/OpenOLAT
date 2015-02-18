@@ -57,7 +57,7 @@ public class PortalPage {
 		By editBy = By.cssSelector(".o_home_portaleditlink a.btn-default");
 		WebElement editButton = browser.findElement(editBy);
 		editButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -65,7 +65,7 @@ public class PortalPage {
 		By editBy = By.cssSelector(".o_home_portaleditlink a.btn-primary");
 		WebElement editButton = browser.findElement(editBy);
 		editButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -113,7 +113,7 @@ public class PortalPage {
 		List<WebElement> buttons = panel.findElements(action);
 		Assert.assertEquals(1, buttons.size());
 		buttons.get(0).click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 }

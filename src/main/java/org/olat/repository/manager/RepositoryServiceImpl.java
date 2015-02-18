@@ -21,6 +21,7 @@ package org.olat.repository.manager;
 
 import java.io.File;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -241,6 +242,11 @@ public class RepositoryServiceImpl implements RepositoryService {
 	public RepositoryEntry loadByResourceKey(Long resourceKey) {
 		return repositoryEntryDAO.loadByResourceKey(resourceKey);
 	}
+	
+	@Override
+	public List<RepositoryEntry> loadByResourceKeys(Collection<Long> resourceKeys) {
+		return repositoryEntryDAO.loadByResourceKeys(resourceKeys);
+	}
 
 	@Override
 	public VFSLeaf getIntroductionImage(RepositoryEntry re) {
@@ -424,7 +430,11 @@ public class RepositoryServiceImpl implements RepositoryService {
 	public int countMembers(RepositoryEntryRef re, String... roles) {
 		return reToGroupDao.countMembers(re, roles);
 	}
-	
+
+	@Override
+	public int countMembers(List<? extends RepositoryEntryRef> res) {
+		return reToGroupDao.countMembers(res);
+	}
 
 	@Override
 	public List<Long> getAuthors(RepositoryEntryRef re) {

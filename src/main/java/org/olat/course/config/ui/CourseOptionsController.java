@@ -61,7 +61,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
-import org.olat.resource.references.ReferenceImpl;
+import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -383,8 +383,8 @@ public class CourseOptionsController extends FormBasicController {
 			}
 
 			// remove references
-			List<ReferenceImpl> repoRefs = referenceManager.getReferences(course);
-			for (ReferenceImpl ref:repoRefs) {
+			List<Reference> repoRefs = referenceManager.getReferences(course);
+			for (Reference ref:repoRefs) {
 				if (ref.getUserdata().equals(GlossaryManager.GLOSSARY_REPO_REF_IDENTIFYER)) {
 					referenceManager.delete(ref);
 				}
@@ -399,15 +399,15 @@ public class CourseOptionsController extends FormBasicController {
 		}
 		
 		if(updateFolder) {
-			List<ReferenceImpl> repoRefs = referenceManager.getReferences(course);
-			for (ReferenceImpl ref:repoRefs) {
+			List<Reference> repoRefs = referenceManager.getReferences(course);
+			for (Reference ref:repoRefs) {
 				if (ref.getUserdata().equals(SharedFolderManager.SHAREDFOLDERREF)) {
 					referenceManager.delete(ref);
 				}
 			}
 
 			if(folder != null) {
-				ReferenceManager.getInstance().addReference(course, folder.getOlatResource(), SharedFolderManager.SHAREDFOLDERREF);
+				referenceManager.addReference(course, folder.getOlatResource(), SharedFolderManager.SHAREDFOLDERREF);
 				ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_SHARED_FOLDER_REMOVED,
 						getClass(), LoggingResourceable.wrapBCFile(folder.getDisplayname()));
 			} else {

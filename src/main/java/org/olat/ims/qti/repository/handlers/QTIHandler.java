@@ -136,7 +136,7 @@ public abstract class QTIHandler extends FileHandler {
 
 	@Override
 	public boolean readyToDelete(OLATResourceable res, Identity identity, Roles roles, Locale locale, ErrorList errors) {
-		ReferenceManager refM = ReferenceManager.getInstance();
+		ReferenceManager refM = CoreSpringFactory.getImpl(ReferenceManager.class);
 		String referencesSummary = refM.getReferencesToSummary(res, locale);
 		if (referencesSummary != null) {
 			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);

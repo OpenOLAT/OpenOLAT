@@ -58,7 +58,8 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.Encoder.Algorithm;
 import org.olat.core.util.Util;
@@ -82,7 +83,10 @@ import org.olat.user.UserManager;
  * 
  * @author Felix Jost, Florian Gnaegi
  */
-public class BaseSecurityManager extends BasicManager implements BaseSecurity {
+public class BaseSecurityManager implements BaseSecurity {
+	
+	private static final OLog log = Tracing.createLoggerFor(BaseSecurityManager.class);
+	
 	private DB dbInstance;
 	private LoginModule loginModule;
 	private OLATResourceManager orm;
@@ -452,11 +456,11 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		if (!hasBeenInGroup && isNowInGroup) {
 			// user not yet in security group, add him
 			addIdentityToSecurityGroup(updatedIdentity, securityGroup);
-			logAudit("User::" + (actingIdentity == null ? "unkown" : actingIdentity.getName()) + " added system role::" + groupName + " to user::" + updatedIdentity.getName(), null);
+			log.audit("User::" + (actingIdentity == null ? "unkown" : actingIdentity.getName()) + " added system role::" + groupName + " to user::" + updatedIdentity.getName(), null);
 		} else if (hasBeenInGroup && !isNowInGroup) {
 			// user not anymore in security group, remove him
 			removeIdentityFromSecurityGroup(updatedIdentity, securityGroup);
-			logAudit("User::" + (actingIdentity == null ? "unkown" : actingIdentity.getName()) + " removed system role::" + groupName + " from user::" + updatedIdentity.getName(), null);
+			log.audit("User::" + (actingIdentity == null ? "unkown" : actingIdentity.getName()) + " removed system role::" + groupName + " from user::" + updatedIdentity.getName(), null);
 		}
 	}
 
@@ -671,8 +675,8 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 				.createQuery(sb.toString())
 				.setParameter("resourceKey", resource.getKey())
 				.executeUpdate();
-		if(isLogDebugEnabled()) {
-			logDebug(rowDeleted + " policies deleted");
+		if(log.isDebug()) {
+			log.debug(rowDeleted + " policies deleted");
 		}
 	}
 
@@ -740,6 +744,56 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		return iimpl;
 	}
 	
+	/**
+	 * Persists the given user, creates an identity for it and adds the user to
+	 * the users system group
+	 * 
+	 * @param loginName
+	 * @param externalId
+	 * @param pwd null: no OLAT authentication is generated. If not null, the password will be 
+	 * encrypted and and an OLAT authentication is generated.
+	 * @param newUser unpersisted users
+	 * @return Identity
+	 */
+	@Override
+	public Identity createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(String loginName, String externalId, String pwd,  User newUser) {
+		Identity ident = null;
+		if (pwd == null) {
+			// when no password is used the provider must be set to null to not generate
+			// an OLAT authentication token. See method doku.
+			ident = createAndPersistIdentityAndUser(loginName, externalId, newUser, null, null);
+			log.audit("Create an identity without authentication (login=" + loginName + ")");
+ 		} else {
+			ident = createAndPersistIdentityAndUser(loginName, externalId, newUser, BaseSecurityModule.getDefaultAuthProviderIdentifier(), loginName, pwd);
+			log.audit("Create an identity with " + BaseSecurityModule.getDefaultAuthProviderIdentifier() + " authentication (login=" + loginName + ")");
+		}
+
+		// Add user to system users group
+		SecurityGroup olatuserGroup = findSecurityGroupByName(Constants.GROUP_OLATUSERS);
+		addIdentityToSecurityGroup(ident, olatuserGroup);
+		return ident;
+	}
+	
+	/**
+	 * Persists the given user, creates an identity for it and adds the user to
+	 * the users system group, create an authentication for an external provider
+	 * 
+	 * @param loginName
+	 * @param externalId
+	 * @param provider
+	 * @param authusername
+	 * @param newUser
+	 * @return
+	 */
+	@Override
+	public Identity createAndPersistIdentityAndUserWithUserGroup(String loginName, String externalId, String provider, String authusername, User newUser) {
+		Identity ident = createAndPersistIdentityAndUser(loginName, externalId, newUser, provider, authusername, null);
+		log.audit("Create an identity with " + provider + " authentication (login=" + loginName + ",authusername=" + authusername + ")");
+		// Add user to system users group
+		SecurityGroup olatuserGroup = findSecurityGroupByName(Constants.GROUP_OLATUSERS);
+		addIdentityToSecurityGroup(ident, olatuserGroup);
+		return ident;
+	}
 	
 	private void notifyNewIdentityCreated(Identity newIdentity) {
 		//Save the identity on the DB. So can the listeners of the event retrieve it
@@ -1158,7 +1212,8 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	public Authentication createAndPersistAuthentication(final Identity ident, final String provider, final String authUserName,
 			final String credentials, final Encoder.Algorithm algorithm) {
 		OLATResourceable resourceable = OresHelper.createOLATResourceableInstanceWithoutCheck(provider, ident.getKey());
-		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(resourceable, new SyncerCallback<Authentication>(){
+		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(resourceable, new SyncerCallback<Authentication>() {
+			@Override
 			public Authentication execute() {
 				Authentication auth = findAuthentication(ident, provider);
 				if(auth == null) {
@@ -1170,6 +1225,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 						auth = new AuthenticationImpl(ident, provider, authUserName, credentials);
 					}
 					dbInstance.getCurrentEntityManager().persist(auth);
+					log.audit("Create " + provider + " authentication (login=" + ident.getName() + ",authusername=" + authUserName + ")");
 				}
 				return auth;
 			}
@@ -1286,7 +1342,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 				dbInstance.getCurrentEntityManager().remove(authRef);
 			}
 		} catch (EntityNotFoundException e) {
-			logError("", e);
+			log.error("", e);
 		}
 	}
 

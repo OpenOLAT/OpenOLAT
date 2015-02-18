@@ -203,4 +203,19 @@ public interface ProjectGroupManager {
    * @return
    */
   public boolean isCandidateListEmpty(SecurityGroup candidateGroup);
+  
+  /**
+   * Returns true when the leaving of the project group is allowed
+   * @param project
+   * @param identity
+   * @return
+   */
+  public boolean isDeselectionAllowed(Project project);
+  
+  /**
+   * set the leaving flag of the project group true or false;
+   * @param project
+   * @param allow
+   */
+  public void setDeselectionAllowed(Project project, boolean allow);
 }

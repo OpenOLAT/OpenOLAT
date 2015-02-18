@@ -236,7 +236,7 @@ public class OnyxModule extends AbstractOLATModule implements ConfigOnOff {
 			}
 		} catch(NoSuchFileException nsfe) {
 			eval.setValid(false);
-		} catch (IOException e) {
+		} catch (IOException | IllegalArgumentException e) {
 			log.error("", e);
 			eval.setValid(false);
 		} finally {

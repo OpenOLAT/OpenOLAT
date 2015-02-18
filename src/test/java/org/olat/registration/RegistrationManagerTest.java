@@ -34,7 +34,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.UUID;
 
 import org.junit.Test;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -46,6 +46,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RegistrationManagerTest extends OlatTestCase {
 
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private RegistrationManager registrationManager;
 	@Autowired
@@ -60,7 +62,8 @@ public class RegistrationManagerTest extends OlatTestCase {
 	/**
 	 * Test internal registration.
 	 */
-	@Test public void testRegister() {
+	@Test
+	public void testRegister() {
 		String emailaddress = "sabina@jeger.net";
 		String ipaddress = "130.60.112.10";
 		TemporaryKeyImpl result = registrationManager.register(emailaddress, ipaddress, "register");
@@ -73,7 +76,8 @@ public class RegistrationManagerTest extends OlatTestCase {
 	/**
 	 * Test load of temp key.
 	 */
-	@Test public void testLoadTemporaryKeyByRegistrationKey() {
+	@Test
+	public void testLoadTemporaryKeyByRegistrationKey() {
 		String emailaddress = "christian.guretzki@id.uzh.ch";
 		String regkey = "";
 		TemporaryKeyImpl result = null;
@@ -87,7 +91,7 @@ public class RegistrationManagerTest extends OlatTestCase {
 		result = registrationManager.createTemporaryKeyByEmail(emailaddress,ipaddress, RegistrationManager.REGISTRATION);
 		assertTrue("result not null because key generated", result != null);
 		//**
-		DBFactory.getInstance().closeSession();
+		dbInstance.closeSession();
 		regkey = result.getRegistrationKey();
 		//**
 		
@@ -114,7 +118,7 @@ public class RegistrationManagerTest extends OlatTestCase {
 		result = registrationManager.createTemporaryKeyByEmail(emailaddress,ipaddress, RegistrationManager.REGISTRATION);
 		assertTrue("result not null because key generated", result != null);
 		//**
-		DBFactory.getInstance().closeSession();
+		dbInstance.closeSession();
 		//**
 		
 		//check that loading the key by e-mail works

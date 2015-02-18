@@ -19,14 +19,18 @@
  */
 package org.olat.repository.manager;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import junit.framework.Assert;
 
+import org.jgroups.util.UUID;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +48,8 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 	@Autowired
 	private MarkManager markManager;
 	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
@@ -57,23 +63,101 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 		Assert.assertNotNull(re);
 		
 		RepositoryEntry loadedRe = repositoryEntryDao.loadByKey(re.getKey());
-		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(loadedRe.getStatistics());
 		Assert.assertNotNull(loadedRe.getOlatResource());
 	}
 	
 	@Test
+	public void loadByResourceKey() {
+		RepositoryEntry re = repositoryService.create("Rei Ayanami", "-", "Repository entry DAO Test 2", "", null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(re);
+		
+		RepositoryEntry loadedRe = repositoryEntryDao.loadByResourceKey(re.getOlatResource().getKey());
+		Assert.assertNotNull(loadedRe.getStatistics());
+		Assert.assertEquals(re.getOlatResource(), loadedRe.getOlatResource());
+	}
+	
+	@Test
+	public void loadByResourceKeys() {
+		RepositoryEntry re1 = repositoryService.create("Rei Ayanami", "-", "Repository entry DAO Test 3a", "", null);
+		RepositoryEntry re2 = repositoryService.create("Rei Ayanami", "-", "Repository entry DAO Test 3b", "", null);
+		dbInstance.commitAndCloseSession();
+		
+		List<Long> resourceKeys = new ArrayList<>(2);
+		resourceKeys.add(re1.getOlatResource().getKey());
+		resourceKeys.add(re2.getOlatResource().getKey());
+		
+		//load 2 resources
+		List<RepositoryEntry> loadedRes = repositoryEntryDao.loadByResourceKeys(resourceKeys);
+		Assert.assertNotNull(loadedRes);
+		Assert.assertEquals(2,  loadedRes.size());
+		Assert.assertTrue(loadedRes.contains(re1));
+		Assert.assertTrue(loadedRes.contains(re2));
+		
+		//try with empty list
+		List<RepositoryEntry> emptyRes = repositoryEntryDao.loadByResourceKeys(Collections.<Long>emptyList());
+		Assert.assertNotNull(emptyRes);
+		Assert.assertEquals(0,  emptyRes.size());
+	}
+	
+	@Test
+	public void searchByIdAndRefs() {
+		RepositoryEntry re = repositoryService.create("Rei Ayanami", "-", "Repository entry DAO Test 4", "", null);
+		dbInstance.commit();
+		String externalId = UUID.randomUUID().toString();
+		String externalRef = UUID.randomUUID().toString();
+		re = repositoryManager.setDescriptionAndName(re, null, null, null, externalId, externalRef, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		//by primary key
+		List<RepositoryEntry> primaryKeyList = repositoryEntryDao.searchByIdAndRefs(Long.toString(re.getKey()));
+		Assert.assertNotNull(primaryKeyList);
+		Assert.assertEquals(1,  primaryKeyList.size());
+		Assert.assertEquals(re, primaryKeyList.get(0));
+		
+		//by soft key
+		List<RepositoryEntry> softKeyList = repositoryEntryDao.searchByIdAndRefs(re.getSoftkey());
+		Assert.assertNotNull(softKeyList);
+		Assert.assertEquals(1, softKeyList.size());
+		Assert.assertEquals(re, softKeyList.get(0));
+		
+		//by resourceable id key
+		List<RepositoryEntry> resourceableIdList = repositoryEntryDao.searchByIdAndRefs(Long.toString(re.getResourceableId()));
+		Assert.assertNotNull(resourceableIdList);
+		Assert.assertEquals(1, resourceableIdList.size());
+		Assert.assertEquals(re, resourceableIdList.get(0));
+		
+		//by resource resourceable id
+		Long resResourceableId = re.getOlatResource().getResourceableId();
+		List<RepositoryEntry> resResourceableIdList = repositoryEntryDao.searchByIdAndRefs(resResourceableId.toString());
+		Assert.assertNotNull(resResourceableIdList);
+		Assert.assertEquals(1,  resResourceableIdList.size());
+		Assert.assertEquals(re, resResourceableIdList.get(0));
+		
+		//by external id
+		List<RepositoryEntry> externalIdList = repositoryEntryDao.searchByIdAndRefs(externalId);
+		Assert.assertNotNull(externalIdList);
+		Assert.assertEquals(1,  externalIdList.size());
+		Assert.assertEquals(re, externalIdList.get(0));
+		
+		//by external ref
+		List<RepositoryEntry> externalRefList = repositoryEntryDao.searchByIdAndRefs(externalRef);
+		Assert.assertNotNull(externalRefList);
+		Assert.assertEquals(1, externalRefList.size());
+		Assert.assertEquals(re, externalRefList.get(0));
+		
+	}
+	
+	@Test
 	public void getAllRepositoryEntries() {
-		RepositoryEntry re = repositoryService.create("Rei Ayanami", "-", "Repository entry DAO Test 1", "", null);
+		RepositoryEntry re = repositoryService.create("Rei Ayanami", "-", "Repository entry DAO Test 4", "", null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(re);
 		
 		List<RepositoryEntry> allRes = repositoryEntryDao.getAllRepositoryEntries(0, 25);
-		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(allRes);
 		Assert.assertFalse(allRes.isEmpty());
 		Assert.assertTrue(allRes.size() < 26);
 	}
-	
-
 }

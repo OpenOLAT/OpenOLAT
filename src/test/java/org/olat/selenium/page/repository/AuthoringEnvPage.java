@@ -19,6 +19,8 @@
  */
 package org.olat.selenium.page.repository;
 
+import java.io.File;
+
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
@@ -27,7 +29,6 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
 
 /**
  * Page to control the author environnment.
@@ -43,14 +44,11 @@ public class AuthoringEnvPage {
 	public static final By displayNameInput = By.cssSelector("div.o_sel_author_displayname input");
 	public static final By createSubmit = By.className("o_sel_author_create_submit");
 	public static final By createWizard = By.className("o_sel_author_create_wizard");
+	public static final By createMenuCaretBy = By.cssSelector("a.o_sel_author_create");
+	public static final By createMenuBy = By.cssSelector("ul.o_sel_author_create");
 	
 	@Drone
 	private WebDriver browser;
-	
-	@FindBy(css="a.o_sel_author_create")
-	private WebElement createMenuCaret;
-	@FindBy(css="ul.o_sel_author_create")
-	private WebElement createMenu;
 	
 	public RepositoryEditDescriptionPage createCP(String title) {
 		return openCreateDropDown()
@@ -78,9 +76,11 @@ public class AuthoringEnvPage {
 	 * @return
 	 */
 	public AuthoringEnvPage openCreateDropDown() {
+		WebElement createMenuCaret = browser.findElement(createMenuCaretBy);
+		
 		Assert.assertTrue(createMenuCaret.isDisplayed());
 		createMenuCaret.click();
-		OOGraphene.waitElement(createMenu);
+		OOGraphene.waitElement(createMenuBy, browser);
 		return this;
 	}
 
@@ -90,11 +90,12 @@ public class AuthoringEnvPage {
 	 * @return
 	 */
 	public AuthoringEnvPage clickCreate(ResourceType type) {
+		WebElement createMenu = browser.findElement(createMenuBy);
 		Assert.assertTrue(createMenu.isDisplayed());
 		WebElement createLink = createMenu.findElement(By.className("o_sel_author_create-" + type.type()));
 		Assert.assertTrue(createLink.isDisplayed());
 		createLink.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -109,8 +110,8 @@ public class AuthoringEnvPage {
 		input.sendKeys(displayName);
 		WebElement submit = modal.findElement(createSubmit);
 		submit.click();
-		OOGraphene.waitBusy();
-		OOGraphene.waitElement(RepositoryEditDescriptionPage.generaltabBy);
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitElement(RepositoryEditDescriptionPage.generaltabBy, browser);
 		
 		WebElement main = browser.findElement(By.id("o_main_wrapper"));
 		return Graphene.createPageFragment(RepositoryEditDescriptionPage.class, main);
@@ -126,7 +127,7 @@ public class AuthoringEnvPage {
 		WebElement input = modal.findElement(displayNameInput);
 		input.sendKeys(displayName);
 		modal.findElement(createWizard).click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		
 		return CourseWizardPage.getWizard(browser);
 	}
@@ -144,6 +145,29 @@ public class AuthoringEnvPage {
 		//from description editor, back to details and launch the course
 		editDescription
 			.clickToolbarBack();
+	}
+	
+	public AuthoringEnvPage uploadResource(String title, File resource) {
+		WebElement importLink = browser.findElement(By.className("o_sel_author_import"));
+		Assert.assertTrue(importLink.isDisplayed());
+		importLink.click();
+		OOGraphene.waitBusy(browser);
+		
+		By inputBy = By.cssSelector(".o_fileinput input[type='file']");
+		OOGraphene.uploadFile(inputBy, resource, browser);
+		OOGraphene.waitElement(By.className("o_sel_author_imported_name"), browser);
+		
+		By titleBy = By.cssSelector(".o_sel_author_imported_name input");
+		WebElement titleEl = browser.findElement(titleBy);
+		titleEl.sendKeys(title);
+		
+		//save
+		By saveBy = By.cssSelector("div.o_sel_repo_save_details button.btn-primary");
+		WebElement saveButton = browser.findElement(saveBy);
+		saveButton.click();
+		OOGraphene.waitBusy(browser);
+
+		return this;
 	}
 	
 	public enum ResourceType {

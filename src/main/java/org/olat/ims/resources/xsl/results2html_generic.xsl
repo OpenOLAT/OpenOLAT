@@ -137,7 +137,7 @@ border-collapse: collapse;
 	<!-- render scores -->
 	<xsl:template match="score">
 		<table border="0"><tbody><tr>
-			<td>
+			<td width="160">
 		<table border="0" cellpadding="0" cellspacing="0" height="12" width="150">
 			<tbody>
 				<tr>

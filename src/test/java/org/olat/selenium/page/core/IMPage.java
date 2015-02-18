@@ -51,12 +51,13 @@ public class IMPage {
 	 */
 	public IMPage openGroupChat() {
 		By openBy = By.className("o_sel_im_open_tool_chat");
+		OOGraphene.waitElement(openBy, browser);
 		WebElement openButton = browser.findElement(openBy);
 		openButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		
 		By imModalBy = By.className("o_im_chat");
-		OOGraphene.waitElement(imModalBy);
+		OOGraphene.waitElement(imModalBy, browser);
 		return this;
 	}
 	
@@ -73,7 +74,7 @@ public class IMPage {
 		By sendMessageBy = By.cssSelector(".o_im_chat_form a.btn.btn-default");
 		WebElement sendMessageButton = browser.findElement(sendMessageBy);
 		sendMessageButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	

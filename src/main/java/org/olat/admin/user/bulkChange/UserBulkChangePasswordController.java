@@ -47,6 +47,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.registration.RegistrationManager;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -64,6 +65,9 @@ public class UserBulkChangePasswordController extends BasicController {
 	
 	private ChangePasswordForm changePasswordForm;
 	private final OLATAuthManager olatAuthenticationSpi;
+	
+	@Autowired
+	private RegistrationManager registrationManager;
 
 	public UserBulkChangePasswordController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -115,7 +119,7 @@ public class UserBulkChangePasswordController extends BasicController {
 							log.info("changePassword for username: " + username);
 						}
 						if (autodisc) {
-							RegistrationManager.getInstance().setHasConfirmedDislaimer(identity);
+							registrationManager.setHasConfirmedDislaimer(identity);
 							log.info("Disclaimer accepted for username: " + username);
 						}
 						if (langGerman) {

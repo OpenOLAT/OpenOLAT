@@ -63,7 +63,7 @@ public class MenuTreePageFragment {
 		Assert.assertFalse(rootLinks.isEmpty());
 		
 		rootLinks.get(0).click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -75,7 +75,7 @@ public class MenuTreePageFragment {
 			String text = nodeLink.getText();
 			if(text.contains(title)) {
 				nodeLink.click();
-				OOGraphene.waitBusy();
+				OOGraphene.waitBusy(browser);
 				found = true;
 			}
 		}

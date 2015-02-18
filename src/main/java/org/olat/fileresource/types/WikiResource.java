@@ -63,7 +63,7 @@ public class WikiResource extends FileResource {
 			IndexFileFilter visitor = new IndexFileFilter();
 			PathUtils.visit(file, filename, visitor);
 			eval.setValid(visitor.isValid());
-		} catch (IOException e) {
+		} catch (IOException | IllegalArgumentException e) {
 			log.error("", e);
 		}
 		return eval;

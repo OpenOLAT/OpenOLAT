@@ -19,6 +19,8 @@
  */
 package org.olat.repository.manager;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.TypedQuery;
@@ -76,7 +78,22 @@ public class RepositoryEntryDAO {
 			return null;
 		}
 		return entries.get(0);
+	}
+	
+	public List<RepositoryEntry> loadByResourceKeys(Collection<Long> resourceKeys) {
+		if(resourceKeys == null || resourceKeys.isEmpty()) return Collections.emptyList();
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		  .append(" inner join fetch v.olatResource as ores")
+		  .append(" inner join fetch v.statistics as statistics")
+		  .append(" left join fetch v.lifecycle as lifecycle")
+		  .append(" where ores.key in (:resourceKeys)");
 		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setParameter("resourceKeys", resourceKeys)
+				.getResultList();
 	}
 	
 	public List<RepositoryEntry> searchByIdAndRefs(String idAndRefs) {

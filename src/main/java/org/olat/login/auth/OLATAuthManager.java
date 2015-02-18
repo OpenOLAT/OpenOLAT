@@ -69,10 +69,6 @@ import org.springframework.stereotype.Service;
 import com.thoughtworks.xstream.XStream;
 
 /**
- * Description:<br>
- * TODO:
- * 
- * <P>
  * Initial Date:  26.09.2007 <br>
  * @author Felix Jost, http://www.goodsolutions.ch
  */
@@ -93,6 +89,8 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 	private LoginModule loginModule;
 	@Autowired
 	private LDAPLoginModule ldapLoginModule;
+	@Autowired
+	private RegistrationManager registrationManager;
 	
 	/**
 	 * 
@@ -155,8 +153,7 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 	private Identity findIdentInChangingEmailWorkflow(String login){
 		XStream xml = XStreamHelper.createXStreamInstance();
 		
-		RegistrationManager rm = RegistrationManager.getInstance();
-		List<TemporaryKey> tk = rm.loadTemporaryKeyByAction(RegistrationManager.EMAIL_CHANGE);
+		List<TemporaryKey> tk = registrationManager.loadTemporaryKeyByAction(RegistrationManager.EMAIL_CHANGE);
 		if (tk != null) {
 			for (TemporaryKey temporaryKey : tk) {
 				@SuppressWarnings("unchecked")

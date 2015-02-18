@@ -47,7 +47,7 @@ public class GroupsPage {
 		By createBy = By.className("o_sel_group_create");
 		WebElement createButton = browser.findElement(createBy);
 		createButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		
 		//fill the form
 		By nameBy = By.cssSelector(".o_sel_group_edit_title input[type='text']");
@@ -59,7 +59,7 @@ public class GroupsPage {
 		By submitBy = By.cssSelector(".o_sel_group_edit_group_form button.btn-primary");
 		WebElement submitButton = browser.findElement(submitBy);
 		submitButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		
 		return new GroupPage(browser);
 	}
@@ -84,7 +84,7 @@ public class GroupsPage {
 		groupLink.click();
 		
 		By rootTreeNodeBy = By.xpath("//div[contains(@class,'o_tree')]//a/span[contains(text(),'" + name+ "')]");
-		OOGraphene.waitElement(rootTreeNodeBy);
+		OOGraphene.waitElement(rootTreeNodeBy, browser);
 		
 		return new GroupPage(browser);
 	}

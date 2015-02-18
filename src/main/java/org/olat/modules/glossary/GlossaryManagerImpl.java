@@ -49,9 +49,8 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.OLATResourceManager;
-import org.olat.resource.references.ReferenceImpl;
+import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
@@ -231,15 +230,15 @@ public class GlossaryManagerImpl extends GlossaryManager {
 	@Override
 	public void deleteGlossary(OLATResourceable res) {
 		// first remove all references
-		List<ReferenceImpl> repoRefs = referenceManager.getReferencesTo(res);
-		for (Iterator<ReferenceImpl> iter = repoRefs.iterator(); iter.hasNext();) {
-			ReferenceImpl ref = iter.next();
+		List<Reference> repoRefs = referenceManager.getReferencesTo(res);
+		for (Iterator<Reference> iter = repoRefs.iterator(); iter.hasNext();) {
+			Reference ref = iter.next();
 			if (ref.getUserdata().equals(GLOSSARY_REPO_REF_IDENTIFYER)) {
 				// remove the reference from the course configuration
 				// TODO:RH:improvement: this should use a callback method or send a general delete
 				// event so that the course can take care of this rather than having it
 				// here hardcoded
-				OLATResourceImpl courseResource = ref.getSource();
+				OLATResource courseResource = ref.getSource();
 				//ICourse course = CourseFactory.loadCourse(courseResource);
 				ICourse course = CourseFactory.openCourseEditSession(courseResource.getResourceableId());
 				CourseConfig cc = course.getCourseEnvironment().getCourseConfig();

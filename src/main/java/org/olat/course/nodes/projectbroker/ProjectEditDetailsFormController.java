@@ -99,6 +99,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 	private Map<Project.EventType, DateChooser> eventEndElementList;
 
 	private MultipleSelectionElement selectionMaxMembers;
+	private MultipleSelectionElement allowDeselection;
 
 	private boolean enableCancel;
 
@@ -217,6 +218,11 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 			selectionMaxMembers.select(keys[0], true);
 		}
 		selectionMaxMembers.addActionListener(FormEvent.ONCLICK);
+		
+		String[] deselectValues = new String[] {translate("detailsform.allow.deselection.hint")};
+		allowDeselection = uifactory.addCheckboxesHorizontal("detailsform.allow.deselection", formLayout, keys, deselectValues);
+		allowDeselection.select(keys[0], projectGroupManager.isDeselectionAllowed(project));
+		allowDeselection.addActionListener(FormEvent.ONCLICK);
 		uifactory.addSpacerElement("spacer_1", formLayout, false);
 
 		// customfields
@@ -426,7 +432,13 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 				maxMembers.setVisible(false);
 				maxMembers.setIntValue(Project.MAX_MEMBERS_UNLIMITED);
 			}
-		} else if (source == removeAttachmentLink) {
+		} else if(source == allowDeselection){
+			if(allowDeselection.isSelected(0)){
+				projectGroupManager.setDeselectionAllowed(project, true);
+			}else{
+				projectGroupManager.setDeselectionAllowed(project, false);
+			}
+		}else if (source == removeAttachmentLink) {
 			attachmentFileName.setInitialFile(null);
 		}
 		this.flc.setDirty(true);

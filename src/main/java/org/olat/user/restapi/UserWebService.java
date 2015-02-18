@@ -61,7 +61,6 @@ import javax.ws.rs.core.UriInfo;
 
 import org.olat.admin.user.UserShortDescription;
 import org.olat.admin.user.delete.service.UserDeletionManager;
-import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -262,7 +261,7 @@ public class UserWebService {
 		List<ErrorVO> errors = validateUser(null, user, request);
 		if(errors.isEmpty()) {
 			User newUser = UserManager.getInstance().createUser(user.getFirstName(), user.getLastName(), user.getEmail());
-			Identity id = AuthHelper.createAndPersistIdentityAndUserWithUserGroup(user.getLogin(), user.getExternalId(), user.getPassword(), newUser);
+			Identity id = BaseSecurityManager.getInstance().createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(user.getLogin(), user.getExternalId(), user.getPassword(), newUser);
 			post(newUser, user, getLocale(request));
 			UserManager.getInstance().updateUser(newUser);
 			return Response.ok(get(id)).build();

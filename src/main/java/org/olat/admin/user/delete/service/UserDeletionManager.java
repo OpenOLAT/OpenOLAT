@@ -96,6 +96,7 @@ public class UserDeletionManager extends BasicManager {
 	// Flag used in user-delete to indicate that all deletable managers are initialized
 	private boolean managersInitialized = false;
 	private RepositoryDeletionModule deletionModule;
+	private RegistrationManager registrationManager;
 	private BaseSecurity securityManager;
 	private MailManager mailManager;
 	private GroupDAO groupDao;
@@ -132,7 +133,14 @@ public class UserDeletionManager extends BasicManager {
 	public void setGroupDao(GroupDAO groupDao) {
 		this.groupDao = groupDao;
 	}
-
+	
+	/**
+	 * [used by Spring]
+	 * @param registrationManager
+	 */
+	public void setRegistrationManager(RegistrationManager registrationManager) {
+		this.registrationManager = registrationManager;
+	}
 
 	/**
 	 * @return Singleton.
@@ -317,12 +325,10 @@ public class UserDeletionManager extends BasicManager {
 		//remove identity from groups
 		groupDao.removeMemberships(identity);
 
-		// fxdiff: FXOLAT-44 delete emails still in change-workflow
-		RegistrationManager rm = RegistrationManager.getInstance();
 		String key = identity.getUser().getProperty("emchangeKey", null);
-		TemporaryKeyImpl tempKey = rm.loadTemporaryKeyByRegistrationKey(key);
+		TemporaryKeyImpl tempKey = registrationManager.loadTemporaryKeyByRegistrationKey(key);
 		if (tempKey != null) {
-			rm.deleteTemporaryKey(tempKey);
+			registrationManager.deleteTemporaryKey(tempKey);
 		}		
 		
 

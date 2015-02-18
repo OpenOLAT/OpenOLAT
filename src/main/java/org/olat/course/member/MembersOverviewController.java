@@ -129,10 +129,12 @@ public class MembersOverviewController extends BasicController implements Activa
 		boolean managed = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);
 		addMemberLink = LinkFactory.createButton("add.member", mainVC, this);
 		addMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+		addMemberLink.setElementCssClass("o_sel_course_add_member");
 		addMemberLink.setVisible(!managed);
 		mainVC.put("addMembers", addMemberLink);
 		importMemberLink = LinkFactory.createButton("import.member", mainVC, this);
 		importMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
+		importMemberLink.setElementCssClass("o_sel_course_import_members");
 		importMemberLink.setVisible(!managed);
 		mainVC.put("importMembers", importMemberLink);
 		dedupLink = LinkFactory.createButton("dedup.members", mainVC, this);

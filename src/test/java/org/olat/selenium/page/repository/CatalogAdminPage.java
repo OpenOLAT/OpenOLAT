@@ -64,7 +64,7 @@ public class CatalogAdminPage {
 		
 		//fill the form
 		By titleBy = By.cssSelector(".o_sel_catalog_add_category_popup input[type='text']");
-		OOGraphene.waitElement(titleBy);
+		OOGraphene.waitElement(titleBy, browser);
 		WebElement titleEl = browser.findElement(titleBy);
 		titleEl.sendKeys(title);
 		
@@ -74,7 +74,7 @@ public class CatalogAdminPage {
 		By saveBy = By.cssSelector(".o_sel_catalog_add_category_popup .o_sel_catalog_entry_form_buttons button.btn-primary");
 		WebElement saveButton = browser.findElement(saveBy);
 		saveButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -95,7 +95,7 @@ public class CatalogAdminPage {
 		}
 		Assert.assertNotNull(selectedNode);
 		selectedNode.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 }

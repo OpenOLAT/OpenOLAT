@@ -26,7 +26,6 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
 
 /**
  * 
@@ -39,23 +38,21 @@ public class UserSettingsPage {
 	@Drone
 	private WebDriver browser;
 	
-	@FindBy(className = "o_segments")
-	private WebElement segmentView;
+	public UserSettingsPage() {
+		//
+	}
 	
-	@FindBy(className = "o_sel_user_settings_prefs")
-	private WebElement preferencesSegmentLink;
-	@FindBy(className = "o_sel_user_settings_webdav")
-	private WebElement webdavSegmentLink;
-	@FindBy(className = "o_sel_user_settings_im")
-	private WebElement imSegmentLink;
-	@FindBy(className = "o_sel_user_settings_disclaimer")
-	private WebElement disclaimerSegmentLink;
+	public UserSettingsPage(WebDriver browser) {
+		this.browser = browser;
+	}
 
 	/**
 	 * Check that the user settings is displayed.
 	 * @return
 	 */
 	public UserSettingsPage assertOnUserSettings() {
+		By segementViewBy = By.className("o_segments");
+		WebElement segmentView = browser.findElement(segementViewBy);
 		Assert.assertTrue(segmentView.isDisplayed());
 		return this;
 	}
@@ -65,8 +62,10 @@ public class UserSettingsPage {
 	 * @return
 	 */
 	public UserPreferencesPageFragment openPreferences() {
+		By preferencesSegmentBy = By.className("o_sel_user_settings_prefs");
+		WebElement preferencesSegmentLink = browser.findElement(preferencesSegmentBy);
 		preferencesSegmentLink.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 
 		WebElement main = browser.findElement(By.id("o_main"));
 		return Graphene.createPageFragment(UserPreferencesPageFragment.class, main);

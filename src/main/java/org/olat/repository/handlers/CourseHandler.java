@@ -194,7 +194,7 @@ public class CourseHandler implements RepositoryHandler {
 				}
 			}
 			eval.setValid(visitor.isValid());
-		} catch (IOException e) {
+		} catch (IOException | IllegalArgumentException e) {
 			log.error("", e);
 		}
 		return eval;
@@ -354,7 +354,7 @@ public class CourseHandler implements RepositoryHandler {
 			// set the new glossary reference
 		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
 		courseConfig.setGlossarySoftKey(importedRepositoryEntry.getSoftkey());
-		ReferenceManager.getInstance().addReference(course, importedRepositoryEntry.getOlatResource(), GlossaryManager.GLOSSARY_REPO_REF_IDENTIFYER);			
+		CoreSpringFactory.getImpl(ReferenceManager.class).addReference(course, importedRepositoryEntry.getOlatResource(), GlossaryManager.GLOSSARY_REPO_REF_IDENTIFYER);			
 		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 	}
 	
@@ -504,7 +504,7 @@ public class CourseHandler implements RepositoryHandler {
 
 	@Override
 	public boolean readyToDelete(OLATResourceable res, Identity identity, Roles roles, Locale locale, ErrorList errors) {
-		ReferenceManager refM = ReferenceManager.getInstance();
+		ReferenceManager refM = CoreSpringFactory.getImpl(ReferenceManager.class);
 		String referencesSummary = refM.getReferencesToSummary(res, locale);
 		if (referencesSummary != null) {
 			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);

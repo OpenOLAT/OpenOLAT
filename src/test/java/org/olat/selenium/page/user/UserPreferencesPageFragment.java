@@ -93,7 +93,7 @@ public class UserPreferencesPageFragment {
 		
 		WebElement saveButton = browser.findElement(saveSystemSettingsButton);
 		saveButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -104,7 +104,7 @@ public class UserPreferencesPageFragment {
 		
 		WebElement saveButton = browser.findElement(saveSystemPrefsButton);
 		saveButton.click();
-		OOGraphene.waitBusy();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -119,7 +119,7 @@ public class UserPreferencesPageFragment {
 		
 		WebElement saveButton = browser.findElement(resetPrefsButton);
 		saveButton.click();
-		OOGraphene.waitElement(LoginPage.loginFormBy);
+		OOGraphene.waitElement(LoginPage.loginFormBy, browser);
 		return this;
 	}
 	

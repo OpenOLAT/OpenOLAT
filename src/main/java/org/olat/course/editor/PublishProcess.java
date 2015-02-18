@@ -75,7 +75,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.manager.CatalogManager;
-import org.olat.resource.references.ReferenceImpl;
+import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
 
@@ -564,7 +564,7 @@ public class PublishProcess {
 	 * @param resourceable
 	 */
 	private void addRef(CourseNode courseNode, OLATResourceable resourceable) {
-		ReferenceManager.getInstance().addReference(course, resourceable, courseNode.getIdent());
+		CoreSpringFactory.getImpl(ReferenceManager.class).addReference(course, resourceable, courseNode.getIdent());
 	}
 
 	/**
@@ -573,10 +573,10 @@ public class PublishProcess {
 	 * @param courseNode
 	 */
 	private void deleteRefs(CourseNode courseNode) {
-		ReferenceManager refM = ReferenceManager.getInstance();
-		List<ReferenceImpl> courseRefs = refM.getReferences(course);
-		for (Iterator<ReferenceImpl> iter = courseRefs.iterator(); iter.hasNext();) {
-			ReferenceImpl ref = iter.next();
+		ReferenceManager refM = CoreSpringFactory.getImpl(ReferenceManager.class);
+		List<Reference> courseRefs = refM.getReferences(course);
+		for (Iterator<Reference> iter = courseRefs.iterator(); iter.hasNext();) {
+			Reference ref = iter.next();
 			if (!ref.getUserdata().equals(courseNode.getIdent())) continue;
 			refM.delete(ref);
 			break;
