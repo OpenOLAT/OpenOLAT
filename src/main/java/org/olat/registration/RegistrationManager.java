@@ -73,8 +73,10 @@ public class RegistrationManager extends BasicManager {
 	private RegistrationModule registrationModule;
 	private MailManager mailManager;
 	private BaseSecurity securityManager;
+	private static RegistrationManager INSTANCE;
 
 	private RegistrationManager() {
+		INSTANCE = this;
 		// singleton
 	}
 
@@ -82,7 +84,7 @@ public class RegistrationManager extends BasicManager {
 	 * @return Manager instance.
 	 */
 	public static RegistrationManager getInstance() {
-		return new RegistrationManager();
+		return INSTANCE;
 	}
 	
 	/**
