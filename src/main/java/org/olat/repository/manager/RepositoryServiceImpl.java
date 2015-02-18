@@ -21,6 +21,7 @@ package org.olat.repository.manager;
 
 import java.io.File;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -240,6 +241,11 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Override
 	public RepositoryEntry loadByResourceKey(Long resourceKey) {
 		return repositoryEntryDAO.loadByResourceKey(resourceKey);
+	}
+	
+	@Override
+	public List<RepositoryEntry> loadByResourceKeys(Collection<Long> resourceKeys) {
+		return repositoryEntryDAO.loadByResourceKeys(resourceKeys);
 	}
 
 	@Override

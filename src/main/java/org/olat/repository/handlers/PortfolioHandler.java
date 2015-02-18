@@ -184,7 +184,7 @@ public class PortfolioHandler implements RepositoryHandler {
 			}
 		}
 
-		ReferenceManager refM = ReferenceManager.getInstance();
+		ReferenceManager refM = CoreSpringFactory.getImpl(ReferenceManager.class);
 		String referencesSummary = refM.getReferencesToSummary(res, locale);
 		if (referencesSummary != null) {
 			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);

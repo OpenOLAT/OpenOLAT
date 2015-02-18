@@ -132,7 +132,7 @@ import org.olat.modules.qpool.ui.events.QItemViewEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.resource.references.ReferenceImpl;
+import org.olat.resource.references.Reference;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -240,7 +240,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private boolean restrictedEdit;
 	private Map<String, Memento> history = null;
 	private String startedWithTitle;
-	private List<ReferenceImpl> referencees;
+	private List<Reference> referencees;
 	private ChangeMessageForm chngMsgFrom;
 	private DialogBoxController proceedRestricedEditDialog;
 	private ContactMessage changeEmail;
@@ -265,11 +265,11 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	@Autowired
 	private QTIQPoolServiceProvider qtiQpoolServiceProvider;
 	
-	public QTIEditorMainController(UserRequest ureq, WindowControl wControl, RepositoryEntry qtiEntry, List<ReferenceImpl> referencees, FileResource fileResource) {
+	public QTIEditorMainController(UserRequest ureq, WindowControl wControl, RepositoryEntry qtiEntry, List<Reference> referencees, FileResource fileResource) {
 		super(ureq, wControl);
 
-		for(Iterator<ReferenceImpl> iter = referencees.iterator(); iter.hasNext(); ) {
-			ReferenceImpl ref = iter.next();
+		for(Iterator<Reference> iter = referencees.iterator(); iter.hasNext(); ) {
+			Reference ref = iter.next();
 			if ("CourseModule".equals(ref.getSource().getResourceableTypeName())) {
 				try {
 					ICourse course = CourseFactory.loadCourse(ref.getSource().getResourceableId());
@@ -1210,8 +1210,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 
 		StringBuilder result = new StringBuilder();
 		result.append(translate("qti.restricted.leading"));
-		for (Iterator<ReferenceImpl> iter = referencees.iterator(); iter.hasNext();) {
-			ReferenceImpl element = iter.next();
+		for (Iterator<Reference> iter = referencees.iterator(); iter.hasNext();) {
+			Reference element = iter.next();
 			if ("CourseModule".equals(element.getSource().getResourceableTypeName())) {
 				ICourse course = null;
 				try {

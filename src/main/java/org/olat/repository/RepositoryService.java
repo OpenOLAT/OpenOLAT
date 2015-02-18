@@ -19,6 +19,7 @@
  */
 package org.olat.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -55,6 +56,8 @@ public interface RepositoryService {
 	public RepositoryEntry loadByKey(Long key);
 	
 	public RepositoryEntry loadByResourceKey(Long key);
+	
+	public List<RepositoryEntry> loadByResourceKeys(Collection<Long> keys);
 	
 	public VFSLeaf getIntroductionImage(RepositoryEntry re);
 

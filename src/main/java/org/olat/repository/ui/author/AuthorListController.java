@@ -909,7 +909,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			Roles roles = ureq.getUserSession().getRoles();
 			isOlatAdmin = roles.isOLATAdmin();
 			boolean isInstitutionalResourceManager = !roles.isGuestOnly()
-						&& RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, entry);
+						&& repositoryManager.isInstitutionalRessourceManagerFor(identity, roles, entry);
 			isOwner = isOlatAdmin || repositoryService.hasRole(ureq.getIdentity(), entry, GroupRoles.owner.name())
 						|| isInstitutionalResourceManager;
 			isAuthor = isOlatAdmin || roles.isAuthor() | isInstitutionalResourceManager;

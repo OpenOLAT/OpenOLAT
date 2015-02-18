@@ -57,7 +57,7 @@ import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
-import org.olat.resource.references.ReferenceImpl;
+import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
 
 import de.bps.onyx.plugin.OnyxModule;
@@ -173,7 +173,7 @@ public class QTITestHandler extends QTIHandler {
 		fr.overrideResourceableId(res.getResourceableId());
 		
 		//check if we can edit in restricted mode -> only typos 
-		List<ReferenceImpl> referencees = ReferenceManager.getInstance().getReferencesTo(res);
+		List<Reference> referencees = CoreSpringFactory.getImpl(ReferenceManager.class).getReferencesTo(res);
 		QTIEditorMainController editor =  new QTIEditorMainController(ureq, wControl, re, referencees, fr);
 		if (editor.isLockedSuccessfully()) {
 			return editor;
