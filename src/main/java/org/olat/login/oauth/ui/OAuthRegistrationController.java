@@ -81,6 +81,8 @@ public class OAuthRegistrationController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private RegistrationManager registrationManager;
 	
 	public OAuthRegistrationController(UserRequest ureq, WindowControl wControl, OAuthRegistration registration) {
 		super(ureq, wControl);
@@ -141,7 +143,7 @@ public class OAuthRegistrationController extends FormBasicController {
 			
 			if (event == Event.DONE_EVENT) {
 				// User accepted disclaimer, do login now
-				RegistrationManager.getInstance().setHasConfirmedDislaimer(authenticatedIdentity);
+				registrationManager.setHasConfirmedDislaimer(authenticatedIdentity);
 				doLoginAndRegister(authenticatedIdentity, ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
 				// User did not accept, workflow ends here

@@ -59,6 +59,7 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -74,13 +75,15 @@ public class PwChangeController extends BasicController {
 	private Panel pwarea;
 	private WizardInfoController wic;
 	private final MailManager mailManager;
-	private RegistrationManager rm = RegistrationManager.getInstance();
 	private String pwKey;
 	private PwChangeForm pwf;
 	private TemporaryKeyImpl tempKey;
 	private EmailOrUsernameFormController emailOrUsernameCtr;
 	private Link pwchangeHomelink;
-
+	
+	@Autowired
+	private RegistrationManager rm;
+	
 	/**
 	 * Controller to change a user's password.
 	 * @param ureq

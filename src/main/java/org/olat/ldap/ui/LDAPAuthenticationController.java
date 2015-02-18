@@ -82,6 +82,8 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 	private LoginModule loginModule;
 	@Autowired
 	private LDAPLoginModule ldapLoginModule;
+	@Autowired
+	private RegistrationManager registrationManager;
 
 	public LDAPAuthenticationController(UserRequest ureq, WindowControl control) {
 		// use fallback translator to login and registration package
@@ -201,7 +203,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 			loginModule.clearFailedLoginAttempts(login);
 
 			// Check if disclaimer has been accepted
-			if (RegistrationManager.getInstance().needsToConfirmDisclaimer(authenticatedIdentity)) {
+			if (registrationManager.needsToConfirmDisclaimer(authenticatedIdentity)) {
 				// accept disclaimer first
 				
 				removeAsListenerAndDispose(disclaimerCtr);
@@ -228,7 +230,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 			cmc.deactivate();
 			if (event == Event.DONE_EVENT) {
 				// User accepted disclaimer, do login now
-				RegistrationManager.getInstance().setHasConfirmedDislaimer(authenticatedIdentity);
+				registrationManager.setHasConfirmedDislaimer(authenticatedIdentity);
 				doLoginAndRegister(authenticatedIdentity, ureq, provider);
 			} else if (event == Event.CANCELLED_EVENT) {
 				// User did not accept, workflow ends here

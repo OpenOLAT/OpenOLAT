@@ -83,6 +83,8 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	private LoginModule loginModule;
 	@Autowired
 	private OLATAuthManager olatAuthenticationSpi;
+	@Autowired
+	private RegistrationManager registrationManager;
 	
 	/**
 	 * @see org.olat.login.auth.AuthenticationController#init(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
@@ -208,7 +210,7 @@ public class OLATAuthenticationController extends AuthenticationController imple
 			loginModule.clearFailedLoginAttempts(login);
 			
 			// Check if disclaimer has been accepted
-			if (RegistrationManager.getInstance().needsToConfirmDisclaimer(authenticatedIdentity)) {
+			if (registrationManager.needsToConfirmDisclaimer(authenticatedIdentity)) {
 				// accept disclaimer first
 				
 				removeAsListenerAndDispose(disclaimerCtr);
@@ -229,7 +231,7 @@ public class OLATAuthenticationController extends AuthenticationController imple
 			cmc.deactivate();
 			if (event == Event.DONE_EVENT) {
 				// disclaimer accepted 
-				RegistrationManager.getInstance().setHasConfirmedDislaimer(authenticatedIdentity);
+				registrationManager.setHasConfirmedDislaimer(authenticatedIdentity);
 				authenticated(ureq, authenticatedIdentity);
 			}
 		} else if(cmc == source) {

@@ -72,7 +72,7 @@ public class ChangePasswordWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
-		RegistrationManager rm = RegistrationManager.getInstance();
+		RegistrationManager rm = CoreSpringFactory.getImpl(RegistrationManager.class);
 		String emailAdress = identity.getUser().getProperty(UserConstants.EMAIL, null); 
 		TemporaryKey tk = rm.loadTemporaryKeyByEmail(emailAdress);
 		if (tk == null) {

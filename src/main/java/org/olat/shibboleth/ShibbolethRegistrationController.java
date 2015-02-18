@@ -359,7 +359,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 					SecurityGroup olatUserGroup = secMgr.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
 					secMgr.addIdentityToSecurityGroup(identity, olatUserGroup);
 					// tell system that this user did accept the disclaimer
-					RegistrationManager.getInstance().setHasConfirmedDislaimer(identity);
+					CoreSpringFactory.getImpl(RegistrationManager.class).setHasConfirmedDislaimer(identity);
 					doLogin(identity, ureq);
 					return;
 				} else if (state == STATE_MIGRATED_SHIB_USER) { // ...proceed and migrate user

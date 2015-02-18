@@ -28,6 +28,7 @@ import org.apache.velocity.context.Context;
 import org.olat.admin.user.bulkChange.UserBulkChangeManager;
 import org.olat.admin.user.bulkChange.UserBulkChangeStep00;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -196,7 +197,7 @@ public class EmailProperty extends Generic127CharTextPropertyHandler {
 	
 	private boolean checkForScheduledAdressChange(String emailAddress) {
 		// check if mail address scheduled to change
-		RegistrationManager rm = RegistrationManager.getInstance();
+		RegistrationManager rm = CoreSpringFactory.getImpl(RegistrationManager.class);
 		List<TemporaryKey> tk = rm.loadTemporaryKeyByAction(RegistrationManager.EMAIL_CHANGE);
 		if (tk != null) {
 			for (TemporaryKey temporaryKey : tk) {

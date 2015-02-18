@@ -36,11 +36,8 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-import org.hibernate.type.StandardBasicTypes;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -56,12 +53,15 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Description:
  * 
  * @author Sabina Jeger
  */
+@Service("selfRegistrationManager")
 public class RegistrationManager extends BasicManager {
 
 	public static final String PW_CHANGE = "PW_CHANGE";
@@ -70,46 +70,17 @@ public class RegistrationManager extends BasicManager {
 	protected static final int REG_WORKFLOW_STEPS = 5;
 	protected static final int PWCHANGE_WORKFLOW_STEPS = 4;
 	
-	private RegistrationModule registrationModule;
+	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private MailManager mailManager;
+	@Autowired
 	private BaseSecurity securityManager;
-	private static RegistrationManager INSTANCE;
+	@Autowired
+	private PropertyManager propertyManager;
+	@Autowired
+	private RegistrationModule registrationModule;
 
-	private RegistrationManager() {
-		INSTANCE = this;
-		// singleton
-	}
-
-	/**
-	 * @return Manager instance.
-	 */
-	public static RegistrationManager getInstance() {
-		return INSTANCE;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param mailManager
-	 */
-	public void setMailManager(MailManager mailManager) {
-		this.mailManager = mailManager;
-	}
-
-	/**
-	 * [used by Spring]
-	 * @param registrationModule
-	 */
-	public void setRegistrationModule(RegistrationModule registrationModule) {
-		this.registrationModule = registrationModule;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param securityManager
-	 */
-	public void setSecurityManager(BaseSecurity securityManager) {
-		this.securityManager = securityManager;
-	}
 
 	public boolean validateEmailUsername(String email) {
 		List<String> whiteList = registrationModule.getDomainList();
@@ -232,16 +203,19 @@ public class RegistrationManager extends BasicManager {
 	 * @return TemporaryKey
 	 */
 	public TemporaryKeyImpl createTemporaryKeyByEmail(String email, String ip, String action) {
-		TemporaryKeyImpl tk = null;
-		DB db = DBFactory.getInstance();
 		// check if the user is already registered
 		// we also try to find it in the temporarykey list
-		List tks = db.find("from org.olat.registration.TemporaryKeyImpl as r where r.emailAddress = ?", email,
-				StandardBasicTypes.STRING);
+		String q = "select r from org.olat.registration.TemporaryKeyImpl as r where r.emailAddress = :email";
+		List<TemporaryKeyImpl> tks = dbInstance.getCurrentEntityManager()
+				.createQuery(q, TemporaryKeyImpl.class)
+				.setParameter("email", email)
+				.getResultList();
+		
+		TemporaryKeyImpl tk = null;
 		if ((tks == null) || (tks.size() != 1)) { // no user found, create a new one
 			tk = register(email, ip, action);
 		} else {
-			tk = (TemporaryKeyImpl) tks.get(0);
+			tk = tks.get(0);
 		}
 		return tk;
 	}
@@ -254,7 +228,9 @@ public class RegistrationManager extends BasicManager {
 	 * @return true if successfully deleted
 	 */
 	public void deleteTemporaryKey(TemporaryKeyImpl key) {
-		DBFactory.getInstance().deleteObject(key);
+		TemporaryKeyImpl reloadedKey = dbInstance.getCurrentEntityManager()
+				.getReference(TemporaryKeyImpl.class, key.getKey());
+		dbInstance.getCurrentEntityManager().remove(reloadedKey);
 	}
 
 	/**
@@ -266,14 +242,16 @@ public class RegistrationManager extends BasicManager {
 	 * @return the found temporary key or null if none is found
 	 */
 	public TemporaryKeyImpl loadTemporaryKeyByEmail(String email) {
-		DB db = DBFactory.getInstance();
-		List tks = db.find("from r in class org.olat.registration.TemporaryKeyImpl where r.emailAddress = ?", email,
-				StandardBasicTypes.STRING);
+		String q = "select r from r in class org.olat.registration.TemporaryKeyImpl where r.emailAddress =:email";
+		List<TemporaryKeyImpl> tks = dbInstance.getCurrentEntityManager()
+				.createQuery(q, TemporaryKeyImpl.class)
+				.setParameter("email", email)
+				.getResultList();
+		
 		if (tks.size() == 1) {
-			return (TemporaryKeyImpl) tks.get(0);
-		} else {
-			return null;
+			return tks.get(0);
 		}
+		return null;
 	}
 	
 	/**
@@ -285,8 +263,12 @@ public class RegistrationManager extends BasicManager {
 	 * @return the found temporary key or null if none is found
 	 */
 	public List<TemporaryKey> loadTemporaryKeyByAction(String action) {
-		DB db = DBFactory.getInstance();
-		List<TemporaryKey> tks = db.find("from r in class org.olat.registration.TemporaryKeyImpl where r.regAction = ?", action, StandardBasicTypes.STRING);
+		String q = "select r from r in class org.olat.registration.TemporaryKeyImpl where r.regAction = :action";
+		List<TemporaryKey> tks = dbInstance.getCurrentEntityManager()
+				.createQuery(q, TemporaryKey.class)
+				.setParameter("action", action)
+				.getResultList();
+		
 		if (tks.size() > 0) {
 			return tks;
 		} else {
@@ -302,14 +284,16 @@ public class RegistrationManager extends BasicManager {
 	 * @return the found TemporaryKey or null if none is found
 	 */
 	public TemporaryKeyImpl loadTemporaryKeyByRegistrationKey(String regkey) {
-		DB db = DBFactory.getInstance();
-		List tks = db.find("from r in class org.olat.registration.TemporaryKeyImpl where r.registrationKey = ?", regkey,
-				StandardBasicTypes.STRING);
+		String q = "select r from r in class org.olat.registration.TemporaryKeyImpl where r.registrationKey = :regkey";
+		List<TemporaryKeyImpl> tks = dbInstance.getCurrentEntityManager()
+				.createQuery(q, TemporaryKeyImpl.class)
+				.setParameter("regkey", regkey)
+				.getResultList();
+		
 		if (tks.size() == 1) {
-			return (TemporaryKeyImpl) tks.get(0);
-		} else {
-			return null;
+			return tks.get(0);
 		}
+		return null;
 	}
 
 	/**
@@ -325,7 +309,7 @@ public class RegistrationManager extends BasicManager {
 		String today = new Date().toString();
 		String encryptMe = Encoder.md5hash(emailaddress + ipaddress + today);
 		TemporaryKeyImpl tk = new TemporaryKeyImpl(emailaddress, ipaddress, encryptMe, action);
-		DBFactory.getInstance().saveObject(tk);
+		dbInstance.getCurrentEntityManager().persist(tk);
 		return tk;
 	}
 
@@ -350,10 +334,10 @@ public class RegistrationManager extends BasicManager {
 	 */
 	public boolean needsToConfirmDisclaimer(Identity identity) {
 		boolean needsToConfirm = false; // default is not to confirm
-		if (CoreSpringFactory.getImpl(RegistrationModule.class).isDisclaimerEnabled()) {
+		if (registrationModule.isDisclaimerEnabled()) {
 			// don't use the discrete method to be more robust in case that more than one
 			// property is found
-			List<Property> disclaimerProperties = PropertyManager.getInstance().listProperties(identity, null, null, "user", "dislaimer_accepted");
+			List<Property> disclaimerProperties = propertyManager.listProperties(identity, null, null, "user", "dislaimer_accepted");
 			needsToConfirm = ( disclaimerProperties.size() == 0);
 		}
 		return needsToConfirm;
@@ -367,9 +351,8 @@ public class RegistrationManager extends BasicManager {
 	 * @param identity
 	 */
 	public void setHasConfirmedDislaimer(Identity identity) {		
-		PropertyManager propertyMgr = PropertyManager.getInstance();
-		Property disclaimerProperty = propertyMgr.createUserPropertyInstance(identity, "user", "dislaimer_accepted", null, 1l, null, null);
-		propertyMgr.saveProperty(disclaimerProperty);
+		Property disclaimerProperty = propertyManager.createUserPropertyInstance(identity, "user", "dislaimer_accepted", null, 1l, null, null);
+		propertyManager.saveProperty(disclaimerProperty);
 	}
 
 	/**
@@ -377,8 +360,7 @@ public class RegistrationManager extends BasicManager {
 	 * system must accept the disclaimer again.
 	 */
 	public void revokeAllconfirmedDisclaimers() {
-		PropertyManager propertyMgr = PropertyManager.getInstance();
-		propertyMgr.deleteProperties(null, null, null, "user", "dislaimer_accepted");		
+		propertyManager.deleteProperties(null, null, null, "user", "dislaimer_accepted");		
 	}
 
 	/**
@@ -388,8 +370,7 @@ public class RegistrationManager extends BasicManager {
 	 * @param identity
 	 */
 	public void revokeConfirmedDisclaimer(Identity identity) {
-		PropertyManager propertyMgr = PropertyManager.getInstance();
-		propertyMgr.deleteProperties(identity, null, null, "user", "dislaimer_accepted");		
+		propertyManager.deleteProperties(identity, null, null, "user", "dislaimer_accepted");		
 	}
 	
 	/**
@@ -397,10 +378,11 @@ public class RegistrationManager extends BasicManager {
 	 * @return
 	 */
 	public List<Identity> getIdentitiesWithConfirmedDisclaimer() {
-		List<Identity> identities = DBFactory.getInstance().find(
-				"select distinct ident from org.olat.core.id.Identity as ident, org.olat.properties.Property as prop " +
-				"where prop.identity=ident and prop.category='user' and prop.name='dislaimer_accepted'");
-		return identities;
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct ident from org.olat.core.id.Identity as ident, org.olat.properties.Property as prop ")
+		  .append(" where prop.identity=ident and prop.category='user' and prop.name='dislaimer_accepted'");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.getResultList();
 	}
-
 }
