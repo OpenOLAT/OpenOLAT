@@ -72,7 +72,7 @@
 		<org.postgresql.version>9.4-1200-jdbc41</org.postgresql.version>
 		<org.infinispan.version>6.0.2.Final</org.infinispan.version>
 		<lucene.version>4.8.0</lucene.version>
-		<version.selenium>2.44.0</version.selenium>
+		<version.selenium>2.43.1</version.selenium>
 
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
