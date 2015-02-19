@@ -210,40 +210,39 @@ public class RegistrationModule extends AbstractOLATModule {
 	public void init() {
 		//registration enabled/disabled
 		String enabledObj = getStringPropertyValue("registration.enabled", true);
-		if(StringHelper.containsNonWhitespace(enabledObj)) {
-			selfRegistrationEnabled = "true".equals(enabledObj);
-		}
+		selfRegistrationEnabled = "true".equals(enabledObj);
 		
 		//link registration enabled/disabled (rest)
 		String linkEnabledObj = getStringPropertyValue("registration.link.enabled", true);
-		if(StringHelper.containsNonWhitespace(linkEnabledObj)) {
-			selfRegistrationLinkEnabled = "true".equals(linkEnabledObj);
-		}
+		selfRegistrationLinkEnabled = "true".equals(linkEnabledObj);
 		
 		//link on the login page for registration enabled/disabled 
 		String loginEnabledObj = getStringPropertyValue("registration.login.enabled", true);
-		if(StringHelper.containsNonWhitespace(loginEnabledObj)) {
-			selfRegistrationLoginEnabled = "true".equals(loginEnabledObj);
-		}
+		selfRegistrationLoginEnabled = "true".equals(loginEnabledObj);
 		
 		//white list of domains
 		String domainObj = getStringPropertyValue("registration.domains", true);
 		if(StringHelper.containsNonWhitespace(domainObj)) {
 			domainList = domainObj;
+		} else {
+			domainList = null; // reset
 		}
 
 		//static property mapping enabled/disabled
 		String enabledPropObj = getStringPropertyValue("static.prop.mapping.enabled", true);
-		if(StringHelper.containsNonWhitespace(enabledPropObj)) {
-			staticPropertyMappingEnabled = "true".equals(enabledPropObj);
-		}
+		staticPropertyMappingEnabled = "true".equals(enabledPropObj);
+		
 		String propKeyObj = getStringPropertyValue("static.prop.mapping", true);
 		if(StringHelper.containsNonWhitespace(propKeyObj)) {
 			staticPropertyMappingName = propKeyObj;
+		} else {
+			staticPropertyMappingName = null; // reset
 		}
 		String propValueObj = getStringPropertyValue("static.prop.mapping.value", true);
 		if(StringHelper.containsNonWhitespace(propValueObj)) {
 			staticPropertyMappingValue = propValueObj;
+		} else {
+			staticPropertyMappingValue = null; // reset
 		}
 	}
 
