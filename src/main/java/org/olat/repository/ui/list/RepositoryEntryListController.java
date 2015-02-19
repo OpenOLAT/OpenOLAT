@@ -550,6 +550,9 @@ public class RepositoryEntryListController extends FormBasicController
 	public void forgeSelectLink(RepositoryEntryRow row) {
 		String displayName = row.getDisplayName();
 		FormLink selectLink = uifactory.addFormLink("select_" + row.getKey(), "select", displayName, null, null, Link.NONTRANSLATED);
+		if(row.isClosed()) {
+			selectLink.setIconLeftCSS("o_icon o_CourseModule_icon_closed");
+		}
 		selectLink.setUserObject(row);
 		row.setSelectLink(selectLink);
 	}

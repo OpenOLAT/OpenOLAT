@@ -12,13 +12,16 @@
 		<div class="o_go_xs visible-xs">
 			<i class=" o_icon o_icon_start o_icon-lg"></i>
 		</div>
-		<h4 class="o_title">$r.render($row.getSelectLinkName())
+		<h4 class="o_title">#if($row.closed)#end$r.render($row.getSelectLinkName())
 			#if ($row.getExternalRef())
 				<small>$row.getExternalRef()</small>
 			#end
 		</h4>
 		#if($row.authors && !$row.authors.empty)
 			<div class="o_author"><span class="text-muted">$r.translate("course.made.by")</span> $row.authors</div>
+		#end
+		#if($row.closed)
+			<div class="o_warning o_closed">$r.translate("close.ressource.warning")</div>
 		#end
 		#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleStart || $row.lifecycleEnd)
 			<div class="o_lifecycle #if ($row.isActive()) o_active #end">

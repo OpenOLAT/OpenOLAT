@@ -38,6 +38,9 @@
 			<div class="#if($hasMetaData) col-xs-6 col-sm-12 #else col-sm-6 #end o_subcolumn">
 				<div class="o_overview">
 					<h3>$r.translate("details.overview")</h3>
+					#if($closed)
+						<div class="o_warning o_closed"><i class="o_icon o_icon-lg o_CourseModule_icon_closed"> </i> $r.translate("close.ressource.warning")</div>
+					#end
 					#if($v.lifecycle || $v.lifecycle.softKey || $row.lifecycle.start || $row.lifecycle.end)
 					<div title="$r.translateInAttribute("cif.dates")">
 						<i class="o_icon o_icon_lifecycle"></i> 
