@@ -686,8 +686,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		String sort = form.getRequestParameter("sort");
 		String filter = form.getRequestParameter("filter");
 		String pagesize = form.getRequestParameter("pagesize");
+		String checkbox = form.getRequestParameter("chkbox");
 		if("undefined".equals(dispatchuri)) {
 			evalSearchRequest(ureq);
+		} else if(StringHelper.containsNonWhitespace(checkbox)) {
+			toogleSelectIndex(checkbox);
 		} else if(StringHelper.containsNonWhitespace(page)) {
 			int p = Integer.parseInt(page);
 			setPage(p);
@@ -1220,6 +1223,31 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public boolean isMultiSelectedIndex(int index) {
 		return multiSelectedIndex != null && multiSelectedIndex.contains(new Integer(index));
+	}
+	
+	protected void toogleSelectIndex(String selection) {
+		if(multiSelectedIndex == null) {
+			multiSelectedIndex = new HashSet<Integer>();
+		}
+
+		String rowStr;
+		int index = selection.lastIndexOf('-');
+		if(index > 0 && index+1 < selection.length()) {
+			rowStr = selection.substring(index+1);
+		} else {
+			rowStr = selection;
+		}
+		
+		try {
+			Integer row = new Integer(rowStr);
+			if(multiSelectedIndex.contains(row)) {
+				multiSelectedIndex.remove(row);
+			} else {
+				multiSelectedIndex.add(row);
+			}	
+		} catch (NumberFormatException e) {
+			//can happen
+		}
 	}
 	
 	protected void setMultiSelectIndex(String[] selections) {
