@@ -31,10 +31,10 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.jgroups.util.UUID;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.CoreSpringFactory;
@@ -54,9 +54,7 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/**
- * 
- */
+
 public class CoordinatorTest extends OlatTestCase {
 	
 	private static final OLog log = Tracing.createLoggerFor(CoordinatorTest.class);

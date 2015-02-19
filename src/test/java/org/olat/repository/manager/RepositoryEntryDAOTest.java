@@ -22,10 +22,9 @@ package org.olat.repository.manager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
-import junit.framework.Assert;
-
-import org.jgroups.util.UUID;
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.MarkManager;

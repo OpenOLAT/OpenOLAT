@@ -71,7 +71,6 @@ import org.junit.runners.Suite;
 	org.olat.core.gui.render.VelocityTemplateTest.class,
 	org.olat.core.gui.control.generic.iframe.IFrameDeliveryMapperTest.class,
 	org.olat.note.NoteTest.class,
-	org.olat.user.UserPropertiesPerformanceTest.class,
 	org.olat.user.EmailCheckPerformanceTest.class,//fail
 	org.olat.user.UserTest.class,
 	org.olat.user.UserPropertiesTest.class,

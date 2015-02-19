@@ -22,8 +22,8 @@ package org.olat.modules.qpool.ui.metadata;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
-import org.jgroups.util.UUID;
 import org.olat.admin.securitygroup.gui.GroupController;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;

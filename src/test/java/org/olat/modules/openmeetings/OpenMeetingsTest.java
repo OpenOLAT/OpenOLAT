@@ -21,8 +21,7 @@ package org.olat.modules.openmeetings;
 
 import java.util.Locale;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.modules.openmeetings.manager.OpenMeetingsLanguages;
 

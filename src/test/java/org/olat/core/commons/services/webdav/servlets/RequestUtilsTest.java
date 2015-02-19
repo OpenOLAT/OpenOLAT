@@ -19,8 +19,7 @@
  */
 package org.olat.core.commons.services.webdav.servlets;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

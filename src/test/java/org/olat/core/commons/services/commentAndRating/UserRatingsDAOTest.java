@@ -24,8 +24,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.UUID;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;

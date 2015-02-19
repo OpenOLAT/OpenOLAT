@@ -29,14 +29,13 @@ import java.util.UUID;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import junit.framework.Assert;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;

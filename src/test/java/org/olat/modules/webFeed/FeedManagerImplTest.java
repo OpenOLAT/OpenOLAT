@@ -27,9 +27,9 @@ package org.olat.modules.webFeed;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import junit.framework.Assert;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.id.OLATResourceable;

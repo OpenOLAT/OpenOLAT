@@ -19,8 +19,7 @@
  */
 package org.olat.core;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.logging.OLog;

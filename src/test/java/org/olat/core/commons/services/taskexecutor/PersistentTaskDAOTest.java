@@ -26,8 +26,7 @@ import java.util.UUID;
 
 import javax.persistence.EntityNotFoundException;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.taskexecutor.manager.PersistentTaskDAO;
@@ -59,8 +58,8 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void createTask() {
-		String name = "Task 0";
-		PersistentTask task = persistentTaskDao.createTask(name, new DummyTask());
+		String taskName = "Task 0";
+		PersistentTask task = persistentTaskDao.createTask(taskName, new DummyTask());
 		
 		dbInstance.commit();
 		
@@ -110,8 +109,8 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 
 	@Test
 	public void pickTask() {
-		String name = "Task 1";
-		PersistentTask task = persistentTaskDao.createTask(name, new DummyTask());
+		String taskName = "Task 1";
+		PersistentTask task = persistentTaskDao.createTask(taskName, new DummyTask());
 		dbInstance.commitAndCloseSession();
 		
 		PersistentTask todo = persistentTaskDao.pickTaskForRun(task.getKey());
@@ -124,8 +123,8 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 	@Test
 	public void updateTask() {
 		//create
-		String name = "Task to update";
-		PersistentTask task = persistentTaskDao.createTask(name, new DummyTask());
+		String taskName = "Task to update";
+		PersistentTask task = persistentTaskDao.createTask(taskName, new DummyTask());
 		dbInstance.commitAndCloseSession();
 		
 		//update
@@ -147,8 +146,8 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void todo() {
-		String name = UUID.randomUUID().toString();
-		PersistentTask task = persistentTaskDao.createTask(name, new DummyTask());
+		String taskname = UUID.randomUUID().toString();
+		PersistentTask task = persistentTaskDao.createTask(taskname, new DummyTask());
 		dbInstance.commitAndCloseSession();
 		
 		List<Long> todos = persistentTaskDao.tasksToDo();
@@ -159,8 +158,8 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void todo_workflow() {
-		String name = UUID.randomUUID().toString();
-		persistentTaskDao.createTask(name, new DummyTask());
+		String taskName = UUID.randomUUID().toString();
+		persistentTaskDao.createTask(taskName, new DummyTask());
 		dbInstance.commitAndCloseSession();
 		
 		int count = 0;
@@ -180,8 +179,8 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void todo_oldTasks() {
-		String name = UUID.randomUUID().toString();
-		PersistentTask ctask = persistentTaskDao.createTask(name, new DummyTask());
+		String taskName = UUID.randomUUID().toString();
+		PersistentTask ctask = persistentTaskDao.createTask(taskName, new DummyTask());
 		
 		//simulate a task from a previous boot
 		PersistentTask ptask = new PersistentTask();
@@ -426,8 +425,8 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void todo_workflow_withModifiers() {
-		String name = UUID.randomUUID().toString();
-		persistentTaskDao.createTask(name, new DummyTask());
+		String tname = UUID.randomUUID().toString();
+		persistentTaskDao.createTask(tname, new DummyTask());
 		dbInstance.commitAndCloseSession();
 		
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();

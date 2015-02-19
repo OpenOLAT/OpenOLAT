@@ -140,8 +140,9 @@ public class ClusterSyncer implements Syncer {
 	/**
 	 * @see org.olat.core.util.coordinate.Syncer#assertAlreadyDoInSyncFor(org.olat.core.id.OLATResourceable)
 	 */
+	@Override
 	public void assertAlreadyDoInSyncFor(OLATResourceable ores) {
-		if (!getData().isEquals(ores) || (getData().getNestedLevel() == 0) ) {
+		if (getData().getSyncObject() == null || !getData().isEquals(ores) || (getData().getNestedLevel() == 0) ) {
 			throw new AssertException("This method must be called from doInSync block with ores=" + ores);
 		}
 	}
@@ -207,15 +208,19 @@ public class ClusterSyncer implements Syncer {
 			}
 		}
 		
+		protected OLATResourceable getSyncObject() {
+			return ores;
+		}
+		
 		protected void setSyncObject(OLATResourceable ores) {
 			this.ores = ores;
 		}
 		
-		protected boolean isEquals(OLATResourceable ores) {
-			if (!this.ores.getResourceableTypeName().equals(ores.getResourceableTypeName())) {
+		protected boolean isEquals(OLATResourceable res) {
+			if (!ores.getResourceableTypeName().equals(res.getResourceableTypeName())) {
 				return false;
 			}
-			if (!this.ores.getResourceableId().equals(ores.getResourceableId())) {
+			if (!ores.getResourceableId().equals(res.getResourceableId())) {
 				return false;
 			}
 			return true;

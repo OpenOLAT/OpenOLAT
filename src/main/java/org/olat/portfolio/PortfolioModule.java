@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -213,7 +214,14 @@ public class PortfolioModule extends AbstractSpringModule implements ConfigOnOff
 	}
 
 	public boolean removeArtefactHandler(EPArtefactHandler<?> artefacthandler) {
-		return artefactHandlers.remove(artefacthandler);
+		boolean removed = false;
+		for(Iterator<EPArtefactHandler<?>> it=artefactHandlers.iterator(); it.hasNext(); ) {
+			if(it.next().getType().equals(artefacthandler.getType())) {
+				it.remove();
+				removed = true;
+			}
+		}
+		return removed;
 	}
 	
 	public VFSContainer getPortfolioRoot() {
