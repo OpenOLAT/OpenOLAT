@@ -53,7 +53,6 @@ public class VFSLockManagerImpl implements VFSLockManager {
      * Key : path <br>
      * Value : LockInfo
      */
-    private Map<String,LockInfo> resourceLocks = new ConcurrentHashMap<String,LockInfo>();
     private Map<File,LockInfo> fileLocks = new ConcurrentHashMap<File,LockInfo>();
 
     /**
@@ -89,7 +88,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
     	if(file != null && fileLocks.containsKey(file)) {
     		LockInfo lock = fileLocks.get(file);
     		if (lock != null && lock.hasExpired()) {
-                resourceLocks.remove(lock.getWebPath());
+                //LOCK resourceLocks.remove(lock.getWebPath());
                 fileLocks.remove(file);
             } else {
             	return true;
@@ -109,7 +108,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
     	if(file != null && fileLocks.containsKey(file)) {
     		LockInfo lock = fileLocks.get(file);
     		if (lock != null && lock.hasExpired()) {
-                resourceLocks.remove(lock.getWebPath());
+    			//LOCK resourceLocks.remove(lock.getWebPath());
                 fileLocks.remove(file);
             } else {
         		Long lockedBy = lock.getLockedBy();
@@ -189,7 +188,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
 					lock.setVfsLock(false);
 				} else {
 					if(lock.getWebPath() != null) {
-						resourceLocks.remove(lock.getWebPath());
+						//LOCK resourceLocks.remove(lock.getWebPath());
 					}
 					fileLocks.remove(file);
 					unlocked = true;
@@ -203,13 +202,13 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	}
 
 	public Iterator<LockInfo> getResourceLocks() {
-		return resourceLocks.values().iterator();
+		return fileLocks.values().iterator();
 	}
 	
     public LockInfo getResourceLock(WebResource resource) {
-    	if(resourceLocks.containsKey(resource.getPath())) {
+    	/* LOCK if(resourceLocks.containsKey(resource.getPath())) {
     		return resourceLocks.get(resource.getPath());
-    	}
+    	}*/
     	
     	File file = extractFile(resource);
     	if(file != null && fileLocks.containsKey(file)) {
@@ -285,7 +284,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
     }
     
     public void putResourceLock(WebResource resource, LockInfo lock) {
-		resourceLocks.put(resource.getPath(), lock);
+		//LOCK resourceLocks.put(resource.getPath(), lock);
 		File file = extractFile(resource);
 		if(file != null) {
 			fileLocks.put(file, lock);
@@ -317,18 +316,18 @@ public class VFSLockManagerImpl implements VFSLockManager {
     }
     
     public void removeResourceLock(WebResource resource) {
-    	LockInfo lock = resourceLocks.get(resource.getPath());
-    	if(lock != null) {
-    		if(lock.isVfsLock()) {
-    			lock.setWebDAVLock(false);
-    		} else {
-		    	resourceLocks.remove(resource.getPath());
-		    	File file = extractFile(resource);
-				if(file != null) {
+    	//LOCK
+		File file = extractFile(resource);
+		if(file != null) {
+	    	LockInfo lock = fileLocks.get(file);
+	    	if(lock != null) {
+	    		if(lock.isVfsLock()) {
+	    			lock.setWebDAVLock(false);
+	    		} else {
 					fileLocks.remove(file);
-				}
-    		}
-    	}
+	    		}
+	    	}
+		}
 	}
 
 	public Vector<String> getLockNullResource(WebResource resource) {
@@ -376,11 +375,15 @@ public class VFSLockManagerImpl implements VFSLockManager {
     			return true;
     		}
     	}
-
-        LockInfo lock = resourceLocks.get(path);
-
+    	
+    	File file = extractFile(resource);
+    	if(file == null) {
+    		return false;//lock only file
+    	}
+    	
+        LockInfo lock = fileLocks.get(file);
         if (lock != null && lock.hasExpired()) {
-            resourceLocks.remove(path);
+            fileLocks.remove(file);
         } else if (lock != null) {
             // At least one of the tokens of the locks must have been given
         	Iterator<String> tokenList = lock.tokens();
