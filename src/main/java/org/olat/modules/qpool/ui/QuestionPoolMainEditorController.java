@@ -41,6 +41,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -93,11 +94,13 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	private QuestionsController markedQuestionsCtrl;
 	
 	private Controller presentationCtrl, sharePresentationCtrl;
+	private CloseableModalController cmc;
 	private PoolsAdminController poolAdminCtrl;
 	private QItemTypesAdminController typesCtrl;
 	private QEducationalContextsAdminController levelsCtrl;
 	private QLicensesAdminController licensesCtrl;
 	private TaxonomyAdminController taxonomyCtrl;
+	private ShareItemOptionController shareItemsCtrl;
 	private LayoutMain3ColsController columnLayoutCtr;
 	private QuestionPoolAdminStatisticsController adminStatisticsCtrl;
 	private DialogBoxController copyToMyCtrl;
@@ -203,7 +206,23 @@ public class QuestionPoolMainEditorController extends BasicController implements
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(event instanceof QPoolEvent) {
+		if(shareItemsCtrl == source) {
+			if(QPoolEvent.ITEM_SHARED.equals(event.getCommand())) {
+				List<QuestionItemShort> items = shareItemsCtrl.getItems();
+				if(items.size() > 0) {//can only drop one item
+					QuestionItemShort item = items.get(0);
+					if(shareItemsCtrl.getGroups() != null) {
+						showInfo("item.shared", item.getTitle());
+					} else if(shareItemsCtrl.getPools() != null) {
+						showInfo("item.pooled", item.getTitle());
+					}
+				}
+				buildShareSubTreeModel(sharesNode);
+				menuTree.setDirty(true);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(event instanceof QPoolEvent) {
 			if(QPoolEvent.ITEM_SHARED.equals(event.getCommand())) {
 				buildShareSubTreeModel(sharesNode);
 				menuTree.setDirty(true);
@@ -232,8 +251,17 @@ public class QuestionPoolMainEditorController extends BasicController implements
 				QuestionItemShort item = (QuestionItemShort)copyToMyCtrl.getUserObject();
 				doCopyToMy(ureq, item);
 			}
+		} else if(cmc == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(shareItemsCtrl);
+		removeAsListenerAndDispose(cmc);
+		shareItemsCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -265,11 +293,9 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			if(node != null) {
 				Object userObj = node.getUserObject();
 				if(userObj instanceof BusinessGroup) {
-					qpoolService.shareItemsWithGroups(singletonList(item), singletonList((BusinessGroup)userObj), false);
-					showInfo("item.shared", item.getTitle());
+					doShareItemsOptions(ureq, singletonList(item), singletonList((BusinessGroup)userObj), null);
 				} else if(userObj instanceof Pool) {
-					qpoolService.addItemsInPools(singletonList(item), singletonList((Pool)userObj), false);
-					showInfo("item.pooled", item.getTitle());
+					doShareItemsOptions(ureq, singletonList(item), null, singletonList((Pool)userObj));
 				} else if(userObj instanceof QuestionItemCollection) {
 					qpoolService.addItemToCollection(singletonList(item), singletonList((QuestionItemCollection)userObj));
 					showInfo("item.collectioned", item.getTitle());
@@ -285,6 +311,18 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		} catch (Exception e) {
 			logError("Cannot drop with id: " + dropId, e);
 		}
+	}
+	
+	private void doShareItemsOptions(UserRequest ureq, List<QuestionItemShort> items, List<BusinessGroup> groups, List<Pool> pools) {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(shareItemsCtrl);
+		shareItemsCtrl = new ShareItemOptionController(ureq, getWindowControl(), items, groups, pools);
+		listenTo(shareItemsCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				shareItemsCtrl.getInitialComponent(), true, translate("share.item"));
+		cmc.activate();
+		listenTo(cmc);	
 	}
 	
 	private void doCopyToMyConfirmation(UserRequest ureq, QuestionItemShort item) {

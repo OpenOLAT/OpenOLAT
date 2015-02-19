@@ -2022,12 +2022,6 @@
 			<groupId>com.thoughtworks.xstream</groupId>
 			<artifactId>xstream</artifactId>
 			<version>1.4.7</version>
-			<exclusions><!-- use only xmlpull -->
-				<exclusion>
-					<artifactId>xpp3</artifactId>
-					<groupId>xpp3_min</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>xerces</groupId>
