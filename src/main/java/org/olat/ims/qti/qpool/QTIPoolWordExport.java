@@ -77,6 +77,11 @@ class QTIPoolWordExport implements MediaResource {
 	}
 	
 	@Override
+	public boolean acceptRanges() {
+		return false;
+	}
+	
+	@Override
 	public String getContentType() {
 		return "application/zip";
 	}

@@ -439,6 +439,11 @@ public class CertificatesOptionsController extends FormBasicController {
 		}
 		
 		@Override
+		public boolean acceptRanges() {
+			return true;
+		}
+		
+		@Override
 		public String getContentType() {
 			return "application/type";
 		}

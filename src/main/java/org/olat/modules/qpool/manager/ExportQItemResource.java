@@ -53,6 +53,11 @@ public class ExportQItemResource implements MediaResource {
 		this.encoding = encoding;
 		this.item = item;
 	}
+	
+	@Override
+	public boolean acceptRanges() {
+		return false;
+	}
 
 	@Override
 	public String getContentType() {

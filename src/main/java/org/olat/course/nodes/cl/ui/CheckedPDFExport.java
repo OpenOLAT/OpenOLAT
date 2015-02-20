@@ -79,10 +79,10 @@ public class CheckedPDFExport extends PdfDocument implements MediaResource {
 		institutionalUserIdentifierIndex = findPropertyIndex(UserConstants.INSTITUTIONALUSERIDENTIFIER, userPropertyHandlers);
 	}
 	
-	private int findPropertyIndex(String propertyName, List<UserPropertyHandler> userPropertyHandlers) {
+	private int findPropertyIndex(String propertyName, List<UserPropertyHandler> userPropHandlers) {
 		int i=0;
 		int index = -1;
-		for(UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
+		for(UserPropertyHandler userPropertyHandler:userPropHandlers) {
 			if(propertyName.equals(userPropertyHandler.getName())) {
 				index = i;
 				numOfCols++;
@@ -92,9 +92,9 @@ public class CheckedPDFExport extends PdfDocument implements MediaResource {
 		return index;
 	}
 	
-	private String findHeader(String propertyName, List<UserPropertyHandler> userPropertyHandlers) {
+	private String findHeader(String propertyName, List<UserPropertyHandler> userPropHandlers) {
 		String header = null;
-		for(UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
+		for(UserPropertyHandler userPropertyHandler:userPropHandlers) {
 			if(propertyName.equals(userPropertyHandler.getName())) {
 				header = translator.translate(userPropertyHandler.i18nColumnDescriptorLabelKey());
 			}
@@ -124,6 +124,11 @@ public class CheckedPDFExport extends PdfDocument implements MediaResource {
 
 	public void setAuthor(String author) {
 		this.author = author;
+	}
+	
+	@Override
+	public boolean acceptRanges() {
+		return false;
 	}
 
 	@Override

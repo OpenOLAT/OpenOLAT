@@ -56,6 +56,11 @@ public class HttpRequestMediaResource implements MediaResource {
 	public HttpRequestMediaResource(HttpResponse response) {
 		this.response = response;
 	}
+	
+	@Override
+	public boolean acceptRanges() {
+		return false;
+	}
 
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#getContentType()

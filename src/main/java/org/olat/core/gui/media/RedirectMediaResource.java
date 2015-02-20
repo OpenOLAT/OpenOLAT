@@ -49,6 +49,11 @@ public class RedirectMediaResource implements MediaResource {
 	public RedirectMediaResource(String redirectURL) {
 		this.redirectURL = redirectURL;
 	}
+	
+	@Override
+	public boolean acceptRanges() {
+		return false;
+	}
 
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#getContentType()

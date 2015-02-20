@@ -52,8 +52,8 @@ public class ExcelMediaResource extends StringMediaResource {
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#prepare(javax.servlet.http.HttpServletResponse)
 	 */
+	@Override
 	public void prepare(HttpServletResponse hres) {
-
 		// anything
 		hres.setCharacterEncoding("utf-8");
 		
@@ -65,21 +65,7 @@ public class ExcelMediaResource extends StringMediaResource {
 		else {
 			name = optionalFilename;
 		}
-		
-		
-		/*try {
-		 //String test = "aüa\u0395\u0159a\u0641bcd\u0395a\u03BA\u03C4\u03B5a\u0410\u0432\u0442b\u0159c";
-		 String output = null;
-			byte[] b = test.getBytes("utf-8");
-			output = new String(b, "iso-8859-1");
-			String res = sb.toString();
-			//output = res;
-		} catch (UnsupportedEncodingException e) {
-		}
-		*/
-		//boolean isIE = false; // ie and konqueror and safari: true, only iso-8859-1
-		
-		//hres.setHeader("Content-Disposition", "attachment; filename=" + (isIE?test:output) + ".xls");
+
 		hres.setHeader("Content-Disposition", "attachment; filename=" + name + ".xls");
 		hres.setHeader("Content-Description", "OLAT Generated data");
 	}
@@ -93,10 +79,6 @@ public class ExcelMediaResource extends StringMediaResource {
 		if (!p.matcher(fileName).matches())	{
 			throw new AssertException(fileName + " is not a valid filename");
 		}
-		
-		//TODO: check for no file extension and only valid characters
-//		StringHelper.check4SafeFileName(fileName);
 		this.optionalFilename = fileName;
 	}
-
 }

@@ -114,7 +114,7 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 		servletContextPath = servletContext.getContextPath();
 		
 		try {
-			InputStream meta = servletContext.getResourceAsStream("META-INF/MANIFEST.MF");
+			InputStream meta = servletContext.getResourceAsStream("/META-INF/MANIFEST.MF");
 			if(meta != null) {
 				try {
 					Properties props = new Properties();

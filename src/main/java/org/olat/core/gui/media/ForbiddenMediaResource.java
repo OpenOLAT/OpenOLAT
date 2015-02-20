@@ -46,6 +46,7 @@ public class ForbiddenMediaResource extends DefaultMediaResource {
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#prepare(javax.servlet.http.HttpServletResponse)
 	 */
+	@Override
 	public void prepare(HttpServletResponse hres) {
 		try {
 			hres.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden: " + forbiddenFoundURI);

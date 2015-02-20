@@ -51,6 +51,11 @@ public class VFSMediaResource implements MediaResource {
 		this.vfsLeaf = vfsLeaf;
 		this.filesInfoMBean = (FilesInfoMBean) CoreSpringFactory.getBean(FilesInfoMBean.class.getCanonicalName());
 	}
+	
+	@Override
+	public boolean acceptRanges() {
+		return true;
+	}
 
 	public String getContentType() {
 		String mimeType;

@@ -43,6 +43,11 @@ public class CertificateMediaResource implements MediaResource {
 	}
 	
 	@Override
+	public boolean acceptRanges() {
+		return true;
+	}
+	
+	@Override
 	public String getContentType() {
 		return "application/pdf";
 	}

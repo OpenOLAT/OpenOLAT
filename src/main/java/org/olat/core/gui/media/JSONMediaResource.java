@@ -20,7 +20,6 @@
 package org.olat.core.gui.media;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -78,10 +77,5 @@ public class JSONMediaResource extends DefaultMediaResource {
 		} catch (IOException e) {
 			log.error("", e);
 		}
-	}
-
-	@Override
-	public InputStream getInputStream() {
-		return null;
 	}
 }

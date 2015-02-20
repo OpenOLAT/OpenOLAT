@@ -45,6 +45,11 @@ public class CleanupAfterDeliveryFileMediaResource extends FileMediaResource {
 	public CleanupAfterDeliveryFileMediaResource(File file) {
 		super(file, true);
 	}
+	
+	@Override
+	public boolean acceptRanges() {
+		return false;
+	}
 
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#release()

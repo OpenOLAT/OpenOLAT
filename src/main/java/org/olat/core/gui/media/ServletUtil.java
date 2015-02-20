@@ -157,7 +157,7 @@ public class ServletUtil {
 
 			//fxdiff FXOLAT-118: accept range to deliver videos for iPad (implementation based on Tomcat)
 			List<Range> ranges = parseRange(httpReq, httpResp, (lastModified == null ? -1 : lastModified.longValue()), (size == null ? 0 : size.longValue()));
-			if(ranges != null) {
+			if(ranges != null && mr.acceptRanges()) {
 				httpResp.setHeader("Accept-Ranges", "bytes");
 			}
 			// maybe some more preparations

@@ -60,6 +60,11 @@ public class ArchiveResource implements MediaResource {
 		this.courseNode = courseNode;
 		this.courseOres = courseOres;
 	}
+	
+	@Override
+	public boolean acceptRanges() {
+		return false;
+	}
 
 	@Override
 	public String getContentType() {
