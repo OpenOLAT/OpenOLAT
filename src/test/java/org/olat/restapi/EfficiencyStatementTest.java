@@ -30,16 +30,21 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.course.ICourse;
 import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.model.EfficiencyStatementVO;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
+import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +61,37 @@ public class EfficiencyStatementTest extends OlatJerseyTestCase {
 	private DB dbInstance;
 	@Autowired
 	private EfficiencyStatementManager efficiencyStatementManager;
+	
+	@Test
+	public void getEfficiencyStatement() throws IOException, URISyntaxException {
+		// create a standalone efficiency statement
+		Identity admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("eff-1");
+		ICourse course = CoursesWebService.createEmptyCourse(admin, "courses1", "courses1 long name", null, null, RepositoryEntry.ACC_OWNERS, false, null, null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		OLATResource resource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+		UserEfficiencyStatement statement = efficiencyStatementManager
+				.createUserEfficiencyStatement(new Date(), 5.0f, true, assessedIdentity, resource);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(statement);
+		
+		// get the statement
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(resource.getKey().toString())
+				.path("statements").path(assessedIdentity.getKey().toString()).build();
+		HttpGet getStatement = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(getStatement);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		EfficiencyStatementVO statementVO = conn.parse(response, EfficiencyStatementVO.class);
+		Assert.assertNotNull(statementVO);
+		Assert.assertEquals(5.0f, statementVO.getScore(), 0.0001);
+		Assert.assertEquals(true, statementVO.getPassed());
+		Assert.assertEquals(assessedIdentity.getKey(), statementVO.getIdentityKey());
+	}
 
 	@Test
 	public void putEfficiencyStatement() throws IOException, URISyntaxException {
@@ -109,6 +145,50 @@ public class EfficiencyStatementTest extends OlatJerseyTestCase {
 				.path("statements").path(assessedIdentity.getKey().toString()).build();
 
 		EfficiencyStatementVO statement = new EfficiencyStatementVO();
+		statement.setCreationDate(new Date());
+		statement.setPassed(Boolean.TRUE);
+		statement.setScore(8.5f);
+		statement.setCourseTitle("Standalone");
+
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, statement);
+
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+
+		//check the efficiency statement
+		UserEfficiencyStatement efficiencyStatement = efficiencyStatementManager
+				.getUserEfficiencyStatementFullByResourceKey(resourceKey, assessedIdentity);
+		Assert.assertNotNull(efficiencyStatement);
+		Assert.assertEquals(8.5f, efficiencyStatement.getScore(), 0.001);
+		Assert.assertEquals(Boolean.TRUE, efficiencyStatement.getPassed());
+		Assert.assertEquals("Standalone", efficiencyStatement.getShortTitle());
+		Assert.assertEquals(assessedIdentity, efficiencyStatement.getIdentity());
+	}
+	
+	/**
+	 * Don't give the identity key in URL but in the JSON object
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void putEfficiencyStatement_standalone_alt() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-3");
+		dbInstance.commitAndCloseSession();
+		
+		Long resourceKey = 3495783497l;
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(resourceKey.toString())
+				.path("statements").build();
+
+		EfficiencyStatementVO statement = new EfficiencyStatementVO();
+		statement.setIdentityKey(assessedIdentity.getKey());
 		statement.setCreationDate(new Date());
 		statement.setPassed(Boolean.TRUE);
 		statement.setScore(8.5f);

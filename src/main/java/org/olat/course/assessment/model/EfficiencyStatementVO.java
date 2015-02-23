@@ -21,6 +21,8 @@ package org.olat.course.assessment.model;
 
 import java.util.Date;
 
+import org.olat.course.assessment.UserEfficiencyStatement;
+
 /**
  * 
  * Initial date: 17.11.2014<br>
@@ -29,10 +31,24 @@ import java.util.Date;
  */
 public class EfficiencyStatementVO {
 
+	private Long identityKey;
+	
 	private Float score;
 	private Boolean passed;
 	private Date creationDate;
 	private String courseTitle;
+	
+	public EfficiencyStatementVO() {
+		//make JAX-RS happy
+	}
+	
+	public EfficiencyStatementVO(UserEfficiencyStatement efficiencyStatement) {
+		courseTitle = efficiencyStatement.getShortTitle();
+		creationDate = efficiencyStatement.getCreationDate();
+		passed = efficiencyStatement.getPassed();
+		score = efficiencyStatement.getScore();
+		identityKey = efficiencyStatement.getIdentity().getKey();
+	}
 	
 	public Date getCreationDate() {
 		return creationDate;
@@ -40,6 +56,14 @@ public class EfficiencyStatementVO {
 
 	public void setCreationDate(Date creationDate) {
 		this.creationDate = creationDate;
+	}
+
+	public Long getIdentityKey() {
+		return identityKey;
+	}
+
+	public void setIdentityKey(Long identityKey) {
+		this.identityKey = identityKey;
 	}
 
 	public Float getScore() {

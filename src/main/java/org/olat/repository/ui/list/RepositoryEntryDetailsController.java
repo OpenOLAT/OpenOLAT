@@ -414,7 +414,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				failed = row.isFailed();
 				score = row.getScore();
 			} else {
-				UserEfficiencyStatement statement = effManager.getUserEfficiencyStatementLight(entry.getKey(), getIdentity());
+				UserEfficiencyStatement statement = effManager.getUserEfficiencyStatementLightByRepositoryEntry(entry, getIdentity());
 				if(statement != null) {
 					Boolean p = statement.getPassed();
 					if(p != null) {
