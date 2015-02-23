@@ -99,6 +99,7 @@ public class RegistrationModule extends AbstractOLATModule {
 	}
 	
 	public void setSelfRegistrationEnabled(boolean enable) {
+		selfRegistrationEnabled = enable;
 		String value = enable ? "true" : "false";
 		setStringProperty("registration.enabled", value, true);
 	}
@@ -111,42 +112,45 @@ public class RegistrationModule extends AbstractOLATModule {
 	}
 	
 	public void setStaticPropertyMappingEnabled(boolean enable) {
+		staticPropertyMappingEnabled = enable;
 		String value = enable ? "true" : "false";
 		setStringProperty("static.prop.mapping.enabled", value, true);
 	}
 	
 	public String getStaticPropertyMappingName() {
-    return staticPropertyMappingName;
+		return staticPropertyMappingName;
 	}
 
 	public void setStaticPropertyMappingName(String value) {
-		value = StringHelper.containsNonWhitespace(value) ? value : "";
-		setStringProperty("static.prop.mapping", value, true);
+		staticPropertyMappingName = StringHelper.containsNonWhitespace(value) ? value : "";
+		setStringProperty("static.prop.mapping", staticPropertyMappingName, true);
 	}
 	
 	public String getStaticPropertyMappingValue() {
-    return staticPropertyMappingValue;
+		return staticPropertyMappingValue;
 	}
 
 	public void setStaticPropertyMappingValue(String value) {
-		value = StringHelper.containsNonWhitespace(value) ? value : "";
-		setStringProperty("static.prop.mapping.value", value, true);
+		staticPropertyMappingValue = StringHelper.containsNonWhitespace(value) ? value : "";
+		setStringProperty("static.prop.mapping.value", staticPropertyMappingValue, true);
 	}
 	
 	public boolean isSelfRegistrationLinkEnabled(){
-    return selfRegistrationLinkEnabled;
+		return selfRegistrationLinkEnabled;
 	}
 	
 	public void setSelfRegistrationLinkEnabled(boolean enable) {
+		selfRegistrationLinkEnabled = enable;
 		String value = enable ? "true" : "false";
 		setStringProperty("registration.link.enabled", value, true);
 	}
 	
 	public boolean isSelfRegistrationLoginEnabled(){
-    return selfRegistrationLoginEnabled;
+		return selfRegistrationLoginEnabled;
 	}
 	
 	public void setSelfRegistrationLoginEnabled(boolean enable) {
+		selfRegistrationLoginEnabled = enable;
 		String value = enable ? "true" : "false";
 		setStringProperty("registration.login.enabled", value, true);
 	}
@@ -156,7 +160,8 @@ public class RegistrationModule extends AbstractOLATModule {
 	}
 	
 	public void setDomainListRaw(String list) {
-		setStringProperty("registration.domains", normalizeDomainList(list), true);
+		domainList = normalizeDomainList(list);
+		setStringProperty("registration.domains", domainList, true);
 	}
 	
 	private String normalizeDomainList(String list) {
@@ -210,35 +215,43 @@ public class RegistrationModule extends AbstractOLATModule {
 	public void init() {
 		//registration enabled/disabled
 		String enabledObj = getStringPropertyValue("registration.enabled", true);
-		selfRegistrationEnabled = "true".equals(enabledObj);
+		if(StringHelper.containsNonWhitespace(enabledObj)) {
+			selfRegistrationEnabled = "true".equals(enabledObj);
+		}
 		
 		//link registration enabled/disabled (rest)
 		String linkEnabledObj = getStringPropertyValue("registration.link.enabled", true);
-		selfRegistrationLinkEnabled = "true".equals(linkEnabledObj);
+		if(StringHelper.containsNonWhitespace(linkEnabledObj)) {
+			selfRegistrationLinkEnabled = "true".equals(linkEnabledObj);
+		}
 		
 		//link on the login page for registration enabled/disabled 
 		String loginEnabledObj = getStringPropertyValue("registration.login.enabled", true);
-		selfRegistrationLoginEnabled = "true".equals(loginEnabledObj);
+		if(StringHelper.containsNonWhitespace(loginEnabledObj)) {
+			selfRegistrationLoginEnabled = "true".equals(loginEnabledObj);
+		}
 		
 		//white list of domains
 		String domainObj = getStringPropertyValue("registration.domains", true);
 		if(StringHelper.containsNonWhitespace(domainObj)) {
 			domainList = domainObj;
-		} else {
+		} else {// allowed because to olat.properties for this
 			domainList = null; // reset
 		}
 
 		//static property mapping enabled/disabled
 		String enabledPropObj = getStringPropertyValue("static.prop.mapping.enabled", true);
-		staticPropertyMappingEnabled = "true".equals(enabledPropObj);
+		if(StringHelper.containsNonWhitespace(enabledPropObj)) {
+			staticPropertyMappingEnabled = "true".equals(enabledPropObj);
+		}
 		
-		String propKeyObj = getStringPropertyValue("static.prop.mapping", true);
+		String propKeyObj = getStringPropertyValue("static.prop.mapping", false);
 		if(StringHelper.containsNonWhitespace(propKeyObj)) {
 			staticPropertyMappingName = propKeyObj;
 		} else {
 			staticPropertyMappingName = null; // reset
 		}
-		String propValueObj = getStringPropertyValue("static.prop.mapping.value", true);
+		String propValueObj = getStringPropertyValue("static.prop.mapping.value", false);
 		if(StringHelper.containsNonWhitespace(propValueObj)) {
 			staticPropertyMappingValue = propValueObj;
 		} else {
