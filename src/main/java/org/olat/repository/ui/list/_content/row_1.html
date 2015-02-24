@@ -23,12 +23,9 @@
 		#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd)
 			<div class="o_lifecycle #if ($row.isActive()) o_active #end">
 				<i class="o_icon o_icon_lifecycle"></i>
-				#if($row.lifecycleSoftKey || $row.lifecycleLabel)
-					#if($row.lifecycleLabel and !$row.lifecycleLabel.isEmpty()) $row.lifecycleLabel #end
-					#if($row.lifecycleSoftKey and !$row.lifecycleSoftKey.isEmpty())
-						#if($row.lifecycleLabel and !$row.lifecycleLabel.isEmpty()) - #end
-						$row.lifecycleSoftKey
-					#end
+				#if(($row.lifecycleSoftKey and !$row.lifecycleSoftKey.isEmpty()) || ($row.lifecycleLabel and !$row.lifecycleLabel.isEmpty()))
+					#if($row.lifecycleSoftKey and !$row.lifecycleSoftKey.isEmpty()) $row.lifecycleSoftKey
+					#else $row.lifecycleLabel #end
 				#else
 					#if($row.lifecycleStart) $r.formatDate($row.lifecycleStart) #end
 					#if($row.lifecycleEnd) - $r.formatDate($row.lifecycleEnd) #end

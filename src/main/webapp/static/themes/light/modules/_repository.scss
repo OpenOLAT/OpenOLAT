@@ -29,6 +29,12 @@
 			margin-bottom: 0.25em;
 		}
 	}
+	
+	.o_infopanel, o_usagepanel, o_managedpanel {
+		.panel-title {
+			cursor: pointer;
+		}
+	}
 		
 	.o_start, .o_book {
 		margin: 2em 0;
