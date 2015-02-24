@@ -38,12 +38,19 @@
 			<div class="#if($hasMetaData) col-xs-6 col-sm-12 #else col-sm-6 #end o_subcolumn">
 				<div class="o_overview">
 					<h3>$r.translate("details.overview")</h3>
-					#if($v.lifecycle || $v.lifecycle.softKey || $row.lifecycle.start || $row.lifecycle.end)
+					#if($v.lifecycle || $v.lifecycle.softKey || $v.lifecycle.label || $row.lifecycle.start || $row.lifecycle.end)
 					<div title="$r.translateInAttribute("cif.dates")">
 						<i class="o_icon o_icon_lifecycle"></i> 
-						#if($!v.lifecycle.private && $v.lifecycle.softKey) $v.lifecycle.softKey #end
-						#if($v.lifecycle.validFrom) $r.formatDate($v.lifecycle.validFrom) #end
-						#if($v.lifecycle.validTo) - $r.formatDate($v.lifecycle.validTo) #end
+						#if(!$v.lifecycle.privateCycle)
+							#if($v.lifecycle.label and !$v.lifecycle.label.isEmpty()) $v.lifecycle.label #end
+							#if($v.lifecycle.softKey and !$v.lifecycle.softKey.isEmpty())
+								#if($v.lifecycle.label and !$v.lifecycle.label.isEmpty()) - #end
+							 	$v.lifecycle.softKey
+							 #end
+						#else
+							#if($v.lifecycle.validFrom) $r.formatDate($v.lifecycle.validFrom) #end
+							#if($v.lifecycle.validTo) - $r.formatDate($v.lifecycle.validTo) #end
+						#end
 					</div>
 					#end
 					#if($v.expenditureOfWork && !$v.expenditureOfWork.empty)

@@ -20,13 +20,19 @@
 		#if($row.authors && !$row.authors.empty)
 			<div class="o_author"><span class="text-muted">$r.translate("course.made.by")</span> $row.authors</div>
 		#end
-		#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleStart || $row.lifecycleEnd)
+		#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd)
 			<div class="o_lifecycle #if ($row.isActive()) o_active #end">
 				<i class="o_icon o_icon_lifecycle"></i>
-				#if($row.lifecycle) $row.lifecycle #end
-				#if($row.lifecycleSoftKey) $row.lifecycleSoftKey #end
-				#if($row.lifecycleStart) $r.formatDate($row.lifecycleStart) #end
-				#if($row.lifecycleEnd) - $r.formatDate($row.lifecycleEnd) #end
+				#if($row.lifecycleSoftKey || $row.lifecycleLabel)
+					#if($row.lifecycleLabel and !$row.lifecycleLabel.isEmpty()) $row.lifecycleLabel #end
+					#if($row.lifecycleSoftKey and !$row.lifecycleSoftKey.isEmpty())
+						#if($row.lifecycleLabel and !$row.lifecycleLabel.isEmpty()) - #end
+						$row.lifecycleSoftKey
+					#end
+				#else
+					#if($row.lifecycleStart) $r.formatDate($row.lifecycleStart) #end
+					#if($row.lifecycleEnd) - $r.formatDate($row.lifecycleEnd) #end
+				#end
 			</div>
 		#end
 		<div class="o_desc">

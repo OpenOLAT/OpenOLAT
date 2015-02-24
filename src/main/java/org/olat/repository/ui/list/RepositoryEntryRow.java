@@ -65,8 +65,8 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private Double averageRating;
 	private long numOfRatings;
 	private long numOfComments;
-	
-	private String lifecycle;
+
+	private String lifecycleLabel;
 	private String lifecycleSoftKey;
 	private Date lifecycleStart;
 	private Date lifecycleEnd;
@@ -123,7 +123,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 			setLifecycleStart(reLifecycle.getValidFrom());
 			setLifecycleEnd(reLifecycle.getValidTo());
 			if(!reLifecycle.isPrivateCycle()) {
-				setLifecycle(reLifecycle.getLabel());
+				setLifecycleLabel(reLifecycle.getLabel());
 				setLifecycleSoftKey(reLifecycle.getSoftKey());
 			}
 		}
@@ -246,20 +246,20 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		this.numOfComments = numOfComments;
 	}
 
-	public String getLifecycle() {
-		return lifecycle;
-	}
-
-	public void setLifecycle(String lifecycle) {
-		this.lifecycle = lifecycle;
-	}
-
 	public String getLifecycleSoftKey() {
 		return lifecycleSoftKey;
 	}
 
 	public void setLifecycleSoftKey(String lifecycleSoftKey) {
 		this.lifecycleSoftKey = lifecycleSoftKey;
+	}
+
+	public String getLifecycleLabel() {
+		return lifecycleLabel;
+	}
+
+	public void setLifecycleLabel(String lifecycleLabel) {
+		this.lifecycleLabel = lifecycleLabel;
 	}
 
 	public Date getLifecycleStart() {

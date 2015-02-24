@@ -62,7 +62,7 @@ class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposito
 			case displayName: return item.getDisplayName();
 			case externalId: return item.getExternalId();
 			case externalRef: return item.getExternalRef();
-			case lifecycleLabel: return item.getLifecycle();
+			case lifecycleLabel: return item.getLifecycleLabel();
 			case lifecycleSoftkey: return item.getLifecycleSoftKey();
 			case lifecycleStart: return item.getLifecycleStart();
 			case lifecycleEnd: return item.getLifecycleEnd();
