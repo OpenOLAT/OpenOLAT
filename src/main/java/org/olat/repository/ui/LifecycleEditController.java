@@ -93,9 +93,9 @@ public class LifecycleEditController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 
-		softKeyEl.clearError();
-		if(!StringHelper.containsNonWhitespace(softKeyEl.getValue())) {
-			softKeyEl.setErrorKey("form.mandatory.hover", null);
+		labelEl.clearError();
+		if(!StringHelper.containsNonWhitespace(labelEl.getValue())) {
+			labelEl.setErrorKey("form.mandatory.hover", null);
 			allOk = false;
 		}
 

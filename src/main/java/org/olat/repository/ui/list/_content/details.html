@@ -41,12 +41,16 @@
 					#if($closed)
 						<div class="o_warning o_closed"><i class="o_icon o_icon-lg o_CourseModule_icon_closed"> </i> $r.translate("close.ressource.warning")</div>
 					#end
-					#if($v.lifecycle || $v.lifecycle.softKey || $row.lifecycle.start || $row.lifecycle.end)
+					#if($v.lifecycle || $v.lifecycle.softKey || $v.lifecycle.label || $row.lifecycle.start || $row.lifecycle.end)
 					<div title="$r.translateInAttribute("cif.dates")">
 						<i class="o_icon o_icon_lifecycle"></i> 
-						#if($!v.lifecycle.private && $v.lifecycle.softKey) $v.lifecycle.softKey #end
-						#if($v.lifecycle.validFrom) $r.formatDate($v.lifecycle.validFrom) #end
-						#if($v.lifecycle.validTo) - $r.formatDate($v.lifecycle.validTo) #end
+						#if(!$v.lifecycle.privateCycle)
+							#if($v.lifecycle.softKey and !$v.lifecycle.softKey.isEmpty()) $v.lifecycle.softKey
+							#else $v.lifecycle.label #end
+						#else
+							#if($v.lifecycle.validFrom) $r.formatDate($v.lifecycle.validFrom) #end
+							#if($v.lifecycle.validTo) - $r.formatDate($v.lifecycle.validTo) #end
+						#end
 					</div>
 					#end
 					#if($v.expenditureOfWork && !$v.expenditureOfWork.empty)
