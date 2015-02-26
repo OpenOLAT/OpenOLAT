@@ -56,7 +56,7 @@ public class MembersPage {
 	 */
 	public void quickAdd(UserVO user) {
 		addMember()
-			.searchMember(user)
+			.searchMember(user, true)
 			.next().next().next().finish();
 	}
 

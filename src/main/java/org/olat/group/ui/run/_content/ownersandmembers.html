@@ -1,11 +1,11 @@
-<h2><i class="o_icon o_icon_group"> </i> $r.translate("userlist.title") </h2>
+<h2><i class="o_icon o_icon_group"> </i> $r.translate("userlist.title")</h2>
 #if ($showOwnerGroups)
 	<h3>$r.translate("userlist.owners.title")</h3>
-	<div class="o_sel_group_coaches">
+	<div id="o_sel_group_coaches">
 		$r.render("owners")
 	</div>
 #else
-    <div class="o_sel_group_coaches_not_visible">
+    <div id="o_sel_group_coaches_not_visible">
     	<h3>$r.translate("userlist.show.no.owners.title")</h3>
 		<div class="o_info">$r.translate("userlist.show.no.owners.text")</div>
 	</div>
@@ -13,11 +13,11 @@
 
 #if ($showPartipsGroups)
 	<h3>$r.translate("userlist.participants.title")</h3>
-	<div class="o_sel_group_participants">
+	<div id="o_sel_group_participants">
 		$r.render("participants")
 	</div>
 #else
-    <div class="o_sel_group_participants_not_visible">
+    <div id="o_sel_group_participants_not_visible">
     	<h3>$r.translate("userlist.show.no.participants.title")</h3>
 		<div class="o_info">$r.translate("userlist.show.no.participants.text")</div>
 	</div>
@@ -26,11 +26,11 @@
 #if ($hasWaitingList)
 	#if ($showWaitingList)
 		<h3>$r.translate("userlist.waitinglist.title")</h3>
-    	<div class="o_sel_group_waiting_list">
+    	<div id="o_sel_group_waiting_list">
 			$r.render("waitingList")
 		</div>
 	#else
-    	<div class="o_sel_group_waiting_list_not_visible">
+    	<div id="o_sel_group_waiting_list_not_visible">
 	    	<h3>$r.translate("userlist.show.no.waitinglist.title")</h3>
 			<div class="o_info">$r.translate("userlist.show.no.waitinglist.text")</div>
 		</div>

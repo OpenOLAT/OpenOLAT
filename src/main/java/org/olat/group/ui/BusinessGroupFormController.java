@@ -204,8 +204,10 @@ public class BusinessGroupFormController extends FormBasicController {
 		// Checkboxes
 		enableWaitingList = uifactory.addCheckboxesHorizontal("create.form.enableWaitinglist", null, formLayout, waitingListKeys,
 				waitingListValues);
+		enableWaitingList.setElementCssClass("o_sel_group_edit_waiting_list");
 		enableAutoCloseRanks = uifactory.addCheckboxesHorizontal("create.form.enableAutoCloseRanks", null, formLayout, autoCloseKeys,
 				autoCloseValues);
+		enableAutoCloseRanks.setElementCssClass("o_sel_group_edit_auto_close_ranks");
 
 		// Enable only if specification of min and max members is possible
 		businessGroupMinimumMembers.setVisible(false); // currently the minimum feature is not enabled

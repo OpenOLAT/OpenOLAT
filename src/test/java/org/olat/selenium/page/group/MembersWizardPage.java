@@ -71,14 +71,15 @@ public class MembersWizardPage {
 	 * @param user
 	 * @return
 	 */
-	public MembersWizardPage searchMember(UserVO user) {
+	public MembersWizardPage searchMember(UserVO user, boolean admin) {
 		//Search by username
 		By usernameBy = By.cssSelector(".o_sel_usersearch_searchform input[type='text']");
 		OOGraphene.waitElement(usernameBy, browser);
 		
 		List<WebElement> searchFields = browser.findElements(usernameBy);
 		Assert.assertFalse(searchFields.isEmpty());
-		searchFields.get(0).sendKeys(user.getLogin());
+		String search = admin ? user.getLogin() : user.getFirstName();
+		searchFields.get(0).sendKeys(search);
 
 		By searchBy = By.cssSelector(".o_sel_usersearch_searchform a.btn-default");
 		WebElement searchButton = browser.findElement(searchBy);

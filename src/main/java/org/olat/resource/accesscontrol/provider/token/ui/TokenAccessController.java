@@ -77,6 +77,7 @@ public class TokenAccessController extends FormBasicController implements FormCo
 		setFormTitle("access.token.title");
 		setFormDescription("access.token.desc");
 		setFormTitleIconCss("o_icon o_icon-fw " + TokenAccessHandler.METHOD_CSS_CLASS + "_icon");
+		formLayout.setElementCssClass("o_sel_accesscontrol_form");
 		
 		String description = link.getOffer().getDescription();
 		if(StringHelper.containsNonWhitespace(description)) {

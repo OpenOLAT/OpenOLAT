@@ -22,6 +22,7 @@ package org.olat.selenium.page.group;
 import java.util.List;
 
 import org.junit.Assert;
+import org.olat.selenium.page.core.BookingPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -40,6 +41,18 @@ public class GroupsPage {
 	
 	public GroupsPage(WebDriver browser) {
 		this.browser = browser;
+	}
+	
+	/**
+	 * Select the tab "Published groups"
+	 * 
+	 * @return
+	 */
+	public GroupsPage publishedGroups() {
+		By openGroupsBy = By.className("o_sel_group_open_groups_seg");
+		browser.findElement(openGroupsBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
 	}
 	
 	public GroupPage createGroup(String name, String description) {
@@ -65,11 +78,51 @@ public class GroupsPage {
 	}
 	
 	/**
+	 * Click on the book link
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public BookingPage bookGroup(String name) {
+		By rowBy = By.cssSelector("div.o_table_wrapper tr");
+		By colBy = By.cssSelector("td a");	
+		WebElement groupLink = null;
+		List<WebElement> rows = browser.findElements(rowBy);
+		for(WebElement row:rows) {
+			if(row.getText().contains(name)) {
+				// take the last link of the row
+				List<WebElement> links = row.findElements(colBy);
+				if(links.size() > 0) {
+					groupLink = links.get(links.size() - 1);
+				}
+			}
+		}
+		
+		Assert.assertNotNull(groupLink);
+		groupLink.click();
+		OOGraphene.waitBusy(browser);
+		
+		By tokenEntryBy = By.className("o_sel_accesscontrol_token_entry");
+		OOGraphene.waitElement(tokenEntryBy, browser);
+		return new BookingPage(browser);
+	}
+	
+	/**
 	 * Select a group in the list by its name
 	 * @param name
 	 * @return
 	 */
 	public GroupPage selectGroup(String name) {
+		selectGroupInTable(name);
+		
+		//By groupNameBy = By.xpath("//div[contains(@class,'o_tree')]//a/span[contains(text(),'" + name+ "')]");
+		By groupNameBy = By.xpath("//div[@id='o_main_center_content_inner']//p[contains(text(),'" + name+ "')]");
+		OOGraphene.waitElement(groupNameBy, browser);
+		
+		return new GroupPage(browser);
+	}
+	
+	private GroupsPage selectGroupInTable(String name) {
 		By linkBy = By.cssSelector("div.o_table_wrapper td a");
 		
 		WebElement groupLink = null;
@@ -82,10 +135,7 @@ public class GroupsPage {
 		
 		Assert.assertNotNull(groupLink);
 		groupLink.click();
-		
-		By rootTreeNodeBy = By.xpath("//div[contains(@class,'o_tree')]//a/span[contains(text(),'" + name+ "')]");
-		OOGraphene.waitElement(rootTreeNodeBy, browser);
-		
-		return new GroupPage(browser);
+		OOGraphene.waitBusy(browser);
+		return this;
 	}
 }
