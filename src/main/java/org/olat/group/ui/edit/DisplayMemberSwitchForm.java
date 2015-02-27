@@ -104,6 +104,7 @@ public class DisplayMemberSwitchForm extends FormBasicController {
 		showPartips.select("show_participants", group.isParticipantsVisibleIntern());
 		showPartips.setElementCssClass("o_sel_group_show_participants");
 		showWaitingList.select("show_waiting_list", group.isWaitingListVisibleIntern());
+		showWaitingList.setElementCssClass("o_sel_group_show_waiting_list");
 		openOwners.select("open_owners", group.isOwnersVisiblePublic());
 		openPartips.select("open_participants", group.isParticipantsVisiblePublic());
 		openWaitingList.select("open_waiting_list", group.isWaitingListVisiblePublic());

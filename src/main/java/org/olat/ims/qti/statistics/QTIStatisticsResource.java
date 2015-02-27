@@ -73,6 +73,11 @@ public class QTIStatisticsResource implements MediaResource {
 		this.resourceResult = resourceResult;
 		this.locale = locale;
 	}
+	
+	@Override
+	public boolean acceptRanges() {
+		return false;
+	}
 
 	@Override
 	public String getContentType() {

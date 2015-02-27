@@ -25,8 +25,7 @@ import java.util.Locale;
 
 import javax.xml.bind.JAXBException;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.modules.qpool.QuestionItem;

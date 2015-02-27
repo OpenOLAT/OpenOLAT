@@ -25,6 +25,7 @@ import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -39,9 +40,9 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.EfficiencyStatementManager;
+import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.model.EfficiencyStatementVO;
 import org.olat.resource.OLATResource;
-
 import org.olat.resource.OLATResourceManager;
 
 /**
@@ -53,6 +54,50 @@ import org.olat.resource.OLATResourceManager;
 @Path("repo/courses/{resourceKey}/statements")
 public class EfficiencyStatementWebService {
 	
+	@GET
+	@Path("{identityKey}")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getEfficiencyStatement(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
+			@Context HttpServletRequest request) {
+		
+		if(!isAdmin(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		BaseSecurity baseSecurity = CoreSpringFactory.getImpl(BaseSecurity.class);
+		Identity assessedIdentity = baseSecurity.loadIdentityByKey(identityKey);
+		if(assessedIdentity == null) {
+			return Response.serverError().status(Response.Status.NOT_FOUND).build();
+		}
+
+		UserEfficiencyStatement efficiencyStatement = CoreSpringFactory
+				.getImpl(EfficiencyStatementManager.class)
+				.getUserEfficiencyStatementLightByResource(resourceKey, assessedIdentity);
+		if(efficiencyStatement == null) {
+			return Response.serverError().status(Response.Status.NOT_FOUND).build();
+		}
+		
+		EfficiencyStatementVO statementVO = new EfficiencyStatementVO(efficiencyStatement);
+		return Response.ok(statementVO).build();
+	}
+	
+	/**
+	 * Create a new efficiency statement.
+	 * 
+	 * @response.representation.200.doc If the statement was persisted 
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The identity or the resource cannot be found
+	 * @param identityKey The owner of the certificate
+	 * @param resourceKey The primary key of the resource of the repository entry of the course.
+	 * @return Nothing special
+	 */
+	@PUT
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response putEfficiencyStatement(@PathParam("resourceKey") Long resourceKey,
+						EfficiencyStatementVO efficiencyStatementVO, @Context HttpServletRequest request) {
+		return putEfficiencyStatement(efficiencyStatementVO.getIdentityKey(), resourceKey, efficiencyStatementVO, request);
+	}
 
 	/**
 	 * Create a new efficiency statement.

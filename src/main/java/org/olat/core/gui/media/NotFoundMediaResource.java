@@ -48,6 +48,7 @@ public class NotFoundMediaResource extends DefaultMediaResource {
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#prepare(javax.servlet.http.HttpServletResponse)
 	 */
+	@Override
 	public void prepare(HttpServletResponse hres) {
 		try {
 			hres.sendError(HttpServletResponse.SC_NOT_FOUND, "Not found: " + notFoundURI);
@@ -55,5 +56,4 @@ public class NotFoundMediaResource extends DefaultMediaResource {
 			// we can do nothing better
 		}
 	}
-
 }

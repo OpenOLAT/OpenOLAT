@@ -32,11 +32,9 @@ import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
-import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
-import org.olat.restapi.RestConnection;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 
@@ -51,17 +49,6 @@ import org.olat.test.OlatJerseyTestCase;
  */
 public class RegistrationTest extends OlatJerseyTestCase {
 	
-	private static Identity owner1;
-	
-	@Before
-	@Override
-	public void setUp() throws Exception {
-		super.setUp();
-		//create a course with learn group
-		
-		owner1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-one");
-	}
-
 	@Test
 	public void testRegistration() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
@@ -79,10 +66,12 @@ public class RegistrationTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testRedirectRegistration() throws IOException, URISyntaxException {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("rest-reg");
+		
 		RestConnection conn = new RestConnection();
 
 		URI uri = conn.getContextURI().path("registration")
-				.queryParam("email", owner1.getUser().getProperty(UserConstants.EMAIL, null)).build();
+				.queryParam("email", id.getUser().getProperty(UserConstants.EMAIL, null)).build();
 		HttpPut put = conn.createPut(uri, "*/*", "de", true);
 
 		HttpResponse response = conn.execute(put);

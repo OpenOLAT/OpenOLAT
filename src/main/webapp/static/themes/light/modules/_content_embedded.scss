@@ -33,9 +33,14 @@
 	@include border-bottom-radius($o-content-border-box-radius); 
 }
 
-.b_copy_code, p.b_copy_code, div.b_copy_code, code, pre { 
+.b_copy_code, p.b_copy_code, div.b_copy_code, code { 
+	@extend %o_copy_code;
+	@extend %o_nowrap;
+}
+pre {
 	@extend %o_copy_code;
 }
+
 div.b_scrollblock { 
 	@extend %o_scrollblock;
 }

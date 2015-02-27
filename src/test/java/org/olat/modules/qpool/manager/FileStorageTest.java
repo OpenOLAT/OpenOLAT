@@ -21,8 +21,7 @@ package org.olat.modules.qpool.manager;
 
 import java.util.UUID;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.test.OlatTestCase;

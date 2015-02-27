@@ -232,6 +232,11 @@ public class StaticsLegacyDispatcher implements Dispatcher {
     		this.inStream = inStream;
     		this.rd = rd;
     	}
+    	
+    	@Override
+    	public boolean acceptRanges() {
+    		return false;
+    	}
 
 		@Override
 		public String getContentType() {

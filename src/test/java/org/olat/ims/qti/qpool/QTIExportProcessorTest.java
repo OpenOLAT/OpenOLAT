@@ -28,12 +28,11 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 import java.util.zip.ZipOutputStream;
 
-import junit.framework.Assert;
-
 import org.apache.commons.io.IOUtils;
-import org.jgroups.util.UUID;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;

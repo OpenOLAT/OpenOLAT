@@ -22,8 +22,7 @@ package org.olat.core.util;
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.util.Encoder.Algorithm;
 

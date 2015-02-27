@@ -30,8 +30,6 @@ import java.util.UUID;
 
 import javax.ws.rs.core.UriBuilder;
 
-import junit.framework.Assert;
-
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -43,6 +41,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
 import org.apache.poi.util.IOUtils;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
@@ -51,6 +50,8 @@ import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -74,6 +75,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class WebDAVCommandsTest extends WebDAVTestCase {
+	
+	private static final OLog log = Tracing.createLoggerFor(WebDAVCommandsTest.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -520,7 +523,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		//author check file 
 		URI textUri = conn.getBaseURI().path("webdav").path("home").path("public").path("test.txt").build();
 		String textPropfind = conn.propfind(textUri, 0);
-		System.out.println(textPropfind);
+		log.info(textPropfind);
 		
 		//author lock the file
 		String lockToken = conn.lock(textUri, UUID.randomUUID().toString());
@@ -557,6 +560,52 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		Assert.assertEquals(1, lock.getTokensSize());
 		
 		IOUtils.closeQuietly(conn);
+	}
+	
+	@Test
+	public void testLock_public_samePathLock()
+	throws IOException, URISyntaxException {
+		//create a user
+		Identity user1 = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-2d");
+		Identity user2 = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-2e");
+
+		//create a file
+		String publicPath1 = FolderConfig.getUserHomes() + "/" + user1.getName() + "/public";
+		VFSContainer vfsPublic1 = new OlatRootFolderImpl(publicPath1, null);
+		VFSItem item1 = createFile(vfsPublic1, "test.txt");
+		Assert.assertNotNull(item1);
+		
+		String publicPath2 = FolderConfig.getUserHomes() + "/" + user2.getName() + "/public";
+		VFSContainer vfsPublic2 = new OlatRootFolderImpl(publicPath2, null);
+		VFSItem item2 = createFile(vfsPublic2, "test.txt");
+		Assert.assertNotNull(item2);
+		
+		//lock the item with WebDAV
+		WebDAVConnection conn1 = new WebDAVConnection();
+		conn1.setCredentials(user1.getName(), "A6B7C8");
+
+		//user 1 lock the file
+		URI textUri = conn1.getBaseURI().path("webdav").path("home").path("public").path("test.txt").build();
+		String textPropfind1 = conn1.propfind(textUri, 0);
+		Assert.assertNotNull(textPropfind1);
+		
+		// lock the path /webdav/home/public/test.txt
+		String lockToken1 = conn1.lock(textUri, UUID.randomUUID().toString());
+		Assert.assertNotNull(lockToken1);
+
+		//user 2 lock its own file
+		WebDAVConnection conn2 = new WebDAVConnection();
+		conn2.setCredentials(user2.getName(), "A6B7C8");
+		String textPropfind2 = conn2.propfind(textUri, 0);
+		Assert.assertNotNull(textPropfind2);
+		
+		// lock the path /webdav/home/public/test.txt
+		String lockToken2 = conn2.lock(textUri, UUID.randomUUID().toString());
+		Assert.assertNotNull(lockToken2);
+		
+		//closes
+		conn1.close();
+		conn2.close();
 	}
 	
 	@Test
@@ -679,7 +728,8 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		Assert.assertTrue(customizingXml.contains("<D:href>/webdav/customizing/</D:href>"));
 
 		//PUT in the folder
-		URI textUri = conn.getBaseURI().path("webdav").path("customizing").path("infos.txt").build();
+		String randomFilename = "infos" + UUID.randomUUID() + ".txt";
+		URI textUri = conn.getBaseURI().path("webdav").path("customizing").path(randomFilename).build();
 		HttpPut put = conn.createPut(textUri);
 		InputStream dataStream = WebDAVCommandsTest.class.getResourceAsStream("text.txt");
 		InputStreamEntity entity = new InputStreamEntity(dataStream, -1);

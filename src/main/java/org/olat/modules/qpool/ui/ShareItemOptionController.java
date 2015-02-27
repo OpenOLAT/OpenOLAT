@@ -64,6 +64,18 @@ public class ShareItemOptionController extends FormBasicController {
 		
 		initForm(ureq);
 	}
+	
+	public List<QuestionItemShort> getItems() {
+		return items;
+	}
+	
+	public List<Pool> getPools() {
+		return pools;
+	}
+	
+	public List<BusinessGroup> getGroups() {
+		return groups;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

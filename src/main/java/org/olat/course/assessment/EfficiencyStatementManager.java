@@ -52,7 +52,9 @@ import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserManager;
@@ -399,7 +401,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 		return count.get(0).intValue() > 0;
 	}
 	
-	public UserEfficiencyStatement getUserEfficiencyStatementLight(Long courseRepoEntryKey, IdentityRef identity) {
+	public UserEfficiencyStatement getUserEfficiencyStatementLightByRepositoryEntry(RepositoryEntryRef courseRepo, IdentityRef identity) {
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append("select statement from ").append(UserEfficiencyStatementLight.class.getName()).append(" as statement ")
@@ -408,14 +410,35 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 			List<UserEfficiencyStatement> statement = dbInstance.getCurrentEntityManager()
 					.createQuery(sb.toString(), UserEfficiencyStatement.class)
 					.setParameter("identityKey", identity.getKey())
-					.setParameter("repoKey", courseRepoEntryKey)
+					.setParameter("repoKey", courseRepo.getKey())
 					.getResultList();
 			if(statement.isEmpty()) {
 				return null;
 			}
 			return statement.get(0);
 		} catch (Exception e) {
-			logError("Cannot retrieve efficiency statement: " + courseRepoEntryKey + " from " + identity, e);
+			logError("Cannot retrieve efficiency statement: " + courseRepo.getKey() + " from " + identity, e);
+			return null;
+		}
+	}
+	
+	public UserEfficiencyStatement getUserEfficiencyStatementLightByResource(Long resourceKey, IdentityRef identity) {
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select statement from ").append(UserEfficiencyStatementLight.class.getName()).append(" as statement ")
+			  .append(" where statement.identity.key=:identityKey and statement.resource.key=:resourceKey");
+
+			List<UserEfficiencyStatement> statement = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), UserEfficiencyStatement.class)
+					.setParameter("identityKey", identity.getKey())
+					.setParameter("resourceKey", resourceKey)
+					.getResultList();
+			if(statement.isEmpty()) {
+				return null;
+			}
+			return statement.get(0);
+		} catch (Exception e) {
+			logError("Cannot retrieve efficiency statement: " + resourceKey + " from " + identity, e);
 			return null;
 		}
 	}
@@ -646,7 +669,8 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 	 * @param efficiencyStatement
 	 */
 	protected void deleteEfficiencyStatement(Identity identity, EfficiencyStatement efficiencyStatement) {
-		UserEfficiencyStatement s = getUserEfficiencyStatementLight(efficiencyStatement.getCourseRepoEntryKey(), identity);
+		RepositoryEntryRef ref = new RepositoryEntryRefImpl(efficiencyStatement.getCourseRepoEntryKey());
+		UserEfficiencyStatement s = getUserEfficiencyStatementLightByRepositoryEntry(ref, identity);
 		if(s != null) {
 			dbInstance.getCurrentEntityManager().remove(s);
 		}

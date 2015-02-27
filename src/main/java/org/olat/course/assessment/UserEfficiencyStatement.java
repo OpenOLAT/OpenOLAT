@@ -39,6 +39,8 @@ public interface UserEfficiencyStatement {
 	
 	public Date  getLastModified();
 	
+	public Date getCreationDate();
+	
 	public Long getCourseRepoKey();
 
 	public String getShortTitle();

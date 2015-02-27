@@ -27,13 +27,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 import java.util.Locale;
-
-import junit.framework.Assert;
+import java.util.UUID;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.Node;
-import org.jgroups.util.UUID;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;

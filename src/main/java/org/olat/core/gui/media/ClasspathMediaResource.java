@@ -158,6 +158,10 @@ public class ClasspathMediaResource extends LogDelegator implements MediaResourc
 		}
 	}
 	
+	@Override
+	public boolean acceptRanges() {
+		return true;
+	}
 
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#getContentType()

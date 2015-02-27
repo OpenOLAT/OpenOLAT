@@ -26,8 +26,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;

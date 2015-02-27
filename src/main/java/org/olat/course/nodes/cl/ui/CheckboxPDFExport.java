@@ -115,6 +115,11 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 	public void setAuthor(String author) {
 		this.author = author;
 	}
+	
+	@Override
+	public boolean acceptRanges() {
+		return false;
+	}
 
 	@Override
 	public String getContentType() {

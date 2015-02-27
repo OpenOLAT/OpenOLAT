@@ -28,8 +28,7 @@ import static org.olat.modules.iq.IQTestHelper.modDate;
 import java.util.Collections;
 import java.util.List;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;

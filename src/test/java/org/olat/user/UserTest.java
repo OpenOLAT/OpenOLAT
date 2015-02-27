@@ -38,8 +38,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.admin.user.delete.service.UserDeletionManager;

@@ -19,8 +19,7 @@
  */
 package org.olat.modules.wiki.gui.components.wikiToHtml;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

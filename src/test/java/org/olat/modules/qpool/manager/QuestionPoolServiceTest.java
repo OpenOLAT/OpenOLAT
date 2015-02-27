@@ -30,8 +30,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.ResultInfos;

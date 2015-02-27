@@ -47,6 +47,11 @@ public class CourseDBMediaResource implements MediaResource {
 		this.fileName = fileName;
 		this.content = content;
 	}
+	
+	@Override
+	public boolean acceptRanges() {
+		return false;
+	}
 
 	@Override
 	public String getContentType() {

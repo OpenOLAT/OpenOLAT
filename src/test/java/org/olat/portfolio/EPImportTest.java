@@ -25,8 +25,7 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.OLATResourceable;

@@ -22,9 +22,9 @@ package org.olat.ims.qti.qpool;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.dom4j.Element;
-import org.jgroups.util.UUID;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionStatus;

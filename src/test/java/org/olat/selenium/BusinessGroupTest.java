@@ -38,6 +38,7 @@ import org.junit.runner.RunWith;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
+import org.olat.selenium.page.Student;
 import org.olat.selenium.page.User;
 import org.olat.selenium.page.core.IMPage;
 import org.olat.selenium.page.group.GroupPage;
@@ -91,8 +92,8 @@ public class BusinessGroupTest {
 			@Drone @Participant WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		
-		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
-		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser();
+		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("Selena");
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Aoi");
 		
 		loginPage
 			.loginAs(author.getLogin(), author.getPassword())
@@ -107,10 +108,10 @@ public class BusinessGroupTest {
 		MembersWizardPage members = group
 			.openAdministration()
 			.openAdminMembers()
-			.setVisibility(true, true)
+			.setVisibility(true, true, false)
 			.addMember();
 		
-		members.searchMember(participant)
+		members.searchMember(participant, false)
 			.next()
 			.next()
 			.next()
@@ -130,6 +131,110 @@ public class BusinessGroupTest {
 		WebElement contentEl = participantBrowser.findElement(By.id("o_main_center_content_inner"));
 		String content = contentEl.getText();
 		Assert.assertTrue(content.contains(groupName));
+	}
+	
+	/**
+	 * An author creates a group, it opens the tab groups and then "My groups". It
+	 * creates a group, enters a number of participants "1", enable the waiting
+	 * list. In members visibility, it see coaches, participants and waiting
+	 * list visible to members.<br>
+	 * A participant and than a student come, book the group. The first enters
+	 * the group, the second the waiting list.<br>
+	 * The author go in the members list to check if it's in the coach list,
+	 * the participant in the participants list and the student in the waiting
+	 * list.
+	 * 
+	 * Should show group starting page, with menu items Administration and Bookings visible
+	 * 
+	 * @param loginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void createGroupWithWaitingList(@InitialPage LoginPage loginPage,
+			@Drone @Participant WebDriver participantBrowser,
+			@Drone @Student WebDriver studentBrowser)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("Selena");
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		UserVO student = new UserRestClient(deploymentUrl).createRandomUser("Asuka");
+	
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		//go to groups
+		String groupName = "Group-1-" + UUID.randomUUID();
+		GroupPage group = navBar
+			.openGroups(browser)
+			.createGroup(groupName, "A group with a waiting list")
+			.openAdministration()
+			//set waiting list and 1 participant
+			.openEditDetails()
+			.setMaxNumberOfParticipants(1)
+			.setWaitingList()
+			.saveDetails();
+		
+		//add booking ( token one )
+		String token = "secret";
+		String description = "The password is secret";
+		group.openBookingConfig()
+			.openAddDropMenu()
+			.addTokenMethod()
+			.configureTokenMethod(token, description)
+			.assertOnToken(token)
+			.save();
+		
+		//members see members
+		group = GroupPage.getGroup(browser)
+			.openAdminMembers()
+			.setVisibility(true, true, true)
+			.openMembers();
+		
+
+		//participant search published groups
+		LoginPage participantLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		//tools
+		participantLoginPage
+			.loginAs(participant.getLogin(), participant.getPassword())
+			.resume();
+		//groups
+		NavigationPage participantNavBar = new NavigationPage(participantBrowser);
+		participantNavBar
+				.openGroups(participantBrowser)
+				.publishedGroups()
+				.bookGroup(groupName)
+				.bookToken(token);
+		//are we that we are in the right group?
+		GroupPage.getGroup(participantBrowser)
+			.assertOnInfosPage(groupName);
+		
+		
+		//student search published groups
+		LoginPage studentLoginPage = LoginPage.getLoginPage(studentBrowser, deploymentUrl);
+		//tools
+		studentLoginPage
+			.loginAs(student.getLogin(), student.getPassword())
+			.resume();
+		//groups
+		NavigationPage studentNavBar = new NavigationPage(studentBrowser);
+		studentNavBar
+				.openGroups(studentBrowser)
+				.publishedGroups()
+				.bookGroup(groupName)
+				.bookToken(token);
+		//are we that we are in the right group?
+		GroupPage.getGroup(studentBrowser)
+			.assertOnWaitingList(groupName);
+		
+		group = GroupPage.getGroup(browser)
+				.openMembers()
+				.assertMembersInOwnerList(author)
+				.assertMembersInParticipantList(participant)
+				.assertMembersInWaitingList(student);
 	}
 	
 	/**
@@ -169,16 +274,16 @@ public class BusinessGroupTest {
 			.openAdminTools()
 			.enableTools()
 			.openAdminMembers()
-			.setVisibility(true, true);
+			.setVisibility(true, true, false);
 		//add Kanu to the group
 		group
 			.openAdminMembers()
 			.addMember()
-			.searchMember(kanu)
+			.searchMember(kanu, true)
 			.next().next().next().finish();
 		//add Ryomou
 		group.addMember()
-			.searchMember(ryomou)
+			.searchMember(ryomou, true)
 			.next().next().next().finish();
 		
 		//Kanu open the group

@@ -347,6 +347,9 @@ alter table o_repositoryentry drop constraint repo_parti_sec_group_ctx;
 
 alter table o_repositorymetadata drop constraint FKDB97A6493F14E3EE;
 
+alter table o_bs_policy drop constraint FK9A1C5109F9C3F1D;
+
+
 alter table o_bookmark drop constraint FK68C4E30663219E27;
 
 alter table o_gp_business_to_resource drop constraint idx_bgp_to_rsrc_rsrc;
@@ -368,3 +371,6 @@ alter table o_gp_bgarea drop constraint FK9EFAF698DF6BCD14;
 
 alter table o_ep_struct_el drop constraint FKF26C8375236F29X;
 drop index idx_structel_to_ownegrp_idx;
+
+alter table o_bs_invitation drop constraint FKF26C8375236F27X;
+

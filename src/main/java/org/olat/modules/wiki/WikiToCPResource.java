@@ -61,6 +61,11 @@ public class WikiToCPResource implements MediaResource {
 		this.translator = translator;
 		this.ores = ores;
 	}
+	
+	@Override
+	public boolean acceptRanges() {
+		return false;
+	}
 
 	@Override
 	public String getContentType() {

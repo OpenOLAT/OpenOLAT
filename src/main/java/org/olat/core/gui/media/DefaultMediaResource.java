@@ -35,10 +35,14 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class DefaultMediaResource implements MediaResource {
 
-	private String contentType;
 	private Long size;
-	private InputStream inputStream;
 	private Long lastModified;
+	private String contentType;
+	
+	@Override
+	public boolean acceptRanges() {
+		return false;
+	}
 
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#getContentType()
@@ -51,7 +55,7 @@ public class DefaultMediaResource implements MediaResource {
 	 * @see org.olat.core.gui.media.MediaResource#getInputStream()
 	 */
 	public InputStream getInputStream() {
-		return inputStream;
+		return null;
 	}
 
 	/**
@@ -76,13 +80,6 @@ public class DefaultMediaResource implements MediaResource {
 	}
 
 	/**
-	 * @param inputStream
-	 */
-	public void setInputStream(InputStream inputStream) {
-		this.inputStream = inputStream;
-	}
-
-	/**
 	 * @param lastModified
 	 */
 	public void setLastModified(Long lastModified) {
@@ -100,14 +97,13 @@ public class DefaultMediaResource implements MediaResource {
 	 * @see org.olat.core.gui.media.MediaResource#prepare(javax.servlet.http.HttpServletResponse)
 	 */
 	public void prepare(HttpServletResponse hres) {
-	//
+		//
 	}
 
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#release()
 	 */
 	public void release() {
-	//
+		//
 	}
-
 }

@@ -34,10 +34,9 @@ import java.net.URISyntaxException;
 
 import javax.ws.rs.core.MediaType;
 
-import junit.framework.Assert;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.id.Identity;

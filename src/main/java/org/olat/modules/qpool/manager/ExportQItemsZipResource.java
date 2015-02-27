@@ -54,6 +54,11 @@ public class ExportQItemsZipResource implements MediaResource {
 		this.encoding = encoding;
 		this.items = items;
 	}
+	
+	@Override
+	public boolean acceptRanges() {
+		return false;
+	}
 
 	@Override
 	public String getContentType() {

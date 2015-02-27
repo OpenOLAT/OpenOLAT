@@ -134,6 +134,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		FlexiTableColumnModel columnsModel = ftE.getTableDataModel().getTableColumnModel();
 		int numOfCols = columnsModel.getColumnCount();
+		Form theForm = ftE.getRootForm();
 		
 		// use alternating css class
 		int numOfColumns = 0;
@@ -142,7 +143,10 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 				
 		if(ftE.isMultiSelect()) {
 			target.append("<td>")
-			      .append("<input type='checkbox' name='tb_ms' value='").append(rowIdPrefix).append(row).append("'");
+			      .append("<input type='checkbox' name='tb_ms' value='").append(rowIdPrefix).append(row).append("'")
+			      .append(" onclick=\"javascript:")
+			      .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("chkbox", Integer.toString(row))))
+				  .append("\"");	 
 			if(ftE.isMultiSelectedIndex(row)) {
 				target.append(" checked='checked'");
 			}   

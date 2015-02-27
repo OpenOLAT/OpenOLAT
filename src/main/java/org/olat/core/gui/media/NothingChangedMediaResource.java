@@ -39,6 +39,7 @@ public class NothingChangedMediaResource extends DefaultMediaResource {
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#prepare(javax.servlet.http.HttpServletResponse)
 	 */
+	@Override
 	public void prepare(HttpServletResponse hres) {
 		hres.setStatus(HttpServletResponse.SC_OK);
 	}

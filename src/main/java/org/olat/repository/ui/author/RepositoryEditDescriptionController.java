@@ -239,7 +239,17 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			int count = 0;	
 			for(RepositoryEntryLifecycle cycle:cycles) {
 				publicKeys[count] = cycle.getKey().toString();
-				publicValues[count++] = cycle.getLabel();
+				
+				StringBuilder sb = new StringBuilder(32);
+				boolean labelAvailable = StringHelper.containsNonWhitespace(cycle.getLabel());
+				if(labelAvailable) {
+					sb.append(cycle.getLabel());
+				}
+				if(StringHelper.containsNonWhitespace(cycle.getSoftKey())) {
+					if(labelAvailable) sb.append(" - ");
+					sb.append(cycle.getSoftKey());
+				}
+				publicValues[count++] = sb.toString();
 			}
 			publicDatesEl = uifactory.addDropdownSingleselect("cif.public.dates", descCont, publicKeys, publicValues, null);
 	

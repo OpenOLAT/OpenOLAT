@@ -89,9 +89,15 @@ public class FileMediaResource implements MediaResource {
 		this.filesInfoMBean = (FilesInfoMBean) CoreSpringFactory.getBean(FilesInfoMBean.class.getCanonicalName());
 	}
 	
+	@Override
+	public boolean acceptRanges() {
+		return true;
+	}
+	
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#getContentType()
 	 */
+	@Override
 	public String getContentType() {
 		String fileName = file.getName();
 		String mimeType = WebappHelper.getMimeType(fileName);
@@ -102,6 +108,7 @@ public class FileMediaResource implements MediaResource {
 	/**
 	 * @return @see org.olat.core.gui.media.MediaRequest#getSize()
 	 */
+	@Override
 	public Long getSize() {
 		return new Long(file.length());
 	}
@@ -109,6 +116,7 @@ public class FileMediaResource implements MediaResource {
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#getInputStream()
 	 */
+	@Override
 	public InputStream getInputStream() {
 		BufferedInputStream bis = null;
 		try {
@@ -123,6 +131,7 @@ public class FileMediaResource implements MediaResource {
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#getLastModified()
 	 */
+	@Override
 	public Long getLastModified() {
 		return new Long(file.lastModified());
 	}
@@ -130,6 +139,7 @@ public class FileMediaResource implements MediaResource {
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#release()
 	 */
+	@Override
 	public void release() {
 	// void
 	}
@@ -137,6 +147,7 @@ public class FileMediaResource implements MediaResource {
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#prepare(javax.servlet.http.HttpServletResponse)
 	 */
+	@Override
 	public void prepare(HttpServletResponse hres) {
 		if (deliverAsAttachment) {
 			// encode filename in ISO8859-1; does not really help but prevents from filename not being displayed at all
@@ -147,9 +158,9 @@ public class FileMediaResource implements MediaResource {
 			hres.setHeader("Content-Disposition", "inline");
 		}
 	}
-	
+
+	@Override
 	public String toString() {
 		return "FileMediaResource:"+file.getAbsolutePath();
 	}
-
 }

@@ -929,7 +929,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				bgTree.setTreeModel(trMdl);
 				if (bgEditCntrllr == null) {
 					// change didn't origin by our own edit controller
-					showInfo(translate("grouprun.configurationchanged"));
+					showInfo("grouprun.configurationchanged");
 					bgTree.setSelectedNodeId(trMdl.getRootNode().getIdent());
 					mainPanel.setContent(main);
 				} else {
@@ -1006,6 +1006,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_INFORMATION);
 			gtnChild.setAltText(translate("menutree.news.alt"));
 			gtnChild.setIconCssClass("o_icon_news");
+			gtnChild.setCssClass("o_sel_group_news");
 			root.addChild(gtnChild);
 			nodeInformation = gtnChild;
 		}
@@ -1016,6 +1017,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_CALENDAR);
 			gtnChild.setAltText(translate("menutree.calendar.alt"));
 			gtnChild.setIconCssClass("o_calendar_icon");
+			gtnChild.setCssClass("o_sel_group_calendar");
 			root.addChild(gtnChild);
 			nodeCal = gtnChild;
 		}
@@ -1027,8 +1029,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_SHOW_RESOURCES);
 			gtnChild.setAltText(translate("menutree.resources.alt"));
 			gtnChild.setIconCssClass("o_CourseModule_icon");
+			gtnChild.setCssClass("o_sel_group_resources");
 			root.addChild(gtnChild);
-			//fxdiff BAKS-7 Resume function
 			nodeResources = gtnChild;
 		}
 
@@ -1040,8 +1042,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_MEMBERSLIST);
 			gtnChild.setAltText(translate("menutree.members.alt"));
 			gtnChild.setIconCssClass("o_icon_group");
+			gtnChild.setCssClass("o_sel_group_members");
 			root.addChild(gtnChild);
-			//fxdiff BAKS-7 Resume function
 			nodeGroupOwners = gtnChild;
 		}
 
@@ -1051,8 +1053,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_CONTACTFORM);
 			gtnChild.setAltText(translate("menutree.contactform.alt"));
 			gtnChild.setIconCssClass("o_co_icon");
+			gtnChild.setCssClass("o_sel_group_contact");
 			root.addChild(gtnChild);
-			//fxdiff BAKS-7 Resume function
 			nodeContact = gtnChild;
 		}
 
@@ -1062,6 +1064,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_FOLDER);
 			gtnChild.setAltText(translate("menutree.folder.alt"));
 			gtnChild.setIconCssClass("o_bc_icon");
+			gtnChild.setCssClass("o_sel_group_folder");
 			root.addChild(gtnChild);
 			nodeFolder = gtnChild;
 		}
@@ -1072,6 +1075,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_FORUM);
 			gtnChild.setAltText(translate("menutree.forum.alt"));
 			gtnChild.setIconCssClass("o_fo_icon");
+			gtnChild.setCssClass("o_sel_group_forum");
 			root.addChild(gtnChild);
 			nodeForum = gtnChild;
 		}

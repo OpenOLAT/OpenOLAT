@@ -211,6 +211,8 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			layoutCont.contextPut("guestOnly", new Boolean(guestOnly));
 			String cssClass = RepositoyUIFactory.getIconCssClass(entry);
 			layoutCont.contextPut("cssClass", cssClass);
+			layoutCont.contextPut("closed",
+					new Boolean(repositoryManager.createRepositoryEntryStatus(entry.getStatusCode()).isClosed()));
 			
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
 			VFSContainer mediaContainer = handler.getMediaContainer(entry);
@@ -412,7 +414,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				failed = row.isFailed();
 				score = row.getScore();
 			} else {
-				UserEfficiencyStatement statement = effManager.getUserEfficiencyStatementLight(entry.getKey(), getIdentity());
+				UserEfficiencyStatement statement = effManager.getUserEfficiencyStatementLightByRepositoryEntry(entry, getIdentity());
 				if(statement != null) {
 					Boolean p = statement.getPassed();
 					if(p != null) {

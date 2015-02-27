@@ -30,6 +30,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.logging.AssertException;
@@ -42,6 +43,11 @@ public class StringMediaResource extends DefaultMediaResource {
 	//default - if no encoding is specified we assume iso latin
 	private String encoding = "iso-8859-1";
 	private String data;
+	
+	@Override
+	public boolean acceptRanges() {
+		return true;
+	}
 
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#getInputStream()

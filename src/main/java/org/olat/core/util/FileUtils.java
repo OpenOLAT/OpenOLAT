@@ -940,16 +940,23 @@ public class FileUtils {
 
 		int c;
 		long tot = 0;
-		long s = System.nanoTime();
+		long s = 0;
+		boolean debug = log.isDebug();
+		if(debug) {
+			s = System.nanoTime();
+		}
+		
 		while ((c = in.read(buffer, 0, buffer.length)) != -1) {
     		out.write(buffer, 0, c);
     		tot += c;
 		}
 		
-		long tim = System.nanoTime() - s;
-		double dtim = tim == 0 ? 0.5 : tim; // avg of those less than 1 nanoseconds is taken as 0.5 nanoseconds
-		double bps = tot*1000*1000/dtim;
-		log.debug(String.format("cpio %,13d bytes %6.2f ms avg %6.1f Mbps %s%n", tot, dtim/1000/1000, bps/1024, wt));
+		if(debug) {
+			long tim = System.nanoTime() - s;
+			double dtim = tim == 0 ? 0.5 : tim; // avg of those less than 1 nanoseconds is taken as 0.5 nanoseconds
+			double bps = tot*1000*1000/dtim;
+			log.debug(String.format("cpio %,13d bytes %6.2f ms avg %6.1f Mbps %s%n", tot, dtim/1000/1000, bps/1024, wt));
+		}
 		return tot;
 	}
 	

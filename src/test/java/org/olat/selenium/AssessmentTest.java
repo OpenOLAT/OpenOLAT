@@ -234,7 +234,7 @@ public class AssessmentTest {
 		courseRuntime
 			.members()
 			.addMember()
-			.searchMember(ryomou)
+			.searchMember(ryomou, true)
 			.next().next().next().finish();
 		
 		//Ryomou open the group

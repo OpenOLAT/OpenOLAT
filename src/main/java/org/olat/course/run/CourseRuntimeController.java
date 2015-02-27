@@ -895,7 +895,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			} else if(type != null && type.startsWith("path=")) {
 				if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
 					String path = BusinessControlFactory.getInstance().getPath(entries.get(0));
-					doCourseFolder(ureq).activatePath(ureq, path);
+					FolderRunController folderCtrl = doCourseFolder(ureq);
+					if(folderCtrl != null) {
+						folderCtrl.activatePath(ureq, path);
+					}
 				}
 			}
 		}

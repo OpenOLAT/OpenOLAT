@@ -35,6 +35,8 @@ import javax.servlet.http.HttpServletResponse;
  * @author Felix Jost
  */
 public interface MediaResource {
+	
+	public boolean acceptRanges();
 
 	/**
 	 * @return

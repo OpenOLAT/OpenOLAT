@@ -101,6 +101,11 @@ public class CmdDownloadZip implements FolderCommand {
 			this.selection = selection;
 			this.currentContainer = currentContainer;
 		}
+		
+		@Override
+		public boolean acceptRanges() {
+			return false;
+		}
 
 		@Override
 		public String getContentType() {

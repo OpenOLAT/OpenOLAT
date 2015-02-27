@@ -38,12 +38,19 @@
 			<div class="#if($hasMetaData) col-xs-6 col-sm-12 #else col-sm-6 #end o_subcolumn">
 				<div class="o_overview">
 					<h3>$r.translate("details.overview")</h3>
-					#if($v.lifecycle || $v.lifecycle.softKey || $row.lifecycle.start || $row.lifecycle.end)
+					#if($closed)
+						<div class="o_warning o_closed"><i class="o_icon o_icon-lg o_CourseModule_icon_closed"> </i> $r.translate("close.ressource.warning")</div>
+					#end
+					#if($v.lifecycle || $v.lifecycle.softKey || $v.lifecycle.label || $row.lifecycle.start || $row.lifecycle.end)
 					<div title="$r.translateInAttribute("cif.dates")">
 						<i class="o_icon o_icon_lifecycle"></i> 
-						#if($!v.lifecycle.private && $v.lifecycle.softKey) $v.lifecycle.softKey #end
-						#if($v.lifecycle.validFrom) $r.formatDate($v.lifecycle.validFrom) #end
-						#if($v.lifecycle.validTo) - $r.formatDate($v.lifecycle.validTo) #end
+						#if(!$v.lifecycle.privateCycle)
+							#if($v.lifecycle.softKey and !$v.lifecycle.softKey.isEmpty()) $v.lifecycle.softKey
+							#else $v.lifecycle.label #end
+						#else
+							#if($v.lifecycle.validFrom) $r.formatDate($v.lifecycle.validFrom) #end
+							#if($v.lifecycle.validTo) - $r.formatDate($v.lifecycle.validTo) #end
+						#end
 					</div>
 					#end
 					#if($v.expenditureOfWork && !$v.expenditureOfWork.empty)
@@ -180,7 +187,7 @@
 			#end
 			<div class="o_extlink clearfix o_block_large_bottom">
 				<h4>$r.translate("details.extlinkheader")</h4>
-				<div class="o_copy_code">
+				<div class="o_copy_code o_nowrap">
 					<a href="javascript:;" id="o_extlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode"></i></a>
 					$extlink
 					<script type="text/javascript">
@@ -192,7 +199,7 @@
 					</script>
 				</div>
 				#if ($isGuestAllowed)
-				<div class="o_copy_code">
+				<div class="o_copy_code o_nowrap">
 					<a href="javascript:;" id="o_extlink2"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode"></i></a>
 					${extlink}?guest=true&amp;lang=$r.getLanguageCode()
 					<script type="text/javascript">

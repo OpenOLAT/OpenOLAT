@@ -19,8 +19,7 @@
  */
 package org.olat.core.gui.control.generic.iframe;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

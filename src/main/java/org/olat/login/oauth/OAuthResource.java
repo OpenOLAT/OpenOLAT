@@ -49,6 +49,11 @@ public class OAuthResource implements MediaResource {
 		this.provider = provider;
 		this.session = session;
 	}
+	
+	@Override
+	public boolean acceptRanges() {
+		return false;
+	}
 
 	@Override
 	public String getContentType() {

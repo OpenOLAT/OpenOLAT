@@ -24,8 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -123,12 +122,12 @@ public class UserManagerTest extends OlatTestCase {
 	}
 	
 	private Identity createUser(String uuid) {
-		String name = "createid-" + uuid;
-		String email = name + "@frentix.com";
-		String institutEmail = name + "@openolat.com";
-		User user = userManager.createUser("first" + name, "last" + name, email);
+		String username = "createid-" + uuid;
+		String email = username + "@frentix.com";
+		String institutEmail = username + "@openolat.com";
+		User user = userManager.createUser("first" + username, "last" + username, email);
 		user.setProperty(UserConstants.INSTITUTIONALEMAIL, institutEmail);
-		Identity identity = securityManager.createAndPersistIdentityAndUser(name, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, "secret");
+		Identity identity = securityManager.createAndPersistIdentityAndUser(username, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, "secret");
 		Assert.assertNotNull(identity);
 		return identity;
 	}

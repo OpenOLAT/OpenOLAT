@@ -19,13 +19,12 @@
  */
 package org.olat.core.gui.media;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
-import org.apache.commons.io.IOUtils;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.poi.ss.usermodel.Workbook;
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.CodeHelper;
 
@@ -36,30 +35,58 @@ import org.olat.core.util.CodeHelper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class WorkbookMediaResource extends FileMediaResource {
+public class WorkbookMediaResource implements MediaResource {
 
+	private final Workbook wb;
+	
 	public WorkbookMediaResource(Workbook wb) {
-		super(null, true);
-		
-		FileOutputStream fos = null;
-		try {
-			File f = new File(FolderConfig.getCanonicalTmpDir(), "TableExport" + CodeHelper.getRAMUniqueID() + ".xls");
-			fos = new FileOutputStream(f);
-			wb.write(fos);
-			fos.close();
-			this.file = f;
-		} catch (IOException e) {
-			throw new AssertException("error preparing media resource for XLS Table Export", e);
-		} finally {
-			IOUtils.closeQuietly(fos);
-		}
+		this.wb = wb;
 	}
 	
+	@Override
+	public boolean acceptRanges() {
+		return false;
+	}
+
+	@Override
+	public String getContentType() {
+		return "application/vnd.ms-excel; charset=utf-8";
+	}
+
+	@Override
+	public Long getSize() {
+		return null;
+	}
+
+	@Override
+	public InputStream getInputStream() {
+		return null;
+	}
+
+	@Override
+	public Long getLastModified() {
+		return null;
+	}
+
+	@Override
+	public void prepare(HttpServletResponse hres) {
+		hres.setCharacterEncoding("utf-8");
+		String name = "TableExport" + CodeHelper.getRAMUniqueID();
+		hres.setHeader("Content-Disposition", "attachment; filename=" + name + ".xls");
+		hres.setHeader("Content-Description", "OpenOLAT Generated data");
+		try {
+			wb.write(hres.getOutputStream());
+		} catch (IOException e) {
+			throw new AssertException("error preparing media resource for XLS Table Export", e);
+		}
+	}
+
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#release()
 	 */
+	@Override
 	public void release() {
-		file.delete();
+		//
 	}
 
 

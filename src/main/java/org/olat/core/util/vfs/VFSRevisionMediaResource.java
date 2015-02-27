@@ -45,6 +45,11 @@ public class VFSRevisionMediaResource implements MediaResource {
 		this.revision = revision;
 		this.forceDownload = forceDownload;
 	}
+	
+	@Override
+	public boolean acceptRanges() {
+		return true;
+	}
 
 	public String getContentType() {
 		String mimeType = WebappHelper.getMimeType(revision.getName());

@@ -22,8 +22,8 @@ package org.olat.modules.iq;
 import static org.olat.modules.iq.IQTestHelper.createRepository;
 import static org.olat.modules.iq.IQTestHelper.createSet;
 import static org.olat.modules.iq.IQTestHelper.modDate;
-import junit.framework.Assert;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;

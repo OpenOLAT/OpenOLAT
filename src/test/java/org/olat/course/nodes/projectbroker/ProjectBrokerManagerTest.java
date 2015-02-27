@@ -41,8 +41,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.SecurityGroupImpl;
@@ -357,11 +356,11 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 
 	}
 	
-private Project createProject(String name, Identity creator, Long projectBrokerId, Long courseId) {
-	BusinessGroup projectGroup = projectGroupManager.createProjectGroupFor(projectBrokerId, creator, name + "_Group", name + "GroupDescription", courseId);
-	Project project = projectBrokerManager.createAndSaveProjectFor(name + "title", name + "description1", projectBrokerId, projectGroup);
-	return project;
-}
+	private Project createProject(String projectName, Identity creator, Long projectBrokerId, Long courseId) {
+		BusinessGroup projectGroup = projectGroupManager.createProjectGroupFor(projectBrokerId, creator, projectName + "_Group", projectName + "GroupDescription", courseId);
+		Project project = projectBrokerManager.createAndSaveProjectFor(projectName + "title", projectName + "description1", projectBrokerId, projectGroup);
+		return project;
+	}
 
 }
 

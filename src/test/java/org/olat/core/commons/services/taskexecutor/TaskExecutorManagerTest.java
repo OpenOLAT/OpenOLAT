@@ -22,8 +22,7 @@ package org.olat.core.commons.services.taskexecutor;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -22,8 +22,7 @@ package org.olat.course.condition;
 import java.util.Collection;
 import java.util.UUID;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;

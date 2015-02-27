@@ -25,8 +25,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ResourceEvaluation;

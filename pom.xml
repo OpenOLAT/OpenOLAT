@@ -72,7 +72,8 @@
 		<org.postgresql.version>9.4-1200-jdbc41</org.postgresql.version>
 		<org.infinispan.version>6.0.2.Final</org.infinispan.version>
 		<lucene.version>4.8.0</lucene.version>
-		<version.selenium>2.44.0</version.selenium>
+		<version.selenium>2.43.1</version.selenium>
+		<activemq.version>5.11.1</activemq.version>
 		<qtiworks.version>1.0-SNAPSHOT</qtiworks.version>
 
 	    <!-- properties for testing and Q&A -->
@@ -392,6 +393,16 @@
 					<groupId>org.postgresql</groupId>
 					<artifactId>postgresql</artifactId>
 					<version>${org.postgresql.version}</version>
+					<exclusions>
+						<exclusion>
+							<groupId>com.github.dblock.waffle</groupId>
+							<artifactId>waffle-jna</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.slf4j</groupId>
+							<artifactId>slf4j-simple</artifactId>
+						</exclusion>
+					</exclusions>
 				</dependency>
 		
 				<dependency>
@@ -401,41 +412,34 @@
 				</dependency>
 				<dependency>
 					<groupId>org.apache.activemq</groupId>
-					<artifactId>activemq-core</artifactId>
-					<version>5.3.2</version>
+					<artifactId>activemq-client</artifactId>
+					<version>${activemq.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.activemq</groupId>
+					<artifactId>activemq-broker</artifactId>
+					<version>${activemq.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.activemq</groupId>
+					<artifactId>activemq-spring</artifactId>
+					<version>${activemq.version}</version>
 					<exclusions>
 						<exclusion>
-							<groupId>backport-util-concurrent</groupId>
-							<artifactId>backport-util-concurrent</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>javax.activation</groupId>
-							<artifactId>activation</artifactId>
-						</exclusion>
-						<!-- fxdiff: FXOLAT-243  clean up the dependencies of ActiveMQ -->
-						<exclusion>
-							<groupId>org.springframework.osgi</groupId>
-							<artifactId>spring-osgi-core</artifactId>
+							<groupId>org.apache.xbean</groupId>
+							<artifactId>xbean-spring</artifactId>
 						</exclusion>
 						<exclusion>
 							<groupId>org.apache.activemq</groupId>
-							<artifactId>kahadb</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>org.osgi</groupId>
-							<artifactId>org.osgi.core</artifactId>
+							<artifactId>activemq-pool</artifactId>
 						</exclusion>
 						<exclusion>
 							<groupId>org.apache.geronimo.specs</groupId>
-							<artifactId>geronimo-j2ee-management_1.0_spec</artifactId>
+							<artifactId>geronimo-jta_1.0.1B_spec</artifactId>
 						</exclusion>
 						<exclusion>
-							<groupId>commons-logging</groupId>
-							<artifactId>commons-logging-api</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>commons-logging</groupId>
-							<artifactId>commons-logging</artifactId>
+							<groupId>commons-pool</groupId>
+							<artifactId>commons-pool</artifactId>
 						</exclusion>
 					</exclusions>
 				</dependency>
@@ -616,8 +620,6 @@
 						<executions>
 							<execution>
 								<id>copy-resources-4-mysqlunittests</id>
-								<!-- hook in to copy maven.build.properties to allow test and integration-test 
-									phase run properly -->
 								<phase>generate-test-resources</phase>
 								<goals>
 									<goal>copy-resources</goal>
@@ -807,8 +809,6 @@
 						<executions>
 							<execution>
 								<id>copy-resources-4-postgresqlunittests</id>
-								<!-- hook in to copy maven.build.properties to allow test and integration-test 
-									phase run properly -->
 								<phase>generate-test-resources</phase>
 								<goals>
 									<goal>copy-resources</goal>
@@ -847,6 +847,16 @@
 								<groupId>org.postgresql</groupId>
 								<artifactId>postgresql</artifactId>
 								<version>${org.postgresql.version}</version>
+								<exclusions>
+									<exclusion>
+										<groupId>com.github.dblock.waffle</groupId>
+										<artifactId>waffle-jna</artifactId>
+									</exclusion>
+									<exclusion>
+										<groupId>org.slf4j</groupId>
+										<artifactId>slf4j-simple</artifactId>
+									</exclusion>
+								</exclusions>
 							</dependency>
 						</dependencies>
 	
@@ -1004,8 +1014,6 @@
 						<executions>
 							<execution>
 								<id>copy-resources-4-oracleunittests</id>
-								<!-- hook in to copy maven.build.properties to allow test and integration-test 
-									phase run properly -->
 								<phase>generate-test-resources</phase>
 								<goals>
 									<goal>copy-resources</goal>
@@ -1579,42 +1587,37 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-core</artifactId>
-			<version>5.3.2</version>
+			<artifactId>activemq-client</artifactId>
+			<version>${activemq.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-broker</artifactId>
+			<version>${activemq.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-spring</artifactId>
+			<version>${activemq.version}</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
-					<groupId>backport-util-concurrent</groupId>
-					<artifactId>backport-util-concurrent</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>javax.activation</groupId>
-					<artifactId>activation</artifactId>
-				</exclusion>
-				<!-- fxdiff: FXOLAT-243  clean up the dependencies of ActiveMQ -->
-				<exclusion>
-					<groupId>org.springframework.osgi</groupId>
-					<artifactId>spring-osgi-core</artifactId>
+					<groupId>org.apache.xbean</groupId>
+					<artifactId>xbean-spring</artifactId>
 				</exclusion>
 				<exclusion>
 					<groupId>org.apache.activemq</groupId>
-					<artifactId>kahadb</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.osgi</groupId>
-					<artifactId>org.osgi.core</artifactId>
+					<artifactId>activemq-pool</artifactId>
 				</exclusion>
 				<exclusion>
 					<groupId>org.apache.geronimo.specs</groupId>
-					<artifactId>geronimo-j2ee-management_1.0_spec</artifactId>
+					<artifactId>geronimo-jta_1.0.1B_spec</artifactId>
 				</exclusion>
 				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
+					<groupId>commons-pool</groupId>
+					<artifactId>commons-pool</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -1656,6 +1659,7 @@
 			<version>3.2.1</version>
 		</dependency>
 		<dependency>
+			<!-- Used by at least commons-fileupload, webdriver -->
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>2.4</version>
@@ -2056,12 +2060,6 @@
 			<groupId>com.thoughtworks.xstream</groupId>
 			<artifactId>xstream</artifactId>
 			<version>1.4.7</version>
-			<exclusions><!-- use only xmlpull -->
-				<exclusion>
-					<artifactId>xpp3</artifactId>
-					<groupId>xpp3_min</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>xerces</groupId>
@@ -2240,7 +2238,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.8.2</version>
+			<version>4.12</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

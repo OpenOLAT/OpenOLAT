@@ -24,8 +24,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 import java.util.UUID;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.services.commentAndRating.manager.UserCommentsDAO;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;

@@ -29,6 +29,12 @@
 			margin-bottom: 0.25em;
 		}
 	}
+	
+	.o_infopanel, o_usagepanel, o_managedpanel {
+		.panel-title {
+			cursor: pointer;
+		}
+	}
 		
 	.o_start, .o_book {
 		margin: 2em 0;
@@ -65,6 +71,16 @@
 			width: 100%;
 		}
 	}
+}
+
+.o_meta .o_closed {
+	padding: 2px 5px;
+	margin: 5px 0;
+}
+
+.o_overview .o_closed {
+	padding: 12px 15px;
+	margin: 15px 0;
 }
 
 .o_ac_configuration {

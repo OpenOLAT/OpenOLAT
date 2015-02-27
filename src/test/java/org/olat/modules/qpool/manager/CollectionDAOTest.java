@@ -24,8 +24,8 @@ import static java.util.Collections.singletonList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
-import org.jgroups.util.UUID;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -63,7 +63,7 @@ public class CollectionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createCollection() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-" + UUID.randomUUID());
 		collectionDao.createCollection("My first collection", id);
 		dbInstance.commit();
 	}
@@ -71,7 +71,7 @@ public class CollectionDAOTest extends OlatTestCase {
 	@Test
 	public void loadCollectionById() {
 		//create an owner and its collection
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-" + UUID.randomUUID());
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection", id);
 		dbInstance.commitAndCloseSession();
 		

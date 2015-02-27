@@ -29,11 +29,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import junit.framework.Assert;
-
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Group;
@@ -68,6 +69,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BusinessGroupServiceTest extends OlatTestCase {
 	
 	private static boolean initialize = false;
@@ -679,8 +681,10 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	 */
 	@Test
 	public void testEnableDisableAndCheckForTool() throws Exception {
-		List<BusinessGroup>  sqlRes = businessGroupService.findBusinessGroupsOwnedBy(id2);
-		BusinessGroup found = sqlRes.get(0);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("coll-tools");
+		BusinessGroup found = businessGroupService.createBusinessGroup(coach, "Collaboration", "Collaboration", -1, -1, false, false, null);
+		dbInstance.commitAndCloseSession();
+		
 		CollaborationTools myCTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(found);
 		String[] availableTools = CollaborationToolsFactory.getInstance().getAvailableTools().clone();
 		for (int i = 0; i < availableTools.length; i++) {
@@ -716,9 +720,9 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	@Test
 	public void testUpdateMembership() {
 		//create a group with owner and participant
-		Identity ureqIdentity = JunitTestHelper.createAndPersistIdentityAsUser("Up-mship-u-" + UUID.randomUUID().toString());
-		Identity ownerIdentity = JunitTestHelper.createAndPersistIdentityAsUser("Up-mship-o-" + UUID.randomUUID().toString());
-		Identity partIdentity = JunitTestHelper.createAndPersistIdentityAsUser("Up-mship-p-" + UUID.randomUUID().toString());
+		Identity ureqIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("Up-mship-u-");
+		Identity ownerIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("Up-mship-o-");
+		Identity partIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("Up-mship-p-");
 		BusinessGroup group = businessGroupService.createBusinessGroup(ureqIdentity, "Up-mship", "updateMembership", 0, 10, false, false, null);
 		businessGroupRelationDao.addRole(ownerIdentity, group, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(partIdentity, group, GroupRoles.participant.name());
@@ -747,9 +751,9 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	@Test
 	public void testUpdateMemberships() {
 		//create a group with owner and participant
-		Identity ureqIdentity = JunitTestHelper.createAndPersistIdentityAsUser("Up-mships-u-" + UUID.randomUUID().toString());
-		Identity ownerIdentity = JunitTestHelper.createAndPersistIdentityAsUser("Up-mships-o-" + UUID.randomUUID().toString());
-		Identity partIdentity = JunitTestHelper.createAndPersistIdentityAsUser("Up-mships-p-" + UUID.randomUUID().toString());
+		Identity ureqIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("Up-mships-u-");
+		Identity ownerIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("Up-mships-o-");
+		Identity partIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("Up-mships-p-");
 		BusinessGroup group = businessGroupService.createBusinessGroup(ureqIdentity, "Up-mships", "updateMemberships", 0, 10, false, false, null);
 		businessGroupRelationDao.addRole(ownerIdentity, group, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(partIdentity, group, GroupRoles.participant.name());

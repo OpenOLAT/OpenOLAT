@@ -58,6 +58,11 @@ public class SyndFeedMediaResource implements MediaResource {
 			// cannot convert feed to string or something
 		}
 	}
+	
+	@Override
+	public boolean acceptRanges() {
+		return true;
+	}
 
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#getContentType()

@@ -57,6 +57,11 @@ public class StreamedMediaResource implements MediaResource {
 		this.lastModified = lastModified;
 		this.contentType = contentType;
 	}
+	
+	@Override
+	public boolean acceptRanges() {
+		return false;
+	}
 
 	@Override
 	public String getContentType() {
