@@ -277,13 +277,12 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		}
 	}
 	
-
 	/**
 	 * Change the password on the LDAP server.
 	 * @see org.olat.ldap.LDAPLoginManager#changePassword(org.olat.core.id.Identity, java.lang.String, org.olat.ldap.LDAPError)
 	 */
 	@Override
-	public void changePassword(Identity identity, String pwd, LDAPError errors) {
+	public boolean changePassword(Identity identity, String pwd, LDAPError errors) {
 		String uid = identity.getName();
 		String ldapUserPasswordAttribute = syncConfiguration.getLdapUserPasswordAttribute();
 		try {
@@ -310,14 +309,17 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			modificationItems [ 0 ] = new ModificationItem ( DirContext.REPLACE_ATTRIBUTE, userPasswordAttribute );
 			ctx.modifyAttributes ( dn, modificationItems );
 			ctx.close();
+			return true;
 		} catch (NamingException e) {
 			log.error("NamingException when trying to change password with username::" + uid, e);
 			errors.insert("Cannot change the password");
+			return false;
+		} catch(Exception e) {
+			log.error("Unexpected exception when trying to change password with username::" + uid, e);
+			errors.insert("Cannot change the password");
+			return false;
 		}
 	}
-
-
-	
 
 	/**
 	 * Delete all Identities in List and removes them from LDAPSecurityGroup
