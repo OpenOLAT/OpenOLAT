@@ -615,8 +615,6 @@
 						<executions>
 							<execution>
 								<id>copy-resources-4-mysqlunittests</id>
-								<!-- hook in to copy maven.build.properties to allow test and integration-test 
-									phase run properly -->
 								<phase>generate-test-resources</phase>
 								<goals>
 									<goal>copy-resources</goal>
@@ -806,8 +804,6 @@
 						<executions>
 							<execution>
 								<id>copy-resources-4-postgresqlunittests</id>
-								<!-- hook in to copy maven.build.properties to allow test and integration-test 
-									phase run properly -->
 								<phase>generate-test-resources</phase>
 								<goals>
 									<goal>copy-resources</goal>
@@ -1003,8 +999,6 @@
 						<executions>
 							<execution>
 								<id>copy-resources-4-oracleunittests</id>
-								<!-- hook in to copy maven.build.properties to allow test and integration-test 
-									phase run properly -->
 								<phase>generate-test-resources</phase>
 								<goals>
 									<goal>copy-resources</goal>
