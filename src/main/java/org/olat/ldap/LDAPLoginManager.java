@@ -39,7 +39,7 @@ public interface LDAPLoginManager {
 
 	public Attributes bindUser(String uid, String pwd, LDAPError errors);
 
-	public void changePassword(Identity identity, String pwd, LDAPError errors);
+	public boolean changePassword(Identity identity, String pwd, LDAPError errors);
 	
 	public Identity createAndPersistUser(Attributes userAttributes);
 	
