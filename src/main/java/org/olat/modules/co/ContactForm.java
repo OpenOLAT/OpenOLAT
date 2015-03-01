@@ -373,6 +373,7 @@ public class ContactForm extends FormBasicController {
 			fullName = "[" + fullName + "]";
 		}
 		tfrom = uifactory.addTextElement("ttfrom", NLS_CONTACT_FROM, 255, fullName, formLayout);
+		tfrom.setElementCssClass("o_sel_contact_to");
 		tfrom.setEnabled(false);
 		
 		tto = uifactory.addTextElement("tto", NLS_CONTACT_TO, 255, "", formLayout);

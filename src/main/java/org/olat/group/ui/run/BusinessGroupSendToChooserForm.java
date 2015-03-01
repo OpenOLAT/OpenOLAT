@@ -143,60 +143,30 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 		}
 		
 		if (isMultiSelectionPartipKeys()) {
-			/*if (isRightGroup()) {
-				radioKeysPartips = new String[]{
-						NLS_RADIO_ALL,
-						NLS_RADIO_CHOOSE
-				};
-				radioValuesPartips = new String[]{
-						translate("sendtochooser.form.radio.partip.rightgroup.all"),
-						translate("sendtochooser.form.radio.partip.rightgroup.choose")
-				};
-				
-				// Participant MultiSelection
-				SecurityGroup participants = businessGroup.getPartipiciantGroup();
-				keysPartips = getMemberKeys(ureq, participants);
-				valuesPartips = getMemberValues(ureq, participants); 
-								
-			} else */{
-				radioKeysPartips = new String[]{
-						NLS_RADIO_ALL,
-						NLS_RADIO_NOTHING,
-						NLS_RADIO_CHOOSE
-				};
-				radioValuesPartips = new String[]{
-						translate("sendtochooser.form.radio.partip.all"),
-						translate("sendtochooser.form.radio.partip.nothing"),
-						translate("sendtochooser.form.radio.partip.choose")
-				};
-				
-				// Participant MultiSelection
-				List<Identity> participants = businessGroupService.getMembers(businessGroup, GroupRoles.participant.name());
-				keysPartips = getMemberKeys(participants);
-				valuesPartips = getMemberValues(ureq, participants); 
-				ArrayHelper.sort(keysPartips, valuesPartips, false, true, false);
-			}
+			radioKeysPartips = new String[]{
+					NLS_RADIO_ALL,
+					NLS_RADIO_NOTHING,
+					NLS_RADIO_CHOOSE
+			};
+			radioValuesPartips = new String[]{
+					translate("sendtochooser.form.radio.partip.all"),
+					translate("sendtochooser.form.radio.partip.nothing"),
+					translate("sendtochooser.form.radio.partip.choose")
+			};
+			
+			// Participant MultiSelection
+			List<Identity> participants = businessGroupService.getMembers(businessGroup, GroupRoles.participant.name());
+			keysPartips = getMemberKeys(participants);
+			valuesPartips = getMemberValues(ureq, participants); 
+			ArrayHelper.sort(keysPartips, valuesPartips, false, true, false);
 		} else {
-			/*if (isRightGroup()) {
-				radioKeysPartips = new String[]{
-						NLS_RADIO_ALL
-				};
-				radioValuesPartips = new String[]{
-						translate("sendtochooser.form.radio.partip.all.rightgroup")
-				};
-			} else */{
-				radioKeysPartips = new String[]{
-						NLS_RADIO_ALL,
-						NLS_RADIO_NOTHING
-				};
-				radioValuesPartips = new String[]{
-						translate("sendtochooser.form.radio.partip.all"),
-						translate("sendtochooser.form.radio.partip.nothing")
-				};
-			}
+			radioKeysPartips = new String[]{ NLS_RADIO_ALL, NLS_RADIO_NOTHING };
+			radioValuesPartips = new String[]{
+					translate("sendtochooser.form.radio.partip.all"),
+					translate("sendtochooser.form.radio.partip.nothing")
+			};
 		}		
-	
-		
+
 		radioKeysWaitings = new String[]{
 				NLS_RADIO_ALL,
 				NLS_RADIO_NOTHING,
@@ -261,6 +231,7 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 		return keys;
 	}
 
+	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		
 		errorKeyDisplay.clearError();
@@ -301,30 +272,18 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 				return false;
 			}
 		} else {
-			/*if (isRightGroup()) {
-				if (radioButtonPartips.isSelected(0)
-						|| (isMultiSelectionPartipKeys() ? (radioButtonPartips.isSelected(1) && (multiSelectionPartipKeys != null) && multiSelectionPartipKeys.getSelectedKeys().size() > 0 ? true
-								: false)
-								: false)) {
-					return true;
-				} else {
-					errorKeyDisplay.setErrorKey("sendtochooser.form.error.nonselected", null);
-					return false;
-				}
-			} else */ {
-				if (radioButtonOwner.isSelected(0)
-						|| radioButtonPartips.isSelected(0)
-						|| (isMultiSelectionOwnerKeys() ? (radioButtonOwner.isSelected(2) && (multiSelectionOwnerKeys != null) && multiSelectionOwnerKeys.getSelectedKeys().size() > 0 ? true
-								: false)
-								: false)
-						|| (isMultiSelectionPartipKeys() ? (radioButtonPartips.isSelected(2) && (multiSelectionPartipKeys != null) && multiSelectionPartipKeys.getSelectedKeys().size() > 0 ? true
-								: false)
-								: false)) {
-					return true;
-				} else {
-					errorKeyDisplay.setErrorKey("sendtochooser.form.error.nonselected", null);
-					return false;
-				}
+			if (radioButtonOwner.isSelected(0)
+					|| radioButtonPartips.isSelected(0)
+					|| (isMultiSelectionOwnerKeys() ? (radioButtonOwner.isSelected(2) && (multiSelectionOwnerKeys != null) && multiSelectionOwnerKeys.getSelectedKeys().size() > 0 ? true
+							: false)
+							: false)
+					|| (isMultiSelectionPartipKeys() ? (radioButtonPartips.isSelected(2) && (multiSelectionPartipKeys != null) && multiSelectionPartipKeys.getSelectedKeys().size() > 0 ? true
+							: false)
+							: false)) {
+				return true;
+			} else {
+				errorKeyDisplay.setErrorKey("sendtochooser.form.error.nonselected", null);
+				return false;
 			}
 		}
 	}
@@ -411,14 +370,14 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("sendtochooser.form.header");
-		//if (!isRightGroup()) {
-			radioButtonOwner = uifactory.addRadiosVertical("radioButtonOwner", "sendtochooser.form.radio.owners", formLayout, radioKeysOwners, radioValuesOwners);
-			radioButtonOwner.select(NLS_RADIO_ALL, true);
-			radioButtonOwner.addActionListener(FormEvent.ONCLICK);
-			if ( (keysOwner != null) && (valuesOwner != null) ) {
-				multiSelectionOwnerKeys = uifactory.addCheckboxesVertical("multiSelectionOwnerKeys", "", formLayout, keysOwner, valuesOwner, 1);
-			}
-		//}
+		flc.setElementCssClass("o_sel_contact_form");
+
+		radioButtonOwner = uifactory.addRadiosVertical("radioButtonOwner", "sendtochooser.form.radio.owners", formLayout, radioKeysOwners, radioValuesOwners);
+		radioButtonOwner.select(NLS_RADIO_ALL, true);
+		radioButtonOwner.addActionListener(FormEvent.ONCLICK);
+		if ( (keysOwner != null) && (valuesOwner != null) ) {
+			multiSelectionOwnerKeys = uifactory.addCheckboxesVertical("multiSelectionOwnerKeys", "", formLayout, keysOwner, valuesOwner, 1);
+		}
 		
 		radioButtonPartips = uifactory.addRadiosVertical("radioButtonPartip", "sendtochooser.form.radio.rightgroup", formLayout, radioKeysPartips, radioValuesPartips);
 		radioButtonPartips.select(NLS_RADIO_ALL, true);

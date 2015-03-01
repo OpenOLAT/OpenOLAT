@@ -71,6 +71,8 @@ junit and integration tests in OpenOLAT 8
 - selenium integration tests which started the whole web application in Tomcat (execution time ca. 10m)
   - MySQL
 	mvn clean verify -DskipTests=true -Dwith-mysql -Ptomcat
+  - PostgreSQL
+	mvn clean verify -DskipTests=true -Dwith-postgresql -Ptomcat
 
 The Selenium tests can be run with different browser but with some limitations:
 - Chrome/Safari cannot do an upload (tests which need an upload are ignored)

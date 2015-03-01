@@ -90,11 +90,13 @@ public class CmdCreateFolder extends FormBasicController implements FolderComman
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_folder_new_folder");
 		uifactory.addStaticTextElement("cf.createin", target, formLayout);
 
 		textElement = uifactory.addTextElement("fileName", "cf.name", -1, "", formLayout);
 		textElement.setDisplaySize(20);
 		textElement.setMandatory(true);
+		textElement.setElementCssClass("o_sel_folder_new_folder_name");
 		
 		FormLayoutContainer formButtons = FormLayoutContainer.createButtonLayout("formButton", getTranslator());
 		formLayout.add(formButtons);

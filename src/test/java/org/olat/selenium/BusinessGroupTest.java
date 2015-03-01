@@ -88,7 +88,7 @@ public class BusinessGroupTest {
 	 */
 	@Test
 	@RunAsClient
-	public void groupMembers(@InitialPage LoginPage loginPage,
+	public void groupMembersVisibility(@InitialPage LoginPage loginPage,
 			@Drone @Participant WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		
@@ -131,6 +131,99 @@ public class BusinessGroupTest {
 		WebElement contentEl = participantBrowser.findElement(By.id("o_main_center_content_inner"));
 		String content = contentEl.getText();
 		Assert.assertTrue(content.contains(groupName));
+	}
+	
+	/**
+	 * Configure group tools: create a group, go to administration > tools
+	 * select the informations for members and write some message. Select
+	 * all tools: contact, calendar, folder, forum, chat, wiki and portfolio.<br>
+	 * 
+	 * Check that all these functions are available.
+	 * 
+	 * @param loginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void collaborativeTools(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("Selena");
+		
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		//go to groups
+		String groupName = "Group-1-" + UUID.randomUUID();
+		GroupPage group = navBar
+			.openGroups(browser)
+			.createGroup(groupName, "A very little group");
+		
+		String news = "Welcome members ( " + UUID.randomUUID() + " )";
+		group
+			.openAdministration()
+			.openAdminTools()
+			.enableTools()
+			.setMembersInfos(news);
+		
+		//check the news
+		group
+			.openNews()
+			.assertNews(news);
+		
+		//check calendar
+		group
+			.openCalendar()
+			.assertOnCalendar();
+		
+		//check members @see other selenium test dedicated to this one
+
+		//check contact
+		group
+			.openContact()
+			.assertOnContact();
+		
+		//check folder
+		String directoryName = "New directory";
+		group
+			.openFolder()
+			.assertOnFolderCmp()
+			.createDirectory(directoryName)
+			.assertOnDirectory(directoryName)
+			.createHTMLFile("New file", "Some really cool content.")
+			.assertOnFile("new file.html");
+		
+		//check forum
+		String threadBodyMarker = UUID.randomUUID().toString();
+		group
+			.openForum()
+			.createThread("New thread in a group", "Very interessant discussion in a group" + threadBodyMarker)
+			.assertMessageBody(threadBodyMarker);
+		
+		//check chat @see other selenium test dedicated to this one
+		
+		//check wiki
+		String wikiMarker = UUID.randomUUID().toString();
+		group
+			.openWiki()
+			.createPage("Group page", "Content for the group's wiki " + wikiMarker)
+			.assertOnContent(wikiMarker);
+		
+		//check portfolio
+		String pageTitle = "Portfolio page " + UUID.randomUUID();
+		String structureElementTitle = "Structure " + UUID.randomUUID();
+		group
+			.openPortfolio()
+			.openEditor()
+			.selectMapInEditor()
+			.selectFirstPageInEditor()
+			.setPage(pageTitle, "With a little description")
+			.createStructureElement(structureElementTitle, "Structure description")
+			.closeEditor()
+			.assertStructure(structureElementTitle);
 	}
 	
 	/**

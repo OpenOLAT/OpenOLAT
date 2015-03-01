@@ -42,6 +42,14 @@ public class ForumPage {
 	
 	@Drone
 	private WebDriver browser;
+	
+	public ForumPage() {
+		//
+	}
+	
+	public ForumPage(WebDriver browser) {
+		this.browser = browser;
+	}
 
 	/**
 	 * Get the forum from a course element.
@@ -49,7 +57,7 @@ public class ForumPage {
 	 * @param browser
 	 * @return
 	 */
-	public static ForumPage getForumPage(WebDriver browser) {
+	public static ForumPage getCourseForumPage(WebDriver browser) {
 		By forumBy = By.cssSelector("div.o_course_run div.o_forum");
 		List<WebElement> forumEl = browser.findElements(forumBy);
 		Assert.assertFalse(forumEl.isEmpty());
@@ -57,6 +65,14 @@ public class ForumPage {
 		By mainBy = By.cssSelector("div.o_course_run");
 		WebElement main = browser.findElement(mainBy);
 		return Graphene.createPageFragment(ForumPage.class, main);
+	}
+	
+	public static ForumPage getGroupForumPage(WebDriver browser) {
+		By forumBy = By.cssSelector("div.o_forum");
+		List<WebElement> forumEl = browser.findElements(forumBy);
+		Assert.assertFalse(forumEl.isEmpty());
+	
+		return new ForumPage(browser);
 	}
 	
 	/**
@@ -84,6 +100,19 @@ public class ForumPage {
 		WebElement saveButton = browser.findElement(saveBy);
 		saveButton.click();
 		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public ForumPage assertMessageBody(String text) {
+		By messageBodyBy = By.className("o_forum_message_body");
+		List<WebElement> messages = browser.findElements(messageBodyBy);
+		boolean found = false;
+		for(WebElement message:messages) {
+			if(message.getText().contains(text)) {
+				found = true;
+			}
+		}
+		Assert.assertTrue(found);
 		return this;
 	}
 	

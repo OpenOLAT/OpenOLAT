@@ -19,6 +19,8 @@
  */
 package org.olat.selenium.page.wiki;
 
+import java.util.List;
+
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
@@ -41,9 +43,23 @@ public class WikiPage {
 	@Drone
 	private WebDriver browser;
 	
+	public WikiPage() {
+		//
+	}
+	
+	public WikiPage(WebDriver browser) {
+		this.browser = browser;
+	}
+	
 	public static WikiPage getWiki(WebDriver browser) {
 		WebElement main = browser.findElement(By.id("o_main_wrapper"));
 		return Graphene.createPageFragment(WikiPage.class, main);
+	}
+	
+	public static WikiPage getGroupWiki(WebDriver browser) {
+		WebElement main = browser.findElement(By.id("o_main_wrapper"));
+		Assert.assertTrue(main.isDisplayed());
+		return new WikiPage(browser);
 	}
 	
 	public WikiPage createPage(String name, String content) {
@@ -90,6 +106,18 @@ public class WikiPage {
 		return this;
 	}
 	
+	public WikiPage assertOnContent(String text) {
+		By messageBodyBy = By.className("o_wikimod-article-box");
+		List<WebElement> messages = browser.findElements(messageBodyBy);
+		boolean found = false;
+		for(WebElement message:messages) {
+			if(message.getText().contains(text)) {
+				found = true;
+			}
+		}
+		Assert.assertTrue(found);
+		return this;
+	}
 	
 	/**
 	 * Add the current page to my artefacts

@@ -41,6 +41,14 @@ public class PortfolioPage {
 	@Drone
 	private WebDriver browser;
 	
+	public PortfolioPage() {
+		//
+	}
+	
+	public PortfolioPage(WebDriver browser) {
+		this.browser = browser;
+	}
+	
 	/**
 	 * Open the segment view at "My maps"
 	 * 
@@ -189,6 +197,25 @@ public class PortfolioPage {
 	}
 	
 	/**
+	 * Close the editor
+	 * 
+	 * @return
+	 */
+	public PortfolioPage closeEditor() {
+		By editorMarkerBy = By.className("o_eportfolio_edit");
+		List<WebElement> markers = browser.findElements(editorMarkerBy);
+		Assert.assertFalse(markers.isEmpty());
+		if(markers.size() > 0) {
+			By editorBy = By.className("o_sel_ep_edit_map");
+			WebElement editorButton = browser.findElement(editorBy);
+			Assert.assertTrue(editorButton.isDisplayed());
+			editorButton.click();
+			OOGraphene.waitBusy(browser);
+		}
+		return this;
+	}
+	
+	/**
 	 * Open the editor of a template
 	 * @return
 	 */
@@ -257,6 +284,15 @@ public class PortfolioPage {
 		return this;
 	}
 	
+	public PortfolioPage selectMapInEditor() {
+		By mapNodeBy = By.cssSelector("div.o_ep_toc_editor span.o_tree_link.o_tree_l1.o_tree_l1>a");
+		List<WebElement> level1Nodes = browser.findElements(mapNodeBy);
+		Assert.assertFalse(level1Nodes.isEmpty());
+		level1Nodes.get(0).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
 	public PortfolioPage selectStructureInTOC(String structureElementTitle) {
 		WebElement selectedStructLink = null;
 		By structBy = By.cssSelector("li.level2.type_struct>a");
@@ -298,6 +334,20 @@ public class PortfolioPage {
 			}
 		}
 		Assert.assertNotNull(artefactEl);	
+		return this;
+	}
+	
+	public PortfolioPage assertStructure(String structureTitle) {
+		By structureBy = By.cssSelector(".o_eportfolio_structure h5");
+		List<WebElement> structureEls = browser.findElements(structureBy);
+		Assert.assertFalse(structureEls.isEmpty());
+		boolean found = false;
+		for(WebElement el:structureEls) {
+			if(el.getText().contains(structureTitle)) {
+				found = true;
+			}
+		}
+		Assert.assertTrue(found);	
 		return this;
 	}
 	
