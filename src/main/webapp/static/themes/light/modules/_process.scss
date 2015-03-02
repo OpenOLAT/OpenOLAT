@@ -1,0 +1,81 @@
+$o-step-border-width		: 4px !default;
+$o-step-milestone-size		: ($o-step-border-width * 4) !default;
+$o-step-padding-top			: 10px !default;
+$o-step-padding-left		: 30px !default;
+$o-step-padding-bottom		: 10px !default;
+$o-step-color				: $gray-light !default;
+$o-step-active-color		: $brand-primary !default;
+$o-step-done-color			: lighten($brand-primary,10%) !default;
+$o-step-meta-color			: $text-muted !default;
+$o-step-meta-size			: $font-size-small !default;
+
+.o_process {
+	position: relative;
+	padding-left: 25px;
+	
+	.o_step {
+		position: relative;
+		height: auto;
+		padding-top: $o-step-padding-top;
+		padding-left: $o-step-padding-left;
+		padding-bottom: $o-step-padding-bottom;
+	}
+
+	.o_bar {
+		position: absolute;
+		top: $o-step-padding-top;
+		left: floor($o-step-milestone-size / 2);
+		height: 100%;
+		border-left: $o-step-border-width solid $o-step-color;
+		
+		&:after {
+			position: absolute;
+			top: 0;
+			left: floor($o-step-milestone-size/-2 - $o-step-border-width/2);
+			height: $o-step-milestone-size;
+			width: $o-step-milestone-size;
+			border: $o-step-border-width solid $o-step-color;
+			border-radius: $o-step-milestone-size;
+			background: #fff;
+			content : " ";
+		}
+	}
+
+	.o_title {
+		margin-top: round($headings-line-height/2) * -1 + px;	
+		color: $o-step-color !important;
+	}
+
+	.o_step.o_active {
+		.o_bar,
+		.o_bar:after {
+			border-color: $o-step-active-color;
+		}
+		.o_title {
+			color: $o-step-active-color !important;
+			&:before {
+				@include fa-icon();
+				content: $fa-var-hand-o-right;			
+			}
+		}
+	}
+	.o_step.o_done {
+		.o_bar,
+		.o_bar:after {
+			border-color: $o-step-done-color;
+		}
+		.o_title {
+			color: $o-step-done-color !important;
+			&:before {
+				@include fa-icon();
+				content: $fa-var-check;			
+			}
+		}
+	}
+	.o_meta {
+		color: $o-step-meta-color;
+		font-size: $o-step-meta-size;
+		margin-top: -0.5em;
+	}
+}
+
