@@ -51,7 +51,7 @@ public class DownloadComponent extends AbstractComponent {
 	 * @param downloadItem
 	 */
 	public DownloadComponent(String name, VFSLeaf downloadItem) {
-		this(name, downloadItem, downloadItem.getName(), null,
+		this(name, downloadItem, true, downloadItem.getName(), null,
 				getCssIconClass(downloadItem.getName()));
 	}
 	
@@ -77,10 +77,10 @@ public class DownloadComponent extends AbstractComponent {
 	 *            will be added when this argument is used. Use the render
 	 *            argument when you want to provide additional CSS classes.
 	 */
-	public DownloadComponent(String name, VFSLeaf downloadItem,
+	public DownloadComponent(String name, VFSLeaf downloadItem, boolean forceDownload,
 			String linkText, String linkToolTip, String linkCssIconClass) {
 		super(name);
-		setDownloadItem(downloadItem);
+		setDownloadItem(downloadItem, forceDownload);
 		setLinkText(linkText);
 		setLinkToolTip(linkToolTip);
 		setLinkCssIconClass(linkCssIconClass);
@@ -90,13 +90,17 @@ public class DownloadComponent extends AbstractComponent {
 	 * @param downloadItem
 	 *            the VFS item to download
 	 */
-	public void setDownloadItem(VFSLeaf downloadItem) {
+	public void setDownloadItem(VFSLeaf downloadItem, boolean forceDownload) {
 		if (downloadItem == null) {
-			this.mediaResource = null;
+			mediaResource = null;
 		} else {
-			this.mediaResource = new VFSMediaResource(downloadItem);
+			VFSMediaResource mResource = new VFSMediaResource(downloadItem);
+			if(forceDownload) {
+				mResource.setDownloadable(forceDownload);
+			}
+			mediaResource = mResource;
 		}
-		this.setDirty(true);
+		setDirty(true);
 	}
 	
 	public void setMediaResource(MediaResource mediaResource) {

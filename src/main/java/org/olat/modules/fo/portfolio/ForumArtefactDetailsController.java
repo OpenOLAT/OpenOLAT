@@ -64,8 +64,9 @@ public class ForumArtefactDetailsController extends BasicController {
 			int i=1; //vc-shift!
 			for (VFSItem vfsItem : attachments) {
 				VFSLeaf file = (VFSLeaf) vfsItem;
-//				DownloadComponent downlC = new DownloadComponent("download"+i, file);
-				DownloadComponent downlC = new DownloadComponent("download"+i, file, file.getName() + " (" + String.valueOf(file.getSize() / 1024) + " KB)", null, CSSHelper.createFiletypeIconCssClassFor(file.getName()));
+				DownloadComponent downlC = new DownloadComponent("download"+i, file, true,
+						file.getName() + " (" + String.valueOf(file.getSize() / 1024) + " KB)", null,
+						CSSHelper.createFiletypeIconCssClassFor(file.getName()));
 				vC.put("download"+i, downlC);
 				i++;
 			}

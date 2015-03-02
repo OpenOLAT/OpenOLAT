@@ -59,7 +59,8 @@ public class VFSMediaResource implements MediaResource {
 			//html, xhtml and javascript are set to force download
 			if (mimeType == null || "text/html".equals(mimeType)
 					|| "application/xhtml+xml".equals(mimeType)
-					|| "application/javascript".equals(mimeType)) {
+					|| "application/javascript".equals(mimeType)
+					|| "image/svg+xml".equals(mimeType)) {
 				mimeType = MIME_TYPE_FORCE_DOWNLOAD;
 				unknownMimeType = true;
 			} else if (encoding != null) {
