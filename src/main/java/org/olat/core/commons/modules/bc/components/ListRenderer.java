@@ -230,7 +230,7 @@ public class ListRenderer {
 		
 		boolean lockedForUser = lockManager.isLockedForMe(child, fc.getIdentityEnvironnement().getIdentity(), fc.getIdentityEnvironnement().getRoles());
 		
-		String name = child.getName();
+		String name = StringHelper.escapeHtml(child.getName());
 		String pathAndName = currentContainerPath;
 		if (pathAndName.length() > 0 && !pathAndName.endsWith("/")) {
 			pathAndName = pathAndName + "/";
