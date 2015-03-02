@@ -162,6 +162,7 @@ $o-footer-line-height				: 16px !default;
 $o-footer-share-font-size			: $font-size-base !default;
 $o-footer-padding-top				: 10px !default;
 $o-footer-height 					: 70px !default;
+$o-footer-dmz-height 				: $o-footer-height !default;
 $o-footer-outer-bg 					: #f5f5f5 !default;
 $o-footer-inner-bg 					: #f5f5f5 !default;
 $o-footer-default-color 			: #999 !default;
@@ -273,6 +274,8 @@ $o-login-form-width				: 400px !default;
 $o-login-form-align				: right !default; 								/* left, center or right */
 $o-login-form-bg-gradient-steps	: rgba(255,255,255,0.1) 0.2%, rgba(255,255,255,0.6) 60%, rgba(255,255,255,0.8) 100% !default;
 $o-login-form-bg-img			: $o-images-path + "learn-bg.jpg" !default;  	/* image CC by Thomas Leuthard https://www.flickr.com/photos/thomasleuthard/8587724648/ */
+$o-login-form-bg-position-left 	: center !default;
+$o-login-form-bg-position-top	: center !default;
 $o-login-btn-register-color		: $btn-info-color !default;
 $o-login-btn-register-bg		: $btn-info-bg !default;
 $o-login-btn-register-border	: darken($o-login-btn-register-bg, 5%) !default; 
