@@ -31,6 +31,7 @@ import java.util.StringTokenizer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.util.StringHelper;
 
 /**
  * Initial Date:  08.07.2003
@@ -61,7 +62,7 @@ public class CrumbRenderer {
 			sb.append(so.toString());
 		}
 		sb.append(">")
-		  .append(fc.getRootContainer().getName()).append("</a></li>");
+		  .append(StringHelper.escapeHtml(fc.getRootContainer().getName())).append("</a></li>");
 		
 		String path = fc.getCurrentContainerPath();
 		StringTokenizer st = new StringTokenizer(path, "/", false);
@@ -76,9 +77,9 @@ public class CrumbRenderer {
 				if (iframePostEnabled) { // add ajax iframe target
 					sb.append(so.toString());
 				}
-				sb.append(">").append(token).append("</a></li>");
+				sb.append(">").append(StringHelper.escapeHtml(token)).append("</a></li>");
 			} else {
-				sb.append("<li class='active'>").append(token).append("</li>");
+				sb.append("<li class='active'>").append(StringHelper.escapeHtml(token)).append("</li>");
 			}
 		}
 		sb.append("</ol>");
