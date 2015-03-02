@@ -159,8 +159,10 @@ public class VFSResourceRoot implements WebResourceRoot  {
 		} else if (parentItem instanceof VFSContainer) {
 			String name = path.substring(lastSlash + 1);
 			VFSContainer folder = (VFSContainer)parentItem;
-			VFSContainer dir = folder.createChildContainer(name);
-			return dir != null && dir.exists();
+			if(folder.canWrite() == VFSConstants.YES) {
+				VFSContainer dir = folder.createChildContainer(name);
+				return dir != null && dir.exists();
+			}
 		}
 		return false;
 	}

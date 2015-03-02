@@ -51,6 +51,8 @@ import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -74,6 +76,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class WebDAVCommandsTest extends WebDAVTestCase {
+	
+	private static final OLog log = Tracing.createLoggerFor(WebDAVCommandsTest.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -520,7 +524,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		//author check file 
 		URI textUri = conn.getBaseURI().path("webdav").path("home").path("public").path("test.txt").build();
 		String textPropfind = conn.propfind(textUri, 0);
-		System.out.println(textPropfind);
+		log.info(textPropfind);
 		
 		//author lock the file
 		String lockToken = conn.lock(textUri, UUID.randomUUID().toString());
@@ -664,6 +668,101 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		conn.close();
 	}
 	
+	/**
+	 * Check that different methods doesn't create directory
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void coursePermission_participantDirectory()
+	throws IOException, URISyntaxException {
+		webDAVModule.setEnableLearnersBookmarksCourse(true);
+		webDAVModule.setEnableLearnersParticipatingCourses(true);
+		
+		//create a user
+		Identity auth = JunitTestHelper.createAndPersistIdentityAsAuthor("webdav-4-" + UUID.randomUUID().toString());
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-5");
+		RepositoryEntry courseEntry = deployMkdirsCourse(auth);
+		repositoryEntryRelationDao.addRole(participant, courseEntry, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//put a reference file there
+		ICourse course = CourseFactory.loadCourse(courseEntry.getOlatResource());
+		VFSContainer elements = (VFSContainer)course.getCourseFolderContainer().resolve("_courseelementdata");
+		Assert.assertNotNull(elements);
+		VFSContainer directory = (VFSContainer)elements.resolve("Directory");
+		VFSContainer level_1_Container = directory.createChildContainer("DT_01");
+		
+		VFSLeaf readonlyLeaf = level_1_Container.createChildLeaf("readonly.txt");
+		InputStream in = WebDAVCommandsTest.class.getResourceAsStream("text.txt");
+		OutputStream out = readonlyLeaf.getOutputStream(false);
+		FileUtils.copy(in, out);
+		
+		//check
+		VFSItem readonlyLeafBis = level_1_Container.resolve("readonly.txt");
+		Assert.assertNotNull(readonlyLeafBis);
+		
+		
+		//participant try to put a file
+		WebDAVConnection conn = new WebDAVConnection();
+		conn.setCredentials(participant.getName(), "A6B7C8");
+		URI courseUri = conn.getBaseURI().path("webdav").path("coursefolders").path("other").path("Mkdirs").build();
+		
+		
+		//MKCOL in the folder at the second level
+		URI level2Uri = UriBuilder.fromUri(courseUri).path("_courseelementdata")
+				.path("Directory").path("DT_01").path("DT_11").build();
+		int mkcol2Code = conn.mkcol(level2Uri);
+		Assert.assertEquals(409, mkcol2Code);		
+		//check	
+		VFSItem level2Mkcol = level_1_Container.resolve("DT_11");
+		Assert.assertNull(level2Mkcol);
+		
+		
+		//MKCOL in the folder at the first level
+		URI level1Uri = UriBuilder.fromUri(courseUri).path("_courseelementdata")
+						.path("Directory").path("DT_02").build();
+		int mkcol1Code = conn.mkcol(level1Uri);
+		Assert.assertEquals(409, mkcol1Code);
+		VFSItem level1Mkcol = directory.resolve("DT_02");
+		Assert.assertNull(level1Mkcol);
+		
+		
+		//PROPFIND in second level
+		int propfind2Code = conn.propfindTry(level2Uri, 1);
+		Assert.assertEquals(404, propfind2Code);	
+		//check	
+		VFSItem level2Propfind = level_1_Container.resolve("DT_11");
+		Assert.assertNull(level2Propfind);
+
+		
+		//PROPFIND in first level
+		int propfind1Code = conn.propfindTry(level2Uri, 1);
+		Assert.assertEquals(404, propfind1Code);	
+		//check	
+		VFSItem level1Propfind = level_1_Container.resolve("DT_02");
+		Assert.assertNull(level1Propfind);
+		
+		
+		//LOCK in the second level
+		int lock2Code = conn.lockTry(level2Uri, UUID.randomUUID().toString());
+		Assert.assertEquals(403, lock2Code);	
+		//check	
+		VFSItem level2Lock = level_1_Container.resolve("DT_11");
+		Assert.assertNull(level2Lock);
+
+		
+		//LOCK in the first level
+		int lock1Code = conn.lockTry(level2Uri, UUID.randomUUID().toString());
+		Assert.assertEquals(403, lock1Code);	
+		//check	
+		VFSItem level1Lock = level_1_Container.resolve("DT_02");
+		Assert.assertNull(level1Lock);
+	
+		IOUtils.closeQuietly(conn);
+	}
+	
 	@Test
 	public void customizingFolder()
 	throws IOException, URISyntaxException {
@@ -679,7 +778,8 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		Assert.assertTrue(customizingXml.contains("<D:href>/webdav/customizing/</D:href>"));
 
 		//PUT in the folder
-		URI textUri = conn.getBaseURI().path("webdav").path("customizing").path("infos.txt").build();
+		String randomFilename = "infos" + UUID.randomUUID() + ".txt";
+		URI textUri = conn.getBaseURI().path("webdav").path("customizing").path(randomFilename).build();
 		HttpPut put = conn.createPut(textUri);
 		InputStream dataStream = WebDAVCommandsTest.class.getResourceAsStream("text.txt");
 		InputStreamEntity entity = new InputStreamEntity(dataStream, -1);
@@ -727,6 +827,12 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		return container.resolve(filename);
 	}
 	
+	private RepositoryEntry deployMkdirsCourse(Identity author) 
+	throws URISyntaxException {
+		URL courseWithForumsUrl = WebDAVCommandsTest.class.getResource("mkdirs.zip");
+		return deployTestCourse(author, null, courseWithForumsUrl);
+	}
+
 	private RepositoryEntry deployTestCourse(Identity author, Identity coAuthor)
 	throws URISyntaxException {
 		URL courseWithForumsUrl = CoursePublishTest.class.getResource("myCourseWS.zip");

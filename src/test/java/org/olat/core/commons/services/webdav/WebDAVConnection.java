@@ -119,8 +119,17 @@ public class WebDAVConnection implements Closeable {
 		HttpPropFind propfind = new HttpPropFind(uri);
 		propfind.addHeader("Depth", Integer.toString(depth));
 		HttpResponse response = execute(propfind);
+		String text = EntityUtils.toString(response.getEntity());
 		Assert.assertEquals(207, response.getStatusLine().getStatusCode());
-		return EntityUtils.toString(response.getEntity());
+		return text;
+	}
+	
+	public int propfindTry(URI uri, int depth) throws IOException, URISyntaxException {
+		HttpPropFind propfind = new HttpPropFind(uri);
+		propfind.addHeader("Depth", Integer.toString(depth));
+		HttpResponse response = execute(propfind);
+		EntityUtils.consumeQuietly(response.getEntity());
+		return response.getStatusLine().getStatusCode();
 	}
 	
 	public int mkcol(URI uri) throws IOException, URISyntaxException {
