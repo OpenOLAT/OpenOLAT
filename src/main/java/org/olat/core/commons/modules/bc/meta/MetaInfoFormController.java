@@ -199,7 +199,7 @@ public class MetaInfoFormController extends FormBasicController {
 			filename.setMandatory(true);
 		}
 		
-		MetaInfo meta = item == null ? null : metaInfoFactory.createMetaInfoFor((OlatRelPathImpl)item);
+		MetaInfo meta = item instanceof OlatRelPathImpl ? metaInfoFactory.createMetaInfoFor((OlatRelPathImpl)item) : null;
 
 		// title
 		String titleVal = (meta != null ? meta.getTitle() : null);
