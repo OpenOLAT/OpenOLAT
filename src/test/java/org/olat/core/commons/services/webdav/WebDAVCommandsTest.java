@@ -804,6 +804,26 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		//check	
 		VFSItem level1Lock = level_1_Container.resolve("DT_02");
 		Assert.assertNull(level1Lock);
+		
+		
+		//MKCOL in the folder deeper
+		VFSContainer level_2_Container = level_1_Container.createChildContainer("DT2_01");
+		VFSContainer level_3_Container = level_2_Container.createChildContainer("DT3_01");
+		VFSContainer level_4_Container = level_3_Container.createChildContainer("DT4_01");
+		Assert.assertNotNull(level_4_Container);
+
+		URI level4Uri = UriBuilder.fromUri(courseUri).path("_courseelementdata")
+				.path("Directory").path("DT_01").path("DT2_01").path("DT3_01").path("DT4_01").build();
+		int propfind4Code = conn.propfindTry(level4Uri, 1);
+		Assert.assertEquals(207, propfind4Code);
+		
+		URI level5Uri = UriBuilder.fromUri(level4Uri).path("DT5_01").build();
+		
+		int mkcol5Code = conn.mkcol(level5Uri);
+		Assert.assertEquals(409, mkcol5Code);		
+		//check	
+		VFSItem level5Mkcol = level_1_Container.resolve("DT2_01").resolve("DT3_01").resolve("DT4_01").resolve("DT5_01");
+		Assert.assertNull(level5Mkcol);
 	
 		IOUtils.closeQuietly(conn);
 	}
