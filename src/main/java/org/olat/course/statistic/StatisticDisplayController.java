@@ -54,6 +54,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
@@ -282,7 +283,8 @@ public class StatisticDisplayController extends BasicController {
 			ThreadLocalUserActivityLogger.log(StatisticLoggingAction.VIEW_NODE_STATISTIC, getClass(), 
 					LoggingResourceable.wrap(node),
 					LoggingResourceable.wrapNonOlatResource(StringResourceableType.statisticType, "", STATISTIC_TYPE_VIEW_NODE_STATISTIC));
-			selectionInfo = getTranslator().translate("statistic.chart.selectioninfo.node", new String[] { (String) map.get(AssessmentHelper.KEY_TITLE_SHORT) });
+			String shortTitle = StringHelper.escapeHtml((String) map.get(AssessmentHelper.KEY_TITLE_SHORT));
+			selectionInfo = getTranslator().translate("statistic.chart.selectioninfo.node", new String[] { shortTitle });
 		} else {
 			ThreadLocalUserActivityLogger.log(StatisticLoggingAction.VIEW_TOTAL_OF_NODES_STATISTIC, getClass(), 
 					LoggingResourceable.wrapNonOlatResource(StringResourceableType.statisticType, "", STATISTIC_TYPE_VIEW_TOTAL_OF_NODES_STATISTIC));

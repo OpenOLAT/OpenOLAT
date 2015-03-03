@@ -35,6 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -164,7 +165,8 @@ public abstract class FeedNodeEditController extends ActivateableTabbableDefault
 				// no securitycheck on feeds, editable by everybody
 				editLink = LinkFactory.createButtonSmall("edit", contentVC, this);
 				contentVC.contextPut(SHOW_PREVIEW_LINK, Boolean.TRUE);
-				previewLink = LinkFactory.createCustomLink(COMMAND_PREVIEW, COMMAND_PREVIEW, re.getDisplayname(), Link.NONTRANSLATED, contentVC,
+				String displayname = StringHelper.escapeHtml(re.getDisplayname());
+				previewLink = LinkFactory.createCustomLink(COMMAND_PREVIEW, COMMAND_PREVIEW, displayname, Link.NONTRANSLATED, contentVC,
 						this);
 				previewLink.setCustomEnabledLinkCSS("o_preview");
 				previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
@@ -279,7 +281,8 @@ public abstract class FeedNodeEditController extends ActivateableTabbableDefault
 					config.set(AbstractFeedCourseNode.CONFIG_KEY_REPOSITORY_SOFTKEY, re.getSoftkey());
 
 					contentVC.contextPut("showPreviewLink", Boolean.TRUE);
-					previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED,
+					String displayname = StringHelper.escapeHtml(re.getDisplayname());
+					previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayname, Link.NONTRANSLATED,
 							contentVC, this);
 					previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 					previewLink.setCustomEnabledLinkCSS("o_preview");

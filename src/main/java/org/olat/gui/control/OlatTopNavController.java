@@ -97,7 +97,11 @@ public class OlatTopNavController extends BasicController implements LockableCon
 			
 			// the label to open the personal menu
 			User user = getIdentity().getUser();
-			String[] attr = new String[] { user.getProperty(UserConstants.FIRSTNAME, getLocale()), user.getProperty(UserConstants.LASTNAME, getLocale()), getIdentity().getName()};
+			String[] attr = new String[] {
+					StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, getLocale())),
+					StringHelper.escapeHtml(user.getProperty(UserConstants.LASTNAME, getLocale())),
+					getIdentity().getName()
+			};
 			String myMenuText = translate("topnav.my.menu.label", attr);
 			topNavVC.contextPut("myMenuLabel", myMenuText);
 		}

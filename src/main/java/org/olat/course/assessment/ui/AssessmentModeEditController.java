@@ -240,7 +240,7 @@ public class AssessmentModeEditController extends FormBasicController {
 		for(AssessmentModeToGroup modeToGroup: assessmentMode.getGroups()) {
 			BusinessGroup group = modeToGroup.getBusinessGroup();
 			groupKeys.add(group.getKey());
-			groupNames.add(group.getName());
+			groupNames.add(StringHelper.escapeHtml(group.getName()));
 		}
 		chooseGroupsCont.getFormItemComponent().contextPut("groupNames", groupNames);
 		
@@ -249,7 +249,7 @@ public class AssessmentModeEditController extends FormBasicController {
 		for(AssessmentModeToArea modeToArea: assessmentMode.getAreas()) {
 			BGArea area = modeToArea.getArea();
 			areaKeys.add(area.getKey());
-			areaNames.add(area.getName());
+			areaNames.add(StringHelper.escapeHtml(area.getName()));
 		}
 		chooseGroupsCont.getFormItemComponent().contextPut("areaNames", areaNames);
 	
@@ -341,7 +341,11 @@ public class AssessmentModeEditController extends FormBasicController {
 		if(groupChooseCtrl == source) {
 			if(Event.DONE_EVENT == event || Event.CHANGED_EVENT == event) {
 				groupKeys = groupChooseCtrl.getSelectedKeys();
-				groupNames = groupChooseCtrl.getSelectedNames();
+				List<String> newGroupNames = groupChooseCtrl.getSelectedNames();
+				groupNames.clear();
+				for(String newGroupName:newGroupNames) {
+					groupNames.add(StringHelper.escapeHtml(newGroupName));
+				}
 				chooseGroupsCont.getFormItemComponent().contextPut("groupNames", groupNames);
 				flc.setDirty(true);
 			}
@@ -350,7 +354,10 @@ public class AssessmentModeEditController extends FormBasicController {
 		} else if(areaChooseCtrl == source) {
 			if(Event.DONE_EVENT == event || Event.CHANGED_EVENT == event) {
 				areaKeys = areaChooseCtrl.getSelectedKeys();
-				areaNames = areaChooseCtrl.getSelectedNames();
+				List<String> newAreaNames = areaChooseCtrl.getSelectedNames();
+				for(String newAreaName:newAreaNames) {
+					areaNames.add(StringHelper.escapeHtml(newAreaName));
+				}
 				chooseGroupsCont.getFormItemComponent().contextPut("areaNames", areaNames);
 				flc.setDirty(true);
 			}

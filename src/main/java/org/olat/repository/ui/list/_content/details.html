@@ -4,7 +4,7 @@
 			<i class="o_icon $cssClass o_icon-lg"></i>
 			$r.escapeHtml($v.displayname)
 			#if($v.getExternalRef())
-				<small>$v.getExternalRef()</small>
+				<small>$r.escapeHtml($v.getExternalRef())</small>
 			#end
 		</h1>
 		#if($v.authors && !$v.authors.empty)
@@ -45,8 +45,8 @@
 					<div title="$r.translateInAttribute("cif.dates")">
 						<i class="o_icon o_icon_lifecycle"></i> 
 						#if(!$v.lifecycle.privateCycle)
-							#if($v.lifecycle.softKey and !$v.lifecycle.softKey.isEmpty()) $v.lifecycle.softKey
-							#else $v.lifecycle.label #end
+							#if($v.lifecycle.softKey and !$v.lifecycle.softKey.isEmpty()) $r.escapeHtml($v.lifecycle.softKey)
+							#else $r.escapeHtml($v.lifecycle.label) #end
 						#else
 							#if($v.lifecycle.validFrom) $r.formatDate($v.lifecycle.validFrom) #end
 							#if($v.lifecycle.validTo) - $r.formatDate($v.lifecycle.validTo) #end
@@ -231,20 +231,20 @@
 						<tr><th>$r.translate("cif.id")</th><td>$v.getKey()</td></tr>
 						#if ($roles.isOLATAdmin())		
 						<tr><th>$r.translate("cif.ores_id")</th><td>$v.getOlatResource().getResourceableId()</td></tr>
-						<tr><th>$r.translate("cif.softkey")</th><td>$v.getSoftkey()</td></tr>
+						<tr><th>$r.translate("cif.softkey")</th><td>$r.escapeHtml($v.getSoftkey())</td></tr>
 						#end
 						#if($v.getExternalId())
-						<tr><th>$r.translate("cif.externalid")</th><td>$v.getExternalId()</td></tr>
+						<tr><th>$r.translate("cif.externalid")</th><td>$r.escapeHtml($v.getExternalId())</td></tr>
 						#end
 						#if($v.getExternalRef())
-						<tr><th>$r.translate("cif.externalref")</th><td>$v.getExternalRef()</td></tr>
+						<tr><th>$r.translate("cif.externalref")</th><td>$r.escapeHtml($v.getExternalRef())</td></tr>
 						#end
 						<tr><th>$r.translate("orderby.creationDate")</th><td>$r.formatDateAndTime($v.getCreationDate())</td></tr>
 						<tr><th>$r.translate("orderby.lastModified")</th><td>$r.formatDateAndTime($v.getLastModified())</td></tr>
 						
 						#if ($isEntryAuthor || $roles.isOLATAdmin() || $roles.isAuthor() || $roles.isInstitutionalResourceManager())		
 						<tr><th>$r.translate("cif.access")</th><td>$accessI18n</td></tr>
-						<tr><th>$r.translate("cif.initialAuthor")</th><td>$v.getInitialAuthor()</td></tr>
+						<tr><th>$r.translate("cif.initialAuthor")</th><td>$r.escapeHtml($v.getInitialAuthor())</td></tr>
 						<tr>
 							<th>$r.translate("cif.owners")</th>
 							<td><ul class="list-unstyled">

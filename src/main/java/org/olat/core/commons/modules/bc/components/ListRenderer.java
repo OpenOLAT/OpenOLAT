@@ -41,6 +41,8 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.AbstractVirtualContainer;
@@ -61,6 +63,8 @@ import org.olat.user.UserManager;
  * @author Mike Stock
  */
 public class ListRenderer {
+	
+	private static final OLog log = Tracing.createLoggerFor(ListRenderer.class);
 
 	/** Edit parameter identifier. */
 	public static final String PARAM_EDTID = "fcedt";
@@ -230,49 +234,68 @@ public class ListRenderer {
 		
 		boolean lockedForUser = lockManager.isLockedForMe(child, fc.getIdentityEnvironnement().getIdentity(), fc.getIdentityEnvironnement().getRoles());
 		
-		String name = StringHelper.escapeHtml(child.getName());
-		String pathAndName = currentContainerPath;
-		if (pathAndName.length() > 0 && !pathAndName.endsWith("/")) {
-			pathAndName = pathAndName + "/";
+		String name = child.getName();
+		boolean xssErrors = StringHelper.xssScanForErrors(name);
+		
+		String pathAndName;
+		if(xssErrors) {
+			pathAndName = null;
+		} else {
+			pathAndName = currentContainerPath;
+			if (pathAndName.length() > 0 && !pathAndName.endsWith("/")) {
+				pathAndName = pathAndName + "/";
+			}
+			pathAndName = pathAndName + name;
 		}
-		pathAndName = pathAndName + name;
 				
 		// tr begin
 		sb.append("<tr><td>")
 		// add checkbox for actions if user can write, delete or email this directory
 		  .append("<input type=\"checkbox\" name=\"")
 		  .append(FileSelection.FORM_ID)
-		  .append("\" value=\"")
-		  .append(StringHelper.escapeHtml(name))
-		  .append("\" /> ")
-		// browse link pre
-		  .append("<a id='o_sel_doc_").append(pos).append("' href=\"");
-		
-		if (isContainer) { // for directories... normal module URIs
-			ubu.buildURI(sb, null, null, pathAndName, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-			sb.append("\"");
-			if (iframePostEnabled) { // add ajax iframe target
-				StringOutput so = new StringOutput();
-				ubu.appendTarget(so);
-				sb.append(so.toString());
-			}
-		} else { // for files, add PARAM_SERV command
-			ubu.buildURI(sb, new String[] { PARAM_SERV }, new String[] { "x" }, pathAndName, AJAXFlags.MODE_NORMAL);
-			sb.append("\" target=\"_blank\"");
-			sb.append(" download=\"").append(name).append("\"");
+		  .append("\" value=\"");
+		if(xssErrors) {
+			sb.append(StringHelper.escapeHtml(name))
+			  .append(" disabled=\"disabled\"");
+		} else {
+			sb.append(name);
 		}
-		sb.append(">");
-		// icon css
-		sb.append("<i class=\"o_icon o_icon-fw ");
-		if (isContainer) sb.append(CSSHelper.CSS_CLASS_FILETYPE_FOLDER);
-		else sb.append(CSSHelper.createFiletypeIconCssClassFor(name));
-		sb.append("\"></i> ");
+		sb.append("\" /> ");
+		// browse link pre
+		if(xssErrors) {
+			sb.append("<i class='o_icon o_icon-fw o_icon_banned'> </i> ");
+			sb.append(StringHelper.escapeHtml(name));
+			log.error("XSS Scan found something suspicious in: " + child);
+		} else {
+			sb.append("<a id='o_sel_doc_").append(pos).append("' href=\"");
+		
+			if (isContainer) { // for directories... normal module URIs
+				ubu.buildURI(sb, null, null, pathAndName, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
+				sb.append("\"");
+				if (iframePostEnabled) { // add ajax iframe target
+					StringOutput so = new StringOutput();
+					ubu.appendTarget(so);
+					sb.append(so.toString());
+				}
+			} else { // for files, add PARAM_SERV command
+				ubu.buildURI(sb, new String[] { PARAM_SERV }, new String[] { "x" }, pathAndName, AJAXFlags.MODE_NORMAL);
+				sb.append("\" target=\"_blank\"");
+				sb.append(" download=\"").append(name).append("\"");
+			}
+			sb.append(">");
 
-		// name
-		if (isAbstract) sb.append("<i>");
-		sb.append(name);
-		if (isAbstract) sb.append("</i>");
-		sb.append("</a>");
+			// icon css
+			sb.append("<i class=\"o_icon o_icon-fw ");
+			if (isContainer) sb.append(CSSHelper.CSS_CLASS_FILETYPE_FOLDER);
+			else sb.append(CSSHelper.createFiletypeIconCssClassFor(name));
+			sb.append("\"></i> ");
+	
+			// name
+			if (isAbstract) sb.append("<i>");
+			sb.append(StringHelper.escapeHtml(name));
+			if (isAbstract) sb.append("</i>");
+			sb.append("</a>");
+		}
 
 		//file metadata as tooltip
 		if (metaInfo != null) {
@@ -291,7 +314,7 @@ public class ListRenderer {
 				hasMeta = true;
 			}
 			//boolean hasThumbnail = false;
-			if(metaInfo.isThumbnailAvailable()) {
+			if(metaInfo.isThumbnailAvailable() && !xssErrors) {
 				sb.append("<div class='o_thumbnail' style='background-image:url("); 
 				ubu.buildURI(sb, new String[] { PARAM_SERV_THUMBNAIL}, new String[] { "x" }, pathAndName, AJAXFlags.MODE_NORMAL);
 				sb.append("); background-repeat:no-repeat; background-position:50% 50%;'></div>");
@@ -391,13 +414,17 @@ public class ListRenderer {
 
 		// Info link
 		if (canWrite) {
-			
 			int actionCount = 0;
-			if(canVersion) actionCount++;
+			if(canVersion) {
+				actionCount++;
+			}
 			
 			String nameLowerCase = name.toLowerCase();
 			boolean isLeaf= (child instanceof VFSLeaf); // OO-57 only display edit link if it's not a folder
-			boolean isEditable =  (isLeaf && !lockedForUser && (nameLowerCase.endsWith(".html") || nameLowerCase.endsWith(".htm") || nameLowerCase.endsWith(".txt") || nameLowerCase.endsWith(".css") || nameLowerCase.endsWith(".csv	")));
+			boolean isEditable =  (isLeaf && !lockedForUser && !xssErrors &&
+					(nameLowerCase.endsWith(".html") || nameLowerCase.endsWith(".htm")
+							|| nameLowerCase.endsWith(".txt") || nameLowerCase.endsWith(".css")
+							|| nameLowerCase.endsWith(".csv	")));
 			if(isEditable) actionCount++;
 
 			boolean canEP = canAddToEPortfolio && !isContainer;

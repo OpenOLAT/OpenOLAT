@@ -4,7 +4,7 @@
 		<li class="o_block">
 			<h5>
 				<a href="#if($link.intern) $mapperBaseUrl$link.getTarget() #else $link.getTarget() #end" target="$link.getHtmlTarget()" class="o_desc">
-					$link.getDescription()
+					$r.escapeHtml($link.getDescription())
 					<small>
 						#if($link.intern) $mapperBaseUrl$link.getTarget() #else $link.getTarget() #end
 						#if($link.getHtmlTarget() == "_blank")
@@ -15,7 +15,7 @@
 			</h5>
 			#if($showLinkComments)
 			<div class="o_comment">
-				$link.getComment()
+				$r.xssScan($link.getComment())
 			</div>
 			#end
 		</li>

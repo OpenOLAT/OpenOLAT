@@ -2,11 +2,10 @@
 <div class="o_st_peekview">
 	<ul class="list-unstyled">
 	#foreach ($coursenode in $childNodes)
-		<li>
-			$r.render("nodeLink_${coursenode.getIdent()}")
+		<li>$r.render("nodeLink_${coursenode.getIdent()}")
 		#if ($coursenode.getLongTitle() &&  $coursenode.getLongTitle() != "")
 			<div class="o_displaytitle">	
-				$r.formatLatexFormulas("$coursenode.getLongTitle()")
+				$r.escapeHtml("$coursenode.getLongTitle()")
 			</div>
 		#end	
 		</li>	

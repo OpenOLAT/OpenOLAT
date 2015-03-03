@@ -14,11 +14,11 @@
 		</div>
 		<h4 class="o_title">#if($row.closed)#end$r.render($row.getSelectLinkName())
 			#if ($row.getExternalRef())
-				<small>$row.getExternalRef()</small>
+				<small>$r.escapeHtml($row.getExternalRef())</small>
 			#end
 		</h4>
 		#if($row.authors && !$row.authors.empty)
-			<div class="o_author"><span class="text-muted">$r.translate("course.made.by")</span> $row.authors</div>
+			<div class="o_author"><span class="text-muted">$r.translate("course.made.by")</span> $r.escapeHtml($row.authors)</div>
 		#end
 		#if($row.closed)
 			<div class="o_warning o_closed">$r.translate("close.ressource.warning")</div>
@@ -27,8 +27,8 @@
 			<div class="o_lifecycle #if ($row.isActive()) o_active #end">
 				<i class="o_icon o_icon_lifecycle"></i>
 				#if(($row.lifecycleSoftKey and !$row.lifecycleSoftKey.isEmpty()) || ($row.lifecycleLabel and !$row.lifecycleLabel.isEmpty()))
-					#if($row.lifecycleSoftKey and !$row.lifecycleSoftKey.isEmpty()) $row.lifecycleSoftKey
-					#else $row.lifecycleLabel #end
+					#if($row.lifecycleSoftKey and !$row.lifecycleSoftKey.isEmpty()) $r.escapeHtml($row.lifecycleSoftKey)
+					#else $r.escapeHtml($row.lifecycleLabel) #end
 				#else
 					#if($row.lifecycleStart) $r.formatDate($row.lifecycleStart) #end
 					#if($row.lifecycleEnd) - $r.formatDate($row.lifecycleEnd) #end

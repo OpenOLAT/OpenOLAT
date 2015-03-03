@@ -1,4 +1,4 @@
-<h2><i class="o_icon $cssClass"> </i> $displayName</h2>
+<h2><i class="o_icon $cssClass"> </i> $r.escapeHtml($displayName)</h2>
 #if($image)
 	<img src="$mediaUrl/$filename" />
 #elseif($movie)

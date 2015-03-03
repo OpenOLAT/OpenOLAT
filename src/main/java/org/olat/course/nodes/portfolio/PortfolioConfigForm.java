@@ -36,6 +36,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -113,7 +114,9 @@ public class PortfolioConfigForm extends FormBasicController {
 		setFormTitle("pane.tab.portfolio_config.title");
 		setFormContextHelp("org.olat.course.nodes.portfolio", "ced_portfolio.html", "ced.hover");
 	
-		String name = map == null ? translate("error.noreference.short", courseNode.getShortTitle()) : map.getTitle();
+		String name = map == null
+				? translate("error.noreference.short", courseNode.getShortTitle())
+				: StringHelper.escapeHtml(map.getTitle());
 		mapNameElement = uifactory.addStaticTextElement("map-name", "selected.map", name, formLayout);
 		mapNameElement.setVisible(map == null);
 		
@@ -218,7 +221,9 @@ public class PortfolioConfigForm extends FormBasicController {
 					map = (PortfolioStructureMap)eSTMgr.loadPortfolioStructure(mapEntry.getOlatResource());
 					fireEvent(ureq, Event.DONE_EVENT);
 				}
-				String name = map == null ? translate("error.noreference.short", courseNode.getShortTitle()) : map.getTitle();
+				String name = map == null
+						? translate("error.noreference.short", courseNode.getShortTitle())
+						: StringHelper.escapeHtml(map.getTitle());
 				mapNameElement.setValue(name);
 				mapNameElement.setVisible(map == null);
 				

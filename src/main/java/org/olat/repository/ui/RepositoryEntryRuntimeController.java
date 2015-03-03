@@ -680,7 +680,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected void doEditSettings(UserRequest ureq) {
 		if(!reSecurity.isEntryAdmin()) return;
 		
-		RepositoryEditDescriptionController ctrl = new RepositoryEditDescriptionController(ureq, getWindowControl(), re, false);
+		RepositoryEditDescriptionController ctrl = new RepositoryEditDescriptionController(ureq, getWindowControl(), re);
 		listenTo(ctrl);
 		descriptionCtrl = pushController(ureq, translate("settings.editor"), ctrl);
 		currentToolCtr = descriptionCtrl;

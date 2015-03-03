@@ -699,7 +699,7 @@ public class COConfigForm extends FormBasicController {
 		for(BusinessGroupShort group:groups) {
 			if(sb.length() > 0) sb.append("&nbsp;&nbsp;");
 			sb.append("<i class='o_icon o_icon-fw o_icon_group'>&nbsp;</i> ");
-			sb.append(group.getName());
+			sb.append(StringHelper.escapeHtml(group.getName()));
 		}
 		return sb.toString();
 	}
@@ -710,7 +710,7 @@ public class COConfigForm extends FormBasicController {
 		for(BGArea area:areas) {
 			if(sb.length() > 0) sb.append("&nbsp;&nbsp;");
 			sb.append("<i class='o_icon o_icon-fw o_icon_courseareas'>&nbsp;</i> ");
-			sb.append(area.getName());
+			sb.append(StringHelper.escapeHtml(area.getName()));
 		}
 		return sb.toString();
 	}

@@ -131,7 +131,7 @@ public class MetaInfoController extends FormBasicController {
 
 		// filename
 		uifactory.addStaticTextElement("mf.filename", item.getName(), formLayout);
-		
+
 		MetaInfo meta = item == null ? null :
 			CoreSpringFactory.getImpl(MetaInfoFactory.class).createMetaInfoFor((OlatRelPathImpl) item);
 
@@ -264,7 +264,12 @@ public class MetaInfoController extends FormBasicController {
 			}
 		}
 		
-		if(StringHelper.containsNonWhitespace(resourceUrl)) {
+		boolean xssErrors = false;
+		if(item != null) {
+			xssErrors = StringHelper.xssScanForErrors(item.getName());
+		}
+		
+		if(StringHelper.containsNonWhitespace(resourceUrl) && !xssErrors) {
 			String externalUrlPage = velocity_root + "/external_url.html";
 			FormLayoutContainer extUrlCont = FormLayoutContainer.createCustomFormLayout("external.url", getTranslator(), externalUrlPage);
 			extUrlCont.setLabel("external.url", null);
