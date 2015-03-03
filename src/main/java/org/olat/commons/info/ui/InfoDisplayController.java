@@ -365,7 +365,8 @@ public class InfoDisplayController extends FormBasicController {
 				lockEntry = null;
 				loadMessages();
 			} else {
-				String confirmDeleteText = translate("edit.confirm_delete", new String[]{ msg.getTitle() });
+				String title = StringHelper.escapeHtml(msg.getTitle());
+				String confirmDeleteText = translate("edit.confirm_delete", new String[]{ title });
 				confirmDelete = activateYesNoDialog(ureq, null, confirmDeleteText, confirmDelete);
 				confirmDelete.setUserObject(msg);
 			}

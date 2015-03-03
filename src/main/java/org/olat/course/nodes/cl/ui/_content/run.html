@@ -106,13 +106,13 @@
 			</div>
 			<div class="col-xs-12 col-sm-9">
 				<h4 class="o_cl_title">
-					$checkbox.title 
+					$r.escapeHtml($checkbox.title )
 					#if($withScore && $checkbox.pointsAvailable) 
 					<small>$r.translate("box.points.info", $checkbox.points)</small>
 					#end
 				</h4>
 				#if($checkbox.description)
-					<div class="o_cl_desc">$checkbox.description</div>
+					<div class="o_cl_desc">$r.xssScan($checkbox.description)</div>
 				#end
 				#if($checkbox.checkbox.filename)
 					<div class="o_cl_file">$r.render($checkbox.downloadName)</div>

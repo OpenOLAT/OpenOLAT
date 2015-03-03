@@ -167,7 +167,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 	protected void updateUI() {
 		copy = ePFMgr.loadPortfolioStructureMap(getIdentity(), template, courseOres, courseNode.getIdent(), null);
 		if(copy == null) {
-			String title = template.getTitle();
+			String title = StringHelper.escapeHtml(template.getTitle());
 			String msg = translate("map.available", new String[]{ title });
 			if(newMapMsgEl == null) {
 				newMapMsgEl = uifactory.addStaticTextElement("map.available", msg, infosContainer);
@@ -188,7 +188,8 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			} else {
 				selectMapLink.setVisible(true);
 			}
-			((Link)selectMapLink.getComponent()).setCustomDisplayText(copy.getTitle());
+			String copyTitle = StringHelper.escapeHtml(copy.getTitle());
+			((Link)selectMapLink.getComponent()).setCustomDisplayText(copyTitle);
 			
 			// show results, when already handed in
 			EPStructuredMap structuredMap = (EPStructuredMap)copy;
@@ -267,7 +268,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 		if(source == newMapLink) {
 			copy = ePFMgr.assignStructuredMapToUser(getIdentity(), template, courseOres, courseNode.getIdent(), null, getDeadline());
 			if(copy != null) {
-				showInfo("map.copied", template.getTitle());
+				showInfo("map.copied", StringHelper.escapeHtml(template.getTitle()));
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapPortfolioOres(copy));
 				ThreadLocalUserActivityLogger.log(EPLoggingAction.EPORTFOLIO_TASK_STARTED, getClass());
 			}

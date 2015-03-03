@@ -89,7 +89,6 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		imageMimeTypes.add("image/png");
 	}
 
-	private final boolean isSubWorkflow;
 	private VFSContainer mediaContainer;
 	private RepositoryEntry repositoryEntry;
 	private final String repoEntryType;
@@ -126,10 +125,9 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	 * @param wControl
 	 * @param sourceEntry
 	 */
-	public RepositoryEditDescriptionController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean isSubWorkflow) {
+	public RepositoryEditDescriptionController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl, "bgrep");
 		setBasePackage(RepositoryService.class);
-		this.isSubWorkflow = isSubWorkflow;
 		this.repositoryEntry = entry;
 		repoEntryType = repositoryEntry.getOlatResource().getResourceableTypeName();
 		initForm(ureq);
@@ -141,10 +139,6 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer && isSubWorkflow) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			layoutCont.contextPut("title", repositoryEntry.getDisplayname());
-		}
 		
 		descCont = FormLayoutContainer.createDefaultFormLayout("desc", getTranslator());
 		descCont.setFormContextHelp("org.olat.repository","rep-meta-desc.html","help.hover.lifecycle");
@@ -347,9 +341,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		buttonContainer.setElementCssClass("o_sel_repo_save_details");
 		submit = uifactory.addFormSubmitButton("submit", buttonContainer);
 		submit.setVisible(!managed);
-		if (!isSubWorkflow) {
-			uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
-		}
+		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
 	}
 	
 	private void updateDatesVisibility() {

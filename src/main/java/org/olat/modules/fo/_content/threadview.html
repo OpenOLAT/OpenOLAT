@@ -6,7 +6,7 @@
 <div class="o_forum">
 	<div class="clearfix">
 		#if($filteredForLastName)
-		<h3>$r.translate("filter.results.title") $filteredForFirstName $filteredForLastName</h3>
+		<h3>$r.translate("filter.results.title") $r.escapeHtml($filteredForFirstName) $r.escapeHtml($filteredForLastName)</h3>
 		#end
 		<div class="pull-right">
 			#if($r.available("threadViewSwitch"))

@@ -51,6 +51,7 @@ import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultCon
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -152,7 +153,8 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 					editLink = LinkFactory.createButtonSmall("edit", cpConfigurationVc, this);
 				}
 				cpConfigurationVc.contextPut("showPreviewButton", Boolean.TRUE);
-				previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED, cpConfigurationVc, this);
+				String displayname = StringHelper.escapeHtml(re.getDisplayname());
+				previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayname, Link.NONTRANSLATED, cpConfigurationVc, this);
 				previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 				previewLink.setTitle(getTranslator().translate("command.preview"));
 				
@@ -238,7 +240,8 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 				if (re != null) {
 					setCPReference(re, config);
 					cpConfigurationVc.contextPut("showPreviewButton", Boolean.TRUE);
-					previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED, cpConfigurationVc, this);
+					String displayname = StringHelper.escapeHtml(re.getDisplayname());
+					previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayname, Link.NONTRANSLATED, cpConfigurationVc, this);
 					previewLink.setCustomEnabledLinkCSS("o_preview");
 					previewLink.setTitle(getTranslator().translate("command.preview"));
 					// remove existing edit link, add new one if user is allowed to edit this CP

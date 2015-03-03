@@ -332,13 +332,14 @@ public class CatalogNodeManagerController extends FormBasicController implements
 				}
 				flc.contextPut("k" + cmpId, entry.getKey());
 				
+				String title = StringHelper.escapeHtml(entry.getName());
 				Link link = LinkFactory.createCustomLink(cmpId, "select_node", cmpId, Link.LINK + Link.NONTRANSLATED, flc.getFormItemComponent(), this);
 				link.setIconLeftCSS("o_icon o_icon_catalog_sub");
-				link.setCustomDisplayText(entry.getName());
+				link.setCustomDisplayText(title);
 				link.setUserObject(entry.getKey());
 				subCategories.add(Integer.toString(count));
 				String titleId = "title_" + count;
-				flc.contextPut(titleId, entry.getName());
+				flc.contextPut(titleId, title);
 			}
 		}
 		flc.contextPut("subCategories", subCategories);

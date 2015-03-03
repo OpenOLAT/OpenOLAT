@@ -31,6 +31,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.run.userview.NodeEvaluation;
@@ -73,7 +74,7 @@ public class STPeekViewController extends BasicController {
 				childNodes.add(child);
 				// Add link to jump to course node
 				Link nodeLink = LinkFactory.createLink("nodeLink_" + child.getIdent(), genericPeekViewVC, this);
-				nodeLink.setCustomDisplayText(child.getShortTitle());
+				nodeLink.setCustomDisplayText(StringHelper.escapeHtml(child.getShortTitle()));
 				// Add css class for course node type
 				String iconCSSClass = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(child.getType()).getIconCSSClass();
 				nodeLink.setIconLeftCSS("o_icon o_icon-fw " + iconCSSClass);

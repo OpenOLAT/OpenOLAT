@@ -327,7 +327,12 @@ public class MetaInfoFormController extends FormBasicController {
 			uifactory.addStaticTextElement("mf.downloads", downloads, formLayout);
 		}
 		
-		if(StringHelper.containsNonWhitespace(resourceUrl)) {
+		boolean xssErrors = false;
+		if(item != null) {
+			xssErrors = StringHelper.xssScanForErrors(item.getName());
+		}
+		
+		if(StringHelper.containsNonWhitespace(resourceUrl) && !xssErrors) {
 			String externalUrlPage = velocity_root + "/external_url.html";
 			FormLayoutContainer extUrlCont = FormLayoutContainer.createCustomFormLayout("external.url", getTranslator(), externalUrlPage);
 			extUrlCont.setLabel("external.url", null);

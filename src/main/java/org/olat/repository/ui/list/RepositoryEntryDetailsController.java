@@ -248,7 +248,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				List<String> categoriesLink = new ArrayList<>(categories.size());
 				for(CatalogEntry category:categories) {
 					String id = "cat_" + ++cmpcount;
-					String title = category.getParent().getName();
+					String title = StringHelper.escapeHtml(category.getParent().getName());
 					FormLink catLink = uifactory.addFormLink(id, "category", title, null, layoutCont, Link.LINK | Link.NONTRANSLATED);
 					catLink.setIconLeftCSS("o_icon o_icon-fw o_icon_catalog");
 					catLink.setUserObject(category.getKey());
@@ -396,7 +396,8 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				List<String> groupLinkNames = new ArrayList<>(groups.size());
 				for(BusinessGroup group:groups) {
 					String groupLinkName = "grp_" + ++cmpcount;
-					FormLink link = uifactory.addFormLink(groupLinkName, "group", group.getName(), null, layoutCont, Link.LINK | Link.NONTRANSLATED);
+					String groupName = StringHelper.escapeHtml(group.getName());
+					FormLink link = uifactory.addFormLink(groupLinkName, "group", groupName, null, layoutCont, Link.LINK | Link.NONTRANSLATED);
 					link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
 					link.setUserObject(group.getKey());
 					groupLinkNames.add(groupLinkName);
@@ -464,7 +465,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
     		int counter = 0;
     		for(Map.Entry<Long, String> author:authorNames.entrySet()) {
     			Long authorKey = author.getKey();
-    			String authorName = author.getValue();
+    			String authorName = StringHelper.escapeHtml(author.getValue());
     			
 	    		FormLink authorLink = uifactory.addFormLink("owner-" + ++counter, "owner", authorName, null, formLayout, Link.NONTRANSLATED | Link.LINK);
 	    		authorLink.setUserObject(authorKey);

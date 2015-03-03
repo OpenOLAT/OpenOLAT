@@ -73,6 +73,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -444,8 +445,8 @@ public class FilterForUserController extends BasicController {
 		Identity modifier = m.getModifier();
 		if (modifier != null) {
 			map.put("isModified", Boolean.TRUE);
-			map.put("modfname", modifier.getUser().getProperty(UserConstants.FIRSTNAME, ureq.getLocale()));
-			map.put("modlname", modifier.getUser().getProperty(UserConstants.LASTNAME, ureq.getLocale()));
+			map.put("modfname",StringHelper.escapeHtml( modifier.getUser().getProperty(UserConstants.FIRSTNAME, ureq.getLocale())));
+			map.put("modlname", StringHelper.escapeHtml(modifier.getUser().getProperty(UserConstants.LASTNAME, ureq.getLocale())));
 		} else {
 			map.put("isModified", Boolean.FALSE);
 		}
@@ -453,8 +454,10 @@ public class FilterForUserController extends BasicController {
 		map.put("body", m.getBody());
 		map.put("date", dateFormat.format(creationDate));
 		Identity creator = m.getCreator();
-		map.put("firstname", Formatter.truncate(creator.getUser().getProperty(UserConstants.FIRSTNAME, ureq.getLocale()),18)); //keeps the first 15 chars
-		map.put("lastname", Formatter.truncate(creator.getUser().getProperty(UserConstants.LASTNAME, ureq.getLocale()),18));
+		
+		
+		map.put("firstname", StringHelper.escapeHtml(Formatter.truncate(creator.getUser().getProperty(UserConstants.FIRSTNAME, ureq.getLocale()), 18))); //keeps the first 15 chars
+		map.put("lastname", StringHelper.escapeHtml(Formatter.truncate(creator.getUser().getProperty(UserConstants.LASTNAME, ureq.getLocale()), 18)));
 		
 		String subPath = m.getKey().toString();
 		Mark currentMark = marks.get(subPath);
@@ -499,7 +502,8 @@ public class FilterForUserController extends BasicController {
 		map.put("portraitComponentVCName", portraitComponentVCName);
 		vcContainer.put(portraitComponentVCName, portrait.getInitialComponent());
 		// Add link with username that is clickable
-		Link vcLink = LinkFactory.createCustomLink("vc_"+msgCount, "vc_"+msgCount, UserManager.getInstance().getUserDisplayName(creator), Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, vcThreadView, this);
+		String creatorFullName = StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayName(creator));
+		Link vcLink = LinkFactory.createCustomLink("vc_"+msgCount, "vc_"+msgCount, creatorFullName, Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, vcThreadView, this);
 		vcLink.setUserObject(msgCount);
 		LinkPopupSettings settings = new LinkPopupSettings(800, 600, "_blank");
 		vcLink.setPopup(settings);

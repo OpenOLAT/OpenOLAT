@@ -351,7 +351,7 @@ public class GroupController extends BasicController implements Activateable2, G
 		
 		int index = tableCtr.getIndexOfSortedObject(statementEntry) + 1;
 		String details = translate("students.details", new String[]{
-				statementEntry.getStudentFullName(), String.valueOf(index), String.valueOf(tableCtr.getRowCount())
+				StringHelper.escapeHtml(statementEntry.getStudentFullName()), String.valueOf(index), String.valueOf(tableCtr.getRowCount())
 		});
 		detailsCmp.setText(details);
 		setDetailsToolbarVisible(true);
