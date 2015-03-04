@@ -184,8 +184,10 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
-		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(BlogFileResource.TYPE_NAME);
-		super.importNode(handler, importDirectory, owner, locale);
+	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences) {
+		if(withReferences) {
+			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(BlogFileResource.TYPE_NAME);
+			importFeed(handler, importDirectory, owner, locale);
+		}
 	}
 }

@@ -251,15 +251,13 @@ public class CourseHandler implements RepositoryHandler {
 		CourseFactory.saveCourse(course.getResourceableId());
 		
 		//import references
-		if(withReferences) {
-			CourseEditorTreeNode rootNode = (CourseEditorTreeNode)course.getEditorTreeModel().getRootNode();
-			importReferences(rootNode, course, initialAuthor, locale);
-			if(course.getCourseConfig().hasCustomSharedFolder()) {
-				importSharedFolder(course, initialAuthor);
-			}
-			if(course.getCourseConfig().hasGlossary()) {
-				importGlossary(course, initialAuthor);
-			}
+		CourseEditorTreeNode rootNode = (CourseEditorTreeNode)course.getEditorTreeModel().getRootNode();
+		importReferences(rootNode, course, initialAuthor, locale, withReferences);
+		if(withReferences && course.getCourseConfig().hasCustomSharedFolder()) {
+			importSharedFolder(course, initialAuthor);
+		}
+		if(withReferences && course.getCourseConfig().hasGlossary()) {
+			importGlossary(course, initialAuthor);
 		}
 
 		// create group management / import groups
@@ -358,13 +356,13 @@ public class CourseHandler implements RepositoryHandler {
 		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 	}
 	
-	private void importReferences(CourseEditorTreeNode node, ICourse course, Identity owner, Locale locale) {
-		node.getCourseNode().importNode(course.getCourseExportDataDir().getBasefile(), course, owner, locale);
+	private void importReferences(CourseEditorTreeNode node, ICourse course, Identity owner, Locale locale, boolean withReferences) {
+		node.getCourseNode().importNode(course.getCourseExportDataDir().getBasefile(), course, owner, locale, withReferences);
 
 		for (int i = 0; i<node.getChildCount(); i++) {
 			INode child = node.getChildAt(i);
 			if(child instanceof CourseEditorTreeNode) {
-				importReferences((CourseEditorTreeNode)child, course, owner, locale);
+				importReferences((CourseEditorTreeNode)child, course, owner, locale, withReferences);
 			}
 		}
 	}
