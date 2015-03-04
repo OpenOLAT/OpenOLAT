@@ -29,6 +29,7 @@ import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -45,6 +46,8 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLATSecurityException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
@@ -64,7 +67,11 @@ import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class LDAPAuthenticationController extends AuthenticationController implements Activateable2 {
+	
+	private static final OLog log = Tracing.createLoggerFor(LDAPAuthenticationController.class);
+	
 	public static final String PROVIDER_LDAP = "LDAP";
+	public static final long WARNING_LIMIT = 15 *1000 * 1000 * 1000;
 	
 	private VelocityContainer loginComp;
 	private Link pwLink;
@@ -150,7 +157,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 				getLogger().audit("Login attempt on already blocked login for " + login + ". IP::" + ureq.getHttpReq().getRemoteAddr(), null);
 				return;
 			}
-			authenticatedIdentity= authenticate(login, pass, ldapError);
+			authenticatedIdentity = authenticate(login, pass, ldapError);
 
 			if(!ldapError.isEmpty()) {
 				final String errStr = ldapError.get();
@@ -167,6 +174,13 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 
 			if (authenticatedIdentity != null) {
 				provider = LDAPAuthenticationController.PROVIDER_LDAP;
+				
+				try {
+					//prevents database timeout
+					DBFactory.getInstance().commitAndCloseSession();
+				} catch (Exception e) {
+					log.error("", e);
+				}
 			} else {
 				// try fallback to OLAT provider if configured
 				if (ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()) {
@@ -241,7 +255,6 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 	}
 	
 	@Override
-	//fxdiff FXOLAT-113: business path in DMZ
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
@@ -259,8 +272,14 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 		final LDAPLoginModule ldapModule = CoreSpringFactory.getImpl(LDAPLoginModule.class);
 		final LDAPLoginManager ldapManager = CoreSpringFactory.getImpl(LDAPLoginManager.class);
 		
+		long start = System.nanoTime();
 		//authenticate against LDAP server
 		Attributes attrs = ldapManager.bindUser(username, pwd, ldapError);
+		long takes = System.nanoTime() - start;
+		if(takes > WARNING_LIMIT) {
+			log.warn("LDAP Authentication takes (ms): " + (takes / 1000000));
+		}
+		
 		if (ldapError.isEmpty() && attrs != null) { 
 			Identity identity = ldapManager.findIdentyByLdapAuthentication(username, ldapError);
 			if (!ldapError.isEmpty()) {

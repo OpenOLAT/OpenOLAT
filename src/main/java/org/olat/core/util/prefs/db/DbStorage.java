@@ -32,7 +32,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.olat.core.id.Identity;
-import org.olat.core.logging.LogDelegator;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.prefs.PreferencesStorage;
 import org.olat.core.util.xml.XStreamHelper;
@@ -48,17 +49,25 @@ import com.thoughtworks.xstream.XStream;
  * 
  * @author Felix Jost
  */
-public class DbStorage extends LogDelegator implements PreferencesStorage{
+public class DbStorage implements PreferencesStorage {
+	
+	private static final OLog log = Tracing.createLoggerFor(DbStorage.class);
 
 	static final String USER_PROPERTY_KEY = "v2guipreferences";
 	
 	private XStream xstream = XStreamHelper.createXStreamInstance();
-	
+
+	@Override
 	public Preferences getPreferencesFor(Identity identity, boolean useTransientPreferences) {
 		if (useTransientPreferences) {
 			return createEmptyDbPrefs(identity,true);
 		} else {			
-			return getPreferencesFor(identity);
+			try {
+				return getPreferencesFor(identity);
+			} catch (Exception e) {
+				log.error("Retry after exception", e);
+				return getPreferencesFor(identity);
+			}
 		}
 	}
 
@@ -100,13 +109,13 @@ public class DbStorage extends LogDelegator implements PreferencesStorage{
 			// OLAT-6429 detect and delete multiple prefs objects, keep the first one only 
 			List<Property> guiPropertyList = PropertyManager.getInstance().findProperties(identity, null, null, null, USER_PROPERTY_KEY); 
 			if (guiPropertyList != null && guiPropertyList.size() > 0) {
-				 logWarn("Found more than 1 entry for " + USER_PROPERTY_KEY + " in o_property table for user " + identity.getName() + ". Use first of them, deleting the others!", e); 
+				 log.warn("Found more than 1 entry for " + USER_PROPERTY_KEY + " in o_property table for user " + identity.getName() + ". Use first of them, deleting the others!", e); 
 				 Iterator<Property> iterator = guiPropertyList.iterator();
 				 guiProperty = iterator.next();
 				 while (iterator.hasNext()) { 
 					 Property property = iterator.next(); 
 					 PropertyManager.getInstance().deleteProperty(property); 				 
-					 logInfo("Will delete old property: " + property.getTextValue()); 
+					 log.info("Will delete old property: " + property.getTextValue()); 
 				} 
 			}
 		}
