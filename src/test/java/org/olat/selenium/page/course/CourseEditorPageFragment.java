@@ -55,6 +55,7 @@ public class CourseEditorPageFragment {
 	public static final By chooseWikiButton = By.className("o_sel_wiki_choose_repofile");
 	public static final By chooseTestButton = By.className("o_sel_test_choose_repofile");
 	public static final By chooseFeedButton = By.className("o_sel_feed_choose_repofile");
+	public static final By chooseScormButton = By.className("o_sel_scorm_choose_repofile");
 	public static final By choosePortfolioButton = By.className("o_sel_map_choose_repofile");
 	
 	
@@ -64,6 +65,7 @@ public class CourseEditorPageFragment {
 		chooseRepoEntriesButtonList.add(chooseWikiButton);
 		chooseRepoEntriesButtonList.add(chooseTestButton);
 		chooseRepoEntriesButtonList.add(chooseFeedButton);
+		chooseRepoEntriesButtonList.add(chooseScormButton);
 		chooseRepoEntriesButtonList.add(choosePortfolioButton);
 	}
 	
@@ -183,6 +185,15 @@ public class CourseEditorPageFragment {
 	 */
 	public CourseEditorPageFragment chooseTest(String resourceTitle) {
 		return chooseResource(chooseTestButton, resourceTitle);
+	}
+	
+	/**
+	 * @see chooseResource
+	 * @param resourceTitle
+	 * @return
+	 */
+	public CourseEditorPageFragment chooseScorm(String resourceTitle) {
+		return chooseResource(chooseScormButton, resourceTitle);
 	}
 	
 	/**

@@ -29,6 +29,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -88,7 +89,8 @@ public class ChooseScormRunModeForm extends FormBasicController {
 		mode = uifactory.addRadiosVertical("mode", "form.scormmode", formLayout, modeKeys, modeValues);
 		mode.select(ScormConstants.SCORM_MODE_NORMAL, true);
 		mode.setVisible(showOptions);
-		uifactory.addFormSubmitButton("command.showscorm", formLayout);
+		FormSubmit showButton = uifactory.addFormSubmitButton("command.showscorm", formLayout);
+		showButton.setElementCssClass("o_sel_start_scorm");
 	}
 
 	@Override

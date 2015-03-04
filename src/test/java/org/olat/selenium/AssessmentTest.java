@@ -36,6 +36,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.selenium.page.LoginPage;
@@ -50,6 +51,7 @@ import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.PublisherPageFragment.Access;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.qti.QTI12Page;
+import org.olat.selenium.page.repository.ScormPage;
 import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.JunitTestHelper;
@@ -58,6 +60,7 @@ import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
 
 /**
  * 
@@ -93,6 +96,9 @@ public class AssessmentTest {
 	@RunAsClient
 	public void qti12Test(@InitialPage LoginPage authorLoginPage)
 	throws IOException, URISyntaxException {
+		//File upload only work with Firefox
+		Assume.assumeTrue(browser instanceof FirefoxDriver);
+				
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
@@ -111,7 +117,7 @@ public class AssessmentTest {
 			.createCourse(courseTitle)
 			.clickToolbarBack();
 
-		//create a course element of type CP with the CP that we create above
+		//create a course element of type Test with the test that we create above
 		String testNodeTitle = "Test-QTI-1.2";
 		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
 			.edit();
@@ -182,9 +188,12 @@ public class AssessmentTest {
 	 */
 	@Test
 	@RunAsClient
-	public void testCourseWithAssessment_qti12(@InitialPage LoginPage authorLoginPage,
+	public void qti12CourseWithAssessment(@InitialPage LoginPage authorLoginPage,
 			@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
+		//File upload only work with Firefox
+		Assume.assumeTrue(browser instanceof FirefoxDriver);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
@@ -237,7 +246,7 @@ public class AssessmentTest {
 			.searchMember(ryomou, true)
 			.next().next().next().finish();
 		
-		//Ryomou open the group
+		//Ryomou open the course
 		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
 		ryomouLoginPage
 			.loginAs(ryomou.getLogin(), ryomou.getPassword())
@@ -308,6 +317,122 @@ public class AssessmentTest {
 	}
 	
 	/**
+	 * An author upload a SCORM resource, create a course and use the
+	 * SCORM within. It publish the course, add a participant to the
+	 * course. The participant log in, select the course above, run
+	 * the SCORM and finish it.<br>
+	 * At the end, the author go to the assessment tool and chec that
+	 * the participant has successfully passed the test.
+	 * 
+	 * @param authorLoginPage
+	 * @param ryomouBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void scormCourseWithAssessment(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver ryomouBrowser)
+	throws IOException, URISyntaxException {
+		//File upload only work with Firefox
+		Assume.assumeTrue(browser instanceof FirefoxDriver);
+				
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		
+		//upload a test
+		String scormTitle = "SCORM - " + UUID.randomUUID();
+		URL scormUrl = JunitTestHelper.class.getResource("file_resources/very_simple_scorm.zip");
+		File scormFile = new File(scormUrl.toURI());
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(scormTitle, scormFile);
+		
+		//create a course
+		String courseTitle = "Course-With-SCORM-" + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		//create a course element of type Scorm with the scorm that we create above
+		String scormNodeTitle = "SCORM";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("scorm")
+			.nodeTitle(scormNodeTitle)
+			.selectTabLearnContent()
+			.chooseScorm(scormTitle);
+
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish();
+		
+		CoursePageFragment courseRuntime = courseEditor.clickToolbarBack();
+		//add Ryomou as a course member
+		courseRuntime
+			.members()
+			.addMember()
+			.searchMember(ryomou, true)
+			.next().next().next().finish();
+		
+		//Ryomou open the course
+		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		ryomouLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		
+		//open the course
+		NavigationPage ryomouNavBar = new NavigationPage(ryomouBrowser);
+		ryomouNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		//open the course and see the test start page
+		CoursePageFragment ryomouCourse = new CoursePageFragment(ryomouBrowser);
+		ryomouCourse
+			.clickTree()
+			.selectWithTitle(scormNodeTitle);
+		
+		By scormH2By = By.cssSelector("div.o_titled_wrapper.o_course_run h2");
+		WebElement scormH2 = ryomouBrowser.findElement(scormH2By);
+		Assert.assertEquals(scormNodeTitle, scormH2.getText().trim());
+		
+		//scorm
+		ScormPage scorm = ScormPage.getScormPage(ryomouBrowser);
+		scorm
+			.start()
+			.passVerySimpleScorm()
+			.back();
+		
+		WebElement scormH2Back = ryomouBrowser.findElement(scormH2By);
+		Assert.assertEquals(scormNodeTitle, scormH2Back.getText().trim());
+		
+		//log out
+		UserToolsPage roymouUserTools = new UserToolsPage(ryomouBrowser);
+		roymouUserTools.logout();
+		
+		//author take the lead and check the assessment tool
+		navBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		//open the assessment tool
+		AssessmentToolPage assessmentTool = new CoursePageFragment(browser)
+			.assessmentTool();
+		
+		assessmentTool
+			.users()
+		//check that ryomou has passed the test
+			.assertOnUsers(ryomou)
+			.selectUser(ryomou)
+			.assertPassed(ryomou);
+	}
+	
+	/**
 	 * An author upload a test, create a course with a test course
 	 * element, publish the course, add 2 students (Ryomou and Kanu)
 	 * to the course, configure an assessment.<br />
@@ -327,6 +452,9 @@ public class AssessmentTest {
 	public void assessmentMode_manual(@InitialPage LoginPage authorLoginPage,
 			@Drone @Student WebDriver ryomouBrowser, @Drone @Participant WebDriver kanuBrowser)
 	throws IOException, URISyntaxException {
+		//File upload only work with Firefox
+		Assume.assumeTrue(browser instanceof FirefoxDriver);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");

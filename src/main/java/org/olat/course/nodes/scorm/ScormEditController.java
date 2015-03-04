@@ -155,7 +155,9 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		cpConfigurationVc = this.createVelocityContainer("edit");
 		
 		chooseCPButton = LinkFactory.createButtonSmall("command.importcp", cpConfigurationVc, this);
+		chooseCPButton.setElementCssClass("o_sel_scorm_choose_repofile");
 		changeCPButton = LinkFactory.createButtonSmall("command.changecp", cpConfigurationVc, this);
+		changeCPButton.setElementCssClass("o_sel_scorm_change_repofile");
 		
 		DeliveryOptions parentConfig = null;
 		if (config.get(CONFIG_KEY_REPOSITORY_SOFTKEY) != null) {
