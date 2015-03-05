@@ -88,6 +88,7 @@ public class AssessedIdentityCertificatesController extends BasicController impl
 
 		if(courseConfig.isManualCertificationEnabled()) {
 			generateLink = LinkFactory.createLink("generate.certificate", "generate", getTranslator(), mainVC, this, Link.BUTTON);
+			generateLink.setElementCssClass("o_sel_certificate_generate");
 		}
 		loadList();
 		putInitialPanel(mainVC);

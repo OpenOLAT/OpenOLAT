@@ -48,10 +48,12 @@ import org.olat.selenium.page.course.AssessmentModePage;
 import org.olat.selenium.page.course.AssessmentToolPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
+import org.olat.selenium.page.course.MembersPage;
 import org.olat.selenium.page.course.PublisherPageFragment.Access;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.qti.QTI12Page;
 import org.olat.selenium.page.repository.ScormPage;
+import org.olat.selenium.page.repository.RepositoryAccessPage.UserAccess;
 import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.JunitTestHelper;
@@ -315,7 +317,6 @@ public class AssessmentTest {
 			.selectUser(ryomou)
 			.assertPassed(ryomou);
 	}
-	
 	/**
 	 * An author upload a SCORM resource, create a course and use the
 	 * SCORM within. It publish the course, add a participant to the
@@ -368,10 +369,12 @@ public class AssessmentTest {
 
 		//publish the course
 		courseEditor
-			.publish()
-			.quickPublish();
+				.autoPublish()
+				.accessConfiguration()
+				.setUserAccess(UserAccess.registred)
+				.clickToolbarBack();
 		
-		CoursePageFragment courseRuntime = courseEditor.clickToolbarBack();
+		CoursePageFragment courseRuntime = new CoursePageFragment(browser);
 		//add Ryomou as a course member
 		courseRuntime
 			.members()
@@ -580,6 +583,78 @@ public class AssessmentTest {
 			.assertOnUsers(kanu)
 			.selectUser(ryomou)
 			.assertPassed(ryomou);
+	}
+	
+	/**
+	 * An author create a course, publish it and add a participant.
+	 * It set the certificate, create one for the participant.<br>
+	 * The participant logs in and look at its wonderful certificate. 
+	 * 
+	 * @param authorLoginPage
+	 * @param reiBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void certificatesManuallyGenerated(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver reiBrowser)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		
+		//create a course
+		String courseTitle = "Course-With-Certificates-" + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+
+		//create a course element of type CP with the CP that we create above
+		CoursePageFragment courseRuntime = CoursePageFragment.getCourse(browser)
+			.edit()
+			.createNode("info")
+			.autoPublish();
+		
+		//add a participant to the course
+		MembersPage members = courseRuntime
+			.members();
+		members
+			.addMember()
+			.searchMember(rei, true)
+			.next().next().next().finish();
+		// return to course
+		courseRuntime = members
+				.clickToolbarBack()
+				.efficiencyStatementConfiguration()
+				.clickToolbarBack()
+				.efficiencyStatementConfiguration()
+				.enableCertificates(false)
+				.enableRecertification()
+				.save()
+				.clickToolbarBack();
+		//create a certificate
+		courseRuntime
+			.assessmentTool()
+			.users()
+			.selectUser(rei)
+			.generateCertificate();
+		
+		//Participant log in
+		LoginPage reiLoginPage = LoginPage.getLoginPage(reiBrowser, deploymentUrl);
+		reiLoginPage
+			.loginAs(rei.getLogin(), rei.getPassword())
+			.resume();
+				
+		//open the efficiency statements
+		UserToolsPage reiUserTools = new UserToolsPage(reiBrowser);
+		reiUserTools
+			.openUserToolsMenu()
+			.openMyEfficiencyStatement()
+			.assertOnEfficiencyStatmentPage()
+			.assertOnCertificate(courseTitle);
 	}
 
 }

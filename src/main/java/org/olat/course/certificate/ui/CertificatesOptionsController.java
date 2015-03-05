@@ -145,6 +145,7 @@ public class CertificatesOptionsController extends FormBasicController {
 		setFormTitle("options.certificates.title");
 		setFormTitleIconCss("o_icon o_icon_certificate");
 		setFormContextHelp("org.olat.course.config.ui","course-efficiency.html","help.hover.course-eff");
+		formLayout.setElementCssClass("o_sel_course_certificates");
 		
 		boolean effEnabled = courseConfig.isEfficencyStatementEnabled();
 		boolean managedEff = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.efficencystatement);

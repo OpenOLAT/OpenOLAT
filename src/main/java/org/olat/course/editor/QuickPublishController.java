@@ -88,9 +88,12 @@ public class QuickPublishController extends BasicController {
 		mainVC.contextPut("accessI18CssClass", accessI18CssClass);
 		
 		noLink = LinkFactory.createButton("pbl.quick.no", mainVC, this);
+		noLink.setElementCssClass("o_sel_course_quickpublish_no");
 		manualLink = LinkFactory.createButton("pbl.quick.manual", mainVC, this);
+		manualLink.setElementCssClass("o_sel_course_quickpublish_manual");
 		autoLink = LinkFactory.createButton("pbl.quick.auto", mainVC, this);
 		autoLink.setCustomEnabledLinkCSS("btn btn-primary");
+		autoLink.setElementCssClass("o_sel_course_quickpublish_auto");
 		putInitialPanel(mainVC);
 	}
 	

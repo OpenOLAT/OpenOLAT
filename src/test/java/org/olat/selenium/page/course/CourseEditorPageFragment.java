@@ -314,6 +314,24 @@ public class CourseEditorPageFragment {
 		return this;
 	}
 	
+	/**
+	 * Don't forget to set access
+	 * 
+	 * @return
+	 */
+	public CoursePageFragment autoPublish() {
+		//back
+		By breadcrumpBackBy = By.cssSelector("#o_main_toolbar li.o_breadcrumb_back a");
+		browser.findElement(breadcrumpBackBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		//auto publish
+		By autoPublishBy = By.cssSelector("div.modal  a.o_sel_course_quickpublish_auto");
+		browser.findElement(autoPublishBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		return new CoursePageFragment(browser);
+	}
 
 	/**
 	 * Open the publish process

@@ -93,4 +93,23 @@ public class AssessmentToolPage {
 		Assert.assertTrue(passedEl.get(0).isDisplayed());
 		return this;
 	}
+	
+	public AssessmentToolPage generateCertificate() {
+		By userLinksBy = By.className("o_sel_certificate_generate");
+		browser.findElement(userLinksBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		boolean newCertificate = false;
+		for(int i=0; i<50; i++) {
+			By certificateBy = By.cssSelector("ul.o_certificates a>i.o_icon.o_filetype_pdf");
+			List<WebElement> completedEls = browser.findElements(certificateBy);
+			if(completedEls.size() > 0) {
+				newCertificate = true;
+				break;
+			}
+			OOGraphene.waitingALittleLonger();
+		}
+		Assert.assertTrue(newCertificate);
+		return this;
+	}
 }
