@@ -123,6 +123,8 @@ public class MergedCourseContainer extends MergeSource {
 	}
 	
 	private void addFolderBuildingBlocks(PersistingCourseImpl course, MergeSource nodesContainer, TreeNode courseNode) {
+		if(courseNode == null) return;
+		
 		for (int i = 0; i < courseNode.getChildCount(); i++) {
 			TreeNode child = (TreeNode)courseNode.getChildAt(i);
 			
