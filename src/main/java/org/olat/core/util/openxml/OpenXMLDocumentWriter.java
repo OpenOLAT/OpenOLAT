@@ -135,7 +135,7 @@ public class OpenXMLDocumentWriter {
 	throws IOException {
 		for(DocReference img:document.getImages()) {
 			try(FileInputStream in = new FileInputStream(img.getFile())) {
-				ZipEntry wordDocument = new ZipEntry("word/media/" + img.getFile().getName());
+				ZipEntry wordDocument = new ZipEntry("word/media/" + img.getFilename());
 				out.putNextEntry(wordDocument);
 	
 				IOUtils.copy(in, out);
@@ -213,7 +213,7 @@ public class OpenXMLDocumentWriter {
 			if(document != null) {
 				for(DocReference docRef:document.getImages()) {
 					addRelationship(docRef.getId(), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image",
-							"media/" + docRef.getFile().getName(), relationshipsEl, doc);
+							"media/" + docRef.getFilename(), relationshipsEl, doc);
 				}
 				
 				for(HeaderReference headerRef:document.getHeaders()) {

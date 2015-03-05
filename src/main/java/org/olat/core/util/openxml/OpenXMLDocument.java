@@ -31,8 +31,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
@@ -82,6 +84,7 @@ public class OpenXMLDocument {
 	private int currentId = 4;
 	private int currentNumberingId = 0;
 	private String documentHeader;
+	private Set<String> imageFilenames = new HashSet<>();
 	private Map<File, DocReference> fileToImagesMap = new HashMap<File, DocReference>();
 	
 	private List<Node> cursorStack = new ArrayList<>();
@@ -906,15 +909,18 @@ public class OpenXMLDocument {
 	public Element createImageEl(File image) {
 		String id;
 		Size emuSize;
+		String filename;
 		if(fileToImagesMap.containsKey(image)) {
 			DocReference ref = fileToImagesMap.get(image);
 			id = ref.getId();
 			emuSize = ref.getEmuSize();
+			filename = ref.getFilename();
 		} else {
 			id = generateId();
 			Size size = ImageUtils.getImageSize(image);
 			emuSize = OpenXMLUtils.convertPixelToEMUs(size, 72);
-			fileToImagesMap.put(image, new DocReference(id, emuSize, image));
+			filename = getUniqueFilename(image);
+			fileToImagesMap.put(image, new DocReference(id, filename, emuSize, image));
 		}
 
 		Element drawingEl = document.createElement("w:drawing");
@@ -935,7 +941,7 @@ public class OpenXMLDocument {
 		effectExtentEl.setAttribute("b", "0");
 		Element docPrEl = (Element)inlineEl.appendChild(document.createElement("wp:docPr"));
 		docPrEl.setAttribute("id", Integer.toString(currentId - 1));
-		docPrEl.setAttribute("name", image.getName());
+		docPrEl.setAttribute("name", filename);
 		
 		Element cNvGraphicFramePrEl = (Element)inlineEl.appendChild(document.createElement("wp:cNvGraphicFramePr"));
 		Element graphicFrameLocksEl = (Element)cNvGraphicFramePrEl.appendChild(document.createElement("a:graphicFrameLocks"));
@@ -954,7 +960,7 @@ public class OpenXMLDocument {
 		Node nvPicPrEl = picEl.appendChild(document.createElement("pic:nvPicPr"));
 		Element cNvPrEl = (Element)nvPicPrEl.appendChild(document.createElement("pic:cNvPr"));
 		cNvPrEl.setAttribute("id", "0");
-		cNvPrEl.setAttribute("name", image.getName());
+		cNvPrEl.setAttribute("name", filename);
 		Node cNvPicPrEl = nvPicPrEl.appendChild(document.createElement("pic:cNvPicPr"));
 		Element picLocksEl = (Element)cNvPicPrEl.appendChild(document.createElement("a:picLocks"));
 		picLocksEl.setAttribute("noChangeAspect", "1");
@@ -1001,6 +1007,23 @@ public class OpenXMLDocument {
 
 		
 		return drawingEl;
+	}
+	
+	private String getUniqueFilename(File image) {
+		String filename = image.getName();
+		if(imageFilenames.contains(filename)) {
+			for(int i=1; i<1000; i++) {
+				String nextFilename = i +"_" + filename;
+				if(!imageFilenames.contains(nextFilename)) {
+					filename = nextFilename;
+					imageFilenames.add(filename);
+					break;
+				}
+			}
+		} else {
+			imageFilenames.add(filename);
+		}
+		return filename;	
 	}
 	
 	private String generateId() {
