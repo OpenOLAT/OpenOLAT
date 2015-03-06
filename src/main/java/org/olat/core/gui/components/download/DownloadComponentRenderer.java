@@ -19,16 +19,16 @@
  */
 package org.olat.core.gui.components.download;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
@@ -41,7 +41,7 @@ import org.olat.core.gui.translator.Translator;
  * 
  * @author gnaegi
  */
-public class DownloadComponentRenderer implements ComponentRenderer {
+public class DownloadComponentRenderer extends DefaultComponentRenderer {
 
 	/**
 	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
@@ -60,13 +60,19 @@ public class DownloadComponentRenderer implements ComponentRenderer {
 			return;
 
 		sb.append("<a id='o_c").append(comp.getDispatchID()).append("' href=\"");
-		ubu.buildURI(sb, null, null, AJAXFlags.MODE_NORMAL); // rendered in new window anyway
+		if(comp.getFormItem() != null) {
+			DownloadLink formItem = comp.getFormItem();
+			String linkText = formItem.getLinkText();
+			ubu.createCopyFor(comp).buildURI(sb, null, null, linkText, AJAXFlags.MODE_NORMAL);
+		} else {
+			ubu.buildURI(sb, null, null, AJAXFlags.MODE_NORMAL); // rendered in new window anyway
+		}
 		sb.append("\"");
 		// Tooltip
 		String tip = comp.getLinkToolTip();
 		if (tip != null) {
 			sb.append(" title=\"")
-			  .append(StringEscapeUtils.escapeHtml(tip))
+			  .append(StringHelper.escapeHtml(tip))
 			  .append("\"");
 		}
 		sb.append(" target=\"_blank\">");
@@ -76,9 +82,9 @@ public class DownloadComponentRenderer implements ComponentRenderer {
 		if (iconCssClass != null || cssArg != null) {
 			sb.append("<i class=\"");
 			if (iconCssClass != null) {
-				sb.append("o_icon ");
-				sb.append(iconCssClass);
-				sb.append(" ");
+				sb.append("o_icon ")
+				  .append(iconCssClass)
+				  .append(" ");
 			}
 			if (cssArg != null) {
 				sb.append(cssArg);
@@ -91,34 +97,5 @@ public class DownloadComponentRenderer implements ComponentRenderer {
 			sb.append(text);
 		}
 		sb.append("</a>");
-
 	}
-
-	/**
-	 * @see org.olat.core.gui.components.ComponentRenderer#renderBodyOnLoadJSFunctionCall(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.RenderingState)
-	 */
-	@Override
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer,
-			StringOutput sb, Component source, RenderingState rstate) {
-		// nothing to render
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.ComponentRenderer#renderHeaderIncludes(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder,
-	 *      org.olat.core.gui.translator.Translator,
-	 *      org.olat.core.gui.render.RenderingState)
-	 */
-	@Override
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb,
-			Component source, URLBuilder ubu, Translator translator,
-			RenderingState rstate) {
-		// nothing to render
-	}
-
 }

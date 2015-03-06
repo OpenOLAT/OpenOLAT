@@ -28,6 +28,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -37,9 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -49,7 +48,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CheckListCourseNode;
@@ -81,6 +79,7 @@ public class CheckListBoxListEditController extends FormBasicController {
 	private final boolean inUse;
 	private ModuleConfiguration config;
 	private final OLATResourceable courseOres;
+	private final CourseEnvironment courseEnv;
 	private final CheckListCourseNode courseNode;
 
 	private final CheckboxManager checkboxManager;
@@ -91,6 +90,9 @@ public class CheckListBoxListEditController extends FormBasicController {
 		this.inUse = inUse;
 		this.courseOres = courseOres;
 		this.courseNode = courseNode;
+		
+		ICourse course = CourseFactory.loadCourse(courseOres);
+		courseEnv = course.getCourseEnvironment();
 		config = courseNode.getModuleConfiguration();
 		checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		
@@ -120,19 +122,35 @@ public class CheckListBoxListEditController extends FormBasicController {
 		pointColModel = new DefaultFlexiColumnModel(visible, Cols.points.i18nKey(), Cols.points.ordinal(), false, null);
 		columnsModel.addFlexiColumnModel(pointColModel);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.release.i18nKey(), Cols.release.ordinal()));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(Cols.file.i18nKey(),
-				Cols.file.ordinal(), "download", false, null,
-				new StaticFlexiCellRenderer("download", new TextFlexiCellRenderer())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.file.i18nKey(), Cols.file.ordinal()));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit", translate("edit"), "edit"));
 		
-		CheckboxList list = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
-		List<Checkbox> boxList = list == null ? null : list.getList();
-		if(boxList == null) {
-			boxList = new ArrayList<Checkbox>();
-		}
-		model = new CheckboxConfigDataModel(boxList, getTranslator(), columnsModel);
+		model = new CheckboxConfigDataModel(getTranslator(), columnsModel);
 		boxTable = uifactory.addTableElement(getWindowControl(), "checkbox-list", model, getTranslator(), tableCont);
 		boxTable.setCustomizeColumns(false);
+		updateModel();
+	}
+	
+	private void updateModel() {
+		CheckboxList list = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
+		List<CheckboxConfigRow> boxList = new ArrayList<CheckboxConfigRow>();
+
+		if(list != null && list.getList() != null) {
+			for(Checkbox checkbox:list.getList()) {
+				DownloadLink download = null;
+				VFSContainer container = checkboxManager.getFileContainer(courseEnv, courseNode, checkbox);
+				if(container != null) {
+					VFSItem item = container.resolve(checkbox.getFilename());
+					if(item instanceof VFSLeaf) {
+						download = uifactory.addDownloadLink("file_" + checkbox.getCheckboxId(), checkbox.getFilename(), null, (VFSLeaf)item, boxTable);
+					}
+				}
+				boxList.add(new CheckboxConfigRow(checkbox, download));
+			}
+		}
+		model.setObjects(boxList);
+		boxTable.reset();
+		
 	}
 	
 	@Override
@@ -156,11 +174,8 @@ public class CheckListBoxListEditController extends FormBasicController {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
 				if("edit".equals(cmd)) {
-					Checkbox row = model.getObject(se.getIndex());
-					doOpenEdit(ureq, row, false, translate("edit.checkbox"));
-				} else if("download".equals(cmd)) {
-					Checkbox row = model.getObject(se.getIndex());
-					doDownloadFile(ureq, row);
+					CheckboxConfigRow row = model.getObject(se.getIndex());
+					doOpenEdit(ureq, row.getCheckbox(), false, translate("edit.checkbox"));
 				}
 			}
 		}
@@ -195,24 +210,11 @@ public class CheckListBoxListEditController extends FormBasicController {
 	private void doDelete(UserRequest ureq, Checkbox checkbox ) {
 		CheckboxList list = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
 		if(list == null || checkbox == null) return;
-		
+
 		list.remove(checkbox);
 		config.set(CheckListCourseNode.CONFIG_KEY_CHECKBOX, list);
 		fireEvent(ureq, Event.DONE_EVENT);
-		model.setObjects(list.getList());
-		boxTable.reset();
-	}
-	
-	private void doDownloadFile(UserRequest ureq, Checkbox checkbox) {
-		ICourse course = CourseFactory.loadCourse(courseOres);
-		CourseEnvironment courseEnv = course.getCourseEnvironment();
-		VFSContainer container = checkboxManager.getFileContainer(courseEnv, courseNode, checkbox);
-		VFSItem item = container.resolve(checkbox.getFilename());
-		if(item instanceof VFSLeaf) {
-			VFSMediaResource rsrc = new VFSMediaResource((VFSLeaf)item);
-			rsrc.setDownloadable(true);
-			ureq.getDispatchResult().setResultingMediaResource(rsrc);
-		}
+		updateModel();
 	}
 	
 	private void doEdit(UserRequest ureq, Checkbox checkbox) {
@@ -223,8 +225,7 @@ public class CheckListBoxListEditController extends FormBasicController {
 		list.add(checkbox);
 		config.set(CheckListCourseNode.CONFIG_KEY_CHECKBOX, list);
 		fireEvent(ureq, Event.DONE_EVENT);
-		model.setObjects(list.getList());
-		boxTable.reset();
+		updateModel();
 	}
 
 	private void doOpenEdit(UserRequest ureq, Checkbox checkbox, boolean newCheckbox, String title) {
