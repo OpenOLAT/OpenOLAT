@@ -67,8 +67,6 @@ public class UserRestClient {
 		this.password = password;
 	}
 	
-
-	
 	public UserVO createRandomUser()
 	throws IOException, URISyntaxException {
 		return createRandomUser("Selena");

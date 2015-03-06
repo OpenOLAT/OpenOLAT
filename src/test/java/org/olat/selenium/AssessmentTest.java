@@ -57,6 +57,7 @@ import org.olat.selenium.page.repository.RepositoryAccessPage.UserAccess;
 import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.rest.RepositoryRestClient;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
@@ -655,6 +656,103 @@ public class AssessmentTest {
 			.openMyEfficiencyStatement()
 			.assertOnEfficiencyStatmentPage()
 			.assertOnCertificate(courseTitle);
+	}
+	
+	/**
+	 * An author create a course, set up the root node to make efficiency statement,
+	 * add a test, publish it and add a participant. It set the certificate.<br>
+	 * 
+	 * The participant logs in, make the test and look at its wonderful certificate
+	 * and the details of its performance.
+	 * 
+	 * @param authorLoginPage
+	 * @param reiBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void certificatesGeneratedByTest(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver reiBrowser)
+	throws IOException, URISyntaxException {
+		//create an author and a participant
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		//deploy the test
+		URL testUrl = ArquillianDeployments.class.getResource("file_resources/e4_test.zip");
+		String testTitle = "E4Test-" + UUID.randomUUID();
+		new RepositoryRestClient(deploymentUrl, author).deployResource(new File(testUrl.toURI()), "-", testTitle);
+		
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		//create a course
+		String courseTitle = "Certif-" + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+
+		//create a course element of type CP with the CP that we create above
+		String testNodeTitle = "Test-QTI-1.2";
+		CoursePageFragment courseRuntime = CoursePageFragment.getCourse(browser);
+		courseRuntime
+			.edit()
+			.createNode("iqtest")
+			.nodeTitle(testNodeTitle)
+			.selectTabLearnContent()
+			.chooseTest(testTitle)
+			.selectRoot()
+			.selectTabScore()
+			.enableRootScoreByNodes()
+			.autoPublish()
+			.accessConfiguration()
+			.setUserAccess(UserAccess.registred)
+			.clickToolbarBack();
+		
+		//add a participant to the course
+		MembersPage members = courseRuntime
+			.members();
+		members
+			.addMember()
+			.searchMember(rei, true)
+			.next().next().next().finish();
+		// return to course
+		courseRuntime = members
+				.clickToolbarBack()
+				.efficiencyStatementConfiguration()
+				.enableCertificates(true)
+				.enableRecertification()
+				.save()
+				.clickToolbarBack();
+		
+		//Participant log in
+		LoginPage reiLoginPage = LoginPage.getLoginPage(reiBrowser, deploymentUrl);
+		reiLoginPage
+			.loginAs(rei.getLogin(), rei.getPassword())
+			.resume();
+		
+		//open the course
+		NavigationPage reiNavBar = new NavigationPage(reiBrowser);
+		reiNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		//go to the test
+		CoursePageFragment reiTestCourse = new CoursePageFragment(reiBrowser);
+		reiTestCourse
+			.clickTree()
+			.selectWithTitle(testNodeTitle);
+		//pass the test
+		QTI12Page.getQTI12Page(reiBrowser).passE4(rei);
+				
+		//open the efficiency statements
+		UserToolsPage reiUserTools = new UserToolsPage(reiBrowser);
+		reiUserTools
+			.openUserToolsMenu()
+			.openMyEfficiencyStatement()
+			.assertOnEfficiencyStatmentPage()
+			.assertOnCertificateAndStatements(courseTitle)
+			.selectStatement(courseTitle).selectStatementSegment()
+			.assertOnCourseDetails(testNodeTitle, true);
 	}
 
 }

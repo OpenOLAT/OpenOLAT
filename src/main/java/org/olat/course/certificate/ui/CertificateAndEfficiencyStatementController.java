@@ -171,10 +171,12 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		if(efficiencyStatement != null && certificate != null) {
 			segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 			certificateLink = LinkFactory.createLink("details.certificate", mainVC, this);
+			certificateLink.setElementCssClass("o_select_certificate_segement");
 			segmentView.addSegment(certificateLink, true);
 			selectCertificate(ureq);
 			
 			courseDetailsLink = LinkFactory.createLink("details.course.infos", mainVC, this);
+			courseDetailsLink.setElementCssClass("o_select_statement_segment");
 			segmentView.addSegment(courseDetailsLink, false);
 		} else if(efficiencyStatement != null) {
 			selectCourseInfos(ureq);

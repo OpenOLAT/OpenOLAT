@@ -87,6 +87,82 @@ public class CourseEditorPageFragment {
 	}
 	
 	/**
+	 * Select the root course element.
+	 */
+	public CourseEditorPageFragment selectRoot() {
+		By rootNodeBy = By.cssSelector("span.o_tree_link.o_tree_l0>a");
+		browser.findElement(rootNodeBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	/**
+	 * Select the tab score in a structure node.
+	 * 
+	 */
+	public CourseEditorPageFragment selectTabScore() {
+		By scoreTabBy = By.cssSelector("fieldset.o_sel_structure_score");
+		return selectTab(scoreTabBy);
+	}
+	
+	private CourseEditorPageFragment selectTab(By tabBy) {
+		List<WebElement> tabLinks = browser.findElements(navBarNodeConfiguration);
+
+		boolean found = false;
+		a_a:
+		for(WebElement tabLink:tabLinks) {
+			tabLink.click();
+			OOGraphene.waitBusy(browser);
+			List<WebElement> chooseRepoEntry = browser.findElements(tabBy);
+			if(chooseRepoEntry.size() > 0) {
+				found = true;
+				break a_a;
+			}
+		}
+
+		Assert.assertTrue("Found the tab", found);
+		return this;
+	}
+	
+	/**
+	 * Enable passed and points by nodes
+	 * @return
+	 */
+	public CourseEditorPageFragment enableRootScoreByNodes() {
+		By enablePointBy = By.cssSelector("fieldset.o_sel_structure_score .o_sel_has_score input[type='checkbox']");
+		browser.findElement(enablePointBy).click();
+		OOGraphene.waitBusy(browser); //scform.scoreNodeIndents
+		
+		By enablePointNodesBy = By.cssSelector("fieldset.o_sel_structure_score input[type='checkbox'][name='scform.scoreNodeIndents']");
+		List<WebElement> pointNodeEls = browser.findElements(enablePointNodesBy);
+		for(WebElement pointNodeEl:pointNodeEls) {
+			pointNodeEl.click();
+			OOGraphene.waitBusy(browser);
+		}
+		
+		By enablePassedBy = By.cssSelector("fieldset.o_sel_structure_score .o_sel_has_passed input[type='checkbox']");
+		browser.findElement(enablePassedBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By passedInheritBy = By.cssSelector("fieldset.o_sel_structure_score input[type='radio'][name='passedType'][value='inherit']");
+		browser.findElement(passedInheritBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By enablePassedNodesBy = By.cssSelector("fieldset.o_sel_structure_score input[type='checkbox'][name='scform.passedNodeIndents']");
+		List<WebElement> enablePassedNodeEls = browser.findElements(enablePassedNodesBy);
+		for(WebElement enablePassedNodeEl:enablePassedNodeEls) {
+			enablePassedNodeEl.click();
+			OOGraphene.waitBusy(browser);
+		}
+		
+		//save
+		By submitBy = By.cssSelector("fieldset.o_sel_structure_score button.btn.btn-primary");
+		browser.findElement(submitBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	/**
 	 * Create a new course element
 	 * @param nodeAlias The type of the course element
 	 * @return
