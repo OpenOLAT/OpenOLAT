@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.cl.ui.wizard;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,6 +51,7 @@ import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.ui.CheckListEditController;
 import org.olat.course.nodes.cl.ui.CheckboxConfigDataModel;
 import org.olat.course.nodes.cl.ui.CheckboxConfigDataModel.Cols;
+import org.olat.course.nodes.cl.ui.CheckboxConfigRow;
 import org.olat.course.nodes.cl.ui.CheckboxEditController;
 
 /**
@@ -99,10 +101,19 @@ public class CheckboxListStepController extends StepFormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.file.i18nKey(), Cols.file.ordinal()));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit.checkbox", translate("edit.checkbox"), "edit"));
 
-		List<Checkbox> boxList = data.getCheckboxList();
-		model = new CheckboxConfigDataModel(boxList, getTranslator(), columnsModel);
+		model = new CheckboxConfigDataModel(getTranslator(), columnsModel);
 		boxTable = uifactory.addTableElement(getWindowControl(), "checkbox-list", model, getTranslator(), tableCont);
 		boxTable.setCustomizeColumns(false);
+	}
+	
+	private void updateModel() {
+		List<Checkbox> boxList = data.getCheckboxList();
+		List<CheckboxConfigRow> rows = new ArrayList<>();
+		for(Checkbox box:boxList) {
+			rows.add(new CheckboxConfigRow(box, null));
+		}
+		model.setObjects(rows);
+		boxTable.reset();
 	}
 	
 	@Override
@@ -140,8 +151,8 @@ public class CheckboxListStepController extends StepFormBasicController {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
 				if("edit".equals(cmd)) {
-					Checkbox row = model.getObject(se.getIndex());
-					doOpenEdit(ureq, row, false, translate("edit.checkbox"));
+					CheckboxConfigRow row = model.getObject(se.getIndex());
+					doOpenEdit(ureq, row.getCheckbox(), false, translate("edit.checkbox"));
 				}
 			}
 		}
@@ -167,18 +178,19 @@ public class CheckboxListStepController extends StepFormBasicController {
 	private void doDelete(Checkbox checkbox) {
 		List<Checkbox> boxList = data.getCheckboxList();
 		boxList.remove(checkbox);
-		model.setObjects(boxList);
-		boxTable.reset();
+		updateModel();
 	}
 	
 	private void doEdit(Checkbox checkbox, boolean newCheckbox) {
 		if(newCheckbox) {
 			List<Checkbox> boxList = data.getCheckboxList();
 			boxList.add(checkbox);
-			model.setObjects(boxList);
+			updateModel();
+		} else {
+			boxTable.reset();
 		}
 		setFormWarning(null);
-		boxTable.reset();
+		
 	}
 
 	private void doOpenEdit(UserRequest ureq, Checkbox checkbox, boolean newCheckbox, String title) {

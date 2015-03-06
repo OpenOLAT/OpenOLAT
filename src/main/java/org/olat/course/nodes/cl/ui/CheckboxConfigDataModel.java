@@ -19,13 +19,9 @@
  */
 package org.olat.course.nodes.cl.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.translator.Translator;
-import org.olat.course.nodes.cl.model.Checkbox;
 
 /**
  * 
@@ -33,23 +29,23 @@ import org.olat.course.nodes.cl.model.Checkbox;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CheckboxConfigDataModel extends DefaultFlexiTableDataModel<Checkbox> {
+public class CheckboxConfigDataModel extends DefaultFlexiTableDataModel<CheckboxConfigRow> {
 	
 	private final Translator translator;
 	
-	public CheckboxConfigDataModel(List<Checkbox> checkbox, Translator translator, FlexiTableColumnModel columnModel) {
-		super(checkbox, columnModel);
+	public CheckboxConfigDataModel(Translator translator, FlexiTableColumnModel columnModel) {
+		super(columnModel);
 		this.translator = translator;
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<Checkbox> createCopyWithEmptyList() {
-		return new CheckboxConfigDataModel(new ArrayList<Checkbox>(), translator, getTableColumnModel());
+	public DefaultFlexiTableDataModel<CheckboxConfigRow> createCopyWithEmptyList() {
+		return new CheckboxConfigDataModel(translator, getTableColumnModel());
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		Checkbox box = getObject(row);
+		CheckboxConfigRow box = getObject(row);
 		switch(Cols.values()[col]) {
 			case title: return box.getTitle();
 			case points: return box.getPoints();
@@ -60,7 +56,7 @@ public class CheckboxConfigDataModel extends DefaultFlexiTableDataModel<Checkbox
 				}
 				return translator.translate("release." + release.name());
 			}
-			case file: return box.getFilename();
+			case file: return box.getDownload();
 		}
 		return box;
 	}
