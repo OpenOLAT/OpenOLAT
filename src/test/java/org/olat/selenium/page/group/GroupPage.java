@@ -280,10 +280,27 @@ public class GroupPage {
 	}
 	
 	private GroupPage assertMembers(UserVO member, String cssClass) {
+		boolean isMember = isMembers( member, cssClass);
+		Assert.assertTrue(isMember);
+		return this;
+	}
+	
+	public boolean isInMembersOwnerList(UserVO owner) {
+		return isMembers(owner, "o_sel_group_coaches");
+	}
+	
+	public boolean isInMembersParticipantList(UserVO owner) {
+		return isMembers(owner, "o_sel_group_participants");
+	}
+	
+	public boolean isInMembersInWaitingList(UserVO owner) {
+		return isMembers(owner, "o_sel_group_waiting_list");
+	}
+	
+	private boolean isMembers(UserVO member, String cssClass) {
 		String firstName = member.getFirstName();
 		By longBy = By.xpath("//div[@id='" + cssClass + "']//table//tr//td//a[contains(text(),'" + firstName + "')]");
 		List<WebElement> elements = browser.findElements(longBy);
-		Assert.assertFalse(elements.isEmpty());
-		return this;
+		return elements.size() > 0;
 	}
 }

@@ -205,8 +205,10 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		easyGroupList = uifactory.addStaticTextElement("group", "form.groupnames", groupInitVal == null ? "" : groupInitVal, formLayout);
 		easyGroupList.setUserObject(groupKeys);
 
-		chooseGroupsLink = uifactory.addFormLink("chooseGroup", "choose", null, formLayout, Link.LINK);
+		chooseGroupsLink = uifactory.addFormLink("chooseGroup", "choose", null, formLayout, Link.LINK);	
+		chooseGroupsLink.setElementCssClass("o_sel_course_en_choose_group");
 		createGroupsLink = uifactory.addFormLink("createGroup", "create", null, formLayout, Link.LINK);	
+		createGroupsLink.setElementCssClass("o_sel_course_en_create_group");
 		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseEntry()) > 0;
 		
 		// areas
