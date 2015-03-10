@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.download.DownloadComponent;
@@ -81,6 +83,8 @@ public class BCPeekviewController extends BasicController implements Controller 
 		addItems(rootFolder, allLeafs);
 		// Sort messages by last modified date
 		Collections.sort(allLeafs, dateSortingComparator);
+		boolean forceDownload = CoreSpringFactory.getImpl(FolderModule.class).isForceDownload();
+		
 		// only take the configured amount of messages
 		List<VFSLeaf> leafs = new ArrayList<VFSLeaf>();
 		for (int i = 0; i < allLeafs.size(); i++) {
@@ -92,7 +96,9 @@ public class BCPeekviewController extends BasicController implements Controller 
 			// add link to item
 			// Add link to jump to course node
 			if (leaf instanceof LocalFileImpl) {
-				DownloadComponent dlComp = new DownloadComponent("nodeLinkDL_"+(i+1), leaf, leaf.getName(), translate("preview.downloadfile"), CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
+				DownloadComponent dlComp = new DownloadComponent("nodeLinkDL_"+(i+1), leaf, forceDownload,
+						leaf.getName(), translate("preview.downloadfile"),
+						CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
 				dlComp.setElementCssClass("o_gotoNode");
 				peekviewVC.put("nodeLinkDL_"+(i+1),dlComp);
 			} else {

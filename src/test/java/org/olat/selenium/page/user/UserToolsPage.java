@@ -99,6 +99,15 @@ public class UserToolsPage {
 		return new UserSettingsPage(browser);
 	}
 	
+	public EfficiencyStatementPage openMyEfficiencyStatement() {
+		By efficiencyStatementsBy = By.className("o_sel_user_tools-effstatements");
+		WebElement efficiencyStatementsLink = browser.findElement(efficiencyStatementsBy);
+		Assert.assertTrue(efficiencyStatementsLink.isDisplayed());
+		efficiencyStatementsLink.click();
+		OOGraphene.waitBusy(browser);
+		return new EfficiencyStatementPage(browser);
+	}
+	
 	public UserSettingsPage openPassword() {
 		WebElement passwordLink = browser.findElement(By.className("o_sel_user_tools-mypassword"));
 		Assert.assertTrue(passwordLink.isDisplayed());

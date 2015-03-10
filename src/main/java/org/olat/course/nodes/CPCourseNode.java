@@ -83,6 +83,7 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 	 * @see org.olat.course.nodes.CourseNode#createEditController(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl, org.olat.course.ICourse)
 	 */
+	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		updateModuleConfigDefaults(false);
 		CPEditController childTabCntrllr = new CPEditController(this, ureq, wControl, stackPanel, course, euce);
@@ -96,6 +97,7 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.course.run.userview.NodeEvaluation)
 	 */
+	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		NodeRunConstructionResult ncr;
@@ -112,6 +114,7 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.course.run.userview.NodeEvaluation)
 	 */
+	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		return createNodeRunConstructionResult(ureq, wControl, userCourseEnv, ne, null).getRunController();
 	}
@@ -124,6 +127,7 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 	/**
 	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
 	 */
+	@Override
 	public StatusDescription isConfigValid() {/*
 																						 * first check the one click cache
 																						 */
@@ -148,6 +152,7 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 	/**
 	 * @see org.olat.course.nodes.CourseNode#isConfigValid(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		// only here we know which translator to take for translating condition
 		// error messages
@@ -159,6 +164,7 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 	/**
 	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
 	 */
+	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		// ",false" because we do not want to be strict, but just indicate whether
 		// the reference still exists or not
@@ -169,6 +175,7 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 	/**
 	 * @see org.olat.course.nodes.CourseNode#needsReferenceToARepositoryEntry()
 	 */
+	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return true;
 	}
@@ -181,6 +188,7 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 	 *          from previous node configuration version, set default to maintain
 	 *          previous behaviour
 	 */
+	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode) {
 		int CURRENTVERSION = 7;
 		ModuleConfiguration config = getModuleConfiguration();
@@ -283,9 +291,9 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences) {
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
-		if(rie.anyExportedPropertiesAvailable()) {
+		if(withReferences && rie.anyExportedPropertiesAvailable()) {
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(ImsCPFileResource.TYPE_NAME);
 			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
 					rie.getDescription(), false, locale, rie.importGetExportedFile(), null);

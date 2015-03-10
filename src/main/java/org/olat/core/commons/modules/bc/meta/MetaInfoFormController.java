@@ -199,7 +199,7 @@ public class MetaInfoFormController extends FormBasicController {
 			filename.setMandatory(true);
 		}
 		
-		MetaInfo meta = item == null ? null : metaInfoFactory.createMetaInfoFor((OlatRelPathImpl)item);
+		MetaInfo meta = item instanceof OlatRelPathImpl ? metaInfoFactory.createMetaInfoFor((OlatRelPathImpl)item) : null;
 
 		// title
 		String titleVal = (meta != null ? meta.getTitle() : null);
@@ -327,7 +327,12 @@ public class MetaInfoFormController extends FormBasicController {
 			uifactory.addStaticTextElement("mf.downloads", downloads, formLayout);
 		}
 		
-		if(StringHelper.containsNonWhitespace(resourceUrl)) {
+		boolean xssErrors = false;
+		if(item != null) {
+			xssErrors = StringHelper.xssScanForErrors(item.getName());
+		}
+		
+		if(StringHelper.containsNonWhitespace(resourceUrl) && !xssErrors) {
 			String externalUrlPage = velocity_root + "/external_url.html";
 			FormLayoutContainer extUrlCont = FormLayoutContainer.createCustomFormLayout("external.url", getTranslator(), externalUrlPage);
 			extUrlCont.setLabel("external.url", null);

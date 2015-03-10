@@ -197,6 +197,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		tableModel = new CertificateAndEfficiencyStatementListModel(tableColumnModel);
 		loadModel();
 		tableEl = uifactory.addTableElement(getWindowControl(), "certificates", tableModel, getTranslator(), formLayout);
+		tableEl.setElementCssClass("o_sel_certificates_table");
 	}
 	
 	private void loadModel() {

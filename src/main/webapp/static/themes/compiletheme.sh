@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Compilescript for openolat-SASS-theme
 # Can be included into eclipse-project-build (project-properties --> "Builders")

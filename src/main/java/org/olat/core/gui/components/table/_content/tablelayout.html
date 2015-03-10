@@ -22,11 +22,11 @@
 		<div class="col-sm-3 col-xs-8"><div class="pull-right"><div class="o_table_tools">
 			#if ($hasFilters && $filters.size() > 0)
 			<div class="btn-group">	
-				<button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>
+				<button id='table-button-filters' type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>
 					<i class='o_icon o_icon-lg o_icon_filter'> </i>
 					<b class="caret"></b>
 				</button>
-				<ul class="dropdown-menu dropdown-menu-right" role="menu">
+				<div id="table-filters" class="hide"><ul class="o_dropdown list-unstyled" role="menu">
 					#if ($useNoFilterOption)
 						<li><a href="$r.commandURI("cmd.filter.nofilter")">$noFilterOption</a></li>
 					#end
@@ -41,7 +41,12 @@
 							$r.escapeHtml($filter.getShortName())</a>
 						</li>
 					#end
-				</ul>
+				</ul></div>
+	  			<script type='text/javascript'>
+				/* <![CDATA[ */
+				jQuery(function() { o_popover('table-button-filters','table-filters'); });
+				/* ]]> */
+				</script>
 			</div>
 			#end
 			#if ($hasSorters)

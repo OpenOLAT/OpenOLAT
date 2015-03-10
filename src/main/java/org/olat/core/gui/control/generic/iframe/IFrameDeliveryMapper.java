@@ -305,10 +305,10 @@ public class IFrameDeliveryMapper implements Mapper {
 		if (parser.getXhtmlNamespaces() == null) sb.append("<html><head>");
 		else {
 			sb.append(parser.getXhtmlNamespaces());
-			sb.append("<head><meta http-equiv=\"Content-Script-Type\" content=\"text/javascript\"/>");//neded to allow body onload attribute
+			sb.append("<head>\n<meta http-equiv=\"Content-Script-Type\" content=\"text/javascript\"/>");//neded to allow body onload attribute
 		}
 		//<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-		sb.append("<meta http-equiv=\"content-type\" content=\"").append(mimetype).append("\"");
+		sb.append("\n<meta http-equiv=\"content-type\" content=\"").append(mimetype).append("\"");
 		if (docType != null && docType.indexOf("XHTML") > 0) sb.append("/"); // close tag only when xhtml to validate
 		sb.append(">");
 		
@@ -349,9 +349,7 @@ public class IFrameDeliveryMapper implements Mapper {
 		sb.append("b_iframeid=\"").append(frameId).append("\";");
 		sb.append("b_isInlineUri=").append(Boolean.valueOf(addCheckForInlineEvents).toString()).append(";");
 		sb.append("\n/* ]]> */\n</script>");
-		sb.append("<script type=\"text/javascript\" src=\"");
-		StaticMediaDispatcher.renderStaticURI(sb, "js/openolat/iframe.js");
-		sb.append("\"></script>\n");
+		sb.appendStaticJs("js/openolat/iframe.js");
 
 		// Resize frame to fit height of html page. 
 		// Do this only when there is some content available. This can be false when
@@ -400,7 +398,7 @@ public class IFrameDeliveryMapper implements Mapper {
 
 		// Add HTML header stuff from original page: css, javascript, title etc.
 		if (origHTMLHead != null) sb.append(origHTMLHead);		
-		sb.append("</head>");
+		sb.append("\n</head>\n");
 		// use the original body tag, may include all kind of attributes (class, style, onload, on...)
 		sb.append(parser.getBodyTag());
 		// finally add content and finish page
@@ -553,15 +551,12 @@ public class IFrameDeliveryMapper implements Mapper {
 		public HtmlOutput(String docType, String themeBaseUri, int length) {
 			super(length);
 			this.docType = docType;
-			this.themeBaseUri = themeBaseUri;
+			this.themeBaseUri = themeBaseUri + "content.css";
 		}
 		
 		private void appendOpenolatCss() {
 			if(ooCssLoaded) return;
-			
-			append("<link href=\"").append(themeBaseUri).append("content.css\" rel=\"stylesheet\" type=\"text/css\" ");
-			if (docType != null && docType.indexOf("XHTML") > 0) append("/"); // close tag only when xhtml to validate
-			append(">\n");
+			appendCss(themeBaseUri, "themecss");
 			ooCssLoaded = true;
 		}
 		
@@ -576,16 +571,12 @@ public class IFrameDeliveryMapper implements Mapper {
 		}
 		
 		public void appendJQuery2Cond() {
-			append("<!--[if lt IE 9]>");
-			append("<script type=\"text/javascript\" src=\"");
-			StaticMediaDispatcher.renderStaticURI(this, "js/jquery/jquery-1.9.1.min.js");
-			append("\")'></script>");
-			append("<![endif]-->");
-			append("<!--[if gte IE 9]><!-->");
-			append("<script type=\"text/javascript\" src=\"");
-			StaticMediaDispatcher.renderStaticURI(this, "js/jquery/jquery-2.1.0.min.js");
-			append("\")'></script>");
-			append("<!--<![endif]-->");
+			append("<!--[if lt IE 9]>\n");
+			appendStaticJs("js/jquery/jquery-1.9.1.min.js");
+			append("<![endif]-->\n");
+			append("<!--[if gte IE 9]><!-->\n");
+			appendStaticJs("js/jquery/jquery-2.1.0.min.js");
+			append("<!--<![endif]-->\n");
 		}
 
 		public void appendPrototype() {
@@ -593,10 +584,8 @@ public class IFrameDeliveryMapper implements Mapper {
 		}
 		
 		public void appendJsMath() {
-			append("\n<script type=\"text/javascript\" src=\"");
-			StaticMediaDispatcher.renderStaticURI(this, "js/jsMath/easy/load.js");
-			append("\"></script>");			
-			// don't show jsmath info box, aready visible in parent window
+			appendStaticJs("js/jsMath/easy/load.js");
+			// don't show jsmath info box, already visible in parent window
 			append("<style type='text/css'>#jsMath_button {display:none}</style>");	
 		}
 		

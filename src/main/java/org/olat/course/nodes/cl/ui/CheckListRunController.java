@@ -30,17 +30,15 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -53,7 +51,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.CheckListCourseNode;
@@ -64,7 +61,6 @@ import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.model.DBCheck;
 import org.olat.course.nodes.cl.model.DBCheckbox;
-import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -206,14 +202,14 @@ public class CheckListRunController extends FormBasicController implements Contr
 		el.setEnabled(canCheck && !readOnly);
 		el.addActionListener(FormEvent.ONCHANGE);
 
-		FormLink downloadLink = null;
+		DownloadLink downloadLink = null;
 		if(StringHelper.containsNonWhitespace(checkbox.getFilename())) {
-			String filename = checkbox.getFilename();
-			String name = "file_" + checkbox.getCheckboxId();
-			downloadLink = uifactory.addFormLink(name, "download", filename, null, formLayout, Link.LINK | Link.NONTRANSLATED);
-			String css = CSSHelper.createFiletypeIconCssClassFor(filename);
-			downloadLink.setIconLeftCSS("o_icon o_icon-fw " + css);
-			((Link)downloadLink.getComponent()).setTarget("_blank");
+			VFSContainer container = checkboxManager.getFileContainer(userCourseEnv.getCourseEnvironment(), courseNode, checkbox);
+			VFSItem item = container.resolve(checkbox.getFilename());
+			if(item instanceof VFSLeaf) {
+				String name = "file_" + checkbox.getCheckboxId();
+				downloadLink = uifactory.addDownloadLink(name, checkbox.getFilename(), null, (VFSLeaf)item, formLayout);
+			}
 		}
 		
 		CheckboxWrapper wrapper = new CheckboxWrapper(checkbox, downloadLink, el);
@@ -252,19 +248,6 @@ public class CheckListRunController extends FormBasicController implements Contr
 			if(wrapper != null) {
 				boolean checked = boxEl.isAtLeastSelected(1);
 				doCheck(wrapper, checked);
-			}
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
-			if("download".equals(link.getCmd())) {
-				CheckboxWrapper wrapper = (CheckboxWrapper)link.getUserObject();
-				CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
-				VFSContainer container = checkboxManager.getFileContainer(courseEnv, courseNode, wrapper.getCheckbox());
-				VFSItem item = container.resolve(wrapper.getCheckbox().getFilename());
-				if(item instanceof VFSLeaf) {
-					VFSMediaResource rsrc = new VFSMediaResource((VFSLeaf)item);
-					rsrc.setDownloadable(true);
-					ureq.getDispatchResult().setResultingMediaResource(rsrc);
-				}
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -315,11 +298,11 @@ public class CheckListRunController extends FormBasicController implements Contr
 	public static class CheckboxWrapper {
 		
 		private final Checkbox checkbox;
-		private final FormLink downloadLink;
+		private final DownloadLink downloadLink;
 		private final MultipleSelectionElement checkboxEl;
 		private DBCheckbox dbCheckbox;
 		
-		public CheckboxWrapper(Checkbox checkbox, FormLink downloadLink, MultipleSelectionElement checkboxEl) {
+		public CheckboxWrapper(Checkbox checkbox, DownloadLink downloadLink, MultipleSelectionElement checkboxEl) {
 			this.checkboxEl = checkboxEl;
 			this.downloadLink = downloadLink;
 			this.checkbox = checkbox;
@@ -362,7 +345,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 		}
 		
 		public String getCheckboxElName() {
-			return checkboxEl.getName();//getComponent().getComponentName();
+			return checkboxEl.getName();
 		}
 		
 		public String getDownloadName() {

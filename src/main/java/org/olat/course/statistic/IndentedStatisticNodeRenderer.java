@@ -33,6 +33,7 @@ import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.CourseNodeFactory;
 
@@ -103,7 +104,7 @@ public class IndentedStatisticNodeRenderer implements CustomCellRenderer {
 		Integer indent = (Integer) nodeData.get(AssessmentHelper.KEY_INDENT);
 		String type = (String)  nodeData.get(AssessmentHelper.KEY_TYPE);
 		if (type==null) {
-			sb.append(title);
+			sb.append(StringHelper.escapeHtml(title));
 			return;
 		}
 		appendIndent(sb,indent);
@@ -113,7 +114,7 @@ public class IndentedStatisticNodeRenderer implements CustomCellRenderer {
 		if (altText != null) {
 			sb.append("title= \"").append(StringEscapeUtils.escapeHtml(altText));
 		}
-		sb.append("\">").append(title).append("</span>");
+		sb.append("\">").append(StringHelper.escapeHtml(title)).append("</span>");
 	}
 	
 	private void appendIndent(StringOutput sb, Integer indent) {

@@ -48,7 +48,6 @@ import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.ChiefControllerCreator;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.exception.MsgFactory;
-import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
@@ -235,8 +234,6 @@ public class DMZDispatcher implements Dispatcher {
 					CoreSpringFactory.getImpl(UserSessionManager.class).signOffAndClear(usess);
 					usess.setLocale(LocaleNegotiator.getPreferedLocale(ureq));
 					I18nManager.updateLocaleInfoToThread(usess);//update locale infos
-					
-					ServletUtil.printOutRequestParameters(request);
 					
 					OAuthLoginModule oauthModule = CoreSpringFactory.getImpl(OAuthLoginModule.class);
 					if(canRedirectOAuth(request, oauthModule)) {

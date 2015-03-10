@@ -22,6 +22,7 @@ package org.olat.core.gui.components.download;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -42,6 +43,16 @@ public class DownloadComponent extends AbstractComponent {
 	private String linkText;
 	private String linkToolTip;
 	private String linkCssIconClass;
+	private DownloadLink delegate;
+	
+	/**
+	 * Constructor for flexi element (or you need to set all properties yourself)
+	 * @param name
+	 */
+	public DownloadComponent(String name, DownloadLink delegate) {
+		super(name);
+		this.delegate = delegate;
+	}
 
 	/**
 	 * Constructor to create a download component that will use the file name as
@@ -51,14 +62,8 @@ public class DownloadComponent extends AbstractComponent {
 	 * @param downloadItem
 	 */
 	public DownloadComponent(String name, VFSLeaf downloadItem) {
-		this(name, downloadItem, downloadItem.getName(), null,
+		this(name, downloadItem, true, downloadItem.getName(), null,
 				getCssIconClass(downloadItem.getName()));
-	}
-	
-	public DownloadComponent(String name, MediaResource downloadItem) {
-		super(name);
-		this.mediaResource = downloadItem;
-		this.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 	}
 
 	/**
@@ -77,26 +82,34 @@ public class DownloadComponent extends AbstractComponent {
 	 *            will be added when this argument is used. Use the render
 	 *            argument when you want to provide additional CSS classes.
 	 */
-	public DownloadComponent(String name, VFSLeaf downloadItem,
+	public DownloadComponent(String name, VFSLeaf downloadItem, boolean forceDownload,
 			String linkText, String linkToolTip, String linkCssIconClass) {
 		super(name);
-		setDownloadItem(downloadItem);
+		setDownloadItem(downloadItem, forceDownload);
 		setLinkText(linkText);
 		setLinkToolTip(linkToolTip);
 		setLinkCssIconClass(linkCssIconClass);
+	}
+	
+	public DownloadLink getFormItem() {
+		return delegate;
 	}
 
 	/**
 	 * @param downloadItem
 	 *            the VFS item to download
 	 */
-	public void setDownloadItem(VFSLeaf downloadItem) {
+	public void setDownloadItem(VFSLeaf downloadItem, boolean forceDownload) {
 		if (downloadItem == null) {
-			this.mediaResource = null;
+			mediaResource = null;
 		} else {
-			this.mediaResource = new VFSMediaResource(downloadItem);
+			VFSMediaResource mResource = new VFSMediaResource(downloadItem);
+			if(forceDownload) {
+				mResource.setDownloadable(forceDownload);
+			}
+			mediaResource = mResource;
 		}
-		this.setDirty(true);
+		setDirty(true);
 	}
 	
 	public void setMediaResource(MediaResource mediaResource) {
@@ -167,11 +180,11 @@ public class DownloadComponent extends AbstractComponent {
 	 */
 	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
-		if (this.mediaResource != null) {
-			//ServletUtil.serveResource(ureq.getHttpReq(), ureq.getHttpResp(),
-			//		this.mediaResource);
-			// Since downloaded in new window the link in the main window should
-			// not get dirty - can be reused many times.
+		doDownload(ureq);
+	}
+	
+	public void doDownload(UserRequest ureq) {
+		if (mediaResource != null) {
 			ureq.getDispatchResult().setResultingMediaResource(mediaResource);
 			setDirty(false);
 		}

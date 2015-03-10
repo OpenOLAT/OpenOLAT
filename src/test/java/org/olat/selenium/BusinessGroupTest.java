@@ -41,6 +41,12 @@ import org.olat.selenium.page.Participant;
 import org.olat.selenium.page.Student;
 import org.olat.selenium.page.User;
 import org.olat.selenium.page.core.IMPage;
+import org.olat.selenium.page.course.CourseEditorPageFragment;
+import org.olat.selenium.page.course.CoursePageFragment;
+import org.olat.selenium.page.course.EnrollmentConfigurationPage;
+import org.olat.selenium.page.course.EnrollmentPage;
+import org.olat.selenium.page.course.PublisherPageFragment.Access;
+import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.group.GroupPage;
 import org.olat.selenium.page.group.MembersWizardPage;
 import org.olat.selenium.page.user.UserToolsPage;
@@ -88,7 +94,7 @@ public class BusinessGroupTest {
 	 */
 	@Test
 	@RunAsClient
-	public void groupMembers(@InitialPage LoginPage loginPage,
+	public void groupMembersVisibility(@InitialPage LoginPage loginPage,
 			@Drone @Participant WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		
@@ -131,6 +137,99 @@ public class BusinessGroupTest {
 		WebElement contentEl = participantBrowser.findElement(By.id("o_main_center_content_inner"));
 		String content = contentEl.getText();
 		Assert.assertTrue(content.contains(groupName));
+	}
+	
+	/**
+	 * Configure group tools: create a group, go to administration > tools
+	 * select the informations for members and write some message. Select
+	 * all tools: contact, calendar, folder, forum, chat, wiki and portfolio.<br>
+	 * 
+	 * Check that all these functions are available.
+	 * 
+	 * @param loginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void collaborativeTools(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("Selena");
+		
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		//go to groups
+		String groupName = "Group-1-" + UUID.randomUUID();
+		GroupPage group = navBar
+			.openGroups(browser)
+			.createGroup(groupName, "A very little group");
+		
+		String news = "Welcome members ( " + UUID.randomUUID() + " )";
+		group
+			.openAdministration()
+			.openAdminTools()
+			.enableTools()
+			.setMembersInfos(news);
+		
+		//check the news
+		group
+			.openNews()
+			.assertNews(news);
+		
+		//check calendar
+		group
+			.openCalendar()
+			.assertOnCalendar();
+		
+		//check members @see other selenium test dedicated to this one
+
+		//check contact
+		group
+			.openContact()
+			.assertOnContact();
+		
+		//check folder
+		String directoryName = "New directory";
+		group
+			.openFolder()
+			.assertOnFolderCmp()
+			.createDirectory(directoryName)
+			.assertOnDirectory(directoryName)
+			.createHTMLFile("New file", "Some really cool content.")
+			.assertOnFile("new file.html");
+		
+		//check forum
+		String threadBodyMarker = UUID.randomUUID().toString();
+		group
+			.openForum()
+			.createThread("New thread in a group", "Very interessant discussion in a group" + threadBodyMarker)
+			.assertMessageBody(threadBodyMarker);
+		
+		//check chat @see other selenium test dedicated to this one
+		
+		//check wiki
+		String wikiMarker = UUID.randomUUID().toString();
+		group
+			.openWiki()
+			.createPage("Group page", "Content for the group's wiki " + wikiMarker)
+			.assertOnContent(wikiMarker);
+		
+		//check portfolio
+		String pageTitle = "Portfolio page " + UUID.randomUUID();
+		String structureElementTitle = "Structure " + UUID.randomUUID();
+		group
+			.openPortfolio()
+			.openEditor()
+			.selectMapInEditor()
+			.selectFirstPageInEditor()
+			.setPage(pageTitle, "With a little description")
+			.createStructureElement(structureElementTitle, "Structure description")
+			.closeEditor()
+			.assertStructure(structureElementTitle);
 	}
 	
 	/**
@@ -339,5 +438,150 @@ public class BusinessGroupTest {
 		authorIM
 			.assertOnMessage(msg2)
 			.assertOnMessage(msg3);
+	}
+	
+	/**
+	 * An author create a course, with an enrollment course element. It
+	 * configure it and create a group with max. participant set to 1 and
+	 * enables the waiting list.<br>
+	 * 
+	 * Three users goes to the course and try to enroll. One will become
+	 * a participant, the 2 others land in the waiting list.
+	 * 
+	 * @param authorLoginPage
+	 * @param ryomouBrowser
+	 * @param reiBrowser
+	 * @param kanuBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void enrolmentWithWaitingList(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver ryomouBrowser,
+			@Drone @Participant WebDriver reiBrowser,
+			@Drone @Student WebDriver kanuBrowser)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		
+		//create a course
+		String courseTitle = "Enrolment-1-" + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+
+		//create a course element of type Enrolment
+		String enNodeTitle = "Enrolment-1";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("en")
+			.nodeTitle(enNodeTitle);
+		//configure enrolment with a group that we create
+		String groupName = "Enrolment group - 1 " + UUID.randomUUID();
+		EnrollmentConfigurationPage enrolmentConfig = new EnrollmentConfigurationPage(browser);
+		enrolmentConfig
+			.selectConfiguration()
+			.createBusinessGroup(groupName, "-", 1, true, false);
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish(Access.users);
+		courseEditor.clickToolbarBack();
+		
+		GroupPage authorGroup = navBar
+			.openGroups(browser)
+			.selectGroup(groupName)
+			.openAdministration()
+			.openAdminMembers()
+			.setVisibility(true, true, true)
+			.openMembers();
+		
+		//Rei open the course
+		Enrollment[] participantDrivers = new Enrollment[]{
+				new Enrollment(ryomou, ryomouBrowser),
+				new Enrollment(rei, reiBrowser),
+				new Enrollment(kanu, kanuBrowser)
+		};
+		for(Enrollment enrollment:participantDrivers) {
+			WebDriver driver = enrollment.getDriver();
+			LoginPage.getLoginPage(driver, deploymentUrl)
+				.loginAs(enrollment.getUser())
+				.resume();
+			
+			NavigationPage participantNavBar = new NavigationPage(driver);
+			participantNavBar
+				.openMyCourses()
+				.openSearch()
+				.extendedSearch(courseTitle)
+				.select(courseTitle)
+				.start();
+			
+			//go to the enrollment
+			CoursePageFragment participantCourse = new CoursePageFragment(driver);
+			participantCourse
+				.clickTree()
+				.selectWithTitle(enNodeTitle);
+		
+			EnrollmentPage enrollmentPage = new EnrollmentPage(driver);
+			enrollmentPage
+				.assertOnEnrolmentPage();
+			enrollment.setEnrollmentPage(enrollmentPage);
+		}
+		
+		//enroll
+		for(Enrollment enrollment:participantDrivers) {
+			enrollment.getEnrollmentPage().enrollNoWait();
+		}
+		//wait
+		for(Enrollment enrollment:participantDrivers) {
+			OOGraphene.waitBusy(enrollment.getDriver());
+		}
+		
+		//author check the lists
+		authorGroup.openMembers();
+		//must a participant and 2 in waiting list
+		int participants = 0;
+		int waitingList = 0;
+		for(Enrollment enrollment:participantDrivers) {
+			if(authorGroup.isInMembersParticipantList(enrollment.getUser()))  participants++;
+			if(authorGroup.isInMembersInWaitingList(enrollment.getUser())) waitingList++;
+		}
+		Assert.assertEquals(1, participants);
+		Assert.assertEquals(2, waitingList);
+	}
+	
+	private static class Enrollment {
+		
+		private final UserVO user;
+		private final WebDriver driver;
+		private EnrollmentPage enrollmentPage;
+		
+		public Enrollment(UserVO user, WebDriver driver) {
+			this.user = user;
+			this.driver = driver;
+		}
+
+		public UserVO getUser() {
+			return user;
+		}
+
+		public WebDriver getDriver() {
+			return driver;
+		}
+
+		public EnrollmentPage getEnrollmentPage() {
+			return enrollmentPage;
+		}
+
+		public void setEnrollmentPage(EnrollmentPage enrollmentPage) {
+			this.enrollmentPage = enrollmentPage;
+		}
 	}
 }

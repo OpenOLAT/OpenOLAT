@@ -390,6 +390,12 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		return VelocityRenderDecorator.getId(prefix, formLayoutContainer);
 	}
 	
+	@Override
+	public void setElementCssClass(String elementCssClass) {
+		formLayoutContainer.setElementCssClass(elementCssClass);
+		super.setElementCssClass(elementCssClass);
+	}
+
 	/**
 	 * Set the translated title
 	 * @param title

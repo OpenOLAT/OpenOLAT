@@ -122,6 +122,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.course.run.userview.NodeEvaluation)
 	 */
+	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		updateModuleConfigDefaults(false);		
@@ -136,6 +137,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.course.run.userview.NodeEvaluation)
 	 */
+	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		return IQUIFactory.createIQTestPreviewController(ureq, wControl, userCourseEnv, this);
 	}
@@ -182,6 +184,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
 	 */
+	@Override
 	public StatusDescription isConfigValid() {
 		/*
 		 * first check the one click cache
@@ -220,6 +223,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.CourseNode#isConfigValid(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
 		// only here we know which translator to take for translating condition
@@ -233,6 +237,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserScoreEvaluation(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnvironment) {
 		// read score from properties save score, passed and attempts information
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -248,6 +253,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getCutValueConfiguration()
 	 */
+	@Override
 	public Float getCutValueConfiguration() {
 		ModuleConfiguration config = this.getModuleConfiguration();
 		return (Float) config.get(IQEditController.CONFIG_KEY_CUTVALUE);
@@ -256,6 +262,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getMaxScoreConfiguration()
 	 */
+	@Override
 	public Float getMaxScoreConfiguration() {
 		ModuleConfiguration config = this.getModuleConfiguration();
 		return (Float) config.get(IQEditController.CONFIG_KEY_MAXSCORE);
@@ -264,6 +271,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getMinScoreConfiguration()
 	 */
+	@Override
 	public Float getMinScoreConfiguration() {
 		ModuleConfiguration config = this.getModuleConfiguration();
 		return (Float) config.get(IQEditController.CONFIG_KEY_MINSCORE);
@@ -272,6 +280,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasCommentConfigured()
 	 */
+	@Override
 	public boolean hasCommentConfigured() {
 		// coach should be able to add comments here, visible to users
 		return true;
@@ -280,6 +289,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasPassedConfigured()
 	 */
+	@Override
 	public boolean hasPassedConfigured() {
 		return true;
 	}
@@ -287,6 +297,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasScoreConfigured()
 	 */
+	@Override
 	public boolean hasScoreConfigured() {
 		return true;
 	}
@@ -294,6 +305,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasStatusConfigured()
 	 */
+	@Override
 	public boolean hasStatusConfigured() {
 		return false;
 	}
@@ -301,6 +313,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#isEditableConfigured()
 	 */
+	@Override
 	public boolean isEditableConfigured() {
 		// test scoring fields can be edited manually
 		return true;
@@ -310,6 +323,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	 * @see org.olat.course.nodes.AssessableCourseNode#updateUserCoachComment(java.lang.String,
 	 *      org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public void updateUserCoachComment(String coachComment, UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		if (coachComment != null) {
@@ -322,6 +336,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.core.id.Identity)
 	 */
+	@Override
 	public void updateUserScoreEvaluation(ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnvironment,
 			Identity coachingIdentity, boolean incrementAttempts) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -338,6 +353,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.core.id.Identity)
 	 */
+	@Override
 	public void updateUserUserComment(String userComment, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
 		if (userComment != null) {
 			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -349,6 +365,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserCoachComment(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public String getUserCoachComment(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -359,6 +376,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserUserComment(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public String getUserUserComment(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -369,6 +387,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserLog(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public String getUserLog(UserCourseEnvironment userCourseEnvironment) {
 		UserNodeAuditManager am = userCourseEnvironment.getCourseEnvironment().getAuditManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -379,6 +398,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
 	 */
+	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		// ",false" because we do not want to be strict, but just indicate whether
 		// the reference still exists or not
@@ -389,6 +409,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.CourseNode#needsReferenceToARepositoryEntry()
 	 */
+	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return true;
 	}
@@ -397,6 +418,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	 * @see org.olat.course.nodes.CourseNode#informOnDelete(org.olat.core.gui.UserRequest,
 	 *      org.olat.course.ICourse)
 	 */
+	@Override
 	public String informOnDelete(Locale locale, ICourse course) {
 		// Check if there are qtiresults for this test
 		String repositorySoftKey = (String) getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
@@ -411,6 +433,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.CourseNode#cleanupOnDelete(org.olat.course.ICourse)
 	 */
+	@Override
 	public void cleanupOnDelete(ICourse course) {
 		CoursePropertyManager pm = course.getCourseEnvironment().getCoursePropertyManager();
 		// 1) Delete all properties: score, passed, log, comment, coach_comment,
@@ -455,6 +478,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	 * @see org.olat.course.nodes.CourseNode#exportNode(java.io.File,
 	 *      org.olat.course.ICourse)
 	 */
+	@Override
 	public void exportNode(File exportDirectory, ICourse course) {
 		String repositorySoftKey = (String) getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
 		if (repositorySoftKey == null) return; // nothing to export
@@ -472,9 +496,9 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences) {
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
-		if(rie.anyExportedPropertiesAvailable()) {
+		if(withReferences && rie.anyExportedPropertiesAvailable()) {
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(TestFileResource.TYPE_NAME);
 			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
 				rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
@@ -485,6 +509,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public Integer getUserAttempts(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -496,6 +521,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasAttemptsConfigured()
 	 */
+	@Override
 	public boolean hasAttemptsConfigured() {
 		return true;
 	}
@@ -505,6 +531,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.core.id.Identity)
 	 */
+	@Override
 	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
 		if (userAttempts != null) {
 			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -516,6 +543,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#incrementUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -543,6 +571,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsListView(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
 		return null;
 	}
@@ -550,6 +579,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsListViewHeaderKey()
 	 */
+	@Override
 	public String getDetailsListViewHeaderKey() {
 		return null;
 	}
@@ -557,6 +587,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasDetails()
 	 */
+	@Override
 	public boolean hasDetails() {
 		return true;
 	}
@@ -564,6 +595,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	/**
 	 * @see org.olat.course.nodes.CourseNode#createInstanceForCopy()
 	 */
+	@Override
 	public CourseNode createInstanceForCopy() {
 		CourseNode copyInstance = super.createInstanceForCopy();
 		IQEditController.removeIQReference(copyInstance.getModuleConfiguration());
@@ -578,6 +610,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	 *          from previous node configuration version, set default to maintain
 	 *          previous behaviour
 	 */
+	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {

@@ -46,6 +46,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
@@ -247,20 +248,21 @@ public class ENRunController extends BasicController implements GenericEventList
 	private void doEnrollView(UserRequest ureq) {
 		//TODO read from config: 1) user can choose or 2) round robin
 		// for now only case 1
-    if (enrolledGroup != null) {
-    	enrollVC.contextPut("isEnrolledView", Boolean.TRUE);
-    	enrollVC.contextPut("isWaitingList", Boolean.FALSE);
-  		enrollVC.contextPut("groupName", enrolledGroup.getName());
-  		enrollVC.contextPut("groupDesc", (enrolledGroup.getDescription() == null) ? "" : enrolledGroup.getDescription());    	
-    } else if (waitingListGroup != null){
-    	enrollVC.contextPut("isEnrolledView", Boolean.TRUE);
-    	enrollVC.contextPut("isWaitingList", Boolean.TRUE);
-  		String desc = this.waitingListGroup.getDescription();
-  		enrollVC.contextPut("groupName", this.waitingListGroup.getName());
-  		enrollVC.contextPut("groupDesc", (desc == null) ? "" : this.waitingListGroup.getDescription());    	
-    } else {
-    	enrollVC.contextPut("isEnrolledView", Boolean.FALSE);
-    }
+		if (enrolledGroup != null) {
+			enrollVC.contextPut("isEnrolledView", Boolean.TRUE);
+			enrollVC.contextPut("isWaitingList", Boolean.FALSE);
+			enrollVC.contextPut("groupName", StringHelper.escapeHtml(enrolledGroup.getName()));
+			String desc = StringHelper.xssScan(enrolledGroup.getDescription());
+			enrollVC.contextPut("groupDesc", (desc == null) ? "" : desc);    	
+		} else if (waitingListGroup != null){
+			enrollVC.contextPut("isEnrolledView", Boolean.TRUE);
+			enrollVC.contextPut("isWaitingList", Boolean.TRUE);
+			enrollVC.contextPut("groupName", StringHelper.escapeHtml(waitingListGroup.getName()));
+			String desc = StringHelper.xssScan(waitingListGroup.getDescription());
+			enrollVC.contextPut("groupDesc", (desc == null) ? "" : desc);    	
+		} else {
+			enrollVC.contextPut("isEnrolledView", Boolean.FALSE);
+		}
 		doEnrollMultipleView(ureq);
 	}
 
@@ -270,8 +272,8 @@ public class ENRunController extends BasicController implements GenericEventList
 		List<Integer> members = courseGroupManager.getNumberOfMembersFromGroups(groups);
 		// 2. Build group list
 		groupListModel = new BusinessGroupTableModelWithMaxSize(groups, members, getTranslator(), ureq.getIdentity(), cancelEnrollEnabled);
-	  tableCtr.setTableDataModel(groupListModel);
-	  tableCtr.modelChanged();
+		tableCtr.setTableDataModel(groupListModel);
+		tableCtr.modelChanged();
 		// 3. Add group list to view
 		enrollVC.put("grouplisttable", tableCtr.getInitialComponent());
 	}

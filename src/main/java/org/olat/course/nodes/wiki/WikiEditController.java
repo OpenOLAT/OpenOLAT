@@ -42,6 +42,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
@@ -150,7 +151,8 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 				// no securitycheck on wiki, editable by everybody
 				editLink = LinkFactory.createButtonSmall("edit", content, this);
 				content.contextPut("showPreviewLink", Boolean.TRUE);
-				previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED, content, this);
+				String displayname = StringHelper.escapeHtml(re.getDisplayname());
+				previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayname, Link.NONTRANSLATED, content, this);
 				previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 				previewLink.setCustomEnabledLinkCSS("o_preview");
 				previewLink.setTitle(getTranslator().translate("command.preview"));
@@ -221,7 +223,8 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 				if (re != null) {
 					setWikiRepoReference(re, moduleConfiguration);
 					content.contextPut("showPreviewLink", Boolean.TRUE);
-					previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED, content, this);
+					String displayname = StringHelper.escapeHtml(re.getDisplayname());
+					previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayname, Link.NONTRANSLATED, content, this);
 					previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 					previewLink.setCustomEnabledLinkCSS("o_preview");
 					previewLink.setTitle(getTranslator().translate("command.preview"));

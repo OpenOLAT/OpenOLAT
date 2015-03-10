@@ -189,36 +189,43 @@ public class SysinfoController extends FormBasicController {
 	
 	private String getHeapValue() {
 		MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
-    long used = memoryBean.getHeapMemoryUsage().getUsed();
-    long max = memoryBean.getHeapMemoryUsage().getMax();
+		long used = memoryBean.getHeapMemoryUsage().getUsed();
+		long max = memoryBean.getHeapMemoryUsage().getMax();
 		return toPercent(used, max);
 	}
 	
 	private String getHeapTooltip() {
 		MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
-    long used = toMB(memoryBean.getHeapMemoryUsage().getUsed());
-    long max = toMB(memoryBean.getHeapMemoryUsage().getMax());
+		long used = toMB(memoryBean.getHeapMemoryUsage().getUsed());
+		long max = toMB(memoryBean.getHeapMemoryUsage().getMax());
 		return translate("runtime.memory.tooltip", new String[]{ Long.toString(used), Long.toString(max)});
 	}
 	
 	private String getNonHeapValue() {
 		MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
 		long used = memoryBean.getNonHeapMemoryUsage().getUsed();
-    long max = memoryBean.getNonHeapMemoryUsage().getMax();
+		long max = memoryBean.getNonHeapMemoryUsage().getMax();
+		if(max == -1) {
+			max = used;
+		}
 		return toPercent(used, max);
 	}
 	
 	private String getNonHeapTooltip() {
 		MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
-    long used = toMB(memoryBean.getNonHeapMemoryUsage().getUsed());
-    long max = toMB(memoryBean.getNonHeapMemoryUsage().getMax());
+		long used = toMB(memoryBean.getNonHeapMemoryUsage().getUsed());
+		long maxBytes = memoryBean.getNonHeapMemoryUsage().getMax();
+		long max = toMB(maxBytes);
+		if(maxBytes == -1) {
+			max = used;
+		}
 		return translate("runtime.memory.tooltip", new String[]{ Long.toString(used), Long.toString(max)});
 	}
 	
 	private final String toPercent(long used, long max) {
 		double ratio = (double)used / (double)max;
-    double percent = ratio * 100.0d;
-    return Math.round(percent) + "%";
+		double percent = ratio * 100.0d;
+		return Math.round(percent) + "%";
 	}
 	
 	private final long toMB(long val) {

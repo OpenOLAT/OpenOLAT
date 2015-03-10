@@ -1025,6 +1025,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	}
 	
 	private void doSyncGroupAttribute(List<LDAPUser> ldapUsers) {
+		log.info("LDAP batch sync LDAP user attributes to OO groups");
 		Map<String,List<LDAPUser>> externelIdToGroupMap = new HashMap<>();
 		for(LDAPUser ldapUser:ldapUsers) {
 			List<String> groupIds = ldapUser.getGroupIds();
@@ -1107,6 +1108,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		List<String> groupDNs = syncConfiguration.getLdapGroupBases();
 		List<LDAPGroup> ldapGroups = ldapDao.searchGroups(ctx, groupDNs);
 
+		log.info("LDAP batch sync " + ldapGroups.size() + " LDAP bases to OO groups");
 		for(LDAPGroup ldapGroup:ldapGroups) {
 			String externalId = ldapGroup.getCommonName();
 			BusinessGroup managedGroup = getManagerBusinessGroup(externalId);

@@ -1098,6 +1098,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_WIKI);
 			gtnChild.setAltText(translate("menutree.wiki.alt"));
 			gtnChild.setIconCssClass("o_wiki_icon");
+			gtnChild.setCssClass("o_sel_group_wiki");
 			root.addChild(gtnChild);
 			nodeWiki = gtnChild;
 		}
@@ -1109,6 +1110,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_PORTFOLIO);
 			gtnChild.setAltText(translate("menutree.portfolio.alt"));
 			gtnChild.setIconCssClass("o_ep_icon");
+			gtnChild.setCssClass("o_sel_group_portfolio");
 			root.addChild(gtnChild);
 			nodePortfolio = gtnChild;
 		}

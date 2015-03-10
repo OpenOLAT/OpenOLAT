@@ -353,12 +353,13 @@ public interface CourseNode extends INode, ShortName {
 	 * @param course
 	 * @param owner TODO
 	 * @param locale TODO
+	 * @param withReferences TODO
 	 * @param ureq
 	 * @param wControl
 	 * @return Controller for user driven import, or null after all import tasks
 	 *         have finished.
 	 */
-	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale);
+	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences);
 	
 	/**
 	 * Remap the node to the context of the course after import.

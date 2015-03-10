@@ -116,6 +116,7 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.course.run.userview.NodeEvaluation)
 	 */
+	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		Controller controller = IQUIFactory.createIQSurveyRunController(ureq, wControl, userCourseEnv, this);
@@ -165,6 +166,7 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	/**
 	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
 	 */
+	@Override
 	public StatusDescription isConfigValid() {
 		/*
 		 * first check the one click cache
@@ -201,6 +203,7 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	/**
 	 * @see org.olat.course.nodes.CourseNode#isConfigValid(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
 		// only here we know which translator to take for translating condition
@@ -214,6 +217,7 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	/**
 	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
 	 */
+	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		// ",false" because we do not want to be strict, but just indicate whether
 		// the reference still exists or not
@@ -224,6 +228,7 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	/**
 	 * @see org.olat.course.nodes.CourseNode#needsReferenceToARepositoryEntry()
 	 */
+	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return true;
 	}
@@ -232,6 +237,7 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	 * @see org.olat.course.nodes.CourseNode#informOnDelete(org.olat.core.gui.UserRequest,
 	 *      org.olat.course.ICourse)
 	 */
+	@Override
 	public String informOnDelete(Locale locale, ICourse course) {
 		// Check if there are qtiresults for this questionnaire
 		String repositorySoftKey = (String) getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
@@ -244,6 +250,7 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	/**
 	 * @see org.olat.course.nodes.CourseNode#cleanupOnDelete(org.olat.course.ICourse)
 	 */
+	@Override
 	public void cleanupOnDelete(ICourse course) {
 		CoursePropertyManager pm = course.getCourseEnvironment().getCoursePropertyManager();
 		// 1) Delete all properties: attempts
@@ -289,9 +296,9 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences) {
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
-		if(rie.anyExportedPropertiesAvailable()) {
+		if(withReferences && rie.anyExportedPropertiesAvailable()) {
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(SurveyFileResource.TYPE_NAME);
 			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
 				rie.getDescription(), false, locale, rie.importGetExportedFile(), null);

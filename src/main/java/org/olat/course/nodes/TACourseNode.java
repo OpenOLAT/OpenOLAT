@@ -234,6 +234,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	/**
 	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
 	 */
+	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		return null;
 	}
@@ -241,6 +242,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	/**
 	 * @see org.olat.course.nodes.CourseNode#needsReferenceToARepositoryEntry()
 	 */
+	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return false;
 	}
@@ -248,6 +250,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	/**
 	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
 	 */
+	@Override
 	public StatusDescription isConfigValid() {
 		/*
 		 * first check the one click cache
@@ -481,6 +484,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserScoreEvaluation(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnvironment) {
 		// read score from properties
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -498,6 +502,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasCommentConfigured()
 	 */
+	@Override
 	public boolean hasCommentConfigured() {
 		Boolean hasScoring = (Boolean) getModuleConfiguration().get(CONF_SCORING_ENABLED);
 		if (hasScoring) {
@@ -513,6 +518,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasPassedConfigured()
 	 */
+	@Override
 	public boolean hasPassedConfigured() {
 		Boolean hasScoring = (Boolean) getModuleConfiguration().get(CONF_SCORING_ENABLED);
 		if (hasScoring) {
@@ -528,6 +534,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasScoreConfigured()
 	 */
+	@Override
 	public boolean hasScoreConfigured() {
 		Boolean hasScoring = (Boolean) getModuleConfiguration().get(CONF_SCORING_ENABLED);
 		if (hasScoring) {
@@ -543,6 +550,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasStatusConfigured()
 	 */
+	@Override
 	public boolean hasStatusConfigured() {
 		return true; // Task Course node has always a status-field
 	}
@@ -550,6 +558,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getMaxScoreConfiguration()
 	 */
+	@Override
 	public Float getMaxScoreConfiguration() {
 		if (!hasScoreConfigured()) { throw new OLATRuntimeException(TACourseNode.class, "getMaxScore not defined when hasScore set to false", null); }
 		ModuleConfiguration config = getModuleConfiguration();
@@ -560,6 +569,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getMinScoreConfiguration()
 	 */
+	@Override
 	public Float getMinScoreConfiguration() {
 		if (!hasScoreConfigured()) { throw new OLATRuntimeException(TACourseNode.class, "getMinScore not defined when hasScore set to false", null); }
 		ModuleConfiguration config = getModuleConfiguration();
@@ -570,6 +580,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getCutValueConfiguration()
 	 */
+	@Override
 	public Float getCutValueConfiguration() {
 		if (!hasPassedConfigured()) { throw new OLATRuntimeException(TACourseNode.class, "getCutValue not defined when hasPassed set to false", null); }
 		ModuleConfiguration config = getModuleConfiguration();
@@ -580,6 +591,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserCoachComment(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public String getUserCoachComment(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		String coachCommentValue = am.getNodeCoachComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
@@ -589,6 +601,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserUserComment(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public String getUserUserComment(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		String userCommentValue = am.getNodeComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
@@ -598,6 +611,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserLog(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public String getUserLog(UserCourseEnvironment userCourseEnvironment) {
 		UserNodeAuditManager am = userCourseEnvironment.getCourseEnvironment().getAuditManager();
 		String logValue = am.getUserNodeLog(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
@@ -607,6 +621,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#isEditableConfigured()
 	 */
+	@Override
 	public boolean isEditableConfigured() {
 		// always true
 		return true;
@@ -616,6 +631,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	 * @see org.olat.course.nodes.AssessableCourseNode#updateUserCoachComment(java.lang.String,
 	 *      org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public void updateUserCoachComment(String coachComment, UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -629,6 +645,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.core.id.Identity)
 	 */
+	@Override
 	public void updateUserScoreEvaluation(ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnvironment,
 			Identity coachingIdentity, boolean incrementAttempts) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -641,6 +658,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.core.id.Identity)
 	 */
+	@Override
 	public void updateUserUserComment(String userComment, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -652,6 +670,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public Integer getUserAttempts(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -663,6 +682,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasAttemptsConfigured()
 	 */
+	@Override
 	public boolean hasAttemptsConfigured() {
 		return true;
 	}
@@ -672,6 +692,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.core.id.Identity)
 	 */
+	@Override
 	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
 		if (userAttempts != null) {
 			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -683,6 +704,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#incrementUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -727,6 +749,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsListViewHeaderKey()
 	 */
+	@Override
 	public String getDetailsListViewHeaderKey() {
 		return "table.header.details.ta";
 	}
@@ -734,6 +757,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasDetails()
 	 */
+	@Override
 	public boolean hasDetails() {
 		ModuleConfiguration modConfig = getModuleConfiguration();
 		Boolean hasTask = (Boolean) modConfig.get(TACourseNode.CONF_TASK_ENABLED);
@@ -768,10 +792,10 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	/**
 	 * @see org.olat.course.nodes.GenericCourseNode#importNode(java.io.File,
 	 *      org.olat.course.ICourse, org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
+	 *      org.olat.core.gui.control.WindowControl, boolean)
 	 */
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences) {
 		//import tasks
 		File fNodeImportDir = new File(importDirectory, getIdent());
 		File fTaskfolderDir = new File(FolderConfig.getCanonicalRoot() + getTaskFolderPathRelToFolderRoot(course, this));

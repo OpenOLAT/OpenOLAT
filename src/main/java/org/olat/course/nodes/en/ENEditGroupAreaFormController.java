@@ -205,8 +205,10 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		easyGroupList = uifactory.addStaticTextElement("group", "form.groupnames", groupInitVal == null ? "" : groupInitVal, formLayout);
 		easyGroupList.setUserObject(groupKeys);
 
-		chooseGroupsLink = uifactory.addFormLink("chooseGroup", "choose", null, formLayout, Link.LINK);
+		chooseGroupsLink = uifactory.addFormLink("chooseGroup", "choose", null, formLayout, Link.LINK);	
+		chooseGroupsLink.setElementCssClass("o_sel_course_en_choose_group");
 		createGroupsLink = uifactory.addFormLink("createGroup", "create", null, formLayout, Link.LINK);	
+		createGroupsLink.setElementCssClass("o_sel_course_en_create_group");
 		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseEntry()) > 0;
 		
 		// areas
@@ -378,10 +380,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			listenTo(groupChooseC);
 
 			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(
-					getWindowControl(), "close",
-					groupChooseC.getInitialComponent()
-			);
+			cmc = new CloseableModalController(getWindowControl(), "close", groupChooseC.getInitialComponent());
 			listenTo(cmc);
 			
 			cmc.activate();
@@ -460,8 +459,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			easyAreaList.setEnabled(false);
 			removeAsListenerAndDispose(areaCreateCntrllr);
 			OLATResource courseResource = this.cev.getCourseGroupManager().getCourseResource();
-			areaCreateCntrllr = new NewAreaController(ureq, getWindowControl(), courseResource, true, csvAreaName[0]
-			);
+			areaCreateCntrllr = new NewAreaController(ureq, getWindowControl(), courseResource, true, csvAreaName[0]);
 			listenTo(areaCreateCntrllr);
 			
 			removeAsListenerAndDispose(cmc);
@@ -483,7 +481,12 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		if (source == groupChooseC) {
 			if (event == Event.DONE_EVENT) {
 				cmc.deactivate();
-				String list = StringHelper.formatAsSortUniqCSVString(groupChooseC.getSelectedNames());
+				List<String> newGroupNames = groupChooseC.getSelectedNames();
+				List<String> escapedNames = new ArrayList<>(newGroupNames.size());
+				for(String newGroupName:newGroupNames) {
+					escapedNames.add(StringHelper.escapeHtml(newGroupName));
+				}
+				String list = StringHelper.formatAsSortUniqCSVString(escapedNames);
 				easyGroupList.setValue(list == null ? "" : list);
 				easyGroupList.setUserObject(groupChooseC.getSelectedKeys());
 				easyGroupList.getRootForm().submit(ureq);
@@ -493,7 +496,12 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		} else if (source == areaChooseC) {
 			if (event == Event.DONE_EVENT) {
 				cmc.deactivate();
-				String list = StringHelper.formatAsSortUniqCSVString(areaChooseC.getSelectedNames());
+				List<String> newAreaNames = areaChooseC.getSelectedNames();
+				List<String> escapedNames = new ArrayList<>(newAreaNames.size());
+				for(String newAreaName:newAreaNames) {
+					escapedNames.add(StringHelper.escapeHtml(newAreaName));
+				}
+				String list = StringHelper.formatAsSortUniqCSVString(escapedNames);
 				easyAreaList.setValue(list == null ? "" : list);
 				easyAreaList.setUserObject(areaChooseC.getSelectedKeys());
 				easyAreaList.getRootForm().submit(ureq);
@@ -601,7 +609,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		List<BusinessGroupShort> groups = businessGroupService.loadShortBusinessGroups(keys);
 		for(BusinessGroupShort group:groups) {
 			if(sb.length() > 0) sb.append(", ");
-			sb.append(group.getName());
+			sb.append(StringHelper.escapeHtml(group.getName()));
 		}
 		return sb.toString();
 	}
@@ -611,7 +619,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		List<BGArea> areas = areaManager.loadAreas(keys);
 		for(BGArea area:areas) {
 			if(sb.length() > 0) sb.append(", ");
-			sb.append(area.getName());
+			sb.append(StringHelper.escapeHtml(area.getName()));
 		}
 		return sb.toString();
 	}

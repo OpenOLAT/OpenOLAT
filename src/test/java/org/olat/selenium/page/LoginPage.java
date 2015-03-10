@@ -85,6 +85,16 @@ public class LoginPage {
 	 * @param username
 	 * @param password
 	 */
+	public LoginPage loginAs(UserVO user) {
+		return loginAs(user.getLogin(), user.getPassword());
+	}
+	
+	/**
+	 * Login and accept the disclaimer if there is one.
+	 * 
+	 * @param username
+	 * @param password
+	 */
 	public LoginPage loginAs(String username, String password) {
 		//fill login form
 		By usernameId = By.id("o_fiooolat_login_name");

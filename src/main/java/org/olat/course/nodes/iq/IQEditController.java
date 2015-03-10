@@ -59,6 +59,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -339,12 +340,14 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 
 		// fetch repository entry
 		RepositoryEntry re = null;
+		String displayName = "";
 		String repoSoftkey = (String) moduleConfiguration.get(CONFIG_KEY_REPOSITORY_SOFTKEY);
 		if (repoSoftkey != null) {
 			re = getIQReference(moduleConfiguration, false);
+			displayName = StringHelper.escapeHtml(re.getDisplayname());
 		}
-		
-		myContent.contextPut(VC_CHOSENTEST, re == null ? translate("no.file.chosen") : re.getDisplayname());
+		 
+		myContent.contextPut(VC_CHOSENTEST, re == null ? translate("no.file.chosen") : displayName);
 		if (re != null) {
 			myContent.contextPut("dontRenderRepositoryButton", new Boolean(true));
 			// Put values to velocity container
@@ -362,7 +365,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 				myContent.contextPut(CONFIG_KEY_CUTVALUE, moduleConfiguration.get(CONFIG_KEY_CUTVALUE));
 			}
 
-			previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED, myContent, this);
+			previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayName, Link.NONTRANSLATED, myContent, this);
 			previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 			previewLink.setCustomEnabledLinkCSS("o_preview");
 			previewLink.setTitle(getTranslator().translate("command.preview"));
@@ -739,7 +742,8 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 				}
 
 				setIQReference(re, moduleConfiguration);
-				previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED, myContent, this);
+				String displayName = StringHelper.escapeHtml(re.getDisplayname());
+				previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayName, Link.NONTRANSLATED, myContent, this);
 				previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 				previewLink.setCustomEnabledLinkCSS("o_preview");
 				previewLink.setTitle(getTranslator().translate("command.preview"));
@@ -750,7 +754,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 				boolean isOnyx = OnyxModule.isOnyxTest(re.getOlatResource());
 				myContent.contextPut("isOnyx", new Boolean(isOnyx));
 				if(isOnyx) {
-					myContent.contextPut("onyxDisplayName", re.getDisplayname());
+					myContent.contextPut("onyxDisplayName", displayName);
 					moduleConfiguration.set(CONFIG_KEY_TYPE_QTI, CONFIG_VALUE_QTI2);
 					setOnyxVariables(re);
 				} else {

@@ -53,7 +53,11 @@ public class ArquillianDeployments {
 		addResourceRecursive(new File(MAIN_RSRC), null, new AllFileFilter(), archive);
 		addWebResourceRecursive(new File(WEBAPP), "static", new StaticFileFilter(), archive);
 		
-		archive.addAsResource(new File("src/test/profile/mysql", "olat.local.properties"), "olat.local.properties");
+		String profile = System.getProperty("profile");
+		if(profile == null || profile.isEmpty()) {
+			profile = "mysql";
+		}
+		archive.addAsResource(new File("src/test/profile/" + profile, "olat.local.properties"), "olat.local.properties");
 		archive.setWebXML(new File(WEBINF_TOMCAT, "web.xml"));
 		return archive;
 	}

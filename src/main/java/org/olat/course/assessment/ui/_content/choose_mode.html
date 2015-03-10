@@ -5,7 +5,7 @@
 #end
 
 #foreach($mode in $guards.list)
-	<h2>$mode.name <small>$r.translate("current.mode.course", $mode.displayName)</small></h2>
+	<h2>$r.escapeHtml($mode.name) <small>$r.translate("current.mode.course", $r.escapeHtml($mode.displayName))</small></h2>
 	<p><em>$r.translate("current.mode.datetimes", $mode.begin, $mode.end)</em>
 		#if($mode.leadTime && !$mode.leadTime.empty)
 			<br/><em>$r.translate("current.mode.leadtime", $mode.leadTime)</em>
@@ -15,7 +15,7 @@
 		#end
 	</p>
 	#if($mode.description && !$mode.description.empty)
-		<p>$mode.description</p>
+		<p>$r.xssScan($mode.description)</p>
 	#end
 	
 	#if($mode.status == "leadtime")
@@ -24,7 +24,7 @@
 	
 	#if($mode.status == "assessment" || $mode.status == "leadtime")
 		#if($mode.safeExamBrowserHint && !$mode.safeExamBrowserHint.empty)
-			<div class="o_info">$mode.safeExamBrowserHint</div>
+			<div class="o_info">$r.xssScan($mode.safeExamBrowserHint)</div>
 		#end
 		<div class="o_button_group">$r.render($mode.go.componentName)</div>
 	#elseif($mode.status == "followup")

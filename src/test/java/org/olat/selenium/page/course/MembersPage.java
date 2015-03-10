@@ -59,5 +59,17 @@ public class MembersPage {
 			.searchMember(user, true)
 			.next().next().next().finish();
 	}
+	
+	/**
+	 * Click back to the course
+	 * 
+	 * @return
+	 */
+	public CoursePageFragment clickToolbarBack() {
+		By toolbarBackBy = By.cssSelector("li.o_breadcrumb_back>a");
+		browser.findElement(toolbarBackBy).click();
+		OOGraphene.waitBusy(browser);
+		return new CoursePageFragment(browser);
+	}
 
 }

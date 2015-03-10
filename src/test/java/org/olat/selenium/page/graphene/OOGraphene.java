@@ -110,9 +110,23 @@ public class OOGraphene {
 		waitingALittleBit();
 	}
 	
+	/**
+	 * Wait 100ms
+	 */
 	public static final void waitingALittleBit() {
 		try {
 			Thread.sleep(100);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Wait 0.5 second
+	 */
+	public static final void waitingALittleLonger() {
+		try {
+			Thread.sleep(500);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}

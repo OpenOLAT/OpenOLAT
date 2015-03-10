@@ -136,6 +136,12 @@
 		<property name="deletable" value="true" />
 	</bean>
 	
+	<bean id="userPropertyCountryCode" class="org.olat.user.propertyhandlers.CountryCodePropertyHandler">
+		<property name="name" value="countryCode" />
+		<property name="group" value="address" />
+		<property name="deletable" value="true" />
+	</bean>
+	
 	<bean id="userPropertyInstitutionalName" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
 		<property name="name" value="institutionalName" />
 		<property name="group" value="institute" />

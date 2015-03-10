@@ -52,6 +52,7 @@ import org.olat.core.gui.control.generic.iframe.DeliveryOptionsConfigurationCont
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
@@ -154,7 +155,9 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		cpConfigurationVc = this.createVelocityContainer("edit");
 		
 		chooseCPButton = LinkFactory.createButtonSmall("command.importcp", cpConfigurationVc, this);
+		chooseCPButton.setElementCssClass("o_sel_scorm_choose_repofile");
 		changeCPButton = LinkFactory.createButtonSmall("command.changecp", cpConfigurationVc, this);
+		changeCPButton.setElementCssClass("o_sel_scorm_change_repofile");
 		
 		DeliveryOptions parentConfig = null;
 		if (config.get(CONFIG_KEY_REPOSITORY_SOFTKEY) != null) {
@@ -168,7 +171,8 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 				cpConfigurationVc.contextPut(VC_CHOSENCP, translate(NLS_NO_CP_CHOSEN));
 			} else {
 				cpConfigurationVc.contextPut("showPreviewButton", Boolean.TRUE);
-				previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED, cpConfigurationVc, this);
+				String displayname = StringHelper.escapeHtml(re.getDisplayname());
+				previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayname, Link.NONTRANSLATED, cpConfigurationVc, this);
 				previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 				previewLink.setCustomEnabledLinkCSS("o_preview");
 				previewLink.setTitle(getTranslator().translate("command.preview"));
@@ -278,7 +282,8 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 				if (re != null) {
 					setScormCPReference(re, config);
 					cpConfigurationVc.contextPut("showPreviewButton", Boolean.TRUE);
-					previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED, cpConfigurationVc, this);
+					String displayname = StringHelper.escapeHtml(re.getDisplayname());
+					previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayname, Link.NONTRANSLATED, cpConfigurationVc, this);
 					previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 					previewLink.setCustomEnabledLinkCSS("o_preview");
 					previewLink.setTitle(getTranslator().translate("command.preview"));

@@ -94,12 +94,14 @@ public class NewsFormController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("news.content");
+		formLayout.setElementCssClass("o_sel_collaboration_news");
 		newsInputElement = uifactory.addRichTextElementForStringData("news.content", "news.content", this.news, 10, -1, false, null,
 				null, formLayout, ureq.getUserSession(), getWindowControl());
 		newsInputElement.setMandatory(true);
 
 		// Create submit button
 		submit = uifactory.addFormSubmitButton("submit", formLayout);
+		submit.setElementCssClass("o_sel_collaboration_news_save");
 	}
 	
 	public void setEnabled(boolean enabled) {

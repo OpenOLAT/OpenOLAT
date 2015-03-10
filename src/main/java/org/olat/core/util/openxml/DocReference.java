@@ -32,19 +32,25 @@ import org.olat.core.commons.services.image.Size;
 public class DocReference {
 	
 	private final String id;
+	private final String filename;
 	private final File file;
 	private final Size emuSize;
 	
-	public DocReference(String id, Size emuSize, File file) {
+	public DocReference(String id, String filename, Size emuSize, File file) {
 		this.id = id;
 		this.file = file;
 		this.emuSize = emuSize;
+		this.filename = filename;
 	}
 	
 	public String getId() {
 		return id;
 	}
 	
+	public String getFilename() {
+		return filename;
+	}
+
 	public File getFile() {
 		return file;
 	}

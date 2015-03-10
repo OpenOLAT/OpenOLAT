@@ -1259,7 +1259,8 @@ public class ForumController extends BasicController implements GenericEventList
 		  map.put("portraitComponentVCName", portraitComponentVCName);
 		  vcContainer.put(portraitComponentVCName, portrait.getInitialComponent());
 		  // Add link with username that is clickable
-		  Link vcLink = LinkFactory.createCustomLink("vc_"+msgCount, "vc_"+msgCount, UserManager.getInstance().getUserDisplayName(creator), Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, vcThreadView, this);
+		  String creatorFullName = StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayName(creator));
+		  Link vcLink = LinkFactory.createCustomLink("vc_"+msgCount, "vc_"+msgCount, creatorFullName, Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, vcThreadView, this);
 		  vcLink.setUserObject(msgCount);
 		  LinkPopupSettings settings = new LinkPopupSettings(800, 600, "_blank");
 		  vcLink.setPopup(settings);

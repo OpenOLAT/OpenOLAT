@@ -286,6 +286,8 @@ public class BusinessGroupImportExport {
 						if (val != null) {
 							ct.setToolEnabled(availableTools[i], val);
 						}
+					} catch(NoSuchFieldException e) {
+						// hasOpenMeetings compatibility
 					} catch (Exception e) {
 						log.error("", e);
 					}

@@ -23,8 +23,14 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.olat.selenium.page.core.BookingPage;
+import org.olat.selenium.page.core.CalendarPage;
+import org.olat.selenium.page.core.ContactPage;
+import org.olat.selenium.page.core.FolderPage;
 import org.olat.selenium.page.core.IMPage;
+import org.olat.selenium.page.forum.ForumPage;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.selenium.page.portfolio.PortfolioPage;
+import org.olat.selenium.page.wiki.WikiPage;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -87,16 +93,51 @@ public class GroupPage {
 	}
 	
 	public IMPage openChat() {
-		By chatBy = By.cssSelector("li.o_sel_group_chat a");
-		WebElement chatNode = browser.findElement(chatBy);
-		chatNode.click();
-		OOGraphene.waitBusy(browser);
+		openMenuItem("o_sel_group_chat");
 		return new IMPage(browser);
 	}
 	
+	public CalendarPage openCalendar() {
+		openMenuItem("o_sel_group_calendar");
+		return new CalendarPage(browser);
+	}
+	
+	public ContactPage openContact() {
+		openMenuItem("o_sel_group_contact");
+		return new ContactPage(browser);
+	}
+	
 	public GroupPage openMembers() {
-		By membersBy = By.cssSelector("li.o_sel_group_members a");
-		browser.findElement(membersBy).click();
+		return openMenuItem("o_sel_group_members");
+	}
+	
+	public GroupPage openNews() {
+		return openMenuItem("o_sel_group_news");
+	}
+	
+	public FolderPage openFolder() {
+		openMenuItem("o_sel_group_folder");
+		return new FolderPage(browser);
+	}
+	
+	public ForumPage openForum() {
+		openMenuItem("o_sel_group_forum");
+		return ForumPage.getGroupForumPage(browser);
+	}
+	
+	public WikiPage openWiki() {
+		openMenuItem("o_sel_group_wiki");
+		return WikiPage.getGroupWiki(browser);
+	}
+	
+	public PortfolioPage openPortfolio() {
+		openMenuItem("o_sel_group_portfolio");
+		return new PortfolioPage(browser);
+	}
+	
+	private GroupPage openMenuItem(String cssClass) {
+		By newsBy = By.cssSelector("li." + cssClass + " a");
+		browser.findElement(newsBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -164,6 +205,15 @@ public class GroupPage {
 		return this;
 	}
 	
+	public GroupPage setMembersInfos(String text) {		
+		OOGraphene.tinymce(text, browser);
+		
+		By submitBy = By.cssSelector(".o_sel_collaboration_news_save button.btn-primary");
+		browser.findElement(submitBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
 	public MembersWizardPage addMember() {
 		By addMemberBy = By.className("o_sel_group_add_member");
 		WebElement addMemberButton = browser.findElement(addMemberBy);
@@ -198,6 +248,13 @@ public class GroupPage {
 		return this;
 	}
 	
+	public GroupPage assertNews(String name) {
+		By groupNameBy = By.xpath("//div[@id='o_main_center_content_inner']//div[@id='o_msg_info']//p[contains(text(),'" + name+ "')]");
+		List<WebElement> groupNameEls = browser.findElements(groupNameBy);
+		Assert.assertFalse(groupNameEls.isEmpty());
+		return this;
+	}
+	
 	public GroupPage assertOnWaitingList(String name) {
 		//check group name
 		By groupNameBy = By.cssSelector("#o_main_center_content_inner h4");
@@ -223,10 +280,27 @@ public class GroupPage {
 	}
 	
 	private GroupPage assertMembers(UserVO member, String cssClass) {
+		boolean isMember = isMembers( member, cssClass);
+		Assert.assertTrue(isMember);
+		return this;
+	}
+	
+	public boolean isInMembersOwnerList(UserVO owner) {
+		return isMembers(owner, "o_sel_group_coaches");
+	}
+	
+	public boolean isInMembersParticipantList(UserVO owner) {
+		return isMembers(owner, "o_sel_group_participants");
+	}
+	
+	public boolean isInMembersInWaitingList(UserVO owner) {
+		return isMembers(owner, "o_sel_group_waiting_list");
+	}
+	
+	private boolean isMembers(UserVO member, String cssClass) {
 		String firstName = member.getFirstName();
 		By longBy = By.xpath("//div[@id='" + cssClass + "']//table//tr//td//a[contains(text(),'" + firstName + "')]");
 		List<WebElement> elements = browser.findElements(longBy);
-		Assert.assertFalse(elements.isEmpty());
-		return this;
+		return elements.size() > 0;
 	}
 }

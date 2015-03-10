@@ -1358,7 +1358,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		List<BusinessGroupShort> groups = businessGroupService.loadShortBusinessGroups(keys);
 		for(BusinessGroupShort group:groups) {
 			if(sb.length() > 0) sb.append(", ");
-			sb.append(group.getName());
+			sb.append(StringHelper.escapeHtml(group.getName()));
 		}
 		return sb.toString();
 	}
@@ -1369,7 +1369,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			BGArea area = areaManager.loadArea(key);
 			if(area != null) {
 				if(sb.length() > 0) sb.append(", ");
-				sb.append(area.getName());
+				sb.append(StringHelper.escapeHtml(area.getName()));
 			}
 		}
 		return sb.toString();

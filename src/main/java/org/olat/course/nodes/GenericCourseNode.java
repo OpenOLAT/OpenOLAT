@@ -105,6 +105,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 *      ATTENTION:
 	 *      all course nodes must call updateModuleConfigDefaults(false) here
 	 */
+	@Override
 	public abstract TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course,
 			UserCourseEnvironment euce);
 
@@ -115,6 +116,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 *      ATTENTION: all course nodes must call
 	 *      updateModuleConfigDefaults(false) here
 	 */
+	@Override
 	public abstract NodeRunConstructionResult createNodeRunConstructionResult(
 			UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne,
@@ -132,6 +134,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 * 
 	 * @see org.olat.course.nodes.CourseNode#createPeekViewRunController(UserRequest, WindowControl, UserCourseEnvironment, NodeEvaluation)
 	 */
+	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			NodeEvaluation ne) {
 		return null;
@@ -146,6 +149,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 * @see org.olat.course.run.userview.NodeEvaluation)
 	 */
 	//no userCourseEnv or NodeEvaluation needed here
+	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		Translator translator = Util.createPackageTranslator(GenericCourseNode.class, ureq.getLocale());
 		String text = translator.translate("preview.notavailable");
@@ -166,6 +170,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	/**
 	 * @return String
 	 */
+	@Override
 	public String getLearningObjectives() {
 		return learningObjectives;
 	}
@@ -173,6 +178,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	/**
 	 * @return String
 	 */
+	@Override
 	public String getLongTitle() {
 		return longTitle;
 	}
@@ -180,6 +186,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	/**
 	 * @return String
 	 */
+	@Override
 	public String getShortTitle() {
 		return shortTitle;
 	}
@@ -199,6 +206,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	/**
 	 * @return String with the old behavior (default value if none existing)
 	 */
+	@Override
 	public String getDisplayOption() {
 		return getDisplayOption(true);		
 	}
@@ -206,6 +214,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	/**
 	 * @return String
 	 */
+	@Override
 	public String getType() {
 		return type;
 	}
@@ -215,6 +224,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 * 
 	 * @param learningObjectives The learningObjectives to set
 	 */
+	@Override
 	public void setLearningObjectives(String learningObjectives) {
 		this.learningObjectives = learningObjectives;
 	}
@@ -224,6 +234,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 * 
 	 * @param longTitle The longTitle to set
 	 */
+	@Override
 	public void setLongTitle(String longTitle) {
 		this.longTitle = longTitle;
 	}
@@ -233,6 +244,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 * 
 	 * @param shortTitle The shortTitle to set
 	 */
+	@Override
 	public void setShortTitle(String shortTitle) {
 		this.shortTitle = shortTitle;
 	}
@@ -241,6 +253,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 * Sets the display option
 	 * @param displayOption
 	 */
+	@Override
 	public void setDisplayOption(String displayOption) {
 		this.displayOption = displayOption;
 	}
@@ -257,6 +270,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	/**
 	 * @return ModuleConfiguration
 	 */
+	@Override
 	public ModuleConfiguration getModuleConfiguration() {
 		return moduleConfiguration;
 	}
@@ -306,6 +320,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	/**
 	 * @return String
 	 */
+	@Override
 	public String getNoAccessExplanation() {
 		return noAccessExplanation;
 	}
@@ -315,6 +330,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 * 
 	 * @param noAccessExplanation The noAccessExplanation to set
 	 */
+	@Override
 	public void setNoAccessExplanation(String noAccessExplanation) {
 		this.noAccessExplanation = noAccessExplanation;
 	}
@@ -322,6 +338,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	/**
 	 * @return Condition
 	 */
+	@Override
 	public Condition getPreConditionVisibility() {
 		if (preConditionVisibility == null) {
 			preConditionVisibility = new Condition();
@@ -335,6 +352,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 * 
 	 * @param preConditionVisibility The preConditionVisibility to set
 	 */
+	@Override
 	public void setPreConditionVisibility(Condition preConditionVisibility) {
 		if (preConditionVisibility == null) {
 			preConditionVisibility = getPreConditionVisibility();
@@ -346,6 +364,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	/**
 	 * @return Condition
 	 */
+	@Override
 	public Condition getPreConditionAccess() {
 		if (preConditionAccess == null) {
 			preConditionAccess = new Condition();
@@ -366,6 +385,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 * @see org.olat.course.nodes.CourseNode#informOnDelete(org.olat.core.gui.UserRequest,
 	 *      org.olat.course.ICourse)
 	 */
+	@Override
 	public String informOnDelete(Locale locale, ICourse course) {
 		return null;
 	}
@@ -376,6 +396,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 * 
 	 * @see org.olat.course.nodes.CourseNode#cleanupOnDelete(org.olat.course.ICourse)
 	 */
+	@Override
 	public void cleanupOnDelete(ICourse course) {
 		// do nothing in default implementation
 	}
@@ -406,10 +427,10 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 * Implemented by specialized node
 	 * @see org.olat.course.nodes.CourseNode#importNode(java.io.File,
 	 *      org.olat.course.ICourse, org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
+	 *      org.olat.core.gui.control.WindowControl, boolean)
 	 */
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences) {
 		// nothing to do in default implementation
 	}
 
