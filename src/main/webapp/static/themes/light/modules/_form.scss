@@ -85,6 +85,16 @@
 	}
 }
 
+/* centered form labels are still left aligned */
+.o_centered_form {
+	text-align: center;
+	fieldset.o_form {
+		display: inline-block;
+		text-align: left;
+	}
+}
+
+
 /* choice element */
 .o_choice_checkrow,
 .o_choice_textrow {

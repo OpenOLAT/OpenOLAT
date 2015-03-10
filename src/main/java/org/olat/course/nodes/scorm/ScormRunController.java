@@ -270,7 +270,6 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 
 		String courseId;
 		boolean showMenu = config.getBooleanSafe(ScormEditController.CONFIG_SHOWMENU, true);
-		// fxdiff FXOLAT-116: SCORM improvements
 		final boolean fullWindow = config.getBooleanSafe(ScormEditController.CONFIG_FULLWINDOW, true);
 
 		if (isPreview) {
@@ -290,19 +289,19 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 			courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId().toString();
 
 			if (isAssessable) {
+				// When a SCORE is transfered, the run mode is hardcoded 
 				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, this,
 						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
 						ScormConstants.SCORM_MODE_CREDIT, false, assessableType, doActivate, fullWindow,
 						attemptsIncremented, deliveryOptions);
-				// <OLATCE-289>
-				// scormNode.incrementUserAttempts(userCourseEnv);
-				// </OLATCE-289>
 			} else if (chooseScormRunMode.getSelectedElement().equals(ScormConstants.SCORM_MODE_NORMAL)) {
+				// When not assessible users can choose between normal mode where data is stored...
 				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
 						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
 						ScormConstants.SCORM_MODE_CREDIT, false, assessableType, doActivate, fullWindow,
 						attemptsIncremented, deliveryOptions);
 			} else {
+				// ... and preview mode where no data is stored
 				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
 						cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT,
 						false, assessableType, doActivate, fullWindow, attemptsIncremented, deliveryOptions);

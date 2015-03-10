@@ -117,12 +117,11 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		// logging-note: the callers of createScormAPIandDisplayController make sure they have the scorm resource added to the ThreadLocalUserActivityLogger
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_OPEN, getClass());
 		this.username = ureq.getIdentity().getName();
-		if (!lesson_mode.equals(ScormConstants.SCORM_MODE_NORMAL) && !lesson_mode.equals("review") && !lesson_mode.equals(ScormConstants.SCORM_MODE_BROWSE)) throw new AssertException(
+		if (!lesson_mode.equals(ScormConstants.SCORM_MODE_NORMAL) && !lesson_mode.equals(ScormConstants.SCORM_MODE_REVIEW) && !lesson_mode.equals(ScormConstants.SCORM_MODE_BROWSE)) throw new AssertException(
 				"Wrong parameter for constructor, only 'normal', 'browse' or 'review' are allowed for lesson_mode");
 		if (!credit_mode.equals("credit") && !credit_mode.equals("no-credit")) throw new AssertException(
 				"Wrong parameter for constructor, only 'credit' or 'no-credit' are allowed for credit_mode");
-		//if (lesson_mode == null) scorm_lesson_mode = ScormConstants.SCORM_MODE_BROWSE;
-		//if (credit_mode == null) scorm_lesson_mode = ScormConstants.SCORM_MODE_NOCREDIT;
+
 		scorm_lesson_mode = lesson_mode;
 		
 		myContent = createVelocityContainer("display");
