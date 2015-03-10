@@ -114,10 +114,12 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 		
 		GenericTreeNode node = new GenericTreeNode(translate("menu.members"), CMD_MEMBERS);
 		node.setAltText(translate("menu.members.alt"));
+		node.setCssClass("o_sel_membersmgt_members");
 		root.addChild(node);
 		
 		node = new GenericTreeNode(translate("menu.groups"), CMD_GROUPS);
 		node.setAltText(translate("menu.groups.alt"));
+		node.setCssClass("o_sel_membersmgt_groups");
 		root.addChild(node);
 
 		if(acModule.isEnabled()) {
@@ -126,12 +128,14 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 					|| acService.isResourceAccessControled(repoEntry.getOlatResource(), null)) {
 				node = new GenericTreeNode(translate("menu.orders"), CMD_BOOKING);
 				node.setAltText(translate("menu.orders.alt"));
+				node.setCssClass("o_sel_membersmgt_orders");
 				root.addChild(node);
 			}
 		}
 
 		node = new GenericTreeNode(translate("menu.rights"), CMD_RIGHTS);
 		node.setAltText(translate("menu.rights.alt"));
+		node.setCssClass("o_sel_membersmgt_rights");
 		root.addChild(node);
 		return gtm;
 	}

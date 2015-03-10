@@ -104,9 +104,11 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		}
 
 		createGroup = uifactory.addFormLink("group.create", formLayout, Link.BUTTON);
+		createGroup.setElementCssClass("o_sel_course_new_group");
 		createGroup.setVisible(!managed);
 		createGroup.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		addGroup = uifactory.addFormLink("group.add", formLayout, Link.BUTTON);
+		addGroup.setElementCssClass("o_sel_course_select_group");
 		addGroup.setVisible(!managed);
 		addGroup.setIconLeftCSS("o_icon o_icon-fw o_icon_add_search");
 	}

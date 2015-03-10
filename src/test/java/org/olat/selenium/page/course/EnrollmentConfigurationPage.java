@@ -53,6 +53,24 @@ public class EnrollmentConfigurationPage {
 		return selectTab(configBy);
 	}
 	
+	public EnrollmentConfigurationPage selectBusinessGroups() {
+		By createGroupBy = By.cssSelector("a.o_sel_course_en_choose_group");
+		browser.findElement(createGroupBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By checkGroupsBy = By.cssSelector("div.modal-body input[type='checkbox'][name='entries']");
+		List<WebElement> checkGroupEls = browser.findElements(checkGroupsBy);
+		for(WebElement checkGroupEl:checkGroupEls) {
+			checkGroupEl.click();
+			OOGraphene.waitBusy(browser);
+		}
+		
+		By selectBy = By.cssSelector("div.modal-body div.o_button_group button.btn.btn-primary");
+		browser.findElement(selectBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
 	/**
 	 * Open the popup to create a business group.
 	 * @return

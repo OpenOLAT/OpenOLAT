@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
+import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -53,6 +54,11 @@ public class EnrollmentPage {
 		return this;
 	}
 	
+	/**
+	 * Enroll without wait busy to make them very quick.
+	 * 
+	 * @return
+	 */
 	public EnrollmentPage enrollNoWait() {
 		By enrollBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr//td//a[contains(@href,'cmd.enroll.in.group')]");
 		List<WebElement> pageEls = browser.findElements(enrollBy);
@@ -60,6 +66,38 @@ public class EnrollmentPage {
 			pageEls.get(0).click();
 		}
 		return this;
+	}
+	
+	/**
+	 * Check if the enrollment return an error message or if the cancel
+	 * link appears.
+	 * 
+	 * @return
+	 */
+	public boolean hasError() {
+		OOGraphene.waitBusy(browser);
+		By errorMsgBy = By.cssSelector("div.modal-body.alert.alert-danger");
+		By cancelBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr//td//a[contains(@href,'cmd.enrolled.cancel')]");
+		
+		List<WebElement> errorEls = browser.findElements(errorMsgBy);
+		List<WebElement> cancelLinkEls = browser.findElements(cancelBy);
+		
+		boolean error = false;
+		for(int i=20; i-->0; ) {
+		
+			if(cancelLinkEls.size() > 0) {
+				error = false;
+				break;
+			} else if (errorEls.size() > 0) {
+				error = true;
+				break;
+			}
+			
+			OOGraphene.waitingALittleBit();
+			errorEls = browser.findElements(errorMsgBy);
+			cancelLinkEls = browser.findElements(cancelBy);
+		}
+		return error;
 	}
 
 }
