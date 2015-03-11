@@ -25,7 +25,6 @@ import java.util.Map;
 
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin;
-import org.olat.core.util.WebappHelper;
 
 /**
  * Description:<br>
@@ -57,7 +56,6 @@ public class OlatMovieViewerPlugin extends TinyMCECustomPlugin {
 	
 	@Override
 	public Map<String, String> getPluginParameters() {
-
 		// Create only if not already present.
 		Map<String, String> params = super.getPluginParameters();
 		if (params == null) {
@@ -66,18 +64,9 @@ public class OlatMovieViewerPlugin extends TinyMCECustomPlugin {
 
 		// Get static URI for transparent GIF.
 		params.put("transparentImage", StaticMediaDispatcher.createStaticURIFor("images/transparent.gif", false));
-		params.put("playerScript", StaticMediaDispatcher.createStaticURIFor("movie/player.js", false));
+		params.put("playerScript", StaticMediaDispatcher.createStaticURIFor("movie/player.js", true));
 
 		setPluginParameters(params);
 		return params;
-	}
-
-	@Override
-	public void setPluginParameters(Map<String,String> pluginParameters) {
-		//use only one source for the servlet context path
-		if(pluginParameters.containsKey("movieViewerUrl") && !pluginParameters.get("movieViewerUrl").startsWith(WebappHelper.getServletContextPath())) {
-			pluginParameters.put("movieViewerUrl", WebappHelper.getServletContextPath() + pluginParameters.get("movieViewerUrl"));
-		}
-		super.setPluginParameters(pluginParameters);
 	}
 }
