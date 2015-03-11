@@ -85,6 +85,27 @@ public class EfficiencyStatementPage {
 	}
 	
 	/**
+	 * Assert that an efficiency statement of the course specified by the course title
+	 * is passed or failed.
+	 * 
+	 * @param courseTitle
+	 * @param passed
+	 * @return
+	 */
+	public EfficiencyStatementPage assertOnStatement(String courseTitle, boolean passed) {
+		WebElement rowToAssert = getStatementRow(courseTitle);
+		Assert.assertNotNull(rowToAssert);
+		if(passed) {
+			By passedBy = By.cssSelector(".o_state.o_passed");
+			browser.findElement(passedBy);	
+		} else {
+			By failedBy = By.cssSelector(".o_state.o_failed");
+			browser.findElement(failedBy);
+		}
+		return this;
+	}
+	
+	/**
 	 * In the efficiency statement page / course details, check that
 	 * the node is in the table and the node is passe / failed.
 	 * 

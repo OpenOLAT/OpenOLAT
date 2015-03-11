@@ -44,6 +44,7 @@ import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
 import org.olat.selenium.page.Student;
 import org.olat.selenium.page.User;
+import org.olat.selenium.page.course.AssessmentCEConfigurationPage;
 import org.olat.selenium.page.course.AssessmentModePage;
 import org.olat.selenium.page.course.AssessmentToolPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
@@ -753,6 +754,96 @@ public class AssessmentTest {
 			.assertOnCertificateAndStatements(courseTitle)
 			.selectStatement(courseTitle).selectStatementSegment()
 			.assertOnCourseDetails(testNodeTitle, true);
+	}
+	
+	/**
+	 * An author create a course with an assessment course element with
+	 * min., max., cut value and so on. It add an user to the course,
+	 * go to the assessment tool and set a score to the assessed user.<br>
+	 * 
+	 * The user log in, go to the efficiency statements list and check
+	 * it become its statement.
+	 * 
+	 * @param authorLoginPage
+	 * @param ryomouBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void assessmentCourseElement(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver ryomouBrowser)
+	throws IOException, URISyntaxException {
+
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course-Assessment-" + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+
+		//create a course element of type Test with the test that we create above
+		String assessmentNodeTitle = "Assessment CE";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit()
+			.createNode("ms")
+			.nodeTitle(assessmentNodeTitle);
+		
+		//configure assessment
+		AssessmentCEConfigurationPage assessmentConfig = new AssessmentCEConfigurationPage(browser);
+		assessmentConfig
+			.selectConfiguration()
+			.setScoreAuto(0.1f, 10.0f, 5.0f);
+		//set the score / passed calculation in root node and publish
+		courseEditor
+			.selectRoot()
+			.selectTabScore()
+			.enableRootScoreByNodes()
+			.autoPublish()
+			.accessConfiguration()
+			.setUserAccess(UserAccess.registred);
+		
+		//go to members management
+		CoursePageFragment courseRuntime = courseEditor.clickToolbarBack();
+		MembersPage members = courseRuntime
+			.members();
+		members
+			.addMember()
+			.searchMember(ryomou, true)
+			.next().next().next().finish();
+		
+		//efficiency statement is default on
+		//go to the assessment to to set the points
+		members
+			.clickToolbarBack()
+			.assessmentTool()
+			.users()
+			.assertOnUsers(ryomou)
+			.selectUser(ryomou)
+			.selectCourseNode(assessmentNodeTitle)
+			.setAssessmentScore(8.0f)
+			.assertUserPassedCourseNode(assessmentNodeTitle);
+		
+		//Ryomou login
+		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		ryomouLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		
+		//see its beautiful efficiency statement
+		UserToolsPage ryomouUserTools = new UserToolsPage(ryomouBrowser);
+		ryomouUserTools
+			.openUserToolsMenu()
+			.openMyEfficiencyStatement()
+			.assertOnEfficiencyStatmentPage()
+			.assertOnStatement(courseTitle, true)
+			.selectStatement(courseTitle)
+			.assertOnCourseDetails(assessmentNodeTitle, true);
 	}
 
 }

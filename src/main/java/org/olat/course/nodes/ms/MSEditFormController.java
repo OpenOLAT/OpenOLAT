@@ -148,11 +148,14 @@ public class MSEditFormController extends FormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_course_ms_form");
+		
 		// Create the "score granted" field...
 		scoreGranted = uifactory.addCheckboxesHorizontal("form.score", formLayout, new String[]{"xx"}, new String[]{null});
 		scoreGranted.addActionListener(FormEvent.ONCLICK);
 		Boolean sf = (Boolean) modConfig.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 		scoreGranted.select("xx", sf == null ? false : sf.booleanValue());
+		scoreGranted.setElementCssClass("o_sel_course_ms_score");
 
 		// ...minimum value...
 		Float min = (Float) modConfig.get(MSCourseNode.CONFIG_KEY_SCORE_MIN);
@@ -162,6 +165,7 @@ public class MSEditFormController extends FormBasicController {
 		minVal = uifactory.addTextElement("form.min", "form.min", 8, min.toString(), formLayout);
 		minVal.setDisplaySize(5);
 		minVal.setRegexMatchCheck(scoreRex, "form.error.wrongFloat");
+		minVal.setElementCssClass("o_sel_course_ms_min_val");
 		
 		Float max = (Float) modConfig.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 		if (max == null) {
@@ -171,6 +175,7 @@ public class MSEditFormController extends FormBasicController {
 		maxVal = uifactory.addTextElement("form.max", "form.max", 8, max.toString(), formLayout);
 		maxVal.setDisplaySize(5);
 		maxVal.setRegexMatchCheck(scoreRex, "form.error.wrongFloat");
+		maxVal.setElementCssClass("o_sel_course_ms_max_val");
 		
 		uifactory.addSpacerElement("spacer1", formLayout, false);
 
@@ -186,6 +191,7 @@ public class MSEditFormController extends FormBasicController {
 		Float cut = (Float) modConfig.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		displayType = uifactory.addRadiosVertical("form.passed.type", formLayout, trueFalseKeys, passedTypeValues);
 		displayType.addActionListener(FormEvent.ONCLICK);
+		displayType.setElementCssClass("o_sel_course_ms_display_type");
 
 		displayType.select(trueFalseKeys[1], true);
 		if (cut != null) {
@@ -197,6 +203,7 @@ public class MSEditFormController extends FormBasicController {
 		cutVal = uifactory.addTextElement("form.cut", "form.cut", 8, cut.toString(), formLayout);
 		cutVal.setDisplaySize(5);
 		cutVal.setRegexMatchCheck(scoreRex, "form.error.wrongFloat");
+		cutVal.setElementCssClass("o_sel_course_ms_cut_val");
 
 		uifactory.addSpacerElement("spacer2", formLayout, false);
 
