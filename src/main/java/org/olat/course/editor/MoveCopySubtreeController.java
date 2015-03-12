@@ -30,8 +30,8 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tree.GenericTreeModel;
-import org.olat.core.gui.components.tree.InsertionPoint.Position;
 import org.olat.core.gui.components.tree.InsertEvent;
+import org.olat.core.gui.components.tree.InsertionPoint.Position;
 import org.olat.core.gui.components.tree.InsertionTreeModel;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeNode;
@@ -188,7 +188,7 @@ public class MoveCopySubtreeController extends BasicController {
 
 	private void recursiveCopy(CourseEditorTreeNode copyFrom2, CourseEditorTreeNode insertParent, int pos, boolean firstIteration, ICourse course) {		
 		// create copy of course node
-		CourseNode copyOfNode = copyFrom2.getCourseNode().createInstanceForCopy(firstIteration);
+		CourseNode copyOfNode = copyFrom2.getCourseNode().createInstanceForCopy(firstIteration, course);
 		copyNodeId = copyOfNode.getIdent();
 		// Insert at desired position		
 		course.getEditorTreeModel().insertCourseNodeAt(copyOfNode, insertParent.getCourseNode(), pos);

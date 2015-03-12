@@ -362,8 +362,8 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Ass
 	}
 
 	@Override
-	public CourseNode createInstanceForCopy() {
-		CourseNode copyInstance = super.createInstanceForCopy();
+	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course) {
+		CourseNode copyInstance = super.createInstanceForCopy(isNewTitle, course);
 		CPEditController.removeCPReference(copyInstance.getModuleConfiguration());
 		return copyInstance;
 	}

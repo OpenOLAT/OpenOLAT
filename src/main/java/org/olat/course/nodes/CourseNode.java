@@ -371,14 +371,6 @@ public interface CourseNode extends INode, ShortName {
 	 */
 	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible);
 
-	/**
-	 * Create an instance for the copy process. The copy must have a different
-	 * unique ID and may take some of the configuration values configured for this
-	 * node.
-	 * 
-	 * @return
-	 */
-	public CourseNode createInstanceForCopy();
 	
 	/**
 	 * Try to copy the configuration of this course node to
@@ -394,9 +386,10 @@ public interface CourseNode extends INode, ShortName {
 	 * node.
 	 * 
 	 * @param isNewTitle
+	 * @param course the course in which the copying is happening
 	 * @return
 	 */
-	public CourseNode createInstanceForCopy(boolean isNewTitle);
+	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course);
 
 	/**
 	 * @return empty list, or list with active condition expressions of the course

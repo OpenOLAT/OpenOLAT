@@ -569,19 +569,11 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		return getShortTitle();
 	}
 	
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createInstanceForCopy()
-	 */
-	public CourseNode createInstanceForCopy() {
-		return createInstanceForCopy(true);
-	}
-	
-	public CourseNode createInstanceForCopy(boolean isNewTitle) {
+	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course) {
 		CourseNode copyInstance = (CourseNode) XStreamHelper.xstreamClone(this);
 		copyInstance.setIdent(String.valueOf(CodeHelper.getForeverUniqueID()));
 		copyInstance.setPreConditionVisibility(null);
 		if (isNewTitle) {
-			// FIXME:pb:ms translation for COPY OF
 			String newTitle = "Copy of " + getShortTitle();
 			if (newTitle.length() > NodeConfigFormController.SHORT_TITLE_MAX_LENGTH) newTitle = newTitle.substring(0,
 					NodeConfigFormController.SHORT_TITLE_MAX_LENGTH - 1);

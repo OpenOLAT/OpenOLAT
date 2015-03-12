@@ -135,15 +135,6 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 		nodeEval.setVisible(visible);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createInstanceForCopy()
-	 */
-	public CourseNode createInstanceForCopy() {
-		CourseNode copyInstance = super.createInstanceForCopy();
-		setPreConditionAccess(null);
-		return copyInstance;
-	}
-
 	@Override
 	public void copyConfigurationTo(CourseNode courseNode) {
 		super.copyConfigurationTo(courseNode);

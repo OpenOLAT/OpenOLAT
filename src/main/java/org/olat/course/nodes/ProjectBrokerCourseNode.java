@@ -26,15 +26,22 @@
 package org.olat.course.nodes;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Locale;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
@@ -56,14 +63,19 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DirectoryFilter;
 import org.olat.core.util.ExportUtil;
+import org.olat.core.util.FileNameSuffixFilter;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.bulk.BulkAssessmentToolController;
@@ -79,9 +91,11 @@ import org.olat.course.nodes.ms.MSEditFormController;
 import org.olat.course.nodes.projectbroker.ProjectBrokerControllerFactory;
 import org.olat.course.nodes.projectbroker.ProjectBrokerCourseEditorController;
 import org.olat.course.nodes.projectbroker.ProjectListController;
+import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectBroker;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerExportGenerator;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerManager;
+import org.olat.course.nodes.projectbroker.service.ProjectGroupManager;
 import org.olat.course.nodes.ta.DropboxController;
 import org.olat.course.nodes.ta.ReturnboxController;
 import org.olat.course.nodes.ta.TaskController;
@@ -92,10 +106,14 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
+
+import com.thoughtworks.xstream.XStream;
 
 /**
  *  
@@ -273,7 +291,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 		}
 		StatusDescription sd = StatusDescription.NOERROR;
 		if (!isValid) {
-			// FIXME: refine statusdescriptions by moving the statusdescription
 			String shortKey = NLS_ERROR_MISSINGSCORECONFIG_SHORT;
 			String longKey = NLS_ERROR_MISSINGSCORECONFIG_SHORT;
 			String[] params = new String[] { this.getShortTitle() };
@@ -281,8 +298,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, translPackage);
 			sd.setDescriptionForUnit(getIdent());
 			// set which pane is affected by error
-// TODO:cg 28.01.2010 no assessment-tool in V1.0			
-//			sd.setActivateableViewIdentifier(ProjectBrokerCourseEditorController.PANE_TAB_CONF_SCORING);
 		}
 		return sd;
 	}
@@ -312,10 +327,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 		boolean projectBrokerAccess = (getConditionProjectBroker().getConditionExpression() == null ? true : ci.evaluateCondition(conditionProjectBroker));
 		nodeEval.putAccessStatus(ACCESS_PROJECTBROKER, projectBrokerAccess);
 		// add a dummy access-status to open course node in general otherwise the hole project-broker could be closed
-// TODO:ch 28.01.2010 : ProjectBroker does not support assessment-tool in V1.0
-//		boolean scoring = (getConditionScoring().getConditionExpression() == null ? true : ci.evaluateCondition(conditionScoring));
-//		nodeEval.putAccessStatus(ACCESS_SCORING, scoring);
-
 		boolean visible = (getPreConditionVisibility().getConditionExpression() == null ? true : ci
 				.evaluateCondition(getPreConditionVisibility()));
 		nodeEval.setVisible(visible);
@@ -478,33 +489,21 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasCommentConfigured()
 	 */
 	public boolean hasCommentConfigured() {
-		return false;// TODO:ch 28.01.2010 : ProjectBroker does not support assessment-tool in V1.0
-//		ModuleConfiguration config = getModuleConfiguration();
-//		Boolean comment = (Boolean) config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
-//		if (comment == null) return false;
-//		return comment.booleanValue();
+		return false;
 	}
 
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasPassedConfigured()
 	 */
 	public boolean hasPassedConfigured() {
-		return false;// TODO:ch 28.01.2010 : ProjectBroker does not support assessment-tool in V1.0
-//		ModuleConfiguration config = getModuleConfiguration();
-//		Boolean passed = (Boolean) config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
-//		if (passed == null) return false;
-//		return passed.booleanValue();
+		return false;
 	}
 
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasScoreConfigured()
 	 */
 	public boolean hasScoreConfigured() {
-		return false;// TODO:ch 28.01.2010 : ProjectBroker does not support assessment-tool in V1.0
-//		ModuleConfiguration config = getModuleConfiguration();
-//		Boolean score = (Boolean) config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
-//		if (score == null) return false;
-//		return score.booleanValue();
+		return false;
 	}
 
 	/**
@@ -576,7 +575,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 	 */
 	public boolean isEditableConfigured() {
 		// always true when assessable
-		return false;// TODO:ch 28.01.2010 : ProjectBroker does not support assessment-tool in V1.0
+		return false;
 	}
 
 	/**
@@ -631,8 +630,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasAttemptsConfigured()
 	 */
 	public boolean hasAttemptsConfigured() {
-		return false;// TODO:ch 28.01.2010 : ProjectBroker does not support assessment-tool in V1.0
-//		return true;
+		return false;
 	}
 
 	/**
@@ -701,11 +699,111 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 
 	@Override
 	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences) {
+		// initialize managers
 		ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
-		ProjectBroker projectBroker = projectBrokerManager.createAndSaveProjectBroker();
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
+		ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
+		XStream xstream = XStreamHelper.createXStreamInstance();
+		// create a new projectBroker
+		ProjectBroker projectBroker = projectBrokerManager.createAndSaveProjectBroker();
 		projectBrokerManager.saveProjectBrokerId(projectBroker.getKey(), cpm, this);
+		// get the node folder inside of the importDirectory
+		File folderNodeData = new File(importDirectory, this.getIdent());
+		// loop through the project directories
+		if (folderNodeData.exists()) {
+			for (File projectDir : folderNodeData.listFiles(DirectoryFilter.DIRECTORY_FILTER)) {
+				for (File projectFile : projectDir.listFiles(new FileNameSuffixFilter("xml"))) {
+					// read the projectConfiguration from the importDirectory
+					try {
+						Map<String, Object> projectConfig = (HashMap<String, Object>) XStreamHelper.readObject(xstream, projectFile);
+						BusinessGroup projectGroup = projectGroupManager.createProjectGroupFor(projectBroker.getKey(), owner, projectConfig.get("title").toString(), projectConfig.get("description").toString(), course.getResourceableId());
+						Project project = projectBrokerManager.createAndSaveProjectFor(projectConfig.get("title").toString(), projectConfig.get("description").toString(), projectBrokerManager.getProjectBrokerId(cpm, this), projectGroup);
+						projectGroupManager.setDeselectionAllowed(project, (boolean) projectConfig.get("allowDeselection"));
+						project.setMailNotificationEnabled((boolean) projectConfig.get("mailNotificationEnabled"));
+						project.setMaxMembers((int) projectConfig.get("maxMembers"));
+						project.setAttachedFileName(projectConfig.get("attachmentFileName").toString());
+						for (int i = 0; i < (int) projectConfig.get("customeFieldSize"); i++) {
+							project.setCustomFieldValue(i, projectConfig.get("customFieldValue" + i).toString());
+						}
+						projectBrokerManager.updateProject(project);
+
+						// get the attachment directory within the project
+						// directory
+						File attachmentDir = new File(projectDir, "attachment");// .getParentFile().listFiles(attachmentFilter);
+						if (attachmentDir.exists()) {
+							File[] attachment = attachmentDir.listFiles();
+							if (attachment.length > 0) {
+								VFSLeaf attachmentLeaf = new LocalFileImpl(attachment[0]);
+								projectBrokerManager.saveAttachedFile(project, projectConfig.get("attachmentFileName").toString(), attachmentLeaf, course.getCourseEnvironment(), this);
+							}
+						}
+					} catch (Exception e) {
+						// handle/log error in case of FileIO exception or cast
+						// exception if import input is not correct
+						log.error("Error while importing a project into projectbroker", e);
+					}
+				}
+			}
+		}
 	}
+
+	@Override
+	public void exportNode(File exportDirectory, ICourse course) {
+		// initialize managers
+		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
+		ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
+		ProjectBroker pb = projectBrokerManager.getProjectBroker(projectBrokerManager.getProjectBrokerId(cpm, this));
+		ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
+		XStream xstream = XStreamHelper.createXStreamInstance();
+		// folder for the pb node
+		File pbNodeFolder = new File(exportDirectory, getIdent());
+		// get all the projects available in the pb
+		List<Project> projects = projectBrokerManager.getProjectListBy(pb.getKey());
+		ListIterator<Project> projectIterator = projects.listIterator();
+		while (projectIterator.hasNext()) {
+			Project project = projectIterator.next();
+			File projectFolder = new File(pbNodeFolder, project.getKey().toString());
+			projectFolder.mkdirs();
+			// create a hashmap with the project configuration and insert the
+			// project data
+			File projectFile = new File(projectFolder, project.getKey() + ".xml");
+			HashMap<String, Object> projectData = new HashMap<String, Object>();
+			projectData.put("title", project.getTitle());
+			projectData.put("description", project.getDescription());
+			projectData.put("customFieldSize", project.getCustomFieldSize());
+			projectData.put("maxMembers", project.getMaxMembers());
+			projectData.put("mailNotificationEnabled", project.isMailNotificationEnabled());
+			projectData.put("attachmentFileName", project.getAttachmentFileName());
+			projectData.put("allowDeselection", projectGroupManager.isDeselectionAllowed(project));
+			projectData.put("customeFieldSize", project.getCustomFieldSize());
+			// iterate through the customFields
+			for (int i = 0; i < project.getCustomFieldSize(); i++) {
+				projectData.put("customFieldValue" + i, project.getCustomFieldValue(i));
+			}
+			// writeout the project data
+			XStreamHelper.writeObject(xstream, projectFile, projectData);
+			// add attachment file
+			OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(projectBrokerManager.getAttamchmentRelativeRootPath(project, course.getCourseEnvironment(), this), null);
+			VFSItem item = rootFolder.resolve(project.getAttachmentFileName());
+			if (item instanceof VFSLeaf) {
+				VFSLeaf itemLeaf = (VFSLeaf) item;
+				File attachmentFolder = new File(projectFolder, "attachment");
+				File attachment = new File(attachmentFolder, Base64.encodeBase64String(project.getAttachmentFileName().getBytes()));
+				try {
+					attachmentFolder.mkdirs();
+					attachment.createNewFile();
+					FileOutputStream attachmentOutputStream = new FileOutputStream(attachment);
+					InputStream leafInputStream = itemLeaf.getInputStream();
+					FileUtils.copy(leafInputStream, attachmentOutputStream);
+					attachmentOutputStream.close();
+					leafInputStream.close();
+				} catch (IOException e) {
+					log.error("Error while exporting attachments for projectbroker " + project.getTitle(), e);
+				}
+			}
+		}
+	}
+	
 	
 	@Override
 	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String charset) {
@@ -735,10 +833,10 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 		if (dropboxDir.exists()) {
 			//OLAT-6426 archive only dropboxes of users that handed in at least one file -> prevent empty folders in archive 
 			for(VFSItem themaItem: dropboxDir.getItems()) {
-				if(!(themaItem instanceof VFSContainer)) continue;
+				if (!(themaItem instanceof VFSContainer)) continue;
 				List<VFSItem> userFolderArray = ((VFSContainer)themaItem).getItems();
-				for(VFSItem userFolder : userFolderArray){
-					if(!VFSManager.isDirectoryAndNotEmpty(userFolder)) continue;
+				for (VFSItem userFolder : userFolderArray){
+					if (!VFSManager.isDirectoryAndNotEmpty(userFolder)) continue;
 					String path  = exportDirName + "/dropboxes/" + themaItem.getName();
 					ZipUtil.addToZip(userFolder, path, exportStream);
 				}
@@ -747,11 +845,11 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 			
 		// copy returnboxes to tmp dir
 		if (returnboxDir.exists()) {
-			for(VFSItem themaItem:returnboxDir.getItems()) {
-				if(!(themaItem instanceof VFSContainer)) continue;
+			for (VFSItem themaItem:returnboxDir.getItems()) {
+				if (!(themaItem instanceof VFSContainer)) continue;
 				List<VFSItem> userFolderArray = ((VFSContainer)themaItem).getItems();
-				for(VFSItem userFolder : userFolderArray){
-					if(!VFSManager.isDirectoryAndNotEmpty(userFolder)) continue;
+				for (VFSItem userFolder : userFolderArray){
+					if (!VFSManager.isDirectoryAndNotEmpty(userFolder)) continue;
 					String path = exportDirName + "/returnboxes/" + themaItem.getName();
 					ZipUtil.addToZip(userFolder, path, exportStream);
 				}
@@ -842,10 +940,64 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 	/**
 	 * @see org.olat.course.nodes.CourseNode#createInstanceForCopy()
 	 */
-	public CourseNode createInstanceForCopy(boolean isNewTitle) {
-		CourseNode copyInstance = super.createInstanceForCopy(isNewTitle);
+	@Override
+	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course) {
+		// create the instance for the copy
+		CourseNode copyInstance = super.createInstanceForCopy(isNewTitle, course);
+		// get all the different managers
+		ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
+		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
+		ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
+		// get the pbID from the source pb
+		Long oldProjectBrokerId = projectBrokerManager.getProjectBrokerId(cpm, this);
+		// create a new projectBroker for the copyInstance
+		ProjectBroker newBroker = projectBrokerManager.createAndSaveProjectBroker();
+		Long projectBrokerId = newBroker.getKey();
+		projectBrokerManager.saveProjectBrokerId(projectBrokerId, cpm, copyInstance);
+		if (oldProjectBrokerId != null) {
+			List<Project> projects = projectBrokerManager.getProjectListBy(oldProjectBrokerId);
+			ListIterator<Project> projectIterator = projects.listIterator();
+			while (projectIterator.hasNext()) {
+				Project project = projectIterator.next();
+				BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+				List<Identity> members = bgs.getMembers(project.getProjectGroup(), GroupRoles.coach.name());
+				if (!members.isEmpty()) {
+					Identity ident = bgs.getMembers(project.getProjectGroup(), GroupRoles.coach.name()).get(0);
+					// create projectGroup
+					BusinessGroup projectGroup = projectGroupManager.createProjectGroupFor(projectBrokerId, ident, project.getTitle() + "_Group", project.getDescription() + "GroupDescription", course.getResourceableId());
+					Project newProject = projectBrokerManager.createAndSaveProjectFor(project.getTitle(), project.getDescription(), projectBrokerId, projectGroup);
+					// configure the new Project like the old one
+					// copy the old accountManagergroup to preserve the
+					// "persons in charge"
+					BusinessGroup oldAccountManagerGroup = projectGroupManager.getAccountManagerGroupFor(cpm, this, course, this.getShortTitle(), this.getShortTitle(), ident);
+					BusinessGroup newAccountManagerGroup = bgs.copyBusinessGroup(ident, oldAccountManagerGroup, this.getShortTitle(), this.getShortTitle(), -1, -1, false, false, true, true, true, true, false, false);
+					// during the creation of the project an empty
+					// accountManagerGroup is automatically created. delete this
+					// one here and copy over the old one
+					projectGroupManager.deleteAccountManagerGroup(cpm, copyInstance);
+					projectGroupManager.saveAccountManagerGroupKey(newAccountManagerGroup.getKey(), cpm, copyInstance);
+					// copy all project configurations
+					newProject.setMailNotificationEnabled(project.isMailNotificationEnabled());
+					newProject.setMaxMembers(project.getMaxMembers());
+					for (int i = 0; i < project.getCustomFieldSize(); i++) {
+						newProject.setCustomFieldValue(i, project.getCustomFieldValue(i));
+					}
+					projectGroupManager.setProjectGroupMaxMembers(ident, projectGroup, project.getMaxMembers());
+					projectGroupManager.setDeselectionAllowed(newProject, project.getProjectGroup().isAllowToLeave());
+					projectBrokerManager.updateProject(newProject);
+
+					// attachment file
+					OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(projectBrokerManager.getAttamchmentRelativeRootPath(project, course.getCourseEnvironment(), this), null);
+					VFSItem item = rootFolder.resolve(project.getAttachmentFileName());
+					if (item instanceof VFSLeaf) {
+						projectBrokerManager.saveAttachedFile(newProject, project.getAttachmentFileName(), (VFSLeaf) item, course.getCourseEnvironment(), copyInstance);
+						newProject.setAttachedFileName(project.getAttachmentFileName());
+						projectBrokerManager.updateProject(newProject);
+					}
+				}
+			}
+		}
 		return copyInstance;
 	}
 
-		
 }
