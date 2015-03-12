@@ -227,11 +227,15 @@ public class ImportRepositoryEntryController extends FormBasicController {
 			
 			importedEntry = handler.importResource(getIdentity(), null, displayname,
 					"", withReferences, getLocale(), uploadedFile, uploadedFilename);
-	
-			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CREATE, getClass(),
-					LoggingResourceable.wrap(importedEntry, OlatResourceableType.genRepoEntry));
 			
-			repositoryManager.triggerIndexer(importedEntry);
+			if(importedEntry == null) {
+				showWarning("error.import");
+			} else {
+				ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CREATE, getClass(),
+						LoggingResourceable.wrap(importedEntry, OlatResourceableType.genRepoEntry));
+				
+				repositoryManager.triggerIndexer(importedEntry);
+			}
 		}
 	}
 
