@@ -360,7 +360,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select mode from courseassessmentmode mode where ")
-		  .append(" (mode.beginWithLeadTime<=:now and mode.endWithFollowupTime>=:now and mode.manualBeginEnd=false	)")
+		  .append(" (mode.beginWithLeadTime<=:now and mode.endWithFollowupTime>=:now and mode.manualBeginEnd=false)")
 		  .append(" or mode.statusString in ('").append(Status.leadtime.name()).append("','")
 		  .append(Status.assessment.name()).append("','").append(Status.followup.name()).append("')");
 
@@ -368,6 +368,27 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 				.createQuery(sb.toString(), AssessmentMode.class)
 				.setParameter("now", now)
 				.getResultList();
+	}
+
+	@Override
+	public boolean isInAssessmentMode(RepositoryEntryRef entry, Date date) {
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.MILLISECOND, 0);
+		cal.set(Calendar.SECOND, 0);
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(mode) from courseassessmentmode mode where ")
+		  .append(" mode.repositoryEntry.key=:repoKey and (")
+		  .append(" (mode.beginWithLeadTime<=:now and mode.endWithFollowupTime>=:now and mode.manualBeginEnd=false)")
+		  .append(" or mode.statusString in ('").append(Status.leadtime.name()).append("','")
+		  .append(Status.assessment.name()).append("','").append(Status.followup.name()).append("'))");
+
+		List<Number> count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("now", date)
+				.setParameter("repoKey", entry.getKey())
+				.getResultList();
+		return count != null && count.size() > 0 && count.get(0).intValue() > 0;
 	}
 
 	@Override

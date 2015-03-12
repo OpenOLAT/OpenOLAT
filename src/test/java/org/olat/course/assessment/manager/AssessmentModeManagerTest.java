@@ -270,6 +270,33 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		Assert.assertTrue(currentModes.contains(mode));
 	}
 	
+	@Test
+	public void isInAssessmentMode() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry entryReference = JunitTestHelper.createAndPersistRepositoryEntry();
+		AssessmentMode mode = createMinimalAssessmentmode(entry);
+		mode = assessmentModeMgr.persist(mode);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(mode);
+		
+		//check
+		Date now = new Date();
+		boolean entryNow = assessmentModeMgr.isInAssessmentMode(entry, now);
+		Assert.assertTrue(entryNow);
+		
+		//no assessment for this course
+		boolean entryReferenceNow = assessmentModeMgr.isInAssessmentMode(entryReference, now);
+		Assert.assertFalse(entryReferenceNow);
+		
+		//out of assessment scope
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(now);
+		cal.add(Calendar.DATE, -1);
+		Date aDayBefore = cal.getTime();
+		boolean entryReferencePast = assessmentModeMgr.isInAssessmentMode(entryReference, aDayBefore);
+		Assert.assertFalse(entryReferencePast);
+	}
+	
 	/**
 	 * Check an assessment linked to a group with one participant
 	 * 
@@ -670,6 +697,13 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		Assert.assertFalse(notAllowed4);
 	}
 
+	/**
+	 * Create a minimal assessment mode which start one hour before now
+	 * and stop two hours after now.
+	 * 
+	 * @param entry
+	 * @return
+	 */
 	private AssessmentMode createMinimalAssessmentmode(RepositoryEntry entry) {
 		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(entry);
 		mode.setName("Assessment to load");

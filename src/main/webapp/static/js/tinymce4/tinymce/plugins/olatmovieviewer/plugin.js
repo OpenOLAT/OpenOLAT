@@ -174,7 +174,6 @@
 			
 			function _getEmbed(p) {
 				// player configuration
-				var playerSrc = top.tinymce.activeEditor.getParam("olatmovieviewer_movieViewerUrl");
 				var playerOffsetHeight = top.tinymce.activeEditor.getParam("olatmovieviewer_playerOffsetHeight");
 				var playerOffsetWidth = top.tinymce.activeEditor.getParam("olatmovieviewer_playerOffsetWidth");
 				var playerWidth = typeof(p.width) != "undefined" ? (parseInt(p.width) + parseInt(playerOffsetWidth))  : '320';

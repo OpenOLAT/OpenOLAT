@@ -101,7 +101,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		config.appendConfigToTinyJSArray_4(configurations, translator);
 		
 		StringOutput baseUrl = new StringOutput();
-		StaticMediaDispatcher.renderStaticURI(baseUrl, "js/tinymce4/tinymce/tinymce.min.js", false);
+		StaticMediaDispatcher.renderStaticURI(baseUrl, "js/tinymce4/tinymce/tinymce.min.js", true);
 
 		sb.append("<script type='text/javascript'>/* <![CDATA[ */ ");
 		//file browser url
