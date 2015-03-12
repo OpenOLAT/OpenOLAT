@@ -141,7 +141,7 @@ public class PortfolioHandler implements RepositoryHandler {
 	@Override
 	public RepositoryEntry copy(RepositoryEntry source, RepositoryEntry target) {
 		OLATResource sourceResource = source.getOlatResource();
-		OLATResource targetResource = source.getOlatResource();
+		OLATResource targetResource = target.getOlatResource();
 		
 		EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 		PortfolioStructure structure = ePFMgr.loadPortfolioStructure(sourceResource);
