@@ -76,6 +76,7 @@ public class InfoConfigForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_course_info_form");
 		setFormTitle("pane.tab.infos_config.title");
 		setFormContextHelp(InfoConfigForm.class.getPackage().getName(), "ced-info-config.html", "help.hover.info.config");
 		
@@ -86,6 +87,7 @@ public class InfoConfigForm extends FormBasicController {
 
 		durationSelection = uifactory.addDropdownSingleselect("pane.tab.infos_config.max_duration", showLayout, maxDurationValues, maxDurationValues, null);
 		durationSelection.setLabel("pane.tab.infos_config.max", null);
+		durationSelection.setElementCssClass("o_sel_course_info_duration");
 		String durationStr = (String)config.get(InfoCourseNodeConfiguration.CONFIG_DURATION);
 		if(StringHelper.containsNonWhitespace(durationStr)) {
 			durationSelection.select(durationStr, true);
@@ -94,7 +96,7 @@ public class InfoConfigForm extends FormBasicController {
 		}
 
 		lengthSelection = uifactory.addDropdownSingleselect("pane.tab.infos_config.max_shown", null, showLayout, maxLengthValues, maxLengthValues, null);
-
+		lengthSelection.setElementCssClass("o_sel_course_info_length");
 		lengthSelection.setLabel("pane.tab.infos_config.max", null);
 		String lengthStr = (String)config.get(InfoCourseNodeConfiguration.CONFIG_LENGTH);
 		if(StringHelper.containsNonWhitespace(lengthStr)) {

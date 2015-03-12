@@ -53,11 +53,13 @@ public class InfoEditFormController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_info_form");
 		if(showTitle) {
 			setFormTitle("edit.title");
 		}
 		
 		title = uifactory.addTextElement("info_title", "edit.info_title", 512, "", formLayout);
+		title.setElementCssClass("o_sel_info_title");
 		title.setMandatory(true);
 		
 		message = uifactory.addRichTextElementForStringDataMinimalistic("edit.info_message", "edit.info_message", "", 6, 80,
