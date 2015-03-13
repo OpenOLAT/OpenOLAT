@@ -841,10 +841,12 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private void launchEditDescription(UserRequest ureq, RepositoryEntry re) {
-		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(re);
-		if(handler != null) {
-			String businessPath = "[RepositoryEntry:" + re.getKey() + "][EditDescription:0]";
-			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		if(re != null) {
+			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(re);
+			if(handler != null) {
+				String businessPath = "[RepositoryEntry:" + re.getKey() + "][EditDescription:0]";
+				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			}
 		}
 	}
 	

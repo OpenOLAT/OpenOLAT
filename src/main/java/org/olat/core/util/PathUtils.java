@@ -28,9 +28,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.nio.file.ProviderNotFoundException;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ServiceConfigurationError;
 
 /**
  * 
@@ -50,7 +52,11 @@ public class PathUtils {
 		if(file.isDirectory()) {
 			fPath = file.toPath();
 		} else if(filename != null && filename.toLowerCase().endsWith(".zip")) {
-			fPath = FileSystems.newFileSystem(file.toPath(), null).getPath("/");
+			try {
+				fPath = FileSystems.newFileSystem(file.toPath(), null).getPath("/");
+			} catch (ProviderNotFoundException | ServiceConfigurationError e) {
+				throw new IOException("Unreadable file with .zip extension: " + file, e);
+			}
 		} else {
 			fPath = file.toPath();
 		}

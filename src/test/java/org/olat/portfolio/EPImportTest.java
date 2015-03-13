@@ -28,14 +28,18 @@ import java.net.URL;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.resource.OresHelper;
+import org.olat.core.id.Identity;
 import org.olat.portfolio.manager.EPFrontendManager;
+import org.olat.portfolio.manager.EPStructureManager;
 import org.olat.portfolio.manager.EPXStreamHandler;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -53,6 +57,12 @@ public class EPImportTest extends OlatTestCase {
 	private OLATResourceManager resourceManager;
 	@Autowired
 	private EPFrontendManager epFrontendManager;
+	@Autowired
+	private EPStructureManager epStructureManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	
 	@Test
@@ -60,16 +70,34 @@ public class EPImportTest extends OlatTestCase {
 		URL mapUrl = EPImportTest.class.getResource("map_81.xml.zip");
 		assertNotNull(mapUrl);
 		File mapFile = new File(mapUrl.toURI());
-		
-		OLATResourceable ores = OresHelper.createOLATResourceableType("EPMapTemplate");
-		OLATResource resource = resourceManager.createAndPersistOLATResourceInstance(ores);
-		//import the map
 		PortfolioStructure rootStructure = EPXStreamHandler.getAsObject(mapFile, false);
+		OLATResource resource = epStructureManager.createPortfolioMapTemplateResource();
+	
+		//import the map
 		PortfolioStructureMap importedMap = epFrontendManager.importPortfolioMapTemplate(rootStructure, resource);
 		Assert.assertNotNull(importedMap);
 		dbInstance.commitAndCloseSession();
 	}
 	
+	@Test
+	public void testCopy() throws URISyntaxException  {
+		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("ImPort-1");
+		//save the map
+		PortfolioStructureMap map = epStructureManager.createPortfolioMapTemplate(ident, "import-map-1", "map-template");
+		epStructureManager.savePortfolioStructure(map);
+		dbInstance.commitAndCloseSession();
+		
+		//check that the author are in the
+		OLATResource resource = resourceManager.findResourceable(map.getResourceableId(), map.getResourceableTypeName());
+		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(resource, false);
+		Assert.assertNotNull(re);
+		dbInstance.commitAndCloseSession();
 
-	
+		RepositoryEntry copy = repositoryService.copy(re, ident, "ImPort - (Copy 1)");
+		Assert.assertNotNull(copy);
+		dbInstance.commitAndCloseSession();
+		
+		PortfolioStructure copiedMap = epFrontendManager.loadPortfolioStructure(copy.getOlatResource());
+		Assert.assertNotNull(copiedMap);
+	}
 }
