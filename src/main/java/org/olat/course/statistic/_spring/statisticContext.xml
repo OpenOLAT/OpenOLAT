@@ -96,13 +96,9 @@
 	........................................................................
 	 -->
 	
-	<bean id="courseLogExporter"
-		class="org.olat.course.statistic.export.SimpleLogExporter">
-		
-		<property name="logLineConverter">
-			<ref bean="logLineConverter"/>
-		</property>
-		
+	<bean id="courseLogExporter" class="org.olat.course.statistic.export.SimpleLogExporter">
+		<property name="dbInstance" ref="database"/>
+		<property name="logLineConverter" ref="logLineConverter"/>
 	</bean>
 
 	<bean id="logLineConverter"
