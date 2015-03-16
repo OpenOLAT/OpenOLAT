@@ -25,6 +25,7 @@
 */
 package org.olat.core.gui.components.form.flexible;
 
+import java.lang.management.MemoryType;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
+import org.olat.core.gui.components.form.flexible.elements.MemoryElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement.Layout;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -62,6 +64,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormToggleImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.IntegerElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.JSDateChooser;
+import org.olat.core.gui.components.form.flexible.impl.elements.MemoryElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultiSelectionTreeImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.SelectboxSelectionImpl;
@@ -1105,12 +1108,10 @@ public class FormUIFactory {
 		return cancel;
 	}
 
-
-
-
-	
-	
-	
-	
-	
+	public MemoryElement addMemoryView(String name, String i18nLabel, MemoryType type, FormItemContainer formLayout) {
+		MemoryElementImpl fte = new MemoryElementImpl(name, type);
+		setLabelIfNotNull(i18nLabel, fte);
+		formLayout.add(fte);
+		return fte;
+	}
 }
