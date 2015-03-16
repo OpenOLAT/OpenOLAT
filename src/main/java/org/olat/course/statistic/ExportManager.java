@@ -127,13 +127,13 @@ public class ExportManager extends BasicManager {
 	 */
 	public void archiveCourseLogFiles(Long oresID, String exportDir, Date begin, Date end, boolean adminLog, boolean userLog, boolean statisticLog, String charset, Locale locale, String email){
 		
-    String zipName = ExportUtil.createFileNameWithTimeStamp(ExportManager.COURSE_LOG_FILES, "zip");
-    Date date = new Date();
-    String tmpDirName = oresID + "-" + date.getTime();
-    final VFSContainer tmpDirVFSContainer = new LocalFolderImpl(new File(WebappHelper.getTmpDir(), tmpDirName));
+		String zipName = ExportUtil.createFileNameWithTimeStamp(ExportManager.COURSE_LOG_FILES, "zip");
+		Date date = new Date();
+		String tmpDirName = oresID + "-" + date.getTime();
+		final VFSContainer tmpDirVFSContainer = new LocalFolderImpl(new File(WebappHelper.getTmpDir(), tmpDirName));
 		final File tmpDir = new File(WebappHelper.getTmpDir(), tmpDirName);
 		
-    List<VFSItem> logFiles = new ArrayList<VFSItem>();
+		List<VFSItem> logFiles = new ArrayList<VFSItem>();
 		if (adminLog) {
 			logFiles.add(createLogFile(oresID, begin, end, charset, tmpDirVFSContainer, tmpDir, FILENAME_ADMIN_LOG, true, false));
 		}

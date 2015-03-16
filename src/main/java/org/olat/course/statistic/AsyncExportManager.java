@@ -51,7 +51,7 @@ public class AsyncExportManager extends BasicManager {
 	private static AsyncExportManager INSTANCE;
 
 	/** set via spring **/
-	private int concurrentExportsPerNode_ = 2;
+	private int concurrentExportsPerNode_ = 1;
 	
 	private TaskExecutorManager taskExecutorManager;
 
@@ -105,24 +105,55 @@ public class AsyncExportManager extends BasicManager {
 			log_.info("asyncArchiveCourseLogFiles: user "+identity.getName()+" wants to archive a course log. Already pending jobs: "+waitingCnt_);
 		}
 		
-		taskExecutorManager.execute(new Runnable() {
+		CourseLogRunnable run = new CourseLogRunnable(identity, callback, oresID, exportDir, begin, end, adminLog, userLog, statisticLog, charset, locale, email);
+		taskExecutorManager.execute(run);
+	}
+	
+	public static class CourseLogRunnable implements Runnable {
+		
+		private final Identity identity;
+		private final Runnable callback;
+		private final Long oresID;
+		private final String exportDir;
+		private final Date begin;
+		private final Date end;
+		private final boolean adminLog;
+		private final boolean userLog;
+		private final boolean statisticLog;
+		private final String charset;
+		private final Locale locale;
+		private final String email;
+		
+		public CourseLogRunnable(Identity identity, Runnable callback, Long oresID, String exportDir, Date begin, Date end,
+				boolean adminLog, boolean userLog, boolean statisticLog, String charset, Locale locale, String email) {
+			this.identity = identity;
+			this.callback = callback;
+			this.oresID = oresID;
+			this.exportDir = exportDir;
+			this.begin = begin;
+			this.end = end;
+			this.adminLog = adminLog;
+			this.userLog = userLog;
+			this.statisticLog = statisticLog;
+			this.charset = charset;
+			this.locale = locale;
+			this.email = email;
+		}
 
-			@Override
-			public void run() {
-				try{
-					log_.info("asyncArchiveCourseLogFiles: user "+identity.getName()+" aquires lock for archiving course log");
-					waitForSlot(identity);
-					log_.info("asyncArchiveCourseLogFiles: user "+identity.getName()+" starts archiving...");
-					ExportManager.getInstance().archiveCourseLogFiles(oresID, exportDir, begin, end, adminLog, userLog, statisticLog, charset, locale, email);
-					log_.info("asyncArchiveCourseLogFiles: user "+identity.getName()+" finished archiving...");
-				} finally {
-					returnSlot(identity);
-					log_.info("asyncArchiveCourseLogFiles: user "+identity.getName()+" releases lock for archiving course log");
-					callback.run();
-				}
+		@Override
+		public void run() {
+			try{
+				log_.info("asyncArchiveCourseLogFiles: user "+identity.getName()+" aquires lock for archiving course log");
+				AsyncExportManager.getInstance().waitForSlot(identity);
+				log_.info("asyncArchiveCourseLogFiles: user "+identity.getName()+" starts archiving...");
+				ExportManager.getInstance().archiveCourseLogFiles(oresID, exportDir, begin, end, adminLog, userLog, statisticLog, charset, locale, email);
+				log_.info("asyncArchiveCourseLogFiles: user "+identity.getName()+" finished archiving...");
+			} finally {
+				AsyncExportManager.getInstance().returnSlot(identity);
+				log_.info("asyncArchiveCourseLogFiles: user "+identity.getName()+" releases lock for archiving course log");
+				callback.run();
 			}
-			
-		});
+		}
 	}
 	
 	public synchronized boolean asyncArchiveCourseLogOngoingFor(Identity identity) {

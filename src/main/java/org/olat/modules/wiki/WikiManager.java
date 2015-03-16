@@ -208,6 +208,8 @@ public class WikiManager {
 			Files.createDirectories(wikiDir);
 			mediaDir = destDir.resolve(WikiContainer.MEDIA_FOLDER_NAME);
 			Files.createDirectories(mediaDir);
+			Path versionDir = destDir.resolve(VERSION_FOLDER_NAME);
+			Files.createDirectories(versionDir);
 		}
 		
 		@Override

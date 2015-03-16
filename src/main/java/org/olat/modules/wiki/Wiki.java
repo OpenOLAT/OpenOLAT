@@ -49,6 +49,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSLeafFilter;
 import org.olat.modules.wiki.gui.components.wikiToHtml.FilterUtil;
 import org.olat.modules.wiki.versioning.ChangeInfo;
@@ -82,9 +83,9 @@ public class Wiki implements WikiContainer, Serializable {
 		if(wikiRootContainer == null) throw new AssertException("null values are not allowed for the wiki constructor!");
 		wikiPages = Collections.synchronizedMap(new HashMap<String, WikiPage>());
 		this.diffService = WikiManager.getInstance().getDiffService();
-		versionsContainer = (VFSContainer) wikiRootContainer.resolve(WikiManager.VERSION_FOLDER_NAME);
-		pageContainer = (VFSContainer) wikiRootContainer.resolve(WikiManager.WIKI_RESOURCE_FOLDER_NAME);
-		mediaContainer = (VFSContainer) wikiRootContainer.resolve(WikiContainer.MEDIA_FOLDER_NAME);
+		versionsContainer = VFSManager.getOrCreateContainer(wikiRootContainer, WikiManager.VERSION_FOLDER_NAME);
+		pageContainer = VFSManager.getOrCreateContainer(wikiRootContainer, WikiManager.WIKI_RESOURCE_FOLDER_NAME);
+		mediaContainer = VFSManager.getOrCreateContainer(wikiRootContainer, WikiContainer.MEDIA_FOLDER_NAME);
 	}
 
 	/**
