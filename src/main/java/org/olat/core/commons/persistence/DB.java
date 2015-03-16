@@ -32,6 +32,7 @@ import javax.persistence.EntityManager;
 
 import org.hibernate.stat.Statistics;
 import org.hibernate.type.Type;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.olat.core.id.Persistable;
 
 public interface DB {
@@ -195,6 +196,12 @@ public interface DB {
 	 * @return Return Hibernates statistics object.
 	 */
 	public Statistics getStatistics();
+	
+	/**
+	 * 
+	 * @return The infinispan cache manager if it's configured
+	 */
+	public EmbeddedCacheManager getCacheContainer();
 	
 	public String getDbVendor();
 

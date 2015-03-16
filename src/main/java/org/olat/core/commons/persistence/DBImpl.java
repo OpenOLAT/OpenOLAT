@@ -33,6 +33,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.Cache;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
@@ -45,11 +46,13 @@ import org.hibernate.jpa.HibernateEntityManager;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.stat.Statistics;
 import org.hibernate.type.Type;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.olat.core.configuration.Destroyable;
 import org.olat.core.id.Persistable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.DBRuntimeException;
-import org.olat.core.logging.LogDelegator;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.springframework.orm.jpa.EntityManagerFactoryUtils;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -65,7 +68,8 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * @author Andreas Ch. Kapp
  * @author Christian Guretzki
  */
-public class DBImpl extends LogDelegator implements DB, Destroyable {
+public class DBImpl implements DB, Destroyable {
+	private static final OLog log = Tracing.createLoggerFor(DBImpl.class);
 	private static final int MAX_DB_ACCESS_COUNT = 500;
 	private static DBImpl INSTANCE;
 	
@@ -221,11 +225,11 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 			if(!trx.isActive()) {
 				trx.begin();
 			}
-			updateDataStatistics(threadBoundedEm, "entityManager");
+			updateDataStatistics("entityManager");
 			return threadBoundedEm;
 		}
 		EntityManager em = getEntityManager();
-		updateDataStatistics(em, "entityManager");
+		updateDataStatistics("entityManager");
 		return em;
 	}
 	
@@ -262,7 +266,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 		return txEm;
 	}
 
-  private void updateDataStatistics(EntityManager em, Object logObject) {
+  private void updateDataStatistics(Object logObject) {
 		/*
   	//OLAT-3621: paranoia check for error state: we need to catch errors at the earliest point possible. OLAT-3621 has a suspected situation
 		//           where an earlier transaction failed and didn't clean up nicely. To check this, we introduce error checking in getInstance here
@@ -288,7 +292,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
   	}
 
     if (getData().getAccessCounter() > MAX_DB_ACCESS_COUNT) {
-    	logWarn("beginTransaction bulk-change, too many db access for one transaction, could be a performance problem (add closeSession/createSession in loop) logObject=" + logObject, null);
+    	log.warn("beginTransaction bulk-change, too many db access for one transaction, could be a performance problem (add closeSession/createSession in loop) logObject=" + logObject, null);
     	getData().resetAccessCounter();
     }
   }
@@ -317,9 +321,9 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 					trx.commit();
 				} catch (RollbackException ex) {
 					//possible if trx setRollbackonly
-					logWarn("Close session with transaction set with setRollbackOnly", ex);
+					log.warn("Close session with transaction set with setRollbackOnly", ex);
 				} catch (Exception e) {
-					logError("", e);
+					log.error("", e);
 					trx.rollback();
 				}
 			}
@@ -372,8 +376,8 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 		try {
 			Object relaoded = em.merge(object);
 			em.remove(relaoded);
-			if (isLogDebugEnabled()) {
-				logDebug("delete (trans "+trx.hashCode()+") class "+object.getClass().getName()+" = "+object.toString());	
+			if (log.isDebug()) {
+				log.debug("delete (trans "+trx.hashCode()+") class "+object.getClass().getName()+" = "+object.toString());	
 			}
 		} catch (HibernateException e) { // we have some error
 			trx.setRollbackOnly();
@@ -692,7 +696,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 			try{
 				// double check: is the transaction still open? if yes, is it not rolled-back? if yes, do a rollback now!
 				if (hasTransaction() && isError()) {
-					getLogger().error("commitAndCloseSession: commit seems to have failed, transaction still open. Doing a rollback!", new Exception("commitAndCloseSession"));
+					log.error("commitAndCloseSession: commit seems to have failed, transaction still open. Doing a rollback!", new Exception("commitAndCloseSession"));
 					rollback();
 				}
 			} finally {
@@ -715,14 +719,15 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 */
 	@Override
 	public void commit() {
-		if (isLogDebugEnabled()) logDebug("commit start...", null);
+		boolean debug = log.isDebug();
+		if (debug) log.debug("commit start...", null);
 		try {
 			if (hasTransaction() && !isError()) {
-				if (isLogDebugEnabled()) logDebug("has Transaction and is in Transaction => commit", null);
+				if (debug) log.debug("has Transaction and is in Transaction => commit", null);
 				getData().incrementCommitCounter();
-				if ( isLogDebugEnabled() ) {
+				if (debug) {
 					if ((maxCommitCounter != 0) && (getData().getCommitCounter() > maxCommitCounter) ) {
-						logInfo("Call too many commit in a db-session, commitCounter=" + getData().getCommitCounter() +"; could be a performance problem" , null);
+						log.info("Call too many commit in a db-session, commitCounter=" + getData().getCommitCounter() +"; could be a performance problem" , null);
 					}
 				}
 				
@@ -731,22 +736,22 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 					trx.commit();
 				}
 
-				if (isLogDebugEnabled()) logDebug("Commit DONE hasTransaction()=" + hasTransaction(), null);
+				if (debug) log.debug("Commit DONE hasTransaction()=" + hasTransaction(), null);
 			} else if(hasTransaction() && isError()) {
 				EntityTransaction trx = getCurrentEntityManager().getTransaction();
 				if(trx != null && trx.isActive()) {
 					throw new DBRuntimeException("Try to commit a transaction in error status");
 				}
 			} else {
-				if (isLogDebugEnabled()) logDebug("Call commit without starting transaction", null );
+				if (debug) log.debug("Call commit without starting transaction", null );
 			}
 		} catch (Error er) {
-			logError("Uncaught Error in DBImpl.commit.", er);
+			log.error("Uncaught Error in DBImpl.commit.", er);
 			throw er;
 		} catch (Exception e) {
 			// Filter Exception form async TaskExecutorThread, there are exception allowed
 			if (!Thread.currentThread().getName().equals("TaskExecutorThread")) {
-				logWarn("Caught Exception in DBImpl.commit.", e);
+				log.warn("Caught Exception in DBImpl.commit.", e);
 			}
 			// Error when trying to commit
 			try {
@@ -768,10 +773,10 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 					}
 				}
 			} catch (Error er) {
-				logError("Uncaught Error in DBImpl.commit.catch(Exception).", er);
+				log.error("Uncaught Error in DBImpl.commit.catch(Exception).", er);
 				throw er;
 			} catch (Exception ex) {
-				logWarn("Could not rollback transaction after commit!", ex);
+				log.warn("Could not rollback transaction after commit!", ex);
 				throw new DBRuntimeException("rollback after commit failed", e);
 			}
 			throw new DBRuntimeException("commit failed, rollback transaction", e);
@@ -783,7 +788,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 */
 	@Override
 	public void rollback() {
-		if (isLogDebugEnabled()) logDebug("rollback start...", null);
+		if (log.isDebug()) log.debug("rollback start...", null);
 		try {
 			// see closeSession() and OLAT-4318: more robustness with commit/rollback/close, therefore
 			// we check if the connection is open at this stage at all
@@ -805,7 +810,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 			}
 
 		} catch (Exception ex) {
-			logWarn("Could not rollback transaction!",ex);
+			log.warn("Could not rollback transaction!",ex);
 			throw new DBRuntimeException("rollback failed", ex);
 		}		
 	}
@@ -821,12 +826,19 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 		}
  		return null;
    }
-	
-	public Object getCache() {
-		/*if(emf instanceof HibernateEntityManagerFactory) {
-			return ((HibernateEntityManagerFactory)emf).getSessionFactory().getCache().();
-		}*/
-		return null;
+
+	@Override
+	public EmbeddedCacheManager getCacheContainer() {
+		EmbeddedCacheManager cm;
+		try {
+			Cache cache = emf.getCache();
+			JpaInfinispanRegionFactory region = cache.unwrap(JpaInfinispanRegionFactory.class);
+			cm = region.getCacheManager();
+		} catch (Exception e) {
+			log.error("", e);
+			cm = null;
+		}
+		return cm;
 	}
 
 	/**
@@ -847,7 +859,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 			try {
 				DriverManager.deregisterDriver(registeredDrivers.nextElement());
 			} catch (SQLException e) {
-				logError("Could not unregister database driver.", e);
+				log.error("Could not unregister database driver.", e);
 			}
 		}
 	}
