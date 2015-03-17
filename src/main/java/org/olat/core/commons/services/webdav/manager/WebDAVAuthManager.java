@@ -147,7 +147,7 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 			if (auth == null) { // create new authentication for provider OLAT
 				Identity reloadedIdentity = securityManager.loadIdentityByKey(identity.getKey());
 				auth = securityManager.createAndPersistAuthentication(reloadedIdentity, PROVIDER_WEBDAV, identity.getName(), newPwd, loginModule.getDefaultHashAlgorithm());
-				log.audit(doer.getName() + " created new WebDAV authenticatin for identity: " + identity.getName());
+				log.audit(doer.getName() + " created new WebDAV authentication for identity: " + identity.getName());
 			} else {
 				auth = securityManager.updateCredentials(auth, newPwd, loginModule.getDefaultHashAlgorithm());
 				log.audit(doer.getName() + " set new WebDAV password for identity: " +identity.getName());
