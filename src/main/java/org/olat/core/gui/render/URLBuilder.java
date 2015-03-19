@@ -157,7 +157,7 @@ public class URLBuilder {
 	public void buildURI(StringOutput buf, String[] keys, String[] values, String modURI, int mode) {
 		StringBuilder result = new StringBuilder(100);
 		result.append(uriPrefix);
-		result.append(encodeParams(mode));
+		encodeParams(result, mode);
 		
 		if (keys != null) {
 			for (int i = 0; i < keys.length; i++) {
@@ -203,8 +203,7 @@ public class URLBuilder {
 	 * 
 	 * @return
 	 */
-	private StringBuilder encodeParams(int mode) {
-		StringBuilder result = new StringBuilder();
+	private StringBuilder encodeParams(StringBuilder result, int mode) {
 		// encode framework parameters
 		result.append(windowID == null ? "0" : windowID);
 		result.append(UserRequest.PARAM_DELIM);
@@ -219,16 +218,6 @@ public class URLBuilder {
 		result.append(UserRequest.PARAM_DELIM);
 		
 		result.append(mode);
-		
-		/* TODO bookmarking via hash part of url or via below
-		result.append(UserRequest.PARAM_DELIM);
-
-		// avoid empty string for stringtokenizer
-		result.append('a');
-		if (businessControlPath != null) {
-			result.append(businessControlPath);
-		}
-		*/
 		return result;
 	}
 	
