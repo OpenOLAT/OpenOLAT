@@ -25,6 +25,7 @@
 
 package org.olat.course.nodes.en;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
@@ -100,10 +101,11 @@ public class ENRunController extends BasicController implements GenericEventList
 	private final CoursePropertyManager coursePropertyManager;
 
 	// workflow variables
-	private BusinessGroup enrolledGroup;
-	private BusinessGroup waitingListGroup;
+	private List<BusinessGroup> enrolledGroups;
+	private List<BusinessGroup> waitingListGroups;
 	
 	private boolean cancelEnrollEnabled;
+	private int maxEnrollCount;
 	
 	/**
 	 * @param moduleConfiguration
@@ -143,15 +145,15 @@ public class ENRunController extends BasicController implements GenericEventList
 		cancelEnrollEnabled = ((Boolean) moduleConfig.get(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED)).booleanValue();
 
 		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
-		enrolledGroup = enrollmentManager.getBusinessGroupWhereEnrolled(identity, enrollableGroupKeys, enrollableAreaKeys, courseGroupManager.getCourseEntry());
-		waitingListGroup = enrollmentManager.getBusinessGroupWhereInWaitingList(identity, enrollableGroupKeys, enrollableAreaKeys);
+		enrolledGroups = enrollmentManager.getBusinessGroupsWhereEnrolled(identity, enrollableGroupKeys, enrollableAreaKeys, courseGroupManager.getCourseEntry());
+		waitingListGroups = enrollmentManager.getBusinessGroupsWhereInWaitingList(identity, enrollableGroupKeys, enrollableAreaKeys);
 		registerGroupChangedEvents(enrollableGroupKeys, enrollableAreaKeys, ureq.getIdentity());
 		// Set correct view
 		enrollVC = createVelocityContainer("enrollmultiple");
 		List<BusinessGroup> groups = enrollmentManager.loadGroupsFromNames(enrollableGroupKeys, enrollableAreaKeys);
 		
 		tableCtr = createTableController(ureq, enrollmentManager.hasAnyWaitingList(groups));
-		
+		maxEnrollCount = moduleConfiguration.getIntegerSafe(ENCourseNode.CONFIG_ALLOW_MULTIPLE_ENROLL_COUNT, 1);
 		doEnrollView(ureq);
 
 		// push title and learning objectives, only visible on intro page
@@ -195,37 +197,35 @@ public class ENRunController extends BasicController implements GenericEventList
 					EnrollStatus enrollStatus = enrollmentManager.doEnroll(ureq.getIdentity(), ureq.getUserSession().getRoles(), choosenGroup, enNode, coursePropertyManager, getWindowControl(), getTranslator(),
 							                                                   enrollableGroupKeys, enrollableAreaKeys, courseGroupManager);
 					if (enrollStatus.isEnrolled() ) {
-						enrolledGroup = choosenGroup;
+						enrolledGroups.add(choosenGroup);
 					} else if (enrollStatus.isInWaitingList() ) {
-						waitingListGroup = choosenGroup;
+						waitingListGroups.add(choosenGroup);
 					} else {
 						getWindowControl().setError(enrollStatus.getErrorMessage());
 					}
 					// events are already fired BusinessGroupManager level :: BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, choosenGroup,  ureq.getIdentity());
 					// but async
-					doEnrollView(ureq);
 					// fire event to indicate runmaincontroller that the menuview is to update
-					
+					doEnrollView(ureq);
 					if (enrollStatus.isEnrolled() ) {
-						fireEvent(ureq, new BusinessGroupModifiedEvent(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, enrolledGroup, getIdentity()));
+						fireEvent(ureq, new BusinessGroupModifiedEvent(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, choosenGroup, getIdentity()));
 					} else {
 						fireEvent(ureq, Event.DONE_EVENT);
 					}
+
 				} else if (actionid.equals(CMD_ENROLLED_CANCEL)) {
-					if (waitingListGroup != null) {
+ 					if (enrollmentManager.getBusinessGroupsWhereInWaitingList(getIdentity(), enrollableGroupKeys, enrollableAreaKeys).contains(choosenGroup)) {
 						enrollmentManager.doCancelEnrollmentInWaitingList(ureq.getIdentity(), choosenGroup, enNode, coursePropertyManager, getWindowControl(), getTranslator());
-						waitingListGroup = null;
-					} else {
+						waitingListGroups.remove(choosenGroup);
+					} else if(enrollmentManager.getBusinessGroupsWhereEnrolled(getIdentity(), enrollableGroupKeys, enrollableAreaKeys, courseGroupManager.getCourseEntry()).contains(choosenGroup)) {
 						enrollmentManager.doCancelEnrollment(ureq.getIdentity(), choosenGroup, enNode, coursePropertyManager, getWindowControl(), getTranslator());
-						enrolledGroup = null;
+						enrolledGroups.remove(choosenGroup);
 					}
-					doEnrollView(ureq);
-					if (enrolledGroup == null) {
-						// fire event to indicate runmaincontroller that the menuview is to update
-						fireEvent(ureq, new BusinessGroupModifiedEvent(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT, choosenGroup, getIdentity()));
-					}
+					// fire event to indicate runmaincontroller that the menuview is to update
+					fireEvent(ureq, new BusinessGroupModifiedEvent(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT, choosenGroup, getIdentity()));
 					// events are already fired BusinessGroupManager level :: BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT, group,  ureq.getIdentity());
 					// but async
+					doEnrollView(ureq);
 				} else if(CMD_VISIT_CARD.equals(actionid)) {
 					String businessPath;
 					if(businessGroupService.isIdentityInBusinessGroup(getIdentity(), choosenGroup)) {
@@ -246,32 +246,42 @@ public class ENRunController extends BasicController implements GenericEventList
 	}	
 
 	private void doEnrollView(UserRequest ureq) {
-		//TODO read from config: 1) user can choose or 2) round robin
-		// for now only case 1
-		if (enrolledGroup != null) {
-			enrollVC.contextPut("isEnrolledView", Boolean.TRUE);
-			enrollVC.contextPut("isWaitingList", Boolean.FALSE);
-			enrollVC.contextPut("groupName", StringHelper.escapeHtml(enrolledGroup.getName()));
-			String desc = StringHelper.xssScan(enrolledGroup.getDescription());
-			enrollVC.contextPut("groupDesc", (desc == null) ? "" : desc);    	
-		} else if (waitingListGroup != null){
-			enrollVC.contextPut("isEnrolledView", Boolean.TRUE);
-			enrollVC.contextPut("isWaitingList", Boolean.TRUE);
-			enrollVC.contextPut("groupName", StringHelper.escapeHtml(waitingListGroup.getName()));
-			String desc = StringHelper.xssScan(waitingListGroup.getDescription());
-			enrollVC.contextPut("groupDesc", (desc == null) ? "" : desc);    	
-		} else {
-			enrollVC.contextPut("isEnrolledView", Boolean.FALSE);
+		enrollVC.contextPut("multiEnroll", (maxEnrollCount > 1 && enrolledGroups.size()+waitingListGroups.size()<maxEnrollCount));
+		if(!enrolledGroups.isEmpty()||!waitingListGroups.isEmpty()){
+			String[] hintNumbers = new String[2];
+			hintNumbers[0]=String.valueOf(enrolledGroups.size()+waitingListGroups.size());
+			hintNumbers[1]=String.valueOf(maxEnrollCount-enrolledGroups.size()-waitingListGroups.size());
+			enrollVC.contextPut("multipleHint", translate("multiple.select.hint.outstanding", hintNumbers));
+		}else{
+			enrollVC.contextPut("multipleHint", translate("multiple.select.hint", String.valueOf(maxEnrollCount)));
 		}
-		doEnrollMultipleView(ureq);
-	}
-
-	private void doEnrollMultipleView(UserRequest ureq) {
+		
+		if (!enrolledGroups.isEmpty()) {
+			enrollVC.contextPut("isEnrolledView", Boolean.TRUE);
+			ArrayList<String> groupnames = new ArrayList<String>();
+			for(BusinessGroup group:enrolledGroups){
+				groupnames.add(StringHelper.escapeHtml(group.getName()));
+			}
+			enrollVC.contextPut("groupNames", groupnames);	
+		}else{
+			enrollVC.contextPut("isEnrolledView", Boolean.FALSE);
+		} 
+		
+		if (!waitingListGroups.isEmpty()){
+			enrollVC.contextPut("isInWaitingList", Boolean.TRUE);
+			ArrayList<String> waitingListNames = new ArrayList<String>();
+			for(BusinessGroup waitingGroup:waitingListGroups){
+				waitingListNames.add(StringHelper.escapeHtml(waitingGroup.getName()));
+			}
+			enrollVC.contextPut("waitingListNames", waitingListNames);    	
+		}else{
+			enrollVC.contextPut("isInWaitingList", Boolean.FALSE);
+		}
 		// 1. Fetch groups from database
 		List<BusinessGroup> groups = enrollmentManager.loadGroupsFromNames(enrollableGroupKeys, enrollableAreaKeys);
 		List<Integer> members = courseGroupManager.getNumberOfMembersFromGroups(groups);
 		// 2. Build group list
-		groupListModel = new BusinessGroupTableModelWithMaxSize(groups, members, getTranslator(), ureq.getIdentity(), cancelEnrollEnabled);
+		groupListModel = new BusinessGroupTableModelWithMaxSize(groups, members, getTranslator(), ureq.getIdentity(), cancelEnrollEnabled, maxEnrollCount);
 		tableCtr.setTableDataModel(groupListModel);
 		tableCtr.modelChanged();
 		// 3. Add group list to view

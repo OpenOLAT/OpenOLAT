@@ -37,6 +37,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -59,6 +60,7 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 	private Identity identity;
 	private boolean cancelEnrollEnabled;
 	private BusinessGroupService businessGroupService;
+	private int maxEnrolCount;
 
 	/**
 	 * @param groups List of business groups
@@ -66,13 +68,14 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 	 *          The index of the list corresponds with the index of the group list
 	 * @param trans
 	 */
-	public BusinessGroupTableModelWithMaxSize(List<BusinessGroup> groups, List<Integer> members, Translator trans, Identity identity, boolean cancelEnrollEnabled) {
+	public BusinessGroupTableModelWithMaxSize(List<BusinessGroup> groups, List<Integer> members, Translator trans, Identity identity, boolean cancelEnrollEnabled, int maxEnrolCount) {
 		super(groups);
 		this.members = members;
 		this.trans = trans;
 		this.identity = identity;
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		this.cancelEnrollEnabled = cancelEnrollEnabled;
+		this.maxEnrolCount = maxEnrolCount;
 	}
 
 	/**
@@ -136,8 +139,8 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 				return trans.translate("grouplist.table.state.notEnrolled");
 			case 5:
 				// Action enroll
-				if (isEnrolledInAnyGroup(identity)) {
-					// Allready enrolled => does not show action-link 'enroll'
+				if (getEnrolCount(identity) >= maxEnrolCount || isEnrolledIn(businessGroup, identity)) {
+					// Already too much enrollments or already enrolled in the bg of the row => does not show action-link 'enroll'
 					return Boolean.FALSE;
 				}
 				if (max != null && !businessGroup.getWaitingListEnabled().booleanValue() && (numbParts.intValue() >= max.intValue()) ) {
@@ -166,7 +169,7 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 
 	@Override
 	public Object createCopyWithEmptyList() {
-		return new BusinessGroupTableModelWithMaxSize(new ArrayList<BusinessGroup>(), members, trans, identity, cancelEnrollEnabled);
+		return new BusinessGroupTableModelWithMaxSize(new ArrayList<BusinessGroup>(), members, trans, identity, cancelEnrollEnabled, maxEnrolCount);
 	}
 
 	/**
@@ -201,16 +204,21 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 	/**
 	 * Check if an identity is in any security-group.
 	 * @param ident
-	 * @return true: Found identity in any security-group of this table model.
+	 * @return amount of business groups the identity is enrolled in
 	 */		
-	private boolean isEnrolledInAnyGroup(Identity ident) {
+	private int getEnrolCount(Identity ident) {
+		int enrolCount=0;
 		// loop over all business-groups
 		for (BusinessGroup businessGroup:objects) {
 			if (isEnrolledIn(businessGroup, ident) ) {
-				return true;
+				enrolCount++;
+				// optimize, enough is enough
+				if (maxEnrolCount == enrolCount) {
+					return enrolCount;
+				}
 			}
 		}
-		return false;
+		return enrolCount;
 	}
 
 	@Override

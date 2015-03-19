@@ -36,6 +36,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -43,7 +44,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -87,14 +87,14 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	private ModuleConfiguration moduleConfig;
 	private CourseEditorEnv cev;
 	private MultipleSelectionElement enableCancelEnroll;
+	private MultipleSelectionElement allowMultipleEnroll;
+	private IntegerElement multipleEnrollCount;
 	
 	private StaticTextElement easyGroupList;
 	private FormLink chooseGroupsLink;
-	private FormLink createGroupsLink;
 	
 	private StaticTextElement easyAreaList;
 	private FormLink chooseAreasLink;
-	private FormLink createAreasLink;
 	
 	private boolean hasAreas;
 	private boolean hasGroups;
@@ -178,6 +178,10 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		moduleConfig.set(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED, cancelEnrollEnabled);
 		hasAreas = areaManager.countBGAreasInContext(cev.getCourseGroupManager().getCourseResource()) > 0;
 		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseEntry()) > 0;
+		//4. multiple groups flag
+		int enrollCount = multipleEnrollCount.getIntValue();
+		if(!allowMultipleEnroll.isSelected(0)) enrollCount=1; 
+		moduleConfig.set(ENCourseNode.CONFIG_ALLOW_MULTIPLE_ENROLL_COUNT, enrollCount);
 		// Inform all listeners about the changed condition
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
@@ -202,14 +206,20 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		}
 		groupInitVal = getGroupNames(groupKeys);
 		
-		easyGroupList = uifactory.addStaticTextElement("group", "form.groupnames", groupInitVal == null ? "" : groupInitVal, formLayout);
+		chooseGroupsLink = uifactory.addFormLink("chooseGroup", formLayout, "btn btn-default o_xsmall o_form_groupchooser");
+		chooseGroupsLink.setLabel("form.groupnames", null);
+		chooseGroupsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
+		
+		easyGroupList = uifactory.addStaticTextElement("group", null, groupInitVal == null ? "" : groupInitVal, formLayout);
 		easyGroupList.setUserObject(groupKeys);
-
-		chooseGroupsLink = uifactory.addFormLink("chooseGroup", "choose", null, formLayout, Link.LINK);	
-		chooseGroupsLink.setElementCssClass("o_sel_course_en_choose_group");
-		createGroupsLink = uifactory.addFormLink("createGroup", "create", null, formLayout, Link.LINK);	
-		createGroupsLink.setElementCssClass("o_sel_course_en_create_group");
+		easyGroupList.setElementCssClass("text-muted");
+		
 		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseEntry()) > 0;
+		if(hasGroups){
+			chooseGroupsLink.setI18nKey("choose");
+		}else{
+			chooseGroupsLink.setI18nKey("create");
+		}
 		
 		// areas
 		String areaInitVal;
@@ -220,12 +230,32 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			areaKeys = areaManager.toAreaKeys(areaInitVal, cev.getCourseGroupManager().getCourseResource());
 		}
 		areaInitVal = getAreaNames(areaKeys);
-		easyAreaList = uifactory.addStaticTextElement("area", "form.areanames", areaInitVal == null ? "" : areaInitVal, formLayout);
-		easyAreaList.setUserObject(areaKeys);
 		
-		chooseAreasLink = uifactory.addFormLink("chooseArea", "choose", null, formLayout, Link.LINK);
-		createAreasLink = uifactory.addFormLink("createArea", "create", null, formLayout, Link.LINK);
-
+		chooseAreasLink = uifactory.addFormLink("chooseArea", formLayout, "btn btn-default o_xsmall o_form_areachooser");
+		chooseAreasLink.setLabel("form.areanames", null);
+		chooseAreasLink.setIconLeftCSS("o_icon o_icon-fw o_icon_courseareas");
+		
+		easyAreaList = uifactory.addStaticTextElement("area", null, areaInitVal == null ? "" : areaInitVal, formLayout);
+		easyAreaList.setUserObject(areaKeys);
+		easyAreaList.setElementCssClass("text-muted");
+		
+		if(areaInitVal.isEmpty()){
+			chooseAreasLink.setI18nKey("create");
+		} else {
+			chooseAreasLink.setI18nKey("choose");
+		}
+		
+		//multiple group selection
+		int enrollCountConfig = moduleConfig.getIntegerSafe(ENCourseNode.CONFIG_ALLOW_MULTIPLE_ENROLL_COUNT,1);
+		Boolean multipleEnroll = (enrollCountConfig > 1);
+		allowMultipleEnroll = uifactory.addCheckboxesHorizontal("allowMultipleEnroll", "form.allowMultiEnroll", formLayout, new String[] { "multiEnroll" }, new String[] { "" });
+		allowMultipleEnroll.select("multiEnroll", multipleEnroll);
+		allowMultipleEnroll.addActionListener(FormEvent.ONCLICK);
+		
+		multipleEnrollCount = uifactory.addIntegerElement("form.multipleEnrollCount", enrollCountConfig, formLayout);
+		multipleEnrollCount.setMinValueCheck(1, "error.multipleEnroll");
+		multipleEnrollCount.setVisible(allowMultipleEnroll.isSelected(0));
+		
 		// enrolment
 		Boolean initialCancelEnrollEnabled  = (Boolean) moduleConfig.get(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED);
 		enableCancelEnroll = uifactory.addCheckboxesHorizontal("enableCancelEnroll", "form.enableCancelEnroll", formLayout, new String[] { "ison" }, new String[] { "" });
@@ -373,7 +403,13 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == chooseGroupsLink) {
+		if(source == allowMultipleEnroll){
+			if(allowMultipleEnroll.isSelected(0)){
+				multipleEnrollCount.setVisible(true);
+			}else{
+				multipleEnrollCount.setVisible(false);
+			}
+		}else if (source == chooseGroupsLink) {
 			removeAsListenerAndDispose(groupChooseC);
 			groupChooseC = new GroupSelectionController(ureq, getWindowControl(), true,
 					cev.getCourseGroupManager(), getKeys(easyGroupList));
@@ -386,20 +422,6 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			cmc.activate();
 			subm.setEnabled(false);
 
-		} else if (source == createGroupsLink) {
-			removeAsListenerAndDispose(cmc);
-			removeAsListenerAndDispose(groupCreateCntrllr);
-			// no groups in group management -> directly show group create dialog
-
-			OLATResource courseResource = cev.getCourseGroupManager().getCourseResource();
-			RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
-			groupCreateCntrllr = new NewBGController(ureq, getWindowControl(), courseRe, true, null);
-			listenTo(groupCreateCntrllr);
-
-			cmc = new CloseableModalController(getWindowControl(), "close", groupCreateCntrllr.getInitialComponent());
-			listenTo(cmc);
-			cmc.activate();
-			subm.setEnabled(false);
 		} else if (source == chooseAreasLink) {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(areaChooseC);
@@ -410,18 +432,6 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			listenTo(areaChooseC);
 
 			cmc = new CloseableModalController(getWindowControl(), "close", areaChooseC.getInitialComponent());
-			listenTo(cmc);
-			cmc.activate();
-			subm.setEnabled(false);
-		} else if (source == createAreasLink) {
-			removeAsListenerAndDispose(cmc);
-			removeAsListenerAndDispose(areaCreateCntrllr);
-			// no areas -> directly show creation dialog
-			OLATResource courseResource = cev.getCourseGroupManager().getCourseResource();
-			areaCreateCntrllr = new NewAreaController(ureq, getWindowControl(), courseResource, true, null);
-			listenTo(areaCreateCntrllr);
-			
-			cmc = new CloseableModalController(getWindowControl(), "close", areaCreateCntrllr.getInitialComponent());
 			listenTo(cmc);
 			cmc.activate();
 			subm.setEnabled(false);
@@ -490,6 +500,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 				easyGroupList.setValue(list == null ? "" : list);
 				easyGroupList.setUserObject(groupChooseC.getSelectedKeys());
 				easyGroupList.getRootForm().submit(ureq);
+				chooseGroupsLink.setI18nKey("choose");
 			} else if (Event.CANCELLED_EVENT == event) {
 				cmc.deactivate();
 			}
@@ -505,6 +516,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 				easyAreaList.setValue(list == null ? "" : list);
 				easyAreaList.setUserObject(areaChooseC.getSelectedKeys());
 				easyAreaList.getRootForm().submit(ureq);
+				chooseAreasLink.setI18nKey("choose");
 			} else if (event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
 			}
@@ -524,8 +536,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 				easyGroupList.setUserObject(c);
 				
 				if (groupCreateCntrllr.getCreatedGroupNames().size() > 0 && !hasGroups) {
-					chooseGroupsLink.setVisible(true);
-					createGroupsLink.setVisible(false);
+					chooseGroupsLink.setLinkTitle("select");
 					singleUserEventCenter.fireEventToListenersOf(new MultiUserEvent("changed"), groupConfigChangeEventOres);
 				}
 				
@@ -546,8 +557,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 				easyAreaList.setUserObject(c);
 				
 				if (areaCreateCntrllr.getCreatedAreaNames().size() > 0 && !hasAreas) {
-					chooseAreasLink.setVisible(true);
-					createAreasLink.setVisible(false);
+					chooseAreasLink.setLinkTitle("select");
 					singleUserEventCenter.fireEventToListenersOf(new MultiUserEvent("changed"), groupConfigChangeEventOres);
 				}
 				easyAreaList.getRootForm().submit(ureq);
@@ -569,12 +579,18 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	
 	private void updateGroupsAndAreasCheck() {
 		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseEntry()) > 0;
-		chooseGroupsLink.setVisible(hasGroups);
-		createGroupsLink.setVisible(!hasGroups && !managedGroups);
+		if(!hasGroups && !managedGroups){
+			chooseGroupsLink.setLinkTitle("create");
+		}else{
+			chooseGroupsLink.setLinkTitle("choose");
+		}
 		
 		hasAreas = areaManager.countBGAreasInContext(cev.getCourseGroupManager().getCourseResource()) > 0;
-		chooseAreasLink.setVisible(hasAreas);
-		createAreasLink.setVisible(!hasAreas);	
+		if(hasAreas){
+			chooseAreasLink.setLinkTitle("choose");
+		}else{
+			chooseAreasLink.setLinkTitle("create");
+		}
 	}
 	
 	private boolean isEmpty(StaticTextElement element) {
@@ -608,7 +624,8 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		StringBuilder sb = new StringBuilder();
 		List<BusinessGroupShort> groups = businessGroupService.loadShortBusinessGroups(keys);
 		for(BusinessGroupShort group:groups) {
-			if(sb.length() > 0) sb.append(", ");
+			if(sb.length() > 0) sb.append("&nbsp;&nbsp;");
+			sb.append("<i class='o_icon o_icon-fw o_icon_group'>&nbsp;</i> ");
 			sb.append(StringHelper.escapeHtml(group.getName()));
 		}
 		return sb.toString();
@@ -618,7 +635,8 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		StringBuilder sb = new StringBuilder();
 		List<BGArea> areas = areaManager.loadAreas(keys);
 		for(BGArea area:areas) {
-			if(sb.length() > 0) sb.append(", ");
+			if(sb.length() > 0) sb.append("&nbsp;&nbsp;");
+			sb.append("<i class='o_icon o_icon-fw o_icon_courseareas'>&nbsp;</i> ");
 			sb.append(StringHelper.escapeHtml(area.getName()));
 		}
 		return sb.toString();
