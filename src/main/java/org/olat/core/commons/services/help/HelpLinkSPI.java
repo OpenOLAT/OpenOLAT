@@ -19,6 +19,8 @@
  */
 package org.olat.core.commons.services.help;
 
+import java.util.Locale;
+
 import org.olat.admin.user.tools.UserTool;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -31,6 +33,8 @@ import org.olat.core.gui.control.WindowControl;
  *
  */
 public interface HelpLinkSPI {
+	
+	public String getURL(Locale locale, String module);
 	
 	public UserTool getHelpUserTool(WindowControl wControl);
 

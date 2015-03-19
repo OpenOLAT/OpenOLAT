@@ -573,6 +573,14 @@ public abstract class FormBasicController extends BasicController {
 		}
 	}
 	
+	protected void setFormContextHelp(String url) {
+		if (url == null) {
+			flc.contextRemove("off_chelp_url");
+		} else {
+			flc.contextPut("off_chelp_url", url);
+		}
+	}
+	
 	/**
 	 * Set an optional css class to use for this form. May help to achieve custom formatting without
 	 * a separate velocity container.
