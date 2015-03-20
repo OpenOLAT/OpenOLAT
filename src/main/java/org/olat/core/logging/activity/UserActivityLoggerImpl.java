@@ -849,7 +849,7 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 
 	/** toString for debug **/
 	private String convertLoggingResourceableListToString(List<ILoggingResourceable> resourceInfos) {
-		StringBuffer loggingResourceableListToString = new StringBuffer("[LoggingResourceables: ");
+		StringBuilder loggingResourceableListToString = new StringBuilder("[LoggingResourceables: ");
 		loggingResourceableListToString.append(resourceInfos.size());
 		for (Iterator<ILoggingResourceable> iterator = resourceInfos.iterator(); iterator.hasNext();) {
 			ILoggingResourceable loggingResourceable = iterator.next();

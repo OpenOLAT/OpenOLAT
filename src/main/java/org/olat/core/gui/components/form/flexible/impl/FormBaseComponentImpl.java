@@ -59,7 +59,7 @@ public abstract class FormBaseComponentImpl extends AbstractComponent implements
 	}
 	
 	public String getFormDispatchId(){		
-		return DISPPREFIX+super.getDispatchID();
+		return DISPPREFIX.concat(super.getDispatchID());
 	}
 
 	@Override

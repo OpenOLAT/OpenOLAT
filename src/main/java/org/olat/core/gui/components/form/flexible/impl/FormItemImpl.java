@@ -515,7 +515,7 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 			return ((FormBaseComponentIdProvider)comp).getFormDispatchId();
 		} else {
 			//do the same as the FormBaseComponentIdProvider would do
-			return DISPPREFIX+comp.getDispatchID();
+			return DISPPREFIX.concat(comp.getDispatchID());
 		}
 	}
 
