@@ -27,14 +27,22 @@
 package org.olat.course.statistic.export;
 
 import java.io.File;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
+import javax.persistence.EntityManager;
+import javax.persistence.TemporalType;
+import javax.persistence.TypedQuery;
+
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LoggingObject;
-import org.olat.core.util.FileUtils;
 
 /**
  * 
@@ -51,8 +59,10 @@ import org.olat.core.util.FileUtils;
  */
 public class SimpleLogExporter implements ICourseLogExporter {
 
+	private static final OLog log = Tracing.createLoggerFor(SimpleLogExporter.class);
 	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 	
+	private DB dbInstance;
 	private LogLineConverter logLineConverter_;
 	
 	private SimpleLogExporter() {
@@ -63,9 +73,14 @@ public class SimpleLogExporter implements ICourseLogExporter {
 	public void setLogLineConverter(LogLineConverter logLineConverter) {
 		logLineConverter_ = logLineConverter;
 	}
+	
+	public void setDbInstance(DB dbInstance) {
+		this.dbInstance = dbInstance;
+	}
 
+	@Override
 	public void exportCourseLog(File outFile, String charset, Long resourceableId, Date begin, Date end, boolean resourceAdminAction, boolean anonymize) {
-		StringBuffer result = new StringBuffer();
+
 		
 		String query = "select v from org.olat.core.logging.activity.LoggingObject v " + "where v.resourceAdminAction = :resAdminAction "
 				+ "AND ( " 
@@ -81,31 +96,44 @@ public class SimpleLogExporter implements ICourseLogExporter {
 		if (end != null) {
 			query = query.concat(" AND (v.creationDate <= :createdBefore)");
 		}
+		
+		EntityManager em = dbInstance.getCurrentEntityManager();
+		em.clear();
 
-		DBQuery dbQuery = DBFactory.getInstance().createQuery(query);
-		dbQuery.setBoolean("resAdminAction", resourceAdminAction);
-		dbQuery.setString("resId", Long.toString(resourceableId));
+		TypedQuery<LoggingObject> dbQuery = em.createQuery(query, LoggingObject.class)
+				.setParameter("resAdminAction", resourceAdminAction)
+				.setParameter("resId", Long.toString(resourceableId));
 		if (begin != null) {
-			dbQuery.setDate("createdAfter", begin);
+			dbQuery.setParameter("createdAfter", begin, TemporalType.DATE);
 		}
 		if (end != null) {
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(end);
 			cal.add(Calendar.DAY_OF_MONTH, 1);
 			end = cal.getTime();
-			dbQuery.setDate("createdBefore", end);
-		}
-
-		List queryResult = dbQuery.list();
-		result.append(logLineConverter_.getCSVHeader());
-		result.append(LINE_SEPARATOR);
-		
-		for (Object loggingObject : queryResult) {
-			result.append(logLineConverter_.getCSVRow((LoggingObject)loggingObject, anonymize, resourceableId ));
-			result.append(LINE_SEPARATOR);
+			dbQuery.setParameter("createdBefore", end, TemporalType.DATE);
 		}
 		
-		FileUtils.save(outFile, result.toString(), charset);
+		try(Writer out = Files.newBufferedWriter(outFile.toPath(), Charset.forName("UTF-8"), StandardOpenOption.CREATE_NEW)) {
+			out.append(logLineConverter_.getCSVHeader());
+			out.append(LINE_SEPARATOR);
+			
+			int count = 0;
+			List<LoggingObject> queryResult = dbQuery.getResultList();
+			for (LoggingObject loggingObject : queryResult) {
+				out.append(logLineConverter_.getCSVRow(loggingObject, anonymize, resourceableId));
+				out.append(LINE_SEPARATOR);
+				if(count % 1000 == 0) {
+					out.flush();
+					em.clear();
+				}
+			}
+			
+		} catch(Exception e) {
+			log.error("", e);
+		} finally {
+			em.clear();
+			dbInstance.commitAndCloseSession();
+		}
 	}
-	
 }

@@ -45,12 +45,25 @@
 		#if ($comment)		
 		<div class="panel panel-default o_comment">
 		  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseComment">
-	  			<h4 class="panel-title">$r.translate("comment.yourcomment")</h4>
+	  			<h4 class="panel-title">
+	  				<i id="collapseCommentsToggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i>
+	  				$r.translate("comment.yourcomment")
+	  			</h4>
 	  		</div>
 		<div id="collapseComment" class="panel-collapse collapse in"><div class="panel-body">
 				$comment
 	  		</div>
 		</div></div>
+		<script type="text/javascript">
+			/* <![CDATA[ */
+				jQuery('#collapseComment').on('hide.bs.collapse', function () {
+						jQuery('#collapseCommentsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				})
+				jQuery('#collapseComment').on('show.bs.collapse', function () {
+						jQuery('#collapseCommentsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+				})
+			/* ]]> */
+		</script>
 		#end
 
 	#else
@@ -71,7 +84,10 @@
 #if($showResultsOnHomePage && $attempts >0)	
 	<div class="panel panel-default o_results">
 	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseResults">
-	  		<h4 class="panel-title">$r.translate("showResults.title")</h4>
+	  		<h4 class="panel-title">
+	  			<i id="collapseResultsToggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i>	  	
+		  		$r.translate("showResults.title")
+		  	</h4>
 	  	</div>
 		<div id="collapseResults" class="panel-collapse collapse in"><div class="panel-body">
 		  	#if($showResultsVisible)
@@ -94,6 +110,16 @@
 			#end
   		</div></div>
 	</div>
+	<script type="text/javascript">
+		/* <![CDATA[ */
+			jQuery('#collapseResults').on('hide.bs.collapse', function () {
+					jQuery('#collapseResultsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+			})
+			jQuery('#collapseResults').on('show.bs.collapse', function () {
+					jQuery('#collapseResultsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+			})
+		/* ]]> */
+	</script>
 #end
 
 
@@ -104,7 +130,10 @@
 	#if ($hasDisc)
 	<div class="panel panel-default o_disclaimer">
 	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseDisclaimer">
-	  		<h4 class="panel-title">$r.translate("disclaimer")</h4>
+	  		<h4 class="panel-title">
+	  			<i id="collapseDisclaimerToggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i>
+	  			$r.translate("disclaimer")
+	  		</h4>
 	  	</div>
 	  	<div id="collapseDisclaimer" class="panel-collapse collapse in"><div class="panel-body">
 		$r.render("disc")
@@ -115,7 +144,10 @@
 	#if ($hasDisc)
 	<div class="panel panel-default o_disclaimer">
 	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseDisclaimer">
-	  		<h4 class="panel-title">$r.translate("disclaimer")</h4>
+	  		<h4 class="panel-title">
+	  			<i id="collapseDisclaimerToggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i>
+	  			$r.translate("disclaimer")
+	  		</h4>
 	  	</div>
 	  	<div id="collapseDisclaimer" class="panel-collapse collapse in"><div class="panel-body">
 		$r.render("disc")
@@ -142,6 +174,16 @@
 	</div>
 	
 #end
+	<script type="text/javascript">
+		/* <![CDATA[ */
+			jQuery('#collapseDisclaimer').on('hide.bs.collapse', function () {
+					jQuery('#collapseDisclaimerToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+			})
+			jQuery('#collapseDisclaimer').on('show.bs.collapse', function () {
+					jQuery('#collapseDisclaimerToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+			})
+		/* ]]> */
+	</script>
 
 #if ($log && $showChangelog)
 <div class="o_box">

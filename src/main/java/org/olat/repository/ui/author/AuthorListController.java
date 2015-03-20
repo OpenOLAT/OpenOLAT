@@ -275,10 +275,10 @@ public class AuthorListController extends FormBasicController implements Activat
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastUsage.i18nKey(), Cols.lastUsage.ordinal(),
 				true, OrderBy.lastUsage.name()));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(Cols.detailsSupported.i18nKey(), Cols.detailsSupported.ordinal(), "details",
-				new StaticFlexiCellRenderer("", "details", "o_icon-lg o_icon_details", translate("details"))));
+				new StaticFlexiCellRenderer("", "details", "o_icon o_icon-lg o_icon_details", translate("details"))));
 		if(hasAuthorRight) {
 			columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(Cols.editionSupported.i18nKey(), Cols.editionSupported.ordinal(), "edit",
-				new BooleanCellRenderer(new StaticFlexiCellRenderer("", "edit", "o_icon-lg o_icon_edit", translate("edit")), null)));
+				new BooleanCellRenderer(new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit")), null)));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.tools.i18nKey(), Cols.tools.ordinal()));
 		}
 		
@@ -841,10 +841,12 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private void launchEditDescription(UserRequest ureq, RepositoryEntry re) {
-		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(re);
-		if(handler != null) {
-			String businessPath = "[RepositoryEntry:" + re.getKey() + "][EditDescription:0]";
-			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		if(re != null) {
+			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(re);
+			if(handler != null) {
+				String businessPath = "[RepositoryEntry:" + re.getKey() + "][EditDescription:0]";
+				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			}
 		}
 	}
 	

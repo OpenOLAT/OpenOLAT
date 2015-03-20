@@ -139,6 +139,7 @@ public class I18nManager extends BasicManager {
 	private ConcurrentMap<String, Properties> cachedBundles = new ConcurrentHashMap<String, Properties>();
 	private ConcurrentMap<String, String> cachedJSTranslatorData = new ConcurrentHashMap<String, String>();
 	private ConcurrentMap<String, Deque<String>> referencingBundlesIndex = new ConcurrentHashMap<String, Deque<String>>();
+	private static final ConcurrentMap<Locale,String> localeToLocaleKey = new ConcurrentHashMap<>();
 	private boolean cachingEnabled = true;
 
 	private static FilenameFilter i18nFileFilter = new FilenameFilter() {
@@ -1689,26 +1690,35 @@ public class I18nManager extends BasicManager {
 	 * @return
 	 */
 	public String getLocaleKey(Locale locale) {
-		String langKey = locale.getLanguage();
-		String country = locale.getCountry();
-		// Only add country when available - in case of an overlay country is
-		// set to
-		// an empty value
-		if (StringHelper.containsNonWhitespace(country)) {
-			langKey = langKey + "_" + country;
-		}
-		String variant = locale.getVariant();
-		// Only add the _ separator if the variant contains something in
-		// addition to
-		// the overlay, otherways use the __ only
-		if (StringHelper.containsNonWhitespace(variant)) {
-			if (variant.startsWith("__" + I18nModule.getOverlayName())) {
-				langKey += variant;
-			} else {
-				langKey = langKey + "_" + variant;
+		String key = localeToLocaleKey.get(locale);
+		if(key == null) {
+			String langKey = locale.getLanguage();
+			String country = locale.getCountry();
+			// Only add country when available - in case of an overlay country is
+			// set to
+			// an empty value
+			if (StringHelper.containsNonWhitespace(country)) {
+				langKey = langKey + "_" + country;
 			}
+			String variant = locale.getVariant();
+			// Only add the _ separator if the variant contains something in
+			// addition to
+			// the overlay, otherways use the __ only
+			if (StringHelper.containsNonWhitespace(variant)) {
+				if (variant.startsWith("__" + I18nModule.getOverlayName())) {
+					langKey += variant;
+				} else {
+					langKey = langKey + "_" + variant;
+				}
+			}
+			
+			key = localeToLocaleKey.putIfAbsent(locale, langKey);
+			if(key == null) {
+				key = langKey;
+			}
+			
 		}
-		return langKey;
+		return key;
 	}
 
 	/**

@@ -22,6 +22,8 @@ package org.olat.selenium;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -45,6 +47,7 @@ import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.EnrollmentConfigurationPage;
 import org.olat.selenium.page.course.EnrollmentPage;
+import org.olat.selenium.page.course.MembersPage;
 import org.olat.selenium.page.course.PublisherPageFragment.Access;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.group.GroupPage;
@@ -556,8 +559,243 @@ public class BusinessGroupTest {
 		Assert.assertEquals(1, participants);
 		Assert.assertEquals(2, waitingList);
 	}
+	/**
+	 * An author create a course, with an enrollment course element. It
+	 * configure it and create 3 groups and set the maximum enrollment counter to 2<br>
+	 * 
+	 * One user goes to the course and enrolls in 2 of the groups. It shouldent be possible
+	 * enroll in the third<br>
+	 * 
+	 * @param authorLoginPage
+	 * @param ryomouBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+
+	@Test
+	@RunAsClient
+	public void enrolmentWithMultiEnrollment(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver ryomouBrowser)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		
+		//create a course
+		String courseTitle = "Enrolment-3-" + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+
+		//create a course element of type Enrolment
+		String enNodeTitle = "Enrolment-3";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("en")
+			.nodeTitle(enNodeTitle);
+		//configure enrolment with a group that we create
+		List<String> groups = new ArrayList<String>();
+		groups.add("Enrolment group - 3 " + UUID.randomUUID());
+		groups.add("Enrolment group - 3 " + UUID.randomUUID());
+		groups.add("Enrolment group - 3 " + UUID.randomUUID());
+		
+		EnrollmentConfigurationPage enrolmentConfig = new EnrollmentConfigurationPage(browser);
+		enrolmentConfig
+			.selectConfiguration()
+			.createBusinessGroup(groups.get(0), "-", 4, false, false)
+			.createBusinessGroup(groups.get(1), "-", 4, false, false)
+			.createBusinessGroup(groups.get(2), "-", 4, false, false)
+			.selectMultipleEnrollments(browser, 2);
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish(Access.users);
+		courseEditor.clickToolbarBack();
+		
+
+		for(String groupName:groups){
+				navBar
+					.openGroups(browser)
+					.selectGroup(groupName)
+					.openAdministration()
+					.openAdminMembers()
+					.setVisibility(true, true, false)
+					.openMembers();
+		}
+				
+		//Ryomou open the course
+		Enrollment ryomouEnrollment = new Enrollment(ryomou, ryomouBrowser);
+				
+		WebDriver driver = ryomouEnrollment.getDriver();
+		LoginPage.getLoginPage(driver, deploymentUrl)
+			.loginAs(ryomouEnrollment.getUser())
+			.resume();
+		
+		NavigationPage participantNavBar = new NavigationPage(driver);
+		participantNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(courseTitle)
+			.select(courseTitle)
+			.start();
+		
+		OOGraphene.waitBusy(ryomouBrowser);
+		
+		//go to the enrollment
+		CoursePageFragment participantCourse = new CoursePageFragment(driver);
+		participantCourse
+			.clickTree()
+			.selectWithTitle(enNodeTitle);
+		
+		EnrollmentPage enrollmentPage = new EnrollmentPage(driver);
+		enrollmentPage
+			.assertOnEnrolmentPage();
+		ryomouEnrollment.setEnrollmentPage(enrollmentPage);
+		
+		ryomouEnrollment.getEnrollmentPage().multiEnroll(2);
+		
+		//wait
+		OOGraphene.waitBusy(driver);
+		//assert that that no more enrollment is allowed
+		ryomouEnrollment.getEnrollmentPage().assertNoEnrollmentAllowed(driver);
+		
+	}
+	/**
+	 * An author create a course and a business group in the members
+	 * management. It has max. participants set to 1 and no waiting list.
+	 * Than it returns in the course editor to create an enrollment
+	 * course element. It configure it and select the group created before.<br>
+	 * 
+	 * Three users goes to the course and try to enroll. One will become
+	 * a participant, the 2 others get an error message.
+	 * 
+	 * @param authorLoginPage
+	 * @param ryomouBrowser
+	 * @param reiBrowser
+	 * @param kanuBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void enrollment(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver ryomouBrowser,
+			@Drone @Participant WebDriver reiBrowser,
+			@Drone @Student WebDriver kanuBrowser)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Enrollment-2-" + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		//create a group in members management
+		String groupName = "Enroll - " + UUID.randomUUID();
+		CoursePageFragment authorCourse = CoursePageFragment.getCourse(browser);
+		MembersPage membersPage = authorCourse
+			.members()
+			.selectBusinessGroups()
+			.createBusinessGroup(groupName, "-", 1, false, false);
+		//back to the members page
+		navBar.openCourse(courseTitle);
+		authorCourse = membersPage
+			.clickToolbarBack();
+		
+		//create an enrollment course element
+		String enNodeTitle = "Enroll - 2";
+		CourseEditorPageFragment courseEditor = authorCourse
+			.edit()
+			.createNode("en")
+			.nodeTitle(enNodeTitle);
+		
+		//select the group created above
+		EnrollmentConfigurationPage enrolmentConfig = new EnrollmentConfigurationPage(browser);
+		enrolmentConfig
+			.selectConfiguration()
+			.selectBusinessGroups();
+		
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish(Access.users);
+		
+		GroupPage authorGroup = navBar
+			.openGroups(browser)
+			.selectGroup(groupName)
+			.openAdministration()
+			.openAdminMembers()
+			.setVisibility(false, true, false)
+			.openMembers();
+		
+		Enrollment[] participantDrivers = new Enrollment[]{
+				new Enrollment(ryomou, ryomouBrowser),
+				new Enrollment(rei, reiBrowser),
+				new Enrollment(kanu, kanuBrowser)
+		};
+		for(Enrollment enrollment:participantDrivers) {
+			WebDriver driver = enrollment.getDriver();
+			LoginPage.getLoginPage(driver, deploymentUrl)
+				.loginAs(enrollment.getUser())
+				.resume();
+			
+			NavigationPage participantNavBar = new NavigationPage(driver);
+			participantNavBar
+				.openMyCourses()
+				.openSearch()
+				.extendedSearch(courseTitle)
+				.select(courseTitle)
+				.start();
+			
+			//go to the enrollment
+			CoursePageFragment participantCourse = new CoursePageFragment(driver);
+			participantCourse
+				.clickTree()
+				.selectWithTitle(enNodeTitle);
+		
+			EnrollmentPage enrollmentPage = new EnrollmentPage(driver);
+			enrollmentPage
+				.assertOnEnrolmentPage();
+			enrollment.setEnrollmentPage(enrollmentPage);
+		}
+		
+		//enroll
+		for(Enrollment enrollment:participantDrivers) {
+			enrollment.getEnrollmentPage().enrollNoWait();
+		}
+		//wait
+		int errors = 0;
+		for(Enrollment enrollment:participantDrivers) {
+			if(enrollment.getEnrollmentPage().hasError()) {
+				errors++;
+			}
+		}
+		
+		//author check the lists
+		authorGroup.openMembers();
+		//must a participant and 2 in waiting list
+		int participants = 0;
+		for(Enrollment enrollment:participantDrivers) {
+			if(authorGroup.isInMembersParticipantList(enrollment.getUser())) {
+				participants++;
+			}
+		}
+		Assert.assertEquals(1, participants);
+		Assert.assertEquals(participantDrivers.length - 1, errors);
+	}
 	
-	private static class Enrollment {
+	public static class Enrollment {
 		
 		private final UserVO user;
 		private final WebDriver driver;

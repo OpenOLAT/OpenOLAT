@@ -206,7 +206,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void queryByEditor() {
+	public void queryByOwner_replaceQueryByEditor() {
 		//create a repository entry with an owner
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("re-owner-la-" + UUID.randomUUID().toString());
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsUser("re-participant-la-" + UUID.randomUUID().toString());
@@ -216,12 +216,12 @@ public class RepositoryManagerTest extends OlatTestCase {
 		repositoryEntryRelationDao.addRole(participant, re, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
-		List<RepositoryEntry> entries = repositoryManager.queryByEditor(owner);
+		List<RepositoryEntry> entries = repositoryManager.queryByOwner(owner);
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		Assert.assertTrue(entries.contains(re));
 		
-		List<RepositoryEntry> partEntries = repositoryManager.queryByEditor(participant);
+		List<RepositoryEntry> partEntries = repositoryManager.queryByOwner(participant);
 		Assert.assertNotNull(partEntries);
 		Assert.assertEquals(0, partEntries.size());
 	}
@@ -239,6 +239,62 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		Assert.assertTrue(entries.contains(re));
+		
+		List<RepositoryEntry> entriesAlt = repositoryManager.queryByMembership(id, true, false, false);
+		Assert.assertNotNull(entriesAlt);
+		Assert.assertEquals(1, entriesAlt.size());
+		Assert.assertTrue(entriesAlt.contains(re));
+	}
+	
+	@Test
+	public void queryByMembership() {
+		//create a 4 repository entries with different memberships
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-participant-la-" + UUID.randomUUID().toString());
+		RepositoryEntry reOwner = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryEntryRelationDao.addRole(id, reOwner, GroupRoles.owner.name());
+		RepositoryEntry reCoach = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryEntryRelationDao.addRole(id, reCoach, GroupRoles.coach.name());
+		RepositoryEntry reParticipant = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryEntryRelationDao.addRole(id, reParticipant, GroupRoles.participant.name());
+		RepositoryEntry reOut = JunitTestHelper.createAndPersistRepositoryEntry();
+		Assert.assertNotNull(reOut);//add some noise
+		dbInstance.commitAndCloseSession();
+		
+		//check single membership
+		List<RepositoryEntry> ownedEntries = repositoryManager.queryByMembership(id, true, false, false);
+		Assert.assertNotNull(ownedEntries);
+		Assert.assertEquals(1, ownedEntries.size());
+		Assert.assertTrue(ownedEntries.contains(reOwner));
+		
+		List<RepositoryEntry> coachedEntries = repositoryManager.queryByMembership(id, false, true, false);
+		Assert.assertNotNull(coachedEntries);
+		Assert.assertEquals(1, coachedEntries.size());
+		Assert.assertTrue(coachedEntries.contains(reCoach));
+		
+		List<RepositoryEntry> participatingEntries = repositoryManager.queryByMembership(id, false, false, true);
+		Assert.assertNotNull(participatingEntries);
+		Assert.assertEquals(1, participatingEntries.size());
+		Assert.assertTrue(participatingEntries.contains(reParticipant));
+		
+		//check 2x membership
+		List<RepositoryEntry> doubleEntries = repositoryManager.queryByMembership(id, true, true, false);
+		Assert.assertNotNull(doubleEntries);
+		Assert.assertEquals(2, doubleEntries.size());
+		Assert.assertTrue(doubleEntries.contains(reOwner));
+		Assert.assertTrue(doubleEntries.contains(reCoach));
+		
+		//check 3x membership
+		List<RepositoryEntry> tripleEntries = repositoryManager.queryByMembership(id, true, true, true);
+		Assert.assertNotNull(tripleEntries);
+		Assert.assertEquals(3, tripleEntries.size());
+		Assert.assertTrue(tripleEntries.contains(reOwner));
+		Assert.assertTrue(tripleEntries.contains(reCoach));
+		Assert.assertTrue(tripleEntries.contains(reParticipant));
+		
+		//dummy
+		List<RepositoryEntry> noEntries = repositoryManager.queryByMembership(id, false, false, false);
+		Assert.assertNotNull(noEntries);
+		Assert.assertTrue(noEntries.isEmpty());
 	}
 	
 	@Test

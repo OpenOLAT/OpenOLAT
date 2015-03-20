@@ -411,6 +411,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	 *          from previous node configuration version, set default to maintain
 	 *          previous behaviour
 	 */
+	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode || config.getConfigurationVersion() < 2) {
@@ -423,8 +424,8 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void postImport(CourseEnvironmentMapper envMapper) {
-		super.postImport(envMapper);
+	protected void postImportCopyConditions(CourseEnvironmentMapper envMapper) {
+		super.postImportCopyConditions(envMapper);
 		postImportCondition(preConditionReader, envMapper);
 		postImportCondition(preConditionPoster, envMapper);
 		postImportCondition(preConditionModerator, envMapper);

@@ -42,7 +42,7 @@ public class StringOutput extends Writer {
 	
 	private static final OLog log = Tracing.createLoggerFor(StringOutput.class);
 
-	private StringBuilder sb;
+	private final StringBuilder sb;
 
 	/**
 	 * @param len
@@ -103,7 +103,7 @@ public class StringOutput extends Writer {
 	 * @return Itself
 	 */
 	public StringOutput append(StringOutput stringOutput) {
-		sb.append(stringOutput.toString());
+		sb.append(stringOutput.sb);
 		return this;
 	}
 	
@@ -116,8 +116,8 @@ public class StringOutput extends Writer {
 	 * @param sMin
 	 * @return Itself
 	 */
-	public StringOutput append(long sMin) {
-		sb.append(String.valueOf(sMin));
+	public StringOutput append(long val) {
+		sb.append(val);
 		return this;
 	}
 

@@ -80,6 +80,7 @@ public class OnlyGroupConditionInterpreter extends ConditionInterpreter{
 		env.addFunction(IsCourseCoachFunction.name, new DummyBooleanFunction(userCourseEnv));
 		env.addFunction(IsCourseParticipantFunction.name, new DummyBooleanFunction(userCourseEnv));
 		env.addFunction(IsCourseAdministratorFunction.name, new DummyBooleanFunction(userCourseEnv));
+		env.addFunction(IsAssessmentModeFunction.name, new DummyBooleanFunction(userCourseEnv));
 
 		env.addFunction(GetAttemptsFunction.name, new DummyIntegerFunction(userCourseEnv));
 

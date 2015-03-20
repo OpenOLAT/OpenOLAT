@@ -712,7 +712,7 @@ public class Form extends LogDelegator {
 		public boolean visit(FormItem comp, UserRequest ureq) {
 			if (comp instanceof FormItemContainer) {
 				FormItemContainer new_name = (FormItemContainer) comp;
-				if(new_name.getFormComponents().containsValue(child)){
+				if(new_name.hasFormComponent(child)){
 					parentContainer = (FormItemContainer)comp;
 					return false;
 				}
@@ -728,13 +728,13 @@ public class Form extends LogDelegator {
 		public boolean visit(FormItem comp, UserRequest ureq) {
 			if (comp instanceof FormItemContainer) {
 				FormItemContainer fic = (FormItemContainer)comp;
-				Map<String, FormItem> pairs = fic.getFormComponents();
+				Iterable<FormItem> pairs = fic.getFormItems();
 				//go to next container if no elements inside
-				if(pairs == null || pairs.size()==0) return true;
-				//otherwise iterate overall elements and evaluate dependency rules
-				Iterable<FormItem> elms= pairs.values();
-				for (FormItem item : elms) {
-					fic.evalDependencyRuleSetFor(ureq, item);
+				if(pairs != null) {
+					//otherwise iterate overall elements and evaluate dependency rules
+					for (FormItem item : pairs) {
+						fic.evalDependencyRuleSetFor(ureq, item);
+					}
 				}
 			}
 			return true;

@@ -87,9 +87,11 @@ public class EnrollmentManager extends BasicManager {
 		
 		final EnrollStatus enrollStatus = new EnrollStatus();
 		if (isLogDebugEnabled()) logDebug("doEnroll");
-		// check if the user is already enrolled (user can be enrooled only in one group)
-		if ( ( getBusinessGroupWhereEnrolled( identity, groupKeys, areaKeys, cgm.getCourseEntry()) == null)
-			  && ( getBusinessGroupWhereInWaitingList(identity, groupKeys, areaKeys) == null) ) {
+		// check if the user is able to be enrolled
+		int groupsEnrolledCount = getBusinessGroupsWhereEnrolled(identity, groupKeys, areaKeys, cgm.getCourseEntry()).size();
+		int waitingListCount = getBusinessGroupsWhereInWaitingList(identity, groupKeys, areaKeys).size();
+		int enrollCountConfig = enNode.getModuleConfiguration().getIntegerSafe(ENCourseNode.CONFIG_ALLOW_MULTIPLE_ENROLL_COUNT, 1);
+		if ( (groupsEnrolledCount + waitingListCount) < enrollCountConfig ) {
 			if (isLogDebugEnabled()) logDebug("Identity is not enrolled identity=" + identity.getName() + "  group=" + group.getName());
 			// 1. Check if group has max size defined. If so check if group is full
 			// o_clusterREVIEW cg please review it - also where does the group.getMaxParticipants().equals("") come from??
@@ -106,6 +108,7 @@ public class EnrollmentManager extends BasicManager {
 					enrollStatus.setIsEnrolled(true);
 				} else if(state.getEnrolled() == BGMembership.waiting) {
 					addUserToWaitingList(identity, group, enNode, coursePropertyManager, wControl, trans);
+					enrollStatus.setIsInWaitingList(true);
 				}
 			}
 		} else {
@@ -173,42 +176,25 @@ public class EnrollmentManager extends BasicManager {
 	// ////////////////
 	/**
 	 * @param identity
-	 * @param groupNames
-	 * @return BusinessGroup in which the identity is enrolled, null if identity
-	 *         is nowhere enrolled.
+	 * @param List<Long> groupKeys which are in the list
+	 * @param List<Long> areaKeys which are in the list
+	 * @return List<BusinessGroup> in which the identity is enrolled
 	 */
-	protected BusinessGroup getBusinessGroupWhereEnrolled(Identity identity, List<Long> groupKeys, List<Long> areaKeys, RepositoryEntry courseResource) {
-		// 1. check in groups
+	protected List<BusinessGroup> getBusinessGroupsWhereEnrolled(Identity identity, List<Long> groupKeys, List<Long> areaKeys, RepositoryEntry courseResource) {
+		List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
+		//search in the enrollable bg keys for the groups where identity is attendee
 		if(groupKeys != null && !groupKeys.isEmpty()) {
 			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 			params.setAttendee(true);
 			params.setIdentity(identity);
 			params.setGroupKeys(groupKeys);
-			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, courseResource, 0, 1);
-			if (groups.size() > 0) {
-					// Usually it is only possible to be in one group. However,
-					// theoretically the
-					// admin can put the user in a second enrollment group or the user could
-					// theoretically be in a second group context. For now, we only look for
-					// the first
-					// group. All groups found after the first one are discarded.
-				return groups.get(0);
-			}
+			groups.addAll(businessGroupService.findBusinessGroups(params, courseResource, 0, 0));
 		}
-		// 2. check in areas
+		//search in the enrollable area keys for the groups where identity is attendee
 		if(areaKeys != null && !areaKeys.isEmpty()) {
-			List<BusinessGroup> groups = areaManager.findBusinessGroupsOfAreaAttendedBy(identity, areaKeys, courseResource.getOlatResource());
-			if (groups.size() > 0) {
-				// Usually it is only possible to be in one group. However,
-				// theoretically the
-				// admin can put the user in a second enrollment group or the user could
-				// theoretically be in a second group context. For now, we only look for
-				// the first
-				// group. All groups found after the first one are discarded.
-				return groups.get(0);
-			}
+			groups.addAll(areaManager.findBusinessGroupsOfAreaAttendedBy(identity, areaKeys, courseResource.getOlatResource()));
 		}
-		return null; 
+		return groups; 
 	}
 
 	/**
@@ -217,15 +203,16 @@ public class EnrollmentManager extends BasicManager {
 	 * @return true if this identity is any waiting-list group in this course that
 	 *         has a name that is in the group names list
 	 */
-	protected BusinessGroup getBusinessGroupWhereInWaitingList(Identity identity, List<Long> groupKeys, List<Long> areaKeys) {
+	protected List<BusinessGroup> getBusinessGroupsWhereInWaitingList(Identity identity, List<Long> groupKeys, List<Long> areaKeys) {
 		List<BusinessGroup> groups = loadGroupsFromNames(groupKeys, areaKeys);
+		List<BusinessGroup> waitingInTheseGroups = new ArrayList<BusinessGroup> ();
 		// loop over all business-groups
 		for (BusinessGroup businessGroup:groups) {
 			if (businessGroupService.hasRoles(identity, businessGroup, GroupRoles.waiting.name())) { 
-				return businessGroup;
+				waitingInTheseGroups.add(businessGroup);
 			}
 		}
-		return null;
+		return waitingInTheseGroups;
 	}
 
 	/**

@@ -99,8 +99,8 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 	}
 	
 	@Override
-	public void postImport(CourseEnvironmentMapper envMapper) {
-		super.postImport(envMapper);
+	protected void postImportCopyConditions(CourseEnvironmentMapper envMapper) {
+		super.postImportCopyConditions(envMapper);
 		postImportCondition(preConditionAccess, envMapper);
 	}
 	
@@ -133,15 +133,6 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 		boolean visible = (getPreConditionVisibility().getConditionExpression() == null ? true : ci
 				.evaluateCondition(getPreConditionVisibility()));
 		nodeEval.setVisible(visible);
-	}
-
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createInstanceForCopy()
-	 */
-	public CourseNode createInstanceForCopy() {
-		CourseNode copyInstance = super.createInstanceForCopy();
-		setPreConditionAccess(null);
-		return copyInstance;
 	}
 
 	@Override

@@ -25,6 +25,9 @@
 
 package org.olat.admin.cache;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -32,6 +35,8 @@ import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.stats.Stats;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DBImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -68,8 +73,7 @@ public class AllCachesController extends BasicController {
 	
 	private VelocityContainer myContent;
 	private TableController tableCtr;
-	private TableDataModel<String> tdm;
-	private EmbeddedCacheManager cm;
+	private TableDataModel<CacheInfos> tdm;
 	private DialogBoxController dc;
 	
 	/**
@@ -99,93 +103,175 @@ public class AllCachesController extends BasicController {
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("empty", "cache.empty", translate("action.choose")));
 		listenTo(tableCtr);
 		myContent.contextPut("title", translate("caches.title"));
-		
-		// eh cache
-		String[] cnames;
-		try {
-			CoordinatorManager coordinator = CoreSpringFactory.getImpl(CoordinatorManager.class);
-			Cacher cacher = coordinator.getCoordinator().getCacher();
-			
-			cm = cacher.getCacheContainer();
-			Set<String> cacheNameSet = cm.getCacheNames();	
-			cnames = cacheNameSet.toArray(new String[cacheNameSet.size()]);		
-		} catch (Exception e) {
-			log.error("", e);
-			cnames = new String[0];
-		}
-		
-		tdm = new AllCachesTableDataModel(cnames, cm);
-		tableCtr.setTableDataModel(tdm);
 		myContent.put("cachetable", tableCtr.getInitialComponent());
+		loadModel();
 				
 		//returned panel is not needed here, because this controller only shows content with the index.html velocity page
 		putInitialPanel(myContent);
 	}
 	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+
+	@Override
+	protected void doDispose() {
+		//
+	}
+	
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// 
 	}
-	
+
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == tableCtr) {
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
 				TableEvent te = (TableEvent) event;
 				String actionid = te.getActionId();
 				if (actionid.equals("empty")) {
-					Object cname = tableCtr.getTableDataModel().getObject(te.getRowId());
+					Object cacheInfos = tableCtr.getTableDataModel().getObject(te.getRowId());
 					dc = activateYesNoDialog(ureq, null, translate("confirm.emptycache"), dc);
-					dc.setUserObject(cname);
+					dc.setUserObject(cacheInfos);
 				}
 			}
 		} else if (source == dc) {
-			//the dialogbox is already removed from the gui stack - do not use getWindowControl().pop(); to remove dialogbox
-			if (DialogBoxUIFactory.isYesEvent(event)) { // ok
+			if (DialogBoxUIFactory.isYesEvent(event)) {
 				String cacheName = null;
 				try {
-					// delete cache
-					cacheName = (String)dc.getUserObject();
-					cm.getCache(cacheName).clear();
+					CacheInfos cacheInfos = (CacheInfos)dc.getUserObject();
+					cacheInfos.clear();
+					loadModel();
 				} catch (IllegalStateException e) {
-					// ignore
 					log.error("Cannot remove Cache:"+cacheName, e);
-				}
-				
-			}//else no was clicked or dialog box was cancelled (close icon clicked)
+				}	
+			}
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	protected void doDispose() {
-		//
+	private void loadModel() {
+		Set<String> names = new HashSet<>();
+		List<CacheInfos> infos = new ArrayList<>();
+		
+		//our cache first
+		try {
+			CoordinatorManager coordinator = CoreSpringFactory.getImpl(CoordinatorManager.class);
+			Cacher cacher = coordinator.getCoordinator().getCacher();
+			loadModel(infos, names, cacher.getCacheContainer());
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		
+		try {
+			loadModel(infos, names, ((DBImpl)DBFactory.getInstance()).getCacheContainer());
+		} catch (Exception e) {
+			log.error("", e);
+		}
+
+		tdm = new AllCachesTableDataModel(infos);
+		tableCtr.setTableDataModel(tdm);
+	}
+	
+	private void loadModel(List<CacheInfos> infos, Set<String> names, EmbeddedCacheManager cm) {
+		Set<String> cacheNameSet = cm.getCacheNames();
+		for(String cacheName:cacheNameSet) {
+			if(names.contains(cacheName)) continue;
+			
+			Cache<?,?> cache = cm.getCache(cacheName);
+			CacheInfos cacheInfos = new CacheInfos(cacheName, cache);
+			infos.add(cacheInfos);
+		}
+		names.addAll(cacheNameSet);
+	}
+	
+	private static class CacheInfos {
+		private final String cname;
+		private final boolean binary;
+		private final long hits;
+		private final long misses;
+		private final long size;
+		private final long maxIdle;
+		private final long lifespan;
+		private final long maxEntries;
+		private final String cacheMode;
+		
+		private final Cache<?,?> cache;
+
+		public CacheInfos(String cname, Cache<?,?> cache) {
+			this.cache = cache;
+			Stats stats = cache.getAdvancedCache().getStats();
+			
+			this.cname = cname;
+			
+			binary = cache.getCacheConfiguration().storeAsBinary().enabled();
+			hits = stats.getHits();
+			misses = stats.getMisses();
+			size = cache.getAdvancedCache().size();//stats.getCurrentNumberOfEntries());
+			maxIdle = cache.getCacheConfiguration().expiration().maxIdle();
+			lifespan = cache.getCacheConfiguration().expiration().lifespan();
+			maxEntries = cache.getCacheConfiguration().eviction().maxEntries();
+			cacheMode = cache.getCacheConfiguration().clustering().cacheModeString();
+		}
+		
+		public String getCname() {
+			return cname;
+		}
+		
+		public boolean isBinary() {
+			return binary;
+		}
+		
+		public long getHits() {
+			return hits;
+		}
+		
+		public long getMisses() {
+			return misses;
+		}
+		
+		public long getSize() {
+			return size;
+		}
+		
+		public long getMaxIdle() {
+			return maxIdle;
+		}
+		
+		public long getLifespan() {
+			return lifespan;
+		}
+		
+		public long getMaxEntries() {
+			return maxEntries;
+		}
+		
+		public String getCacheMode() {
+			return cacheMode;
+		}
+		
+		public void clear() {
+			cache.clear();
+		}
 	}
 
-	private static class AllCachesTableDataModel implements TableDataModel<String> {
-	  private String[] cnames;
-		private EmbeddedCacheManager cacheManager;
+	private static class AllCachesTableDataModel implements TableDataModel<CacheInfos> {
+		private List<CacheInfos> cacheInfos;
 	  
-	  protected AllCachesTableDataModel(String[] cnames, EmbeddedCacheManager cacheManager) {
-	  	this.cnames = cnames;
-	  	this.cacheManager = cacheManager;
-	  }
+		protected AllCachesTableDataModel(List<CacheInfos> cacheInfos) {
+			this.cacheInfos = cacheInfos;
+		}
 		
 		@Override
-		public String getObject(int row) {
-			return cnames[row];
+		public CacheInfos getObject(int row) {
+			return cacheInfos.get(row);
 		}
 	
 		@Override
-		public void setObjects(List<String> objects) {
-			cnames = objects.toArray(cnames);
+		public void setObjects(List<CacheInfos> objects) {
+			this.cacheInfos = objects;
 		}
 	
 		@Override
 		public AllCachesTableDataModel createCopyWithEmptyList() {
-			return new AllCachesTableDataModel(new String[0], cacheManager);
+			return new AllCachesTableDataModel(Collections.<CacheInfos>emptyList());
 		}
 	
 		public int getColumnCount() {
@@ -193,23 +279,21 @@ public class AllCachesController extends BasicController {
 		}
 	
 		public int getRowCount() {
-			return cnames.length;
+			return cacheInfos.size();
 		}
 	
 		public Object getValueAt(int row, int col) {
-			String cname = cnames[row];
-			Cache<?,?> c = cacheManager.getCache(cname);
-			Stats stats = c.getAdvancedCache().getStats();
+			CacheInfos c = getObject(row);
 			switch(col) {
-				case 0: return cname;
-				case 1: return c.getCacheConfiguration().storeAsBinary().enabled() ? Boolean.TRUE:Boolean.FALSE;
-				case 2: return new Long(stats.getHits());
-				case 3: return new Long(stats.getMisses());
-				case 5: return new Long(stats.getTotalNumberOfEntries());
-				case 6: return new Long(c.getCacheConfiguration().expiration().maxIdle());
-				case 7: return new Long(c.getCacheConfiguration().expiration().lifespan());
-				case 8: return new Integer(c.getCacheConfiguration().eviction().maxEntries());
-				case 9: return c.getCacheConfiguration().clustering().cacheModeString();
+				case 0: return c.getCname();
+				case 1: return c.isBinary();
+				case 2: return c.getHits();
+				case 3: return c.getMisses();
+				case 5: return c.getSize();
+				case 6: return c.getMaxIdle();
+				case 7: return c.getLifespan();
+				case 8: return c.getMaxEntries();
+				case 9: return c.getCacheMode();
 				default: return "";
 			}
 		}

@@ -22,8 +22,6 @@
  				<bean class="org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmovieviewer.OlatMovieViewerPlugin">
  					<property name="pluginParameters">		
 			 			<map>
-			 				<!-- URL to movie viewer, must be absolute URI. The context path will be add in the plugin -->
-			 				<entry key="movieViewerUrl" value="/raw/_noversion_/movie/tinyMCE/movieViewer.swf" />
 			 				<!-- The place horizontaly and vertically that the player uses for navigation -->
 			 				<entry key="playerOffsetHeight" value="0" />
 			 				<entry key="playerOffsetWidth" value="0" />

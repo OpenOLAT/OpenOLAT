@@ -1,8 +1,10 @@
 <div #if(!$!f.domReplacementWrapperRequired) id="$r.getCId()" #end class="panel #if($off_warn) panel-warning #elseif($off_info) panel-info #else panel-default #end #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()">
-#if ($off_title || $off_chelp_package || $off_icon) 
+#if ($off_title || $off_chelp_package || $off_chelp_url || $off_icon) 
 	<div class="panel-heading">	
 		#if ($off_chelp_package) 
 			$r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") 
+		#elseif ($off_chelp_url) 
+			$r.contextHelpWithWrapper("$off_chelp_url") 
 		#end
 		#if ($off_icon)
 			<i class="$off_icon"> </i>

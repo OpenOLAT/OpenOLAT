@@ -226,10 +226,10 @@ public class BGMailHelper {
 			groupdescription = (group instanceof BusinessGroup ?
 					FilterFactory.getHtmlTagAndDescapingFilter().filter(((BusinessGroup)group).getDescription()) : ""); 
 
-			subject = subject.replaceAll("\\$groupname", groupname == null ? "" : groupname);
-			body = body.replaceAll("\\$groupname", groupname == null ? "" : groupname);
-			body = body.replaceAll("\\$groupdescription", groupdescription == null ? "" : groupdescription);
-			body = body.replaceAll("\\$courselist", courselist == null ? "" : courselist);
+			subject = subject.replace("$groupname", groupname == null ? "" : groupname);
+			body = body.replace("$groupname", groupname == null ? "" : groupname);
+			body = body.replace("$groupdescription", groupdescription == null ? "" : groupdescription);
+			body = body.replace("$courselist", courselist == null ? "" : courselist);
 		} else {
 			courselist = "";
 			groupname = "";

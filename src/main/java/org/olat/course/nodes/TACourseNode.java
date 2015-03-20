@@ -1088,8 +1088,8 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	}
 	
 	@Override
-	public void postImport(CourseEnvironmentMapper envMapper) {
-		super.postImport(envMapper);
+	protected void postImportCopyConditions(CourseEnvironmentMapper envMapper) {
+		super.postImportCopyConditions(envMapper);
 		postImportCondition(conditionTask, envMapper);
 		postImportCondition(conditionDrop, envMapper);
 		postImportCondition(conditionReturnbox, envMapper);

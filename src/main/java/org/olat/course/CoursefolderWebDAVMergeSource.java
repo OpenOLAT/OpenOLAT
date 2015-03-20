@@ -73,7 +73,7 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 		}
 		
 		Set<RepositoryEntry> duplicates = new HashSet<>();
-		List<RepositoryEntry> editorEntries = repositoryManager.queryByEditor(getIdentity(), "CourseModule");
+		List<RepositoryEntry> editorEntries = repositoryManager.queryByOwner(getIdentity(), "CourseModule");
 		appendCourses(editorEntries, true, containers, useTerms,  terms, noTermContainer, duplicates);
 		
 		//add courses as participant

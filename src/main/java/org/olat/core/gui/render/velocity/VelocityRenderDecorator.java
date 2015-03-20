@@ -39,7 +39,9 @@ import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.contextHelp.ContextHelpModule;
+import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
@@ -343,6 +345,23 @@ public class VelocityRenderDecorator implements Closeable {
 			sb.append("\" title=\"").append(hooverText).append("\" class=\"o_chelp\"><i class='o_icon o_icon_help'></i> ");
 			sb.append(renderer.getTranslator().translate("help"));
 			sb.append("</a>");
+		}
+		return sb;
+	}
+	
+	public StringOutput contextHelpWithWrapper(String page) {
+		StringOutput sb = new StringOutput(192);
+		if (ContextHelpModule.isContextHelpEnabled()) {
+			HelpModule helpModule = CoreSpringFactory.getImpl(HelpModule.class);
+			Locale locale = renderer.getTranslator().getLocale();
+			String url = helpModule.getHelpProvider().getURL(locale, page);
+			if(url != null) {
+				sb.append("<span class=\"o_chelp_wrapper\">")
+				  .append("<a href=\"").append(url)
+				  .append("\" class=\"o_chelp\"><i class='o_icon o_icon_help'></i> ")
+				  .append(renderer.getTranslator().translate("help"))
+				  .append("</a></span>");
+			}
 		}
 		return sb;
 	}

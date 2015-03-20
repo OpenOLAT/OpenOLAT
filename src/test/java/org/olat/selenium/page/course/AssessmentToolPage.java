@@ -69,10 +69,63 @@ public class AssessmentToolPage {
 		return this;
 	}
 	
+	/**
+	 * Select a user in "Users".
+	 * 
+	 * @param user
+	 * @return
+	 */
 	public AssessmentToolPage selectUser(UserVO user) {
 		By userLinksBy = By.xpath("//div[contains(@class,'o_table_layout')]//table//tr//td//a[text()[contains(.,'" + user.getFirstName() + "')]]");
 		WebElement userLink = browser.findElement(userLinksBy);
 		userLink.click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	/**
+	 * Select the course node in "Users" > "Course nodes".
+	 * 
+	 * @param nodeTitle
+	 * @return
+	 */
+	public AssessmentToolPage selectCourseNode(String nodeTitle) {
+		By rowsBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td[contains(text(),'" + nodeTitle + "')]]//td//a[contains(@href,'cmd.select.node')]");
+		List<WebElement> rowEls = browser.findElements(rowsBy);
+		Assert.assertEquals(1, rowEls.size());
+		rowEls.get(0).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	/**
+	 * Check in "Users" > "Course nodes" if a specific course node
+	 * is passed.
+	 * 
+	 * @param nodeTitle
+	 * @return
+	 */
+	public AssessmentToolPage assertUserPassedCourseNode(String nodeTitle) {
+		By rowsBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td[contains(text(),'" + nodeTitle + "')]]");
+		List<WebElement> rowEls = browser.findElements(rowsBy);
+		Assert.assertEquals(1, rowEls.size());
+		By passedBy = By.cssSelector("td span.o_state.o_passed");
+		WebElement passedEl = rowEls.get(0).findElement(passedBy);
+		Assert.assertTrue(passedEl.isDisplayed());
+		return this;
+	}
+	
+	/**
+	 * Set the score in the assessment form
+	 * @param score
+	 * @return
+	 */
+	public AssessmentToolPage setAssessmentScore(float score) {
+		By scoreBy = By.cssSelector(".o_sel_assessment_form_score input[type='text']");
+		browser.findElement(scoreBy).sendKeys(Float.toString(score));
+		
+		By saveBy = By.cssSelector(".o_sel_assessment_form button.btn.btn-primary");
+		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

@@ -163,6 +163,7 @@
 				<prop key="hibernate.cache.use_second_level_cache">true</prop>
 				<prop key="hibernate.cache.region.factory_class">org.olat.core.commons.persistence.JpaInfinispanRegionFactory</prop>
 				<prop key="hibernate.cache.infinispan.cfg">infinispan-config.xml</prop>
+				<prop key="hibernate.cache.infinispan.statistics">true</prop>
 				<prop key="hibernate.cache.region.jbc2.query.localonly">true</prop>
 				<prop key="hibernate.cache.region_prefix">openolat</prop>
 			</props>
@@ -175,6 +176,7 @@
 				<prop key="hibernate.cache.use_query_cache">true</prop>
 				<prop key="hibernate.cache.use_second_level_cache">true</prop>
 				<prop key="hibernate.cache.region.factory_class">org.jboss.as.jpa.hibernate4.infinispan.InfinispanRegionFactory</prop>
+				<prop key="hibernate.cache.infinispan.statistics">true</prop>
 				<prop key="hibernate.cache.infinispan.cachemanager">java:jboss/infinispan/container/hibernate</prop>
 				<prop key="hibernate.transaction.manager_lookup_class">org.hibernate.transaction.JBossTransactionManagerLookup</prop>
 			</props>

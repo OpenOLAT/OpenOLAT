@@ -351,9 +351,9 @@ public interface CourseNode extends INode, ShortName {
 	 * 
 	 * @param importDirectory
 	 * @param course
-	 * @param owner TODO
-	 * @param locale TODO
-	 * @param withReferences TODO
+	 * @param owner 
+	 * @param locale 
+	 * @param withReferences 
 	 * @param ureq
 	 * @param wControl
 	 * @return Controller for user driven import, or null after all import tasks
@@ -364,21 +364,18 @@ public interface CourseNode extends INode, ShortName {
 	/**
 	 * Remap the node to the context of the course after import.
 	 */
-	public void postImport(CourseEnvironmentMapper envMapper);
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing type);
+	
+	/**
+	 * Remap the node to the context of the course after import.
+	 */
+	public void postImport(CourseEnvironmentMapper envMapper, Processing type);
 	
 	/**
 	 * 
 	 */
 	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible);
 
-	/**
-	 * Create an instance for the copy process. The copy must have a different
-	 * unique ID and may take some of the configuration values configured for this
-	 * node.
-	 * 
-	 * @return
-	 */
-	public CourseNode createInstanceForCopy();
 	
 	/**
 	 * Try to copy the configuration of this course node to
@@ -394,9 +391,10 @@ public interface CourseNode extends INode, ShortName {
 	 * node.
 	 * 
 	 * @param isNewTitle
+	 * @param course the course in which the copying is happening
 	 * @return
 	 */
-	public CourseNode createInstanceForCopy(boolean isNewTitle);
+	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course);
 
 	/**
 	 * @return empty list, or list with active condition expressions of the course
@@ -439,5 +437,10 @@ public interface CourseNode extends INode, ShortName {
 	 *  
 	 */
 	public void updateModuleConfigDefaults(boolean isNewNode);
-
+	
+	
+	public enum Processing {
+		runstructure,
+		editor
+	}
 }

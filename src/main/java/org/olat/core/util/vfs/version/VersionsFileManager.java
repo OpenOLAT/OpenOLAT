@@ -214,7 +214,15 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 			return versions;
 		} catch (Exception e) {
 			log.warn("This file is not a versions XML file: " + fVersions, e);
-			return null;
+			fVersions.delete();
+			VersionsFileImpl versions = new VersionsFileImpl();
+			versions.setCurrentVersion((Versionable) leaf);
+			versions.setVersioned(isVersioned(leaf));
+			versions.setRevisionNr(getNextRevisionNr(versions));
+			log.warn("Deleted corrupt version XML file and created new version XML file: " + versions);
+			// the old revisions can not be restored automatically. They are still on disk, you could recover them
+			// manually. This is not a perfect solution, but at least the user does not get an RS
+			return versions;
 		}
 	}
 

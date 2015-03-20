@@ -81,6 +81,13 @@ public interface ProjectGroupManager {
 	 */
 	public BusinessGroup updateAccountManagerGroupName(Identity ureqIdentity, String groupName, String groupDescription, BusinessGroup accountManagerGroup);
 
+	/**
+	 * Save the ProjectGroupKey of the AccountManagementGroup in the Project
+	 * @param accountManagerGroupKey
+	 * @param cpm
+	 * @param courseNode
+	 */
+	public void saveAccountManagerGroupKey(Long accountManagerGroupKey, CoursePropertyManager cpm, CourseNode courseNode);
 	////////////////////////////
 	// PROJECT GROUP MANAGEMENT
 	////////////////////////////

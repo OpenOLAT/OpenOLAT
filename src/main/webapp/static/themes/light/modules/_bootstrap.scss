@@ -79,6 +79,11 @@ body .progress {
 	border-top: 1px solid $panel-default-border;
 }
 
+/* collapsible panels must have pointer cursor to indicate clickable space*/	
+.panel .panel-heading[data-toggle="collapse"] {
+	cursor: pointer;
+}
+
 /* make our statically created popup and our spinner works with Bootstrap 3.3.1 */
 #o_ajax_busy_backdrop  {
 	bottom: 0;

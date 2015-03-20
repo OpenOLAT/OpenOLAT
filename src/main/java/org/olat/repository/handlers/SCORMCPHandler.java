@@ -49,6 +49,7 @@ import org.olat.fileresource.ZippedDirectoryMediaResource;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.ScormCPFileResource;
+import org.olat.modules.scorm.ScormConstants;
 import org.olat.modules.scorm.ScormMainManager;
 import org.olat.modules.scorm.ScormPackageConfig;
 import org.olat.modules.scorm.ScormRuntimeController;
@@ -174,7 +175,7 @@ public class SCORMCPHandler extends FileHandler {
 					OLATResource res = entry.getOlatResource();
 					File cpRoot = FileResourceManager.getInstance().unzipFileResource(res);
 					MainLayoutController realController = ScormMainManager.getInstance().createScormAPIandDisplayController(uureq, wwControl, true, null, cpRoot,
-							res.getResourceableId(), null, "browse", "no-credit", false, null, false, false, false, null);
+							res.getResourceableId(), null, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT, false, null, false, false, false, null);
 					return realController;
 				}
 			});

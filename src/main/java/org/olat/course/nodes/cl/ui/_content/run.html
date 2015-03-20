@@ -56,30 +56,59 @@
 #if ($comment)		
 	<div class="panel panel-default o_comment">
 	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseComment">
-	  		<h4 class="panel-title">$r.translate("comment.title")</h4>
+	  		<h4 class="panel-title">
+				<i id="collapseCommentToggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i>	  		
+	  			$r.translate("comment.title")
+	  		</h4>
 	  	</div>
 		<div id="collapseComment" class="panel-collapse collapse in"><div class="panel-body">
 			$comment
   		</div></div>
 	</div>
+	<script type="text/javascript">
+		/* <![CDATA[ */
+			jQuery('#collapseComment').on('hide.bs.collapse', function () {
+					jQuery('#collapseCommentToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+			})
+			jQuery('#collapseComment').on('show.bs.collapse', function () {
+					jQuery('#collapseCommentToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+			})
+		/* ]]> */
+	</script>
 #end
 
 
 #if($infoTextUser)
 	<div class="panel panel-default o_disclaimer">
 	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseDisclaimer">
-	  		<h4 class="panel-title">$r.translate("info.title")</h4>
+	  		<h4 class="panel-title">
+				<i id="collapseDisclaimerToggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i>	  		
+	  			$r.translate("info.title")
+	  		</h4>	
 	  	</div>
 		<div id="collapseDisclaimer" class="panel-collapse collapse in"><div class="panel-body">
 			$r.formatLatexFormulas($infoTextUser)
   		</div></div>
 	</div>
+	<script type="text/javascript">
+		/* <![CDATA[ */
+			jQuery('#collapseDisclaimer').on('hide.bs.collapse', function () {
+					jQuery('#collapseDisclaimerToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+			})
+			jQuery('#collapseDisclaimer').on('show.bs.collapse', function () {
+					jQuery('#collapseDisclaimerToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+			})
+		/* ]]> */
+	</script>
 #end
 
 #if($dueDate)
 	<div class="panel panel-default o_duedate #if($afterDueDate) o_duedate_passed #end">
 	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseDuedate">
-	  		<h4 class="panel-title">$r.translate("config.due.date")</h4>
+	  		<h4 class="panel-title">
+				<i id="collapseDuedateToggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i>	  		
+	  			$r.translate("config.due.date")
+	  		</h4>
 	  	</div>
 		<div id="collapseDuedate" class="panel-collapse collapse in"><div class="panel-body">
 			<p>
@@ -91,6 +120,16 @@
 			</p>
   		</div></div>
 	</div>
+	<script type="text/javascript">
+		/* <![CDATA[ */
+			jQuery('#collapseDuedate').on('hide.bs.collapse', function () {
+					jQuery('#collapseManagedToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+			})
+			jQuery('#collapseDuedate').on('show.bs.collapse', function () {
+					jQuery('#collapseDuedateToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+			})
+		/* ]]> */
+	</script>
 #end
 
 <div class="o_cl o_block_large">

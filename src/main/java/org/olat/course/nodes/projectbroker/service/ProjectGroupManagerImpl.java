@@ -178,18 +178,15 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	// PROJECT GROUP MANAGEMENT
 	////////////////////////////
 	public BusinessGroup createProjectGroupFor(Long projectBrokerId, Identity identity, String groupName, String groupDescription, Long courseId) {
-		//List<Project> projects = ProjectBrokerManagerFactory.getProjectBrokerManager().getProjectListBy(projectBrokerId);
-		
 		OLATResource resource = CourseFactory.loadCourse(courseId).getCourseEnvironment().getCourseGroupManager().getCourseResource();
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(resource, false);
 
-		//BGContext context = createGroupContext(CourseFactory.loadCourse(courseId));
 		logDebug("createProjectGroupFor groupName=" + groupName);
 		BusinessGroup projectGroup = businessGroupService.createBusinessGroup(identity, groupName, groupDescription, -1, -1, false, false, re);
 		// projectGroup could be null when a group with name already exists
 		int counter = 2;
 		while (projectGroup == null) {
-			// name alreday exist try another one
+			// name already exist try another one
 			String newGroupName = groupName + " _" + counter ;
 			projectGroup = businessGroupService.createBusinessGroup(identity, newGroupName, groupDescription, -1, -1, false, false, re);
 			counter++;

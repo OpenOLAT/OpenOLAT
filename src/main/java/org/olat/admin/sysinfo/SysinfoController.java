@@ -27,8 +27,7 @@ package org.olat.admin.sysinfo;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryType;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -91,18 +90,8 @@ public class SysinfoController extends FormBasicController {
 		uifactory.addStaticTextElement("runtime.time", "runtime.time", time, runtimeCont);
 
 		//memory
-		String memoryPage = velocity_root + "/memory.html";
-		FormLayoutContainer memoryCont = FormLayoutContainer.createCustomFormLayout("memory", getTranslator(), memoryPage);
-		runtimeCont.add(memoryCont);
-		memoryCont.contextPut("used", getHeapValue());
-		memoryCont.contextPut("tooltip", getHeapTooltip());
-		memoryCont.setLabel("runtime.memory", null);
-		
-		FormLayoutContainer permGenCont = FormLayoutContainer.createCustomFormLayout("permgen", getTranslator(), memoryPage);
-		runtimeCont.add(permGenCont);
-		permGenCont.contextPut("used", getNonHeapValue());
-		permGenCont.contextPut("tooltip", getNonHeapTooltip());
-		permGenCont.setLabel("runtime.memory.permGen", null);
+		uifactory.addMemoryView("memoryHeap", "runtime.memory", MemoryType.HEAP, runtimeCont);
+		uifactory.addMemoryView("memoryNonHeap", "runtime.memory.permGen", MemoryType.NON_HEAP, runtimeCont);
 		
 		//controllers
 		int controllerCnt = DefaultController.getControllerCount();
@@ -187,51 +176,7 @@ public class SysinfoController extends FormBasicController {
 		uifactory.addStaticTextElement("sysinfo.olatdata", "sysinfo.olatdata", WebappHelper.getUserDataRoot(), serverCont);
 	}
 	
-	private String getHeapValue() {
-		MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
-		long used = memoryBean.getHeapMemoryUsage().getUsed();
-		long max = memoryBean.getHeapMemoryUsage().getMax();
-		return toPercent(used, max);
-	}
-	
-	private String getHeapTooltip() {
-		MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
-		long used = toMB(memoryBean.getHeapMemoryUsage().getUsed());
-		long max = toMB(memoryBean.getHeapMemoryUsage().getMax());
-		return translate("runtime.memory.tooltip", new String[]{ Long.toString(used), Long.toString(max)});
-	}
-	
-	private String getNonHeapValue() {
-		MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
-		long used = memoryBean.getNonHeapMemoryUsage().getUsed();
-		long max = memoryBean.getNonHeapMemoryUsage().getMax();
-		if(max == -1) {
-			max = used;
-		}
-		return toPercent(used, max);
-	}
-	
-	private String getNonHeapTooltip() {
-		MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
-		long used = toMB(memoryBean.getNonHeapMemoryUsage().getUsed());
-		long maxBytes = memoryBean.getNonHeapMemoryUsage().getMax();
-		long max = toMB(maxBytes);
-		if(maxBytes == -1) {
-			max = used;
-		}
-		return translate("runtime.memory.tooltip", new String[]{ Long.toString(used), Long.toString(max)});
-	}
-	
-	private final String toPercent(long used, long max) {
-		double ratio = (double)used / (double)max;
-		double percent = ratio * 100.0d;
-		return Math.round(percent) + "%";
-	}
-	
-	private final long toMB(long val) {
-		return val / (1024 * 1024);
-	}
-	
+	@Override
 	protected void doDispose() {
 		//
 	}

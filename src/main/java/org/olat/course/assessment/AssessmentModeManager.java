@@ -97,6 +97,14 @@ public interface AssessmentModeManager {
 	 */
 	public List<AssessmentMode> getAssessmentModes(Date now);
 	
+	/**
+	 * Return true if the course is in assessment mode at the specified time.
+	 * @param entry
+	 * @param now
+	 * @return
+	 */
+	public boolean isInAssessmentMode(RepositoryEntryRef entry, Date date);
+	
 	public Set<Long> getAssessedIdentityKeys(AssessmentMode assessmentMode);
 	
 	/**

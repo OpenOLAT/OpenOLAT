@@ -209,6 +209,7 @@ public class InfoDisplayController extends FormBasicController {
 			if(secCallback.canEdit()) {
 				String editName = "info.edit." + info.getKey();
 				FormLink link = uifactory.addFormLink(editName, "edit", "edit", flc, Link.BUTTON_SMALL);
+				link.setElementCssClass("o_sel_info_edit_msg");
 				link.setUserObject(info);
 				editLinks.add(link);
 				flc.add(link);
@@ -216,6 +217,7 @@ public class InfoDisplayController extends FormBasicController {
 			if(secCallback.canDelete()) {
 				String delName = "info.delete." + info.getKey();
 				FormLink link = uifactory.addFormLink(delName, "delete", "delete", flc, Link.BUTTON_SMALL);
+				link.setElementCssClass("o_sel_info_delete_msg");
 				link.setUserObject(info);
 				deleteLinks.add(link);
 				flc.add(link);
@@ -258,12 +260,14 @@ public class InfoDisplayController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(secCallback.canAdd()) {
 			newInfoLink = uifactory.addFormLink("new_message", "new_message", "new_message", formLayout, Link.BUTTON);
+			newInfoLink.setElementCssClass("o_sel_course_info_create_msg");
 		}
 		
 		oldMsgsLink = uifactory.addFormLink("display.old_messages", "display.old_messages", "display.old_messages", formLayout, Link.BUTTON);
+		oldMsgsLink.setElementCssClass("o_sel_course_info_old_msgs");
 		newMsgsLink = uifactory.addFormLink("display.new_messages", "display.new_messages", "display.new_messages", formLayout, Link.BUTTON);
+		newMsgsLink.setElementCssClass("o_sel_course_info_new_msgs");
 	}
-
 	
 	@Override
 	protected void doDispose() {

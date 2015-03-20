@@ -154,6 +154,9 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		component.setIconRightCSS(iconRightCSS);
 		component.setTitle(title);
 		component.setDomReplacementWrapperRequired(domReplacementWrapperRequired);
+		if(StringHelper.containsNonWhitespace(getElementCssClass())) {
+			component.setElementCssClass(getElementCssClass());
+		}
 	}
 	
 	@Override

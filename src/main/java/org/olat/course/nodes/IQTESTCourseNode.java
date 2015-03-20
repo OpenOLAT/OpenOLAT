@@ -202,12 +202,10 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 			if (repoEntry == null) {
 				isValid = false;
 				IQEditController.removeIQReference(getModuleConfiguration());
-				//FIXME:ms: may be show a refined error message, that the former referenced repo entry is meanwhile deleted.
 			}
 		}
 		StatusDescription sd = StatusDescription.NOERROR;
 		if (!isValid) {
-			// FIXME: refine statusdescriptions
 			String shortKey = "error.test.undefined.short";
 			String longKey = "error.test.undefined.long";
 			String[] params = new String[] { this.getShortTitle() };
@@ -596,8 +594,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	 * @see org.olat.course.nodes.CourseNode#createInstanceForCopy()
 	 */
 	@Override
-	public CourseNode createInstanceForCopy() {
-		CourseNode copyInstance = super.createInstanceForCopy();
+	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course) {
+		CourseNode copyInstance = super.createInstanceForCopy(isNewTitle, course);
 		IQEditController.removeIQReference(copyInstance.getModuleConfiguration());
 		return copyInstance;
 	}

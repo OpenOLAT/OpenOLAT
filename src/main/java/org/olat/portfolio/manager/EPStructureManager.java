@@ -1653,7 +1653,7 @@ public class EPStructureManager extends BasicManager {
 		el.setDescription(description);
 		OLATResource resource = resourceManager.createOLATResourceInstance(el.getClass());
 		el.setOlatResource(resource);
-		dbInstance.saveObject(resource);
+		dbInstance.getCurrentEntityManager().persist(resource);
 		return el;
 	}
 	
@@ -1661,7 +1661,9 @@ public class EPStructureManager extends BasicManager {
 		el.setTitle(title);
 		el.setDescription(description);
 		el.setOlatResource(resource);
-		dbInstance.saveObject(resource);
+		if(resource.getKey() == null) {
+			dbInstance.getCurrentEntityManager().persist(resource);
+		}
 		return el;
 	}
 	
@@ -1860,8 +1862,10 @@ public class EPStructureManager extends BasicManager {
 		if(portfolioStructure instanceof PersistentObject) {
 			PersistentObject persistentStructure = (PersistentObject)portfolioStructure;
 			if(persistentStructure.getKey() == null) {
-				dbInstance.saveObject(portfolioStructure.getOlatResource());
-				dbInstance.saveObject(portfolioStructure);
+				if(portfolioStructure.getOlatResource().getKey() == null) {
+					dbInstance.getCurrentEntityManager().persist(portfolioStructure.getOlatResource());
+				}
+				dbInstance.getCurrentEntityManager().persist(portfolioStructure);
 			} else {
 				dbInstance.updateObject(portfolioStructure);
 			}

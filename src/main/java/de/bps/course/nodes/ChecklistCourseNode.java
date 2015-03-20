@@ -336,8 +336,8 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public CourseNode createInstanceForCopy(boolean isNewTitle) {
-		CourseNode copyInstance = super.createInstanceForCopy(isNewTitle);
+	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course) {
+		CourseNode copyInstance = super.createInstanceForCopy(isNewTitle, course);
 		ChecklistManager cm = ChecklistManager.getInstance();
 		// load checklist
 		Checklist checklist = cm.loadChecklist((Checklist) getModuleConfiguration().get(ChecklistCourseNode.CONF_CHECKLIST));

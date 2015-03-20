@@ -35,12 +35,25 @@
 		#if ($comment)		
 		<div class="panel panel-default o_comment">
 		  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseComment">
-	  			<h4 class="panel-title">$r.translate("comment.yourcomment")</h4>
+	  			<h4 class="panel-title">
+	  				<i id="collapseCommentToggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i>
+	  				$r.translate("comment.yourcomment")
+	  			</h4>
 	  		</div>
 		<div id="collapseComment" class="panel-collapse collapse in"><div class="panel-body">
 				$comment
 	  		</div>
 		</div></div>
+		<script type="text/javascript">
+			/* <![CDATA[ */
+				jQuery('#collapseComment').on('hide.bs.collapse', function () {
+						jQuery('#collapseCommentToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				})
+				jQuery('#collapseComment').on('show.bs.collapse', function () {
+						jQuery('#collapseCommentToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+				})
+			/* ]]> */
+		</script>
 		#end
 
 	#else
@@ -55,5 +68,7 @@
 	$r.translate("attempts.max.reached")
 </div>
 #else
-	$r.render("chooseScormRunMode")
+	<div class="o_centered_form">
+		$r.render("chooseScormRunMode")
+	</div>
 #end

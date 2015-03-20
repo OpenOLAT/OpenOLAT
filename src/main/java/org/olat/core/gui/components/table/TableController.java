@@ -338,7 +338,7 @@ public class TableController extends BasicController {
 				applyAndcheckChangedColumnsChoice(ureq, colsChoice.getSelectedRows());
 			} else if (event == Choice.EVNT_FORM_RESETED) {
 				//sideeffect on table and prefs
-				List<Integer> visibleCols = table.getDefaultVisibleColumns();
+				List<Integer> visibleCols = table.getDefaultVisibleColumnsToResetColumnsChoice();
 				applyAndcheckChangedColumnsChoice(ureq, visibleCols);
 			} else { // cancelled
 				cmc.deactivate();

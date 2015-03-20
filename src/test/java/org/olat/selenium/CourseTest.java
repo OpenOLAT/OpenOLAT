@@ -44,6 +44,7 @@ import org.olat.selenium.page.User;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseWizardPage;
+import org.olat.selenium.page.course.InfoMessageCEPage;
 import org.olat.selenium.page.course.PublisherPageFragment;
 import org.olat.selenium.page.course.PublisherPageFragment.Access;
 import org.olat.selenium.page.graphene.OOGraphene;
@@ -719,5 +720,104 @@ public class CourseTest {
 		By courseTitleBy = By.cssSelector(".o_course_run h2");
 		WebElement courseTitleEl = userBrowser.findElement(courseTitleBy);
 		Assert.assertTrue(courseTitleEl.getText().contains(courseTitle));
+	}
+	
+	/**
+     * Login, create a course, select "Messages Course", insert an info message
+     * course element, publish the course, add messages, count if the messages
+     * are there, show older messages, count the messages, show current messages,
+     * count the messages, edit a message and delete an other, count the messages.
+     * 
+	 * @param authorLoginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void createCourseWithInfoMessages(@InitialPage LoginPage authorLoginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//go to authoring
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+		
+		String title = "Course Msg " + UUID.randomUUID().toString();
+		//create course
+		authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.course)
+			.fillCreateForm(title)
+			.assertOnGeneralTab()
+			.clickToolbarBack();
+		
+		String infoNodeTitle = "Infos - News";
+		//open course editor
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment editor = course
+			.assertOnCoursePage()
+			.assertOnTitle(title)
+			.openToolsMenu()
+			.edit()
+			.createNode("info")
+			.nodeTitle(infoNodeTitle);
+		
+		//configure the info messages
+		InfoMessageCEPage infoMsgConfig = new InfoMessageCEPage(browser);
+		infoMsgConfig
+			.selectConfiguration()
+			.configure(3);
+		
+		//publish
+		editor
+			.publish()
+			.quickPublish(Access.guests);
+		editor.clickToolbarBack();
+		
+		course
+			.clickTree()
+			.selectWithTitle(infoNodeTitle);
+		//set a message
+		infoMsgConfig
+			.createMessage()
+			.setMessage("Information 0", "A very important info")
+			.next()
+			.finish()
+			.assertOnMessageTitle("Information 0");
+		
+		for(int i=1; i<=3; i++) {
+			infoMsgConfig.quickMessage("Information " + i, "More informations");
+		}
+		
+		int numOfMessages = infoMsgConfig.countMessages();
+		Assert.assertEquals(3, numOfMessages);
+		
+		//old messages
+		infoMsgConfig.oldMessages();
+		int numOfOldMessages = infoMsgConfig.countMessages();
+		Assert.assertEquals(4, numOfOldMessages);
+		
+		//new messages
+		infoMsgConfig.newMessages();
+		int numOfNewMessages = infoMsgConfig.countMessages();
+		Assert.assertEquals(3, numOfNewMessages);
+		
+		//edit
+		infoMsgConfig.oldMessages();
+		infoMsgConfig
+			.editMessage("Information 2")
+			.setMessage("The latest information", "A very important info")
+			.save()
+			.assertOnMessageTitle("The latest information");
+
+		//delete
+		infoMsgConfig
+			.deleteMessage("Information 3")
+			.confirmDelete();
+		
+		int numOfSurvivingMessages = infoMsgConfig.countMessages();
+		Assert.assertEquals(3, numOfSurvivingMessages);
 	}
 }

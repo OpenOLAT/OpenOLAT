@@ -1,6 +1,7 @@
 <div class="panel-group" id="o_preview_bc_details"><div class="panel panel-default">
     <div class="panel-heading">
      	<h4 class="panel-title">
+     		<i id="collapseToggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i>
      		<a data-toggle="collapse" data-parent="#o_preview_bc_details" href="#collapseBc">$r.translate("preview.header")</a>
      	</h4>
 	</div>
@@ -15,4 +16,14 @@
 		<div class="panel-body">$r.translate("preview.info")</div>
 	</div>
 </div></div>
+<script type="text/javascript">
+	/* <![CDATA[ */
+		jQuery('#o_preview_bc_details').on('hide.bs.collapse', function () {
+				jQuery('#collapseToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		})
+		jQuery('#o_preview_bc_details').on('show.bs.collapse', function () {
+				jQuery('#collapseToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		})
+	/* ]]> */
+</script>
 $r.render("folder")

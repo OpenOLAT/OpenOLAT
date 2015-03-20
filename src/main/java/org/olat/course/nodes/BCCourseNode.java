@@ -354,8 +354,8 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void postImport(CourseEnvironmentMapper envMapper) {
-		super.postImport(envMapper);
+	protected void postImportCopyConditions(CourseEnvironmentMapper envMapper) {
+		super.postImportCopyConditions(envMapper);
 		postImportCondition(preConditionUploaders, envMapper);
 		postImportCondition(preConditionDownloaders, envMapper);
 	}

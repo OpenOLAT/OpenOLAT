@@ -99,12 +99,13 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 	/** CONFIG_AREANAME configuration parameter key. */
 	public static final String CONFIG_AREA_IDS = "areakeys";
 	
-	
+	/** CONFIG_ALLOW_MULTIPLE_ENTROLL_COUNT configuration parameter */
+	public static final String CONFIG_ALLOW_MULTIPLE_ENROLL_COUNT = "allow_multiple_enroll_count";
 	
 	/** CONF_CANCEL_ENROLL_ENABLED configuration parameter key. */
 	public static final String CONF_CANCEL_ENROLL_ENABLED = "cancel_enroll_enabled";
 
-	private static final int CURRENT_CONFIG_VERSION = 2;
+	private static final int CURRENT_CONFIG_VERSION = 3;
 
 	/**
 	 * Constructor for enrollment buildig block
@@ -258,13 +259,23 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 		ModuleConfiguration config = getModuleConfiguration();
 		// defaults
 		config.set(CONF_CANCEL_ENROLL_ENABLED, Boolean.TRUE);
-    config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
+		config.set(CONFIG_ALLOW_MULTIPLE_ENROLL_COUNT,1);
+		config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
 	}
 	
-	@Override
-	public void postImport(CourseEnvironmentMapper envMapper) {
-		super.postImport(envMapper);
-		
+    @Override
+    public void postCopy(CourseEnvironmentMapper envMapper, Processing processType) {
+    	super.postCopy(envMapper, processType);
+	    postImportCopy(envMapper);
+	}
+    
+    @Override	
+    public void postImport(CourseEnvironmentMapper envMapper, Processing processType) {
+    	super.postImport(envMapper, processType);
+     	postImportCopy(envMapper);
+    }
+    
+	public void postImportCopy(CourseEnvironmentMapper envMapper) {
 		ModuleConfiguration mc = getModuleConfiguration();
 		String groupNames = (String)mc.get(ENCourseNode.CONFIG_GROUPNAME);
 		@SuppressWarnings("unchecked")
@@ -324,6 +335,10 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 				// migrate V1 => V2
 				config.set(CONF_CANCEL_ENROLL_ENABLED, Boolean.TRUE);
 				version = 2;
+			}else if(version <= 2){
+				// migrate V2 -> V3
+				config.set(CONFIG_ALLOW_MULTIPLE_ENROLL_COUNT, 1);
+				version = 3;
 			}
 			config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
 		}

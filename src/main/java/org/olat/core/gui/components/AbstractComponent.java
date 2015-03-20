@@ -57,6 +57,7 @@ public abstract class AbstractComponent implements Component {
 	private String elementCssClass;
 
 	private long timestamp = 1l;
+	private String timestampID = "1";
 	private boolean staticCmp = true;
 	
 	private boolean visible = true;
@@ -140,7 +141,9 @@ public abstract class AbstractComponent implements Component {
 	 * @return a valid JS variableName
 	 */
 	private static String secureJSVarName(String id) {
-		if(StringUtils.isBlank(id)) return "o_"+Long.toString(CodeHelper.getRAMUniqueID());
+		if(StringUtils.isBlank(id)) {
+			return "o_" + Long.toString(CodeHelper.getRAMUniqueID());
+		}
 		id = id.replace("-", "_"); // no - 
 		id =  id.replace(".", "_"); // no dots
 		
@@ -202,12 +205,13 @@ public abstract class AbstractComponent implements Component {
 	 * (e.g. for CPComponent, so that the browser loads images correctly). only
 	 * called when the component is visible
 	 */
+	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		if (this.dirty) {
 			if(!staticCmp) {
 				timestamp++;
+				timestampID = Long.toString(timestamp);
 			}
-			if ( log_.isDebug() ) log_.debug("increment component.timestamp new value=" + timestamp + " ureq=" + ureq + " component=" + this);
 		}
 	}
 	
@@ -458,7 +462,7 @@ public abstract class AbstractComponent implements Component {
 		if(staticCmp) {
 			return "1";
 		}
-		return Long.toString(timestamp);
+		return timestampID;
 	}
 
 }

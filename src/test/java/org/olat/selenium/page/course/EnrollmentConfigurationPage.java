@@ -53,13 +53,35 @@ public class EnrollmentConfigurationPage {
 		return selectTab(configBy);
 	}
 	
+	public EnrollmentConfigurationPage selectBusinessGroups() {
+		By createGroupBy = By.cssSelector("a.o_form_groupchooser");
+		browser.findElement(createGroupBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By checkGroupsBy = By.cssSelector("div.modal-body input[type='checkbox'][name='entries']");
+		List<WebElement> checkGroupEls = browser.findElements(checkGroupsBy);
+		for(WebElement checkGroupEl:checkGroupEls) {
+			checkGroupEl.click();
+			OOGraphene.waitBusy(browser);
+		}
+		
+		By selectBy = By.cssSelector("div.modal-body div.o_button_group button.btn.btn-primary");
+		browser.findElement(selectBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
 	/**
 	 * Open the popup to create a business group.
 	 * @return
 	 */
 	public EnrollmentConfigurationPage createBusinessGroup(String name, String description,
 			int maxParticipants, boolean waitingList, boolean auto) {
-		By createGroupBy = By.cssSelector("a.o_sel_course_en_create_group");
+		By chooseGroupBy = By.cssSelector("a.o_form_groupchooser");
+		browser.findElement(chooseGroupBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By createGroupBy = By.cssSelector("div.o_button_group_right a");
 		browser.findElement(createGroupBy).click();
 		OOGraphene.waitBusy(browser);
 		
@@ -82,12 +104,31 @@ public class EnrollmentConfigurationPage {
 			OOGraphene.waitBusy(browser);
 		}
 		
-		//save
+		//save the group
 		By submitBy = By.cssSelector(".o_sel_group_edit_group_form button.btn-primary");
 		WebElement submitButton = browser.findElement(submitBy);
 		submitButton.click();
 		OOGraphene.waitBusy(browser);
-				
+		// save group selection
+		By saveBy = By.cssSelector(".o_sel_group_selection_groups button.btn-primary");
+		WebElement saveButton = browser.findElement(saveBy);
+		saveButton.click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public EnrollmentConfigurationPage selectMultipleEnrollments(WebDriver browser, int maxEnrollmentCount){
+		By multiEnroll = By.name("allowMultipleEnroll");
+		browser.findElement(multiEnroll).click();
+		OOGraphene.waitBusy(browser);
+		By maxCountBy = By.cssSelector(".o_sel_enroll_max input[type='text']");
+		WebElement maxCountBox = browser.findElement(maxCountBy);
+		maxCountBox.clear();
+		maxCountBox.sendKeys(Integer.toString(maxEnrollmentCount));
+		OOGraphene.waitBusy(browser);
+		By saveBy = By.tagName("button");
+		browser.findElement(saveBy).click();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
