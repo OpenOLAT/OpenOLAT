@@ -348,7 +348,9 @@ class ImportStep00 extends BasicStep {
 				}
 				// used for call-back value depending on PropertyHandler
 				ValidationError validationError = new ValidationError();
-				if (!userPropertyHandler.isValidValue(null, thisValue, validationError, getLocale())) {
+				// Only validate value when not empty. In case of mandatory fields the previous check makes sure the
+				// user has a non-empty value. 
+				if (StringHelper.containsNonWhitespace(thisValue) && !userPropertyHandler.isValidValue(null, thisValue, validationError, getLocale())) {
 					String error = "unkown";
 					String label = "";
 					if(userPropertyHandler.i18nFormElementLabelKey() != null) {
