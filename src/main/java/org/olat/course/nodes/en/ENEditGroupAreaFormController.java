@@ -253,6 +253,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		allowMultipleEnroll.addActionListener(FormEvent.ONCLICK);
 		
 		multipleEnrollCount = uifactory.addIntegerElement("form.multipleEnrollCount", enrollCountConfig, formLayout);
+		multipleEnrollCount.setElementCssClass("o_sel_enroll_max");
 		multipleEnrollCount.setMinValueCheck(1, "error.multipleEnroll");
 		multipleEnrollCount.setVisible(allowMultipleEnroll.isSelected(0));
 		
