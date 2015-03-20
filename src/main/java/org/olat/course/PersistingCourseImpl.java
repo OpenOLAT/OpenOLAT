@@ -57,6 +57,7 @@ import org.olat.course.config.CourseConfigManagerImpl;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNode.Processing;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.environment.CourseEnvironmentImpl;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -380,13 +381,24 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	}
 	
 	@Override
-	public void postImport(CourseEnvironmentMapper envMapper) {
+	public void postCopy(CourseEnvironmentMapper envMapper) {
 		Structure importedStructure = getRunStructure();
-		visit(new NodePostImportVisitor(envMapper), importedStructure.getRootNode());
+		visit(new NodePostCopyVisitor(envMapper, Processing.runstructure), importedStructure.getRootNode());
 		saveRunStructure();
 		
 		CourseEditorTreeModel importedEditorModel = getEditorTreeModel();
-		visit(new NodePostImportVisitor(envMapper), importedEditorModel.getRootNode());
+		visit(new NodePostCopyVisitor(envMapper, Processing.editor), importedEditorModel.getRootNode());
+		saveEditorTreeModel();
+	}
+	
+	@Override
+	public void postImport(CourseEnvironmentMapper envMapper) {
+		Structure importedStructure = getRunStructure();
+		visit(new NodePostImportVisitor(envMapper, Processing.runstructure), importedStructure.getRootNode());
+		saveRunStructure();
+		
+		CourseEditorTreeModel importedEditorModel = getEditorTreeModel();
+		visit(new NodePostImportVisitor(envMapper, Processing.editor), importedEditorModel.getRootNode());
 		saveEditorTreeModel();
 	}
 	
@@ -556,10 +568,13 @@ class NodePostExportVisitor implements Visitor {
 }
 
 class NodePostImportVisitor implements Visitor {
+	
+	private final Processing processType;
 	private final CourseEnvironmentMapper envMapper;
 	
-	public NodePostImportVisitor(CourseEnvironmentMapper envMapper) {
+	public NodePostImportVisitor(CourseEnvironmentMapper envMapper, Processing processType) {
 		this.envMapper = envMapper;
+		this.processType = processType;
 	}
 	
 	@Override
@@ -568,7 +583,28 @@ class NodePostImportVisitor implements Visitor {
 			node = ((CourseEditorTreeNode)node).getCourseNode();
 		}
 		if(node instanceof CourseNode) {
-			((CourseNode)node).postImport(envMapper);
+			((CourseNode)node).postImport(envMapper, processType);
+		}
+	}
+}
+
+class NodePostCopyVisitor implements Visitor {
+	
+	private final Processing processType;
+	private final CourseEnvironmentMapper envMapper;
+	
+	public NodePostCopyVisitor(CourseEnvironmentMapper envMapper, Processing processType) {
+		this.envMapper = envMapper;
+		this.processType = processType;
+	}
+	
+	@Override
+	public void visit(INode node) {
+		if(node instanceof CourseEditorTreeNode) {
+			node = ((CourseEditorTreeNode)node).getCourseNode();
+		}
+		if(node instanceof CourseNode) {
+			((CourseNode)node).postCopy(envMapper, processType);
 		}
 	}
 }

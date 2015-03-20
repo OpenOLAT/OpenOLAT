@@ -47,8 +47,9 @@ public class ConfluenceLinkSPI implements HelpLinkSPI {
 	public UserTool getHelpUserTool(WindowControl wControl) {
 		return new ConfluenceUserTool();
 	}
-	
-	private String getURL(Locale locale, String page) {
+
+	@Override
+	public String getURL(Locale locale, String page) {
 		StringBuilder sb = new StringBuilder(64);
 		sb.append("https://confluence.openolat.org/display");
 		String version = Settings.getVersion();

@@ -99,8 +99,8 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 	}
 	
 	@Override
-	public void postImport(CourseEnvironmentMapper envMapper) {
-		super.postImport(envMapper);
+	protected void postImportCopyConditions(CourseEnvironmentMapper envMapper) {
+		super.postImportCopyConditions(envMapper);
 		postImportCondition(preConditionAccess, envMapper);
 	}
 	

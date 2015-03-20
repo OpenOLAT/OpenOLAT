@@ -25,8 +25,6 @@
 */ 
 package org.olat.core.gui.components.form.flexible.impl;
 
-import java.util.Map;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -573,6 +571,14 @@ public abstract class FormBasicController extends BasicController {
 		}
 	}
 	
+	protected void setFormContextHelp(String url) {
+		if (url == null) {
+			flc.contextRemove("off_chelp_url");
+		} else {
+			flc.contextPut("off_chelp_url", url);
+		}
+	}
+	
 	/**
 	 * Set an optional css class to use for this form. May help to achieve custom formatting without
 	 * a separate velocity container.
@@ -617,8 +623,8 @@ public abstract class FormBasicController extends BasicController {
 			public void run() {
 				// Dispose also disposable form items (such as file uploads that needs to
 				// cleanup temporary files)
-				Map<String, FormItem> formItems = FormBasicController.this.flc.getFormComponents();
-				for (FormItem formItem : formItems.values()) {
+				Iterable<FormItem> formItems = FormBasicController.this.flc.getFormItems();
+				for (FormItem formItem : formItems) {
 					if (formItem instanceof Disposable) {
 						Disposable disposableFormItem = (Disposable) formItem;
 						disposableFormItem.dispose();				

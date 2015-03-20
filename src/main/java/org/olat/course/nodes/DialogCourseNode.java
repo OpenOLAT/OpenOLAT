@@ -176,8 +176,8 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void postImport(CourseEnvironmentMapper envMapper) {
-		super.postImport(envMapper);
+	protected void postImportCopyConditions(CourseEnvironmentMapper envMapper) {
+		super.postImportCopyConditions(envMapper);
 		postImportCondition(preConditionModerator, envMapper);
 		postImportCondition(preConditionPoster, envMapper);
 		postImportCondition(preConditionReader, envMapper);

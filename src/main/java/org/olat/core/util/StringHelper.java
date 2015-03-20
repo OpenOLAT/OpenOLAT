@@ -276,10 +276,14 @@ public class StringHelper {
 	 *         otherwhise
 	 */
 	public static boolean containsNonWhitespace(String s) {
-		if (s == null) return false;
+		if (s == null || s.length() == 0) return false;
+		
+		char firstChar = s.charAt(0);
+		if(firstChar > 32 && firstChar < 127) {
+			return true;
+		}
 
 		Matcher matcher = WHITESPACE_PATTERN.matcher(s);
-
 		// if string matches whitespace pattern then string does not
 		// contain non-whitespace
 		return !matcher.find();

@@ -263,6 +263,12 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 		config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
 	}
 	
+    @Override
+    public void postCopy(CourseEnvironmentMapper envMapper, Processing processType) {
+        super.postCopy(envMapper, processType);
+        postImportCopy(envMapper);
+    }
+	
 	@Override
 	public void postImport(CourseEnvironmentMapper envMapper) {
 		super.postImport(envMapper);

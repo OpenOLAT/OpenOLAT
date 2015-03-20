@@ -89,6 +89,11 @@ public interface FormItemContainer extends FormItem, FormItemCollection {
 	public Map<String, FormItem> getFormComponents();
 	
 	/**
+	 * @return True if the container manages this item.
+	 */
+	public boolean hasFormComponent(FormItem item);
+	
+	/**
 	 * 
 	 * @param name
 	 * @return

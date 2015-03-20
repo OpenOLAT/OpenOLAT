@@ -25,8 +25,6 @@
 */
 package org.olat.core.gui.components.form.flexible.impl;
 
-import java.util.Map;
-
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
@@ -152,9 +150,7 @@ public class FormDecorator {
 	 * @return
 	 */
 	private FormItem getFormItem(String formItemName) {
-		Map<String, FormItem> comps = container.getFormComponents();
-		FormItem foco = comps.get(formItemName);
-		return foco;
+		return container.getFormComponent(formItemName);
 	}
 
 }

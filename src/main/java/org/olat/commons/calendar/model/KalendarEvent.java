@@ -220,14 +220,17 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	public boolean isToday() {
 		Calendar cal = Calendar.getInstance();
 		int todayDay = cal.get(Calendar.DAY_OF_YEAR);
+		int todayYear = cal.get(Calendar.YEAR);
 		
 		cal.setTime(begin);
 		int startDay = cal.get(Calendar.DAY_OF_YEAR);
-		boolean today = (todayDay - startDay == 0);
+		int startYear = cal.get(Calendar.YEAR);
+		boolean today = (todayDay == startDay) && (todayYear == startYear);
 		if(end != null) {
 			cal.setTime(end);
 			int endDay = cal.get(Calendar.DAY_OF_YEAR);
-			today &= (todayDay - endDay == 0);
+			int endYear = cal.get(Calendar.YEAR);
+			today &= (todayDay == endDay) && (todayYear == endYear);
 		}
 		//an event without end date finish the same day (3.6.1. Event Component, https://tools.ietf.org/html/rfc5545#section-3.6.1)
 		return today;

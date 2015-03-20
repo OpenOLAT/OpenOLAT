@@ -552,8 +552,6 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			if(event instanceof IdentitiesAddEvent || event instanceof IdentitiesRemoveEvent) {
 				doAddRemoveOwners(event);
 			}
-			cmc.deactivate();
-			cleanUp();
 		} else if(contactCtrl == source) {
 			cmc.deactivate();
 			cleanUp();

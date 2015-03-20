@@ -141,7 +141,7 @@ public class WysiwygFactory {
 	 * @return XHTML page
 	 */
 	public static String createXHtmlFileContent(String bodyMarkup, String title) {
-		StringBuffer fileContent = new StringBuffer();
+		StringBuilder fileContent = new StringBuilder();
 		fileContent.append(HTMLEditorController.DOCTYPE).append(HTMLEditorController.OPEN_HTML).append(HTMLEditorController.OPEN_HEAD);
 		fileContent.append(HTMLEditorController.GENERATOR_META).append(HTMLEditorController.UTF8CHARSET);
 		fileContent.append(HTMLEditorController.OPEN_TITLE).append(title).append(HTMLEditorController.CLOSE_TITLE);

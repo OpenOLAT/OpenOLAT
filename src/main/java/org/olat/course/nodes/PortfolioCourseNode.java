@@ -112,8 +112,8 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 	}
 	
 	@Override
-	public void postImport(CourseEnvironmentMapper envMapper) {
-		super.postImport(envMapper);
+	protected void postImportCopyConditions(CourseEnvironmentMapper envMapper) {
+		super.postImportCopyConditions(envMapper);
 		postImportCondition(preConditionEdit, envMapper);
 	}
 

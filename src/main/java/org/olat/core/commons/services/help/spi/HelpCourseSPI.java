@@ -19,6 +19,8 @@
  */
 package org.olat.core.commons.services.help.spi;
 
+import java.util.Locale;
+
 import org.olat.admin.user.tools.UserTool;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.services.help.HelpLinkSPI;
@@ -95,4 +97,8 @@ public class HelpCourseSPI implements HelpLinkSPI  {
 		return new Panel("HelpCourseSPI.getHelpPageLink() is not supported");
 	}
 
+	@Override
+	public String getURL(Locale locale, String module) {
+		return null;
+	}
 }
