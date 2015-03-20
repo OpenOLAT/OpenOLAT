@@ -54,6 +54,12 @@ public class EnrollmentPage {
 		return this;
 	}
 	
+	public EnrollmentPage assertNoEnrollmentAllowed(WebDriver browser){
+		By enrollBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr//td//a[contains(@href,'cmd.enroll.in.group')]");
+		List<WebElement> pageEls = browser.findElements(enrollBy);
+		Assert.assertTrue(pageEls.isEmpty());
+		return this;
+	}
 	/**
 	 * Enroll without wait busy to make them very quick.
 	 * 
@@ -64,6 +70,20 @@ public class EnrollmentPage {
 		List<WebElement> pageEls = browser.findElements(enrollBy);
 		if(pageEls.size() > 0) {
 			pageEls.get(0).click();
+		}
+		return this;
+	}
+	
+	/**
+	 * Enroll to multiple groups
+	 * 
+	 * @return
+	 */
+	public EnrollmentPage multiEnroll(int enrollCount) {
+		for(int i = 1;i<=enrollCount; i++){
+			WebElement selectLink = browser.findElement(By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr["+i+"]//td//a[contains(@href,'cmd.enroll.in.group')]"));
+			OOGraphene.waitBusy(browser);
+			selectLink.click();
 		}
 		return this;
 	}

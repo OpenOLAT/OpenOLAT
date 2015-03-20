@@ -22,6 +22,8 @@ package org.olat.selenium;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -557,7 +559,110 @@ public class BusinessGroupTest {
 		Assert.assertEquals(1, participants);
 		Assert.assertEquals(2, waitingList);
 	}
-	
+	/**
+	 * An author create a course, with an enrollment course element. It
+	 * configure it and create 3 groups and set the maximum enrollment counter to 2<br>
+	 * 
+	 * One user goes to the course and enrolls in 2 of the groups. It shouldent be possible
+	 * enroll in the third<br>
+	 * 
+	 * @param authorLoginPage
+	 * @param ryomouBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+
+	@Test
+	@RunAsClient
+	public void enrolmentWithMultiEnrollment(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver ryomouBrowser)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		
+		//create a course
+		String courseTitle = "Enrolment-3-" + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+
+		//create a course element of type Enrolment
+		String enNodeTitle = "Enrolment-3";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("en")
+			.nodeTitle(enNodeTitle);
+		//configure enrolment with a group that we create
+		List<String> groups = new ArrayList<String>();
+		groups.add("Enrolment group - 3 " + UUID.randomUUID());
+		groups.add("Enrolment group - 3 " + UUID.randomUUID());
+		groups.add("Enrolment group - 3 " + UUID.randomUUID());
+		
+		EnrollmentConfigurationPage enrolmentConfig = new EnrollmentConfigurationPage(browser);
+		enrolmentConfig
+			.selectConfiguration()
+			.createBusinessGroup(groups.get(0), "-", 4, false, false)
+			.createBusinessGroup(groups.get(1), "-", 4, false, false)
+			.createBusinessGroup(groups.get(2), "-", 4, false, false)
+			.selectMultipleEnrollments(browser, 2);
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish(Access.users);
+		courseEditor.clickToolbarBack();
+		
+
+		for(String groupName:groups){
+				navBar
+					.openGroups(browser)
+					.selectGroup(groupName)
+					.openAdministration()
+					.openAdminMembers()
+					.setVisibility(true, true, false)
+					.openMembers();
+		}
+				
+		//Ryomou open the course
+		Enrollment ryomouEnrollment = new Enrollment(ryomou, ryomouBrowser);
+				
+		WebDriver driver = ryomouEnrollment.getDriver();
+		LoginPage.getLoginPage(driver, deploymentUrl)
+			.loginAs(ryomouEnrollment.getUser())
+			.resume();
+		
+		NavigationPage participantNavBar = new NavigationPage(driver);
+		participantNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(courseTitle)
+			.select(courseTitle)
+			.start();
+		
+		OOGraphene.waitBusy(ryomouBrowser);
+		
+		//go to the enrollment
+		CoursePageFragment participantCourse = new CoursePageFragment(driver);
+		participantCourse
+			.clickTree()
+			.selectWithTitle(enNodeTitle);
+		
+		EnrollmentPage enrollmentPage = new EnrollmentPage(driver);
+		enrollmentPage
+			.assertOnEnrolmentPage();
+		ryomouEnrollment.setEnrollmentPage(enrollmentPage);
+		
+		ryomouEnrollment.getEnrollmentPage().multiEnroll(2);
+		
+		//wait
+		OOGraphene.waitBusy(driver);
+		//assert that that no more enrollment is allowed
+		ryomouEnrollment.getEnrollmentPage().assertNoEnrollmentAllowed(driver);
+		
+	}
 	/**
 	 * An author create a course and a business group in the members
 	 * management. It has max. participants set to 1 and no waiting list.
