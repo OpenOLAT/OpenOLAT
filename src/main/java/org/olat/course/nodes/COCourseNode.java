@@ -117,9 +117,18 @@ public class COCourseNode extends AbstractAccessableCourseNode {
     }
     
     @Override
-    public void postImport(CourseEnvironmentMapper envMapper) {
-        super.postImport(envMapper);
-        
+    public void postCopy(CourseEnvironmentMapper envMapper, Processing processType) {
+        super.postCopy(envMapper, processType);
+        postImportCopy(envMapper);
+    }
+    
+    @Override
+    public void postImport(CourseEnvironmentMapper envMapper, Processing processType) {
+        super.postImport(envMapper, processType);
+        postImportCopy(envMapper);
+    }
+    
+    private void postImportCopy(CourseEnvironmentMapper envMapper) {
         ModuleConfiguration mc = getModuleConfiguration();
         String coachesGroupNames = (String)mc.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP);
         String particpantsGroupNames = (String)mc.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP);
@@ -161,8 +170,6 @@ public class COCourseNode extends AbstractAccessableCourseNode {
             participantsAreaKeys = envMapper.toAreaKeyFromOriginalKeys(participantsAreaKeys);
         }
         mc.set(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID, participantsAreaKeys);
-        
-        
     }
 
     @Override

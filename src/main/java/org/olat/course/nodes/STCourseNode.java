@@ -610,10 +610,19 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 		}
 	}
 	
+    @Override
+    public void postCopy(CourseEnvironmentMapper envMapper, Processing processType) {
+        super.postCopy(envMapper, processType);
+        postImportCopy(envMapper);
+    }
+	
 	@Override
-	public void postImport(CourseEnvironmentMapper envMapper) {
-		super.postImport(envMapper);
+	public void postImport(CourseEnvironmentMapper envMapper, Processing processType) {
+		super.postImport(envMapper, processType);
+		postImportCopy(envMapper);
+	}
 		
+	private void postImportCopy(CourseEnvironmentMapper envMapper) {
 		ScoreCalculator calculator = getScoreCalculator();
 		boolean changed = false;
 		if(StringHelper.containsNonWhitespace(calculator.getScoreExpression())) {

@@ -261,10 +261,19 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
     config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
 	}
 	
+    @Override
+    public void postCopy(CourseEnvironmentMapper envMapper, Processing processType) {
+        super.postCopy(envMapper, processType);
+        postImportCopy(envMapper);
+    }
+	
 	@Override
-	public void postImport(CourseEnvironmentMapper envMapper) {
-		super.postImport(envMapper);
-		
+	public void postImport(CourseEnvironmentMapper envMapper, Processing processType) {
+		super.postImport(envMapper, processType);
+		postImportCopy(envMapper);
+	}
+	
+	private void postImportCopy(CourseEnvironmentMapper envMapper) {
 		ModuleConfiguration mc = getModuleConfiguration();
 		String groupNames = (String)mc.get(ENCourseNode.CONFIG_GROUPNAME);
 		@SuppressWarnings("unchecked")

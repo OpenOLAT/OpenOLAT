@@ -88,8 +88,8 @@ public abstract class AbstractFeedCourseNode extends GenericCourseNode {
 	}
 	
 	@Override
-	public void postImport(CourseEnvironmentMapper envMapper) {
-		super.postImport(envMapper);
+	protected void postImportCopyConditions(CourseEnvironmentMapper envMapper) {
+		super.postImportCopyConditions(envMapper);
 		postImportCondition(preConditionReader, envMapper);
 		postImportCondition(preConditionPoster, envMapper);
 		postImportCondition(preConditionModerator, envMapper);

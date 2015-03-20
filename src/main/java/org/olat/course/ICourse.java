@@ -73,6 +73,8 @@ public interface ICourse extends OLATResourceable {
 	public void exportToFilesystem(OLATResource originalCourseResource, File exportDirectory,
 			boolean runtimeDatas, boolean backwardsCompatible);
 	
+	public void postCopy(CourseEnvironmentMapper envMapper);
+	
 	public void postImport(CourseEnvironmentMapper envMapper);
 	
 	/**

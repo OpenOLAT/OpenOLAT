@@ -920,8 +920,8 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 	}
 	
 	@Override
-	public void postImport(CourseEnvironmentMapper envMapper) {
-		super.postImport(envMapper);
+	protected void postImportCopyConditions(CourseEnvironmentMapper envMapper) {
+		super.postImportCopyConditions(envMapper);
 		postImportCondition(conditionDrop, envMapper);
 		postImportCondition(conditionScoring, envMapper);
 		postImportCondition(conditionReturnbox, envMapper);
