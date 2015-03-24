@@ -310,8 +310,8 @@ public class IQComponentRenderer implements ComponentRenderer {
 		StringOutput sb = new StringOutput();
 
 		sb.append("<td>");
-		String title = StringHelper.escapeHtml(itc.getEl_item().attributeValue("title", "no title"));
-		String titleShort = StringHelper.escapeHtml(Formatter.truncate(title, 27));
+		String titleNotEscaped = itc.getEl_item().attributeValue("title", "no title");
+		String titleShort = StringHelper.escapeHtml(Formatter.truncate(titleNotEscaped, 27));
 		long maxdur = itc.getDurationLimit();
 		long start = itc.getTimeOfStart();
 		long due = start + maxdur;
@@ -332,7 +332,7 @@ public class IQComponentRenderer implements ComponentRenderer {
 			sb.append("<a onclick=\"return o2cl();\" href=\"");
 			ubu.buildURI(sb, new String[] { VelocityContainer.COMMAND_ID }, new String[] { "git" });
 			sb.append("?itid="	+ itemPos	+ "&seid=" + sectionPos);
-			sb.append("\" class=\"o_sel_qti_menu_item\" title=\"" + StringEscapeUtils.escapeHtml(title) + "\">");
+			sb.append("\" class=\"o_sel_qti_menu_item\" title=\"" + StringEscapeUtils.escapeHtml(titleNotEscaped) + "\">");
 		}
 		
 		sb.append("<b>" + (sectionPos + 1) + "." + (itemPos + 1) + ".</b>&nbsp;");	
