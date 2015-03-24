@@ -117,7 +117,7 @@ public class EnrollmentConfigurationPage {
 		return this;
 	}
 	
-	public EnrollmentConfigurationPage selectMultipleEnrollments(WebDriver browser, int maxEnrollmentCount){
+	public EnrollmentConfigurationPage selectMultipleEnrollments(int maxEnrollmentCount){
 		By multiEnroll = By.name("allowMultipleEnroll");
 		browser.findElement(multiEnroll).click();
 		OOGraphene.waitBusy(browser);
