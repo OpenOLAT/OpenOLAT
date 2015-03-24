@@ -64,7 +64,8 @@ public class OOGraphene {
 	}
 	
 	public static final void tinymce(String content, WebDriver browser) {
-		Graphene.waitModel().until(new TinyMCELoadedPredicate());
+		Graphene.waitModel(browser).withTimeout(5, TimeUnit.SECONDS)
+			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new TinyMCELoadedPredicate());
 		((JavascriptExecutor)browser).executeScript("top.tinymce.activeEditor.setContent('" + content + "')");
 	}
 	

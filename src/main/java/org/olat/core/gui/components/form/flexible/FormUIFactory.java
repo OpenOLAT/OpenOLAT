@@ -682,7 +682,7 @@ public class FormUIFactory {
 	public RichTextElement addRichTextElementForStringDataMinimalistic(String name, final String i18nLabel, String initialHTMLValue, final int rows,
 			final int cols, FormItemContainer formLayout, WindowControl wControl) {
 		// Create richt text element with bare bone configuration
-		RichTextElement rte = new RichTextElementImpl(name, initialHTMLValue, rows, cols, formLayout.getRootForm(), wControl.getWindowBackOffice());
+		RichTextElement rte = new RichTextElementImpl(name, initialHTMLValue, rows, cols, formLayout.getRootForm());
 		setLabelIfNotNull(i18nLabel, rte);
 		// Now configure editor
 		rte.getEditorConfiguration().setConfigProfileFormEditorMinimalistic(wControl.getWindowBackOffice().getWindow().getGuiTheme());			
@@ -735,7 +735,7 @@ public class FormUIFactory {
 			FormItemContainer formLayout, UserSession usess, WindowControl wControl) {
 		// Create richt text element with bare bone configuration
 		WindowBackOffice backoffice = wControl.getWindowBackOffice();
-		RichTextElement rte = new RichTextElementImpl(name, initialHTMLValue, rows, cols, formLayout.getRootForm(), backoffice);
+		RichTextElement rte = new RichTextElementImpl(name, initialHTMLValue, rows, cols, formLayout.getRootForm());
 		setLabelIfNotNull(i18nLabel, rte);
 		// Now configure editor
 		Theme theme = backoffice.getWindow().getGuiTheme();
@@ -788,8 +788,7 @@ public class FormUIFactory {
 			FormItemContainer formLayout, UserSession usess,
 			WindowControl wControl) {
 		// Create richt text element with bare bone configuration
-		RichTextElement rte = new RichTextElementImpl(name, initialValue, rows,
-				cols, formLayout.getRootForm(), wControl.getWindowBackOffice());
+		RichTextElement rte = new RichTextElementImpl(name, initialValue, rows, cols, formLayout.getRootForm());
 		setLabelIfNotNull(i18nLabel, rte);
 		// Now configure editor
 		rte.getEditorConfiguration().setConfigProfileFileEditor(usess,

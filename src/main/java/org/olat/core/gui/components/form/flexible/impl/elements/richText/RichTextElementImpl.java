@@ -27,8 +27,6 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.AbstractTextElement;
 import org.olat.core.gui.control.Disposable;
-import org.olat.core.gui.control.WindowBackOffice;
-import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -52,7 +50,6 @@ public class RichTextElementImpl extends AbstractTextElement implements
 	private static final OLog log = Tracing.createLoggerFor(RichTextElementImpl.class);
 	private final RichTextElementComponent component;
 	private RichTextConfiguration configuration;
-	private WindowBackOffice windowBackOffice;
 	
 	/**
 	 * Constructor for specialized TextElements, i.e. IntegerElementImpl.
@@ -68,9 +65,8 @@ public class RichTextElementImpl extends AbstractTextElement implements
 	 * @param form The dispatch ID of the root form that deals with the submit button
 	 * @param windowBackOffice The window back office used to properly cleanup code in browser window
 	 */
-	public RichTextElementImpl(String name, String predefinedValue, int rows,
-			int cols, Form form, WindowBackOffice windowBackOffice) {
-		this(name, rows, cols, form, windowBackOffice);
+	public RichTextElementImpl(String name, String predefinedValue, int rows, int cols, Form form) {
+		this(name, rows, cols, form);
 		setValue(predefinedValue);
 	}
 
@@ -86,16 +82,13 @@ public class RichTextElementImpl extends AbstractTextElement implements
 	 * @param form The dispatch ID of the root form that deals with the submit button
 	 * @param windowBackOffice The window back office used to properly cleanup code in browser window
 	 */
-	protected RichTextElementImpl(String name, int rows, int cols, Form rootForm, WindowBackOffice windowBackOffice) {
+	protected RichTextElementImpl(String name, int rows, int cols, Form rootForm) {
 		super(name);
-		this.windowBackOffice = windowBackOffice;
 		// initialize the component
 		component = new RichTextElementComponent(this, rows, cols);
 		// configure tiny (must be after component initialization)
 		// init editor on our form element
-		configuration = new RichTextConfiguration(
-			getFormDispatchId(),
-			rootForm.getDispatchFieldId());
+		configuration = new RichTextConfiguration(getFormDispatchId(), rootForm.getDispatchFieldId());
 	}
 	
 	/**
@@ -153,6 +146,7 @@ public class RichTextElementImpl extends AbstractTextElement implements
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.RichTextElement#getRichTextConfiguration()
 	 */
+	@Override
 	public RichTextConfiguration getEditorConfiguration() {
 		return configuration;
 	}
@@ -160,6 +154,7 @@ public class RichTextElementImpl extends AbstractTextElement implements
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormItemImpl#getFormItemComponent()
 	 */
+	@Override
 	protected Component getFormItemComponent() {
 		return component;
 	}
@@ -167,17 +162,12 @@ public class RichTextElementImpl extends AbstractTextElement implements
 	/**
 	 * @see org.olat.core.gui.control.Disposable#dispose()
 	 */
+	@Override
 	public void dispose() {
 		// cleanup stuff in the configuration (base url maper)
 		if (configuration != null) {
 			configuration.dispose();
 			configuration = null;
-		}
-		// remove tiny editor instance from browser
-		if (windowBackOffice != null) {
-			JSCommand jsCommand = new JSCommand("try{BTinyHelper.removeEditorInstance('" + component.getFormDispatchId() + "');}catch(e){}");
-			windowBackOffice.sendCommandTo(jsCommand);
-			windowBackOffice = null; // do this only once
 		}
 	}
 
@@ -197,8 +187,8 @@ public class RichTextElementImpl extends AbstractTextElement implements
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormItemImpl#addActionListener(org.olat.core.gui.control.Controller, int)
 	 */
 	@Override
-	public void addActionListener(int action) {
-		super.addActionListener(action);
+	public void addActionListener(int actionType) {
+		super.addActionListener(actionType);
 		if (action == FormEvent.ONCHANGE && Settings.isDebuging()) {
 			log.warn("Do not use the onChange event in Textfields / TextAreas as this has often unwanted side effects. " +
 					"As the onchange event is only tiggered when you click outside a field or navigate with the tab to the next element " +

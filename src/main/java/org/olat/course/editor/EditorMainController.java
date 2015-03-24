@@ -617,6 +617,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				launchPublishingWizard(ureq, course, true);
 			} else if(event == Event.CHANGED_EVENT) {
 				updateAfterPublishing(ureq, course, event == Event.CHANGED_EVENT);
+				cleanUpNodeController();
 				cmc.deactivate();
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
@@ -726,6 +727,12 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		calloutCtrl = null;
 		statusCtr = null;
 		cmc = null;
+	}
+	
+	private void cleanUpNodeController() {
+		tabbedNodeConfig.removeAll();
+		// dispose old one, if there was one
+		removeAsListenerAndDispose(nodeEditCntrllr);
 	}
 	
 	private void updateAfterPublishing(UserRequest ureq, ICourse course, boolean changed) {

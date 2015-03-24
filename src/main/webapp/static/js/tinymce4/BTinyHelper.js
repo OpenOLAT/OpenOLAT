@@ -19,23 +19,8 @@ var BTinyHelper = {
 		}
 	},
 	
-	// This methods adds event handlers to auto-hide the external toolbar 
-	// when the curser leaves the editor area
-	addAutohideExternalToolbarHandler : function (domID) {
-		var tinyExtTB = jQuery(domID + '_external');
-		if (tinyExtTB) {
-			jQuery('#' + domID + '_parent').hover( 
-					function(){ /* do nothing, will be added alread on click events by tiny itself */ },
-					function(){ tinymce.DOM.hide(domID + '_external'); }
-			);
-			tinyExtTB.width(jQuery('#' + domID + '_tbl').width() - 2 + 'px');
-		}
-		tinyExtTB = null; // Help GC, break circular reference;
-	},
-	
 	// contains uris to open the media popup window
 	editorMediaUris : new Hashtable(),
-	
 	// Current media browser callback field
 	currentField : null,
 	currentFieldId: null,
@@ -122,6 +107,7 @@ var BTinyHelper = {
 	// Make sure you called stopFormDirtyObserver() first to remove any old observers
 	startFormDirtyObserver : function(formId, elementId) {
 		var observerKey = formId + '-' + elementId;
+		if(BTinyHelper.formDirtyObservers.containsKey(observerKey)) return;
 		
 		// Check for dirtyness and mark buttons accordingly, each second
 		var newExecutor = jQuery.periodic({period: 500, decay:1.0, max_period: Number.MAX_VALUE}, function() {
@@ -130,9 +116,7 @@ var BTinyHelper = {
 			if (elem.length == 0) {
 				newExecutor.cancel();
 				BTinyHelper.formDirtyObservers.remove(observerKey);
-				return;
-			}
-			if (top.tinymce && top.tinymce.activeEditor) {
+			} else if (top.tinymce != null && top.tinymce.activeEditor != null && top.tinymce.activeEditor.initialized) {
 				if (top.tinymce.activeEditor.isDirty()) {
 					setFlexiFormDirty(formId);
 				}
@@ -144,28 +128,13 @@ var BTinyHelper = {
 	
 	// Remove the editor instance for the given DOM node ID if such an editor exists.
 	// Remove all event handlers and release the memory
-	removeEditorInstance : function (elementId) {
-		if (top.tinymce && top.tinymce.editors) {
-			var oldE = top.tinymce.get(elementId);
-			if (oldE != null) { 
-				try { 					
-					// first try to remove and cleanup editor instance itself
-					// in some situations this call fails, we ignore this cases, no big deal.
-					oldE.remove(); 
-				} catch(e) {
-					// IE (of course) has some issues here, need to silently catch those 
-					//console.log('could not removeEditorInstance::' + e.message)
-				}
-				try { 					
-					// second remove editor instance from tiny editorManager 
-					top.tinymce.remove(oldE); 
-				} catch(e) {
-					// IE (of course) has some issues here, need to silently catch those 
-					//console.log('could not removeEditorInstance::' + e.message)
-				}
+	removeEditorInstance : function (elementId, cmd) {
+		if (top.tinymce) {
+			try {
+				top.tinymce.remove('#' + elementId);
+			} catch(e) {
+				// IE (of course) has some issues here, need to silently catch those 
 			}
-			oldE = null;
 		}
 	}
-	
 }
