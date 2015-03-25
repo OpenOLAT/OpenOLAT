@@ -360,10 +360,11 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 			for (int j = 0; j < cols; j++) {
 				String text = rowContent[j];
 				float cellWidth = (j==0 ? nameMaxSizeWithMargin : colWidth);
+				float textWidth = (j==0 ? nameMaxSize : colWidth);
 				if(text != null) {
 					if(rowHeights[i] > rowHeight + 1) {
 						//can do 2 lines
-						String[] texts = splitText(text, cellWidth, fontSize);
+						String[] texts = splitText(text, textWidth, fontSize);
 						float lineTexty = texty;
 						for(int k=0; k<2 && k<texts.length; k++) {
 							String textLine = texts[k];
