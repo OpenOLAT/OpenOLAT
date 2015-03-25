@@ -47,13 +47,15 @@ import org.olat.core.logging.activity.ResourceableTypeList;
  * @author Florian Gngi
  */
 /* package protected */class FeedLoggingAction extends BaseLoggingAction {
-
+	
 	private static ResourceableTypeList FEED_READ_RESOURCES = new ResourceableTypeList().
-		// this one is a message in a feed-node in a course
-		addMandatory(OlatResourceableType.course, OlatResourceableType.node, OlatResourceableType.feed, OlatResourceableType.feedItem).
-		or().addMandatory(OlatResourceableType.course, OlatResourceableType.node, OlatResourceableType.feedItem).
-		// this one is a message in a standalone feed
-		or().addMandatory(OlatResourceableType.feed, OlatResourceableType.feedItem);
+			// this one is a message in a feed-node in a course
+			addMandatory(OlatResourceableType.course, OlatResourceableType.node, OlatResourceableType.feed, OlatResourceableType.feedItem).
+			or().addMandatory(OlatResourceableType.course, OlatResourceableType.node, OlatResourceableType.feed).
+			or().addMandatory(OlatResourceableType.course, OlatResourceableType.node, OlatResourceableType.feedItem).
+			// this one is a message in a standalone feed
+			or().addMandatory(OlatResourceableType.feed, OlatResourceableType.feedItem).
+			or().addMandatory(OlatResourceableType.feed);
 
 	/**
 	 * Feed level actions

@@ -215,11 +215,11 @@ public class EPStructureDetailsController extends FormBasicController {
 				if (restriction != null && restriction.getAmount() > 0) {
 					amountStr = Integer.toString(restriction.getAmount());
 				}
-				final TextElement amountElement = uifactory.addTextElement("collect.restriction.amount." + count, "", 2, amountStr, collectContainer);
+				final TextElement amountElement = uifactory.addTextElement("collect.restriction.amount." + count, null, 2, amountStr, collectContainer);
 				amountElement.setDomReplacementWrapperRequired(false);
 				amountElement.setDisplaySize(3);
 				
-				StaticTextElement errorElement = uifactory.addStaticTextElement("collect.restriction.error." + count, "", collectContainer);
+				StaticTextElement errorElement = uifactory.addStaticTextElement("collect.restriction.error." + count, null, "", collectContainer);
 				errorElement.setVisible(false);
 				
 				restrictionElements.add(restrictionElement);

@@ -229,7 +229,7 @@ public class EditMembershipController extends FormBasicController {
 					translate("role.repo.owner"), translate("role.repo.tutor"), translate("role.repo.participant")
 			};
 			boolean managed = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);
-			repoRightsEl = uifactory.addCheckboxesVertical("repoRights", formLayout, repoRightsKeys, repoValues, 1);
+			repoRightsEl = uifactory.addCheckboxesVertical("repoRights", null, formLayout, repoRightsKeys, repoValues, 1);
 			repoRightsEl.setEnabled(!managed);
 			if(member != null) {
 				RepoPermission repoPermission = PermissionHelper.getPermission(repoEntry, member, memberships);
