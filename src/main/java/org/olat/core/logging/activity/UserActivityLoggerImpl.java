@@ -30,7 +30,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -521,17 +520,18 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 			}
 			for (Iterator<ContextEntry> it = bcContextEntriesCopy.iterator(); it.hasNext();) {
 				ContextEntry ce = it.next();
-				boolean foundIt = false;
+				// SR: see below boolean foundIt = false;
 				for (Iterator<ILoggingResourceable> it2 = inputCopy.iterator(); it2.hasNext();) {
 					ILoggingResourceable resourceInfo = it2.next();
 					if (resourceInfo.correspondsTo(ce)) {
 						// perfecto
 						result.add(resourceInfo);
 						it2.remove();
-						foundIt = true;
+						// SR: see below foundIt = true;
 						break;
 					}
 				}
+				/*
 				if (!foundIt) {
 					String oresourceableOres = "n/a (null)";
 					// SR: why generate exception for unuseable information???
@@ -565,6 +565,7 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 						log_.warn("Could not find any LoggingResourceable corresponding to this ContextEntry: "+ce.toString(), null);
 					}
 				}
+				*/
 			}
 		}
 		
