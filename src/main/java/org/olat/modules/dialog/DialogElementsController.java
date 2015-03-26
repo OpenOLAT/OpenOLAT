@@ -68,6 +68,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -385,13 +386,15 @@ public class DialogElementsController extends BasicController {
 	 */
 	private void doFileDelivery(UserRequest ureq, Long forumKey) {
 		OlatRootFolderImpl forumContainer = getForumContainer(forumKey);
-		VFSLeaf vl = (VFSLeaf) forumContainer.getItems(new VFSLeafFilter()).get(0);
-		
-		//ureq.getDispatchResult().setResultingMediaResource(new FileDialogMediaResource(vl));
-		ureq.getDispatchResult().setResultingMediaResource(new VFSMediaResource(vl));
-		// do logging
-		ThreadLocalUserActivityLogger.log(CourseLoggingAction.DIALOG_ELEMENT_FILE_DOWNLOADED, getClass(),
-				LoggingResourceable.wrapBCFile(vl.getName()));
+		List<VFSItem> items = forumContainer.getItems(new VFSLeafFilter());
+		if(items.size() > 0 && items.get(0) instanceof VFSLeaf) {
+			VFSLeaf vl = (VFSLeaf)items.get(0);
+			ureq.getDispatchResult().setResultingMediaResource(new VFSMediaResource(vl));
+			ThreadLocalUserActivityLogger.log(CourseLoggingAction.DIALOG_ELEMENT_FILE_DOWNLOADED, getClass(),
+					LoggingResourceable.wrapBCFile(vl.getName()));
+		} else {
+			logError("No file to discuss: " + forumContainer, null);
+		}
 	}
 
 	public void event(UserRequest ureq, Component source, Event event) {
