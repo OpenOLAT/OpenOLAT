@@ -160,6 +160,29 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void countMembers_list() {
+		//create a repository entry with a business group
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("member-1-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("member-2-");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("member-3-");
+		Identity id4 = JunitTestHelper.createAndPersistIdentityAsRndUser("member-4-");
+		RepositoryEntry re = repositoryService.create("Rei Ayanami", "rel", "rel", null, null);
+		dbInstance.commit();
+		
+		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(id2, re, GroupRoles.participant.name());
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "count relation 1", "tg", null, null, false, false, re);
+	    businessGroupRelationDao.addRole(id2, group, GroupRoles.coach.name());
+	    businessGroupRelationDao.addRole(id3, group, GroupRoles.coach.name());
+	    businessGroupRelationDao.addRole(id4, group, GroupRoles.coach.name());
+	    dbInstance.commitAndCloseSession();
+	    
+		//get the number of members
+	    int numOfMembers = repositoryService.countMembers(Collections.singletonList(re));
+		Assert.assertEquals(4, numOfMembers);
+	}
+	
+	@Test
 	public void getAuthorKeys() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("auth-1-");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("part-2-");

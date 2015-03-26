@@ -101,6 +101,13 @@ public interface RepositoryService {
 	public int countMembers(RepositoryEntryRef re, String... roles);
 	
 	/**
+	 * Count all members (following up to business groups wainting list)
+	 * @param res
+	 * @return
+	 */
+	public int countMembers(List<? extends RepositoryEntryRef> res);
+	
+	/**
 	 * @param re The repository entry
 	 * @return True if the configuration allowed user to leave the entry right now
 	 */
