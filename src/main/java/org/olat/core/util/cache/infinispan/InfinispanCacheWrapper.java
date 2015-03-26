@@ -25,8 +25,8 @@
 */ 
 package org.olat.core.util.cache.infinispan;
 
-import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.infinispan.Cache;
@@ -41,7 +41,7 @@ import org.olat.core.util.cache.CacheWrapper;
  * Initial Date:  03.10.2007 <br>
  * @author Felix Jost, http://www.goodsolutions.ch
  */
-public class InfinispanCacheWrapper<U,V extends Serializable> implements CacheWrapper<U,V> {
+public class InfinispanCacheWrapper<U,V> implements CacheWrapper<U,V> {
 
 	private Cache<U,V> cache;
 
@@ -82,8 +82,8 @@ public class InfinispanCacheWrapper<U,V extends Serializable> implements CacheWr
 	}
 
 	@Override
-	public void remove(Object key) {
-		cache.remove(key);
+	public V remove(Object key) {
+		return cache.remove(key);
 	}
 	
 	@Override
@@ -107,6 +107,9 @@ public class InfinispanCacheWrapper<U,V extends Serializable> implements CacheWr
 	public V putIfAbsent(U key, V value) {
 		return cache.putIfAbsent(key, value);
 	}
-	
-	
+
+	@Override
+	public Iterator<U> iterateKeys() {
+		return cache.keySet().iterator();
+	}
 }

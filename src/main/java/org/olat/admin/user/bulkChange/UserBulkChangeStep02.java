@@ -23,13 +23,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.context.Context;
-import org.apache.velocity.runtime.RuntimeConstants;
 import org.olat.admin.user.groups.GroupSearchController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -82,30 +79,15 @@ class UserBulkChangeStep02 extends BasicStep {
 
 	static final String usageIdentifyer = UserBulkChangeStep00.class.getCanonicalName();
 	public List<UserPropertyHandler> userPropertyHandlers;
-	private static VelocityEngine velocityEngine;
-	
+
 	private final UserBulkChangeManager ubcMan;
 	private final BusinessGroupService businessGroupService;
-
-	static {
-		// init velocity engine
-		Properties p = null;
-		try {
-			velocityEngine = new VelocityEngine();
-			p = new Properties();
-			p.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS, "org.apache.velocity.runtime.log.SimpleLog4JLogSystem");
-			p.setProperty("runtime.log.logsystem.log4j.category", "syslog");
-			velocityEngine.init(p);
-		} catch (Exception e) {
-			throw new RuntimeException("config error " + p.toString());
-		}
-	}
 
 	public UserBulkChangeStep02(UserRequest ureq) {
 		super(ureq);
 		setI18nTitleAndDescr("step2.description", null);
-	  setNextStep(Step.NOSTEP);
-	  businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		setNextStep(Step.NOSTEP);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		ubcMan = UserBulkChangeManager.getInstance();
 	}
 
@@ -211,7 +193,7 @@ class UserBulkChangeStep02 extends BasicStep {
 
 				Context vcContext = new VelocityContext();
 				// set all properties as context
-				ubcMan.setUserContext(identity, vcContext, isAdministrativeUser);
+				ubcMan.setUserContext(identity, vcContext);
 				// loop for each property configured in
 				// src/serviceconfig/org/olat/_spring/olat_userconfig.xml -> Key:
 				// org.olat.admin.user.bulkChange.UserBulkChangeStep00

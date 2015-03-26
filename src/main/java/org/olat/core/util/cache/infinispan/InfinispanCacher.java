@@ -25,8 +25,6 @@
 */ 
 package org.olat.core.util.cache.infinispan;
 
-import java.io.Serializable;
-
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -59,7 +57,7 @@ public class InfinispanCacher implements Cacher {
 	}
 
 	@Override
-	public <U, V extends Serializable> CacheWrapper<U, V> getCache(String type, String name) {
+	public <U, V> CacheWrapper<U, V> getCache(String type, String name) {
 		String cacheName = type + "@" + name;
 		if(!cacheManager.cacheExists(cacheName)) {
 			createInfinispanConfiguration(cacheName);

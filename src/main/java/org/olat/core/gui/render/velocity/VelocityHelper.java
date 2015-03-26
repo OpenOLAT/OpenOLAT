@@ -47,7 +47,7 @@ import org.olat.core.util.WebappHelper;
  * @author Mike Stock
  */
 public class VelocityHelper extends LogDelegator {
-	private static VelocityHelper INSTANCE = new VelocityHelper();
+	private static final VelocityHelper INSTANCE = new VelocityHelper();
 
 	private VelocityEngine ve;
 	
@@ -74,16 +74,13 @@ public class VelocityHelper extends LogDelegator {
 			ve = new VelocityEngine();
 			p = new Properties();
 			p.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS, "org.apache.velocity.runtime.log.SimpleLog4JLogSystem");
-			//p.setProperty(RuntimeConstants.RUNTIME_LOG, OLATContext.getUserdataRoot() + "logs/velocity.log.txt");
 			p.setProperty("runtime.log.logsystem.log4j.category", "syslog");
 
-			p.setProperty(RuntimeConstants.RUNTIME_LOG_ERROR_STACKTRACE, "true");
-			p.setProperty(RuntimeConstants.RUNTIME_LOG_INFO_STACKTRACE, "true");
 
 			p.setProperty(RuntimeConstants.INPUT_ENCODING, VelocityModule.getInputEncoding());
 			p.setProperty(RuntimeConstants.OUTPUT_ENCODING, VelocityModule.getOutputEncoding());			
 			p.setProperty(RuntimeConstants.PARSER_POOL_SIZE, VelocityModule.getParserPoolSize());
-
+			p.setProperty(RuntimeConstants.RESOURCE_MANAGER_CACHE_CLASS, "org.olat.core.gui.render.velocity.InfinispanResourceCache");
 
 			if (Settings.isDebuging()) {
 				p.setProperty(RuntimeConstants.RESOURCE_LOADER, "file, classpath");					

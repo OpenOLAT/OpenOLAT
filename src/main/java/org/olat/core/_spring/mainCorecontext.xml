@@ -40,7 +40,7 @@
 	<import resource="classpath:/org/olat/core/commons/services/thumbnail/_spring/thumbnailserviceContext.xml"/>
 	<import resource="classpath:/org/olat/core/commons/services/webdav/_spring/webdavContext.xml"/>
 
-	<bean class="org.olat.core.gui.render.velocity.VelocityModule" depends-on="org.olat.core.helpers.Settings" init-method="init">
+	<bean class="org.olat.core.gui.render.velocity.VelocityModule" depends-on="org.olat.core.helpers.Settings,coordinatorManager" init-method="init">
 	    <property name="parserPoolSize" value="${velocity.parser.pool.size}" />	
 	</bean>
 

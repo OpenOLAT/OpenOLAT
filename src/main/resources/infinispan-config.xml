@@ -73,6 +73,13 @@
 		<expiration maxIdle="2700000" wakeUpInterval="15000"/>
 		<transaction transactionMode="NON_TRANSACTIONAL" />
 	</namedCache>
+	
+	<namedCache name="Velocity@templates">
+		<locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
+		<eviction maxEntries="1000" strategy="LIRS"/>
+		<expiration lifespan="-1" maxIdle="-1" wakeUpInterval="0"/>
+		<transaction transactionMode="NON_TRANSACTIONAL" />
+	</namedCache>
 		
 	<namedCache name="LoginModule@blockafterfailedattempts">
 		<locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
