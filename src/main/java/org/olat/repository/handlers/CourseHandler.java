@@ -289,7 +289,20 @@ public class CourseHandler implements RepositoryHandler {
 		if(imp.anyExportedPropertiesAvailable()) {
 			re = imp.importContent(re, getMediaContainer(re));
 		}
+		
+		//clean up export folder
+		cleanExportAfterImport(fImportBaseDirectory);
+		
 		return re;
+	}
+	
+	private void cleanExportAfterImport(File fImportBaseDirectory) {
+		try {
+			Path exportDir = fImportBaseDirectory.toPath();
+			FileUtils.deleteDirsAndFiles(exportDir);
+		} catch (Exception e) {
+			log.error("", e);
+		}
 	}
 	
 	private void importSharedFolder(ICourse course, Identity owner) {

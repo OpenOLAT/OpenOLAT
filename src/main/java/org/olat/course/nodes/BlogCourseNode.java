@@ -188,6 +188,8 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 		if(withReferences) {
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(BlogFileResource.TYPE_NAME);
 			importFeed(handler, importDirectory, owner, locale);
+		} else {
+			FeedNodeEditController.removeReference(getModuleConfiguration());
 		}
 	}
 }
