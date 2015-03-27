@@ -52,6 +52,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.gui.control.JSAndCSSAdderImpl;
+import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.info.WindowControlInfo;
@@ -195,7 +196,11 @@ public class Window extends AbstractComponent {
 	 * @return the current GUI theme
 	 */
 	public Theme getGuiTheme() {
-		return this.guiTheme;
+		return guiTheme;
+	}
+	
+	public WindowBackOffice getWindowBackOffice() {
+		return wbackofficeImpl;
 	}
 	
 	/**

@@ -152,6 +152,7 @@ public class CPDisplayController extends BasicController implements Activateable
 		if (showMenu) {
 			// the menu is only initialized when needed.
 			cpTree = new MenuTree("cpDisplayTree");
+			cpTree.setScrollTopOnClick(true);
 			cpTree.setTreeModel(ctm);
 			cpTree.addListener(this);
 		}
