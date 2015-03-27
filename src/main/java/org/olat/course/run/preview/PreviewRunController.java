@@ -87,6 +87,7 @@ public class PreviewRunController extends MainLayoutBasicController {
 		super(ureq, wControl);
 		// set up the components
 		luTree = new MenuTree(null, "luTreeRun", this);
+		luTree.setScrollTopOnClick(true);
 
 		// build up the running structure for this user;
 		uce = new UserCourseEnvironmentImpl(identEnv, cenv);

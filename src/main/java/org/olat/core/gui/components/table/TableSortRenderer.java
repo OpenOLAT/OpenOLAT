@@ -44,11 +44,11 @@ class TableSortRenderer extends DefaultComponentRenderer {
 		String id = sorter.getDispatchID();
 		
 		sb.append("<div id='o_c").append(id).append("' class='btn-group'>")
-		  .append("<button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
+		  .append("<button id='table-button-sorters-").append(id).append("' type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
 		  .append("<i class='o_icon o_icon-lg o_icon_sort_menu'> </i>")
 		  .append("<b class='caret'></b>")
 		  .append("</button>")
-		  .append("<ul class='dropdown-menu dropdown-menu-right' role='menu'>");
+		  .append("<div id='table-sorters-").append(id).append("' class='hide'><ul class='o_dropdown list-unstyled' role='menu'>");
 
 		int cols = table.getColumnCount();
 		boolean asc = table.isSortAscending();
@@ -83,6 +83,11 @@ class TableSortRenderer extends DefaultComponentRenderer {
 			}
 		}
 
-		sb.append("</ul></div>");
+		sb.append("</ul></div></div>")
+		  .append("<script type='text/javascript'>\n")
+		  .append("/* <![CDATA[ */\n")
+		  .append("jQuery(function() { o_popover('table-button-sorters-").append(id).append("','table-sorters-").append(id).append("'); });\n")
+		  .append("/* ]]> */\n")
+		  .append("</script>");
 	}
 }

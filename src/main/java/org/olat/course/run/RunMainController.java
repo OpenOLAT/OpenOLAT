@@ -183,6 +183,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		logAudit("Entering course: [[["+courseTitle+"]]]", course.getResourceableId().toString());
 		
 		luTree = new MenuTree(null, "luTreeRun", this);
+		luTree.setScrollTopOnClick(true);
 		luTree.setExpandSelectedNode(false);
 		luTree.setElementCssClass("o_course_menu");
 		contentP = new Panel("building_block_content");
