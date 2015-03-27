@@ -203,7 +203,7 @@ public class CertificatesOptionsController extends FormBasicController {
 		formLayout.add(recertificationCont);
 		
 		int timelapse = courseConfig.getRecertificationTimelapse();
-		reCertificationTimelapseEl = uifactory.addIntegerElement("timelapse", timelapse, recertificationCont);
+		reCertificationTimelapseEl = uifactory.addIntegerElement("timelapse", null, timelapse, recertificationCont);
 		reCertificationTimelapseEl.setDomReplacementWrapperRequired(false);
 		reCertificationTimelapseEl.setDisplaySize(4);
 		
@@ -212,7 +212,7 @@ public class CertificatesOptionsController extends FormBasicController {
 			translate("recertification.month"), translate("recertification.year")
 		};
 		RecertificationTimeUnit timelapseUnit = courseConfig.getRecertificationTimelapseUnit();
-		reCertificationTimelapseUnitEl = uifactory.addDropdownSingleselect("timelapse.unit", recertificationCont, timelapseUnitKeys, timelapseUnitValues, null);
+		reCertificationTimelapseUnitEl = uifactory.addDropdownSingleselect("timelapse.unit", null, recertificationCont, timelapseUnitKeys, timelapseUnitValues, null);
 		reCertificationTimelapseUnitEl.setDomReplacementWrapperRequired(false);
 		if(timelapseUnit != null) {
 			reCertificationTimelapseUnitEl.select(timelapseUnit.name(), true);

@@ -649,16 +649,31 @@ public class AuthorListController extends FormBasicController implements Activat
 	private void doAddOwners(UserRequest ureq, List<AuthoringEntryRow> rows) {
 		if(userSearchCtr != null) return;
 		
-		removeAsListenerAndDispose(userSearchCtr);
-		userSearchCtr = new UserSearchController(ureq, getWindowControl(), false, true, UserSearchController.ACTION_KEY_CHOOSE_FINISH);
-		userSearchCtr.setUserObject(rows);
-		listenTo(userSearchCtr);
+		Roles roles = ureq.getUserSession().getRoles();
+		List<AuthoringEntryRow> manageableRows = new ArrayList<>(rows.size());
+		for(AuthoringEntryRow row:rows) {
+			boolean managed = RepositoryEntryManagedFlag.isManaged(row.getManagedFlags(), RepositoryEntryManagedFlag.membersmanagement);
+			boolean canAddOwner = roles.isOLATAdmin() || repositoryService.hasRole(ureq.getIdentity(), row, GroupRoles.owner.name())
+					|| repositoryManager.isInstitutionalRessourceManagerFor(getIdentity(), roles, row);
+			if(canAddOwner && !managed) {
+				manageableRows.add(row);
+			}
+		}
 		
-		String title = translate("tools.add.owners");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), userSearchCtr.getInitialComponent(),
-				true, title);
-		listenTo(cmc);
-		cmc.activate();
+		if(manageableRows.isEmpty()) {
+			showWarning("bulk.update.nothing.selected");
+		} else {
+			removeAsListenerAndDispose(userSearchCtr);
+			userSearchCtr = new UserSearchController(ureq, getWindowControl(), false, true, UserSearchController.ACTION_KEY_CHOOSE_FINISH);
+			userSearchCtr.setUserObject(manageableRows);
+			listenTo(userSearchCtr);
+			
+			String title = translate("tools.add.owners");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), userSearchCtr.getInitialComponent(),
+					true, title);
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 	
 	private void doAddOwners(List<Identity> futureOwners, List<AuthoringEntryRow> rows) {
@@ -671,7 +686,6 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private void doConfirmCopy(UserRequest ureq, List<AuthoringEntryRow> rows) {
-		
 		Roles roles = ureq.getUserSession().getRoles();
 		List<AuthoringEntryRow> copyableRows = new ArrayList<>(rows.size());
 		for(AuthoringEntryRow row:rows) {

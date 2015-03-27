@@ -555,7 +555,7 @@ public class CourseTest {
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
-		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		
 		loginPage.loginAs(author.getLogin(), author.getPassword());
 		

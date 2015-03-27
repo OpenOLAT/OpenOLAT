@@ -87,6 +87,7 @@ public class ChooseScormRunModeForm extends FormBasicController {
 		mode = uifactory.addRadiosVertical("mode", null, formLayout, modeKeys, modeValues);
 		mode.select(ScormConstants.SCORM_MODE_NORMAL, true);
 		mode.setVisible(showOptions);
+		mode.setElementCssClass("o_scorm_mode");
 		FormSubmit showButton = uifactory.addFormSubmitButton("command.showscorm", formLayout);
 		showButton.setElementCssClass("o_sel_start_scorm");
 	}

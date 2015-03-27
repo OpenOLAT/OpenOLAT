@@ -85,7 +85,9 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 			sb.append(Formatter.formatLatexFormulas(value));
 			sb.append("</div>");
 		} else {
+			sb.append("<div id='").append(domID).append("_diw' class='o_richtext_mce'>");
 			renderTinyMCE_4(sb, domID, teC, ubu, source.getTranslator());
+			sb.append("</div>");
 		}
 	}
 
@@ -94,24 +96,20 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		RichTextConfiguration config = te.getEditorConfiguration();
 		List<String> onInit = config.getOnInit();
 
-		// Read write view
-		renderTextarea(sb, domID, teC);
-
 		StringOutput configurations = new StringOutput();
 		config.appendConfigToTinyJSArray_4(configurations, translator);
 		
 		StringOutput baseUrl = new StringOutput();
 		StaticMediaDispatcher.renderStaticURI(baseUrl, "js/tinymce4/tinymce/tinymce.min.js", true);
-
-		sb.append("<script type='text/javascript'>/* <![CDATA[ */ ");
+		
+		// Read write view
+		renderTextarea(sb, domID, teC);
+		
+		sb.append("<script type='text/javascript'>/* <![CDATA[ */\n");
 		//file browser url
 		sb.append("  BTinyHelper.editorMediaUris.put('").append(domID).append("','");
 		ubu.buildURI(sb, null, null);
-		sb.append("');");
-		//remove if a instance is there
-		sb.append("  BTinyHelper.stopFormDirtyObserver('" + te.getRootForm().getDispatchFieldId() + "','" + domID + "');");
-		sb.append("  BTinyHelper.removeEditorInstance('").append(domID).append("');");
-		
+		sb.append("');\n");
 		sb.append("  jQuery('#").append(domID).append("').tinymce({\n")
 		  .append("    selector: '#").append(domID).append("',\n")
 		  .append("    script_url: '").append(baseUrl.toString()).append("',\n")
@@ -124,9 +122,8 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		  .append("      });\n") 
 		  .append("    },\n")
 		  .append(configurations)
-		  .append("  });\n");
-
-		sb.append("/* ]]> */</script>");
+		  .append("  });\n")
+		  .append("/* ]]> */</script>\n");
 	}
 	
 	private void renderTextarea(StringOutput sb, String domID, RichTextElementComponent teC) {

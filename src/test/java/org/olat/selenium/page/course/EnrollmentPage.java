@@ -54,7 +54,7 @@ public class EnrollmentPage {
 		return this;
 	}
 	
-	public EnrollmentPage assertNoEnrollmentAllowed(WebDriver browser){
+	public EnrollmentPage assertNoEnrollmentAllowed(){
 		By enrollBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr//td//a[contains(@href,'cmd.enroll.in.group')]");
 		List<WebElement> pageEls = browser.findElements(enrollBy);
 		Assert.assertTrue(pageEls.isEmpty());
@@ -82,8 +82,8 @@ public class EnrollmentPage {
 	public EnrollmentPage multiEnroll(int enrollCount) {
 		for(int i = 1;i<=enrollCount; i++){
 			WebElement selectLink = browser.findElement(By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr["+i+"]//td//a[contains(@href,'cmd.enroll.in.group')]"));
-			OOGraphene.waitBusy(browser);
 			selectLink.click();
+			OOGraphene.waitBusy(browser);
 		}
 		return this;
 	}

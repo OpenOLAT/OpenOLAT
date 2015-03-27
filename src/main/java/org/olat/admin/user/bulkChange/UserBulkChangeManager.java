@@ -152,7 +152,7 @@ public class UserBulkChangeManager extends BasicManager {
 
 			Context vcContext = new VelocityContext();
 			// set all properties as context
-			setUserContext(identity, vcContext, isAdministrativeUser);
+			setUserContext(identity, vcContext);
 			// loop for each property configured in
 			// src/serviceconfig/org/olat/_spring/olat_userconfig.xml -> Key:
 			// org.olat.admin.user.bulkChange.UserBulkChangeStep00
@@ -341,7 +341,7 @@ public class UserBulkChangeManager extends BasicManager {
 	 * @param vcContext
 	 * @param isAdministrativeUser
 	 */
-	public void setUserContext(Identity identity, Context vcContext, boolean isAdministrativeUser) {
+	public void setUserContext(Identity identity, Context vcContext) {
 		List<UserPropertyHandler> userPropertyHandlers2;
 		userPropertyHandlers2 = UserManager.getInstance().getAllUserPropertyHandlers();
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers2) {

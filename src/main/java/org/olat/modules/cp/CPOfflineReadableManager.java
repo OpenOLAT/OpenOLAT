@@ -90,6 +90,7 @@ public class CPOfflineReadableManager {
 			velocityEngine = new VelocityEngine();
 			p = new Properties();
 			p.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS, "org.apache.velocity.runtime.log.SimpleLog4JLogSystem");
+			p.setProperty(RuntimeConstants.RESOURCE_MANAGER_CACHE_CLASS, "org.olat.core.gui.render.velocity.InfinispanResourceCache");
 			p.setProperty("runtime.log.logsystem.log4j.category", "syslog");
 			p.setProperty(RuntimeConstants.INPUT_ENCODING, VelocityModule.getInputEncoding());
 			p.setProperty(RuntimeConstants.OUTPUT_ENCODING, VelocityModule.getOutputEncoding());

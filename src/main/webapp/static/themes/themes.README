@@ -10,7 +10,7 @@ It is mandatory to understand the bootstrap framework before your start writing 
 very complex world, if you are not an expert in this field, learn CSS before you start working on an OpenOLAT 
 theme.
 
-As icon set we use monochome, vectorbased icons from font-awesome. See http://fortawesome.github.io
+As icon set we use monochome, vectorbased icons from font-awesome. See http://fortawesome.github.io/Font-Awesome/
 
 When you have created a new high-quality theme, why not share it with the OpenOLAT community?
 Please contact us via the developer mailinglist (http://www.openolat.org)
@@ -27,7 +27,7 @@ Theme structure
 The OpenOLAT themes follow the bootstrap terminology. 
 We also rely heavily on SASS: 
 	"Sass is an extension of CSS3, adding nested rules, variables, mixins, selector inheritance, and more. 
-	It’s translated to well-formatted, standard CSS using the command line tool or a web-framework plugin." 
+	It's translated to well-formatted, standard CSS using the command line tool or a web-framework plugin." 
 	(http://sass-lang.com/).
 
 In the default theme ("light"), the SASS (css) rules are splitted up in different many different module files
@@ -51,7 +51,7 @@ the light theme and extends on top of it.
 - theme.js (optional): javascript code that should be embedded to the page to add some more complex
   features that can't be done with CSS alone
 - _config.scss: all OpenOLAT and bootstrap SASS variables
-- modules/*: tonns of include files for different aspects of OpenOLAT
+- modules/*: tons of include files for different aspects of OpenOLAT
 
 
 Creating a custom theme

@@ -509,13 +509,25 @@ function o_ainvoke(r) {
 							var replaceElement = false;
 							var newcId = "o_c"+ciid;
 							var newc = jQuery('#' + newcId);
-							if (newc == null || (newc.length == 0)) {
+							if (newc == null || newc.length == 0) {
 								//not a container, perhaps an element
 								newcId = "o_fi"+ciid;
 								newc = jQuery('#' + newcId);
 								replaceElement = true;
 							}
 							if (newc != null) {
+								var eds = jQuery('div.o_richtext_mce textarea', newc);
+								for(var t=0; t<eds.length; t++) {
+									try {
+										var edId = jQuery(eds.get(t)).attr('id');
+										if(typeof top.tinymce != undefined) {
+											top.tinymce.remove('#' + edId);
+										}
+									} catch(e) {
+										if(window.console) console.log(e);
+									}
+								}
+								
 								if(civis) { // needed only for ie 6/7 bug where an empty div requires space on screen
 									newc.css('display','');//.style.display="";//reset?
 								} else {
@@ -612,7 +624,7 @@ function o_ainvoke(r) {
 						break;	
 					default:
 						if (o_info.debug) o_log("?: unknown command "+co); 
-					if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"Error in o_ainvoke(), ?: unknown command "+co, "functions.js");
+						if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"Error in o_ainvoke(), ?: unknown command "+co, "functions.js");
 						break;
 				}		
 			} else {

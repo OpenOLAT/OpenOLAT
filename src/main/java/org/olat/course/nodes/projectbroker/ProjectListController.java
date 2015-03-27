@@ -288,7 +288,11 @@ public class ProjectListController extends BasicController implements GenericEve
 			activateUserController(currentProject, urequest, te);
 		} else if ( te.getActionId().equals(TABLE_ACTION_SELECT)) {
 			if(!projectGroupManager.isDeselectionAllowed(currentProject)){
-				noDeselectWarning = activateOkCancelDialog(urequest, translate("info.projectbroker.no.deselect.title"), translate("info.projectbroker.no.deselect"), noDeselectWarning);
+				List<String> warningButtons = new ArrayList<String>();
+				warningButtons.add(translate("info.projectbroker.no.deselect.select"));
+				warningButtons.add(translate("info.projectbroker.no.deselect.cancel"));
+				String message = translate("info.projectbroker.deselect.confirmation",currentProject.getTitle())+"<br/><div class=\"o_important\">"+translate("info.projectbroker.no.deselect")+"</div>"; 
+				noDeselectWarning = activateGenericDialog(urequest, translate("info.projectbroker.no.deselect.title"), message, warningButtons, noDeselectWarning);
 				return;
 			}
 			handleEnrollAction(urequest, currentProject);

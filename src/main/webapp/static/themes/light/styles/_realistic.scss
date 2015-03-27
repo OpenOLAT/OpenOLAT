@@ -23,6 +23,29 @@
 	@include btn-styles($o-button-dirty-bg);
 }
 
+.o_login {
+	.o_login_social {
+		.btn-default {
+			text-shadow: none;
+			&.o_sel_auth_facebook {
+				@include btn-styles(#4568b2);
+			}		
+			&.o_sel_auth_twitter {
+				@include btn-styles(#2cc5ff);
+			}		
+			&.o_sel_auth_google {
+				@include btn-styles(#e15f4f);
+			}		
+			&.o_sel_auth_linkedin {
+				@include btn-styles(#0181bd);
+			}		
+			&.o_sel_auth_adfs {
+				@include btn-styles(#1a1a1a);
+			}
+		}
+	}
+}
+
 /* remove text-shadow on default buttons in conjunction with other button styles */
 .btn-default {
 	&.btn-success,

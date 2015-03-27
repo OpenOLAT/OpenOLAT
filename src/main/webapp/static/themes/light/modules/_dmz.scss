@@ -168,29 +168,24 @@ body.o_dmz {
 			padding: $padding-large-vertical $padding-base-horizontal;
 		}
 		
-		a.o_sel_auth_facebook {
-			color: white;
-			background-color: #4568b2;
+		.btn-default.o_sel_auth_facebook {
+			@include button-variant(#fff, #4568b2, darken(#4568b2, 5%));
 		}
 		
-		a.o_sel_auth_twitter {
-			color: white;
-			background-color: #2cc5ff;
+		.btn-default.o_sel_auth_twitter {
+			@include button-variant(#fff, #2cc5ff, darken(#2cc5ff, 5%));
 		}
 		
-		a.o_sel_auth_google {
-			color: white;
-			background-color: #e15f4f;
+		.btn-default.o_sel_auth_google {
+			@include button-variant(#fff, #e15f4f, darken(#e15f4f, 5%));
 		}
 		
-		a.o_sel_auth_linkedin {
-			color: white;
-			background-color: #0181bd;
+		.btn-default.o_sel_auth_linkedin {
+			@include button-variant(#fff, #0181bd, darken(#0181bd, 5%));
 		}
 		
-		a.o_sel_auth_adfs {
-			color: #19a6e1;
-			background-color: #1a1a1a;
+		.btn-default.o_sel_auth_adfs {
+			@include button-variant(#fff, #1a1a1a, darken(#1a1a1a, 5%));
 		}
 	}
 }

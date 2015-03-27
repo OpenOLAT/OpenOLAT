@@ -25,7 +25,7 @@
 */ 
 package org.olat.core.util.cache;
 
-import java.io.Serializable;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -39,7 +39,7 @@ import java.util.List;
  * Initial Date:  03.10.2007 <br>
  * @author Felix Jost, http://www.goodsolutions.ch
  */
-public interface CacheWrapper<U, V extends Serializable> {
+public interface CacheWrapper<U, V> {
 	
 	
 	public boolean containsKey(U key);
@@ -102,7 +102,7 @@ public interface CacheWrapper<U, V extends Serializable> {
 	 * removes a value from the cache. this method is thread-safe
 	 * @param key
 	 */
-	public void remove(U key);
+	public V remove(U key);
 	
 	/**
 	 * Return the size of the cache, in the case of a distributed
@@ -111,5 +111,11 @@ public interface CacheWrapper<U, V extends Serializable> {
 	 * @return
 	 */
 	public int size();
+	
+	/**
+	 * This can be dangerous
+	 * @return
+	 */
+	public Iterator<U> iterateKeys();
 
 }

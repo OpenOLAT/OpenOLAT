@@ -109,7 +109,7 @@ public class EmailProperty extends Generic127CharTextPropertyHandler {
 					else {
 						Long userKey = user.getKey();
 						Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(userKey);
-						ubcMan.setUserContext(identity, vcContext, isAdministrativeUser);
+						ubcMan.setUserContext(identity, vcContext);
 					}
 					value = value.replace("$", "$!");
 					String evaluatedValue = ubcMan.evaluateValueWithUserContext(value, vcContext);

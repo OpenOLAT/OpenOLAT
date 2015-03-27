@@ -608,7 +608,7 @@ public class BusinessGroupTest {
 			.createBusinessGroup(groups.get(0), "-", 4, false, false)
 			.createBusinessGroup(groups.get(1), "-", 4, false, false)
 			.createBusinessGroup(groups.get(2), "-", 4, false, false)
-			.selectMultipleEnrollments(browser, 2);
+			.selectMultipleEnrollments(2);
 		//publish the course
 		courseEditor
 			.publish()
@@ -626,15 +626,12 @@ public class BusinessGroupTest {
 					.openMembers();
 		}
 				
-		//Ryomou open the course
-		Enrollment ryomouEnrollment = new Enrollment(ryomou, ryomouBrowser);
-				
-		WebDriver driver = ryomouEnrollment.getDriver();
-		LoginPage.getLoginPage(driver, deploymentUrl)
-			.loginAs(ryomouEnrollment.getUser())
+		//Ryomou open the course	
+		LoginPage.getLoginPage(ryomouBrowser, deploymentUrl)
+			.loginAs(ryomou)
 			.resume();
 		
-		NavigationPage participantNavBar = new NavigationPage(driver);
+		NavigationPage participantNavBar = new NavigationPage(ryomouBrowser);
 		participantNavBar
 			.openMyCourses()
 			.openSearch()
@@ -645,22 +642,19 @@ public class BusinessGroupTest {
 		OOGraphene.waitBusy(ryomouBrowser);
 		
 		//go to the enrollment
-		CoursePageFragment participantCourse = new CoursePageFragment(driver);
+		CoursePageFragment participantCourse = new CoursePageFragment(ryomouBrowser);
 		participantCourse
 			.clickTree()
 			.selectWithTitle(enNodeTitle);
 		
-		EnrollmentPage enrollmentPage = new EnrollmentPage(driver);
+		EnrollmentPage enrollmentPage = new EnrollmentPage(ryomouBrowser);
 		enrollmentPage
-			.assertOnEnrolmentPage();
-		ryomouEnrollment.setEnrollmentPage(enrollmentPage);
-		
-		ryomouEnrollment.getEnrollmentPage().multiEnroll(2);
-		
-		//wait
-		OOGraphene.waitBusy(driver);
+			.assertOnEnrolmentPage()
+			.multiEnroll(2);
+
 		//assert that that no more enrollment is allowed
-		ryomouEnrollment.getEnrollmentPage().assertNoEnrollmentAllowed(driver);
+		enrollmentPage
+			.assertNoEnrollmentAllowed();
 		
 	}
 	/**

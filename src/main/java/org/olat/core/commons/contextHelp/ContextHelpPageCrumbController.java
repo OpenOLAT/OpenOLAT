@@ -169,7 +169,7 @@ class ContextHelpPageCrumbController extends CrumbBasicController  {
 			
 		Roles roles = ureq.getUserSession().getRoles();
 		OLATResourceable helpOres = OresHelper.createOLATResourceableType("contexthelp");
-		String key = ContextHelpManager.getInstance().calculateCombinedKey(pageTranslator.getLocale(), bundleName, page);
+		String key = pageTranslator.toString() + ":" + bundleName + ":" + page;
 		CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), roles.isOLATAdmin(), roles.isGuestOnly());
 		UserCommentsAndRatingsController commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), helpOres, key, secCallback, true, true, true);
 		listenTo(commentsAndRatingCtr);
