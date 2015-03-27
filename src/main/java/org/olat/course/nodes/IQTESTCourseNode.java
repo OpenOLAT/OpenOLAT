@@ -501,6 +501,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
 				rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
 			IQEditController.setIQReference(re, getModuleConfiguration());
+		} else {
+			IQEditController.removeIQReference(getModuleConfiguration());
 		}
 	}
 

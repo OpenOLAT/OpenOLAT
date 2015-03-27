@@ -432,7 +432,11 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 				EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 				PortfolioStructure map = ePFMgr.loadPortfolioStructure(re.getOlatResource());
 				PortfolioCourseNodeEditController.setReference(re, map, getModuleConfiguration());
+			} else {
+				PortfolioCourseNodeEditController.removeReference(getModuleConfiguration());
 			}
+		} else {
+			PortfolioCourseNodeEditController.removeReference(getModuleConfiguration());
 		}
 	}
 }
