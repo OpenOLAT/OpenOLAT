@@ -28,7 +28,6 @@ package org.olat.course.assessment;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -53,7 +52,7 @@ public class GroupAndContextTableModel extends DefaultTableDataModel<BusinessGro
      * @param trans translator for the business group context
      */
     public GroupAndContextTableModel(List<BusinessGroup> groups) {
-    		super(groups);
+    	super(groups);
     }
 
     /**
@@ -66,27 +65,25 @@ public class GroupAndContextTableModel extends DefaultTableDataModel<BusinessGro
     /**
      * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
      */
+    @Override
     public Object getValueAt(int row, int col) {
         BusinessGroup businessGroup = objects.get(row);
         switch (col) {
             case 0 :
-            		String groupName = businessGroup.getName();
-            		if(StringHelper.containsNonWhitespace(groupName)){
-                  return StringEscapeUtils.escapeHtml(businessGroup.getName());
-            		}
-            		return "???";
+            	String groupName = businessGroup.getName();
+            	return StringHelper.containsNonWhitespace(groupName) ? businessGroup.getName() : "???";
             case 1 :
             	String tmp = businessGroup.getDescription();
             	tmp = FilterFactory.getHtmlTagsFilter().filter(tmp);
-              tmp = Formatter.truncate(tmp, 256);
-              return tmp;
+            	tmp = Formatter.truncate(tmp, 256);
+            	return tmp;
             default :
                 return "ERROR";
         }
     }
 
-		@Override
-		public Object createCopyWithEmptyList() {
-			return new GroupAndContextTableModel(new ArrayList<BusinessGroup>());
-		}
+	@Override
+	public Object createCopyWithEmptyList() {
+		return new GroupAndContextTableModel(new ArrayList<BusinessGroup>());
+	}
 }
