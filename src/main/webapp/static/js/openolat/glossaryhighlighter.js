@@ -315,7 +315,7 @@ function getHighlightStartTag(glossaryMainTerm, searchTerm, occurrence){
 	searchTerm = searchTerm.replace(" ","+");
 	var identifier = "gloss" + glossaryMainTerm + "" + searchTerm + "" + occurrence ;
 	identifier = mainwindow.o_gloss_getUniqueTargetId(identifier);
-	highlightStartTag = "<span class=\"o_tm_glossary\" id=\"" + identifier + "\">";
+	highlightStartTag = "<span class='o_tm_glossary' id='" + identifier + "'>";
 
 	//to later know, which ext-tooltips should be added.
 	var tmpArr = new Array(glossaryMainTerm,searchTerm,occurrence);
