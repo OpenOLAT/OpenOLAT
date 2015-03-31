@@ -51,6 +51,7 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.DialogCourseNode;
 import org.olat.course.nodes.FOCourseNode;
+import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.nodes.TACourseNode;
@@ -70,6 +71,7 @@ public class ArchiverMainController extends MainLayoutBasicController {
 	private static final String CMD_SCOREACCOUNTING = "scoreaccounting";
 	private static final String CMD_ARCHIVELOGFILES = "archivelogfiles";
 	private static final String CMD_HANDEDINTASKS = "handedintasks";
+	private static final String CMD_GROUPTASKS = "grouptask";
 	private static final String CMD_PROJECTBROKER = "projectbroker";
 	private static final String CMD_FORUMS = "forums";
 	private static final String CMD_DIALOGS = "dialogs";
@@ -126,6 +128,7 @@ public class ArchiverMainController extends MainLayoutBasicController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == menuTree) {
 			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) { // goto node in edit mode
@@ -133,12 +136,11 @@ public class ArchiverMainController extends MainLayoutBasicController {
 				Object cmd = selTreeNode.getUserObject();
 				if(cmd instanceof ActionExtension) {
 					launchExtensionController(ureq, cmd);
+				} else {
+					launchArchiveControllers(ureq, (String)cmd);
 				}
-				else launchArchiveControllers(ureq, (String)cmd);
 			}
 		}
-		// no events from main
-		// no events from intro
 	}
 
 	/**
@@ -189,6 +191,13 @@ public class ArchiverMainController extends MainLayoutBasicController {
 			gtn.setTitle(translate("menu.handedintasks"));
 			gtn.setUserObject(CMD_HANDEDINTASKS);
 			gtn.setAltText(translate("menu.handedintasks.alt"));
+			root.addChild(gtn);
+		}
+		if (archiverCallback.mayArchiveHandedInTasks()) {
+			gtn = new GenericTreeNode();		
+			gtn.setTitle(translate("menu.grouptasks"));
+			gtn.setUserObject(CMD_GROUPTASKS);
+			gtn.setAltText(translate("menu.grouptasks.alt"));
 			root.addChild(gtn);
 		}
 		if (archiverCallback.mayArchiveProjectBroker()) {
@@ -282,6 +291,9 @@ public class ArchiverMainController extends MainLayoutBasicController {
 				main.setContent(contentCtr.getInitialComponent());
 			} else if (menuCommand.equals(CMD_HANDEDINTASKS)) { //TACourseNode
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, new TACourseNode());
+				main.setContent(contentCtr.getInitialComponent());
+			}  else if (menuCommand.equals(CMD_GROUPTASKS)) {
+				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, new GTACourseNode());
 				main.setContent(contentCtr.getInitialComponent());
 			} else if (menuCommand.equals(CMD_PROJECTBROKER)) { 
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, new ProjectBrokerCourseNode());

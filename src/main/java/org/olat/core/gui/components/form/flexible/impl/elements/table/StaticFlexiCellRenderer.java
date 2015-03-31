@@ -41,16 +41,22 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer {
 	private String label;
 	private String action;
 	private String iconCSS;
+	private String linkCSS;
 	private String linkTitle; 
 	private FlexiCellRenderer labelDelegate;
 	
 	public StaticFlexiCellRenderer(String label, String action) {
-		this(label, action, null, null);
+		this(label, action, null, null, null);
 	}
 	
-	public StaticFlexiCellRenderer(String label, String action, String iconCSS, String linkTitle) {
+	public StaticFlexiCellRenderer(String label, String action, String linkCSS, String iconCSS) {
+		this(label, action, linkCSS, iconCSS, null);
+	}
+	
+	public StaticFlexiCellRenderer(String label, String action, String linkCSS, String iconCSS, String linkTitle) {
 		this.label = label;
 		this.action = action;
+		this.linkCSS = linkCSS;
 		this.iconCSS = iconCSS;
 		this.linkTitle = linkTitle;
 	}
@@ -80,6 +86,9 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer {
 			target.append("<a href=\"javascript:").append(jsCode).append("\"");
 			if(StringHelper.containsNonWhitespace(linkTitle)) {
 				target.append(" title=\"").append(StringEscapeUtils.escapeHtml(linkTitle)).append("\"");
+			}
+			if(StringHelper.containsNonWhitespace(linkCSS)) {
+				target.append(" class=\"").append(linkCSS).append("\"");
 			}
 			target.append(" onclick=\"return o2cl();\">");
 			if(StringHelper.containsNonWhitespace(iconCSS)) {

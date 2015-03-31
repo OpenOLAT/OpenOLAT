@@ -54,7 +54,12 @@ public abstract class AbstractCourseNodeConfiguration extends AbstractConfigOnOf
 	public int getOrder() {
 		return order;
 	}
-	
+
+	@Override
+	public boolean isDeprecated() {
+		return false;
+	}
+
 	@Override
 	public List<String> getAlternativeCourseNodes() {
 		if(alternatives == null) {

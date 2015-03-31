@@ -216,6 +216,12 @@ public class Formatter {
 		}
 	}
 	
+	public static Date parseDatetimeFilesystemSave(String d) throws ParseException {
+		synchronized (formatterDatetimeFilesystem) {
+			return formatterDatetimeFilesystem.parse(d);
+		}
+	}
+	
 	public static String formatShortDateFilesystem(Date d) {
 		synchronized (shortFormatDateFileSystem) {
 			return shortFormatDateFileSystem.format(d);

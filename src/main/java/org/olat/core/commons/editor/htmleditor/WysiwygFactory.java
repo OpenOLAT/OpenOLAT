@@ -67,7 +67,14 @@ public class WysiwygFactory {
 			UserRequest ureq, WindowControl wControl, VFSContainer rootDir,
 			String filePath, boolean editorCheckEnabled, boolean versions) {
 		return new HTMLEditorController(ureq, wControl, rootDir, filePath,
-				null, editorCheckEnabled, versions);
+				null, null, editorCheckEnabled, versions);
+	}
+	
+	public static HTMLEditorController createWysiwygController(
+			UserRequest ureq, WindowControl wControl, VFSContainer rootDir,
+			String filePath, String mediaPath, boolean editorCheckEnabled, boolean versions) {
+		return new HTMLEditorController(ureq, wControl, rootDir, filePath,
+				null, mediaPath, editorCheckEnabled, versions);
 	}
 
 	/**
@@ -99,7 +106,7 @@ public class WysiwygFactory {
 			String relFilePath, boolean editorCheckEnabled,
 			CustomLinkTreeModel customLinkTreeModel) {
 		return new HTMLEditorController(ureq, wControl, baseContainer, relFilePath,
-				customLinkTreeModel, editorCheckEnabled, true);
+				customLinkTreeModel, null, editorCheckEnabled, true);
 	}
 
 	/**

@@ -44,6 +44,7 @@ import org.olat.core.util.Encoder;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.SimpleHtmlParser;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
@@ -96,7 +97,7 @@ public class HTMLEditorController extends FormBasicController {
 	private String body; // Content of body tag
 	private String charSet = UTF_8; // default for first parse attempt
 
-	private String fileName, fileRelPath;
+	private String fileName, fileRelPath, mediaPath;
 	private LockResult lock;
 
 	private RichTextElement htmlElement;
@@ -135,11 +136,12 @@ public class HTMLEditorController extends FormBasicController {
 	 * @return Controller with internal-link selector
 	 */
 	protected HTMLEditorController(UserRequest ureq, WindowControl wControl, VFSContainer baseContainer, String relFilePath,
-			CustomLinkTreeModel customLinkTreeModel, boolean editorCheckEnabled, boolean versions) {
+			CustomLinkTreeModel customLinkTreeModel, String mediaPath, boolean editorCheckEnabled, boolean versions) {
 		super(ureq, wControl, "htmleditor");
 		// set some basic variables
 		this.baseContainer = baseContainer;
 		this.fileRelPath = relFilePath;
+		this.mediaPath = mediaPath;
 		this.versions = versions;
 		this.customLinkTreeModel = customLinkTreeModel;
 		this.editorCheckEnabled = editorCheckEnabled;
@@ -191,6 +193,14 @@ public class HTMLEditorController extends FormBasicController {
 
 	public void setUserObject(Object userObject) {
 		this.userObject = userObject;
+	}
+	
+	public VFSLeaf getFileLeaf() {
+		return fileLeaf;
+	}
+	
+	public String getFilename() {
+		return fileName;
 	}
 
 	/**
@@ -246,7 +256,10 @@ public class HTMLEditorController extends FormBasicController {
 			RichTextConfiguration editorConfiguration = htmlElement.getEditorConfiguration(); 
 			editorConfiguration.addOnInitCallbackFunction("b_resizetofit_htmleditor");
 			editorConfiguration.enableEditorHeight();
-			//
+			if(StringHelper.containsNonWhitespace(mediaPath)) {
+				editorConfiguration.setFileBrowserUploadRelPath(mediaPath);
+			}
+
 			// The buttons
 			save = uifactory.addFormLink("savebuttontext", formLayout, Link.BUTTON);
 
@@ -460,5 +473,9 @@ public class HTMLEditorController extends FormBasicController {
 
 	public void setNewFile(boolean newFile) {
 		this.newFile = newFile;
+	}
+	
+	public void setmedia() {
+		
 	}
 }

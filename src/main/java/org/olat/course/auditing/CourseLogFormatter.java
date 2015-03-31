@@ -58,12 +58,14 @@ public class CourseLogFormatter extends Formatter {
 	public String format(LogRecord logRecord) {
 		StringBuilder sb = new StringBuilder();
 		Date date = new Date(logRecord.getMillis());
-		sb.append(dateFormat.format(date));
-		sb.append("\t");
-		sb.append(logRecord.getLevel());
-		sb.append("\t");
-		sb.append(logRecord.getMessage());
-		sb.append("\n");
+		synchronized(dateFormat) {
+			sb.append(dateFormat.format(date));
+		}
+		sb.append("\t")
+		  .append(logRecord.getLevel())
+		  .append("\t")
+		  .append(logRecord.getMessage())
+		  .append("\n");
 		return sb.toString();
 	}
 

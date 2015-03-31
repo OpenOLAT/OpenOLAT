@@ -1,0 +1,18 @@
+#foreach($previousRevision in $previousRevisions)
+	$r.render($previousRevision)
+#end
+
+#if($r.available("revisions"))
+	$r.render("revisions")
+#end
+#if($r.available("uploadCorrections"))
+	$r.render("uploadCorrections")
+	<div class="o_button_group">
+	#if($r.available("coach.submit.corrections.to.revision.button"))
+		$r.render("coach.submit.corrections.to.revision.button")
+	#end
+	#if($r.available("coach.close.revision.button"))
+		$r.render("coach.close.revision.button")
+	#end
+	</div>
+#end

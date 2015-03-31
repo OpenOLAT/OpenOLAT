@@ -117,6 +117,15 @@ public interface CoursePropertyManager extends IdentityAnonymizerCallback {
 	 */
 	public Property findCourseNodeProperty(CourseNode node, Identity identity, BusinessGroup grp, String name);
 	
+	/**
+	 * Find a specific course node property (exact match. I.e. null values are taken into account)
+	 * @param node
+	 * @param grp
+	 * @param name
+	 * @return matching course node property
+	 */
+	public Property findCourseNodeProperty(CourseNode node, BusinessGroup grp, String name);
+	
 
 	/**
 	 * Find a specific course node property (exact match. I.e. null values are taken into account)

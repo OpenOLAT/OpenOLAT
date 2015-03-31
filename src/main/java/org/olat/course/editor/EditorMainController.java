@@ -437,12 +437,12 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		CourseNodeConfiguration newConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(selectAlternative);
 		CourseNode newNode = newConfig.getInstance();
 		//copy configurations
-		chosenNode.copyConfigurationTo(newNode);
+		chosenNode.copyConfigurationTo(newNode, course);
 		//insert the node
 		CourseEditorTreeNode cetn = (CourseEditorTreeNode)cetm.getNodeById(chosenNode.getIdent());
 		CourseEditorTreeNode parentNode = (CourseEditorTreeNode)cetn.getParent();
 		int position = cetn.getPosition() + 1;
-		CourseEditorTreeNode newCetn =course.getEditorTreeModel().insertCourseNodeAt(newNode, parentNode.getCourseNode(), position);
+		CourseEditorTreeNode newCetn = course.getEditorTreeModel().insertCourseNodeAt(newNode, parentNode.getCourseNode(), position);
 		doInsert(ureq, newNode);
 		
 		//copy the children
@@ -521,8 +521,10 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			nodeEditCntrllr.addTabs(tabbedNodeConfig);
 		}
 		boolean disabled = !cnConfig.isEnabled();
+		boolean deprecated = cnConfig.isDeprecated();
 		main.contextPut("courseNodeDisabled", disabled);
-		alternativeLink.setVisible(disabled && !cnConfig.getAlternativeCourseNodes().isEmpty());
+		main.contextPut("courseNodeDeprecated", deprecated);
+		alternativeLink.setVisible((disabled || deprecated) && !cnConfig.getAlternativeCourseNodes().isEmpty());
 		alternativeLink.setUserObject(chosenNode);
 		String nodeCssClass = null;
 		if (chosenNode.getParent() == null) {

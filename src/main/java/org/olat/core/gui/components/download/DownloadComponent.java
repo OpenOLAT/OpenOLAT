@@ -19,10 +19,13 @@
  */
 package org.olat.core.gui.components.download;
 
+import java.io.File;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
+import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -108,6 +111,15 @@ public class DownloadComponent extends AbstractComponent {
 				mResource.setDownloadable(forceDownload);
 			}
 			mediaResource = mResource;
+		}
+		setDirty(true);
+	}
+	
+	public void setDownloadItem(File downloadItem) {
+		if (downloadItem == null) {
+			mediaResource = null;
+		} else {
+			mediaResource = new FileMediaResource(downloadItem);
 		}
 		setDirty(true);
 	}

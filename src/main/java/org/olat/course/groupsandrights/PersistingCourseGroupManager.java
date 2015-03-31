@@ -166,6 +166,12 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	public boolean isIdentityInLearningArea(Identity identity, Long areaKey) {
 		return areaManager.isIdentityInBGArea(identity, null, areaKey, getCourseResource());
 	}
+	
+	@Override
+	public boolean hasBusinessGroups() {
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		return businessGroupService.countBusinessGroups(params, getCourseEntry()) > 0;
+	}
 
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getAllLearningGroupsFromAllContexts()
@@ -190,14 +196,18 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		}
 		return businessGroupService.countBusinessGroups(params, getCourseEntry()) > 0;
 	}
+	
+	@Override
+	public boolean hasAreas() {
+		return areaManager.countBGAreasInContext(getCourseResource()) > 0;
+	}
 
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getAllAreasFromAllContexts()
 	 */
 	@Override
 	public List<BGArea> getAllAreas() {
-		List<BGArea> areas = areaManager.findBGAreasInContext(getCourseResource());
-		return areas;
+		return areaManager.findBGAreasInContext(getCourseResource());
 	}
 
 	@Override

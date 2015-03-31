@@ -40,6 +40,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupRef;
 import org.olat.user.UserDataDeletable;
 
 /**
@@ -576,6 +577,33 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 		            + ", name::" + name);
 		}
 		return props.get(0);
+	}
+	
+	/**
+	 * The query is an exact match where null value are NOT allowed.
+	 * @param businessGroup
+	 * @param resourceable
+	 * @param category
+	 * @param name
+	 * @return
+	 */
+	public Property findProperty(BusinessGroupRef businessGroup, OLATResourceable resourceable, String category, String name) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select p from ").append(Property.class.getName()).append(" as p")
+		  .append(" where p.category=:category and p.name=:name")
+		  .append(" and p.grp.key=:groupKey")
+		  .append(" and p.resourceTypeName=:resourceTypeName and p.resourceTypeId=:resourceableId");
+
+		List<Property> properties = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Property.class)
+				.setParameter("groupKey", businessGroup.getKey())
+				.setParameter("resourceTypeName", resourceable.getResourceableTypeName())
+				.setParameter("resourceableId", resourceable.getResourceableId())
+				.setParameter("category", category)
+				.setParameter("name", name)
+				.getResultList();
+		
+		return properties.isEmpty() ? null : properties.get(0);
 	}
 	
 	/**

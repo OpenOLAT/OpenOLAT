@@ -108,7 +108,7 @@ public class TACourseNodeRunController extends BasicController {
 		}
 				
 		if (hasScoring && !previewMode) {
-			scoringController = new MSCourseNodeRunController(ureq, getWindowControl(), userCourseEnv, courseNode, false);
+			scoringController = new MSCourseNodeRunController(ureq, getWindowControl(), userCourseEnv, courseNode, false, true);
 			content.put("scoringController", scoringController.getInitialComponent());
 			content.contextPut("hasScoring", Boolean.TRUE);
 		}

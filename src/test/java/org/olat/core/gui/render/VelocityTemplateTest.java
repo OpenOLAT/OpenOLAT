@@ -49,6 +49,7 @@ public class VelocityTemplateTest {
 	public static final String MAIN_JAVA = "src/main/java";
 	
 	private VelocityEngine engine;
+	private int count = 0;
 	
 	@Test
 	public void testTemplates() {
@@ -61,6 +62,7 @@ public class VelocityTemplateTest {
 			log.error(ex.getMessage());
 		}
 		Assert.assertEquals(0, exs.size());
+		log.info("We have " + count + " velocity templates.");
 	}
 	
 	private void testTemplates(String dir, File file, List<Exception> exs) {
@@ -76,6 +78,7 @@ public class VelocityTemplateTest {
 						Context context = new VelocityContext();
 						Template veloTemplate = engine.getTemplate(path);
 						veloTemplate.merge(context, writer);
+						count++;
 					} catch (Exception e) {
 						exs.add(e);
 					}

@@ -1,0 +1,13 @@
+<div>$description
+#if($r.available("bulk"))
+	<div class="pull-right">
+		$r.render("bulk")<br>
+		<i class="o_icon o_filetype_zip"> </i> $r.escapeHtml($zipName)
+	</div>
+#end
+</div>
+<ul class="list-unstyled">
+#foreach($linkName in $linkNames)
+	<li>$r.render($linkName)</li>
+#end
+</ul>

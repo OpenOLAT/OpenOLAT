@@ -131,8 +131,19 @@ public interface RepositoryService {
 	 */
 	public List<Identity> getMembers(RepositoryEntryRef re, String... roles);
 	
+	/**
+	 * Get the role in the specified resource, business group are included in
+	 * the query.
+	 * 
+	 * @return The list of roles
+	 */
 	public List<String> getRoles(Identity identity, RepositoryEntryRef re);
 	
+	/**
+	 * Has specific role in the specified resource (doesn't follow the business groups).
+	 * 
+	 * @return True if the specified role(s) was found.
+	 */
 	public boolean hasRole(Identity identity, RepositoryEntryRef re, String... roles);
 	
 	public void addRole(Identity identity, RepositoryEntry re, String role);

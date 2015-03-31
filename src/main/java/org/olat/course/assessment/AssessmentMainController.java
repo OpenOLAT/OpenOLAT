@@ -624,6 +624,12 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 					userListCtr.modelChanged();
 				}
 			}
+		} else if(userChoose != null && userChoose.contains(source.getInitialComponent())) {
+			if(userListCtr != null) {
+				if(event == Event.CHANGED_EVENT) {
+					userListCtr.modelChanged();
+				}
+			}
 		}
 	}
 
@@ -783,7 +789,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		if (callback.mayAssessAllUsers() || callback.mayViewAllUsersAssessments()) {
 			return gm.getAllBusinessGroups();
 		} else if (callback.mayAssessCoachedUsers()) {
-			return  gm.getOwnedBusinessGroups(identity);
+			return gm.getOwnedBusinessGroups(identity);
 		} else {
 			throw new OLATSecurityException("No rights to assess or even view any groups");
 		}
@@ -822,14 +828,21 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		groupListCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
 		listenTo(groupListCtr);
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.group.name", 0, CMD_CHOOSE_GROUP, ureq.getLocale()));
+		
+		
 		DefaultColumnDescriptor desc = new DefaultColumnDescriptor("table.group.desc", 1, null, ureq.getLocale());
 		desc.setEscapeHtml(EscapeMode.antisamy);
+		
+		
+		
+		
+		
 		groupListCtr.addColumnDescriptor(desc);
 
 		// loop over all groups to filter depending on condition
 		List<BusinessGroup> currentGroups = new ArrayList<BusinessGroup>();
 		for (BusinessGroup group:coachedGroups) {
-			if ( !isFiltering || isVisibleAndAccessable(this.currentCourseNode, group) ) {
+			if ( !isFiltering || isVisibleAndAccessable(currentCourseNode, group) ) {
 				currentGroups.add(group);
 			}
 		}
@@ -838,8 +851,11 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		groupChoose.put("grouplisttable", groupListCtr.getInitialComponent());
 		
 		// render all-groups button only if goups are available
-		if (this.coachedGroups.size() > 0) groupChoose.contextPut("hasGroups", Boolean.TRUE);
-		else groupChoose.contextPut("hasGroups", Boolean.FALSE);
+		if (coachedGroups.size() > 0) {
+			groupChoose.contextPut("hasGroups", Boolean.TRUE);
+		} else {
+			groupChoose.contextPut("hasGroups", Boolean.FALSE);
+		}
 
 		if (mode == MODE_NODEFOCUS) {
 			groupChoose.contextPut("showBack", Boolean.TRUE);

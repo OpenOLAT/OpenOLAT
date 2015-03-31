@@ -1,0 +1,13 @@
+#if($multipleGroupsWarning && !$multipleGroupsWarning.isEmpty())
+	<div class="o_warning">$r.xssScan($multipleGroupsWarning)</div>
+#end
+<div class="o_block_large">
+	#if($r.available("selection"))
+		#if($r.available("list"))
+			$r.render("backLink")
+		#end
+		$r.render("selection")
+	#elseif($r.available("list"))
+		$r.render("list")
+	#end
+</div>

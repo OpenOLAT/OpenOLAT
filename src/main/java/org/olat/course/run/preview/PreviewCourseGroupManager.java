@@ -166,6 +166,11 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 		return isCourseAdmin;
 	}
 
+	@Override
+	public boolean hasBusinessGroups() {
+		return groups != null && groups.size() > 0;
+	}
+
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getAllLearningGroupsFromAllContexts()
 	 */
@@ -190,6 +195,11 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 		throw new AssertException("unsupported");
 	}
 	
+	@Override
+	public boolean hasAreas() {
+		return areas != null && areas.size() > 0;
+	}
+
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getAllAreasFromAllContexts()
 	 */

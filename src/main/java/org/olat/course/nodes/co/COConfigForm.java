@@ -400,8 +400,7 @@ public class COConfigForm extends FormBasicController {
 		chooseGroupCoachesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
 		chooseGroupCoachesLink.setVisible(false);
 		chooseGroupCoachesLink.setLabel("form.message.group", null);
-		
-		if(cev.getCourseGroupManager().getAllBusinessGroups().isEmpty()){
+		if(cev.getCourseGroupManager().hasBusinessGroups()){
 			chooseGroupCoachesLink.setI18nKey("groupCreate");
 		}
 		
@@ -426,8 +425,7 @@ public class COConfigForm extends FormBasicController {
 		chooseAreasCoachesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_courseareas");
 		chooseAreasCoachesLink.setLabel("form.message.area", null);
 		chooseAreasCoachesLink.setElementCssClass("o_omit_margin");
-		
-		if(cev.getCourseGroupManager().getAllAreas().isEmpty()){
+		if(cev.getCourseGroupManager().hasAreas()){
 			chooseAreasCoachesLink.setI18nKey("areaCreate");
 		}
 		

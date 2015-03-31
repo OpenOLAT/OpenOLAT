@@ -1,0 +1,18 @@
+#foreach($previousRevision in $previousRevisions)
+	$r.render($previousRevision)
+#end
+
+#if($r.available("uploadRevisions"))
+	<p>$r.translate("run.revision.period.description")</p>
+	$r.render("uploadRevisions")
+	<div class="o_button_group">
+		$r.render("run.submit.revision.button")
+	</div>
+#end
+#if($r.available("revisions"))
+	$r.render("revisions")
+#end
+#if($r.available("corrections"))
+	$r.render("corrections")
+#end
+

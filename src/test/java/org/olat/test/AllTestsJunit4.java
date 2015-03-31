@@ -123,6 +123,7 @@ import org.junit.runners.Suite;
 	org.olat.instantMessaging.RosterDAOTest.class,
 	org.olat.instantMessaging.InstantMessageServiceTest.class,
 	org.olat.course.nodes.en.EnrollmentManagerTest.class,
+	org.olat.course.nodes.gta.manager.GTAManagerTest.class,
 	org.olat.course.assessment.AssessmentManagerTest.class,
 	org.olat.course.assessment.manager.UserCourseInformationsManagerTest.class,
 	org.olat.course.assessment.manager.AssessmentModeManagerTest.class,

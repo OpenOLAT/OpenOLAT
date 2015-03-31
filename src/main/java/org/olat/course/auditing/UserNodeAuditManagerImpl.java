@@ -33,6 +33,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.properties.CoursePropertyManager;
+import org.olat.group.BusinessGroup;
 import org.olat.properties.Property;
 
 /**
@@ -46,10 +47,12 @@ import org.olat.properties.Property;
  * Initial Date:  22.10.2009 <br>
  * @author Stefan
  */
-public class UserNodeAuditManagerImpl extends UserNodeAuditManager {
+public class UserNodeAuditManagerImpl implements UserNodeAuditManager {
 
 	protected static final String LOG_DELIMITER = "-------------------------------------------------------------------\n";
 	protected static final String LOG_PREFIX_REMOVED_OLD_LOG_ENTRIES = "Removed old log entires because of limited log size\n";
+	private static final SimpleDateFormat sdb = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+	
 	private final OLATResourceable ores;
 
 	public UserNodeAuditManagerImpl(ICourse course) {
@@ -61,29 +64,58 @@ public class UserNodeAuditManagerImpl extends UserNodeAuditManager {
 	 *      org.olat.core.id.Identity, org.olat.core.id.Identity,
 	 *      java.lang.String)
 	 */
+	@Override
 	public void appendToUserNodeLog(CourseNode courseNode, Identity identity, Identity assessedIdentity, String logText) {
 		ICourse course = CourseFactory.loadCourse(ores);
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
-		// Forma log message
-		Date now = new Date();
-		SimpleDateFormat sdb = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-		String date = sdb.format(now);
-		StringBuilder sb = new StringBuilder();
-		sb.append(LOG_DELIMITER);
-		sb.append("Date: ").append(date).append("\n");
-		sb.append("User: ").append(identity.getName()).append("\n");
-		sb.append(logText).append("\n");
+
+		String text = formatMessage(identity, logText) ;
+		
 		Property logProperty = cpm.findCourseNodeProperty(courseNode, assessedIdentity, null, LOG_IDENTIFYER);
 		if (logProperty == null) {
-			logProperty = cpm.createCourseNodePropertyInstance(courseNode, assessedIdentity, null, LOG_IDENTIFYER, null, null, null, sb.toString());
+			logProperty = cpm.createCourseNodePropertyInstance(courseNode, assessedIdentity, null, LOG_IDENTIFYER, null, null, null, text);
 			cpm.saveProperty(logProperty);
 		} else {
-			String newLog = logProperty.getTextValue() + sb.toString();
-			String limitedLogContent = createLimitedLogContent(newLog,60000);
+			String newLog = logProperty.getTextValue().concat(text);
+			String limitedLogContent = createLimitedLogContent(newLog, 60000);
 			logProperty.setTextValue(limitedLogContent);
 			cpm.updateProperty(logProperty);
 		}
+	}
+		
+	@Override
+	public void appendToUserNodeLog(CourseNode courseNode, Identity identity, BusinessGroup assessedGroup, String logText) {
+		ICourse course = CourseFactory.loadCourse(ores);
+		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 
+		String text = formatMessage(identity, logText) ;
+		
+		Property logProperty = cpm.findCourseNodeProperty(courseNode, null, assessedGroup, LOG_IDENTIFYER);
+		if (logProperty == null) {
+			logProperty = cpm.createCourseNodePropertyInstance(courseNode, null, assessedGroup, LOG_IDENTIFYER, null, null, null, text);
+			cpm.saveProperty(logProperty);
+		} else {
+			String newLog = logProperty.getTextValue().concat(text);
+			String limitedLogContent = createLimitedLogContent(newLog, 60000);
+			logProperty.setTextValue(limitedLogContent);
+			cpm.updateProperty(logProperty);
+		}
+	}
+	
+	private String formatMessage(Identity identity, String logText) {
+		Date now = new Date();
+		String date;
+		synchronized(sdb) {
+			date = sdb.format(now);
+		}
+		StringBuilder sb = new StringBuilder(256);
+		sb.append(LOG_DELIMITER)
+		  .append("Date: ").append(date).append("\n");
+		if(identity != null) {
+			sb.append("User: ").append(identity.getName()).append("\n");
+		}
+		sb.append(logText).append("\n");
+		return sb.toString();
 	}
 
 	protected String createLimitedLogContent(String logContent, int maxLength) {
@@ -118,10 +150,14 @@ public class UserNodeAuditManagerImpl extends UserNodeAuditManager {
 		ICourse course = CourseFactory.loadCourse(ores);
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		Property property = cpm.findCourseNodeProperty(courseNode, identity, null, LOG_IDENTIFYER);
-		if (property == null) return null;
-		String result = property.getTextValue();
-		return result;
+		return property == null ? null : property.getTextValue();
 	}
 
-
+	@Override
+	public String getUserNodeLog(CourseNode courseNode, BusinessGroup businessGroup) {
+		ICourse course = CourseFactory.loadCourse(ores);
+		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
+		Property property = cpm.findCourseNodeProperty(courseNode, businessGroup, LOG_IDENTIFYER);
+		return property == null ? null : property.getTextValue();
+	}
 }

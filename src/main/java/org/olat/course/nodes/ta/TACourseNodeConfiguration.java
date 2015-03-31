@@ -50,6 +50,11 @@ public class TACourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 	}
 
 	@Override
+	public boolean isDeprecated() {
+		return true;
+	}
+
+	@Override
 	public String getLinkText(Locale locale) {
 		Translator fallback = Util.createPackageTranslator(CourseNodeConfiguration.class, locale);
 		Translator translator = Util.createPackageTranslator(this.getClass(), locale, fallback);

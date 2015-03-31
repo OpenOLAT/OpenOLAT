@@ -79,6 +79,7 @@ import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.ms.MSEditFormController;
 import org.olat.course.nodes.ta.BulkDownloadToolController;
+import org.olat.course.nodes.ta.ConvertToGTACourseNode;
 import org.olat.course.nodes.ta.DropboxController;
 import org.olat.course.nodes.ta.DropboxScoringViewController;
 import org.olat.course.nodes.ta.ReturnboxController;
@@ -768,6 +769,14 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 		if (hasReturnbox == null) hasReturnbox = hasDropbox;
 		
 		return (hasTask.booleanValue() || hasDropbox.booleanValue() || hasReturnbox.booleanValue());
+	}
+
+	@Override
+	public void copyConfigurationTo(CourseNode courseNode, ICourse course) {
+		if(courseNode instanceof GTACourseNode) {
+			ConvertToGTACourseNode convert = new ConvertToGTACourseNode();
+			convert.convert(this, (GTACourseNode)courseNode, course);
+		}
 	}
 
 	/**
