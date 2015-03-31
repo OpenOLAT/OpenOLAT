@@ -57,6 +57,9 @@ public class Condition implements Serializable, Cloneable {
 	// false: rules defined for students do also apply for coaches and
 	// administrators
 	private boolean easyModeAlwaysAllowCoachesAndAdmins;
+	
+	// true: only in assessment mode
+	private boolean assessmentMode;
 
 	// This is the MapList in which the extended easy mode conditions are stored
 	private List<ExtendedCondition> attributeConditions = null;
@@ -251,6 +254,14 @@ public class Condition implements Serializable, Cloneable {
 		this.easyModeCoachesAndAdmins = easyModeCoachesAndAdmins;
 	}
 
+	public boolean isAssessmentMode() {
+		return assessmentMode;
+	}
+
+	public void setAssessmentMode(boolean assessmentMode) {
+		this.assessmentMode = assessmentMode;
+	}
+
 	/**
 	 * @return true
 	 */
@@ -378,6 +389,11 @@ public class Condition implements Serializable, Cloneable {
 			}
 			needsAmpersand = true;
 		}
+		if(isAssessmentMode()) {
+			if (needsAmpersand) sb.append(" & ");
+			sb.append(" isAssessmentMode(0)");
+			needsAmpersand = true;
+		}
 		if (isEasyModeCoachesAndAdmins()) {
 			if (needsAmpersand) sb.append(" & ");
 			sb.append(" ( isCourseCoach(0) | isCourseAdministrator(0) )");
@@ -444,6 +460,7 @@ public class Condition implements Serializable, Cloneable {
 		this.easyModeGroupAreaAccessIds = null;
 		this.easyModeNodePassedId = null;
 		this.attributeConditions = null;
+		this.assessmentMode = false;
 		// do not clear this.expertMode = false;
 	}
 
@@ -469,6 +486,7 @@ public class Condition implements Serializable, Cloneable {
 		retVal.condition = this.condition;
 		retVal.attributeConditions = this.attributeConditions;
 		retVal.attributeconditionsConnectorIsAND = this.attributeconditionsConnectorIsAND;
+		retVal.assessmentMode = this.assessmentMode;
 		return retVal;
 	}
 	/**
