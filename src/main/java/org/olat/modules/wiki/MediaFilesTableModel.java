@@ -119,7 +119,11 @@ public class MediaFilesTableModel extends DefaultTableDataModel<MediaFileElement
 				if (filename.endsWith(WikiMainController.METADATA_SUFFIX)) {
 					sb.append("o_wiki-file-deleted");
 				}
-				sb.append("'>").append(filename.substring(0, filename.lastIndexOf(".")));			
+				int extension = filename.lastIndexOf(".");
+				if(extension > 0) {
+					filename = filename.substring(0, extension);
+				}
+				sb.append("'>").append(filename).append("</span>");
 			}
 		}
 	}
