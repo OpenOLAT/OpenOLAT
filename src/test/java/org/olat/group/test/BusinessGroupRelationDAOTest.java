@@ -782,4 +782,47 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, duplicates.size());
 		Assert.assertEquals(id1.getKey(), duplicates.get(0).getKey());
 	}
+	
+	@Test
+	public void getMembersOrderByDate() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-1");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-1");
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "to-group-1", "to-group-1-desc", -1, -1, false, false, false, false, false);
+		businessGroupRelationDao.addRole(id1, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id3, group, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//load the identities
+		List<Identity> ids = businessGroupRelationDao.getMembersOrderByDate(group, GroupRoles.participant.name());
+		Assert.assertNotNull(ids);
+		Assert.assertEquals(3, ids.size());
+		Assert.assertTrue(ids.contains(id1));
+		Assert.assertTrue(ids.contains(id2));
+		Assert.assertTrue(ids.contains(id3));
+	}
+	
+	@Test
+	public void getMemberKeysOrderByDate() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-1");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-1");
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "to-group-1", "to-group-1-desc", -1, -1, false, false, false, false, false);
+		businessGroupRelationDao.addRole(id1, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id3, group, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//load the identities
+		List<Long> ids = businessGroupRelationDao.getMemberKeysOrderByDate(group, GroupRoles.participant.name());
+		Assert.assertNotNull(ids);
+		Assert.assertEquals(3, ids.size());
+		Assert.assertTrue(ids.contains(id1.getKey()));
+		Assert.assertTrue(ids.contains(id2.getKey()));
+		Assert.assertTrue(ids.contains(id3.getKey()));
+	}
+	
+	
+	
 }
