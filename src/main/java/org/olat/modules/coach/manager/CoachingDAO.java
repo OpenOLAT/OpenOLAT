@@ -898,6 +898,16 @@ public class CoachingDAO {
 			queryParams.put("login", login);
 		}
 		
+		if(params.getStatus() != null) {
+			Integer status = params.getStatus();
+			if (status.equals(Identity.STATUS_VISIBLE_LIMIT)) {
+				sb.append(" and id_participant.status<").append(Identity.STATUS_VISIBLE_LIMIT);
+			} else {
+				sb.append(" and id_participant.status=:status");
+				queryParams.put("status", params.getStatus());
+			}
+		}
+		
 		if(params.getUserProperties() != null && params.getUserProperties().size() > 0) {
 			Map<String,String> searchParams = new HashMap<>(params.getUserProperties());
 	

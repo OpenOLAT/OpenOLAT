@@ -1303,12 +1303,12 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 	
 	@Override
-	public int getPositionInWaitingListFor(Identity identity, BusinessGroup businessGroup) {
+	public int getPositionInWaitingListFor(IdentityRef identity, BusinessGroupRef businessGroup) {
 		// get position in waiting-list
-		List<Identity> identities = businessGroupRelationDAO.getMembersOrderByDate(businessGroup, GroupRoles.waiting.name());
+		List<Long> identities = businessGroupRelationDAO.getMemberKeysOrderByDate(businessGroup, GroupRoles.waiting.name());
 		for (int i = 0; i<identities.size(); i++) {
-			Identity waitingListIdentity = identities.get(i);
-			if (waitingListIdentity.equals(identity) ) {
+			Long waitingListIdentity = identities.get(i);
+			if (waitingListIdentity.equals(identity.getKey()) ) {
 				return i+1;// '+1' because list begins with 0 
 			}
 		}
@@ -1694,13 +1694,18 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	public boolean isIdentityInBusinessGroup(Identity identity, BusinessGroup businessGroup) {
+	public boolean isIdentityInBusinessGroup(IdentityRef identity, BusinessGroupRef businessGroup) {
 		if(businessGroup == null || identity == null) return false;
 		List<String> roles = businessGroupRelationDAO.getRoles(identity, businessGroup);
 		if(roles == null || roles.isEmpty() || (roles.size() == 1 &&  GroupRoles.waiting.name().equals(roles.get(0)))) {
 			return false;
 		}
 		return roles.size() > 0;
+	}
+
+	@Override
+	public List<String> getIdentityRolesInBusinessGroup(IdentityRef identity, BusinessGroupRef businessGroup) {
+		return businessGroupRelationDAO.getRoles(identity, businessGroup);
 	}
 
 	@Override

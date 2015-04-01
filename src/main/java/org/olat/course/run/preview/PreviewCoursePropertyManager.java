@@ -132,18 +132,28 @@ final class PreviewCoursePropertyManager extends BasicManager implements CourseP
 	/**
 	 * @see org.olat.course.properties.CoursePropertyManager#findCourseNodeProperties(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.group.BusinessGroup, java.lang.String)
 	 */
+	@Override
 	public List<Property> findCourseNodeProperties(CourseNode node, Identity identity, BusinessGroup grp, String name) {
 		List<Property> propertiesList = properties.get(buildPropertyHashKey(buildCourseNodePropertyCategory(node), (identity == null ? 0l : identity.getKey()), grp, name));
-		if (propertiesList == null) propertiesList = new ArrayList<Property>();
+		if (propertiesList == null) {
+			propertiesList = new ArrayList<Property>();
+		}
 		return propertiesList;
+	}
+
+	@Override
+	public Property findCourseNodeProperty(CourseNode node, BusinessGroup grp, String name) {
+		List<Property> propertyList = properties.get(buildPropertyHashKey(buildCourseNodePropertyCategory(node), null, grp, name));
+		return  (propertyList == null || propertyList.isEmpty()) ? null : propertyList.get(0);
 	}
 
 	/**
 	 * @see org.olat.course.properties.CoursePropertyManager#findCourseNodeProperty(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.group.BusinessGroup, java.lang.String)
 	 */
+	@Override
 	public Property findCourseNodeProperty(CourseNode node, Identity identity, BusinessGroup grp, String name) {
 		List<Property> propertyList = properties.get(buildPropertyHashKey(buildCourseNodePropertyCategory(node), (identity == null ? 0l : identity.getKey()), grp, name));
-		if (propertyList == null) return null;
+		if (propertyList == null || propertyList.isEmpty()) return null;
 		return propertyList.get(0);
 	}
 

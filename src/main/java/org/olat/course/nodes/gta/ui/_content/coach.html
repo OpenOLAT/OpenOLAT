@@ -1,0 +1,117 @@
+$r.render("contextualSubscription")
+
+#if($groupName && !$groupName.isEmpty())
+	<h4><i class="o_icon o_icon_group"> </i> $r.escapeHtml($groupName)</h4>
+#elseif($identityFullName && !$identityFullName.isEmpty())
+	<h4><i class="o_icon o_icon_user"> </i> $r.escapeHtml($identityFullName)</h4>
+#end
+
+<div class="o_process">
+#if($assignmentEnabled)
+	<div class="o_step $assignmentCssClass">
+		<div class="o_bar"></div>
+		<h4 class="o_title">$r.translate("run.assignment.title")</h4>
+		#if($assignmentDueDate)
+			<div class="o_meta">$r.translate("run.assignment.due.date", $assignmentDueDate)</div>
+		#end
+		<div class="o_content">
+		#if($r.available("assignedTask"))
+			$r.render("assignedTask")
+		#else
+			$r.translate("coach.waiting.assignment")
+		#end
+		</div>
+	</div>
+#end
+
+#if($submitEnabled)
+	<div class="o_step $submitCssClass">
+		<div class="o_bar"></div>
+		<h4 class="o_title">$r.translate("run.submit")</h4>
+		#if($submitDueDate)
+			<div class="o_meta">$r.translate("run.submit.due.date", $submitDueDate)</div>
+		#end
+		<div class="o_content">
+		#if($r.available("submittedDocs"))
+			$r.render("submittedDocs")
+		#else
+			$r.translate("coach.waiting.submitted.documents")
+		#end
+		</div>
+	</div>
+#end
+
+#if($reviewAndCorrectionEnabled)
+	<div class="o_step $reviewCssClass">
+		<div class="o_bar"></div>
+		<h4 class="o_title">$r.translate("run.review")</h4>
+		<div class="o_content">
+		#if($r.available("corrections"))
+			$r.render("corrections")
+			#if($r.available("coach.reviewed.button") || $r.available("coach.need.revision.button"))
+				<div class="o_button_group">
+				#if($r.available("coach.reviewed.button"))
+					$r.render("coach.reviewed.button")
+				#end
+				#if($r.available("coach.need.revision.button"))
+					$r.render("coach.need.revision.button")
+				#end
+				</div>
+			#end 
+		#end
+		</div>
+	</div>
+#end
+
+#if($revisionEnabled)
+	<div class="o_step $revisionCssClass">
+		<div class="o_bar"></div>
+		<h4 class="o_title">$r.translate("run.revision")</h4>
+		<div class="o_content">
+		#if($r.available("revisionDocs"))
+			$r.render("revisionDocs")
+		#end
+		</div>
+	</div>
+#end
+
+#if($solutionEnabled)
+	<div class="o_step $solutionCssClass">
+		<div class="o_bar"></div>
+		<h4 class="o_title">$r.translate("run.solution")</h4>
+		#if($solutionAvailableDate)
+			<div class="o_meta">$r.translate("run.solution.available.date", $solutionAvailableDate)</div>
+		#end
+		<div class="o_content">
+		#if($r.available("solutions"))
+			$r.render("solutions")
+		#end
+		</div>
+	</div>
+#end
+	
+#if($gradingEnabled)
+	<div class="o_step $gradingCssClass">
+		<div class="o_bar"></div>
+		<h4 class="o_title">$r.translate("run.grading")</h4>
+		<div class="o_content">
+		#if($r.available("grading"))
+			$r.render("grading")
+		#end
+		#if($userLog || $groupLog)
+		<div class="o_box">
+		    #o_togglebox_start("o_course_run_log" $r.translate("log.title"))
+			#if($groupLog)
+		    <pre class="small">$groupLog</pre>
+		    #end
+		    #if($userLog)
+		    <pre class="small">$userLog</pre>
+		    #end
+		    #o_togglebox_end()
+		</div>
+		#end
+		</div>
+	</div>
+#end
+
+</div>

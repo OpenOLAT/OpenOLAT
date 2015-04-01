@@ -453,6 +453,80 @@ public class BGAreaManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void findBusinessGroupsOfAreaKeys_andGroupKeys() {
+		//create a resource, 3 area and 2 group
+		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
+		String areaName = UUID.randomUUID().toString();
+		BGArea area1 = areaManager.createAndPersistBGArea("find-group-1-" + areaName, "description:" + areaName, resource.getOlatResource());
+		BGArea area2 = areaManager.createAndPersistBGArea("find-group-2-" + areaName, "description:" + areaName, resource.getOlatResource());
+		//create 2 groups
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "find-group-1-area", "find-group-in-area-1-desc", 0, -1, false, false, resource);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "find-group-2-area", "find-group-in-area-2-desc", 0, -1, false, false, resource);
+		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "find-group-2-area", "find-group-in-area-3-desc", 0, -1, false, false, resource);
+		dbInstance.commitAndCloseSession();
+		//add the relations
+		areaManager.addBGToBGArea(group1, area1);
+		areaManager.addBGToBGArea(group1, area2);
+		areaManager.addBGToBGArea(group2, area2);
+		areaManager.addBGToBGArea(group3, area2);
+		dbInstance.commitAndCloseSession();
+
+		//check find area 2 -> all 3 groups
+		List<Long> area2Key = Collections.singletonList(area2.getKey());
+		List<BusinessGroup> groupsArea2 = areaManager.findBusinessGroupsOfAreaKeys(area2Key);
+		Assert.assertNotNull(groupsArea2);
+		Assert.assertEquals(3, groupsArea2.size());
+		Assert.assertTrue(groupsArea2.contains(group1));
+		Assert.assertTrue(groupsArea2.contains(group2));
+		Assert.assertTrue(groupsArea2.contains(group3));
+		
+		List<Long> groupKeysArea2 = areaManager.findBusinessGroupKeysOfAreaKeys(area2Key);
+		Assert.assertNotNull(groupKeysArea2);
+		Assert.assertEquals(3, groupKeysArea2.size());
+		Assert.assertTrue(groupKeysArea2.contains(group1.getKey()));
+		Assert.assertTrue(groupKeysArea2.contains(group2.getKey()));
+		Assert.assertTrue(groupKeysArea2.contains(group3.getKey()));	
+		
+		//check find area 1 -> only group 1
+		List<Long> area1Key = Collections.singletonList(area1.getKey());
+		List<BusinessGroup> groupsArea1 = areaManager.findBusinessGroupsOfAreaKeys(area1Key);
+		Assert.assertNotNull(groupsArea1);
+		Assert.assertEquals(1, groupsArea1.size());
+		Assert.assertTrue(groupsArea1.contains(group1));
+		
+		List<Long> groupKeysArea1 = areaManager.findBusinessGroupKeysOfAreaKeys(area1Key);
+		Assert.assertNotNull(groupKeysArea1);
+		Assert.assertEquals(1, groupKeysArea1.size());
+		Assert.assertTrue(groupKeysArea1.contains(group1.getKey()));	
+
+		//check find area 1 and 2 -> all 3 groups
+		List<Long> areaKeys = new ArrayList<>(2);
+		areaKeys.add(area1.getKey());
+		areaKeys.add(area2.getKey());
+		List<BusinessGroup> groupsAreas = areaManager.findBusinessGroupsOfAreaKeys(areaKeys);
+		Assert.assertNotNull(groupsAreas);
+		Assert.assertEquals(3, groupsAreas.size());
+		Assert.assertTrue(groupsAreas.contains(group1));
+		Assert.assertTrue(groupsAreas.contains(group2));
+		Assert.assertTrue(groupsAreas.contains(group3));
+		
+		List<Long> groupKeysAreas = areaManager.findBusinessGroupKeysOfAreaKeys(areaKeys);
+		Assert.assertNotNull(groupKeysAreas);
+		Assert.assertEquals(3, groupKeysAreas.size());
+		Assert.assertTrue(groupKeysAreas.contains(group1.getKey()));
+		Assert.assertTrue(groupKeysAreas.contains(group2.getKey()));
+		Assert.assertTrue(groupKeysAreas.contains(group3.getKey()));
+		
+		//check with empty list
+		List<BusinessGroup> emptyGroups = areaManager.findBusinessGroupsOfAreaKeys(Collections.<Long>emptyList());
+		Assert.assertNotNull(emptyGroups);
+		Assert.assertEquals(0, emptyGroups.size());
+		List<Long> emptyGroupKeys = areaManager.findBusinessGroupKeysOfAreaKeys(Collections.<Long>emptyList());
+		Assert.assertNotNull(emptyGroupKeys);
+		Assert.assertEquals(0, emptyGroupKeys.size());
+	}
+	
+	@Test
 	public void countBGAreasOfBusinessGroups() {
 		//create a resource, 3 area and 2 group
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();

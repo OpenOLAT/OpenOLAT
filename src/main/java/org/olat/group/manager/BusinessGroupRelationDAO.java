@@ -35,6 +35,7 @@ import org.olat.basesecurity.NamedGroupImpl;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.basesecurity.model.GroupMembershipImpl;
+import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
@@ -44,6 +45,7 @@ import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BGRepositoryEntryRelation;
+import org.olat.group.model.BusinessGroupRefImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -70,12 +72,12 @@ public class BusinessGroupRelationDAO {
 		repositoryEntryRelationDao.createRelation(((BusinessGroupImpl)group).getBaseGroup(), re);
 	}
 	
-	public void addRole(Identity identity, BusinessGroup businessGroup, String role) {
+	public void addRole(Identity identity, BusinessGroupRef businessGroup, String role) {
 		Group group = getGroup(businessGroup);
 		groupDao.addMembership(group, identity, role);
 	}
 	
-	public boolean removeRole(Identity identity, BusinessGroup businessGroup, String role) {
+	public boolean removeRole(Identity identity, BusinessGroupRef businessGroup, String role) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select membership from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
 		  .append(" inner join bgroup.baseGroup as baseGroup")
@@ -93,7 +95,7 @@ public class BusinessGroupRelationDAO {
 		 return memberships.size() > 0;
 	}
 	
-	public Group getGroup(BusinessGroup businessGroup) {
+	public Group getGroup(BusinessGroupRef businessGroup) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select baseGroup from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
 		  .append(" inner join bgroup.baseGroup as baseGroup")
@@ -104,7 +106,7 @@ public class BusinessGroupRelationDAO {
 				.getSingleResult();
 	}
 	
-	public List<String> getRoles(Identity identity, BusinessGroup group) {
+	public List<String> getRoles(IdentityRef identity, BusinessGroupRef group) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select membership.role from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
 		  .append(" inner join bgroup.baseGroup as baseGroup")
@@ -115,6 +117,58 @@ public class BusinessGroupRelationDAO {
 				.setParameter("businessGroupKey", group.getKey())
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
+	}
+	
+	public List<String> getRoles(IdentityRef identity, List<? extends BusinessGroupRef> groups) {
+		if(groups == null || groups.isEmpty()) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select membership.role from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
+		  .append(" inner join bgroup.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where bgroup.key in (:businessGroupKeys) and membership.identity.key=:identityKey");
+		
+		List<Long> groupKeys = new ArrayList<>(groups.size());
+		for(BusinessGroupRef group:groups) {
+			groupKeys.add(group.getKey());
+		}
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), String.class)
+				.setParameter("businessGroupKeys", groupKeys)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+	}
+	
+	/**
+	 * @param groups
+	 * @return The list of identity key which have multiple memberships in the specified groups
+	 */
+	public List<IdentityRef> getDuplicateMemberships(List<? extends BusinessGroupRef> groups) {
+		if(groups == null || groups.isEmpty()) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(membership.key ), membership.identity.key from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
+		  .append(" inner join bgroup.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where bgroup.key in (:businessGroupKeys) and membership.role='participant'")
+		  .append(" group by membership.identity.key");
+		
+		List<Long> groupKeys = new ArrayList<>(groups.size());
+		for(BusinessGroupRef group:groups) {
+			groupKeys.add(group.getKey());
+		}
+		List<Object[]> groupBy = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class)
+				.setParameter("businessGroupKeys", groupKeys)
+				.getResultList();
+
+		List<IdentityRef> duplicates = new ArrayList<>();
+		for(Object[] id:groupBy) {
+			Number numOfMembership = (Number)id[0];
+			Long identityKey = (Long)id[1];
+			if(numOfMembership.longValue() > 1) {
+				duplicates.add(new IdentityRefImpl(identityKey));
+			}
+		}
+		return duplicates;
 	}
 	
 	public int countRoles(BusinessGroupRef group, String... role) {
@@ -143,7 +197,7 @@ public class BusinessGroupRelationDAO {
 	 * @param group
 	 * @return
 	 */
-	public int countAuthors(BusinessGroup group) {
+	public int countAuthors(BusinessGroupRef group) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(membership) from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
 		  .append(" inner join bgroup.baseGroup as baseGroup")
@@ -251,6 +305,21 @@ public class BusinessGroupRelationDAO {
 		return members;
 	}
 	
+	public List<Long> getMemberKeysOrderByDate(BusinessGroupRef group, String... roles) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select membership.identity.key from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
+		  .append(" inner join bgroup.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where bgroup.key=:businessGroupKey and membership.role in (:roles) order by membership.creationDate");
+
+		List<String> roleList = GroupRoles.toList(roles);
+		List<Long> members = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+				.setParameter("businessGroupKey", group.getKey())
+				.setParameter("roles", roleList)
+				.getResultList();
+		return members;
+	}
+	
 	public List<Identity> getMembersOrderByDate(BusinessGroupRef group, String... roles) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select membership.identity from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
@@ -264,6 +333,39 @@ public class BusinessGroupRelationDAO {
 				.setParameter("roles", roleList)
 				.getResultList();
 		return members;
+	}
+	
+	/**
+	 * Filter in a list of groups the ones where the identity is member.
+	 * 
+	 * @param businessGroups List of business groups references
+	 * @param member An identity
+	 * @param roles The roles to filter with (optional)
+	 * @return The list of groups where the identity is member
+	 */
+	public List<BusinessGroup> filterMembership(List<? extends BusinessGroupRef> businessGroups, IdentityRef member, String... roles) {
+		if(businessGroups == null || businessGroups.isEmpty() || member == null) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select bgi from ").append(BusinessGroupImpl.class.getName()).append(" bgi")
+		  .append(" inner join fetch bgi.resource as ores ")
+		  .append(" inner join fetch bgi.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as bmember")
+		  .append(" where bgi.key in (:groupKeys) and bmember.identity.key=:identityKey");
+		List<String> roleList = GroupRoles.toList(roles);
+		if(roleList.size() > 0) {
+			sb.append(" and bmember.role in (:roles)");
+		}
+		
+		List<Long> groupKeys = BusinessGroupRefImpl.toKeys(businessGroups);
+		TypedQuery<BusinessGroup> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BusinessGroup.class)
+				.setParameter("groupKeys", groupKeys)
+				.setParameter("identityKey", member.getKey());
+		if(roleList.size() > 0) {
+			query.setParameter("roles", roleList);
+		}
+		return query.getResultList();
 	}
 	
 	public void deleteRelation(BusinessGroup group, RepositoryEntryRef entry) {

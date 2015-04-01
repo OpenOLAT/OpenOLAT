@@ -149,7 +149,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Assess
 			String message = trans.translate("guestnoaccess.message");
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
-			controller = new MSCourseNodeRunController(ureq, wControl, userCourseEnv, this, true);
+			controller = new MSCourseNodeRunController(ureq, wControl, userCourseEnv, this, true, true);
 		}
 		
 		Controller wrappedCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_ms_icon");

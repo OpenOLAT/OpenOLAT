@@ -151,6 +151,17 @@ public class NarrowedPropertyManager {
 	}
 	
 	/**
+	 * Exact match
+	 * @param grp
+	 * @param category
+	 * @param name
+	 * @return
+	 */
+	public Property findProperty(BusinessGroup grp, String category, String name) {
+		return pm.findProperty(grp, resourceable, category, name);
+	}
+	
+	/**
 	 * Find method for a batch of people
 	 * 
 	 * @param identity

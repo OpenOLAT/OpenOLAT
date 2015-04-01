@@ -152,6 +152,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		component.setTranslator(getTranslator());
 		component.setIconLeftCSS(iconLeftCSS);
 		component.setIconRightCSS(iconRightCSS);
+		component.setElementCssClass(getElementCssClass());
 		component.setTitle(title);
 		component.setDomReplacementWrapperRequired(domReplacementWrapperRequired);
 		if(StringHelper.containsNonWhitespace(getElementCssClass())) {
@@ -191,7 +192,9 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 
 	@Override
 	public void setElementCssClass(String elementCssClass) {
-		component.setElementCssClass(elementCssClass);
+		if(component != null) {
+			component.setElementCssClass(elementCssClass);
+		}
 		super.setElementCssClass(elementCssClass);
 	}
 

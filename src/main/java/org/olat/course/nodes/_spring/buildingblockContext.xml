@@ -8,7 +8,7 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context.xsd">
 
-	<context:component-scan base-package="org.olat.course.nodes.en,org.olat.course.nodes.cl,org.olat.course.nodes.projectbroker.service" />
+	<context:component-scan base-package="org.olat.course.nodes.en,org.olat.course.nodes.cl,org.olat.course.nodes.projectbroker.service,org.olat.course.nodes.gta.manager" />
 	  
 	<!-- Course node spring config: Course Nodes are searched on the whole classpath, just place your CourceNodeConfiguration somewhere
 	on the classpath best as a jar. The xml file with ending ...Context.xml has do to be outside of the jar to get automatically loaded -->
@@ -77,6 +77,15 @@
 	
 	<bean id="ta" class="org.olat.course.nodes.ta.TACourseNodeConfiguration" scope="prototype">
 		<property name="order" value="130" />
+		<property name="alternativeCourseNodes">
+			<list>
+				<value>gta</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="gta" class="org.olat.course.nodes.gta.GTACourseNodeConfiguration" scope="prototype">
+		<property name="order" value="131" />
 	</bean>
 			
 	<bean id="projectbroker" class="org.olat.course.nodes.projectbroker.ProjectBrokerNodeConfiguration" scope="prototype">

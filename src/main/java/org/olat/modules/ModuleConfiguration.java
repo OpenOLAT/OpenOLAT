@@ -26,8 +26,17 @@
 package org.olat.modules;
 
 import java.io.Serializable;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 
 /**
  * Initial Date:  Dec 8, 2003
@@ -36,6 +45,7 @@ import java.util.Map;
  */
 public class ModuleConfiguration implements Serializable {
 
+	private static final OLog log = Tracing.createLoggerFor(ModuleConfiguration.class);
 	private static final long serialVersionUID = 5997068149344924126L;
 
 	/**
@@ -200,6 +210,49 @@ public class ModuleConfiguration implements Serializable {
 		// boolean are stored either as null (no val yet), "true", or "false" (Strings)
 		String val = (value? "true" : "false");
 		set(config_key, val);
+	}
+	
+	public Date getDateValue(String config_key) {
+		Object val = get(config_key);
+		Date value = null;
+		if(val instanceof Date) {
+			value = (Date)val;
+		} else if(val instanceof String) {
+			try {
+				if(StringHelper.containsNonWhitespace((String)val)) {
+					value = Formatter.parseDatetimeFilesystemSave((String)val);
+				}
+			} catch (ParseException e) {
+				log.warn("Cannot convert to date: " + val, e);
+			}
+		}
+		return value;
+	}
+	
+	public void setDateValue(String config_key, Date value) {
+		if(value == null) {
+			remove(config_key);
+		} else {
+			String val = Formatter.formatDatetimeFilesystemSave(value);
+			set(config_key, val);
+		}
+	}
+	
+	public <U> List<U> getList(String config_key, Class<U> cl) {
+		@SuppressWarnings("unchecked")
+		List<U> list = (List<U>)get(config_key);
+		if(list == null) {
+			list = new ArrayList<>();
+		}
+		return list;
+	}
+	
+	public void setList(String config_key, List<?> list) {
+		if(list == null) {
+			remove(config_key);
+		} else {
+			set(config_key, list);
+		}
 	}
 
 	/** 

@@ -120,6 +120,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		
 		olatMenuTree = new MenuTree("olatMenuTree");
 		olatMenuTree.setExpandSelectedNode(false);
+		olatMenuTree.setScrollTopOnClick(true);
 		olatMenuTree.setRootVisible(false);
 		TreeModel tm = buildTreeModel(ureq); 
 		olatMenuTree.setTreeModel(tm);

@@ -303,6 +303,8 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
 				rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
 			IQEditController.setIQReference(re, getModuleConfiguration());
+		} else {
+			IQEditController.removeIQReference(getModuleConfiguration());
 		}
 	}
 

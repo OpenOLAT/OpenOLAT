@@ -19,6 +19,7 @@
  */
 package org.olat.group.test;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +29,7 @@ import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -306,7 +308,7 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 	@Test
 	public void isIdentityInBusinessGroupNameParticipant() {
 		//create relations
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser(UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("named-1");
 		RepositoryEntry resource1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry resource2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry resource3 = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -327,10 +329,10 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 	@Test
 	public void findBusinessGroupsWithWaitingListAttendedBy() {
 		//prepare 2 resources + 3 groups and 4 ids
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("wait-1-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("wait-2-" + UUID.randomUUID().toString());
-		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("wait-3-" + UUID.randomUUID().toString());
-		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("wait-3-" + UUID.randomUUID().toString());
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("wait-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("wait-2");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("wait-3");
+		Identity id4 = JunitTestHelper.createAndPersistIdentityAsRndUser("wait-4");
 
 		RepositoryEntry resource1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry resource2 = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -506,6 +508,71 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void filterMembership() {
+		//create 3 groups with owner and participants
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("own-1-" + UUID.randomUUID().toString());
+		Identity part1 = JunitTestHelper.createAndPersistIdentityAsUser("part-1-" + UUID.randomUUID().toString());
+		Identity part2 = JunitTestHelper.createAndPersistIdentityAsUser("part-2-" + UUID.randomUUID().toString());
+
+		BusinessGroup group1 = businessGroupDao.createAndPersist(owner, "filter-membership-one", "rel-bgis-1-desc", 0, 10, true, false, false, false, false);
+		businessGroupRelationDao.addRole(part1, group1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(part2, group1, GroupRoles.participant.name());
+
+		BusinessGroup group2 = businessGroupDao.createAndPersist(owner, "filter-membership-two", "rel-bgis-2-desc", 0, 10, true, false, false, false, false);
+		businessGroupRelationDao.addRole(owner, group2, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(part2, group2, GroupRoles.participant.name());
+		
+		BusinessGroup group3 = businessGroupDao.createAndPersist(owner, "filter-membership-three", "rel-bgis-3-desc", 0, 10, true, false, false, false, false);
+		dbInstance.commitAndCloseSession();
+
+		List<BusinessGroup> groups = new ArrayList<>(3);
+		groups.add(group1);
+		groups.add(group2);
+		groups.add(group3);
+		
+		//filter owner as owner
+		List<BusinessGroup> ownerAsOwnerGroups = businessGroupRelationDao.filterMembership(groups, owner, GroupRoles.coach.name());
+		Assert.assertNotNull(ownerAsOwnerGroups);
+		Assert.assertEquals(3, ownerAsOwnerGroups.size());
+		Assert.assertTrue(ownerAsOwnerGroups.contains(group1));
+		Assert.assertTrue(ownerAsOwnerGroups.contains(group2));
+		Assert.assertTrue(ownerAsOwnerGroups.contains(group3));
+		
+		//filter owner as participant
+		List<BusinessGroup> ownerAsParticipantGroups = businessGroupRelationDao.filterMembership(groups, owner, GroupRoles.participant.name());
+		Assert.assertNotNull(ownerAsParticipantGroups);
+		Assert.assertEquals(1, ownerAsParticipantGroups.size());
+		Assert.assertTrue(ownerAsParticipantGroups.contains(group2));
+		
+		//filter part1 as owner
+		List<BusinessGroup> part1AsOwnerGroups = businessGroupRelationDao.filterMembership(groups, part1, GroupRoles.coach.name());
+		Assert.assertNotNull(part1AsOwnerGroups);
+		Assert.assertEquals(0, part1AsOwnerGroups.size());
+
+		//filter part1 as participant
+		List<BusinessGroup> part1AsParticipantGroups = businessGroupRelationDao.filterMembership(groups, part1, GroupRoles.participant.name());
+		Assert.assertNotNull(part1AsParticipantGroups);
+		Assert.assertEquals(1, part1AsParticipantGroups.size());
+		Assert.assertTrue(part1AsParticipantGroups.contains(group1));
+		
+		//filter part2
+		List<BusinessGroup> part2Groups = businessGroupRelationDao.filterMembership(groups, part2);
+		Assert.assertNotNull(part2Groups);
+		Assert.assertEquals(2, part2Groups.size());
+		Assert.assertTrue(part2Groups.contains(group1));
+		Assert.assertTrue(part2Groups.contains(group2));
+		
+		//try stupid things
+		List<BusinessGroup>  emptyGroups = businessGroupRelationDao.filterMembership(Collections.<BusinessGroup>emptyList(), part2);
+		Assert.assertNotNull(emptyGroups);
+		Assert.assertEquals(0, emptyGroups.size());
+		
+		List<BusinessGroup>  noIdentityGroups = businessGroupRelationDao.filterMembership(groups, null);
+		Assert.assertNotNull(noIdentityGroups);
+		Assert.assertEquals(0, noIdentityGroups.size());
+	}
+	
+	@Test
 	public void countAuthors() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("auth-" + UUID.randomUUID().toString());
 		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("not-auth");
@@ -669,5 +736,93 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		boolean numOfResources2 = businessGroupRelationDao.hasResources(Collections.singletonList(group)); 
 		Assert.assertTrue(numOfResources2);
 	}
+	
+	@Test
+	public void getRoles() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("wait-1");
+		BusinessGroup group1 = businessGroupDao.createAndPersist(id, "to-group-1", "to-group-1-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "to-group-2", "to-group-2-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "to-group-2", "to-group-2-desc", -1, -1, false, false, false, false, false);
+		businessGroupRelationDao.addRole(id, group2, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id, group3, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		List<BusinessGroup> groups = new ArrayList<>(2);
+		groups.add(group1);
+		groups.add(group2);
+		groups.add(group3);
+		
+		List<String> roles = businessGroupRelationDao.getRoles(id, groups);
+		Assert.assertNotNull(roles);
+		Assert.assertEquals(3, roles.size());
+		Assert.assertTrue(roles.contains(GroupRoles.participant.name()));
+		Assert.assertTrue(roles.contains(GroupRoles.coach.name()));
+	}
+	
+	@Test
+	public void getDuplicateMemberships() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("wait-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("wait-1");
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "to-group-1", "to-group-1-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "to-group-2", "to-group-2-desc", -1, -1, false, false, false, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "to-group-2", "to-group-2-desc", -1, -1, false, false, false, false, false);
+		businessGroupRelationDao.addRole(id1, group1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id1, group2, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id2, group3, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//id1 is a duplicate
+		List<BusinessGroup> groups = new ArrayList<>(2);
+		groups.add(group1);
+		groups.add(group2);
+		groups.add(group3);
+		List<IdentityRef> duplicates = businessGroupRelationDao.getDuplicateMemberships(groups);
+		Assert.assertNotNull(duplicates);
+		Assert.assertEquals(1, duplicates.size());
+		Assert.assertEquals(id1.getKey(), duplicates.get(0).getKey());
+	}
+	
+	@Test
+	public void getMembersOrderByDate() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-1");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-1");
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "to-group-1", "to-group-1-desc", -1, -1, false, false, false, false, false);
+		businessGroupRelationDao.addRole(id1, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id3, group, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//load the identities
+		List<Identity> ids = businessGroupRelationDao.getMembersOrderByDate(group, GroupRoles.participant.name());
+		Assert.assertNotNull(ids);
+		Assert.assertEquals(3, ids.size());
+		Assert.assertTrue(ids.contains(id1));
+		Assert.assertTrue(ids.contains(id2));
+		Assert.assertTrue(ids.contains(id3));
+	}
+	
+	@Test
+	public void getMemberKeysOrderByDate() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-1");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-1");
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "to-group-1", "to-group-1-desc", -1, -1, false, false, false, false, false);
+		businessGroupRelationDao.addRole(id1, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id3, group, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//load the identities
+		List<Long> ids = businessGroupRelationDao.getMemberKeysOrderByDate(group, GroupRoles.participant.name());
+		Assert.assertNotNull(ids);
+		Assert.assertEquals(3, ids.size());
+		Assert.assertTrue(ids.contains(id1.getKey()));
+		Assert.assertTrue(ids.contains(id2.getKey()));
+		Assert.assertTrue(ids.contains(id3.getKey()));
+	}
+	
+	
 	
 }

@@ -199,11 +199,25 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 		  .append(" left join fetch businessGroup.resource resource")
 		  .append(" where  bgarel.groupArea.key in (:areaKeys)");
 
-		List<BusinessGroup> result = DBFactory.getInstance().getCurrentEntityManager()
+		return DBFactory.getInstance().getCurrentEntityManager()
 				.createQuery(sb.toString(), BusinessGroup.class)
 				.setParameter("areaKeys", areaKeys)
 				.getResultList();
-		return result;
+	}
+
+	@Override
+	public List<Long> findBusinessGroupKeysOfAreaKeys(List<Long> areaKeys) {
+		if(areaKeys == null || areaKeys.isEmpty()) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct businessGroup.key from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel ")
+		  .append(" inner join bgarel.businessGroup businessGroup ")
+		  .append(" where  bgarel.groupArea.key in (:areaKeys)");
+
+		return DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("areaKeys", areaKeys)
+				.getResultList();
 	}
 
 	/**

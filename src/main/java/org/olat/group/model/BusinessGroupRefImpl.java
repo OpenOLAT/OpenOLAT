@@ -19,6 +19,10 @@
  */
 package org.olat.group.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.olat.group.BusinessGroupRef;
 
 /**
@@ -38,6 +42,24 @@ public final class BusinessGroupRefImpl implements BusinessGroupRef {
 	@Override
 	public Long getKey() {
 		return groupKey;
+	}
+	
+	public static final List<BusinessGroupRef> toRefs(List<Long> keys) {
+		if(keys == null || keys.isEmpty()) return Collections.emptyList();
+		List<BusinessGroupRef> refs = new ArrayList<>(keys.size());
+		for(Long key:keys) {
+			refs.add(new BusinessGroupRefImpl(key));
+		}
+		return refs;
+	}
+	
+	public static final List<Long> toKeys(List<? extends BusinessGroupRef> refs) {
+		if(refs == null || refs.isEmpty()) return Collections.emptyList();
+		List<Long> keys = new ArrayList<>(refs.size());
+		for(BusinessGroupRef ref:refs) {
+			keys.add(ref.getKey());
+		}
+		return keys;
 	}
 
 	@Override

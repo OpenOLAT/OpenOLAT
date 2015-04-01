@@ -26,8 +26,8 @@
 package org.olat.course.auditing;
 
 import org.olat.core.id.Identity;
-import org.olat.core.manager.BasicManager;
 import org.olat.course.nodes.CourseNode;
+import org.olat.group.BusinessGroup;
 
 /**
  * Description:
@@ -47,26 +47,34 @@ import org.olat.course.nodes.CourseNode;
  * Initial Date: Dec 1, 2004
  * @author gnaegi
  */
-public abstract class UserNodeAuditManager extends BasicManager {
+public interface UserNodeAuditManager {
 
 	/**
 	 * the log identifyer is used as name in the properties table, do not change
 	 * it to another value!!
 	 */
-	protected static final String LOG_IDENTIFYER = "LOG";
+	public static final String LOG_IDENTIFYER = "LOG";
 
 	/**
 	 * @param node The current course node
 	 * @return true if this node has user logs, false otherwhise
 	 */
-	public abstract boolean hasUserNodeLogs(CourseNode node);
+	public boolean hasUserNodeLogs(CourseNode node);
 
 	/**
 	 * @param courseNode The course node
 	 * @param identity The identity
 	 * @return The user log or null if no log available
 	 */
-	public abstract String getUserNodeLog(CourseNode courseNode, Identity identity);
+	public String getUserNodeLog(CourseNode courseNode, Identity identity);
+	
+	/**
+	 * 
+	 * @param courseNode The course node
+	 * @param businessGroup The business group
+	 * @return The group log or null if not available
+	 */
+	public String getUserNodeLog(CourseNode courseNode, BusinessGroup businessGroup);
 
 	/**
 	 * Append a log message to the personal course node log
@@ -77,6 +85,16 @@ public abstract class UserNodeAuditManager extends BasicManager {
 	 * @param assessedIdentity The user who is affected by the change
 	 * @param logText
 	 */
-	public abstract void appendToUserNodeLog(CourseNode courseNode, Identity identity, Identity assessedIdentity, String logText);
+	public void appendToUserNodeLog(CourseNode courseNode, Identity identity, Identity assessedIdentity, String logText);
+	
+	/**
+	 * 
+	 * @param courseNode
+	 * @param identity
+	 * @param assessedIdentity
+	 * @param assessedGroup
+	 * @param logText
+	 */
+	public void appendToUserNodeLog(CourseNode courseNode, Identity identity, BusinessGroup assessedGroup, String logText);
 
 }

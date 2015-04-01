@@ -83,7 +83,11 @@ public class ZippedDirectoryMediaResource implements MediaResource {
 
 	@Override
 	public void prepare(HttpServletResponse hres) {
-		String label = StringHelper.transformDisplayNameToFileSystemName(filename) + ".zip";
+		String label = StringHelper.transformDisplayNameToFileSystemName(filename);
+		if(label != null && !label.toLowerCase().endsWith(".zip")) {
+			label += ".zip";
+		}
+		
 		String urlEncodedLabel = StringHelper.urlEncodeUTF8(label);
 		hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + urlEncodedLabel);			
 		hres.setHeader("Content-Description", urlEncodedLabel);

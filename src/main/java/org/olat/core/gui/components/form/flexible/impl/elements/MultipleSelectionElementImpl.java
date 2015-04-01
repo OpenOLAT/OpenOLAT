@@ -362,7 +362,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	 */
 	@Override
 	public String getFormDispatchId() {
-		return DISPPREFIX + getComponent().getDispatchID();
+		return DISPPREFIX.concat(getComponent().getDispatchID());
 	}
 
 	@Override

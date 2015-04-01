@@ -435,7 +435,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	}
 
 	@Override
-	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType) {
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse) {
 		postImportCopyConditions(envMapper);
 	}
 
@@ -578,25 +578,28 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	/**
 	 * @see org.olat.core.gui.ShortName#getShortName()
 	 */
+	@Override
 	public String getShortName() {
 		return getShortTitle();
 	}
 	
+	@Override
 	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course) {
 		CourseNode copyInstance = (CourseNode) XStreamHelper.xstreamClone(this);
 		copyInstance.setIdent(String.valueOf(CodeHelper.getForeverUniqueID()));
 		copyInstance.setPreConditionVisibility(null);
 		if (isNewTitle) {
 			String newTitle = "Copy of " + getShortTitle();
-			if (newTitle.length() > NodeConfigFormController.SHORT_TITLE_MAX_LENGTH) newTitle = newTitle.substring(0,
-					NodeConfigFormController.SHORT_TITLE_MAX_LENGTH - 1);
+			if (newTitle.length() > NodeConfigFormController.SHORT_TITLE_MAX_LENGTH) {
+				newTitle = newTitle.substring(0, NodeConfigFormController.SHORT_TITLE_MAX_LENGTH - 1);
+			}
 			copyInstance.setShortTitle(newTitle);
 		}
 		return copyInstance;
 	}
 
 	@Override
-	public void copyConfigurationTo(CourseNode courseNode) {
+	public void copyConfigurationTo(CourseNode courseNode, ICourse course) {
 		if(courseNode instanceof GenericCourseNode) {
 			GenericCourseNode newNode = (GenericCourseNode)courseNode;
 			newNode.setDisplayOption(getDisplayOption());

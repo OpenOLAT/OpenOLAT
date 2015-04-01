@@ -1,0 +1,28 @@
+<div class="o_button_group o_button_group_right">
+	$r.render("coach.assessment")
+</div>
+
+<div class="panel panel-default o_personal">
+	<div class="panel-heading">
+ 		<h4 class="panel-title">$r.translate("group.title")</h4>
+ 	</div>
+	<table class="table"><tbody>
+		#if ($hasScoreField)
+		<tr class="o_score_config_min">
+			<th>$r.translate("score.min")</th>
+			<td>$scoreMin</td>
+		</tr>
+		<tr class="o_score_config_max">
+			<th>$r.translate("score.max")</th>
+			<td>$scoreMax</td>
+		</tr>
+		#end 
+		#if ($hasPassedField && $passedCutValue)
+		<tr class="o_cutval">
+			<th>$r.translate("passed.cut")</th>
+			<td>$passedCutValue</td>
+		</tr>
+		#end
+	</tbody></table>
+	$r.render("group-list")
+</div>

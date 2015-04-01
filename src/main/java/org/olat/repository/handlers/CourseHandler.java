@@ -289,7 +289,20 @@ public class CourseHandler implements RepositoryHandler {
 		if(imp.anyExportedPropertiesAvailable()) {
 			re = imp.importContent(re, getMediaContainer(re));
 		}
+		
+		//clean up export folder
+		cleanExportAfterImport(fImportBaseDirectory);
+		
 		return re;
+	}
+	
+	private void cleanExportAfterImport(File fImportBaseDirectory) {
+		try {
+			Path exportDir = fImportBaseDirectory.toPath();
+			FileUtils.deleteDirsAndFiles(exportDir);
+		} catch (Exception e) {
+			log.error("", e);
+		}
 	}
 	
 	private void importSharedFolder(ICourse course, Identity owner) {
@@ -399,7 +412,7 @@ public class CourseHandler implements RepositoryHandler {
 		CourseEnvironmentMapper envMapper = cgm.importCourseBusinessGroups(fExportDir);
 		//upgrade to the current version of the course
 		course = CourseFactory.loadCourse(cgm.getCourseResource());
-		course.postCopy(envMapper);
+		course.postCopy(envMapper, sourceCourse);
 		
 		return target;
 	}

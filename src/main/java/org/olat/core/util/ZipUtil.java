@@ -34,6 +34,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -695,6 +700,55 @@ public class ZipUtil {
 			fileSet.add(files[i]);
 		}		
 		return zip(fileSet, rootFile, targetZipFile, compress);
+	}
+	
+	/**
+	 * Add the content of a directory to a zip stream.
+	 * 
+	 * @param path
+	 * @param dirName
+	 * @param zout
+	 */
+	public static void addDirectoryToZip(final Path path, final String baseDirName, final ZipOutputStream zout) {
+		try {
+			Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+				@Override
+				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+					if(!attrs.isDirectory()) {
+						Path relativeFile = path.relativize(file);
+						String names = baseDirName + "/" + relativeFile.toString();
+						zout.putNextEntry(new ZipEntry(names));
+						
+						try(InputStream in=Files.newInputStream(file)) {
+							FileUtils.copy(in, zout);
+						} catch (Exception e) {
+							log.error("", e);
+						}
+						
+						zout.closeEntry();
+					}
+					return FileVisitResult.CONTINUE;
+				}
+			});
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
+	
+	/**
+	 * Add a file to a zip stream.
+	 * @param path
+	 * @param file
+	 * @param exportStream
+	 */
+	public static void addFileToZip(String path, File file, ZipOutputStream exportStream) {
+		try(InputStream source = new FileInputStream(file)) {
+			exportStream.putNextEntry(new ZipEntry(path));
+			FileUtils.copy(source, exportStream);
+			exportStream.closeEntry();
+		} catch(IOException e) {
+			log.error("", e);
+		}
 	}
 	
 	/**

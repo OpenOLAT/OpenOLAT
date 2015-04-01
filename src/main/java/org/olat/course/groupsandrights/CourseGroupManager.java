@@ -128,6 +128,11 @@ public interface CourseGroupManager {
 	 * @return boolean
 	 */
 	public boolean isIdentityCourseParticipant(Identity identity);
+	
+	/**
+	 * @return True if there are some business groups linked to this resource
+	 */
+	public boolean hasBusinessGroups();
 
 	/**
 	 * @return A list of all learning group from all learning group contexts of
@@ -148,6 +153,11 @@ public interface CourseGroupManager {
 	 * @return A list of all learning groups where this identity is participant
 	 */
 	public List<BusinessGroup> getParticipatingBusinessGroups(Identity identity);
+	
+	/**
+	 * @return True if the course has some areas configured.
+	 */
+	public boolean hasAreas();
 
 	/**
 	 * @return A list of all group areas from this course

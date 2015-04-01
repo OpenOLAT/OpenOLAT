@@ -60,6 +60,7 @@ public class FileMediaResource implements MediaResource {
 	//TODO:fj:a clean up on all filemediaresources subclasses
 	protected File file;
 	private FilesInfoMBean filesInfoMBean;
+	private boolean unknownMimeType = false;
 	private boolean deliverAsAttachment = false;
 
 	/**
@@ -101,7 +102,16 @@ public class FileMediaResource implements MediaResource {
 	public String getContentType() {
 		String fileName = file.getName();
 		String mimeType = WebappHelper.getMimeType(fileName);
-		if (mimeType == null) mimeType = "application/octet-stream";
+		
+		mimeType = WebappHelper.getMimeType(fileName);
+		//html, xhtml and javascript are set to force download
+		if (mimeType == null || "text/html".equals(mimeType)
+				|| "application/xhtml+xml".equals(mimeType)
+				|| "application/javascript".equals(mimeType)
+				|| "image/svg+xml".equals(mimeType)) {
+			mimeType = "application/force-download";
+			unknownMimeType = true;
+		}
 		return mimeType;
 	}
 
@@ -152,8 +162,13 @@ public class FileMediaResource implements MediaResource {
 		if (deliverAsAttachment) {
 			// encode filename in ISO8859-1; does not really help but prevents from filename not being displayed at all
 			// if it contains non-US-ASCII characters which are not allowed in header fields.
-			hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + StringHelper.urlEncodeUTF8(file.getName()));			
-			hres.setHeader("Content-Description",StringHelper.urlEncodeUTF8(file.getName()));
+			String name = StringHelper.urlEncodeUTF8(file.getName());
+			if (unknownMimeType) {
+				hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + name);
+				hres.setHeader("Content-Description", name);
+			} else {
+				hres.setHeader("Content-Disposition", "filename*=UTF-8''" + name);
+			}
 		} else {
 			hres.setHeader("Content-Disposition", "inline");
 		}

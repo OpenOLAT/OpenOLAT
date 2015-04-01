@@ -340,6 +340,8 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Ass
 			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
 				rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
 			ScormEditController.setScormCPReference(re, getModuleConfiguration());
+		} else {
+			CPEditController.removeCPReference(getModuleConfiguration());
 		}
 	}
 

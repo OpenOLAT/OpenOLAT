@@ -34,6 +34,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.additionalconditions.AdditionalCondition;
 import org.olat.course.condition.additionalconditions.AdditionalConditionAnswerContainer;
@@ -136,8 +137,8 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 	}
 
 	@Override
-	public void copyConfigurationTo(CourseNode courseNode) {
-		super.copyConfigurationTo(courseNode);
+	public void copyConfigurationTo(CourseNode courseNode, ICourse course) {
+		super.copyConfigurationTo(courseNode, course);
 		if(courseNode instanceof AbstractAccessableCourseNode) {
 			AbstractAccessableCourseNode accessableNode = (AbstractAccessableCourseNode)courseNode;
 			if(preConditionAccess != null) {

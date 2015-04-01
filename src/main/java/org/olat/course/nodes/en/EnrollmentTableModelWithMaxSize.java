@@ -23,23 +23,17 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.group.ui;
+package org.olat.course.nodes.en;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.basesecurity.GroupRoles;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.components.table.TableDataModelWithMarkableRows;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.Formatter;
-import org.olat.core.util.filter.FilterFactory;
-import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupService;
 
 /**
  * Description:<BR>
@@ -50,16 +44,15 @@ import org.olat.group.BusinessGroupService;
  * 
  * @author gnaegi
  */
-public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<BusinessGroup> implements TableDataModelWithMarkableRows<BusinessGroup>  {
-	private static final OLog log = Tracing.createLoggerFor(BusinessGroupTableModelWithMaxSize.class);
+public class EnrollmentTableModelWithMaxSize extends DefaultTableDataModel<EnrollmentRow> implements TableDataModelWithMarkableRows<EnrollmentRow>  {
+	private static final OLog log = Tracing.createLoggerFor(EnrollmentTableModelWithMaxSize.class);
 	
 	private static final int COLUMN_COUNT = 7;
-	private List<Integer> members;
-	private Translator trans;
-	private Identity identity;
-	private boolean cancelEnrollEnabled;
-	private BusinessGroupService businessGroupService;
-	private int maxEnrolCount;
+
+	private final Translator trans;
+	private final Identity identity;
+	private final boolean cancelEnrollEnabled;
+	private final int maxEnrolCount;
 
 	/**
 	 * @param groups List of business groups
@@ -67,12 +60,11 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 	 *          The index of the list corresponds with the index of the group list
 	 * @param trans
 	 */
-	public BusinessGroupTableModelWithMaxSize(List<BusinessGroup> groups, List<Integer> members, Translator trans, Identity identity, boolean cancelEnrollEnabled, int maxEnrolCount) {
+	public EnrollmentTableModelWithMaxSize(List<EnrollmentRow> groups, Translator trans, Identity identity,
+			boolean cancelEnrollEnabled, int maxEnrolCount) {
 		super(groups);
-		this.members = members;
 		this.trans = trans;
 		this.identity = identity;
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		this.cancelEnrollEnabled = cancelEnrollEnabled;
 		this.maxEnrolCount = maxEnrolCount;
 	}
@@ -80,6 +72,7 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 	/**
 	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
 	 */
+	@Override
 	public int getColumnCount() {
 		return COLUMN_COUNT;
 	}
@@ -87,18 +80,14 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 	/**
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
+	@Override
 	public Object getValueAt(int row, int col) {
-		BusinessGroup businessGroup = objects.get(row);
-		Integer numbParts = members.get(row);
-		Integer max = businessGroup.getMaxParticipants();
+		EnrollmentRow enrollmentRow = objects.get(row);
+		int numbParts = enrollmentRow.getNumOfParticipants();
+		Integer max = enrollmentRow.getMaxParticipants();
 		switch (col) {
-			case 0:
-				return businessGroup.getName();
-			case 1:
-				String description = businessGroup.getDescription();
-				description = FilterFactory.getHtmlTagsFilter().filter(description);
-				description = Formatter.truncate(description, 256);
-				return description;
+			case 0: return enrollmentRow.getName();
+			case 1: return enrollmentRow.getDescription();
 			case 2:
 				// Belegt/Plätze
 				if (max == null) { 
@@ -107,51 +96,50 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 				}
 				// return format 2/10
 				StringBuilder buf = new StringBuilder();
-				buf.append(numbParts);
-				buf.append(trans.translate("grouplist.table.partipiciant.delimiter"));
-				buf.append(businessGroup.getMaxParticipants());
-				if(numbParts>businessGroup.getMaxParticipants()) {
-				  log.info("Group overflow detected for the group: " + businessGroup + ", participants: " + numbParts + " maxParticipamts: " + businessGroup.getMaxParticipants());
+				buf.append(numbParts)
+				   .append(trans.translate("grouplist.table.partipiciant.delimiter"))
+				   .append(enrollmentRow.getMaxParticipants());
+				if(numbParts > enrollmentRow.getMaxParticipants()) {
+					log.info("Group overflow detected for the group: " + enrollmentRow.getKey() + "[name=" + enrollmentRow.getName() + "], participants: " + numbParts + " maxParticipamts: " + enrollmentRow.getMaxParticipants());
 				}
 				return buf.toString();
 			case 3:
 				// Waiting-list
-				if (businessGroup.getWaitingListEnabled().booleanValue()) {
+				if (enrollmentRow.isWaitingListEnabled()) {
 					// Waitinglist is enabled => show current size
-					int intValue = businessGroupService.countMembers(businessGroup, GroupRoles.waiting.name());
-					return new Integer(intValue);
+					return new Integer(enrollmentRow.getNumInWaitingList());
 				}
 				return trans.translate("grouplist.table.noWaitingList");
 			case 4:
 				// Status
-				if (businessGroupService.hasRoles(identity, businessGroup, GroupRoles.participant.name())) {
+				if (enrollmentRow.isParticipant()) {
 					return trans.translate("grouplist.table.state.onPartipiciantList"); 
-				} else if (businessGroupService.hasRoles(identity, businessGroup, GroupRoles.waiting.name())) {
-					int pos = businessGroupService.getPositionInWaitingListFor(identity,businessGroup);
+				} else if (enrollmentRow.isWaiting()) {
+					int pos = enrollmentRow.getPositionInWaitingList();
 					String[] onWaitingListArgs = new String[] { Integer.toString(pos) };
 					return trans.translate("grouplist.table.state.onWaitingList",onWaitingListArgs); 
-				} else if (max != null && !businessGroup.getWaitingListEnabled().booleanValue() && (numbParts.intValue() >= max.intValue()) ) {
+				} else if (max != null && !enrollmentRow.isWaitingListEnabled() && numbParts >= max.intValue()) {
 					return trans.translate("grouplist.table.state.enroll.full"); 
-				}	else if (max != null && businessGroup.getWaitingListEnabled().booleanValue() && (numbParts.intValue() >= max.intValue()) ) {
+				}	else if (max != null && enrollmentRow.isWaitingListEnabled() && numbParts >= max.intValue()) {
 					return trans.translate("grouplist.table.state.WaitingList");
 				}
 				return trans.translate("grouplist.table.state.notEnrolled");
 			case 5:
 				// Action enroll
-				if (getEnrolCount(identity) >= maxEnrolCount || isEnrolledIn(businessGroup, identity)) {
+				if (getEnrolCount() >= maxEnrolCount || isEnrolledIn(enrollmentRow)) {
 					// Already too much enrollments or already enrolled in the bg of the row => does not show action-link 'enroll'
 					return Boolean.FALSE;
 				}
-				if (max != null && !businessGroup.getWaitingListEnabled().booleanValue() && (numbParts.intValue() >= max.intValue()) ) {
+				if (max != null && !enrollmentRow.isWaitingListEnabled() && numbParts >= max.intValue()) {
 					// group is full => => does not show action-link 'enroll'
 					return Boolean.FALSE;
 				}
 				return Boolean.TRUE;
 			case 6:
 				// Action cancel enrollment
-				if (isEnrolledIn(businessGroup, identity)) {
+				if (isEnrolledIn(enrollmentRow)) {
           // check if user is on waiting-list
-					if (businessGroupService.hasRoles(identity, businessGroup, GroupRoles.waiting.name())) {
+					if (enrollmentRow.isWaiting()) {
             // user is on waitinglist => show allways action cancelEnrollment for waitinglist 
  					  return Boolean.TRUE;
 					}
@@ -161,20 +149,19 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 					}
 				}
 				return Boolean.FALSE;
-			default:
-				return "ERROR";
+			default: return "ERROR";
 		}
 	}
 
 	@Override
 	public Object createCopyWithEmptyList() {
-		return new BusinessGroupTableModelWithMaxSize(new ArrayList<BusinessGroup>(), members, trans, identity, cancelEnrollEnabled, maxEnrolCount);
+		return new EnrollmentTableModelWithMaxSize(new ArrayList<EnrollmentRow>(), trans, identity, cancelEnrollEnabled, maxEnrolCount);
 	}
 
 	/**
 	 * @param owned
 	 */
-	public void setEntries(List<BusinessGroup> owned) {
+	public void setEntries(List<EnrollmentRow> owned) {
 		this.objects = owned;
 	}
 
@@ -182,7 +169,7 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 	 * @param row
 	 * @return the business group at the given row
 	 */
-	public BusinessGroup getBusinessGroupAt(int row) {
+	public EnrollmentRow getRowAt(int row) {
 		return objects.get(row);
 	}
 	
@@ -192,12 +179,8 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 	 * @param ident
 	 * @return true: Found identity in PartipiciantGroup or WaitingGroup.
 	 */
-	private boolean isEnrolledIn(BusinessGroup businessGroup, Identity ident) {
-		if (businessGroupService.hasRoles(ident, businessGroup, GroupRoles.participant.name())
-				|| businessGroupService.hasRoles(ident, businessGroup, GroupRoles.waiting.name())) {
-			return true;
-		} 
-		return false;
+	private boolean isEnrolledIn(EnrollmentRow enrollmentRow) {
+		return enrollmentRow.isWaiting() || enrollmentRow.isParticipant();
 	}
 	
 	/**
@@ -205,11 +188,11 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 	 * @param ident
 	 * @return amount of business groups the identity is enrolled in
 	 */		
-	private int getEnrolCount(Identity ident) {
+	private int getEnrolCount() {
 		int enrolCount=0;
 		// loop over all business-groups
-		for (BusinessGroup businessGroup:objects) {
-			if (isEnrolledIn(businessGroup, ident) ) {
+		for (EnrollmentRow enrollmentRow:objects) {
+			if (isEnrolledIn(enrollmentRow) ) {
 				enrolCount++;
 				// optimize, enough is enough
 				if (maxEnrolCount == enrolCount) {
@@ -222,10 +205,47 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 
 	@Override
 	public String getRowCssClass(int rowId) {
-		BusinessGroup businessGroup = objects.get(rowId);
-		boolean isEnrolled = isEnrolledIn(businessGroup, identity);
-		return (isEnrolled ? "o_row_selected" : "");
+		EnrollmentRow enrollmentRow = objects.get(rowId);
+		return isEnrolledIn(enrollmentRow) ? "o_row_selected" : "";
 	}
+	
+	public Stats getStats() {
+		Stats stats = new Stats();
+		for(int i=getRowCount(); i-->0; ) {
+			EnrollmentRow row = getObject(i);
+			if(row.isWaitingListEnabled() && row.isWaiting()) {
+				stats.getWaitingGroupNames().add(row.getName());
+			}
+			if(row.isParticipant()) {
+				stats.getParticipantingGroupNames().add(row.getName());
+			}
+			if(row.isWaitingListEnabled()) {
+				stats.setSomeGroupWaitingListEnabled(true);
+			}
+		}
+		return stats;
+	}
+	
+	public static class Stats {
+		
+		private boolean someGroupWaitingListEnabled = false;
+		private final List<String> participantingGroupNames = new ArrayList<>(5);
+		private final List<String> waitingGroupNames = new ArrayList<>(5);
 
- 
+		public boolean isSomeGroupWaitingListEnabled() {
+			return someGroupWaitingListEnabled;
+		}
+
+		public void setSomeGroupWaitingListEnabled(boolean someGroupWaitingListEnabled) {
+			this.someGroupWaitingListEnabled = someGroupWaitingListEnabled;
+		}
+
+		public List<String> getParticipantingGroupNames() {
+			return participantingGroupNames;
+		}
+
+		public List<String> getWaitingGroupNames() {
+			return waitingGroupNames;
+		}
+	}
 }

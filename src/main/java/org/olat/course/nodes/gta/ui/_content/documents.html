@@ -1,0 +1,16 @@
+<div class="o_button_group o_button_group_right">
+#if($r.available("upload.document") && $r.available("open.editor"))
+	<div class="btn-group">
+		$r.render("upload.document")
+		$r.render("open.editor")
+	</div>
+#elseif($r.available("upload.document"))
+	$r.render("upload.document")
+#elseif($r.available("open.editor"))
+	$r.render("open.editor")
+#end
+</div>
+#if($maxDocsWarning && !$maxDocsWarning.isEmpty())
+	<div class="o_warning">$maxDocsWarning</div>
+#end
+$r.render("table")

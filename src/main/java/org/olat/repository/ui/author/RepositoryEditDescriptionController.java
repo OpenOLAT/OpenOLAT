@@ -382,7 +382,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		allOk &= validateTextElement(objectives, 2000);
 		allOk &= validateTextElement(requirements, 2000);
 		allOk &= validateTextElement(credits, 2000);
-		allOk &= validateTextElement(externalRef, 225);
+		allOk &= validateTextElement(externalRef, 58);
 		allOk &= validateTextElement(expenditureOfWork, 225);
 		allOk &= validateTextElement(authors, 2000);
 

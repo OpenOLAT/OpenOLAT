@@ -363,8 +363,10 @@ public interface CourseNode extends INode, ShortName {
 	
 	/**
 	 * Remap the node to the context of the course after import.
+	 * @param sourceCrourse
+	 * @param sourceCourse 
 	 */
-	public void postCopy(CourseEnvironmentMapper envMapper, Processing type);
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing type, ICourse course, ICourse sourceCrourse);
 	
 	/**
 	 * Remap the node to the context of the course after import.
@@ -383,7 +385,7 @@ public interface CourseNode extends INode, ShortName {
 	 * be from different types.
 	 * @param courseNode
 	 */
-	public void copyConfigurationTo(CourseNode courseNode);
+	public void copyConfigurationTo(CourseNode courseNode, ICourse course);
 	
 	/**
 	 * Create an instance for the copy process. The copy must have a different

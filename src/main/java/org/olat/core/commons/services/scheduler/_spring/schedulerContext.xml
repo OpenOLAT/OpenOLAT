@@ -24,6 +24,7 @@ How to add a new job:
 
 <!-- this tells spring to create the quartz scheduler -->
 <bean id="schedulerFactoryBean" class="org.springframework.scheduling.quartz.SchedulerFactoryBean" depends-on="database">
+	<property name="waitForJobsToCompleteOnShutdown" value="true" />
 	<property name="quartzProperties">
 		<props>
 			<prop key="org.quartz.threadPool.threadCount">5</prop>

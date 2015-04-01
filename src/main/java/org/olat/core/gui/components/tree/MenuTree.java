@@ -34,11 +34,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.tree.InsertionPoint.Position;
 import org.olat.core.gui.control.JSAndCSSAdder;
+import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
@@ -123,6 +126,7 @@ public class MenuTree extends AbstractComponent {
 	private boolean unselectNodes;
 	private boolean showInsertTool;
 	private boolean multiSelect;
+	private boolean scrollTopOnClick;
 	private String dndAcceptJSMethod = "treeAcceptDrop_notWithChildren";
 
 	private boolean dirtyForUser = false;
@@ -134,15 +138,7 @@ public class MenuTree extends AbstractComponent {
 	 * @param name
 	 */
 	public MenuTree(String name) {
-		this(null, name);
-	}
-	
-	/**
-	 * @param id Fix unique identifier for state-less behavior
-	 * @param name
-	 */
-	public MenuTree(String id, String name) {
-		super(id, name);
+		super(null, name);
 	}
 	
 	/**
@@ -151,11 +147,11 @@ public class MenuTree extends AbstractComponent {
 	 * @param eventListener
 	 */
 	public MenuTree(String id, String name, ComponentEventListener eventListener) {
-		this(id, name);
+		super(id, name);
 		addListener(eventListener);
 	}
 	
-	public MenuTree(String id, String name, ComponentEventListener eventListener, MenuTreeItem menuTreeItem) {
+	MenuTree(String id, String name, ComponentEventListener eventListener, MenuTreeItem menuTreeItem) {
 		this(id, name, eventListener);
 		this.menuTreeItem = menuTreeItem;
 	}
@@ -164,8 +160,20 @@ public class MenuTree extends AbstractComponent {
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		super.validate(ureq, vr);
 		
-		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
-		jsa.addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.10.4.custom.dnd.min.js");
+		if(isDragEnabled() || isDropEnabled() || isDropSiblingEnabled()) {
+			JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
+			jsa.addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.10.4.custom.dnd.min.js");
+		}
+	}
+	
+	private void scrollTop(UserRequest ureq) {
+		Window window = Windows.getWindows(ureq).getWindow(ureq);
+		if(window != null) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("try{ o_scrollToElement('#o_top'); }catch(e){}");
+			JSCommand jsCommand = new JSCommand(sb.toString());
+			window.getWindowBackOffice().sendCommandTo(jsCommand);
+		}
 	}
 
 	/**
@@ -276,6 +284,8 @@ public class MenuTree extends AbstractComponent {
 			subCmd = TreeEvent.COMMAND_TREENODE_CLOSE;
 		} else if (TREENODE_OPEN.equals(cmd)) {
 			subCmd = TreeEvent.COMMAND_TREENODE_OPEN;
+		} else {
+			scrollTop(ureq);
 		}
 		updateOpenedNode(selTreeNode, selNodeId, cmd);
 
@@ -509,6 +519,14 @@ public class MenuTree extends AbstractComponent {
 		} else {
 			this.filter = filter;
 		}
+	}
+
+	public boolean isScrollTopOnClick() {
+		return scrollTopOnClick;
+	}
+
+	public void setScrollTopOnClick(boolean scrollTopOnClick) {
+		this.scrollTopOnClick = scrollTopOnClick;
 	}
 
 	public boolean isDragEnabled() {

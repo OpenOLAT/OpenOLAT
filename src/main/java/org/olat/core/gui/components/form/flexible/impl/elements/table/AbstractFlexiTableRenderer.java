@@ -218,9 +218,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		String selected = null;
 		
 		sb.append("<div class='btn-group'>")
-		  .append("<button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
+		  .append("<button id='table-button-filters-").append(dispatchId).append("' type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
 		  .append("<i class='o_icon o_icon_filter o_icon-lg'> </i> <b class='caret'></b></button>")
-		  .append("<ul class='dropdown-menu dropdown-menu-right' role='menu'>");
+		  .append("<div id='table-filters-").append(dispatchId).append("' class='hide'><ul class='o_dropdown list-unstyled' role='menu'>");
 		
 		for(FlexiTableFilter filter:filters) {
 			if(FlexiTableFilter.SPACER.equals(filter)) {
@@ -238,7 +238,12 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				}
 			}
 		}
-		sb.append("</ul></div> ");
+		sb.append("</ul></div></div> ")
+		  .append("<script type='text/javascript'>\n")
+		  .append("/* <![CDATA[ */\n")
+		  .append("jQuery(function() { o_popover('table-button-filters-").append(dispatchId).append("','table-filters-").append(dispatchId).append("'); });\n")
+		  .append("/* ]]> */\n")
+		  .append("</script>");
 		return selected;
 	}
 	
@@ -247,9 +252,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		String dispatchId = ftE.getFormDispatchId();
 		
 		sb.append("<div class='btn-group'>")
-		  .append("<button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
+		  .append("<button id='table-button-sorters-").append(dispatchId).append("' type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
 		  .append("<i class='o_icon o_icon_sort_menu o_icon-lg'> </i> <b class='caret'></b></button>")
-		  .append("<ul class='dropdown-menu dropdown-menu-right' role='menu'>");
+		  .append("<div id='table-sorters-").append(dispatchId).append("' class='hide'><ul class='o_dropdown list-unstyled' role='menu'>");
 		
 		for(FlexiTableSort sort:sorts) {
 			if(FlexiTableSort.SPACER.equals(sort)) {
@@ -270,7 +275,12 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				sb.append(sort.getLabel()).append("</a></li>");
 			}
 		}
-		sb.append("</ul></div> ");
+		sb.append("</ul></div></div> ")
+		  .append("<script type='text/javascript'>\n")
+		  .append("/* <![CDATA[ */\n")
+		  .append("jQuery(function() { o_popover('table-button-sorters-").append(dispatchId).append("','table-sorters-").append(dispatchId).append("'); });\n")
+		  .append("/* ]]> */\n")
+		  .append("</script>");
 	}
 	
 	protected void renderHeaderSwitchType(FlexiTableRendererType type, Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,

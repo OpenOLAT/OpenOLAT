@@ -19,6 +19,8 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
+import java.io.File;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.download.DownloadComponent;
@@ -61,6 +63,11 @@ public class DownloadLinkImpl extends FormItemImpl implements DownloadLink {
 	@Override
 	public void setIconLeftCSS(String iconCSS) {
 		downloadCmp.setLinkCssIconClass(iconCSS);
+	}
+
+	@Override
+	public void setDownloadItem(File downloadItem) {
+		downloadCmp.setDownloadItem(downloadItem);
 	}
 
 	@Override

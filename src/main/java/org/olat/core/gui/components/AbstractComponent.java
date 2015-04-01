@@ -52,8 +52,8 @@ public abstract class AbstractComponent implements Component {
 
 	private boolean spanReplaceable = false;
 
-	private String name;
-	private String dispatchID;
+	private final String name;
+	private final String dispatchID;
 	private String elementCssClass;
 
 	private long timestamp = 1l;
@@ -118,13 +118,11 @@ public abstract class AbstractComponent implements Component {
 			dispatchID = Long.toString(CodeHelper.getRAMUniqueID());
 			staticCmp = false;
 		} else {
-			dispatchID = id;
+			// OO-98: dispatchID will get used in generated js-code. thus, make sure it
+			// is valid as variable name.
+			dispatchID = secureJSVarName(id);
 			staticCmp = true;
 		}
-		
-		// OO-98: dispatchID will get used in generated js-code. thus, make sure it
-		// is valid as variable name.
-		dispatchID = secureJSVarName(dispatchID);
 					
 		this.name = name;
 		this.translator = translator;

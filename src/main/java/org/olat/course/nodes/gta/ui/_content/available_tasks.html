@@ -1,0 +1,6 @@
+#if($noMoreTasks)
+	<div class="o_warning">$r.translate("error.nomoretasks")</div>
+#else
+	<p>$r.translate("run.pick.task.description")</p>
+	$r.render("table")
+#end

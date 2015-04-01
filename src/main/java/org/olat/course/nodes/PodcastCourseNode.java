@@ -187,6 +187,8 @@ public class PodcastCourseNode extends AbstractFeedCourseNode {
 		if(withReferences) {
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(PodcastFileResource.TYPE_NAME);
 			importFeed(handler, importDirectory, owner, locale);
+		} else {
+			FeedNodeEditController.removeReference(getModuleConfiguration());
 		}
 	}
 }

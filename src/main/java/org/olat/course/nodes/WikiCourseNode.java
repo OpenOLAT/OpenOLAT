@@ -198,6 +198,8 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
 				rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
 			WikiEditController.setWikiRepoReference(re, getModuleConfiguration());
+		} else {
+			WikiEditController.removeWikiReference(getModuleConfiguration());
 		}
 	}
 

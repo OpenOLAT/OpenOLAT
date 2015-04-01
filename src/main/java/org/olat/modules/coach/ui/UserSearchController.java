@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.modules.coach.CoachingService;
@@ -113,11 +114,15 @@ public class UserSearchController extends BasicController implements Activateabl
 	
 	private void doSearch() {
 		String login = searchForm.getLogin();
+		boolean onlyActive = searchForm.isOnlyActive();
 		Map<String,String> searchProps = searchForm.getSearchProperties();
 		
 		SearchCoachedIdentityParams params = new SearchCoachedIdentityParams();
 		params.setLogin(login);
 		params.setUserProperties(searchProps);
+		if(onlyActive) {
+			params.setStatus(Identity.STATUS_VISIBLE_LIMIT);
+		}
 		userListCtrl.search(params);
 		mainPanel.pushContent(userListCtrl.getInitialComponent());
 	}

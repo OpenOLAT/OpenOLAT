@@ -49,6 +49,8 @@ public interface CourseNodeConfiguration extends ConfigOnOff{
 	
 	public int getOrder();
 	
+	public boolean isDeprecated();
+	
 	public List<String> getAlternativeCourseNodes();
 
 }

@@ -48,7 +48,7 @@ public interface BGAreaManager {
 	 * @param resource The resource of this area
 	 * @return The new area or null if no area has been created
 	 */
-	public abstract BGArea createAndPersistBGArea(String areaName, String description, OLATResource resource);
+	public BGArea createAndPersistBGArea(String areaName, String description, OLATResource resource);
 
 	/**
 	 * Finds an area in the given context
@@ -57,7 +57,7 @@ public interface BGAreaManager {
 	 * @param resource
 	 * @return The area or null if the area does not exists
 	 */
-	public abstract BGArea findBGArea(String areaName, OLATResource resource);
+	public BGArea findBGArea(String areaName, OLATResource resource);
 	
 	/**
 	 * Load an area by its primary key
@@ -139,6 +139,12 @@ public interface BGAreaManager {
 	 * @return A list of business groups
 	 */
 	public List<BusinessGroup> findBusinessGroupsOfAreaKeys(List<Long> areaKeys);
+	
+	/**
+	 * @param areaKeys
+	 * @return List of keys
+	 */
+	public List<Long> findBusinessGroupKeysOfAreaKeys(List<Long> areaKeys);
 
 	/**
 	 * Searches for all business groups that are associated with the given

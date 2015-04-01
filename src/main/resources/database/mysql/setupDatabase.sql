@@ -1341,6 +1341,28 @@ create table o_cl_check (
    primary key (id)
 );
 
+create table o_gta_task_list (
+   id bigint not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   g_course_node_ident varchar(36),
+   fk_entry bigint not null,
+   primary key (id)
+);
+
+create table o_gta_task (
+   id bigint not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   g_status varchar(36),
+   g_rev_loop mediumint not null default 0,
+   g_taskname varchar(36),
+   fk_tasklist bigint not null,
+   fk_identity bigint,
+   fk_businessgroup bigint,
+   primary key (id)
+);
+
 create table o_ex_task (
    id bigint not null,
    creationdate datetime not null,
@@ -1710,6 +1732,8 @@ alter table o_ex_task_modifier ENGINE = InnoDB;
 alter table o_checklist ENGINE = InnoDB;
 alter table o_cl_checkbox ENGINE = InnoDB;
 alter table o_cl_check ENGINE = InnoDB;
+alter table o_gta_task_list ENGINE = InnoDB;
+alter table o_gta_task ENGINE = InnoDB;
 alter table o_cer_template ENGINE = InnoDB;
 alter table o_cer_certificate ENGINE = InnoDB;
 
@@ -1885,6 +1909,13 @@ alter table o_cl_check add constraint check_identity_ctx foreign key (fk_identit
 alter table o_cl_check add constraint check_box_ctx foreign key (fk_checkbox_id) references o_cl_checkbox (id);
 alter table o_cl_check add unique check_identity_unique_ctx (fk_identity_id, fk_checkbox_id);
 create index idx_checkbox_uuid_idx on o_cl_checkbox (c_checkboxid);
+
+-- group tasks
+alter table o_gta_task add constraint gtask_to_tasklist_idx foreign key (fk_tasklist) references o_gta_task_list (id);
+alter table o_gta_task add constraint gtask_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+alter table o_gta_task add constraint gtask_to_bgroup_idx foreign key (fk_businessgroup) references o_gp_business (group_id);
+
+alter table o_gta_task_list add constraint gta_list_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 
 -- lifecycle
 create index lc_pref_idx on o_lifecycle (persistentref);

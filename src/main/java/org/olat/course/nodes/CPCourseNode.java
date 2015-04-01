@@ -298,6 +298,8 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
 					rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
 			CPEditController.setCPReference(re, getModuleConfiguration());
+		} else {
+			CPEditController.removeCPReference(getModuleConfiguration());
 		}
 	}
 

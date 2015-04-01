@@ -264,8 +264,8 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 	}
 	
     @Override
-    public void postCopy(CourseEnvironmentMapper envMapper, Processing processType) {
-    	super.postCopy(envMapper, processType);
+    public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse) {
+    	super.postCopy(envMapper, processType, course, sourceCrourse);
 	    postImportCopy(envMapper);
 	}
     

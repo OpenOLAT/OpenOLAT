@@ -28,6 +28,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -50,11 +51,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class UserSearchForm extends FormBasicController {
 	
 	private static final String  PROPS_IDENTIFIER = UserSearchForm.class.getName();
+	private static final String[] activeKeys = new String[] { "on" };
+	private static final String[] activeValues = new String[] { "" };
 	
 	private final boolean adminProps;
 	private FormLink searchButton;
 	
 	private TextElement login;
+	private MultipleSelectionElement statusEl;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private Map <String,FormItem>propFormItems;
 	
@@ -98,6 +102,9 @@ public class UserSearchForm extends FormBasicController {
 			}
 		}
 		
+		statusEl = uifactory.addCheckboxesHorizontal("only.active", formLayout, activeKeys, activeValues);
+		statusEl.select(activeKeys[0], true);
+		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonCont);
 		uifactory.addFormSubmitButton("search", buttonCont);
@@ -120,6 +127,10 @@ public class UserSearchForm extends FormBasicController {
 			}
 		}
 		return userPropertiesSearch;
+	}
+	
+	public boolean isOnlyActive() {
+		return statusEl.isAtLeastSelected(1);
 	}
 	
 	@Override

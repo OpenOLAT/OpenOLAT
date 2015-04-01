@@ -25,6 +25,7 @@
 */
 package org.olat.core.gui.components.form.flexible;
 
+import java.io.File;
 import java.lang.management.MemoryType;
 import java.util.Date;
 import java.util.List;
@@ -983,6 +984,19 @@ public class FormUIFactory {
 	 * @return
 	 */
 	public DownloadLink addDownloadLink(String name,  String linkTitle, String i18nLabel, VFSLeaf file, FlexiTableElement formLayout) {
+		DownloadLinkImpl fte = new DownloadLinkImpl(name);
+		fte.setLinkText(linkTitle);
+		fte.setDownloadItem(file);
+		String css = CSSHelper.createFiletypeIconCssClassFor(file.getName());
+		fte.setIconLeftCSS("o_icon o_icon-fw " + css);
+		setLabelIfNotNull(i18nLabel, fte);
+		if(formLayout != null) {
+			((FlexiTableElementImpl)formLayout).addFormItem(fte);
+		}
+		return fte;
+	}
+	
+	public DownloadLink addDownloadLink(String name,  String linkTitle, String i18nLabel, File file, FlexiTableElement formLayout) {
 		DownloadLinkImpl fte = new DownloadLinkImpl(name);
 		fte.setLinkText(linkTitle);
 		fte.setDownloadItem(file);
