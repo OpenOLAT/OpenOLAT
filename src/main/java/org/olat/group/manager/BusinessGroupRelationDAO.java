@@ -305,9 +305,24 @@ public class BusinessGroupRelationDAO {
 		return members;
 	}
 	
+	public List<Long> getMemberKeysOrderByDate(BusinessGroupRef group, String... roles) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select membership.identity.key from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
+		  .append(" inner join bgroup.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where bgroup.key=:businessGroupKey and membership.role in (:roles) order by membership.creationDate");
+
+		List<String> roleList = GroupRoles.toList(roles);
+		List<Long> members = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+				.setParameter("businessGroupKey", group.getKey())
+				.setParameter("roles", roleList)
+				.getResultList();
+		return members;
+	}
+	
 	public List<Identity> getMembersOrderByDate(BusinessGroupRef group, String... roles) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select membership.identity from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
+		sb.append("select membership.identity.key from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
 		  .append(" inner join bgroup.baseGroup as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
 		  .append(" where bgroup.key=:businessGroupKey and membership.role in (:roles) order by membership.creationDate");

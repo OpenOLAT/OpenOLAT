@@ -82,9 +82,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author patrick
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class EnrollmentManagerTest extends OlatTestCase implements WindowControl {
+public class EnrollmentManagerConcurrentTest extends OlatTestCase implements WindowControl {
 	//
-	private static OLog log = Tracing.createLoggerFor(EnrollmentManagerTest.class);
+	private static OLog log = Tracing.createLoggerFor(EnrollmentManagerConcurrentTest.class);
 	/*
 	 * ::Test Setup::
 	 */
@@ -128,7 +128,7 @@ public class EnrollmentManagerTest extends OlatTestCase implements WindowControl
 			log.info("TEST bgWithWaitingList.getMaxParticipants()=" + bgWithWaitingList.getMaxParticipants() );
 			log.info("TEST bgWithWaitingList.getWaitingListEnabled()=" + bgWithWaitingList.getWaitingListEnabled() );
 			// create mock objects
-			testTranslator = Util.createPackageTranslator(EnrollmentManagerTest.class, new Locale("de"));
+			testTranslator = Util.createPackageTranslator(EnrollmentManagerConcurrentTest.class, new Locale("de"));
 			// Identities
 			wg1 = JunitTestHelper.createAndPersistIdentityAsUser("wg1");
 			wg1Roles = securityManager.getRoles(wg1);
@@ -147,7 +147,8 @@ public class EnrollmentManagerTest extends OlatTestCase implements WindowControl
 	 * Enroll 3 identities (group with max-size=2 and waiting-list).
 	 * Cancel enrollment. Check size after each step.
 	 */
-	@Test public void testEnroll() throws Exception {
+	@Test
+	public void testEnroll() throws Exception {
 		log.info("testEnroll: start...");
 		ENCourseNode enNode = new ENCourseNode();
 		OLATResourceable ores = OresHelper.createOLATResourceableTypeWithoutCheck("TestCourse");
@@ -299,7 +300,7 @@ public class EnrollmentManagerTest extends OlatTestCase implements WindowControl
 				CoursePropertyManager coursePropertyManager = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
 				CourseGroupManager courseGroupManager = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
 				
-				enrollmentManager.doEnroll(identity, JunitTestHelper.getUserRoles(), group, enNode, coursePropertyManager, EnrollmentManagerTest.this /*WindowControl mock*/, testTranslator,
+				enrollmentManager.doEnroll(identity, JunitTestHelper.getUserRoles(), group, enNode, coursePropertyManager, EnrollmentManagerConcurrentTest.this /*WindowControl mock*/, testTranslator,
 						new ArrayList<Long>()/*enrollableGroupNames*/, new ArrayList<Long>()/*enrollableAreaNames*/, courseGroupManager);
 				DBFactory.getInstance().commitAndCloseSession();
 			} catch (Exception e) {

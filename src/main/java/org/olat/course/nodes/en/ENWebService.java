@@ -241,8 +241,8 @@ public class ENWebService extends AbstractCourseNodeWebService {
 					Long groupKey = new Long(groupId);
 					keys.add(groupKey);
 				}
-				List<BusinessGroupShort> groups = bgm.loadShortBusinessGroups(keys);
-				for(BusinessGroupShort bg:groups) {
+				List<BusinessGroupShort> groupsShort = bgm.loadShortBusinessGroups(keys);
+				for(BusinessGroupShort bg:groupsShort) {
 					groupNames.add(bg.getName());
 				}
 			}

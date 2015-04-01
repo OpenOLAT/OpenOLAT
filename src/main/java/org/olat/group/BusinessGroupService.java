@@ -346,7 +346,7 @@ public interface BusinessGroupService {
 	 * @param businessGroup
 	 * @return
 	 */
-	public int getPositionInWaitingListFor(Identity identity, BusinessGroup businessGroup);
+	public int getPositionInWaitingListFor(IdentityRef identity, BusinessGroupRef businessGroup);
 	
 	//memberships
 	/**
@@ -531,7 +531,9 @@ public interface BusinessGroupService {
 	 * @param businessGroup
 	 * @return True if coach or participant
 	 */
-	public boolean isIdentityInBusinessGroup(Identity identity, BusinessGroup businessGroup);
+	public boolean isIdentityInBusinessGroup(IdentityRef identity, BusinessGroupRef businessGroup);
+	
+	public List<String> getIdentityRolesInBusinessGroup(IdentityRef identity, BusinessGroupRef businessGroup);
 	
 	/**
 	 * Checks if an identity is in the list of business groups either as owner or as participant
