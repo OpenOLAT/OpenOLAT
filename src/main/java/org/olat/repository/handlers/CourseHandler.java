@@ -412,7 +412,7 @@ public class CourseHandler implements RepositoryHandler {
 		CourseEnvironmentMapper envMapper = cgm.importCourseBusinessGroups(fExportDir);
 		//upgrade to the current version of the course
 		course = CourseFactory.loadCourse(cgm.getCourseResource());
-		course.postCopy(envMapper);
+		course.postCopy(envMapper, sourceCourse);
 		
 		return target;
 	}

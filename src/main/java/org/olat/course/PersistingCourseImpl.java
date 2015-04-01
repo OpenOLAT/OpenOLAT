@@ -381,13 +381,13 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	}
 	
 	@Override
-	public void postCopy(CourseEnvironmentMapper envMapper) {
+	public void postCopy(CourseEnvironmentMapper envMapper, ICourse sourceCourse) {
 		Structure importedStructure = getRunStructure();
-		visit(new NodePostCopyVisitor(envMapper, Processing.runstructure), importedStructure.getRootNode());
+		visit(new NodePostCopyVisitor(envMapper, Processing.runstructure, this, sourceCourse), importedStructure.getRootNode());
 		saveRunStructure();
 		
 		CourseEditorTreeModel importedEditorModel = getEditorTreeModel();
-		visit(new NodePostCopyVisitor(envMapper, Processing.editor), importedEditorModel.getRootNode());
+		visit(new NodePostCopyVisitor(envMapper, Processing.editor, this, sourceCourse), importedEditorModel.getRootNode());
 		saveEditorTreeModel();
 	}
 	
@@ -592,10 +592,14 @@ class NodePostCopyVisitor implements Visitor {
 	
 	private final Processing processType;
 	private final CourseEnvironmentMapper envMapper;
+	private final ICourse course;
+	private final ICourse sourceCourse;
 	
-	public NodePostCopyVisitor(CourseEnvironmentMapper envMapper, Processing processType) {
+	public NodePostCopyVisitor(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse) {
 		this.envMapper = envMapper;
 		this.processType = processType;
+		this.course = course;
+		this.sourceCourse = sourceCourse;
 	}
 	
 	@Override
@@ -604,7 +608,7 @@ class NodePostCopyVisitor implements Visitor {
 			node = ((CourseEditorTreeNode)node).getCourseNode();
 		}
 		if(node instanceof CourseNode) {
-			((CourseNode)node).postCopy(envMapper, processType);
+			((CourseNode)node).postCopy(envMapper, processType, course, sourceCourse);
 		}
 	}
 }

@@ -937,6 +937,55 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 		postExportCondition(conditionProjectBroker, envMapper, backwardsCompatible);
 	}
 
+    @Override
+    public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse) {
+    	super.postCopy(envMapper, processType, course, null);
+	    if(processType.equals(Processing.runstructure)){
+	    	postImportCopy(envMapper, course, sourceCourse);
+	    }
+	}
+    
+    /**
+     * do re-arrange the projects in a new projectbroker after the copy happened 
+     * @param envMapper
+     * @param course
+     */
+	public void postImportCopy(CourseEnvironmentMapper envMapper, ICourse course, ICourse sourceCourse) {
+		//initialize the managers and services
+		ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
+		ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		CoursePropertyManager oldCpm = sourceCourse.getCourseEnvironment().getCoursePropertyManager();
+		//create new Project broker and get the old one
+		Long projectBrokerId = projectBrokerManager.createAndSaveProjectBroker().getKey();
+		projectBrokerManager.saveProjectBrokerId(projectBrokerId, course.getCourseEnvironment().getCoursePropertyManager(), this);
+		Long oldBrokerId = projectBrokerManager.getProjectBrokerId(oldCpm, this);
+		List<Project> projectsFromGroup = projectBrokerManager.getProjectListBy(oldBrokerId);
+		//loop create and configure the new Projects
+		for(Project project : projectsFromGroup){
+			Identity ident = bgs.getMembers(project.getProjectGroup(), GroupRoles.coach.name()).get(0);
+			BusinessGroup projectGroup = projectGroupManager.createProjectGroupFor(projectBrokerId, ident, project.getTitle() + "_Group", project.getDescription() + "GroupDescription", course.getResourceableId());
+			Project newProject = projectBrokerManager.createAndSaveProjectFor(project.getTitle(), project.getDescription(), projectBrokerId, projectGroup);
+			// copy all project configurations
+			newProject.setMailNotificationEnabled(project.isMailNotificationEnabled());
+			newProject.setMaxMembers(project.getMaxMembers());
+			for (int i = 0; i < project.getCustomFieldSize(); i++) {
+				newProject.setCustomFieldValue(i, project.getCustomFieldValue(i));
+			}
+			projectGroupManager.setDeselectionAllowed(newProject, project.getProjectGroup().isAllowToLeave());
+			projectBrokerManager.updateProject(newProject);
+			// attachment file
+			OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(projectBrokerManager.getAttamchmentRelativeRootPath(project, sourceCourse.getCourseEnvironment(), this), null);
+			VFSItem item = rootFolder.resolve(project.getAttachmentFileName());
+			if (item instanceof VFSLeaf) {
+				projectBrokerManager.saveAttachedFile(newProject, project.getAttachmentFileName(), (VFSLeaf) item, course.getCourseEnvironment(), this);
+				newProject.setAttachedFileName(project.getAttachmentFileName());
+				projectBrokerManager.updateProject(newProject);
+			}
+		}
+	}
+
+	
 	/**
 	 * @see org.olat.course.nodes.CourseNode#createInstanceForCopy()
 	 */
@@ -982,7 +1031,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 					for (int i = 0; i < project.getCustomFieldSize(); i++) {
 						newProject.setCustomFieldValue(i, project.getCustomFieldValue(i));
 					}
-					projectGroupManager.setProjectGroupMaxMembers(ident, projectGroup, project.getMaxMembers());
 					projectGroupManager.setDeselectionAllowed(newProject, project.getProjectGroup().isAllowToLeave());
 					projectBrokerManager.updateProject(newProject);
 
