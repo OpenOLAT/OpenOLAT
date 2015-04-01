@@ -186,8 +186,8 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(uploadRevisionsCtrl == source) {
 			if(event instanceof SubmitEvent) {
-				Task assignedTask = uploadRevisionsCtrl.getAssignedTask();
-				gtaManager.log("Revision", (SubmitEvent)event, assignedTask, getIdentity(), getIdentity(), assessedGroup, courseEnv, gtaNode);
+				Task aTask = uploadRevisionsCtrl.getAssignedTask();
+				gtaManager.log("Revision", (SubmitEvent)event, aTask, getIdentity(), getIdentity(), assessedGroup, courseEnv, gtaNode);
 			}
 		}
 		super.event(ureq, source, event);
@@ -196,12 +196,12 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(submitRevisionButton == source) {
-			doSubmitRevisions(ureq);
+			doSubmitRevisions();
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
 	}
 	
-	private void doSubmitRevisions(UserRequest ureq) {
+	private void doSubmitRevisions() {
 		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.correction);
 		gtaManager.log("Revision", "revision submitted", assignedTask, getIdentity(), getIdentity(), assessedGroup, courseEnv, gtaNode);
 		

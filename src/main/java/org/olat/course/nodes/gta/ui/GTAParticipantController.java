@@ -58,7 +58,6 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGAreaManager;
-import org.olat.modules.ModuleConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -98,10 +97,10 @@ public class GTAParticipantController extends GTAAbstractController {
 	protected void initContainer(UserRequest ureq) {
 		mainVC = createVelocityContainer("run");
 		putInitialPanel(mainVC);
-		initFlow(ureq) ;
+		initFlow() ;
 	}
 
-	protected void initFlow(UserRequest ureq) {
+	protected final void initFlow() {
 		//this is an individual or a group task
 		String type = config.getStringValue(GTACourseNode.GTASK_TYPE);
 		if(GTAType.individual.name().equals(type)) {
@@ -210,14 +209,14 @@ public class GTAParticipantController extends GTAAbstractController {
 				setSubmitController(ureq, assignedTask);
 			} else {
 				mainVC.contextPut("submitCssClass", "o_done");
-				setSubmittedDocumentsController(ureq, assignedTask);
+				setSubmittedDocumentsController(ureq);
 			}
 		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.submit) {
 			mainVC.contextPut("submitCssClass", "o_active");
 			setSubmitController(ureq, assignedTask);
 		} else {
 			mainVC.contextPut("submitCssClass", "o_done");
-			setSubmittedDocumentsController(ureq, assignedTask);
+			setSubmittedDocumentsController(ureq);
 		}
 		
 		return assignedTask;
@@ -244,7 +243,7 @@ public class GTAParticipantController extends GTAAbstractController {
 		submitButton.setIconLeftCSS("o_icon o_icon o_icon_submit");
 	}
 	
-	private void setSubmittedDocumentsController(UserRequest ureq, Task task) {
+	private void setSubmittedDocumentsController(UserRequest ureq) {
 		File documentsDir;
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
 			documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedGroup);
@@ -308,25 +307,24 @@ public class GTAParticipantController extends GTAAbstractController {
 			} else if(assignedTask.getTaskStatus() == TaskProcess.review) {
 				mainVC.contextPut("reviewCssClass", "o_active");
 				
-				setReviews(ureq, assignedTask, true);
+				setReviews(ureq, true);
 			} else {
 				mainVC.contextPut("reviewCssClass", "o_done");
-				setReviews(ureq, assignedTask, false);
+				setReviews(ureq, false);
 			}
 		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.review) {
 			mainVC.contextPut("reviewCssClass", "o_active");
-			setReviews(ureq, assignedTask, true);
+			setReviews(ureq, true);
 		} else {
 			mainVC.contextPut("reviewCssClass", "o_done");
-			setReviews(ureq, assignedTask, false);
+			setReviews(ureq, false);
 		}
 		
 		return assignedTask;
 	}
 	
-	private void setReviews(UserRequest ureq, Task task, boolean waiting) {
+	private void setReviews(UserRequest ureq, boolean waiting) {
 		File documentsDir;
-		ModuleConfiguration config = gtaNode.getModuleConfiguration();
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
 			documentsDir = gtaManager.getCorrectionDirectory(courseEnv, gtaNode, assessedGroup);
 		} else {
@@ -595,7 +593,7 @@ public class GTAParticipantController extends GTAAbstractController {
 		removeAsListenerAndDispose(businessGroupChooserCtrl);
 		removeAsListenerAndDispose(chooserCalloutCtrl);
 
-		businessGroupChooserCtrl = new BusinessGroupChooserController(ureq, getWindowControl(), myGroups, assessedGroup);
+		businessGroupChooserCtrl = new BusinessGroupChooserController(ureq, getWindowControl(), myGroups);
 		listenTo(businessGroupChooserCtrl);
 
 		chooserCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),

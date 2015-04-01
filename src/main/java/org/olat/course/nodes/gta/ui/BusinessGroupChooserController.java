@@ -44,7 +44,7 @@ public class BusinessGroupChooserController extends BasicController {
 	private BusinessGroup selectGroup;
 	
 	public BusinessGroupChooserController(UserRequest ureq, WindowControl wControl,
-			List<BusinessGroup> myGroups, BusinessGroup currentGroup) {
+			List<BusinessGroup> myGroups) {
 		super(ureq, wControl);
 		VelocityContainer mainVC = createVelocityContainer("groups_chooser");
 		

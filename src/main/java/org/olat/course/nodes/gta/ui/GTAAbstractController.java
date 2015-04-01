@@ -124,7 +124,6 @@ public abstract class GTAAbstractController extends BasicController {
 	
 	protected final void process(UserRequest ureq) {
 		Task task;
-		ModuleConfiguration config = gtaNode.getModuleConfiguration();
 		if(businessGroupTask) {
 			task = gtaManager.getTask(assessedGroup, taskList);
 		} else {
@@ -174,7 +173,7 @@ public abstract class GTAAbstractController extends BasicController {
 		}
 	}
 	
-	protected Task stepAssignment(UserRequest ureq, Task assignedTask) {
+	protected Task stepAssignment(@SuppressWarnings("unused") UserRequest ureq, Task assignedTask) {
 		Date dueDate = gtaNode.getModuleConfiguration().getDateValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
 		if(dueDate != null) {
 			String date = Formatter.getInstance(getLocale()).formatDateAndTime(dueDate);
@@ -189,7 +188,7 @@ public abstract class GTAAbstractController extends BasicController {
 		return assignedTask;
 	}
 	
-	protected Task stepSubmit(UserRequest ureq, Task assignedTask) {
+	protected Task stepSubmit(@SuppressWarnings("unused")UserRequest ureq, Task assignedTask) {
 		Date dueDate = gtaNode.getModuleConfiguration().getDateValue(GTACourseNode.GTASK_SUBMIT_DEADLINE);
 		if(dueDate != null) {
 			String date = Formatter.getInstance(getLocale()).formatDateAndTime(dueDate);
@@ -205,15 +204,15 @@ public abstract class GTAAbstractController extends BasicController {
 		return assignedTask;
 	}
 	
-	protected Task stepReviewAndCorrection(UserRequest ureq, Task assignedTask) {
+	protected Task stepReviewAndCorrection(@SuppressWarnings("unused")UserRequest ureq, Task assignedTask) {
 		return assignedTask;
 	}
 	
-	protected Task stepRevision(UserRequest ureq, Task assignedTask) {
+	protected Task stepRevision(@SuppressWarnings("unused")UserRequest ureq, Task assignedTask) {
 		return assignedTask;
 	}
 	
-	protected Task stepSolution(UserRequest ureq, Task assignedTask) {
+	protected Task stepSolution(@SuppressWarnings("unused")UserRequest ureq, Task assignedTask) {
 		Date availableDate = gtaNode.getModuleConfiguration().getDateValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
 		if(availableDate != null) {
 			String date = Formatter.getInstance(getLocale()).formatDateAndTime(availableDate);
@@ -222,7 +221,7 @@ public abstract class GTAAbstractController extends BasicController {
 		return assignedTask;
 	}
 	
-	protected Task stepGrading(UserRequest ureq, Task assignedTask) {
+	protected Task stepGrading(@SuppressWarnings("unused") UserRequest ureq, Task assignedTask) {
 		if(businessGroupTask) {
 			String groupLog = courseEnv.getAuditManager().getUserNodeLog(gtaNode, assessedGroup);
 			if(StringHelper.containsNonWhitespace(groupLog)) {

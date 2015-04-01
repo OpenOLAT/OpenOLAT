@@ -194,8 +194,8 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(uploadCorrectionsCtrl == source) {
 			if(event instanceof SubmitEvent) {
-				Task assignedTask = uploadCorrectionsCtrl.getAssignedTask();
-				gtaManager.log("Corrections", (SubmitEvent)event, assignedTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
+				Task aTask = uploadCorrectionsCtrl.getAssignedTask();
+				gtaManager.log("Corrections", (SubmitEvent)event, aTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
 			}
 		}
 		super.event(ureq, source, event);

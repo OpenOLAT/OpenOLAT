@@ -164,7 +164,7 @@ class SubmitDocumentsController extends FormBasicController {
 			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				SubmittedSolution document = (SubmittedSolution)confirmDeleteCtrl.getUserObject();
 				String filename = document.getFile().getName();
-				doDelete(ureq, document);
+				doDelete(document);
 				fireEvent(ureq, new SubmitEvent(SubmitEvent.DELETE, filename));
 			}
 			cleanUp();
@@ -247,7 +247,7 @@ class SubmitDocumentsController extends FormBasicController {
 		confirmDeleteCtrl.setUserObject(solution);
 	}
 
-	private void doDelete(UserRequest ureq, SubmittedSolution solution) {
+	private void doDelete(SubmittedSolution solution) {
 		File document = solution.getFile();
 		if(document.exists()) {
 			document.delete();

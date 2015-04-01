@@ -390,9 +390,9 @@ public class GTAWorkflowEditController extends FormBasicController {
 		cmc.activate();
 	}
 	
-	private String getGroupNames(List<Long> keys) {
+	private String getGroupNames(List<Long> groupKeyList) {
 		StringBuilder sb = new StringBuilder(64);
-		List<BusinessGroupShort> groups = businessGroupService.loadShortBusinessGroups(keys);
+		List<BusinessGroupShort> groups = businessGroupService.loadShortBusinessGroups(groupKeyList);
 		for(BusinessGroupShort group:groups) {
 			if(sb.length() > 0) sb.append("&nbsp;&nbsp;");
 			sb.append("<i class='o_icon o_icon-fw o_icon_group'>&nbsp;</i> ")
@@ -401,9 +401,9 @@ public class GTAWorkflowEditController extends FormBasicController {
 		return sb.toString();
 	}
 	
-	private String getAreaNames(List<Long> keys) {
+	private String getAreaNames(List<Long> areaKeyList) {
 		StringBuilder sb = new StringBuilder(64);
-		List<BGArea> areas = areaManager.loadAreas(keys);
+		List<BGArea> areas = areaManager.loadAreas(areaKeyList);
 		for(BGArea area:areas) {
 			if(sb.length() > 0) sb.append("&nbsp;&nbsp;");
 			sb.append("<i class='o_icon o_icon-fw o_icon_courseareas'>&nbsp;</i> ")
@@ -411,6 +411,4 @@ public class GTAWorkflowEditController extends FormBasicController {
 		}
 		return sb.toString();
 	}
-	
-	
 }

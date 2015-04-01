@@ -41,7 +41,6 @@ import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.model.TaskDefinitionList;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
-import org.olat.modules.ModuleConfiguration;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -182,14 +181,14 @@ public class GTACoachController extends GTAAbstractController {
 				setUploadCorrections(ureq, assignedTask);
 			} else {
 				mainVC.contextPut("reviewCssClass", "o_done");
-				setCorrections(ureq, assignedTask);
+				setCorrections(ureq);
 			}
 		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.review) {
 			mainVC.contextPut("reviewCssClass", "o_active");
 			setUploadCorrections(ureq, assignedTask);
 		} else {
 			mainVC.contextPut("reviewCssClass", "o_done");
-			setCorrections(ureq, assignedTask);
+			setCorrections(ureq);
 		}
 		
 		return assignedTask;
@@ -216,9 +215,8 @@ public class GTACoachController extends GTAAbstractController {
 		}
 	}
 	
-	private void setCorrections(UserRequest ureq, Task task) {
+	private void setCorrections(UserRequest ureq) {
 		File documentsDir;
-		ModuleConfiguration config = gtaNode.getModuleConfiguration();
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
 			documentsDir = gtaManager.getCorrectionDirectory(courseEnv, gtaNode, assessedGroup);
 		} else {

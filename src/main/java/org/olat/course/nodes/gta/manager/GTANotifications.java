@@ -67,7 +67,6 @@ import org.olat.user.UserManager;
  */
 class GTANotifications {
 	
-	private final Locale locale;
 	private final Date compareDate;
 	private final Subscriber subscriber;
 	private final List<SubscriptionListItem> items = new ArrayList<>();
@@ -91,7 +90,6 @@ class GTANotifications {
 		this.repositoryService = repositoryService;
 		this.businessGroupService = businessGroupService;
 		
-		this.locale = locale;
 		this.subscriber = subscriber;
 		this.compareDate = compareDate;
 		translator = Util.createPackageTranslator(GTARunController.class, locale);
@@ -114,9 +112,9 @@ class GTANotifications {
 			taskList = gtaManager.getTaskList(entry, gtaNode);
 			
 			if(GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
-				createBusinessGroupsSubscriptionInfo(locale, compareDate, subscriber.getIdentity(), taskList, course.getCourseEnvironment(), gtaNode);
+				createBusinessGroupsSubscriptionInfo(subscriber.getIdentity(), course.getCourseEnvironment(), gtaNode);
 			} else {
-				createIndividualSubscriptionInfo(locale, compareDate, subscriber.getIdentity(), taskList, course.getCourseEnvironment(), gtaNode);
+				createIndividualSubscriptionInfo(subscriber.getIdentity(), course.getCourseEnvironment(), gtaNode);
 			}
 
 			//copy solutions
@@ -134,9 +132,9 @@ class GTANotifications {
 		return items;
 	}
 	
-	private void createIndividualSubscriptionInfo(Locale locale, Date compareDate, Identity subscriber, TaskList taskList, CourseEnvironment ce, GTACourseNode gtaNode) {
+	private void createIndividualSubscriptionInfo(Identity subscriberIdentity, CourseEnvironment ce, GTACourseNode gtaNode) {
 		RepositoryEntry entry = ce.getCourseGroupManager().getCourseEntry();
-		List<String> roles = repositoryService.getRoles(subscriber, entry);
+		List<String> roles = repositoryService.getRoles(subscriberIdentity, entry);
 		
 		boolean owner = roles.contains(GroupRoles.owner.name());
 		boolean coach = roles.contains(GroupRoles.coach.name());
@@ -149,7 +147,7 @@ class GTANotifications {
 			if(owner) {
 				participants = businessGroupService.getMembersOf(entry, false, true);
 			} else {
-				SearchBusinessGroupParams params = new SearchBusinessGroupParams(subscriber, true, false);
+				SearchBusinessGroupParams params = new SearchBusinessGroupParams(subscriberIdentity, true, false);
 				coachedGroups = businessGroupService.findBusinessGroups(params, entry, 0, -1);
 				participants = businessGroupService.getMembers(coachedGroups, GroupRoles.participant.name());
 			}
@@ -161,7 +159,7 @@ class GTANotifications {
 				}
 			}
 			
-			boolean repoTutor = owner || (coachedGroups.isEmpty() && repositoryService.hasRole(subscriber, entry, GroupRoles.coach.name()));
+			boolean repoTutor = owner || (coachedGroups.isEmpty() && repositoryService.hasRole(subscriberIdentity, entry, GroupRoles.coach.name()));
 			if(repoTutor) {
 				List<Identity> courseParticipants = repositoryService.getMembers(entry, GroupRoles.participant.name());
 				for(Identity participant:courseParticipants) {
@@ -178,7 +176,7 @@ class GTANotifications {
 		}
 		
 		if(roles.contains(GroupRoles.participant.name())) {
-			createIndividualSubscriptionInfo(subscriber, ce, gtaNode, false);
+			createIndividualSubscriptionInfo(subscriberIdentity, ce, gtaNode, false);
 		}
 	}
 
@@ -231,25 +229,25 @@ class GTANotifications {
 		}
 	}
 	
-	private void createBusinessGroupsSubscriptionInfo(Locale locale, Date compareDate, Identity subscriber, TaskList taskList, CourseEnvironment ce, GTACourseNode gtaNode) {
+	private void createBusinessGroupsSubscriptionInfo(Identity subscriberIdentity, CourseEnvironment ce, GTACourseNode gtaNode) {
 		RepositoryEntry entry = ce.getCourseGroupManager().getCourseEntry();
 
-		Membership membership = gtaManager.getMembership(subscriber, entry, gtaNode);
-		boolean owner = repositoryService.hasRole(subscriber, entry, GroupRoles.owner.name());
+		Membership membership = gtaManager.getMembership(subscriberIdentity, entry, gtaNode);
+		boolean owner = repositoryService.hasRole(subscriberIdentity, entry, GroupRoles.owner.name());
 		if(owner) {
 			List<BusinessGroup> groups = gtaManager.getBusinessGroups(gtaNode);
 			for(BusinessGroup group:groups) {
 				createBusinessGroupsSubscriptionItems(group, ce, gtaNode, true);
 			}
 		} else if(membership.isCoach() ) {
-			List<BusinessGroup> groups = gtaManager.getCoachedBusinessGroups(subscriber, gtaNode);
+			List<BusinessGroup> groups = gtaManager.getCoachedBusinessGroups(subscriberIdentity, gtaNode);
 			for(BusinessGroup group:groups) {
 				createBusinessGroupsSubscriptionItems(group, ce, gtaNode, true);
 			}
 		}
 		
 		if(membership.isParticipant()) {
-			List<BusinessGroup> groups = gtaManager.getParticipatingBusinessGroups(subscriber, gtaNode);
+			List<BusinessGroup> groups = gtaManager.getParticipatingBusinessGroups(subscriberIdentity, gtaNode);
 			for(BusinessGroup group:groups) {
 				createBusinessGroupsSubscriptionItems(group, ce, gtaNode, false);
 			}
