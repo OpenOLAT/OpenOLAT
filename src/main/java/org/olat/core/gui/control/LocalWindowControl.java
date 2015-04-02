@@ -29,7 +29,8 @@ package org.olat.core.gui.control;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.info.WindowControlInfo;
 import org.olat.core.id.context.BusinessControl;
-import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 
 /**
  * Description:<br>
@@ -37,6 +38,7 @@ import org.olat.core.logging.AssertException;
  * @author Felix Jost
  */
 public class LocalWindowControl implements WindowControl {
+	private static final OLog log = Tracing.createLoggerFor(LocalWindowControl.class);
 	private final WindowControl origWControl;
 	private int localHeight = 0;
 	//private final Controller controller;
@@ -50,10 +52,14 @@ public class LocalWindowControl implements WindowControl {
 	/**
 	 * @see org.olat.core.gui.control.WindowControl#pop()
 	 */
+	@Override
 	public void pop() {
-		if (localHeight == 0) throw new AssertException("cannot pop below surface...");
-		origWControl.pop();
-		localHeight--;
+		if (localHeight > 0) {
+			origWControl.pop();
+			localHeight--;
+		} else {
+			log.warn("Cannot pop below surface...");
+		}
 	}
 
 	/**
