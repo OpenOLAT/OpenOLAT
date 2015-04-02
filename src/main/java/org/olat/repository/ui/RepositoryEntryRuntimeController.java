@@ -335,7 +335,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected void initSettingsTools(Dropdown settingsDropdown) {
 		if (reSecurity.isEntryAdmin()) {
 			//settings
-			editDescriptionLink = LinkFactory.createToolLink("settings.cmd", translate("details.chprop"), this, "o_icon_details");
+			editDescriptionLink = LinkFactory.createToolLink("settings.cmd", translate("details.chdesc"), this, "o_icon_details");
 			editDescriptionLink.setElementCssClass("o_sel_course_settings");
 			editDescriptionLink.setEnabled(!corrupted);
 			settingsDropdown.addComponent(editDescriptionLink);
