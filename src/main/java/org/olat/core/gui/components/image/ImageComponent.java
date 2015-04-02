@@ -38,6 +38,7 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -66,12 +67,12 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 	private String mimeType;
 
 	private String alt;
-	private final String mapperUrl;
+	private final MapperKey mapperUrl;
 	private final MediaMapper mapper;
 
 	// optional in case of video: poster image
 	private VFSLeaf poster;
-	private String posterMapperUrl;
+	private MapperKey posterMapperUrl;
 	private MediaMapper posterMapper;
 
 	private Size realSize;
@@ -155,10 +156,10 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 	@Override
 	public void dispose() {
 		if(mapper != null) {
-			CoreSpringFactory.getImpl(MapperService.class).cleanUp(Collections.<Mapper>singletonList(mapper));
+			CoreSpringFactory.getImpl(MapperService.class).cleanUp(Collections.<MapperKey>singletonList(mapperUrl));
 		}
 		if(posterMapper != null) {
-			CoreSpringFactory.getImpl(MapperService.class).cleanUp(Collections.<Mapper>singletonList(posterMapper));
+			CoreSpringFactory.getImpl(MapperService.class).cleanUp(Collections.<MapperKey>singletonList(posterMapperUrl));
 		}
 	}
 
@@ -195,16 +196,14 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 		this.poster = poster;
 		posterMapper.setMediaFile(poster);
 	}
-
 	
 	public String getMapperUrl() {
-		return mapperUrl;
+		return mapperUrl.getUrl();
 	}
 
 	public String getPosterMapperUrl() {
-		return posterMapperUrl;
+		return posterMapperUrl.getUrl();
 	}
-
 	
 	public String getMimeType() {
 		if(mimeType != null) {

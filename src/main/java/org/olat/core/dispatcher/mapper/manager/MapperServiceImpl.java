@@ -49,7 +49,6 @@ import org.springframework.stereotype.Service;
 public class MapperServiceImpl implements MapperService, InitializingBean {
 	
 	private Map<MapperKey,Mapper> mapperKeyToMapper = new ConcurrentHashMap<MapperKey,Mapper>();
-	private Map<Mapper,MapperKey> mapperToMapperKey = new ConcurrentHashMap<Mapper, MapperKey>();
 	private Map<String,List<MapperKey>> sessionIdToMapperKeys = new ConcurrentHashMap<String,List<MapperKey>>();
 
 	private CacheWrapper<String, Serializable> mapperCache;
@@ -66,19 +65,19 @@ public class MapperServiceImpl implements MapperService, InitializingBean {
 	
 	@Override
 	public int inMemoryCount() {
-		return mapperKeyToMapper.size() + mapperToMapperKey.size() + sessionIdToMapperKeys.size();
+		return mapperKeyToMapper.size() + sessionIdToMapperKeys.size();
 	}
 
 	@Override
-	public String register(UserSession session, Mapper mapper) {
+	public MapperKey register(UserSession session, Mapper mapper) {
 		String mapid = UUID.randomUUID().toString().replace("-", "");
 		mapid = Encoder.md5hash(mapid);
 		
 		MapperKey mapperKey = new MapperKey(session, mapid);
 		mapperKeyToMapper.put(mapperKey, mapper);
-		mapperToMapperKey.put(mapper, mapperKey);
 		if(session == null || session.getSessionInfo() == null) {
-			return WebappHelper.getServletContextPath() + DispatcherModule.PATH_MAPPED + mapid;
+			mapperKey.setUrl(WebappHelper.getServletContextPath() + DispatcherModule.PATH_MAPPED + mapid);
+			return mapperKey;
 		}
 		
 		String sessionId = session.getSessionInfo().getSession().getId();
@@ -93,19 +92,20 @@ public class MapperServiceImpl implements MapperService, InitializingBean {
 		if(mapper instanceof Serializable) {
 			mapperDao.persistMapper(sessionId, mapid, (Serializable)mapper, -1);
 		}
-		return WebappHelper.getServletContextPath() + DispatcherModule.PATH_MAPPED + mapid;
+		mapperKey.setUrl(WebappHelper.getServletContextPath() + DispatcherModule.PATH_MAPPED + mapid);
+		return mapperKey;
 	}	
 
 	/**
 	 * Cacheable mapper, not session dependant
 	 */
 	@Override
-	public String register(UserSession session, String mapperId, Mapper mapper) {
+	public MapperKey register(UserSession session, String mapperId, Mapper mapper) {
 		return register(session, mapperId, mapper, -1);
 	}
 
 	@Override
-	public String register(UserSession session, String mapperId, Mapper mapper, int expirationTime) {
+	public MapperKey register(UserSession session, String mapperId, Mapper mapper, int expirationTime) {
 		String encryptedMapId = Encoder.md5hash(mapperId);
 		MapperKey mapperKey = new MapperKey(session, encryptedMapId);
 		boolean alreadyLoaded = mapperKeyToMapper.containsKey(mapperKey);
@@ -125,8 +125,8 @@ public class MapperServiceImpl implements MapperService, InitializingBean {
 		}
 
 		mapperKeyToMapper.put(mapperKey, mapper);
-		mapperToMapperKey.put(mapper, mapperKey);
-		return WebappHelper.getServletContextPath() + DispatcherModule.PATH_MAPPED + encryptedMapId;
+		mapperKey.setUrl(WebappHelper.getServletContextPath() + DispatcherModule.PATH_MAPPED + encryptedMapId);
+		return mapperKey;
 	}
 
 	@Override
@@ -171,22 +171,18 @@ public class MapperServiceImpl implements MapperService, InitializingBean {
 					if(mapper instanceof Serializable) {
 						mapperDao.updateConfiguration(mapKey.getMapperId(), (Serializable)mapper, -1);
 					}
-					mapperToMapperKey.remove(mapper);
 				}
 			}
 		}
 	}
 	
 	@Override
-	public void cleanUp(List<Mapper> mappers) {
-		if(mappers == null || mappers.isEmpty()) return;
-		for(Mapper mapper:mappers) {
-			MapperKey mapperKey = mapperToMapperKey.remove(mapper);
-			if(mapperKey != null) {
-				mapperKeyToMapper.remove(mapperKey);
-				if(mapper instanceof Serializable) {
-					mapperDao.updateConfiguration(mapperKey.getMapperId(), (Serializable)mapper, -1);
-				}
+	public void cleanUp(List<MapperKey> mapperKeys) {
+		if(mapperKeys == null || mapperKeys.isEmpty()) return;
+		for(MapperKey mapperKey:mapperKeys) {
+			Mapper mapper = mapperKeyToMapper.remove(mapperKey);
+			if(mapper instanceof Serializable) {
+				mapperDao.updateConfiguration(mapperKey.getMapperId(), (Serializable)mapper, -1);
 			}
 		}
 	}

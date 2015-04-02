@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -45,8 +46,8 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.CatalogEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.CatalogEntry.Style;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.CatalogManager;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.ui.CatalogEntryImageMapper;
@@ -67,7 +68,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 	private RepositoryEntryListController entryListController;
 
 	private final boolean wrapInMainPanel;
-	private final String mapperThumbnailUrl;
+	private final MapperKey mapperThumbnailKey;
 	private final WindowControl rootwControl;
 	
 	@Autowired
@@ -88,8 +89,8 @@ public class CatalogNodeController extends BasicController implements Activateab
 		mainVC.setDomReplacementWrapperRequired(false); // uses own DOM ID
 		
 		//one mapper for all users
-		mapperThumbnailUrl = mapperService.register(null, "catalogentryImage", new CatalogEntryImageMapper());
-		mainVC.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
+		mapperThumbnailKey = mapperService.register(null, "catalogentryImage", new CatalogEntryImageMapper());
+		mainVC.contextPut("mapperThumbnailUrl", mapperThumbnailKey.getUrl());
 		if(catalogEntry.getStyle() != null) {
 			mainVC.contextPut("listStyle", catalogEntry.getStyle().name());
 		} else {
