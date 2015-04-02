@@ -48,6 +48,7 @@ import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.gui.Windows;
+import org.olat.core.gui.components.CannotReplaceDOMFragmentException;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.panel.Panel;
@@ -133,21 +134,28 @@ public class AjaxController extends DefaultController {
 					reload = cc.wishAsyncReload(ureq, false);
 				}
 				
-				// check for dirty components now.
-				wboImpl.fireCycleEvent(Window.BEFORE_INLINE_RENDERING);
-				Command updateDirtyCom = window.handleDirties();
-				wboImpl.fireCycleEvent(Window.AFTER_INLINE_RENDERING);
-				
-				if (updateDirtyCom != null) {
-					synchronized (windowcommands) { //o_clusterOK by:fj
-						windowcommands.add(new WindowCommand(wboImpl, updateDirtyCom));
-						if(reload) {
-							String timestampID = ureq.getTimestampID();
-							String reRenderUri = window.buildURIFor(window, timestampID, null);
-							Command rmrcom = CommandFactory.createParentRedirectTo(reRenderUri);
-							windowcommands.add(new WindowCommand(wboImpl, rmrcom));
+				try {
+					// check for dirty components now.
+					wboImpl.fireCycleEvent(Window.BEFORE_INLINE_RENDERING);
+					Command updateDirtyCom = window.handleDirties();
+					wboImpl.fireCycleEvent(Window.AFTER_INLINE_RENDERING);
+					
+					if (updateDirtyCom != null) {
+						synchronized (windowcommands) { //o_clusterOK by:fj
+							windowcommands.add(new WindowCommand(wboImpl, updateDirtyCom));
+							if(reload) {
+								String timestampID = ureq.getTimestampID();
+								String reRenderUri = window.buildURIFor(window, timestampID, null);
+								Command rmrcom = CommandFactory.createParentRedirectTo(reRenderUri);
+								windowcommands.add(new WindowCommand(wboImpl, rmrcom));
+							}
 						}
 					}
+				} catch (CannotReplaceDOMFragmentException e) {
+					String timestampID = ureq.getTimestampID();
+					String reRenderUri = window.buildURIFor(window, timestampID, null);
+					Command rmrcom = CommandFactory.createParentRedirectTo(reRenderUri);
+					windowcommands.add(new WindowCommand(wboImpl, rmrcom));
 				}
 				return extractMediaResource(false);
 			}
