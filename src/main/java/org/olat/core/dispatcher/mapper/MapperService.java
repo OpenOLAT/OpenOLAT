@@ -21,6 +21,7 @@ package org.olat.core.dispatcher.mapper;
 
 import java.util.List;
 
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.util.UserSession;
 
 /**
@@ -60,7 +61,7 @@ public interface MapperService {
 	 * @param mapper
 	 * @return the path e.g. /olat/m/1001 without / at the end
 	 */
-	public String register(UserSession session, Mapper mapper);
+	public MapperKey register(UserSession session, Mapper mapper);
 	
 	/**
 	 * Register a cacheable mapper by giving a mapper path ID. When setting the
@@ -77,7 +78,7 @@ public interface MapperService {
 	 * @param mapper
 	 * @return the path e.g. /olat/c/my.mapper.path without / at the end
 	 */
-	public String register(UserSession session, String mapperId, Mapper mapper);
+	public MapperKey register(UserSession session, String mapperId, Mapper mapper);
 	
 	/**
 	 * Same as above but with a defined expiration time
@@ -87,7 +88,7 @@ public interface MapperService {
 	 * @param expiration Expiration time in seconds
 	 * @return
 	 */
-	public String register(UserSession session, String mapperId, Mapper mapper, int expiration);
+	public MapperKey register(UserSession session, String mapperId, Mapper mapper, int expiration);
 	
 	
 	
@@ -95,7 +96,7 @@ public interface MapperService {
 	
 	public void cleanUp(String sessionId);
 
-	public void cleanUp(List<Mapper> mappers);
+	public void cleanUp(List<MapperKey> mappers);
 	
 	public void slayZombies();
 	

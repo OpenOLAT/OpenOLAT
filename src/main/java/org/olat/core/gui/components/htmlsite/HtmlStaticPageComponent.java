@@ -29,6 +29,7 @@ package org.olat.core.gui.components.htmlsite;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -67,6 +68,8 @@ public class HtmlStaticPageComponent extends AbstractComponent implements AsyncM
 	private String jsOnLoad = null;
 	private String htmlContent = null;
 	private String wrapperCssStyle = null;
+	
+	private MapperKey amapPath;
 
 	/**
 	 * Constructor for an displaying an html page.
@@ -151,8 +154,6 @@ public class HtmlStaticPageComponent extends AbstractComponent implements AsyncM
 					// it is a html page with olatraw parameter => redirect to mapper
 					Mapper mapper = new HtmlStaticMapper(rootContainer);
 					// NOTE: do not deregister this mapper, since it could be used a lot later (since it is opened in a new browser window)
-					String amapPath;
-					
 					// Register mapper as cacheable
 					String mapperID = VFSManager.getRealPath(rootContainer);
 					if (mapperID == null) {
@@ -165,9 +166,9 @@ public class HtmlStaticPageComponent extends AbstractComponent implements AsyncM
 						amapPath  = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), mapperID, mapper);				
 					}
 
-
-					ese.setResultingMediaResource(new RedirectMediaResource(amapPath+"/"+moduleURI));
-					log.debug("RedirectMediaResource=" + amapPath+"/"+moduleURI);
+					String path = amapPath.getUrl() + "/" + moduleURI;
+					ese.setResultingMediaResource(new RedirectMediaResource(path));
+					if(log.isDebug()) log.debug("RedirectMediaResource=" + path);
 					ese.accept();
 					mr = ese.getResultingMediaResource();
 					checkRegular = false;

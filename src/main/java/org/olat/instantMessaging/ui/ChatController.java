@@ -38,6 +38,7 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
@@ -104,7 +105,7 @@ public class ChatController extends BasicController implements GenericEventListe
 	@Autowired
 	private DisplayPortraitManager portraitManager;
 	
-	private final String avatarBaseURL;
+	private final MapperKey avatarMapperKey;
 
 	protected ChatController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, String roomName,
 			Long privateReceiverKey, boolean highlightVip, int width, int height, int offsetX, int offsetY) {
@@ -118,7 +119,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		this.highlightVip = highlightVip;
 		setToday();
 
-		avatarBaseURL = mapperService.register(null, "avatars-members", new UserAvatarMapper(false));
+		avatarMapperKey = mapperService.register(null, "avatars-members", new UserAvatarMapper(false));
 		
 		allChats = new ArrayList<String>();
 		allChats.add(Integer.toString(hashCode()));
@@ -180,7 +181,7 @@ public class ChatController extends BasicController implements GenericEventListe
 
 		chatMsgFieldContent.contextPut("chatMessages", messageHistory);
 		chatMsgFieldContent.contextPut("panelName", pn);
-		chatMsgFieldContent.contextPut("avatarBaseURL", avatarBaseURL);
+		chatMsgFieldContent.contextPut("avatarBaseURL", avatarMapperKey.getUrl());
 		chatMsgFieldContent.contextPut("focus", Boolean.TRUE);
 		loadModel(getYesterday(), 50);
 		chatMsgFieldContent.contextPut("id", hashCode());

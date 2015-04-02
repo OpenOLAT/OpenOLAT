@@ -36,6 +36,7 @@ public class MapperKey implements Serializable {
 	
 	private String mapperId;
 	private String sessionId;
+	private String url;
 	
 	public MapperKey() {
 		//
@@ -69,6 +70,14 @@ public class MapperKey implements Serializable {
 	
 	public void setSessionId(String sessionId) {
 		this.sessionId = sessionId;
+	}
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
 	}
 
 	@Override

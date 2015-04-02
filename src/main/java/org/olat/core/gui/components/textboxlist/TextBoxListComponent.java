@@ -34,6 +34,7 @@ import org.json.JSONArray;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.control.JSAndCSSAdder;
@@ -91,7 +92,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 
 	private boolean allowDuplicates = false;
 
-	private static OLog logger = Tracing.createLoggerFor(TextBoxListComponent.class);
+	private static final OLog logger = Tracing.createLoggerFor(TextBoxListComponent.class);
 
 	/*
 	 * the autoCompletion map. Key-String in the map is the "caption",
@@ -100,7 +101,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 	private Map<String, String> autoCompletionValues;
 
 	private ResultMapProvider provider;
-	private String mapperUri;
+	private MapperKey mapperKey;
 
 	/*
 	 * the number of maxResults shown in the auto-completion list
@@ -312,7 +313,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 			}
 		};
 
-		mapperUri = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), mapper);
+		mapperKey = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), mapper);
 	}
 
 	/**
@@ -411,7 +412,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 	 * @return Returns the mapperUri.
 	 */
 	public String getMapperUri() {
-		return mapperUri;
+		return mapperKey.getUrl();
 	}
 
 	/**

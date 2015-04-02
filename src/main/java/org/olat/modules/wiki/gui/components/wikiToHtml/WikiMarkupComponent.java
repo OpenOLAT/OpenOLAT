@@ -36,6 +36,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -70,8 +71,8 @@ public class WikiMarkupComponent extends AbstractComponent implements Disposable
 	private OLATResourceable ores;
 	private OlatWikiDataHandler datahandler;
 	private String imageBaseUri;
-	private Mapper contentMapper;
-
+	private MapperKey mapperKey;
+	
 	public WikiMarkupComponent(String name, OLATResourceable ores, int minHeight) {
 		super(name);
 		this.ores = ores;
@@ -85,8 +86,8 @@ public class WikiMarkupComponent extends AbstractComponent implements Disposable
 
 	@Override
 	public void dispose() {
-		if(contentMapper != null) {
-			List<Mapper> mappers = Collections.<Mapper>singletonList(contentMapper);
+		if(mapperKey != null) {
+			List<MapperKey> mappers = Collections.<MapperKey>singletonList(mapperKey);
 			CoreSpringFactory.getImpl(MapperService.class).cleanUp(mappers);
 		}
 	}
@@ -144,20 +145,20 @@ public class WikiMarkupComponent extends AbstractComponent implements Disposable
 	 */
 	public void setImageMapperUri(UserRequest ureq, final VFSContainer wikiContainer) {
 		// get a usersession-local mapper for images in this wiki
-		contentMapper = new VFSContainerMapper(wikiContainer);
-		String mapperPath;
+		Mapper contentMapper = new VFSContainerMapper(wikiContainer);
+		
 		// Register mapper as cacheable
 		String mapperID = VFSManager.getRealPath(wikiContainer);
 		if (mapperID == null) {
 			// Can't cache mapper, no cacheable context available
-			mapperPath = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), contentMapper);
+			mapperKey = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), contentMapper);
 		} else {
 			// Add classname to the file path to remove conflicts with other
 			// usages of the same file path
 			mapperID = this.getClass().getSimpleName() + ":" + mapperID;
-			mapperPath = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), mapperID, contentMapper);				
+			mapperKey = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), mapperID, contentMapper);				
 		}
-		imageBaseUri = mapperPath + "/" + WikiContainer.MEDIA_FOLDER_NAME + "/";
+		imageBaseUri = mapperKey.getUrl() + "/" + WikiContainer.MEDIA_FOLDER_NAME + "/";
 	}
 	
 	/**

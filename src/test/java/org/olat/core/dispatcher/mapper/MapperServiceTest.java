@@ -30,6 +30,7 @@ import junit.framework.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.dispatcher.mapper.manager.MapperDAO;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.SessionInfo;
@@ -63,8 +64,11 @@ public class MapperServiceTest extends OlatTestCase {
 	@Test
 	public void testRegister() {
 		UserSession session = createUserSession();
-		String mapperId = mapperService.register(session, new DummyMapper());
-		Assert.assertNotNull(mapperId);
+		MapperKey mapperKey = mapperService.register(session, new DummyMapper());
+		Assert.assertNotNull(mapperKey);
+		Assert.assertNotNull(mapperKey.getMapperId());
+		Assert.assertNotNull(mapperKey.getSessionId());
+		Assert.assertNotNull(mapperKey.getUrl());
 		Assert.assertTrue(mapperService.inMemoryCount() > 0);
 	}
 	
@@ -73,11 +77,11 @@ public class MapperServiceTest extends OlatTestCase {
 		//create a mapper
 		UserSession session = createUserSession();
 		DummyMapper mapper = new DummyMapper();
-		String mapperId = mapperService.register(session, mapper);
+		MapperKey mapperKey = mapperService.register(session, mapper);
 		dbInstance.commitAndCloseSession();
 		
 		//retrieve the mapper
-		Mapper reloadedMapper = mapperService.getMapperById(session, mapperId);
+		Mapper reloadedMapper = mapperService.getMapperById(session, mapperKey.getMapperId());
 		Assert.assertNotNull(reloadedMapper);
 		Assert.assertEquals(mapper, reloadedMapper);
 	}
@@ -89,18 +93,18 @@ public class MapperServiceTest extends OlatTestCase {
 		//create a mapper
 		UserSession session = createUserSession();
 		DummyMapper mapper = new DummyMapper();
-		String mapperId = mapperService.register(session, mapper);
+		MapperKey mapperKey = mapperService.register(session, mapper);
 		dbInstance.commitAndCloseSession();
 		
 		//retrieve the mapper
-		Mapper reloadedMapper = mapperService.getMapperById(session, mapperId);
+		Mapper reloadedMapper = mapperService.getMapperById(session, mapperKey.getMapperId());
 		Assert.assertNotNull(reloadedMapper);
 		Assert.assertFalse(numOfMappers == mapperService.inMemoryCount());
 		//cleanup
-		mapperService.cleanUp(Collections.<Mapper>singletonList(mapper));
+		mapperService.cleanUp(Collections.<MapperKey>singletonList(mapperKey));
 		
 		//check 1
-		Mapper deletedMapper = mapperService.getMapperById(session, mapperId);
+		Mapper deletedMapper = mapperService.getMapperById(session, mapperKey.getMapperId());
 		Assert.assertNull(deletedMapper);
 	}
 	
@@ -111,7 +115,7 @@ public class MapperServiceTest extends OlatTestCase {
 		//create a mapper
 		UserSession session = createUserSession();
 		DummyMapper mapper = new DummyMapper();
-		String mapperId = mapperService.register(session, mapper);
+		MapperKey mapperKey = mapperService.register(session, mapper);
 		dbInstance.commitAndCloseSession();
 		
 		//retrieve the mapper
@@ -122,7 +126,7 @@ public class MapperServiceTest extends OlatTestCase {
 		//check 1
 		Assert.assertEquals(numOfMappers, mapperService.inMemoryCount());
 		//check 2
-		Mapper deletedMapper = mapperService.getMapperById(session, mapperId);
+		Mapper deletedMapper = mapperService.getMapperById(session, mapperKey.getMapperId());
 		Assert.assertNull(deletedMapper);
 	}
 
@@ -132,11 +136,11 @@ public class MapperServiceTest extends OlatTestCase {
 		int initialNumOfMappers = mapperService.inMemoryCount();
 		UserSession session = createUserSession();
 		PersistentMapper mapper = new PersistentMapper(UUID.randomUUID().toString());
-		String mapperId = mapperService.register(session, mapper);
+		MapperKey mapperKey = mapperService.register(session, mapper);
 		dbInstance.commitAndCloseSession();
 
 		//retrieve the mapper
-		PersistentMapper reloadedMapper = (PersistentMapper)mapperService.getMapperById(session, mapperId);
+		PersistentMapper reloadedMapper = (PersistentMapper)mapperService.getMapperById(session, mapperKey.getMapperId());
 		Assert.assertNotNull(reloadedMapper);
 		Assert.assertEquals(mapper.getKey(), reloadedMapper.getKey());
 		Assert.assertFalse(initialNumOfMappers == mapperService.inMemoryCount());
@@ -146,7 +150,7 @@ public class MapperServiceTest extends OlatTestCase {
 		Assert.assertEquals(initialNumOfMappers, mapperService.inMemoryCount());
 		
 		//reloaded episode 2
-		PersistentMapper reloadedMapper2 = (PersistentMapper)mapperService.getMapperById(null, mapperId);
+		PersistentMapper reloadedMapper2 = (PersistentMapper)mapperService.getMapperById(null, mapperKey.getMapperId());
 		Assert.assertNotNull(reloadedMapper2);
 		Assert.assertEquals(mapper.getKey(), reloadedMapper2.getKey());
 	}
@@ -157,11 +161,11 @@ public class MapperServiceTest extends OlatTestCase {
 		int initialNumOfMappers = mapperService.inMemoryCount();
 		UserSession session = createUserSession();
 		PersistentMapper mapper = new PersistentMapper(UUID.randomUUID().toString());
-		String mapperId = mapperService.register(session, mapper);
+		MapperKey mapperKey = mapperService.register(session, mapper);
 		dbInstance.commitAndCloseSession();
 
 		//retrieve the mapper
-		PersistentMapper reloadedMapper = (PersistentMapper)mapperService.getMapperById(session, mapperId);
+		PersistentMapper reloadedMapper = (PersistentMapper)mapperService.getMapperById(session, mapperKey.getMapperId());
 		Assert.assertNotNull(reloadedMapper);
 		Assert.assertEquals(mapper, reloadedMapper);
 		Assert.assertFalse(initialNumOfMappers == mapperService.inMemoryCount());
@@ -171,12 +175,12 @@ public class MapperServiceTest extends OlatTestCase {
 		reloadedMapper.setKey(modKey);
 
 		//remove in memory mappers
-		mapperService.cleanUp(Collections.<Mapper>singletonList(reloadedMapper));
+		mapperService.cleanUp(Collections.<MapperKey>singletonList(mapperKey));
 		mapperService.cleanUp(session.getSessionInfo().getSession().getId());
 		Assert.assertEquals(initialNumOfMappers, mapperService.inMemoryCount());
 		
 		//reloaded episode 2
-		PersistentMapper reloadedMapper2 = (PersistentMapper)mapperService.getMapperById(null, mapperId);
+		PersistentMapper reloadedMapper2 = (PersistentMapper)mapperService.getMapperById(null, mapperKey.getMapperId());
 		Assert.assertNotNull(reloadedMapper2);
 		Assert.assertEquals(modKey, reloadedMapper2.getKey());
 	}
@@ -187,11 +191,11 @@ public class MapperServiceTest extends OlatTestCase {
 		int initialNumOfMappers = mapperService.inMemoryCount();
 		UserSession session = createUserSession();
 		PersistentMapper mapper = new PersistentMapper(UUID.randomUUID().toString());
-		String mapperId = mapperService.register(session, mapper);
+		MapperKey mapperKey = mapperService.register(session, mapper);
 		dbInstance.commitAndCloseSession();
 
 		//retrieve the mapper
-		PersistentMapper reloadedMapper = (PersistentMapper)mapperService.getMapperById(session, mapperId);
+		PersistentMapper reloadedMapper = (PersistentMapper)mapperService.getMapperById(session, mapperKey.getMapperId());
 		Assert.assertNotNull(reloadedMapper);
 		Assert.assertEquals(mapper, reloadedMapper);
 		Assert.assertFalse(initialNumOfMappers == mapperService.inMemoryCount());
@@ -201,13 +205,13 @@ public class MapperServiceTest extends OlatTestCase {
 		reloadedMapper.setKey(modKey);
 
 		//remove in memory mappers
-		mapperService.cleanUp(Collections.<Mapper>singletonList(reloadedMapper));
+		mapperService.cleanUp(Collections.<MapperKey>singletonList(mapperKey));
 		mapperService.cleanUp(session.getSessionInfo().getSession().getId());
 		Assert.assertEquals(initialNumOfMappers, mapperService.inMemoryCount());
 		
 		//reloaded episode 2
 		UserSession session2 = createUserSession();
-		PersistentMapper reloadedMapper2 = (PersistentMapper)mapperService.getMapperById(session2, mapperId);
+		PersistentMapper reloadedMapper2 = (PersistentMapper)mapperService.getMapperById(session2, mapperKey.getMapperId());
 		Assert.assertNotNull(reloadedMapper2);
 		Assert.assertEquals(modKey, reloadedMapper2.getKey());
 	}

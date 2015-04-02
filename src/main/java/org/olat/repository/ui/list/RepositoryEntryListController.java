@@ -31,6 +31,7 @@ import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -108,7 +109,7 @@ public class RepositoryEntryListController extends FormBasicController
 	private RepositoryEntryDetailsController detailsCtrl;
 	private RepositoryEntrySearchController searchCtrl;
 	
-	private final String mapperThumbnailUrl;
+	private final MapperKey mapperThumbnailKey;
 	@Autowired
 	private MarkManager markManager;
 	@Autowired
@@ -125,7 +126,7 @@ public class RepositoryEntryListController extends FormBasicController
 			boolean withSearch, String name, BreadcrumbPanel stackPanel) {
 		super(ureq, wControl, "repoentry_table");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
-		mapperThumbnailUrl = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
+		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
 		this.name = name;
 		this.stackPanel = stackPanel;
 		this.withSearch = withSearch;
@@ -252,7 +253,7 @@ public class RepositoryEntryListController extends FormBasicController
 
 	@Override
 	public String getMapperThumbnailUrl() {
-		return mapperThumbnailUrl;
+		return mapperThumbnailKey.getUrl();
 	}
 
 	@Override

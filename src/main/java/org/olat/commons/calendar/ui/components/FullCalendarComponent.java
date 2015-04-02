@@ -28,6 +28,7 @@ import java.util.List;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -49,7 +50,7 @@ public class FullCalendarComponent extends AbstractComponent {
 	private String viewName = "month";
 	private boolean eventAlwaysVisible;
 	
-	private final String mapperUrl;
+	private final MapperKey mapperKey;
 	private final FullCalendarElement calendarEl;
 	
 	/**
@@ -69,11 +70,11 @@ public class FullCalendarComponent extends AbstractComponent {
 		this.calendarEl = calendarEl;
 		
 		MapperService mapper = CoreSpringFactory.getImpl(MapperService.class);
-		mapperUrl = mapper.register(ureq.getUserSession(), new FullCalendarMapper(this));
+		mapperKey = mapper.register(ureq.getUserSession(), new FullCalendarMapper(this));
 	}
 	
 	protected String getMapperUrl() {
-		return mapperUrl;
+		return mapperKey.getUrl();
 	}
 	
 	protected FullCalendarElement getCalendarElement() {
