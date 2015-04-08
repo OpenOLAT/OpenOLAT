@@ -32,7 +32,7 @@
 	</legend>
 	
 	<form action="$r.formURIbg("skprim")" id="ofo_tab_kprimitem" $r.bgTarget() method="post">
-#if ($question.getResponses().size() > 0)
+#if ($question && $question.getResponses().size() > 0)
 		<table class="table table-bordered" style="position:relative">
 		<thead>
 			<tr>

@@ -34,7 +34,7 @@
 
 	<div class="o_login_box_wrapper">
 		<div class="o_login_box">
-			#if ($r.available("menu.guest") || $providerSet.size() > 1)
+			#if ($r.available("menu.guest") || ($providerSet && $providerSet.size() > 1))
 			<div class="o_login_providers">
 				<div class="btn-group btn-group-lg btn-group-justified">
 				#foreach ($authProvider in $providerSet)

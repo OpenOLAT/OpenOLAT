@@ -8,7 +8,7 @@
 	</legend>
 	
 	<form action="$r.formURIbg("sfib")" id="ofo_tab_fibitem" $r.bgTarget() method="post">
-		#if ($question.getResponses().size() > 0)
+		#if ($question && $question.getResponses().size() > 0)
 		<table class="table table-bordered">
 		<thead>
 			<tr>

@@ -2,7 +2,7 @@
 	<div class="o_search_result_title">
 		#set($contextpath = $result.getResourceUrl() )
 	  	#set($lastIndex = $contextpath.lastIndexOf("path=") + 5 )
-	  	#if($lastIndex>=0)
+	  	#if($lastIndex && $lastIndex>=0)
 	  		#set($minone=$contextpath.length() - 1)
 	    	#set($contextpath = $contextpath.substring($lastIndex,$minone) )
 	  	#end

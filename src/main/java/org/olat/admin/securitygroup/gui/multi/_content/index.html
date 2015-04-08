@@ -1,4 +1,4 @@
-#if ($usercount > 0)
+#if ($usercount && $usercount > 0)
 <h4>$r.translate("import.title.finish.create")</h4>
 $r.render("table")
 #end
@@ -25,7 +25,7 @@ $r.render("table")
 #end
 
 <div class="o_button_group">
-#if ($usercount > 0)
+#if ($usercount && $usercount > 0)
 	#if ($r.available("next"))
 		$r.render("next")
 	#else

@@ -30,6 +30,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -434,6 +435,31 @@ public class UserManagerImpl extends UserManager {
 		// persist changes
 		updateUser(user);
 		if(isLogDebugEnabled()) logDebug("Delete all user-attributtes for user=" + user);
+	}
+
+	@Override
+	public int warmUp() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from ").append(IdentityShort.class.getName()).append(" as ident");
+		
+		EntityManager em = dbInstance.getCurrentEntityManager();
+		
+		int batchSize = 5000;
+		TypedQuery<IdentityShort> query = em.createQuery(sb.toString(), IdentityShort.class)
+				.setMaxResults(batchSize);
+		int count = 0;
+		
+		List<IdentityShort> identities;
+		do {
+			identities = query.setFirstResult(count).getResultList();
+			em.clear();
+			for(IdentityShort identity:identities) {
+				getUserDisplayName(identity);
+			}
+			count += identities.size();
+		} while(identities.size() >= batchSize);
+		
+		return count;
 	}
 
 	@Override

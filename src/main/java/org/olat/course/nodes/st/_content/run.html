@@ -43,7 +43,7 @@
 	</div>
  #end
 
-#if ($children.size() > 0)
+#if ($children && $children.size() > 0)
 	#set ($i = 0)
 	<div class="o_toc #if ($layoutType == 1) o_one_column #else o_two_column #end">
 		<div class="row">
