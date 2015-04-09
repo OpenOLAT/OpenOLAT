@@ -1,0 +1,9 @@
+<div class='form-inline'>
+	$r.render("coursenodes") $r.render("status")
+	#if($f.hasError("status"))
+		<br/>$r.render("status_ERROR")
+	#end
+	#if($f.hasError("coursenodes"))
+		<br/>$r.render("coursenodes_ERROR")
+	#end
+</div>

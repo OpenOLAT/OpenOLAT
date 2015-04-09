@@ -105,6 +105,8 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.member.MembersManagementMainController;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.reminder.ui.CourseReminderListController;
+import org.olat.course.reminder.ui.CourseRemindersController;
 import org.olat.course.run.calendar.CourseCalendarController;
 import org.olat.course.run.glossary.CourseGlossaryFactory;
 import org.olat.course.run.glossary.CourseGlossaryToolLinkController;
@@ -120,6 +122,7 @@ import org.olat.ims.qti.statistics.QTIType;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
+import org.olat.modules.reminder.ReminderModule;
 import org.olat.note.NoteController;
 import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
@@ -151,13 +154,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		courseStatisticLink, surveyStatisticLink, testStatisticLink,
 		areaLink, dbLink,
 		//settings
-		layoutLink, optionsLink, certificatesOptionsLink,
+		layoutLink, optionsLink, certificatesOptionsLink, reminderLink, assessmentModeLink,
 		//my course
 		efficiencyStatementsLink, calendarLink, noteLink, chatLink, leaveLink,
 		//glossary
-		openGlossaryLink, enableGlossaryLink,
-		//assessment
-		assessmentModeLink;
+		openGlossaryLink, enableGlossaryLink;
 	private Link currentUserCountLink;
 	private Dropdown myCourse, glossary;
 	
@@ -168,6 +169,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private FolderRunController courseFolderCtrl;
 	private StatisticMainController statisticsCtrl;
 	private CourseOptionsController optionsToolCtr;
+	private CourseRemindersController remindersCtrl;
 	private AssessmentMainController assessmentToolCtr;
 	private MembersManagementMainController membersCtrl;
 	private StatisticCourseNodesController statsToolCtr;
@@ -178,6 +180,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private int currentUserCount;
 	private Map<String, Boolean> courseRightsCache;
 
+	@Autowired
+	private ReminderModule reminderModule;
 	@Autowired
 	private CalendarModule calendarModule;
 	@Autowired
@@ -483,6 +487,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			certificatesOptionsLink = LinkFactory.createToolLink("certificates.cmd", translate("command.options.certificates"), this, "o_icon_certificate");
 			certificatesOptionsLink.setElementCssClass("o_sel_course_options_certificates");
 			settings.addComponent(certificatesOptionsLink);
+			
+			if(reminderModule.isEnabled()) {
+				reminderLink = LinkFactory.createToolLink("reminders.cmd", translate("command.options.reminders"), this, "o_icon_reminder");
+				reminderLink.setElementCssClass("o_sel_course_options_certificates");
+				settings.addComponent(reminderLink);
+			}
 		}
 	}
 	
@@ -687,6 +697,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doAssessmentMode(ureq);
 		} else if(certificatesOptionsLink == source) {
 			doCertificatesOptions(ureq);
+		} else if(reminderLink == source) {
+			doReminders(ureq);
 		} else if(archiverLink == source) {
 			doArchive(ureq);
 		} else if(folderLink == source) {
@@ -771,6 +783,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						case assessmentTestStatistics: doAssessmentTestStatistics(ureq); break;
 						case assessmentTool: doAssessmentTool(ureq);
 						case certificates: doCertificatesOptions(ureq); break;
+						case reminders: doReminders(ureq); break;
 						case courseAreas: doCourseAreas(ureq); break;
 						case courseFolder: doCourseFolder(ureq); break;
 						case courseStatistics: doCourseStatistics(ureq); break;
@@ -1076,6 +1089,21 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			}
 		} else {
 			delayedClose = Delayed.certificates;
+		}
+	}
+	
+	private void doReminders(UserRequest ureq) {
+		if(delayedClose == Delayed.reminders || requestForClose(ureq)) {
+			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
+				removeCustomCSS(ureq);
+
+				CourseRemindersController ctrl = new CourseRemindersController(ureq, getWindowControl(), getRepositoryEntry(), toolbarPanel);
+				remindersCtrl = pushController(ureq, translate("command.reminders"), ctrl);
+				setActiveTool(reminderLink);
+				currentToolCtr = remindersCtrl;
+			}
+		} else {
+			delayedClose = Delayed.reminders;
 		}
 	}
 	
@@ -1534,6 +1562,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		assessmentTestStatistics,
 		assessmentTool,
 		certificates,
+		reminders,
 		courseAreas,
 		courseFolder,
 		courseStatistics,

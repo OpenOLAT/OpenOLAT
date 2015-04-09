@@ -45,5 +45,13 @@ public interface BreadcrumbPanel extends StackedPanel {
 	
 	
 	public void popUpToController(Controller controller);
+	
+	/**
+	 * Remove and dispose the specified controller and all
+	 * controllers under this one.
+	 * 
+	 * @param controller
+	 */
+	public void popController(Controller controller);
 
 }

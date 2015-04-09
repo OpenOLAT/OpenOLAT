@@ -140,6 +140,8 @@ import org.junit.runners.Suite;
 	org.olat.modules.wiki.gui.components.wikiToHtml.FilterUtilTest.class,
 	org.olat.modules.coach.manager.CoachingDAOTest.class,
 	org.olat.modules.coach.CoachingLargeTest.class,
+	org.olat.modules.reminder.manager.ReminderDAOTest.class,
+	org.olat.modules.reminder.manager.ReminderRuleEngineTest.class,
 	org.olat.properties.PropertyTest.class,
 	org.olat.search.service.document.file.FileDocumentFactoryTest.class,
 	org.olat.search.service.document.file.PDFDocumentTest.class,

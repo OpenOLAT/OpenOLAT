@@ -204,6 +204,19 @@ public class Formatter {
 	}
 	
 	/**
+	 * Parse the given date with the ISO 8601 standard also known as 'datetime'
+	 * See http://www.w3.org/TR/NOTE-datetime.html for more info.
+	 * 
+	 * @param d the date as string to be parsed
+	 * @return The date
+	 */
+	public static Date parseDatetime(String d) throws ParseException {
+		synchronized (formatDateTime) {
+			return formatDateTime.parse(d);
+		}
+	}
+	
+	/**
 	 * Use this for naming files or directories with a timestamp. 
 	 * As windows does not like ":" in filenames formatDateAndTime(d) does not work
 	 * 
