@@ -28,9 +28,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.BusinessGroupRefImpl;
+import org.olat.modules.reminder.IdentitiesProviderRuleSPI;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
-import org.olat.modules.reminder.RuleSPI;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
 import org.olat.modules.reminder.ui.BusinessGroupRoleEditor;
 import org.olat.repository.RepositoryEntry;
@@ -44,7 +44,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class BusinessGroupRoleRuleSPI implements RuleSPI {
+public class BusinessGroupRoleRuleSPI implements IdentitiesProviderRuleSPI {
 
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
@@ -64,7 +64,8 @@ public class BusinessGroupRoleRuleSPI implements RuleSPI {
 		return new BusinessGroupRoleEditor(rule, entry);
 	}
 
-	public List<Identity> evaluate(ReminderRule rule) {
+	@Override
+	public List<Identity> evaluate(RepositoryEntry entry, ReminderRule rule) {
 		List<Identity> identities = null;
 		
 		if(rule instanceof ReminderRuleImpl) {

@@ -17,9 +17,10 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.reminder.ui;
+package org.olat.course.nodes.gta.ui;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -35,9 +36,11 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.reminder.rule.InitialAttemptsRuleSPI;
+import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.gta.rule.AssignTaskRuleSPI;
+import org.olat.course.nodes.gta.rule.SubmissionTaskRuleSPI;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
@@ -46,11 +49,11 @@ import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Initial date: 09.04.2015<br>
+ * Initial date: 10.04.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class InitialAttemptsRuleEditor extends RuleEditorFragment {
+public class BeforeDateTaskRuleEditor extends RuleEditorFragment {
 	
 	private static final String[] unitKeys = new String[]{
 		LaunchUnit.day.name(), LaunchUnit.week.name(), LaunchUnit.month.name(), LaunchUnit.year.name()
@@ -59,29 +62,32 @@ public class InitialAttemptsRuleEditor extends RuleEditorFragment {
 	private TextElement valueEl;
 	private SingleSelection courseNodeEl, unitEl;
 	
+	private final String ruleType;
+	
 	private final RepositoryEntry entry;
 	
-	public InitialAttemptsRuleEditor(ReminderRule rule, RepositoryEntry entry) {
+	public BeforeDateTaskRuleEditor(ReminderRule rule, RepositoryEntry entry, String ruleType) {
 		super(rule);
 		this.entry = entry;
-		
+		this.ruleType = ruleType;
 	}
 
 	@Override
 	public FormItem initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
-		String page = Util.getPackageVelocityRoot(this.getClass()) + "/initial_attempts.html";
+		String page = Util.getPackageVelocityRoot(this.getClass()) + "/date_rule.html";
 		String id = Long.toString(CodeHelper.getRAMUniqueID());
 		
-		Translator trans = formLayout.getTranslator();
+		Translator trans = Util
+				.createPackageTranslator(BeforeDateTaskRuleEditor.class, formLayout.getTranslator().getLocale(), formLayout.getTranslator());
 		FormLayoutContainer ruleCont = FormLayoutContainer
-				.createCustomFormLayout("attempts.".concat(id), formLayout.getTranslator(), page);
+				.createCustomFormLayout("taks.".concat(id), formLayout.getTranslator(), page);
 		ruleCont.setRootForm(formLayout.getRootForm());
+		ruleCont.setTranslator(trans);
 		formLayout.add(ruleCont);
 		
 		ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
-		
-		
+
 		String currentValue = null;
 		String currentUnit = null;
 		String currentCourseNode = null;
@@ -123,7 +129,7 @@ public class InitialAttemptsRuleEditor extends RuleEditorFragment {
 			courseNodeEl.setErrorKey("error.course.node.found", null);
 		}
 
-		valueEl = uifactory.addTextElement("attemptvalue", null, 128, currentValue, ruleCont);
+		valueEl = uifactory.addTextElement("value", null, 128, currentValue, ruleCont);
 		valueEl.setDomReplacementWrapperRequired(false);
 		valueEl.setDisplaySize(3);
 
@@ -132,7 +138,7 @@ public class InitialAttemptsRuleEditor extends RuleEditorFragment {
 				trans.translate(LaunchUnit.month.name()), trans.translate(LaunchUnit.year.name())
 		};
 
-		unitEl = uifactory.addDropdownSingleselect("attemptunit", null, ruleCont, unitKeys, unitValues, null);
+		unitEl = uifactory.addDropdownSingleselect("unit", null, ruleCont, unitKeys, unitValues, null);
 		unitEl.setDomReplacementWrapperRequired(false);
 		boolean selected = false;
 		if(currentUnit != null) {
@@ -151,10 +157,22 @@ public class InitialAttemptsRuleEditor extends RuleEditorFragment {
 	}
 	
 	private void searchAttemptableNodes(CourseNode courseNode, List<CourseNode> nodes) {
-		if (courseNode instanceof AssessableCourseNode) {
-			AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
-			if (assessableCourseNode.hasAttemptsConfigured()) {
-				nodes.add(courseNode);
+		if (courseNode instanceof GTACourseNode) {
+			GTACourseNode assessableCourseNode = (GTACourseNode) courseNode;
+			ModuleConfiguration config = assessableCourseNode.getModuleConfiguration();
+			
+			if(AssignTaskRuleSPI.class.getSimpleName().equals(ruleType)) {
+				boolean assignment = config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT);
+				Date dueDate = config.getDateValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
+				if(assignment && dueDate != null) {
+					nodes.add(courseNode);
+				}
+			} else if(SubmissionTaskRuleSPI.class.getSimpleName().equals(ruleType)) {
+				boolean submit = config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT);
+				Date dueDate = config.getDateValue(GTACourseNode.GTASK_SUBMIT_DEADLINE);
+				if(submit && dueDate != null) {
+					nodes.add(courseNode);
+				}
 			}
 		}
 		
@@ -194,9 +212,9 @@ public class InitialAttemptsRuleEditor extends RuleEditorFragment {
 		ReminderRuleImpl configuredRule = null; 
 		if(courseNodeEl.isOneSelected() && unitEl.isOneSelected() && StringHelper.containsNonWhitespace(valueEl.getValue())) {
 			configuredRule = new ReminderRuleImpl();
-			configuredRule.setType(InitialAttemptsRuleSPI.class.getSimpleName());
+			configuredRule.setType(ruleType);
 			configuredRule.setLeftOperand(courseNodeEl.getSelectedKey());
-			configuredRule.setOperator(">");
+			configuredRule.setOperator("<");
 			configuredRule.setRightOperand(valueEl.getValue());
 			configuredRule.setRightUnit(unitEl.getSelectedKey());
 		}

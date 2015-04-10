@@ -155,7 +155,7 @@ public class CourseReminderListController extends FormBasicController implements
 		String entryPoint = entry.getOLATResourceable().getResourceableTypeName();
 		if("SentReminders".equalsIgnoreCase(entryPoint)) {
 			Long key = entry.getOLATResourceable().getResourceableId();
-			System.out.println(key);
+			doSendReminderList(ureq, key);
 		}
 	}
 
@@ -239,14 +239,14 @@ public class CourseReminderListController extends FormBasicController implements
 		toolbarPanel.pushController(translate("new.reminder"), reminderEditCtrl);	
 	}
 	
-	private void doSendReminderList(UserRequest ureq, ReminderRow row) {
+	private void doSendReminderList(UserRequest ureq, Long reminderKey) {
 		removeAsListenerAndDispose(sendReminderListCtrl);
 		
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("SentReminders", row.getKey());
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("SentReminders", reminderKey);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 
-		Reminder reminder = reminderManager.loadByKey(row.getKey());
+		Reminder reminder = reminderManager.loadByKey(reminderKey);
 		sendReminderListCtrl = new CourseSendReminderListController(ureq, bwControl, reminder);
 		listenTo(sendReminderListCtrl);
 		addToHistory(ureq, sendReminderListCtrl);
@@ -336,7 +336,7 @@ public class CourseReminderListController extends FormBasicController implements
 				if("edit".equals(cmd)) {
 					doEdit(ureq, row);
 				} else if("show.sent".equals(cmd)) {
-					doSendReminderList(ureq, row);
+					doSendReminderList(ureq, row.getKey());
 				} else if("delete".equals(cmd)) {
 					doConfirmDelete(ureq, row);
 				} else if("duplicate".equals(cmd)) {

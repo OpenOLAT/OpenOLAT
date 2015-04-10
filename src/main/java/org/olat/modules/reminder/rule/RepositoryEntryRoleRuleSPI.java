@@ -25,9 +25,9 @@ import java.util.List;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.reminder.IdentitiesProviderRuleSPI;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
-import org.olat.modules.reminder.RuleSPI;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
 import org.olat.modules.reminder.ui.RepositoryEntryRoleEditor;
 import org.olat.repository.RepositoryEntry;
@@ -43,7 +43,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class RepositoryEntryRoleRuleSPI implements RuleSPI  {
+public class RepositoryEntryRoleRuleSPI implements IdentitiesProviderRuleSPI  {
 
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
@@ -63,7 +63,7 @@ public class RepositoryEntryRoleRuleSPI implements RuleSPI  {
 		return new RepositoryEntryRoleEditor(rule);
 	}
 
-
+	@Override
 	public List<Identity> evaluate(RepositoryEntry entry, ReminderRule rule) {
 		List<Identity> identities = null;
 		if(rule instanceof ReminderRuleImpl) {

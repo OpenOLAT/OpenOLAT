@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -61,6 +62,7 @@ public class CourseLaunchRuleEditor extends RuleEditorFragment {
 		String page = Util.getPackageVelocityRoot(this.getClass()) + "/course_launch.html";
 		String id = Long.toString(CodeHelper.getRAMUniqueID());
 		
+		Translator trans = formLayout.getTranslator();
 		FormLayoutContainer ruleCont = FormLayoutContainer
 				.createCustomFormLayout("course.launch.".concat(id), formLayout.getTranslator(), page);
 		ruleCont.setRootForm(formLayout.getRootForm());
@@ -79,10 +81,10 @@ public class CourseLaunchRuleEditor extends RuleEditorFragment {
 		valueEl.setDisplaySize(3);
 		
 		String[] unitValues = new String[] {
-				LaunchUnit.day.name(), LaunchUnit.week.name(), LaunchUnit.month.name(), LaunchUnit.year.name()
+				trans.translate(LaunchUnit.day.name()), trans.translate(LaunchUnit.week.name()),
+				trans.translate(LaunchUnit.month.name()), trans.translate(LaunchUnit.year.name())
 		};
 		
-
 		unitEl = uifactory.addDropdownSingleselect("launchunit", null, ruleCont, unitKeys, unitValues, null);
 		unitEl.setDomReplacementWrapperRequired(false);
 		boolean selected = false;

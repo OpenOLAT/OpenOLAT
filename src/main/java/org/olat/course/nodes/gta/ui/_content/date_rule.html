@@ -1,0 +1,9 @@
+<div class='form-inline'>
+	$r.render("coursenodes") $r.render("value") $r.render("unit") <span class="form-control-static">$r.translate("before")</span>
+	#if($f.hasError("value"))
+		<br/>$r.render("value_ERROR")
+	#end
+	#if($f.hasError("coursenodes"))
+		<br/>$r.render("coursenodes_ERROR")
+	#end
+</div>

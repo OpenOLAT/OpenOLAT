@@ -157,6 +157,9 @@ public interface GTAManager {
 	public Task nextStep(Task task, GTACourseNode cNode);
 	
 	
+
+	public List<Task> getTasks(TaskList taskList);
+	
 	/**
 	 * Return the tasks assigned to a person, individually or via a
 	 * business group.

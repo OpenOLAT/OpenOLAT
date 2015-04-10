@@ -29,6 +29,7 @@ import java.util.Set;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.id.Identity;
 import org.olat.modules.reminder.FilterRuleSPI;
+import org.olat.modules.reminder.IdentitiesProviderRuleSPI;
 import org.olat.modules.reminder.Reminder;
 import org.olat.modules.reminder.ReminderModule;
 import org.olat.modules.reminder.ReminderRule;
@@ -122,18 +123,19 @@ public class ReminderRuleEngine {
 	}
 	
 	protected List<Identity> getIdentities(RepositoryEntry entry, Reminder reminder, List<ReminderRule> ruleList, boolean resend) {	
-		List<ReminderRule> roleRules = new ArrayList<>();
+		List<ReminderRule> identitiesProviderRules = new ArrayList<>();
 
 		for(Iterator<ReminderRule> ruleIt=ruleList.iterator(); ruleIt.hasNext(); ) {
 			ReminderRule rule = ruleIt.next();
-			if(REPO_ROLE_RULE_TYPE.equals(rule.getType()) || BUSINESSGROUP_ROLE_RULE_TYPE.equals(rule.getType())) {
-				roleRules.add(rule);
+			RuleSPI ruleSpi = reminderModule.getRuleSPIByType(rule.getType());
+			if(ruleSpi instanceof IdentitiesProviderRuleSPI) {
+				identitiesProviderRules.add(rule);
 				ruleIt.remove();
 			}
 		}
 		
 		List<Identity> identities;
-		if(roleRules.isEmpty()) {
+		if(identitiesProviderRules.isEmpty()) {
 			//all members of repository entry
 			List<Identity> duplicatedIdentities = repositoryEntryRelationDao.getMembers(entry, RepositoryEntryRelationType.both,
 					GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name());
@@ -141,14 +143,10 @@ public class ReminderRuleEngine {
 		} else {
 			identities = null;
 			
-			for(ReminderRule rule:roleRules) {
-				List<Identity> members = null;
-				if(REPO_ROLE_RULE_TYPE.equals(rule.getType())) {
-					members = repoRoleRuleSpi.evaluate(entry, rule);
-				} else if(BUSINESSGROUP_ROLE_RULE_TYPE.equals(rule.getType())) {
-					members = groupRoleRuleSpi.evaluate(rule);
-				}
-				
+			for(ReminderRule rule:identitiesProviderRules) {
+				RuleSPI ruleSpi = reminderModule.getRuleSPIByType(rule.getType());
+				IdentitiesProviderRuleSPI identitiesProviderRuleSpi = (IdentitiesProviderRuleSPI)ruleSpi;
+				List<Identity> members = identitiesProviderRuleSpi.evaluate(entry, rule);
 				if(identities == null) {
 					identities = members;
 				} else {

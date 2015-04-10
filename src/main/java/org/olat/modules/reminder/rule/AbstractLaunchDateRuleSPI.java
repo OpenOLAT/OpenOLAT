@@ -73,14 +73,14 @@ public abstract class AbstractLaunchDateRuleSPI  implements FilterRuleSPI {
 				Date initialLaunchDate = initialLaunchDates.get(identity.getKey());
 				if(initialLaunchDate == null) {
 					identityIt.remove();
-				} else if(!evaluate(initialLaunchDate, now, distance, unit)) {
+				} else if(!after(initialLaunchDate, now, distance, unit)) {
 					identityIt.remove();
 				}	
 			}
 		}
 	}
 	
-	private boolean evaluate(Date date, Date now, int distance, LaunchUnit unit) {
+	private boolean after(Date date, Date now, int distance, LaunchUnit unit) {
 		double between = -1;
 		switch(unit) {
 			case day:
