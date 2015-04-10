@@ -19,6 +19,8 @@
  */
 package org.olat.course.reminder.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -31,7 +33,15 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
  * 
@@ -39,7 +49,7 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CourseRemindersController extends BasicController {
+public class CourseRemindersController extends BasicController implements Activateable2 {
 
 	private final Link remindersLink, logsLink;
 	private final VelocityContainer mainVC;
@@ -76,6 +86,21 @@ public class CourseRemindersController extends BasicController {
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry entry = entries.get(0);
+		String entryPoint = entry.getOLATResourceable().getResourceableTypeName();
+		if("Reminders".equalsIgnoreCase(entryPoint)) {
+			doOpenRemindersConfiguration(ureq);
+			segmentView.select(remindersLink);
+		} else if("RemindersLogs".equalsIgnoreCase(entryPoint)) {
+			doOpenReminderLogs(ureq);
+			segmentView.select(logsLink);
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
 			if(event instanceof SegmentViewEvent) {
@@ -93,18 +118,25 @@ public class CourseRemindersController extends BasicController {
 	
 	private void doOpenRemindersConfiguration(UserRequest ureq) {
 		if(reminderListCtrl == null) {
-			reminderListCtrl = new CourseReminderListController(ureq, getWindowControl(), repositoryEntry, toolbarPanel);
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Reminders", 0l);
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			reminderListCtrl = new CourseReminderListController(ureq, bwControl, repositoryEntry, toolbarPanel);
 			listenTo(reminderListCtrl);
-			
 		}
 		mainVC.put("segmentCmp", reminderListCtrl.getInitialComponent());
+		addToHistory(ureq, reminderListCtrl);
 	}
 	
 	private void doOpenReminderLogs(UserRequest ureq) {
 		if(reminderLogsCtrl == null) {
-			reminderLogsCtrl = new CourseReminderLogsController(ureq, getWindowControl(), repositoryEntry, toolbarPanel);
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("RemindersLogs", 0l);
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			reminderLogsCtrl = new CourseReminderLogsController(ureq, bwControl, repositoryEntry, toolbarPanel);
 			listenTo(reminderLogsCtrl);
 		}
 		mainVC.put("segmentCmp", reminderLogsCtrl.getInitialComponent());	
+		addToHistory(ureq, reminderLogsCtrl);
 	}
 }

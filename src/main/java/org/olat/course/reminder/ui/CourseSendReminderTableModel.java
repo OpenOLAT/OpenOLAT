@@ -19,8 +19,12 @@
  */
 package org.olat.course.reminder.ui;
 
+import java.util.List;
+
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.course.reminder.model.SentReminderRow;
 
 /**
@@ -29,7 +33,7 @@ import org.olat.course.reminder.model.SentReminderRow;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CourseSendReminderTableModel extends DefaultFlexiTableDataModel<SentReminderRow> {
+public class CourseSendReminderTableModel extends DefaultFlexiTableDataModel<SentReminderRow> implements SortableFlexiTableDataModel<SentReminderRow> {
 	
 	public CourseSendReminderTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
@@ -41,8 +45,21 @@ public class CourseSendReminderTableModel extends DefaultFlexiTableDataModel<Sen
 	}
 
 	@Override
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<SentReminderRow> views = new CourseSendReminderTableSort(orderBy, this, null).sort();
+			super.setObjects(views);
+		}
+	}
+	
+	@Override
 	public Object getValueAt(int row, int col) {
 		SentReminderRow reminder = getObject(row);
+		return getValueAt(reminder, col);
+	}
+
+	@Override
+	public Object getValueAt(SentReminderRow reminder, int col) {
 		if(col == SendCols.reminder.ordinal()) {
 			return reminder.getReminderDescription();
 		} else if(col == SendCols.status.ordinal()) {

@@ -98,14 +98,14 @@ public class RepositoryEntryRoleEditor extends RuleEditorFragment {
 
 	@Override
 	public ReminderRule getConfiguration() {
-		ReminderRuleImpl rule = null;
+		ReminderRuleImpl configuredRule = null;
 		if(roleEl.isOneSelected()) {
-			rule = new ReminderRuleImpl();
-			rule.setType(RepositoryEntryRoleRuleSPI.class.getSimpleName());
-			rule.setOperator("=");
-			rule.setRightOperand(roleEl.getSelectedKey());
+			configuredRule = new ReminderRuleImpl();
+			configuredRule.setType(RepositoryEntryRoleRuleSPI.class.getSimpleName());
+			configuredRule.setOperator("=");
+			configuredRule.setRightOperand(roleEl.getSelectedKey());
 		}
-		return rule;
+		return configuredRule;
 	}
 
 

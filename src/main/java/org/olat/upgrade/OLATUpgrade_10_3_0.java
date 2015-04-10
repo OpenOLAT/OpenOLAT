@@ -79,10 +79,9 @@ public class OLATUpgrade_10_3_0 extends OLATUpgrade {
 			return false;
 		}
 		
-		boolean allOk = false;
+		boolean allOk = true;
 		allOk &= upgradeExportFodler(upgradeManager, uhd);
 
-		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {

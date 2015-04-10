@@ -121,11 +121,11 @@ public class CourseLaunchRuleEditor extends RuleEditorFragment {
 
 	@Override
 	public ReminderRule getConfiguration() {
-		ReminderRuleImpl rule = new ReminderRuleImpl();
-		rule.setType(ruleType);
-		rule.setOperator(">");
-		rule.setRightOperand(valueEl.getValue());
-		rule.setRightUnit(unitEl.getSelectedKey());
-		return rule;
+		ReminderRuleImpl configuredRule = new ReminderRuleImpl();
+		configuredRule.setType(ruleType);
+		configuredRule.setOperator(">");
+		configuredRule.setRightOperand(valueEl.getValue());
+		configuredRule.setRightUnit(unitEl.getSelectedKey());
+		return configuredRule;
 	}
 }

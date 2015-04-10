@@ -47,14 +47,23 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.reminder.model.ReminderRow;
 import org.olat.course.reminder.ui.CourseReminderTableModel.ReminderCols;
 import org.olat.modules.reminder.Reminder;
 import org.olat.modules.reminder.ReminderService;
+import org.olat.modules.reminder.model.ReminderInfos;
 import org.olat.repository.RepositoryEntry;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -63,7 +72,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CourseReminderListController extends FormBasicController {
+public class CourseReminderListController extends FormBasicController implements Activateable2 {
 	
 	private FormLink addButton;
 	private FlexiTableElement tableEl;
@@ -95,14 +104,20 @@ public class CourseReminderListController extends FormBasicController {
 		addButton = uifactory.addFormLink("add.reminder", formLayout, Link.BUTTON);
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ReminderCols.id.i18nKey(), ReminderCols.id.ordinal(), false, null));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ReminderCols.id.i18nKey(), ReminderCols.id.ordinal(),
+				true, ReminderCols.id.name()));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(ReminderCols.description.i18nKey(), ReminderCols.description.ordinal(),
-				"edit", new StaticFlexiCellRenderer("edit", new TextFlexiCellRenderer())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.creator.i18nKey(), ReminderCols.creator.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.creationDate.i18nKey(), ReminderCols.creationDate.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ReminderCols.lastModified.i18nKey(), ReminderCols.lastModified.ordinal(), false, null));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.sendTime.i18nKey(), ReminderCols.sendTime.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.send.i18nKey(), ReminderCols.send.ordinal()));
+				"edit", true, ReminderCols.description.name(), new StaticFlexiCellRenderer("edit", new TextFlexiCellRenderer())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.creator.i18nKey(), ReminderCols.creator.ordinal(),
+				true, ReminderCols.creator.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.creationDate.i18nKey(), ReminderCols.creationDate.ordinal(),
+				true, ReminderCols.creationDate.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ReminderCols.lastModified.i18nKey(), ReminderCols.lastModified.ordinal(),
+				true, ReminderCols.lastModified.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.sendTime.i18nKey(), ReminderCols.sendTime.ordinal(),
+				true, ReminderCols.sendTime.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.send.i18nKey(), ReminderCols.send.ordinal(),
+				true, ReminderCols.send.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.tools.i18nKey(), ReminderCols.tools.ordinal()));
 		
 		tableModel = new CourseReminderTableModel(columnsModel);
@@ -111,15 +126,15 @@ public class CourseReminderListController extends FormBasicController {
 	}
 	
 	private void updateModel() {
-		List<Reminder> reminders = reminderManager.getReminders(repositoryEntry);
+		List<ReminderInfos> reminders = reminderManager.getReminderInfos(repositoryEntry);
 		List<ReminderRow> rows = new ArrayList<>(reminders.size());
-		for(Reminder reminder:reminders) {
+		for(ReminderInfos reminder:reminders) {
 			
 			FormLink toolsLink = uifactory.addFormLink("tools_" + counter.incrementAndGet(), "tools", "", null, null, Link.NONTRANSLATED);
 			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
 			toolsLink.setTitle(translate("tools"));
 
-			ReminderRow row = new ReminderRow(reminder, 3, toolsLink);
+			ReminderRow row = new ReminderRow(reminder, toolsLink);
 			toolsLink.setUserObject(row);
 			rows.add(row);
 		}
@@ -130,6 +145,18 @@ public class CourseReminderListController extends FormBasicController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry entry = entries.get(0);
+		String entryPoint = entry.getOLATResourceable().getResourceableTypeName();
+		if("SentReminders".equalsIgnoreCase(entryPoint)) {
+			Long key = entry.getOLATResourceable().getResourceableId();
+			System.out.println(key);
+		}
 	}
 
 	@Override
@@ -173,7 +200,7 @@ public class CourseReminderListController extends FormBasicController {
 			cleanUp();
 		} else if(deleteDialogBox == source) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
-				doDelete(ureq, (ReminderRow)deleteDialogBox.getUserObject());
+				doDelete((ReminderRow)deleteDialogBox.getUserObject());
 			}
 		}
 		super.event(ureq, source, event);
@@ -205,7 +232,7 @@ public class CourseReminderListController extends FormBasicController {
 	private void doAddReminder(UserRequest ureq) {
 		removeAsListenerAndDispose(reminderEditCtrl);
 		
-		Reminder newReminder = reminderManager.createReminder(repositoryEntry);
+		Reminder newReminder = reminderManager.createReminder(repositoryEntry, getIdentity());
 		reminderEditCtrl = new CourseReminderEditController(ureq, getWindowControl(), newReminder);
 		listenTo(reminderEditCtrl);
 		
@@ -214,10 +241,15 @@ public class CourseReminderListController extends FormBasicController {
 	
 	private void doSendReminderList(UserRequest ureq, ReminderRow row) {
 		removeAsListenerAndDispose(sendReminderListCtrl);
-	
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("SentReminders", row.getKey());
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+
 		Reminder reminder = reminderManager.loadByKey(row.getKey());
-		sendReminderListCtrl = new CourseSendReminderListController(ureq, getWindowControl(), reminder);
+		sendReminderListCtrl = new CourseSendReminderListController(ureq, bwControl, reminder);
 		listenTo(sendReminderListCtrl);
+		addToHistory(ureq, sendReminderListCtrl);
 		
 		toolbarPanel.pushController(translate("send.reminder"), sendReminderListCtrl);	
 	}
@@ -228,7 +260,7 @@ public class CourseReminderListController extends FormBasicController {
 		deleteDialogBox.setUserObject(row);
 	}
 
-	private void doDelete(UserRequest ureq, ReminderRow row) {
+	private void doDelete(ReminderRow row) {
 		Reminder reminder = reminderManager.loadByKey(row.getKey());
 		reminderManager.delete(reminder);
 		updateModel();
@@ -244,13 +276,13 @@ public class CourseReminderListController extends FormBasicController {
 		toolbarPanel.pushController(translate("edit.reminder"), reminderEditCtrl);	
 	}
 	
-	private void doDuplicate(UserRequest ureq, ReminderRow row) {
+	private void doDuplicate(ReminderRow row) {
 		Reminder reminder = reminderManager.loadByKey(row.getKey());
 		reminderManager.duplicate(reminder);
 		updateModel();
 	}
 	
-	private void doSend(UserRequest ureq, ReminderRow row) {
+	private void doSend(ReminderRow row) {
 		Reminder reminder = reminderManager.loadByKey(row.getKey());
 		reminderManager.sendReminder(reminder);
 		updateModel();
@@ -308,9 +340,9 @@ public class CourseReminderListController extends FormBasicController {
 				} else if("delete".equals(cmd)) {
 					doConfirmDelete(ureq, row);
 				} else if("duplicate".equals(cmd)) {
-					doDuplicate(ureq, row);
+					doDuplicate(row);
 				} else if("send".equals(cmd)) {
-					doSend(ureq, row);
+					doSend(row);
 				}
 					
 			}

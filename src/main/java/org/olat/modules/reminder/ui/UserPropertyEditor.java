@@ -128,14 +128,14 @@ public class UserPropertyEditor extends RuleEditorFragment {
 
 	@Override
 	public ReminderRule getConfiguration() {
-		ReminderRuleImpl rule = null; 
+		ReminderRuleImpl configuredRule = null; 
 		if(propEl.isOneSelected() && StringHelper.containsNonWhitespace(valueEl.getValue())) {
-			rule = new ReminderRuleImpl();
-			rule.setType(UserPropertyRuleSPI.class.getSimpleName());
-			rule.setLeftOperand(propEl.getSelectedKey());
-			rule.setOperator("=");
-			rule.setRightOperand(valueEl.getValue());
+			configuredRule = new ReminderRuleImpl();
+			configuredRule.setType(UserPropertyRuleSPI.class.getSimpleName());
+			configuredRule.setLeftOperand(propEl.getSelectedKey());
+			configuredRule.setOperator("=");
+			configuredRule.setRightOperand(valueEl.getValue());
 		}
-		return rule;
+		return configuredRule;
 	}
 }

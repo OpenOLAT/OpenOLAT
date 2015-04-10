@@ -171,14 +171,14 @@ public class PassedRuleEditor extends RuleEditorFragment {
 
 	@Override
 	public ReminderRule getConfiguration() {
-		ReminderRuleImpl rule = null; 
+		ReminderRuleImpl configuredRule = null; 
 		if(courseNodeEl.isOneSelected() && statusEl.isOneSelected()) {
-			rule = new ReminderRuleImpl();
-			rule.setType(PassedRuleSPI.class.getSimpleName());
-			rule.setLeftOperand(courseNodeEl.getSelectedKey());
-			rule.setOperator("=");
-			rule.setRightOperand(statusEl.getSelectedKey());
+			configuredRule = new ReminderRuleImpl();
+			configuredRule.setType(PassedRuleSPI.class.getSimpleName());
+			configuredRule.setLeftOperand(courseNodeEl.getSelectedKey());
+			configuredRule.setOperator("=");
+			configuredRule.setRightOperand(statusEl.getSelectedKey());
 		}
-		return rule;
+		return configuredRule;
 	}
 }

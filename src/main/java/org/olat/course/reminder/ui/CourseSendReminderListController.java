@@ -20,8 +20,11 @@
 package org.olat.course.reminder.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -30,14 +33,20 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
+import org.olat.core.util.mail.MailHelper;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.course.reminder.model.SentReminderRow;
 import org.olat.course.reminder.ui.CourseSendReminderTableModel.SendCols;
 import org.olat.modules.reminder.Reminder;
@@ -68,6 +77,8 @@ public class CourseSendReminderListController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private ReminderService reminderService;
 	@Autowired
 	private BaseSecurityModule securityModule;
@@ -88,10 +99,11 @@ public class CourseSendReminderListController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.status.i18nKey(), SendCols.status.ordinal(),
-				 new StatusCellRenderer()));
+				 true, SendCols.status.name(), new StatusCellRenderer()));
 
 		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.username.i18nKey(), SendCols.username.ordinal()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.username.i18nKey(), SendCols.username.ordinal(),
+					true, SendCols.username.name()));
 		}
 		
 		int i=0;
@@ -101,10 +113,19 @@ public class CourseSendReminderListController extends FormBasicController {
 			
 			String propName = userPropertyHandler.getName();
 			boolean visible = userManager.isMandatoryUserProperty(USER_PROPS_ID , userPropertyHandler);
-			DefaultFlexiColumnModel col = new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, true, propName);
+			
+			FlexiColumnModel col;
+			if(UserConstants.FIRSTNAME.equals(propName)
+					|| UserConstants.LASTNAME.equals(propName)) {
+				col = new StaticFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(),
+						colIndex, userPropertyHandler.getName(), true, propName,
+						new StaticFlexiCellRenderer(userPropertyHandler.getName(), new TextFlexiCellRenderer()));
+			} else {
+				col = new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, true, propName);
+			}
 			columnsModel.addFlexiColumnModel(col);
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.sendTime.i18nKey(), SendCols.sendTime.ordinal()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.sendTime.i18nKey(), SendCols.sendTime.ordinal(), true, SendCols.sendTime.name()));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("resend", translate("resend"), "resend"));
 		
 		tableModel = new CourseSendReminderTableModel(columnsModel);
@@ -138,8 +159,10 @@ public class CourseSendReminderListController extends FormBasicController {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
 				SentReminderRow row = tableModel.getObject(se.getIndex());
-				if("reminder".equals(cmd)) {
-					doOpenReminder(ureq, row);
+				if("resend".equals(cmd)) {
+					doResend(row);
+				} else if(UserConstants.FIRSTNAME.equals(cmd) || UserConstants.LASTNAME.equals(cmd)) {
+					doOpenIdentity(ureq, row);
 				}
 			}
 		}
@@ -147,8 +170,22 @@ public class CourseSendReminderListController extends FormBasicController {
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void doOpenReminder(UserRequest ureq, SentReminderRow row) {
-		
+	private void doResend(SentReminderRow row) {
+		Reminder reloadedReminder = reminderService.loadByKey(row.getReminderKey());
+		Identity id = securityManager.loadIdentityByKey(row.getIdentityKey());
+		List<Identity> identitiesToRemind = Collections.singletonList(id);
+		MailerResult result = reminderService.sendReminder(reloadedReminder, identitiesToRemind);
+		if(result.getReturnCode() != MailerResult.OK) {
+			MailHelper.printErrorsAndWarnings(result, getWindowControl(), getLocale());
+		} else {
+			showInfo("reminder.resend");
+		}
+		updateModel();
+	}
+	
+	private void doOpenIdentity(UserRequest ureq, SentReminderRow row) {
+		String businessPath = "[Identity:" + row.getIdentityKey() + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 
 	@Override

@@ -87,24 +87,16 @@ public class ReminderRuleEngine {
 		
 		List<ReminderRule> ruleList = new ArrayList<>(rules.getRules());
 		//1. Date rules doesn't need database queries
-		boolean allOk = evaluateDateRule(ruleList, resend);
+		boolean allOk = evaluateDateRule(ruleList);
 		
 		List<Identity> identities;
 		if(allOk) {
 			identities = getIdentities(reminder.getEntry(), reminder, ruleList, resend);
 			
-			if(ruleList.size() > 0) {
+			if(identities.size() > 0 && ruleList.size() > 0) {
 				filterByRules(reminder.getEntry(),  identities, ruleList);
 			}
 
-			if(ruleList.size() > 0) {
-				for(Iterator<Identity> identityIt=identities.iterator(); identityIt.hasNext(); ) {
-					Identity identity = identityIt.next();
-					if(!accept(identity, ruleList)) {
-						identityIt.remove();
-					}
-				}
-			}
 		} else {
 			identities = Collections.emptyList();	
 		}
@@ -115,7 +107,7 @@ public class ReminderRuleEngine {
 	 * 
 	 * @param reminder
 	 */
-	protected boolean evaluateDateRule(List<ReminderRule> ruleList, boolean resend) {
+	protected boolean evaluateDateRule(List<ReminderRule> ruleList) {
 		boolean allOk = true;
 		
 		for(Iterator<ReminderRule> ruleIt=ruleList.iterator(); ruleIt.hasNext(); ) {
@@ -154,7 +146,7 @@ public class ReminderRuleEngine {
 				if(REPO_ROLE_RULE_TYPE.equals(rule.getType())) {
 					members = repoRoleRuleSpi.evaluate(entry, rule);
 				} else if(BUSINESSGROUP_ROLE_RULE_TYPE.equals(rule.getType())) {
-					members = groupRoleRuleSpi.evaluate(entry, rule);
+					members = groupRoleRuleSpi.evaluate(rule);
 				}
 				
 				if(identities == null) {
@@ -236,9 +228,5 @@ public class ReminderRuleEngine {
 				filter.filter(entry, identities, rule);
 			}	
 		}
-	}
-	
-	protected boolean accept(Identity identity, List<ReminderRule> ruleList) {
-		return false;
 	}
 }

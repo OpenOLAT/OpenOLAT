@@ -180,14 +180,14 @@ public class ScoreRuleEditor extends RuleEditorFragment {
 
 	@Override
 	public ReminderRule getConfiguration() {
-		ReminderRuleImpl rule = null; 
+		ReminderRuleImpl configuredRule = null; 
 		if(courseNodeEl.isOneSelected() && operatorEl.isOneSelected() && StringHelper.containsNonWhitespace(valueEl.getValue())) {
-			rule = new ReminderRuleImpl();
-			rule.setType(ScoreRuleSPI.class.getSimpleName());
-			rule.setLeftOperand(courseNodeEl.getSelectedKey());
-			rule.setOperator(operatorEl.getSelectedKey());
-			rule.setRightOperand(valueEl.getValue());
+			configuredRule = new ReminderRuleImpl();
+			configuredRule.setType(ScoreRuleSPI.class.getSimpleName());
+			configuredRule.setLeftOperand(courseNodeEl.getSelectedKey());
+			configuredRule.setOperator(operatorEl.getSelectedKey());
+			configuredRule.setRightOperand(valueEl.getValue());
 		}
-		return rule;
+		return configuredRule;
 	}
 }

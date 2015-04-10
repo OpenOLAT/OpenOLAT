@@ -47,8 +47,9 @@ public class ReminderDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createAndPersistReminder() {
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("creator-rem-1");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		Reminder reminder = reminderDao.createReminder(entry);
+		Reminder reminder = reminderDao.createReminder(entry, creator);
 		Assert.assertNotNull(reminder);
 		reminder.setConfiguration("<rules></rules>");
 		reminder.setDescription("Reminder - 1");
@@ -84,9 +85,10 @@ public class ReminderDAOTest extends OlatTestCase {
 	@Test
 	public void createAndPersistSendReminder() {
 		//create and reminder and an identity
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("creator-rem-2");
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("mind-1");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		Reminder reminder = reminderDao.createReminder(entry);
+		Reminder reminder = reminderDao.createReminder(entry, creator);
 		reminder.setConfiguration("<rules></rules>");
 		reminder.setDescription("Reminder - 2");
 		reminder.setEmailBody("Hello world");

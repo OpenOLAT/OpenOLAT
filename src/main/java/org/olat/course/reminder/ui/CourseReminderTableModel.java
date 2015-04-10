@@ -19,8 +19,12 @@
  */
 package org.olat.course.reminder.ui;
 
+import java.util.List;
+
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.course.reminder.model.ReminderRow;
 
 /**
@@ -29,7 +33,7 @@ import org.olat.course.reminder.model.ReminderRow;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CourseReminderTableModel extends DefaultFlexiTableDataModel<ReminderRow> {
+public class CourseReminderTableModel extends DefaultFlexiTableDataModel<ReminderRow> implements SortableFlexiTableDataModel<ReminderRow> {
 	
 	public CourseReminderTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
@@ -39,18 +43,30 @@ public class CourseReminderTableModel extends DefaultFlexiTableDataModel<Reminde
 	public CourseReminderTableModel createCopyWithEmptyList() {
 		return new CourseReminderTableModel(getTableColumnModel());
 	}
+	
+	@Override
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<ReminderRow> views = new CourseReminderTableSort(orderBy, this, null).sort();
+			super.setObjects(views);
+		}
+	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
 		ReminderRow reminder = getObject(row);
+		return getValueAt(reminder, col);
+	}
 		
+	@Override
+	public Object getValueAt(ReminderRow reminder, int col) {	
 		switch(ReminderCols.values()[col]) {
 			case id: return reminder.getKey();
 			case description: return reminder.getDescription();
-			case creator: return "";
+			case creator: return reminder.getCreator();
 			case creationDate: return reminder.getCreationDate();
 			case lastModified: return reminder.getLastModified();
-			case sendTime: return "";
+			case sendTime: return reminder.getSendTime();
 			case send: return reminder.getSend();
 			case tools: return reminder.getToolsLink();
 			default: return "ERROR";

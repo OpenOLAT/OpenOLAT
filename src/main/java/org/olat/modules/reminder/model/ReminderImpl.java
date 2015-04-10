@@ -35,6 +35,8 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.olat.basesecurity.IdentityImpl;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.modules.reminder.Reminder;
 import org.olat.repository.RepositoryEntry;
@@ -68,9 +70,19 @@ public class ReminderImpl implements Reminder, Persistable {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
+	
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_creator", nullable=false, insertable=true, updatable=false)
+	private Identity creator;
 
 	@Column(name="r_description", nullable=false, insertable=true, updatable=true)
 	private String description;
+	
+	@Column(name="r_sendtime", nullable=true, insertable=true, updatable=true)
+	private String sendTime;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="r_start", nullable=true, insertable=true, updatable=true)
+	private Date startDate;
 	@Column(name="r_configuration", nullable=true, insertable=true, updatable=true)
 	private String configuration;
 	@Column(name="r_email_body", nullable=true, insertable=true, updatable=true)
@@ -108,6 +120,14 @@ public class ReminderImpl implements Reminder, Persistable {
 		this.lastModified = lastModified;
 	}
 	
+	public Identity getCreator() {
+		return creator;
+	}
+
+	public void setCreator(Identity creator) {
+		this.creator = creator;
+	}
+
 	@Override
 	public String getDescription() {
 		return description;
@@ -116,6 +136,22 @@ public class ReminderImpl implements Reminder, Persistable {
 	@Override
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public Date getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
+
+	public String getSendTime() {
+		return sendTime;
+	}
+
+	public void setSendTime(String sendTime) {
+		this.sendTime = sendTime;
 	}
 
 	@Override

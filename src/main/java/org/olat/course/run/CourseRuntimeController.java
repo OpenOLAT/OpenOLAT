@@ -105,7 +105,6 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.member.MembersManagementMainController;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.reminder.ui.CourseReminderListController;
 import org.olat.course.reminder.ui.CourseRemindersController;
 import org.olat.course.run.calendar.CourseCalendarController;
 import org.olat.course.run.glossary.CourseGlossaryFactory;
@@ -855,8 +854,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				doOptions(ureq);
 			} else if("CertificationSettings".equalsIgnoreCase(type)) {
 				doCertificatesOptions(ureq);
-			}  else if("Certification".equalsIgnoreCase(type)) {
+			} else if("Certification".equalsIgnoreCase(type)) {
 				doEfficiencyStatements(ureq);
+			} else if("Reminders".equalsIgnoreCase(type) || "RemindersLogs".equalsIgnoreCase(type)) {
+				doReminders(ureq);
 			} else if("MembersMgmt".equalsIgnoreCase(type)) {
 				Activateable2 members = doMembers(ureq);
 				if(members != null) {

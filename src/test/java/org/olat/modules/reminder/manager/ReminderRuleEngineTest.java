@@ -104,7 +104,7 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 		pastRule.setRightOperand(Formatter.formatDatetime(cal.getTime()));
 		rulePastList.add(pastRule);
 
-		boolean pastEval = ruleEngine.evaluateDateRule(rulePastList, false);
+		boolean pastEval = ruleEngine.evaluateDateRule(rulePastList);
 		Assert.assertTrue(pastEval);
 		
 		//check rule with date in the future
@@ -116,7 +116,7 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 		futureRule.setRightOperand(Formatter.formatDatetime(cal.getTime()));
 		ruleFutureList.add(futureRule);
 		
-		boolean futureEval = ruleEngine.evaluateDateRule(ruleFutureList, false);
+		boolean futureEval = ruleEngine.evaluateDateRule(ruleFutureList);
 		Assert.assertFalse(futureEval);
 	}
 	

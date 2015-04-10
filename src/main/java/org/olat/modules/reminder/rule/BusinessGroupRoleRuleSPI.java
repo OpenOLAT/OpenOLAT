@@ -64,7 +64,7 @@ public class BusinessGroupRoleRuleSPI implements RuleSPI {
 		return new BusinessGroupRoleEditor(rule, entry);
 	}
 
-	public List<Identity> evaluate(RepositoryEntry entry, ReminderRule rule) {
+	public List<Identity> evaluate(ReminderRule rule) {
 		List<Identity> identities = null;
 		
 		if(rule instanceof ReminderRuleImpl) {

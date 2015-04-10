@@ -19,6 +19,7 @@
  */
 package org.olat.modules.reminder.manager;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,9 +35,11 @@ import org.olat.core.id.Identity;
 import org.olat.modules.reminder.Reminder;
 import org.olat.modules.reminder.SentReminder;
 import org.olat.modules.reminder.model.ReminderImpl;
+import org.olat.modules.reminder.model.ReminderInfos;
 import org.olat.modules.reminder.model.SentReminderImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,19 +54,23 @@ public class ReminderDAO {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private UserManager userManager;
 
-	public Reminder createReminder(RepositoryEntry entry) {
+	public Reminder createReminder(RepositoryEntry entry, Identity creator) {
 		ReminderImpl reminder = new ReminderImpl();
 		Date now = new Date();
 		reminder.setCreationDate(now);
 		reminder.setLastModified(now);
 		reminder.setEntry(entry);
+		reminder.setCreator(creator);
 		return reminder;
 	}
 
 	public Reminder save(Reminder reminder) {
 		Reminder mergedReminder;
 		if(reminder.getKey() != null) {
+			reminder.setLastModified(new Date());
 			mergedReminder = dbInstance.getCurrentEntityManager().merge(reminder);
 		} else {
 			dbInstance.getCurrentEntityManager().persist(reminder);
@@ -104,10 +111,16 @@ public class ReminderDAO {
 		dbInstance.getCurrentEntityManager().remove(ref);
 	}
 	
-	public List<Reminder> getReminders() {
-		String q = "select rem from reminder rem inner join rem.entry entry";
+	/**
+	 * 
+	 * @param startDate
+	 * @return
+	 */
+	public List<Reminder> getReminders(Date startDate) {
+		String q = "select rem from reminder rem inner join rem.entry entry where rem.startDate is null or rem.startDate<=:startDate";
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(q, Reminder.class)
+				.setParameter("startDate", startDate)
 				.getResultList();
 	}
 
@@ -117,6 +130,40 @@ public class ReminderDAO {
 				.createQuery(q, Reminder.class)
 				.setParameter("entryKey", entry.getKey())
 				.getResultList();
+	}
+	
+	public List<ReminderInfos> getReminderInfos(RepositoryEntryRef entry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select rem.key, rem.description, rem.sendTime, rem.creationDate, rem.lastModified, rem.creator.key,")
+		  .append(" (select count(sentrem.key) from sentreminder sentrem")
+		  .append("    where sentrem.reminder.key=rem.key")
+		  .append(" ) as numOfRemindersSent ")
+		  .append(" from reminder rem")
+		  .append(" where rem.entry.key=:entryKey");
+
+		List<Object[]> results = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("entryKey", entry.getKey())
+				.getResultList();
+		
+		List<ReminderInfos> infos = new ArrayList<>(results.size());
+		for(Object[] result:results) {
+			Long key = (Long)result[0];
+			String desc = (String)result[1];
+			String sendTime = (String)result[2];
+			Date creationDate = (Date)result[3];
+			Date lastModified = (Date)result[4];
+			Long creatorKey = (Long)result[5];
+			String creator = userManager.getUserDisplayName(creatorKey);
+			int numOfRemindersSent = 0;
+			if(result[6] != null) {
+				numOfRemindersSent = ((Number)result[6]).intValue();
+			}
+
+			infos.add(new ReminderInfos(key, creationDate, lastModified,
+					desc, sendTime, creatorKey, creator, numOfRemindersSent));
+		}
+		return infos;
 	}
 
 	public SentReminderImpl markAsSend(Reminder reminder, Identity identity, String status) {

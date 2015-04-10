@@ -100,18 +100,18 @@ public abstract class AbstractLaunchDateRuleSPI  implements FilterRuleSPI {
 	}
 	
 	public double daysBetween(Date d1, Date d2) {
-        return ((double)(d2.getTime() - d1.getTime()) / (1000d * 60d * 60d * 24d));
+        return ((d2.getTime() - d1.getTime()) / (1000d * 60d * 60d * 24d));
 	}
 	
 	public double weeksBetween(Date d1, Date d2) {
-        return ((double)(d2.getTime() - d1.getTime()) / (1000d * 60d * 60d * 24d * 7d));
+        return ((d2.getTime() - d1.getTime()) / (1000d * 60d * 60d * 24d * 7d));
 	}
 	
 	public double monthsBetween(Date d1, Date d2) {
-        return ((double)(d2.getTime() - d1.getTime()) / (1000d * 60d * 60d * 24d * 30d));
+        return ((d2.getTime() - d1.getTime()) / (1000d * 60d * 60d * 24d * 30d));
 	}
 	
 	public double yearsBetween(Date d1, Date d2) {
-        return ((double)(d2.getTime() - d1.getTime()) / (1000d * 60d * 60d * 24d * 365d));
+        return ((d2.getTime() - d1.getTime()) / (1000d * 60d * 60d * 24d * 365d));
 	}
 }

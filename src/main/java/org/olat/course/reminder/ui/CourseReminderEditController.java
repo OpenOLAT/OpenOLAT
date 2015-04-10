@@ -40,6 +40,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.reminder.Reminder;
+import org.olat.modules.reminder.ReminderModule;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.ReminderService;
 import org.olat.modules.reminder.RuleEditorFragment;
@@ -74,9 +75,8 @@ public class CourseReminderEditController extends FormBasicController {
 	
 	@Autowired
 	private ReminderService reminderManager;
-	
 	@Autowired
-	private List<RuleSPI> ruleSpies;
+	private ReminderModule reminderModule;
 	
 	public CourseReminderEditController(UserRequest ureq, WindowControl wControl, Reminder reminder) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
@@ -85,11 +85,11 @@ public class CourseReminderEditController extends FormBasicController {
 		this.reminder = reminder;
 		this.entry = reminder.getEntry();
 		
-		List<RuleSPI> orderedRuleSpies = new ArrayList<>(ruleSpies);
+		List<RuleSPI> orderedRuleSpies = new ArrayList<>(reminderModule.getRuleSPIList());
 		Collections.sort(orderedRuleSpies, new RuleSpiComparator());
 		
-		typeKeys = new String[ruleSpies.size()];
-		typeValues = new String[ruleSpies.size()];
+		typeKeys = new String[orderedRuleSpies.size()];
+		typeValues = new String[orderedRuleSpies.size()];
 		int count = 0;
 		for(RuleSPI ruleSpy: orderedRuleSpies) {
 			typeKeys[count] = ruleSpy.getClass().getSimpleName();
@@ -97,21 +97,6 @@ public class CourseReminderEditController extends FormBasicController {
 		}
 		
 		initForm(ureq);
-	}
-	
-	private static class RuleSpiComparator implements Comparator<RuleSPI> {
-		@Override
-		public int compare(RuleSPI r1, RuleSPI r2) {
-			String c1 = r1.getCategory();
-			String c2 = r2.getCategory();
-			int c = c1.compareTo(c2);
-			if(c == 0) {
-				String n1 = r1.getLabelI18nKey();
-				String n2 = r2.getLabelI18nKey();
-				c = n1.compareTo(n2);
-			}
-			return c;
-		}
 	}
 
 	@Override
@@ -139,7 +124,7 @@ public class CourseReminderEditController extends FormBasicController {
 			if(rules.getRules() != null) {
 				for(ReminderRule rule: rules.getRules()) {
 					if(rule != null) {
-						RuleSPI ruleSpy = getRuleSPIByType(rule.getType());
+						RuleSPI ruleSpy = reminderModule.getRuleSPIByType(rule.getType());
 						RuleElement ruleEl = initRuleForm(ureq, ruleSpy, rule);
 						ruleEls.add(ruleEl);
 					}
@@ -232,7 +217,7 @@ public class CourseReminderEditController extends FormBasicController {
 			}
 			if(panelToUpdate != null) {
 				SingleSelection typeEl = (SingleSelection)source;
-				RuleSPI type = getRuleSPIByType(typeEl.getSelectedKey());
+				RuleSPI type = reminderModule.getRuleSPIByType(typeEl.getSelectedKey());
 				doUpdateRuleForm(ureq, panelToUpdate, type);
 			}
 		} else if(source instanceof FormLink) {
@@ -259,7 +244,7 @@ public class CourseReminderEditController extends FormBasicController {
 	
 	private void doAddRule(UserRequest ureq, RuleElement ruleElement) {
 		int index = ruleEls.indexOf(ruleElement) + 1;
-		RuleSPI ruleSpi = getRuleSPIByType(DateRuleSPI.class.getSimpleName());
+		RuleSPI ruleSpi = reminderModule.getRuleSPIByType(DateRuleSPI.class.getSimpleName());
 		RuleElement ruleEl = initRuleForm(ureq, ruleSpi, null);
 		if(index >= 0 && index < ruleEls.size()) {
 			ruleEls.add(index, ruleEl);
@@ -284,20 +269,9 @@ public class CourseReminderEditController extends FormBasicController {
 	}
 	
 	private void doInitDefaultRule(UserRequest ureq) {
-		RuleSPI ruleSpi = getRuleSPIByType(DateRuleSPI.class.getSimpleName());
+		RuleSPI ruleSpi = reminderModule.getRuleSPIByType(DateRuleSPI.class.getSimpleName());
 		RuleElement ruleEl = initRuleForm(ureq, ruleSpi, null);
 		ruleEls.add(ruleEl);
-	}
-	
-	private RuleSPI getRuleSPIByType(String type) {
-		RuleSPI selectedSpi = null;
-		for(RuleSPI ruleSpy: ruleSpies) {
-			if(ruleSpy.getClass().getSimpleName().equals(type)) {
-				selectedSpi = ruleSpy;
-				break;
-			}
-		}
-		return selectedSpi;
 	}
 
 	@Override
@@ -327,6 +301,21 @@ public class CourseReminderEditController extends FormBasicController {
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+	
+	private static class RuleSpiComparator implements Comparator<RuleSPI> {
+		@Override
+		public int compare(RuleSPI r1, RuleSPI r2) {
+			String c1 = r1.getCategory();
+			String c2 = r2.getCategory();
+			int c = c1.compareTo(c2);
+			if(c == 0) {
+				String n1 = r1.getLabelI18nKey();
+				String n2 = r2.getLabelI18nKey();
+				c = n1.compareTo(n2);
+			}
+			return c;
+		}
 	}
 	
 	public static class RuleElement {

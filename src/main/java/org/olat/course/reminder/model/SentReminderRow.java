@@ -37,9 +37,10 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class SentReminderRow extends UserPropertiesRow {
 	
-	private String description;
-	private Date sendDate;
-	private String status;
+	private final Long reminderKey;
+	private final String description;
+	private final Date sendDate;
+	private final String status;
 	
 	public SentReminderRow(Reminder reminder, SentReminder sentReminder,
 			Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
@@ -47,8 +48,13 @@ public class SentReminderRow extends UserPropertiesRow {
 		this.description = reminder.getDescription();
 		this.sendDate = sentReminder.getCreationDate();
 		this.status = sentReminder.getStatus();
+		this.reminderKey = reminder.getKey();
 	}
 	
+	public Long getReminderKey() {
+		return reminderKey;
+	}
+
 	public String getStatus() {
 		return status;
 	}

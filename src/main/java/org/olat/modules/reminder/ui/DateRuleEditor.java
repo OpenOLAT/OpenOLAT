@@ -92,13 +92,13 @@ public class DateRuleEditor extends RuleEditorFragment {
 
 	@Override
 	public ReminderRule getConfiguration() {
-		ReminderRuleImpl rule = new ReminderRuleImpl();
-		rule.setType(DateRuleSPI.class.getSimpleName());
-		rule.setOperator(DateRuleSPI.AFTER);
+		ReminderRuleImpl configuredRule = new ReminderRuleImpl();
+		configuredRule.setType(DateRuleSPI.class.getSimpleName());
+		configuredRule.setOperator(DateRuleSPI.AFTER);
 		if(afterEl.getDate() != null) {
-			rule.setRightOperand(Formatter.formatDatetime(afterEl.getDate()));
+			configuredRule.setRightOperand(Formatter.formatDatetime(afterEl.getDate()));
 		}
-		return rule;
+		return configuredRule;
 	}
 
 }

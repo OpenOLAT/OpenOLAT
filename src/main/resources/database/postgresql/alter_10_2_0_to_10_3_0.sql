@@ -3,14 +3,19 @@ create table o_rem_reminder (
    creationdate timestamp not null,
    lastmodified timestamp not null,
    r_description varchar(255),
+   r_start timestamp,
+   r_sendtime varchar(16),
    r_configuration text,
    r_email_body text,
+   fk_creator bigint not null,
    fk_entry int8 not null,
    primary key (id)
 );
 
 alter table o_rem_reminder add constraint rem_reminder_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_reminder_to_repo_entry_idx on o_rem_reminder (fk_entry);
+alter table o_rem_reminder add constraint rem_reminder_to_creator_idx foreign key (fk_creator) references o_bs_identity (id);
+create index idx_reminder_to_creator_idx on o_rem_reminder (fk_creator);
 
 create table o_rem_sent_reminder (
    id int8 not null,

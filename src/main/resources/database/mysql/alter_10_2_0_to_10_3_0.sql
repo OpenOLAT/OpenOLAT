@@ -3,14 +3,18 @@ create table o_rem_reminder (
    creationdate datetime not null,
    lastmodified datetime not null,
    r_description varchar(255),
+   r_start datetime,
+   r_sendtime varchar(16),
    r_configuration mediumtext,
    r_email_body mediumtext,
+   fk_creator bigint not null,
    fk_entry bigint not null,
    primary key (id)
 );
 alter table o_rem_reminder ENGINE = InnoDB;
 
 alter table o_rem_reminder add constraint rem_reminder_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_rem_reminder add constraint rem_reminder_to_creator_idx foreign key (fk_creator) references o_bs_identity (id);
 
 create table o_rem_sent_reminder (
    id bigint not null,

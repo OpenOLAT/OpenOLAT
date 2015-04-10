@@ -21,6 +21,9 @@ package org.olat.modules.reminder;
 
 import java.util.List;
 
+import org.olat.core.id.Identity;
+import org.olat.core.util.mail.MailerResult;
+import org.olat.modules.reminder.model.ReminderInfos;
 import org.olat.modules.reminder.model.ReminderRules;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -38,20 +41,34 @@ public interface ReminderService {
 	 * @param entry
 	 * @return
 	 */
-	public Reminder createReminder(RepositoryEntry entry);
+	public Reminder createReminder(RepositoryEntry entry, Identity creator);
 	
 	public Reminder save(Reminder reminder);
 	
 	public Reminder loadByKey(Long key);
 	
-	public List<Reminder> getReminders(RepositoryEntryRef entry);
+	public List<ReminderInfos> getReminderInfos(RepositoryEntryRef entry);
 	
 	public Reminder duplicate(Reminder toCopy);
 	
 	public void delete(Reminder reminder);
 	
+	/**
+	 * This send the reminders to the target identities within the rules
+	 * and if the reminder was not already sent.
+	 * 
+	 * @param reminder
+	 */
+	public MailerResult sendReminder(Reminder reminder);
 	
-	public void sendReminder(Reminder reminder);
+	/**
+	 * This send reminder, without any check.
+	 * 
+	 * @param reminder
+	 * @param identitiesToRemind
+	 */
+	public MailerResult sendReminder(Reminder reminder, List<Identity> identitiesToRemind);
+	
 	
 	public List<SentReminder> getSentReminders(Reminder reminder);
 	

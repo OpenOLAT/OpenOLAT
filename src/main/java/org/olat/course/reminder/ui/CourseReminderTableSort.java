@@ -17,32 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.user;
+package org.olat.course.reminder.ui;
 
-import org.olat.core.configuration.PreWarm;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
-import org.olat.core.util.CodeHelper;
-import org.springframework.stereotype.Service;
+import java.util.List;
+import java.util.Locale;
+
+import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.course.reminder.model.ReminderRow;
 
 /**
  * 
- * Initial date: 09.04.2015<br>
+ * Initial date: 10.04.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Service
-public class UserDisplayNamePreWarm implements PreWarm {
+public class CourseReminderTableSort extends SortableFlexiTableModelDelegate<ReminderRow>{
 	
-	private static final OLog log = Tracing.createLoggerFor(UserDisplayNamePreWarm.class);
-
+	public CourseReminderTableSort(SortKey orderBy, SortableFlexiTableDataModel<ReminderRow> tableModel, Locale locale) {
+		super(orderBy, tableModel, locale);
+	}
+	
 	@Override
-	public void run() {
-		long start = System.nanoTime();
-		log.info("Start filling the user displayname cache");
-		
-		int numOfNames = UserManager.getInstance().warmUp();
-
-		log.info("Display name cache filled with " + numOfNames + " names in (ms): " + CodeHelper.nanoToMilliTime(start));
+	protected void sort(List<ReminderRow> rows) {
+		super.sort(rows);
 	}
 }

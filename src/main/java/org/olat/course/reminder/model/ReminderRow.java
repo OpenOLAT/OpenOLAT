@@ -22,7 +22,7 @@ package org.olat.course.reminder.model;
 import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.modules.reminder.Reminder;
+import org.olat.modules.reminder.model.ReminderInfos;
 
 /**
  * 
@@ -32,13 +32,11 @@ import org.olat.modules.reminder.Reminder;
  */
 public class ReminderRow {
 	
-	private final Reminder reminder;
-	private final Integer send;
+	private final ReminderInfos reminder;
 	private final FormLink toolsLink;
 	
-	public ReminderRow(Reminder reminder, Integer send, FormLink toolsLink) {
+	public ReminderRow(ReminderInfos reminder, FormLink toolsLink) {
 		this.reminder = reminder;
-		this.send = send;
 		this.toolsLink = toolsLink;
 	}
 	
@@ -46,8 +44,16 @@ public class ReminderRow {
 		return reminder.getKey();
 	}
 	
+	public String getCreator() {
+		return reminder.getCreator();
+	}
+	
 	public String getDescription() {
 		return reminder.getDescription();
+	}
+	
+	public String getSendTime() {
+		return reminder.getSendTime();
 	}
 	
 	public Date getCreationDate() {
@@ -58,12 +64,8 @@ public class ReminderRow {
 		return reminder.getLastModified();
 	}
 	
-	public Reminder getReminder() {
-		return reminder;
-	}
-	
-	public Integer getSend() {
-		return send;
+	public int getSend() {
+		return reminder.getNumOfRemindersSent();
 	}
 
 	public FormLink getToolsLink() {

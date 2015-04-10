@@ -188,15 +188,15 @@ public class InitialAttemptsRuleEditor extends RuleEditorFragment {
 
 	@Override
 	public ReminderRule getConfiguration() {
-		ReminderRuleImpl rule = null; 
+		ReminderRuleImpl configuredRule = null; 
 		if(courseNodeEl.isOneSelected() && unitEl.isOneSelected() && StringHelper.containsNonWhitespace(valueEl.getValue())) {
-			rule = new ReminderRuleImpl();
-			rule.setType(InitialAttemptsRuleSPI.class.getSimpleName());
-			rule.setLeftOperand(courseNodeEl.getSelectedKey());
-			rule.setOperator(">");
-			rule.setRightOperand(valueEl.getValue());
-			rule.setRightUnit(unitEl.getSelectedKey());
+			configuredRule = new ReminderRuleImpl();
+			configuredRule.setType(InitialAttemptsRuleSPI.class.getSimpleName());
+			configuredRule.setLeftOperand(courseNodeEl.getSelectedKey());
+			configuredRule.setOperator(">");
+			configuredRule.setRightOperand(valueEl.getValue());
+			configuredRule.setRightUnit(unitEl.getSelectedKey());
 		}
-		return rule;
+		return configuredRule;
 	}
 }

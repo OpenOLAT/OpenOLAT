@@ -114,7 +114,7 @@ public class BusinessGroupRoleEditor extends RuleEditorFragment {
 
 	@Override
 	public ReminderRule getConfiguration() {
-		ReminderRuleImpl rule = null;
+		ReminderRuleImpl configuredRule = null;
 		if(groupEl.isOneSelected()) {
 			
 			String selectedKey = groupEl.getSelectedKey();
@@ -122,13 +122,13 @@ public class BusinessGroupRoleEditor extends RuleEditorFragment {
 			if(index >= 0 && index < businessGroups.size()) {
 				BusinessGroup businessGroup = businessGroups.get(index);
 				
-				rule = new ReminderRuleImpl();
-				rule.setType(BusinessGroupRoleRuleSPI.class.getSimpleName());
-				rule.setOperator("=");
-				rule.setRightOperand(businessGroup.getKey().toString());
+				configuredRule = new ReminderRuleImpl();
+				configuredRule.setType(BusinessGroupRoleRuleSPI.class.getSimpleName());
+				configuredRule.setOperator("=");
+				configuredRule.setRightOperand(businessGroup.getKey().toString());
 			}
 		}
-		return rule;
+		return configuredRule;
 	}
 	
 	public enum Roles {
