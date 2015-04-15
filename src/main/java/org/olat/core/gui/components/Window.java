@@ -41,6 +41,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
@@ -489,9 +490,10 @@ public class Window extends AbstractComponent {
 								// create a mapper which maps this mediaresource, and serves it once only
 								MediaResourceMapper extMRM = new MediaResourceMapper();
 								extMRM.setMediaResource(mmr);
-								String res = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), extMRM) + "/";
+								MapperKey mapperKey = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), extMRM);
+								String resUrl = mapperKey.getUrl() + "/";
 								// e.g. res = /olat/m/10001/
-								Command rmrcom = CommandFactory.createParentRedirectForExternalResource(res);
+								Command rmrcom = CommandFactory.createParentRedirectForExternalResource(resUrl);
 								wbackofficeImpl.sendCommandTo(rmrcom);
 								if (isDebugLog) {
 									long durationAfterCreateMediaResourceMapper = System.currentTimeMillis() - debug_start;
