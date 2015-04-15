@@ -1,8 +1,12 @@
-<table class="table table-bordered">
+<table class="table table-bordered table-condensed table-striped">
 	#if($username)
 	<tr>
 		<th>$usernameLabel</th>
 		<td>$username</td>
+	</tr>
+	<tr>
+		<th>Identity</th>
+		<td>$identityKey</td>
 	</tr>
 	#end
 	#foreach( $propertyHandler in $userPropertyHandlers )
