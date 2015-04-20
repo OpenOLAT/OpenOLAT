@@ -864,7 +864,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	protected void launchContent(UserRequest ureq, RepositoryEntrySecurity security) {
-		if(security.canLaunch()) {
+		if(corrupted) {
+			runtimeController = new CorruptedCourseController(ureq, this.getWindowControl());
+			listenTo(runtimeController);
+			toolbarPanel.rootController(re.getDisplayname(), runtimeController);
+		} else if(security.canLaunch()) {
 			runtimeController = runtimeControllerCreator.create(ureq, getWindowControl(), toolbarPanel, re, reSecurity, assessmentMode);
 			listenTo(runtimeController);
 			toolbarPanel.rootController(re.getDisplayname(), runtimeController);

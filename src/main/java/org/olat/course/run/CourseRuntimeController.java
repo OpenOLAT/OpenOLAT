@@ -199,23 +199,25 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			boolean offerBookmark, boolean showCourseConfigLink) {
 		super(ureq, wControl, re, reSecurity, runtimeControllerCreator, offerBookmark, showCourseConfigLink);
 		
-		ICourse course = CourseFactory.loadCourse(getOlatResourceable());
-		addLoggingResourceable(LoggingResourceable.wrap(course));
+		if(!corrupted) {
+			ICourse course = CourseFactory.loadCourse(getOlatResourceable());
+			addLoggingResourceable(LoggingResourceable.wrap(course));
 
-		coordinatorManager.getCoordinator().getEventBus().registerFor(this, getIdentity(), getOlatResourceable());
-		// - group modification events
-		coordinatorManager.getCoordinator().getEventBus().registerFor(this, getIdentity(), getRepositoryEntry());
-		
-		if (CourseModule.displayParticipantsCount()) {
-			coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(new MultiUserEvent(JOINED), getOlatResourceable());
-			updateCurrentUserCount();
-		}
-		
-		if(enableGlossaryLink != null) {
-			Preferences prefs = ureq.getUserSession().getGuiPreferences();
-			String guiPrefsKey = CourseGlossaryFactory.createGuiPrefsKey(course);
-			Boolean state = (Boolean) prefs.get(CourseGlossaryToolLinkController.class, guiPrefsKey);
-			setGlossaryLinkTitle(ureq, state);
+			coordinatorManager.getCoordinator().getEventBus().registerFor(this, getIdentity(), getOlatResourceable());
+			// - group modification events
+			coordinatorManager.getCoordinator().getEventBus().registerFor(this, getIdentity(), getRepositoryEntry());
+			
+			if (CourseModule.displayParticipantsCount()) {
+				coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(new MultiUserEvent(JOINED), getOlatResourceable());
+				updateCurrentUserCount();
+			}
+			
+			if(enableGlossaryLink != null) {
+				Preferences prefs = ureq.getUserSession().getGuiPreferences();
+				String guiPrefsKey = CourseGlossaryFactory.createGuiPrefsKey(course);
+				Boolean state = (Boolean) prefs.get(CourseGlossaryToolLinkController.class, guiPrefsKey);
+				setGlossaryLinkTitle(ureq, state);
+			}
 		}
 	}
 
@@ -232,6 +234,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	@Override
 	protected void loadRights(RepositoryEntrySecurity security) {
 		super.loadRights(security);
+		if(corrupted) return;
 		
 		ICourse course = CourseFactory.loadCourse(getOlatResourceable());
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
@@ -337,10 +340,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	@Override
 	protected void initToolbar(Dropdown toolsDropdown, Dropdown settingsDropdown) {
+		toolbarPanel.removeAllTools();
+		if(corrupted) return;
+		
 		ICourse course = CourseFactory.loadCourse(getRepositoryEntry().getOlatResource());
 		UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
-		
-		toolbarPanel.removeAllTools();
 		if(!isAssessmentLock()) {
 			initTools(toolsDropdown, course, uce);
 			initSettingsTools(settingsDropdown);

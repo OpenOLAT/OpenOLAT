@@ -1,7 +1,7 @@
 #if($elementNames && $elementNames.size() > 0)
 	$r.translate("elements"):
 	#foreach($elementName in $elementNames)
-		<span>$elementName</span>
+		<span>#if($elementNames.indexOf($elementName) > 0), #end$elementName</span>
 	#end
 	<br/>
 #end

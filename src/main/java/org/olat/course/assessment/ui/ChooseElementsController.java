@@ -117,9 +117,9 @@ public class ChooseElementsController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(selectAll == source) {
-			
+			selectTree.selectAll();
 		} else if(deselectAll == source) {
-			
+			selectTree.deselectAll();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

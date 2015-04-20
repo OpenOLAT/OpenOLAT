@@ -38,10 +38,8 @@ public class AdminSecurityCallback implements SiteSecurityCallback {
 	 */
 	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
-		if (ureq.getUserSession().getRoles().isOLATAdmin()) {
-			return true;
-		} else {
-			return false; 
-		}
+		return ureq != null && ureq.getUserSession() != null
+				&& ureq.getUserSession().getRoles() != null
+				&& ureq.getUserSession().getRoles().isOLATAdmin();
 	}
 }

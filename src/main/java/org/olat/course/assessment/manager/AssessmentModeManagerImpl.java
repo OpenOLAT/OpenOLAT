@@ -19,7 +19,8 @@
  */
 package org.olat.course.assessment.manager;
 
-import static org.olat.core.commons.persistence.PersistenceHelper.*;
+import static org.olat.core.commons.persistence.PersistenceHelper.appendAnd;
+import static org.olat.core.commons.persistence.PersistenceHelper.appendFuzzyLike;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -55,6 +56,7 @@ import org.olat.course.assessment.model.AssessmentModeToGroupImpl;
 import org.olat.course.assessment.model.SearchAssessmentModeParams;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
+import org.olat.group.BusinessGroupRef;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.area.BGtoAreaRelationImpl;
@@ -173,6 +175,13 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		AssessmentModeImpl refMode = dbInstance.getCurrentEntityManager()
 				.getReference(AssessmentModeImpl.class, assessmentMode.getKey());
 		dbInstance.getCurrentEntityManager().remove(refMode);
+	}
+
+	@Override
+	public void delete(RepositoryEntryRef entry) {
+		for(AssessmentMode mode: getAssessmentModeFor(entry)) {
+			delete(mode);
+		}
 	}
 
 	@Override
@@ -398,6 +407,23 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		modeToGroup.setBusinessGroup(group);
 		dbInstance.getCurrentEntityManager().persist(modeToGroup);
 		return modeToGroup;
+	}
+
+	@Override
+	public void deleteAssessmentModesToGroup(BusinessGroupRef businessGroup) {
+		String q = "delete from courseassessmentmodetogroup as modegrrel where modegrrel.businessGroup.key=:groupKey";
+		dbInstance.getCurrentEntityManager().createQuery(q)
+			.setParameter("groupKey", businessGroup.getKey())
+			.executeUpdate();
+	}
+	
+	@Override
+	public void delete(BusinessGroupRef businessGroup, RepositoryEntryRef entry) {
+		String q = "delete from courseassessmentmodetogroup as modegrrel where modegrrel.businessGroup.key=:groupKey and modegrrel.assessmentMode.key in (select amode.key from courseassessmentmode amode where amode.repositoryEntry.key=:repoKey)";
+		dbInstance.getCurrentEntityManager().createQuery(q)
+			.setParameter("groupKey", businessGroup.getKey())
+			.setParameter("repoKey", entry.getKey())
+			.executeUpdate();
 	}
 
 	@Override
