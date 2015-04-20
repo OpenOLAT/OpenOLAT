@@ -265,8 +265,11 @@ public class AssessmentModeEditController extends FormBasicController {
 		String elements = assessmentMode.getElementList();
 		if(StringHelper.containsNonWhitespace(elements)) {
 			for(String element:elements.split(",")) {
-				elementKeys.add(element);
-				elementNames.add(getCourseNodeName(element, treeModel));
+				String courseNodeName = getCourseNodeName(element, treeModel);
+				if(StringHelper.containsNonWhitespace(courseNodeName)) {
+					elementKeys.add(element);
+					elementNames.add(courseNodeName);
+				}
 			}
 		}
 		chooseElementsCont.getFormItemComponent().contextPut("elementNames", elementNames);

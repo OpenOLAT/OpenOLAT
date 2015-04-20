@@ -67,9 +67,8 @@ public class CourseEditorTreeModel extends GenericTreeModel implements DnDTreeMo
 	 * @return the course node
 	 */
 	public CourseNode getCourseNode(String nodeId) {
-		CourseEditorTreeNode ctn = (CourseEditorTreeNode) getNodeById(nodeId);
-		CourseNode cn = ctn.getCourseNode();
-		return cn;
+		CourseEditorTreeNode ctn = (CourseEditorTreeNode)getNodeById(nodeId);
+		return ctn == null ? null : ctn.getCourseNode();
 	}
 
 	/**
