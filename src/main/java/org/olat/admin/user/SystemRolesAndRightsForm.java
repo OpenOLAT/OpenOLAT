@@ -253,8 +253,13 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 	}
 	
 	private void setStatus(Integer status) {
-		statusRE.select(status.toString(), true);
-		statusRE.setEnabled(status != Identity.STATUS_DELETED);
+		String statusStr = status.toString();
+		for(String statusKey:statusKeys) {
+			if(statusStr.equals(statusKey)) {
+				statusRE.select(statusKey, true);
+			}
+		}
+		statusRE.setEnabled(!Identity.STATUS_DELETED.equals(status));
 	}
 
 	public boolean getSendLoginDeniedEmail() {
