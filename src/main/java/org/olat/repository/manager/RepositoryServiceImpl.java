@@ -51,7 +51,7 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.manager.AssessmentModeDAO;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.repository.ErrorList;
@@ -116,7 +116,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Autowired
 	private UserCourseInformationsManager userCourseInformationsManager;
 	@Autowired
-	private AssessmentModeManager assessmentModeMgr;
+	private AssessmentModeDAO assessmentModeDao;
 
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
@@ -303,7 +303,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 		// delete all catalog entries referencing deleted entry
 		catalogManager.resourceableDeleted(entry);
 		// delete assessment modes
-		assessmentModeMgr.delete(entry);
+		assessmentModeDao.delete(entry);
 		
 		//delete all policies
 		securityManager.deletePolicies(resource);

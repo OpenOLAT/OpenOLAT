@@ -39,7 +39,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
-import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.manager.AssessmentModeDAO;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupRef;
@@ -65,7 +65,7 @@ public class BusinessGroupRelationDAO {
 	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
-	private AssessmentModeManager assessmentModeMgr;
+	private AssessmentModeDAO assessmentModeDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	
@@ -270,7 +270,7 @@ public class BusinessGroupRelationDAO {
 	}
 	
 	public void deleteRelation(BusinessGroup group, RepositoryEntryRef entry) {
-		assessmentModeMgr.delete(group, entry);
+		assessmentModeDao.delete(group, entry);
 		repositoryEntryRelationDao.removeRelation(group.getBaseGroup(), entry);
 	}
 	
