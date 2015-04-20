@@ -121,17 +121,20 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	/**
 	 * @see org.olat.group.area.BGAreaManager#deleteBGArea(org.olat.group.area.BGArea)
 	 */
-	// o_clusterOK by:cg must be synchronized too
+	@Override
 	public void deleteBGArea(final BGArea area) {
 		final OLATResource resource = area.getResource();
 		
-		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(resource, new SyncerExecutor(){
+		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(resource, new SyncerExecutor() {
+			@Override
 			public void execute() {
 				BGArea reloadArea = loadArea(area.getKey());
 				if (reloadArea != null) {
 					// 1) delete all area - group relations
 					deleteBGtoAreaRelations(reloadArea);
-					// 2) delete area itself
+					// 2) delete area - assessment mode relations
+					deleteAssessmentModeToAreaRelations(reloadArea);
+					// 3) delete area itself
 					dbInstance.deleteObject(reloadArea);
 					logAudit("Deleted Business Group Area", reloadArea.toString());
 				} else {
@@ -146,6 +149,7 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	 * 
 	 * @param group
 	 */
+	@Override
 	public void deleteBGtoAreaRelations(BusinessGroup group) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(" delete from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel where bgarel.businessGroup.key=:groupKey");
@@ -445,6 +449,15 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	private void deleteBGtoAreaRelations(BGArea area) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("delete from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel where bgarel.groupArea.key=:areaKey");
+		
+		dbInstance.getCurrentEntityManager().createQuery(sb.toString())
+			.setParameter("areaKey", area.getKey())
+			.executeUpdate();
+	}
+	
+	private void deleteAssessmentModeToAreaRelations(BGArea area) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from courseassessmentmodetoarea as modearel where modearel.area.key=:areaKey");
 		
 		dbInstance.getCurrentEntityManager().createQuery(sb.toString())
 			.setParameter("areaKey", area.getKey())
