@@ -696,6 +696,145 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		boolean notAllowed4 = assessmentModeMgr.isIpAllowed(ipList, "212.203.203.64");
 		Assert.assertFalse(notAllowed4);
 	}
+	
+	@Test
+	public void removeBusinessGroupFromRepositoryEntry() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-4");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-5");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-6");
+		BusinessGroup businessGroup1 = businessGroupService.createBusinessGroup(author, "as-mode-7", "", null, null, null, null, false, false, entry);
+		BusinessGroup businessGroup2 = businessGroupService.createBusinessGroup(author, "as-mode-8", "", null, null, null, null, false, false, entry);
+		businessGroupRelationDao.addRole(participant1, businessGroup1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(participant2, businessGroup2, GroupRoles.participant.name());
+		
+		AssessmentMode mode = createMinimalAssessmentmode(entry);
+		mode.setTargetAudience(AssessmentMode.Target.groups);
+		mode.setApplySettingsForCoach(false);
+		mode = assessmentModeMgr.persist(mode);
+		
+		AssessmentModeToGroup modeToGroup1 = assessmentModeMgr.createAssessmentModeToGroup(mode, businessGroup1);
+		AssessmentModeToGroup modeToGroup2 = assessmentModeMgr.createAssessmentModeToGroup(mode, businessGroup2);
+		mode.getGroups().add(modeToGroup1);
+		mode.getGroups().add(modeToGroup2);
+		mode = assessmentModeMgr.merge(mode, true);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(mode);
+		
+		//check participant 1
+		List<AssessmentMode> currentModes1 = assessmentModeMgr.getAssessmentModeFor(participant1);
+		Assert.assertNotNull(currentModes1);
+		Assert.assertEquals(1, currentModes1.size());
+		Assert.assertTrue(currentModes1.contains(mode));
+		//check participant 2
+		List<AssessmentMode> currentModes2 = assessmentModeMgr.getAssessmentModeFor(participant2);
+		Assert.assertNotNull(currentModes2);
+		Assert.assertEquals(1, currentModes2.size());
+		Assert.assertTrue(currentModes2.contains(mode));
+		
+		//remove business group 1
+		businessGroupRelationDao.deleteRelation(businessGroup1, entry);
+		dbInstance.commitAndCloseSession();
+		
+		//check participant 1
+		List<AssessmentMode> afterDeleteModes1 = assessmentModeMgr.getAssessmentModeFor(participant1);
+		Assert.assertNotNull(afterDeleteModes1);
+		Assert.assertEquals(0, afterDeleteModes1.size());
+		//check participant 2
+		List<AssessmentMode> afterDeleteModes2 = assessmentModeMgr.getAssessmentModeFor(participant2);
+		Assert.assertNotNull(afterDeleteModes2);
+		Assert.assertEquals(1, afterDeleteModes2.size());
+		Assert.assertTrue(afterDeleteModes2.contains(mode));	
+	}
+	
+	@Test
+	public void deleteBusinessGroupFromRepositoryEntry() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-9");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-10");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-11");
+		BusinessGroup businessGroup1 = businessGroupService.createBusinessGroup(author, "as-mode-12", "", null, null, null, null, false, false, entry);
+		BusinessGroup businessGroup2 = businessGroupService.createBusinessGroup(author, "as-mode-13", "", null, null, null, null, false, false, entry);
+		businessGroupRelationDao.addRole(participant1, businessGroup1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(participant2, businessGroup2, GroupRoles.participant.name());
+		
+		AssessmentMode mode = createMinimalAssessmentmode(entry);
+		mode.setTargetAudience(AssessmentMode.Target.groups);
+		mode.setApplySettingsForCoach(false);
+		mode = assessmentModeMgr.persist(mode);
+		
+		AssessmentModeToGroup modeToGroup1 = assessmentModeMgr.createAssessmentModeToGroup(mode, businessGroup1);
+		AssessmentModeToGroup modeToGroup2 = assessmentModeMgr.createAssessmentModeToGroup(mode, businessGroup2);
+		mode.getGroups().add(modeToGroup1);
+		mode.getGroups().add(modeToGroup2);
+		mode = assessmentModeMgr.merge(mode, true);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(mode);
+		
+		//check participant 1
+		List<AssessmentMode> currentModes1 = assessmentModeMgr.getAssessmentModeFor(participant1);
+		Assert.assertNotNull(currentModes1);
+		Assert.assertEquals(1, currentModes1.size());
+		Assert.assertTrue(currentModes1.contains(mode));
+		//check participant 2
+		List<AssessmentMode> currentModes2 = assessmentModeMgr.getAssessmentModeFor(participant2);
+		Assert.assertNotNull(currentModes2);
+		Assert.assertEquals(1, currentModes2.size());
+		Assert.assertTrue(currentModes2.contains(mode));
+		
+		//remove business group 1
+		businessGroupService.deleteBusinessGroup(businessGroup2);
+		dbInstance.commitAndCloseSession();
+
+		//check participant 1
+		List<AssessmentMode> afterDeleteModes1 = assessmentModeMgr.getAssessmentModeFor(participant1);
+		Assert.assertNotNull(afterDeleteModes1);
+		Assert.assertEquals(1, afterDeleteModes1.size());
+		Assert.assertTrue(afterDeleteModes1.contains(mode));
+		//check participant 2
+		List<AssessmentMode> afterDeleteModes2 = assessmentModeMgr.getAssessmentModeFor(participant2);
+		Assert.assertNotNull(afterDeleteModes2);
+		Assert.assertEquals(0, afterDeleteModes2.size());
+	}
+	
+	@Test
+	public void deleteAreaFromRepositoryEntry() {
+		//prepare the setup
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-14");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-15");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		
+		AssessmentMode mode = createMinimalAssessmentmode(entry);
+		mode.setTargetAudience(AssessmentMode.Target.groups);
+		mode = assessmentModeMgr.persist(mode);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(mode);
+
+		BusinessGroup businessGroupForArea = businessGroupService.createBusinessGroup(author, "as_mode_1", "", null, null, null, null, false, false, null);
+		businessGroupRelationDao.addRole(participant, businessGroupForArea, GroupRoles.participant.name());
+		BGArea area = areaMgr.createAndPersistBGArea("little area", "My little secret area", entry.getOlatResource());
+		areaMgr.addBGToBGArea(businessGroupForArea, area);
+		dbInstance.commitAndCloseSession();
+		AssessmentModeToArea modeToArea = assessmentModeMgr.createAssessmentModeToArea(mode, area);
+		mode.getAreas().add(modeToArea);
+		mode = assessmentModeMgr.merge(mode, true);
+		dbInstance.commitAndCloseSession();
+		
+		//check the participant modes
+		List<AssessmentMode> currentModes = assessmentModeMgr.getAssessmentModeFor(participant);
+		Assert.assertNotNull(currentModes);
+		Assert.assertEquals(1, currentModes.size());
+		Assert.assertTrue(currentModes.contains(mode));
+		
+		//delete
+		areaMgr.deleteBGArea(area);
+		dbInstance.commitAndCloseSession();
+
+		//check the participant modes after deleting the area
+		List<AssessmentMode> afterDeleteModes = assessmentModeMgr.getAssessmentModeFor(participant);
+		Assert.assertNotNull(afterDeleteModes);
+		Assert.assertEquals(0, afterDeleteModes.size());
+	}
 
 	/**
 	 * Create a minimal assessment mode which start one hour before now

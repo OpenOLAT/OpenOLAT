@@ -410,10 +410,19 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	}
 
 	@Override
-	public void deleteAssessmentModesToGroup(BusinessGroupRef group) {
+	public void deleteAssessmentModesToGroup(BusinessGroupRef businessGroup) {
 		String q = "delete from courseassessmentmodetogroup as modegrrel where modegrrel.businessGroup.key=:groupKey";
 		dbInstance.getCurrentEntityManager().createQuery(q)
-			.setParameter("groupKey", group.getKey())
+			.setParameter("groupKey", businessGroup.getKey())
+			.executeUpdate();
+	}
+	
+	@Override
+	public void delete(BusinessGroupRef businessGroup, RepositoryEntryRef entry) {
+		String q = "delete from courseassessmentmodetogroup as modegrrel where modegrrel.businessGroup.key=:groupKey and modegrrel.assessmentMode.key in (select amode.key from courseassessmentmode amode where amode.repositoryEntry.key=:repoKey)";
+		dbInstance.getCurrentEntityManager().createQuery(q)
+			.setParameter("groupKey", businessGroup.getKey())
+			.setParameter("repoKey", entry.getKey())
 			.executeUpdate();
 	}
 

@@ -80,6 +80,13 @@ public interface AssessmentModeManager {
 	 * @param entry
 	 */
 	public void delete(RepositoryEntryRef entry);
+	
+	/**
+	 * Delete the relations between assessment mode and group for the specified business group and course.
+	 * @param businessGroup
+	 * @param entry
+	 */
+	public void delete(BusinessGroupRef businessGroup, RepositoryEntryRef entry);
 
 	
 	public AssessmentMode getAssessmentModeById(Long key);
