@@ -178,6 +178,13 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	}
 
 	@Override
+	public void delete(RepositoryEntryRef entry) {
+		for(AssessmentMode mode: getAssessmentModeFor(entry)) {
+			delete(mode);
+		}
+	}
+
+	@Override
 	public AssessmentMode getAssessmentModeById(Long key) {
 		List<AssessmentMode> modes = dbInstance.getCurrentEntityManager()
 			.createNamedQuery("assessmentModeById", AssessmentMode.class)
