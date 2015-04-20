@@ -440,7 +440,7 @@ public class AssessmentModeEditController extends FormBasicController {
 		if(targetEl.isOneSelected()) {
 			Target target = AssessmentMode.Target.valueOf(targetEl.getSelectedKey());
 			if(target == Target.courseAndGroups || target == Target.groups) {
-				if(groupKeys.isEmpty()) {
+				if(groupKeys.isEmpty() && areaKeys.isEmpty()) {
 					targetEl.setErrorKey("error.group.missing", null);
 					allOk &= false;
 				}	

@@ -68,6 +68,7 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
 import org.olat.group.BusinessGroupManagedFlag;
@@ -146,6 +147,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	private BaseSecurity securityManager;
 	@Autowired
 	private ContactDAO contactDao;
+	@Autowired
+	private AssessmentModeManager assessmentModeMgr;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDAO;
 	@Autowired
@@ -747,6 +750,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			areaManager.deleteBGtoAreaRelations(group);
 			// 3) Delete the relations
 			businessGroupRelationDAO.deleteRelationsToRepositoryEntry(group);
+			assessmentModeMgr.deleteAssessmentModesToGroup(group);
 			// 4) delete properties
 			propertyManager.deleteProperties(null, group, null, null, null);
 			propertyManager.deleteProperties(null, null, group, null, null);

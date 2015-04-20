@@ -19,7 +19,8 @@
  */
 package org.olat.course.assessment.manager;
 
-import static org.olat.core.commons.persistence.PersistenceHelper.*;
+import static org.olat.core.commons.persistence.PersistenceHelper.appendAnd;
+import static org.olat.core.commons.persistence.PersistenceHelper.appendFuzzyLike;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -55,6 +56,7 @@ import org.olat.course.assessment.model.AssessmentModeToGroupImpl;
 import org.olat.course.assessment.model.SearchAssessmentModeParams;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
+import org.olat.group.BusinessGroupRef;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.area.BGtoAreaRelationImpl;
@@ -398,6 +400,14 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		modeToGroup.setBusinessGroup(group);
 		dbInstance.getCurrentEntityManager().persist(modeToGroup);
 		return modeToGroup;
+	}
+
+	@Override
+	public void deleteAssessmentModesToGroup(BusinessGroupRef group) {
+		String q = "delete from courseassessmentmodetogroup as modegrrel where modegrrel.businessGroup.key=:groupKey";
+		dbInstance.getCurrentEntityManager().createQuery(q)
+			.setParameter("groupKey", group.getKey())
+			.executeUpdate();
 	}
 
 	@Override
