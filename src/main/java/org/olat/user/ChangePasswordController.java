@@ -39,7 +39,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.messages.MessageUIFactory;
+import org.olat.core.gui.control.generic.messages.SimpleMessageController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.resource.OresHelper;
@@ -90,33 +90,27 @@ public class ChangePasswordController extends BasicController implements Support
 		// if a user is not allowed to change his/her own password, say it here
 		if (!UserModule.isPwdchangeallowed(ureq.getIdentity())) {
 			String text = translate("notallowedtochangepwd", new String[] { WebappHelper.getMailConfig("mailSupport") });
-			Controller simpleMsg = MessageUIFactory.createSimpleMessage(ureq, wControl, text);
+			Controller simpleMsg = new SimpleMessageController(ureq, wControl, text, "o_warning");
 			listenTo(simpleMsg); //register controller to be disposed automatically on dispose of Change password controller
 			putInitialPanel(simpleMsg.getInitialComponent());
-			return;
-		}
-		
-		if (!securityManager.isIdentityPermittedOnResourceable(
+		} else if (!securityManager.isIdentityPermittedOnResourceable(
 				ureq.getIdentity(), 
 				Constants.PERMISSION_ACCESS, 
 				OresHelper.lookupType(this.getClass()))) {
 			String text = "Insufficient permission to access ChangePasswordController";
-			Controller simpleMsg = MessageUIFactory.createSimpleMessage(ureq, wControl, text);
+			Controller simpleMsg = new SimpleMessageController(ureq, wControl, text, "o_warning");
 			listenTo(simpleMsg); //register controller to be disposed automatically on dispose of Change password controller
 			putInitialPanel(simpleMsg.getInitialComponent());			
-			return;
+		} else {
+			myContent = createVelocityContainer("pwd");
+			//adds "provider_..." variables to myContent
+			exposePwdProviders(ureq.getIdentity());
+
+			chPwdForm = new ChangePasswordForm(ureq, wControl);
+			listenTo(chPwdForm);
+			myContent.put("chpwdform", chPwdForm.getInitialComponent());
+			putInitialPanel(myContent);
 		}
-
-		myContent = createVelocityContainer("pwd");
-		//adds "provider_..." variables to myContent
-		exposePwdProviders(ureq.getIdentity());
-
-		chPwdForm = new ChangePasswordForm(ureq, wControl);
-		listenTo(chPwdForm);
-		
-		myContent.put("chpwdform", chPwdForm.getInitialComponent());
-
-		putInitialPanel(myContent);
 	}
 
 	@Override
