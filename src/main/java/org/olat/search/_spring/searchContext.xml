@@ -129,8 +129,7 @@
 					
 					<!-- Files bigger than maxFileSize (and on fileSizeSuffixes-list) will be excluded from index -->
 					maxFileSize=10485760
-					<!-- Control indexer prozess -->		
-					numberIndexWriter=0
+					<!-- Control indexer prozess -->
 					folderPoolSize=4
 					<!-- Define automatic restart time window e.g. 01:00-02:59 restartWindowStart=1 restartWindowEnd=3 -->
 					restartWindowStart=${restart.window.start}

@@ -34,9 +34,14 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
-import java.util.Vector;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.lucene.LucenePackage;
@@ -69,9 +74,6 @@ public class OlatFullIndexer {
 	private static final OLog log = Tracing.createLoggerFor(OlatFullIndexer.class);
 	private static final int INDEX_MERGE_FACTOR = 1000;
 
-	private static final int MAX_SIZE_QUEUE = 500;
-	private int numberIndexWriter = 5;
-
 	private String  indexPath;
 	private String  tempIndexPath;
 
@@ -93,12 +95,7 @@ public class OlatFullIndexer {
 
 	/** Used to build number of indexed documents per minute. */ 
 	private long lastMinute;
-
 	private int currentMinuteCounter;
-	
-	/** Queue to pass documents from indexer to index-writers. Only in multi-threaded mode. */
-	private Vector<Document> documentQueue;
-	private IndexWriterWorker[] indexWriterWorkers;
 
 	/* Define number of documents which will be added befor sleeping (indexInterval for CPU load). */
 	int documentsPerInterval;
@@ -110,6 +107,9 @@ public class OlatFullIndexer {
 
 	private MainIndexer mainIndexer;
 	private CoordinatorManager coordinatorManager;
+
+	private static final Object indexerWriterBlock = new Object();
+	private ThreadPoolExecutor indexerWriterExecutor;
 
 	
 	/**
@@ -127,12 +127,10 @@ public class OlatFullIndexer {
 		indexPath = searchModuleConfig.getFullIndexPath();
 		tempIndexPath = searchModuleConfig.getFullTempIndexPath();
 		indexInterval = searchModuleConfig.getIndexInterval();
-		numberIndexWriter = searchModuleConfig.getNumberIndexWriter();
 		documentsPerInterval = searchModuleConfig.getDocumentsPerInterval();
 		ramBufferSizeMB = searchModuleConfig.getRAMBufferSizeMB();
-		fullIndexerStatus = new FullIndexerStatus(numberIndexWriter);
+		fullIndexerStatus = new FullIndexerStatus(1);
 		stopIndexing = true;
-		documentQueue = new Vector<Document>();
 		initStatus();
 		resetDocumentCounters();
 	}
@@ -212,23 +210,16 @@ public class OlatFullIndexer {
 	private void doIndex() throws InterruptedException{
 		try {
 			WorkThreadInformations.setLongRunningTask("indexer");
+
+			if(indexerWriterExecutor == null) {
+				BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(2);
+				indexerWriterExecutor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, queue);
+			}
 			
 			File tempIndexDir = new File(tempIndexPath);
-			Directory indexPath = FSDirectory.open(new File(tempIndexDir, "main"));
-			
-			indexWriter = new IndexWriter(indexPath, newIndexWriterConfig());// analyzer, true, IndexWriter.MAX_TERM_LENGTH.UNLIMITED);
+			Directory tmpIndexPath = FSDirectory.open(new File(tempIndexDir, "main"));
+			indexWriter = new IndexWriter(tmpIndexPath, newIndexWriterConfig());// analyzer, true, IndexWriter.MAX_TERM_LENGTH.UNLIMITED);
 			indexWriter.deleteAll();
-			
-			// Create IndexWriterWorker
-			log.info("Running with " + numberIndexWriter + " IndexerWriterWorker");
-			indexWriterWorkers = new IndexWriterWorker[numberIndexWriter];
-			Directory[] partIndexDirs = new Directory[numberIndexWriter];
-			for (int i = 0; i < numberIndexWriter; i++) {
-				IndexWriterWorker indexWriterWorker = new IndexWriterWorker(i, tempIndexDir, this);
-				indexWriterWorkers[i] = indexWriterWorker;
-				indexWriterWorkers[i].start();
-				partIndexDirs[i] = indexWriterWorkers[i].getIndexDir();
-			}
 			
 			SearchResourceContext searchResourceContext = new SearchResourceContext();
 			log.info("doIndex start. OlatFullIndexer with Debug output");
@@ -244,57 +235,32 @@ public class OlatFullIndexer {
 				Thread.sleep(10000);
 			}
 			if (waitingCount >= MAX_WAITING_COUNT) log.info("Finished with max waiting time!");
-			log.info("Set Finish-flag for each indexWriterWorkers");
-			// Set Finish-flag
-			for (int i = 0; i < numberIndexWriter; i++) {
-				indexWriterWorkers[i].finishIndexing();
-			}
-
-			log.info("Wait until every indexworker is finished");
-			// check if every indexworker is finished max waiting-time 10Min (=waitingCount-limit = 60)
-			waitingCount = 0;
-			while (!areIndexingDone() && (waitingCount++ < MAX_WAITING_COUNT) ) {
-				Thread.sleep(10000);
-			}
-			if (waitingCount >= MAX_WAITING_COUNT) log.info("Finished with max waiting time!");
 			
-			// Merge all partIndex
-			DBFactory.getInstance().commitAndCloseSession();
-			if(partIndexDirs.length > 0) {
-				log.info("Start merging part Indexes");
-				indexWriter.addIndexes(partIndexDirs);
-				log.info("Added all part Indexes");
+
+			log.info("Wait until index writer executor is finished");
+			int waitWriter = 0;
+			while (indexerWriterExecutor.getActiveCount() > 0 && (waitWriter++ < (10 * MAX_WAITING_COUNT))) { 
+				Thread.sleep(1000);
 			}
+			
+			log.info("Close index writer executor");
 			fullIndexerStatus.setIndexSize(indexWriter.maxDoc());
-			indexWriter.close();
-			indexWriter = null;
-			indexWriterWorkers = null;
+			//shutdown the index writer thread
+			indexerWriterExecutor.submit(new CloseIndexCallable());
+			indexerWriterExecutor.shutdown();
+			indexerWriterExecutor.awaitTermination(1, TimeUnit.MINUTES);
 		} catch (IOException e) {
 			log.warn("Can not create IndexWriter, indexname=" + tempIndexPath, e);
 		} finally {
 			WorkThreadInformations.unsetLongRunningTask("indexer");
 			DBFactory.getInstance().commitAndCloseSession();
 			log.debug("doIndex: commit & close session");
-		}
-	}
-	
-	/**
-	 * Ensure that all indexworker is finished
-	 * @return
-	 */
-	private boolean areIndexingDone() {
-		if(indexWriterWorkers != null && indexWriterWorkers.length > 0) {
-			if(!documentQueue.isEmpty()) {
-				return false;
-			}
 			
-			for(IndexWriterWorker worker:indexWriterWorkers) {
-				if(!worker.isClosed()) {
-					return false;
-				}
+			if(indexerWriterExecutor != null) {
+				indexerWriterExecutor.shutdownNow();
+				indexerWriterExecutor = null;
 			}
 		}
-		return documentQueue.isEmpty();
 	}
 
 	/**
@@ -303,9 +269,6 @@ public class OlatFullIndexer {
 	 */
 	public void run() {
 		try {
-			//TODO: Workround : does not start immediately
-			Thread.sleep(10000);
-
 			log.info("full indexing starts... Lucene-version:" + LucenePackage.get().getImplementationVersion());
 			fullIndexerStatus.indexingStarted();
 			doIndex();
@@ -348,55 +311,31 @@ public class OlatFullIndexer {
 		}
 	}
 	
-
-
-	
 	/**
-	 * Callback to addDocument to indexWriter.
+	 * Add a document to the index writer. The document is indexed by a single threaded executor,
+	 * Lucene want that write operations happen within a single thread. The access is synchronized
+	 * to block concurrent access to the executor. It blocks the text extractors and allow a
+	 * ridiculously small queue but memory efficient.
+	 * 
 	 * @param document
 	 * @throws IOException
 	 */
 	public void addDocument(Document document) throws IOException,InterruptedException {
-		if (numberIndexWriter == 0 ) {
-			indexWriter.addDocument(document);
-			fullIndexerStatus.incrementDocumentCount();
-			if (indexInterval != 0 && sleepDocumentCounter++ >= documentsPerInterval) {
-				sleepDocumentCounter  = 0;
-				Thread.sleep(indexInterval);
-			} else {
-				// do not sleep, check for stopping indexing
-				if (stopIndexing) {
-					throw new InterruptedException("Do stop indexing at element=" + indexWriter.maxDoc());
-				}
-			}
-			countIndexPerMinute();
-		} else {
-			// clusterOK by:cg synchronizes only access of index-writer, indexer runs only on one cluster-node
-			synchronized (documentQueue) {
-				while (documentQueue.size() > MAX_SIZE_QUEUE) {
-					log.warn("Document queue over " + MAX_SIZE_QUEUE);
-					Thread.sleep(60000);
-				}
-				documentQueue.add(document);
-				fullIndexerStatus.incrementDocumentCount();
-				fullIndexerStatus.setDocumentQueueSize(documentQueue.size());
-				countIndexPerMinute();
-				if (log.isDebug()) log.debug("documentQueue.add size=" + documentQueue.size());
-	      // check for stopping indexing
-				if (stopIndexing) {
-					throw new InterruptedException("Do stop indexing at element=" + indexWriter.maxDoc());
+		DBFactory.getInstance().commitAndCloseSession();
+		
+		if (!stopIndexing && indexerWriterExecutor != null && !indexerWriterExecutor.isShutdown()) {
+			synchronized(indexerWriterBlock) {//once at a time please, wait, you have enough time
+				Future<Boolean> future = indexerWriterExecutor.submit(new AddDocumentCallable(document));
+				try {
+					future.get();
+				} catch (ExecutionException e) {
+					log.error("", e);
 				}
 			}
 		}
+
 		incrementDocumentTypeCounter(document);
 		incrementFileTypeCounter(document);
-// TODO:cg/07.10.2010		try to fix Indexer ERROR 'Overdue resource check-out stack trace.' on OLATNG
-//                      close and commit after each document		
-//		if (fullIndexerStatus.getDocumentCount() % 20 == 0) {
-			// Do commit after certain number of documents because the transaction should not be too big
-			DBFactory.getInstance().commitAndCloseSession();
-			log.debug("DB: intermediateCommit");
-//		}
 	}
 	
 	private void incrementFileTypeCounter(Document document) {
@@ -443,15 +382,9 @@ public class OlatFullIndexer {
 	 * @return  Return current full-indexer status.
 	 */
 	public FullIndexerStatus getStatus() {
-		if (indexWriterWorkers != null) {
-			// IndexWorker exist => set current document-counter
-			for (int i = 0; i < numberIndexWriter; i++) {
-				fullIndexerStatus.setPartDocumentCount(indexWriterWorkers[i].getDocCount(),i);
-			}
-		}
 		fullIndexerStatus.setDocumentCounters(documentCounters);
 		fullIndexerStatus.setFileTypeCounters(fileTypeCounters);
-		fullIndexerStatus.setDocumentQueueSize(documentQueue.size());
+		fullIndexerStatus.setDocumentQueueSize(0);
 		return fullIndexerStatus;
 	}
 	
@@ -465,13 +398,6 @@ public class OlatFullIndexer {
 	public void setIndexInterval(long indexInterval) {
 		this.indexInterval = indexInterval;
 	}
-	
-	/**
-	 * @return  Return document-queue which is used in multi-threaded mode.
-	 */
-	public List<Document> getDocumentQueue() {
-		return documentQueue;
-	}
 
 	/**
 	 * Check if the indexing process is interrupted.
@@ -484,5 +410,38 @@ public class OlatFullIndexer {
 	private void resetDocumentCounters() {
 		documentCounters = new Hashtable<String,Integer>();
 		fileTypeCounters = new Hashtable<String,Integer>();		
+	}
+	
+	private class CloseIndexCallable implements Callable<Boolean> {
+
+		@Override
+		public Boolean call() throws Exception {
+			indexWriter.commit();
+			indexWriter.close();
+			indexWriter = null;
+			return Boolean.TRUE;
+		}
+	}
+	
+	private class AddDocumentCallable implements Callable<Boolean> {
+		private final Document document;
+		
+		public AddDocumentCallable(Document document) {
+			this.document = document;
+		}
+
+		@Override
+		public Boolean call() throws Exception {
+			indexWriter.addDocument(document);
+			fullIndexerStatus.incrementDocumentCount();
+			if (indexInterval != 0 && sleepDocumentCounter++ >= documentsPerInterval) {
+				sleepDocumentCounter = 0;
+				Thread.sleep(indexInterval);
+			} else if (stopIndexing) {
+				throw new InterruptedException("Do stop indexing at element=" + indexWriter.maxDoc());
+			}
+			countIndexPerMinute();
+			return Boolean.TRUE;
+		}
 	}
 }
