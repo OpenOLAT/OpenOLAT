@@ -37,6 +37,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.search.SearchModule;
+import org.olat.search.SearchService;
 import org.olat.search.service.spell.SearchSpellChecker;
 
 /**
@@ -63,7 +64,7 @@ public class Index {
 	 * @param restartInterval Restart interval of full-index in milliseconds.
 	 * @param indexInterval   Sleeping time in milliseconds between adding documents to index.
 	 */
-	public Index(SearchModule searchModule, SearchSpellChecker spellChecker, MainIndexer mainIndexer,
+	public Index(SearchModule searchModule, SearchService searchService, SearchSpellChecker spellChecker, MainIndexer mainIndexer,
 			LifeFullIndexer lifeIndexer, CoordinatorManager coordinatorManager) {
 		this.spellChecker = spellChecker;
 		this.indexPath = searchModule.getFullIndexPath();
@@ -71,7 +72,7 @@ public class Index {
 		this.permanentIndexPath = searchModule.getFullPermanentIndexPath();
 		this.lifeIndexer = lifeIndexer;
 		
-		fullIndexer = new OlatFullIndexer(this, searchModule, mainIndexer, coordinatorManager);
+		fullIndexer = new OlatFullIndexer(this, searchModule, searchService, mainIndexer, coordinatorManager);
 	}
 
 	/**

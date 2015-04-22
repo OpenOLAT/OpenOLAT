@@ -53,6 +53,7 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.LogDocMergePolicy;
 import org.apache.lucene.index.LogMergePolicy;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.olat.core.commons.persistence.DBFactory;
@@ -60,13 +61,17 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.search.QueryException;
 import org.olat.search.SearchModule;
 import org.olat.search.SearchService;
+import org.olat.search.ServiceNotAvailableException;
 import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
 
 /**
- * Controls the hole generation of a full-index. Runs in own thread.
+ * Controls the hole generation of a full-index. It run in its own thread the main index.
+ * The sub-indexers can use a thread pool to parallelize the works.
+ * 
  * @author Christian Guretzki
  */
 public class OlatFullIndexer {
@@ -109,6 +114,7 @@ public class OlatFullIndexer {
 	private Map<String,Integer> fileTypeCounters;
 
 	private final MainIndexer mainIndexer;
+	private final SearchService searchService;
 	private final CoordinatorManager coordinatorManager;
 
 	private static final Object indexerWriterBlock = new Object();
@@ -122,11 +128,14 @@ public class OlatFullIndexer {
 	 * @param restartInterval Restart interval in milliseconds.
 	 * @param indexInterval   Sleep time in milliseconds between adding documents.
 	 */
-	public OlatFullIndexer(Index index, SearchModule searchModule,
+	public OlatFullIndexer(Index index, SearchModule searchModule, SearchService searchService,
 			MainIndexer mainIndexer, CoordinatorManager coordinatorManager) {
 		this.index = index;
 		this.mainIndexer = mainIndexer;
+		this.searchService = searchService;
 		this.coordinatorManager = coordinatorManager;
+		// -1 because the thread pool used a CallerRunPolicy, which means the main thread
+		// will do the work if the queue of the poll is full.
 		if(searchModule.getFolderPoolSize() <= 2) {
 			indexerPoolSize = 1;
 		} else {
@@ -333,6 +342,14 @@ public class OlatFullIndexer {
 			log.info("quit indexing run.");
 		} catch (NullPointerException nex) {
 			// no logging available (shut down)=> do nothing
+		}
+	}
+	
+	public Document getDocument(String businessPath) {
+		try {
+			return searchService.doSearch(businessPath);
+		} catch (ServiceNotAvailableException | ParseException | QueryException e) {
+			return null;
 		}
 	}
 	

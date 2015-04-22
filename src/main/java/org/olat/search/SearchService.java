@@ -28,6 +28,7 @@ package org.olat.search;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.util.Version;
 import org.olat.core.commons.persistence.SortKey;
@@ -72,6 +73,19 @@ public interface SearchService {
 	public List<Long> doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles,
 			int firstResult, int maxReturns, SortKey... orderBy)
 	throws ServiceNotAvailableException, ParseException, QueryException;
+	
+	/**
+	 * Search a document with the specified resource URL.
+	 * 
+	 * @param resourceUrl
+	 * @return The whole document with all fields, null if not found.
+	 * @throws ServiceNotAvailableException
+	 * @throws ParseException
+	 * @throws QueryException
+	 */
+	public Document doSearch(String resourceUrl)
+			throws ServiceNotAvailableException, ParseException, QueryException;
+
 	
 	/**
 	 * Check a query for similar words.

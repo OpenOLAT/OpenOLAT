@@ -61,6 +61,8 @@ public abstract class AbstractOlatDocument implements Serializable {
 	public  static final String FILETYPE_FIELD_NAME = "filetype";
 
 	public  static final String RESOURCEURL_FIELD_NAME = "resourceurl";
+	
+	public  static final String RESOURCEURL_MD5_FIELD_NAME = "resourceurlmd";
 
 	public  static final String AUTHOR_FIELD_NAME = "author";
 

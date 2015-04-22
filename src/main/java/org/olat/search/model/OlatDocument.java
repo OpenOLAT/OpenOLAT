@@ -35,6 +35,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
+import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
 
 
@@ -88,6 +89,7 @@ public class OlatDocument extends AbstractOlatDocument {
 		document.add(createTextField(DESCRIPTION_FIELD_NAME,getDescription(), 2));
 		document.add(createTextField(CONTENT_FIELD_NAME, getContent(), 0.5f));
 		document.add(new StringField(RESOURCEURL_FIELD_NAME, getResourceUrl(), Field.Store.YES));
+		document.add(new StringField(RESOURCEURL_MD5_FIELD_NAME, Encoder.md5hash(getResourceUrl()), Field.Store.YES));
 		document.add(new StringField(DOCUMENTTYPE_FIELD_NAME,getDocumentType(), Field.Store.YES));
 		if(getCssIcon() != null) {
 			document.add(new StringField(CSS_ICON,getCssIcon(), Field.Store.YES));
