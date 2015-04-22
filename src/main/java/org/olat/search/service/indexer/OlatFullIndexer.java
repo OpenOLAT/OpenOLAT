@@ -73,9 +73,10 @@ public class OlatFullIndexer {
 	
 	private static final OLog log = Tracing.createLoggerFor(OlatFullIndexer.class);
 	private static final int INDEX_MERGE_FACTOR = 1000;
+	private static final int MAX_WAITING_COUNT = 600;// = 10Min
 
-	private String  indexPath;
-	private String  tempIndexPath;
+	private String indexPath;
+	private String tempIndexPath;
 
 	/**
 	 * Reference to indexer for done callback.
@@ -89,6 +90,8 @@ public class OlatFullIndexer {
 	private long indexInterval = 500;
 
 	private double ramBufferSizeMB;
+	
+	private final int indexerPoolSize;
 	
 	/** Current status of full-indexer. */
 	private FullIndexerStatus fullIndexerStatus;
@@ -105,13 +108,13 @@ public class OlatFullIndexer {
 	private Map<String,Integer> documentCounters;
 	private Map<String,Integer> fileTypeCounters;
 
-	private MainIndexer mainIndexer;
-	private CoordinatorManager coordinatorManager;
+	private final MainIndexer mainIndexer;
+	private final CoordinatorManager coordinatorManager;
 
 	private static final Object indexerWriterBlock = new Object();
+	private ThreadPoolExecutor indexerExecutor;
 	private ThreadPoolExecutor indexerWriterExecutor;
 
-	
 	/**
 	 * 
 	 * @param tempIndexPath   Absolute file path to temporary index directory.
@@ -119,16 +122,21 @@ public class OlatFullIndexer {
 	 * @param restartInterval Restart interval in milliseconds.
 	 * @param indexInterval   Sleep time in milliseconds between adding documents.
 	 */
-	public OlatFullIndexer(Index index, SearchModule searchModuleConfig,
+	public OlatFullIndexer(Index index, SearchModule searchModule,
 			MainIndexer mainIndexer, CoordinatorManager coordinatorManager) {
 		this.index = index;
 		this.mainIndexer = mainIndexer;
 		this.coordinatorManager = coordinatorManager;
-		indexPath = searchModuleConfig.getFullIndexPath();
-		tempIndexPath = searchModuleConfig.getFullTempIndexPath();
-		indexInterval = searchModuleConfig.getIndexInterval();
-		documentsPerInterval = searchModuleConfig.getDocumentsPerInterval();
-		ramBufferSizeMB = searchModuleConfig.getRAMBufferSizeMB();
+		if(searchModule.getFolderPoolSize() <= 2) {
+			indexerPoolSize = 1;
+		} else {
+			indexerPoolSize = searchModule.getFolderPoolSize() - 1;
+		}
+		indexPath = searchModule.getFullIndexPath();
+		tempIndexPath = searchModule.getFullTempIndexPath();
+		indexInterval = searchModule.getIndexInterval();
+		documentsPerInterval = searchModule.getDocumentsPerInterval();
+		ramBufferSizeMB = searchModule.getRAMBufferSizeMB();
 		fullIndexerStatus = new FullIndexerStatus(1);
 		stopIndexing = true;
 		initStatus();
@@ -141,6 +149,7 @@ public class OlatFullIndexer {
 			final AtomicLong last = new AtomicLong(1);
 			try {
 				Files.walkFileTree(indexDir.toPath(), new SimpleFileVisitor<Path>(){
+					@Override
 					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 						if(attrs.isRegularFile()) {
 							FileTime time = attrs.lastModifiedTime();
@@ -210,7 +219,12 @@ public class OlatFullIndexer {
 	private void doIndex() throws InterruptedException{
 		try {
 			WorkThreadInformations.setLongRunningTask("indexer");
-
+			
+			if(indexerExecutor == null) {
+				BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(2);
+				indexerExecutor = new ThreadPoolExecutor(indexerPoolSize, indexerPoolSize, 0L, TimeUnit.MILLISECONDS,
+						queue, new ThreadPoolExecutor.CallerRunsPolicy());
+			}
 			if(indexerWriterExecutor == null) {
 				BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(2);
 				indexerWriterExecutor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, queue);
@@ -224,22 +238,18 @@ public class OlatFullIndexer {
 			SearchResourceContext searchResourceContext = new SearchResourceContext();
 			log.info("doIndex start. OlatFullIndexer with Debug output");
 			mainIndexer.doIndex(searchResourceContext, null /*no parent*/, this);
+			DBFactory.getInstance().commitAndCloseSession();
 	
 			log.info("Wait until every folder indexer is finished");
 			
+			indexerExecutor.shutdown();
+			indexerExecutor.awaitTermination(10, TimeUnit.MINUTES);
 			DBFactory.getInstance().commitAndCloseSession();
-			// check if every folder indexer is finished max waiting-time 10Min (=waitingCount-limit = 60) 
-			int waitingCount = 0;
-			int MAX_WAITING_COUNT = 60;// = 10Min
-			while (FolderIndexerWorkerPool.getInstance().isIndexerRunning() && (waitingCount++ < MAX_WAITING_COUNT) ) { 
-				Thread.sleep(10000);
-			}
-			if (waitingCount >= MAX_WAITING_COUNT) log.info("Finished with max waiting time!");
 			
 
 			log.info("Wait until index writer executor is finished");
 			int waitWriter = 0;
-			while (indexerWriterExecutor.getActiveCount() > 0 && (waitWriter++ < (10 * MAX_WAITING_COUNT))) { 
+			while (indexerWriterExecutor.getActiveCount() > 0 && (waitWriter++ < MAX_WAITING_COUNT)) { 
 				Thread.sleep(1000);
 			}
 			
@@ -256,10 +266,23 @@ public class OlatFullIndexer {
 			DBFactory.getInstance().commitAndCloseSession();
 			log.debug("doIndex: commit & close session");
 			
+			if(indexerExecutor != null) {
+				indexerExecutor.shutdownNow();
+				indexerExecutor = null;
+			}
 			if(indexerWriterExecutor != null) {
 				indexerWriterExecutor.shutdownNow();
 				indexerWriterExecutor = null;
 			}
+		}
+	}
+	
+	public Future<Boolean> submit(Callable<Boolean> task) {
+		if(indexerExecutor != null && !indexerExecutor.isShutdown()) {
+			return indexerExecutor.submit(task);
+		} else {
+			log.error("Try to submit a task to index executor but it's closed.");
+			return null;
 		}
 	}
 
@@ -302,8 +325,10 @@ public class OlatFullIndexer {
 				// no logging available (shut down) => do nothing
 			}
 		}
+		
 		fullIndexerStatus.setStatus(FullIndexerStatus.STATUS_STOPPED);
 		stopIndexing = true;
+		
 		try {
 			log.info("quit indexing run.");
 		} catch (NullPointerException nex) {

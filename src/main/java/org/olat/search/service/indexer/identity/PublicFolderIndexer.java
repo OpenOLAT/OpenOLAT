@@ -45,6 +45,7 @@ public class PublicFolderIndexer extends FolderIndexer {
 	/**
 	 * @see org.olat.search.service.indexer.Indexer#getSupportedTypeName()
 	 */
+	@Override
 	public String getSupportedTypeName() {
 		return Identity.class.getSimpleName();
 	}
@@ -52,7 +53,7 @@ public class PublicFolderIndexer extends FolderIndexer {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#supportsDownload()
 	 */
-
+	@Override
 	public void doIndex(SearchResourceContext parentResourceContext, Object parentObject, OlatFullIndexer indexWriter) {
 
 		try {

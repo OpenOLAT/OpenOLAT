@@ -48,19 +48,21 @@ public class BCCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 
 	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.BCCourseNode";
 	
+	@Override
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
 		if (isLogDebugEnabled()) logDebug("Index Briefcase..." );
 
-    SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
-    courseNodeResourceContext.setBusinessControlFor(courseNode);
-    courseNodeResourceContext.setDocumentType(TYPE);
-    courseNodeResourceContext.setTitle(courseNode.getShortTitle());
-    courseNodeResourceContext.setDescription(courseNode.getLongTitle());
+		SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
+    	courseNodeResourceContext.setBusinessControlFor(courseNode);
+    	courseNodeResourceContext.setDocumentType(TYPE);
+    	courseNodeResourceContext.setTitle(courseNode.getShortTitle());
+    	courseNodeResourceContext.setDescription(courseNode.getLongTitle());
 
 		OlatNamedContainerImpl namedContainer = BCCourseNode.getNodeFolderContainer((BCCourseNode) courseNode, course.getCourseEnvironment());
 		doIndexVFSContainer(courseNodeResourceContext,namedContainer,indexWriter,"", FolderIndexerAccess.FULL_ACCESS);
 	}
 
+	@Override
 	public String getSupportedTypeName() {
 		return SUPPORTED_TYPE_NAME;
 	}

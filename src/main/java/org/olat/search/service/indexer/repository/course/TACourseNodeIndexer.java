@@ -58,37 +58,37 @@ public class TACourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 
 	@Override
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
-    SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
-    courseNodeResourceContext.setBusinessControlFor(courseNode);
-    courseNodeResourceContext.setTitle(courseNode.getShortTitle());
-    courseNodeResourceContext.setDescription(courseNode.getLongTitle());
+		SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
+		courseNodeResourceContext.setBusinessControlFor(courseNode);
+		courseNodeResourceContext.setTitle(courseNode.getShortTitle());
+		courseNodeResourceContext.setDescription(courseNode.getLongTitle());
     
-    // Index Task
-    File fTaskfolder = new File(FolderConfig.getCanonicalRoot() + TACourseNode.getTaskFolderPathRelToFolderRoot(course.getCourseEnvironment(), courseNode));
-    VFSContainer taskRootContainer = new LocalFolderImpl(fTaskfolder);
-    courseNodeResourceContext.setDocumentType(TYPE_TASK);
-    doIndexVFSContainer(courseNodeResourceContext, taskRootContainer, indexWriter, "", FolderIndexerAccess.FULL_ACCESS);
-    
-    // Index Dropbox
-    String dropboxFilePath = FolderConfig.getCanonicalRoot() + DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(), courseNode);
-    File fDropboxFolder = new File(dropboxFilePath);
-    VFSContainer dropboxRootContainer = new LocalFolderImpl(fDropboxFolder);
-    courseNodeResourceContext.setDocumentType(TYPE_DROPBOX);
-    doIndexVFSContainer(courseNodeResourceContext, dropboxRootContainer, indexWriter, "", FolderIndexerAccess.FULL_ACCESS);
-    
-    // Index Returnbox
-    String returnboxFilePath = FolderConfig.getCanonicalRoot() + ReturnboxController.getReturnboxPathRelToFolderRoot(course.getCourseEnvironment(), courseNode);
-    File fResturnboxFolder = new File(returnboxFilePath);
-    VFSContainer returnboxRootContainer = new LocalFolderImpl(fResturnboxFolder);
-    courseNodeResourceContext.setDocumentType(TYPE_RETURNBOX);
-    doIndexVFSContainer(courseNodeResourceContext, returnboxRootContainer, indexWriter, "", FolderIndexerAccess.FULL_ACCESS);
-    
-    // Index Solutionbox
-    String solutionFilePath = FolderConfig.getCanonicalRoot() + SolutionController.getSolutionPathRelToFolderRoot(course.getCourseEnvironment(), courseNode);
-    File fSolutionFolder = new File(solutionFilePath);
-    VFSContainer solutionRootContainer = new LocalFolderImpl(fSolutionFolder);
-    courseNodeResourceContext.setDocumentType(TYPE_SOLUTIONBOX);
-    doIndexVFSContainer(courseNodeResourceContext, solutionRootContainer, indexWriter, "", FolderIndexerAccess.FULL_ACCESS);
+		// Index Task
+		File fTaskfolder = new File(FolderConfig.getCanonicalRoot() + TACourseNode.getTaskFolderPathRelToFolderRoot(course.getCourseEnvironment(), courseNode));
+		VFSContainer taskRootContainer = new LocalFolderImpl(fTaskfolder);
+		courseNodeResourceContext.setDocumentType(TYPE_TASK);
+		doIndexVFSContainer(courseNodeResourceContext, taskRootContainer, indexWriter, "", FolderIndexerAccess.FULL_ACCESS);
+		
+		// Index Dropbox
+		String dropboxFilePath = FolderConfig.getCanonicalRoot() + DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(), courseNode);
+		File fDropboxFolder = new File(dropboxFilePath);
+		VFSContainer dropboxRootContainer = new LocalFolderImpl(fDropboxFolder);
+		courseNodeResourceContext.setDocumentType(TYPE_DROPBOX);
+		doIndexVFSContainer(courseNodeResourceContext, dropboxRootContainer, indexWriter, "", FolderIndexerAccess.FULL_ACCESS);
+		
+		// Index Returnbox
+		String returnboxFilePath = FolderConfig.getCanonicalRoot() + ReturnboxController.getReturnboxPathRelToFolderRoot(course.getCourseEnvironment(), courseNode);
+		File fResturnboxFolder = new File(returnboxFilePath);
+		VFSContainer returnboxRootContainer = new LocalFolderImpl(fResturnboxFolder);
+		courseNodeResourceContext.setDocumentType(TYPE_RETURNBOX);
+		doIndexVFSContainer(courseNodeResourceContext, returnboxRootContainer, indexWriter, "", FolderIndexerAccess.FULL_ACCESS);
+		
+		// Index Solutionbox
+		String solutionFilePath = FolderConfig.getCanonicalRoot() + SolutionController.getSolutionPathRelToFolderRoot(course.getCourseEnvironment(), courseNode);
+		File fSolutionFolder = new File(solutionFilePath);
+		VFSContainer solutionRootContainer = new LocalFolderImpl(fSolutionFolder);
+		courseNodeResourceContext.setDocumentType(TYPE_SOLUTIONBOX);
+		doIndexVFSContainer(courseNodeResourceContext, solutionRootContainer, indexWriter, "", FolderIndexerAccess.FULL_ACCESS);
 	}
 
 	@Override

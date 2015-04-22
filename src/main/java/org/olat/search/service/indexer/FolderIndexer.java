@@ -25,19 +25,10 @@
 
 package org.olat.search.service.indexer;
 
-
 import java.io.IOException;
 
-import org.apache.lucene.document.Document;
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.SearchResourceContext;
-import org.olat.search.service.document.file.DocumentAccessException;
-import org.olat.search.service.document.file.FileDocumentFactory;
 
 /**
  * Common folder indexer. Index all files form a certain VFS-container as starting point.
@@ -47,92 +38,13 @@ public abstract class FolderIndexer extends AbstractHierarchicalIndexer {
 
 	protected void doIndexVFSContainer(SearchResourceContext parentResourceContext, VFSContainer container, OlatFullIndexer indexWriter, String filePath, FolderIndexerAccess accessRule)
 	throws IOException, InterruptedException {
-		if (FolderIndexerWorkerPool.getInstance().isDisabled()) {
-			// Do index in single thread mode
-			doIndexVFSContainerByMySelf(parentResourceContext, container, indexWriter, filePath, accessRule);
-		} else {
-			// Start new thread to index folder
-			FolderIndexerWorker runnableFolderIndexer = FolderIndexerWorkerPool.getInstance().getIndexer(); 
-			runnableFolderIndexer.setAccessRule(accessRule);
-			runnableFolderIndexer.setParentResourceContext(parentResourceContext);
-			runnableFolderIndexer.setContainer(container);
-			runnableFolderIndexer.setIndexWriter(indexWriter);
-			runnableFolderIndexer.setFilePath(filePath);
-			// Start Indexing from this rootContainer in an own thread 
-			runnableFolderIndexer.start();
-		}
-	}
-
-	// This index methods will be used in single-thread mode only (FolderIndexerWorkerPool is disabled)
-	//////////////////////////////////////////////////////////////////////////////////////////////////
-	private void doIndexVFSContainerByMySelf(SearchResourceContext parentResourceContext, VFSContainer container, OlatFullIndexer indexWriter, String filePath, FolderIndexerAccess accessRule)
-	throws IOException, InterruptedException {
-		// Items: List of VFSContainer & VFSLeaf
-		String myFilePath = filePath;
-		for (VFSItem item : container.getItems()) {
-			if (item instanceof VFSContainer) {
-				// ok it is a container go further
-				if (isLogDebugEnabled()) logDebug(item.getName() + " is a VFSContainer => go further ");
-				if(accessRule.allowed(item)) {
-					doIndexVFSContainerByMySelf(parentResourceContext, (VFSContainer)item, indexWriter, myFilePath + "/" + ((VFSContainer)item).getName(), accessRule);
-				}
-			} else if (item instanceof VFSLeaf) {
-				// ok it is a file => analyse it
-				if (isLogDebugEnabled()) logDebug(item.getName() + " is a VFSLeaf => analyse file");
-				if(accessRule.allowed(item)) {
-					doIndexVFSLeafByMySelf(parentResourceContext, (VFSLeaf)item, indexWriter, myFilePath);
-				}
-			} else {
-				logWarn("Unkown element in item-list class=" + item.getClass(), null);
-			}
-			// TODO:cg/27.10.2010		try to fix Indexer ERROR 'Overdue resource check-out stack trace.' on OLATNG
-			DBFactory.getInstance().commitAndCloseSession();
-		}
+		FolderIndexerWorker runnableFolderIndexer = new  FolderIndexerWorker();
+		runnableFolderIndexer.setAccessRule(accessRule);
+		runnableFolderIndexer.setParentResourceContext(parentResourceContext);
+		runnableFolderIndexer.setContainer(container);
+		runnableFolderIndexer.setIndexWriter(indexWriter);
+		runnableFolderIndexer.setFilePath(filePath);
+		indexWriter.submit(runnableFolderIndexer);
 	}
 	
-	protected void doIndexVFSLeafByMySelf(SearchResourceContext leafResourceContext, VFSLeaf leaf, OlatFullIndexer indexWriter, String filePath) throws InterruptedException {
-		if (isLogDebugEnabled()) logDebug("Analyse VFSLeaf=" + leaf.getName());
-		try {
-			if (CoreSpringFactory.getImpl(FileDocumentFactory.class).isFileSupported(leaf)) {
-				String myFilePath = "";
-				if (filePath.endsWith("/")) {
-					myFilePath = filePath + leaf.getName();
-				} else {
-	        myFilePath = filePath + "/" + leaf.getName();
-				}
-				leafResourceContext.setFilePath(myFilePath);
-				//fxdiff FXOLAT-97: high CPU load tracker
-				WorkThreadInformations.set("Index VFSLeaf=" + myFilePath + " at " + leafResourceContext.getResourceUrl());
-				Document document = CoreSpringFactory.getImpl(FileDocumentFactory.class).createDocument(leafResourceContext, leaf);
-	  		indexWriter.addDocument(document);
-			} else {
-				if (isLogDebugEnabled()) logDebug("Documenttype not supported. file=" + leaf.getName());
-			}
-		} catch (DocumentAccessException e) {
-			if (isLogDebugEnabled()) logDebug("Can not access document." + e.getMessage());
-		} catch (IOException ioEx) {
-			logWarn("IOException: Can not index leaf=" + leaf.getName(), ioEx);
-		} catch (InterruptedException iex) {
-			throw new InterruptedException(iex.getMessage());
-	  } catch (Exception ex) {
-			logWarn("Exception: Can not index leaf=" + leaf.getName(), ex);
-		//fxdiff FXOLAT-97: high CPU load tracker
-		} finally {
-  		WorkThreadInformations.unset();
-		}
-	}
-	
-	/**
-	 * @param leaf
-	 * @return Full file-path of leaf without leaf-name
-	 */
-	protected String getPathFor(VFSLeaf leaf) {
-		String path = "";
-		VFSContainer parentContainer = leaf.getParentContainer();
-		while (parentContainer.getParentContainer() != null) {
-			path = parentContainer.getName() + "/" + path;
-			parentContainer = parentContainer.getParentContainer();
-	  }
-		return path;
-	}
 }

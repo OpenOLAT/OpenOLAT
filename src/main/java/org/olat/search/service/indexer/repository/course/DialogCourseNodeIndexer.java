@@ -80,14 +80,15 @@ public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNod
 		//
 	}
 
+	@Override
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
-    SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
-    courseNodeResourceContext.setBusinessControlFor(courseNode);
-    courseNodeResourceContext.setTitle(courseNode.getShortTitle());
-    courseNodeResourceContext.setDescription(courseNode.getLongTitle());
+		SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
+		courseNodeResourceContext.setBusinessControlFor(courseNode);
+		courseNodeResourceContext.setTitle(courseNode.getShortTitle());
+		courseNodeResourceContext.setDescription(courseNode.getLongTitle());
     
-    CoursePropertyManager coursePropMgr = course.getCourseEnvironment().getCoursePropertyManager();
-    DialogElementsPropertyManager dialogElmsMgr = DialogElementsPropertyManager.getInstance();
+		CoursePropertyManager coursePropMgr = course.getCourseEnvironment().getCoursePropertyManager();
+		DialogElementsPropertyManager dialogElmsMgr = DialogElementsPropertyManager.getInstance();
 		DialogPropertyElements elements = dialogElmsMgr.findDialogElements(coursePropMgr, courseNode);
 		List<DialogElement> list = new ArrayList<DialogElement>();
 		if (elements != null) list = elements.getDialogPropertyElements();
@@ -96,7 +97,7 @@ public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNod
 			DialogElement element = iter.next();
 			element.getAuthor();
 			element.getDate();
-		  Forum forum = ForumManager.getInstance().loadForum(element.getForumKey());
+			Forum forum = ForumManager.getInstance().loadForum(element.getForumKey());
 			// do IndexForum
 			doIndexAllMessages(courseNodeResourceContext, forum, indexWriter );
 			// do Index File
@@ -121,10 +122,10 @@ public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNod
 			if (CoreSpringFactory.getImpl(FileDocumentFactory.class).isFileSupported(leaf)) {
 				leafResourceContext.setFilePath(filename);
 				leafResourceContext.setDocumentType(TYPE_FILE);
-				//fxdiff FXOLAT-97: high CPU load tracker
+				
 				WorkThreadInformations.set("Index Dialog VFSLeaf=" + filename + " at " + leafResourceContext.getResourceUrl());
-  			Document document = CoreSpringFactory.getImpl(FileDocumentFactory.class).createDocument(leafResourceContext, leaf);
-	  		indexWriter.addDocument(document);
+				Document document = CoreSpringFactory.getImpl(FileDocumentFactory.class).createDocument(leafResourceContext, leaf);
+				indexWriter.addDocument(document);
 			} else {
 				if (isLogDebugEnabled()) logDebug("Documenttype not supported. file=" + leaf.getName());
 			}
@@ -134,11 +135,10 @@ public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNod
 			logWarn("IOException: Can not index leaf=" + leaf.getName(), ioEx);
 		} catch (InterruptedException iex) {
 			throw new InterruptedException(iex.getMessage());
-	  } catch (Exception ex) {
+		} catch (Exception ex) {
 			logWarn("Exception: Can not index leaf=" + leaf.getName(), ex);
-		//fxdiff FXOLAT-97: high CPU load tracker
 		} finally {
-  		WorkThreadInformations.unset();
+			WorkThreadInformations.unset();
 		}
 	}
 
@@ -154,10 +154,12 @@ public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNod
 		}
 	}
 
+	@Override
 	public String getSupportedTypeName() {
 		return SUPPORTED_TYPE_NAME;
 	}
 	
+	@Override
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles)  {
 		ContextEntry ce = businessControl.popLauncherContextEntry();
 		OLATResourceable ores = ce.getOLATResourceable();
@@ -175,7 +177,7 @@ public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNod
 			}
 			boolean isMessageHidden = Status.getStatus(threadtop.getStatusCode()).isHidden(); 
 			//assumes that if is owner then is moderator so it is allowed to see the hidden forum threads		
-	    //TODO: (LD) fix this!!! - the contextEntry is not the right context for this check
+			//TODO: (LD) fix this!!! - the contextEntry is not the right context for this check
 			boolean isOwner = BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_ACCESS,  contextEntry.getOLATResourceable());
 			if(isMessageHidden && !isOwner) {
 				return false;
@@ -186,5 +188,4 @@ public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNod
 			return false;
 		}
 	}
-	
 }

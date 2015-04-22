@@ -53,32 +53,26 @@ public class IdentityIndexer extends AbstractHierarchicalIndexer {
 	}
 
 	@Override
-	public void doIndex(SearchResourceContext parentResourceContext, Object parentObject, OlatFullIndexer indexWriter) throws IOException,
-			InterruptedException {
+	public void doIndex(SearchResourceContext parentResourceContext, Object parentObject, OlatFullIndexer indexWriter)
+	throws IOException, InterruptedException {
 		
-  	int counter = 0;
-  	BaseSecurity secMgr = BaseSecurityManager.getInstance();
-  	List<Identity> identities = secMgr.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, Identity.STATUS_ACTIV);
-  	if (isLogDebugEnabled()) logDebug("Found " + identities.size() + " active identities to index");
-
-  	// committing here to make sure the loadBusinessGroup below does actually
-  	// reload from the database and not only use the session cache 
-  	// (see org.hibernate.Session.get(): 
-  	//  If the instance, or a proxy for the instance, is already associated with the session, return that instance or proxy.)
-  	DBFactory.getInstance().commitAndCloseSession();
+		int counter = 0;
+		BaseSecurity secMgr = BaseSecurityManager.getInstance();
+		List<Identity> identities = secMgr.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, Identity.STATUS_ACTIV);
+		if (isLogDebugEnabled()) logDebug("Found " + identities.size() + " active identities to index");
+		DBFactory.getInstance().commitAndCloseSession();
   	
-  	for (Identity identity : identities) {
-  		try {
-				// reload the businessGroup here before indexing it to make sure it has not been deleted in the meantime
-  			Identity reloadedIdentity = secMgr.findIdentityByName(identity.getName());
-				if (reloadedIdentity==null || (reloadedIdentity.getStatus()>=Identity.STATUS_VISIBLE_LIMIT)) {
+		for (Identity identity : identities) {
+			try {
+				// reload the identity here before indexing it to make sure it has not been deleted in the meantime
+				identity = secMgr.findIdentityByName(identity.getName());
+				if (identity == null || (identity.getStatus()>=Identity.STATUS_VISIBLE_LIMIT)) {
 					logInfo("doIndex: identity was deleted while we were indexing. The deleted identity was: "+identity);
 					continue;
 				}
-				identity = reloadedIdentity;
 
-  			if (isLogDebugEnabled()) logDebug("Indexing identity::" + identity.getName() + " and counter::" + counter);  	  	
-  	  	// Create a search context for this identity. The search context will open the users visiting card in a new tab
+				if (isLogDebugEnabled()) logDebug("Indexing identity::" + identity.getName() + " and counter::" + counter);  	  	
+				// Create a search context for this identity. The search context will open the users visiting card in a new tab
 				SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
 				searchResourceContext.setBusinessControlFor(OresHelper.createOLATResourceableInstance(Identity.class, identity.getKey()));
 				searchResourceContext.setParentContextType(TYPE);
@@ -88,12 +82,12 @@ public class IdentityIndexer extends AbstractHierarchicalIndexer {
 					indexer.doIndex(searchResourceContext, identity, indexWriter);
 				}
 				
-  			counter++;
+				counter++;
 			} catch (Exception ex) {
 				logWarn("Exception while indexing identity::" + identity.getName() + ". Skipping this user, try next one.", ex);
 				DBFactory.getInstance(false).rollbackAndCloseSession();
 			}
 		}
-  	if (isLogDebugEnabled()) logDebug("IdentityIndexer finished with counter::" + counter);
+		if (isLogDebugEnabled()) logDebug("IdentityIndexer finished with counter::" + counter);
 	}
 }

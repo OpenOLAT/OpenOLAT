@@ -190,7 +190,7 @@ public class FullIndexerStatus {
 	 * @return Returns the runningFolderIndexer.
 	 */
 	public int getNumberRunningFolderIndexer() {
-		return FolderIndexerWorkerPool.getInstance().getNumberOfRunningIndexer();
+		return -1;//FolderIndexerWorkerPool.getInstance().getNumberOfRunningIndexer();
 	}
 
 
@@ -198,7 +198,7 @@ public class FullIndexerStatus {
 	 * @return Returns the availableFolderIndexer.
 	 */
 	public int getNumberAvailableFolderIndexer() {
-		return FolderIndexerWorkerPool.getInstance().getNumberOfAvailableIndexer();
+		return -1;//FolderIndexerWorkerPool.getInstance().getNumberOfAvailableIndexer();
 	}
 
 

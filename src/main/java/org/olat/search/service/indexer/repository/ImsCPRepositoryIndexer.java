@@ -28,7 +28,6 @@ package org.olat.search.service.indexer.repository;
 import java.io.File;
 import java.io.IOException;
 
-import org.olat.core.logging.AssertException;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.FileResourceManager;
@@ -49,10 +48,8 @@ public class ImsCPRepositoryIndexer extends FolderIndexer {
 	public final static String TYPE = "type.repository.entry.imscp";
 
 	public final static String ORES_TYPE_CP = ImsCPFileResource.TYPE_NAME;
-	
-	/**
-	 * 
-	 */
+
+	@Override
 	public String getSupportedTypeName() {	
 		return ORES_TYPE_CP; 
 	}
@@ -64,15 +61,15 @@ public class ImsCPRepositoryIndexer extends FolderIndexer {
 	public void doIndex(SearchResourceContext resourceContext, Object parentObject, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
 		RepositoryEntry repositoryEntry = (RepositoryEntry) parentObject;
 		if (isLogDebugEnabled()) logDebug("Analyse IMS CP RepositoryEntry...");
-
 		resourceContext.setDocumentType(TYPE);
     
-		if (repositoryEntry == null) throw new AssertException("no Repository");
-    File cpRoot = FileResourceManager.getInstance().unzipFileResource(repositoryEntry.getOlatResource());
-		if (cpRoot == null) throw new AssertException("file of repository entry " + repositoryEntry.getKey() + "was missing");
-
-		SearchResourceContext cpContext = new SearchResourceContext(resourceContext);
-    VFSContainer rootContainer = new LocalFolderImpl(cpRoot);
-    doIndexVFSContainer(cpContext, rootContainer, indexWriter, "", FolderIndexerAccess.FULL_ACCESS);
+		if (repositoryEntry != null) {
+			File cpRoot = FileResourceManager.getInstance().unzipFileResource(repositoryEntry.getOlatResource());
+			if (cpRoot != null) {
+				SearchResourceContext cpContext = new SearchResourceContext(resourceContext);
+				VFSContainer rootContainer = new LocalFolderImpl(cpRoot);
+				doIndexVFSContainer(cpContext, rootContainer, indexWriter, "", FolderIndexerAccess.FULL_ACCESS);
+			}
+		}
 	}
 }

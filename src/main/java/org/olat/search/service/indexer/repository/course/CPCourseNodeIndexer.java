@@ -66,7 +66,7 @@ public class CPCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 	    	File cpRoot = FileResourceManager.getInstance().unzipFileResource(re.getOlatResource());
 	    	if(cpRoot != null) {
 	    		VFSContainer rootContainer = new LocalFolderImpl(cpRoot);
-	    		doIndexVFSContainer(courseNodeResourceContext,rootContainer,indexWriter,"", FolderIndexerAccess.FULL_ACCESS);
+	    		doIndexVFSContainer(courseNodeResourceContext, rootContainer, indexWriter, "", FolderIndexerAccess.FULL_ACCESS);
 	    	}
 	    }
 	}

@@ -42,7 +42,7 @@
 		<property name="indexerCron" value="${search.indexing.cronjob}" />
 	</bean>
 	
-		<bean id="searchExecutor" class="org.springframework.core.task.support.ExecutorServiceAdapter">
+	<bean id="searchExecutor" class="org.springframework.core.task.support.ExecutorServiceAdapter">
 		<constructor-arg index="0" ref="searchSpringExecutor" />
 	</bean>
 	
@@ -115,9 +115,9 @@
 	       <property name="targetMethod" value="init" />
 	       <property name="arguments">
 	             <value>
-	        searchService=${search.service}
+					searchService=${search.service}
 	             
-	        generateIndexAtStartup=${generate.index.at.startup}		
+					generateIndexAtStartup=${generate.index.at.startup}		
 					tempIndexPath=${search.index.tempIndex}
 					tempSpellCheckPath=${search.index.tempSpellcheck}
 					pdfTextBufferPath=${search.index.pdfBuffer}
@@ -143,10 +143,9 @@
 					<!-- updater runs every xx ms (0=stopped) -->
 					<!-- The updater is NOT implemented for all index elements, do not use it for now! -->
 					updateInterval=0
-					ramBufferSizeMb=16
-					
-	          </value>
-	       </property>
+					ramBufferSizeMb=16		
+			</value>
+		</property>
 	</bean>
 
 	<!-- Indexer factory -->

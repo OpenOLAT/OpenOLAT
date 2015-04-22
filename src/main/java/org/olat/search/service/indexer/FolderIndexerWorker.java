@@ -27,6 +27,7 @@ package org.olat.search.service.indexer;
 
 
 import java.io.IOException;
+import java.util.concurrent.Callable;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.CoreSpringFactory;
@@ -45,44 +46,28 @@ import org.olat.search.service.document.file.FileDocumentFactory;
  * Common folder indexer. Index all files form a certain VFS-container as starting point.
  * @author Christian Guretzki
  */
-public class FolderIndexerWorker implements Runnable{
+public class FolderIndexerWorker implements Callable<Boolean> {
 	
-	private static OLog log = Tracing.createLoggerFor(FolderIndexerWorker.class);
+	private static final OLog log = Tracing.createLoggerFor(FolderIndexerWorker.class);
 
-	public static final int STATE_RUNNING = 1;
-	public static final int STATE_FINISHED = 2;
-
-	private Thread folderIndexer = null;
-	
 	private SearchResourceContext parentResourceContext;
 	private VFSContainer container;
 	private OlatFullIndexer indexWriter;
 	private String filePath;
 	private FolderIndexerAccess accessRule;
 
-	private final String threadId;
-	
-	private int state = 0;
 	private final FileDocumentFactory docFactory;
 
-	public FolderIndexerWorker(int threadId) {
-		this.threadId = Integer.toString(threadId);
+	public FolderIndexerWorker() {
 		docFactory = CoreSpringFactory.getImpl(FileDocumentFactory.class);
 	}
 
-	public void start() {
-	  folderIndexer = new Thread(this, "folderIndexer-" + threadId );
-	  folderIndexer.setPriority(Thread.MIN_PRIORITY);
-	  folderIndexer.setDaemon(true);
-	  folderIndexer.start();
-	  state = STATE_RUNNING;
-	}
-	
-	public void run() {
-		try {
-			if (log.isDebug()) log.debug("folderIndexer-" + threadId + " run...");			
+	@Override
+	public Boolean call() throws Exception {
+		boolean allOk = false;
+		try {			
 			doIndexVFSContainer(parentResourceContext, container, indexWriter, filePath, accessRule);
-			if (log.isDebug()) log.debug("folderIndexer-" + threadId + " finished");
+			allOk = true;
 		} catch (IOException e) {
 			log.warn("IOException in run", e);
 		} catch (InterruptedException e) {
@@ -93,10 +78,8 @@ public class FolderIndexerWorker implements Runnable{
 		} finally {
 			//db session a saved in a thread local
 			DBFactory.getInstance().commitAndCloseSession();
-			FolderIndexerWorkerPool.getInstance().release(this);
 		}
-		log.debug("folderIndexer-" + threadId + " end of run");
-		state = STATE_FINISHED;
+		return allOk;
 	}
 	
 	protected void doIndexVFSContainer(SearchResourceContext resourceContext, VFSContainer cont, OlatFullIndexer writer, String fPath, FolderIndexerAccess aRule)
@@ -131,10 +114,10 @@ public class FolderIndexerWorker implements Runnable{
 				//fxdiff FXOLAT-97: high CPU load tracker
 				WorkThreadInformations.setInfoFiles(myFilePath, leaf);
 				WorkThreadInformations.set("Index VFSLeaf=" + myFilePath + " at " + leafResourceContext.getResourceUrl());
-  			Document document = docFactory.createDocument(leafResourceContext, leaf);
-  			if(document != null) {//document wihich are disabled return null
-  				writer.addDocument(document);
-  			}
+				Document document = docFactory.createDocument(leafResourceContext, leaf);
+				if(document != null) {//document which are disabled return null
+					writer.addDocument(document);
+				}
 			} else {
 				if (log.isDebug()) log.debug("Documenttype not supported. file=" + leaf.getName());
 			}
@@ -146,13 +129,10 @@ public class FolderIndexerWorker implements Runnable{
 			log.warn("IOException: Can not index leaf=" + leaf.getName(), ioEx);
 		} catch (Exception ex) {
 			log.warn("Exception: Can not index leaf=" + leaf.getName(), ex);
-		//fxdiff FXOLAT-97: high CPU load tracker
 		} finally {
 			WorkThreadInformations.unset();
 		}
 	}
-	
-
 
 	public void setParentResourceContext(SearchResourceContext newParentResourceContext) {
 		this.parentResourceContext = newParentResourceContext;
@@ -172,19 +152,5 @@ public class FolderIndexerWorker implements Runnable{
 
 	public void setAccessRule(FolderIndexerAccess accessRule) {
 		this.accessRule = accessRule;
-	}
-
-	public String getId() {
-		return threadId;
-	}
-
-	/**
-	 * @return Returns the state.
-	 */
-	public int getState() {
-		if ((folderIndexer != null) && folderIndexer.isAlive()) {
-			return STATE_RUNNING;
-		}
-		return state;
 	}
 }

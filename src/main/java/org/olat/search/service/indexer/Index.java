@@ -63,15 +63,15 @@ public class Index {
 	 * @param restartInterval Restart interval of full-index in milliseconds.
 	 * @param indexInterval   Sleeping time in milliseconds between adding documents to index.
 	 */
-	public Index(SearchModule searchModuleConfig, SearchSpellChecker spellChecker, MainIndexer mainIndexer,
+	public Index(SearchModule searchModule, SearchSpellChecker spellChecker, MainIndexer mainIndexer,
 			LifeFullIndexer lifeIndexer, CoordinatorManager coordinatorManager) {
 		this.spellChecker = spellChecker;
-		this.indexPath = searchModuleConfig.getFullIndexPath();
-		this.tempIndexPath = searchModuleConfig.getFullTempIndexPath();
-		this.permanentIndexPath = searchModuleConfig.getFullPermanentIndexPath();
+		this.indexPath = searchModule.getFullIndexPath();
+		this.tempIndexPath = searchModule.getFullTempIndexPath();
+		this.permanentIndexPath = searchModule.getFullPermanentIndexPath();
 		this.lifeIndexer = lifeIndexer;
 		
-		fullIndexer = new OlatFullIndexer(this, searchModuleConfig, mainIndexer, coordinatorManager);
+		fullIndexer = new OlatFullIndexer(this, searchModule, mainIndexer, coordinatorManager);
 	}
 
 	/**

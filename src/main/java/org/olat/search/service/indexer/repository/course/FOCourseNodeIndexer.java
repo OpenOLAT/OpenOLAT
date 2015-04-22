@@ -59,15 +59,16 @@ public class FOCourseNodeIndexer extends ForumIndexer implements CourseNodeIndex
 	public final static String TYPE = "type.course.node.forum.message";
 
 	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.FOCourseNode";
-	
+
+	@Override
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) {
 		try {
 			SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
-	    courseNodeResourceContext.setBusinessControlFor(courseNode);
-	    courseNodeResourceContext.setDocumentType(TYPE);
-	    courseNodeResourceContext.setTitle(courseNode.getShortTitle());
-	    courseNodeResourceContext.setDescription(courseNode.getLongTitle());
-	    doIndexForum(courseNodeResourceContext, course, courseNode, indexWriter);
+			courseNodeResourceContext.setBusinessControlFor(courseNode);
+			courseNodeResourceContext.setDocumentType(TYPE);
+			courseNodeResourceContext.setTitle(courseNode.getShortTitle());
+			courseNodeResourceContext.setDescription(courseNode.getLongTitle());
+			doIndexForum(courseNodeResourceContext, course, courseNode, indexWriter);
 		} catch(Exception ex) {
 			log.error("Exception indexing courseNode=" + courseNode, ex);
 		} catch (Error err) {
@@ -75,10 +76,12 @@ public class FOCourseNodeIndexer extends ForumIndexer implements CourseNodeIndex
 		}
 	}
 
+	@Override
 	public String getSupportedTypeName() {
 		return SUPPORTED_TYPE_NAME;
 	}
 	
+	@Override
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
 		ContextEntry ce = businessControl.popLauncherContextEntry();
 		Long resourceableId = ce.getOLATResourceable().getResourceableId();

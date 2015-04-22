@@ -40,22 +40,23 @@ import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiPage;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.WikiPageDocument;
-import org.olat.search.service.indexer.FolderIndexer;
+import org.olat.search.service.indexer.AbstractHierarchicalIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 
 /**
  * Index all group folders.
  * @author Christian Guretzki
  */
-public class GroupWikiIndexer extends FolderIndexer{
+public class GroupWikiIndexer extends AbstractHierarchicalIndexer {
   //Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
 	public static final String TYPE = "type.group.wiki";
 
 	@Override
 	public void doIndex(SearchResourceContext parentResourceContext, Object businessObj, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
-		if (!(businessObj instanceof BusinessGroup) )
+		if (!(businessObj instanceof BusinessGroup))
 			throw new AssertException("businessObj must be BusinessGroup");
+		
 		BusinessGroup businessGroup = (BusinessGroup)businessObj;
 		
 		// Index Group Wiki
@@ -64,17 +65,17 @@ public class GroupWikiIndexer extends FolderIndexer{
 		if (collabTools.isToolEnabled(CollaborationTools.TOOL_WIKI) ) {
 			try {
 				Wiki wiki = WikiManager.getInstance().getOrLoadWiki(businessGroup);
-					// loop over all wiki pages
-					List<WikiPage> wikiPageList = wiki.getAllPagesWithContent();
-					for (WikiPage wikiPage : wikiPageList) {
-					  SearchResourceContext wikiResourceContext = new SearchResourceContext(parentResourceContext);
-					  wikiResourceContext.setBusinessControlFor(BusinessGroupMainRunController.ORES_TOOLWIKI);
-					  wikiResourceContext.setDocumentType(TYPE);
-					  wikiResourceContext.setFilePath(wikiPage.getPageName());
+				// loop over all wiki pages
+				List<WikiPage> wikiPageList = wiki.getAllPagesWithContent();
+				for (WikiPage wikiPage : wikiPageList) {
+					SearchResourceContext wikiResourceContext = new SearchResourceContext(parentResourceContext);
+					wikiResourceContext.setBusinessControlFor(BusinessGroupMainRunController.ORES_TOOLWIKI);
+					wikiResourceContext.setDocumentType(TYPE);
+					wikiResourceContext.setFilePath(wikiPage.getPageName());
 			
-						Document document = WikiPageDocument.createDocument(wikiResourceContext, wikiPage);
-					  indexWriter.addDocument(document);
-					}
+					Document document = WikiPageDocument.createDocument(wikiResourceContext, wikiPage);
+					indexWriter.addDocument(document);
+				}
 			} catch (NullPointerException nex) {
 				logWarn("NullPointerException in GroupWikiIndexer.doIndex.", nex);
 			}

@@ -38,14 +38,14 @@ import org.olat.modules.wiki.WikiPage;
 import org.olat.repository.RepositoryEntry;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.WikiPageDocument;
-import org.olat.search.service.indexer.FolderIndexer;
+import org.olat.search.service.indexer.AbstractHierarchicalIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 
 /**
  * Indexer for Wiki course-node.
  * @author Christian Guretzki
  */
-public class WikiCourseNodeIndexer extends FolderIndexer implements CourseNodeIndexer {
+public class WikiCourseNodeIndexer extends AbstractHierarchicalIndexer implements CourseNodeIndexer {
 	private static final OLog log = Tracing.createLoggerFor(WikiCourseNodeIndexer.class);
 
 	// Must correspond with LocalString_xx.properties
@@ -58,20 +58,21 @@ public class WikiCourseNodeIndexer extends FolderIndexer implements CourseNodeIn
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) {
 		if (log.isDebug()) log.debug("Index wiki...");
 		String repoEntryName = "*name not available*";
-    try {
-  		RepositoryEntry repositoryEntry = courseNode.getReferencedRepositoryEntry();
-  		if(repositoryEntry == null) return;
-  		repoEntryName = repositoryEntry.getDisplayname();
+		try {
+			RepositoryEntry repositoryEntry = courseNode.getReferencedRepositoryEntry();
+			if(repositoryEntry == null) return;
+			
+			repoEntryName = repositoryEntry.getDisplayname();
 			Wiki wiki = WikiManager.getInstance().getOrLoadWiki(courseNode.getReferencedRepositoryEntry().getOlatResource());
 			// loop over all wiki pages
 			List<WikiPage> wikiPageList = wiki.getAllPagesWithContent();
 			for (WikiPage wikiPage : wikiPageList) {
-			  try {
+				try {
 					SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
 					courseNodeResourceContext.setBusinessControlFor(courseNode);
 					courseNodeResourceContext.setDocumentType(TYPE);
-			    courseNodeResourceContext.setTitle(courseNode.getShortTitle());
-			    courseNodeResourceContext.setDescription(courseNode.getLongTitle());
+					courseNodeResourceContext.setTitle(courseNode.getShortTitle());
+					courseNodeResourceContext.setDescription(courseNode.getLongTitle());
 					courseNodeResourceContext.setFilePath(wikiPage.getPageName());
 
 					Document document = WikiPageDocument.createDocument(courseNodeResourceContext, wikiPage);
@@ -85,6 +86,7 @@ public class WikiCourseNodeIndexer extends FolderIndexer implements CourseNodeIn
 		}
 	}
 
+	@Override
 	public String getSupportedTypeName() {
 		return SUPPORTED_TYPE_NAME;
 	}

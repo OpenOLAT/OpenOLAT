@@ -59,6 +59,7 @@ public class GroupFolderIndexer extends FolderIndexer{
 		this.collaborationManager = collaborationManager;
 	}
 
+	@Override
 	public void doIndex(SearchResourceContext parentResourceContext, Object businessObj, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
 		if (!(businessObj instanceof BusinessGroup) )
 			throw new AssertException("businessObj must be BusinessGroup");

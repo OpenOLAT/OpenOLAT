@@ -42,6 +42,7 @@ public class ProfileIndexer extends AbstractHierarchicalIndexer {
 	/**
 	 * @see org.olat.search.service.indexer.Indexer#getSupportedTypeName()
 	 */
+	@Override
 	public String getSupportedTypeName() {
 		return Identity.class.getSimpleName();
 	}
@@ -62,6 +63,5 @@ public class ProfileIndexer extends AbstractHierarchicalIndexer {
 			logWarn("Exception while indexing profile for identity::" + parentObject.toString() + ". Skipping this user, try next one.", ex);
 		}
 		if (isLogDebugEnabled()) logDebug("ProfileIndexer finished for user::" + parentObject.toString());
-
 	}
 }
