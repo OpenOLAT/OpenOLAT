@@ -85,6 +85,10 @@ public class FileDocumentFactory {
 		searchModule = module;
 	}
 	
+	public static int getMaxFileSize() {
+		return (int)searchModule.getMaxFileSize();
+	}
+	
 	public Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf)
 	throws IOException, DocumentAccessException {
 		try {

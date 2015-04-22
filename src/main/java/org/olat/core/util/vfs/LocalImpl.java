@@ -39,7 +39,7 @@ import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
  *
  * @author Felix Jost
  */
-public abstract class LocalImpl implements VFSItem {
+public abstract class LocalImpl implements VFSItem, JavaIOItem {
 
 	private File basefile;
 	private VFSContainer parentContainer;

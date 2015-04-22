@@ -30,6 +30,7 @@ import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.io.LimitedContentWriter;
 import org.olat.core.util.io.ShieldInputStream;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.SearchResourceContext;
@@ -103,7 +104,7 @@ public class OpenDocument extends FileDocument {
 			FileUtils.closeSafely(zip);
 			FileUtils.closeSafely(stream);
 		}
-		return new FileContent(dh.getContent());
+		return new FileContent(dh.toString());
 	}
 	
 	private void parse(InputStream stream, DefaultHandler handler) throws DocumentException {
@@ -112,9 +113,8 @@ public class OpenDocument extends FileDocument {
 			parser.setContentHandler(handler);
 			parser.setEntityResolver(handler);
 			try {
-			parser.setFeature("http://xml.org/sax/features/validation", false);
+				parser.setFeature("http://xml.org/sax/features/validation", false);
 			} catch(Exception e) {
-				e.printStackTrace();
 				//cannot desactivate validation
 			}
 			parser.parse(new InputSource(stream));
@@ -125,15 +125,7 @@ public class OpenDocument extends FileDocument {
 	
 	private class OpenDocumentHandler extends DefaultHandler {
 
-		private final StringBuilder sb = new StringBuilder();
-		
-		public OpenDocumentHandler() {
-			//
-		}
-
-		public String getContent() {
-			return sb.toString();
-		}
+		private final LimitedContentWriter sb = new LimitedContentWriter(5000, FileDocumentFactory.getMaxFileSize());
 
 		@Override
 		public InputSource resolveEntity(String publicId, String systemId) {
@@ -150,7 +142,7 @@ public class OpenDocument extends FileDocument {
 			if(sb .length() > 0 && sb.charAt(sb.length() - 1) != ' '){
 				sb.append(' ');
 			}
-			sb.append(ch, start, length);
+			sb.write(ch, start, length);
 		}
 	}
 }

@@ -94,9 +94,9 @@ public class FileDocumentFactoryTest extends OlatTestCase {
 		assertTrue("xml must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.xml"))));
 	}
 	
-	private VFSLeaf getVFSFile(String name) {
+	private VFSLeaf getVFSFile(String filename) {
 		try {
-			URL url = FileDocumentFactoryTest.class.getResource(name);
+			URL url = FileDocumentFactoryTest.class.getResource(filename);
 			File file = new File(url.toURI());
 			return new LocalFileImpl(file);
 		} catch (URISyntaxException e) {
@@ -105,7 +105,8 @@ public class FileDocumentFactoryTest extends OlatTestCase {
 		}
 	}
 
-	@Test public void testCreateHtmlDocument() {
+	@Test
+	public void testCreateHtmlDocument() {
 		String filePath = "SearchTestFolder";
 		String htmlFileName = "test.html";
 		String htmlText = "<html><head><meta name=\"generator\" content=\"olat-tinymce-1\"><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body>"

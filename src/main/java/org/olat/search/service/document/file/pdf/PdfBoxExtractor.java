@@ -21,18 +21,19 @@ package org.olat.search.service.document.file.pdf;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.util.PDFTextStripper;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.io.LimitedContentWriter;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.document.file.DocumentAccessException;
-import org.olat.search.service.document.file.FileDocument.FileContent;
+import org.olat.search.service.document.file.FileContent;
+import org.olat.search.service.document.file.FileDocumentFactory;
 
 /**
  * 
@@ -52,11 +53,14 @@ public class PdfBoxExtractor implements PdfExtractor {
 	}
 	
 	private void storePdfTextInBuffer(FileContent pdfText, File pdfTextFile) throws IOException {
-		FileOutputStream out = new FileOutputStream(pdfTextFile);
-		if(StringHelper.containsNonWhitespace(pdfText.getTitle())) {
-			FileUtils.save(out, pdfText.getTitle() + "\u00A0|\u00A0" + pdfText.getContent(), "utf-8");
-		} else {
-			FileUtils.save(out, pdfText.getContent(), "utf-8");
+		try(FileWriter out = new FileWriter(pdfTextFile)) {
+			if(StringHelper.containsNonWhitespace(pdfText.getTitle())) {
+				out.write(pdfText.getTitle());
+				out.write("\u00A0|\u00A0");
+			}
+			out.write(pdfText.getContent());
+		} catch(IOException e) {
+			throw e;
 		}
 	}
 	
@@ -72,13 +76,19 @@ public class PdfBoxExtractor implements PdfExtractor {
 					document.decrypt("");
 				} catch (Exception e) {
 					log.warn("PDF is encrypted. Can not read content file=" + leaf.getName());
-					return new FileContent(leaf.getName(), leaf.getName());
+					LimitedContentWriter writer = new LimitedContentWriter(128, FileDocumentFactory.getMaxFileSize());
+					writer.append(leaf.getName());
+					writer.close();
+					return new FileContent(leaf.getName(), writer.toString());
 				}
 			}	
 			String title = getTitle(document);
 			if (log.isDebug()) log.debug("readContent PDDocument loaded");
 			PDFTextStripper stripper = new PDFTextStripper();
-			return new FileContent(title, stripper.getText(document));
+			LimitedContentWriter writer = new LimitedContentWriter(50000, FileDocumentFactory.getMaxFileSize());
+			stripper.writeText(document, writer);
+			writer.close();
+			return new FileContent(title, writer.toString());
 		} finally {
 			if (document != null) {
 			  document.close();
@@ -95,5 +105,4 @@ public class PdfBoxExtractor implements PdfExtractor {
 		}
 		return null;
 	}
-
 }

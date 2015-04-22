@@ -21,7 +21,6 @@ package org.olat.core.util.io;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.zip.ZipInputStream;
 
 /**
  * It's a wrapper for a ZIP input stream which MUST not be closed
@@ -33,9 +32,9 @@ import java.util.zip.ZipInputStream;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix
  */
 public class ShieldInputStream extends InputStream {
-	private final ZipInputStream delegate;
+	private final InputStream delegate;
 	
-	public ShieldInputStream(ZipInputStream delegate) {
+	public ShieldInputStream(InputStream delegate) {
 		this.delegate = delegate;
 	}
 	

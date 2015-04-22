@@ -20,6 +20,7 @@
 package org.olat.search.service.document.file;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.UUID;
@@ -27,7 +28,6 @@ import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.search.service.document.file.FileDocument.FileContent;
 import org.olat.test.OlatTestCase;
 import org.olat.test.VFSJavaIOFile;
 
@@ -38,7 +38,8 @@ import org.olat.test.VFSJavaIOFile;
 public class PDFDocumentTest extends OlatTestCase {
 	
 	@Test
-	public void testPDFDocument() throws DocumentException, DocumentAccessException, URISyntaxException {
+	public void testPDFDocument()
+	throws DocumentException, DocumentAccessException, URISyntaxException, IOException {
 		URL pdfUrl = PDFDocumentTest.class.getResource("Test_pdf_indexing.pdf");
 		Assert.assertNotNull(pdfUrl);
 
@@ -48,11 +49,13 @@ public class PDFDocumentTest extends OlatTestCase {
 		FileContent content =	document.readContent(doc);
 		Assert.assertNotNull(content);
 		Assert.assertEquals("Test pdf indexing", content.getTitle());
-		Assert.assertEquals("Un petit texte en français", content.getContent().trim());
+		String body = content.getContent();
+		Assert.assertEquals("Un petit texte en français", body.trim());
 	}
 	
 	@Test
-	public void testPDFDocumentCaching() throws DocumentException, DocumentAccessException, URISyntaxException {
+	public void testPDFDocumentCaching()
+	throws DocumentException, DocumentAccessException, URISyntaxException, IOException {
 		URL pdfUrl = PDFDocumentTest.class.getResource("Test_pdf_indexing.pdf");
 		Assert.assertNotNull(pdfUrl);
 
@@ -64,12 +67,14 @@ public class PDFDocumentTest extends OlatTestCase {
 		FileContent contentIndexed =	document.readContent(doc);
 		Assert.assertNotNull(contentIndexed);
 		Assert.assertEquals("Test pdf indexing", contentIndexed.getTitle());
-		Assert.assertEquals("Un petit texte en français", contentIndexed.getContent().trim());
+		String bodyIndexed = contentIndexed.getContent();
+		Assert.assertEquals("Un petit texte en français", bodyIndexed.trim());
 		
 		//take from the cache
 		FileContent contentCached =	document.readContent(doc);
 		Assert.assertNotNull(contentCached);
 		Assert.assertEquals("Test pdf indexing", contentCached.getTitle());
-		Assert.assertEquals("Un petit texte en français", contentCached.getContent().trim());
+		String cachedBody = contentCached.getContent();
+		Assert.assertEquals("Un petit texte en français", cachedBody.trim());
 	}
 }

@@ -19,24 +19,30 @@
  */
 package org.olat.search.service.document.file;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import java.util.zip.ZipFile;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
+import org.olat.core.util.io.LimitedContentWriter;
 import org.olat.core.util.io.ShieldInputStream;
+import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.SearchResourceContext;
-import org.olat.search.service.document.file.utils.SlicedDocument;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
+
+import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 
@@ -54,8 +60,8 @@ public class PowerPointOOXMLDocument extends FileDocument {
 	public final static String POWERPOINT_FILE_TYPE = "type.file.ppt";
 	private static final String SLIDE = "ppt/slides/slide";
 
-	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf) throws IOException, DocumentException,
-			DocumentAccessException {
+	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf)
+	throws IOException, DocumentException, DocumentAccessException {
 		PowerPointOOXMLDocument officeDocument = new PowerPointOOXMLDocument();
 		officeDocument.init(leafResourceContext, leaf);
 		officeDocument.setFileType(POWERPOINT_FILE_TYPE);
@@ -68,36 +74,41 @@ public class PowerPointOOXMLDocument extends FileDocument {
 
 	@Override
 	public FileContent readContent(VFSLeaf leaf) throws IOException, DocumentException {
-		SlicedDocument doc = new SlicedDocument();
 		
-		InputStream stream = null;
-		ZipInputStream zip = null;
-		try {
-			stream = leaf.getInputStream();
-
-			zip = new ZipInputStream(stream);
-			ZipEntry entry = zip.getNextEntry();
-			while (entry != null) {
+		File file = ((JavaIOItem)leaf).getBasefile();
+		
+		LimitedContentWriter writer = new LimitedContentWriter(100000, FileDocumentFactory.getMaxFileSize());
+	
+		try(ZipFile wordFile = new ZipFile(file)) {
+			List<String> contents = new ArrayList<>();
+			for(Enumeration<? extends ZipEntry> entriesEnumeration=wordFile.entries(); entriesEnumeration.hasMoreElements(); ) {
+				ZipEntry entry = entriesEnumeration.nextElement();
 				String name = entry.getName();
 				if(name.startsWith(SLIDE) && name.endsWith(".xml")) {
-					int lastIndex = name.indexOf(".xml");
-					String position = name.substring(SLIDE.length(), lastIndex);
-					
-					OfficeDocumentHandler dh = new OfficeDocumentHandler();
-					parse(new ShieldInputStream(zip), dh);
-					doc.setContent(Integer.parseInt(position), dh.getContent());
+					contents.add(name);
 				}
-				entry = zip.getNextEntry();
 			}
+
+			if(contents.size() > 1) {
+				Collections.sort(contents, new PowerPointDocumentComparator());
+			}
+			
+			for(String content:contents) {
+				if(writer.accept()) {
+					ZipEntry entry = wordFile.getEntry(content);
+					InputStream zip = wordFile.getInputStream(entry);
+					OfficeDocumentHandler dh = new OfficeDocumentHandler(writer);
+					parse(new ShieldInputStream(zip), dh);
+					zip.close();
+				}
+			}
+			
 		} catch (DocumentException e) {
 			throw e;
 		} catch (Exception e) {
 			throw new DocumentException(e.getMessage());
-		} finally {
-			FileUtils.closeSafely(zip);
-			FileUtils.closeSafely(stream);
 		}
-		return new FileContent(doc.toStringAndClear());
+		return new FileContent(writer.toString());
 	}
 	
 	private void parse(InputStream stream, DefaultHandler handler) throws DocumentException {
@@ -106,7 +117,7 @@ public class PowerPointOOXMLDocument extends FileDocument {
 			parser.setContentHandler(handler);
 			parser.setEntityResolver(handler);
 			try {
-			parser.setFeature("http://xml.org/sax/features/validation", false);
+				parser.setFeature("http://xml.org/sax/features/validation", false);
 			} catch(Exception e) {
 				log.error("Cannot deactivate validation", e);
 			}
@@ -116,11 +127,11 @@ public class PowerPointOOXMLDocument extends FileDocument {
 		}
 	}
 	
-	private class OfficeDocumentHandler extends DefaultHandler {
-		private final StringBuilder sb = new StringBuilder();
+	private static class OfficeDocumentHandler extends DefaultHandler {
+		private final LimitedContentWriter sb;
 
-		public StringBuilder getContent() {
-			return sb;
+		public OfficeDocumentHandler(LimitedContentWriter sb) {
+			this.sb = sb;
 		}
 
 		@Override
@@ -133,7 +144,28 @@ public class PowerPointOOXMLDocument extends FileDocument {
 			if(sb .length() > 0 && sb.charAt(sb.length() - 1) != ' '){
 				sb.append(' ');
 			}
-			sb.append(ch, start, length);
+			sb.write(ch, start, length);
 		}
+	}
+	
+	public static class PowerPointDocumentComparator extends AbstractOfficeDocumentComparator  {
+
+		@Override
+		public int compare(String f1, String f2) {
+			int c = 0;
+			if(f1.startsWith(SLIDE) && f2.startsWith(SLIDE)) {
+				c = comparePosition(f1, f2, SLIDE);
+			} else if(f1.startsWith(SLIDE)) {
+				c = 1;
+			} else if(f2.startsWith(SLIDE)) {
+				c = -1;
+			}
+			
+			if(c == 0) {
+				c = f1.compareTo(f2);
+			}
+			return -c;
+		}
+		
 	}
 }

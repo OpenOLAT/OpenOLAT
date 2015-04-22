@@ -32,7 +32,6 @@ import org.apache.lucene.document.Document;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.filter.impl.NekoHTMLFilter;
 import org.olat.core.util.filter.impl.NekoHTMLFilter.NekoContent;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -53,20 +52,25 @@ public class HtmlDocument extends FileDocument {
 	}
 	
 	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf) throws IOException,DocumentException,DocumentAccessException {
-    HtmlDocument htmlDocument = new HtmlDocument();
-    htmlDocument.init(leafResourceContext,leaf);
-    htmlDocument.setFileType(FILE_TYPE);
-    htmlDocument.setCssIcon(CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
+		HtmlDocument htmlDocument = new HtmlDocument();
+		htmlDocument.init(leafResourceContext,leaf);
+		htmlDocument.setFileType(FILE_TYPE);
+		htmlDocument.setCssIcon(CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
 		if (log.isDebug() ) log.debug(htmlDocument.toString());
 		return htmlDocument.getLuceneDocument();
 	}
 	
-	protected FileContent readContent(VFSLeaf leaf) {
-		InputStream is = leaf.getInputStream();
-    // Remove all HTML and &nbsp; Tags
-    NekoContent output = new NekoHTMLFilter().filter(is);
-    if (log.isDebug() ) log.debug("HTML content without tags :" + output);
-  	FileUtils.closeSafely(is);
-		return new FileContent(output.getTitle(), output.getContent());
+	@Override
+	protected FileContent readContent(VFSLeaf leaf) throws DocumentException {
+		try(InputStream is = leaf.getInputStream()) {
+			// Remove all HTML and &nbsp; Tags
+			NekoContent output = new NekoHTMLFilter().filter(is);
+			if (log.isDebug())
+				log.debug("HTML content without tags :" + output);
+	
+			return new FileContent(output.getTitle(), output.getContent());
+		} catch(Exception e) {
+			throw new DocumentException(e.getMessage()); 
+		}
 	}
 }

@@ -130,25 +130,4 @@ public abstract class FileDocument extends OlatDocument {
 	
 	abstract protected FileContent readContent(VFSLeaf leaf) throws IOException, DocumentException, DocumentAccessException;
 
-	public static class FileContent {
-		private final String title;
-		private final String content;
-		
-		public FileContent(String content) {
-			this(null, content);
-		}
-		
-		public FileContent(String title, String content) {
-			this.title = title;
-			this.content = content;
-		}
-		
-		public String getTitle() {
-			return title;
-		}
-		
-		public String getContent() {
-			return content;
-		}
-	}
 }

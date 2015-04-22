@@ -25,6 +25,7 @@
 
 package org.olat.search.model;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
@@ -85,7 +86,7 @@ public class OlatDocument extends AbstractOlatDocument {
 		}
 		document.add(createTextField(TITLE_FIELD_NAME,getTitle(), 4));
 		document.add(createTextField(DESCRIPTION_FIELD_NAME,getDescription(), 2));
-		document.add(createTextField(CONTENT_FIELD_NAME,getContent(), 0.5f ) );
+		document.add(createTextField(CONTENT_FIELD_NAME, getContent(), 0.5f));
 		document.add(new StringField(RESOURCEURL_FIELD_NAME, getResourceUrl(), Field.Store.YES));
 		document.add(new StringField(DOCUMENTTYPE_FIELD_NAME,getDocumentType(), Field.Store.YES));
 		if(getCssIcon() != null) {
@@ -95,26 +96,26 @@ public class OlatDocument extends AbstractOlatDocument {
 		document.add(createTextField(AUTHOR_FIELD_NAME,getAuthor(), 2));
     
 		try {
-    	if(getCreatedDate() != null) {
-    		document.add(new StringField(CREATED_FIELD_NAME, DateTools.dateToString(getCreatedDate(), DateTools.Resolution.DAY), Field.Store.YES) );
-    	}
-    }catch (Exception ex) {
-    	// No createdDate set => does not add field
-    }
-    try {
-    	if(getLastChange() != null) {
-    		document.add(new StringField(CHANGED_FIELD_NAME, DateTools.dateToString(getLastChange(), DateTools.Resolution.DAY), Field.Store.YES) );
-    	}
-    }catch (Exception ex) {
-    	// No changedDate set => does not add field
-    }
-    try {
-    	if(getTimestamp() != null) {
-    		document.add(new StringField(TIME_STAMP_NAME, DateTools.dateToString(getTimestamp(), DateTools.Resolution.MILLISECOND), Field.Store.YES) );
-    	}
-    }catch (Exception ex) {
-    	// No changedDate set => does not add field
-    }
+			if(getCreatedDate() != null) {
+				document.add(createDayField(CREATED_FIELD_NAME, getCreatedDate()));
+			}
+		} catch (Exception ex) {
+			// No createdDate set => does not add field
+		}
+		try {
+			if (getLastChange() != null) {
+				document.add(createDayField(CHANGED_FIELD_NAME, getLastChange()));
+			}
+		} catch (Exception ex) {
+			// No changedDate set => does not add field
+		}
+		try {
+			if (getTimestamp() != null) {
+				document.add(createMillisecondField(TIME_STAMP_NAME, getTimestamp()));
+			}
+		} catch (Exception ex) {
+			// No changedDate set => does not add field
+		}
     
 		// Add various metadata
 		if (metadata != null) {
@@ -136,7 +137,7 @@ public class OlatDocument extends AbstractOlatDocument {
 		} else {
 			document.add(new StringField(RESERVED_TO, "public", Field.Store.YES));
 		}
-	  return document;
+		return document;
 	}
 
 	/**
@@ -150,5 +151,13 @@ public class OlatDocument extends AbstractOlatDocument {
 		TextField field = new TextField(fieldName,content, Field.Store.YES);
 		field.setBoost(boost);
 		return field;
+	}
+	
+	protected static Field createDayField(String fieldName, Date date) {
+		return new StringField(fieldName, DateTools.dateToString(date, DateTools.Resolution.DAY), Field.Store.YES);
+	}
+	
+	protected static Field createMillisecondField(String fieldName, Date date) {
+		return new StringField(fieldName, DateTools.dateToString(date, DateTools.Resolution.MILLISECOND), Field.Store.YES);
 	}
 }

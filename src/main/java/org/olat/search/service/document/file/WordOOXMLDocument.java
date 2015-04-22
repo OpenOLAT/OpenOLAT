@@ -19,25 +19,30 @@
  */
 package org.olat.search.service.document.file;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import java.util.zip.ZipFile;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
-import org.olat.core.util.StringHelper;
+import org.olat.core.util.io.LimitedContentWriter;
 import org.olat.core.util.io.ShieldInputStream;
+import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.SearchResourceContext;
-import org.olat.search.service.document.file.utils.SlicedDocument;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
+
+import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 
@@ -55,6 +60,7 @@ public class WordOOXMLDocument extends FileDocument {
 	public final static String WORD_FILE_TYPE = "type.file.word";
 	private static final String HEADER = "word/header";
 	private static final String FOOTER = "word/footer";
+	private static final String DOCUMENT = "word/document.xml";
 
 	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf)
 	throws IOException, DocumentException, DocumentAccessException {
@@ -71,58 +77,47 @@ public class WordOOXMLDocument extends FileDocument {
 
 	@Override
 	public FileContent readContent(VFSLeaf leaf) throws IOException, DocumentException {
-		SlicedDocument doc = new SlicedDocument();
 		
-		InputStream stream = null;
-		ZipInputStream zip = null;
-		try {
-			stream = leaf.getInputStream();
+		File file = ((JavaIOItem)leaf).getBasefile();
 
-			zip = new ZipInputStream(stream);
-			ZipEntry entry = zip.getNextEntry();
-			while (entry != null) {
+		LimitedContentWriter writer = new LimitedContentWriter(100000, FileDocumentFactory.getMaxFileSize());
+	
+		try(ZipFile wordFile = new ZipFile(file)) {
+			
+			List<String> contents = new ArrayList<>();
+			for(Enumeration<? extends ZipEntry> entriesEnumeration=wordFile.entries(); entriesEnumeration.hasMoreElements(); ) {
+				ZipEntry entry = entriesEnumeration.nextElement();
 				String name = entry.getName();
 				if(name.endsWith("word/document.xml")) {
-					OfficeDocumentHandler dh = new OfficeDocumentHandler();
-					parse(new ShieldInputStream(zip), dh);
-					doc.setContent(0, dh.getContent());
+					contents.add(name);
 				} else if(name.startsWith(HEADER) && name.endsWith(".xml")) {
-					String position = name.substring(HEADER.length(), name.indexOf(".xml"));
-					if(StringHelper.isLong(position)) {
-						try {
-							OfficeDocumentHandler dh = new OfficeDocumentHandler();
-							parse(new ShieldInputStream(zip), dh);
-							doc.setHeader(Integer.parseInt(position), dh.getContent());
-						} catch (NumberFormatException e) {
-							log.warn("", e);
-							//if position not a position, go head
-						}
-					}
+					contents.add(name);
 				} else if(name.startsWith(FOOTER) && name.endsWith(".xml")) {
-					String position = name.substring(FOOTER.length(), name.indexOf(".xml"));
-					if(StringHelper.isLong(position)) {
-						try {
-							OfficeDocumentHandler dh = new OfficeDocumentHandler();
-							parse(new ShieldInputStream(zip), dh);
-							doc.setFooter(Integer.parseInt(position), dh.getContent());
-						} catch (NumberFormatException e) {
-							log.warn("", e);
-							//if position not a position, go head
-						}
-					}
+					contents.add(name);
 				}
-				entry = zip.getNextEntry();
 			}
+			
+			if(contents.size() > 1) {
+				Collections.sort(contents, new WordDocumentComparator());
+			}
+			
+			for(String content:contents) {
+				if(writer.accept()) {
+					ZipEntry entry = wordFile.getEntry(content);
+					InputStream zip = wordFile.getInputStream(entry);
+					OfficeDocumentHandler dh = new OfficeDocumentHandler(writer);
+					parse(new ShieldInputStream(zip), dh);
+					zip.close();
+				}
+			}
+			
 		} catch (DocumentException e) {
 			throw e;
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new DocumentException(e.getMessage());
-		} finally {
-			FileUtils.closeSafely(zip);
-			FileUtils.closeSafely(stream);
 		}
-		return new FileContent(doc.toStringAndClear());
+		
+		return new FileContent(writer.toString());
 	}
 	
 	private void parse(InputStream stream, DefaultHandler handler) throws DocumentException {
@@ -131,7 +126,7 @@ public class WordOOXMLDocument extends FileDocument {
 			parser.setContentHandler(handler);
 			parser.setEntityResolver(handler);
 			try {
-			parser.setFeature("http://xml.org/sax/features/validation", false);
+				parser.setFeature("http://xml.org/sax/features/validation", false);
 			} catch(Exception e) {
 				log.error("Cannot deactivate validation", e);
 			}
@@ -141,11 +136,11 @@ public class WordOOXMLDocument extends FileDocument {
 		}
 	}
 	
-	private class OfficeDocumentHandler extends DefaultHandler {
-		private final StringBuilder sb = new StringBuilder();
-
-		public StringBuilder getContent() {
-			return sb;
+	private static class OfficeDocumentHandler extends DefaultHandler {
+		private final LimitedContentWriter sb;
+		
+		public OfficeDocumentHandler(LimitedContentWriter sb) {
+			this.sb = sb;
 		}
 
 		@Override
@@ -153,7 +148,39 @@ public class WordOOXMLDocument extends FileDocument {
 			if(sb .length() > 0 && sb.charAt(sb.length() - 1) != ' '){
 				sb.append(' ');
 			}
-			sb.append(ch, start, length);
+			sb.write(ch, start, length);
+		}
+	}
+	
+	public static class WordDocumentComparator extends AbstractOfficeDocumentComparator {
+
+		@Override
+		public int compare(String f1, String f2) {
+			int c = 0;
+			if(f1.endsWith(DOCUMENT)) {
+				if(f2.startsWith(HEADER)) {
+					c = -1;
+				} else if(f2.startsWith(FOOTER)) {
+					c = 1;	
+				}
+			} else if(f1.startsWith(HEADER)) {
+				if(f2.startsWith(DOCUMENT) || f2.startsWith(FOOTER)) {
+					c = 1;	
+				} else if(f2.startsWith(HEADER)) {
+					c = comparePosition(f1, f2, HEADER);
+				}
+			} else if(f1.startsWith(FOOTER)) {
+				if(f2.startsWith(DOCUMENT) || f2.startsWith(HEADER)) {
+					c = -1;	
+				} else if(f2.startsWith(FOOTER)) {
+					c = comparePosition(f1, f2, FOOTER);
+				}
+			}
+			
+			if(c == 0) {
+				c = f1.compareTo(f2);
+			}
+			return -c;
 		}
 	}
 }
