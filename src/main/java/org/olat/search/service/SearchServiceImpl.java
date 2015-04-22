@@ -497,11 +497,16 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 		    final OOMultiReader r = (OOMultiReader)referenceToRefresh.getIndexReader();
 		    final IndexReader newReader = DirectoryReader.openIfChanged(r.getReader());
 		    final IndexReader newPermReader = DirectoryReader.openIfChanged(r.getPermanentReader());
-		    if (newReader == null && newPermReader == null) {
-		    	return null;
+		    
+		    IndexSearcher searcher;
+		    if(refresh.getAndSet(false)) {
+		    	searcher = getSearcher(factory);
+		    } else if (newReader == null && newPermReader == null) {
+		    	searcher = null;
 		    } else {
-		    	return getSearcher(factory);
+		    	searcher = getSearcher(factory);
 		    }
+		    return searcher;
 		}
 
 		@Override
