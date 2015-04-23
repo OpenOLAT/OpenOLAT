@@ -66,13 +66,13 @@ public class WikiPageDocument extends OlatDocument {
 	public static Document createDocument(SearchResourceContext searchResourceContext, WikiPage wikiPage) {		
 		WikiPageDocument wikiPageDocument = new WikiPageDocument();
 
-  	long userId = wikiPage.getInitalAuthor();
-  	if (userId != 0) {
-  		Identity  identity = identityManager.loadIdentityByKey(Long.valueOf(userId));
-  		if(identity != null) {
-  			wikiPageDocument.setAuthor(identity.getName());
-  		}
-  	}
+		long userId = wikiPage.getInitalAuthor();
+		if (userId != 0) {
+			Identity  identity = identityManager.loadIdentityByKey(Long.valueOf(userId));
+			if(identity != null) {
+				wikiPageDocument.setAuthor(identity.getName());
+			}
+		}
 		wikiPageDocument.setTitle(wikiPage.getPageName());
 		wikiPageDocument.setContent(getContent(wikiPage));
 		wikiPageDocument.setCreatedDate(new Date(wikiPage.getCreationTime()));
@@ -91,14 +91,14 @@ public class WikiPageDocument extends OlatDocument {
 		try {
 			ParserInput input = new ParserInput();
 			input.setWikiUser(null);
-	    input.setAllowSectionEdit(false);
-	    input.setDepth(2);
-	    input.setContext("");
-	    input.setLocale(Locale.ENGLISH);
-	    input.setTopicName("dummy");
-	    input.setUserIpAddress("0.0.0.0");
-	    input.setDataHandler(DUMMY_DATA_HANDLER);
-	    input.setVirtualWiki("/olat");
+			input.setAllowSectionEdit(false);
+			input.setDepth(2);
+			input.setContext("");
+			input.setLocale(Locale.ENGLISH);
+			input.setTopicName("dummy");
+			input.setUserIpAddress("0.0.0.0");
+			input.setDataHandler(DUMMY_DATA_HANDLER);
+			input.setVirtualWiki("/olat");
 
 			AbstractParser parser = new JFlexParser(input);
 			ParserDocument parsedDoc = parser.parseHTML(wikiPage.getContent());
@@ -106,7 +106,6 @@ public class WikiPageDocument extends OlatDocument {
 			String filteredContent = FilterFactory.getHtmlTagAndDescapingFilter().filter(parsedContent);
 			return filteredContent;
 		} catch(Exception e) {
-			e.printStackTrace();
 			log.error("", e);
 			return wikiPage.getContent();
 		}

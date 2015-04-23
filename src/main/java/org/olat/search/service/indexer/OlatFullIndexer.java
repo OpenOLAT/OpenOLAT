@@ -378,6 +378,8 @@ public class OlatFullIndexer {
 
 		incrementDocumentTypeCounter(document);
 		incrementFileTypeCounter(document);
+		fullIndexerStatus.setNumberAvailableFolderIndexer(indexerExecutor.getPoolSize());
+		fullIndexerStatus.setNumberRunningFolderIndexer(indexerExecutor.getActiveCount());
 	}
 	
 	private void incrementFileTypeCounter(Document document) {

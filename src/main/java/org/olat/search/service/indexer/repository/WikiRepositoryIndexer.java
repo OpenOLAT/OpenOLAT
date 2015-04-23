@@ -50,9 +50,7 @@ public class WikiRepositoryIndexer extends DefaultIndexer {
 
 	public final static String ORES_TYPE_WIKI = WikiResource.TYPE_NAME;
 
-	/**
-	 * 
-	 */
+	@Override
 	public String getSupportedTypeName() {	
 		return ORES_TYPE_WIKI; 
 	}
@@ -60,7 +58,7 @@ public class WikiRepositoryIndexer extends DefaultIndexer {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#supportsDownload()
 	 */
-
+	@Override
 	public void doIndex(SearchResourceContext resourceContext, Object parentObject, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
 		RepositoryEntry repositoryEntry = (RepositoryEntry) parentObject;
 		if (isLogDebugEnabled()) logDebug("Analyse Wiki RepositoryEntry...");
@@ -71,7 +69,7 @@ public class WikiRepositoryIndexer extends DefaultIndexer {
 			// loop over all wiki pages
 			List<WikiPage> wikiPageList = wiki.getAllPagesWithContent();
 			for (WikiPage wikiPage : wikiPageList) {
-		    try {
+				try {
 					SearchResourceContext wikiContext = new SearchResourceContext(resourceContext);
 					wikiContext.setDocumentType(TYPE);
 					wikiContext.setFilePath(wikiPage.getPageName());

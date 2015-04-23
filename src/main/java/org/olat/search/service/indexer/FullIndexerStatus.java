@@ -53,6 +53,9 @@ public class FullIndexerStatus {
 	private int indexPerMinute = 0;
 	private int[] partDocumentCounters;
 	private int documentQueueSize;
+	private int numberRunningFolderIndexer = 0;
+	private int numberAvailableFolderIndexer = 0;
+	
 	/** Hashtable with document-type-names as key and Integer-object as counters. */
 	private Map<String,Integer> documentCounters;
 	/** Hashtable with file-type-names as key and Integer-object as counters. */
@@ -185,20 +188,26 @@ public class FullIndexerStatus {
 		return indexPerMinute;
 	}
 
-
 	/**
 	 * @return Returns the runningFolderIndexer.
 	 */
 	public int getNumberRunningFolderIndexer() {
-		return -1;//FolderIndexerWorkerPool.getInstance().getNumberOfRunningIndexer();
+		return numberRunningFolderIndexer;
 	}
-
+	
+	public void setNumberRunningFolderIndexer(int numberRunningFolderIndexer) {
+		this.numberRunningFolderIndexer = numberRunningFolderIndexer;
+	}
 
 	/**
 	 * @return Returns the availableFolderIndexer.
 	 */
 	public int getNumberAvailableFolderIndexer() {
-		return -1;//FolderIndexerWorkerPool.getInstance().getNumberOfAvailableIndexer();
+		return numberAvailableFolderIndexer;
+	}
+	
+	public void setNumberAvailableFolderIndexer(int numberAvailableFolderIndexer) {
+		this.numberAvailableFolderIndexer = numberAvailableFolderIndexer;
 	}
 
 
