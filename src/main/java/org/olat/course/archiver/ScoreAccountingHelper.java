@@ -28,6 +28,7 @@ package org.olat.course.archiver;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -383,6 +384,7 @@ public class ScoreAccountingHelper {
 		
 		BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		List<Identity> userList = businessGroupService.getMembers(groups, GroupRoles.participant.name());
+		userList = new ArrayList<>(new HashSet<>(userList));
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, courseEnv.getCourseResourceableId());
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
 		if(re != null) {
@@ -391,7 +393,10 @@ public class ScoreAccountingHelper {
 		}
 
 		List<Identity> assessedList = courseEnv.getCoursePropertyManager().getAllIdentitiesWithCourseAssessmentData(userList);
-		userList.addAll(assessedList);
+		if(assessedList.size() > 0) {
+			assessedList.removeAll(userList);//deduplicate
+			userList.addAll(assessedList);
+		}
 		return userList;
 	}
 	
