@@ -116,6 +116,9 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		else {
 			target.append(" o_tree_root_visible");
 		}
+		if(tree.isInsertToolEnabled()) {
+			target.append(" o_tree_insert_tool");
+		}
 		// add element CSS
 		if(StringHelper.containsNonWhitespace(tree.getElementCssClass())) {
 			target.append(" ").append(tree.getElementCssClass());

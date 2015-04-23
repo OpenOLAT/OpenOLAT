@@ -203,6 +203,10 @@
 	.o_dnd_l11 { margin-left:10em !important; }
 }
 
+.o_tree.o_tree_insert_tool span.o_tree_link a {
+	display: block;
+}
+
 .o_offcanvas {
 	.o_tree {
 		border: 0;
