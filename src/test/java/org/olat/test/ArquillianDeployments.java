@@ -21,11 +21,21 @@ package org.olat.test;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.Filter;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.springframework.util.PropertyPlaceholderHelper;
 
 public class ArquillianDeployments {
 
@@ -52,14 +62,42 @@ public class ArquillianDeployments {
 		addResourceRecursive(new File(MAIN_JAVA), null, new JavaResourcesFilter(), archive);
 		addResourceRecursive(new File(MAIN_RSRC), null, new AllFileFilter(), archive);
 		addWebResourceRecursive(new File(WEBAPP), "static", new StaticFileFilter(), archive);
-		
+		addOlatLocalProperties(archive);
+		archive.setWebXML(new File(WEBINF_TOMCAT, "web.xml"));
+		return archive;
+	}
+	
+	public static WebArchive addOlatLocalProperties(WebArchive archive) {
 		String profile = System.getProperty("profile");
 		if(profile == null || profile.isEmpty()) {
 			profile = "mysql";
 		}
-		archive.addAsResource(new File("src/test/profile/" + profile, "olat.local.properties"), "olat.local.properties");
-		archive.setWebXML(new File(WEBINF_TOMCAT, "web.xml"));
-		return archive;
+		
+		File barebonePropertiesFile = new File("src/test/profile/" + profile, "olat.local.properties");
+		PropertyPlaceholderHelper helper = new PropertyPlaceholderHelper("${", "}", ":", true);
+
+		Asset propertiesAsset = null;
+		try(InputStream inStream = new FileInputStream(barebonePropertiesFile)) {
+			
+			Properties properties = new Properties();
+			properties.load(inStream);
+			
+			List<String> propNames = new ArrayList<>(properties.stringPropertyNames());
+			Properties updatedProperties = new Properties();
+			for(String name:propNames) {
+				String value = properties.getProperty(name);
+				String replacedValue = helper.replacePlaceholders(value, new PropertyPlaceholderResolver(properties));
+				updatedProperties.setProperty(name, replacedValue);
+			}
+			
+			StringWriter writer = new StringWriter();
+			updatedProperties.store(writer, "Replaced for Arquillian deployements");
+			propertiesAsset = new StringAsset(writer.toString());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return archive.addAsResource(propertiesAsset, "olat.local.properties");
 	}
 	
 	public static WebArchive addLibraries(WebArchive archive) {
@@ -200,6 +238,33 @@ public class ArquillianDeployments {
 					|| pathStr.contains("/org/olat/test/")
 					|| pathStr.endsWith("Test.class]"));
 			return !exclude;
+		}
+	}
+	
+	private static class PropertyPlaceholderResolver implements PropertyPlaceholderHelper.PlaceholderResolver {
+
+		private final Properties properties;
+		
+		public PropertyPlaceholderResolver(Properties properties) {
+			this.properties = properties;
+		}
+
+		public String resolvePlaceholder(String placeholderName) {
+			try {
+				String propVal = System.getProperty(placeholderName);
+				if (propVal == null) {
+					// Fall back to searching the system environment.
+					propVal = System.getenv(placeholderName);
+					if(propVal == null) {
+						propVal = properties.getProperty(placeholderName);
+					}
+				}
+				return propVal;
+			}
+			catch (Throwable ex) {
+				System.err.println("Could not resolve placeholder '" + placeholderName + "' in as system property: " + ex);
+				return null;
+			}
 		}
 	}
 }
