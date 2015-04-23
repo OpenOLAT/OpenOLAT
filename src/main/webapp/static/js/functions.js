@@ -1349,6 +1349,7 @@ function onTreeDrop(event, ui) {
 	} else if(droppableId.indexOf('dt') == 0) {
 		url += '%3Asne%3Aend';
 	}
+	jQuery('.ui-droppable').each(function(index, el) { jQuery(el).droppable( "disable" ); });
 	frames['oaa0'].location.href = url + '/';
 }
 

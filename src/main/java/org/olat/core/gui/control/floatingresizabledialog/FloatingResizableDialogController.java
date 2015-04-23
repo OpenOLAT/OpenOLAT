@@ -151,7 +151,7 @@ public class FloatingResizableDialogController extends BasicController {
 		wrapper.contextPut("ajaxFlags", wControl.getWindowBackOffice().getGlobalSettings().getAjaxFlags());
 		
 		//add the dialog javascript
-		JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/jquery/ui/jquery-ui-1.10.4.custom.dialog.min.js" }, null);
+		JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/jquery/ui/jquery-ui-1.11.4.custom.dialog.min.js" }, null);
 		wrapper.put("jsAdder", js);
 		
 		putInitialPanel(wrapper);

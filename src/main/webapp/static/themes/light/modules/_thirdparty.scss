@@ -39,32 +39,38 @@
 		.ui-dialog-titlebar-close:before {
 			content: $fa-var-times !important;
 		}
-		
+
 		.ui-dialog-titlebar-close {
 			display: inline-block;
 			font-family: FontAwesome;
 			font-style: normal;
 			font-weight: normal;
-			font-size: 120%;
+			font-size: 100%;
 			-webkit-font-smoothing: antialiased;
 			-moz-osx-font-smoothing: grayscale;
+			
+			span {
+				display: none;
+			}
 		}
 		
 		.ui-button.ui-corner-all {
 			border: none !important;
 			background: #fff !important;
+			float: right;
 		}
 	}
 
 	.ui-widget-content {
 		border-color: #fff;
 		padding: 5px;
+		overflow: auto;
+		background: white !important;
 	}
 	
 	.ui-dialog-titlebar {
-		padding: 4px 30px 4px 7px;
-		margin: -2px -2px 0 -2px;
-		background-color: $o-dialog-window-bar-bg;
+		padding: 4px 7px 4px 7px;
+		background-color: $o-dialog-window-bar-bg !important;
 	}
 }
 

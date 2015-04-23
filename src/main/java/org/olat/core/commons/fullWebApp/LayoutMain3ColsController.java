@@ -179,8 +179,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 		setCol3(col3);
 		
 		if(col1 != null || col2 != null) {
-			//jquery-ui-1.10.4.custom.resize.min.js
-			JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/jquery/ui/jquery-ui-1.10.4.custom.resize.min.js" }, null);
+			JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/jquery/ui/jquery-ui-1.11.4.custom.resize.min.js" }, null);
 			layoutMainVC.put("js", js);
 		}
 

@@ -164,7 +164,7 @@ public class CPPrintMapper implements Mapper {
 		sb.append("<![endif]-->");
 		sb.append("<!--[if gte IE 9]><!-->");
 		sb.append("<script type=\"text/javascript\" src=\"");
-		StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/jquery-2.1.0.min.js");
+		StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/jquery-2.1.3.min.js");
 		sb.append("\")'></script>");
 		sb.append("<!--<![endif]-->");
 		output.append(sb.toString());
