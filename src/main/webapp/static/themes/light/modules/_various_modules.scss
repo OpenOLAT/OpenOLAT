@@ -407,6 +407,11 @@ ul.o_certificates li {
 .o_tm_red { background-color: #FF3333; }
 .o_tm_green { background-color: #99FF00; }
 
+/* Reminders rules */
+.o_reminder_rule {
+	padding: 5px 0;
+}
+
 /* Segmented view wrapper */
 .o_segments_content {
 	margin-top: $line-height-computed;

@@ -70,6 +70,7 @@ public class UserShortDescription extends BasicController {
 		userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		velocityContainer.contextPut("userPropertyHandlers", userPropertyHandlers);
 		velocityContainer.contextPut("user", identity.getUser());			
+		velocityContainer.contextPut("identityKey", identity.getKey());			
 		
 		if(getIdentity().equals(identity) || isAdministrativeUser) {
 			velocityContainer.contextPut("username", identity.getName());

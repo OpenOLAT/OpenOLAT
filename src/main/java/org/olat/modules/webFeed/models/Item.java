@@ -22,13 +22,8 @@ package org.olat.modules.webFeed.models;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.navigation.Dated;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
-import org.olat.core.id.Identity;
-import org.olat.core.id.User;
-import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.user.UserManager;
 
@@ -140,15 +135,7 @@ public class Item implements Serializable, Dated {
 	public String getAuthor() {
 		String authorName = null;
 		if(authorKey > 0) {
-			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(authorKey, false);
-			if (identity != null) {
-				User user = identity.getUser();
-				if (user == null) {
-					authorName = author = identity.getName();					
-				} else {
-					authorName = author = user.getProperty(UserConstants.FIRSTNAME, null) + " " + user.getProperty(UserConstants.LASTNAME, null);
-				}
-			}
+			authorName = UserManager.getInstance().getUserDisplayName(authorKey);
 		}
 		if (authorName == null && StringHelper.containsNonWhitespace(author)) {
 			authorName = author;
@@ -173,15 +160,7 @@ public class Item implements Serializable, Dated {
 	public String getModifier() {
 		String modifierName = null;
 		if(modifierKey > 0) {
-			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(modifierKey, false);
-			if (identity != null) {
-				User user = identity.getUser();
-				if (user == null) {
-					modifierName = modifier = identity.getName();					
-				} else {
-					modifierName = modifier = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(identity);
-				}
-			}
+			modifierName = UserManager.getInstance().getUserDisplayName(modifierKey);
 		}
 		if (modifierName == null && StringHelper.containsNonWhitespace(modifier)) {
 			modifierName = modifier;

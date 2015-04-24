@@ -26,14 +26,23 @@
 package org.olat.search.service.document.file;
 
 import java.io.IOException;
+import java.util.Date;
 
+import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.search.QueryException;
 import org.olat.search.SearchModule;
+import org.olat.search.SearchService;
+import org.olat.search.ServiceNotAvailableException;
+import org.olat.search.model.AbstractOlatDocument;
 import org.olat.search.service.SearchResourceContext;
+import org.olat.search.service.SearchServiceImpl;
 
 /**
  * Lucene document mapper.
@@ -69,13 +78,13 @@ public class FileDocumentFactory {
 	private final static String XML_SUFFIX = "xml";
 	private final static String TEXT_SUFFIX = "txt tex readme csv";
   
-  //as a special parser;
-  private static final String IMS_MANIFEST_FILE = "imsmanifest.xml";
+	//as a special parser;
+	private static final String IMS_MANIFEST_FILE = "imsmanifest.xml";
   
-  private int  excludedFileSizeCount = 0;
+	private int excludedFileSizeCount = 0;
 
   
-  private static SearchModule searchModule;
+	private static SearchModule searchModule;
   
 	/**
 	 * [used by spring]
@@ -85,14 +94,37 @@ public class FileDocumentFactory {
 		searchModule = module;
 	}
 	
+	public static int getMaxFileSize() {
+		return (int)searchModule.getMaxFileSize();
+	}
+	
 	public Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf)
 	throws IOException, DocumentAccessException {
 		try {
+			Document doc = null;
+			try {
+				String resourceUrl = leafResourceContext.getResourceUrl();
+				SearchService searchService = CoreSpringFactory.getImpl(SearchServiceImpl.class);
+				
+				Document indexedDoc = searchService.doSearch(resourceUrl);
+				if(indexedDoc != null) {
+					String timestamp = indexedDoc.get(AbstractOlatDocument.TIME_STAMP_NAME);
+					if(timestamp != null) {
+						Date lastMod = DateTools.stringToDate(timestamp);
+						Date lastMod2 = new Date(leaf.getLastModified());
+						if(lastMod2.compareTo(lastMod) < 0) {
+							return indexedDoc;
+						}
+					}
+				}
+			} catch (ServiceNotAvailableException | ParseException | QueryException | java.text.ParseException e) {
+				log.error("", e);
+			}
+			
 			String fileName = leaf.getName();
 			String suffix = FileTypeDetector.getSuffix(leaf);
 			if (log.isDebug()) log.debug("suffix=" + suffix);
-
-			Document doc = null;
+			
 			if (PDF_SUFFIX.indexOf(suffix) >= 0) {
 				if(searchModule.getPdfFileEnabled()) {
 					doc = PdfDocument.createDocument(leafResourceContext, leaf);

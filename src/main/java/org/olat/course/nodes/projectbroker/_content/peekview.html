@@ -1,5 +1,5 @@
 <div class="o_projectbroker_peekview clearfix">
-#if ( $myProjects.size() > 0 )
+#if ($myProjects && $myProjects.size() > 0 )
 	<div class="o_projectbroker_peekview_title">
 		$r.translate("peekview.selected.project.title")
 	</div>
@@ -16,14 +16,14 @@
 		</div>
 	#end
 #else
-	#if ($myCoachedProjects.size() == 0)
+	#if ($myCoachedProjects && $myCoachedProjects.size() == 0)
 		<div class="o_projectbroker_peekview_title">
 			$r.translate("peekview.no.selected.projects")
 		</div>
 	#end
 #end
 
-#if ($myCoachedProjects.size() > 0)
+#if ($myCoachedProjects && $myCoachedProjects.size() > 0)
 	<div class="o_projectbroker_peekview_title">
 		$r.translate("peekview.coached.project.title")
 	</div>

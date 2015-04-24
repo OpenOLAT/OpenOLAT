@@ -444,6 +444,18 @@ public class GTAManagerImpl implements GTAManager {
 	}
 
 	@Override
+	public List<Task> getTasks(TaskList taskList) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select task from gtatask task ")
+		  .append(" inner join task.taskList tasklist ")
+		  .append(" where tasklist.key=:taskListKey ");
+		
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Task.class)
+				.setParameter("taskListKey", taskList.getKey())
+				.getResultList();
+	}
+
+	@Override
 	public List<Task> getTasks(IdentityRef identity, RepositoryEntryRef entry, GTACourseNode cNode) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select task from gtatask task ")

@@ -131,7 +131,7 @@ public class ProfileAndHomePageEditController extends BasicController implements
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(profileFormController == source) {
 			identityToModify = profileFormController.getIdentityToModify();
-			if(Event.FAILED_EVENT.equals(event)) {
+			if(Event.CANCELLED_EVENT.equals(event)) {
 				resetForm(ureq);
 			}
 			if(homePageController != null) {

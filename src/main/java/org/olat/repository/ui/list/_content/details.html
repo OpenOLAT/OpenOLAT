@@ -302,7 +302,7 @@
 			</script>			
 			#end
 
-			#if ($v.getManagedFlags().size() > 0)
+			#if ($v && $v.getManagedFlags().size() > 0)
 			<div class="panel panel-default o_managedpanel">
 				<div class="panel-heading" data-toggle="collapse" data-target="#collapseManaged">
 			    	<h3 class="panel-title">

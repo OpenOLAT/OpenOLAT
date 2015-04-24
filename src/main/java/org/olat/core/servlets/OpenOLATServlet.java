@@ -33,7 +33,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.olat.admin.sysinfo.manager.SessionStatsManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.webdav.WebDAVDispatcher;
+import org.olat.core.configuration.PreWarm;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.GlobalMapperRegistry;
@@ -120,6 +122,15 @@ public class OpenOLATServlet extends HttpServlet {
 		
 		//preload extensions
 		ExtManager.getInstance().getExtensions();
+		preWarm();
+	}
+	
+	private void preWarm() {
+		TaskExecutorManager executor = CoreSpringFactory.getImpl(TaskExecutorManager.class);
+		Map<String,PreWarm> preWarms = CoreSpringFactory.getBeansOfType(PreWarm.class);
+		for(PreWarm preWarm:preWarms.values()) {
+			executor.execute(preWarm);
+		}
 	}
 
 	@Override

@@ -48,6 +48,7 @@ How to add a new job:
             <ref bean="acReservationCleanupJob"/>
             <ref bean="mapperSlayerTrigger"/>
             <ref bean="assessmentNotificationsTrigger"/>
+            <ref bean="reminderTrigger"/>
         </list>
     </property>
 </bean>

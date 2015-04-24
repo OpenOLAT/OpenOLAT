@@ -105,6 +105,7 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.member.MembersManagementMainController;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.reminder.ui.CourseRemindersController;
 import org.olat.course.run.calendar.CourseCalendarController;
 import org.olat.course.run.glossary.CourseGlossaryFactory;
 import org.olat.course.run.glossary.CourseGlossaryToolLinkController;
@@ -120,6 +121,7 @@ import org.olat.ims.qti.statistics.QTIType;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
+import org.olat.modules.reminder.ReminderModule;
 import org.olat.note.NoteController;
 import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
@@ -151,13 +153,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		courseStatisticLink, surveyStatisticLink, testStatisticLink,
 		areaLink, dbLink,
 		//settings
-		layoutLink, optionsLink, certificatesOptionsLink,
+		layoutLink, optionsLink, certificatesOptionsLink, reminderLink, assessmentModeLink,
 		//my course
 		efficiencyStatementsLink, calendarLink, noteLink, chatLink, leaveLink,
 		//glossary
-		openGlossaryLink, enableGlossaryLink,
-		//assessment
-		assessmentModeLink;
+		openGlossaryLink, enableGlossaryLink;
 	private Link currentUserCountLink;
 	private Dropdown myCourse, glossary;
 	
@@ -168,6 +168,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private FolderRunController courseFolderCtrl;
 	private StatisticMainController statisticsCtrl;
 	private CourseOptionsController optionsToolCtr;
+	private CourseRemindersController remindersCtrl;
 	private AssessmentMainController assessmentToolCtr;
 	private MembersManagementMainController membersCtrl;
 	private StatisticCourseNodesController statsToolCtr;
@@ -178,6 +179,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private int currentUserCount;
 	private Map<String, Boolean> courseRightsCache;
 
+	@Autowired
+	private ReminderModule reminderModule;
 	@Autowired
 	private CalendarModule calendarModule;
 	@Autowired
@@ -196,23 +199,25 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			boolean offerBookmark, boolean showCourseConfigLink) {
 		super(ureq, wControl, re, reSecurity, runtimeControllerCreator, offerBookmark, showCourseConfigLink);
 		
-		ICourse course = CourseFactory.loadCourse(getOlatResourceable());
-		addLoggingResourceable(LoggingResourceable.wrap(course));
+		if(!corrupted) {
+			ICourse course = CourseFactory.loadCourse(getOlatResourceable());
+			addLoggingResourceable(LoggingResourceable.wrap(course));
 
-		coordinatorManager.getCoordinator().getEventBus().registerFor(this, getIdentity(), getOlatResourceable());
-		// - group modification events
-		coordinatorManager.getCoordinator().getEventBus().registerFor(this, getIdentity(), getRepositoryEntry());
-		
-		if (CourseModule.displayParticipantsCount()) {
-			coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(new MultiUserEvent(JOINED), getOlatResourceable());
-			updateCurrentUserCount();
-		}
-		
-		if(enableGlossaryLink != null) {
-			Preferences prefs = ureq.getUserSession().getGuiPreferences();
-			String guiPrefsKey = CourseGlossaryFactory.createGuiPrefsKey(course);
-			Boolean state = (Boolean) prefs.get(CourseGlossaryToolLinkController.class, guiPrefsKey);
-			setGlossaryLinkTitle(ureq, state);
+			coordinatorManager.getCoordinator().getEventBus().registerFor(this, getIdentity(), getOlatResourceable());
+			// - group modification events
+			coordinatorManager.getCoordinator().getEventBus().registerFor(this, getIdentity(), getRepositoryEntry());
+			
+			if (CourseModule.displayParticipantsCount()) {
+				coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(new MultiUserEvent(JOINED), getOlatResourceable());
+				updateCurrentUserCount();
+			}
+			
+			if(enableGlossaryLink != null) {
+				Preferences prefs = ureq.getUserSession().getGuiPreferences();
+				String guiPrefsKey = CourseGlossaryFactory.createGuiPrefsKey(course);
+				Boolean state = (Boolean) prefs.get(CourseGlossaryToolLinkController.class, guiPrefsKey);
+				setGlossaryLinkTitle(ureq, state);
+			}
 		}
 	}
 
@@ -229,6 +234,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	@Override
 	protected void loadRights(RepositoryEntrySecurity security) {
 		super.loadRights(security);
+		if(corrupted) return;
 		
 		ICourse course = CourseFactory.loadCourse(getOlatResourceable());
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
@@ -334,10 +340,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	@Override
 	protected void initToolbar(Dropdown toolsDropdown, Dropdown settingsDropdown) {
+		toolbarPanel.removeAllTools();
+		if(corrupted) return;
+		
 		ICourse course = CourseFactory.loadCourse(getRepositoryEntry().getOlatResource());
 		UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
-		
-		toolbarPanel.removeAllTools();
 		if(!isAssessmentLock()) {
 			initTools(toolsDropdown, course, uce);
 			initSettingsTools(settingsDropdown);
@@ -483,6 +490,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			certificatesOptionsLink = LinkFactory.createToolLink("certificates.cmd", translate("command.options.certificates"), this, "o_icon_certificate");
 			certificatesOptionsLink.setElementCssClass("o_sel_course_options_certificates");
 			settings.addComponent(certificatesOptionsLink);
+			
+			if(reminderModule.isEnabled()) {
+				reminderLink = LinkFactory.createToolLink("reminders.cmd", translate("command.options.reminders"), this, "o_icon_reminder");
+				reminderLink.setElementCssClass("o_sel_course_options_certificates");
+				settings.addComponent(reminderLink);
+			}
 		}
 	}
 	
@@ -687,6 +700,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doAssessmentMode(ureq);
 		} else if(certificatesOptionsLink == source) {
 			doCertificatesOptions(ureq);
+		} else if(reminderLink == source) {
+			doReminders(ureq);
 		} else if(archiverLink == source) {
 			doArchive(ureq);
 		} else if(folderLink == source) {
@@ -771,6 +786,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						case assessmentTestStatistics: doAssessmentTestStatistics(ureq); break;
 						case assessmentTool: doAssessmentTool(ureq);
 						case certificates: doCertificatesOptions(ureq); break;
+						case reminders: doReminders(ureq); break;
 						case courseAreas: doCourseAreas(ureq); break;
 						case courseFolder: doCourseFolder(ureq); break;
 						case courseStatistics: doCourseStatistics(ureq); break;
@@ -842,8 +858,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				doOptions(ureq);
 			} else if("CertificationSettings".equalsIgnoreCase(type)) {
 				doCertificatesOptions(ureq);
-			}  else if("Certification".equalsIgnoreCase(type)) {
+			} else if("Certification".equalsIgnoreCase(type)) {
 				doEfficiencyStatements(ureq);
+			} else if("Reminders".equalsIgnoreCase(type) || "RemindersLogs".equalsIgnoreCase(type)) {
+				doReminders(ureq);
 			} else if("MembersMgmt".equalsIgnoreCase(type)) {
 				Activateable2 members = doMembers(ureq);
 				if(members != null) {
@@ -1076,6 +1094,21 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			}
 		} else {
 			delayedClose = Delayed.certificates;
+		}
+	}
+	
+	private void doReminders(UserRequest ureq) {
+		if(delayedClose == Delayed.reminders || requestForClose(ureq)) {
+			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
+				removeCustomCSS(ureq);
+
+				CourseRemindersController ctrl = new CourseRemindersController(ureq, getWindowControl(), getRepositoryEntry(), toolbarPanel);
+				remindersCtrl = pushController(ureq, translate("command.reminders"), ctrl);
+				setActiveTool(reminderLink);
+				currentToolCtr = remindersCtrl;
+			}
+		} else {
+			delayedClose = Delayed.reminders;
 		}
 	}
 	
@@ -1534,6 +1567,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		assessmentTestStatistics,
 		assessmentTool,
 		certificates,
+		reminders,
 		courseAreas,
 		courseFolder,
 		courseStatistics,

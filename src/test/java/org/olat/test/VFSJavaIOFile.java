@@ -29,6 +29,7 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 
@@ -39,7 +40,7 @@ import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class VFSJavaIOFile implements VFSLeaf {
+public class VFSJavaIOFile implements VFSLeaf, JavaIOItem {
 
 	private final String name;
 	private final File file;
@@ -56,6 +57,11 @@ public class VFSJavaIOFile implements VFSLeaf {
 	@Override
 	public boolean exists() {
 		return file != null && file.exists();
+	}
+
+	@Override
+	public File getBasefile() {
+		return file;
 	}
 
 	@Override

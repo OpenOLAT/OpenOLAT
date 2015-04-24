@@ -351,9 +351,8 @@ public class Tracing {
 		if (Settings.isDebuging()) {
 			// Short version for console output during debugging
 			if (userObj != null) {
-				sb.append(userObj);
+				sb.append(userObj).append(" ");
 			}
-			
 		} else {
 			sb.append(PREFIX);
 			sb.append(category);

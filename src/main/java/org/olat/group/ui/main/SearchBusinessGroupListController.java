@@ -23,6 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.group.BusinessGroup;
 import org.olat.group.model.SearchBusinessGroupParams;
 
 /**
@@ -74,5 +75,13 @@ public class SearchBusinessGroupListController extends AbstractBusinessGroupList
 		}
 		params.setIdentity(getIdentity());
 		return params;
-	}	
+	}
+	
+	@Override
+	protected void doLaunch(UserRequest ureq, BusinessGroup group) {
+		if(isAdmin()) {
+			ureq.getUserSession().putEntry("wild_card_" + group.getKey(), Boolean.TRUE);
+		}
+		super.doLaunch(ureq, group);
+	}
 }

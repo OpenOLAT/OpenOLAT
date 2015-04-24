@@ -33,6 +33,7 @@ import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPluginFactory;
 import org.olat.core.gui.control.Disposable;
@@ -144,7 +145,7 @@ public class RichTextConfiguration implements Disposable {
 	// DOM ID of the flexi form element
 	private String domID;
 	
-	private Mapper contentMapper;
+	private MapperKey contentMapperKey;
 	
 	private TinyConfig tinyConfig;
 
@@ -549,22 +550,22 @@ public class RichTextConfiguration implements Disposable {
 	private void setDocumentMediaBase(final VFSContainer documentBaseContainer, String relFilePath, UserSession usess) {
 		linkBrowserRelativeFilePath = relFilePath;
 		// get a usersession-local mapper for the file storage (and tinymce's references to images and such)
-		contentMapper = new VFSContainerMapper(documentBaseContainer);
+		Mapper contentMapper = new VFSContainerMapper(documentBaseContainer);
 		// Register mapper for this user. This mapper is cleaned up in the
 		// dispose method (RichTextElementImpl will clean it up)
 
-		String uri;
+		
 		
 		// Register mapper as cacheable
 		String mapperID = VFSManager.getRealPath(documentBaseContainer);
 		if (mapperID == null) {
 			// Can't cache mapper, no cacheable context available
-			uri = CoreSpringFactory.getImpl(MapperService.class).register(usess, contentMapper);
+			contentMapperKey = CoreSpringFactory.getImpl(MapperService.class).register(usess, contentMapper);
 		} else {
 			// Add classname to the file path to remove conflicts with other
 			// usages of the same file path
 			mapperID = this.getClass().getSimpleName() + ":" + mapperID;
-			uri = CoreSpringFactory.getImpl(MapperService.class).register(usess, mapperID, contentMapper);				
+			contentMapperKey = CoreSpringFactory.getImpl(MapperService.class).register(usess, mapperID, contentMapper);				
 		}
 		
 		if (relFilePath != null) {
@@ -588,7 +589,7 @@ public class RichTextConfiguration implements Disposable {
 			// set empty relative file path to prevent nullpointers later on
 			linkBrowserRelativeFilePath = relFilePath;
 		}
-		String fulluri = uri + "/" + relFilePath;
+		String fulluri = contentMapperKey.getUrl() + "/" + relFilePath;
 		setQuotedConfigValue(DOCUMENT_BASE_URL, fulluri);
 	}
 	
@@ -813,10 +814,11 @@ public class RichTextConfiguration implements Disposable {
 	/**
 	 * @see org.olat.core.gui.control.Disposable#dispose()
 	 */
+	@Override
 	public void dispose() {
-		if (contentMapper != null) {
-			CoreSpringFactory.getImpl(MapperService.class).cleanUp(Collections.singletonList(contentMapper));
-			contentMapper = null;
+		if (contentMapperKey != null) {
+			CoreSpringFactory.getImpl(MapperService.class).cleanUp(Collections.singletonList(contentMapperKey));
+			contentMapperKey = null;
 		}		
 	}
 }

@@ -609,19 +609,17 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 	 * sync map with its former source (template)
 	*/
 	public boolean synchronizeStructuredMapToUserCopy(PortfolioStructureMap map) {
-		final EPStructuredMap userMap = (EPStructuredMap) map;
-		final EPStructureManager structMgr = structureManager; // only remove
-																														// synthetic access
-																														// warnings
-
+		if(map == null) return false;
+		
+		final EPStructuredMap userMap = (EPStructuredMap)map;
 		Boolean synched = coordinator.getSyncer().doInSync(map.getOlatResource(), new SyncerCallback<Boolean>() {
 			public Boolean execute() {
 				if (userMap.getStructuredMapSource() == null) { return Boolean.FALSE; }
 				// need to reload it, I don't know why
 				Long templateKey = userMap.getStructuredMapSource().getKey();
 				userMap.setLastSynchedDate(new Date());
-				PortfolioStructure template = structMgr.loadPortfolioStructureByKey(templateKey);
-				structMgr.syncStructureRecursively(template, userMap, true);
+				PortfolioStructure template = structureManager.loadPortfolioStructureByKey(templateKey);
+				structureManager.syncStructureRecursively(template, userMap, true);
 				return Boolean.TRUE;
 			}
 		});

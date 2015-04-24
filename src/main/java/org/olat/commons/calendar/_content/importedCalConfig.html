@@ -12,7 +12,7 @@
     </div>
 #end
 
-#if ($calendars.size() > 5)
+#if ($calendars && $calendars.size() > 5)
 	<div class="o_cal_config_scrollwrapper">
 #end
 
@@ -59,7 +59,7 @@
   #end
 #end
 
-#if ($calendars.size() > 5)
+#if ($calendars && $calendars.size() > 5)
 	</div>
 #end
 </fieldset>

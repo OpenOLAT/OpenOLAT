@@ -30,6 +30,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -121,15 +122,20 @@ public class UserManagerImpl extends UserManager {
 	/**
 	 * @see org.olat.user.UserManager#createAndPersistUser(java.lang.String, java.lang.String, java.lang.String)
 	 */
+	@Override
 	public User createAndPersistUser(String firstName, String lastName, String email) {
 		User user = new UserImpl(firstName, lastName, email);
+		user.getPreferences();
 		dbInstance.getCurrentEntityManager().persist(user);
 		return user;
 	}
 	
-	// fxdiff: check also for emails in change-workflow
+	/*
+	 *  check also for emails in change-workflow(non-Javadoc)
+	 * @see org.olat.user.UserManager#isEmailInUse(java.lang.String)
+	 */
+	@Override
 	public boolean isEmailInUse(String email) {
-		DB db = DBFactory.getInstance();
 		String[] emailProperties = {UserConstants.EMAIL, UserConstants.INSTITUTIONALEMAIL};
 		for(String emailProperty:emailProperties) {
 			StringBuilder sb = new StringBuilder();
@@ -139,7 +145,7 @@ public class UserManagerImpl extends UserManager {
 			  .append("']=:email_value");
 			
 			String query = sb.toString();
-			DBQuery dbq = db.createQuery(query);
+			DBQuery dbq = dbInstance.createQuery(query);
 			dbq.setString("email_value", email);
 			Number countEmail = (Number)dbq.uniqueResult();
 			if(countEmail.intValue() > 0) {
@@ -432,6 +438,31 @@ public class UserManagerImpl extends UserManager {
 	}
 
 	@Override
+	public int warmUp() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from ").append(IdentityShort.class.getName()).append(" as ident");
+		
+		EntityManager em = dbInstance.getCurrentEntityManager();
+		
+		int batchSize = 5000;
+		TypedQuery<IdentityShort> query = em.createQuery(sb.toString(), IdentityShort.class)
+				.setMaxResults(batchSize);
+		int count = 0;
+		
+		List<IdentityShort> identities;
+		do {
+			identities = query.setFirstResult(count).getResultList();
+			em.clear();
+			for(IdentityShort identity:identities) {
+				getUserDisplayName(identity);
+			}
+			count += identities.size();
+		} while(identities.size() >= batchSize);
+		
+		return count;
+	}
+
+	@Override
 	public String getUsername(Long identityKey) {
 		String username = userToNameCache.get(identityKey);
 		if(username == null) {
@@ -544,7 +575,7 @@ public class UserManagerImpl extends UserManager {
 			}
 		}
 
-		List<IdentityShort> identities = securityManager.loadIdentityShortByKeys(identityKeys);
+		List<IdentityShort> identities = securityManager.loadIdentityShortByKeys(newIdentityKeys);
 		for(IdentityShort identity:identities) {
 			String fullName = getUserDisplayName(identity);
 			updateUsernameCache(identity.getKey(), identity.getName(), fullName);

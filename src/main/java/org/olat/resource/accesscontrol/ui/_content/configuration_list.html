@@ -1,4 +1,4 @@
-#if ($confControllers.size() > 0)
+#if ($confControllers && $confControllers.size() > 0)
 	#foreach($confController in $confControllers)
 		#set($css = $confController.getLink().getMethod().getMethodCssClass())
 		#set($desc = $confController.getLink().getOffer().getDescription())

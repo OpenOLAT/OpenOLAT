@@ -38,6 +38,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.io.LimitedContentWriter;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.SearchResourceContext;
 
@@ -56,8 +57,8 @@ public class ExcelDocument extends FileDocument {
 		//
 	}
 
-	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf) throws IOException, DocumentException,
-			DocumentAccessException {
+	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf)
+	throws IOException, DocumentException, DocumentAccessException {
 		ExcelDocument excelDocument = new ExcelDocument();
 		excelDocument.init(leafResourceContext, leaf);
 		excelDocument.setFileType(FILE_TYPE);
@@ -66,6 +67,7 @@ public class ExcelDocument extends FileDocument {
 		return excelDocument.getLuceneDocument();
 	}
 
+	@Override
 	protected FileContent readContent(VFSLeaf leaf) throws IOException, DocumentException {
 		BufferedInputStream bis = null;
 		int cellNullCounter = 0;
@@ -74,7 +76,8 @@ public class ExcelDocument extends FileDocument {
 
 		try {
 			bis = new BufferedInputStream(leaf.getInputStream());
-			StringBuilder content = new StringBuilder(bis.available());
+
+			LimitedContentWriter content = new LimitedContentWriter(bis.available(), FileDocumentFactory.getMaxFileSize());
 			POIFSFileSystem fs = new POIFSFileSystem(bis);
 			HSSFWorkbook workbook = new HSSFWorkbook(fs);
 
@@ -110,6 +113,7 @@ public class ExcelDocument extends FileDocument {
 							+ sheetNullCounter);
 				}
 			}
+			content.close();
 			return new FileContent(content.toString());
 		} catch (Exception ex) {
 			throw new DocumentException("Can not read XLS Content. File=" + leaf.getName());

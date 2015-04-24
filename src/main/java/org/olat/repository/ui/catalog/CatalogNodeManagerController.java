@@ -31,6 +31,7 @@ import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -136,7 +137,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	private Link addCategoryLink, addResourceLink;
 
 	private LockResult catModificationLock;
-	private final String mapperThumbnailUrl;
+	private final MapperKey mapperThumbnailKey;
 
 	private final boolean isGuest;
 	private final boolean isAuthor;
@@ -171,7 +172,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		
 		this.toolbarPanel = stackPanel;
 		this.catalogEntry = catalogEntry;
-		mapperThumbnailUrl = mapperService.register(null, "catalogentryImage", new CatalogEntryImageMapper());
+		mapperThumbnailKey = mapperService.register(null, "catalogentryImage", new CatalogEntryImageMapper());
 		
 		isAuthor = ureq.getUserSession().getRoles().isAuthor();
 		isGuest = ureq.getUserSession().getRoles().isGuestOnly();
@@ -196,7 +197,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//one mapper for all users
-		flc.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
+		flc.contextPut("mapperThumbnailUrl", mapperThumbnailKey.getUrl());
 		
 		int level  = 0;
 		CatalogEntry parent = catalogEntry.getParent();

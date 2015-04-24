@@ -275,8 +275,11 @@ public class AssessmentModeEditController extends FormBasicController {
 		String elements = assessmentMode.getElementList();
 		if(StringHelper.containsNonWhitespace(elements)) {
 			for(String element:elements.split(",")) {
-				elementKeys.add(element);
-				elementNames.add(getCourseNodeName(element, treeModel));
+				String courseNodeName = getCourseNodeName(element, treeModel);
+				if(StringHelper.containsNonWhitespace(courseNodeName)) {
+					elementKeys.add(element);
+					elementNames.add(courseNodeName);
+				}
 			}
 		}
 		chooseElementsCont.getFormItemComponent().contextPut("elementNames", elementNames);
@@ -447,7 +450,7 @@ public class AssessmentModeEditController extends FormBasicController {
 		if(targetEl.isOneSelected()) {
 			Target target = AssessmentMode.Target.valueOf(targetEl.getSelectedKey());
 			if(target == Target.courseAndGroups || target == Target.groups) {
-				if(groupKeys.isEmpty()) {
+				if(groupKeys.isEmpty() && areaKeys.isEmpty()) {
 					targetEl.setErrorKey("error.group.missing", null);
 					allOk &= false;
 				}	

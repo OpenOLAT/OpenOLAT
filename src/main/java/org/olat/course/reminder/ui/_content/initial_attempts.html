@@ -1,0 +1,12 @@
+<div class='form-inline'>
+	$r.render("coursenodes") $r.render("attemptvalue") $r.render("attemptunit") <span class="form-control-static">$r.translate("ago")</span>
+	#if($f.hasError("attemptvalue"))
+		<br/>$r.render("attemptvalue_ERROR")
+	#end
+	#if($f.hasError("coursenodes"))
+		<br/>$r.render("coursenodes_ERROR")
+	#end
+	#if($f.hasError("attemptunit"))
+		<br/>$r.render("attemptunit_ERROR")
+	#end
+</div>

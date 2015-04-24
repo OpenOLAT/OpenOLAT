@@ -2,7 +2,7 @@
 <p>
 $r.translate("deletenode.hasreferences.explain",$nodeident)
 </p>
-#if($entries.size()>0)
+#if($entries && $entries.size()>0)
 <ol>
 	#foreach ($entry in $entries)
 	<li>$entry</li>	

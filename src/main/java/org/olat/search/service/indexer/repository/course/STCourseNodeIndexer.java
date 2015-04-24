@@ -38,14 +38,14 @@ import org.olat.course.nodes.st.STCourseNodeEditController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.CourseNodeDocument;
-import org.olat.search.service.indexer.FolderIndexer;
+import org.olat.search.service.indexer.LeafIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 
 /**
  * Indexer for ST (Structure) course-node. 
  * @author Christian Guretzki
  */
-public class STCourseNodeIndexer extends FolderIndexer implements CourseNodeIndexer {
+public class STCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexer {
 	private static final OLog log = Tracing.createLoggerFor(STCourseNodeIndexer.class);
 	
 	// Must correspond with LocalString_xx.properties
@@ -60,16 +60,17 @@ public class STCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 		//
 	}
 
+	@Override
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter)
 	throws IOException,InterruptedException {
 		if (log.isDebug()) log.debug("Index StructureNode...");
 		SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
 		courseNodeResourceContext.setBusinessControlFor(courseNode);
-    courseNodeResourceContext.setDocumentType(TYPE);
-    courseNodeResourceContext.setTitle(courseNode.getShortTitle());
-    courseNodeResourceContext.setDescription(courseNode.getLongTitle());
+		courseNodeResourceContext.setDocumentType(TYPE);
+		courseNodeResourceContext.setTitle(courseNode.getShortTitle());
+		courseNodeResourceContext.setDescription(courseNode.getLongTitle());
     
-	  Document document = CourseNodeDocument.createDocument(courseNodeResourceContext, courseNode);
+		Document document = CourseNodeDocument.createDocument(courseNodeResourceContext, courseNode);
 		indexWriter.addDocument(document);
 		
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
@@ -83,6 +84,7 @@ public class STCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 		}
 	}
 
+	@Override
 	public String getSupportedTypeName() {
 		return SUPPORTED_TYPE_NAME;
 	}

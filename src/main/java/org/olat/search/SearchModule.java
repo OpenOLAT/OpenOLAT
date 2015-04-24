@@ -59,7 +59,6 @@ public class SearchModule extends AbstractOLATModule {
 	private static final String CONF_INDEX_INTERVAL = "indexInterval";
 	private static final String CONF_MAX_HITS = "maxHits";
 	private static final String CONF_MAX_RESULTS = "maxResults";
-	private static final String CONF_NUMBER_INDEX_WRITER = "numberIndexWriter";
 	private static final String CONF_FOLDER_POOL_SIZE = "folderPoolSize";
 	private static final String CONF_RESTART_WINDOW_START = "restartWindowStart";
 	private static final String CONF_RESTART_WINDOW_END = "restartWindowEnd";
@@ -83,7 +82,6 @@ public class SearchModule extends AbstractOLATModule {
 	private static final int    DEFAULT_INDEX_INTERVAL = 0;
 	private static final int    DEFAULT_MAX_HITS = 1000;
 	private static final int    DEFAULT_MAX_RESULTS = 100;
-	private static final int    DEFAULT_NUMBER_INDEX_WRITER = 0;
 	private static final int    DEFAULT_FOLDER_POOL_SIZE = 0;
 	private static final int    DEFAULT_RESTART_WINDOW_START = 0;
 	private static final int    DEFAULT_RESTART_WINDOW_END = 24;
@@ -104,7 +102,6 @@ public class SearchModule extends AbstractOLATModule {
 	private List<String> fileBlackList;
 	private List<String> customFileBlackList;
 
-	private int numberIndexWriter;
 	private int folderPoolSize;
 	private int restartWindowStart;
 	private int restartWindowEnd;
@@ -185,7 +182,6 @@ public class SearchModule extends AbstractOLATModule {
     indexInterval = getIntConfigParameter(CONF_INDEX_INTERVAL, DEFAULT_INDEX_INTERVAL);
     maxHits = getIntConfigParameter(CONF_MAX_HITS, DEFAULT_MAX_HITS);
     maxResults = getIntConfigParameter(CONF_MAX_RESULTS, DEFAULT_MAX_RESULTS);
-    numberIndexWriter = getIntConfigParameter(CONF_NUMBER_INDEX_WRITER, DEFAULT_NUMBER_INDEX_WRITER);
     folderPoolSize = getIntConfigParameter(CONF_FOLDER_POOL_SIZE, DEFAULT_FOLDER_POOL_SIZE);
     restartWindowStart = getIntConfigParameter(CONF_RESTART_WINDOW_START, DEFAULT_RESTART_WINDOW_START);
     restartWindowEnd = getIntConfigParameter(CONF_RESTART_WINDOW_END, DEFAULT_RESTART_WINDOW_END);
@@ -342,13 +338,6 @@ public class SearchModule extends AbstractOLATModule {
 	
 	public List<String> getCustomFileBlackList() {
 		return customFileBlackList;
-	}
-
-	/**
-	 * @return Number of IndexWriterWorker in Multithreaded mode.
-	 */
-	public int getNumberIndexWriter() {
-		return numberIndexWriter;
 	}
 
 	/**

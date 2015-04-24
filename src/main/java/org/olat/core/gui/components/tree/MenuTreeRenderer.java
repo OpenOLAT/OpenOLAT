@@ -116,6 +116,9 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		else {
 			target.append(" o_tree_root_visible");
 		}
+		if(tree.isInsertToolEnabled()) {
+			target.append(" o_tree_insert_tool");
+		}
 		// add element CSS
 		if(StringHelper.containsNonWhitespace(tree.getElementCssClass())) {
 			target.append(" ").append(tree.getElementCssClass());
@@ -278,7 +281,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		// expand icon
 		// add ajax support and real open/close function
 		if (((tree.isRootVisible() && level != 0) || !tree.isRootVisible()) && chdCnt > 0) { // root has not open/close icon,  append open / close icon only if there is children
-			target.append("<a onclick='");
+			target.append("<a onclick='return ");
 			if(tree.getMenuTreeItem() == null) {
 				target.append("o2cl_secure()");
 			} else {
@@ -288,7 +291,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 				target.append("o2cl_noDirtyCheck()");
 			}
 			
-			target.append("' href=\"");
+			target.append(";' href=\"");
 			
 			// Build menu item URI
 			String cmd = renderChildren ? MenuTree.TREENODE_CLOSE : MenuTree.TREENODE_OPEN;
@@ -353,9 +356,9 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		
 		// add css class to identify level, FireFox script
 		if(tree.getMenuTreeItem() != null && tree.getMenuTreeItem().isNoDirtyCheckOnClick()) {
-			target.append("<a onclick='o2cl_noDirtyCheck()' href=\"");		
+			target.append("<a onclick='return o2cl_noDirtyCheck();' href=\"");		
 		} else {
-			target.append("<a onclick='o2cl_secure()' href=\"");		
+			target.append("<a onclick='return o2cl_secure();' href=\"");		
 		}			
 		
 		// Build menu item URI
@@ -445,7 +448,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 	
 	private void renderInsertCalloutButton(String cmd, String cssClass,  StringOutput sb, TreeNode node, URLBuilder ubu, AJAXFlags flags) {
 		boolean iframePostEnabled = flags.isIframePostEnabled();
-		sb.append("<a class='btn btn-default small' onclick='o2cl_secure()' href=\"");
+		sb.append("<a class='btn btn-default small' onclick='return o2cl_secure();' href=\"");
 		if (iframePostEnabled) {
 			ubu.buildURI(sb, new String[] { COMMAND_ID, NODE_IDENT }, new String[] { cmd, node.getIdent() }, AJAXFlags.MODE_TOBGIFRAME);
 		} else {

@@ -47,7 +47,10 @@ public interface AssessmentModeManager {
 	 */
 	public AssessmentMode createAssessmentMode(RepositoryEntry entry);
 	
+
+	
 	public AssessmentModeToGroup createAssessmentModeToGroup(AssessmentMode mode, BusinessGroup group);
+	
 	
 	public AssessmentModeToArea createAssessmentModeToArea(AssessmentMode mode, BGArea area);
 	
@@ -62,8 +65,12 @@ public interface AssessmentModeManager {
 	 */
 	public AssessmentMode merge(AssessmentMode assessmentMode, boolean forceStatus);
 	
+	/**
+	 * Delete a specific assessment mode.
+	 * 
+	 * @param assessmentMode
+	 */
 	public void delete(AssessmentMode assessmentMode);
-
 	
 	public AssessmentMode getAssessmentModeById(Long key);
 	

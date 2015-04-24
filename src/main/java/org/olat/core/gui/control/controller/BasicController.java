@@ -32,6 +32,7 @@ import java.util.Locale;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.SimpleStackedPanel;
@@ -71,7 +72,7 @@ public abstract class BasicController extends DefaultController {
 	private Translator fallbackTranslator;
 	private OLog logger;
 
-	private List<Mapper> mappers;
+	private List<MapperKey> mapperKeys;
 	private List<Controller> childControllers;
 
 	/**
@@ -120,13 +121,13 @@ public abstract class BasicController extends DefaultController {
 		this.logger = Tracing.createLoggerFor(this.getClass());
 	}
 
-
+	@Override
 	protected void doPreDispose() {
 		// deregister all mappers if needed
-		if (mappers != null) {
-			CoreSpringFactory.getImpl(MapperService.class).cleanUp(mappers);
-			mappers.clear();
-			mappers = null;
+		if (mapperKeys != null) {
+			CoreSpringFactory.getImpl(MapperService.class).cleanUp(mapperKeys);
+			mapperKeys.clear();
+			mapperKeys = null;
 		}
 
 		// dispose child controller if needed
@@ -221,20 +222,20 @@ public abstract class BasicController extends DefaultController {
 	 * @return
 	 */
 	protected String registerCacheableMapper(UserRequest ureq, String cacheableMapperID, Mapper m, int expirationTime) {
-		if (mappers == null) {
-			mappers = new ArrayList<Mapper>(2);
+		if (mapperKeys == null) {
+			mapperKeys = new ArrayList<MapperKey>(2);
 		}
-		String mapperBaseURL;
+		MapperKey mapperBaseKey;
 		UserSession usess = ureq == null ? null : ureq.getUserSession();
 		if (cacheableMapperID == null) {
 			// use non cacheable as fallback
-			mapperBaseURL =  CoreSpringFactory.getImpl(MapperService.class).register(usess, m);			
+			mapperBaseKey = CoreSpringFactory.getImpl(MapperService.class).register(usess, m);			
 		} else {
-			mapperBaseURL =  CoreSpringFactory.getImpl(MapperService.class).register(usess, cacheableMapperID, m, expirationTime);
+			mapperBaseKey = CoreSpringFactory.getImpl(MapperService.class).register(usess, cacheableMapperID, m, expirationTime);
 		}
 		// registration was successful, add to our mapper list
-		mappers.add(m);
-		return mapperBaseURL;
+		mapperKeys.add(mapperBaseKey);
+		return mapperBaseKey.getUrl();
 	}
 
 	/**

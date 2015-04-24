@@ -65,11 +65,11 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.7</targetJdk>
 		<org.springframework.version>3.2.13.RELEASE</org.springframework.version>
-		<org.hibernate.version>4.3.8.Final</org.hibernate.version>
+		<org.hibernate.version>4.3.9.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.17.1</com.sun.jersey.version>
 		<jackson.version>1.9.2</jackson.version>
 		<org.mysql.version>5.1.34</org.mysql.version>
-		<org.postgresql.version>9.4-1200-jdbc41</org.postgresql.version>
+		<org.postgresql.version>9.4-1201-jdbc41</org.postgresql.version>
 		<org.infinispan.version>6.0.2.Final</org.infinispan.version>
 		<lucene.version>4.8.0</lucene.version>
 		<version.selenium>2.43.1</version.selenium>
@@ -254,7 +254,7 @@
 												<include>${basedir}/target/jquery/jquery/tagsinput/bootstrap-tagsinput.min.css</include>
 												<include>${basedir}/target/jquery/jquery/fullcalendar/fullcalendar.min.css</include>
 												<include>${basedir}/target/jquery/jquery/cropper/cropper.min.css</include>
-												<include>${basedir}/target/jquery/jquery/ui/jquery-ui-1.10.4.custom.min.css</include>
+												<include>${basedir}/target/jquery/jquery/ui/jquery-ui-1.11.4.custom.min.css</include>
 											</includes>
 										</aggregation>
 									</aggregations>
@@ -1261,6 +1261,15 @@
 					<forkMode>always</forkMode>
 					<systemProperties>
 						<profile>${test.env}</profile>
+						<test.env.db.name>${test.env.db.name}</test.env.db.name>
+						<test.env.db.user>${test.env.db.user}</test.env.db.user>
+						<test.env.db.pass>${test.env.db.pass}</test.env.db.pass>
+						<test.env.db.host.port>${test.env.db.host.port}</test.env.db.host.port>
+						<test.env.db.postgresql.user>${test.env.db.postgresql.user}</test.env.db.postgresql.user>
+						<test.env.db.postgresql.pass>${test.env.db.postgresql.pass}</test.env.db.postgresql.pass>
+						<test.env.db.postgresql.host.port>${test.env.db.postgresql.host.port}</test.env.db.postgresql.host.port>
+						<test.env.instance.id>${test.env.instance.id}</test.env.instance.id>
+						<test.env.jmx.rmi.port.0>${test.env.jmx.rmi.port.0}</test.env.jmx.rmi.port.0>
 						<arquillian.launch>tomcat-7-managed</arquillian.launch>
 					</systemProperties>
 					<testNGArtifactName>none:none</testNGArtifactName>

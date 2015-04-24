@@ -107,7 +107,16 @@ public class EPMapViewController extends BasicController implements Activateable
 		if (map instanceof EPStructuredMap && (map.getStatus() == null || !map.getStatus().equals(StructureStatusEnum.CLOSED) )){
 			map = (PortfolioStructureMap) ePFMgr.loadPortfolioStructureByKey(map.getKey());
 			boolean syncOk = ePFMgr.synchronizeStructuredMapToUserCopy(map);
-			if (syncOk) showInfo("synced.map.success");
+			if (syncOk) {
+				showInfo("synced.map.success");
+			} else if(map == null) {
+				showWarning("synced.map.deleted");
+				putInitialPanel(createVelocityContainer("map_deleted"));
+				return;
+			} else {
+				showError("synced.map.error");
+				
+			}
 		}
 		
 		if(EPSecurityCallbackFactory.isLockNeeded(secCallback)) {

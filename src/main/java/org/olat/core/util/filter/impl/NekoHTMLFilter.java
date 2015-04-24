@@ -29,6 +29,8 @@ import java.util.Set;
 import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.filter.Filter;
+import org.olat.core.util.io.LimitedContentWriter;
+import org.olat.search.service.document.file.FileDocumentFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -97,9 +99,9 @@ public class NekoHTMLFilter extends LogDelegator implements Filter {
 	
 	public static class NekoContent {
 		private final String title;
-		private final String content;
+		private final LimitedContentWriter content;
 		
-		public NekoContent(String title, String content) {
+		public NekoContent(String title, LimitedContentWriter content) {
 			this.title = title;
 			this.content = content;
 		}
@@ -109,7 +111,7 @@ public class NekoHTMLFilter extends LogDelegator implements Filter {
 		}
 		
 		public String getContent() {
-			return content;
+			return content.toString();
 		}
 	}
 	
@@ -118,12 +120,12 @@ public class NekoHTMLFilter extends LogDelegator implements Filter {
 		private boolean consumeBlanck = false;
 		private boolean consumeTitle = true;
 		private final boolean pretty;
-		private final StringBuilder sb;
+		private final LimitedContentWriter content;
 		private final StringBuilder title;
 		
 		public HTMLHandler(int size, boolean pretty) {
 			this.pretty = pretty;
-			sb = new StringBuilder(size);
+			content = new LimitedContentWriter(size, FileDocumentFactory.getMaxFileSize());
 			title = new StringBuilder(32);
 		}
 
@@ -136,15 +138,15 @@ public class NekoHTMLFilter extends LogDelegator implements Filter {
 			} else {
 				if(pretty) {
 					if("li".equals(elem)) {
-						sb.append("\u00B7 ");
+						content.append("\u00B7 ");
 					} else if("br".equals(elem)) {
-						sb.append('\n');
+						content.append('\n');
 					}
 				}
 				if("title".equals(elem)) {
 					consumeTitle = true;
 				}
-				if(blockTags.contains(elem) && sb.length() > 0 && sb.charAt(sb.length() -1) != ' ' ) {
+				if(blockTags.contains(elem) && content.length() > 0 && content.charAt(content.length() -1) != ' ' ) {
 					consumeBlanck = true;
 				}
 			}
@@ -154,12 +156,12 @@ public class NekoHTMLFilter extends LogDelegator implements Filter {
 		public void characters(char[] chars, int offset, int length) {
 			if(collect) {
 				if(consumeBlanck) {
-					if(sb.length() > 0 && sb.charAt(sb.length() -1) != ' ' && length > 0 && chars[offset] != ' ') { 
-						sb.append(' ');
+					if(content.length() > 0 && content.charAt(content.length() -1) != ' ' && length > 0 && chars[offset] != ' ') { 
+						content.append(' ');
 					}
 					consumeBlanck = false;
 				}
-				sb.append(chars, offset, length);
+				content.write(chars, offset, length);
 				if(consumeTitle) {
 					title.append(chars, offset, length);
 				}
@@ -173,24 +175,24 @@ public class NekoHTMLFilter extends LogDelegator implements Filter {
 				collect = true;
 			} else {
 				if(pretty && ("li".equals(elem) || "p".equals(elem))) {
-					sb.append('\n');
+					content.append('\n');
 				}
 				if("title".equals(elem)) {
 					consumeTitle = false;
 				}
-				if(blockTags.contains(elem) && sb.length() > 0 && sb.charAt(sb.length() -1) != ' ' ) {
+				if(blockTags.contains(elem) && content.length() > 0 && content.charAt(content.length() -1) != ' ' ) {
 					consumeBlanck = true;
 				}
 			}
 		}
 
 		public NekoContent getContent() {
-			return new NekoContent(title.toString(), sb.toString());
+			return new NekoContent(title.toString(), content);
 		}
 		
 		@Override
 		public String toString() {
-			return sb.toString();
+			return content.toString();
 		}
 	}
 }

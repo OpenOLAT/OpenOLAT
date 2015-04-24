@@ -23,12 +23,16 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.search.service.document.file.FileDocument.FileContent;
+import org.olat.test.OlatTestCase;
 import org.olat.test.VFSJavaIOFile;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Test the low memory text extractor for OpenXML (Microsoft Office XML)
@@ -36,7 +40,10 @@ import org.olat.test.VFSJavaIOFile;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class OfficeDocumentTest {
+public class OfficeDocumentTest extends OlatTestCase {
+	
+	@Autowired
+	private FileDocumentFactory fileDocumentFactory;
 	
 	@Test
 	public void testWordOpenXMLDocument() throws IOException, DocumentException, DocumentAccessException, URISyntaxException {
@@ -50,6 +57,28 @@ public class OfficeDocumentTest {
 		String body = content.getContent();
 		Assert.assertTrue(body.contains("Document compatibility test"));
 		Assert.assertTrue(body.contains("They prefer to start writing a document at home in desktop or laptop computer"));
+	}
+	
+	@Test
+	public void testWordOOXMLDocumentComparator() {
+		List<String> docs = new ArrayList<>();
+		docs.add("word/document.xml");
+		docs.add("word/header1.xml");
+		docs.add("word/footer3.xml");
+		docs.add("word/footer.xml");
+		docs.add("word/footer14.xml");
+		docs.add("word/header4.xml");
+		docs.add("word/header25.xml");
+		
+		Collections.sort(docs, new WordOOXMLDocument.WordDocumentComparator());
+		
+		Assert.assertEquals("word/header1.xml", docs.get(0));
+		Assert.assertEquals("word/header4.xml", docs.get(1));
+		Assert.assertEquals("word/header25.xml", docs.get(2));
+		Assert.assertEquals("word/document.xml", docs.get(3));
+		Assert.assertEquals("word/footer.xml", docs.get(4));
+		Assert.assertEquals("word/footer3.xml", docs.get(5));
+		Assert.assertEquals("word/footer14.xml", docs.get(6));
 	}
 	
 	@Test
@@ -104,6 +133,28 @@ public class OfficeDocumentTest {
 		Assert.assertNotNull(content);
 		String body = content.getContent();
 		Assert.assertTrue(body.contains("Here is some text"));
+	}
+	
+	@Test
+	public void testPowerPointOOXMLDocumentComparator() {
+		List<String> docs = new ArrayList<>();
+		docs.add("word/dru.xml");
+		docs.add("ppt/slides/slide9.xml");
+		docs.add("ppt/slides/slide6.xml");
+		docs.add("ppt/slides/slide25.xml");
+		docs.add("ppt/slides/slide.xml");
+		docs.add("ppt/slides/slide12.xml");
+		docs.add("ppt/slides/slide3.xml");
+		
+		Collections.sort(docs, new PowerPointOOXMLDocument.PowerPointDocumentComparator());
+		
+		Assert.assertEquals("ppt/slides/slide.xml", docs.get(0));
+		Assert.assertEquals("ppt/slides/slide3.xml", docs.get(1));
+		Assert.assertEquals("ppt/slides/slide6.xml", docs.get(2));
+		Assert.assertEquals("ppt/slides/slide9.xml", docs.get(3));
+		Assert.assertEquals("ppt/slides/slide12.xml", docs.get(4));
+		Assert.assertEquals("ppt/slides/slide25.xml", docs.get(5));
+		Assert.assertEquals("word/dru.xml", docs.get(6));
 	}
 	
 	@Test

@@ -243,6 +243,8 @@ public abstract class UserManager extends BasicManager {
 		this.userPropertiesConfig = userPropertiesConfig;
 	}
 	
+	public abstract int warmUp();
+	
 	public abstract String getUsername(Long identityKey);
 
 	/**

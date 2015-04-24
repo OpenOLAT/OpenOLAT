@@ -32,10 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.basesecurity.IdentityImpl;
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
@@ -219,8 +219,11 @@ public class PersistingCoursePropertyManager extends BasicManager implements Cou
 	}
 
 	/**
-	 * @see org.olat.course.properties.CoursePropertyManager#getAllIdentitiesWithCourseAssessmentData()
+	 * The specified exclude identities is only a best effort used for performance. If you want
+	 * unique identities, deduplicate them afterwards.
+	 * 
 	 */
+	@Override
 	public List<Identity> getAllIdentitiesWithCourseAssessmentData(Collection<Identity> excludeIdentities) {
 		StringBuilder query = new StringBuilder();
 		query.append("select distinct i from ")
@@ -235,20 +238,21 @@ public class PersistingCoursePropertyManager extends BasicManager implements Cou
 			query.append(" and p.identity.key not in (:excludeIdentities) ");
 		}
 
-		DB db = DBFactory.getInstance();
-		DBQuery dbq = db.createQuery(query.toString());
-		dbq.setLong("resid", ores.getResourceableId());
-		dbq.setString("resname", ores.getResourceableTypeName());
+		TypedQuery<Identity> db = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(query.toString(), Identity.class)
+				.setParameter("resid", ores.getResourceableId())
+				.setParameter("resname", ores.getResourceableTypeName());
 		if(excludeIdentities != null && !excludeIdentities.isEmpty()) {
 			List<Long> excludeKeys = new ArrayList<Long>();
 			for(Identity identity:excludeIdentities) {
 				excludeKeys.add(identity.getKey());
 			}
-			dbq.setParameterList("excludeIdentities", excludeKeys);
+			//limit because Oracle and Hibernate doesn't like more than 1000
+			if(excludeKeys.size() > 900) {
+				excludeKeys = excludeKeys.subList(0, 900);
+			}
+			db.setParameter("excludeIdentities", excludeKeys);
 		}
-
-		List<Identity> res = dbq.list();
-		return res;
+		return db.getResultList();
 	}
-
 }

@@ -101,7 +101,5 @@ public class IdentityDocument extends OlatDocument {
 		
 		if (log.isDebug()) log.debug(identityDocument.toString());
 		return identityDocument.getLuceneDocument();
-	}
-
-	
+	}	
 }

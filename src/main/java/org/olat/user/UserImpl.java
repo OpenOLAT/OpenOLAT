@@ -76,16 +76,19 @@ public class UserImpl extends PersistentObject implements User {
 	 * still null.
 	 */
 	protected UserImpl() {
-		super();
-		this.preferences = new PreferencesImpl();
+		//
 	}
 
 	UserImpl(String firstName, String lastName, String eMail) {
-		super();
-		if (firstName != null) getUserProperties().put(UserConstants.FIRSTNAME, firstName);
-		if (lastName != null) getUserProperties().put(UserConstants.LASTNAME, lastName);
-		if (eMail != null) getUserProperties().put(UserConstants.EMAIL, eMail);
-		this.preferences = new PreferencesImpl();
+		if (firstName != null) {
+			getUserProperties().put(UserConstants.FIRSTNAME, firstName);
+		}
+		if (lastName != null) {
+			getUserProperties().put(UserConstants.LASTNAME, lastName);
+		}
+		if (eMail != null) {
+			getUserProperties().put(UserConstants.EMAIL, eMail);
+		}
 	}
 
 	/**
@@ -114,7 +117,10 @@ public class UserImpl extends PersistentObject implements User {
 	 * @see User#getPreferences()
 	 */
 	public Preferences getPreferences(){
-		return this.preferences;	
+		if(preferences == null) {
+			preferences = new PreferencesImpl();
+		}
+		return preferences;	
 	}
 	
 	/**

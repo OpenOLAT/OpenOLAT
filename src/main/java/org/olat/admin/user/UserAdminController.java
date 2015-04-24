@@ -59,12 +59,15 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListController;
+import org.olat.ldap.LDAPLoginManager;
+import org.olat.ldap.LDAPLoginModule;
 import org.olat.properties.Property;
 import org.olat.user.ChangePrefsController;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.ProfileAndHomePageEditController;
 import org.olat.user.PropFoundEvent;
 import org.olat.user.UserPropertiesController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *  Initial Date:  Jul 29, 2003
@@ -110,6 +113,14 @@ public class UserAdminController extends BasicController implements Activateable
 	private GroupOverviewController grpCtr;
 	private CertificateAndEfficiencyStatementListController efficicencyCtrl;
 
+	private final boolean isOlatAdmin;
+	
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private LDAPLoginModule ldapLoginModule;
+	@Autowired
+	private LDAPLoginManager ldapLoginManager;
 
 	/**
 	 * Constructor that creates a back - link as default
@@ -119,13 +130,14 @@ public class UserAdminController extends BasicController implements Activateable
 	 */
 	public UserAdminController(UserRequest ureq, WindowControl wControl, Identity identity) {
 		super(ureq, wControl);
+		isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 
-		BaseSecurity mgr = BaseSecurityManager.getInstance();
-		if (!mgr.isIdentityPermittedOnResourceable(
+		if (!securityManager.isIdentityPermittedOnResourceable(
 				ureq.getIdentity(), 
 				Constants.PERMISSION_ACCESS, 
-				OresHelper.lookupType(this.getClass())))
+				OresHelper.lookupType(this.getClass()))) {
 			throw new OLATSecurityException("Insufficient permissions to access UserAdminController");
+		}
 		
 		myIdentity = identity;
 				
@@ -147,7 +159,6 @@ public class UserAdminController extends BasicController implements Activateable
 	}
 	
 	@Override
-	//fxdiff BAKS-7 Resume function
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
@@ -163,8 +174,9 @@ public class UserAdminController extends BasicController implements Activateable
 	 * @param backButtonEnabled
 	 */
 	public void setBackButtonEnabled(boolean backButtonEnabled) {
-		if (myContent != null)
+		if (myContent != null) {
 			myContent.contextPut("showButton", Boolean.valueOf(backButtonEnabled));
+		}
 	}
 	
 	/**
@@ -172,9 +184,8 @@ public class UserAdminController extends BasicController implements Activateable
 	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == backLink){
+		if (source == backLink) {
 			fireEvent(ureq, Event.BACK_EVENT);
-		//fxdiff BAKS-7 Resume function
 		} else if (source == userTabP) {
 			userTabP.addToHistory(ureq, getWindowControl());
 		}
@@ -215,7 +226,6 @@ public class UserAdminController extends BasicController implements Activateable
 	 * @return boolean
 	 */
 	private boolean allowedToManageUser(UserRequest ureq, Identity identity) {
-		
 		//fxdiff 	FXOLAT-184 prevent editing of users that are in frentix-superadmin group (except "frentix" wants to change own profile)
 		Identity editor = ureq.getUserSession().getIdentity();
 		SecurityGroup frentixSuperAdminGroup =  BaseSecurityManager.getInstance().findSecurityGroupByName("fxadmins");
@@ -225,25 +235,23 @@ public class UserAdminController extends BasicController implements Activateable
 			}
 			return false;
 		}
-		
-		boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
+
 		if (isOlatAdmin) return true;
 
-		BaseSecurity secmgr = BaseSecurityManager.getInstance();
 		// only admins can administrate admin and usermanager users
-		boolean isAdmin = secmgr.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_ADMIN);
-		boolean isUserManager = secmgr.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_USERMANAGER);
+		boolean isAdmin = securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_ADMIN);
+		boolean isUserManager = securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_USERMANAGER);
 		if (isAdmin || isUserManager) return false;
 		// if user is author ony allowed to edit if configured
-		boolean isAuthor = secmgr.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR);
+		boolean isAuthor = securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR);
 		Boolean canManageAuthor = BaseSecurityModule.USERMANAGER_CAN_MANAGE_AUTHORS;
 		if (isAuthor && !canManageAuthor.booleanValue()) return false;
 		// if user is groupmanager ony allowed to edit if configured
-		boolean isGroupManager = secmgr.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_GROUPMANAGER);
+		boolean isGroupManager = securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_GROUPMANAGER);
 		Boolean canManageGroupmanager = BaseSecurityModule.USERMANAGER_CAN_MANAGE_GROUPMANAGERS;
 		if (isGroupManager && !canManageGroupmanager.booleanValue()) return false;
 		// if user is guest ony allowed to edit if configured
-		boolean isGuestOnly = secmgr.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_GUESTONLY);
+		boolean isGuestOnly = securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_GUESTONLY);
 		Boolean canManageGuest = BaseSecurityModule.USERMANAGER_CAN_MANAGE_GUESTS;
 		if (isGuestOnly && !canManageGuest.booleanValue()) return false;
 		// passed all tests, current user is allowed to edit given identity
@@ -258,9 +266,7 @@ public class UserAdminController extends BasicController implements Activateable
 	 */
 	private void initTabbedPane(Identity identity, UserRequest ureq) {
 		// first Initialize the user details tabbed pane
-		boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 		userTabP = new TabbedPane("userTabP", ureq.getLocale());
-		//fxdiff BAKS-7 Resume function
 		userTabP.addListener(this);
 		
 		/**
@@ -279,17 +285,10 @@ public class UserAdminController extends BasicController implements Activateable
 		prefsCtr = new ChangePrefsController(ureq, getWindowControl(), identity);
 		userTabP.addTab(translate(NLS_EDIT_UPREFS), prefsCtr.getInitialComponent());
 
-		Boolean canChangePwd = BaseSecurityModule.USERMANAGER_CAN_MODIFY_PWD;
-		if (canChangePwd.booleanValue() || isOlatAdmin) {
-			// show pwd form only if user has also right to create new passwords in case
-			// of a user that has no password yet
-			Boolean canCreatePwd = BaseSecurityModule.USERMANAGER_CAN_CREATE_PWD;
-			Authentication OLATAuth = BaseSecurityManager.getInstance().findAuthentication(identity,BaseSecurityModule.getDefaultAuthProviderIdentifier());
-			if (OLATAuth != null || canCreatePwd.booleanValue() || isOlatAdmin) {
-				pwdCtr =  new UserChangePasswordController(ureq, getWindowControl(), identity);				
-				this.listenTo(pwdCtr); // listen when finished to update authentications model
-				userTabP.addTab(translate(NLS_EDIT_UPWD), pwdCtr.getInitialComponent());
-			}
+		if (isPasswordChangesAllowed(identity)) {
+			pwdCtr =  new UserChangePasswordController(ureq, getWindowControl(), identity);				
+			listenTo(pwdCtr); // listen when finished to update authentications model
+			userTabP.addTab(translate(NLS_EDIT_UPWD), pwdCtr.getInitialComponent());
 		}
 		
 		Boolean canAuth = BaseSecurityModule.USERMANAGER_ACCESS_TO_AUTH;
@@ -342,6 +341,26 @@ public class UserAdminController extends BasicController implements Activateable
 		
 		// now push to velocity
 		myContent.put("userTabP", userTabP);
+	}
+	
+	private boolean isPasswordChangesAllowed(Identity identity) {
+		Boolean canChangePwd = BaseSecurityModule.USERMANAGER_CAN_MODIFY_PWD;
+		if (canChangePwd.booleanValue()  || isOlatAdmin) {
+			// show pwd form only if user has also right to create new passwords in case
+			// of a user that has no password yet
+			if(ldapLoginModule.isLDAPEnabled() && ldapLoginManager.isIdentityInLDAPSecGroup(identity)) {
+				// it's an ldap-user
+				return ldapLoginModule.isPropagatePasswordChangedOnLdapServer();
+			}
+			
+			Boolean canCreatePwd = BaseSecurityModule.USERMANAGER_CAN_CREATE_PWD;
+			Authentication olatAuth = securityManager.findAuthentication(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+			if (olatAuth != null || canCreatePwd.booleanValue() || isOlatAdmin) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
 	/**

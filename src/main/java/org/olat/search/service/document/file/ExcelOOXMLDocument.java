@@ -30,11 +30,10 @@ import org.apache.lucene.document.Document;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
+import org.olat.core.util.io.LimitedContentWriter;
 import org.olat.core.util.io.ShieldInputStream;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.SearchResourceContext;
-import org.olat.search.service.document.file.utils.SlicedDocument;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -77,50 +76,38 @@ public class ExcelOOXMLDocument extends FileDocument {
 		Map<String,String> sharedStrings = parseSharedStrings(leaf);
 		//parse sheets
 		String content = parseSheets(sharedStrings, leaf);
-		
 		return new FileContent(content);
 	}
 	
-	
 	private String parseSheets(Map<String,String> sharedStrings, VFSLeaf leaf)  throws IOException, DocumentException {
-		InputStream stream = null;
-		ZipInputStream zip = null;
-		try {
-			stream = leaf.getInputStream();
-			zip = new ZipInputStream(stream);
-			ZipEntry entry = zip.getNextEntry();
+		try(InputStream stream = leaf.getInputStream();
+				ZipInputStream zip = new ZipInputStream(stream)) {
 			
-			SlicedDocument doc = new SlicedDocument();
+			ZipEntry entry = zip.getNextEntry();
+			LimitedContentWriter writer = new LimitedContentWriter(100000, FileDocumentFactory.getMaxFileSize());
 			while (entry != null) {
-				String name = entry.getName();
-				if(name.startsWith(SHEET) && name.endsWith(".xml")) {
-					String position = name.substring(SHEET.length(), name.indexOf(".xml"));
-					
-					OfficeDocumentHandler dh = new OfficeDocumentHandler(sharedStrings);
-					parse(new ShieldInputStream(zip), dh);
-					doc.setContent(Integer.parseInt(position), dh.getContent());
+				if(writer.accept()) {
+					String name = entry.getName();
+					if(name.startsWith(SHEET) && name.endsWith(".xml")) {
+						OfficeDocumentHandler dh = new OfficeDocumentHandler(writer, sharedStrings);
+						parse(new ShieldInputStream(zip), dh);
+					}
 				}
 				entry = zip.getNextEntry();
 			}
-			return doc.toStringAndClear();
+			return writer.toString();
 		} catch (DocumentException e) {
 			throw e;
 		} catch (Exception e) {
 			throw new DocumentException(e.getMessage());
-		} finally {
-			FileUtils.closeSafely(zip);
-			FileUtils.closeSafely(stream);
 		}
 	}
 	
 	private Map<String,String> parseSharedStrings( VFSLeaf leaf) throws IOException, DocumentException {
 		SharedStringsHandler dh = new SharedStringsHandler();
-		
-		InputStream stream = null;
-		ZipInputStream zip = null;
-		try {
-			stream = leaf.getInputStream();
-			zip = new ZipInputStream(stream);
+		try(InputStream stream = leaf.getInputStream();
+			ZipInputStream zip = new ZipInputStream(stream)) {
+
 			ZipEntry entry = zip.getNextEntry();
 			while (entry != null) {
 				String name = entry.getName();
@@ -135,9 +122,6 @@ public class ExcelOOXMLDocument extends FileDocument {
 			throw e;
 		} catch (Exception e) {
 			throw new DocumentException(e.getMessage());
-		} finally {
-			FileUtils.closeSafely(zip);
-			FileUtils.closeSafely(stream);
 		}
 	}
 	
@@ -147,7 +131,7 @@ public class ExcelOOXMLDocument extends FileDocument {
 			parser.setContentHandler(handler);
 			parser.setEntityResolver(handler);
 			try {
-			parser.setFeature("http://xml.org/sax/features/validation", false);
+				parser.setFeature("http://xml.org/sax/features/validation", false);
 			} catch(Exception e) {
 				log.error("Cannot deactivate validation", e);
 			}
@@ -157,19 +141,16 @@ public class ExcelOOXMLDocument extends FileDocument {
 		}
 	}
 	
-	private class OfficeDocumentHandler extends DefaultHandler {
-		private final StringBuilder sb = new StringBuilder();
+	private static class OfficeDocumentHandler extends DefaultHandler {
 		
 		private boolean row = false;
 		private boolean sharedStrings = false;
-		private Map<String,String> strings;
+		private final Map<String,String> strings;
+		private final LimitedContentWriter sb;
 		
-		public OfficeDocumentHandler(Map<String,String> strings) {
+		public OfficeDocumentHandler(LimitedContentWriter sb, Map<String,String> strings) {
+			this.sb = sb;
 			this.strings = strings;
-		}
-
-		public StringBuilder getContent() {
-			return sb;
 		}
 
 		@Override
@@ -211,7 +192,7 @@ public class ExcelOOXMLDocument extends FileDocument {
 				if(sb .length() > 0 && sb.charAt(sb.length() - 1) != ' '){
 					sb.append(' ');
 				}
-				sb.append(ch, start, length);
+				sb.write(ch, start, length);
 			}
 		}
 	}

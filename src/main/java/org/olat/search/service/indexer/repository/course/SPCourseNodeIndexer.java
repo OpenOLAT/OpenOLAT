@@ -45,14 +45,14 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.nodes.sp.SPEditController;
 import org.olat.search.service.SearchResourceContext;
-import org.olat.search.service.indexer.FolderIndexer;
+import org.olat.search.service.indexer.LeafIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 
 /**
  * Indexer for SP (SinglePage) course-node.
  * @author Christian Guretzki
  */
-public class SPCourseNodeIndexer extends FolderIndexer implements CourseNodeIndexer {
+public class SPCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexer {
 	private static final OLog log = Tracing.createLoggerFor(SPCourseNodeIndexer.class);
 
 	// Must correspond with LocalString_xx.properties
@@ -60,40 +60,41 @@ public class SPCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 	public final static String TYPE = "type.course.node.sp";
 
 	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.SPCourseNode";
-  private final static boolean indexOnlyChosenFile = false;
+	private final static boolean indexOnlyChosenFile = false;
   
-  private static final Pattern HREF_PATTERN = Pattern.compile("href=\\\"([^\\\"]*)\\\"", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
-  private static final String HTML_SUFFIXES = "html htm xhtml xml";
+	private static final Pattern HREF_PATTERN = Pattern.compile("href=\\\"([^\\\"]*)\\\"", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+	private static final String HTML_SUFFIXES = "html htm xhtml xml";
 
+	@Override
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
 		if (log.isDebug()) log.debug("Index SinglePage...");
 
-    SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
-    courseNodeResourceContext.setBusinessControlFor(courseNode);
-    courseNodeResourceContext.setDocumentType(TYPE);
-    courseNodeResourceContext.setTitle(courseNode.getShortTitle());
-    courseNodeResourceContext.setDescription(courseNode.getLongTitle());
+		SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
+		courseNodeResourceContext.setBusinessControlFor(courseNode);
+		courseNodeResourceContext.setDocumentType(TYPE);
+		courseNodeResourceContext.setTitle(courseNode.getShortTitle());
+		courseNodeResourceContext.setDescription(courseNode.getLongTitle());
 
-    VFSContainer rootContainer = SPCourseNode.getNodeFolderContainer((SPCourseNode) courseNode, course.getCourseEnvironment());
-  	String chosenFile = (String) courseNode.getModuleConfiguration().get(SPEditController.CONFIG_KEY_FILE);
-  	// First: Index choosen HTML file
-  	if (log.isDebug()) log.debug("Index chosen file in SP. chosenFile=" + chosenFile);
- 	  VFSLeaf leaf = (VFSLeaf)rootContainer.resolve(chosenFile);
-  	if (leaf != null) {
-  	  String filePath = getPathFor(leaf);
-  	  if (log.isDebug()) log.debug("Found chosen file in SP. filePath=" + filePath );
-  	  doIndexVFSLeafByMySelf(courseNodeResourceContext, leaf, indexWriter, filePath);
-    	if (!indexOnlyChosenFile) {
-    		if (log.isDebug()) log.debug("Index sub pages in SP.");
-    		Set<String> alreadyIndexFileNames = new HashSet<String>();
-    		alreadyIndexFileNames.add(chosenFile);
-      	indexSubPages(courseNodeResourceContext,rootContainer,indexWriter,leaf,alreadyIndexFileNames,0,filePath);
-      } else {
-      	if (log.isDebug()) log.debug("Index only chosen file in SP.");
-      }
-  	} else {
-  		if (log.isDebug()) log.debug("Can not found choosen file in SP => Nothing indexed.");
-  	}
+		VFSContainer rootContainer = SPCourseNode.getNodeFolderContainer((SPCourseNode) courseNode, course.getCourseEnvironment());
+		String chosenFile = (String) courseNode.getModuleConfiguration().get(SPEditController.CONFIG_KEY_FILE);
+		// First: Index choosen HTML file
+		if (log.isDebug()) log.debug("Index chosen file in SP. chosenFile=" + chosenFile);
+		VFSLeaf leaf = (VFSLeaf)rootContainer.resolve(chosenFile);
+		if (leaf != null) {
+			String filePath = getPathFor(leaf);
+			if (log.isDebug()) log.debug("Found chosen file in SP. filePath=" + filePath );
+			doIndexVFSLeafByMySelf(courseNodeResourceContext, leaf, indexWriter, filePath);
+			if (!indexOnlyChosenFile) {
+				if (log.isDebug()) log.debug("Index sub pages in SP.");
+				Set<String> alreadyIndexFileNames = new HashSet<String>();
+				alreadyIndexFileNames.add(chosenFile);
+				indexSubPages(courseNodeResourceContext,rootContainer,indexWriter,leaf,alreadyIndexFileNames,0,filePath);
+			} else if (log.isDebug()) {
+				log.debug("Index only chosen file in SP.");
+			}
+		} else if (log.isDebug()) {
+			log.debug("Can not found choosen file in SP => Nothing indexed.");
+		}
 	}
 
 	public String getSupportedTypeName() {

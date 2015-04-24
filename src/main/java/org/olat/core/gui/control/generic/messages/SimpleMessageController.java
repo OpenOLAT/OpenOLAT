@@ -43,11 +43,9 @@ import org.olat.core.logging.AssertException;
  */
 public class SimpleMessageController extends BasicController {
 
-	private VelocityContainer simplemsg;
-
-	SimpleMessageController(UserRequest ureq, WindowControl wControl, String text, String cssClassName) {
+	public SimpleMessageController(UserRequest ureq, WindowControl wControl, String text, String cssClassName) {
 		super(ureq, wControl);
-		simplemsg = createVelocityContainer("simplemsg");
+		VelocityContainer simplemsg = createVelocityContainer("simplemsg");
 		String msg;
 		text = text != null ? text : "";
 		if(cssClassName != null){

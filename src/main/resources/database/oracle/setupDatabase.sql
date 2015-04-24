@@ -1395,6 +1395,29 @@ create table o_gta_task (
    primary key (id)
 );
 
+create table o_rem_reminder (
+   id number(20) not null,
+   creationdate date not null,
+   lastmodified date not null,
+   r_description varchar(255),
+   r_start date,
+   r_sendtime varchar(16),
+   r_configuration clob,
+   r_email_body clob,
+   fk_creator number(20) not null,
+   fk_entry number(20) not null,
+   primary key (id)
+);
+
+create table o_rem_sent_reminder (
+   id int8 not null,
+   creationdate timestamp not null,
+   r_status varchar(16),
+   fk_identity int8 not null,
+   fk_reminder int8 not null,
+   primary key (id)
+);
+
 create table o_ex_task (
    id number(20) not null,
    creationdate date not null,
@@ -2033,6 +2056,17 @@ create index idx_gtask_to_bgroup_idx on o_gta_task (fk_businessgroup);
 
 alter table o_gta_task_list add constraint gta_list_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_gta_list_to_repo_entry_idx on o_gta_task_list (fk_entry);
+
+-- reminders
+alter table o_rem_reminder add constraint rem_reminder_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_reminder_to_repo_entry_idx on o_rem_reminder (fk_entry);
+alter table o_rem_reminder add constraint rem_reminder_to_creator_idx foreign key (fk_creator) references o_bs_identity (id);
+create index idx_reminder_to_creator_idx on o_rem_reminder (fk_creator);
+
+alter table o_rem_sent_reminder add constraint rem_sent_rem_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_sent_rem_to_ident_idx on o_rem_sent_reminder (fk_identity);
+alter table o_rem_sent_reminder add constraint rem_sent_rem_to_reminder_idx foreign key (fk_reminder) references o_rem_reminder (id);
+create index idx_sent_rem_to_rem_idx on o_rem_sent_reminder (fk_reminder);
 
 -- lifecycle
 create index lc_pref_idx on o_lifecycle (persistentref);

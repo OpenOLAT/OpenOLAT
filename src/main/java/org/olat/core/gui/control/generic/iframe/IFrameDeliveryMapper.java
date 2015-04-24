@@ -565,8 +565,8 @@ public class IFrameDeliveryMapper implements Mapper {
 			
 			appendJQuery2Cond();
 			appendStaticJs("js/jshashtable-2.1_src.js");
-			appendStaticJs("js/jquery/ui/jquery-ui-1.10.4.custom.min.js");
-			appendStaticCss("js/jquery/ui/jquery-ui-1.10.4.custom.min.css", "jqueryuicss");
+			appendStaticJs("js/jquery/ui/jquery-ui-1.11.4.custom.min.js");
+			appendStaticCss("js/jquery/ui/jquery-ui-1.11.4.custom.min.css", "jqueryuicss");
 			jqueryLoaded = true;
 		}
 		
@@ -575,7 +575,7 @@ public class IFrameDeliveryMapper implements Mapper {
 			appendStaticJs("js/jquery/jquery-1.9.1.min.js");
 			append("<![endif]-->\n");
 			append("<!--[if gte IE 9]><!-->\n");
-			appendStaticJs("js/jquery/jquery-2.1.0.min.js");
+			appendStaticJs("js/jquery/jquery-2.1.3.min.js");
 			append("<!--<![endif]-->\n");
 		}
 

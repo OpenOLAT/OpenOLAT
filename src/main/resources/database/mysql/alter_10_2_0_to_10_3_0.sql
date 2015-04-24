@@ -1,3 +1,36 @@
+create table o_rem_reminder (
+   id bigint not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   r_description varchar(255),
+   r_start datetime,
+   r_sendtime varchar(16),
+   r_configuration mediumtext,
+   r_email_body mediumtext,
+   fk_creator bigint not null,
+   fk_entry bigint not null,
+   primary key (id)
+);
+alter table o_rem_reminder ENGINE = InnoDB;
+
+alter table o_rem_reminder add constraint rem_reminder_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_rem_reminder add constraint rem_reminder_to_creator_idx foreign key (fk_creator) references o_bs_identity (id);
+
+create table o_rem_sent_reminder (
+   id bigint not null,
+   creationdate datetime not null,
+   r_status varchar(16),
+   fk_identity bigint not null,
+   fk_reminder bigint not null,
+   primary key (id)
+);
+alter table o_rem_sent_reminder ENGINE = InnoDB;
+
+alter table o_rem_sent_reminder add constraint rem_sent_rem_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+alter table o_rem_sent_reminder add constraint rem_sent_rem_to_reminder_idx foreign key (fk_reminder) references o_rem_reminder (id);
+
+
+
 create table o_gta_task_list (
    id bigint not null,
    creationdate datetime not null,

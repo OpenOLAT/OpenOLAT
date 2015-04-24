@@ -39,6 +39,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiReader;
@@ -231,7 +232,7 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 		searchSpellChecker.setSpellCheckEnabled(searchModuleConfig.getSpellCheckEnabled());
 		searchSpellChecker.setSearchExecutor(searchExecutor);
 		
-		indexer = new Index(searchModuleConfig, searchSpellChecker, mainIndexer, lifeIndexer, coordinatorManager);
+		indexer = new Index(searchModuleConfig, this, searchSpellChecker, mainIndexer, lifeIndexer, coordinatorManager);
 
 		indexPath = searchModuleConfig.getFullIndexPath();	
 		permanentIndexPath = searchModuleConfig.getFullPermanentIndexPath();
@@ -332,6 +333,19 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 		} catch (Exception e) {
 			log.error("", e);
 			return new ArrayList<Long>(1);
+		}
+	}
+	
+	@Override
+	public Document doSearch(String queryString)
+	throws ServiceNotAvailableException, ParseException, QueryException {
+		try {
+			GetDocumentByCallable run = new GetDocumentByCallable(queryString, this);
+			Future<Document> futureResults = searchExecutor.submit(run);
+			return futureResults.get();
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
 		}
 	}
 	
@@ -497,11 +511,16 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 		    final OOMultiReader r = (OOMultiReader)referenceToRefresh.getIndexReader();
 		    final IndexReader newReader = DirectoryReader.openIfChanged(r.getReader());
 		    final IndexReader newPermReader = DirectoryReader.openIfChanged(r.getPermanentReader());
-		    if (newReader == null && newPermReader == null) {
-		    	return null;
+		    
+		    IndexSearcher searcher;
+		    if(refresh.getAndSet(false)) {
+		    	searcher = getSearcher(factory);
+		    } else if (newReader == null && newPermReader == null) {
+		    	searcher = null;
 		    } else {
-		    	return getSearcher(factory);
+		    	searcher = getSearcher(factory);
 		    }
+		    return searcher;
 		}
 
 		@Override

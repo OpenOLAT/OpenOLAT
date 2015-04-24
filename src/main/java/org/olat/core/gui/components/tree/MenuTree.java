@@ -162,7 +162,7 @@ public class MenuTree extends AbstractComponent {
 		
 		if(isDragEnabled() || isDropEnabled() || isDropSiblingEnabled()) {
 			JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
-			jsa.addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.10.4.custom.dnd.min.js");
+			jsa.addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.11.4.custom.dnd.min.js");
 		}
 	}
 	

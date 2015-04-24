@@ -28,7 +28,7 @@
 	#end
 	</legend>
 
-#if ($question.getResponses().size() > 0)
+#if ($question && $question.getResponses().size() > 0)
 	<form action="$r.formURIbg("ssc")" id="ofo_tab_scitem" $r.bgTarget() method="post">
 		<table class="table table-bordered">
 			<thead><tr>

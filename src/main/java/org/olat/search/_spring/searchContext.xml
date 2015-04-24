@@ -42,7 +42,7 @@
 		<property name="indexerCron" value="${search.indexing.cronjob}" />
 	</bean>
 	
-		<bean id="searchExecutor" class="org.springframework.core.task.support.ExecutorServiceAdapter">
+	<bean id="searchExecutor" class="org.springframework.core.task.support.ExecutorServiceAdapter">
 		<constructor-arg index="0" ref="searchSpringExecutor" />
 	</bean>
 	
@@ -115,9 +115,9 @@
 	       <property name="targetMethod" value="init" />
 	       <property name="arguments">
 	             <value>
-	        searchService=${search.service}
+					searchService=${search.service}
 	             
-	        generateIndexAtStartup=${generate.index.at.startup}		
+					generateIndexAtStartup=${generate.index.at.startup}		
 					tempIndexPath=${search.index.tempIndex}
 					tempSpellCheckPath=${search.index.tempSpellcheck}
 					pdfTextBufferPath=${search.index.pdfBuffer}
@@ -129,8 +129,7 @@
 					
 					<!-- Files bigger than maxFileSize (and on fileSizeSuffixes-list) will be excluded from index -->
 					maxFileSize=10485760
-					<!-- Control indexer prozess -->		
-					numberIndexWriter=0
+					<!-- Control indexer prozess -->
 					folderPoolSize=4
 					<!-- Define automatic restart time window e.g. 01:00-02:59 restartWindowStart=1 restartWindowEnd=3 -->
 					restartWindowStart=${restart.window.start}
@@ -144,10 +143,9 @@
 					<!-- updater runs every xx ms (0=stopped) -->
 					<!-- The updater is NOT implemented for all index elements, do not use it for now! -->
 					updateInterval=0
-					ramBufferSizeMb=16
-					
-	          </value>
-	       </property>
+					ramBufferSizeMb=16		
+			</value>
+		</property>
 	</bean>
 
 	<!-- Indexer factory -->
