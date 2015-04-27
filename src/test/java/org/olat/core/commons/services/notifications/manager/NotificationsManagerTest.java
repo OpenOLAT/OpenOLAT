@@ -74,6 +74,20 @@ public class NotificationsManagerTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 
+	@Test
+	public void getUserIntervalOrDefault() {
+		String defInterval = notificationManager.getDefaultNotificationInterval();
+		Assert.assertNotNull(defInterval);
+
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("subs-1");
+		dbInstance.commitAndCloseSession();
+		String checkId = notificationManager.getUserIntervalOrDefault(id);
+		Assert.assertNotNull(checkId);
+
+		String nullInterval = notificationManager.getUserIntervalOrDefault(null);
+		Assert.assertNotNull(nullInterval);
+		Assert.assertEquals(defInterval, nullInterval);
+	}
 	
 	@Test
 	public void testCreatePublisher() {
