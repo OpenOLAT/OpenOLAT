@@ -4,16 +4,6 @@
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
   http://www.springframework.org/schema/beans/spring-beans.xsd">
-
-	<bean id="landingPagesModule" class="org.olat.admin.landingpages.LandingPagesModule" 
-		init-method="init" depends-on="coordinatorManager">
-		<property name="persistedProperties">
-			<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
-				<constructor-arg index="0" ref="coordinatorManager"/>
-				<constructor-arg index="1" ref="landingPagesModule"/>
-			</bean>
-		</property>
-	</bean>
 	
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="7206" />

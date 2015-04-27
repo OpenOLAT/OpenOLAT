@@ -72,7 +72,7 @@ public class AdminModuleDispatcher implements Dispatcher {
 		if (cmd.equalsIgnoreCase(CMD_SET_MAINTENANCE_MESSAGE) || cmd.equalsIgnoreCase(CMD_SET_INFO_MESSAGE)) {
 			handleSetMaintenanceOrInfoMessage(request, response, cmd);
 		} else {
-			if (CoreSpringFactory.getImpl(AdminModule.class).checkSessionAdminToken(request, response)) {
+			if (CoreSpringFactory.getImpl(AdminModule.class).checkSessionAdminToken(request)) {
 				handleSessionsCommand(request, response, cmd);
 			} else {
 				DispatcherModule.sendForbidden(request.getPathInfo(), response);
@@ -168,7 +168,7 @@ public class AdminModuleDispatcher implements Dispatcher {
 	 */
 	private void handleSetMaintenanceOrInfoMessage(HttpServletRequest request, HttpServletResponse response, String cmd) {
 		AdminModule adminModule = CoreSpringFactory.getImpl(AdminModule.class);
-		if (adminModule.checkMaintenanceMessageToken(request, response)) {
+		if (adminModule.checkMaintenanceMessageToken(request)) {
 			String message = request.getParameter(PARAMETER_MSG);
 			if (cmd.equalsIgnoreCase(CMD_SET_INFO_MESSAGE)){
 				InfoMessageManager mrg = (InfoMessageManager) CoreSpringFactory.getBean(InfoMessageManager.class);

@@ -140,9 +140,9 @@ public class LandingPagesAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RCols.landingPageChooser.i18nKey(), RCols.landingPageChooser.ordinal()));
 		
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("up", -1, "up",
-				new StaticFlexiCellRenderer("", "up", "o_icon_move_up o_icon-lg",translate("up"))));
+				new StaticFlexiCellRenderer("", "up", "o_icon o_icon-lg o_icon_move_up",translate("up"))));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("down", -1, "down",
-				new StaticFlexiCellRenderer("", "down", "o_icon_move_down o_icon-lg", translate("down"))));
+				new StaticFlexiCellRenderer("", "down", "o_icon o_icon-lg o_icon_move_down", translate("down"))));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("add", translate("add"), "add"));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("delete", translate("delete"), "delete"));
 

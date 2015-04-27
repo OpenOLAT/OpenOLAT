@@ -8,7 +8,7 @@
         http://www.springframework.org/schema/context 
         http://www.springframework.org/schema/context/spring-context.xsd">
   
-	<context:component-scan base-package="org.olat.admin.layout" />
+	<context:component-scan base-package="org.olat.admin" />
   
   	<import resource="classpath:/org/olat/admin/jmx/_spring/jmxContext.xml"/>
 	<import resource="classpath:/org/olat/admin/landingpages/_spring/landingPagesContext.xml"/>
@@ -17,33 +17,6 @@
 	<import resource="classpath:/org/olat/admin/user/delete/service/_spring/deletionContext.xml"/>
 	<import resource="classpath:/org/olat/admin/user/tools/_spring/userToolsContext.xml"/>
 
-	<bean id="adminModule" class="org.olat.admin.AdminModule">
-		<constructor-arg index="0" ref="propertyManager" />
-		<property name="persistedProperties">
-			<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
-				<constructor-arg index="0" ref="coordinatorManager"/>
-				<constructor-arg index="1" ref="adminModule" />
-			</bean>
-		</property>	
-	</bean>
-                       
-	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetObject" ref="adminModule" />
-        <property name="targetMethod" value="init" />
-        <property name="arguments">
-        			<!-- Important: Set tomcats policy to allow read/write access to Root and TmpDir  -->
-                    <value>
-                    <!-- 
-					    -1 =: no user sessions, only Administrator roles can log in
-					     0 =: unlimited, hence limited only by RAM
-			          1..n =: n sessions at max, then a static not available page is displayed.
-			          default is 0		     
-					-->
-	                    maxNumberOfSessions=0
-	                </value>
-	     </property>
-	</bean>
-	
 	<!-- Sites admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="8215" />
@@ -63,5 +36,4 @@
 			</list>
 		</property>
 	</bean>
-
 </beans>

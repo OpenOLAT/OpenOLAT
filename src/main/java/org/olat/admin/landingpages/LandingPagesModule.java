@@ -23,10 +23,12 @@ import java.util.ArrayList;
 
 import org.olat.admin.landingpages.model.Rule;
 import org.olat.admin.landingpages.model.Rules;
-import org.olat.core.configuration.AbstractOLATModule;
-import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.xml.XStreamHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -36,7 +38,8 @@ import com.thoughtworks.xstream.XStream;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LandingPagesModule extends AbstractOLATModule {
+@Service("landingPagesModule")
+public class LandingPagesModule extends AbstractSpringModule {
 	private static final String CONFIG_RULES = "rules";
 	private static final XStream rulesXStream;
 	static {
@@ -46,6 +49,11 @@ public class LandingPagesModule extends AbstractOLATModule {
 	}
 	
 	private Rules rules;
+	
+	@Autowired
+	public LandingPagesModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
+	}
 
 	@Override
 	public void init() {
@@ -66,11 +74,6 @@ public class LandingPagesModule extends AbstractOLATModule {
 	@Override
 	protected void initFromChangedProperties() {
 		init();
-	}
-
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
 	}
 	
 	public Rules getRules() {
