@@ -50,6 +50,7 @@ public class IsUserFunction extends AbstractFunction {
 	/**
 	 * @see com.neemsoft.jmep.FunctionCB#call(java.lang.Object[])
 	 */
+	@Override
 	public Object call(Object[] inStack) {/*
 		 * argument check
 		 */
@@ -74,13 +75,14 @@ public class IsUserFunction extends AbstractFunction {
 		}
 		
 		Identity ident = getUserCourseEnv().getIdentityEnvironment().getIdentity();
-		String identName = ident.getName();
-		
-		return identName.equals(userName) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		if(ident == null || ident.getName() == null) {
+			return ConditionInterpreter.INT_FALSE;
+		}
+		return ident.getName().equals(userName) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
 	}
 
+	@Override
 	protected Object defaultValue() {
 		return ConditionInterpreter.INT_TRUE;
 	}
-
 }

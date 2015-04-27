@@ -312,12 +312,16 @@ public class CPFileImportController extends FormBasicController {
 	 *      org.olat.core.gui.components.form.flexible.FormItem,
 	 *      org.olat.core.gui.components.form.flexible.impl.FormEvent)
 	 */
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == cancelButton && event.wasTriggerdBy(FormEvent.ONCLICK)) {
 			fireEvent(ureq, Event.CANCELLED_EVENT);
 		} else if (source == file && event.wasTriggerdBy(FormEvent.ONCHANGE)) {
 			// If a zip file was selected show import options. Else hide'em.
-			if (file.getUploadFileName().endsWith(".zip")) {
+			if (file == null) {
+				checkboxes.setVisible(false);
+				isSingleFile = true;
+			} else if (file.getUploadFileName().endsWith(".zip")) {
 				checkboxes.setVisible(true);
 				checkboxes.selectAll();
 				checkboxes.select(ALL, false);
@@ -329,7 +333,7 @@ public class CPFileImportController extends FormBasicController {
 				isSingleFile = true;
 			}
 			// Needed since checkbox component wasn't initially rendered
-			this.flc.setDirty(true);
+			flc.setDirty(true);
 		}
 	}
 
