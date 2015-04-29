@@ -34,7 +34,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.AssertException;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
@@ -98,11 +97,11 @@ public class GTAAssessmentDetailsController extends BasicController {
 				List<String> reRoles = repositoryService.getRoles(getIdentity(), courseRe);
 				if(reRoles.contains(GroupRoles.owner.name())) {
 					//view all groups;
-				} else if(reRoles.contains(GroupRoles.owner.name())) {
+				} else if(reRoles.contains(GroupRoles.coach.name())) {
 					List<BusinessGroup> coachedGroups = gtaManager.getCoachedBusinessGroups(getIdentity(), gtaNode);
 					participatingGroups.retainAll(coachedGroups);
 				} else {
-					throw new AssertException("You are not allowed to see this");
+					participatingGroups.clear();
 				}
 			}
 			
