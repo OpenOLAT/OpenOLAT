@@ -1011,7 +1011,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 				if (!members.isEmpty()) {
 					Identity ident = bgs.getMembers(project.getProjectGroup(), GroupRoles.coach.name()).get(0);
 					// create projectGroup
-					BusinessGroup projectGroup = projectGroupManager.createProjectGroupFor(projectBrokerId, ident, project.getTitle() + "_Group", project.getDescription() + "GroupDescription", course.getResourceableId());
+					BusinessGroup projectGroup = projectGroupManager.createProjectGroupFor(projectBrokerId, ident, project.getTitle(), project.getDescription(), course.getResourceableId());
 					Project newProject = projectBrokerManager.createAndSaveProjectFor(project.getTitle(), project.getDescription(), projectBrokerId, projectGroup);
 					// configure the new Project like the old one
 					// copy the old accountManagergroup to preserve the
