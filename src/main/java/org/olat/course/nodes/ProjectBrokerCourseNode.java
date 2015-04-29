@@ -107,7 +107,9 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.model.BusinessGroupReference;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
@@ -955,6 +957,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 		ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
 		ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
 		CoursePropertyManager oldCpm = sourceCourse.getCourseEnvironment().getCoursePropertyManager();
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		//create new Project broker and get the old one
 		Long projectBrokerId = projectBrokerManager.createAndSaveProjectBroker().getKey();
 		projectBrokerManager.saveProjectBrokerId(projectBrokerId, course.getCourseEnvironment().getCoursePropertyManager(), this);
@@ -962,7 +965,13 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 		List<Project> projectsFromGroup = projectBrokerManager.getProjectListBy(oldBrokerId);
 		//loop create and configure the new Projects
 		for(Project project : projectsFromGroup){
-			BusinessGroup projectGroup = project.getProjectGroup();
+			Identity ident = bgs.getMembers(project.getProjectGroup(), GroupRoles.coach.name()).get(0);
+			for(BusinessGroupReference group : envMapper.getGroups()){
+				if(group.getName() == project.getProjectGroup().getName()){
+					bgs.deleteBusinessGroup(bgs.loadBusinessGroup(group.getKey()));
+				}
+			}
+			BusinessGroup projectGroup = bgs.copyBusinessGroup(ident, project.getProjectGroup(), project.getTitle(), project.getDescription(), -1, -1, false, false, false, true, false, false, false, false);
 			Project newProject = projectBrokerManager.createAndSaveProjectFor(project.getTitle(), project.getDescription(), projectBrokerId, projectGroup);
 			// copy all project configurations
 			newProject.setMailNotificationEnabled(project.isMailNotificationEnabled());
