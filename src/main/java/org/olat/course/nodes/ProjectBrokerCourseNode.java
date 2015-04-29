@@ -954,7 +954,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 		//initialize the managers and services
 		ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
 		ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		CoursePropertyManager oldCpm = sourceCourse.getCourseEnvironment().getCoursePropertyManager();
 		//create new Project broker and get the old one
 		Long projectBrokerId = projectBrokerManager.createAndSaveProjectBroker().getKey();
@@ -963,8 +962,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 		List<Project> projectsFromGroup = projectBrokerManager.getProjectListBy(oldBrokerId);
 		//loop create and configure the new Projects
 		for(Project project : projectsFromGroup){
-			Identity ident = bgs.getMembers(project.getProjectGroup(), GroupRoles.coach.name()).get(0);
-			BusinessGroup projectGroup = projectGroupManager.createProjectGroupFor(projectBrokerId, ident, project.getTitle() + "_Group", project.getDescription() + "GroupDescription", course.getResourceableId());
+			BusinessGroup projectGroup = project.getProjectGroup();
 			Project newProject = projectBrokerManager.createAndSaveProjectFor(project.getTitle(), project.getDescription(), projectBrokerId, projectGroup);
 			// copy all project configurations
 			newProject.setMailNotificationEnabled(project.isMailNotificationEnabled());
