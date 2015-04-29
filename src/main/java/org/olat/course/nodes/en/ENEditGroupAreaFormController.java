@@ -239,10 +239,11 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		easyAreaList.setUserObject(areaKeys);
 		easyAreaList.setElementCssClass("text-muted");
 		
-		if(areaInitVal.isEmpty()){
-			chooseAreasLink.setI18nKey("create");
-		} else {
+		hasAreas = areaManager.countBGAreasInContext(cev.getCourseGroupManager().getCourseResource()) > 0;
+		if(hasAreas){
 			chooseAreasLink.setI18nKey("choose");
+		} else {
+			chooseAreasLink.setI18nKey("create");
 		}
 		
 		//multiple group selection
