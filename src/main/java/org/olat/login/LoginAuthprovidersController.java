@@ -141,10 +141,13 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		contentBorn.contextPut("browserWarningOn", bwo ? Boolean.TRUE : Boolean.FALSE);
 		
 		// prepare login
-		if (provider == null)	provider = loginModule.getDefaultProviderName();
+		if (provider == null) {
+			provider = loginModule.getDefaultProviderName();
+		}
 		AuthenticationProvider authProvider = loginModule.getAuthenticationProvider(provider);
-		if (authProvider == null)
+		if (authProvider == null) {
 			throw new AssertException("Invalid authentication provider: " + provider);
+		}
 		
 		//clean-up controllers
 		if(authController != null) {
