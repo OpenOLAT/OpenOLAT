@@ -46,7 +46,12 @@ public class MarkedItemsSource extends DefaultItemsSource {
 	}
 
 	@Override
-	public int postImport(List<QuestionItem> items) {
+	public boolean askEditable() {
+		return false;
+	}
+
+	@Override
+	public int postImport(List<QuestionItem> items, boolean editable) {
 		if(items == null || items.isEmpty()) return 0;
 		
 		for(QuestionItem item:items) {

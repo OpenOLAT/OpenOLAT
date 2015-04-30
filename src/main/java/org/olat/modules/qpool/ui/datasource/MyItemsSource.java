@@ -39,7 +39,12 @@ public class MyItemsSource extends DefaultItemsSource {
 	}
 
 	@Override
-	public int postImport(List<QuestionItem> items) {
+	public boolean askEditable() {
+		return false;
+	}
+
+	@Override
+	public int postImport(List<QuestionItem> items, boolean editable) {
 		return items == null ? 0 : items.size();
 	}
 

@@ -91,7 +91,7 @@ public abstract class DefaultItemsSource implements QuestionItemsSource {
 	public abstract boolean isDeleteEnabled();
 
 	@Override
-	public abstract int postImport(List<QuestionItem> items);
+	public abstract int postImport(List<QuestionItem> items, boolean editable);
 
 	@Override
 	public void removeFromSource(List<QuestionItemShort> items) {

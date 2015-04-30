@@ -63,9 +63,14 @@ public class EmptyItemsSource implements QuestionItemsSource {
     public boolean isDeleteEnabled() {
         return false;
     }
-
+    
     @Override
-    public int postImport(List<QuestionItem> items) {
+	public boolean askEditable() {
+		return false;
+	}
+
+	@Override
+    public int postImport(List<QuestionItem> items, boolean editable) {
         return 0;
     }
 

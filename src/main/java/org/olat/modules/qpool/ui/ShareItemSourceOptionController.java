@@ -19,12 +19,10 @@
  */
 package org.olat.modules.qpool.ui;
 
-import java.io.File;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -33,44 +31,54 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.ui.events.QPoolEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 26.02.2013<br>
+ * Initial date: 30.04.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ImportController extends FormBasicController {
+public class ShareItemSourceOptionController extends FormBasicController {
 
-	private static final String[] keys = {"yes","no"};
-	
-	private FileElement fileEl;
+	private final String[] keys = {"yes","no"};
 	private SingleSelection editableEl;
 	
-	private final QuestionItemsSource source;
 	@Autowired
-	private QPoolService qpoolservice;
+	private QPoolService qpoolService;
 	
-	public ImportController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source) {
-		super(ureq, wControl);
+	private final List<QuestionItem> items;
+	private final QuestionItemsSource source;
+	
+	public ShareItemSourceOptionController(UserRequest ureq, WindowControl wControl,
+			List<QuestionItem> items, QuestionItemsSource source) {	
+		super(ureq, wControl, "share_options");
+		
+		this.items = items;
 		this.source = source;
+		
 		initForm(ureq);
+	}
+	
+	public List<QuestionItem> getItems() {
+		return items;
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("org.olat.modules.qpool.ui", "import-file.html", "help.hover.importfile");
-
-		if(source.askEditable()) {
-			String[] values = new String[]{
-					translate("yes"),
-					translate("no")
-			};
-			editableEl = uifactory.addRadiosVertical("share.editable", "share.editable", formLayout, keys, values);
-			editableEl.select("no", true);
+		FormLayoutContainer mailCont = FormLayoutContainer.createDefaultFormLayout("editable", getTranslator());
+		formLayout.add(mailCont);
+		String[] values = new String[]{
+				translate("yes"),
+				translate("no")
+		};
+		editableEl = uifactory.addRadiosVertical("share.editable", "share.editable", mailCont, keys, values);
+		editableEl.select("no", true);
+		
+		if(formLayout instanceof FormLayoutContainer) {
+			((FormLayoutContainer)formLayout).contextPut("shares", "");
 		}
-		fileEl = uifactory.addFileElement("item", "import.item", formLayout);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
@@ -83,35 +91,16 @@ public class ImportController extends FormBasicController {
 	protected void doDispose() {
 		//
 	}
-	
-	public File getFile() {
-		return fileEl.getUploadFile();
-	}
-
-	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
-		
-		fileEl.clearError();
-		if(fileEl.getUploadFile() == null) {
-			fileEl.setErrorKey("form.mandatory.hover", null);
-			allOk = false;
-		}
-		return allOk & super.validateFormLogic(ureq);
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		String filename = fileEl.getUploadFileName();
-		File file = fileEl.getUploadFile();
-		List<QuestionItem> importItems = qpoolservice.importItems(getIdentity(), getLocale(), filename, file);
-		if(importItems == null || importItems.isEmpty()) {
+		boolean editable = editableEl.isOneSelected() && editableEl.isSelected(0);
+		int count = source.postImport(items, editable);
+		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_SHARED));
+		if(count == 0) {
 			showWarning("import.failed");
 		} else {
-			boolean editable = editableEl == null ? true : editableEl.isSelected(0);
-			source.postImport(importItems, editable);
-			fireEvent(ureq, Event.DONE_EVENT);
-			showInfo("import.success", Integer.toString(importItems.size()));
+			showInfo("import.success", Integer.toString(count));
 		}
 	}
 

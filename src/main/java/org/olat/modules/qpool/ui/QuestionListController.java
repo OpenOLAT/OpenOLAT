@@ -104,12 +104,14 @@ public class QuestionListController extends AbstractItemListController implement
 	private RenameController renameCtrl;
 	private CloseableModalController cmc;
 	private CloseableModalController cmcNewItem;
+	private CloseableModalController cmcShareItemToSource;
 	private QPoolItemEditorController newItemCtrl;
 	private DialogBoxController confirmCopyBox;
 	private DialogBoxController confirmDeleteBox;
 	private DialogBoxController confirmRemoveBox;
 	private DialogBoxController confirmDeleteSourceBox;
 	private ShareItemOptionController shareItemsCtrl;
+	private ShareItemSourceOptionController shareItemsToSourceCtrl;
 	private PoolsController selectPoolCtrl;
 	private SelectBusinessGroupController selectGroupCtrl;
 	private CreateCollectionController createCollectionCtrl;
@@ -376,11 +378,17 @@ public class QuestionListController extends AbstractItemListController implement
 			cmc.deactivate();
 			cleanUp();
 		} else if(source == importTestCtrl) {
+			RepositoryEntry re = importTestCtrl.getSelectedEntry();
+			cmc.deactivate();
+			cleanUp();
 			if(event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
-				doImportResource(importTestCtrl.getSelectedEntry());
+				doImportResource(ureq, re);
+			}
+		} else if(source == shareItemsToSourceCtrl) {
+			if(QPoolEvent.ITEM_SHARED.equals(event.getCommand())) {
 				getItemsTable().reset();
 			}
-			cmc.deactivate();
+			cmcShareItemToSource.deactivate();
 			cleanUp();
 		} else if(source == bulkChangeCtrl) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -442,7 +450,7 @@ public class QuestionListController extends AbstractItemListController implement
 			showInfo("create.success");
 			if(newItemCtrl.getItem() != null && newItemCtrl.getItem().getKey() != null) {
 				List<QuestionItem> newItems = Collections.singletonList(newItemCtrl.getItem());
-				getSource().postImport(newItems);
+				getSource().postImport(newItems, false);
 			}
 			getItemsTable().reset();
 			QPoolEvent qce = new QPoolEvent(QPoolEvent.ITEM_CREATED);
@@ -567,20 +575,32 @@ public class QuestionListController extends AbstractItemListController implement
 		listenTo(cmc);
 	}
 	
-	private void doImportResource(RepositoryEntry repositoryEntry) {
+	private void doImportResource(UserRequest ureq, RepositoryEntry repositoryEntry) {
 		QTIQPoolServiceProvider spi
 			= (QTIQPoolServiceProvider)CoreSpringFactory.getBean("qtiPoolServiceProvider");
 		List<QuestionItem> importItems = spi.importRepositoryEntry(getIdentity(), repositoryEntry, getLocale());
-		int postImported = getSource().postImport(importItems);
-		if(postImported > 0) {
-			getItemsTable().reset();
-		}
-		
-		if(importItems.isEmpty()) {
-			showWarning("import.failed");
+		if(getSource().askEditable()) {
+			removeAsListenerAndDispose(shareItemsToSourceCtrl);
+			shareItemsToSourceCtrl = new ShareItemSourceOptionController(ureq, getWindowControl(), importItems, getSource());
+			listenTo(shareItemsToSourceCtrl);
+
+			removeAsListenerAndDispose(cmcShareItemToSource);
+			cmcShareItemToSource = new CloseableModalController(getWindowControl(), translate("close"),
+					shareItemsToSourceCtrl.getInitialComponent(), true, translate("import.item"));
+			cmcShareItemToSource.activate();
+			listenTo(cmcShareItemToSource);
 		} else {
-			showInfo("import.success", Integer.toString(importItems.size()));
-			getItemsTable().reset();
+			int postImported = getSource().postImport(importItems, true);
+			if(postImported > 0) {
+				getItemsTable().reset();
+			}
+			
+			if(importItems.isEmpty()) {
+				showWarning("import.failed");
+			} else {
+				showInfo("import.success", Integer.toString(importItems.size()));
+				getItemsTable().reset();
+			}
 		}
 	}
 	
@@ -602,7 +622,11 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(excelImportWizard);
 		
 		final ItemsPackage importPackage = new ItemsPackage();
-		Step start = new QImport_1_InputStep(ureq, importPackage);
+		Step additionalStep = null;
+		if(getSource().askEditable()) {
+			additionalStep = new EditableStep(ureq);
+		}
+		Step start = new QImport_1_InputStep(ureq, importPackage, additionalStep);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
@@ -610,7 +634,13 @@ public class QuestionListController extends AbstractItemListController implement
 				QTIQPoolServiceProvider spi
 					= (QTIQPoolServiceProvider)CoreSpringFactory.getBean("qtiPoolServiceProvider");
 				List<QuestionItem> importItems = spi.importBeecomItem(getIdentity(), itemsToImport, getLocale());
-				int postImported = getSource().postImport(importItems);
+				
+				boolean editable = true;
+				if(getSource().askEditable()) {
+					Object editableCtx = runContext.get("editable");
+					editable = (editableCtx instanceof Boolean) ? ((Boolean)editableCtx).booleanValue() : false;
+				}
+				int postImported = getSource().postImport(importItems, editable);
 				if(postImported > 0) {
 					getItemsTable().reset();
 				}

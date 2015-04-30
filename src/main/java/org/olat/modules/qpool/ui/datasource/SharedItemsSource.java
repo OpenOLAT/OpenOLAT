@@ -82,9 +82,14 @@ public class SharedItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
-	public int postImport(List<QuestionItem> items) {
+	public boolean askEditable() {
+		return true;
+	}
+
+	@Override
+	public int postImport(List<QuestionItem> items, boolean editable) {
 		if(items == null || items.isEmpty()) return 0;
-		qpoolService.shareItemsWithGroups(items, Collections.singletonList(group), false);
+		qpoolService.shareItemsWithGroups(items, Collections.singletonList(group), editable);
 		return items.size();
 	}
 
