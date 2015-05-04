@@ -214,7 +214,31 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 
 		super.event(ureq, source, event);
 	}
-	
+
+	@Override
+	protected void doCreate(UserRequest ureq, WindowControl wControl, RepositoryEntry re) {
+		ureq.getUserSession().putEntry("wild_card_new", Boolean.TRUE);
+		super.doCreate(ureq, wControl, re);
+	}
+
+	@Override
+	protected void doAccess(UserRequest ureq, BusinessGroup group) {
+		ureq.getUserSession().putEntry("wild_card_" + group.getKey(), Boolean.TRUE);
+		super.doAccess(ureq, group);
+	}
+
+	@Override
+	protected void doLaunch(UserRequest ureq, BusinessGroup group) {
+		ureq.getUserSession().putEntry("wild_card_" + group.getKey(), Boolean.TRUE);
+		super.doLaunch(ureq, group);
+	}
+
+	@Override
+	protected void doEdit(UserRequest ureq, BusinessGroup group) {
+		ureq.getUserSession().putEntry("wild_card_" + group.getKey(), Boolean.TRUE);
+		super.doEdit(ureq, group);
+	}
+
 	private void doConfirmRemove(UserRequest ureq, List<BGTableItem> selectedItems) {
 		StringBuilder sb = new StringBuilder();
 		StringBuilder managedSb = new StringBuilder();
