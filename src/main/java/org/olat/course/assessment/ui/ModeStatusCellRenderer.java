@@ -19,6 +19,8 @@
  */
 package org.olat.course.assessment.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
@@ -26,6 +28,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.course.assessment.AssessmentMode.Status;
+import org.olat.course.assessment.model.EnhancedStatus;
 
 /**
  * 
@@ -41,13 +44,31 @@ public class ModeStatusCellRenderer implements FlexiCellRenderer {
 
 		if(cellValue instanceof Status) {
 			Status status = (Status)cellValue;
-			switch(status) {
-				case none: render("o_as_mode_none", sb); break;
-				case leadtime: render("o_as_mode_leadtime", sb); break;
-				case assessment: render("o_as_mode_assessment", sb); break;
-				case followup: render("o_as_mode_followup", sb); break;
-				case end: render("o_as_mode_closed", sb); break;
+			renderStatus(status, sb);
+		} else if(cellValue instanceof EnhancedStatus) {
+			EnhancedStatus enStatus = (EnhancedStatus)cellValue;
+			renderWarning(enStatus.getWarnings(), sb);
+			renderStatus(enStatus.getStatus(), sb);
+		}
+	}
+	
+	private void renderWarning(List<String> warnings, StringOutput sb) {
+		if(warnings != null && warnings.size() > 0) {
+			sb.append("<i class='o_icon o_icon_warn' title='");
+			for(String warning:warnings) {
+				sb.append(warning).append(" ");
 			}
+			sb.append("'> </i> ");
+		}
+	}
+	
+	private void renderStatus(Status status, StringOutput sb) {
+		switch(status) {
+			case none: render("o_as_mode_none", sb); break;
+			case leadtime: render("o_as_mode_leadtime", sb); break;
+			case assessment: render("o_as_mode_assessment", sb); break;
+			case followup: render("o_as_mode_followup", sb); break;
+			case end: render("o_as_mode_closed", sb); break;
 		}
 	}
 	

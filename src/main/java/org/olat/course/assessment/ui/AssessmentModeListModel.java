@@ -19,15 +19,23 @@
  */
 package org.olat.course.assessment.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
+import org.olat.course.assessment.model.EnhancedStatus;
 import org.olat.course.assessment.model.TransientAssessmentMode;
+import org.olat.course.nodes.CourseNode;
 
 /**
  * 
@@ -37,16 +45,19 @@ import org.olat.course.assessment.model.TransientAssessmentMode;
  */
 public class AssessmentModeListModel extends DefaultFlexiTableDataModel<AssessmentMode> implements SortableFlexiTableDataModel<AssessmentMode> {
 	
+	private final Translator translator;
 	private final AssessmentModeCoordinationService coordinationService;
 	
-	public AssessmentModeListModel(FlexiTableColumnModel columnsModel, AssessmentModeCoordinationService coordinationService) {
+	public AssessmentModeListModel(FlexiTableColumnModel columnsModel, Translator translator,
+			AssessmentModeCoordinationService coordinationService) {
 		super(columnsModel);
+		this.translator = translator;
 		this.coordinationService = coordinationService;
 	}
 
 	@Override
 	public AssessmentModeListModel createCopyWithEmptyList() {
-		return new AssessmentModeListModel(getTableColumnModel(), coordinationService);
+		return new AssessmentModeListModel(getTableColumnModel(),translator,  coordinationService);
 	}
 
 	@Override
@@ -58,7 +69,33 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 	@Override
 	public Object getValueAt(AssessmentMode mode, int col) {
 		switch(Cols.values()[col]) {
-			case status: return mode.getStatus();
+			case status: {
+				List<String> warnings = null;
+				Status status = mode.getStatus();
+				if(StringHelper.containsNonWhitespace(mode.getStartElement())) {
+					ICourse course = CourseFactory.loadCourse(mode.getRepositoryEntry().getOlatResource());
+					CourseNode node = course.getRunStructure().getNode(mode.getStartElement());
+					if(node == null) {
+						warnings = new ArrayList<>(2);
+						warnings.add(translator.translate("warning.missing.start.element"));
+					}
+				}
+				if(StringHelper.containsNonWhitespace(mode.getElementList())) {
+					ICourse course = CourseFactory.loadCourse(mode.getRepositoryEntry().getOlatResource());
+					String elements = mode.getElementList();
+					for(String element:elements.split(",")) {
+						CourseNode node = course.getRunStructure().getNode(element);
+						if(node == null) {
+							if(warnings == null) {
+								warnings = new ArrayList<>(2);
+							}
+							warnings.add(translator.translate("warning.missing.element"));
+							break;
+						}
+					}
+				}
+				return new EnhancedStatus(status, warnings);
+			}
 			case course: return mode.getRepositoryEntry().getDisplayname();
 			case externalId: return mode.getRepositoryEntry().getExternalId();
 			case externalRef: return mode.getRepositoryEntry().getExternalRef();

@@ -91,9 +91,11 @@ import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.ui.courselayout.CourseLayoutHelper;
 import org.olat.course.editor.PublishStepCatalog.CategoryLabel;
+import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -104,9 +106,11 @@ import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.PublishTreeModel;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.ToolbarAware;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -187,9 +191,13 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private MultiSPController multiSPChooserCtr;
 
 	private final OLATResourceable ores;
+	private RepositoryEntryRef repoEntry;
 	
 	private static final OLog log = Tracing.createLoggerFor(EditorMainController.class);
 	private final static String RELEASE_LOCK_AT_CATCH_EXCEPTION = "Must release course lock since an exception occured in " + EditorMainController.class;
+	
+	@Autowired
+	private AssessmentModeManager assessmentModeMgr;
 	
 	/**
 	 * Constructor for the course editor controller
@@ -259,7 +267,9 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				 * caculated and initialized
 				 */
 				cetm = CourseFactory.getCourseEditSession(ores.getResourceableId()).getEditorTreeModel();
-				CourseEditorEnv cev = new CourseEditorEnvImpl(cetm, course.getCourseEnvironment().getCourseGroupManager(), ureq.getLocale());
+				CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
+				repoEntry = cgm.getCourseEntry();
+				CourseEditorEnv cev = new CourseEditorEnvImpl(cetm, cgm, ureq.getLocale());
 				euce = new EditorUserCourseEnvironmentImpl(cev);
 				euce.getCourseEditorEnv().setCurrentCourseNodeId(null);
 				
@@ -839,15 +849,23 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		TreeNode tn = menuTree.getSelectedNode();
 		if (tn == null) {
 			showError(NLS_DELETENODE_ERROR_SELECTFIRST);
-			return;
-		}
-		if (tn.getParent() == null) {
+		} else if (tn.getParent() == null) {
 			showError(NLS_DELETENODE_ERROR_ROOTNODE);
-			return;
+		} else {
+			// deletion is possible, start asking if really to delete.
+			tabbedNodeConfig.setVisible(false);
+
+			String title = translate("deletenode.header", tn.getTitle());
+			String message = translate("deletenode.confirm");
+			if(tn instanceof CourseEditorTreeNode
+					&& assessmentModeMgr.isNodeInUse(repoEntry, ((CourseEditorTreeNode)tn).getCourseNode())) {
+				message = translate("deletenode.confirm.inuse.assessment.mode");
+			} else {
+				message = translate("deletenode.confirm");
+			}
+			
+			deleteDialogController = activateYesNoDialog(ureq, title, message, deleteDialogController);
 		}
-		// deletion is possible, start asking if really to delete.
-		tabbedNodeConfig.setVisible(false);
-		deleteDialogController = activateYesNoDialog(ureq, translate("deletenode.header", tn.getTitle()), translate("deletenode.confirm"), deleteDialogController);
 	}
 	
 	private void doInsert(UserRequest ureq, CourseNode newNode) {

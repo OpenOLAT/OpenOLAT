@@ -119,7 +119,7 @@ public class AssessmentModeAdminListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.target.i18nKey(), Cols.target.ordinal(),
 				true, Cols.target.name(), new TargetAudienceCellRenderer(getTranslator())));
 		
-		model = new AssessmentModeListModel(columnsModel, assessmentModeCoordinationService);
+		model = new AssessmentModeListModel(columnsModel, getTranslator(), assessmentModeCoordinationService);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setMultiSelect(false);
 		tableEl.setAndLoadPersistedPreferences(ureq, "assessment-mode-admin");

@@ -40,6 +40,7 @@ import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.model.AssessmentModeImpl;
 import org.olat.course.assessment.model.SearchAssessmentModeParams;
+import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.area.BGtoAreaRelationImpl;
@@ -162,6 +163,7 @@ public class AssessmentModeDAO {
 	
 	public boolean isInAssessmentMode(RepositoryEntryRef entry, Date date) {
 		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
 		cal.set(Calendar.MILLISECOND, 0);
 		cal.set(Calendar.SECOND, 0);
 		
@@ -215,6 +217,30 @@ public class AssessmentModeDAO {
 				.getResultList();
 		//quicker than distinct
 		return new ArrayList<AssessmentMode>(new HashSet<AssessmentMode>(modeList));
+	}
+	
+	public boolean isNodeInUse(RepositoryEntryRef entry, CourseNode node) {
+		if(entry == null || node == null) return false;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(mode) from courseassessmentmode mode where ")
+		  .append(" mode.repositoryEntry.key=:repoKey ")
+		  .append(" and (mode.startElement=:startIdent or mode.elementList like :nodeIdent)")
+		  .append(" and (mode.beginWithLeadTime>=:now")
+		  .append(" or mode.statusString in ('").append(Status.none.name()).append("','").append(Status.leadtime.name()).append("','").append(Status.assessment.name()).append("','").append(Status.followup.name()).append("'))");
+
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.MILLISECOND, 0);
+		cal.set(Calendar.SECOND, 0);
+		
+		List<Number> count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("repoKey", entry.getKey())
+				.setParameter("startIdent", node.getIdent())
+				.setParameter("nodeIdent", "%" + node.getIdent() + "%")
+				.setParameter("now", cal.getTime(), TemporalType.TIMESTAMP)
+				.getResultList();
+		return count != null && count.size() > 0 && count.get(0).intValue() > 0;
 	}
 	
 	public void delete(AssessmentMode assessmentMode) {
