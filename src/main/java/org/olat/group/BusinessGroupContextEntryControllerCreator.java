@@ -31,6 +31,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
+import org.olat.core.util.UserSession;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.resource.accesscontrol.ACService;
@@ -99,8 +100,11 @@ public class BusinessGroupContextEntryControllerCreator extends DefaultContextEn
 	
 	private boolean isAuthorized(UserRequest ureq, BusinessGroup bgroup) {
 		if(authorized == null) {
-			authorized = ureq.getUserSession().getRoles().isOLATAdmin()
-				|| ureq.getUserSession().getRoles().isGroupManager() 
+			UserSession usess = ureq.getUserSession();
+			Object wildcard = usess.getEntry("wild_card_" + bgroup.getKey());
+			authorized = (wildcard != null && Boolean.TRUE.equals(wildcard))
+				|| usess.getRoles().isOLATAdmin()
+				|| usess.getRoles().isGroupManager() 
 				|| CoreSpringFactory.getImpl(BusinessGroupService.class).isIdentityInBusinessGroup(ureq.getIdentity(), bgroup)  
 				|| CoreSpringFactory.getImpl(BGRightManager.class).hasBGRight(Constants.PERMISSION_ACCESS, ureq.getIdentity(), bgroup.getResource())
 				|| isAccessControlled(bgroup);

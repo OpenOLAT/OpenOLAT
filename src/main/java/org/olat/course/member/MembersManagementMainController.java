@@ -54,6 +54,10 @@ import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
+ * This is the members management view. The controller is made for the course administrator
+ * and doesn't make any security check. Especially, the course authors can access the business groups
+ * without being members of these groups.
+ * 
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
