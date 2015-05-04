@@ -26,7 +26,6 @@
 package org.olat.admin;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.olat.NewControllerFactory;
@@ -36,13 +35,18 @@ import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.util.GlobalStickyMessage;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.configuration.AbstractOLATModule;
-import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.User;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Description:<BR>
@@ -53,31 +57,38 @@ import org.olat.properties.PropertyManager;
  *
  * @author gnaegi 
  */
-public class AdminModule extends AbstractOLATModule {
+@Service("adminModule")
+public class AdminModule extends AbstractSpringModule {
+	
+	private static final OLog log = Tracing.createLoggerFor(AdminModule.class);
 
 	private static final String CONFIG_LOGIN_BLOCKED = "loginBlocked";
 	/** Category for system properties **/
 	public static String SYSTEM_PROPERTY_CATEGORY = "_o3_";
 	public static final String PROPERTY_MAINTENANCE_MESSAGE    = "maintenanceMessageToken";
 	public static final String PROPERTY_SESSION_ADMINISTRATION = "sessionAdministrationToken";
-	private static final String CONFIG_ADMIN_MAX_SESSION = "maxNumberOfSessions";
+	
+	@Value("${maxNumberOfSessions:0}")
+	private int maxNumberOfSessions;
+	
+	@Autowired
 	private PropertyManager propertyManager;
 
 	/**
 	 * [used by spring]
 	 */
-	public AdminModule(PropertyManager propertyManager) {
-		super();
-		this.propertyManager = propertyManager;
+	@Autowired
+	public AdminModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
 	}
 
-/**
- * Check if system property for maintenance message exists, create one if it
- * doesn't
- * This generated token is used by the remote http maintenance message
- * setting mechanism, see method below
- * @param tokenPropertyName
- */
+	/**
+	 * Check if system property for maintenance message exists, create one if it
+	 * doesn't
+	 * This generated token is used by the remote http maintenance message
+	 * setting mechanism, see method below
+	 * @param tokenPropertyName
+	 */
 	private void initializeSystemTokenProperty(String tokenPropertyName) {
 		Property p = propertyManager.findProperty(null, null, null, SYSTEM_PROPERTY_CATEGORY, tokenPropertyName);
 		if (p == null) {
@@ -98,18 +109,18 @@ public class AdminModule extends AbstractOLATModule {
 		GlobalStickyMessage.setGlobalStickyMessage(message, true);
 	}
 	
-	public boolean checkMaintenanceMessageToken(HttpServletRequest request, HttpServletResponse response) {
+	public boolean checkMaintenanceMessageToken(HttpServletRequest request) {
 		return checkToken(request, PROPERTY_MAINTENANCE_MESSAGE);
 	}
 
-	public boolean checkSessionAdminToken(HttpServletRequest request, HttpServletResponse response) {
+	public boolean checkSessionAdminToken(HttpServletRequest request) {
 		return checkToken(request, PROPERTY_SESSION_ADMINISTRATION);
 	}
 
 	private boolean checkToken(HttpServletRequest request, String tokenPropertyName) {
 		String submittedToken = request.getParameter("token");
 		if (submittedToken == null) {
-			logAudit("Trying to set maintenance message without using a token. Remote address::" + request.getRemoteAddr());
+			log.audit("Trying to set maintenance message without using a token. Remote address::" + request.getRemoteAddr());
 			return false;
 		}
 		// get token and compare
@@ -119,7 +130,7 @@ public class AdminModule extends AbstractOLATModule {
 		if (token.matches(submittedToken)) { // limit access to token
 			return true;
 		} else {
-			logAudit("Trying to set maintenance message using a wrong token. Remote address::" + request.getRemoteAddr());
+			log.audit("Trying to set maintenance message using a wrong token. Remote address::" + request.getRemoteAddr());
 			return false;
 		}
 	}
@@ -129,7 +140,7 @@ public class AdminModule extends AbstractOLATModule {
 	 * @param newLoginBlocked
 	 */
 	public void setLoginBlocked(boolean newLoginBlocked, boolean persist) {
-		logAudit("Session administration: Set login-blocked=" + newLoginBlocked);
+		log.audit("Session administration: Set login-blocked=" + newLoginBlocked);
 		AuthHelper.setLoginBlocked(newLoginBlocked);
 		setBooleanProperty(CONFIG_LOGIN_BLOCKED, newLoginBlocked, persist);
 	}
@@ -147,7 +158,7 @@ public class AdminModule extends AbstractOLATModule {
 	 * @param rejectDMZRequests
 	 */
 	public void setRejectDMZRequests(boolean rejectDMZRequests) {
-		logAudit("Session administration: Set rejectDMZRequests=" + rejectDMZRequests);
+		log.audit("Session administration: Set rejectDMZRequests=" + rejectDMZRequests);
 		AuthHelper.setRejectDMZRequests(rejectDMZRequests);
 	}
 
@@ -165,7 +176,7 @@ public class AdminModule extends AbstractOLATModule {
 	 * @param maxSession
 	 */
 	public void setMaxSessions(int maxSession) {
-		logAudit("Session administration: Set maxSession=" + maxSession);
+		log.audit("Session administration: Set maxSession=" + maxSession);
 		AuthHelper.setMaxSessions(maxSession);
 	}
 
@@ -174,7 +185,7 @@ public class AdminModule extends AbstractOLATModule {
 	 * @param sessionTimeout
 	 */
 	public void setSessionTimeoutDepr(int sessionTimeout) {
-		logAudit("Session administration: Set session-timeout=" + sessionTimeout);
+		log.audit("Session administration: Set session-timeout=" + sessionTimeout);
 		//in seconds
 		CoreSpringFactory.getImpl(UserSessionManager.class).setGlobalSessionTimeout(sessionTimeout);
 	}
@@ -219,17 +230,11 @@ public class AdminModule extends AbstractOLATModule {
 
 	@Override
 	protected void initDefaultProperties() {
-			int maxNumberOfSessions = getIntConfigParameter(CONFIG_ADMIN_MAX_SESSION, 0);
-			AuthHelper.setMaxSessions(maxNumberOfSessions);
+		AuthHelper.setMaxSessions(maxNumberOfSessions);
 	}
 
 	@Override
 	protected void initFromChangedProperties() {
-		//nothin to do
-	}
-
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
+		//nothing to do
 	}
 }

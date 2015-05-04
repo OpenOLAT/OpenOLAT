@@ -27,7 +27,7 @@ import org.olat.admin.user.tools.UserToolExtension;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Roles;
+import org.olat.core.util.UserSession;
 
 /**
  * 
@@ -64,8 +64,9 @@ public class InstantMessagingUserToolExtension extends UserToolExtension {
 
 	@Override
 	public UserTool createUserTool(UserRequest ureq, WindowControl wControl, Locale locale) {
-		Roles roles = ureq.getUserSession().getRoles();		
-		if(roles.isGuestOnly() || roles.isInvitee()) {
+		if(ureq == null) return null;
+		UserSession usess = ureq.getUserSession();
+		if(usess == null || usess.getRoles() == null || usess.getRoles().isGuestOnly() || usess.getRoles().isInvitee()) {
 			return null;
 		}
 		return new InstantMessagingUserTool(wControl);

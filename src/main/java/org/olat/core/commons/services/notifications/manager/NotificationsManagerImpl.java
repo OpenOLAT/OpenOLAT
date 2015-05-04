@@ -468,9 +468,10 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	/**
 	 * @see org.olat.core.commons.services.notifications.NotificationsManager#getUserIntervalOrDefault(org.olat.core.id.Identity)
 	 */
+	@Override
 	public String getUserIntervalOrDefault(Identity ident){
-		if(ident.getUser() == null || ident.getUser().getPreferences() == null) {
-			logWarn("User " + ident.getName() + " has no preferences invalid", null);
+		if(ident == null || ident.getUser() == null || ident.getUser().getPreferences() == null) {
+			logWarn("User " + (ident == null ? "NULL" : ident.getName()) + " has no preferences invalid", null);
 			return getDefaultNotificationInterval();
 		}
 		

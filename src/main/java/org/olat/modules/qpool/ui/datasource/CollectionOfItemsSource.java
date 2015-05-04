@@ -84,7 +84,12 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
-	public int postImport(List<QuestionItem> items) {
+	public boolean askEditable() {
+		return false;
+	}
+
+	@Override
+	public int postImport(List<QuestionItem> items, boolean editable) {
 		if(items == null || items.isEmpty()) return 0;
 		qpoolService.addItemToCollection(items, Collections.singletonList(collection));
 		return items.size();

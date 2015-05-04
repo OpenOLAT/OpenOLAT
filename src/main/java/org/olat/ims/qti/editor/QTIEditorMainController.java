@@ -1080,7 +1080,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		removeAsListenerAndDispose(importTableWizard);
 
 		final ItemsPackage importPackage = new ItemsPackage();
-		Step start = new QImport_1_InputStep(ureq, importPackage);
+		Step start = new QImport_1_InputStep(ureq, importPackage, null);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {

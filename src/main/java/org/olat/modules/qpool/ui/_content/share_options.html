@@ -1,3 +1,5 @@
 <p>$r.translate("share.options", $shares)</p>
 $r.render("editable")
-$r.render("buttons")
+#if($r.available("buttons"))
+	$r.render("buttons")
+#end

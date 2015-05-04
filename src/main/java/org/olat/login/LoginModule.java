@@ -190,7 +190,7 @@ public class LoginModule extends AbstractSpringModule {
 	public AuthenticationProvider getAuthenticationProvider(String provider) {
 		AuthenticationProvider authenticationProvider = null;
 		for(AuthenticationProvider authProvider:authenticationProviders) {
-			if(authProvider.getName().equals(provider)) {
+			if(authProvider.getName().equalsIgnoreCase(provider)) {
 				authenticationProvider = authProvider;
 			}
 		}

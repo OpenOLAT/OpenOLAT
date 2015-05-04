@@ -19,44 +19,35 @@
  */
 package org.olat.modules.qpool.ui;
 
-import java.util.Collection;
-import java.util.List;
-
-import org.olat.core.commons.persistence.ResultInfos;
-import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.QuestionItemView;
+import org.olat.core.gui.control.generic.wizard.BasicStep;
+import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
+import org.olat.core.gui.control.generic.wizard.StepFormController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 
 /**
  * 
- * Initial date: 12.02.2013<br>
+ * Initial date: 30.04.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionItemsSource {
+public class EditableStep extends BasicStep {
 	
-	public String getName();
-	
-	public Controller getSourceController(UserRequest ureq, WindowControl wControl);
-	
-	public boolean isRemoveEnabled();
-	
-	public boolean isDeleteEnabled();
-	
-	public boolean askEditable();
-	
-	public int postImport(List<QuestionItem> items, boolean editable);
-	
-	public void removeFromSource(List<QuestionItemShort> items);
-	
-	public int getNumOfItems();
-	
-	public List<QuestionItemView> getItems(Collection<Long> keys);
-	
-	public ResultInfos<QuestionItemView> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy);
+	public EditableStep(UserRequest ureq) {
+		super(ureq);
+		setNextStep(NOSTEP);
+		setI18nTitleAndDescr("editable", "editable");
+	}
 
+	@Override
+	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
+		return new PrevNextFinishConfig(true, false, true);
+	}
+
+	@Override
+	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
+		return new ShareItemOptionStepController(ureq, wControl, runContext, form);
+	}
 }

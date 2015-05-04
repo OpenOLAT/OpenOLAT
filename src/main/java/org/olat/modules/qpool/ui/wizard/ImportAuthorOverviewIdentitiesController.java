@@ -114,7 +114,7 @@ public class ImportAuthorOverviewIdentitiesController extends StepFormBasicContr
 	private List<Identity> loadModel(List<String> keys) {
 		List<Identity> existIdents = Collections.emptyList();//securityManager.getIdentitiesOfSecurityGroup(securityGroup);
 
-		List<Identity> oks = new ArrayList<Identity>();
+		List<Identity> okIdentities = new ArrayList<Identity>();
 		List<String> isanonymous = new ArrayList<String>();
 		List<String> notfounds = new ArrayList<String>();
 		List<String> alreadyin = new ArrayList<String>();
@@ -134,20 +134,20 @@ public class ImportAuthorOverviewIdentitiesController extends StepFormBasicContr
 					alreadyin.add(ident.getName());
 				} else {
 					// ok to add -> preview (but filter duplicate entries)
-					if (!PersistenceHelper.containsPersistable(oks, ident)) {
-						oks.add(ident);
+					if (!PersistenceHelper.containsPersistable(okIdentities, ident)) {
+						okIdentities.add(ident);
 					}
 				}
 			}
 		}
 		
-		return oks;
+		return okIdentities;
 	}
 	
 	private List<Identity> loadModel(String inp) {
 		List<Identity> existIdents = Collections.emptyList();//securityManager.getIdentitiesOfSecurityGroup(securityGroup);
 
-		List<Identity> oks = new ArrayList<Identity>();
+		List<Identity> okIdentities = new ArrayList<Identity>();
 		List<String> isanonymous = new ArrayList<String>();
 		List<String> notfounds = new ArrayList<String>();
 		List<String> alreadyin = new ArrayList<String>();
@@ -171,15 +171,15 @@ public class ImportAuthorOverviewIdentitiesController extends StepFormBasicContr
 						alreadyin.add(ident.getName());
 					} else {
 						// ok to add -> preview (but filter duplicate entries)
-						if (!PersistenceHelper.containsPersistable(oks, ident)) {
-							oks.add(ident);
+						if (!PersistenceHelper.containsPersistable(okIdentities, ident)) {
+							okIdentities.add(ident);
 						}
 					}
 				}
 			}
 		}
 		
-		return oks;
+		return okIdentities;
 	}
 	
 

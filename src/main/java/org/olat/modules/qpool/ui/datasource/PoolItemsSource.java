@@ -48,11 +48,16 @@ public class PoolItemsSource extends DefaultItemsSource {
 	public void removeFromSource(List<QuestionItemShort> items) {
 		qpoolService.removeItemsInPool(items, pool);
 	}
+	
+	@Override
+	public boolean askEditable() {
+		return true;
+	}
 
 	@Override
-	public int postImport(List<QuestionItem> items) {
+	public int postImport(List<QuestionItem> items, boolean editable) {
 		if(items == null || items.isEmpty()) return 0;
-		qpoolService.addItemsInPools(items, Collections.singletonList(pool), false);
+		qpoolService.addItemsInPools(items, Collections.singletonList(pool), editable);
 		return items.size();
 	}
 

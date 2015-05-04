@@ -108,6 +108,7 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.model.BusinessGroupReference;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
@@ -954,8 +955,8 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 		//initialize the managers and services
 		ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
 		ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		CoursePropertyManager oldCpm = sourceCourse.getCourseEnvironment().getCoursePropertyManager();
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		//create new Project broker and get the old one
 		Long projectBrokerId = projectBrokerManager.createAndSaveProjectBroker().getKey();
 		projectBrokerManager.saveProjectBrokerId(projectBrokerId, course.getCourseEnvironment().getCoursePropertyManager(), this);
@@ -964,7 +965,12 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 		//loop create and configure the new Projects
 		for(Project project : projectsFromGroup){
 			Identity ident = bgs.getMembers(project.getProjectGroup(), GroupRoles.coach.name()).get(0);
-			BusinessGroup projectGroup = projectGroupManager.createProjectGroupFor(projectBrokerId, ident, project.getTitle() + "_Group", project.getDescription() + "GroupDescription", course.getResourceableId());
+			for(BusinessGroupReference group : envMapper.getGroups()){
+				if(group.getName() == project.getProjectGroup().getName()){
+					bgs.deleteBusinessGroup(bgs.loadBusinessGroup(group.getKey()));
+				}
+			}
+			BusinessGroup projectGroup = bgs.copyBusinessGroup(ident, project.getProjectGroup(), project.getTitle(), project.getDescription(), -1, -1, false, false, false, true, false, false, false, false);
 			Project newProject = projectBrokerManager.createAndSaveProjectFor(project.getTitle(), project.getDescription(), projectBrokerId, projectGroup);
 			// copy all project configurations
 			newProject.setMailNotificationEnabled(project.isMailNotificationEnabled());
@@ -1013,7 +1019,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 				if (!members.isEmpty()) {
 					Identity ident = bgs.getMembers(project.getProjectGroup(), GroupRoles.coach.name()).get(0);
 					// create projectGroup
-					BusinessGroup projectGroup = projectGroupManager.createProjectGroupFor(projectBrokerId, ident, project.getTitle() + "_Group", project.getDescription() + "GroupDescription", course.getResourceableId());
+					BusinessGroup projectGroup = projectGroupManager.createProjectGroupFor(projectBrokerId, ident, project.getTitle(), project.getDescription(), course.getResourceableId());
 					Project newProject = projectBrokerManager.createAndSaveProjectFor(project.getTitle(), project.getDescription(), projectBrokerId, projectGroup);
 					// configure the new Project like the old one
 					// copy the old accountManagergroup to preserve the

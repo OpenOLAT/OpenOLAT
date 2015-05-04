@@ -63,7 +63,7 @@ import org.openqa.selenium.firefox.FirefoxDriver;
  *
  */
 @RunWith(Arquillian.class)
-public class UserSettingsTest {
+public class UserTest {
 	
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
@@ -89,7 +89,7 @@ public class UserSettingsTest {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void resume_resumeCourseAutomatically(@InitialPage LoginPage loginPage)
+	public void resumeCourseAutomatically(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
 		//create a random user
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
@@ -141,7 +141,7 @@ public class UserSettingsTest {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void resume_resumeCourseOnDemand(@InitialPage LoginPage loginPage)
+	public void resumeCourseOnDemand(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
 		//create a random user
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
@@ -188,7 +188,7 @@ public class UserSettingsTest {
 	 */
 	@Test
 	@RunAsClient
-	public void resume_disabled(@InitialPage LoginPage loginPage)
+	public void resumeDisabled(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		loginPage
@@ -228,7 +228,7 @@ public class UserSettingsTest {
 	 */
 	@Test
 	@RunAsClient
-	public void language_switch(@InitialPage LoginPage loginPage)
+	public void userSwitchLanguageSwitchToEnglish(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		loginPage
@@ -286,7 +286,7 @@ public class UserSettingsTest {
 	 */
 	@Test
 	@RunAsClient
-	public void password_change(@InitialPage LoginPage loginPage)
+	public void userChangeItsPassword(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		loginPage
@@ -318,7 +318,7 @@ public class UserSettingsTest {
 	 */
 	@Test
 	@RunAsClient
-	public void resetPreferences(@InitialPage LoginPage loginPage)
+	public void userResetItsPreferences(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		loginPage

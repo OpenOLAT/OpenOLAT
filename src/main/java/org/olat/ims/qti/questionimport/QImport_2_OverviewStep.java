@@ -24,6 +24,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
+import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 
@@ -35,22 +36,29 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  */
 public class QImport_2_OverviewStep extends BasicStep {
 	
+	private final boolean nextStep;
 	private final ItemsPackage importedItems;
 	
-	public QImport_2_OverviewStep(UserRequest ureq, ItemsPackage importedItems) {
+	public QImport_2_OverviewStep(UserRequest ureq, ItemsPackage importedItems, Step additionalStep) {
 		super(ureq);
 		this.importedItems = importedItems;
-		setNextStep(NOSTEP);
+		if(additionalStep == null) {
+			setNextStep(NOSTEP);
+			nextStep = false;
+		} else {
+			setNextStep(additionalStep);
+			nextStep = true;
+		}
 		setI18nTitleAndDescr("wizard.import.overview.title", "wizard.import.overview.title");
 	}
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(true, false, true);
+		return new PrevNextFinishConfig(true, nextStep, !nextStep);
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new OverviewQuestionController(ureq, wControl, runContext, form, importedItems);
+		return new OverviewQuestionController(ureq, wControl, runContext, form, importedItems, !nextStep);
 	}
 }

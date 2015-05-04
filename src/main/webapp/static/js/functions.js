@@ -298,9 +298,8 @@ function o2cl_noDirtyCheck() {
 	if (o_info.linkbusy) {
 		return false;
 	} else {
-		var doreq = (o2c==0);
-		if (doreq) o_beforeserver();
-		return doreq;
+		o_beforeserver();
+		return true;
 	}
 }
 //for tree and Firefox

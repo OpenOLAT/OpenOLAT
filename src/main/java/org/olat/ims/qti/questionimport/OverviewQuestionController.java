@@ -48,11 +48,13 @@ import org.olat.ims.qti.editor.beecom.objects.Question;
  */
 public class OverviewQuestionController extends StepFormBasicController {
 	
+	private final boolean lastStep;
 	private final ItemsPackage importedItems;
 	
-	public OverviewQuestionController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form rootForm,
-			ItemsPackage importedItems) {
+	public OverviewQuestionController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext,
+			Form rootForm, ItemsPackage importedItems, boolean lastStep) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
+		this.lastStep = lastStep;
 		this.importedItems = importedItems;
 		initForm(ureq);
 	}
@@ -81,7 +83,11 @@ public class OverviewQuestionController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
+		if(lastStep) {
+			fireEvent(ureq, StepsEvent.INFORM_FINISHED);
+		} else {
+			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+		}
 	}
 	
 	private class ItemsTableDataModel extends DefaultFlexiTableDataModel<ItemAndMetadata> {
