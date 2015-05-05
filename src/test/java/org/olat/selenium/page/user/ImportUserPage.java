@@ -21,9 +21,11 @@ package org.olat.selenium.page.user;
 
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
+import java.util.List;
 
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.Platform;
@@ -74,7 +76,7 @@ public class ImportUserPage {
 	 * @param lastName
 	 * @param sb
 	 */
-	public void append(String username, String password, String firstName, String lastName, StringBuilder sb) {
+	public UserVO append(String username, String password, String firstName, String lastName, StringBuilder sb) {
 
 		String email = username.replace("-", "") + "@frentix.com";
 		String institution = "frentix GmbH";
@@ -90,6 +92,20 @@ public class ImportUserPage {
 		  .append(institution).append("	")
 		  .append(institutionNumber).append("	")
 		  .append(institutionEmail).append('\n');
+		
+		UserVO userVo = new UserVO();
+		userVo.setLogin(username);
+		userVo.setFirstName(firstName);
+		userVo.setLastName(lastName);
+		userVo.setEmail(email);
+		return userVo;
+	}
+	
+	public ImportUserPage assertGreen(int numOfGreen) {
+		By greenBy = By.cssSelector(".o_dnd_label i.o_icon_new");
+		List<WebElement> greenEls = browser.findElements(greenBy);
+		Assert.assertEquals(numOfGreen, greenEls.size());
+		return this;
 	}
 	
 	/**

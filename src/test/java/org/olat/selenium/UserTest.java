@@ -519,11 +519,12 @@ public class UserTest {
 		String username2 = "mizore-" + uuid;
 		
 		StringBuilder csv = new StringBuilder();
-		importWizard.append(username1, "rosario01", "Moka", "Akashiya", csv);
+		UserVO user1 = importWizard.append(username1, "rosario01", "Moka", "Akashiya", csv);
 		importWizard.append(username2, "vampire01", "Mizore", "Shirayuki", csv);
 		importWizard
 			.fill(csv.toString())
 			.next() // -> preview
+			.assertGreen(2)
 			.next() // -> groups
 			.next() // -> emails
 			.finish();
@@ -536,6 +537,6 @@ public class UserTest {
 		userLoginPage
 			.loginAs(username1, "rosario01")
 			.resume()
-			.assertLoggedIn(username1);
+			.assertLoggedIn(user1);
 	}
 }
