@@ -969,7 +969,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 	private void doShowResources(UserRequest ureq) {
 		// always refresh data model, maybe it has changed
-		RepositoryTableModel repoTableModel = new RepositoryTableModel(resourceTrans);
+		RepositoryTableModel repoTableModel = new RepositoryTableModel(getLocale());
 		List<RepositoryEntry> repoTableModelEntries = businessGroupService.findRepositoryEntries(Collections.singletonList(businessGroup), 0, -1);
 		repoTableModel.setObjects(repoTableModelEntries);
 		// init table controller only once
@@ -981,7 +981,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			listenTo(resourcesCtr);
 			
 			resourcesVC = createVelocityContainer("resources");
-			repoTableModel.addColumnDescriptors(resourcesCtr, null, true);
+			repoTableModel.addColumnDescriptors(resourcesCtr, false, false, true);
 			resourcesVC.put("resources", resourcesCtr.getInitialComponent());
 		}
 		// add table model to table

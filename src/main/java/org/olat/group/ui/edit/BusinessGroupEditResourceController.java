@@ -109,14 +109,11 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 		resourcesCtr = new TableController(tableConfig, ureq, getWindowControl(), resourceTrans);
 		listenTo(resourcesCtr);
 
-		repoTableModel = new RepositoryTableModel(resourceTrans);
+		repoTableModel = new RepositoryTableModel(getLocale());
 		List<RepositoryEntry> repoTableModelEntries = businessGroupService.findRepositoryEntries(Collections.singletonList(group), 0, -1);
 		repoTableModel.setObjects(repoTableModelEntries);
 		
-		ColumnDescriptor sortCol = repoTableModel.addColumnDescriptors(resourcesCtr, null, false);	
-		if(!managed) {
-			resourcesCtr.addColumnDescriptor(new RemoveResourceActionColumnDescriptor("resources.remove", 1, getTranslator()));
-		}
+		ColumnDescriptor sortCol = repoTableModel.addColumnDescriptors(resourcesCtr, false, !managed, false);	
 		resourcesCtr.setTableDataModel(repoTableModel);
 		resourcesCtr.setSortColumn(sortCol, true);
 		
@@ -180,7 +177,7 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 				TableEvent te = (TableEvent) event;
 				String actionid = te.getActionId();
 				RepositoryEntry re = repoTableModel.getObject(te.getRowId());
-				if (actionid.equals(RepositoryTableModel.TABLE_ACTION_SELECT_LINK)) {
+				if (actionid.equals(RepositoryTableModel.TABLE_ACTION_REMOVE_LINK)) {
 					//present dialog box if resource should be removed
 					String text = getTranslator().translate("resource.remove", new String[] { group.getName(), re.getDisplayname() });
 					confirmRemoveResource = activateYesNoDialog(ureq, null, text, this.confirmRemoveResource);

@@ -129,8 +129,8 @@ public class RepositorySearchController extends BasicController implements Activ
 		}
 		listenTo(tableCtr);
 		
-		repoTableModel = new RepositoryTableModel(getTranslator());
-		ColumnDescriptor sortCol = repoTableModel.addColumnDescriptors(tableCtr, selectButtonLabel, enableDirectLaunch);
+		repoTableModel = new RepositoryTableModel(getLocale());
+		ColumnDescriptor sortCol = repoTableModel.addColumnDescriptors(tableCtr, selectButtonLabel != null, false, enableDirectLaunch);
 		tableCtr.setTableDataModel(repoTableModel);
 		tableCtr.setSortColumn(sortCol, true);
 		vc.put("repotable", tableCtr.getInitialComponent());
