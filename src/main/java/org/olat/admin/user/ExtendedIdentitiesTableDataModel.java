@@ -53,6 +53,9 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * to display more information using a wrapper object.
  */
 public class ExtendedIdentitiesTableDataModel extends DefaultTableDataModel<Identity> {
+	
+	public static final String COMMAND_VCARD = "show.vcard";
+	public static final String COMMAND_SELECTUSER = "select.user";
 
 	private final boolean actionEnabled;
 	private final boolean isAdministrativeUser;
@@ -87,11 +90,9 @@ public class ExtendedIdentitiesTableDataModel extends DefaultTableDataModel<Iden
 		// first column is users login name
 		// default rows
 		
-		if(isAdministrativeUser) {
-			String action = (actionEnabled ? ExtendedIdentitiesTableControllerFactory.COMMAND_VCARD : null);
-			DefaultColumnDescriptor cd0 = new DefaultColumnDescriptor("table.identity.name", colCount++, action, getLocale());
-			cd0.setIsPopUpWindowAction(true, "height=700, width=900, location=no, menubar=no, resizable=yes, status=no, scrollbars=yes, toolbar=no");
-			tableCtr.addColumnDescriptor(cd0);
+		if (isAdministrativeUser) {
+			String action = actionEnabled ? COMMAND_SELECTUSER : null;
+			tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.identity.name", colCount++, action, getLocale()));
 		}
 
 		UserManager um = UserManager.getInstance();
@@ -99,22 +100,28 @@ public class ExtendedIdentitiesTableDataModel extends DefaultTableDataModel<Iden
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(i);
 			boolean visible = um.isMandatoryUserProperty(usageIdentifyer, userPropertyHandler);
-			tableCtr.addColumnDescriptor(visible, userPropertyHandler.getColumnDescriptor(colCount++, null, getLocale()));
+			String action = null;
+			if(actionEnabled && i < 2) {
+				action = COMMAND_SELECTUSER;
+			}
+			tableCtr.addColumnDescriptor(visible, userPropertyHandler.getColumnDescriptor(colCount++, action, getLocale()));
 		}
 		// in the end the last login and creation date
 		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.identity.lastlogin", colCount++, null, getLocale()));
 		// creation date at the end, enabled by default
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.identity.creationdate", colCount++, null, getLocale()));
-
-		if (actionEnabled) {
-			tableCtr.addColumnDescriptor(new StaticColumnDescriptor(ExtendedIdentitiesTableControllerFactory.COMMAND_SELECTUSER,
-					"table.identity.action", trans.translate("action.select")));
+		
+		if(actionEnabled) {
+			StaticColumnDescriptor vcd = new StaticColumnDescriptor(COMMAND_VCARD, "table.header.vcard", trans.translate("table.identity.vcard"));
+			vcd.setIsPopUpWindowAction(true, "height=700, width=900, location=no, menubar=no, resizable=yes, status=no, scrollbars=yes, toolbar=no");
+			tableCtr.addColumnDescriptor(vcd);
 		}
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
+	@Override
 	public final Object getValueAt(int row, int col) {
 		Identity identity = getObject(row);
 		User user = identity.getUser();

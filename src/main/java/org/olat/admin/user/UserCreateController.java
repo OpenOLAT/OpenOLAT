@@ -41,7 +41,6 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -91,20 +90,20 @@ public class UserCreateController extends BasicController  {
 				
 		Translator pT = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());		
 		createUserForm = new NewUserForm(ureq, wControl, canCreateOLATPassword, pT);		
-		this.listenTo(createUserForm);
-				
-		VelocityContainer newUserVC = this.createVelocityContainer("newuser");		
-		newUserVC.put("createUserForm", createUserForm.getInitialComponent());		
-		this.putInitialPanel(newUserVC);
+		listenTo(createUserForm);
+
+		putInitialPanel(createUserForm.getInitialComponent());
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//empty		
 	}
-	
+
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == createUserForm) {
 			if (event instanceof SingleIdentityChosenEvent) {			        
