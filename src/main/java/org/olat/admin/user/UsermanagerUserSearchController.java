@@ -836,9 +836,11 @@ class UsermanagerUserSearchForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_user_search_form");
 	
 		login = uifactory.addTextElement("login", "search.form.login", 128, "", formLayout);
 		login.setVisible(isAdministrativeUser);
+		login.setElementCssClass("o_sel_user_search_username");
 		items.put("login", login);
 
 		Translator tr = Util.createPackageTranslator(
@@ -867,7 +869,8 @@ class UsermanagerUserSearchForm extends FormBasicController {
 				TextElement textElement = (TextElement) fi;
 				textElement.setItemValidatorProvider(null);
 			}
-			
+
+			fi.setElementCssClass("o_sel_user_search_".concat(userPropertyHandler.getName().toLowerCase()));
 			fi.setTranslator(tr);
 			items.put(fi.getName(), fi);
 		}

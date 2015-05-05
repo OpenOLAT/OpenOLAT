@@ -106,6 +106,7 @@ public class UserImportController extends BasicController {
 		this.canCreateOLATPassword = canCreateOLATPassword;
 		mainVC = createVelocityContainer("importindex");
 		startLink = LinkFactory.createButton("import.start", mainVC, this);
+		startLink.setElementCssClass("o_sel_id_start_import_user_button");
 		startLink.setPrimary(true);
 		putInitialPanel(mainVC);
 	}
