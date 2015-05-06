@@ -1,5 +1,6 @@
-$r.render("contextualSubscription")
-<div class="o_block">[ugly]</div>
+<div class="clearfix">
+	$r.render("contextualSubscription")
+</div>
 
 #if($noGroupError)
 <div class="o_error" role="alert">$r.translate("error.no.group")</div>
@@ -115,11 +116,33 @@ $r.render("contextualSubscription")
 		<div class="o_bar"></div>
 		<h4 class="o_title">$r.translate("run.grading")</h4>
 		<div class="o_content">
+			#if($gradingInfoTextUser && !$gradingInfoTextUser.isEmpty())
+			<div class="panel panel-default o_disclaimer">
+			  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseDisclaimer">
+			  		<h4 class="panel-title">
+			  			<i id="collapseDisclaimerToggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i>
+			  			$r.translate("info.title")
+			  		</h4>
+			  	</div>
+				<div id="collapseDisclaimer" class="panel-collapse collapse in"><div class="panel-body">
+					$r.formatLatexFormulas($gradingInfoTextUser)
+		  		</div></div>
+			</div>
+			<script type="text/javascript">
+				/* <![CDATA[ */
+					jQuery('#collapseDisclaimer').on('hide.bs.collapse', function () {
+						jQuery('#collapseDisclaimerToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+					})
+					jQuery('#collapseDisclaimer').on('show.bs.collapse', function () {
+						jQuery('#collapseDisclaimerToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+					})
+				/* ]]> */
+			</script>
+			#end
 			#if($r.available("grading"))
 				$r.render("grading")
 			#end
 		</div>
-		
 		#if($userLog || $groupLog)
 		<div class="o_box">
 		    #o_togglebox_start("o_course_run_log" $r.translate("log.title"))

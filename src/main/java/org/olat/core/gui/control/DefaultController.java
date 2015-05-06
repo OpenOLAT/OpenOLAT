@@ -183,11 +183,12 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	 * @param ores
 	 */
 	protected void fireEvent(UserRequest ureq, Event event) {
-		if (listeners == null) return;
-		for (Iterator<ControllerEventListener> iter = listeners.iterator(); iter.hasNext();) {
-			ControllerEventListener listener = iter.next();
-			if (log.isDebug()) log.debug("Controller event: "+this.getClass().getName()+": fires event to: "+listener.getClass().getName());
-			listener.dispatchEvent(ureq, this, event);
+		if (listeners != null && listeners.size() > 0) {
+			ControllerEventListener[] listenerArr = listeners.toArray(new ControllerEventListener[listeners.size()]);
+			for (ControllerEventListener listener:listenerArr) {
+				if (log.isDebug()) log.debug("Controller event: "+this.getClass().getName()+": fires event to: "+listener.getClass().getName());
+				listener.dispatchEvent(ureq, this, event);
+			}
 		}
 	}
 

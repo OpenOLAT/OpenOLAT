@@ -46,6 +46,7 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
@@ -436,6 +437,11 @@ public class GTAParticipantController extends GTAAbstractController {
 			}
 		}
 		
+		String infoTextUser = config.getStringValue(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
+	    if(StringHelper.containsNonWhitespace(infoTextUser)) {
+	    	mainVC.contextPut("gradingInfoTextUser", StringHelper.xssScan(infoTextUser));
+	    }
+		
 		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)
@@ -486,6 +492,7 @@ public class GTAParticipantController extends GTAAbstractController {
 	private void setGroupHeaders(BusinessGroup group) {
 		mainVC.contextPut("groupName", group.getName());
 		openGroupButton = LinkFactory.createButton("open.group", mainVC, this);
+		openGroupButton.setIconLeftCSS("o_icon o_icon_group");
 	}
 	
 	private void setMultiGroupsSelection() {

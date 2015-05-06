@@ -315,16 +315,16 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 
 			sb.append("<div class='o_table_footer'><div class='o_table_checkall input-sm'>");
 
-			sb.append("<label class='checkbox-inline'><a id=\"")
-			  .append(dispatchId).append("\" href=\"javascript:o_table_toggleCheck('").append(formName).append("', true);")
+			sb.append("<label class='checkbox-inline'><a id='")
+			  .append(dispatchId).append("_sa' href=\"javascript:o_table_toggleCheck('").append(formName).append("', true);")
 			  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, new NameValuePair("select", "checkall")))
-			  .append("\"><input type='checkbox' checked='checked' disabled='disabled' /><span>").append(translator.translate("form.checkall"))
+			  .append("\"><i class='o_icon o_icon-lg o_icon_check_on'> </i> <span>").append(translator.translate("form.checkall"))
 			  .append("</span></a></label>");
 
-			sb.append("<label class='checkbox-inline'><a id=\"")
-			  .append(dispatchId).append("\" href=\"javascript:o_table_toggleCheck('").append(formName).append("', false);")
+			sb.append("<label class='checkbox-inline'><a id='")
+			  .append(dispatchId).append("_dsa' href=\"javascript:o_table_toggleCheck('").append(formName).append("', false);")
 			  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, new NameValuePair("select", "uncheckall")))
-			  .append("\"><input type='checkbox' disabled='disabled' /><span>").append(translator.translate("form.uncheckall"))
+			  .append("\"><i class='o_icon o_icon-lg o_icon_check_off'> </i> <span>").append(translator.translate("form.uncheckall"))
 			  .append("</span></a></label>");
 
 			sb.append("</div></div>");
