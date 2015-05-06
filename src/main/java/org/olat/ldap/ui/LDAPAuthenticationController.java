@@ -45,7 +45,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -128,18 +127,18 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 	protected void openChangePassword(UserRequest ureq, String initialEmail) {
 		// double-check if allowed first
 		if (!UserModule.isPwdchangeallowed(ureq.getIdentity()) || !ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
-			throw new OLATSecurityException("chose password to be changed, but disallowed by config");
+			showError("error.password.change.not.allow");
+		} else {
+			removeAsListenerAndDispose(cmc);
+			removeAsListenerAndDispose(subController);
+			
+			subController = new PwChangeController(ureq, getWindowControl(), initialEmail, true);
+			listenTo(subController);
+			String title = ((PwChangeController)subController).getWizardTitle();
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), subController.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
 		}
-
-		removeAsListenerAndDispose(cmc);
-		removeAsListenerAndDispose(subController);
-		
-		subController = new PwChangeController(ureq, getWindowControl(), initialEmail, true);
-		listenTo(subController);
-		String title = ((PwChangeController)subController).getWizardTitle();
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), subController.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
 	}
 	
 	protected void event(UserRequest ureq, Controller source, Event event) {
