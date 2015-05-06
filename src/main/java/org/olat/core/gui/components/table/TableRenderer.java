@@ -220,17 +220,17 @@ public class TableRenderer extends DefaultComponentRenderer {
 
 	private void appendSelectDeselectAllButtons(final StringOutput target, final Translator translator, Table table, String formName, int rows, int resultsPerPage) {
 		if (table.isMultiSelect()) {
-			target.append("<div class='o_table_checkall input-sm'>");
-			target.append("<label class='checkbox-inline'>");
-			target.append("<a href='#' onclick=\"javascript:o_table_toggleCheck('").append(formName).append("', true)\">");
-			target.append("<input type='checkbox' checked='checked' disabled='disabled' />");
-			target.append(translator.translate("checkall"));
-			target.append("</a></label>");
-			target.append("<label class='checkbox-inline'><a href=\"#\" onclick=\"javascript:o_table_toggleCheck('").append(formName).append("', false)\">");
-			target.append("<input type='checkbox' disabled='disabled' />");
-			target.append(translator.translate("uncheckall"));
-			target.append("</a></label>");
-			target.append("</div>");
+			target.append("<div class='o_table_checkall input-sm'>")
+			  .append("<label class='checkbox-inline'>")
+			  .append("<a href='#' onclick=\"javascript:o_table_toggleCheck('").append(formName).append("', true)\">")
+			  .append("<i class='o_icon o_icon-lg o_icon_check_on'> </i> ")
+			  .append(translator.translate("checkall"))
+			  .append("</a></label>");
+			target.append("<label class='checkbox-inline'><a href=\"#\" onclick=\"javascript:o_table_toggleCheck('").append(formName).append("', false)\">")
+			  .append("<i class='o_icon o_icon-lg o_icon_check_off'> </i> ")
+			  .append(translator.translate("uncheckall"))
+			  .append("</a></label>")
+			  .append("</div>");
 		}
 
 		if (table.isShowAllSelected() && (rows > resultsPerPage)) {

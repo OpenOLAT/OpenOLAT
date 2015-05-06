@@ -78,7 +78,7 @@ public class EditorStatusController extends BasicController {
 		
 		long lpTimeStamp = cetm.getLatestPublishTimestamp();
 		if (lpTimeStamp == -1) {				
-			main.contextPut("publishInfos", "published.never.yet");
+			main.contextPut("publishInfos", translate("published.never.yet"));
 		} else { // course has been published before
 			Date d = new Date(lpTimeStamp);
 			main.contextPut("publishInfos", translate("published.latest", Formatter.getInstance(getLocale()).formatDateAndTime(d)));
