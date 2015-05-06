@@ -19,16 +19,12 @@
  */
 package org.olat.selenium.page.user;
 
-import java.awt.Toolkit;
-import java.awt.datatransfer.StringSelection;
 import java.util.List;
 
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
@@ -54,12 +50,16 @@ public class ImportUserPage {
 	public ImportUserPage fill(String csv) {
 		By importTextareaBy = By.cssSelector("div.o_wizard_steps_current_content textarea");
 		WebElement importTextareaEl = browser.findElement(importTextareaBy);
-		Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(csv), null);
-		if(Platform.MAC.equals(Platform.getCurrent())) {
-			importTextareaEl.sendKeys(Keys.COMMAND + "v");
-		} else {
-			importTextareaEl.sendKeys(Keys.CONTROL + "v");
-		}
+		//focus
+		importTextareaEl.sendKeys("");
+		OOGraphene.textarea(importTextareaEl, csv, browser);
+		return this;
+	}
+	
+	public ImportUserPage changePassword() {
+		By updatePassword = By.cssSelector("input[name='update.password'][type='checkbox']");
+		browser.findElement(updatePassword).click();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -77,7 +77,10 @@ public class ImportUserPage {
 	 * @param sb
 	 */
 	public UserVO append(String username, String password, String firstName, String lastName, StringBuilder sb) {
-
+		if(sb.length() > 0) {
+			sb.append("\\n");
+		}
+		
 		String email = username.replace("-", "") + "@frentix.com";
 		String institution = "frentix GmbH";
 		String institutionNumber = "034-" + System.currentTimeMillis();
@@ -91,7 +94,7 @@ public class ImportUserPage {
 		  .append(email).append("	")
 		  .append(institution).append("	")
 		  .append(institutionNumber).append("	")
-		  .append(institutionEmail).append('\n');
+		  .append(institutionEmail);
 		
 		UserVO userVo = new UserVO();
 		userVo.setLogin(username);
@@ -101,11 +104,40 @@ public class ImportUserPage {
 		return userVo;
 	}
 	
+	public UserVO append(UserVO userVo, String newLastName, String password, StringBuilder sb) {
+		if(sb.length() > 0) {
+			sb.append("\\n");
+		}
+		sb.append(userVo.getLogin()).append("	")
+		  .append(password).append("	")
+		  .append("de").append("	")
+		  .append(userVo.getFirstName()).append("	");
+		if(newLastName != null) {
+			sb.append(newLastName).append("	");
+			userVo.setLastName(newLastName);
+		} else {
+			sb.append(userVo.getLastName()).append("	");
+		}
+		sb.append(userVo.getEmail()).append("	")
+		  .append("").append("	")
+		  .append("").append("	")
+		  .append("");
+		return userVo;
+	}
+	
 	public ImportUserPage assertGreen(int numOfGreen) {
 		By greenBy = By.cssSelector(".o_dnd_label i.o_icon_new");
 		List<WebElement> greenEls = browser.findElements(greenBy);
 		Assert.assertEquals(numOfGreen, greenEls.size());
 		return this;
+	}
+	
+	public ImportUserPage assertWarn(int numOfWarns) {
+		By warnBy = By.cssSelector(".o_dnd_label i.o_icon_warn");
+		List<WebElement> warnEls = browser.findElements(warnBy);
+		Assert.assertEquals(numOfWarns, warnEls.size());
+		return this;
+		
 	}
 	
 	/**

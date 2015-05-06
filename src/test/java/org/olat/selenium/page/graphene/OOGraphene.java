@@ -69,6 +69,11 @@ public class OOGraphene {
 		((JavascriptExecutor)browser).executeScript("top.tinymce.activeEditor.setContent('" + content + "')");
 	}
 	
+	public static final void textarea(WebElement textareaEl, String content, WebDriver browser) {
+		String id = textareaEl.getAttribute("id");
+		((JavascriptExecutor)browser).executeScript("document.getElementById('" + id + "').value = '" + content + "'");
+	}
+	
 	public static final void date(Date date, String seleniumCssClass, WebDriver browser) {
 		Locale locale = getLocale(browser);
 		String dateText = DateFormat.getDateInstance(DateFormat.SHORT, locale).format(date);
