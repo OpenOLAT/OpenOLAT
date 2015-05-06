@@ -183,7 +183,14 @@ public class BGUserManagementController extends BasicController {
 		addCtrl = new UserSearchController(ureq, getWindowControl(), true, true);	
 		addCtrl.setUserObject(type);
 		listenTo(addCtrl);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), addCtrl.getInitialComponent(), true, translate("users.addowner"));
+		String title;
+		switch(type) {
+			case owner: title = translate("users.addowner"); break;
+			case participant: title = translate("users.addparticipant"); break;
+			case waiting: title = translate("users.addwaiting"); break;
+			default: title = "";
+		}
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), addCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

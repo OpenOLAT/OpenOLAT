@@ -48,6 +48,7 @@ import org.olat.course.assessment.model.AssessmentModeImpl;
 import org.olat.course.assessment.model.AssessmentModeToAreaImpl;
 import org.olat.course.assessment.model.AssessmentModeToGroupImpl;
 import org.olat.course.assessment.model.SearchAssessmentModeParams;
+import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
@@ -263,7 +264,12 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		dbInstance.getCurrentEntityManager().persist(modeToArea);
 		return modeToArea;
 	}
-	
+
+	@Override
+	public boolean isNodeInUse(RepositoryEntryRef entry, CourseNode node) {
+		return assessmentModeDao.isNodeInUse(entry, node);
+	}
+
 	@Override
 	public boolean isIpAllowed(String ipList, String address) {
 		boolean allOk = false;

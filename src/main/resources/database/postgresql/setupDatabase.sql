@@ -2127,4 +2127,12 @@ create index cer_resource_idx on o_cer_certificate (fk_olatresource);
 create index cer_archived_resource_idx on o_cer_certificate (c_archived_resource_id);
 create index cer_uuid_idx on o_cer_certificate (c_uuid);
 
+-- o_logging_table
+create index log_target_resid_idx on o_loggingtable(targetresid);
+create index log_ptarget_resid_idx on o_loggingtable(parentresid);
+create index log_gptarget_resid_idx on o_loggingtable(grandparentresid);
+create index log_ggptarget_resid_idx on o_loggingtable(greatgrandparentresid);
+create index log_creationdate_idx on o_loggingtable(creationdate);
+
+
 insert into hibernate_unique_key values ( 0 );

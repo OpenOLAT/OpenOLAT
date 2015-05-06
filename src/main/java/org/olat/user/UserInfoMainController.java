@@ -309,7 +309,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 		String rootFolderName = StringHelper.escapeHtml(firstLastName);
 		OlatNamedContainerImpl namedFolder = new OlatNamedContainerImpl(rootFolderName, rootFolder);
 		
-		//decided in plenum to have read only view in the personal visit card, even for admin
+		//decided in plenum to have read only view in the personal visiting card, even for admin
 		VFSSecurityCallback secCallback = new ReadOnlyCallback();
 		namedFolder.setLocalSecurityCallback(secCallback);
 		

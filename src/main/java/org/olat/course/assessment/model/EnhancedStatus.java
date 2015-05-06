@@ -17,32 +17,34 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment.manager;
+package org.olat.course.assessment.model;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.scheduler.JobWithDB;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
+import java.util.List;
+
+import org.olat.course.assessment.AssessmentMode.Status;
 
 /**
  * 
- * Initial date: 18.12.2014<br>
+ * Initial date: 04.05.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentModeNotificationJob extends JobWithDB {
+public class EnhancedStatus {
 	
-	private static final OLog logger = Tracing.createLoggerFor(AssessmentModeNotificationJob.class);
-
-	@Override
-	public void executeWithDB(JobExecutionContext context)
-	throws JobExecutionException {
-		try {
-			CoreSpringFactory.getImpl(AssessmentModeCoordinationServiceImpl.class).beat();
-		} catch (Exception e) {
-			logger.error("", e);
-		}
+	private final Status status;
+	private final List<String> warnings;
+	
+	public EnhancedStatus(Status status, List<String> warnings) {
+		this.status = status;
+		this.warnings = warnings;
 	}
+
+	public List<String> getWarnings() {
+		return warnings;
+	}
+
+	public Status getStatus() {
+		return status;
+	}
+
 }

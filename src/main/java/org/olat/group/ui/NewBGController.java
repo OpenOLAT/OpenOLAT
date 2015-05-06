@@ -39,6 +39,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.UserSession;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
@@ -116,13 +117,16 @@ public class NewBGController extends BasicController {
 	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == this.groupCreateController) {
+		if (source == groupCreateController) {
 			if (event == Event.DONE_EVENT) {
 				String bgDesc = groupCreateController.getGroupDescription();
 				Integer bgMax = groupCreateController.getGroupMax();
 				Integer bgMin = groupCreateController.getGroupMin();
 				boolean enableWaitingList = groupCreateController.isWaitingListEnabled();
 				boolean enableAutoCloseRanks = groupCreateController.isAutoCloseRanksEnabled();
+				
+				UserSession usess = ureq.getUserSession();
+				Object wildcard = usess.removeEntry("wild_card_new");
 				
 				newGroups = new ArrayList<BusinessGroup>();
 				if (bulkMode) {
@@ -134,6 +138,9 @@ public class NewBGController extends BasicController {
 					String bgName = groupCreateController.getGroupName();
 					BusinessGroup group = businessGroupService.createBusinessGroup(getIdentity(), bgName, bgDesc, bgMin, bgMax, enableWaitingList, enableAutoCloseRanks, re);
 					newGroups.add(group);
+					if(wildcard != null && Boolean.TRUE.equals(wildcard)) {
+						usess.putEntry("wild_card_" + group.getKey(), Boolean.TRUE);
+					}
 				}
 
 				if(newGroups != null){

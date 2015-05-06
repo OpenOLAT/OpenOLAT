@@ -40,8 +40,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.lucene.LucenePackage;
@@ -79,6 +81,8 @@ public class OlatFullIndexer {
 	private static final OLog log = Tracing.createLoggerFor(OlatFullIndexer.class);
 	private static final int INDEX_MERGE_FACTOR = 1000;
 	private static final int MAX_WAITING_COUNT = 600;// = 10Min
+	private static final IndexerThreadFactory indexWriterThreadFactory = new IndexerThreadFactory("writer");
+	private static final IndexerThreadFactory indexWorkersThreadFactory = new IndexerThreadFactory("worker");
 
 	private String indexPath;
 	private String tempIndexPath;
@@ -232,11 +236,11 @@ public class OlatFullIndexer {
 			if(indexerExecutor == null) {
 				BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(2);
 				indexerExecutor = new ThreadPoolExecutor(indexerPoolSize, indexerPoolSize, 0L, TimeUnit.MILLISECONDS,
-						queue, new ThreadPoolExecutor.CallerRunsPolicy());
+						queue, indexWorkersThreadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
 			}
 			if(indexerWriterExecutor == null) {
 				BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(2);
-				indexerWriterExecutor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, queue);
+				indexerWriterExecutor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, queue, indexWriterThreadFactory);
 			}
 			
 			File tempIndexDir = new File(tempIndexPath);
@@ -487,5 +491,33 @@ public class OlatFullIndexer {
 			countIndexPerMinute();
 			return Boolean.TRUE;
 		}
+	}
+	
+	private static class IndexerThreadFactory implements ThreadFactory {
+
+		private static final AtomicInteger poolNumber = new AtomicInteger(1);
+        private final ThreadGroup group;
+        private final AtomicInteger threadNumber = new AtomicInteger(1);
+        private final String namePrefix;
+
+        IndexerThreadFactory(String prefix) {
+            SecurityManager s = System.getSecurityManager();
+            group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+            namePrefix = "index-" + prefix + "-" +
+                          poolNumber.getAndIncrement() +
+                         "-thread-";
+        }
+
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
+            if (t.isDaemon()) {
+                t.setDaemon(false);
+            }
+            if (t.getPriority() != Thread.MIN_PRIORITY) {
+                t.setPriority(Thread.MIN_PRIORITY);
+            }
+            return t;
+        }
+		
 	}
 }

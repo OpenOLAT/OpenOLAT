@@ -81,8 +81,8 @@ public class BGConfigResourcesStepController extends StepFormBasicController {
 		resourcesCtr = new TableController(tableConfig, ureq, getWindowControl(), resourceTrans);
 		listenTo(resourcesCtr);
 
-		repoTableModel = new RepositoryTableModel(resourceTrans);
-		repoTableModel.addColumnDescriptors(resourcesCtr, translate("resources.remove"), false);
+		repoTableModel = new RepositoryTableModel(getLocale());
+		repoTableModel.addColumnDescriptors(resourcesCtr, false, true, false);
 		resourcesCtr.setTableDataModel(repoTableModel);
 		
 		((FormLayoutContainer)formLayout).put("resources", resourcesCtr.getInitialComponent());
@@ -130,7 +130,7 @@ public class BGConfigResourcesStepController extends StepFormBasicController {
 				TableEvent te = (TableEvent) event;
 				String actionid = te.getActionId();
 				RepositoryEntry re = repoTableModel.getObject(te.getRowId());
-				if (actionid.equals(RepositoryTableModel.TABLE_ACTION_SELECT_LINK)) {
+				if (actionid.equals(RepositoryTableModel.TABLE_ACTION_REMOVE_LINK)) {
 					//present dialog box if resource should be removed
 					if(repoTableModel.getObjects().remove(re)) {
 						resourcesCtr.modelChanged();

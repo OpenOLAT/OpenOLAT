@@ -148,6 +148,24 @@ public class AssessmentModeEditController extends FormBasicController {
 		}
 		setFormDescription("form.mode.description");
 		
+		ICourse course = CourseFactory.loadCourse(courseOres);
+		if(StringHelper.containsNonWhitespace(assessmentMode.getStartElement())) {
+			CourseNode startElement = course.getRunStructure().getNode(assessmentMode.getStartElement());
+			if(startElement == null) {
+				setFormWarning("warning.missing.start.element");
+			}
+		}
+		
+		if(StringHelper.containsNonWhitespace(assessmentMode.getElementList())) {
+			String elements = assessmentMode.getElementList();
+			for(String element:elements.split(",")) {
+				CourseNode node = course.getRunStructure().getNode(element);
+				if(node == null) {
+					setFormWarning("warning.missing.element");
+				}
+			}
+		}
+		
 		Status status = assessmentMode.getStatus();
 		String name = assessmentMode.getName();
 		nameEl = uifactory.addTextElement("mode.name", "mode.name", 255, name, formLayout);
@@ -267,7 +285,6 @@ public class AssessmentModeEditController extends FormBasicController {
 		formLayout.add(chooseElementsCont);
 		chooseElementsCont.setVisible(assessmentMode.isRestrictAccessElements());
 		
-		ICourse course = CourseFactory.loadCourse(courseOres);
 		CourseEditorTreeModel treeModel = course.getEditorTreeModel();
 		
 		elementKeys = new ArrayList<>();

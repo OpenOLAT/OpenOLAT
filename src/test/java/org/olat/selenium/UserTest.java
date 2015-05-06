@@ -35,14 +35,18 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
+import org.olat.selenium.page.User;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.selenium.page.user.ImportUserPage;
 import org.olat.selenium.page.user.PortalPage;
+import org.olat.selenium.page.user.UserAdminPage;
 import org.olat.selenium.page.user.UserPasswordPage;
 import org.olat.selenium.page.user.UserPreferencesPageFragment;
 import org.olat.selenium.page.user.UserPreferencesPageFragment.ResumeOption;
@@ -441,5 +445,99 @@ public class UserTest {
 		browser.navigate().back();
 		//we are in "My courses", check
 		OOGraphene.waitElement(NavigationPage.myCoursesAssertBy, browser);
+	}
+	
+	/**
+	 * The administrator create an user, the user log in.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void createUser(@InitialPage LoginPage loginPage,
+			@Drone @User WebDriver userBrowser)
+	throws IOException, URISyntaxException {
+		//login
+		loginPage
+			.assertOnLoginPage()
+			.loginAs("administrator", "openolat")
+			.resume();
+		
+		String uuid = UUID.randomUUID().toString();
+		String username = "miku-" + uuid;
+		UserVO userVo = UserAdminPage.createUserVO(username, "Miku", "Hatsune", "miku-" + uuid + "@openolat.com", "miku01");
+		UserAdminPage userAdminPage = navBar
+			.openUserManagement()
+			.openCreateUser()
+			.fillUserForm(userVo)
+			.assertOnUserEditView(username);
+		
+		userAdminPage
+			.openSearchUser()
+			.searchByUsername(username)
+			.assertOnUserInList(username)
+			.selectByUsername(username)
+			.assertOnUserEditView(username);
+		
+		//user log in
+		LoginPage userLoginPage = LoginPage.getLoginPage(userBrowser, deploymentUrl);
+		//tools
+		userLoginPage
+			.loginAs(username, "miku01")
+			.resume()
+			.assertLoggedIn(userVo);
+	}
+	
+	/**
+	 * Import 2 new users and check if the first can log in.
+	 * 
+	 * @param loginPage
+	 * @param userBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test @Ignore
+	@RunAsClient
+	public void importUsers(@InitialPage LoginPage loginPage,
+			@Drone @User WebDriver userBrowser)
+	throws IOException, URISyntaxException {
+		//login
+		loginPage
+			.assertOnLoginPage()
+			.loginAs("administrator", "openolat")
+			.resume();
+		
+		UserAdminPage userAdminPage = navBar
+			.openUserManagement()
+			.openImportUsers();
+		//start import wizard
+		ImportUserPage importWizard = userAdminPage.startImport();
+		
+		String uuid = UUID.randomUUID().toString();
+		String username1 = "moka-" + uuid;
+		String username2 = "mizore-" + uuid;
+		
+		StringBuilder csv = new StringBuilder();
+		UserVO user1 = importWizard.append(username1, "rosario01", "Moka", "Akashiya", csv);
+		importWizard.append(username2, "vampire01", "Mizore", "Shirayuki", csv);
+		importWizard
+			.fill(csv.toString())
+			.next() // -> preview
+			.assertGreen(2)
+			.next() // -> groups
+			.next() // -> emails
+			.finish();
+		
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
+		
+		//user log in
+		LoginPage userLoginPage = LoginPage.getLoginPage(userBrowser, deploymentUrl);
+		//tools
+		userLoginPage
+			.loginAs(username1, "rosario01")
+			.resume()
+			.assertLoggedIn(user1);
 	}
 }

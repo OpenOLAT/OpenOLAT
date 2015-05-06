@@ -40,7 +40,7 @@ import org.olat.user.UserManager;
 /**
  * 
  * Description:<br>
- * Render the from with link to visit card or group name or email
+ * Render the from with link to visiting card or group name or email
  * 
  * <P>
  * Initial Date:  7 mars 2011 <br>

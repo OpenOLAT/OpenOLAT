@@ -195,6 +195,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_rss:before { content: $fa-var-rss;}
 .o_icon_rss_unsubscribe:before { content: $fa-var-rss; color: #996633;}
 .o_icon_search:before { content: $fa-var-search;}
+.o_icon_select:before { content: $fa-var-check; }
 .o_icon_send:before { content: $fa-var-envelope;}
 .o_icon_settings:before { content: $fa-var-gears;}
 .o_icon_share:before { content: $fa-var-share;}

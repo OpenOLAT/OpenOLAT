@@ -27,11 +27,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
+import org.olat.core.id.context.TabContext;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.home.HomeSite;
 
 /**
@@ -61,9 +64,11 @@ public class IdentityContextEntryControllerCreator extends DefaultContextEntryCo
 	 */
 	@Override
 	public Controller createController(List<ContextEntry> ces, UserRequest ureq, WindowControl wControl) {
-		Identity identity = getIdentity(ces.get(0));
-		if (identity == null) return null;
-		return new UserInfoMainController(ureq, wControl, identity);
+		Identity id = getIdentity(ces.get(0));
+		if (id == null) {
+			return null;
+		}
+		return new UserInfoMainController(ureq, wControl, id);
 	}
 
 	@Override
@@ -75,14 +80,31 @@ public class IdentityContextEntryControllerCreator extends DefaultContextEntryCo
 		return null;
 	}
 
+	@Override
+	public TabContext getTabContext(UserRequest ureq, OLATResourceable ores,
+			ContextEntry mainEntry, List<ContextEntry> entries) {
+		
+		Long resId = mainEntry.getOLATResourceable().getResourceableId();
+		if(resId != null && resId.equals(ureq.getIdentity().getKey())) {
+			if(entries.isEmpty()) {//rewrite
+				OLATResourceable homeOres = OresHelper.createOLATResourceableInstance("HomeSite", resId);
+				entries.add(BusinessControlFactory.getInstance().createContextEntry(homeOres));
+				OLATResourceable profileOres = OresHelper.createOLATResourceableInstance("profil", 0l);
+				entries.add(BusinessControlFactory.getInstance().createContextEntry(profileOres));
+			}
+		}
+
+		return super.getTabContext(ureq, ores, mainEntry, entries);
+	}
+
 	/**
 	 * @see org.olat.core.id.context.ContextEntryControllerCreator#getTabName(org.olat.core.id.context.ContextEntry)
 	 */
 	@Override
 	public String getTabName(ContextEntry ce, UserRequest ureq) {
-		Identity identity = getIdentity(ce);
-		if (identity == null) return null;
-		return UserManagerImpl.getInstance().getUserDisplayName(identity);
+		Identity id = getIdentity(ce);
+		if (id == null) return null;
+		return UserManagerImpl.getInstance().getUserDisplayName(id);
 	}
 
 	@Override

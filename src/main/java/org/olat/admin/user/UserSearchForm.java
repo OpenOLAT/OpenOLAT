@@ -157,8 +157,11 @@ public class UserSearchForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_user_search_form");
+		
 		login = uifactory.addTextElement("login", "search.form.login", 128, "", formLayout);
 		login.setVisible(isAdminProps);
+		login.setElementCssClass("o_sel_user_search_username");
 
 		UserManager um = UserManager.getInstance();
 		Translator tr = Util.createPackageTranslator(
@@ -183,7 +186,8 @@ public class UserSearchForm extends FormBasicController {
 				TextElement textElement = (TextElement)fi;
 				textElement.setItemValidatorProvider(null);
 			}
-
+			
+			fi.setElementCssClass("o_sel_user_search_".concat(userPropertyHandler.getName().toLowerCase()));
 			propFormItems.put(userPropertyHandler.getName(), fi);
 		}
 		
@@ -193,6 +197,7 @@ public class UserSearchForm extends FormBasicController {
 		// Don't use submit button, form should not be marked as dirty since this is
 		// not a configuration form but only a search form (OLAT-5626)
 		searchButton = uifactory.addFormLink("submit.search", buttonGroupLayout, Link.BUTTON);
+		searchButton.setElementCssClass("o_sel_user_search_button");
 		if (cancelButton) {
 			uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 		}

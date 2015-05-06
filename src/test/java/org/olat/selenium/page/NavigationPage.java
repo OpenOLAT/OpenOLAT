@@ -31,6 +31,7 @@ import org.olat.selenium.page.group.GroupsPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.CatalogAdminPage;
 import org.olat.selenium.page.user.PortalPage;
+import org.olat.selenium.page.user.UserAdminPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -97,8 +98,9 @@ public class NavigationPage {
 		return new MyCoursesPage(browser);
 	}
 	
-	public void openUserManagement() {
+	public UserAdminPage openUserManagement() {
 		navigate(userManagementBy);
+		return UserAdminPage.getUserAdminPage(browser);
 	}
 	
 	public AdministrationPage openAdministration() {

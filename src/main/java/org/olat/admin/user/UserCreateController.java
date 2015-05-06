@@ -41,7 +41,6 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -91,20 +90,20 @@ public class UserCreateController extends BasicController  {
 				
 		Translator pT = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());		
 		createUserForm = new NewUserForm(ureq, wControl, canCreateOLATPassword, pT);		
-		this.listenTo(createUserForm);
-				
-		VelocityContainer newUserVC = this.createVelocityContainer("newuser");		
-		newUserVC.put("createUserForm", createUserForm.getInitialComponent());		
-		this.putInitialPanel(newUserVC);
+		listenTo(createUserForm);
+
+		putInitialPanel(createUserForm.getInitialComponent());
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//empty		
 	}
-	
+
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == createUserForm) {
 			if (event instanceof SingleIdentityChosenEvent) {			        
@@ -138,7 +137,7 @@ public class UserCreateController extends BasicController  {
 
 class NewUserForm extends FormBasicController {
 	
-	private OLog log = Tracing.createLoggerFor(this.getClass());
+	private static final OLog log = Tracing.createLoggerFor(NewUserForm.class);
 	
 	private static final String formIdentifyer = NewUserForm.class.getCanonicalName();
 	private static final String PASSWORD_NEW1 = "passwordnew1";
@@ -174,10 +173,14 @@ class NewUserForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {						
-		uifactory.addStaticTextElement("heading1", null, translate("new.form.please.enter"), formLayout);
+		setFormTitle("title.newuser");
+		setFormDescription("new.form.please.enter");
+		formLayout.setElementCssClass("o_sel_id_create");
+		
 		usernameTextElement = uifactory.addTextElement(LOGINNAME, "username", 128, "", formLayout);
 		usernameTextElement.setMandatory(true);
 		usernameTextElement.setDisplaySize(30);
+		usernameTextElement.setElementCssClass("o_sel_id_username");
 		
 		UserManager um = UserManager.getInstance();
 		userPropertyHandlers = um.getUserPropertyHandlersFor(formIdentifyer, true);
@@ -189,6 +192,8 @@ class NewUserForm extends FormBasicController {
 			if(userPropertyHandler.getName().equals(UserConstants.EMAIL)) {
 				emailTextElement = (TextElement) formItem;
 			}
+
+			formItem.setElementCssClass("o_sel_id_" + userPropertyHandler.getName().toLowerCase());
 		}
 		
 		Map<String, String> languages = I18nManager.getInstance().getEnabledLanguagesTranslated();
@@ -216,11 +221,13 @@ class NewUserForm extends FormBasicController {
 			psw1TextElement.setMandatory(true);
 			psw1TextElement.setDisplaySize(30);
 			psw1TextElement.setVisible(showPasswordFields);
+			psw1TextElement.setElementCssClass("o_sel_id_password1");
 
 			psw2TextElement = uifactory.addPasswordElement(PASSWORD_NEW2, "new.form.password.new2", 255, "", formLayout);
 			psw2TextElement.setMandatory(true);
 			psw2TextElement.setDisplaySize(30);		
 			psw2TextElement.setVisible(showPasswordFields);
+			psw2TextElement.setElementCssClass("o_sel_id_password2");
 		}
 		
 		uifactory.addFormSubmitButton("save", "submit.save", formLayout);

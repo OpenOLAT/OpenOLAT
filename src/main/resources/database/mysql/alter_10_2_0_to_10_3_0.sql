@@ -61,7 +61,15 @@ alter table o_gta_task add constraint gtask_to_tasklist_idx foreign key (fk_task
 alter table o_gta_task add constraint gtask_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 alter table o_gta_task add constraint gtask_to_bgroup_idx foreign key (fk_businessgroup) references o_gp_business (group_id);
 
-
-
 alter table o_gta_task_list add constraint gta_list_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+
+
+-- add index to o_loggingtable
+create index log_target_resid_idx on o_loggingtable(targetresid);
+create index log_ptarget_resid_idx on o_loggingtable(parentresid);
+create index log_gptarget_resid_idx on o_loggingtable(grandparentresid);
+create index log_ggptarget_resid_idx on o_loggingtable(greatgrandparentresid);
+create index log_creationdate_idx on o_loggingtable(creationdate);
+
+
 

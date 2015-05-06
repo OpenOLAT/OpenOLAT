@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.course.assessment.model.SearchAssessmentModeParams;
+import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
 import org.olat.group.area.BGArea;
 import org.olat.repository.RepositoryEntry;
@@ -112,7 +113,15 @@ public interface AssessmentModeManager {
 	 */
 	public boolean isInAssessmentMode(RepositoryEntryRef entry, Date date);
 	
+	/**
+	 * Return the list of assessed users specified in the configuration.
+	 * @param assessmentMode
+	 * @return
+	 */
 	public Set<Long> getAssessedIdentityKeys(AssessmentMode assessmentMode);
+	
+	public boolean isNodeInUse(RepositoryEntryRef entry, CourseNode node);
+	
 	
 	/**
 	 * 

@@ -133,7 +133,7 @@ public class AssessmentModeListController extends FormBasicController implements
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("stop"), "stop"), null)));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit", translate("edit"), "edit"));
 		
-		model = new AssessmentModeListModel(columnsModel, assessmentModeCoordinationService);
+		model = new AssessmentModeListModel(columnsModel, getTranslator(), assessmentModeCoordinationService);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);

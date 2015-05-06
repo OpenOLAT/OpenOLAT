@@ -15,11 +15,7 @@ function tweak_${panelName}() {
 function focus_${panelName}() {
 	try {
 		resize_${panelName}();
-		var el = document.getElementById('o_fioinput_${panelName}');
-		if(el != null) {
-			el.focus();
-			el.focus(); //stupid IE needs an extra focus call to work
-		}
+		setTimeout(function(){ jQuery('#o_fioinput_${panelName}').focus(); }, 100);
 	} catch (e) { if(console) console.log(e) }
 }
 /* ]]> */

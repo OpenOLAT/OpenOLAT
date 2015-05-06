@@ -421,7 +421,6 @@ public class QTIHelper {
 		if (tuple != null && ((Long) tuple[0]).compareTo(lmf) == 0) {
 			// in cache and not modified
 			doc = (Document) tuple[1];
-			log.audit("Document Cache Hit for [[" + key + "]]");
 			if (isDebugEnabled) {
 				log.debug("[" + debugEnabledTime + "] Document comes from EHCache!");
 				log.debug("[" + debugEnabledTime + "] Document approx Mem usage " + ObjectCloner.getObjectSize(doc));

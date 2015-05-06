@@ -70,6 +70,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.EventBus;
@@ -196,7 +197,14 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private GroupController gparticipantsC;
 	private GroupController waitingListController;
 
+	/**
+	 * Business group administrator
+	 */
 	private boolean isAdmin;
+	/**
+	 * Group manager of OLAT administrator.
+	 */
+	private boolean isGroupsAdmin;
 
 	@Autowired
 	private ACService acService;
@@ -218,6 +226,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	
 	private boolean needActivation;
 	private boolean chatAvailable;
+	private boolean wildcard;
 
 	/**
 	 * Do not use this constructor! Use the BGControllerFactory instead!
@@ -263,11 +272,19 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 		addLoggingResourceable(LoggingResourceable.wrap(businessGroup));
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OPEN, getClass());
+
+		UserSession usess = ureq.getUserSession();
+		Object wcard = usess.removeEntry("wild_card_" + businessGroup.getKey());
+		
+		isGroupsAdmin = usess.getRoles().isOLATAdmin()
+				|| usess.getRoles().isGroupManager();
 		
 		chatAvailable = isChatAvailable();
-		isAdmin = ureq.getUserSession().getRoles().isOLATAdmin()
-				|| ureq.getUserSession().getRoles().isGroupManager()
+		isAdmin = (wcard != null && Boolean.TRUE.equals(wcard))
+				|| isGroupsAdmin
 				|| businessGroupService.isIdentityInBusinessGroup(getIdentity(), businessGroup.getKey(), true, false, null);
+		
+		
 
 		// Initialize translator:
 		// package translator with default group fallback translators and type
@@ -313,8 +330,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			showError("grouprun.disabled");				
 		}
 		
-		Object wildcard = ureq.getUserSession().getEntry("wild_card_" + businessGroup.getKey());
-		if(wildcard == null) {
+		if(wcard == null) {
 			//check managed
 			AccessResult acResult = acService.isAccessible(businessGroup, getIdentity(), false);
 			if(acResult.isAccessible()) {
@@ -330,9 +346,10 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				bgTree.setTreeModel(new GenericTreeModel());
 				needActivation = true;
 			}
+			wildcard = false;
 		} else {
-			ureq.getUserSession().removeEntryFromNonClearedStore("wild_card_" + businessGroup.getKey());
 			needActivation = false;
+			wildcard = true;
 		}
 	}
 	
@@ -909,13 +926,14 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	/**
 	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(Event event) {
 		if (event instanceof OLATResourceableJustBeforeDeletedEvent) {
 			OLATResourceableJustBeforeDeletedEvent delEvent = (OLATResourceableJustBeforeDeletedEvent) event;
-			if (!delEvent.targetEquals(businessGroup)) throw new AssertException(
-					"receiving a delete event for a olatres we never registered for!!!:" + delEvent.getDerivedOres());
+			if (!delEvent.targetEquals(businessGroup)) {
+				throw new AssertException("receiving a delete event for a olatres we never registered for!!!:" + delEvent.getDerivedOres());
+			}	
 			dispose();
-
 		} else if (event instanceof BusinessGroupModifiedEvent) {
 			BusinessGroupModifiedEvent bgmfe = (BusinessGroupModifiedEvent) event;
 			if (event.getCommand().equals(BusinessGroupModifiedEvent.CONFIGURATION_MODIFIED_EVENT)) {
@@ -936,7 +954,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 					// Activate edit menu item
 					bgTree.setSelectedNodeId(ACTIVITY_MENUSELECT_ADMINISTRATION);
 				}
-			} else if (bgmfe.wasMyselfRemoved(getIdentity())) {
+			} else if (bgmfe.wasMyselfRemoved(getIdentity()) && !wildcard && !isGroupsAdmin) {
 				//nothing more here!! The message will be created and displayed upon disposing
 				dispose();//disposed message controller will be set
 			}
@@ -951,7 +969,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 	private void doShowResources(UserRequest ureq) {
 		// always refresh data model, maybe it has changed
-		RepositoryTableModel repoTableModel = new RepositoryTableModel(resourceTrans);
+		RepositoryTableModel repoTableModel = new RepositoryTableModel(getLocale());
 		List<RepositoryEntry> repoTableModelEntries = businessGroupService.findRepositoryEntries(Collections.singletonList(businessGroup), 0, -1);
 		repoTableModel.setObjects(repoTableModelEntries);
 		// init table controller only once
@@ -963,7 +981,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			listenTo(resourcesCtr);
 			
 			resourcesVC = createVelocityContainer("resources");
-			repoTableModel.addColumnDescriptors(resourcesCtr, null, true);
+			repoTableModel.addColumnDescriptors(resourcesCtr, false, false, true);
 			resourcesVC.put("resources", resourcesCtr.getInitialComponent());
 		}
 		// add table model to table
