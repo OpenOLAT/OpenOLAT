@@ -35,6 +35,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.restapi.support.vo.CourseVO;
@@ -497,7 +498,7 @@ public class UserTest {
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
-	@Test
+	@Test @Ignore
 	@RunAsClient
 	public void importUsers(@InitialPage LoginPage loginPage,
 			@Drone @User WebDriver userBrowser)
