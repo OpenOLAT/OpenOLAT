@@ -25,7 +25,9 @@ import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
@@ -72,6 +74,8 @@ public abstract class GTAAbstractController extends BasicController {
 	
 	protected final boolean businessGroupTask;
 	
+	protected GTAStepPreferences stepPreferences;
+	
 	private ContextualSubscriptionController contextualSubscriptionCtr;
 	
 	@Autowired
@@ -111,6 +115,13 @@ public abstract class GTAAbstractController extends BasicController {
 		publisherData = gtaManager.getPublisherData(courseEnv, gtaNode);
 		subsContext = gtaManager.getSubscriptionContext(courseEnv, gtaNode);
 		
+		stepPreferences = (GTAStepPreferences)ureq.getUserSession()
+				.getGuiPreferences()
+				.get(GTAStepPreferences.class, taskList.getKey().toString());
+		if(stepPreferences == null) {
+			stepPreferences = new GTAStepPreferences();
+		}
+		
 		initContainer(ureq);
 		process(ureq);
 	}
@@ -140,6 +151,9 @@ public abstract class GTAAbstractController extends BasicController {
 		mainVC.contextPut("assignmentEnabled", assignment);
 		if(assignment) {
 			task = stepAssignment(ureq, task);
+		} else if(task == null) {
+			TaskProcess firstStep = gtaManager.firstStep(gtaNode);
+			task = gtaManager.createTask(null, taskList, firstStep, assessedGroup, assessedIdentity, gtaNode);
 		}
 		
 		boolean submit = config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT);
@@ -171,6 +185,42 @@ public abstract class GTAAbstractController extends BasicController {
 		if(grading) {
 			stepGrading(ureq, task);
 		}
+		
+		collapsedContents(task);
+	}
+	
+	protected final void collapsedContents(Task currentTask) {
+		TaskProcess status = null;
+		TaskProcess previousStatus = null;
+		if(currentTask != null) {
+			status = currentTask.getTaskStatus();
+			previousStatus = gtaManager.previousStep(status, gtaNode);
+		}
+		
+		boolean assignment = Boolean.TRUE.equals(stepPreferences.getAssignement())
+				|| TaskProcess.assignment.equals(status) || TaskProcess.assignment.equals(previousStatus);
+		mainVC.contextPut("collapse_assignement", new Boolean(assignment));
+		
+		boolean submit = Boolean.TRUE.equals(stepPreferences.getSubmit())
+				|| TaskProcess.submit.equals(status) || TaskProcess.submit.equals(previousStatus);
+		mainVC.contextPut("collapse_submit", new Boolean(submit));
+		
+		boolean reviewAndCorrection = Boolean.TRUE.equals(stepPreferences.getReviewAndCorrection())
+				|| TaskProcess.review.equals(status) || TaskProcess.review.equals(previousStatus);
+		mainVC.contextPut("collapse_reviewAndCorrection", new Boolean(reviewAndCorrection));
+		
+		boolean revision = Boolean.TRUE.equals(stepPreferences.getRevision())
+				|| TaskProcess.revision.equals(status) || TaskProcess.revision.equals(previousStatus)
+				|| TaskProcess.correction.equals(status) || TaskProcess.correction.equals(previousStatus);
+		mainVC.contextPut("collapse_revision", new Boolean(revision));
+		
+		boolean solution = Boolean.TRUE.equals(stepPreferences.getSolution())
+				|| TaskProcess.solution.equals(status) || TaskProcess.solution.equals(previousStatus);
+		mainVC.contextPut("collapse_solution", new Boolean(solution));
+		
+		boolean grading = Boolean.TRUE.equals(stepPreferences.getGrading())
+				|| TaskProcess.grading.equals(status) || TaskProcess.grading.equals(previousStatus);
+		mainVC.contextPut("collapse_grading", new Boolean(grading));
 	}
 	
 	protected Task stepAssignment(@SuppressWarnings("unused") UserRequest ureq, Task assignedTask) {
@@ -238,5 +288,40 @@ public abstract class GTAAbstractController extends BasicController {
 			}
 		}
 		return assignedTask;
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		if("show".equals(event.getCommand())) {
+			doShow(ureq);
+		} else if("hide".equals(event.getCommand())) {
+			doHide(ureq);
+		}
+	}
+	
+	private void doShow(UserRequest ureq) {
+		String step = ureq.getParameter("step");
+		doSaveStepPreferences(ureq, step, Boolean.TRUE);
+	}
+	
+	private void doHide(UserRequest ureq) {
+		String step = ureq.getParameter("step");
+		doSaveStepPreferences(ureq, step, Boolean.FALSE);
+	}
+
+	private void doSaveStepPreferences(UserRequest ureq, String step, Boolean showHide) {
+		if(step == null) return;
+		switch(step) {
+			case "assignment": stepPreferences.setAssignement(showHide); break;
+			case "submit": stepPreferences.setSubmit(showHide); break;
+			case "reviewAndCorrection": stepPreferences.setReviewAndCorrection(showHide); break;
+			case "revision": stepPreferences.setRevision(showHide); break;
+			case "solution": stepPreferences.setSolution(showHide); break;
+			case "grading": stepPreferences.setGrading(showHide); break;
+			default: {};
+		}
+		
+		ureq.getUserSession().getGuiPreferences()
+			.putAndSave(GTAStepPreferences.class, taskList.getKey().toString(), stepPreferences);
 	}
 }

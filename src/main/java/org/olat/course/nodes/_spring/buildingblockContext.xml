@@ -79,13 +79,19 @@
 		<property name="order" value="130" />
 		<property name="alternativeCourseNodes">
 			<list>
-				<value>gta</value>
+				<value>igta</value>
 			</list>
 		</property>
 	</bean>
 	
-	<bean id="gta" class="org.olat.course.nodes.gta.GTACourseNodeConfiguration" scope="prototype">
+	<bean id="ita" class="org.olat.course.nodes.gta.GTACourseNodeConfiguration" scope="prototype">
+		<constructor-arg index="0" value="true" />
 		<property name="order" value="131" />
+	</bean>
+	
+	<bean id="gta" class="org.olat.course.nodes.gta.GTACourseNodeConfiguration" scope="prototype">
+		<constructor-arg index="0" value="false" />
+		<property name="order" value="132" />
 	</bean>
 			
 	<bean id="projectbroker" class="org.olat.course.nodes.projectbroker.ProjectBrokerNodeConfiguration" scope="prototype">

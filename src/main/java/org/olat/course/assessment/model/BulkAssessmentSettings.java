@@ -22,8 +22,11 @@ package org.olat.course.assessment.model;
 import java.io.Serializable;
 
 import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.TACourseNode;
+import org.olat.course.nodes.gta.GTAType;
+import org.olat.modules.ModuleConfiguration;
 
 /**
  * 
@@ -47,11 +50,15 @@ public class BulkAssessmentSettings implements Serializable {
 		hasScore = courseNode.hasScoreConfigured();
 		hasPassed = courseNode.hasPassedConfigured();
 		
+		ModuleConfiguration config = courseNode.getModuleConfiguration();
 		if (courseNode instanceof TACourseNode) {
-			Boolean hasReturnBox = (Boolean)courseNode.getModuleConfiguration().get(TACourseNode.CONF_RETURNBOX_ENABLED);
+			Boolean hasReturnBox = (Boolean)config.get(TACourseNode.CONF_RETURNBOX_ENABLED);
 			hasReturnFiles = hasReturnBox == null ? false : hasReturnBox.booleanValue();				
+		} else if (courseNode instanceof GTACourseNode) {
+			hasReturnFiles = GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))
+					&& config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION);				
 		} else if (courseNode instanceof ProjectBrokerCourseNode) {
-			Boolean hasReturnBox = (Boolean)courseNode.getModuleConfiguration().get(ProjectBrokerCourseNode.CONF_RETURNBOX_ENABLED);
+			Boolean hasReturnBox = (Boolean)config.get(ProjectBrokerCourseNode.CONF_RETURNBOX_ENABLED);
 			hasReturnFiles = hasReturnBox == null ? false : hasReturnBox.booleanValue();				
 		} else {
 			hasReturnFiles = false;			

@@ -146,7 +146,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 		}
 		taskModel.setObjects(taskDatas);
 		taskListEl.reset();
-		this.flc.contextPut("hasScheduledTasks", Boolean.valueOf(taskDatas.size()>0));
+		flc.contextPut("hasScheduledTasks", Boolean.valueOf(taskDatas.size()>0));
 	}
 	
 	@Override

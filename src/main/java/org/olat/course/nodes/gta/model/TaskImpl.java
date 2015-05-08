@@ -83,7 +83,7 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 	@Column(name="g_rev_loop", nullable=false, insertable=true, updatable=true)
 	private int revisionLoop;
 	
-	@Column(name="g_taskname", nullable=false, insertable=true, updatable=true)
+	@Column(name="g_taskname", nullable=true, insertable=true, updatable=true)
 	private String taskName;
 
 	@ManyToOne(targetEntity=TaskListImpl.class,fetch=FetchType.LAZY,optional=false)

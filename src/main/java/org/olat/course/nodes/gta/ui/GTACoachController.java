@@ -348,7 +348,8 @@ public class GTACoachController extends GTAAbstractController {
 		} else if(needRevisionsButton == source) {
 			Task assignedTask = submitCorrectionsCtrl.getAssignedTask();
 			doRevisions(ureq, assignedTask);
-		}		
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override

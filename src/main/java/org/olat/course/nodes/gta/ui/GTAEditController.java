@@ -89,7 +89,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 				accessCondition, AssessmentHelper.getAssessableNodes(editorModel, gtaNode), euce);		
 		listenTo(accessibilityCondCtrl);
 		//workflow
-		workflowCtrl = new GTAWorkflowEditController(ureq, getWindowControl(), config, euce.getCourseEditorEnv());
+		workflowCtrl = new GTAWorkflowEditController(ureq, getWindowControl(), gtaNode, euce.getCourseEditorEnv());
 		listenTo(workflowCtrl);
 		//assignment
 		assignmentCtrl = new GTAAssignmentEditController(ureq, getWindowControl(), config, tasksDir);

@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.ta;
+package org.olat.course.nodes.gta.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -29,12 +29,13 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.course.archiver.ArchiveResource;
 import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.AssessmentToolOptions;
-import org.olat.course.nodes.TACourseNode;
+import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.resource.OLATResource;
 
 /**
  * 
+ * Initial date: 07.05.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
@@ -44,10 +45,10 @@ public class BulkDownloadToolController extends BasicController {
 
 	private final ArchiveOptions options;
 	private final OLATResource courseOres;
-	private final TACourseNode courseNode;
+	private final GTACourseNode courseNode;
 	
 	public BulkDownloadToolController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
-			AssessmentToolOptions asOptions, TACourseNode courseNode) {
+			AssessmentToolOptions asOptions, GTACourseNode courseNode) {
 		super(ureq, wControl);
 		this.options = new ArchiveOptions();
 		this.options.setGroup(asOptions.getGroup());

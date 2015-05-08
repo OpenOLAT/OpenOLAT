@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -32,7 +33,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
@@ -40,7 +46,9 @@ import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -63,15 +71,20 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 	private final GTACourseNode gtaNode;
 	private final BusinessGroup assessedGroup;
 	private final CourseEnvironment courseEnv;
+	private final UserCourseEnvironment assessedUserCourseEnv;
 	
 	@Autowired
 	private GTAManager gtaManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
-	public GTAParticipantRevisionAndCorrectionsController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
-			Task assignedTask, GTACourseNode gtaNode, BusinessGroup assessedGroup) {
+	public GTAParticipantRevisionAndCorrectionsController(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment assessedUserCourseEnv,Task assignedTask,
+			GTACourseNode gtaNode, BusinessGroup assessedGroup) {
 		super(ureq, wControl);
 		this.gtaNode = gtaNode;
-		this.courseEnv = courseEnv;
+		courseEnv = assessedUserCourseEnv.getCourseEnvironment();
+		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		this.assignedTask = assignedTask;
 		this.assessedGroup = assessedGroup;
 		this.businessGroupTask = GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE));
@@ -204,6 +217,19 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 	private void doSubmitRevisions() {
 		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.correction);
 		gtaManager.log("Revision", "revision submitted", assignedTask, getIdentity(), getIdentity(), assessedGroup, courseEnv, gtaNode);
-		
+
+		if(businessGroupTask) {
+			List<Identity> identities = businessGroupService.getMembers(assessedGroup, GroupRoles.participant.name());
+			AssessmentManager assessmentManager = courseEnv.getAssessmentManager();
+			assessmentManager.preloadCache(identities);
+			ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
+
+			for(Identity identity:identities) {
+				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
+				gtaNode.incrementUserAttempts(userCourseEnv);
+			}
+		} else {
+			gtaNode.incrementUserAttempts(assessedUserCourseEnv);
+		}
 	}
 }

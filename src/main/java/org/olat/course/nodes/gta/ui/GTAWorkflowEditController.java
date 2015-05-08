@@ -74,6 +74,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private MultipleSelectionElement taskAssignmentEl, submissionEl, reviewEl, revisionEl, sampleEl, gradingEl;
 	private FormLayoutContainer stepsCont;
 	
+	private final GTACourseNode gtaNode;
 	private final ModuleConfiguration config;
 	private final CourseEditorEnv courseEditorEnv;
 	private List<Long> areaKeys;
@@ -84,16 +85,20 @@ public class GTAWorkflowEditController extends FormBasicController {
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
-	public GTAWorkflowEditController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, CourseEditorEnv courseEditorEnv) {
+	public GTAWorkflowEditController(UserRequest ureq, WindowControl wControl, GTACourseNode gtaNode, CourseEditorEnv courseEditorEnv) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
-		this.config = config;
+		this.gtaNode = gtaNode;
+		this.config = gtaNode.getModuleConfiguration();
 		this.courseEditorEnv = courseEditorEnv;
-		
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		
+		String type = config.getStringValue(GTACourseNode.GTASK_TYPE);
+		
+
 		FormLayoutContainer typeCont = FormLayoutContainer.createDefaultFormLayout("type", getTranslator());
 		typeCont.setFormTitle(translate("task.type.title"));
 		typeCont.setFormDescription(translate("task.type.description"));
@@ -104,9 +109,10 @@ public class GTAWorkflowEditController extends FormBasicController {
 				translate("task.execution.group"),
 				translate("task.execution.individual")
 		};
+
 		typeEl = uifactory.addDropdownSingleselect("execution", "task.execution", typeCont, executionKeys, executionValues, null);
 		typeEl.addActionListener(FormEvent.ONCHANGE);
-		String type = config.getStringValue(GTACourseNode.GTASK_TYPE);
+		typeEl.setEnabled(false);
 		if(StringHelper.containsNonWhitespace(type)) {
 			for(String executionKey:executionKeys) {
 				if(executionKey.equals(type)) {
@@ -145,8 +151,24 @@ public class GTAWorkflowEditController extends FormBasicController {
 		areaListEl = uifactory.addStaticTextElement("areas.list", null, areaList, typeCont);
 		areaListEl.setElementCssClass("text-muted");
 		areaListEl.setLabel(null, null);
-		updateTaskType();
 		
+		boolean mismatch = ((GTAType.group.name().equals(type) && !gtaNode.getType().equals(GTACourseNode.TYPE_GROUP))
+				|| (GTAType.individual.name().equals(type) && !gtaNode.getType().equals(GTACourseNode.TYPE_INDIVIDUAL)));
+		
+		if(GTAType.group.name().equals(type)) {
+			typeEl.setVisible(mismatch);
+		} else if(GTAType.individual.name().equals(type)) {
+			if(mismatch) {
+				typeEl.setVisible(true);
+				chooseGroupButton.setVisible(false);
+				groupListEl.setVisible(false);
+				chooseAreaButton.setVisible(false);
+				areaListEl.setVisible(false);
+			} else {
+				typeCont.setVisible(false);
+			}
+		}
+
 		//Steps
 		stepsCont = FormLayoutContainer.createDefaultFormLayout("steps", getTranslator());
 		stepsCont.setFormTitle(translate("task.steps.title"));
@@ -216,14 +238,6 @@ public class GTAWorkflowEditController extends FormBasicController {
 		buttonCont.setRootForm(mainForm);
 		formLayout.add(buttonCont);
 		uifactory.addFormSubmitButton("save", "save", buttonCont);
-	}
-	
-	private void updateTaskType() {
-		boolean groupOption = typeEl.isSelected(0);
-		chooseGroupButton.setVisible(groupOption);
-		groupListEl.setVisible(groupOption);
-		chooseAreaButton.setVisible(groupOption);
-		areaListEl.setVisible(groupOption);
 	}
 	
 	@Override
@@ -307,9 +321,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(typeEl == source) {
-			updateTaskType();
-		} else if(submissionEl == source) {
+		if(submissionEl == source) {
 			submissionDeadlineEl.setVisible(submissionEl.isAtLeastSelected(1));
 		} else if(taskAssignmentEl == source) {
 			assignmentDeadlineEl.setVisible(taskAssignmentEl.isAtLeastSelected(1));
@@ -327,7 +339,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(groupSelectionCtrl == source) {
-			if (event == Event.DONE_EVENT) {
+			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				groupKeys = groupSelectionCtrl.getSelectedKeys();
 				groupListEl.setValue(getGroupNames(groupKeys));
 				if(courseEditorEnv.getCourseGroupManager().hasBusinessGroups()) {
@@ -339,7 +351,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 			cmc.deactivate();
 			cleanUp();
 		} else if(areaSelectionCtrl == source) {
-			if (event == Event.DONE_EVENT) {
+			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				areaKeys = areaSelectionCtrl.getSelectedKeys();
 				areaListEl.setValue(getAreaNames(areaKeys));
 				if(courseEditorEnv.getCourseGroupManager().hasAreas()) {
@@ -358,9 +370,10 @@ public class GTAWorkflowEditController extends FormBasicController {
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(groupSelectionCtrl);
+		removeAsListenerAndDispose(areaSelectionCtrl);
 		removeAsListenerAndDispose(cmc);
-		
 		groupSelectionCtrl = null;
+		areaSelectionCtrl = null;
 		cmc = null;
 	}
 	

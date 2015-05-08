@@ -37,20 +37,23 @@ import org.olat.course.nodes.GTACourseNode;
  */
 public class GTACourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 
-	private GTACourseNodeConfiguration() {
+	private final boolean individual;
+	
+	private GTACourseNodeConfiguration(boolean individual) {
 		super();
+		this.individual = individual;
 	}
 
 	@Override
 	public CourseNode getInstance() {
-		return new GTACourseNode();
+		return new GTACourseNode(getAlias());
 	}
 
 	@Override
 	public String getLinkText(Locale locale) {
 		Translator fallback = Util.createPackageTranslator(CourseNodeConfiguration.class, locale);
 		Translator translator = Util.createPackageTranslator(this.getClass(), locale, fallback);
-		return translator.translate("title_gta");
+		return individual ? translator.translate("title_ita") : translator.translate("title_gta");
 	}
 
 	@Override
@@ -60,7 +63,7 @@ public class GTACourseNodeConfiguration extends AbstractCourseNodeConfiguration 
 
 	@Override
 	public String getAlias() {
-		return "gta";
+		return  individual ? "ita" : "gta";
 	}
 
 	@Override
