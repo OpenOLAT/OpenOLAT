@@ -108,15 +108,23 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 	public static final String GTASK_AREAS = "grouptask.areas";
 	public static final String GTASK_ASSIGNMENT = "grouptask.assignement";
 	public static final String GTASK_ASSIGNMENT_DEADLINE = "grouptask.assignment.deadline";
+	public static final String GTASK_ASSIGNMENT_DEADLINE_RELATIVE = "grouptask.assignment.deadline.relative";
+	public static final String GTASK_ASSIGNMENT_DEADLINE_RELATIVE_TO = "grouptask.assignment.deadline.relative.to";
 	public static final String GTASK_SUBMIT = "grouptask.submit";
 	public static final String GTASK_SUBMIT_DEADLINE = "grouptask.submit.deadline";
+	public static final String GTASK_SUBMIT_DEADLINE_RELATIVE = "grouptask.submit.deadline.relative";
+	public static final String GTASK_SUBMIT_DEADLINE_RELATIVE_TO = "grouptask.submit.deadline.relative.to";
 	public static final String GTASK_REVIEW_AND_CORRECTION = "grouptask.review.and.correction";
 	public static final String GTASK_REVISION_PERIOD = "grouptask.revision.period";
 	public static final String GTASK_SAMPLE_SOLUTION = "grouptask.solution";
 	public static final String GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER = "grouptask.solution.visible.after";
+	public static final String GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE = "grouptask.solution.visible.after.relative";
+	public static final String GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE_TO = "grouptask.solution.visible.after.relative.to";
 	public static final String GTASK_GRADING = "grouptask.grading";
 	
 	public static final String GTASK_TASKS = "grouptask.tasks";
+	
+	public static final String GTASK_RELATIVE_DATES = "grouptask.rel.dates";
 	
 	public static final String GTASK_ASSIGNEMENT_TYPE = "grouptask.assignement.type";
 	public static final String GTASK_ASSIGNEMENT_TYPE_AUTO = "auto";

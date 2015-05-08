@@ -22,9 +22,11 @@ package org.olat.repository.manager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
@@ -271,6 +273,81 @@ public class RepositoryEntryRelationDAO {
 				.setParameter("repoKeys", repoKeys)
 				.getSingleResult();
 		return count == null ? 0 : count.intValue();
+	}
+	
+	public Date getEnrollmentDate(RepositoryEntryRef re, IdentityRef identity, String... roles) {
+		if(re == null || identity == null) return null;
+		
+		List<String> roleList = null;
+		if(roles != null && roles.length > 0 && roles[0] != null) {
+			roleList = new ArrayList<>(roles.length);
+			for(String role:roles) {
+				roleList.add(role);
+			}
+		}
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select min(members.creationDate) from ").append(RepositoryEntry.class.getName()).append(" as v")
+		  .append(" inner join v.groups as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as members")
+		  .append(" where v.key=:repoKey and members.identity.key=:identityKey");
+		if(roleList != null && roleList.size() > 0) {
+			sb.append(" and members.role in (:roles)");
+		}
+
+		TypedQuery<Date> datesQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Date.class)
+				.setParameter("repoKey", re.getKey())
+				.setParameter("identityKey", identity.getKey());
+		if(roleList != null && roleList.size() > 0) {
+			datesQuery.setParameter("roles", roleList);
+		}
+		
+		List<Date> dates = datesQuery.getResultList();
+		return dates.isEmpty() ? null : dates.get(0);
+	}
+	
+	public Map<Long,Date> getEnrollmentDates(RepositoryEntryRef re, String... roles) {
+		if(re == null) return null;
+		
+		List<String> roleList = null;
+		if(roles != null && roles.length > 0 && roles[0] != null) {
+			roleList = new ArrayList<>(roles.length);
+			for(String role:roles) {
+				roleList.add(role);
+			}
+		}
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select members.identity.key, min(members.creationDate) from ").append(RepositoryEntry.class.getName()).append(" as v")
+		  .append(" inner join v.groups as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as members")
+		  .append(" where v.key=:repoKey");
+		if(roleList != null && roleList.size() > 0) {
+			sb.append(" and members.role in (:roles)");
+		}
+		sb.append(" group by members.identity.key");
+
+		TypedQuery<Object[]> datesQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("repoKey", re.getKey());
+		if(roleList != null && roleList.size() > 0) {
+			datesQuery.setParameter("roles", roleList);
+		}
+		
+		List<Object[]> dateList = datesQuery.getResultList();
+		Map<Long,Date> dateMap = new HashMap<>((dateList.size() * 2) + 1);
+		for(Object[] dateArr:dateList) {
+			Long key = (Long)dateArr[0];
+			Date date = (Date)dateArr[1];
+			if(key != null && date != null) {
+				dateMap.put(key, date);
+			}
+		}
+
+		return dateMap;
 	}
 	
 	

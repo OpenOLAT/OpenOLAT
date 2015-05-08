@@ -145,6 +145,32 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 		Assert.assertNotNull(launchDates.get(user2.getKey()));
 	}
 	
+	@Test
+	public void getInitialLaunchDates_noIdentites() {
+		Identity user1 = JunitTestHelper.createAndPersistIdentityAsRndUser("user-launch-7-");
+		Identity user2 = JunitTestHelper.createAndPersistIdentityAsRndUser("user-launch-8-");
+		Identity user3 = JunitTestHelper.createAndPersistIdentityAsRndUser("user-launch-9-");
+		ICourse course = CoursesWebService.createEmptyCourse(user1, "course-launch-dates", "course long name", null);
+		dbInstance.commitAndCloseSession();
+		
+		userCourseInformationsManager.updateUserCourseInformations(course.getResourceableId(), user1, true);
+		userCourseInformationsManager.updateUserCourseInformations(course.getResourceableId(), user2, true);
+		userCourseInformationsManager.updateUserCourseInformations(course.getResourceableId(), user3, true);
+		dbInstance.commitAndCloseSession();
+		
+		//get all launch dates
+		Map<Long,Date> launchDates = userCourseInformationsManager.getInitialLaunchDates(course.getResourceableId());
+		Assert.assertNotNull(launchDates);
+		Assert.assertEquals(3, launchDates.size());
+		Assert.assertTrue(launchDates.containsKey(user1.getKey()));
+		Assert.assertNotNull(launchDates.get(user1.getKey()));
+		Assert.assertTrue(launchDates.containsKey(user2.getKey()));
+		Assert.assertNotNull(launchDates.get(user2.getKey()));
+		Assert.assertTrue(launchDates.containsKey(user3.getKey()));
+		Assert.assertNotNull(launchDates.get(user3.getKey()));
+	}
+	
+	
 	
 	/**
 	 * This test is to analyze a red screen

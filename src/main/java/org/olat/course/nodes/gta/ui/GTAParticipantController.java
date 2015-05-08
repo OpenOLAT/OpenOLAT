@@ -144,7 +144,7 @@ public class GTAParticipantController extends GTAAbstractController {
 			mainVC.contextPut("assignmentCssClass", "o_active");
 			
 			//assignment open?
-			Date dueDate = gtaNode.getModuleConfiguration().getDateValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
+			Date dueDate = getAssignementDueDate();
 			if(dueDate != null && dueDate.compareTo(new Date()) < 0) {
 				//assignment is closed
 				mainVC.contextPut("assignmentClosed", Boolean.TRUE);
@@ -450,7 +450,7 @@ public class GTAParticipantController extends GTAAbstractController {
 	}
 	
 	private void setSolutions(UserRequest ureq) {
-		Date availableDate = gtaNode.getModuleConfiguration().getDateValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
+		Date availableDate = getSolutionDueDate();
 		boolean visible = availableDate == null || availableDate.compareTo(new Date()) <= 0;
 		if(visible) {
 			File documentsDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);
@@ -570,6 +570,7 @@ public class GTAParticipantController extends GTAAbstractController {
 		} else if(businessGroupChooserCtrl == source) {
 			if(event == Event.DONE_EVENT && businessGroupChooserCtrl.getSelectGroup() != null) {
 				cleanUpProcess();
+				resetDueDates();
 				assessedGroup = businessGroupChooserCtrl.getSelectGroup();
 				process(ureq);
 			}
