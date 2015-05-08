@@ -35,6 +35,7 @@ import org.olat.group.BusinessGroupImpl;
 import org.olat.repository.RepositoryEntry;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.ConversionException;
 
 /**
  * 
@@ -105,6 +106,9 @@ public class HistoryManager extends BasicManager {
 			String pathHomePage = FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomePage(identity.getName());
 			File resumeXml = new File(pathHomePage, "resume.xml");
 			return readHistory(resumeXml);
+		} catch(ConversionException e) {
+			logWarn("Cannot read resume file: ", e);
+			return null;
 		} catch (Exception e) {
 			logError("Cannot read resume file: ", e);
 			return null;
