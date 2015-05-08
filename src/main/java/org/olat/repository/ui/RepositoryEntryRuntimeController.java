@@ -635,14 +635,17 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected final void doClose(UserRequest ureq) {
 		// Now try to go back to place that is attacked to (optional) root back business path
-		if (launchedFromPoint != null && StringHelper.containsNonWhitespace(launchedFromPoint.getBusinessPath())) {
+		if (launchedFromPoint != null && StringHelper.containsNonWhitespace(launchedFromPoint.getBusinessPath())
+				&& launchedFromPoint.getEntries() != null && launchedFromPoint.getEntries().size() > 0) {
 			BusinessControl bc = BusinessControlFactory.getInstance().createFromPoint(launchedFromPoint);
-			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
-			try {
-				//make the resume secure. If something fail, don't generate a red screen
-				NewControllerFactory.getInstance().launch(ureq, bwControl);
-			} catch (Exception e) {
-				logError("Error while resuming with root leve back business path::" + launchedFromPoint.getBusinessPath(), e);
+			if(bc.hasContextEntry()) {
+				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+				try {
+					//make the resume secure. If something fail, don't generate a red screen
+					NewControllerFactory.getInstance().launch(ureq, bwControl);
+				} catch (Exception e) {
+					logError("Error while resuming with root level back business path::" + launchedFromPoint.getBusinessPath(), e);
+				}
 			}
 		}
 		
