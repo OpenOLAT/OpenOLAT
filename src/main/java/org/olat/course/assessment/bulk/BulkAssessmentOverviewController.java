@@ -266,7 +266,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
-			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
 				Date scheduledDate = (Date)runContext.get("scheduledDate");
 				AssessableCourseNode courseNode = (AssessableCourseNode)runContext.get("courseNode");
 				BulkAssessmentDatas datas = (BulkAssessmentDatas)runContext.get("datas");
@@ -300,12 +300,12 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 			Step start = new BulkAssessment_2_DatasStep(ureq, courseNode, datas, editableTask);
 			StepRunnerCallback finish = new StepRunnerCallback() {
 				@Override
-				public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+				public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
 					Task task = (Task)runContext.get("task");
 					Date scheduledDate = (Date)runContext.get("scheduledDate");
-					AssessableCourseNode courseNode = (AssessableCourseNode)runContext.get("courseNode");
-					BulkAssessmentDatas datas = (BulkAssessmentDatas)runContext.get("datas");
-					Feedback feedback = doUpdateBulkAssessment(task, courseNode, scheduledDate, datas);
+					AssessableCourseNode assessableCourseNode = (AssessableCourseNode)runContext.get("courseNode");
+					BulkAssessmentDatas bulkDatas = (BulkAssessmentDatas)runContext.get("datas");
+					Feedback feedback = doUpdateBulkAssessment(task, assessableCourseNode, scheduledDate, bulkDatas);
 					runContext.put("feedback", feedback);
 					editedTask = null;
 					return StepsMainRunController.DONE_MODIFIED;
@@ -314,7 +314,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 			
 			StepRunnerCallback cancel = new StepRunnerCallback() {
 				@Override
-				public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+				public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
 					taskManager.returnTaskAfterEdition(editableTask, null);
 					editedTask = null;
 					return Step.NOSTEP;
