@@ -236,7 +236,8 @@ public class ReminderModule extends AbstractSpringModule {
 	public void setScheduler(String interval, String defaultSendTime) {
 		this.interval = interval;
 		this.defaultSendTime = defaultSendTime;
-		setStringProperty(INTERVAL, interval, true);
-		setStringProperty(SEND_TIME, defaultSendTime, true);
+		setStringProperty(INTERVAL, interval, false);
+		setStringProperty(SEND_TIME, defaultSendTime, false);
+		savePropertiesAndFireChangedEvent();
 	}
 }
