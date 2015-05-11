@@ -386,7 +386,11 @@ public class CourseConfig implements Serializable, Cloneable {
 	 * @return true if the efficency statement is enabled
 	 */
 	public Long getCertificateTemplate() {
-		Long templateId = (Long)configuration.get(CERTIFICATE_TEMPLATE);
+		Object templateIdObj = configuration.get(CERTIFICATE_TEMPLATE);
+		Long templateId = null;
+		if(templateIdObj instanceof Long) {
+			templateId = (Long)templateIdObj;
+		}
 		return templateId;
 	}
 	
