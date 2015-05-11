@@ -442,6 +442,24 @@ public class GTAManagerImpl implements GTAManager {
 
 		return tasks.isEmpty() ? null : tasks.get(0);
 	}
+	
+	@Override
+	public int deleteTaskList(RepositoryEntryRef entry, GTACourseNode cNode) {
+		TaskList taskList = getTaskList(entry, cNode);
+		
+		int numOfDeletedObjects;
+		if(taskList != null) {
+			String deleteTasks = "delete from gtatask as task where task.taskList.key=:taskListKey";
+			int numOfTasks = dbInstance.getCurrentEntityManager().createQuery(deleteTasks)
+				.setParameter("taskListKey", taskList.getKey())
+				.executeUpdate();
+			dbInstance.getCurrentEntityManager().remove(taskList);
+			numOfDeletedObjects = numOfTasks + 1;
+		} else {
+			numOfDeletedObjects = 0;
+		}
+		return numOfDeletedObjects;
+	}
 
 	@Override
 	public List<Task> getTasks(TaskList taskList) {
@@ -691,6 +709,83 @@ public class GTAManagerImpl implements GTAManager {
 		TaskImpl mergedtask = dbInstance.getCurrentEntityManager().merge(taskImpl);
 		dbInstance.commit();//make the thing definitiv
 		return mergedtask;
+	}
+	
+	
+	
+	@Override
+	public TaskProcess firstStep(GTACourseNode cNode) {
+		TaskProcess firstStep = null;
+		
+		if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
+			firstStep = TaskProcess.assignment;
+		} else if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
+			firstStep = TaskProcess.submit;
+		} else if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)) {
+			firstStep = TaskProcess.review;
+		} else if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
+			firstStep = TaskProcess.revision;
+		} else if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
+			firstStep = TaskProcess.correction;
+		} else if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION)) {
+			firstStep = TaskProcess.solution;
+		} else if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_GRADING)) {
+			firstStep = TaskProcess.grading;
+		}
+		
+		return firstStep;
+	}
+
+	@Override
+	public TaskProcess previousStep(TaskProcess currentStep, GTACourseNode cNode) {
+		TaskProcess previousStep = null;
+		switch(currentStep) {
+			case graded:
+			case grading: {
+				if(currentStep != TaskProcess.grading && cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_GRADING)) {
+					previousStep = TaskProcess.grading;
+					break;
+				}
+			}
+			case solution: {
+				if(currentStep != TaskProcess.solution && cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION)) {
+					previousStep = TaskProcess.solution;
+					break;
+				}
+			}
+			case correction: {
+				if(currentStep != TaskProcess.correction && cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
+					previousStep = TaskProcess.correction;
+					break;
+				}
+			}
+			case revision: {
+				if(currentStep != TaskProcess.revision && cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
+					previousStep = TaskProcess.revision;
+					break;
+				}
+			}
+			case review: {
+				if(currentStep != TaskProcess.review && cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)) {
+					previousStep = TaskProcess.review;
+					break;
+				}
+			}
+			case submit: {
+				if(currentStep != TaskProcess.submit && cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
+					previousStep = TaskProcess.submit;
+					break;
+				}
+			}
+			case assignment: {
+				if(currentStep != TaskProcess.assignment && cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
+					previousStep = TaskProcess.assignment;
+					break;
+				}
+			}
+		}
+
+		return previousStep;
 	}
 
 	@Override

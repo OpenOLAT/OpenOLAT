@@ -53,6 +53,7 @@ public class ReminderModule extends AbstractSpringModule {
 	private static final String SMS_ENABLED = "sms.enabled";
 	private static final String SEND_TIME = "default.send.time";
 	private static final String SEND_TIMEZONE = "default.send.timezone";
+	private static final String INTERVAL = "send.interval";
 	
 	@Value("${reminders.enabled:true}")
 	private boolean enabled;
@@ -63,6 +64,9 @@ public class ReminderModule extends AbstractSpringModule {
 	private String defaultSendTime;
 	@Value("${reminders.default.send.timezone:server}")
 	private String defaultSendTimeZone;
+	@Value("${reminders.interval:24}")
+	private String interval;
+	
 	
 	@Autowired
 	private List<RuleSPI> ruleSpies;
@@ -91,6 +95,11 @@ public class ReminderModule extends AbstractSpringModule {
 			defaultSendTime = sendTimeObj;
 		}
 		
+		String intervalObj = getStringPropertyValue(INTERVAL, true);
+		if(StringHelper.containsNonWhitespace(intervalObj)) {
+			interval = intervalObj;
+		}
+
 		String sendTimezoneObj = getStringPropertyValue(SEND_TIMEZONE, true);
 		if(StringHelper.containsNonWhitespace(sendTimezoneObj)) {
 			defaultSendTimeZone = sendTimezoneObj;
@@ -121,7 +130,7 @@ public class ReminderModule extends AbstractSpringModule {
 		return selectedSpi;
 	}
 	/**
-	 * Default 0 0 9 * * ?
+	 * Default 0 0 9/1 * * ?
 	 * 
 	 */
 	private void configureQuartzJob() {
@@ -132,6 +141,7 @@ public class ReminderModule extends AbstractSpringModule {
 				String currentCronExpression = cronTrigger.getCronExpression();
 				String cronExpression = getCronExpression();
 				if(!cronExpression.equals(currentCronExpression)) {
+					log.info("Start reminder with this cron expression: " + cronExpression);
 					cronTrigger.setCronExpression(cronExpression);
 					scheduler.rescheduleJob("reminderTrigger", Scheduler.DEFAULT_GROUP, (Trigger)cronTrigger.clone());
 				}
@@ -141,7 +151,7 @@ public class ReminderModule extends AbstractSpringModule {
 		}
 	}
 	
-	private String getCronExpression() {
+	protected String getCronExpression() {
 		StringBuilder sb = new StringBuilder();
 		int hour = 9;
 		int minute = 0;
@@ -152,7 +162,21 @@ public class ReminderModule extends AbstractSpringModule {
 			minute = parsedTime.getMinute();
 		}
 
-		sb.append("0 ").append(minute).append(" ").append(hour).append(" * * ?");
+		ReminderInterval intervalVal = ReminderInterval.byKey(getInterval());
+		String cronInterval;
+		if(intervalVal != null && !ReminderInterval.every24.equals(intervalVal)) {
+			int i = intervalVal.interval();
+			if(i < hour) {
+				//correct the first time the cron job starts
+				int rest = hour % i;
+				hour = rest;
+			}
+			cronInterval = "/" + intervalVal.interval();
+		} else {
+			cronInterval = "";//or 24 hours
+		}
+
+		sb.append("0 ").append(minute).append(" ").append(hour).append(cronInterval).append(" * * ?");
 		return sb.toString();
 	}
 
@@ -172,6 +196,15 @@ public class ReminderModule extends AbstractSpringModule {
 	public void setSmsEnabled(boolean smsEnabled) {
 		this.smsEnabled = smsEnabled;
 		setStringProperty(SMS_ENABLED, Boolean.toString(smsEnabled), true);
+	}
+
+	public String getInterval() {
+		return interval;
+	}
+
+	public void setInterval(String interval) {
+		this.interval = interval;
+		setStringProperty(INTERVAL, interval, true);
 	}
 
 	public String getDefaultSendTime() {
@@ -198,5 +231,12 @@ public class ReminderModule extends AbstractSpringModule {
 	public void setDefaultSendTimeZone(TimeZone timeZone) {
 		this.defaultSendTimeZone = timeZone.getID();
 		setStringProperty(SEND_TIMEZONE, defaultSendTimeZone, true);
+	}
+	
+	public void setScheduler(String interval, String defaultSendTime) {
+		this.interval = interval;
+		this.defaultSendTime = defaultSendTime;
+		setStringProperty(INTERVAL, interval, true);
+		setStringProperty(SEND_TIME, defaultSendTime, true);
 	}
 }

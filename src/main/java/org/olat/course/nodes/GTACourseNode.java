@@ -60,6 +60,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.bulk.BulkAssessmentToolController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -70,6 +71,7 @@ import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
 import org.olat.course.nodes.gta.TaskList;
+import org.olat.course.nodes.gta.ui.BulkDownloadToolController;
 import org.olat.course.nodes.gta.ui.GTAAssessmentDetailsController;
 import org.olat.course.nodes.gta.ui.GTAEditController;
 import org.olat.course.nodes.gta.ui.GTAGroupAssessmentToolController;
@@ -106,15 +108,23 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 	public static final String GTASK_AREAS = "grouptask.areas";
 	public static final String GTASK_ASSIGNMENT = "grouptask.assignement";
 	public static final String GTASK_ASSIGNMENT_DEADLINE = "grouptask.assignment.deadline";
+	public static final String GTASK_ASSIGNMENT_DEADLINE_RELATIVE = "grouptask.assignment.deadline.relative";
+	public static final String GTASK_ASSIGNMENT_DEADLINE_RELATIVE_TO = "grouptask.assignment.deadline.relative.to";
 	public static final String GTASK_SUBMIT = "grouptask.submit";
 	public static final String GTASK_SUBMIT_DEADLINE = "grouptask.submit.deadline";
+	public static final String GTASK_SUBMIT_DEADLINE_RELATIVE = "grouptask.submit.deadline.relative";
+	public static final String GTASK_SUBMIT_DEADLINE_RELATIVE_TO = "grouptask.submit.deadline.relative.to";
 	public static final String GTASK_REVIEW_AND_CORRECTION = "grouptask.review.and.correction";
 	public static final String GTASK_REVISION_PERIOD = "grouptask.revision.period";
 	public static final String GTASK_SAMPLE_SOLUTION = "grouptask.solution";
 	public static final String GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER = "grouptask.solution.visible.after";
+	public static final String GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE = "grouptask.solution.visible.after.relative";
+	public static final String GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE_TO = "grouptask.solution.visible.after.relative.to";
 	public static final String GTASK_GRADING = "grouptask.grading";
 	
 	public static final String GTASK_TASKS = "grouptask.tasks";
+	
+	public static final String GTASK_RELATIVE_DATES = "grouptask.rel.dates";
 	
 	public static final String GTASK_ASSIGNEMENT_TYPE = "grouptask.assignement.type";
 	public static final String GTASK_ASSIGNEMENT_TYPE_AUTO = "auto";
@@ -137,10 +147,16 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 	public static final String GTASK_SOLUTIONS = "grouptask.solutions";
 	
 
-	private static final String TYPE = "gta";
+	public static final String TYPE_GROUP = "gta";
+	public static final String TYPE_INDIVIDUAL = "ita";
 
 	public GTACourseNode() {
-		super(TYPE);
+		super(TYPE_GROUP);
+        updateModuleConfigDefaults(true);
+	}
+	
+	public GTACourseNode(String type) {
+		super(type);
         updateModuleConfigDefaults(true);
 	}
 
@@ -160,7 +176,12 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 			//setup default configuration
 			ModuleConfiguration config = getModuleConfiguration();
 			//group task
-			config.setStringValue(GTASK_TYPE, GTAType.group.name());
+			if(getType().equals(TYPE_INDIVIDUAL)) {
+				config.setStringValue(GTASK_TYPE, GTAType.individual.name());
+			} else {
+				config.setStringValue(GTASK_TYPE, GTAType.group.name());
+			}
+
 			//manual choice
 			config.setStringValue(GTASK_ASSIGNEMENT_TYPE, GTASK_ASSIGNEMENT_TYPE_MANUAL);
 			//all steps
@@ -219,7 +240,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 		boolean hasScoring = config.getBooleanSafe(GTASK_GRADING);
 		if (hasScoring) {
 			if(!config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD)
-					&& !config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD)) {
+					&& !config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD)) {
 
 				addStatusErrorDescription("error.missing.score.config", GTAEditController.PANE_TAB_GRADING, sdList);
 			}
@@ -380,14 +401,14 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 		if(taskList != null) {
 			if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
 				List<BusinessGroup> selectedGroups;
-				if(options.getGroup() != null) {
+				if(options != null && options.getGroup() != null) {
 					selectedGroups = Collections.singletonList(options.getGroup());
 				} else {
 					selectedGroups = gtaManager.getBusinessGroups(this);
 				}
 				
 				for(BusinessGroup businessGroup:selectedGroups) {
-					archiveNodeData(locale, course, businessGroup, taskList, dirName, exportStream);
+					archiveNodeData(course, businessGroup, taskList, dirName, exportStream);
 				}
 			} else {
 				if(users == null) {
@@ -396,7 +417,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 				
 				Set<Identity> uniqueUsers = new HashSet<>(users);
 				for(Identity user: uniqueUsers) {
-					archiveNodeData(locale, course, user, taskList, dirName, exportStream);
+					archiveNodeData(course, user, taskList, dirName, exportStream);
 				}
 			}
 		}
@@ -415,7 +436,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 		return true;
 	}
 	
-	private void archiveNodeData(Locale locale, ICourse course, Identity assessedIdentity, TaskList taskList, String dirName, ZipOutputStream exportStream) {
+	private void archiveNodeData(ICourse course, Identity assessedIdentity, TaskList taskList, String dirName, ZipOutputStream exportStream) {
 		ModuleConfiguration config = getModuleConfiguration();
 		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
 		
@@ -460,7 +481,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 		}
 	}
 	
-	private void archiveNodeData(Locale locale, ICourse course, BusinessGroup businessGroup, TaskList taskList, String dirName, ZipOutputStream exportStream) {
+	private void archiveNodeData(ICourse course, BusinessGroup businessGroup, TaskList taskList, String dirName, ZipOutputStream exportStream) {
 		ModuleConfiguration config = getModuleConfiguration();
 		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
 		
@@ -511,11 +532,14 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 		//tasks
 		File taskDirectory = gtaManager.getTasksDirectory(course.getCourseEnvironment(), this);
 		FileUtils.deleteDirsAndFiles(taskDirectory, true, true);
-		//TODO the rest
 		
 		//solutions
 		File solutionsDirectory = gtaManager.getSolutionsDirectory(course.getCourseEnvironment(), this);
 		FileUtils.deleteDirsAndFiles(solutionsDirectory, true, true);
+		
+		//clean up database
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		gtaManager.deleteTaskList(entry, this);
 	}
 	
 	@Override
@@ -676,15 +700,22 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 			TooledStackedPanel stackPanel, CourseEnvironment courseEnv, AssessmentToolOptions options) {
 		
 		ModuleConfiguration config =  getModuleConfiguration();
-		List<Controller> tools = new ArrayList<>(1);
-		if(options.getGroup() != null && GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))
+		List<Controller> tools = new ArrayList<>(2);
+		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))
 			&& (config.getBooleanSafe(GTASK_ASSIGNMENT)
 				|| config.getBooleanSafe(GTASK_SUBMIT)
 				|| config.getBooleanSafe(GTASK_REVIEW_AND_CORRECTION)
 				|| config.getBooleanSafe(GTASK_REVISION_PERIOD))) {
 			
-			Controller tool = new GTAGroupAssessmentToolController(ureq, wControl, courseEnv, options.getGroup(), this);
-			tools.add(tool);		
+			if(options.getGroup() != null) {
+				tools.add(new GTAGroupAssessmentToolController(ureq, wControl, courseEnv, options.getGroup(), this));
+			}
+			tools.add(new BulkDownloadToolController(ureq, wControl, courseEnv, options, this));
+		} else if(GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))
+				&& (config.getBooleanSafe(GTASK_REVIEW_AND_CORRECTION)
+						|| config.getBooleanSafe(GTASK_GRADING))) {
+			tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, this));
+			tools.add(new BulkDownloadToolController(ureq, wControl, courseEnv, options, this));
 		}
 		return tools;
 	}

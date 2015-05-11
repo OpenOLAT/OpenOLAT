@@ -145,6 +145,8 @@ public interface GTAManager {
 	
 	public TaskList getTaskList(RepositoryEntryRef entry, GTACourseNode cNode);
 	
+	public int deleteTaskList(RepositoryEntryRef entry, GTACourseNode cNode);
+	
 	
 	public Membership getMembership(IdentityRef identity, RepositoryEntryRef entry, GTACourseNode cNode);
 	
@@ -181,7 +183,10 @@ public interface GTAManager {
 	public AssignmentResponse assignTaskAutomatically(TaskList taskList, BusinessGroup assessedGroup, CourseEnvironment courseEnv, GTACourseNode cNode);
 
 	public AssignmentResponse assignTaskAutomatically(TaskList taskList, Identity assessedIdentity, CourseEnvironment courseEnv, GTACourseNode cNode);
-	
+
+	public TaskProcess firstStep(GTACourseNode cNode);
+
+	public TaskProcess previousStep(TaskProcess currentStep, GTACourseNode cNode);
 	
 	public TaskProcess nextStep(TaskProcess currentStep, GTACourseNode cNode);
 	

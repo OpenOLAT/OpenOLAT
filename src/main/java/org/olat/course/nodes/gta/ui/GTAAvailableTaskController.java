@@ -106,9 +106,9 @@ public class GTAAvailableTaskController extends FormBasicController {
 		this.gtaNode = gtaNode;
 		this.taskDefs = taskDefs;
 		this.taskList = taskList;
-		this.courseEnv = courseEnv;
 		this.assessedGroup = assessedGroup;
 		this.assessedIdentity = assessedIdentity;
+		this.courseEnv = courseEnv;
 		businessGroupTask = GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE));
 		initForm(ureq);
 	}
@@ -117,7 +117,8 @@ public class GTAAvailableTaskController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ATDCols.title.i18nKey(), ATDCols.title.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ATDCols.description.i18nKey(), ATDCols.description.ordinal()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ATDCols.description.i18nKey(), ATDCols.description.ordinal(),
+				new DescriptionWithTooltipCellRenderer()));
 		
 		boolean preview = gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_PREVIEW);
 		if(preview) {
@@ -157,7 +158,6 @@ public class GTAAvailableTaskController extends FormBasicController {
 				descriptionLink = uifactory.addFormLink("preview-" + CodeHelper.getRAMUniqueID(), "description", "task.description", null, flc, Link.LINK);
 				descriptionLink.setIconLeftCSS("o_icon o_icon_description");
 			}
-			
 			
 			File taskFile = new File(taskFolder, filename);
 			DownloadLink download = uifactory.addDownloadLink("prev-" + CodeHelper.getRAMUniqueID(), filename, null, taskFile, tableEl);
@@ -321,7 +321,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 			AvailableTask task = getObject(row);
 			switch(ATDCols.values()[col]) {
 				case title: return task.getTaskDef().getTitle();
-				case description: return task.getDescriptionLink();
+				case description: return task.getTaskDef().getDescription();
 				case preview: return task.getDownloadLink();
 				default: return "ERROR";
 			}

@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -439,6 +440,16 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Override
 	public int countMembers(List<? extends RepositoryEntryRef> res) {
 		return reToGroupDao.countMembers(res);
+	}
+	
+	@Override
+	public Date getEnrollmentDate(RepositoryEntryRef re, IdentityRef identity, String... roles) {
+		return reToGroupDao.getEnrollmentDate(re, identity, roles);
+	}
+
+	@Override
+	public Map<Long, Date> getEnrollmentDates(RepositoryEntryRef re, String... roles) {
+		return reToGroupDao.getEnrollmentDates(re, roles);
 	}
 
 	@Override

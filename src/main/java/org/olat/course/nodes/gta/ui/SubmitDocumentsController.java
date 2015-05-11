@@ -120,7 +120,7 @@ class SubmitDocumentsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit", DocCols.edit.ordinal(), "edit",
 				new BooleanCellRenderer(
 						new StaticFlexiCellRenderer(translate("edit"), "edit"),
-						new StaticFlexiCellRenderer(translate("replace"), "replace"))));
+						new StaticFlexiCellRenderer(translate("replace"), "edit"))));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("delete", translate("delete"), "delete"));
 		
 		model = new DocumentTableModel(columnsModel);
@@ -139,7 +139,7 @@ class SubmitDocumentsController extends FormBasicController {
 		model.setObjects(docList);
 		tableEl.reset();
 		
-		if(maxDocs >0 && docList.size() >= maxDocs) {
+		if(maxDocs > 0 && docList.size() >= maxDocs) {
 			if(uploadDocButton != null) {
 				uploadDocButton.setEnabled(false);
 			}
@@ -205,9 +205,11 @@ class SubmitDocumentsController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(newDocumentEditorCtrl);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(uploadCtrl);
 		removeAsListenerAndDispose(cmc);
+		newDocumentEditorCtrl = null;
 		confirmDeleteCtrl = null;
 		uploadCtrl = null;
 		cmc = null;
@@ -230,10 +232,8 @@ class SubmitDocumentsController extends FormBasicController {
 				SubmittedSolution row = model.getObject(se.getIndex());
 				if("delete".equals(se.getCommand())) {
 					doConfirmDelete(ureq, row);
-				} else if("replace".equals(se.getCommand())) {
-					doReplaceDocument(ureq, row);
 				} else if("edit".equals(se.getCommand())) {
-					doEditDocumentEditor(ureq, row);
+					doEdit(ureq, row);
 				}
 			}
 		}
@@ -255,8 +255,16 @@ class SubmitDocumentsController extends FormBasicController {
 		updateModel();
 	}
 	
+	private void doEdit(UserRequest ureq, SubmittedSolution row) {
+		if(row.getFile().getName().endsWith(".html")) {
+			doEditDocumentEditor(ureq, row);
+		} else {
+			doReplaceDocument(ureq, row);
+		}
+	}
+	
 	private void doReplaceDocument(UserRequest ureq, SubmittedSolution row) {
-		replaceCtrl = new DocumentUploadController(ureq, getWindowControl());
+		replaceCtrl = new DocumentUploadController(ureq, getWindowControl(), row, row.getFile());
 		listenTo(replaceCtrl);
 
 		String title = translate("replace.document");

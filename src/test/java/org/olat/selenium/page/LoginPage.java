@@ -79,6 +79,14 @@ public class LoginPage {
 		Assert.assertTrue(name.contains(user.getLastName()));
 	}
 	
+	public void assertLoggedInByLastName(String lastName) {
+		WebElement username = browser.findElement(usernameFooterBy);
+		Assert.assertNotNull(username);
+		Assert.assertTrue(username.isDisplayed());
+		String name = username.getText();
+		Assert.assertTrue(name.contains(lastName));
+	}
+	
 	/**
 	 * Login and accept the disclaimer if there is one.
 	 * 

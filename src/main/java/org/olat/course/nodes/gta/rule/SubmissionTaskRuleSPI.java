@@ -20,7 +20,10 @@
 package org.olat.course.nodes.gta.rule;
 
 import java.util.Date;
+import java.util.List;
 
+import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.ui.BeforeDateTaskRuleEditor;
@@ -28,6 +31,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
+import org.olat.modules.reminder.model.ReminderRuleImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,5 +77,16 @@ public class SubmissionTaskRuleSPI extends AbstractDueDateTaskRuleSPI {
 			dueDate = config.getDateValue(GTACourseNode.GTASK_SUBMIT_DEADLINE);
 		}
 		return dueDate;
+	}
+	
+	@Override
+	protected List<Identity> evaluateRelativeDateRule(RepositoryEntry entry, GTACourseNode gtaNode, ReminderRuleImpl rule) {
+		List<Identity> identities = null;
+		int numOfDays = gtaNode.getModuleConfiguration().getIntegerSafe(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE, -1);
+		String relativeTo = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE_TO);
+		if(numOfDays >= 0 && StringHelper.containsNonWhitespace(relativeTo)) {
+			identities = getPeopleToRemindRelativeTo(entry, gtaNode, numOfDays, relativeTo, rule);
+		}
+		return identities;
 	}
 }

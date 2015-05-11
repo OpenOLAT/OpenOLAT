@@ -1192,6 +1192,22 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt) {
 	})
 }
 
+function o_ffXHRNFEvent(targetUrl) {
+	var data = new Object();
+	jQuery.ajax(targetUrl,{
+		type:'GET',
+		data: data,
+		cache: false,
+		dataType: 'json',
+		success: function(data, textStatus, jqXHR) {
+			console.log('Hourra');
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			if(window.console) console.log('Error status', textStatus);
+		}
+	})
+}
+
 //
 // param formId a String with flexi form id
 function setFlexiFormDirtyByListener(e){

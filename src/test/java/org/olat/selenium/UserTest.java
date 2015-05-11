@@ -35,12 +35,12 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Assume;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
+import org.olat.selenium.page.Student;
 import org.olat.selenium.page.User;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.graphene.OOGraphene;
@@ -498,7 +498,7 @@ public class UserTest {
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
-	@Test @Ignore
+	@Test 
 	@RunAsClient
 	public void importUsers(@InitialPage LoginPage loginPage,
 			@Drone @User WebDriver userBrowser)
@@ -539,5 +539,71 @@ public class UserTest {
 			.loginAs(username1, "rosario01")
 			.resume()
 			.assertLoggedIn(user1);
+	}
+	
+	/**
+	 * Import 1 new user and 1 existing, change the password and the last name
+	 * of the existing user.
+	 * 
+	 * @param loginPage
+	 * @param existingUserBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test 
+	@RunAsClient
+	public void importExistingUsers(@InitialPage LoginPage loginPage,
+			@Drone @User WebDriver existingUserBrowser,
+			@Drone @Student WebDriver newUserBrowser)
+	throws IOException, URISyntaxException {
+
+		UserVO user1 = new UserRestClient(deploymentUrl)
+			.createRandomUser("tsukune");
+		
+		//login
+		loginPage
+			.assertOnLoginPage()
+			.loginAs("administrator", "openolat")
+			.resume();
+		
+		UserAdminPage userAdminPage = navBar
+			.openUserManagement()
+			.openImportUsers();
+		//start import wizard
+		ImportUserPage importWizard = userAdminPage.startImport();
+		
+		String uuid = UUID.randomUUID().toString();
+		String username1 = "moka-" + uuid;
+
+		StringBuilder csv = new StringBuilder();
+		UserVO newUser = importWizard.append(username1, "rosario02", "Moka", "Akashiya", csv);
+		user1 = importWizard.append(user1, "Aono", "openolat2", csv);
+		importWizard
+			.fill(csv.toString())
+			.next() // -> preview
+			.assertGreen(1)
+			.assertWarn(1)
+			.changePassword()
+			.next() // -> groups
+			.next() // -> emails
+			.finish();
+		
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
+		
+		//existing user log in with its new password and check if its name was updated
+		LoginPage userLoginPage = LoginPage.getLoginPage(existingUserBrowser, deploymentUrl);
+		//tools
+		userLoginPage
+			.loginAs(user1.getLogin(), "openolat2")
+			.resume()
+			.assertLoggedInByLastName("Aono");
+		
+		//new user log in
+		LoginPage newLoginPage = LoginPage.getLoginPage(newUserBrowser, deploymentUrl);
+		//tools
+		newLoginPage
+			.loginAs(newUser.getLogin(), "rosario02")
+			.resume()
+			.assertLoggedInByLastName("Akashiya");
 	}
 }

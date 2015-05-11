@@ -21,7 +21,9 @@ package org.olat.repository.manager;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -179,6 +181,65 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		//get the number of members
 	    int numOfMembers = repositoryService.countMembers(Collections.singletonList(re));
 		Assert.assertEquals(4, numOfMembers);
+	}
+	
+	@Test
+	public void getEnrollmentDate() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("enroll-date-1-");
+		Identity wid = JunitTestHelper.createAndPersistIdentityAsRndUser("not-enroll-date-1-");
+		RepositoryEntry re = repositoryService.create("Rei Ayanami", "rel", "rel", null, null);
+		dbInstance.commit();
+		repositoryEntryRelationDao.addRole(id, re, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(id, re, GroupRoles.participant.name());
+		dbInstance.commit();
+		
+		//enrollment date
+		Date enrollmentDate = repositoryEntryRelationDao.getEnrollmentDate(re, id);
+		Assert.assertNotNull(enrollmentDate);
+		
+		//this user isn't enrolled
+		Date withoutEnrollmentDate = repositoryEntryRelationDao.getEnrollmentDate(re, wid);
+		Assert.assertNull(withoutEnrollmentDate);
+		
+		//as participant
+		Date participantEnrollmentDate = repositoryEntryRelationDao.getEnrollmentDate(re, id, GroupRoles.participant.name());
+		Assert.assertNotNull(participantEnrollmentDate);
+		//as owner
+		Date ownerEnrollmentDate = repositoryEntryRelationDao.getEnrollmentDate(re, id, GroupRoles.owner.name());
+		Assert.assertNotNull(ownerEnrollmentDate);
+		//is not enrolled as coached
+		Date coachEnrollmentDate = repositoryEntryRelationDao.getEnrollmentDate(re, id, GroupRoles.coach.name());
+		Assert.assertNull(coachEnrollmentDate);
+	}
+	
+	@Test
+	public void getEnrollmentDates() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("enroll-date-2-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("enroll-date-3-");
+		Identity wid = JunitTestHelper.createAndPersistIdentityAsRndUser("not-enroll-date-2-");
+		RepositoryEntry re = repositoryService.create("Rei Ayanami", "rel", "rel", null, null);
+		dbInstance.commit();
+		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(id2, re, GroupRoles.participant.name());
+		dbInstance.commit();
+		
+		//enrollment date
+		Map<Long,Date> enrollmentDates = repositoryEntryRelationDao.getEnrollmentDates(re);
+		Assert.assertNotNull(enrollmentDates);
+		Assert.assertEquals(2, enrollmentDates.size());
+		Assert.assertTrue(enrollmentDates.containsKey(id1.getKey()));
+		Assert.assertTrue(enrollmentDates.containsKey(id2.getKey()));
+		Assert.assertFalse(enrollmentDates.containsKey(wid.getKey()));
+	}
+
+	@Test
+	public void getEnrollmentDates_emptyCourse() {
+		//enrollment of an empty course
+		RepositoryEntry notEnrolledRe = repositoryService.create("Rei Ayanami", "rel", "rel", null, null);
+		dbInstance.commit();
+		Map<Long,Date> notEnrollmentDates = repositoryEntryRelationDao.getEnrollmentDates(notEnrolledRe);
+		Assert.assertNotNull(notEnrollmentDates);
+		Assert.assertEquals(0, notEnrollmentDates.size());
 	}
 	
 	@Test

@@ -81,13 +81,19 @@ import org.olat.course.assessment.model.BulkAssessmentRow;
 import org.olat.course.assessment.model.BulkAssessmentSettings;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.TACourseNode;
+import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.TaskList;
+import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.ta.ReturnboxController;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -310,7 +316,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 		final boolean hasScore = courseNode.hasScoreConfigured();
 		final boolean hasPassed = courseNode.hasPassedConfigured();
 		final boolean hasReturnFiles = (StringHelper.containsNonWhitespace(datas.getReturnFiles())
-				&& courseNode instanceof TACourseNode);
+				&& (courseNode instanceof TACourseNode || courseNode instanceof GTACourseNode));
 		
 		if(hasReturnFiles) {
 			try {
@@ -396,49 +402,108 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 				uce.getScoreAccounting().scoreInfoChanged(courseNode, se);
 			}
 			
+			boolean identityHasReturnFile = false;
 			if(hasReturnFiles && row.getReturnFiles() != null && row.getReturnFiles().size() > 0) {
 				String assessedId = row.getAssessedId();
 				File assessedFolder = new File(unzipped, assessedId);
-				if(assessedFolder.exists()) {
-					VFSContainer returnBox = getReturnBox(uce, courseNode, identity);
-					if(returnBox != null) {
-						for(String returnFilename:row.getReturnFiles()) {
-							File returnFile = new File(assessedFolder, returnFilename);
-							VFSItem currentReturnLeaf = returnBox.resolve(returnFilename);
-							if(currentReturnLeaf != null) {
-								//remove the current file (delete make a version is enabled)
-								currentReturnLeaf.delete();
-							}
-
-							VFSLeaf returnLeaf = returnBox.createChildLeaf(returnFilename);
-							if(returnFile.exists()) {
-								try {
-									InputStream inStream = new FileInputStream(returnFile);
-									VFSManager.copyContent(inStream, returnLeaf);
-								} catch (FileNotFoundException e) {
-									log.error("Cannot copy return file " + returnFilename + " from " + assessedId, e);
-								}
-							}
-						}
-					}
+				identityHasReturnFile = assessedFolder.exists();
+				if(identityHasReturnFile) {
+					processReturnFile(courseNode, row, uce, assessedFolder);
+				}
+			}
+			
+			if(courseNode instanceof GTACourseNode) {
+				//push the state further
+				GTACourseNode gtaNode = (GTACourseNode)courseNode;
+				if((hasScore && score != null) || (hasPassed && passed != null)) {
+					//pushed to graded
+					updateTasksState(gtaNode, uce, TaskProcess.grading);
+				} else if(hasReturnFiles) {
+					//push to revised
+					updateTasksState(gtaNode, uce, TaskProcess.correction);
 				}
 			}
 			
 			if(count++ % 5 == 0) {
 				dbInstance.commitAndCloseSession();
+			} else {
+				dbInstance.commit();
 			}
 		}
 	}
 	
-	private VFSContainer getReturnBox(UserCourseEnvironment uce, CourseNode courseNode, Identity identity) {
-		String returnPath = ReturnboxController.getReturnboxPathRelToFolderRoot(uce.getCourseEnvironment(), courseNode);
-		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(returnPath, null);
-		VFSItem assessedItem = rootFolder.resolve(identity.getName());
-		if(assessedItem == null) {
-			return rootFolder.createChildContainer(identity.getName());
-		} else if(assessedItem instanceof VFSContainer) {
-			return (VFSContainer)assessedItem;
+	private void updateTasksState(GTACourseNode courseNode, UserCourseEnvironment uce, TaskProcess status) {
+		final GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
+		Identity identity = uce.getIdentityEnvironment().getIdentity();
+		RepositoryEntry entry = uce.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		
+		org.olat.course.nodes.gta.Task task;
+		TaskList taskList = gtaManager.getTaskList(entry, courseNode);
+		if(taskList == null) {
+			taskList = gtaManager.createIfNotExists(entry, courseNode);
+			task = gtaManager.createTask(null, taskList, status, null, identity, courseNode);
+		} else {
+			task = gtaManager.getTask(identity, taskList);
+			if(task == null) {
+				gtaManager.createTask(null, taskList, status, null, identity, courseNode);
+			}
 		}
-		return null;
+		
+		gtaManager.nextStep(status, courseNode);
+	}
+	
+	
+	private void processReturnFile(AssessableCourseNode courseNode, BulkAssessmentRow row, UserCourseEnvironment uce, File assessedFolder) {
+		String assessedId = row.getAssessedId();
+		Identity identity = uce.getIdentityEnvironment().getIdentity();
+		VFSContainer returnBox = getReturnBox(uce, courseNode, identity);
+		if(returnBox != null) {
+			for(String returnFilename:row.getReturnFiles()) {
+				File returnFile = new File(assessedFolder, returnFilename);
+				VFSItem currentReturnLeaf = returnBox.resolve(returnFilename);
+				if(currentReturnLeaf != null) {
+					//remove the current file (delete make a version if it is enabled)
+					currentReturnLeaf.delete();
+				}
+
+				VFSLeaf returnLeaf = returnBox.createChildLeaf(returnFilename);
+				if(returnFile.exists()) {
+					try {
+						InputStream inStream = new FileInputStream(returnFile);
+						VFSManager.copyContent(inStream, returnLeaf);
+					} catch (FileNotFoundException e) {
+						log.error("Cannot copy return file " + returnFilename + " from " + assessedId, e);
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Return the target folder of the assessed identity. This is a factory method which take care
+	 * of the type of the course node.
+	 * 
+	 * @param uce
+	 * @param courseNode
+	 * @param identity
+	 * @return
+	 */
+	private VFSContainer getReturnBox(UserCourseEnvironment uce, CourseNode courseNode, Identity identity) {
+		VFSContainer returnContainer = null;
+		if(courseNode instanceof GTACourseNode) {
+			final GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
+			CourseEnvironment courseEnv = uce.getCourseEnvironment();
+			returnContainer = gtaManager.getCorrectionContainer(courseEnv, (GTACourseNode)courseNode, identity);
+		} else {
+			String returnPath = ReturnboxController.getReturnboxPathRelToFolderRoot(uce.getCourseEnvironment(), courseNode);
+			OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(returnPath, null);
+			VFSItem assessedItem = rootFolder.resolve(identity.getName());
+			if(assessedItem == null) {
+				returnContainer = rootFolder.createChildContainer(identity.getName());
+			} else if(assessedItem instanceof VFSContainer) {
+				returnContainer = (VFSContainer)assessedItem;
+			}
+		}
+		return returnContainer;
 	}
 }

@@ -19,20 +19,25 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.GTARelativeToDates;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
@@ -42,6 +47,8 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -72,10 +79,20 @@ public abstract class GTAAbstractController extends BasicController {
 	
 	protected final boolean businessGroupTask;
 	
+	protected GTAStepPreferences stepPreferences;
+	
 	private ContextualSubscriptionController contextualSubscriptionCtr;
+	
+	private Date assignmentDueDate;
+	private Date submissionDueDate;
+	private Date solutionDueDate;
 	
 	@Autowired
 	protected GTAManager gtaManager;
+	@Autowired
+	protected RepositoryService repositoryService;
+	@Autowired
+	protected UserCourseInformationsManager userCourseInformationsManager;
 	
 	public GTAAbstractController(UserRequest ureq, WindowControl wControl,
 			GTACourseNode gtaNode, CourseEnvironment courseEnv, boolean withTitle, boolean withGrading) {
@@ -111,6 +128,13 @@ public abstract class GTAAbstractController extends BasicController {
 		publisherData = gtaManager.getPublisherData(courseEnv, gtaNode);
 		subsContext = gtaManager.getSubscriptionContext(courseEnv, gtaNode);
 		
+		stepPreferences = (GTAStepPreferences)ureq.getUserSession()
+				.getGuiPreferences()
+				.get(GTAStepPreferences.class, taskList.getKey().toString());
+		if(stepPreferences == null) {
+			stepPreferences = new GTAStepPreferences();
+		}
+		
 		initContainer(ureq);
 		process(ureq);
 	}
@@ -140,6 +164,9 @@ public abstract class GTAAbstractController extends BasicController {
 		mainVC.contextPut("assignmentEnabled", assignment);
 		if(assignment) {
 			task = stepAssignment(ureq, task);
+		} else if(task == null) {
+			TaskProcess firstStep = gtaManager.firstStep(gtaNode);
+			task = gtaManager.createTask(null, taskList, firstStep, assessedGroup, assessedIdentity, gtaNode);
 		}
 		
 		boolean submit = config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT);
@@ -171,10 +198,46 @@ public abstract class GTAAbstractController extends BasicController {
 		if(grading) {
 			stepGrading(ureq, task);
 		}
+		
+		collapsedContents(task);
+	}
+	
+	protected final void collapsedContents(Task currentTask) {
+		TaskProcess status = null;
+		TaskProcess previousStatus = null;
+		if(currentTask != null) {
+			status = currentTask.getTaskStatus();
+			previousStatus = gtaManager.previousStep(status, gtaNode);
+		}
+		
+		boolean assignment = Boolean.TRUE.equals(stepPreferences.getAssignement())
+				|| TaskProcess.assignment.equals(status) || TaskProcess.assignment.equals(previousStatus);
+		mainVC.contextPut("collapse_assignement", new Boolean(assignment));
+		
+		boolean submit = Boolean.TRUE.equals(stepPreferences.getSubmit())
+				|| TaskProcess.submit.equals(status) || TaskProcess.submit.equals(previousStatus);
+		mainVC.contextPut("collapse_submit", new Boolean(submit));
+		
+		boolean reviewAndCorrection = Boolean.TRUE.equals(stepPreferences.getReviewAndCorrection())
+				|| TaskProcess.review.equals(status) || TaskProcess.review.equals(previousStatus);
+		mainVC.contextPut("collapse_reviewAndCorrection", new Boolean(reviewAndCorrection));
+		
+		boolean revision = Boolean.TRUE.equals(stepPreferences.getRevision())
+				|| TaskProcess.revision.equals(status) || TaskProcess.revision.equals(previousStatus)
+				|| TaskProcess.correction.equals(status) || TaskProcess.correction.equals(previousStatus);
+		mainVC.contextPut("collapse_revision", new Boolean(revision));
+		
+		boolean solution = Boolean.TRUE.equals(stepPreferences.getSolution())
+				|| TaskProcess.solution.equals(status) || TaskProcess.solution.equals(previousStatus);
+		mainVC.contextPut("collapse_solution", new Boolean(solution));
+		
+		boolean grading = Boolean.TRUE.equals(stepPreferences.getGrading())
+				|| TaskProcess.grading.equals(status) || TaskProcess.grading.equals(previousStatus);
+		mainVC.contextPut("collapse_grading", new Boolean(grading));
 	}
 	
 	protected Task stepAssignment(@SuppressWarnings("unused") UserRequest ureq, Task assignedTask) {
-		Date dueDate = gtaNode.getModuleConfiguration().getDateValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
+		Date dueDate = getAssignementDueDate();
 		if(dueDate != null) {
 			String date = Formatter.getInstance(getLocale()).formatDateAndTime(dueDate);
 			mainVC.contextPut("assignmentDueDate", date);
@@ -188,8 +251,66 @@ public abstract class GTAAbstractController extends BasicController {
 		return assignedTask;
 	}
 	
+	protected void resetDueDates() {
+		assignmentDueDate = null;
+		submissionDueDate = null;
+		solutionDueDate = null;
+	}
+	
+	protected Date getAssignementDueDate() {
+		if(assignmentDueDate == null) {
+			Date dueDate = gtaNode.getModuleConfiguration().getDateValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
+			boolean relativeDate = gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES);
+			if(relativeDate) {
+				int numOfDays = gtaNode.getModuleConfiguration().getIntegerSafe(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE, -1);
+				String relativeTo = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE_TO);
+				if(numOfDays >= 0 && StringHelper.containsNonWhitespace(relativeTo)) {
+					assignmentDueDate = getReferenceDate(numOfDays, relativeTo);
+				}
+			} else if(dueDate != null) {
+				assignmentDueDate = dueDate;
+			}
+		}
+		return assignmentDueDate;
+	}
+	
+	protected Date getReferenceDate(int numOfDays, String relativeTo) {
+		Date dueDate = null;
+		if(numOfDays >= 0 && StringHelper.containsNonWhitespace(relativeTo)) {
+			GTARelativeToDates rel = GTARelativeToDates.valueOf(relativeTo);
+			Date referenceDate = null;
+			switch(rel) {
+				case courseStart: {
+					RepositoryEntryLifecycle lifecycle = courseEntry.getLifecycle();
+					if(lifecycle != null && lifecycle.getValidFrom() != null) {
+						referenceDate = lifecycle.getValidFrom();
+					}
+					break;
+				}
+				case courseLaunch: {
+					referenceDate = userCourseInformationsManager
+							.getInitialLaunchDate(courseEnv.getCourseResourceableId(), assessedIdentity);
+					break;
+				}
+				case enrollment: {
+					referenceDate = repositoryService
+							.getEnrollmentDate(courseEntry, assessedIdentity);
+					break;
+				}
+			}
+			
+			if(referenceDate != null) {
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(referenceDate);
+				cal.add(Calendar.DATE, numOfDays);
+				dueDate = cal.getTime();
+			}
+		}
+		return dueDate;
+	}
+	
 	protected Task stepSubmit(@SuppressWarnings("unused")UserRequest ureq, Task assignedTask) {
-		Date dueDate = gtaNode.getModuleConfiguration().getDateValue(GTACourseNode.GTASK_SUBMIT_DEADLINE);
+		Date dueDate = getSubmissionDueDate();
 		if(dueDate != null) {
 			String date = Formatter.getInstance(getLocale()).formatDateAndTime(dueDate);
 			mainVC.contextPut("submitDueDate", date);
@@ -204,6 +325,23 @@ public abstract class GTAAbstractController extends BasicController {
 		return assignedTask;
 	}
 	
+	protected Date getSubmissionDueDate() {
+		if(submissionDueDate == null) {
+			Date dueDate = gtaNode.getModuleConfiguration().getDateValue(GTACourseNode.GTASK_SUBMIT_DEADLINE);
+			boolean relativeDate = gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES);
+			if(relativeDate) {
+				int numOfDays = gtaNode.getModuleConfiguration().getIntegerSafe(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE, -1);
+				String relativeTo = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE_TO);
+				if(numOfDays >= 0 && StringHelper.containsNonWhitespace(relativeTo)) {
+					submissionDueDate = getReferenceDate(numOfDays, relativeTo);
+				}
+			} else if(dueDate != null) {
+				submissionDueDate = dueDate;
+			}
+		}
+		return submissionDueDate;
+	}
+	
 	protected Task stepReviewAndCorrection(@SuppressWarnings("unused")UserRequest ureq, Task assignedTask) {
 		return assignedTask;
 	}
@@ -213,12 +351,29 @@ public abstract class GTAAbstractController extends BasicController {
 	}
 	
 	protected Task stepSolution(@SuppressWarnings("unused")UserRequest ureq, Task assignedTask) {
-		Date availableDate = gtaNode.getModuleConfiguration().getDateValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
+		Date availableDate = getSolutionDueDate();
 		if(availableDate != null) {
 			String date = Formatter.getInstance(getLocale()).formatDateAndTime(availableDate);
 			mainVC.contextPut("solutionAvailableDate", date);
 		}
 		return assignedTask;
+	}
+	
+	protected Date getSolutionDueDate() {
+		if(solutionDueDate == null) {
+			boolean relativeDate = gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES);
+			Date dueDate = gtaNode.getModuleConfiguration().getDateValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
+			if(relativeDate) {
+				int numOfDays = gtaNode.getModuleConfiguration().getIntegerSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE, -1);
+				String relativeTo = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE_TO);
+				if(numOfDays >= 0 && StringHelper.containsNonWhitespace(relativeTo)) {
+					solutionDueDate = getReferenceDate(numOfDays, relativeTo);
+				}
+			} else if(dueDate != null) {
+				solutionDueDate = dueDate;
+			}
+		}
+		return solutionDueDate;
 	}
 	
 	protected Task stepGrading(@SuppressWarnings("unused") UserRequest ureq, Task assignedTask) {
@@ -238,5 +393,40 @@ public abstract class GTAAbstractController extends BasicController {
 			}
 		}
 		return assignedTask;
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		if("show".equals(event.getCommand())) {
+			doShow(ureq);
+		} else if("hide".equals(event.getCommand())) {
+			doHide(ureq);
+		}
+	}
+	
+	private void doShow(UserRequest ureq) {
+		String step = ureq.getParameter("step");
+		doSaveStepPreferences(ureq, step, Boolean.TRUE);
+	}
+	
+	private void doHide(UserRequest ureq) {
+		String step = ureq.getParameter("step");
+		doSaveStepPreferences(ureq, step, Boolean.FALSE);
+	}
+
+	private void doSaveStepPreferences(UserRequest ureq, String step, Boolean showHide) {
+		if(step == null) return;
+		switch(step) {
+			case "assignment": stepPreferences.setAssignement(showHide); break;
+			case "submit": stepPreferences.setSubmit(showHide); break;
+			case "reviewAndCorrection": stepPreferences.setReviewAndCorrection(showHide); break;
+			case "revision": stepPreferences.setRevision(showHide); break;
+			case "solution": stepPreferences.setSolution(showHide); break;
+			case "grading": stepPreferences.setGrading(showHide); break;
+			default: {};
+		}
+		
+		ureq.getUserSession().getGuiPreferences()
+			.putAndSave(GTAStepPreferences.class, taskList.getKey().toString(), stepPreferences);
 	}
 }

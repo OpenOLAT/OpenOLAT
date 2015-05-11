@@ -20,8 +20,10 @@
 package org.olat.repository;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
@@ -109,6 +111,24 @@ public interface RepositoryService {
 	 * @return
 	 */
 	public int countMembers(List<? extends RepositoryEntryRef> res);
+	
+	/**
+	 * Return the smallest enrollment date.
+	 * 
+	 * @param re
+	 * @param identity
+	 * @return
+	 */
+	public Date getEnrollmentDate(RepositoryEntryRef re, IdentityRef identity, String... roles);
+	
+	/**
+	 * Return the smallest enrollment date.
+	 * 
+	 * @param re
+	 * @param identity
+	 * @return
+	 */
+	public Map<Long,Date> getEnrollmentDates(RepositoryEntryRef re, String... roles);
 	
 	/**
 	 * @param re The repository entry

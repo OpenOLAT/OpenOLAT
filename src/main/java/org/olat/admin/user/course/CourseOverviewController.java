@@ -202,10 +202,22 @@ public class CourseOverviewController extends BasicController  {
 			}
 			
 			memberView.setFirstTime(membership.getCreationDate());
-			memberView.setLastTime(membership.getLastModified());
-			memberView.getMembership().setRepoOwner(membership.isOwner());
-			memberView.getMembership().setRepoTutor(membership.isCoach());
-			memberView.getMembership().setRepoParticipant(membership.isParticipant());
+			if(memberView.getLastTime() == null ||
+					(memberView.getLastTime() != null && membership.getLastModified() != null
+					&& membership.getLastModified().after(memberView.getLastTime()))) {
+				memberView.setLastTime(membership.getLastModified());
+			}
+			
+			//add the roles
+			if(!memberView.getMembership().isRepoOwner()) {
+				memberView.getMembership().setRepoOwner(membership.isOwner());
+			}
+			if(!memberView.getMembership().isRepoTutor()) {
+				memberView.getMembership().setRepoTutor(membership.isCoach());
+			}
+			if(!memberView.getMembership().isRepoParticipant()) {
+				memberView.getMembership().setRepoParticipant(membership.isParticipant());
+			}
 		}
 
 		List<BusinessGroupShort> groups = businessGroupService.loadShortBusinessGroups(groupKeys);
@@ -236,7 +248,11 @@ public class CourseOverviewController extends BasicController  {
 			}
 			memberView.addGroup(group);
 			memberView.setFirstTime(membership.getCreationDate());
-			memberView.setLastTime(membership.getLastModified());
+			if(memberView.getLastTime() == null || (
+					memberView.getLastTime() != null && membership.getLastModified() != null
+					&& membership.getLastModified().after(memberView.getLastTime()))) {
+				memberView.setLastTime(membership.getLastModified());
+			}
 			switch(membership.getMembership()) {
 				case owner: memberView.getMembership().setGroupTutor(true); break;
 				case participant: memberView.getMembership().setGroupParticipant(true); break;
