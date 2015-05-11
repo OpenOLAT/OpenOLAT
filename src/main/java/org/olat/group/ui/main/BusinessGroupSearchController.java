@@ -26,6 +26,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -33,8 +34,8 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -60,7 +61,7 @@ public class BusinessGroupSearchController extends FormBasicController implement
 	private TextElement owner;
 	private TextElement description;
 	private TextElement courseTitle;
-	private FormSubmit searchButton;
+	private FormLink searchButton;
 	private SingleSelection rolesEl;
 	private SingleSelection publicEl;
 	private SingleSelection resourceEl;
@@ -174,7 +175,10 @@ public class BusinessGroupSearchController extends FormBasicController implement
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
 		buttonLayout.setElementCssClass("o_sel_group_search_groups_buttons");
-		searchButton = uifactory.addFormSubmitButton("search", "search", buttonLayout);
+		searchButton = uifactory.addFormLink("search", buttonLayout, Link.BUTTON);
+		searchButton.setElementCssClass("o_sel_group_search_button");
+		searchButton.setCustomEnabledLinkCSS("btn btn-primary");
+		
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 
