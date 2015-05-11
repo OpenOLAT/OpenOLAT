@@ -129,7 +129,7 @@ public abstract class MailTemplate {
 	 * @param context The context where to put the variables
 	 * @param recipient The current identity which will get the email
 	 */
-	public abstract void putVariablesInMailContext(VelocityContext context, Identity recipient);
+	public abstract void putVariablesInMailContext(VelocityContext vContext, Identity recipient);
 	
 	public void addToContext(String name, String value) {
 		context.put(name, value);

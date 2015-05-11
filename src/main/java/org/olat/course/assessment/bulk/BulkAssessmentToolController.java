@@ -103,7 +103,7 @@ public class BulkAssessmentToolController extends BasicController {
 	private void doOpen(UserRequest ureq) {
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
-			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			public Step execute(UserRequest uureq, WindowControl bwControl, StepsRunContext runContext) {
 				Date scheduledDate = (Date)runContext.get("scheduledDate");
 				BulkAssessmentDatas datas = (BulkAssessmentDatas)runContext.get("datas");
 				Feedback feedback = doBulkAssessment(scheduledDate, datas);

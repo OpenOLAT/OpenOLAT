@@ -144,7 +144,11 @@ public class CourseReminderEditController extends FormBasicController {
 		contentCont.setRootForm(mainForm);
 		formLayout.add(contentCont);
 		
-		String emailContent = reminder == null ? "" : reminder.getEmailBody();
+		String emailContent = reminder == null ? null : reminder.getEmailBody();
+		//TODO
+		if(StringHelper.containsNonWhitespace(emailContent)) {
+			emailContent = translate("reminder.def.body");
+		}
 		emailEl = uifactory.addRichTextElementForStringDataMinimalistic("email.content", "email.content", emailContent, 10, 60, contentCont, getWindowControl());
 		
 		String buttonPage = velocity_root + "/edit_rules_buttons.html";
