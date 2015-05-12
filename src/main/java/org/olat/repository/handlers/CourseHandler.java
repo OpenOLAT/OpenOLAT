@@ -33,6 +33,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -94,6 +95,12 @@ import org.olat.fileresource.types.GlossaryResource;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.SharedFolderFileResource;
 import org.olat.modules.glossary.GlossaryManager;
+import org.olat.modules.reminder.Reminder;
+import org.olat.modules.reminder.ReminderModule;
+import org.olat.modules.reminder.ReminderRule;
+import org.olat.modules.reminder.ReminderService;
+import org.olat.modules.reminder.RuleSPI;
+import org.olat.modules.reminder.model.ReminderRules;
 import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
@@ -290,6 +297,9 @@ public class CourseHandler implements RepositoryHandler {
 			re = imp.importContent(re, getMediaContainer(re));
 		}
 		
+		//import reminders
+		importReminders(re, fImportBaseDirectory, envMapper, initialAuthor);
+		
 		//clean up export folder
 		cleanExportAfterImport(fImportBaseDirectory);
 		
@@ -380,6 +390,29 @@ public class CourseHandler implements RepositoryHandler {
 		}
 	}
 	
+	private void importReminders(RepositoryEntry re, File fImportBaseDirectory, CourseEnvironmentMapper envMapper, Identity initialAuthor) {
+		ReminderModule reminderModule = CoreSpringFactory.getImpl(ReminderModule.class);
+		ReminderService reminderService = CoreSpringFactory.getImpl(ReminderService.class);
+		List<Reminder> reminders = reminderService.importRawReminders(initialAuthor, re, fImportBaseDirectory);
+		if(reminders.size() > 0) {
+			for(Reminder reminder:reminders) {
+				ReminderRules clonedRules = new ReminderRules();
+				String configuration = reminder.getConfiguration();
+				ReminderRules rules = reminderService.toRules(configuration);
+				for(ReminderRule rule:rules.getRules()) {
+					RuleSPI ruleSpi = reminderModule.getRuleSPIByType(rule.getType());
+					if(ruleSpi != null) {
+						ReminderRule clonedRule = ruleSpi.clone(rule, envMapper);
+						clonedRules.getRules().add(clonedRule);
+					}
+				}
+				String convertedConfiguration = reminderService.toXML(clonedRules);
+				reminder.setConfiguration(convertedConfiguration);
+				reminderService.save(reminder);
+			}
+		}
+	}
+	
 	private void markDirtyNewRecursively(CourseEditorTreeNode editorRootNode) {
 		editorRootNode.setDirty(true);
 		editorRootNode.setNewnode(true);
@@ -391,7 +424,7 @@ public class CourseHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public RepositoryEntry copy(RepositoryEntry source, RepositoryEntry target) {
+	public RepositoryEntry copy(Identity author, RepositoryEntry source, RepositoryEntry target) {
 		final OLATResource sourceResource = source.getOlatResource();
 		final OLATResource targetResource = target.getOlatResource();
 		
@@ -414,7 +447,34 @@ public class CourseHandler implements RepositoryHandler {
 		course = CourseFactory.loadCourse(cgm.getCourseResource());
 		course.postCopy(envMapper, sourceCourse);
 		
+		cloneReminders(author, envMapper, source, target);
+		
 		return target;
+	}
+	
+	private void cloneReminders(Identity author, CourseEnvironmentMapper envMapper, RepositoryEntry source, RepositoryEntry target) {
+		ReminderModule reminderModule = CoreSpringFactory.getImpl(ReminderModule.class);
+		ReminderService reminderService = CoreSpringFactory.getImpl(ReminderService.class);
+		List<Reminder> reminders = reminderService.getReminders(source);
+		
+		for(Reminder reminder:reminders) {
+			String configuration = reminder.getConfiguration();
+			ReminderRules rules = reminderService.toRules(configuration);
+			ReminderRules clonedRules = new ReminderRules();
+			for(ReminderRule rule:rules.getRules()) {
+				RuleSPI ruleSpi = reminderModule.getRuleSPIByType(rule.getType());
+				if(ruleSpi != null) {
+					ReminderRule clonedRule = ruleSpi.clone(rule, envMapper);
+					clonedRules.getRules().add(clonedRule);
+				}
+			}
+
+			Reminder clonedReminder = reminderService.createReminder(target, author);
+			clonedReminder.setDescription(reminder.getDescription());
+			clonedReminder.setEmailBody(reminder.getEmailBody());
+			clonedReminder.setConfiguration(reminderService.toXML(clonedRules));
+			reminderService.save(clonedReminder);
+		}
 	}
 
 	@Override

@@ -25,9 +25,11 @@ import java.util.List;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.BusinessGroupRefImpl;
+import org.olat.group.model.BusinessGroupReference;
 import org.olat.modules.reminder.IdentitiesProviderRuleSPI;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
@@ -62,6 +64,25 @@ public class BusinessGroupRoleRuleSPI implements IdentitiesProviderRuleSPI {
 	@Override
 	public RuleEditorFragment getEditorFragment(ReminderRule rule, RepositoryEntry entry) {
 		return new BusinessGroupRoleEditor(rule, entry);
+	}
+	
+	@Override
+	public ReminderRule clone(ReminderRule rule, CourseEnvironmentMapper envMapper) {
+		ReminderRuleImpl clone = (ReminderRuleImpl)rule.clone();
+		String groupKey = clone.getRightOperand();
+		
+		boolean found = false;
+		if(StringHelper.isLong(groupKey)) {
+			Long key = Long.parseLong(groupKey);
+			for(BusinessGroupReference ref:envMapper.getGroups()) {
+				if(key.equals(ref.getOriginalKey()) && ref.getKey() != null) {
+					clone.setRightOperand(ref.getKey().toString());
+					found = true;
+				}
+			}
+		}
+		
+		return found ? clone : null;
 	}
 
 	@Override

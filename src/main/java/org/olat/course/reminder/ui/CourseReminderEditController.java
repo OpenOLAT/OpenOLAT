@@ -145,8 +145,7 @@ public class CourseReminderEditController extends FormBasicController {
 		formLayout.add(contentCont);
 		
 		String emailContent = reminder == null ? null : reminder.getEmailBody();
-		//TODO
-		if(StringHelper.containsNonWhitespace(emailContent)) {
+		if(!StringHelper.containsNonWhitespace(emailContent)) {
 			emailContent = translate("reminder.def.body");
 		}
 		emailEl = uifactory.addRichTextElementForStringDataMinimalistic("email.content", "email.content", emailContent, 10, 60, contentCont, getWindowControl());

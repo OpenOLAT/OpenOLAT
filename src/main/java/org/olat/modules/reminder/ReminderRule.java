@@ -19,14 +19,17 @@
  */
 package org.olat.modules.reminder;
 
+
 /**
  * 
  * Initial date: 07.04.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface ReminderRule {
+public interface ReminderRule extends Cloneable {
 	
 	public String getType();
+	
+	public ReminderRule clone();
 
 }

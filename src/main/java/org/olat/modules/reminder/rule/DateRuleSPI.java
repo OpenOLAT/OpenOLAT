@@ -26,6 +26,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
 import org.olat.modules.reminder.RuleSPI;
@@ -60,6 +61,11 @@ public class DateRuleSPI implements RuleSPI {
 	@Override
 	public RuleEditorFragment getEditorFragment(ReminderRule rule, RepositoryEntry entry) {
 		return new DateRuleEditor(rule);
+	}
+	
+	@Override
+	public ReminderRule clone(ReminderRule rule, CourseEnvironmentMapper envMapper) {
+		return rule.clone();
 	}
 	
 	public boolean evaluate(ReminderRule rule) {

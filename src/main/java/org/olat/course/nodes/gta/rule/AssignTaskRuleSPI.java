@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.ui.BeforeDateTaskRuleEditor;
 import org.olat.modules.ModuleConfiguration;
@@ -55,6 +56,12 @@ public class AssignTaskRuleSPI extends AbstractDueDateTaskRuleSPI {
 	@Override
 	public RuleEditorFragment getEditorFragment(ReminderRule rule, RepositoryEntry entry) {
 		return new BeforeDateTaskRuleEditor(rule, entry, AssignTaskRuleSPI.class.getSimpleName());
+	}
+	
+	@Override
+	public ReminderRule clone(ReminderRule rule, CourseEnvironmentMapper envMapper) {
+		//node ident must be the same
+		return rule.clone();
 	}
 
 	@Override
