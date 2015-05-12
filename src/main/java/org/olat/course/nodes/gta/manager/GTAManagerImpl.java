@@ -468,11 +468,11 @@ public class GTAManagerImpl implements GTAManager {
 		sb.append("select task from gtatask task ")
 		  .append(" inner join task.taskList tasklist ");
 		if(GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
-			sb.append(" inner join fetch task.businessGroup group ");
+			sb.append(" inner join fetch task.businessGroup bGroup ");
 		} else {
 			sb.append(" inner join fetch task.identity identity ");
 		}
-		sb.append(" where tasklist.key=:taskListKey ");
+		sb.append(" where tasklist.key=:taskListKey");
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Task.class)
 				.setParameter("taskListKey", taskList.getKey())
 				.getResultList();
