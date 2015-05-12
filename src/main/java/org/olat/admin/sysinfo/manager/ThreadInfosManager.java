@@ -73,24 +73,26 @@ public class ThreadInfosManager implements Sampler {
     	updateTimeSeries();
 	}
 
-
 	private void updateTimeSeries() {
 		ThreadMXBean threadProxy = ManagementFactory.getThreadMXBean();
 		RuntimeMXBean runtimeProxy  = ManagementFactory.getRuntimeMXBean();
 		ThreadInfo tis[] = threadProxy.dumpAllThreads(false, false);
 
 		List<String> currentThreadNames = new ArrayList<String>();
-		
 		Set<Long> currentThreadIds = new HashSet<Long>();
 		for (ThreadInfo ti : tis) {
-			if (!threadMap.containsKey(ti.getThreadId())) {
+			Long threadId = new Long(ti.getThreadId());
+			if (threadMap.containsKey(threadId)) {
+				ThreadView threadVO = threadMap.get(threadId);
+				threadVO.setState(ti.getThreadState());
+			} else {
 				ThreadView threadVO = new ThreadView();
-				threadVO.setId(ti.getThreadId());
+				threadVO.setId(threadId);
 				threadVO.setName(ti.getThreadName());
 				threadVO.setState(ti.getThreadState());
-				threadMap.put(ti.getThreadId(), threadVO);
+				threadMap.put(threadId, threadVO);
 			}
-			currentThreadIds.add(ti.getThreadId());
+			currentThreadIds.add(threadId);
 		}
 		WorkThreadInformations.currentThreadNames(currentThreadNames);
 		
