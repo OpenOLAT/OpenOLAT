@@ -301,8 +301,8 @@ public class GTAParticipantController extends GTAAbstractController {
 			ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
 
 			for(Identity identity:identities) {
-				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-				gtaNode.incrementUserAttempts(userCourseEnv);
+				UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
+				gtaNode.incrementUserAttempts(uce);
 			}
 		} else {
 			gtaNode.incrementUserAttempts(userCourseEnv);

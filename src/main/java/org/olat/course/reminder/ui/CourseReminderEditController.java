@@ -101,7 +101,7 @@ public class CourseReminderEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
+		FormLayoutContainer generalCont = FormLayoutContainer.createVerticalFormLayout("general", getTranslator());
 		generalCont.setRootForm(mainForm);
 		formLayout.add(generalCont);
 
@@ -110,6 +110,9 @@ public class CourseReminderEditController extends FormBasicController {
 		
 		String desc = reminder.getDescription();
 		descriptionEl = uifactory.addTextElement("reminder.description", "reminder.description", 128, desc, generalCont);
+		
+		String sendTime = getSendTimeDescription();
+		uifactory.addStaticTextElement("send.time.description.label", sendTime, generalCont);
 		
 		//rules
 		String rulePage = velocity_root + "/edit_rules.html";
@@ -137,18 +140,30 @@ public class CourseReminderEditController extends FormBasicController {
 		}
 		
 		//email content
-		FormLayoutContainer contentCont = FormLayoutContainer.createDefaultFormLayout("contents", getTranslator());
+		FormLayoutContainer contentCont = FormLayoutContainer.createVerticalFormLayout("contents", getTranslator());
 		contentCont.setRootForm(mainForm);
 		formLayout.add(contentCont);
 		
-		String emailContent = reminder == null ? "" : reminder.getEmailBody();
+		String emailContent = reminder == null ? null : reminder.getEmailBody();
+		//TODO
+		if(StringHelper.containsNonWhitespace(emailContent)) {
+			emailContent = translate("reminder.def.body");
+		}
 		emailEl = uifactory.addRichTextElementForStringDataMinimalistic("email.content", "email.content", emailContent, 10, 60, contentCont, getWindowControl());
 		
-		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		String buttonPage = velocity_root + "/edit_rules_buttons.html";
+		FormLayoutContainer buttonLayout = FormLayoutContainer.createCustomFormLayout("buttons", getTranslator(), buttonPage);
 		buttonLayout.setRootForm(mainForm);
-		contentCont.add(buttonLayout);
+		formLayout.add(buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+	}
+	
+	protected String getSendTimeDescription() {
+		String interval = reminderModule.getInterval();
+		String desc = translate("interval." + interval);
+		String time = reminderModule.getDefaultSendTime();
+		return translate("send.time.description", new String[] { desc, time} );
 	}
 	
 	protected RuleElement initRuleForm(UserRequest ureq, RuleSPI ruleSpi, ReminderRule rule) {

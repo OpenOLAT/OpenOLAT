@@ -33,6 +33,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.reminder.ReminderInterval;
 import org.olat.modules.reminder.ReminderModule;
 import org.olat.modules.reminder.model.SendTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,16 +49,39 @@ public class ReminderAdminController extends FormBasicController {
 	
 	private static final String[] enableKeys = new String[]{ "on" };
 	
+	private static final String[] intervalKeys = new String[]{
+		ReminderInterval.every24.key(),
+		ReminderInterval.every12.key(),
+		ReminderInterval.every8.key(),
+		ReminderInterval.every6.key(),
+		ReminderInterval.every4.key(),
+		ReminderInterval.every2.key(),
+		ReminderInterval.every1.key()
+	};
+	
 	private MultipleSelectionElement enableEl;
 	private IntegerElement hoursEl, minutesEl;
 	private SingleSelection timezoneEl;
+	private SingleSelection intervalEl;
 	private FormLayoutContainer timeLayout;
+	
+	private String[] intervalValues;
 	
 	@Autowired
 	private ReminderModule reminderModule;
 	
 	public ReminderAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		
+		intervalValues = new String[]{
+				translate(ReminderInterval.every24.i18nKey()),
+				translate(ReminderInterval.every12.i18nKey()),
+				translate(ReminderInterval.every8.i18nKey()),
+				translate(ReminderInterval.every6.i18nKey()),
+				translate(ReminderInterval.every4.i18nKey()),
+				translate(ReminderInterval.every2.i18nKey()),
+				translate(ReminderInterval.every1.i18nKey())
+		};
 		
 		initForm(ureq);
 	}
@@ -75,6 +100,21 @@ public class ReminderAdminController extends FormBasicController {
 		enableEl = uifactory.addCheckboxesHorizontal("enable.reminders", formLayout, enableKeys, enableValues);
 		enableEl.addActionListener(FormEvent.ONCHANGE);
 		enableEl.select(enableKeys[0], reminderModule.isEnabled());
+		
+		String interval = reminderModule.getInterval();
+		intervalEl = uifactory.addDropdownSingleselect("interval", formLayout, intervalKeys, intervalValues, null);
+		boolean found = false;
+		if(StringHelper.containsNonWhitespace(interval)) {
+			for(String intervalKey:intervalKeys) {
+				if(intervalKey.equals(interval)) {
+					intervalEl.select(intervalKey, true);
+					found = true;
+				}
+			}
+		}
+		if(!found) {
+			intervalEl.select(intervalKeys[0], true);
+		}
 		
 		int hour = 9;
 		int minute = 0;
@@ -130,6 +170,7 @@ public class ReminderAdminController extends FormBasicController {
 		if(enableEl == source) {
 			boolean enabled = enableEl.isAtLeastSelected(1);
 			timeLayout.setVisible(enabled);
+			intervalEl.setVisible(enabled);
 			//enableSmsEl.setVisible(enabled);
 		}
 		
@@ -142,10 +183,12 @@ public class ReminderAdminController extends FormBasicController {
 		reminderModule.setEnabled(enabled);
 		
 		if(enabled) {
+			String interval = intervalEl.getSelectedKey();
+
 			int hours = hoursEl.getIntValue();
 			int minutes = minutesEl.getIntValue();
 			String sendTime = hours + ":" + minutes;
-			reminderModule.setDefaultSendTime(sendTime);
+			reminderModule.setScheduler(interval, sendTime);
 			
 			if(timezoneEl.isOneSelected()) {
 				String timeZoneID = timezoneEl.getSelectedKey();
