@@ -106,7 +106,7 @@ public class BeforeDateTaskRuleEditor extends RuleEditorFragment {
 		String[] nodeValues = new String[attemptableNodes.size()];
 		
 		for(int i=0; i<attemptableNodes.size(); i++) {
-			CourseNode attemptableNode = attemptableNodes.get(0);
+			CourseNode attemptableNode = attemptableNodes.get(i);
 			nodeKeys[i] = attemptableNode.getIdent();
 			nodeValues[i] = attemptableNode.getShortTitle() + " ( " + attemptableNode.getIdent() + " )";
 		}

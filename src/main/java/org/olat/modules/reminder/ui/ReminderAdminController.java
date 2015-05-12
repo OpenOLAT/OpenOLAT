@@ -25,9 +25,9 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -60,7 +60,7 @@ public class ReminderAdminController extends FormBasicController {
 	};
 	
 	private MultipleSelectionElement enableEl;
-	private IntegerElement hoursEl, minutesEl;
+	private TextElement hoursEl, minutesEl;
 	private SingleSelection timezoneEl;
 	private SingleSelection intervalEl;
 	private FormLayoutContainer timeLayout;
@@ -130,12 +130,17 @@ public class ReminderAdminController extends FormBasicController {
 		timeLayout.setRootForm(mainForm);
 		formLayout.add(timeLayout);
 		timeLayout.setLabel("default.send.time", null);
-		hoursEl = uifactory.addIntegerElement("hours", null, hour, timeLayout);
+		
+		String hourStr = (hour < 10 ? "0" : "") + hour;
+		hoursEl = uifactory.addTextElement("hours", null, 2, hourStr, timeLayout);
 		hoursEl.setDisplaySize(2);
-		((AbstractComponent)hoursEl.getComponent()).setDomReplacementWrapperRequired(false);
-		minutesEl = uifactory.addIntegerElement("minutes", null, minute, timeLayout);
+		hoursEl.setDomReplacementWrapperRequired(false);
+
+		String minuteStr = (minute < 10 ? "0" : "") + minute;
+		minutesEl = uifactory.addTextElement("minutes", null, 2, minuteStr, timeLayout);
 		minutesEl.setDisplaySize(2);
-		((AbstractComponent)minutesEl.getComponent()).setDomReplacementWrapperRequired(false);
+		minutesEl.setDomReplacementWrapperRequired(false);
+		
 		String[] timezoneKeys = TimeZone.getAvailableIDs();
 		String[] timezoneValues = new String[timezoneKeys.length];
 		for(int i=timezoneKeys.length; i-->0; ) {
@@ -178,6 +183,45 @@ public class ReminderAdminController extends FormBasicController {
 	}
 
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		hoursEl.clearError();
+		minutesEl.clearError();
+		boolean enabled = enableEl.isAtLeastSelected(1);
+		if(enabled) {
+			allOk &= validate(hoursEl, 23);
+			allOk &= validate(minutesEl, 59);
+		}
+		
+		return allOk & super.validateFormLogic(ureq);
+	}
+	
+	private boolean validate(TextElement textEl, int max) {
+		boolean allOk = true;
+		
+		String value = textEl.getValue();
+		if(StringHelper.containsNonWhitespace(value)) {
+			try {
+				int val = Integer.parseInt(value);
+				if(val < 0) {
+					textEl.setErrorKey("text.element.error.minvalue", new String[]{ "0" });
+				} else if(val > max) {
+					textEl.setErrorKey("text.element.error.maxvalue", new String[]{ Integer.toString(max) });
+				}
+			} catch (NumberFormatException e) {
+				textEl.setErrorKey("integer.element.int.error", null);
+				allOk &= false;
+			}
+		} else {
+			textEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		return allOk;
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		boolean enabled = enableEl.isAtLeastSelected(1);
 		reminderModule.setEnabled(enabled);
@@ -185,9 +229,9 @@ public class ReminderAdminController extends FormBasicController {
 		if(enabled) {
 			String interval = intervalEl.getSelectedKey();
 
-			int hours = hoursEl.getIntValue();
-			int minutes = minutesEl.getIntValue();
-			String sendTime = hours + ":" + minutes;
+			String hoursStr = hoursEl.getValue();
+			String minutesStr = minutesEl.getValue();
+			String sendTime = Integer.parseInt(hoursStr) + ":" + Integer.parseInt(minutesStr);
 			reminderModule.setScheduler(interval, sendTime);
 			
 			if(timezoneEl.isOneSelected()) {
