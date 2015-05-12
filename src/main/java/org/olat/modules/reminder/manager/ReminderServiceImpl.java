@@ -19,7 +19,13 @@
  */
 package org.olat.modules.reminder.manager;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -45,6 +51,8 @@ import org.olat.modules.reminder.Reminder;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.ReminderService;
 import org.olat.modules.reminder.SentReminder;
+import org.olat.modules.reminder.model.ImportExportReminder;
+import org.olat.modules.reminder.model.ImportExportReminders;
 import org.olat.modules.reminder.model.ReminderImpl;
 import org.olat.modules.reminder.model.ReminderInfos;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
@@ -72,7 +80,10 @@ public class ReminderServiceImpl implements ReminderService {
 	static {
 		ruleXStream.alias("rule", org.olat.modules.reminder.model.ReminderRuleImpl.class);
 		ruleXStream.alias("rules", org.olat.modules.reminder.model.ReminderRules.class);
+		ruleXStream.alias("reminders", org.olat.modules.reminder.model.ImportExportReminders.class);
+		ruleXStream.alias("reminder", org.olat.modules.reminder.model.ImportExportReminder.class);
 	}
+	
 	
 	@Autowired
 	private ReminderDAO reminderDao;
@@ -127,6 +138,11 @@ public class ReminderServiceImpl implements ReminderService {
 	}
 	
 	@Override
+	public List<Reminder> getReminders(RepositoryEntryRef entry) {
+		return reminderDao.getReminders(entry);
+	}
+
+	@Override
 	public List<ReminderInfos> getReminderInfos(RepositoryEntryRef entry) {
 		return reminderDao.getReminderInfos(entry);
 	}
@@ -161,6 +177,45 @@ public class ReminderServiceImpl implements ReminderService {
 		return (ReminderRules)ruleXStream.fromXML(rulesXml);
 	}
 	
+	@Override
+	public void exportReminders(RepositoryEntry entry, File fExportedDataDir) {
+		List<Reminder> reminders = reminderDao.getReminders(entry);
+		if(reminders.size() > 0) {
+			try (OutputStream fOut = new FileOutputStream(new File(fExportedDataDir, REMINDERS_XML))) {
+				ImportExportReminders exportReminders = new ImportExportReminders();
+				for(Reminder reminder:reminders) {
+					ImportExportReminder exportReminder = new ImportExportReminder(reminder);
+					exportReminders.getReminders().add(exportReminder);
+				}
+				ruleXStream.toXML(exportReminders, fOut);
+			} catch(Exception e) {
+				log.error("", e);
+			}
+		}
+	}
+
+	@Override
+	public List<Reminder> importRawReminders(Identity creator, RepositoryEntry newEntry, File fExportedDataDir) {
+		File reminderFile = new File(fExportedDataDir, REMINDERS_XML);
+		List<Reminder> reminders = new ArrayList<>();
+		if(reminderFile.exists()) {
+			try(InputStream in = new FileInputStream(reminderFile)) {
+				ImportExportReminders importReminders = (ImportExportReminders)ruleXStream.fromXML(in);
+				List<ImportExportReminder> importReminderList = importReminders.getReminders();
+				for(ImportExportReminder importReminder:importReminderList) {
+					Reminder reminder = reminderDao.createReminder(newEntry, creator);
+					reminder.setDescription(importReminder.getDescription());
+					reminder.setEmailBody(importReminder.getEmailBody());	
+					reminder.setConfiguration(importReminder.getConfiguration());
+					reminders.add(reminder);
+				}
+			} catch(Exception e) {
+				log.error("", e);
+			}
+		}
+		return reminders;
+	}
+
 	@Override
 	public void remindAll() {
 		Date now = new Date();

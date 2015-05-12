@@ -106,7 +106,7 @@ public interface RepositoryHandler {
 	 * @param target
 	 * @return
 	 */
-	public RepositoryEntry copy(RepositoryEntry source, RepositoryEntry target);
+	public RepositoryEntry copy(Identity author, RepositoryEntry source, RepositoryEntry target);
 	
 	
 	

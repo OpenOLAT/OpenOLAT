@@ -20,8 +20,10 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurityModule;
@@ -47,8 +49,11 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.nodes.gta.ui.CoachParticipantsTableModel.CGCols;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
@@ -56,6 +61,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
+import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -69,8 +75,10 @@ public class GTACoachedParticipantListController extends FormBasicController {
 	
 	private FlexiTableElement tableEl;
 	private CoachParticipantsTableModel tableModel;
-	
-	private List<Identity> assessableIdentities;
+
+	private final GTACourseNode gtaNode;
+	private final CourseEnvironment courseEnv;
+	private List<UserPropertiesRow> assessableIdentities;
 	
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -86,7 +94,8 @@ public class GTACoachedParticipantListController extends FormBasicController {
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
-	public GTACoachedParticipantListController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv) {
+	public GTACoachedParticipantListController(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment userCourseEnv, GTACourseNode gtaNode) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		
 		Roles roles = ureq.getUserSession().getRoles();
@@ -96,6 +105,8 @@ public class GTACoachedParticipantListController extends FormBasicController {
 		
 		CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
 		UserCourseEnvironmentImpl coachCourseEnv = (UserCourseEnvironmentImpl)userCourseEnv;
+		courseEnv = userCourseEnv.getCourseEnvironment();
+		this.gtaNode = gtaNode;
 		
 		boolean admin = userCourseEnv.isAdmin();
 
@@ -105,7 +116,7 @@ public class GTACoachedParticipantListController extends FormBasicController {
 		List<Identity> participants = businessGroupService.getMembers(coachedGroups, GroupRoles.participant.name());
 		for(Identity participant:participants) {
 			if(!duplicateKiller.contains(participant)) {
-				assessableIdentities.add(participant);
+				assessableIdentities.add(new UserPropertiesRow(participant, userPropertyHandlers, getLocale()));
 				duplicateKiller.add(participant);
 			}
 		}
@@ -116,7 +127,7 @@ public class GTACoachedParticipantListController extends FormBasicController {
 			List<Identity> courseParticipants = repositoryService.getMembers(re, GroupRoles.participant.name());
 			for(Identity participant:courseParticipants) {
 				if(!duplicateKiller.contains(participant)) {
-					assessableIdentities.add(participant);
+					assessableIdentities.add(new UserPropertiesRow(participant, userPropertyHandlers, getLocale()));
 					duplicateKiller.add(participant);
 				}
 			}
@@ -131,7 +142,8 @@ public class GTACoachedParticipantListController extends FormBasicController {
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.username.i18nKey(), CGCols.username.ordinal()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.username.i18nKey(), CGCols.username.ordinal(),
+					true, CGCols.username.name()));
 		}
 		
 		int i=0;
@@ -155,6 +167,8 @@ public class GTACoachedParticipantListController extends FormBasicController {
 			}
 		}
 		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskStatus.i18nKey(), CGCols.taskStatus.ordinal(),
+				true, CGCols.taskStatus.name(), new TaskStatusCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("select", translate("select"), "select"));
 		tableModel = new CoachParticipantsTableModel(userPropertyHandlers, getLocale(), columnsModel);
 
@@ -162,7 +176,22 @@ public class GTACoachedParticipantListController extends FormBasicController {
 	}
 	
 	private void updateModel() {
-		tableModel.setObjects(assessableIdentities);
+		RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
+		List<TaskLight> tasks = gtaManager.getTasksLight(entry, gtaNode);
+		Map<Long,TaskLight> identityToTasks = new HashMap<>();
+		for(TaskLight task:tasks) {
+			if(task.getIdentityKey() != null) {
+				identityToTasks.put(task.getIdentityKey(), task);
+			}
+		}
+		
+		List<CoachedIdentityRow> rows = new ArrayList<>(assessableIdentities.size());
+		for(UserPropertiesRow assessableIdentity:assessableIdentities) {
+			TaskLight task = identityToTasks.get(assessableIdentity.getIdentityKey());
+			rows.add(new CoachedIdentityRow(assessableIdentity, task));
+		}
+		
+		tableModel.setObjects(rows);
 		tableEl.reset();
 	}
 
@@ -177,9 +206,9 @@ public class GTACoachedParticipantListController extends FormBasicController {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
-				Identity row = tableModel.getObject(se.getIndex());
+				CoachedIdentityRow row = tableModel.getObject(se.getIndex());
 				if(StringHelper.containsNonWhitespace(cmd)) {
-					fireEvent(ureq, new SelectIdentityEvent(row));	
+					fireEvent(ureq, new SelectIdentityEvent(row.getIdentity().getIdentityKey()));	
 				}
 			}
 		}

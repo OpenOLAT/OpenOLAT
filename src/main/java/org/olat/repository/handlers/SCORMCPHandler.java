@@ -114,7 +114,7 @@ public class SCORMCPHandler extends FileHandler {
 	}
 	
 	@Override
-	public RepositoryEntry copy(RepositoryEntry source, RepositoryEntry target) {
+	public RepositoryEntry copy(Identity author, RepositoryEntry source, RepositoryEntry target) {
 		final ScormMainManager scormManager = ScormMainManager.getInstance();
 		OLATResource sourceResource = source.getOlatResource();
 		OLATResource targetResource = target.getOlatResource();

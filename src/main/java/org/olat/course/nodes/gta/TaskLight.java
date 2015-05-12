@@ -17,27 +17,36 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.gta.ui;
+package org.olat.course.nodes.gta;
 
-import org.olat.core.gui.control.Event;
+import java.util.Date;
 
 /**
  * 
- * Initial date: 11.03.2015<br>
+ * Initial date: 12.05.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SelectIdentityEvent extends Event {
-
-	private static final long serialVersionUID = -6380404222959527487L;
-	private final Long identityKey;
+public interface TaskLight {
 	
-	public SelectIdentityEvent(Long identityKey) {
-		super("select-identity");
-		this.identityKey = identityKey;
-	}
+	public Long getKey();
+	
+	public Date getCreationDate();
+	
+	public Date getLastModified();
+	
+	public TaskProcess getTaskStatus();
+	
+	/**
+	 * Iteration of the revision / correction process. Start with 1.
+	 * @return
+	 */
+	public int getRevisionLoop();
+	
+	public String getTaskName();
+	
+	public Long getIdentityKey();
+	
+	public Long getBusinessGroupKey();
 
-	public Long getIdentityKey() {
-		return identityKey;
-	}
 }

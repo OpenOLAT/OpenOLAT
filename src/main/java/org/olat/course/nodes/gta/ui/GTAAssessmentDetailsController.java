@@ -114,7 +114,7 @@ public class GTAAssessmentDetailsController extends BasicController {
 			} else if(participatingGroups.size() == 1) {
 				doSelectBusinessGroup(ureq, participatingGroups.get(0));
 			} else {
-				groupListCtrl = new GTACoachedGroupListController(ureq, getWindowControl(), participatingGroups);
+				groupListCtrl = new GTACoachedGroupListController(ureq, getWindowControl(), courseEnv, gtaNode, participatingGroups);
 				listenTo(groupListCtrl);
 				mainVC.put("list", groupListCtrl.getInitialComponent());
 			}	

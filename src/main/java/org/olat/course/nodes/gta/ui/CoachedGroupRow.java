@@ -19,25 +19,39 @@
  */
 package org.olat.course.nodes.gta.ui;
 
-import org.olat.core.gui.control.Event;
+import org.olat.course.nodes.gta.TaskLight;
+import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.group.BusinessGroup;
 
 /**
  * 
- * Initial date: 11.03.2015<br>
+ * Initial date: 12.05.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SelectIdentityEvent extends Event {
-
-	private static final long serialVersionUID = -6380404222959527487L;
-	private final Long identityKey;
+public class CoachedGroupRow {
 	
-	public SelectIdentityEvent(Long identityKey) {
-		super("select-identity");
-		this.identityKey = identityKey;
+	private final TaskLight task;
+	private final BusinessGroup businessGroup;
+	
+	public CoachedGroupRow(BusinessGroup businessGroup, TaskLight task) {
+		this.task = task;
+		this.businessGroup = businessGroup;
 	}
-
-	public Long getIdentityKey() {
-		return identityKey;
+	
+	public String getName() {
+		return businessGroup.getName();
+	}
+	
+	public TaskProcess getTaskStatus() {
+		return task == null ? null : task.getTaskStatus();
+	}
+	
+	public TaskLight getTask() {
+		return task;
+	}
+	
+	public BusinessGroup getBusinessGroup() {
+		return businessGroup;
 	}
 }

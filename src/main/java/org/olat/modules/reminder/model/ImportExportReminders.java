@@ -17,27 +17,35 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.gta.ui;
+package org.olat.modules.reminder.model;
 
-import org.olat.core.gui.control.Event;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 
- * Initial date: 11.03.2015<br>
+ * Initial date: 12.05.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SelectIdentityEvent extends Event {
+public class ImportExportReminders implements Serializable {
 
-	private static final long serialVersionUID = -6380404222959527487L;
-	private final Long identityKey;
-	
-	public SelectIdentityEvent(Long identityKey) {
-		super("select-identity");
-		this.identityKey = identityKey;
+	private static final long serialVersionUID = -7591298715271752339L;
+	private List<ImportExportReminder> reminders;
+
+	public ImportExportReminders() {
+		//
 	}
 
-	public Long getIdentityKey() {
-		return identityKey;
+	public List<ImportExportReminder> getReminders() {
+		if(reminders == null) {
+			reminders = new ArrayList<>();
+		}
+		return reminders;
+	}
+
+	public void setReminders(List<ImportExportReminder> reminders) {
+		this.reminders = reminders;
 	}
 }

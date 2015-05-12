@@ -303,14 +303,14 @@ public class GTAWorkflowEditController extends FormBasicController {
 		Date solutionVisibleAfter = config.getDateValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
 		solutionVisibleAfterEl = uifactory.addDateChooser("visibleafter", "sample.solution.visible.after", solutionVisibleAfter, stepsCont);
 		solutionVisibleAfterEl.setDateChooserTimeEnabled(true);
-		solutionVisibleAfterEl.setVisible(sample);
+		solutionVisibleAfterEl.setVisible(sample && !useRelativeDates);
 
 		//relative deadline
 		String solutionPage = velocity_root + "/solution_relative_date.html";
 		solutionVisibleRelCont = FormLayoutContainer.createCustomFormLayout("solutionRelativeDeadline", getTranslator(), solutionPage);
 		solutionVisibleRelCont.setRootForm(mainForm);
 		solutionVisibleRelCont.setLabel("sample.solution.visible.after", null);
-		solutionVisibleRelCont.setVisible(submit && useRelativeDates);
+		solutionVisibleRelCont.setVisible(sample && useRelativeDates);
 		stepsCont.add(solutionVisibleRelCont);
 		
 		numOfDays = config.getIntegerSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE, -1);

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.reminder;
 
+import java.io.File;
 import java.util.List;
 
 import org.olat.core.id.Identity;
@@ -35,6 +36,8 @@ import org.olat.repository.RepositoryEntryRef;
  *
  */
 public interface ReminderService {
+
+	public static final String REMINDERS_XML = "Reminders.xml";
 	
 	/**
 	 * Create a non-persisted reminder.
@@ -46,6 +49,8 @@ public interface ReminderService {
 	public Reminder save(Reminder reminder);
 	
 	public Reminder loadByKey(Long key);
+	
+	public List<Reminder> getReminders(RepositoryEntryRef entry);
 	
 	public List<ReminderInfos> getReminderInfos(RepositoryEntryRef entry);
 	
@@ -80,5 +85,15 @@ public interface ReminderService {
 	public String toXML(ReminderRules rules);
 	
 	public ReminderRules toRules(String rulesXml);
+	
+	public void exportReminders(RepositoryEntry entry, File fExportedDataDir);
+	
+	/**
+	 * The reminders are not persisted and not converted to any new course, group...
+	 * 
+	 * @param fExportedDataDir
+	 * @return
+	 */
+	public List<Reminder> importRawReminders(Identity creator, RepositoryEntry newEntry, File fExportedDataDir);
 
 }

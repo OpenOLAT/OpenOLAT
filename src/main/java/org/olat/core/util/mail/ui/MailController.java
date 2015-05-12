@@ -150,7 +150,7 @@ public class MailController extends FormBasicController {
 		String formattedBody;
 		if(!StringHelper.containsNonWhitespace(body)) {
 			formattedBody = "";
-		} else if(mailManager.isHtmlEmail(body)) {
+		} else if(StringHelper.isHtml(body)) {
 			//html -> don't replace
 			formattedBody = body;
 		} else {

@@ -51,6 +51,7 @@ import org.olat.course.nodes.gta.AssignmentResponse.Status;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
+import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.model.Membership;
@@ -462,14 +463,31 @@ public class GTAManagerImpl implements GTAManager {
 	}
 
 	@Override
-	public List<Task> getTasks(TaskList taskList) {
+	public List<Task> getTasks(TaskList taskList, GTACourseNode cNode) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select task from gtatask task ")
-		  .append(" inner join task.taskList tasklist ")
-		  .append(" where tasklist.key=:taskListKey ");
-		
+		  .append(" inner join task.taskList tasklist ");
+		if(GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
+			sb.append(" inner join fetch task.businessGroup bGroup ");
+		} else {
+			sb.append(" inner join fetch task.identity identity ");
+		}
+		sb.append(" where tasklist.key=:taskListKey");
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Task.class)
 				.setParameter("taskListKey", taskList.getKey())
+				.getResultList();
+	}
+
+	@Override
+	public List<TaskLight> getTasksLight(RepositoryEntryRef entry, GTACourseNode gtaNode) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select task from gtatasklight task ")
+		  .append(" inner join task.taskList tasklist ")
+		  .append(" where tasklist.entry.key=:entryKey and tasklist.courseNodeIdent=:courseNodeIdent");
+		
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), TaskLight.class)
+				.setParameter("entryKey", entry.getKey())
+				.setParameter("courseNodeIdent", gtaNode.getIdent())
 				.getResultList();
 	}
 

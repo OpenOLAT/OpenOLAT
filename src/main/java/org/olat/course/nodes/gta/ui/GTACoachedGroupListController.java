@@ -19,7 +19,10 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -34,8 +37,14 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.nodes.gta.ui.CoachGroupsTableModel.CGCols;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -48,10 +57,18 @@ public class GTACoachedGroupListController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private CoachGroupsTableModel tableModel;
 	
+	private final GTACourseNode gtaNode;
+	private final CourseEnvironment courseEnv;
 	private final List<BusinessGroup> coachedGroups;
 	
-	public GTACoachedGroupListController(UserRequest ureq, WindowControl wControl, List<BusinessGroup> coachedGroups) {
+	@Autowired
+	private GTAManager gtaManager;
+	
+	public GTACoachedGroupListController(UserRequest ureq, WindowControl wControl,
+			CourseEnvironment courseEnv, GTACourseNode gtaNode, List<BusinessGroup> coachedGroups) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
+		this.gtaNode = gtaNode;
+		this.courseEnv = courseEnv;
 		this.coachedGroups = coachedGroups;
 		initForm(ureq);
 		updateModel();
@@ -60,7 +77,10 @@ public class GTACoachedGroupListController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.name.i18nKey(), CGCols.name.ordinal()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.name.i18nKey(), CGCols.name.ordinal(),
+				true,  CGCols.name.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskStatus.i18nKey(), CGCols.taskStatus.ordinal(),
+				true, CGCols.taskStatus.name(), new TaskStatusCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("select", translate("select"), "select"));
 		tableModel = new CoachGroupsTableModel(columnsModel);
 
@@ -68,7 +88,22 @@ public class GTACoachedGroupListController extends FormBasicController {
 	}
 	
 	private void updateModel() {
-		tableModel.setObjects(coachedGroups);
+		RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
+		List<TaskLight> tasks = gtaManager.getTasksLight(entry, gtaNode);
+		Map<Long,TaskLight> groupToTasks = new HashMap<>();
+		for(TaskLight task:tasks) {
+			if(task.getBusinessGroupKey() != null) {
+				groupToTasks.put(task.getBusinessGroupKey(), task);
+			}
+		}
+
+		List<CoachedGroupRow> rows = new ArrayList<>(coachedGroups.size());
+		for(BusinessGroup group:coachedGroups) {
+			TaskLight task = groupToTasks.get(group.getKey());
+			rows.add(new CoachedGroupRow(group, task));
+		}
+		
+		tableModel.setObjects(rows);
 		tableEl.reset();
 	}
 
@@ -83,9 +118,9 @@ public class GTACoachedGroupListController extends FormBasicController {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
-				BusinessGroup row = tableModel.getObject(se.getIndex());
+				CoachedGroupRow row = tableModel.getObject(se.getIndex());
 				if("details".equals(cmd) || "select".equals(cmd)) {
-					fireEvent(ureq, new SelectBusinessGroupEvent(row));	
+					fireEvent(ureq, new SelectBusinessGroupEvent(row.getBusinessGroup()));	
 				}
 			}
 		}

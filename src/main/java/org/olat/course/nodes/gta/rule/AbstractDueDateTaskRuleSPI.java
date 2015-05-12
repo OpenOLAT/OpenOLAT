@@ -112,7 +112,7 @@ public abstract class AbstractDueDateTaskRuleSPI implements IdentitiesProviderRu
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
 			return getGroupsToRemind(taskList, gtaNode);
 		} else {
-			return getIndividualsToRemind(taskList, entry);
+			return getIndividualsToRemind(taskList, entry, gtaNode);
 		}
 	}
 	
@@ -206,7 +206,7 @@ public abstract class AbstractDueDateTaskRuleSPI implements IdentitiesProviderRu
 	}
 	
 	protected List<Identity> getGroupsToRemind(TaskList taskList, GTACourseNode gtaNode) {
-		List<Task> tasks = gtaManager.getTasks(taskList);
+		List<Task> tasks = gtaManager.getTasks(taskList, gtaNode);
 		Set<BusinessGroup> doneTasks = new HashSet<BusinessGroup>();
 		for(Task task:tasks) {
 			if(task.getBusinessGroup() != null) {
@@ -224,8 +224,8 @@ public abstract class AbstractDueDateTaskRuleSPI implements IdentitiesProviderRu
 		return businessGroupService.getMembers(groups, GroupRoles.participant.name());
 	}
 	
-	protected List<Identity> getIndividualsToRemind(TaskList taskList, RepositoryEntry entry) {
-		List<Task> tasks = gtaManager.getTasks(taskList);
+	protected List<Identity> getIndividualsToRemind(TaskList taskList, RepositoryEntry entry, GTACourseNode gtaNode) {
+		List<Task> tasks = gtaManager.getTasks(taskList, gtaNode);
 		Set<Identity> doneTasks = new HashSet<Identity>();
 		for(Task task:tasks) {
 			if(task.getIdentity() != null) {

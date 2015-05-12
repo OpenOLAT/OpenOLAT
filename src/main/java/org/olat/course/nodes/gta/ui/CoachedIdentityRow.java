@@ -19,25 +19,31 @@
  */
 package org.olat.course.nodes.gta.ui;
 
-import org.olat.core.gui.control.Event;
+import org.olat.course.nodes.gta.TaskLight;
+import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.user.UserPropertiesRow;
 
 /**
  * 
- * Initial date: 11.03.2015<br>
+ * Initial date: 12.05.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SelectIdentityEvent extends Event {
+public class CoachedIdentityRow {
 
-	private static final long serialVersionUID = -6380404222959527487L;
-	private final Long identityKey;
+	private final TaskLight task;
+	private final UserPropertiesRow identity;
 	
-	public SelectIdentityEvent(Long identityKey) {
-		super("select-identity");
-		this.identityKey = identityKey;
+	public CoachedIdentityRow(UserPropertiesRow identity, TaskLight task) {
+		this.identity = identity;
+		this.task = task;
 	}
-
-	public Long getIdentityKey() {
-		return identityKey;
+	
+	public TaskProcess getTaskStatus() {
+		return task == null ? null : task.getTaskStatus();
+	}
+	
+	public UserPropertiesRow getIdentity() {
+		return identity;
 	}
 }

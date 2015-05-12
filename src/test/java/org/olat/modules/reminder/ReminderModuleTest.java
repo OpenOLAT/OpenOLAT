@@ -62,6 +62,8 @@ public class ReminderModuleTest extends OlatTestCase {
 	@Test
 	public void testCronJob_everyHeightHours() throws ParseException {
 		reminderModule.setScheduler("8", "6:30");
+		sleep(1000);
+		
 		String cron = reminderModule.getCronExpression();
 		
 		Calendar cal = Calendar.getInstance();

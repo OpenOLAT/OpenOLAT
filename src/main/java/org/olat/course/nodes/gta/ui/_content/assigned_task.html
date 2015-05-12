@@ -1,11 +1,11 @@
+#if($message && !$message.isEmpty())
+	<div class="o_info">$r.xssScan($message)</div>
+#end
 <div>$description
 	<div class="pull-right">
 		$r.render("download.task")<br>
 		<i class="o_icon $taskCssIcon"> </i> $r.escapeHtml($taskInfo)
 	</div>
 </div>
-#if($message && !$message.isEmpty())
-	<div class="o_info">$r.xssScan($message)</div>
-#end
 <h5>$r.escapeHtml($taskName)</h5>
 <p>$r.xssScan($taskDescription)</p>
