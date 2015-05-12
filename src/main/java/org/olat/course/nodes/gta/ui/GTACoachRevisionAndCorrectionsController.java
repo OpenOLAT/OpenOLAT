@@ -158,7 +158,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 		
 		boolean hasDocuments = TaskHelper.hasDocuments(documentsDir);
 		if(hasDocuments) {
-			correctionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, "run.corrections.description", "bulk.review", "review");
+			correctionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, "run.coach.corrections.description", "bulk.review", "review");
 			listenTo(correctionsCtrl);
 			mainVC.put(cmpName, correctionsCtrl.getInitialComponent());
 		}

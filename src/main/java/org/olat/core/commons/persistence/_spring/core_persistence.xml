@@ -106,6 +106,7 @@
 		<class>org.olat.course.nodes.cl.model.DBCheckbox</class>
 		<class>org.olat.course.nodes.cl.model.DBCheck</class>
 		<class>org.olat.course.nodes.gta.model.TaskImpl</class>
+		<class>org.olat.course.nodes.gta.model.TaskLightImpl</class>
 		<class>org.olat.course.nodes.gta.model.TaskListImpl</class>
 		<class>org.olat.course.certificate.model.CertificateImpl</class>
 		<class>org.olat.course.certificate.model.CertificateStandalone</class>

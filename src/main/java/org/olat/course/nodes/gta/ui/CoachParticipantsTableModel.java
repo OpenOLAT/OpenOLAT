@@ -22,10 +22,10 @@ package org.olat.course.nodes.gta.ui;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.id.Identity;
-import org.olat.core.id.User;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -34,7 +34,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<Identity> {
+public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<CoachedIdentityRow> implements SortableFlexiTableDataModel<CoachedIdentityRow> {
 	
 	private final Locale locale;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -47,25 +47,40 @@ public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<Iden
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<Identity> createCopyWithEmptyList() {
+	public DefaultFlexiTableDataModel<CoachedIdentityRow> createCopyWithEmptyList() {
 		return new CoachParticipantsTableModel(userPropertyHandlers, locale, getTableColumnModel());
+	}
+	
+	@Override
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<CoachedIdentityRow> views = new CoachParticipantsModelSort(orderBy, this, null).sort();
+			super.setObjects(views);
+		}
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		Identity participant = getObject(row);
+		CoachedIdentityRow participant = getObject(row);
+		return getValueAt(participant, col);
+	}
+	
+	@Override
+	public Object getValueAt(CoachedIdentityRow row, int col) {
 		if(col == CGCols.username.ordinal()) {
-			return participant.getName();
+			return row.getIdentity().getIdentityName();
+		} else if(col == CGCols.taskStatus.ordinal()) {
+			return row.getTaskStatus();
 		} else if(col >= GTACoachedGroupGradingController.USER_PROPS_OFFSET) {
 			int propIndex = col - GTACoachedGroupGradingController.USER_PROPS_OFFSET;
-			User user = participant.getUser();
-			return userPropertyHandlers.get(propIndex).getUserProperty(user, locale);
+			return row.getIdentity().getIdentityProp(propIndex);
 		}
 		return "ERROR";
 	}
 	
 	public enum CGCols {
-		username("username");
+		username("username"),
+		taskStatus("table.header.group.step");
 		
 		private final String i18nKey;
 		

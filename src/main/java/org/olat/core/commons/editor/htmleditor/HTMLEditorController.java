@@ -230,6 +230,7 @@ public class HTMLEditorController extends FormBasicController {
 			// nothing to catch
 		} else if (source == save && lock != null) {
 			doSaveData();
+			newFile = false;//saved, it's not a new file anymore
 		} else if (source == saveClose && lock != null) {
 			doSaveData();
 			fireEvent(ureq, Event.DONE_EVENT);

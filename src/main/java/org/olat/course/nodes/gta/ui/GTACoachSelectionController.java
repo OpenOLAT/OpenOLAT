@@ -22,6 +22,7 @@ package org.olat.course.nodes.gta.ui;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -63,6 +64,8 @@ public class GTACoachSelectionController extends BasicController {
 	
 	@Autowired
 	private GTAManager gtaManager;
+	@Autowired
+	private BaseSecurity securityManager;
 	
 	public GTACoachSelectionController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment coachCourseEnv, GTACourseNode gtaNode) {
@@ -90,12 +93,12 @@ public class GTACoachSelectionController extends BasicController {
 			if(groups.size() == 1) {
 				doSelectBusinessGroup(ureq, groups.get(0));
 			} else {
-				groupListCtrl = new GTACoachedGroupListController(ureq, getWindowControl(), groups);
+				groupListCtrl = new GTACoachedGroupListController(ureq, getWindowControl(), courseEnv, gtaNode, groups);
 				listenTo(groupListCtrl);
 				mainVC.put("list", groupListCtrl.getInitialComponent());
 			}	
 		} else {
-			participantListCtrl = new GTACoachedParticipantListController(ureq, getWindowControl(), coachCourseEnv);
+			participantListCtrl = new GTACoachedParticipantListController(ureq, getWindowControl(), coachCourseEnv, gtaNode);
 			listenTo(participantListCtrl);
 			mainVC.put("list", participantListCtrl.getInitialComponent());
 		}
@@ -119,7 +122,8 @@ public class GTACoachSelectionController extends BasicController {
 		} else if(participantListCtrl == source) {
 			if(event instanceof SelectIdentityEvent) {
 				SelectIdentityEvent selectEvent = (SelectIdentityEvent)event;
-				doSelectParticipant(ureq, selectEvent.getIdentity());
+				Identity selectedIdentity = securityManager.loadIdentityByKey(selectEvent.getIdentityKey());
+				doSelectParticipant(ureq, selectedIdentity);
 				backLink.setVisible(true);
 			}
 			

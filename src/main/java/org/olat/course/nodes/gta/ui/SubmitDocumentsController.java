@@ -188,6 +188,14 @@ class SubmitDocumentsController extends FormBasicController {
 			if(event == Event.DONE_EVENT) {
 				updateModel();
 				fireEvent(ureq, new SubmitEvent(SubmitEvent.CREATE, newDocumentEditorCtrl.getFilename()));	
+			} else if(event == Event.CANCELLED_EVENT) {
+				if(newDocumentEditorCtrl.isNewFile()) {
+					newDocumentEditorCtrl.getFileLeaf().delete();
+					updateModel();
+				} else {
+					updateModel();
+					fireEvent(ureq, new SubmitEvent(SubmitEvent.CREATE, newDocumentEditorCtrl.getFilename()));	
+				}
 			}
 			cmc.deactivate();
 			cleanUp();
