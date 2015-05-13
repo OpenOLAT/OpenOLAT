@@ -363,9 +363,12 @@ public class GroupAssessmentController extends FormBasicController {
 		List<AssessmentRow> rows = model.getObjects();	
 		if(applyToAllEl.isAtLeastSelected(1)) {
 			Float score = null;
-			String scoreValue = groupScoreEl.getValue();
-			if(withScore && StringHelper.containsNonWhitespace(scoreValue)) {
-				score = Float.parseFloat(scoreValue);
+			
+			if(withScore) {
+				String scoreValue = groupScoreEl.getValue();
+				if(StringHelper.containsNonWhitespace(scoreValue)) {
+					score = Float.parseFloat(scoreValue);
+				}
 			}
 			
 			Boolean passed = null;
