@@ -4,8 +4,6 @@
 	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
 <hibernate-mapping default-lazy="false">
   <class name="org.olat.resource.OLATResourceImpl" table="o_olatresource">
-  		
-	<cache usage="transactional" />
 
 	<id name="key" type="long" column="resource_id"	unsaved-value="null">
 		<generator class="hilo"/>

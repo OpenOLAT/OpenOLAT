@@ -5,8 +5,6 @@
 
 <hibernate-mapping default-lazy="false">
     <class name="org.olat.upgrade.model.BGAreaUpgrade" table="o_gp_bgarea">
-    		
-		<cache usage="transactional" />
 
         <id name="key"
         	type="long"

@@ -4,8 +4,7 @@
 	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
 <hibernate-mapping default-lazy="false">
   
-  <class name="org.olat.course.assessment.model.UserEfficiencyStatementImpl" table="o_as_eff_statement">	
-	<cache usage="transactional" />
+  <class name="org.olat.course.assessment.model.UserEfficiencyStatementImpl" table="o_as_eff_statement">
 
 	<id name="key" type="long" column="id"	unsaved-value="null">
 		<generator class="hilo"/>
@@ -44,8 +43,7 @@
                  cascade="none"/>
   </class>
   
-  <class name="org.olat.course.assessment.model.UserEfficiencyStatementStandalone" table="o_as_eff_statement">	
-	<cache usage="transactional" />
+  <class name="org.olat.course.assessment.model.UserEfficiencyStatementStandalone" table="o_as_eff_statement">
 
 	<id name="key" type="long" column="id"	unsaved-value="null">
 		<generator class="hilo"/>

@@ -5,8 +5,6 @@
 
 <hibernate-mapping default-lazy="false">
 	<class name="org.olat.upgrade.model.BusinessGroupUpgrade" table="o_gp_business">
-	
-		<cache usage="transactional" />
 		<!--
 		key (see Interface org.olat.core.commons.persistence.Persistable),
 		lastModified (see Interface org.olat.core.commons.persistence.Auditable)

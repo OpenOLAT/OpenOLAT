@@ -2,7 +2,6 @@
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN" "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
 	<class name="org.olat.repository.model.RepositoryEntryShortImpl" table="o_repositoryentry" mutable="false">
-		<cache usage="transactional" />
 		<id name="key" column="repositoryentry_id" type="long" unsaved-value="null">
 			<generator class="hilo"/>
 		</id>
