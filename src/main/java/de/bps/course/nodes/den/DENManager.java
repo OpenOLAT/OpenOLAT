@@ -199,21 +199,17 @@ public class DENManager {
 		//cancel enroll in calendar entry
 		if(event.getParticipants() != null) {
 			int currLength = event.getParticipants().length;
-			if (currLength > 1) {
+			if (currLength > 0) {
 				//more than one are enrolled
-				String[] partsNew = new String[currLength - 1]; //one to delete
+				List<String> partsNew = new ArrayList<>(currLength); //one to delete
 				String[] partsOld = event.getParticipants();
 				String identityName = identity.getName();
-				for (int i = 0, j = 0; i < partsOld.length; i++) {
-					if ( !(partsOld[i].equals(identityName)) ) {
-						partsNew[j] = partsOld[i];
-						j++; //only increment if new entry was made
+				for (String  partOld:partsOld) {
+					if (!partOld.equals(identityName)) {
+						partsNew.add(partOld);
 					}
 				}
-				event.setParticipants(partsNew);
-			} else if (currLength == 1) {
-				//only one is enrolled, only simple reset needed
-				event.setParticipants(new String[0]);
+				event.setParticipants(partsNew.toArray(new String[partsNew.size()]));
 			}
 			//save calendar event
 			boolean successfullyDone = calManager.updateEventFrom(cal, event);
