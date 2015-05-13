@@ -4,8 +4,7 @@
 	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
 <hibernate-mapping default-lazy="false">
   <class name="org.olat.core.commons.services.tagging.model.TagImpl" table="o_tag">
-		<cache usage="transactional" />
-	
+		
 		<id name="key" type="long" column="tag_id"	unsaved-value="null">
 			<generator class="hilo"/>
 		</id>

@@ -5,8 +5,6 @@
 
 <hibernate-mapping default-lazy="false">
 	<class name="org.olat.upgrade.model.BGResourceRelation" table="o_gp_business_to_resource">
-		<cache usage="transactional" />
-		
 		<id name="key" type="long" column="g_id" unsaved-value="null">
 			<generator class="hilo"/>
 		</id>
