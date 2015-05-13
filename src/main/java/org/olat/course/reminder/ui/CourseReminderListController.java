@@ -114,8 +114,6 @@ public class CourseReminderListController extends FormBasicController implements
 				true, ReminderCols.creationDate.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ReminderCols.lastModified.i18nKey(), ReminderCols.lastModified.ordinal(),
 				true, ReminderCols.lastModified.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.sendTime.i18nKey(), ReminderCols.sendTime.ordinal(),
-				true, ReminderCols.sendTime.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.send.i18nKey(), ReminderCols.send.ordinal(),
 				true, ReminderCols.send.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.tools.i18nKey(), ReminderCols.tools.ordinal()));
