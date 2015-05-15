@@ -615,14 +615,28 @@ public abstract class AbstractMemberListController extends BasicController imple
 			identities = new ArrayList<Identity>(0);
 		} else {
 			SearchIdentityParams idParams = new SearchIdentityParams();
-			idParams.setIdentityKeys(identityKeys);
+			
 			if(params.getUserPropertiesSearch() != null && !params.getUserPropertiesSearch().isEmpty()) {
 				idParams.setUserProperties(params.getUserPropertiesSearch());
 			}
 			if(StringHelper.containsNonWhitespace(params.getLogin())) {
 				idParams.setLogin(params.getLogin());
 			}
-			identities = securityManager.getIdentitiesByPowerSearch(idParams, 0, -1);
+			
+			List<Long> identityKeyList = new ArrayList<>(identityKeys);
+			identities = new ArrayList<>(identityKeyList.size());
+
+			int count = 0;
+			int batch = 500;
+			do {
+				int toIndex = Math.min(count + batch, identityKeyList.size());
+				List<Long> toLoad = identityKeyList.subList(count, toIndex);
+				idParams.setIdentityKeys(toLoad);
+
+				List<Identity> batchOfIdentities = securityManager.getIdentitiesByPowerSearch(idParams, 0, -1);
+				identities.addAll(batchOfIdentities);
+				count += batch;
+			} while(count < identityKeyList.size());
 		}
 
 		Map<Long,MemberView> keyToMemberMap = new HashMap<Long,MemberView>();
