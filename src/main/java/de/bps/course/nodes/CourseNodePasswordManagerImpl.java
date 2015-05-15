@@ -42,7 +42,7 @@ import org.olat.properties.PropertyManager;
  */
 public class CourseNodePasswordManagerImpl implements CourseNodePasswordManager {
 
-	private Map<Long, AdditionalConditionAnswerContainer> cache = new ConcurrentHashMap<Long, AdditionalConditionAnswerContainer>();
+	private final Map<Long, AdditionalConditionAnswerContainer> cache = new ConcurrentHashMap<Long, AdditionalConditionAnswerContainer>();
 
 	private static CourseNodePasswordManagerImpl INSTANCE;
 	static {
@@ -66,7 +66,9 @@ public class CourseNodePasswordManagerImpl implements CourseNodePasswordManager 
 	@Override
 	public AdditionalConditionAnswerContainer getAnswerContainer(Identity identity) {
 		AdditionalConditionAnswerContainer acac = new AdditionalConditionAnswerContainer();
-		if (cache.containsKey(identity.getKey())) {
+		if(identity == null) {
+			//do nothing
+		} else if (cache.containsKey(identity.getKey())) {
 			acac = cache.get(identity.getKey());
 		} else {
 			PropertyManager pm = PropertyManager.getInstance();

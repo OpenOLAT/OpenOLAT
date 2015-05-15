@@ -33,7 +33,11 @@ public abstract class AdditionalCondition extends Condition implements Cloneable
 	
 	protected AbstractAccessableCourseNode node;
 	protected Long courseId;
+	
+	// The field answers must not be used, it's only there for XStream's compatibility purpose
+	@Deprecated
 	protected AdditionalConditionAnswerContainer answers;
+	
 	/**
 	 * 
 	 * @return the controller that is used to input the condition
@@ -46,8 +50,8 @@ public abstract class AdditionalCondition extends Condition implements Cloneable
 	 * @return NULL if something went wrong, true if the condition was met or false if it hadn't been fulfilled
 	 * 
 	 */
-	public abstract Boolean evaluate();
-	public abstract Boolean pwdEvaluate();
+	public abstract boolean evaluate(Object userObject);
+	
 	/**
 	 * used to get an optional controller if this additionalcondition could be fulfilled with userinteraction
 	 * @param ureq
@@ -56,24 +60,23 @@ public abstract class AdditionalCondition extends Condition implements Cloneable
 	 */
 	public abstract Controller getUserInputController(UserRequest ureq, WindowControl wControl);
 	
-	public String getNodeIdentifier(){
-		return node!=null?node.getIdent():null;
+	public String getNodeIdentifier() {
+		return node != null ? node.getIdent() : null;
 	}
 	
-	public Long getCourseId(){
+	public Long getCourseId() {
 		return courseId;
 	}
 	
-	public void setAnswers(AdditionalConditionAnswerContainer answers){
+	public void setAnswers(AdditionalConditionAnswerContainer answers) {
 		this.answers = answers;
 	}
 	
-	protected void setNode(AbstractAccessableCourseNode node){
+	protected void setNode(AbstractAccessableCourseNode node) {
 		this.node = node;
 	}
 	
-	protected void setCourseId(Long courseId){
+	protected void setCourseId(Long courseId) {
 		this.courseId = courseId;
 	}
-	
 }

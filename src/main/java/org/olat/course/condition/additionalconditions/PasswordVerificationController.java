@@ -81,13 +81,12 @@ public class PasswordVerificationController extends FormBasicController {
 		if(!StringHelper.containsNonWhitespace(pwElement.getValue())) {
 			pwElement.setErrorKey("form.legende.mandatory", new String[] {});
 		} else {
-			condition.setAnswer(pwElement.getValue());
-			valid = condition.evaluate();
-			if (!valid) {
-				pwElement.setErrorKey("password.incorrect", new String[] {});
-			} else {
+			valid = condition.evaluate(pwElement.getValue());
+			if (valid) {
 				CourseNodePasswordManager cnpm = CourseNodePasswordManagerImpl.getInstance();
 				cnpm.updatePwd(ureq.getIdentity(), condition.getNodeIdentifier(), condition.getCourseId().toString(), pwElement.getValue());
+			} else {
+				pwElement.setErrorKey("password.incorrect", new String[0]);
 			}
 		}
 		
