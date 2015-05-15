@@ -41,6 +41,7 @@ public class EnrollmentRow implements BusinessGroupRef {
 	private boolean participant;
 	private int numInWaitingList;
 	private int numOfParticipants;
+	private int numOfReservations;
 	private int positionInWaitingList;
 	
 	public EnrollmentRow(Long groupKey, String name, String description,
@@ -81,10 +82,6 @@ public class EnrollmentRow implements BusinessGroupRef {
 		this.waiting = waiting;
 	}
 	
-	public int getPositionInWaitingList() {
-		return positionInWaitingList;
-	}
-	
 	public boolean isParticipant() {
 		return participant;
 	}
@@ -94,7 +91,7 @@ public class EnrollmentRow implements BusinessGroupRef {
 	}
 	
 	public int getNumInWaitingList() {
-		return numInWaitingList;
+		return numInWaitingList < 0 ? 0 : numInWaitingList;
 	}
 	
 	public void setNumInWaitingList(int numInWaitingList) {
@@ -102,11 +99,23 @@ public class EnrollmentRow implements BusinessGroupRef {
 	}
 
 	public int getNumOfParticipants() {
-		return numOfParticipants;
+		return numOfParticipants < 0 ? 0 : numOfParticipants;
 	}
 
 	public void setNumOfParticipants(int numOfParticipants) {
 		this.numOfParticipants = numOfParticipants;
+	}
+
+	public int getNumOfReservations() {
+		return numOfReservations < 0 ? 0 : numOfReservations;
+	}
+
+	public void setNumOfReservations(int numOfReservations) {
+		this.numOfReservations = numOfReservations;
+	}
+	
+	public int getPositionInWaitingList() {
+		return positionInWaitingList;
 	}
 
 	public void setPositionInWaitingList(int positionInWaitingList) {

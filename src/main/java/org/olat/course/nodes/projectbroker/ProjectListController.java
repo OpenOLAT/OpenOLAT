@@ -195,9 +195,9 @@ public class ProjectListController extends BasicController implements GenericEve
 			if (resId.longValue() != 0) {
 				if (isLogDebugEnabled()) logDebug("projectId=" , ores.getResourceableId().toString());
 				
-				Project currentProject = projectBrokerManager.getProject(ores.getResourceableId());
-				if (currentProject != null) {
-					activateProjectController(currentProject, ureq);				
+				Project proj = projectBrokerManager.getProject(ores.getResourceableId());
+				if (proj != null) {
+					activateProjectController(proj, ureq);				
 				} else {
 					// message not found, do nothing. Load normal start screen
 					logDebug("Invalid projectId=" , ores.getResourceableId().toString());
@@ -281,23 +281,23 @@ public class ProjectListController extends BasicController implements GenericEve
 	}
 
 
-	private void handleTableEventForProject(UserRequest urequest, TableEvent te, Project currentProject) {
+	private void handleTableEventForProject(UserRequest urequest, TableEvent te, Project selectedProject) {
 		if ( te.getActionId().equals(TABLE_ACTION_SHOW_DETAIL)) {
-			activateProjectController(currentProject, urequest);
+			activateProjectController(selectedProject, urequest);
 		} else if ( te.getActionId().equals(TABLE_ACTION_ACCOUNT_MANAGER)) {
-			activateUserController(currentProject, urequest, te);
+			activateUserController(selectedProject, urequest, te);
 		} else if ( te.getActionId().equals(TABLE_ACTION_SELECT)) {
-			if(!projectGroupManager.isDeselectionAllowed(currentProject)){
+			if(!projectGroupManager.isDeselectionAllowed(selectedProject)){
 				List<String> warningButtons = new ArrayList<String>();
 				warningButtons.add(translate("info.projectbroker.no.deselect.select"));
 				warningButtons.add(translate("info.projectbroker.no.deselect.cancel"));
-				String message = translate("info.projectbroker.deselect.confirmation",currentProject.getTitle())+"<br/><div class=\"o_important\">"+translate("info.projectbroker.no.deselect")+"</div>"; 
+				String message = translate("info.projectbroker.deselect.confirmation",selectedProject.getTitle())+"<br/><div class=\"o_important\">"+translate("info.projectbroker.no.deselect")+"</div>"; 
 				noDeselectWarning = activateGenericDialog(urequest, translate("info.projectbroker.no.deselect.title"), message, warningButtons, noDeselectWarning);
 				return;
 			}
-			handleEnrollAction(urequest, currentProject);
+			handleEnrollAction(urequest, selectedProject);
 		} else if ( te.getActionId().equals(TABLE_ACTION_CANCEL_SELECT)) {
-			handleCancelEnrollmentAction(urequest, currentProject);
+			handleCancelEnrollmentAction(urequest, selectedProject);
 		} else {
 			getLogger().warn("Controller-event-handling: Unkown event=" + te);
 		}
@@ -305,15 +305,15 @@ public class ProjectListController extends BasicController implements GenericEve
 	}
 
 
-	private void handleCancelEnrollmentAction(UserRequest urequest, Project currentProject) {
-		getLogger().debug("start cancelProjectEnrollmentOf identity=" + urequest.getIdentity() + " to project=" + currentProject);
-		boolean cancelledEnrollmend = projectBrokerManager.cancelProjectEnrollmentOf(urequest.getIdentity(), currentProject, moduleConfig);
+	private void handleCancelEnrollmentAction(UserRequest urequest, Project selectedProject) {
+		getLogger().debug("start cancelProjectEnrollmentOf identity=" + urequest.getIdentity() + " to project=" + selectedProject);
+		boolean cancelledEnrollmend = projectBrokerManager.cancelProjectEnrollmentOf(urequest.getIdentity(), selectedProject, moduleConfig);
 		if (cancelledEnrollmend) {
-			projectBrokerMailer.sendCancelEnrollmentEmailToParticipant(urequest.getIdentity(), currentProject, this.getTranslator());
-			if (currentProject.isMailNotificationEnabled()) {
-				projectBrokerMailer.sendCancelEnrollmentEmailToManager(urequest.getIdentity(), currentProject, this.getTranslator());
+			projectBrokerMailer.sendCancelEnrollmentEmailToParticipant(urequest.getIdentity(), selectedProject, this.getTranslator());
+			if (selectedProject.isMailNotificationEnabled()) {
+				projectBrokerMailer.sendCancelEnrollmentEmailToManager(urequest.getIdentity(), selectedProject, this.getTranslator());
 			}
-			projectGroupManager.sendGroupChangeEvent(currentProject, courseId, urequest.getIdentity());
+			projectGroupManager.sendGroupChangeEvent(selectedProject, courseId, urequest.getIdentity());
 		} else {
 			showInfo("info.msg.could.not.cancel.enrollment");
 		}
@@ -321,15 +321,15 @@ public class ProjectListController extends BasicController implements GenericEve
 	}
 
 
-	private void handleEnrollAction(UserRequest urequest, Project currentProject) {
-		getLogger().debug("start enrollProjectParticipant identity=" + urequest.getIdentity() + " to project=" + currentProject);
-		boolean enrolled = projectBrokerManager.enrollProjectParticipant(urequest.getIdentity(), currentProject, moduleConfig, nbrSelectedProjects, isParticipantInAnyProject);
+	private void handleEnrollAction(UserRequest urequest, Project selectedProject) {
+		getLogger().debug("start enrollProjectParticipant identity=" + urequest.getIdentity() + " to project=" + selectedProject);
+		boolean enrolled = projectBrokerManager.enrollProjectParticipant(urequest.getIdentity(), selectedProject, moduleConfig, nbrSelectedProjects, isParticipantInAnyProject);
 		if (enrolled) {
-			projectBrokerMailer.sendEnrolledEmailToParticipant(urequest.getIdentity(), currentProject, this.getTranslator());
-			if (currentProject.isMailNotificationEnabled()) {
-				projectBrokerMailer.sendEnrolledEmailToManager(urequest.getIdentity(), currentProject, this.getTranslator());
+			projectBrokerMailer.sendEnrolledEmailToParticipant(urequest.getIdentity(), selectedProject, this.getTranslator());
+			if (selectedProject.isMailNotificationEnabled()) {
+				projectBrokerMailer.sendEnrolledEmailToManager(urequest.getIdentity(), selectedProject, this.getTranslator());
 			}
-			projectGroupManager.sendGroupChangeEvent(currentProject, courseId, urequest.getIdentity());
+			projectGroupManager.sendGroupChangeEvent(selectedProject, courseId, urequest.getIdentity());
 		} else {
 			showInfo("info.msg.could.not.enroll");
 		}

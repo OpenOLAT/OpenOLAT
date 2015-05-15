@@ -42,6 +42,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 
 
 /**
@@ -142,8 +143,10 @@ public class ProjectImpl extends PersistentObject implements Project {
 	}
 
 	public int getSelectedPlaces() {
-		return CoreSpringFactory.getImpl(BusinessGroupService.class).countMembers(getProjectGroup(), GroupRoles.participant.name()) +
-		                     BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(getCandidateGroup());
+		int numOfParticipants = CoreSpringFactory.getImpl(BusinessGroupService.class).countMembers(getProjectGroup(), GroupRoles.participant.name());
+		int numOfCandidates = BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(getCandidateGroup());
+		int numOfReservations = CoreSpringFactory.getImpl(ACReservationDAO.class).countReservations(getProjectGroup().getResource());
+		return numOfParticipants + numOfCandidates + numOfReservations;                     
 	}
 
 	public int getMaxMembers() {

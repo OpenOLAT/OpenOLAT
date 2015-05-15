@@ -268,6 +268,10 @@ public class EnrollmentManager extends BasicManager {
 		  .append(" (select count(participants.key) from bgroupmember participants ")
 		  .append("  where participants.group=baseGroup and participants.role='").append(GroupRoles.participant.name()).append("'")
 		  .append(" ) as numOfParticipants,")
+		  //num of pending
+		  .append(" (select count(reservations.key) from resourcereservation reservations ")
+		  .append("  where reservations.resource.key=grp.resource.key")
+		  .append(" ) as numOfReservationss,")
 		  //length of the waiting list
 		  .append(" (select count(waiters.key) from bgroupmember waiters ")
 		  .append("  where grp.waitingListEnabled=true and waiters.group=baseGroup and waiters.role='").append(GroupRoles.waiting.name()).append("'")
@@ -319,13 +323,15 @@ public class EnrollmentManager extends BasicManager {
 			}
 			
 			int numOfParticipants = row[5] == null ? 0 : ((Number)row[5]).intValue();
-			int numOfWaiters = row[6] == null ? 0 : ((Number)row[6]).intValue();
-			boolean participant = row[7] == null ? false : ((Number)row[7]).intValue() > 0;
-			boolean waiting = row[8] == null ? false : ((Number)row[8]).intValue() > 0;
+			int numOfReservations = row[6] == null ? 0 : ((Number)row[6]).intValue();
+			int numOfWaiters = row[7] == null ? 0 : ((Number)row[7]).intValue();
+			boolean participant = row[8] == null ? false : ((Number)row[8]).intValue() > 0;
+			boolean waiting = row[9] == null ? false : ((Number)row[9]).intValue() > 0;
 			
 			EnrollmentRow enrollment = new EnrollmentRow(key, name, desc,
 					maxParticipants, waitingListEnabled);
 			enrollment.setNumOfParticipants(numOfParticipants);
+			enrollment.setNumOfReservations(numOfReservations);
 			enrollment.setNumInWaitingList(numOfWaiters);
 			enrollment.setParticipant(participant);
 			enrollment.setWaiting(waiting);

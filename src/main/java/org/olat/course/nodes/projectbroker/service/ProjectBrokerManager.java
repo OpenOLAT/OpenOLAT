@@ -57,13 +57,6 @@ public interface ProjectBrokerManager {
 	public ProjectBroker getProjectBroker(Long projectBrokerId);
 	
 	/**
-	 * Get number of selected places for certain project.
-	 * @param project
-	 * @return
-	 */
-	public int getSelectedPlaces(Project project);
-	
-	/**
 	 * Creates a new project-broker and save it. 
 	 * @return
 	 */

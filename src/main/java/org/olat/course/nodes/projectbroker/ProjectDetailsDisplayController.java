@@ -182,7 +182,7 @@ public class ProjectDetailsDisplayController extends BasicController {
 		if (project.getMaxMembers() == Project.MAX_MEMBERS_UNLIMITED) {
 			myContent.contextPut("projectPlaces", this.getTranslator().translate("detailsform.unlimited.project.members") );
 		} else {
-			String placesValue = projectBrokerManager.getSelectedPlaces(project) + " " + this.getTranslator().translate("detailsform.places.of") + " " + project.getMaxMembers();
+			String placesValue = project.getSelectedPlaces() + " " + this.getTranslator().translate("detailsform.places.of") + " " + project.getMaxMembers();
 			myContent.contextPut("projectPlaces", placesValue);
 		}
 		
