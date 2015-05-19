@@ -25,7 +25,6 @@
 package org.olat.course.nodes.en;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -158,21 +157,15 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// 1. group names
-		List<Long> groupKeys = getKeys(easyGroupList);
-		String groupName = "";
-		if (StringHelper.containsNonWhitespace(easyGroupList.getValue())){
-			groupName = easyGroupList.getValue();
-		}
-		moduleConfig.set(ENCourseNode.CONFIG_GROUPNAME, groupName);
-		moduleConfig.set(ENCourseNode.CONFIG_GROUP_IDS, groupKeys);
+		KeysAndNames groupKeysAndNames = (KeysAndNames)easyGroupList.getUserObject();
+		String groupNames = StringHelper.formatAsSortUniqCSVString(groupKeysAndNames.getNames());
+		moduleConfig.set(ENCourseNode.CONFIG_GROUPNAME, groupNames);
+		moduleConfig.set(ENCourseNode.CONFIG_GROUP_IDS, groupKeysAndNames.getKeys());
 		// 2. area names
-		List<Long> areaKeys = getKeys(easyAreaList);
-		String areaName = "";
-		if (StringHelper.containsNonWhitespace(easyAreaList.getValue())){
-			areaName = easyAreaList.getValue();
-		}
-		moduleConfig.set(ENCourseNode.CONFIG_AREANAME, areaName);
-		moduleConfig.set(ENCourseNode.CONFIG_AREA_IDS, areaKeys);
+		KeysAndNames areaKeysAndNames = (KeysAndNames)easyAreaList.getUserObject();
+		String areaNames = StringHelper.formatAsSortUniqCSVString(areaKeysAndNames.getNames());
+		moduleConfig.set(ENCourseNode.CONFIG_AREANAME, areaNames);
+		moduleConfig.set(ENCourseNode.CONFIG_AREA_IDS, areaKeysAndNames.getKeys());
 		// 3. cancel-enroll-enabled flag
 		Boolean cancelEnrollEnabled = enableCancelEnroll.getSelectedKeys().size()==1;
 		moduleConfig.set(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED, cancelEnrollEnabled);
@@ -192,26 +185,22 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// groups
-
-		String groupInitVal;
-		@SuppressWarnings("unchecked")
-		List<Long> groupKeys = (List<Long>)moduleConfig.get(ENCourseNode.CONFIG_GROUP_IDS);
+		List<Long> groupKeys = moduleConfig.getList(ENCourseNode.CONFIG_GROUP_IDS, Long.class);
 		if(groupKeys == null) {
-			groupInitVal = (String) moduleConfig.get(ENCourseNode.CONFIG_GROUPNAME);
-			if(StringHelper.containsNonWhitespace(groupInitVal)) {
-				groupKeys = businessGroupService.toGroupKeys(groupInitVal, cev.getCourseGroupManager().getCourseEntry());
+			String groupNames = (String) moduleConfig.get(ENCourseNode.CONFIG_GROUPNAME);
+			if(StringHelper.containsNonWhitespace(groupNames)) {
+				groupKeys = businessGroupService.toGroupKeys(groupNames, cev.getCourseGroupManager().getCourseEntry());
 			} else {
 				groupKeys = new ArrayList<Long>();
 			}
 		}
-		groupInitVal = getGroupNames(groupKeys);
-		
+		KeysAndNames groupInitVal = getGroupKeysAndNames(groupKeys);
 		chooseGroupsLink = uifactory.addFormLink("chooseGroup", formLayout, "btn btn-default o_xsmall o_form_groupchooser");
 		chooseGroupsLink.setLabel("form.groupnames", null);
 		chooseGroupsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
 		
-		easyGroupList = uifactory.addStaticTextElement("group", null, groupInitVal == null ? "" : groupInitVal, formLayout);
-		easyGroupList.setUserObject(groupKeys);
+		easyGroupList = uifactory.addStaticTextElement("group", null, groupInitVal.getDecoratedNames(), formLayout);
+		easyGroupList.setUserObject(groupInitVal);
 		easyGroupList.setElementCssClass("text-muted");
 		
 		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseEntry()) > 0;
@@ -222,21 +211,21 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		}
 		
 		// areas
-		String areaInitVal;
+
 		@SuppressWarnings("unchecked")
 		List<Long> areaKeys = (List<Long>)moduleConfig.get(ENCourseNode.CONFIG_AREA_IDS);
 		if(areaKeys == null) {
-			areaInitVal = (String) moduleConfig.get(ENCourseNode.CONFIG_AREANAME);
-			areaKeys = areaManager.toAreaKeys(areaInitVal, cev.getCourseGroupManager().getCourseResource());
+			String areaNames = (String) moduleConfig.get(ENCourseNode.CONFIG_AREANAME);
+			areaKeys = areaManager.toAreaKeys(areaNames, cev.getCourseGroupManager().getCourseResource());
 		}
-		areaInitVal = getAreaNames(areaKeys);
 		
+		KeysAndNames areaInitVal = getAreaKeysAndNames(areaKeys);
 		chooseAreasLink = uifactory.addFormLink("chooseArea", formLayout, "btn btn-default o_xsmall o_form_areachooser");
 		chooseAreasLink.setLabel("form.areanames", null);
 		chooseAreasLink.setIconLeftCSS("o_icon o_icon-fw o_icon_courseareas");
 		
-		easyAreaList = uifactory.addStaticTextElement("area", null, areaInitVal == null ? "" : areaInitVal, formLayout);
-		easyAreaList.setUserObject(areaKeys);
+		easyAreaList = uifactory.addStaticTextElement("area", null, areaInitVal.getDecoratedNames(), formLayout);
+		easyAreaList.setUserObject(areaInitVal);
 		easyAreaList.setElementCssClass("text-muted");
 		
 		hasAreas = areaManager.countBGAreasInContext(cev.getCourseGroupManager().getCourseResource()) > 0;
@@ -493,14 +482,9 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		if (source == groupChooseC) {
 			if (event == Event.DONE_EVENT) {
 				cmc.deactivate();
-				List<String> newGroupNames = groupChooseC.getSelectedNames();
-				List<String> escapedNames = new ArrayList<>(newGroupNames.size());
-				for(String newGroupName:newGroupNames) {
-					escapedNames.add(StringHelper.escapeHtml(newGroupName));
-				}
-				String list = StringHelper.formatAsSortUniqCSVString(escapedNames);
-				easyGroupList.setValue(list == null ? "" : list);
-				easyGroupList.setUserObject(groupChooseC.getSelectedKeys());
+				KeysAndNames c =  getGroupKeysAndNames(groupChooseC.getSelectedKeys());
+				easyGroupList.setValue(c.getDecoratedNames());
+				easyGroupList.setUserObject(c);
 				easyGroupList.getRootForm().submit(ureq);
 				chooseGroupsLink.setI18nKey("choose");
 			} else if (Event.CANCELLED_EVENT == event) {
@@ -509,14 +493,9 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		} else if (source == areaChooseC) {
 			if (event == Event.DONE_EVENT) {
 				cmc.deactivate();
-				List<String> newAreaNames = areaChooseC.getSelectedNames();
-				List<String> escapedNames = new ArrayList<>(newAreaNames.size());
-				for(String newAreaName:newAreaNames) {
-					escapedNames.add(StringHelper.escapeHtml(newAreaName));
-				}
-				String list = StringHelper.formatAsSortUniqCSVString(escapedNames);
-				easyAreaList.setValue(list == null ? "" : list);
-				easyAreaList.setUserObject(areaChooseC.getSelectedKeys());
+				KeysAndNames c = getAreaKeysAndNames(areaChooseC.getSelectedKeys());
+				easyAreaList.setValue(c.getDecoratedNames());
+				easyAreaList.setUserObject(c);
 				easyAreaList.getRootForm().submit(ureq);
 				chooseAreasLink.setI18nKey("choose");
 			} else if (event == Event.CANCELLED_EVENT) {
@@ -530,12 +509,17 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 				List<Long> c = new ArrayList<Long>();
 				c.addAll(getKeys(easyGroupList));
 				if (fixGroupError != null && fixGroupError.getUserObject() != null) {
-					c.removeAll(Arrays.asList((String[])fixGroupError.getUserObject()));
+					String[] keyArr = (String[])fixGroupError.getUserObject();
+					if(keyArr != null && keyArr.length > 0) {
+						List<Long> fixedKeys = toKeys(keyArr[0]);
+						c.removeAll(fixedKeys);
+					}
 				}
 				c.addAll(groupCreateCntrllr.getCreatedGroupKeys());
 				
-				easyGroupList.setValue(getGroupNames(c));
-				easyGroupList.setUserObject(c);
+				KeysAndNames keysAndNames = getGroupKeysAndNames(c);
+				easyGroupList.setValue(keysAndNames.getDecoratedNames());
+				easyGroupList.setUserObject(keysAndNames);
 				
 				if (groupCreateCntrllr.getCreatedGroupNames().size() > 0 && !hasGroups) {
 					chooseGroupsLink.setLinkTitle("select");
@@ -551,12 +535,17 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 				List<Long> c = new ArrayList<Long>();
 				c.addAll(getKeys(easyAreaList));
 				if (fixAreaError != null && fixAreaError.getUserObject() != null) {
-					c.removeAll(Arrays.asList((String[])fixAreaError.getUserObject()));
+					String[] keyArr = (String[])fixAreaError.getUserObject();
+					if(keyArr != null && keyArr.length > 0) {
+						List<Long> fixedKeys = toKeys(keyArr[0]);
+						c.removeAll(fixedKeys);
+					}
 				}
 				c.addAll(areaCreateCntrllr.getCreatedAreaKeys());
 				
-				easyAreaList.setValue(getAreaNames(c));
-				easyAreaList.setUserObject(c);
+				KeysAndNames keysAndNames = getAreaKeysAndNames(c);
+				easyAreaList.setValue(keysAndNames.getDecoratedNames());
+				easyAreaList.setUserObject(keysAndNames);
 				
 				if (areaCreateCntrllr.getCreatedAreaNames().size() > 0 && !hasAreas) {
 					chooseAreasLink.setLinkTitle("select");
@@ -604,13 +593,12 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	}
 	
 	private List<Long> getKeys(StaticTextElement element) {
-		@SuppressWarnings("unchecked")
-		List<Long> keys = (List<Long>)element.getUserObject();
+		KeysAndNames keys = (KeysAndNames)element.getUserObject();
 		if(keys == null) {
-			keys = new ArrayList<Long>();
+			keys = new KeysAndNames();
 			element.setUserObject(keys);
 		}
-		return keys;
+		return keys.getKeys();
 	}
 	
 	private String toString(Collection<Long> keys) {
@@ -622,26 +610,71 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		return sb.toString();
 	}
 	
-	private String getGroupNames(List<Long> keys) {
+	private List<Long> toKeys(String keysString) {
+		List<Long> keyList = new ArrayList<>();
+		String[] keys = keysString.split(",");
+		for(String key:keys) {
+			try {
+				keyList.add(Long.parseLong(key));
+			} catch (NumberFormatException e) {
+				logWarn("Cannot parse this key: " + key, e);
+			}
+		}
+		return keyList;
+	}
+	
+	private KeysAndNames getGroupKeysAndNames(List<Long> keys) {
 		StringBuilder sb = new StringBuilder();
+		KeysAndNames keysAndNames = new KeysAndNames();
+		keysAndNames.getKeys().addAll(keys);
+		
 		List<BusinessGroupShort> groups = businessGroupService.loadShortBusinessGroups(keys);
 		for(BusinessGroupShort group:groups) {
 			if(sb.length() > 0) sb.append("&nbsp;&nbsp;");
 			sb.append("<i class='o_icon o_icon-fw o_icon_group'>&nbsp;</i> ");
 			sb.append(StringHelper.escapeHtml(group.getName()));
+			keysAndNames.getNames().add(group.getName());
+			
 		}
-		return sb.toString();
+		keysAndNames.setDecoratedNames(sb.toString());
+		return keysAndNames;
 	}
 	
-	private String getAreaNames(List<Long> keys) {
+	private KeysAndNames getAreaKeysAndNames(List<Long> keys) {
 		StringBuilder sb = new StringBuilder();
 		List<BGArea> areas = areaManager.loadAreas(keys);
+		KeysAndNames keysAndNames = new KeysAndNames();
+		keysAndNames.getKeys().addAll(keys);
 		for(BGArea area:areas) {
 			if(sb.length() > 0) sb.append("&nbsp;&nbsp;");
 			sb.append("<i class='o_icon o_icon-fw o_icon_courseareas'>&nbsp;</i> ");
 			sb.append(StringHelper.escapeHtml(area.getName()));
+			keysAndNames.getNames().add(area.getName());
 		}
-		return sb.toString();
+		keysAndNames.setDecoratedNames(sb.toString());
+		return keysAndNames;
 	}
+	
+	private static class KeysAndNames {
+		
+		private final List<Long> keys = new ArrayList<>();
+		private final List<String> names = new ArrayList<>();
+		private String decoratedNames;
+		
+		public List<Long> getKeys() {
+			return keys;
+		}
+		
+		public List<String> getNames() {
+			return names;
+		}
 
+		public String getDecoratedNames() {
+			return decoratedNames;
+		}
+
+		public void setDecoratedNames(String decoratedNames) {
+			this.decoratedNames = decoratedNames;
+		}
+	}
 }
