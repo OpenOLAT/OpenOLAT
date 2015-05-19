@@ -40,16 +40,22 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.QTI21ContentPackage;
-import org.olat.ims.qti21.UserTestSession;
 import org.olat.ims.qti21.RequestTimestampContext;
+import org.olat.ims.qti21.UserTestSession;
+import org.olat.ims.qti21.manager.CandidateDataService;
+import org.olat.ims.qti21.manager.TestSessionDAO;
+import org.olat.ims.qti21.model.CandidateEvent;
+import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.CandidateTestEventType;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.JqtiPlus;
 import uk.ac.ed.ph.jqtiplus.exception.QtiCandidateStateException;
 import uk.ac.ed.ph.jqtiplus.node.AssessmentObjectType;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
+import uk.ac.ed.ph.jqtiplus.node.test.SubmissionMode;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationLevel;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationRecorder;
 import uk.ac.ed.ph.jqtiplus.provision.BadResourceException;
@@ -79,7 +85,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21DisplayController extends FormBasicController {
+public class QTI21DisplayController extends FormBasicController implements CandidateSessionContext {
 	
 	private final File fUnzippedDirRoot;
 	private final String mapperUri;
@@ -92,6 +98,12 @@ public class QTI21DisplayController extends FormBasicController {
 	private CandidateSessionFinisher candidateSessionFinisher = new CandidateSessionFinisher();
 	
 	private UserTestSession candidateSession;
+	private CandidateEvent lastEvent;
+
+	@Autowired
+	private TestSessionDAO testSessionDao;
+	@Autowired
+	private CandidateDataService candidateDataService;
 	
 	public QTI21DisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl, "run");
@@ -99,12 +111,15 @@ public class QTI21DisplayController extends FormBasicController {
 		FileResourceManager frm = FileResourceManager.getInstance();
 		fUnzippedDirRoot = frm.unzipFileResource(entry.getOlatResource());
 		
-		testSessionController = enterSession();
+		candidateSession = testSessionDao.createTestSession(entry, null, getIdentity());
 		mapperUri = registerCacheableMapper(ureq, "QTI21Resources::" + entry.getKey(), new ResourcesMapper());
 		
+		testSessionController = enterSession();
+
 		/* Handle immediate end of test session */
         if (testSessionController.getTestSessionState().isEnded()) {
-            //candidateSessionFinisher.finishCandidateSession(candidateSession, assessmentResult);
+        	AssessmentResult assessmentResult = null;
+            candidateSessionFinisher.finishCandidateSession(candidateSession, assessmentResult);
         }
 		initForm(ureq);
 	}
@@ -123,6 +138,7 @@ public class QTI21DisplayController extends FormBasicController {
 		qtiEl.setRequestTimestampContext(requestTimestampContext);
 		qtiEl.setTestSessionController(testSessionController);
 		qtiEl.setAssessmentObjectUri(createAssessmentObjectUri());
+		qtiEl.setCandidateSessionContext(this);
 		qtiEl.setMapperUri(mapperUri);
 		
 		mainForm.setMultipartEnabled(true, Integer.MAX_VALUE);
@@ -131,6 +147,25 @@ public class QTI21DisplayController extends FormBasicController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	public boolean isTerminated() {
+		return candidateSession.getTerminationTime() != null;
+	}
+
+	@Override
+	public UserTestSession getCandidateSession() {
+		return candidateSession;
+	}
+	
+	@Override
+	public CandidateEvent getLastEvent() {
+		return lastEvent;
+	}
+
+	protected CandidateEvent assertSessionEntered(UserTestSession candidateSession) {
+		return lastEvent;
 	}
 
 	@Override
@@ -194,14 +229,11 @@ public class QTI21DisplayController extends FormBasicController {
 		TestPlanNodeKey itemKey = TestPlanNodeKey.fromString(key);
 		Date requestTimestamp = requestTimestampContext.getCurrentRequestTimestamp();
 		
-        //Assert.notNull(candidateSessionContext, "candidateSessionContext");
         //Assert.notNull(itemKey, "itemKey");
-        //assertSessionType(candidateSessionContext, AssessmentObjectType.ASSESSMENT_TEST);
-        //final CandidateSession candidateSession = candidateSessionContext.getCandidateSession();
 
         /* Get current JQTI state and create JQTI controller */
-        //final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-        //final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
+        final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+        final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
         //final TestSessionController testSessionController = candidateDataService.createTestSessionController(mostRecentEvent, notificationRecorder);
         final TestSessionState testSessionState = testSessionController.getTestSessionState();
 
@@ -223,27 +255,23 @@ public class QTI21DisplayController extends FormBasicController {
         }
 
         /* Record current result state */
-        //candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
+        candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
 
         /* Record and log event */
-        //final CandidateEvent candidateTestEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
-        //        CandidateTestEventType.REVIEW_ITEM, null, itemKey, testSessionState, notificationRecorder);
+        final CandidateEvent candidateTestEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
+                CandidateTestEventType.REVIEW_ITEM, null, itemKey, testSessionState, notificationRecorder);
+        this.lastEvent = candidateTestEvent;
         //candidateAuditLogger.logCandidateEvent(candidateTestEvent);
 	}
 
 	private void doItemSolution(String key) {
 		TestPlanNodeKey itemKey = TestPlanNodeKey.fromString(key);
-		
-		//Assert.notNull(candidateSessionContext, "candidateSessionContext");
-        //assertSessionType(candidateSessionContext, AssessmentObjectType.ASSESSMENT_TEST);
-        //final CandidateSession candidateSession = candidateSessionContext.getCandidateSession();
-        //Assert.notNull(itemKey, "itemKey");
 
         /* Get current JQTI state and create JQTI controller */
-        final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-        //final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
+        NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+        CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
         //final TestSessionController testSessionController = candidateDataService.createTestSessionController(mostRecentEvent, notificationRecorder);
-        //final TestSessionState testSessionState = testSessionController.getTestSessionState();
+        TestSessionState testSessionState = testSessionController.getTestSessionState();
 
         /* Make sure caller may do this */
         //assertSessionNotTerminated(candidateSession);
@@ -264,18 +292,24 @@ public class QTI21DisplayController extends FormBasicController {
         }
 
         /* Record current result state */
-        //candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
+        candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
 
         /* Record and log event */
-        //final CandidateEvent candidateTestEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
-        //        CandidateTestEventType.SOLUTION_ITEM, null, itemKey, testSessionState, notificationRecorder);
-        //candidateAuditLogger.logCandidateEvent(candidateTestEvent);
-        
+        CandidateEvent candidateTestEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
+                CandidateTestEventType.SOLUTION_ITEM, null, itemKey, testSessionState, notificationRecorder);
+        this.lastEvent = candidateTestEvent;
+        //candidateAuditLogger.logCandidateEvent(candidateTestEvent); 
 	}
 	
 	//public CandidateSession finishLinearItem(final CandidateSessionContext candidateSessionContext)
     // throws CandidateException {
 	private void doFinish() {
+		
+        /* Get current JQTI state and create JQTI controller */
+        final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+        final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
+        //final TestSessionController testSessionController = candidateDataService.createTestSessionController(mostRecentEvent, notificationRecorder);
+        final TestSessionState testSessionState = testSessionController.getTestSessionState();
 		
 		try {
 			if (!testSessionController.mayAdvanceItemLinear()) {
@@ -295,19 +329,18 @@ public class QTI21DisplayController extends FormBasicController {
 	    final TestPlanNode nextItemNode = testSessionController.advanceItemLinear(requestTimestamp);
 
 	    // Record current result state
-	    //final AssessmentResult assessmentResult = candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
+	    final AssessmentResult assessmentResult = candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
 
 	    /* If we ended the testPart and there are now no more available testParts, then finish the session now */
 	    if (nextItemNode==null && testSessionController.findNextEnterableTestPart()==null) {
-	    	//candidateSessionFinisher.finishCandidateSession(candidateSession, assessmentResult);
+	    	candidateSession = candidateSessionFinisher.finishCandidateSession(candidateSession, assessmentResult);
 	    }
 
-	    /* Record and log event 
+	    // Record and log event 
 	    final CandidateTestEventType eventType = nextItemNode!=null ? CandidateTestEventType.FINISH_ITEM : CandidateTestEventType.FINISH_FINAL_ITEM;
 	   	final CandidateEvent candidateTestEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
 	                eventType, null, testSessionState, notificationRecorder);
-	   	*/
-		
+	   	this.lastEvent = candidateTestEvent;
 	}
 	
 	private void doTestPartNavigation() {
@@ -323,6 +356,17 @@ public class QTI21DisplayController extends FormBasicController {
 	private void doResponse(Map<Identifier, StringResponseData> stringResponseMap) {
 		String candidateComment = null;
 		
+		//Assert.notNull(candidateSessionContext, "candidateSessionContext");
+        //assertSessionType(candidateSessionContext, AssessmentObjectType.ASSESSMENT_TEST);
+        //final CandidateSession candidateSession = candidateSessionContext.getCandidateSession();
+        //assertSessionNotTerminated(candidateSession);
+
+        /* Get current JQTI state and create JQTI controller */
+        final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+        final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
+        //final TestSessionController testSessionController = candidateDataService.createTestSessionController(mostRecentEvent, notificationRecorder);
+        final TestSessionState testSessionState = testSessionController.getTestSessionState();
+		
 		final Map<Identifier, ResponseData> responseDataMap = new HashMap<Identifier, ResponseData>();
         if (stringResponseMap != null) {
             for (final Entry<Identifier, StringResponseData> stringResponseEntry : stringResponseMap.entrySet()) {
@@ -331,16 +375,48 @@ public class QTI21DisplayController extends FormBasicController {
                 responseDataMap.put(identifier, stringResponseData);
             }
         }
+        
+        boolean allResponsesValid = true;
+        boolean allResponsesBound = true;
 		
 		//TODO files upload
-		
 		final Date timestamp = requestTimestampContext.getCurrentRequestTimestamp();
-        /*if (candidateComment != null) {
+        if (candidateComment != null) {
             testSessionController.setCandidateCommentForCurrentItem(timestamp, candidateComment);
-        }*/
+        }
 
         /* Attempt to bind responses (and maybe perform RP & OP) */
         testSessionController.handleResponsesToCurrentItem(timestamp, responseDataMap);
+        
+        /* Classify this event */
+        final SubmissionMode submissionMode = testSessionController.getCurrentTestPart().getSubmissionMode();
+        final CandidateItemEventType candidateItemEventType;
+        if (allResponsesValid) {
+            candidateItemEventType = submissionMode == SubmissionMode.INDIVIDUAL
+            		? CandidateItemEventType.ATTEMPT_VALID : CandidateItemEventType.RESPONSE_VALID;
+        }  else {
+            candidateItemEventType = allResponsesBound
+            		? CandidateItemEventType.RESPONSE_INVALID : CandidateItemEventType.RESPONSE_BAD;
+        }
+
+        /* Record resulting event */
+        final CandidateEvent candidateEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
+                CandidateTestEventType.ITEM_EVENT, candidateItemEventType, testSessionState, notificationRecorder);
+        //candidateAuditLogger.logCandidateEvent(candidateEvent);
+        this.lastEvent = candidateEvent;
+
+        /* Persist CandidateResponse entities */
+        /*for (final CandidateResponse candidateResponse : candidateResponseMap.values()) {
+            candidateResponse.setCandidateEvent(candidateEvent);
+            candidateResponseDao.persist(candidateResponse);
+        }*/
+        
+        
+        /* Record current result state */
+        candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
+
+        /* Save any change to session state */
+        candidateSession = testSessionDao.update(candidateSession);
 	}
 
 	//public CandidateSession endCurrentTestPart(final CandidateSessionContext candidateSessionContext)
@@ -353,13 +429,10 @@ public class QTI21DisplayController extends FormBasicController {
 	private void doAdvanceTestPart() {
 		
 		//final CandidateSessionContext candidateSessionContext = getCandidateSessionContext();
-		//Assert.notNull(candidateSessionContext, "candidateSessionContext");
-        //assertSessionType(candidateSessionContext, AssessmentObjectType.ASSESSMENT_TEST);
-        //final CandidateSession candidateSession = candidateSessionContext.getCandidateSession();
-
+		
         /* Get current JQTI state and create JQTI controller */
-        //final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-        //final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
+        final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+        final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
         final TestSessionState testSessionState = testSessionController.getTestSessionState();
 
         /* Perform action */
@@ -389,8 +462,8 @@ public class QTI21DisplayController extends FormBasicController {
             if (testSessionState.getTestPlan().getTestPartNodes().size()==1) {
                 eventType = CandidateTestEventType.EXIT_TEST;
                 testSessionController.exitTest(currentTimestamp);
-                //candidateSession.setTerminationTime(currentTimestamp);
-                //candidateSessionDao.update(candidateSession);
+                candidateSession.setTerminationTime(currentTimestamp);
+                candidateSession = testSessionDao.update(candidateSession);
             }
             else {
                 eventType = CandidateTestEventType.ADVANCE_TEST_PART;
@@ -398,13 +471,13 @@ public class QTI21DisplayController extends FormBasicController {
         }
 
         /* Record current result state */
-        //candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
+        candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
 
         /* Record and log event */
-        //final CandidateEvent candidateTestEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
-        //       eventType, testSessionState, notificationRecorder);
+        final CandidateEvent candidateTestEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
+               eventType, testSessionState, notificationRecorder);
         //candidateAuditLogger.logCandidateEvent(candidateTestEvent);
-
+        this.lastEvent = candidateTestEvent;
 
 		
 		/*
@@ -423,13 +496,10 @@ public class QTI21DisplayController extends FormBasicController {
 	}
 	
 	private void doReviewTestPart() {
-		//Assert.notNull(candidateSessionContext, "candidateSessionContext");
-        //assertSessionType(candidateSessionContext, AssessmentObjectType.ASSESSMENT_TEST);
-        //final CandidateSession candidateSession = candidateSessionContext.getCandidateSession();
-
+		
         /* Get current JQTI state and create JQTI controller */
         final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-        //final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
+        final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
         //final TestSessionController testSessionController = candidateDataService.createTestSessionController(mostRecentEvent, notificationRecorder);
         final TestSessionState testSessionState = testSessionController.getTestSessionState();
 
@@ -443,22 +513,20 @@ public class QTI21DisplayController extends FormBasicController {
         }
 
         /* Record and log event */
-        //final CandidateEvent candidateTestEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
-        //        CandidateTestEventType.REVIEW_TEST_PART, null, null, testSessionState, notificationRecorder);
+        final CandidateEvent candidateTestEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
+                CandidateTestEventType.REVIEW_TEST_PART, null, null, testSessionState, notificationRecorder);
         //candidateAuditLogger.logCandidateEvent(candidateTestEvent);
+        this.lastEvent = candidateTestEvent;
 	}
 	
 	/**
 	 * Exit multi-part tests
 	 */
 	private void doExitTest() {
-		//Assert.notNull(candidateSessionContext, "candidateSessionContext");
-        //assertSessionType(candidateSessionContext, AssessmentObjectType.ASSESSMENT_TEST);
-        //final CandidateSession candidateSession = candidateSessionContext.getCandidateSession();
 
         /* Get current JQTI state and create JQTI controller */
         final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-        //final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
+        final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
         //final TestSessionController testSessionController = candidateDataService.createTestSessionController(mostRecentEvent, notificationRecorder);
         final TestSessionState testSessionState = testSessionController.getTestSessionState();
 
@@ -476,16 +544,17 @@ public class QTI21DisplayController extends FormBasicController {
         }
 
         /* Update CandidateSession as appropriate */
-        //candidateSession.setTerminationTime(currentTimestamp);
-        //candidateSessionDao.update(candidateSession);
+        candidateSession.setTerminationTime(currentTimestamp);
+        candidateSession = testSessionDao.update(candidateSession);
 
         /* Record current result state (final) */
-        //candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
+        candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
 
         /* Record and log event */
-        //final CandidateEvent candidateTestEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
-        //        CandidateTestEventType.EXIT_TEST, testSessionState, notificationRecorder);
+        final CandidateEvent candidateTestEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
+                CandidateTestEventType.EXIT_TEST, testSessionState, notificationRecorder);
         //candidateAuditLogger.logCandidateEvent(candidateTestEvent);
+        this.lastEvent = candidateTestEvent;
 		
 	}
 	
@@ -524,17 +593,22 @@ public class QTI21DisplayController extends FormBasicController {
             return null;
         }
         
+        /* Record and log event */
+        final CandidateEvent candidateEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
+                CandidateTestEventType.ENTER_TEST, testSessionState, notificationRecorder);
+        //candidateAuditLogger.logCandidateEvent(candidateEvent);
+        this.lastEvent = candidateEvent;
+
+        /* Record current result state */
+        final AssessmentResult assessmentResult = candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
+
+        /* Handle immediate end of test session */
+        if (testSessionState.isEnded()) {
+            candidateSessionFinisher.finishCandidateSession(candidateSession, assessmentResult);
+        }
+        
         return testSessionController;
 	}
-	
-	
-	public AssessmentResult computeTestAssessmentResult(final String candidateSessionId, final TestSessionController testSessionController) {
-        String qtiWorksBaseUrl = null;//TODO
-		final URI sessionIdentifierSourceId = URI.create(qtiWorksBaseUrl);
-        final String sessionIdentifier = "testsession/" + candidateSessionId;
-        return testSessionController.computeAssessmentResult(requestTimestampContext.getCurrentRequestTimestamp(),
-        		sessionIdentifier, sessionIdentifierSourceId);
-    }
 	
 	private TestSessionController createNewTestSessionStateAndController(NotificationRecorder notificationRecorder) {
 		TestProcessingMap testProcessingMap = getTestProcessingMap();
@@ -629,19 +703,18 @@ public class QTI21DisplayController extends FormBasicController {
 	private class CandidateSessionFinisher {
 		
 
-	    public void finishCandidateSession(/* final CandidateSession candidateSession,*/ final AssessmentResult assessmentResult) {
+	    public UserTestSession finishCandidateSession(UserTestSession candidateSession, AssessmentResult assessmentResult) {
 	        /* Mark session as finished */
-	        //candidateSession.setFinishTime(requestTimestampContext.getCurrentRequestTimestamp());
+	        candidateSession.setFinishTime(requestTimestampContext.getCurrentRequestTimestamp());
 
 	        /* Also nullify LIS result info for session. These will be updated later, if pre-conditions match for sending the result back */
 	        //candidateSession.setLisOutcomeReportingStatus(null);
 	        //candidateSession.setLisScore(null);
-	       // candidateSessionDao.update(candidateSession);
+	        candidateSession = testSessionDao.update(candidateSession);
 
 	        /* Finally schedule LTI result return (if appropriate and sane) */
 	        //maybeScheduleLtiOutcomes(candidateSession, assessmentResult);
+	        return candidateSession;
 	    }
-		
-		
 	}
 }

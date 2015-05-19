@@ -34,15 +34,22 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.OLATRuntimeException;
 import org.olat.ims.qti21.RequestTimestampContext;
+import org.olat.ims.qti21.UserTestSession;
+import org.olat.ims.qti21.model.CandidateEvent;
+import org.olat.ims.qti21.model.CandidateTestEventType;
 import org.olat.ims.qti21.ui.rendering.AbstractRenderingOptions;
 import org.olat.ims.qti21.ui.rendering.AbstractRenderingRequest;
 import org.olat.ims.qti21.ui.rendering.AssessmentRenderer;
 import org.olat.ims.qti21.ui.rendering.SerializationMethod;
+import org.olat.ims.qti21.ui.rendering.TerminatedRenderingRequest;
+import org.olat.ims.qti21.ui.rendering.TestRenderingMode;
 import org.olat.ims.qti21.ui.rendering.TestRenderingOptions;
 import org.olat.ims.qti21.ui.rendering.TestRenderingRequest;
 
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
+import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
 
 /**
@@ -127,14 +134,15 @@ public class QTI21ComponentRenderer extends DefaultComponentRenderer {
 	private void renderCurrentCandidateTestSessionState(TestSessionController testSessionController,
 			TestRenderingOptions renderingOptions, StreamResult result, QTI21Component component) {
 		TestSessionState testSessionState = testSessionController.getTestSessionState();
-		/*final CandidateSession candidateSession = candidateSessionContext.getCandidateSession();
+		CandidateSessionContext candidateSessionContext = component.getCandidateSessionContext();
+		final UserTestSession candidateSession = candidateSessionContext.getCandidateSession();
         if (candidateSession.isExploded()) {
-            renderExploded(candidateSessionContext, renderingOptions, result);
-        }*/
-		/* 
+            renderExploded(candidateSessionContext, renderingOptions, result, component);
+        }
+	
         if (candidateSessionContext.isTerminated()) {
-            renderTerminated(result);
-        } else {*/
+            renderTerminated(candidateSessionContext, renderingOptions, result, component);
+        } else {
 			/* Look up most recent event */
 			   // final CandidateEvent latestEvent = assertSessionEntered(candidateSession);
 			
@@ -151,13 +159,36 @@ public class QTI21ComponentRenderer extends DefaultComponentRenderer {
 			
 			/* Render event */
 			renderTestEvent(testSessionController, renderingOptions, result, component);
-		//}
+		}
 	}
+	
+    private void renderExploded(CandidateSessionContext candidateSessionContext, AbstractRenderingOptions renderingOptions, StreamResult result, QTI21Component component) {
+        assessmentRenderer.renderExploded(createTerminatedRenderingRequest(candidateSessionContext, renderingOptions, component), result);
+    }
+
+    private void renderTerminated(CandidateSessionContext candidateSessionContext, AbstractRenderingOptions renderingOptions, StreamResult result, QTI21Component component) {
+        assessmentRenderer.renderTeminated(createTerminatedRenderingRequest(candidateSessionContext, renderingOptions, component), result);
+    }
+
+    //----------------------------------------------------
+
+    private TerminatedRenderingRequest createTerminatedRenderingRequest(CandidateSessionContext candidateSessionContext,
+    		AbstractRenderingOptions renderingOptions, QTI21Component component) {
+        final TerminatedRenderingRequest renderingRequest = new TerminatedRenderingRequest();
+        initRenderingRequest(renderingRequest, renderingOptions, component);
+        //renderingRequest.setExitSessionUrl(candidateSessionContext.getReturnUrl());
+        return renderingRequest;
+    }
 	
 	private void renderTestEvent(final TestSessionController testSessionController,
             final TestRenderingOptions renderingOptions, final StreamResult result, QTI21Component component) {
-        //final CandidateTestEventType testEventType = candidateEvent.getTestEventType();
-        //final CandidateSession candidateSession = candidateEvent.getCandidateSession();
+        
+		
+		CandidateSessionContext candidateSessionContext = component.getCandidateSessionContext();
+		//final CandidateTestEventType testEventType = candidateEvent.getTestEventType();
+		CandidateEvent candidateEvent = candidateSessionContext.getLastEvent();
+		CandidateTestEventType testEventType = candidateEvent.getTestEventType();
+        final UserTestSession candidateSession = candidateSessionContext.getCandidateSession();//candidateEvent.getCandidateSession();
 
         /* Create and partially configure rendering request */
         final TestRenderingRequest renderingRequest = new TestRenderingRequest();
@@ -166,7 +197,7 @@ public class QTI21ComponentRenderer extends DefaultComponentRenderer {
 
         /* If session has terminated, render appropriate state and exit */
         final TestSessionState testSessionState = testSessionController.getTestSessionState();
-        if (/* candidateSession.isTerminated() ||*/ testSessionState.isExited()) {
+        if (candidateSessionContext.isTerminated() || testSessionState.isExited()) {
             //assessmentRenderer.renderTeminated(createTerminatedRenderingRequest(candidateSessionContext, renderingRequest.getRenderingOptions()), result);
             return;
         }
@@ -174,19 +205,27 @@ public class QTI21ComponentRenderer extends DefaultComponentRenderer {
         /* Check for "modal" events first. These cause a particular rendering state to be
          * displayed, which candidate will then leave.
          */
-        /*if (testEventType==CandidateTestEventType.REVIEW_ITEM) {
+        if (testEventType == CandidateTestEventType.REVIEW_ITEM) {
             // Extract item to review 
             renderingRequest.setTestRenderingMode(TestRenderingMode.ITEM_REVIEW);
             renderingRequest.setModalItemKey(extractTargetItemKey(candidateEvent));
-        }
-        else if (testEventType==CandidateTestEventType.SOLUTION_ITEM) {
+        } else if (testEventType == CandidateTestEventType.SOLUTION_ITEM) {
             // Extract item to show solution 
             renderingRequest.setTestRenderingMode(TestRenderingMode.ITEM_SOLUTION);
             renderingRequest.setModalItemKey(extractTargetItemKey(candidateEvent));
-        }*/
+        }
 
         /* Pass to rendering layer */
         assessmentRenderer.renderTest(renderingRequest, result);
+    }
+	
+    private TestPlanNodeKey extractTargetItemKey(final CandidateEvent candidateEvent) {
+        final String keyString = candidateEvent.getTestItemKey();
+        try {
+            return TestPlanNodeKey.fromString(keyString);
+        } catch (final Exception e) {
+            throw new OLATRuntimeException("Unexpected Exception parsing TestPlanNodeKey " + keyString, e);
+        }
     }
 	
 	private <P extends AbstractRenderingOptions> void initRenderingRequest(

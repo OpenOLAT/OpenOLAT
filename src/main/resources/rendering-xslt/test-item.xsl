@@ -283,7 +283,7 @@ NB: This is used both while being presented, and during review.
 
         <xsl:if test="$isItemSessionOpen">
           <div class="testItemControl">
-            <input id="submit_button" name="submit" type="submit" value="{$submitButtonText}"/>
+            <input id="submit_button" name="submit" type="submit" value="{$submitButtonText}" class="btn btn-default"/>
           </div>
         </xsl:if>
       </form>

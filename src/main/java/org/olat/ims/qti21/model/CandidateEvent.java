@@ -17,33 +17,48 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.manager;
-
-import org.olat.core.commons.persistence.DB;
-import org.olat.core.id.Identity;
-import org.olat.ims.qti21.QTI21Service;
-import org.olat.ims.qti21.UserTestSession;
-import org.olat.repository.RepositoryEntry;
-import org.springframework.beans.factory.annotation.Autowired;
+package org.olat.ims.qti21.model;
 
 /**
  * 
- * Initial date: 12.05.2015<br>
+ * Initial date: 19.05.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21ServiceImpl implements QTI21Service {
+public class CandidateEvent {
 	
-	@Autowired
-	private DB dbInstance;
-	@Autowired
-	private TestSessionDAO testSessionDAO;
 	
+	
+	private CandidateTestEventType testEventType;
+	
+	private CandidateItemEventType itemEventType;
+	
+    private String testItemKey;
 
-	@Override
-	public UserTestSession createTestSession(RepositoryEntry testEntry, RepositoryEntry courseEntry, Identity identity) {
-		return testSessionDAO.createTestSession(testEntry, courseEntry, identity);
+	public CandidateTestEventType getTestEventType() {
+		return testEventType;
 	}
+
+	public void setTestEventType(CandidateTestEventType testEventType) {
+		this.testEventType = testEventType;
+	}
+
+	public CandidateItemEventType getItemEventType() {
+		return itemEventType;
+	}
+
+	public void setItemEventType(CandidateItemEventType itemEventType) {
+		this.itemEventType = itemEventType;
+	}
+
+	public String getTestItemKey() {
+		return testItemKey;
+	}
+
+	public void setTestItemKey(String testItemKey) {
+		this.testItemKey = testItemKey;
+	}
+	
 	
 	
 	

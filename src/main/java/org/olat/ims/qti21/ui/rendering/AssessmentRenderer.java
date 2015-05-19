@@ -106,6 +106,7 @@ public class AssessmentRenderer {
     private static final URI testPartFeedbackXsltUri = URI.create("classpath:/rendering-xslt/test-testpart-feedback.xsl");
     private static final URI testFeedbackXsltUri = URI.create("classpath:/rendering-xslt/test-feedback.xsl");
     private static final URI terminatedXsltUri = URI.create("classpath:/rendering-xslt/terminated.xsl");
+    private static final URI explodedXsltUri = URI.create("classpath:/rendering-xslt/exploded.xsl");
 
 
 
@@ -342,6 +343,23 @@ public class AssessmentRenderer {
 
         /* We finally do the transform on the _item_ (NB!) */
         doTransform(request, itemSystemId, testItemXsltUri, xsltParameters, result);
+    }
+    
+    /**
+     * Renders an exploded session, sending the result to the provided JAXP {@link Result}.
+     * <p>
+     * NB: If you're using a {@link StreamResult} then you probably want to wrap it around an
+     * {@link OutputStream} rather than a {@link Writer}. Remember that you are responsible for
+     * closing the {@link OutputStream} or {@link Writer} afterwards!
+     */
+    public void renderExploded(final TerminatedRenderingRequest request, final Result result) {
+        Assert.notNull(result, "result");
+
+        final Map<String, Object> xsltParameters = new HashMap<String, Object>();
+        setBaseRenderingParameters(xsltParameters, request, null);
+        xsltParameters.put("exitSessionUrl", request.getExitSessionUrl());
+
+        doTransform(request, null, explodedXsltUri, xsltParameters, result);
     }
 
     /**

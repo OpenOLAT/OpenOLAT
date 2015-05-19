@@ -19,8 +19,6 @@
  */
 package org.olat.ims.qti21.ui;
 
-import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.response;
-import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.selectItem;
 import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.*;
 
 import java.net.URI;
@@ -78,6 +76,14 @@ public class QTI21FormItem extends FormItemImpl {
 
 	public void setTestSessionController(TestSessionController testSessionController) {
 		component.setTestSessionController(testSessionController);
+	}
+	
+	public CandidateSessionContext getCandidateSessionContext() {
+		return component.getCandidateSessionContext();
+	}
+
+	public void setCandidateSessionContext(CandidateSessionContext candidateSessionContext) {
+		component.setCandidateSessionContext(candidateSessionContext);
 	}
 	
 	public RequestTimestampContext getRequestTimestampContext() {

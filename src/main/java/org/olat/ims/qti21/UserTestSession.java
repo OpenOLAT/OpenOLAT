@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti21;
 
+import java.util.Date;
+
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 
@@ -29,5 +31,19 @@ import org.olat.core.id.ModifiedInfo;
  *
  */
 public interface UserTestSession extends CreateInfo, ModifiedInfo {
+	
+	public Long getKey();
+	
+	public Date getFinishTime();
+	
+	public void setFinishTime(Date timestamp);
+	
+	public Date getTerminationTime();
+	
+	public void setTerminationTime(Date timestamp);
+	
+	public boolean isExploded();
+	
+
 
 }

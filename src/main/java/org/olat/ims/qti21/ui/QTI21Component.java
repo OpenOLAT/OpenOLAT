@@ -43,6 +43,7 @@ public class QTI21Component extends AbstractComponent {
 	private URI assessmentObjectUri;
 	private ResourceLocator resourceLocator;
 	private TestSessionController testSessionController;
+	private CandidateSessionContext candidateSessionContext;
 	private RequestTimestampContext requestTimestampContext;
 	
 	private final QTI21FormItem qtiItem;
@@ -72,6 +73,14 @@ public class QTI21Component extends AbstractComponent {
 		this.testSessionController = testSessionController;
 	}
 	
+	public CandidateSessionContext getCandidateSessionContext() {
+		return candidateSessionContext;
+	}
+
+	public void setCandidateSessionContext(CandidateSessionContext candidateSessionContext) {
+		this.candidateSessionContext = candidateSessionContext;
+	}
+
 	public RequestTimestampContext getRequestTimestampContext() {
 		return requestTimestampContext;
 	}
