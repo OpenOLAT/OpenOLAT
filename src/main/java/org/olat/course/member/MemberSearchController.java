@@ -20,10 +20,17 @@
 package org.olat.course.member;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.assessment.IdentityAssessmentEditController;
 import org.olat.group.ui.main.AbstractMemberListController;
+import org.olat.group.ui.main.MemberView;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.repository.RepositoryEntry;
 
@@ -34,16 +41,25 @@ import org.olat.repository.RepositoryEntry;
 public class MemberSearchController extends AbstractMemberListController {
 	
 	private SearchMembersParams searchParams = new SearchMembersParams();
-	private final MemberSearchForm searchForm;
 	
-	public MemberSearchController(UserRequest ureq, WindowControl wControl,
+	private MemberSearchForm searchForm;
+	private IdentityAssessmentEditController identityAssessmentController;
+	
+	public MemberSearchController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			RepositoryEntry repoEntry) {
-		super(ureq, wControl, repoEntry, "search_member_list");
+		super(ureq, wControl, repoEntry, "all_member_list", toolbarPanel);
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		super.initForm(formLayout, listener, ureq);
 		
-		searchForm = new MemberSearchForm(ureq, wControl);
+		searchForm = new MemberSearchForm(ureq, getWindowControl(), mainForm);
+		searchForm.setEnabled(true);
 		listenTo(searchForm);
-		
-		mainVC.put("searchForm", searchForm.getInitialComponent());
+		membersTable.setSearchEnabled(true);
+		membersTable.setExtendedSearch(searchForm);
+		membersTable.expandExtendedSearch(ureq);
 	}
 
 	@Override
@@ -60,5 +76,20 @@ public class MemberSearchController extends AbstractMemberListController {
 			}
 		}
 		super.event(ureq, source, event);
+	}
+	
+	@Override
+	protected void doOpenAssessmentTool(UserRequest ureq, MemberView member) {
+		removeAsListenerAndDispose(identityAssessmentController);
+		
+		Identity assessedIdentity = securityManager.loadIdentityByKey(member.getIdentityKey());
+		ICourse course = CourseFactory.loadCourse(repoEntry.getOlatResource());
+		
+		identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(),ureq, toolbarPanel,
+				assessedIdentity, course, true, false, true);
+		listenTo(identityAssessmentController);
+		
+		String displayName = userManager.getUserDisplayName(assessedIdentity);
+		toolbarPanel.pushController(displayName, identityAssessmentController);
 	}
 }

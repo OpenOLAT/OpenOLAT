@@ -41,8 +41,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.generic.dtabs.DTab;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
@@ -50,8 +48,6 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.id.context.StateEntry;
@@ -635,28 +631,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected final void doClose(UserRequest ureq) {
 		// Now try to go back to place that is attacked to (optional) root back business path
-		if (launchedFromPoint != null && StringHelper.containsNonWhitespace(launchedFromPoint.getBusinessPath())
-				&& launchedFromPoint.getEntries() != null && launchedFromPoint.getEntries().size() > 0) {
-			BusinessControl bc = BusinessControlFactory.getInstance().createFromPoint(launchedFromPoint);
-			if(bc.hasContextEntry()) {
-				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
-				try {
-					//make the resume secure. If something fail, don't generate a red screen
-					NewControllerFactory.getInstance().launch(ureq, bwControl);
-				} catch (Exception e) {
-					logError("Error while resuming with root level back business path::" + launchedFromPoint.getBusinessPath(), e);
-				}
-			}
-		}
-		
-		// Navigate beyond the stack, our own layout has been popped - close this tab
-		DTabs tabs = getWindowControl().getWindowBackOffice().getWindow().getDTabs();
-		if (tabs != null) {
-			DTab tab = tabs.getDTab(re.getOlatResource());
-			if (tab != null) {
-				tabs.removeDTab(ureq, tab);						
-			}
-		}
+		getWindowControl().getWindowBackOffice().getWindow().getDTabs()
+			.closeDTab(ureq, re.getOlatResource(), launchedFromPoint);
 	}
 	
 	protected void doEdit(UserRequest ureq) {
@@ -710,7 +686,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected Activateable2 doMembers(UserRequest ureq) {
 		if(!reSecurity.isEntryAdmin()) return null;
 
-		RepositoryMembersController ctrl = new RepositoryMembersController(ureq, getWindowControl(), re);
+		RepositoryMembersController ctrl = new RepositoryMembersController(ureq, getWindowControl(), toolbarPanel ,re);
 		listenTo(ctrl);
 		membersEditController = pushController(ureq, translate("details.members"), ctrl);
 		currentToolCtr = membersEditController;

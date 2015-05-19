@@ -24,46 +24,44 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupShort;
+import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class MemberView {
+public class MemberView extends UserPropertiesRow {
 	
-	private final Long identityKey;
-	private final String identityName;
-	private final String[] identityProps;
 	private Date firstTime;
 	private Date lastTime;
 	private final CourseMembership membership = new CourseMembership();
 	private List<BusinessGroupShort> groups;
 	private String onlineStatus;
+	private FormLink toolsLink, chatLink;
 	
 	public MemberView(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
-		this.identityKey = identity.getKey();
-		this.identityName = identity.getName();
-		
-		identityProps = new String[userPropertyHandlers.size()];
-		for(int i=userPropertyHandlers.size(); i-->0; ) {
-			identityProps[i] = userPropertyHandlers.get(i).getUserProperty(identity.getUser(), locale);
-		}
+		super(identity, userPropertyHandlers, locale);
 	}
 
-	public Long getIdentityKey() {
-		return identityKey;
+	public FormLink getToolsLink() {
+		return toolsLink;
 	}
 
-	public String getIdentityName() {
-		return identityName;
+	public void setToolsLink(FormLink toolsLink) {
+		this.toolsLink = toolsLink;
 	}
-	
-	public String getIdentityProp(int index) {
-		return identityProps[index];
+
+	public FormLink getChatLink() {
+		return chatLink;
+	}
+
+	public void setChatLink(FormLink chatLink) {
+		this.chatLink = chatLink;
 	}
 
 	public String getOnlineStatus() {

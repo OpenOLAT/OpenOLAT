@@ -25,6 +25,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -68,7 +69,8 @@ public class BusinessGroupMembersController extends BasicController {
 	@Autowired
 	private BusinessGroupService businessGroupService;
 
-	public BusinessGroupMembersController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
+	public BusinessGroupMembersController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
+			BusinessGroup businessGroup) {
 		super(ureq, wControl);
 		
 		this.businessGroup = businessGroup;
@@ -96,7 +98,7 @@ public class BusinessGroupMembersController extends BasicController {
 		mainVC.put("configMembers", configForm.getInitialComponent());
 		
 		SearchMembersParams searchParams = new SearchMembersParams(false, false, false, true, true, true, true);
-		membersController = new MemberListController(ureq, getWindowControl(), businessGroup, searchParams);
+		membersController = new MemberListController(ureq, getWindowControl(), toolbarPanel, businessGroup, searchParams);
 		listenTo(membersController);
 		
 		membersController.reloadModel();

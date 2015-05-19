@@ -21,7 +21,6 @@ package org.olat.course.member;
 
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -30,6 +29,7 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -65,6 +65,7 @@ import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -84,6 +85,7 @@ public class MembersOverviewController extends BasicController implements Activa
 	private final Link allMembersLink, ownersLink, tutorsLink, participantsLink, waitingListLink, searchLink;
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
+	private final TooledStackedPanel toolbarPanel;
 	
 	private AbstractMemberListController allMemberListCtrl;
 	private AbstractMemberListController ownersCtrl;
@@ -99,15 +101,16 @@ public class MembersOverviewController extends BasicController implements Activa
 	private DedupMembersConfirmationController dedupCtrl;
 	
 	private final RepositoryEntry repoEntry;
-	private final RepositoryManager repositoryManager;
-	private final BusinessGroupService businessGroupService;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
-	public MembersOverviewController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry) {
+	public MembersOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel, RepositoryEntry repoEntry) {
 		super(ureq, wControl);
 		this.repoEntry = repoEntry;
-		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-
+		this.toolbarPanel = toolbarPanel;
+		
 		mainVC = createVelocityContainer("members_overview");
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		
@@ -365,7 +368,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			SearchMembersParams searchParams = new SearchMembersParams(true, true, true, true, true, false, true);
-			allMemberListCtrl = new MemberListWithOriginFilterController(ureq, bwControl, repoEntry, searchParams, null);
+			allMemberListCtrl = new MemberListWithOriginFilterController(ureq, bwControl, toolbarPanel, repoEntry, searchParams, null);
 			listenTo(allMemberListCtrl);
 		}
 		
@@ -382,7 +385,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			SearchMembersParams searchParams = new SearchMembersParams(true, false, false, false, false, false, false);
 			String infos = translate("owners.infos");
-			ownersCtrl = new MemberListController(ureq, bwControl, repoEntry, searchParams, infos);
+			ownersCtrl = new MemberListController(ureq, bwControl, toolbarPanel, repoEntry, searchParams, infos);
 			listenTo(ownersCtrl);
 		}
 		
@@ -399,7 +402,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			SearchMembersParams searchParams = new SearchMembersParams(false, true, false, true, false, false, false);
 			String infos = translate("tutors.infos");
-			tutorsCtrl = new MemberListWithOriginFilterController(ureq, bwControl, repoEntry, searchParams, infos);
+			tutorsCtrl = new MemberListWithOriginFilterController(ureq, bwControl, toolbarPanel, repoEntry, searchParams, infos);
 			listenTo(tutorsCtrl);
 		}
 		
@@ -416,7 +419,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			SearchMembersParams searchParams = new SearchMembersParams(false, false, true, false, true, false, true);
 			String infos = translate("participants.infos");
-			participantsCtrl = new MemberListWithOriginFilterController(ureq, bwControl, repoEntry, searchParams, infos);
+			participantsCtrl = new MemberListWithOriginFilterController(ureq, bwControl, toolbarPanel, repoEntry, searchParams, infos);
 			listenTo(participantsCtrl);
 		}
 		
@@ -433,7 +436,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			SearchMembersParams searchParams = new SearchMembersParams(false, false, false, false, false, true, false);
 			String infos = translate("waiting.infos");
-			waitingCtrl = new MemberListController(ureq, bwControl, repoEntry, searchParams, infos);
+			waitingCtrl = new MemberListController(ureq, bwControl, toolbarPanel, repoEntry, searchParams, infos);
 			listenTo(waitingCtrl);
 		}
 		
@@ -448,7 +451,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(SEG_SEARCH_MEMBERS, 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			searchCtrl = new MemberSearchController(ureq, bwControl, repoEntry);
+			searchCtrl = new MemberSearchController(ureq, bwControl, toolbarPanel, repoEntry);
 			listenTo(searchCtrl);
 		}
 	

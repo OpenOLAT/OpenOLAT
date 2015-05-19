@@ -61,7 +61,7 @@ public class HomePageContextEntryControllerCreator extends DefaultContextEntryCo
 	public Controller createController(List<ContextEntry> ces, UserRequest ureq, WindowControl wControl) {
 		Identity identity = extractIdentity(ces.get(0));
 		if (identity == null) return null;
-		return new UserInfoMainController(ureq, wControl, identity);
+		return new UserInfoMainController(ureq, wControl, identity, false, true);
 	}
 
 	/**

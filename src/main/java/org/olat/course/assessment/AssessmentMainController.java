@@ -368,7 +368,8 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			// select user
 			assessedIdentityWrapper = AssessmentHelper.wrapIdentity(focusOnIdentity, localUserCourseEnvironmentCache, initialLaunchDates, course, null);
 			
-			identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(), ureq, stackPanel, assessedIdentityWrapper.getIdentity(), course, true);
+			identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(), ureq, stackPanel,
+					assessedIdentityWrapper.getIdentity(), course, true, true, false);
 			listenTo(identityAssessmentController);
 			setContent(identityAssessmentController.getInitialComponent());
 		}
@@ -805,12 +806,14 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	private void initIdentityEditController(UserRequest ureq, ICourse course) {
 		if (currentCourseNode == null) {
 			removeAsListenerAndDispose(identityAssessmentController);
-			identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(),ureq, stackPanel, assessedIdentityWrapper.getIdentity(), course, true);
+			identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(),ureq, stackPanel,
+					assessedIdentityWrapper.getIdentity(), course, true, true, false);
 			listenTo(identityAssessmentController);
 			setContent(identityAssessmentController.getInitialComponent());
 		} else {
 			removeAsListenerAndDispose(assessmentEditController);
-			assessmentEditController = new AssessmentEditController(ureq, getWindowControl(), stackPanel, course, currentCourseNode, assessedIdentityWrapper, true, false);
+			assessmentEditController = new AssessmentEditController(ureq, getWindowControl(), stackPanel, course, currentCourseNode,
+					assessedIdentityWrapper, true, false, true);
 			listenTo(assessmentEditController);
 			main.setContent(assessmentEditController.getInitialComponent());
 		}

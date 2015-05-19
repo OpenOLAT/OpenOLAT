@@ -60,6 +60,8 @@ public class MemberInfoController extends FormBasicController {
 	private Long repoEntryKey;
 	private UserCourseInformations courseInfos;
 	
+	private final boolean withLinks;
+	
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -68,11 +70,12 @@ public class MemberInfoController extends FormBasicController {
 	private UserCourseInformationsManager userCourseInfosMgr;
 	
 	public MemberInfoController(UserRequest ureq, WindowControl wControl, Identity identity,
-			RepositoryEntry repoEntry) {
+			RepositoryEntry repoEntry, boolean withLinks) {
 		super(ureq, wControl, "info_member");
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, ureq.getLocale(), getTranslator()));
 
 		this.identity = identity;
+		this.withLinks = withLinks;
 		
 		if(repoEntry != null){
 			repoEntryKey = repoEntry.getKey();
@@ -132,17 +135,19 @@ public class MemberInfoController extends FormBasicController {
 		}
 		
 		//links
-		homeLink = uifactory.addFormLink("home", formLayout, Link.BUTTON);
-		homeLink.setIconLeftCSS("o_icon o_icon_home");
-		formLayout.add("home", homeLink);
-		contactLink = uifactory.addFormLink("contact", formLayout, Link.BUTTON);
-		contactLink.setIconLeftCSS("o_icon o_icon_mail");
-		formLayout.add("contact", contactLink);
-		
-		if(repoEntryKey != null) {
-			assessmentLink = uifactory.addFormLink("assessment", formLayout, Link.BUTTON);
-			assessmentLink.setIconLeftCSS("o_icon o_icon_certificate");
-			formLayout.add("assessment", assessmentLink);
+		if(withLinks) {
+			homeLink = uifactory.addFormLink("home", formLayout, Link.BUTTON);
+			homeLink.setIconLeftCSS("o_icon o_icon_home");
+			formLayout.add("home", homeLink);
+			contactLink = uifactory.addFormLink("contact", formLayout, Link.BUTTON);
+			contactLink.setIconLeftCSS("o_icon o_icon_mail");
+			formLayout.add("contact", contactLink);
+			
+			if(repoEntryKey != null) {
+				assessmentLink = uifactory.addFormLink("assessment", formLayout, Link.BUTTON);
+				assessmentLink.setIconLeftCSS("o_icon o_icon_certificate");
+				formLayout.add("assessment", assessmentLink);
+			}
 		}
 	}
 	

@@ -20,11 +20,20 @@
 package org.olat.course.member;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.assessment.IdentityAssessmentEditController;
 import org.olat.group.ui.main.AbstractMemberListController;
+import org.olat.group.ui.main.MemberView;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.repository.RepositoryEntry;
 
@@ -34,38 +43,73 @@ import org.olat.repository.RepositoryEntry;
  */
 public class MemberListWithOriginFilterController extends AbstractMemberListController {
 	
-	private final SearchMembersParams searchParams;
-	private final OriginFilterController filterController;
+	private static final  String[] originKeys = new String[]{"all", "repo", "group"};
 	
-	public MemberListWithOriginFilterController(UserRequest ureq, WindowControl wControl,
+	private SingleSelection originEl;
+	
+	private IdentityAssessmentEditController identityAssessmentController;
+	
+	private final SearchMembersParams searchParams;
+	
+	public MemberListWithOriginFilterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			RepositoryEntry repoEntry, SearchMembersParams searchParams, String infos) {
-		super(ureq, wControl, repoEntry, "member_list_origin_filter");
+		super(ureq, wControl, repoEntry, "member_list_origin_filter", toolbarPanel);
 		this.searchParams = searchParams;
 		
-		filterController = new OriginFilterController(ureq, wControl);
-		listenTo(filterController);
-		mainVC.put("originFilter", filterController.getInitialComponent());
-		
 		if(StringHelper.containsNonWhitespace(infos)) {
-			mainVC.contextPut("infos", infos);
+			flc.contextPut("infos", infos);
 		}
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		super.initForm(formLayout, listener, ureq);
+		
+		String[] openValues = new String[originKeys.length];
+		for(int i=originKeys.length; i-->0; ) {
+			openValues[i] = translate("search." + originKeys[i]);
+		}
+		originEl = uifactory.addRadiosHorizontal("originFilter", "search.origin.alt", formLayout, originKeys, openValues);
+		originEl.select("all", true);
+		originEl.addActionListener(FormEvent.ONCHANGE);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(originEl == source) {
+			if(!originEl.isOneSelected() || originEl.isSelected(0)) {
+				searchParams.setRepoOrigin(true);
+				searchParams.setGroupOrigin(true);
+			} else if(originEl.isSelected(1)) {
+				searchParams.setRepoOrigin(true);
+				searchParams.setGroupOrigin(false);
+			} else if(originEl.isSelected(2)) {
+				searchParams.setRepoOrigin(false);
+				searchParams.setGroupOrigin(true);
+			}
+			reloadModel();
+		} else {
+			super.formInnerEvent(ureq, source, event);
+		}
+	}
+	
+	@Override
+	protected void doOpenAssessmentTool(UserRequest ureq, MemberView member) {
+		removeAsListenerAndDispose(identityAssessmentController);
+		
+		Identity assessedIdentity = securityManager.loadIdentityByKey(member.getIdentityKey());
+		ICourse course = CourseFactory.loadCourse(repoEntry.getOlatResource());
+		
+		identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(),ureq, toolbarPanel,
+				assessedIdentity, course, true, false, true);
+		listenTo(identityAssessmentController);
+		
+		String displayName = userManager.getUserDisplayName(assessedIdentity);
+		toolbarPanel.pushController(displayName, identityAssessmentController);
 	}
 
 	@Override
 	public SearchMembersParams getSearchParams() {
 		return searchParams;
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == filterController) {
-			if(event instanceof SearchOriginParams) {
-				SearchOriginParams filter = (SearchOriginParams)event;
-				searchParams.setRepoOrigin(filter.isRepoOrigin());
-				searchParams.setGroupOrigin(filter.isGroupOrigin());
-				reloadModel();
-			}
-		}
-		super.event(ureq, source, event);
 	}
 }

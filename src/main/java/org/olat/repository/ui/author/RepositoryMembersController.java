@@ -22,9 +22,12 @@ package org.olat.repository.ui.author;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -44,6 +47,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.ui.main.AbstractMemberListController;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
+import org.olat.group.ui.main.MemberView;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -60,8 +64,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RepositoryMembersController extends AbstractMemberListController {
 	
 	private final SearchMembersParams params;
-	private final RepositoryEntry repoEntry;
-	private Link importMemberLink, addMemberLink;
+	private FormLink importMemberLink, addMemberLink;
 	private StepsMainRunController importMembersWizard;
 	
 	@Autowired
@@ -69,21 +72,27 @@ public class RepositoryMembersController extends AbstractMemberListController {
 	@Autowired
 	private BusinessGroupService businessGroupService;
 
-	public RepositoryMembersController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry) {
-		super(ureq, wControl, repoEntry, null, "all_member_list",
-				Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(), Util.createPackageTranslator(AbstractMemberListController.class, ureq.getLocale())));
-		
-		this.repoEntry = repoEntry;
-		boolean managed = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);
-		addMemberLink = LinkFactory.createButton("add.member", mainVC, this);
-		addMemberLink.setVisible(!managed);
-		mainVC.put("addMembers", addMemberLink);
-		importMemberLink = LinkFactory.createButton("import.member", mainVC, this);
-		importMemberLink.setVisible(!managed);
-		mainVC.put("importMembers", importMemberLink);
+	public RepositoryMembersController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, RepositoryEntry repoEntry) {
+		super(ureq, wControl, repoEntry, null, "all_member_list", stackPanel,
+				Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(),
+						Util.createPackageTranslator(AbstractMemberListController.class, ureq.getLocale())));
 
 		params = new SearchMembersParams(true, true, true, true, true, true, true);
 		reloadModel();
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		super.initForm(formLayout, listener, ureq);
+		
+		boolean managed = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);
+		addMemberLink = uifactory.addFormLink("add.member", formLayout, Link.BUTTON);
+		addMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+		addMemberLink.setVisible(!managed);
+
+		importMemberLink = uifactory.addFormLink("import.member", formLayout, Link.BUTTON);
+		importMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
+		importMemberLink.setVisible(!managed);
 	}
 
 	@Override
@@ -92,13 +101,13 @@ public class RepositoryMembersController extends AbstractMemberListController {
 	}
 	
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		 if (source == addMemberLink) {
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == addMemberLink) {
 			doChooseMembers(ureq);
 		} else if (source == importMemberLink) {
 			doImportMembers(ureq);
 		} else {
-			super.event(ureq, source, event);
+			super.formInnerEvent(ureq, source, event);
 		}
 	}
 
@@ -116,6 +125,11 @@ public class RepositoryMembersController extends AbstractMemberListController {
 		} else {
 			super.event(ureq, source, event);
 		}
+	}
+	
+	@Override
+	protected void doOpenAssessmentTool(UserRequest ureq, MemberView member) {
+		//
 	}
 	
 	private void doChooseMembers(UserRequest ureq) {

@@ -68,7 +68,7 @@ public class IdentityContextEntryControllerCreator extends DefaultContextEntryCo
 		if (id == null) {
 			return null;
 		}
-		return new UserInfoMainController(ureq, wControl, id);
+		return new UserInfoMainController(ureq, wControl, id, false, true);
 	}
 
 	@Override

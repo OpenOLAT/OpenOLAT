@@ -20,19 +20,24 @@
 package org.olat.course.member;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -41,12 +46,13 @@ import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.EmailProperty;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class MemberSearchForm extends FormBasicController {
+public class MemberSearchForm extends FormBasicController implements ExtendedFlexiTableSearchController {
 	
 	private String[] roleKeys = {"owner", "tutor", "attendee", "waiting"};
 	private String[] originKeys = new String[]{"all", "repo", "group"};
@@ -54,17 +60,19 @@ public class MemberSearchForm extends FormBasicController {
 	private TextElement login;
 	private SingleSelection originEl;
 	private MultipleSelectionElement rolesEl;
+	private FormLink searchButton;
 	
 	private Map<String,FormItem> propFormItems;
 	private List<UserPropertyHandler> userPropertyHandlers;
+
+	private boolean enabled = true;
 	
-	private final UserManager userManager;
+	@Autowired
+	private UserManager userManager;
 
-	public MemberSearchForm(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "search_form", Util.createPackageTranslator(UserPropertyHandler.class, ureq.getLocale()));
-		
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
-
+	public MemberSearchForm(UserRequest ureq, WindowControl wControl, Form rootForm) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "search_form", rootForm);
+		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, ureq.getLocale(), getTranslator()));
 		initForm(ureq);
 	}
 
@@ -121,7 +129,8 @@ public class MemberSearchForm extends FormBasicController {
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createDefaultFormLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
-		uifactory.addFormSubmitButton("search", "search", buttonLayout);
+		searchButton = uifactory.addFormLink("search", buttonLayout, Link.BUTTON);
+		searchButton.setCustomEnabledLinkCSS("btn btn-primary");
 	}
 	
 	@Override
@@ -130,7 +139,32 @@ public class MemberSearchForm extends FormBasicController {
 	}
 
 	@Override
+	public void setEnabled(boolean enable) {
+		this.enabled = enable;
+	}
+
+	@Override
+	public List<String> getConditionalQueries() {
+		return Collections.emptyList();
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
+		if(enabled) {
+			fireSearchEvent(ureq);
+		}
+	}
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(enabled) {
+			if (source == searchButton) {
+				fireSearchEvent(ureq);
+			}
+		}
+	}
+
+	private void fireSearchEvent(UserRequest ureq) {
 		SearchMembersParams params = new SearchMembersParams();
 		//roles
 		Collection<String> selectedKeys = rolesEl.getSelectedKeys();

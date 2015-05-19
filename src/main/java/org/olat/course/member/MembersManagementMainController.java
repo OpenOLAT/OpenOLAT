@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
@@ -70,6 +71,7 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 
 	private final MenuTree menuTree;
 	private final VelocityContainer mainVC;
+	private final TooledStackedPanel toolbarPanel;
 	private final LayoutMain3ColsController columnLayoutCtr;
 
 	private OrdersAdminController ordersController;
@@ -85,9 +87,10 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 	@Autowired
 	private AccessControlModule acModule;
 
-	public MembersManagementMainController(UserRequest ureq, WindowControl wControl, RepositoryEntry re) {
+	public MembersManagementMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel, RepositoryEntry re) {
 		super(ureq, wControl);
 		this.repoEntry = re;
+		this.toolbarPanel = toolbarPanel;
 
 		//logging
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
@@ -192,7 +195,7 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 		Controller selectedCtrl = null;
 		if(CMD_MEMBERS.equals(cmd)) {
 			if(membersOverviewCtrl == null) {
-				membersOverviewCtrl = new MembersOverviewController(ureq, bwControl, repoEntry);
+				membersOverviewCtrl = new MembersOverviewController(ureq, bwControl, toolbarPanel, repoEntry);
 				listenTo(membersOverviewCtrl);
 			} else if(membersDirty) {
 				membersOverviewCtrl.reloadMembers();

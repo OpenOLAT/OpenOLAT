@@ -20,9 +20,15 @@
 package org.olat.course.member;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.assessment.IdentityAssessmentEditController;
 import org.olat.group.ui.main.AbstractMemberListController;
+import org.olat.group.ui.main.MemberView;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.repository.RepositoryEntry;
 
@@ -31,17 +37,34 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class MemberListController extends AbstractMemberListController {
+
+	private IdentityAssessmentEditController identityAssessmentController;
 	
 	private final SearchMembersParams searchParams;
 	
-	public MemberListController(UserRequest ureq, WindowControl wControl,
+	public MemberListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry repoEntry, SearchMembersParams searchParams, String infos) {
-		super(ureq, wControl, repoEntry, "all_member_list");
+		super(ureq, wControl, repoEntry, "all_member_list", stackPanel);
 		this.searchParams = searchParams;
 		
 		if(StringHelper.containsNonWhitespace(infos)) {
-			mainVC.contextPut("infos", infos);
+			flc.contextPut("infos", infos);
 		}
+	}
+
+	@Override
+	protected void doOpenAssessmentTool(UserRequest ureq, MemberView member) {
+		removeAsListenerAndDispose(identityAssessmentController);
+		
+		Identity assessedIdentity = securityManager.loadIdentityByKey(member.getIdentityKey());
+		ICourse course = CourseFactory.loadCourse(repoEntry.getOlatResource());
+		
+		identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(),ureq, toolbarPanel,
+				assessedIdentity, course, true, false, true);
+		listenTo(identityAssessmentController);
+		
+		String displayName = userManager.getUserDisplayName(assessedIdentity);
+		toolbarPanel.pushController(displayName, identityAssessmentController);
 	}
 
 	@Override

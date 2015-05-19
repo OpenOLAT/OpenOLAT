@@ -756,6 +756,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				if(StringHelper.containsNonWhitespace(selectedRowIndex)) {
 					doSelect(ureq, col.getAction(), Integer.parseInt(selectedRowIndex));
 					select = true;
+					break;
 				}
 			}
 		}
@@ -1106,7 +1107,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			doSearch(ureq, search, null);
 			getRootForm().fireFormEvent(ureq, new FlexiTableEvent(this, search));
 		} else {
-			doResetSearch();
+			doResetSearch(ureq);
 		}
 	}
 	
@@ -1187,13 +1188,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		return Arrays.equals(orderBy , sortKeys);
 	}
 	
-	protected void doResetSearch() {
+	protected void doResetSearch(UserRequest ureq) {
 		conditionalQueries = null;
 		currentPage = 0;
 		if(dataSource != null) {
 			resetInternComponents();
 			dataSource.clear();
 			dataSource.load(null, null, 0, getPageSize());
+		} else {
+			getRootForm().fireFormEvent(ureq, new FlexiTableSearchEvent(this, FormEvent.ONCLICK));
 		}
 	}
 

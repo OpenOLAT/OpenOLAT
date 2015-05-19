@@ -31,6 +31,7 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.HistoryPoint;
 
 /**
  * Description:<br>
@@ -79,6 +80,14 @@ public interface DTabs {
 	 * @param dt Remove this tab
 	 */
 	public void removeDTab(UserRequest ureq, DTab dt);
+	
+	/**
+	 * 
+	 * @param ureq
+	 * @param tab
+	 * @param lastPoint
+	 */
+	public void closeDTab(UserRequest ureq, OLATResourceable ores, HistoryPoint lastPoint);
 		
 	
 }

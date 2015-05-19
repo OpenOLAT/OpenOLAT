@@ -429,7 +429,7 @@ public class ChecklistManageCheckpointsController extends BasicController {
 	private void openVisitingCard(UserRequest ureq) {
 		
 		removeAsListenerAndDispose(uimc);
-		uimc = new UserInfoMainController(ureq, getWindowControl(), selectedIdentity);
+		uimc = new UserInfoMainController(ureq, getWindowControl(), selectedIdentity, false, false);
 		listenTo(uimc);
 		
 		removeAsListenerAndDispose(cmc);

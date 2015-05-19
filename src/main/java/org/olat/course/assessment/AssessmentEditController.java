@@ -101,7 +101,7 @@ public class AssessmentEditController extends BasicController {
 	 */
 	public AssessmentEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, AssessableCourseNode courseNode, AssessedIdentityWrapper assessedIdentityWrapper,
-			boolean showCourseNodeDetails, boolean saveAndCloseButton) {
+			boolean showCourseNodeDetails, boolean saveAndCloseButton, boolean showBackLink) {
 		super(ureq, wControl);
 		this.assessedIdentityWrapper = assessedIdentityWrapper;
 		this.courseNode = courseNode;
@@ -125,6 +125,7 @@ public class AssessmentEditController extends BasicController {
 			hideLogButton = LinkFactory.createButtonSmall("command.hidelog", detailView, this);
 			showLogButton = LinkFactory.createButtonSmall("command.showlog", detailView, this);
 			backLink = LinkFactory.createLinkBack(detailView, this);
+			backLink.setVisible(showBackLink);
 			
 			// Add the user object to the view
 			Identity assessedIdentity = assessedIdentityWrapper.getIdentity();

@@ -20,9 +20,11 @@
 package org.olat.group.ui.edit;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.main.AbstractMemberListController;
+import org.olat.group.ui.main.MemberView;
 import org.olat.group.ui.main.SearchMembersParams;
 
 /**
@@ -33,10 +35,15 @@ public class MemberListController extends AbstractMemberListController {
 	
 	private final SearchMembersParams searchParams;
 	
-	public MemberListController(UserRequest ureq, WindowControl wControl,
+	public MemberListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BusinessGroup group, SearchMembersParams searchParams) {
-		super(ureq, wControl, group, "all_member_list");
+		super(ureq, wControl, group, "all_member_list", stackPanel);
 		this.searchParams = searchParams;
+	}
+	
+	@Override
+	protected void doOpenAssessmentTool(UserRequest ureq, MemberView member) {
+		//
 	}
 
 	@Override

@@ -138,7 +138,8 @@ public class GTACoachedParticipantGradingController extends BasicController {
 		UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
 		AssessedIdentityWrapper assessedIdentityWrapper = AssessmentHelper.wrapIdentity(uce, null, gtaNode);
 		
-		assessmentForm = new AssessmentEditController(ureq, getWindowControl(), null, course, gtaNode, assessedIdentityWrapper, false, true);
+		assessmentForm = new AssessmentEditController(ureq, getWindowControl(), null, course, gtaNode,
+				assessedIdentityWrapper, false, true, true);
 		listenTo(assessmentForm);
 		
 		String title = translate("grading");

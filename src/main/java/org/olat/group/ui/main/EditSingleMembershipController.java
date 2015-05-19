@@ -44,13 +44,13 @@ public class EditSingleMembershipController extends BasicController {
 	private final RepositoryEntry repoEntry;
 
 	public EditSingleMembershipController(UserRequest ureq, WindowControl wControl,  Identity identity,
-			RepositoryEntry repoEntry, BusinessGroup group) {
+			RepositoryEntry repoEntry, BusinessGroup group, boolean withUserLinks) {
 		super(ureq, wControl);
 		
 		this.repoEntry = repoEntry;
 		
 		VelocityContainer mainVC = createVelocityContainer("edit_single_member");
-		infoCtrl = new MemberInfoController(ureq, wControl, identity, repoEntry);
+		infoCtrl = new MemberInfoController(ureq, wControl, identity, repoEntry, withUserLinks);
 		listenTo(infoCtrl);
 		mainVC.put("infos", infoCtrl.getInitialComponent());
 		

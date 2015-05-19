@@ -216,8 +216,9 @@ public class DisplayPortraitController extends BasicController implements Generi
 	 */
 	public void showUserInfo(UserRequest ureq) {
 		ControllerCreator ctrlCreator = new ControllerCreator() {
+			@Override
 			public Controller createController(UserRequest lureq, WindowControl lwControl) {
-				return new UserInfoMainController(lureq, lwControl, portraitIdent);
+				return new UserInfoMainController(lureq, lwControl, portraitIdent, true, false);
 			}					
 		};
 		//wrap the content controller into a full header layout

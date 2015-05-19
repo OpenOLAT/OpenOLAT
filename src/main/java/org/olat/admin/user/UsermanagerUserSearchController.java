@@ -473,8 +473,9 @@ public class UsermanagerUserSearchController extends BasicController implements 
 					int rowid = te.getRowId();
 					final Identity identity = tdm.getObject(rowid);
 					ControllerCreator userInfoMainControllerCreator = new ControllerCreator() {
+						@Override
 						public Controller createController(UserRequest lureq, WindowControl lwControl) {
-							return new UserInfoMainController(lureq, lwControl, identity);
+							return new UserInfoMainController(lureq, lwControl, identity, true, false);
 						}
 					};
 					// wrap the content controller into a full header layout

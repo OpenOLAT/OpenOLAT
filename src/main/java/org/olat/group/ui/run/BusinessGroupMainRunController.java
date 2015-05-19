@@ -44,6 +44,7 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableEvent;
@@ -65,6 +66,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.OlatResourceableType;
@@ -177,6 +179,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 	private Panel mainPanel;
 	private VelocityContainer main, vc_sendToChooserForm, resourcesVC;
+	private final TooledStackedPanel toolbarPanel;
 	private Translator resourceTrans;
 
 	private BusinessGroup businessGroup;
@@ -216,6 +219,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private BusinessGroupService businessGroupService;
 	private EventBus singleUserEventBus;
 	private String adminNodeId; // reference to admin menu item
+	private HistoryPoint launchedFromPoint;
 
 	// not null indicates tool is enabled
 	private GenericTreeNode nodeFolder, nodeForum, nodeWiki, nodeCal, nodePortfolio, nodeOpenMeetings;
@@ -241,6 +245,27 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		super(ureq, control);
 		
 		assessmentEventOres = OresHelper.createOLATResourceableType(AssessmentEvent.class);
+		
+		toolbarPanel = new TooledStackedPanel("courseStackPanel", getTranslator(), this);
+		toolbarPanel.setInvisibleCrumb(0); // show root (course) level
+		toolbarPanel.setToolbarEnabled(false);
+		toolbarPanel.setShowCloseLink(true, true);
+
+		UserSession session = ureq.getUserSession();
+		if(session != null &&  session.getHistoryStack() != null && session.getHistoryStack().size() >= 2) {
+			// Set previous business path as back link for this course - brings user back to place from which he launched the course
+			List<HistoryPoint> stack = session.getHistoryStack();
+			for(int i=stack.size() - 2; i-->0; ) {
+				HistoryPoint point = stack.get(stack.size() - 2);
+				if(point.getEntries().size() > 0) {
+					OLATResourceable ores = point.getEntries().get(0).getOLATResourceable();
+					if(!OresHelper.equals(bGroup, ores) && !OresHelper.equals(bGroup.getResource(), ores)) {
+						launchedFromPoint = point;
+						break;
+					}
+				}
+			}
+		}
 
 		/*
 		 * lastUsage, update lastUsage if group is run if you can acquire the lock
@@ -298,17 +323,17 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 		mainPanel = new Panel("p_buddygroupRun");
 		mainPanel.setContent(main);
-		//
+		
 		bgTree = new MenuTree("bgTree");
 		TreeModel trMdl = buildTreeModel();
 		bgTree.setTreeModel(trMdl);
 		bgTree.addListener(this);
-		//
-		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), bgTree, mainPanel, "grouprun");
-		listenTo(columnLayoutCtr); // cleanup on dispose
 		
-		//
-		putInitialPanel(columnLayoutCtr.getInitialComponent());
+		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), bgTree, mainPanel, "grouprun");
+		toolbarPanel.pushController(bGroup.getName(), columnLayoutCtr);
+		listenTo(columnLayoutCtr); // cleanup on dispose
+		putInitialPanel(toolbarPanel);
+		
 		// register for AssessmentEvents triggered by this user
 		singleUserEventBus = ureq.getUserSession().getSingleUserEventCenter();
 		singleUserEventBus.registerFor(this, ureq.getIdentity(), assessmentEventOres);
@@ -412,6 +437,10 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			} else if (groupRunDisabled) {
 				handleTreeActions(ureq, ACTIVITY_MENUSELECT_OVERVIEW);
 				this.showError("grouprun.disabled");
+			}
+		} else if(source == toolbarPanel) {
+			if (event == Event.CLOSE_EVENT) {
+				doClose(ureq);
 			}
 		}
 	}
@@ -732,7 +761,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		//fxdiff BAKS-7 Resume function
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ORES_TOOLADMIN));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ORES_TOOLADMIN, null, getWindowControl());
-		collabToolCtr = bgEditCntrllr = new BusinessGroupEditController(ureq, bwControl, businessGroup);
+		collabToolCtr = bgEditCntrllr = new BusinessGroupEditController(ureq, bwControl, toolbarPanel, businessGroup);
 		listenTo(bgEditCntrllr);
 		mainPanel.setContent(bgEditCntrllr.getInitialComponent());
 	}
@@ -797,6 +826,12 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		//fxdiff BAKS-7 Resume function
 		collabToolCtr = null;
 		addToHistory(ureq, ORES_TOOLMEMBERS, null);
+	}
+	
+	protected final void doClose(UserRequest ureq) {
+		OLATResourceable ores = businessGroup.getResource();
+		getWindowControl().getWindowBackOffice().getWindow()
+			.getDTabs().closeDTab(ureq, ores, launchedFromPoint);
 	}
 
 	/**
