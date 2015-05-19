@@ -28,7 +28,6 @@
 		<mapping-file>org/olat/resource/accesscontrol/model/AccessTransaction.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/accesscontrol/model/OfferAccess.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/accesscontrol/model/Order.hbm.xml</mapping-file>
-		<mapping-file>org/olat/resource/accesscontrol/model/Reservation.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/accesscontrol/provider/paypal/model/PaypalAccessMethod.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/accesscontrol/provider/paypal/model/PaypalTransaction.hbm.xml</mapping-file>
 		<mapping-file>org/olat/basesecurity/AuthenticationImpl.hbm.xml</mapping-file>
@@ -106,6 +105,7 @@
 		<class>org.olat.course.nodes.cl.model.DBCheckbox</class>
 		<class>org.olat.course.nodes.cl.model.DBCheck</class>
 		<class>org.olat.course.nodes.gta.model.TaskImpl</class>
+		<class>org.olat.course.nodes.gta.model.TaskLightImpl</class>
 		<class>org.olat.course.nodes.gta.model.TaskListImpl</class>
 		<class>org.olat.course.certificate.model.CertificateImpl</class>
 		<class>org.olat.course.certificate.model.CertificateStandalone</class>
@@ -122,6 +122,7 @@
 		<class>org.olat.repository.model.RepositoryEntryLightImpl</class>
 		<class>org.olat.repository.model.RepositoryEntryMembership</class>
 		<class>org.olat.resource.references.ReferenceImpl</class>
+		<class>org.olat.resource.accesscontrol.model.ResourceReservationImpl</class>
 		<class>org.olat.instantMessaging.model.InstantMessageImpl</class>
 		<class>org.olat.instantMessaging.model.ImPreferencesImpl</class>
 		<class>org.olat.instantMessaging.model.RosterEntryImpl</class>

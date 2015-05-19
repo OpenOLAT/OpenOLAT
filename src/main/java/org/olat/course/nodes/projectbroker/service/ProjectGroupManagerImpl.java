@@ -127,15 +127,15 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	}
 
 	public boolean isAccountManager(Identity identity, CoursePropertyManager cpm, CourseNode courseNode) {
-  	Property accountManagerGroupProperty = cpm.findCourseNodeProperty(courseNode, null, null, ProjectBrokerCourseNode.CONF_ACCOUNTMANAGER_GROUP_KEY);
-  	if (accountManagerGroupProperty != null) {
-  	 	Long groupKey = accountManagerGroupProperty.getLongValue();
-  		BusinessGroup accountManagerGroup = businessGroupService.loadBusinessGroup(groupKey);
-  		if (accountManagerGroup != null) {
-  			return isAccountManager(identity,  accountManagerGroup);
-  		}
-  	}
-  	return false;
+		Property accountManagerGroupProperty = cpm.findCourseNodeProperty(courseNode, null, null, ProjectBrokerCourseNode.CONF_ACCOUNTMANAGER_GROUP_KEY);
+		if (accountManagerGroupProperty != null) {
+			Long groupKey = accountManagerGroupProperty.getLongValue();
+			BusinessGroup accountManagerGroup = businessGroupService.loadBusinessGroup(groupKey);
+			if (accountManagerGroup != null) {
+				return isAccountManager(identity,  accountManagerGroup);
+			}
+		}
+		return false;
  	}
 
 	public void deleteAccountManagerGroup( CoursePropertyManager cpm, CourseNode courseNode) {
@@ -218,16 +218,16 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	//TODO gsync
 		List<Identity> addedIdentities = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<List<Identity>>(){
 			public List<Identity> execute() {
-				List<Identity> addedIdentities = new ArrayList<Identity>();
+				List<Identity> addedIdentityList = new ArrayList<Identity>();
 				for (Identity identity : addIdentities) {
 					if (!securityManager.isIdentityInSecurityGroup(identity, project.getCandidateGroup()) ) {
 						securityManager.addIdentityToSecurityGroup(identity, project.getCandidateGroup());
-						addedIdentities.add(identity);
+						addedIdentityList.add(identity);
 						logAudit("ProjectBroker: Add user as candidate, identity=" + identity);
 					}
 					// fireEvents ?
 				}
-				return addedIdentities;
+				return addedIdentityList;
 			}
 		});// end of doInSync
 		return addedIdentities;
@@ -252,15 +252,15 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	public BusinessGroupAddResponse acceptCandidates(final List<Identity> identities, final Project project, final Identity actionIdentity, final boolean autoSignOut, final boolean isAcceptSelectionManually) {
 		final Project reloadedProject = (Project) dbInstance.loadObject(project, true);
 		final BusinessGroupAddResponse response = new BusinessGroupAddResponse();
-		final BusinessGroupService bgs = businessGroupService;
-		BusinessGroupAddResponse state = bgs.addParticipants(actionIdentity, null, identities, reloadedProject.getProjectGroup(), null);
+		BusinessGroupAddResponse state = businessGroupService.addParticipants(actionIdentity, null, identities, reloadedProject.getProjectGroup(), null);
 		response.getAddedIdentities().addAll(state.getAddedIdentities());
 		response.getIdentitiesAlreadyInGroup().addAll(state.getAddedIdentities());
 		
 		Boolean result = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<Boolean>(){
+			@Override
 			public Boolean execute() {
 				for (final Identity identity : identities) {
-					if (!bgs.hasRoles(identity, reloadedProject.getProjectGroup(), GroupRoles.participant.name())) {
+					if (!businessGroupService.hasRoles(identity, reloadedProject.getProjectGroup(), GroupRoles.participant.name())) {
 						securityManager.removeIdentityFromSecurityGroup(identity, reloadedProject.getCandidateGroup());
 						logAudit("ProjectBroker: Accept candidate, identity=" + identity + " project=" + reloadedProject);
 					}		

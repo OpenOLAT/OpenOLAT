@@ -176,7 +176,6 @@ public class BusinessControlFactory {
 	 * @param wControl
 	 * @return
 	 */
-	//fxdiff BAKS-7 Resume function
 	public WindowControl createBusinessWindowControl(final OLATResourceable ores, StateEntry state, WindowControl wControl) {
 		WindowControl bwControl;
 		ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ores);
@@ -196,7 +195,6 @@ public class BusinessControlFactory {
 	 * @param wControl
 	 * @return
 	 */
-	//fxdiff BAKS-7 Resume function
 	public WindowControl createBusinessWindowControl(UserRequest ureq, final OLATResourceable ores, StateEntry state,
 			WindowControl wControl, boolean addToHistory) {
 		WindowControl bwControl = createBusinessWindowControl(ores, state, wControl);
@@ -206,7 +204,6 @@ public class BusinessControlFactory {
 		return bwControl;
 	}
 	
-	//fxdiff BAKS-7 Resume function
 	public void addToHistory(UserRequest ureq, WindowControl wControl) {
 		if(wControl == null || wControl.getBusinessControl() == null) return;
 		ureq.getUserSession().addToHistory(ureq, wControl.getBusinessControl());
@@ -485,8 +482,7 @@ public class BusinessControlFactory {
 		}
 		return date;
 	}
-	
-	//fxdiff BAKS-7 Resume function
+
 	public String getPath(ContextEntry entry) {
 		String path = entry.getOLATResourceable().getResourceableTypeName();
 		path = path.endsWith(":0") ? path.substring(0, path.length() - 2) : path;
@@ -575,7 +571,6 @@ class MyContextEntry implements ContextEntry, Serializable {
 	private static final long serialVersionUID = 949522581806327579L;
 	private OLATResourceable olatResourceable;
 
-	//fxdiff BAKS-7 Resume function
 	private StateEntry state;
 
 	MyContextEntry(OLATResourceable ores) {
@@ -595,13 +590,11 @@ class MyContextEntry implements ContextEntry, Serializable {
 	}
 
 	@Override
-	//fxdiff BAKS-7 Resume function
 	public StateEntry getTransientState() {
 		return state;
 	}
 
 	@Override
-	//fxdiff BAKS-7 Resume function
 	public void setTransientState(StateEntry state) {
 		this.state = state;
 	}

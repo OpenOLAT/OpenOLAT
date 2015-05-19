@@ -94,7 +94,8 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 		if(entry != null) {
 			try {
 				ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
-				assessmentCtrl = new IdentityAssessmentEditController(wControl, ureq, null, assessedIdentity, course, true, false);
+				assessmentCtrl = new IdentityAssessmentEditController(wControl, ureq, null,
+						assessedIdentity, course, true, false, false);
 				listenTo(assessmentCtrl);
 				
 				segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);

@@ -6,8 +6,6 @@
 <hibernate-mapping default-lazy="false">
 
   <class name="org.olat.repository.model.CatalogEntryImpl" table="o_catentry">
-    
-	<cache usage="transactional" />
 
     <id name="key" column="id" type="long" unsaved-value="null">
       <generator class="hilo"/>

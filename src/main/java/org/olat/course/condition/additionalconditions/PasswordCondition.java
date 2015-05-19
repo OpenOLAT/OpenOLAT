@@ -35,6 +35,9 @@ public class PasswordCondition extends AdditionalCondition {
 	
 	// <OLATCE-91>
 	private String password;
+	
+	// The field answer must not be used, it's only there for XStream's compatibility purpose
+	@SuppressWarnings("unused") @Deprecated
 	private String answer;
 	
 	public final static String PASSWORD_ENDING = "password";
@@ -46,26 +49,19 @@ public class PasswordCondition extends AdditionalCondition {
 
 	// <OLATCE-91>
 	@Override
-	public Boolean evaluate() {
-		boolean retVal = (password==null?true:password.equals(answer)); 
-		answer=null;
-		return retVal;
-	}
-	
-	public Boolean pwdEvaluate() {
-		PasswordStore store = null;
-		
-		if(answers != null) {
-			Object obj = answers.getAnswers(node.getIdent(), courseId.toString()); 
+	public boolean evaluate(Object userAnswerObj) {
+		String userAnswer = null;
+		if(userAnswerObj instanceof AdditionalConditionAnswerContainer) {
+			AdditionalConditionAnswerContainer answersContainer = (AdditionalConditionAnswerContainer)userAnswerObj;
+			Object obj = answersContainer.getAnswers(node.getIdent(), courseId.toString()); 
 			if(obj instanceof PasswordStore){
-				store = (PasswordStore) obj;
+				userAnswer = ((PasswordStore)obj).getPassword();
 			}
+		} else if(userAnswerObj instanceof String) {
+			userAnswer = (String)userAnswerObj;
 		}
-		
-		if(store !=null) {
-			answer = store.getPassword();
-		}
-		return evaluate();
+
+		return password==null ? true : password.equals(userAnswer); 
 	}
 
 	@Override
@@ -85,7 +81,8 @@ public class PasswordCondition extends AdditionalCondition {
 	public void setPassword(String password){
 		this.password = password;
 	}
-
+	
+	@Deprecated
 	public void setAnswer(String answer) {
 		this.answer = answer;
 	}

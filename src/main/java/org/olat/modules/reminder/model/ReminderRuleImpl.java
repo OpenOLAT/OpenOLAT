@@ -75,4 +75,15 @@ public class ReminderRuleImpl implements ReminderRule {
 	public void setRightUnit(String rightUnit) {
 		this.rightUnit = rightUnit;
 	}
+	
+	@Override
+	public ReminderRule clone() {
+		ReminderRuleImpl clone = new ReminderRuleImpl();
+		clone.type = type;
+		clone.leftOperand = leftOperand;
+		clone.operator = operator;
+		clone.rightOperand = rightOperand;
+		clone.rightUnit = rightUnit;
+		return clone;
+	}
 }

@@ -42,6 +42,7 @@ public class SearchMembersParams extends Event {
 	private boolean groupOrigin = true;
 	
 	private String login;
+	private String searchString;
 	private Map<String, String> userPropertiesSearch;
 	
 	public SearchMembersParams() {
@@ -139,6 +140,14 @@ public class SearchMembersParams extends Event {
 
 	public void setLogin(String login) {
 		this.login = login;
+	}
+
+	public String getSearchString() {
+		return searchString;
+	}
+
+	public void setSearchString(String searchString) {
+		this.searchString = searchString;
 	}
 
 	public Map<String, String> getUserPropertiesSearch() {

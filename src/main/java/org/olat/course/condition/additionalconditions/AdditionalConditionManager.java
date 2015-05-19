@@ -40,19 +40,17 @@ public class AdditionalConditionManager {
 	}
 	
 	public Boolean evaluateConditions(){
-		Boolean retVal = true;
-		for(AdditionalCondition cond : node.getAdditionalConditions()){
-			cond.setAnswers(answers);
+		boolean retVal = true;
+		for(AdditionalCondition cond : node.getAdditionalConditions()) {
 			cond.setNode(node);
 			cond.setCourseId(courseId);
-			retVal = cond.pwdEvaluate();
+			retVal = cond.evaluate(answers);
 			//otherwise all users on this node can enter the course if one user had known the correct answer 
-			cond.setAnswers(null);
-			if(retVal==null || !retVal){
+			if(!retVal) {
 				break;
 			}
 		}
-		return (retVal!=null?retVal:false);
+		return retVal;
 	}
 	
 	
@@ -64,15 +62,11 @@ public class AdditionalConditionManager {
 	 * @return null if either nothing is wrong or the user is unable to influence the condition in olat (and won't get a more detailed error-message) 
 	 */
 	public Controller nextUserInputController(UserRequest ureq, WindowControl wControl){
-		Boolean retVal;
 		for(AdditionalCondition cond : node.getAdditionalConditions()){
-			cond.setAnswers(answers);
 			cond.setNode(node);
 			cond.setCourseId(courseId);
-			
-			retVal = cond.evaluate();
-			
-			if(retVal != null && !retVal.booleanValue()){
+			boolean retVal = cond.evaluate(answers);
+			if(!retVal) {
 				Controller ctrl = cond.getUserInputController(ureq, wControl);
 				CourseNodeConfiguration config = CourseNodeFactory.getInstance().getCourseNodeConfiguration(node.getType());
 				return TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, node, config.getIconCSSClass());

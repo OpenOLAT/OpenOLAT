@@ -30,6 +30,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.gui.translator.Translator;
+import org.olat.ims.qti.editor.QTIEditHelper;
 import org.olat.ims.qti.editor.beecom.objects.ChoiceQuestion;
 import org.olat.ims.qti.editor.beecom.objects.FIBQuestion;
 import org.olat.ims.qti.editor.beecom.objects.FIBResponse;
@@ -102,6 +103,12 @@ public class CSVToQuestionConverterTest {
 		Assert.assertFalse(responses.get(4).isCorrect());
 		Assert.assertFalse(responses.get(5).isCorrect());
 		Assert.assertFalse(responses.get(6).isCorrect());
+
+		String feedbackMastery = QTIEditHelper.getFeedbackMasteryText(item);
+		Assert.assertEquals("Bravo! Die Antwort ich absolut korrekt.", feedbackMastery);
+		String feedbackFail = QTIEditHelper.getFeedbackFailText(item);
+		Assert.assertEquals("Leider falsch. Probieren Sie es noch einmal.", feedbackFail);
+		
 	}
 	
 	@Test

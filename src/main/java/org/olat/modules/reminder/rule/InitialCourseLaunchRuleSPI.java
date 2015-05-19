@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,11 @@ public class InitialCourseLaunchRuleSPI extends AbstractLaunchDateRuleSPI {
 	@Override
 	public String getLabelI18nKey() {
 		return "rule.initial.course.launch.date";
+	}
+	
+	@Override
+	public ReminderRule clone(ReminderRule rule, CourseEnvironmentMapper envMapper) {
+		return rule.clone();
 	}
 
 	@Override

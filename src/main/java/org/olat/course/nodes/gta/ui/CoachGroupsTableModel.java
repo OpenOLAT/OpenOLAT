@@ -19,9 +19,12 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import java.util.List;
+
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.group.BusinessGroup;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 
 /**
  * 
@@ -29,28 +32,43 @@ import org.olat.group.BusinessGroup;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CoachGroupsTableModel extends DefaultFlexiTableDataModel<BusinessGroup> {
+public class CoachGroupsTableModel extends DefaultFlexiTableDataModel<CoachedGroupRow> implements SortableFlexiTableDataModel<CoachedGroupRow> {
 	
 	public CoachGroupsTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<BusinessGroup> createCopyWithEmptyList() {
+	public DefaultFlexiTableDataModel<CoachedGroupRow> createCopyWithEmptyList() {
 		return new CoachGroupsTableModel(getTableColumnModel());
 	}
 
 	@Override
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<CoachedGroupRow> views = new CoachGroupsModelSort(orderBy, this, null).sort();
+			super.setObjects(views);
+		}
+	}
+
+	@Override
 	public Object getValueAt(int row, int col) {
-		BusinessGroup group = getObject(row);
+		CoachedGroupRow coachedGroup = getObject(row);
+		return getValueAt(coachedGroup, col);
+	}
+	
+	@Override
+	public Object getValueAt(CoachedGroupRow row, int col) {
 		switch(CGCols.values()[col]) {
-			case name: return group.getName();
+			case name: return row.getName();
+			case taskStatus: return row.getTaskStatus();
 			default: return "ERROR";
 		}
 	}
 	
 	public enum CGCols {
-		name("table.header.group.name");
+		name("table.header.group.name"),
+		taskStatus("table.header.group.step");
 		
 		private final String i18nKey;
 		

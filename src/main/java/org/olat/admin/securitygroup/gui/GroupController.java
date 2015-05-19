@@ -287,8 +287,9 @@ public class GroupController extends BasicController {
 				if (actionid.equals(COMMAND_VCARD)) {
 					//get identity and open new visiting card controller in new window
 					ControllerCreator userInfoMainControllerCreator = new ControllerCreator() {
+						@Override
 						public Controller createController(UserRequest lureq, WindowControl lwControl) {
-							return new UserInfoMainController(lureq, lwControl, identity);
+							return new UserInfoMainController(lureq, lwControl, identity, true, false);
 						}					
 					};
 					//wrap the content controller into a full header layout

@@ -32,6 +32,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -301,8 +302,8 @@ public class GTAParticipantController extends GTAAbstractController {
 			ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
 
 			for(Identity identity:identities) {
-				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-				gtaNode.incrementUserAttempts(userCourseEnv);
+				UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
+				gtaNode.incrementUserAttempts(uce);
 			}
 		} else {
 			gtaNode.incrementUserAttempts(userCourseEnv);
@@ -459,6 +460,9 @@ public class GTAParticipantController extends GTAAbstractController {
 				listenTo(solutionsCtrl);
 				mainVC.put("solutions", solutionsCtrl.getInitialComponent());
 			}
+		} else {
+			VelocityContainer waitVC = createVelocityContainer("wait_for_solutions");
+			mainVC.put("solutions", waitVC);
 		}
 	}
 

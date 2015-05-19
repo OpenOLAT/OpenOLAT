@@ -138,7 +138,7 @@ public class ImsCPHandler extends FileHandler {
 	}
 	
 	@Override
-	public RepositoryEntry copy(RepositoryEntry source, RepositoryEntry target) {
+	public RepositoryEntry copy(Identity author, RepositoryEntry source, RepositoryEntry target) {
 		final CPManager cpManager = CPManager.getInstance();
 		OLATResource sourceResource = source.getOlatResource();
 		OLATResource targetResource = target.getOlatResource();

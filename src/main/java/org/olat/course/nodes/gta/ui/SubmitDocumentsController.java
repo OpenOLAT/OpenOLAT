@@ -77,6 +77,7 @@ class SubmitDocumentsController extends FormBasicController {
 	private FormLink uploadDocButton, createDocButton;
 
 	private CloseableModalController cmc;
+	private NewDocumentController newDocCtrl;
 	private DocumentUploadController uploadCtrl, replaceCtrl;
 	private DialogBoxController confirmDeleteCtrl;
 	private HTMLEditorController newDocumentEditorCtrl, editDocumentEditorCtrl;
@@ -184,6 +185,15 @@ class SubmitDocumentsController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(newDocCtrl == source) {
+			String filename = newDocCtrl.getFilename();
+			cmc.deactivate();
+			cleanUp();
+			
+			if(event == Event.DONE_EVENT) {
+				doCreateDocumentEditor(ureq, filename);
+				updateModel();
+			} 
 		} else if(newDocumentEditorCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				updateModel();
@@ -208,10 +218,12 @@ class SubmitDocumentsController extends FormBasicController {
 		removeAsListenerAndDispose(newDocumentEditorCtrl);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(uploadCtrl);
+		removeAsListenerAndDispose(newDocCtrl);
 		removeAsListenerAndDispose(cmc);
 		newDocumentEditorCtrl = null;
 		confirmDeleteCtrl = null;
 		uploadCtrl = null;
+		newDocCtrl = null;
 		cmc = null;
 	}
 
@@ -225,7 +237,7 @@ class SubmitDocumentsController extends FormBasicController {
 		if(uploadDocButton == source) {
 			doOpenDocumentUpload(ureq);
 		} else if(createDocButton == source) {
-			doCreateDocumentEditor(ureq);
+			doChooseFilename(ureq);
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -315,13 +327,27 @@ class SubmitDocumentsController extends FormBasicController {
 		}
 	}
 	
-	private void doCreateDocumentEditor(UserRequest ureq) {
+	private void doChooseFilename(UserRequest ureq) {
+		if(newDocCtrl != null) return;
+		
+		if(maxDocs > 0 && maxDocs <= model.getRowCount()) {
+			showWarning("error.max.documents");
+		} else {
+			newDocCtrl = new NewDocumentController(ureq, getWindowControl(), documentsContainer);
+			listenTo(newDocCtrl);
+			
+			cmc = new CloseableModalController(getWindowControl(), "close", newDocCtrl.getInitialComponent());
+			listenTo(cmc);
+			cmc.activate();
+		}
+	}
+	
+	private void doCreateDocumentEditor(UserRequest ureq, String documentName) {
 		if(newDocumentEditorCtrl != null) return;
 		
 		if(maxDocs > 0 && maxDocs <= model.getRowCount()) {
 			showWarning("error.max.documents");
 		} else {
-			String documentName = "document.html";
 			VFSItem item = documentsContainer.resolve(documentName);
 			if(item == null) {
 				documentsContainer.createChildLeaf(documentName);

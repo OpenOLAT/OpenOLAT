@@ -3,9 +3,6 @@
 
 <hibernate-mapping default-lazy="false">
  <class name="org.olat.group.area.BGtoAreaRelationImpl" table="o_gp_bgtoarea_rel">
- 
-	<cache usage="transactional" />
-
     <id name="key"
 		type="long"
 		column="bgtoarea_id"

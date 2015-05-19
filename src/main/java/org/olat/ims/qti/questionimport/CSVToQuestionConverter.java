@@ -32,8 +32,10 @@ import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti.editor.QTIEditHelper;
 import org.olat.ims.qti.editor.beecom.objects.ChoiceQuestion;
 import org.olat.ims.qti.editor.beecom.objects.ChoiceResponse;
+import org.olat.ims.qti.editor.beecom.objects.Control;
 import org.olat.ims.qti.editor.beecom.objects.FIBQuestion;
 import org.olat.ims.qti.editor.beecom.objects.FIBResponse;
+import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.objects.Material;
 import org.olat.ims.qti.editor.beecom.objects.Mattext;
 import org.olat.ims.qti.editor.beecom.objects.QTIObject;
@@ -103,6 +105,8 @@ public class CSVToQuestionConverter {
 			case "points": processPoints(parts); break;
 			case "fachbereich":
 			case "subject": processTaxonomyPath(parts); break;
+			case "feedback correct answer": processFeedbackCorrectAnswer(parts); break;
+			case "feedback wrong answer": processFeedbackWrongAnswer(parts); break;
 			case "schlagworte":
 			case "keywords": processKeywords(parts); break;
 			case "abdeckung":
@@ -170,6 +174,34 @@ public class CSVToQuestionConverter {
 		String editorVersion = parts[1];
 		if(StringHelper.containsNonWhitespace(editorVersion)) {
 			currentItem.setEditorVersion(editorVersion.trim());
+		}
+	}
+	
+	private void processFeedbackCorrectAnswer(String[] parts) {
+		if(currentItem == null || parts.length < 2) return;
+		
+		String feedback = parts[1];
+		if(StringHelper.containsNonWhitespace(feedback)) {
+			Item item = currentItem.getItem();
+			Control control = QTIEditHelper.getControl(item);
+			if(control.getFeedback() != 1) {
+				control.setFeedback(1);
+			}
+			QTIEditHelper.setFeedbackMastery(item, feedback);
+		}
+	}
+	
+	private void processFeedbackWrongAnswer(String[] parts) {
+		if(currentItem == null || parts.length < 2) return;
+		
+		String feedback = parts[1];
+		if(StringHelper.containsNonWhitespace(feedback)) {
+			Item item = currentItem.getItem();
+			Control control = QTIEditHelper.getControl(item);
+			if(control.getFeedback() != 1) {
+				control.setFeedback(1);
+			}
+			QTIEditHelper.setFeedbackFail(item, feedback);
 		}
 	}
 	

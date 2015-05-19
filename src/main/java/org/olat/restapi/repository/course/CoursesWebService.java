@@ -425,7 +425,7 @@ public class CoursesWebService {
 					description, copyResource, RepositoryEntry.ACC_OWNERS);
 		
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(src);
-			preparedEntry = handler.copy(src, preparedEntry);
+			preparedEntry = handler.copy(ureq.getIdentity(), src, preparedEntry);
 			
 			preparedEntry.setCanDownload(src.getCanDownload());
 			if(StringHelper.containsNonWhitespace(softKey)) {

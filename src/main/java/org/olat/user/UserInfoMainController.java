@@ -45,6 +45,7 @@ import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
@@ -57,8 +58,10 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
@@ -94,6 +97,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 
 	private MenuTree menuTree;
 	private Panel main;
+	private TooledStackedPanel toolbarPanel;
 	
 	public static final OLATResourceable BUSINESS_CONTROL_TYPE_FOLDER = OresHelper.createOLATResourceableTypeWithoutCheck(FolderRunController.class
 			.getSimpleName());
@@ -106,6 +110,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 
 	private final Identity chosenIdentity;
 	private final String firstLastName;
+	private HistoryPoint launchedFromPoint;
 
 	@Autowired
 	private UserManager userManager;
@@ -117,10 +122,27 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 	 * @param wControl
 	 * @param chosenIdentity
 	 */
-	public UserInfoMainController(UserRequest ureq, WindowControl wControl, Identity chosenIdentity) {
+	public UserInfoMainController(UserRequest ureq, WindowControl wControl, Identity chosenIdentity,
+			boolean showRootNode, boolean showToolbar) {
 		super(ureq, wControl);
 				
 		this.chosenIdentity = chosenIdentity;
+		
+		UserSession session = ureq.getUserSession();
+		if(showToolbar && session != null &&  session.getHistoryStack() != null && session.getHistoryStack().size() >= 2) {
+			// Set previous business path as back link for this course - brings user back to place from which he launched the course
+			List<HistoryPoint> stack = session.getHistoryStack();
+			for(int i=stack.size() - 2; i-->0; ) {
+				HistoryPoint point = stack.get(stack.size() - 2);
+				if(point.getEntries().size() > 0) {
+					OLATResourceable ores = point.getEntries().get(0).getOLATResourceable();
+					if(!chosenIdentity.getKey().equals(ores.getResourceableId())) {
+						launchedFromPoint = point;
+						break;
+					}
+				}
+			}
+		}
 
 		main = new Panel("userinfomain");
 		Controller homeCtrl = createComponent(ureq, CMD_HOMEPAGE);
@@ -133,6 +155,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 		menuTree.setTreeModel(tm);
 		menuTree.setSelectedNodeId(tm.getRootNode().getChildAt(0).getIdent());
 		menuTree.addListener(this);
+		menuTree.setRootVisible(showRootNode);
 
 		// override if user is guest, don't show anything
 		if (ureq.getUserSession().getRoles().isGuestOnly()) {
@@ -142,7 +165,17 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 
 		LayoutMain3ColsController columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, main, "userinfomain");
 		listenTo(columnLayoutCtr);
-		putInitialPanel(columnLayoutCtr.getInitialComponent());
+		
+		if(showToolbar) {
+			toolbarPanel = new TooledStackedPanel("courseStackPanel", getTranslator(), this);
+			toolbarPanel.setInvisibleCrumb(0); // show root level
+			toolbarPanel.setToolbarEnabled(false);
+			toolbarPanel.setShowCloseLink(true, true);
+			toolbarPanel.pushController(firstLastName, columnLayoutCtr);
+			putInitialPanel(toolbarPanel);
+		} else {
+			putInitialPanel(columnLayoutCtr.getInitialComponent());
+		}
 	}
 	
 	@Override
@@ -160,6 +193,10 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 				if(controller != null) {
 					main.setContent(controller.getInitialComponent());
 				}
+			}
+		} else if(source == toolbarPanel) {
+			if (event == Event.CLOSE_EVENT) {
+				doClose(ureq);
 			}
 		}
 	}
@@ -344,5 +381,10 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 		portfolioController = new EPMapRunController(ureq, bwControl, false, EPMapRunViewOption.OTHER_MAPS, chosenIdentity);
 		listenTo(portfolioController);
 		return portfolioController;
+	}
+	
+	protected final void doClose(UserRequest ureq) {
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("HomeSite", chosenIdentity.getKey());
+		getWindowControl().getWindowBackOffice().getWindow().getDTabs().closeDTab(ureq, ores, launchedFromPoint);
 	}
 }

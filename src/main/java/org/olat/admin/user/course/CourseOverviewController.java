@@ -386,7 +386,7 @@ public class CourseOverviewController extends BasicController  {
 	
 	private void doOpenEdit(UserRequest ureq, CourseMemberView member) {
 		RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntry(member.getRepoKey());
-		editSingleMemberCtrl = new EditSingleMembershipController(ureq, getWindowControl(), editedIdentity, repoEntry, null);
+		editSingleMemberCtrl = new EditSingleMembershipController(ureq, getWindowControl(), editedIdentity, repoEntry, null, true);
 		listenTo(editSingleMemberCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), editSingleMemberCtrl.getInitialComponent(),
 				true, translate("edit.member"));

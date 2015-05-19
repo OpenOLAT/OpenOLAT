@@ -20,6 +20,7 @@
 package org.olat.course.reminder.ui;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.List;
 
@@ -37,6 +38,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.reminder.Reminder;
@@ -46,6 +48,7 @@ import org.olat.modules.reminder.ReminderService;
 import org.olat.modules.reminder.RuleEditorFragment;
 import org.olat.modules.reminder.RuleSPI;
 import org.olat.modules.reminder.model.ReminderRules;
+import org.olat.modules.reminder.model.SendTime;
 import org.olat.modules.reminder.rule.DateRuleSPI;
 import org.olat.modules.reminder.ui.ReminderAdminController;
 import org.olat.repository.RepositoryEntry;
@@ -144,7 +147,10 @@ public class CourseReminderEditController extends FormBasicController {
 		contentCont.setRootForm(mainForm);
 		formLayout.add(contentCont);
 		
-		String emailContent = reminder == null ? "" : reminder.getEmailBody();
+		String emailContent = reminder == null ? null : reminder.getEmailBody();
+		if(!StringHelper.containsNonWhitespace(emailContent)) {
+			emailContent = translate("reminder.def.body");
+		}
 		emailEl = uifactory.addRichTextElementForStringDataMinimalistic("email.content", "email.content", emailContent, 10, 60, contentCont, getWindowControl());
 		
 		String buttonPage = velocity_root + "/edit_rules_buttons.html";
@@ -158,7 +164,24 @@ public class CourseReminderEditController extends FormBasicController {
 	protected String getSendTimeDescription() {
 		String interval = reminderModule.getInterval();
 		String desc = translate("interval." + interval);
-		String time = reminderModule.getDefaultSendTime();
+		String time;
+		
+		SendTime parsedTime = SendTime.parse(reminderModule.getDefaultSendTime());
+		if(parsedTime.isValid()) {
+			int hour = parsedTime.getHour();
+			int minute = parsedTime.getMinute();
+			
+			Calendar cal = Calendar.getInstance();
+			cal.set(Calendar.HOUR_OF_DAY, hour);
+			cal.set(Calendar.MINUTE, minute);
+			cal.set(Calendar.SECOND, 0);
+			cal.set(Calendar.MILLISECOND, 0);
+			
+			time = Formatter.getInstance(getLocale()).formatTimeShort(cal.getTime());
+		} else {
+			time = "ERROR";
+		}
+		
 		return translate("send.time.description", new String[] { desc, time} );
 	}
 	

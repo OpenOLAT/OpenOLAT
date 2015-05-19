@@ -55,7 +55,7 @@ public class SingleVMEventBus extends AbstractEventBus {
 	 * this imple simply counts the identities on this bus.
 	 */
 	public int getListeningIdentityCntFor(OLATResourceable ores) {
-		return getListeningIdentityNamesFor(ores).size();
+		return getLocalListeningIdentityCntFor(ores);
 	}
 
 }

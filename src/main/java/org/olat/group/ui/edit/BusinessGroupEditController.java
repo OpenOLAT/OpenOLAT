@@ -31,6 +31,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -107,7 +108,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	 *          controller does no type specific stuff implicit just by looking at
 	 *          the group type. Type specifig features must be flagged.
 	 */
-	public BusinessGroupEditController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
+	public BusinessGroupEditController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel, BusinessGroup businessGroup) {
 		super(ureq, wControl);
 		
 		// OLAT-4955: setting the stickyActionType here passes it on to any controller defined in the scope of the editor,
@@ -139,7 +140,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				collaborationToolsController = new BusinessGroupToolsController(ureq, getWindowControl(), businessGroup);
 				listenTo(collaborationToolsController);
 				
-				membersController = new BusinessGroupMembersController(ureq, getWindowControl(), businessGroup);
+				membersController = new BusinessGroupMembersController(ureq, getWindowControl(), toolbarPanel, businessGroup);
 				listenTo(membersController);
 				
 				//fxdiff VCRP-1,2: access control of resources

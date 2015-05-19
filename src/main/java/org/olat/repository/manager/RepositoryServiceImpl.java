@@ -214,7 +214,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 		copyEntry = dbInstance.getCurrentEntityManager().merge(copyEntry);
 	
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(sourceEntry);
-		copyEntry = handler.copy(sourceEntry, copyEntry);
+		copyEntry = handler.copy(author, sourceEntry, copyEntry);
 		
 		
 		//copy the image

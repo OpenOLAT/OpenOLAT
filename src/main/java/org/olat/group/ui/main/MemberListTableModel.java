@@ -19,50 +19,87 @@
  */
 package org.olat.group.ui.main;
 
-import java.util.Collections;
 import java.util.List;
 
-import org.olat.core.gui.components.table.DefaultTableDataModel;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.instantMessaging.model.Presence;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class MemberListTableModel extends DefaultTableDataModel<MemberView> {
+public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberView> implements SortableFlexiTableDataModel<MemberView> {
 	
-	private final List<UserPropertyHandler> userPropertyHandlers;
+	private final boolean onlineStatusEnabled;
 	
-	public MemberListTableModel(List<UserPropertyHandler> userPropertyHandlers) {
-		super(Collections.<MemberView>emptyList());
-		this.userPropertyHandlers = userPropertyHandlers;
+	public MemberListTableModel(FlexiTableColumnModel columnModel, boolean onlineStatusEnabled) {
+		super(columnModel);
+		this.onlineStatusEnabled = onlineStatusEnabled;
 	}
 
 	@Override
-	public int getColumnCount() {
-		return 4 + userPropertyHandlers.size();
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<MemberView> views = new MemberListTableSort(orderBy, this, null).sort();
+			super.setObjects(views);
+		}
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
 		MemberView member = getObject(row);
-		switch(col) {
-			case 0:return member.getIdentityName();
-			case 1: return member.getFirstTime();
-			case 2: return member.getLastTime();
-			case 3: return member.getMembership();
-			case 4: return member;
-			case 5:return member.getOnlineStatus();
-			default: {
-				int propPos = col - Cols.values().length;
-				return member.getIdentityProp(propPos);
-			}
-		}
+		return getValueAt(member, col);
 	}
 
 	@Override
-	public Object createCopyWithEmptyList() {
-		return new MemberListTableModel(userPropertyHandlers);
+	public Object getValueAt(MemberView row, int col) {
+		if(col >= 0 && col < Cols.values().length) {
+			switch(Cols.values()[col]) {
+				case username: return row.getIdentityName();
+				case firstTime: return row.getFirstTime();
+				case lastTime: return row.getLastTime();
+				case role: return row.getMembership();
+				case groups: return row;
+				case online: {
+					FormLink chatLink = row.getChatLink();
+					if(chatLink != null) {
+						String onlineStatus = row.getOnlineStatus();
+						if ("me".equals(onlineStatus)) {
+							//no icon
+						} else if (!onlineStatusEnabled) {
+							// don't show the users status when not configured, only an icon to start a chat/message
+							chatLink.setIconLeftCSS("o_icon o_icon_status_chat");
+						}
+						// standard case: available or unavailable (offline or dnd)
+						else if(Presence.available.name().equals(onlineStatus)) {
+							chatLink.setIconLeftCSS("o_icon o_icon_status_available");
+						} else if(Presence.dnd.name().equals(onlineStatus)) {
+							chatLink.setIconLeftCSS("o_icon o_icon_status_dnd");
+						} else {
+							chatLink.setIconLeftCSS("o_icon o_icon_status_unavailable");
+						}
+						if(chatLink.getComponent() != null) {
+							chatLink.getComponent().setDirty(false);
+						}
+					}
+					return chatLink;
+				}
+				case tools: return row.getToolsLink();
+				default: return "ERROR";
+			}
+		}
+		
+		int propPos = col - AbstractMemberListController.USER_PROPS_OFFSET;
+		return row.getIdentityProp(propPos);
+	}
+
+	@Override
+	public MemberListTableModel createCopyWithEmptyList() {
+		return new MemberListTableModel(getTableColumnModel(), onlineStatusEnabled);
 	}
 
 	public enum Cols {
@@ -71,7 +108,8 @@ public class MemberListTableModel extends DefaultTableDataModel<MemberView> {
 		lastTime("table.header.lastTime"),
 		role("table.header.role"),
 		groups("table.header.groups"),
-		online("table.header.online");
+		online("table.header.online"),
+		tools("tools");
 		
 		private final String i18n;
 		

@@ -20,7 +20,6 @@
 package org.olat.course.nodes.gta.ui;
 
 import org.olat.core.gui.control.Event;
-import org.olat.core.id.Identity;
 
 /**
  * 
@@ -31,14 +30,14 @@ import org.olat.core.id.Identity;
 public class SelectIdentityEvent extends Event {
 
 	private static final long serialVersionUID = -6380404222959527487L;
-	private final Identity identity;
+	private final Long identityKey;
 	
-	public SelectIdentityEvent(Identity identity) {
+	public SelectIdentityEvent(Long identityKey) {
 		super("select-identity");
-		this.identity = identity;
+		this.identityKey = identityKey;
 	}
 
-	public Identity getIdentity() {
-		return identity;
+	public Long getIdentityKey() {
+		return identityKey;
 	}
 }

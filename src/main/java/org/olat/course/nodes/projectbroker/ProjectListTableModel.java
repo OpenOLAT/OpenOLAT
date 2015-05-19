@@ -101,10 +101,10 @@ public class ProjectListTableModel extends DefaultTableDataModel<Project> {
 	/**
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
+	@Override
 	public Object getValueAt(int row, int col) {
 		Project project = objects.get(row);
 		if (col == 0) {
-			log.debug("project=" + project); // debug-output only once for each project
 			String name = project.getTitle();
 			return name;
 		} else if (col == 1) {
@@ -123,7 +123,7 @@ public class ProjectListTableModel extends DefaultTableDataModel<Project> {
 			}
 		} else if (col == (numberOfCustomFieldInTable + numberOfEventInTable + 2)) {
 			return projectBrokerManager.getStateFor(project,identity,moduleConfig);
-		} else if (col == (numberOfCustomFieldInTable + numberOfEventInTable + 3)) {
+		} else if (col == (numberOfCustomFieldInTable + numberOfEventInTable + 3)) { // num. of slots
 			StringBuilder buf = new StringBuilder();
 			buf.append(project.getSelectedPlaces());
 			if (project.getMaxMembers() != Project.MAX_MEMBERS_UNLIMITED) {

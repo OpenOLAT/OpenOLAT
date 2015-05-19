@@ -347,8 +347,9 @@ public class FilterForUserController extends BasicController {
 					showMessages(ureq, selectedInfo);
 				} else if (te.getActionId().equals(CMD_HOMEPAGE)) {
 					ControllerCreator ctrlCreator = new ControllerCreator() {
+						@Override
 						public Controller createController(UserRequest lureq, WindowControl lwControl) {
-							return new UserInfoMainController(lureq, lwControl, selectedInfo.getIdentity());
+							return new UserInfoMainController(lureq, lwControl, selectedInfo.getIdentity(), true, false);
 						}
 					};
 					// wrap the content controller into a full header layout

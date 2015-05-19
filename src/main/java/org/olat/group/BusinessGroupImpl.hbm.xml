@@ -5,8 +5,6 @@
 
 <hibernate-mapping default-lazy="false">
 	<class name="org.olat.group.BusinessGroupImpl" table="o_gp_business">
-	
-		<cache usage="transactional" />
 		<!--
 		key (see Interface org.olat.core.commons.persistence.Persistable),
 		lastModified (see Interface org.olat.core.commons.persistence.Auditable)
@@ -62,7 +60,6 @@
 	</class>
 
 	<class name="org.olat.group.model.BusinessGroupShortImpl" table="o_gp_business" mutable="false">
-		<cache usage="transactional" />
 		<id name="key" type="long" column="group_id" unsaved-value="null">
 			<generator class="hilo"/>
 		</id>

@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.modules.reminder.IdentitiesProviderRuleSPI;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
@@ -61,6 +62,11 @@ public class RepositoryEntryRoleRuleSPI implements IdentitiesProviderRuleSPI  {
 	@Override
 	public RuleEditorFragment getEditorFragment(ReminderRule rule, RepositoryEntry entry) {
 		return new RepositoryEntryRoleEditor(rule);
+	}
+	
+	@Override
+	public ReminderRule clone(ReminderRule rule, CourseEnvironmentMapper envMapper) {
+		return rule.clone();
 	}
 
 	@Override

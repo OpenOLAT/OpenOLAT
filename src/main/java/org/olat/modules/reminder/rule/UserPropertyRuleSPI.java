@@ -20,6 +20,7 @@
 package org.olat.modules.reminder.rule;
 
 import org.olat.core.id.Identity;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
 import org.olat.modules.reminder.RuleSPI;
@@ -53,7 +54,12 @@ public class UserPropertyRuleSPI implements RuleSPI {
 	public RuleEditorFragment getEditorFragment(ReminderRule rule, RepositoryEntry entry) {
 		return new UserPropertyEditor(rule);
 	}
-	
+
+	@Override
+	public ReminderRule clone(ReminderRule rule, CourseEnvironmentMapper envMapper) {
+		return rule.clone();
+	}
+
 	public boolean accept(ReminderRule rule, Identity identity) {
 		boolean allOk = false;
 		if(rule instanceof ReminderRuleImpl) {

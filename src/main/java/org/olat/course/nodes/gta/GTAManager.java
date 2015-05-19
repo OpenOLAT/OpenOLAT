@@ -160,7 +160,10 @@ public interface GTAManager {
 	
 	
 
-	public List<Task> getTasks(TaskList taskList);
+	public List<Task> getTasks(TaskList taskList, GTACourseNode gtaNode);
+	
+	public List<TaskLight> getTasksLight(RepositoryEntryRef entry, GTACourseNode gtaNode);
+
 	
 	/**
 	 * Return the tasks assigned to a person, individually or via a

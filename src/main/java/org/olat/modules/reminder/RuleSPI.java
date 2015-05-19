@@ -19,6 +19,7 @@
  */
 package org.olat.modules.reminder;
 
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -32,6 +33,8 @@ public interface RuleSPI {
 	public String getLabelI18nKey();
 	
 	public String getCategory();
+	
+	public ReminderRule clone(ReminderRule rule, CourseEnvironmentMapper envMapper);
 	
 	public RuleEditorFragment getEditorFragment(ReminderRule rule, RepositoryEntry entry);
 

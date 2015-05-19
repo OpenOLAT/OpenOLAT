@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.Serializable;
 
 import org.olat.admin.quota.QuotaConstants;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.IdentityEnvironment;
@@ -63,6 +64,7 @@ import org.olat.course.run.environment.CourseEnvironmentImpl;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.glossary.GlossaryManager;
+import org.olat.modules.reminder.ReminderService;
 import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
@@ -375,6 +377,10 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		//  pro increased transaction timeout: would fix OLAT-5368 but only move the problem
 		//@TODO OLAT-2597: real solution is a long-running background-task concept...
 		DBFactory.getInstance().intermediateCommit();
+		
+		//export reminders
+		CoreSpringFactory.getImpl(ReminderService.class)
+			.exportReminders(myRE, fExportedDataDir);
 
 		log.info("exportToFilesystem: exporting course "+this+" to "+exportDirectory+" done.");
 		log.info("finished export course '"+getCourseTitle()+"' in t="+Long.toString(System.currentTimeMillis()-s));
@@ -466,7 +472,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 			XStream xstream = CourseXStreamAliases.getReadCourseXStream();
 			return XStreamHelper.readObject(xstream, ((VFSLeaf)vfsItem).getInputStream());
 		} catch (Exception e) {
-			log.error("Cannot read course tree file: " + fileName);
+			log.error("Cannot read course tree file: " + fileName, e);
 			throw new CorruptedCourseException("Cannot resolve file: " + fileName + " course=" + toString(), e);
 		}
 	}

@@ -57,7 +57,7 @@ public class ACReservationDAO {
 	
 	public ResourceReservation loadReservation(Identity identity, OLATResource resource) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select reservation from ").append(ResourceReservationImpl.class.getName()).append(" as reservation ")
+		sb.append("select reservation from resourcereservation as reservation ")
 		  .append(" where reservation.resource.key=:resourceKey and reservation.identity.key=:identityKey");
 		
 		List<ResourceReservation> reservations = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), ResourceReservation.class)
@@ -70,7 +70,7 @@ public class ACReservationDAO {
 	
 	public List<ResourceReservation> loadReservations(List<OLATResource> resources) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select reservation from ").append(ResourceReservationImpl.class.getName()).append(" as reservation ")
+		sb.append("select reservation from resourcereservation as reservation ")
 		  .append(" where reservation.resource.key in (:resourceKey)");
 		
 		List<Long> resourceKeys = PersistenceHelper.toKeys(resources);
@@ -95,7 +95,7 @@ public class ACReservationDAO {
 	
 	public List<ResourceReservation> loadReservationOlderThan(Date date) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select reservation from ").append(ResourceReservationImpl.class.getName()).append(" as reservation ")
+		sb.append("select reservation from resourcereservation as reservation ")
 		  .append(" where reservation.creationDate<:date");
 		
 		List<ResourceReservation> reservations = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), ResourceReservation.class)
@@ -107,7 +107,7 @@ public class ACReservationDAO {
 	
 	public List<ResourceReservation> loadExpiredReservation(Date defaultDate) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select reservation from ").append(ResourceReservationImpl.class.getName()).append(" as reservation ")
+		sb.append("select reservation from resourcereservation as reservation ")
 		  .append(" where (reservation.expirationDate is null and reservation.creationDate<:date)")
 		  .append(" or (reservation.expirationDate<:nowDate)");
 		
@@ -121,7 +121,7 @@ public class ACReservationDAO {
 	
 	public int countReservations(OLATResource resource) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select count(reservation) from ").append(ResourceReservationImpl.class.getName()).append(" as reservation ")
+		sb.append("select count(reservation) from resourcereservation as reservation ")
 		  .append(" where reservation.resource.key=:resourceKey");
 		
 		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)

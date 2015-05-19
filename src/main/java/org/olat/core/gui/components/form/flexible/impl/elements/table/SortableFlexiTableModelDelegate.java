@@ -68,6 +68,10 @@ public class SortableFlexiTableModelDelegate<T> {
 		return columnIndex;
 	}
 	
+	public Collator getCollator() {
+		return collator;
+	}
+	
 	public List<T> sort() {
 		int rowCount = tableModel.getRowCount();
 		List<T> rows = new ArrayList<>(rowCount);

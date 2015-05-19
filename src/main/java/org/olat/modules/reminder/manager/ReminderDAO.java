@@ -105,10 +105,17 @@ public class ReminderDAO {
 		return reminder;
 	}
 
-	public void delete(Reminder reminder) {
+	public int delete(Reminder reminder) {
 		ReminderImpl ref = dbInstance.getCurrentEntityManager()
 				.getReference(ReminderImpl.class, reminder.getKey());
+		String del = "delete from sentreminder sent where sent.reminder.key=:reminderKey";
+		int numOfDeletedRows = dbInstance.getCurrentEntityManager()
+				.createQuery(del)
+				.setParameter("reminderKey", reminder.getKey())
+				.executeUpdate();
 		dbInstance.getCurrentEntityManager().remove(ref);
+		numOfDeletedRows++;
+		return numOfDeletedRows;
 	}
 	
 	/**

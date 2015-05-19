@@ -21,25 +21,87 @@ package org.olat.resource.accesscontrol.model;
 
 import java.util.Date;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Version;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.olat.basesecurity.IdentityImpl;
+import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Persistable;
 import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceImpl;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class ResourceReservationImpl  extends PersistentObject implements ResourceReservation {
+@Entity(name="resourcereservation")
+@Table(name="o_ac_reservation")
+@NamedQueries({
+	@NamedQuery(name="loadReservationsByIdentity",query="select reservation from resourcereservation as reservation where reservation.identity.key=:identityKey")
+})
+public class ResourceReservationImpl implements CreateInfo, Persistable, ResourceReservation {
 
 	private static final long serialVersionUID = 2200260145344478778L;
+
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@Column(name="reservation_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	@Version
+	private int version = 0;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="expirationdate", nullable=true, insertable=true, updatable=true)
 	private Date expirationDate;
-	
-	private Identity identity;
-	private OLATResource resource;
+	@Column(name="reservationtype", nullable=true, insertable=true, updatable=true)
 	private String type;
-	
-	
+
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY, optional=false)
+	@JoinColumn(name="fk_identity", nullable=false, insertable=true, updatable=false)
+	private Identity identity;
+	@ManyToOne(targetEntity=OLATResourceImpl.class,fetch=FetchType.LAZY, optional=false)
+	@JoinColumn(name="fk_resource", nullable=false, insertable=true, updatable=false)
+	private OLATResource resource;
+
+	@Override
+	public Long getKey() {
+		return key;
+	}
+
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
 	@Override
 	public Date getLastModified() {
 		return lastModified;
@@ -103,4 +165,8 @@ public class ResourceReservationImpl  extends PersistentObject implements Resour
 		return false;
 	}
 
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
+	}
 }

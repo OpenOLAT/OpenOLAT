@@ -110,9 +110,9 @@ public class QTI21AssessmentHandler extends FileHandler {
 	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
 		return null;
 	}
-
+	
 	@Override
-	public RepositoryEntry copy(RepositoryEntry source, RepositoryEntry target) {
+	public RepositoryEntry copy(Identity author, RepositoryEntry source, RepositoryEntry target) {
 		return null;
 	}
 

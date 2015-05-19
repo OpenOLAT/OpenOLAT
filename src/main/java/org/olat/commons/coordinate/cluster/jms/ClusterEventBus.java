@@ -207,6 +207,7 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	/**
 	 * this implementation must sum up all counts from all cluster nodes to return the correct number. 
 	 */
+	@Override
 	public int getListeningIdentityCntFor(OLATResourceable ores) {
 		return busInfos.getListenerCountFor(ores);
 	}
@@ -216,18 +217,15 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	 * @see org.olat.core.util.event.AbstractOLATSystemBus#fireEventToListenersOf(org.olat.core.util.event.MultiUserEvent,
 	 *      org.olat.core.id.OLATResourceable)
 	 */
+	@Override
 	public void fireEventToListenersOf(final MultiUserEvent event, final OLATResourceable ores) {
 		// send the event wrapped over jms to all nodes 
 		// (the receiver will detect whether messages are from itself and thus can be ignored, since they were already sent directly.
 		final long msgId = ++latestSentMsgId;
 		final Integer nodeId = clusterConfig.getNodeId();
 		
-		if(ores != null && ores.getResourceableId() != null
-				&& ores.getResourceableId().equals(0l) && "BusinessGroup".equals(ores.getResourceableTypeName())) {
-			System.out.println();
-		}
-		
 		jmsExecutor.execute(new Runnable() {
+			@Override
 			public void run() {
 				try {
 					ObjectMessage message = sessionProducer.createObjectMessage();
@@ -260,20 +258,8 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	 * called by springs org.springframework.jms.listener.DefaultMessageListenerContainer, see coredefaultconfig.xml
 	 * we receive a message here on the topic reserved for olat system bus messages. 
 	 */
+	@Override
 	public void onMessage(Message message) {
-		/*synchronized(incomingMessagesQueue_) {
-			while(incomingMessagesQueue_.size()>LIMIT_ON_INCOMING_MESSAGE_QUEUE) {
-				try {
-					incomingMessagesQueue_.wait();
-				} catch (InterruptedException e) {
-					// this empty catch is okay
-				}
-			}
-			incomingMessagesQueue_.addFirst(message);
-			incomingMessagesQueue_.addFirst(System.currentTimeMillis());
-			incomingMessagesQueue_.notifyAll();
-		}*/
-		
 		try{
 			serveMessage(message, -1);
 		} catch(RuntimeException re) {
@@ -324,13 +310,6 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 			MultiUserEvent event = jmsWrapper.getMultiUserEvent();
 			OLATResourceable ores = jmsWrapper.getOres();
 			boolean fromSameNode = clusterConfig.getNodeId().equals(nodeId);
-
-			//TODO jms update nodeinfo statistics, this doesn't work because we remove
-			//all the synchronization in the event bus
-			/* NodeInfo nodeInfo = getNodeInfoFor(nodeId);
-			if (log.isDebug() && !nodeInfo.update(jmsWrapper)) {
-				log.debug("onMessage: update failed. clustereventbus: "+this);
-			}*/
 
 			String recMsg = "received msg: "+(fromSameNode? "[same node]":"")+" from node:" + 
 			nodeId + ", olat-id:" + jmsWrapper.getMsgId() + ", ores:" + ores.getResourceableTypeName() + ":" + ores.getResourceableId() +

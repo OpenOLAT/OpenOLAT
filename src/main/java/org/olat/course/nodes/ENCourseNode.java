@@ -38,6 +38,7 @@ import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorEnv;
@@ -191,13 +192,15 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 		/*
 		 * check group and area names for existence
 		 */
+		String nodeId = getIdent();
+		
 		ModuleConfiguration mc = getModuleConfiguration();
 		String areaStr = (String) mc.get(CONFIG_AREANAME);
-		String nodeId = getIdent();
 		if (areaStr != null) {
 			String[] areas = areaStr.split(",");
 			for (int i = 0; i < areas.length; i++) {
-				String trimmed = areas[i] != null ? areas[i].trim() : areas[i];
+				String trimmed = areas[i] != null ?
+						FilterFactory.getHtmlTagsFilter().filter(areas[i]).trim() : areas[i];
 				if (!trimmed.equals("") && !cev.existsArea(trimmed)) {
 					StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.notfound.name", "solution.checkgroupmanagement",
 							new String[] { "NONE", trimmed }, translatorStr);
@@ -210,7 +213,8 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 		if (groupStr != null) {
 			String[] groups = groupStr.split(",");
 			for (int i = 0; i < groups.length; i++) {
-				String trimmed = groups[i] != null ? groups[i].trim() : groups[i];
+				String trimmed = groups[i] != null ?
+						FilterFactory.getHtmlTagsFilter().filter(groups[i]).trim() : groups[i];
 				if (!trimmed.equals("") && !cev.existsGroup(trimmed)) {
 					StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.notfound.name", "solution.checkgroupmanagement",
 							new String[] { "NONE", trimmed }, translatorStr);

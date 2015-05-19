@@ -182,7 +182,7 @@ public class ProjectDetailsDisplayController extends BasicController {
 		if (project.getMaxMembers() == Project.MAX_MEMBERS_UNLIMITED) {
 			myContent.contextPut("projectPlaces", this.getTranslator().translate("detailsform.unlimited.project.members") );
 		} else {
-			String placesValue = projectBrokerManager.getSelectedPlaces(project) + " " + this.getTranslator().translate("detailsform.places.of") + " " + project.getMaxMembers();
+			String placesValue = project.getSelectedPlaces() + " " + this.getTranslator().translate("detailsform.places.of") + " " + project.getMaxMembers();
 			myContent.contextPut("projectPlaces", placesValue);
 		}
 		
@@ -226,6 +226,7 @@ public class ProjectDetailsDisplayController extends BasicController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if ( projectBrokerManager.existsProject(project.getKey()) ) {
 			if (source == editProjectButton) {
@@ -244,8 +245,9 @@ public class ProjectDetailsDisplayController extends BasicController {
 					Link projectLeaderLink = (Link)source;
 					final Identity identity = (Identity)projectLeaderLink.getUserObject();
 					ControllerCreator ctrlCreator = new ControllerCreator() {
+						@Override
 						public Controller createController(UserRequest lureq, WindowControl lwControl) {
-							return new UserInfoMainController(lureq, lwControl, identity);
+							return new UserInfoMainController(lureq, lwControl, identity, true, false);
 						}
 					};
 					// wrap the content controller into a full header layout

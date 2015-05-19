@@ -336,18 +336,20 @@ public class GroupAssessmentController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 
-		List<AssessmentRow> rows = model.getObjects();	
-		for(AssessmentRow row:rows) {
-			TextElement scoreEl = row.getScoreEl();
-			String value = scoreEl.getValue();
-			if(withScore && StringHelper.containsNonWhitespace(value)) {
-				try {
-					float score = Float.parseFloat(value);
-					if(score < 0.0f) {
-						//not acceptable
+		if(withScore) {
+			List<AssessmentRow> rows = model.getObjects();	
+			for(AssessmentRow row:rows) {
+				TextElement scoreEl = row.getScoreEl();
+				String value = scoreEl.getValue();
+				if(StringHelper.containsNonWhitespace(value)) {
+					try {
+						float score = Float.parseFloat(value);
+						if(score < 0.0f) {
+							//not acceptable
+						}
+					} catch (NumberFormatException e) {
+						allOk = false;
 					}
-				} catch (NumberFormatException e) {
-					allOk = false;
 				}
 			}
 		}
@@ -361,9 +363,12 @@ public class GroupAssessmentController extends FormBasicController {
 		List<AssessmentRow> rows = model.getObjects();	
 		if(applyToAllEl.isAtLeastSelected(1)) {
 			Float score = null;
-			String scoreValue = groupScoreEl.getValue();
-			if(withScore && StringHelper.containsNonWhitespace(scoreValue)) {
-				score = Float.parseFloat(scoreValue);
+			
+			if(withScore) {
+				String scoreValue = groupScoreEl.getValue();
+				if(StringHelper.containsNonWhitespace(scoreValue)) {
+					score = Float.parseFloat(scoreValue);
+				}
 			}
 			
 			Boolean passed = null;
@@ -379,10 +384,13 @@ public class GroupAssessmentController extends FormBasicController {
 		} else {
 			for(AssessmentRow row:rows) {
 				UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment();
-				String value = row.getScoreEl().getValue();
+				
 				Float score = null;
-				if(withScore && StringHelper.containsNonWhitespace(value)) {
-					score = Float.parseFloat(value);
+				if(withScore) {
+					String value = row.getScoreEl().getValue();
+					if(StringHelper.containsNonWhitespace(value)) {
+						score = Float.parseFloat(value);
+					}
 				}
 				
 				Boolean passed = null;

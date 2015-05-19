@@ -83,24 +83,24 @@ public class EnrollmentTableModelWithMaxSize extends DefaultTableDataModel<Enrol
 	@Override
 	public Object getValueAt(int row, int col) {
 		EnrollmentRow enrollmentRow = objects.get(row);
-		int numbParts = enrollmentRow.getNumOfParticipants();
-		Integer max = enrollmentRow.getMaxParticipants();
+		int numOfParticipants = enrollmentRow.getNumOfParticipants() + enrollmentRow.getNumOfReservations();
+		int max = enrollmentRow.getMaxParticipants();
 		switch (col) {
 			case 0: return enrollmentRow.getName();
 			case 1: return enrollmentRow.getDescription();
 			case 2:
 				// Belegt/Plätze
-				if (max == null) { 
+				if (max < 0) { 
 					// no limit => return only members
-					return numbParts; 
+					return numOfParticipants; 
 				}
 				// return format 2/10
 				StringBuilder buf = new StringBuilder();
-				buf.append(numbParts)
+				buf.append(numOfParticipants)
 				   .append(trans.translate("grouplist.table.partipiciant.delimiter"))
-				   .append(enrollmentRow.getMaxParticipants());
-				if(numbParts > enrollmentRow.getMaxParticipants()) {
-					log.info("Group overflow detected for the group: " + enrollmentRow.getKey() + "[name=" + enrollmentRow.getName() + "], participants: " + numbParts + " maxParticipamts: " + enrollmentRow.getMaxParticipants());
+				   .append(max);
+				if(numOfParticipants > max) {
+					log.info("Group overflow detected for the group: " + enrollmentRow.getKey() + "[name=" + enrollmentRow.getName() + "], participants: " + numOfParticipants + " maxParticipamts: " + enrollmentRow.getMaxParticipants());
 				}
 				return buf.toString();
 			case 3:
@@ -118,9 +118,9 @@ public class EnrollmentTableModelWithMaxSize extends DefaultTableDataModel<Enrol
 					int pos = enrollmentRow.getPositionInWaitingList();
 					String[] onWaitingListArgs = new String[] { Integer.toString(pos) };
 					return trans.translate("grouplist.table.state.onWaitingList",onWaitingListArgs); 
-				} else if (max != null && !enrollmentRow.isWaitingListEnabled() && numbParts >= max.intValue()) {
+				} else if (max  >= 0 && !enrollmentRow.isWaitingListEnabled() && numOfParticipants >= max) {
 					return trans.translate("grouplist.table.state.enroll.full"); 
-				}	else if (max != null && enrollmentRow.isWaitingListEnabled() && numbParts >= max.intValue()) {
+				}	else if (max  >= 0 && enrollmentRow.isWaitingListEnabled() && numOfParticipants >= max) {
 					return trans.translate("grouplist.table.state.WaitingList");
 				}
 				return trans.translate("grouplist.table.state.notEnrolled");
@@ -130,7 +130,7 @@ public class EnrollmentTableModelWithMaxSize extends DefaultTableDataModel<Enrol
 					// Already too much enrollments or already enrolled in the bg of the row => does not show action-link 'enroll'
 					return Boolean.FALSE;
 				}
-				if (max != null && !enrollmentRow.isWaitingListEnabled() && numbParts >= max.intValue()) {
+				if (max >= 0 && !enrollmentRow.isWaitingListEnabled() && numOfParticipants >= max) {
 					// group is full => => does not show action-link 'enroll'
 					return Boolean.FALSE;
 				}

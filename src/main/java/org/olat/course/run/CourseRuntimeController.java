@@ -981,7 +981,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance("MembersMgmt", 0l);
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-				MembersManagementMainController ctrl = new MembersManagementMainController(ureq, addToHistory(ureq, bwControl), getRepositoryEntry());
+				MembersManagementMainController ctrl = new MembersManagementMainController(ureq, addToHistory(ureq, bwControl), toolbarPanel, getRepositoryEntry());
 				listenTo(ctrl);
 				membersCtrl = pushController(ureq, translate("command.opensimplegroupmngt"), ctrl);
 				setActiveTool(membersLink);

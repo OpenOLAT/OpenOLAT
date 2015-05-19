@@ -283,7 +283,7 @@ public class GTACoachController extends GTAAbstractController {
 			} else {
 				mainVC.contextPut("solutionCssClass", "o_done");
 			}	
-		} else if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.solution){
+		} else if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.solution) {
 			mainVC.contextPut("solutionCssClass", "o_active");
 		} else {
 			mainVC.contextPut("solutionCssClass", "o_done");

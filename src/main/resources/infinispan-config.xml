@@ -11,6 +11,36 @@
       <jmxStatistics enabled="true"/>
    </default>
    
+	<!-- Hibernate caches --> 
+	<namedCache name="local-query">
+      <locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
+      <eviction maxEntries="10000" strategy="LRU"/>
+      <expiration maxIdle="100000" wakeUpInterval="5000"/>
+      <transaction transactionMode="NON_TRANSACTIONAL" />
+   </namedCache>
+   
+	<namedCache name="timestamps">
+	  <!-- 
+      <clustering mode="replication">
+         <async/>
+      </clustering>
+      -->
+      <locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
+      <!--  Don't ever evict modification timestamps -->
+      <eviction strategy="NONE"/>
+      <expiration wakeUpInterval="0"/>
+      <!-- Explicitly non transactional -->
+      <transaction transactionMode="NON_TRANSACTIONAL"/>
+      <!-- State transfer forces all replication calls to be synchronous,
+           so for calls to remain async, use a cluster cache loader instead -->
+      <persistence passivation="false">
+         <!--
+         <cluster remoteCallTimeout="20000" />
+         -->
+      </persistence>
+	</namedCache>
+   
+	<!-- Our own caches -->
 	<namedCache name="MapperService@mapper">
 		<locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
 		<eviction maxEntries="1000" strategy="LRU"/>

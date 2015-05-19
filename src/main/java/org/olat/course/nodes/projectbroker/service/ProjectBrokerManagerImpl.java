@@ -96,7 +96,6 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 	protected ProjectBrokerManagerImpl() {
 		// cache name should not be too long e.g. 'projectbroker' is too long, use 'pb' instead.
 		projectCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(ProjectBrokerManager.class.getSimpleName(), "pb");
-		logDebug("ProjectBrokerManagerImpl created");
 	}
 
 	/**
@@ -104,9 +103,11 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 	 * @return List of projects for certain project-broker
 	 */
 	public List<Project> getProjectListBy(final Long projectBrokerId) {
-		logDebug("getProjectListBy for projectBroker=" + projectBrokerId);
+		final boolean debug = isLogDebugEnabled();
+
 		long rstart = 0;
-		if(isLogDebugEnabled()){
+		if(debug){
+			logDebug("getProjectListBy for projectBroker=" + projectBrokerId);
 			rstart = System.currentTimeMillis();
 		}
 		OLATResourceable projectBrokerOres = OresHelper.createOLATResourceableInstance(this.getClass(),projectBrokerId);
@@ -118,7 +119,7 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 
 		});
 	
-		if(isLogDebugEnabled()){
+		if(debug){
 			long rstop = System.currentTimeMillis();
 			logDebug("time to fetch project with projectbroker_id " + projectBrokerId + " :" + (rstop - rstart), null);
 		}
@@ -146,49 +147,54 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 		});	
 		return project;
 	}
-
-	public int getSelectedPlaces(Project project) {
-		return businessGroupService.countMembers(project.getProjectGroup(), GroupRoles.participant.name()) +
-		       securityManager.countIdentitiesOfSecurityGroup(project.getCandidateGroup());
-	}
-
-
+	
+	@Override
 	public void updateProject(final Project project) {
 		final Long projectBrokerId = project.getProjectBroker().getKey();
 		OLATResourceable projectBrokerOres = OresHelper.createOLATResourceableInstance(this.getClass(),projectBrokerId);
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( projectBrokerOres, new SyncerExecutor() {
+			@Override
 			public void execute() {
 				updateProjectAndInvalidateCache(project);
 			}
 		});	
 	}
 	
+	@Override
 	public boolean existsProject(Long projectKey) {
 		return dbInstance.findObject(ProjectImpl.class, projectKey) != null;
 	}
 
+	@Override
 	public boolean enrollProjectParticipant(final Identity identity, final Project project, final ProjectBrokerModuleConfiguration moduleConfig, final int nbrSelectedProjects, final boolean isParticipantInAnyProject) {
+		final boolean debug = isLogDebugEnabled();
+		
 		OLATResourceable projectOres = OresHelper.createOLATResourceableInstance(Project.class, project.getKey());
 		logDebug("enrollProjectParticipant: start identity=" + identity + "  project=" + project);
-		Boolean result = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(projectOres, new SyncerCallback<Boolean>(){
+		Boolean result = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(projectOres, new SyncerCallback<Boolean>() {
+			@Override
 			public Boolean execute() {
 				if ( existsProject( project.getKey() ) ) {
 					// For cluster-safe : reload project object here another node might have changed this in the meantime
 					Project reloadedProject = (Project) dbInstance.loadObject(project, true);					
-					logDebug("enrollProjectParticipant: project.getMaxMembers()=" + reloadedProject.getMaxMembers());
-					logDebug("enrollProjectParticipant: project.getSelectedPlaces()=" + reloadedProject.getSelectedPlaces());
+					
+					if(debug) {
+						logDebug("enrollProjectParticipant: project.getMaxMembers()=" + reloadedProject.getMaxMembers());
+						logDebug("enrollProjectParticipant: project.getSelectedPlaces()=" + reloadedProject.getSelectedPlaces());
+					}
+
 					if (canBeProjectSelectedBy(identity, reloadedProject, moduleConfig, nbrSelectedProjects, isParticipantInAnyProject) ) {				
 						
 						if (moduleConfig.isAcceptSelectionManually() ) {
 							securityManager.addIdentityToSecurityGroup(identity, reloadedProject.getCandidateGroup());
 							logAudit("ProjectBroker: Add as candidate identity=" + identity + " to project=" + reloadedProject);
-							if (isLogDebugEnabled()) {
+							if (debug) {
 								logDebug("ProjectBroker: Add as candidate reloadedProject=" + reloadedProject + "  CandidateGroup=" + reloadedProject.getCandidateGroup() );
 							}
 						} else {
 							businessGroupRelationDao.addRole(identity, reloadedProject.getProjectGroup(), GroupRoles.participant.name());
 							logAudit("ProjectBroker: Add as participant identity=" + identity + " to project=" + reloadedProject);
-							if (isLogDebugEnabled()) {
+							if (debug) {
 								logDebug("ProjectBroker: Add as participant reloadedProject=" + reloadedProject + "  ParticipantGroup=" + reloadedProject.getProjectGroup() );
 							}
 							if ( (reloadedProject.getMaxMembers() != Project.MAX_MEMBERS_UNLIMITED) && (reloadedProject.getSelectedPlaces() >= reloadedProject.getMaxMembers()) ) {
@@ -198,7 +204,9 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 						}
 						return Boolean.TRUE;
 					} else {
-						logDebug("ProjectBroker: project-group was full for identity=" + identity + " , project=" + reloadedProject);
+						if(debug) {
+							logDebug("ProjectBroker: project-group was full for identity=" + identity + " , project=" + reloadedProject);
+						}
 						return Boolean.FALSE;
 					}
 				} else {
@@ -300,8 +308,7 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 			return false;
 		}
 		// 2. check number of max project members
-		int projectMembers = businessGroupService.countMembers(project.getProjectGroup(), GroupRoles.participant.name()) +
-		                     securityManager.countIdentitiesOfSecurityGroup(project.getCandidateGroup());
+		int projectMembers = project.getSelectedPlaces();
 		if ( (project.getMaxMembers() != Project.MAX_MEMBERS_UNLIMITED) && (projectMembers >= project.getMaxMembers()) ) {
 			logDebug("canBeSelectedBy: return false because projectMembers >= getMaxMembers()");
 			return false;

@@ -21,9 +21,12 @@ package org.olat.group.ui.main;
 
 import java.util.Locale;
 
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 
@@ -31,48 +34,58 @@ import org.olat.core.util.Util;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class CourseRoleCellRenderer implements CustomCellRenderer {
+public class CourseRoleCellRenderer implements CustomCellRenderer, FlexiCellRenderer {
 	
 	private final Translator translator;
 	
 	public CourseRoleCellRenderer(Locale locale) {
 		translator = Util.createPackageTranslator(CourseRoleCellRenderer.class, locale);
 	}
+	
+	@Override
+	public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
+			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+		if (cellValue instanceof CourseMembership) {
+			render(target, (CourseMembership) cellValue);
+		}
+	}
 
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
 		if (val instanceof CourseMembership) {
-			CourseMembership membership = (CourseMembership)val;
-			
-			boolean and = false;
-			if(membership.isOwner()) {
-				and = and(sb, and);
-				sb.append(translator.translate("role.repo.owner"));
-			}
-			if(membership.isRepoTutor()) {
-				and = and(sb, and);
-				sb.append(translator.translate("role.repo.tutor"));
-			}
-			if(membership.isGroupTutor()) {
-				and = and(sb, and);
-				sb.append(translator.translate("role.group.tutor"));
-			}
-			if(membership.isRepoParticipant()) {
-				and = and(sb, and);
-				sb.append(translator.translate("role.repo.participant"));
-			}
-			if(membership.isGroupParticipant()) {
-				and = and(sb, and);
-				sb.append(translator.translate("role.group.participant"));
-			}
-			if(membership.isWaiting()) {
-				and = and(sb, and);
-				sb.append(translator.translate("role.group.waiting"));
-			}
-			if(membership.isPending()) {
-				and = and(sb, and);
-				sb.append(translator.translate("role.pending"));
-			}
+			render(sb, (CourseMembership) val);
+		}
+	}
+	
+	private void render(StringOutput sb, CourseMembership membership) {
+		boolean and = false;
+		if(membership.isOwner()) {
+			and = and(sb, and);
+			sb.append(translator.translate("role.repo.owner"));
+		}
+		if(membership.isRepoTutor()) {
+			and = and(sb, and);
+			sb.append(translator.translate("role.repo.tutor"));
+		}
+		if(membership.isGroupTutor()) {
+			and = and(sb, and);
+			sb.append(translator.translate("role.group.tutor"));
+		}
+		if(membership.isRepoParticipant()) {
+			and = and(sb, and);
+			sb.append(translator.translate("role.repo.participant"));
+		}
+		if(membership.isGroupParticipant()) {
+			and = and(sb, and);
+			sb.append(translator.translate("role.group.participant"));
+		}
+		if(membership.isWaiting()) {
+			and = and(sb, and);
+			sb.append(translator.translate("role.group.waiting"));
+		}
+		if(membership.isPending()) {
+			and = and(sb, and);
+			sb.append(translator.translate("role.pending"));
 		}
 	}
 	
