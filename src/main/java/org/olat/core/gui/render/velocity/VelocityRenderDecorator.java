@@ -358,7 +358,7 @@ public class VelocityRenderDecorator implements Closeable {
 			if(url != null) {
 				sb.append("<span class=\"o_chelp_wrapper\">")
 				  .append("<a href=\"").append(url)
-				  .append("\" class=\"o_chelp\"><i class='o_icon o_icon_help'></i> ")
+				  .append("\" class=\"o_chelp\" target=\"_blank\"><i class='o_icon o_icon_help'></i> ")
 				  .append(renderer.getTranslator().translate("help"))
 				  .append("</a></span>");
 			}
