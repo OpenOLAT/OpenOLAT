@@ -113,6 +113,17 @@ public class QTI21FormItem extends FormItemImpl {
 			String sub = uri.substring(selectItem.getPath().length());
 			QTIWorksEvent event = new QTIWorksEvent(selectItem, sub, this);
 			getRootForm().fireFormEvent(ureq, event);
+		} else if(uri.startsWith(finishItem.getPath())) {
+			QTIWorksEvent event = new QTIWorksEvent(finishItem, this);
+			getRootForm().fireFormEvent(ureq, event);
+		} else if(uri.startsWith(reviewItem.getPath())) {
+			String sub = uri.substring(reviewItem.getPath().length());
+			QTIWorksEvent event = new QTIWorksEvent(reviewItem, sub, this);
+			getRootForm().fireFormEvent(ureq, event);
+		} else if(uri.startsWith(itemSolution.getPath())) {
+			String sub = uri.substring(itemSolution.getPath().length());
+			QTIWorksEvent event = new QTIWorksEvent(itemSolution, sub, this);
+			getRootForm().fireFormEvent(ureq, event);
 		} else if(uri.startsWith(testPartNavigation.getPath())) {
 			QTIWorksEvent event = new QTIWorksEvent(testPartNavigation, this);
 			getRootForm().fireFormEvent(ureq, event);
@@ -124,6 +135,16 @@ public class QTI21FormItem extends FormItemImpl {
 		} else if(uri.startsWith(endTestPart.getPath())) {
 			QTIWorksEvent event = new QTIWorksEvent(endTestPart, this);
 			getRootForm().fireFormEvent(ureq, event);
+		} else if(uri.startsWith(advanceTestPart.getPath())) {
+			QTIWorksEvent event = new QTIWorksEvent(advanceTestPart, this);
+			getRootForm().fireFormEvent(ureq, event);
+		} else if(uri.startsWith(reviewTestPart.getPath())) {
+			QTIWorksEvent event = new QTIWorksEvent(reviewTestPart, this);
+			getRootForm().fireFormEvent(ureq, event);
+		} else if(uri.startsWith(exitTest.getPath())) {
+			QTIWorksEvent event = new QTIWorksEvent(exitTest, this);
+			getRootForm().fireFormEvent(ureq, event);
+			
 		}
 	}
 	

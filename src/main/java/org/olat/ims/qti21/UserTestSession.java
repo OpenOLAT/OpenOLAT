@@ -19,42 +19,15 @@
  */
 package org.olat.ims.qti21;
 
-import org.olat.core.configuration.AbstractSpringModule;
-import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.ims.qti21.repository.handlers.QTI21AssessmentHandler;
-import org.olat.repository.handlers.RepositoryHandlerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.ModifiedInfo;
 
 /**
  * 
- * Initial date: 11.12.2014<br>
+ * Initial date: 12.05.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Service
-public class QTI21Module extends AbstractSpringModule {
-	
-	@Autowired
-	private QTI21AssessmentHandler assessmentHandler;
-	
-	@Autowired
-	public QTI21Module(CoordinatorManager coordinatorManager) {
-		super(coordinatorManager);
-	}
-
-	@Override
-	public void init() {
-		RepositoryHandlerFactory.registerHandler(assessmentHandler, 10);
-		//Saxon is mandatory, JQTI need XSLT 2.0
-		//XsltFactoryUtilities.SAXON_TRANSFORMER_FACTORY_CLASS_NAME;
-	}
-
-	@Override
-	protected void initFromChangedProperties() {
-		//
-	}
-	
-	
+public interface UserTestSession extends CreateInfo, ModifiedInfo {
 
 }

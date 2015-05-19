@@ -108,7 +108,7 @@ Renders the test(Part) feedback
     <xsl:if test="$currentTestPart/@navigationMode='nonlinear' or exists($itemSessionState/@entryTime)">
       <li class="assessmentItem">
         <form action="{$webappContextPath}{$reviewTestItemUrl}/{@key}" method="post">
-          <button type="submit">
+          <button type="submit" class="btn btn-default">
             <xsl:if test="not($reviewable)">
               <xsl:attribute name="disabled" select="'disabled'"/>
             </xsl:if>

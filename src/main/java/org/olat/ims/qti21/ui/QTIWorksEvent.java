@@ -18,6 +18,40 @@ public class QTIWorksEvent extends FormEvent {
 
 	private static final long serialVersionUID = 7767258131971848645L;
 	
+	public enum Event {
+		source("source", "source"),
+		state("state", "state"),
+		result("result", "result"),
+		validation("validation", "validation"),
+		authorview("author-view", "author-view"),
+		response("response", "response"),//OK
+		testPartNavigation("test-part-navigation", "test-part-navigation"),//OK
+		selectItem("select-item", "select-item/"),//OK
+		finishItem("finish-item", "finish-item"),//impl
+		reviewTestPart("review-test-part", "review-test-part"),//impl
+		reviewItem("review-item", "review-item/"),//impl
+		itemSolution("item-solution", "item-solution/"),
+		endTestPart("end-test-part", "end-test-part"),//OK
+		advanceTestPart("advance-test-part", "advance-test-part"),//OK
+		exitTest("exit-test", "exit-test");//impl
+		
+		private final String path;
+		private final String event;
+		
+		private Event(String event, String path) {
+			this.event = event;
+			this.path = path;
+		}
+
+		public String getPath() {
+			return path;
+		}
+
+		public String event() {
+			return event;
+		}
+	}
+	
 	private final Event event;
 	private final String subCommand;
 	private final Map<Identifier, StringResponseData> stringResponseMap;
@@ -53,38 +87,5 @@ public class QTIWorksEvent extends FormEvent {
 		return stringResponseMap;
 	}
 
-	public enum Event {
-		source("source", "source"),
-		state("state", "state"),
-		result("result", "result"),
-		validation("validation", "validation"),
-		authorview("author-view", "author-view"),
-		response("response", "response"),//OK
-		testPartNavigation("test-part-navigation", "test-part-navigation"),//OK
-		selectItem("select-item", "select-item/"),//OK
-		finishItem("finish-item", "finish-item"),
-		reviewTestPart("review-test-part", "review-test-part"),
-		reviewItem("review-item", "review-item"),
-		itemSolution("item-solution", "item-solution"),
-		endTestPart("end-test-part", "end-test-part"),//OK
-		advanceTestPart("advance-test-part", "advance-test-part"),
-		exitTest("exit-test", "exit-test")
-		;
-		
-		private final String path;
-		private final String event;
-		
-		private Event(String event, String path) {
-			this.event = event;
-			this.path = path;
-		}
 
-		public String getPath() {
-			return path;
-		}
-
-		public String event() {
-			return event;
-		}
-	}
 }

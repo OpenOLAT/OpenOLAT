@@ -40,11 +40,14 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.QTI21ContentPackage;
+import org.olat.ims.qti21.UserTestSession;
 import org.olat.ims.qti21.RequestTimestampContext;
+import org.olat.ims.qti21.model.CandidateTestEventType;
 import org.olat.repository.RepositoryEntry;
 
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.JqtiPlus;
+import uk.ac.ed.ph.jqtiplus.exception.QtiCandidateStateException;
 import uk.ac.ed.ph.jqtiplus.node.AssessmentObjectType;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationLevel;
@@ -61,6 +64,7 @@ import uk.ac.ed.ph.jqtiplus.running.TestProcessingInitializer;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionControllerSettings;
 import uk.ac.ed.ph.jqtiplus.state.TestPlan;
+import uk.ac.ed.ph.jqtiplus.state.TestPlanNode;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 import uk.ac.ed.ph.jqtiplus.state.TestProcessingMap;
 import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
@@ -82,9 +86,12 @@ public class QTI21DisplayController extends FormBasicController {
 	
 	private QTI21FormItem qtiEl;
 	private TestSessionController testSessionController;
-	
-	private RequestTimestampContext requestTimestampContext = new RequestTimestampContext();
+
     private JqtiExtensionManager jqtiExtensionManager = new JqtiExtensionManager();
+	private RequestTimestampContext requestTimestampContext = new RequestTimestampContext();
+	private CandidateSessionFinisher candidateSessionFinisher = new CandidateSessionFinisher();
+	
+	private UserTestSession candidateSession;
 	
 	public QTI21DisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl, "run");
@@ -136,21 +143,171 @@ public class QTI21DisplayController extends FormBasicController {
 		if(source == qtiEl) {
 			if(event instanceof QTIWorksEvent) {
 				QTIWorksEvent qe = (QTIWorksEvent)event;
-				switch(qe.getEvent()) {
-					case selectItem: doSelectItem(qe.getSubCommand()); break;
-					case testPartNavigation: doTestPartNavigation(); break;
-					case response: doResponse(qe.getStringResponseMap()); break;
-					case endTestPart: doEndTestPart(); break;
-				}
+				processQTIEvent(qe);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void processQTIEvent(QTIWorksEvent qe) {
+		switch(qe.getEvent()) {
+			case selectItem:
+				doSelectItem(qe.getSubCommand());
+				break;
+			case finishItem:
+				doFinish();
+				break;
+			case reviewItem:
+				doReviewItem(qe.getSubCommand());
+				break;
+			case itemSolution:
+				doItemSolution(qe.getSubCommand());
+				break;
+			case testPartNavigation:
+				doTestPartNavigation();
+				break;
+			case response:
+				doResponse(qe.getStringResponseMap());
+				break;
+			case endTestPart:
+				doEndTestPart();
+				break;
+			case advanceTestPart:
+				doAdvanceTestPart();
+				break;
+			case reviewTestPart:
+				doReviewTestPart();
+				break;
+			case exitTest:
+				doExitTest();
+				break;
+		}
 	}
 	
 	private void doSelectItem(String key) {
 		TestPlanNodeKey nodeKey = TestPlanNodeKey.fromString(key);
 		Date requestTimestamp = requestTimestampContext.getCurrentRequestTimestamp();
         testSessionController.selectItemNonlinear(requestTimestamp, nodeKey);
+	}
+	
+	private void doReviewItem(String key) {
+		TestPlanNodeKey itemKey = TestPlanNodeKey.fromString(key);
+		Date requestTimestamp = requestTimestampContext.getCurrentRequestTimestamp();
+		
+        //Assert.notNull(candidateSessionContext, "candidateSessionContext");
+        //Assert.notNull(itemKey, "itemKey");
+        //assertSessionType(candidateSessionContext, AssessmentObjectType.ASSESSMENT_TEST);
+        //final CandidateSession candidateSession = candidateSessionContext.getCandidateSession();
+
+        /* Get current JQTI state and create JQTI controller */
+        //final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+        //final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
+        //final TestSessionController testSessionController = candidateDataService.createTestSessionController(mostRecentEvent, notificationRecorder);
+        final TestSessionState testSessionState = testSessionController.getTestSessionState();
+
+        /* Make sure caller may do this */
+        //assertSessionNotTerminated(candidateSession);
+        try {
+            if (!testSessionController.mayReviewItem(itemKey)) {
+            	logError("CANNOT_REVIEW_TEST_ITEM", null);
+               //candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_REVIEW_TEST_ITEM);
+                return;
+            }
+        } catch (final QtiCandidateStateException e) {
+        	logError("CANNOT_REVIEW_TEST_ITEM", e);
+           // candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_REVIEW_TEST_ITEM);
+            return;
+        }  catch (final RuntimeException e) {
+        	logError("CANNOT_REVIEW_TEST_ITEM", e);
+            return;// handleExplosion(e, candidateSession);
+        }
+
+        /* Record current result state */
+        //candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
+
+        /* Record and log event */
+        //final CandidateEvent candidateTestEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
+        //        CandidateTestEventType.REVIEW_ITEM, null, itemKey, testSessionState, notificationRecorder);
+        //candidateAuditLogger.logCandidateEvent(candidateTestEvent);
+	}
+
+	private void doItemSolution(String key) {
+		TestPlanNodeKey itemKey = TestPlanNodeKey.fromString(key);
+		
+		//Assert.notNull(candidateSessionContext, "candidateSessionContext");
+        //assertSessionType(candidateSessionContext, AssessmentObjectType.ASSESSMENT_TEST);
+        //final CandidateSession candidateSession = candidateSessionContext.getCandidateSession();
+        //Assert.notNull(itemKey, "itemKey");
+
+        /* Get current JQTI state and create JQTI controller */
+        final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+        //final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
+        //final TestSessionController testSessionController = candidateDataService.createTestSessionController(mostRecentEvent, notificationRecorder);
+        //final TestSessionState testSessionState = testSessionController.getTestSessionState();
+
+        /* Make sure caller may do this */
+        //assertSessionNotTerminated(candidateSession);
+        try {
+            if (!testSessionController.mayAccessItemSolution(itemKey)) {
+                //candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_SOLUTION_TEST_ITEM);
+            	logError("CANNOT_SOLUTION_TEST_ITEM", null);
+                return;
+            }
+        }
+        catch (final QtiCandidateStateException e) {
+            //candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_SOLUTION_TEST_ITEM);
+            logError("CANNOT_SOLUTION_TEST_ITEM", e);
+        	return;
+        } catch (final RuntimeException e) {
+        	logError("Exploded", e);
+            return;// handleExplosion(e, candidateSession);
+        }
+
+        /* Record current result state */
+        //candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
+
+        /* Record and log event */
+        //final CandidateEvent candidateTestEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
+        //        CandidateTestEventType.SOLUTION_ITEM, null, itemKey, testSessionState, notificationRecorder);
+        //candidateAuditLogger.logCandidateEvent(candidateTestEvent);
+        
+	}
+	
+	//public CandidateSession finishLinearItem(final CandidateSessionContext candidateSessionContext)
+    // throws CandidateException {
+	private void doFinish() {
+		
+		try {
+			if (!testSessionController.mayAdvanceItemLinear()) {
+				logError("CANNOT_FINISH_LINEAR_TEST_ITEM", null);
+                return;
+            }
+		} catch (QtiCandidateStateException e) {
+         	logError("CANNOT_FINISH_LINEAR_TEST_ITEM", e);
+         	return;
+		} catch (RuntimeException e) {
+         	logError("CANNOT_FINISH_LINEAR_TEST_ITEM", e);
+			 //return handleExplosion(e, candidateSession);
+		}
+		 
+		// Update state
+		final Date requestTimestamp = requestTimestampContext.getCurrentRequestTimestamp();
+	    final TestPlanNode nextItemNode = testSessionController.advanceItemLinear(requestTimestamp);
+
+	    // Record current result state
+	    //final AssessmentResult assessmentResult = candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
+
+	    /* If we ended the testPart and there are now no more available testParts, then finish the session now */
+	    if (nextItemNode==null && testSessionController.findNextEnterableTestPart()==null) {
+	    	//candidateSessionFinisher.finishCandidateSession(candidateSession, assessmentResult);
+	    }
+
+	    /* Record and log event 
+	    final CandidateTestEventType eventType = nextItemNode!=null ? CandidateTestEventType.FINISH_ITEM : CandidateTestEventType.FINISH_FINAL_ITEM;
+	   	final CandidateEvent candidateTestEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
+	                eventType, null, testSessionState, notificationRecorder);
+	   	*/
+		
 	}
 	
 	private void doTestPartNavigation() {
@@ -191,6 +348,145 @@ public class QTI21DisplayController extends FormBasicController {
 		 /* Update state */
         final Date requestTimestamp = requestTimestampContext.getCurrentRequestTimestamp();
         testSessionController.endCurrentTestPart(requestTimestamp);
+	}
+	
+	private void doAdvanceTestPart() {
+		
+		//final CandidateSessionContext candidateSessionContext = getCandidateSessionContext();
+		//Assert.notNull(candidateSessionContext, "candidateSessionContext");
+        //assertSessionType(candidateSessionContext, AssessmentObjectType.ASSESSMENT_TEST);
+        //final CandidateSession candidateSession = candidateSessionContext.getCandidateSession();
+
+        /* Get current JQTI state and create JQTI controller */
+        //final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+        //final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
+        final TestSessionState testSessionState = testSessionController.getTestSessionState();
+
+        /* Perform action */
+        final TestPlanNode nextTestPart;
+        final Date currentTimestamp = requestTimestampContext.getCurrentRequestTimestamp();
+        try {
+            nextTestPart = testSessionController.enterNextAvailableTestPart(currentTimestamp);
+        } catch (final QtiCandidateStateException e) {
+            logError("CANNOT_ADVANCE_TEST_PART", e);
+            return;
+        } catch (final RuntimeException e) {
+            logError("RuntimeException", e);
+            return;// handleExplosion(e, candidateSession);
+        }
+
+        CandidateTestEventType eventType;
+        if (nextTestPart!=null) {
+            /* Moved into next test part */
+            eventType = CandidateTestEventType.ADVANCE_TEST_PART;
+        }
+        else {
+            /* No more test parts.
+             *
+             * For single part tests, we terminate the test completely now as the test feedback was shown with the testPart feedback.
+             * For multi-part tests, we shall keep the test open so that the test feedback can be viewed.
+             */
+            if (testSessionState.getTestPlan().getTestPartNodes().size()==1) {
+                eventType = CandidateTestEventType.EXIT_TEST;
+                testSessionController.exitTest(currentTimestamp);
+                //candidateSession.setTerminationTime(currentTimestamp);
+                //candidateSessionDao.update(candidateSession);
+            }
+            else {
+                eventType = CandidateTestEventType.ADVANCE_TEST_PART;
+            }
+        }
+
+        /* Record current result state */
+        //candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
+
+        /* Record and log event */
+        //final CandidateEvent candidateTestEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
+        //       eventType, testSessionState, notificationRecorder);
+        //candidateAuditLogger.logCandidateEvent(candidateTestEvent);
+
+
+		
+		/*
+        String redirect;
+        if (candidateSession.isTerminated()) {
+            // We exited the test
+            //TODO fire event eXIT
+            redirect = redirectToExitUrl(candidateSessionContext, xsrfToken);
+        }
+        else {
+            // Moved onto next part
+            redirect = redirectToRenderSession(xid, xsrfToken);
+        }
+        */
+		
+	}
+	
+	private void doReviewTestPart() {
+		//Assert.notNull(candidateSessionContext, "candidateSessionContext");
+        //assertSessionType(candidateSessionContext, AssessmentObjectType.ASSESSMENT_TEST);
+        //final CandidateSession candidateSession = candidateSessionContext.getCandidateSession();
+
+        /* Get current JQTI state and create JQTI controller */
+        final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+        //final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
+        //final TestSessionController testSessionController = candidateDataService.createTestSessionController(mostRecentEvent, notificationRecorder);
+        final TestSessionState testSessionState = testSessionController.getTestSessionState();
+
+        /* Make sure caller may do this */
+        //assertSessionNotTerminated(candidateSession);
+        if (testSessionState.getCurrentTestPartKey()==null || !testSessionState.getCurrentTestPartSessionState().isEnded()) {
+        	
+            // candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_REVIEW_TEST_PART);
+            logError("CANNOT_REVIEW_TEST_PART", null);
+        	return;
+        }
+
+        /* Record and log event */
+        //final CandidateEvent candidateTestEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
+        //        CandidateTestEventType.REVIEW_TEST_PART, null, null, testSessionState, notificationRecorder);
+        //candidateAuditLogger.logCandidateEvent(candidateTestEvent);
+	}
+	
+	/**
+	 * Exit multi-part tests
+	 */
+	private void doExitTest() {
+		//Assert.notNull(candidateSessionContext, "candidateSessionContext");
+        //assertSessionType(candidateSessionContext, AssessmentObjectType.ASSESSMENT_TEST);
+        //final CandidateSession candidateSession = candidateSessionContext.getCandidateSession();
+
+        /* Get current JQTI state and create JQTI controller */
+        final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+        //final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
+        //final TestSessionController testSessionController = candidateDataService.createTestSessionController(mostRecentEvent, notificationRecorder);
+        final TestSessionState testSessionState = testSessionController.getTestSessionState();
+
+        /* Perform action */
+        final Date currentTimestamp = requestTimestampContext.getCurrentRequestTimestamp();
+        try {
+            testSessionController.exitTest(currentTimestamp);
+        } catch (final QtiCandidateStateException e) {
+            //candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_EXIT_TEST);
+        	logError("CANNOT_EXIT_TEST", null);
+            return;
+        } catch (final RuntimeException e) {
+        	logError("Exploded", null);
+            return;// handleExplosion(e, candidateSession);
+        }
+
+        /* Update CandidateSession as appropriate */
+        //candidateSession.setTerminationTime(currentTimestamp);
+        //candidateSessionDao.update(candidateSession);
+
+        /* Record current result state (final) */
+        //candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
+
+        /* Record and log event */
+        //final CandidateEvent candidateTestEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
+        //        CandidateTestEventType.EXIT_TEST, testSessionState, notificationRecorder);
+        //candidateAuditLogger.logCandidateEvent(candidateTestEvent);
+		
 	}
 	
 	//private CandidateSession enterCandidateSession(final CandidateSession candidateSession)
@@ -328,5 +624,24 @@ public class QTI21DisplayController extends FormBasicController {
 		}
 		final int requestedLimitIntValue = requestedLimit.intValue();
 		return requestedLimitIntValue > 0 ? requestedLimitIntValue : JqtiPlus.DEFAULT_TEMPLATE_PROCESSING_LIMIT;
+	}
+	
+	private class CandidateSessionFinisher {
+		
+
+	    public void finishCandidateSession(/* final CandidateSession candidateSession,*/ final AssessmentResult assessmentResult) {
+	        /* Mark session as finished */
+	        //candidateSession.setFinishTime(requestTimestampContext.getCurrentRequestTimestamp());
+
+	        /* Also nullify LIS result info for session. These will be updated later, if pre-conditions match for sending the result back */
+	        //candidateSession.setLisOutcomeReportingStatus(null);
+	        //candidateSession.setLisScore(null);
+	       // candidateSessionDao.update(candidateSession);
+
+	        /* Finally schedule LTI result return (if appropriate and sane) */
+	        //maybeScheduleLtiOutcomes(candidateSession, assessmentResult);
+	    }
+		
+		
 	}
 }
