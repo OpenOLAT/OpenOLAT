@@ -19,7 +19,16 @@
  */
 package org.olat.ims.qti21.ui;
 
-import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.*;
+import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.advanceTestPart;
+import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.endTestPart;
+import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.exitTest;
+import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.finishItem;
+import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.itemSolution;
+import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.response;
+import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.reviewItem;
+import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.reviewTestPart;
+import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.selectItem;
+import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.testPartNavigation;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -29,7 +38,6 @@ import java.util.Set;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
-import org.olat.ims.qti21.RequestTimestampContext;
 
 import uk.ac.ed.ph.jqtiplus.exception.QtiParseException;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
@@ -84,14 +92,6 @@ public class QTI21FormItem extends FormItemImpl {
 
 	public void setCandidateSessionContext(CandidateSessionContext candidateSessionContext) {
 		component.setCandidateSessionContext(candidateSessionContext);
-	}
-	
-	public RequestTimestampContext getRequestTimestampContext() {
-		return component.getRequestTimestampContext();
-	}
-
-	public void setRequestTimestampContext(RequestTimestampContext requestTimestampContext) {
-		component.setRequestTimestampContext(requestTimestampContext);
 	}
 
 	public ResourceLocator getResourceLocator() {

@@ -35,7 +35,6 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.ims.qti21.RequestTimestampContext;
 import org.olat.ims.qti21.UserTestSession;
 import org.olat.ims.qti21.model.CandidateEvent;
 import org.olat.ims.qti21.model.CandidateTestEventType;
@@ -65,7 +64,7 @@ public class QTI21ComponentRenderer extends DefaultComponentRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
-		
+
 		AJAXFlags flags = renderer.getGlobalSettings().getAjaxFlags();
 		boolean iframePostEnabled = flags.isIframePostEnabled();
 		
@@ -136,6 +135,7 @@ public class QTI21ComponentRenderer extends DefaultComponentRenderer {
 		TestSessionState testSessionState = testSessionController.getTestSessionState();
 		CandidateSessionContext candidateSessionContext = component.getCandidateSessionContext();
 		final UserTestSession candidateSession = candidateSessionContext.getCandidateSession();
+		
         if (candidateSession.isExploded()) {
             renderExploded(candidateSessionContext, renderingOptions, result, component);
         }
@@ -152,8 +152,7 @@ public class QTI21ComponentRenderer extends DefaultComponentRenderer {
 			
 			/* Touch the session's duration state if appropriate */
 			if (testSessionState.isEntered() && !testSessionState.isEnded()) {
-				RequestTimestampContext requestTimestampContext = component.getRequestTimestampContext();
-			    final Date timestamp = requestTimestampContext.getCurrentRequestTimestamp();
+			    final Date timestamp = candidateSessionContext.getCurrentRequestTimestamp();
 			    testSessionController.touchDurations(timestamp);
 			}
 			
@@ -198,7 +197,7 @@ public class QTI21ComponentRenderer extends DefaultComponentRenderer {
         /* If session has terminated, render appropriate state and exit */
         final TestSessionState testSessionState = testSessionController.getTestSessionState();
         if (candidateSessionContext.isTerminated() || testSessionState.isExited()) {
-            //assessmentRenderer.renderTeminated(createTerminatedRenderingRequest(candidateSessionContext, renderingRequest.getRenderingOptions()), result);
+            assessmentRenderer.renderTeminated(createTerminatedRenderingRequest(candidateSessionContext, renderingRequest.getRenderingOptions(), component), result);
             return;
         }
 

@@ -25,7 +25,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.render.ValidationResult;
-import org.olat.ims.qti21.RequestTimestampContext;
 
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
@@ -44,7 +43,6 @@ public class QTI21Component extends AbstractComponent {
 	private ResourceLocator resourceLocator;
 	private TestSessionController testSessionController;
 	private CandidateSessionContext candidateSessionContext;
-	private RequestTimestampContext requestTimestampContext;
 	
 	private final QTI21FormItem qtiItem;
 	
@@ -79,14 +77,6 @@ public class QTI21Component extends AbstractComponent {
 
 	public void setCandidateSessionContext(CandidateSessionContext candidateSessionContext) {
 		this.candidateSessionContext = candidateSessionContext;
-	}
-
-	public RequestTimestampContext getRequestTimestampContext() {
-		return requestTimestampContext;
-	}
-
-	public void setRequestTimestampContext(RequestTimestampContext requestTimestampContext) {
-		this.requestTimestampContext = requestTimestampContext;
 	}
 
 	public URI getAssessmentObjectUri() {

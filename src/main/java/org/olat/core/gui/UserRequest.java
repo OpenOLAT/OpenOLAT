@@ -26,6 +26,7 @@
 
 package org.olat.core.gui;
 
+import java.util.Date;
 import java.util.Locale;
 import java.util.Set;
 
@@ -47,6 +48,8 @@ public interface UserRequest {
 	public static final String PARAM_DELIM = ":";
 
 	public String getUuid();
+	
+	public Date getRequestTimestamp();
 	
 	public String getUriPrefix();
 

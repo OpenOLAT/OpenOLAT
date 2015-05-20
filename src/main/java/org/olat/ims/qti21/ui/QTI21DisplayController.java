@@ -40,7 +40,6 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.QTI21ContentPackage;
-import org.olat.ims.qti21.RequestTimestampContext;
 import org.olat.ims.qti21.UserTestSession;
 import org.olat.ims.qti21.manager.CandidateDataService;
 import org.olat.ims.qti21.manager.TestSessionDAO;
@@ -94,11 +93,11 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 	private TestSessionController testSessionController;
 
     private JqtiExtensionManager jqtiExtensionManager = new JqtiExtensionManager();
-	private RequestTimestampContext requestTimestampContext = new RequestTimestampContext();
 	private CandidateSessionFinisher candidateSessionFinisher = new CandidateSessionFinisher();
 	
-	private UserTestSession candidateSession;
 	private CandidateEvent lastEvent;
+	private Date currentRequestTimestamp;
+	private UserTestSession candidateSession;
 
 	@Autowired
 	private TestSessionDAO testSessionDao;
@@ -111,15 +110,16 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 		FileResourceManager frm = FileResourceManager.getInstance();
 		fUnzippedDirRoot = frm.unzipFileResource(entry.getOlatResource());
 		
+		currentRequestTimestamp = ureq.getRequestTimestamp();
 		candidateSession = testSessionDao.createTestSession(entry, null, getIdentity());
 		mapperUri = registerCacheableMapper(ureq, "QTI21Resources::" + entry.getKey(), new ResourcesMapper());
 		
-		testSessionController = enterSession();
+		testSessionController = enterSession(ureq);
 
 		/* Handle immediate end of test session */
         if (testSessionController.getTestSessionState().isEnded()) {
         	AssessmentResult assessmentResult = null;
-            candidateSessionFinisher.finishCandidateSession(candidateSession, assessmentResult);
+            candidateSessionFinisher.finishCandidateSession(ureq, candidateSession, assessmentResult);
         }
 		initForm(ureq);
 	}
@@ -135,7 +135,6 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 		final ResourceLocator inputResourceLocator = 
         		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
 		qtiEl.setResourceLocator(inputResourceLocator);
-		qtiEl.setRequestTimestampContext(requestTimestampContext);
 		qtiEl.setTestSessionController(testSessionController);
 		qtiEl.setAssessmentObjectUri(createAssessmentObjectUri());
 		qtiEl.setCandidateSessionContext(this);
@@ -164,6 +163,11 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 		return lastEvent;
 	}
 
+	@Override
+	public Date getCurrentRequestTimestamp() {
+		return currentRequestTimestamp;
+	}
+
 	protected CandidateEvent assertSessionEntered(UserTestSession candidateSession) {
 		return lastEvent;
 	}
@@ -178,56 +182,58 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 		if(source == qtiEl) {
 			if(event instanceof QTIWorksEvent) {
 				QTIWorksEvent qe = (QTIWorksEvent)event;
-				processQTIEvent(qe);
+				processQTIEvent(ureq, qe);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void processQTIEvent(QTIWorksEvent qe) {
+	private void processQTIEvent(UserRequest ureq, QTIWorksEvent qe) {
+		currentRequestTimestamp = ureq.getRequestTimestamp();
+		
 		switch(qe.getEvent()) {
 			case selectItem:
-				doSelectItem(qe.getSubCommand());
+				doSelectItem(ureq, qe.getSubCommand());
 				break;
 			case finishItem:
-				doFinish();
+				doFinish(ureq);
 				break;
 			case reviewItem:
-				doReviewItem(qe.getSubCommand());
+				doReviewItem(ureq, qe.getSubCommand());
 				break;
 			case itemSolution:
 				doItemSolution(qe.getSubCommand());
 				break;
 			case testPartNavigation:
-				doTestPartNavigation();
+				doTestPartNavigation(ureq);
 				break;
 			case response:
-				doResponse(qe.getStringResponseMap());
+				doResponse(ureq, qe.getStringResponseMap());
 				break;
 			case endTestPart:
-				doEndTestPart();
+				doEndTestPart(ureq);
 				break;
 			case advanceTestPart:
-				doAdvanceTestPart();
+				doAdvanceTestPart(ureq);
 				break;
 			case reviewTestPart:
 				doReviewTestPart();
 				break;
 			case exitTest:
-				doExitTest();
+				doExitTest(ureq);
 				break;
 		}
 	}
 	
-	private void doSelectItem(String key) {
+	private void doSelectItem(UserRequest ureq, String key) {
 		TestPlanNodeKey nodeKey = TestPlanNodeKey.fromString(key);
-		Date requestTimestamp = requestTimestampContext.getCurrentRequestTimestamp();
+		Date requestTimestamp = ureq.getRequestTimestamp();
         testSessionController.selectItemNonlinear(requestTimestamp, nodeKey);
 	}
 	
-	private void doReviewItem(String key) {
+	private void doReviewItem(UserRequest ureq, String key) {
 		TestPlanNodeKey itemKey = TestPlanNodeKey.fromString(key);
-		Date requestTimestamp = requestTimestampContext.getCurrentRequestTimestamp();
+		Date requestTimestamp = ureq.getRequestTimestamp();
 		
         //Assert.notNull(itemKey, "itemKey");
 
@@ -303,7 +309,7 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 	
 	//public CandidateSession finishLinearItem(final CandidateSessionContext candidateSessionContext)
     // throws CandidateException {
-	private void doFinish() {
+	private void doFinish(UserRequest ureq) {
 		
         /* Get current JQTI state and create JQTI controller */
         final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
@@ -325,7 +331,7 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 		}
 		 
 		// Update state
-		final Date requestTimestamp = requestTimestampContext.getCurrentRequestTimestamp();
+		final Date requestTimestamp = ureq.getRequestTimestamp();
 	    final TestPlanNode nextItemNode = testSessionController.advanceItemLinear(requestTimestamp);
 
 	    // Record current result state
@@ -333,7 +339,7 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 
 	    /* If we ended the testPart and there are now no more available testParts, then finish the session now */
 	    if (nextItemNode==null && testSessionController.findNextEnterableTestPart()==null) {
-	    	candidateSession = candidateSessionFinisher.finishCandidateSession(candidateSession, assessmentResult);
+	    	candidateSession = candidateSessionFinisher.finishCandidateSession(ureq, candidateSession, assessmentResult);
 	    }
 
 	    // Record and log event 
@@ -343,8 +349,8 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 	   	this.lastEvent = candidateTestEvent;
 	}
 	
-	private void doTestPartNavigation() {
-		final Date requestTimestamp = requestTimestampContext.getCurrentRequestTimestamp();
+	private void doTestPartNavigation(UserRequest ureq) {
+		final Date requestTimestamp = ureq.getRequestTimestamp();
         testSessionController.selectItemNonlinear(requestTimestamp, null);
 	}
 	
@@ -353,7 +359,7 @@ public class QTI21DisplayController extends FormBasicController implements Candi
     //        final Map<Identifier, MultipartFile> fileResponseMap,
     //        final String candidateComment)
             
-	private void doResponse(Map<Identifier, StringResponseData> stringResponseMap) {
+	private void doResponse(UserRequest ureq, Map<Identifier, StringResponseData> stringResponseMap) {
 		String candidateComment = null;
 		
 		//Assert.notNull(candidateSessionContext, "candidateSessionContext");
@@ -380,7 +386,7 @@ public class QTI21DisplayController extends FormBasicController implements Candi
         boolean allResponsesBound = true;
 		
 		//TODO files upload
-		final Date timestamp = requestTimestampContext.getCurrentRequestTimestamp();
+		final Date timestamp = ureq.getRequestTimestamp();
         if (candidateComment != null) {
             testSessionController.setCandidateCommentForCurrentItem(timestamp, candidateComment);
         }
@@ -420,13 +426,13 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 	}
 
 	//public CandidateSession endCurrentTestPart(final CandidateSessionContext candidateSessionContext)
-	private void doEndTestPart() {
+	private void doEndTestPart(UserRequest ureq) {
 		 /* Update state */
-        final Date requestTimestamp = requestTimestampContext.getCurrentRequestTimestamp();
+        final Date requestTimestamp = ureq.getRequestTimestamp();
         testSessionController.endCurrentTestPart(requestTimestamp);
 	}
 	
-	private void doAdvanceTestPart() {
+	private void doAdvanceTestPart(UserRequest ureq) {
 		
 		//final CandidateSessionContext candidateSessionContext = getCandidateSessionContext();
 		
@@ -437,7 +443,7 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 
         /* Perform action */
         final TestPlanNode nextTestPart;
-        final Date currentTimestamp = requestTimestampContext.getCurrentRequestTimestamp();
+        final Date currentTimestamp = ureq.getRequestTimestamp();
         try {
             nextTestPart = testSessionController.enterNextAvailableTestPart(currentTimestamp);
         } catch (final QtiCandidateStateException e) {
@@ -522,7 +528,7 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 	/**
 	 * Exit multi-part tests
 	 */
-	private void doExitTest() {
+	private void doExitTest(UserRequest ureq) {
 
         /* Get current JQTI state and create JQTI controller */
         final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
@@ -531,7 +537,7 @@ public class QTI21DisplayController extends FormBasicController implements Candi
         final TestSessionState testSessionState = testSessionController.getTestSessionState();
 
         /* Perform action */
-        final Date currentTimestamp = requestTimestampContext.getCurrentRequestTimestamp();
+        final Date currentTimestamp = ureq.getRequestTimestamp();
         try {
             testSessionController.exitTest(currentTimestamp);
         } catch (final QtiCandidateStateException e) {
@@ -559,7 +565,7 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 	}
 	
 	//private CandidateSession enterCandidateSession(final CandidateSession candidateSession)
-	private TestSessionController enterSession() {
+	private TestSessionController enterSession(UserRequest ureq) {
 		/* Set up listener to record any notifications */
         final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
 
@@ -571,7 +577,7 @@ public class QTI21DisplayController extends FormBasicController implements Candi
         
         /* Initialise test state and enter test */
         final TestSessionState testSessionState = testSessionController.getTestSessionState();
-        final Date timestamp = requestTimestampContext.getCurrentRequestTimestamp();
+        final Date timestamp = ureq.getRequestTimestamp();
         try {
             testSessionController.initialize(timestamp);
             final int testPartCount = testSessionController.enterTest(timestamp);
@@ -604,7 +610,7 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 
         /* Handle immediate end of test session */
         if (testSessionState.isEnded()) {
-            candidateSessionFinisher.finishCandidateSession(candidateSession, assessmentResult);
+            candidateSessionFinisher.finishCandidateSession(ureq, candidateSession, assessmentResult);
         }
         
         return testSessionController;
@@ -703,9 +709,9 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 	private class CandidateSessionFinisher {
 		
 
-	    public UserTestSession finishCandidateSession(UserTestSession candidateSession, AssessmentResult assessmentResult) {
+	    public UserTestSession finishCandidateSession(UserRequest ureq, UserTestSession candidateSession, AssessmentResult assessmentResult) {
 	        /* Mark session as finished */
-	        candidateSession.setFinishTime(requestTimestampContext.getCurrentRequestTimestamp());
+	        candidateSession.setFinishTime(ureq.getRequestTimestamp());
 
 	        /* Also nullify LIS result info for session. These will be updated later, if pre-conditions match for sending the result back */
 	        //candidateSession.setLisOutcomeReportingStatus(null);

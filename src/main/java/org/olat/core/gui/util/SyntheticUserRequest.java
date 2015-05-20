@@ -20,6 +20,7 @@
 package org.olat.core.gui.util;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Set;
 
@@ -41,15 +42,22 @@ public class SyntheticUserRequest implements UserRequest {
 	
 	private final Locale locale;
 	private final Identity identity;
+	private final Date requestTimestamp;
 	
 	public SyntheticUserRequest(Identity identity, Locale locale) {
 		this.identity = identity;
 		this.locale = locale;
+		requestTimestamp = new Date();
 	}
 	
 	@Override
 	public String getUuid() {
 		return null;
+	}
+	
+	@Override
+	public Date getRequestTimestamp() {
+		return requestTimestamp;
 	}
 
 	@Override

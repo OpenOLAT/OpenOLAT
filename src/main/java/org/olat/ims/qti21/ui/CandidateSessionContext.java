@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti21.ui;
 
+import java.util.Date;
+
 import org.olat.ims.qti21.UserTestSession;
 import org.olat.ims.qti21.model.CandidateEvent;
 
@@ -29,6 +31,8 @@ public interface CandidateSessionContext {
 	public UserTestSession getCandidateSession();
 	
 	public CandidateEvent getLastEvent();
+	
+	public Date getCurrentRequestTimestamp();
 
 
 }

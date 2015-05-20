@@ -126,4 +126,8 @@
 		<property name="order" value="210" />
 	</bean>
 	
+	<bean id="qti21test" class="org.olat.course.nodes.qti21.QTI21AssessmentCourseNodeConfiguration" scope="prototype" >
+		<property name="order" value="210" />
+	</bean>
+	
 </beans>

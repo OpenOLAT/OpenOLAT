@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti21.model;
 
+import java.util.Date;
+
 /**
  * 
  * Initial date: 19.05.2015<br>
@@ -34,6 +36,17 @@ public class CandidateEvent {
 	private CandidateItemEventType itemEventType;
 	
     private String testItemKey;
+    
+    private Date timestamp;
+ 
+
+	public Date getTimestamp() {
+		return timestamp;
+	}
+
+	public void setTimestamp(Date timestamp) {
+		this.timestamp = timestamp;
+	}
 
 	public CandidateTestEventType getTestEventType() {
 		return testEventType;

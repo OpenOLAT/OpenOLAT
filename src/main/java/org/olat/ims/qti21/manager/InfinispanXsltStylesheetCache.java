@@ -17,58 +17,43 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21;
+package org.olat.ims.qti21.manager;
 
-import org.olat.core.configuration.AbstractSpringModule;
+import javax.xml.transform.Templates;
+
+import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.ims.qti21.repository.handlers.QTI21AssessmentHandler;
-import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltStylesheetCache;
+
 /**
+ * Bind the XSLT Templates cache for jacomax on our cache infrastructure.
  * 
- * Initial date: 11.12.2014<br>
+ * 
+ * Initial date: 19.05.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 @Service
-public class QTI21Module extends AbstractSpringModule {
+public class InfinispanXsltStylesheetCache implements XsltStylesheetCache {
 	
+	private CacheWrapper<Object,Templates> cache;
+
+	@SuppressWarnings("static-access")
 	@Autowired
-	private QTI21AssessmentHandler assessmentHandler;
-	
-	@Value("${qti21.math.assessment.extension.enabled:true}")
-	private boolean mathAssessExtensionEnabled;
-	
-	@Autowired
-	public QTI21Module(CoordinatorManager coordinatorManager) {
-		super(coordinatorManager);
+	public InfinispanXsltStylesheetCache(CoordinatorManager coordinatorManager) {
+		cache = coordinatorManager.getInstance().getCoordinator().getCacher().getCache("QTIWorks", "ssltStylesheets");
 	}
 
 	@Override
-	public void init() {
-		RepositoryHandlerFactory.registerHandler(assessmentHandler, 10);
-		//Saxon is mandatory, JQTI need XSLT 2.0
-		//XsltFactoryUtilities.SAXON_TRANSFORMER_FACTORY_CLASS_NAME;
+	public Templates getStylesheet(String key) {
+		return cache.get(key);
 	}
 
 	@Override
-	protected void initFromChangedProperties() {
-		//
+	public void putStylesheet(String key, Templates stylesheet) {
+		cache.put(key, stylesheet);
 	}
-
-	public boolean isMathAssessExtensionEnabled() {
-		return mathAssessExtensionEnabled;
-	}
-
-	public void setMathAssessExtensionEnabled(boolean mathAssessExtensionEnabled) {
-		this.mathAssessExtensionEnabled = mathAssessExtensionEnabled;
-	}
-	
-	
-	
-	
-
 }

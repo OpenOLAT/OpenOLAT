@@ -24,6 +24,8 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.util.Date;
 
+import javax.annotation.Resource;
+
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
@@ -33,7 +35,6 @@ import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.CandidateTestEventType;
 import org.springframework.stereotype.Service;
 
-import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationRecorder;
@@ -45,8 +46,8 @@ import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
 @Service
 public class CandidateDataService {
 	
-	//@Resource
-    private QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
+	@Resource
+	private QtiSerializer qtiSerializer;
 
 	public AssessmentResult computeAndRecordTestAssessmentResult(UserTestSession candidateSession, TestSessionController testSessionController) {
 		AssessmentResult assessmentResult = computeTestAssessmentResult(candidateSession, testSessionController);
