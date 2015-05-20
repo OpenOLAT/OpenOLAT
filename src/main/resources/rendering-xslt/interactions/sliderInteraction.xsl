@@ -44,7 +44,7 @@
         </xsl:choose>
         <input type="hidden" name="qtiworks_response_{@responseIdentifier}" value="{$value}"/>
         <script type="text/javascript">
-          $(document).ready(function() {
+          jQuery(document).ready(function() {
             QtiWorksRendering.registerSliderInteraction('<xsl:value-of
                 select="@responseIdentifier"/>', {
               min: <xsl:value-of select="$min"/>,

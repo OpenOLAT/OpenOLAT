@@ -73,7 +73,7 @@ public class QTI21ComponentRenderer extends DefaultComponentRenderer {
 		QTI21FormItem item = cmp.getQtiItem();
 		
 		if(testSessionController.getTestSessionState().isEnded()) {
-			sb.append("<h1>Ended</h1>");
+			sb.append("<h1>The End</h1>");
 		} else {
 			Component rootFormCmp = item.getRootForm().getInitialComponent();
 			
@@ -137,11 +137,11 @@ public class QTI21ComponentRenderer extends DefaultComponentRenderer {
 		final UserTestSession candidateSession = candidateSessionContext.getCandidateSession();
 		
         if (candidateSession.isExploded()) {
-            renderExploded(candidateSessionContext, renderingOptions, result, component);
+            renderExploded(renderingOptions, result, component);
         }
 	
         if (candidateSessionContext.isTerminated()) {
-            renderTerminated(candidateSessionContext, renderingOptions, result, component);
+            renderTerminated(renderingOptions, result, component);
         } else {
 			/* Look up most recent event */
 			   // final CandidateEvent latestEvent = assertSessionEntered(candidateSession);
@@ -161,33 +161,27 @@ public class QTI21ComponentRenderer extends DefaultComponentRenderer {
 		}
 	}
 	
-    private void renderExploded(CandidateSessionContext candidateSessionContext, AbstractRenderingOptions renderingOptions, StreamResult result, QTI21Component component) {
-        assessmentRenderer.renderExploded(createTerminatedRenderingRequest(candidateSessionContext, renderingOptions, component), result);
+    private void renderExploded(AbstractRenderingOptions renderingOptions, StreamResult result, QTI21Component component) {
+        assessmentRenderer.renderExploded(createTerminatedRenderingRequest(renderingOptions, component), result);
     }
 
-    private void renderTerminated(CandidateSessionContext candidateSessionContext, AbstractRenderingOptions renderingOptions, StreamResult result, QTI21Component component) {
-        assessmentRenderer.renderTeminated(createTerminatedRenderingRequest(candidateSessionContext, renderingOptions, component), result);
+    private void renderTerminated(AbstractRenderingOptions renderingOptions, StreamResult result, QTI21Component component) {
+        assessmentRenderer.renderTeminated(createTerminatedRenderingRequest(renderingOptions, component), result);
     }
 
-    //----------------------------------------------------
-
-    private TerminatedRenderingRequest createTerminatedRenderingRequest(CandidateSessionContext candidateSessionContext,
-    		AbstractRenderingOptions renderingOptions, QTI21Component component) {
+    private TerminatedRenderingRequest createTerminatedRenderingRequest(AbstractRenderingOptions renderingOptions,
+    		QTI21Component component) {
         final TerminatedRenderingRequest renderingRequest = new TerminatedRenderingRequest();
         initRenderingRequest(renderingRequest, renderingOptions, component);
-        //renderingRequest.setExitSessionUrl(candidateSessionContext.getReturnUrl());
         return renderingRequest;
     }
 	
-	private void renderTestEvent(final TestSessionController testSessionController,
-            final TestRenderingOptions renderingOptions, final StreamResult result, QTI21Component component) {
-        
-		
+	private void renderTestEvent(TestSessionController testSessionController, TestRenderingOptions renderingOptions,
+			StreamResult result, QTI21Component component) {
+
 		CandidateSessionContext candidateSessionContext = component.getCandidateSessionContext();
-		//final CandidateTestEventType testEventType = candidateEvent.getTestEventType();
 		CandidateEvent candidateEvent = candidateSessionContext.getLastEvent();
 		CandidateTestEventType testEventType = candidateEvent.getTestEventType();
-        final UserTestSession candidateSession = candidateSessionContext.getCandidateSession();//candidateEvent.getCandidateSession();
 
         /* Create and partially configure rendering request */
         final TestRenderingRequest renderingRequest = new TestRenderingRequest();
@@ -197,7 +191,7 @@ public class QTI21ComponentRenderer extends DefaultComponentRenderer {
         /* If session has terminated, render appropriate state and exit */
         final TestSessionState testSessionState = testSessionController.getTestSessionState();
         if (candidateSessionContext.isTerminated() || testSessionState.isExited()) {
-            assessmentRenderer.renderTeminated(createTerminatedRenderingRequest(candidateSessionContext, renderingRequest.getRenderingOptions(), component), result);
+            assessmentRenderer.renderTeminated(createTerminatedRenderingRequest(renderingRequest.getRenderingOptions(), component), result);
             return;
         }
 

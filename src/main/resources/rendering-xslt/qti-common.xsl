@@ -21,6 +21,7 @@ rendering.
   <!-- Web Application contextPath. Starts with a '/' -->
   <xsl:param name="webappContextPath" as="xs:string" required="yes"/>
   <xsl:param name="staticContextPath" as="xs:string" required="yes"/>
+  <xsl:param name="fullWebappContextPath" as="xs:string" required="yes"/>
 
   <!-- QTIWorks version number -->
   <xsl:param name="qtiWorksVersion" as="xs:string" required="yes"/>
@@ -63,7 +64,7 @@ rendering.
   <xsl:param name="overrideTemplate" select="false()" as="xs:boolean"/> <!-- enable all templates -->
 
   <!-- Codebase URL for engine-provided applets -->
-  <xsl:variable name="appletCodebase" select="concat($staticContextPath, '/rendering/applets')" as="xs:string"/>
+  <xsl:variable name="appletCodebase" select="concat($staticContextPath, 'assessment/rendering/applets')" as="xs:string"/>
 
   <!-- Optional URL for exiting session (NB: may be relative to context) -->
   <xsl:param name="exitSessionUrl" as="xs:string?" required="no"/>
@@ -88,6 +89,19 @@ rendering.
       <xsl:otherwise>
         <xsl:variable name="resolved" as="xs:string" select="string(resolve-uri($uri, $systemId))"/>
         <xsl:sequence select="concat($webappContextPath, $serveFileUrl, '?href=', encode-for-uri($resolved))"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:function>
+  
+  <xsl:function name="qw:convert-link-full" as="xs:string">
+    <xsl:param name="uri" as="xs:string"/>
+    <xsl:choose>
+      <xsl:when test="starts-with($uri, 'http:') or starts-with($uri, 'https:') or starts-with($uri, 'mailto:')">
+        <xsl:sequence select="$uri"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:variable name="resolved" as="xs:string" select="string(resolve-uri($uri, $systemId))"/>
+        <xsl:sequence select="concat($fullWebappContextPath, $serveFileUrl, '?href=', encode-for-uri($resolved))"/>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:function>

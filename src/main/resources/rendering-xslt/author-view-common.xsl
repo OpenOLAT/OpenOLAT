@@ -326,9 +326,9 @@ Common templates for item & test author views
             </xsl:call-template>
           </div>
           <script>
-            $(document).ready(function() {
-              $('a#qtiworks_id_toggle_debugMathsContent_<xsl:value-of select="@identifier"/>').click(function() {
-                $('#qtiworks_id_debugMathsContent_<xsl:value-of select="@identifier"/>').toggle();
+            jQuery(document).ready(function() {
+              jQuery('a#qtiworks_id_toggle_debugMathsContent_<xsl:value-of select="@identifier"/>').click(function() {
+                jQuery('#qtiworks_id_debugMathsContent_<xsl:value-of select="@identifier"/>').toggle();
               })
             });
           </script>

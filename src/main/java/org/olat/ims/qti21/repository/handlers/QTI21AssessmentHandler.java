@@ -39,6 +39,7 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.ims.qti21.ui.InMemoryOutcomesListener;
 import org.olat.ims.qti21.ui.QTI21DisplayController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -134,7 +135,8 @@ public class QTI21AssessmentHandler extends FileHandler {
 					@Override
 					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
 							RepositoryEntry entry, RepositoryEntrySecurity reSecurity, AssessmentMode mode) {
-						return new QTI21DisplayController(uureq, wwControl, entry);
+						InMemoryOutcomesListener listener = new InMemoryOutcomesListener();
+						return new QTI21DisplayController(uureq, wwControl, listener, entry);
 					}
 				});
 	}

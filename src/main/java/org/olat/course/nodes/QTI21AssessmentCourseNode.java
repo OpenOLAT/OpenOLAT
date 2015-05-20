@@ -68,9 +68,13 @@ public class QTI21AssessmentCourseNode extends AbstractAccessableCourseNode impl
 	
 	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "repoSoftkey";
 	public static final String CONFIG_KEY_ENABLESCOREINFO = "enableScoreInfo";
-	public static final String CONFIG_KEY_ATTEMPTS = "attempts";
 	public static final String CONFIG_KEY_BLOCK_AFTER_SUCCESS = "blockAfterSuccess";
 	public final static String CONFIG_FULLWINDOW = "fullwindow";
+	
+	public static final String CONFIG_KEY_MINSCORE = "minscore";
+	public static final String CONFIG_KEY_MAXSCORE = "maxscore";
+	public static final String CONFIG_KEY_CUTVALUE = "cutvalue";
+	public static final String CONFIG_KEY_ATTEMPTS = "attempts";
 	
 	
 	public static final String TYPE = "qti21assessment";

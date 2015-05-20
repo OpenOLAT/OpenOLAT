@@ -20,29 +20,29 @@
 package org.olat.ims.qti21.ui;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Path;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
-import org.olat.ims.qti21.QTI21ContentPackage;
+import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.UserTestSession;
-import org.olat.ims.qti21.manager.CandidateDataService;
-import org.olat.ims.qti21.manager.TestSessionDAO;
 import org.olat.ims.qti21.model.CandidateEvent;
 import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.CandidateTestEventType;
@@ -52,17 +52,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.JqtiPlus;
 import uk.ac.ed.ph.jqtiplus.exception.QtiCandidateStateException;
-import uk.ac.ed.ph.jqtiplus.node.AssessmentObjectType;
+import uk.ac.ed.ph.jqtiplus.node.result.AbstractResult;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
+import uk.ac.ed.ph.jqtiplus.node.result.ItemVariable;
+import uk.ac.ed.ph.jqtiplus.node.result.OutcomeVariable;
 import uk.ac.ed.ph.jqtiplus.node.test.SubmissionMode;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationLevel;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationRecorder;
 import uk.ac.ed.ph.jqtiplus.provision.BadResourceException;
-import uk.ac.ed.ph.jqtiplus.reading.AssessmentObjectXmlLoader;
 import uk.ac.ed.ph.jqtiplus.reading.QtiModelBuildingError;
 import uk.ac.ed.ph.jqtiplus.reading.QtiXmlInterpretationException;
-import uk.ac.ed.ph.jqtiplus.reading.QtiXmlReader;
-import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentObject;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.running.TestPlanner;
 import uk.ac.ed.ph.jqtiplus.running.TestProcessingInitializer;
@@ -76,6 +75,9 @@ import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.types.ResponseData;
 import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
+import uk.ac.ed.ph.jqtiplus.value.BooleanValue;
+import uk.ac.ed.ph.jqtiplus.value.NumberValue;
+import uk.ac.ed.ph.jqtiplus.value.Value;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 
 /**
@@ -84,63 +86,58 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21DisplayController extends FormBasicController implements CandidateSessionContext {
+public class QTI21DisplayController extends BasicController implements CandidateSessionContext {
 	
 	private final File fUnzippedDirRoot;
 	private final String mapperUri;
 	
-	private QTI21FormItem qtiEl;
+	private VelocityContainer mainVC;
+	private QtiWorksController qtiWorksCtrl;
 	private TestSessionController testSessionController;
-
-    private JqtiExtensionManager jqtiExtensionManager = new JqtiExtensionManager();
-	private CandidateSessionFinisher candidateSessionFinisher = new CandidateSessionFinisher();
 	
 	private CandidateEvent lastEvent;
 	private Date currentRequestTimestamp;
 	private UserTestSession candidateSession;
+	
+	private OutcomesListener outcomesListener;
+
 
 	@Autowired
-	private TestSessionDAO testSessionDao;
+	private QTI21Service qtiService;
 	@Autowired
-	private CandidateDataService candidateDataService;
+	private JqtiExtensionManager jqtiExtensionManager;
 	
-	public QTI21DisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
-		super(ureq, wControl, "run");
+	public QTI21DisplayController(UserRequest ureq, WindowControl wControl, OutcomesListener listener, RepositoryEntry entry) {
+		super(ureq, wControl);
+		
+		this.outcomesListener = listener;
 		
 		FileResourceManager frm = FileResourceManager.getInstance();
 		fUnzippedDirRoot = frm.unzipFileResource(entry.getOlatResource());
 		
 		currentRequestTimestamp = ureq.getRequestTimestamp();
-		candidateSession = testSessionDao.createTestSession(entry, null, getIdentity());
-		mapperUri = registerCacheableMapper(ureq, "QTI21Resources::" + entry.getKey(), new ResourcesMapper());
+		candidateSession = qtiService.createTestSession(entry, null, getIdentity());
+		mapperUri = registerCacheableMapper(null, "QTI21Resources::" + entry.getKey(), new ResourcesMapper());
 		
 		testSessionController = enterSession(ureq);
 
 		/* Handle immediate end of test session */
         if (testSessionController.getTestSessionState().isEnded()) {
         	AssessmentResult assessmentResult = null;
-            candidateSessionFinisher.finishCandidateSession(ureq, candidateSession, assessmentResult);
+            qtiService.finishTestSession(candidateSession, assessmentResult, ureq.getRequestTimestamp());
+        	mainVC = createVelocityContainer("end");
+        } else {
+        	mainVC = createVelocityContainer("run");
+        	initQtiWorks(ureq);
         }
-		initForm(ureq);
+        
+        putInitialPanel(mainVC);
 	}
 	
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		qtiEl = new QTI21FormItem("qtirun");
-		formLayout.add("qtirun", qtiEl);
-		
-		mainForm.setStandaloneRendering(true);
-		
-		ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
-		final ResourceLocator inputResourceLocator = 
-        		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
-		qtiEl.setResourceLocator(inputResourceLocator);
-		qtiEl.setTestSessionController(testSessionController);
-		qtiEl.setAssessmentObjectUri(createAssessmentObjectUri());
-		qtiEl.setCandidateSessionContext(this);
-		qtiEl.setMapperUri(mapperUri);
-		
-		mainForm.setMultipartEnabled(true, Integer.MAX_VALUE);
+	private void initQtiWorks(UserRequest ureq) {
+		qtiWorksCtrl = new QtiWorksController(ureq, getWindowControl());
+    	listenTo(qtiWorksCtrl);
+    	mainVC.put("qtirun", qtiWorksCtrl.getInitialComponent());
 	}
 	
 	@Override
@@ -173,65 +170,73 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
+	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == qtiEl) {
-			if(event instanceof QTIWorksEvent) {
-				QTIWorksEvent qe = (QTIWorksEvent)event;
-				processQTIEvent(ureq, qe);
-			}
-		}
-		super.formInnerEvent(ureq, source, event);
-	}
 	
+	private void doExitTest(UserRequest ureq) {
+		fireEvent(ureq, new QTI21Event(QTI21Event.EXIT));
+	}
+
 	private void processQTIEvent(UserRequest ureq, QTIWorksEvent qe) {
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		
 		switch(qe.getEvent()) {
 			case selectItem:
-				doSelectItem(ureq, qe.getSubCommand());
+				processSelectItem(ureq, qe.getSubCommand());
 				break;
 			case finishItem:
-				doFinish(ureq);
+				processFinish(ureq);
 				break;
 			case reviewItem:
-				doReviewItem(ureq, qe.getSubCommand());
+				processReviewItem(ureq, qe.getSubCommand());
 				break;
 			case itemSolution:
-				doItemSolution(qe.getSubCommand());
+				processItemSolution(qe.getSubCommand());
 				break;
 			case testPartNavigation:
-				doTestPartNavigation(ureq);
+				processTestPartNavigation(ureq);
 				break;
 			case response:
-				doResponse(ureq, qe.getStringResponseMap());
+				processResponse(ureq, qe.getStringResponseMap());
 				break;
 			case endTestPart:
-				doEndTestPart(ureq);
+				processEndTestPart(ureq);
 				break;
 			case advanceTestPart:
-				doAdvanceTestPart(ureq);
+				processAdvanceTestPart(ureq);
 				break;
 			case reviewTestPart:
-				doReviewTestPart();
+				processReviewTestPart();
 				break;
 			case exitTest:
-				doExitTest(ureq);
+				processExitTest(ureq);
+				break;
+			case source:
+				logError("QtiWorks event source not implemented", null);
+				break;
+			case state:
+				logError("QtiWorks event state not implemented", null);
+				break;
+			case result:
+				logError("QtiWorks event result not implemented", null);
+				break;
+			case validation:
+				logError("QtiWorks event validation not implemented", null);
+				break;
+			case authorview:
+				logError("QtiWorks event authorview not implemented", null);
 				break;
 		}
 	}
 	
-	private void doSelectItem(UserRequest ureq, String key) {
+	private void processSelectItem(UserRequest ureq, String key) {
 		TestPlanNodeKey nodeKey = TestPlanNodeKey.fromString(key);
 		Date requestTimestamp = ureq.getRequestTimestamp();
         testSessionController.selectItemNonlinear(requestTimestamp, nodeKey);
 	}
 	
-	private void doReviewItem(UserRequest ureq, String key) {
+	private void processReviewItem(UserRequest ureq, String key) {
 		TestPlanNodeKey itemKey = TestPlanNodeKey.fromString(key);
 		Date requestTimestamp = ureq.getRequestTimestamp();
 		
@@ -261,16 +266,16 @@ public class QTI21DisplayController extends FormBasicController implements Candi
         }
 
         /* Record current result state */
-        candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
+        computeAndRecordTestAssessmentResult(candidateSession, testSessionController, false);
 
         /* Record and log event */
-        final CandidateEvent candidateTestEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
+        final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession,
                 CandidateTestEventType.REVIEW_ITEM, null, itemKey, testSessionState, notificationRecorder);
         this.lastEvent = candidateTestEvent;
         //candidateAuditLogger.logCandidateEvent(candidateTestEvent);
 	}
 
-	private void doItemSolution(String key) {
+	private void processItemSolution(String key) {
 		TestPlanNodeKey itemKey = TestPlanNodeKey.fromString(key);
 
         /* Get current JQTI state and create JQTI controller */
@@ -298,10 +303,10 @@ public class QTI21DisplayController extends FormBasicController implements Candi
         }
 
         /* Record current result state */
-        candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
+        computeAndRecordTestAssessmentResult(candidateSession, testSessionController, false);
 
         /* Record and log event */
-        CandidateEvent candidateTestEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
+        CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession,
                 CandidateTestEventType.SOLUTION_ITEM, null, itemKey, testSessionState, notificationRecorder);
         this.lastEvent = candidateTestEvent;
         //candidateAuditLogger.logCandidateEvent(candidateTestEvent); 
@@ -309,7 +314,7 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 	
 	//public CandidateSession finishLinearItem(final CandidateSessionContext candidateSessionContext)
     // throws CandidateException {
-	private void doFinish(UserRequest ureq) {
+	private void processFinish(UserRequest ureq) {
 		
         /* Get current JQTI state and create JQTI controller */
         final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
@@ -333,23 +338,25 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 		// Update state
 		final Date requestTimestamp = ureq.getRequestTimestamp();
 	    final TestPlanNode nextItemNode = testSessionController.advanceItemLinear(requestTimestamp);
+	    
+	    boolean terminated = nextItemNode == null && testSessionController.findNextEnterableTestPart() == null; 
 
 	    // Record current result state
-	    final AssessmentResult assessmentResult = candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
+	    final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(candidateSession, testSessionController, terminated);
 
 	    /* If we ended the testPart and there are now no more available testParts, then finish the session now */
 	    if (nextItemNode==null && testSessionController.findNextEnterableTestPart()==null) {
-	    	candidateSession = candidateSessionFinisher.finishCandidateSession(ureq, candidateSession, assessmentResult);
+	    	candidateSession = qtiService.finishTestSession(candidateSession, assessmentResult, requestTimestamp);
 	    }
 
 	    // Record and log event 
 	    final CandidateTestEventType eventType = nextItemNode!=null ? CandidateTestEventType.FINISH_ITEM : CandidateTestEventType.FINISH_FINAL_ITEM;
-	   	final CandidateEvent candidateTestEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
+	   	final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession,
 	                eventType, null, testSessionState, notificationRecorder);
 	   	this.lastEvent = candidateTestEvent;
 	}
 	
-	private void doTestPartNavigation(UserRequest ureq) {
+	private void processTestPartNavigation(UserRequest ureq) {
 		final Date requestTimestamp = ureq.getRequestTimestamp();
         testSessionController.selectItemNonlinear(requestTimestamp, null);
 	}
@@ -359,7 +366,7 @@ public class QTI21DisplayController extends FormBasicController implements Candi
     //        final Map<Identifier, MultipartFile> fileResponseMap,
     //        final String candidateComment)
             
-	private void doResponse(UserRequest ureq, Map<Identifier, StringResponseData> stringResponseMap) {
+	private void processResponse(UserRequest ureq, Map<Identifier, StringResponseData> stringResponseMap) {
 		String candidateComment = null;
 		
 		//Assert.notNull(candidateSessionContext, "candidateSessionContext");
@@ -406,7 +413,7 @@ public class QTI21DisplayController extends FormBasicController implements Candi
         }
 
         /* Record resulting event */
-        final CandidateEvent candidateEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
+        final CandidateEvent candidateEvent = qtiService.recordCandidateTestEvent(candidateSession,
                 CandidateTestEventType.ITEM_EVENT, candidateItemEventType, testSessionState, notificationRecorder);
         //candidateAuditLogger.logCandidateEvent(candidateEvent);
         this.lastEvent = candidateEvent;
@@ -419,20 +426,20 @@ public class QTI21DisplayController extends FormBasicController implements Candi
         
         
         /* Record current result state */
-        candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
+        computeAndRecordTestAssessmentResult(candidateSession, testSessionController, false);
 
         /* Save any change to session state */
-        candidateSession = testSessionDao.update(candidateSession);
+        candidateSession = qtiService.updateTestSession(candidateSession);
 	}
 
 	//public CandidateSession endCurrentTestPart(final CandidateSessionContext candidateSessionContext)
-	private void doEndTestPart(UserRequest ureq) {
+	private void processEndTestPart(UserRequest ureq) {
 		 /* Update state */
         final Date requestTimestamp = ureq.getRequestTimestamp();
         testSessionController.endCurrentTestPart(requestTimestamp);
 	}
 	
-	private void doAdvanceTestPart(UserRequest ureq) {
+	private void processAdvanceTestPart(UserRequest ureq) {
 		
 		//final CandidateSessionContext candidateSessionContext = getCandidateSessionContext();
 		
@@ -469,39 +476,30 @@ public class QTI21DisplayController extends FormBasicController implements Candi
                 eventType = CandidateTestEventType.EXIT_TEST;
                 testSessionController.exitTest(currentTimestamp);
                 candidateSession.setTerminationTime(currentTimestamp);
-                candidateSession = testSessionDao.update(candidateSession);
+                candidateSession = qtiService.updateTestSession(candidateSession);
             }
             else {
                 eventType = CandidateTestEventType.ADVANCE_TEST_PART;
             }
         }
+        
+        boolean terminated = isTerminated();
 
         /* Record current result state */
-        candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
+        computeAndRecordTestAssessmentResult(candidateSession, testSessionController, terminated);
 
         /* Record and log event */
-        final CandidateEvent candidateTestEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
+        final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession,
                eventType, testSessionState, notificationRecorder);
         //candidateAuditLogger.logCandidateEvent(candidateTestEvent);
         this.lastEvent = candidateTestEvent;
 
-		
-		/*
-        String redirect;
-        if (candidateSession.isTerminated()) {
-            // We exited the test
-            //TODO fire event eXIT
-            redirect = redirectToExitUrl(candidateSessionContext, xsrfToken);
+        if (terminated) {
+        	doExitTest(ureq);
         }
-        else {
-            // Moved onto next part
-            redirect = redirectToRenderSession(xid, xsrfToken);
-        }
-        */
-		
 	}
 	
-	private void doReviewTestPart() {
+	private void processReviewTestPart() {
 		
         /* Get current JQTI state and create JQTI controller */
         final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
@@ -519,7 +517,7 @@ public class QTI21DisplayController extends FormBasicController implements Candi
         }
 
         /* Record and log event */
-        final CandidateEvent candidateTestEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
+        final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession,
                 CandidateTestEventType.REVIEW_TEST_PART, null, null, testSessionState, notificationRecorder);
         //candidateAuditLogger.logCandidateEvent(candidateTestEvent);
         this.lastEvent = candidateTestEvent;
@@ -528,7 +526,7 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 	/**
 	 * Exit multi-part tests
 	 */
-	private void doExitTest(UserRequest ureq) {
+	private void processExitTest(UserRequest ureq) {
 
         /* Get current JQTI state and create JQTI controller */
         final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
@@ -551,17 +549,18 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 
         /* Update CandidateSession as appropriate */
         candidateSession.setTerminationTime(currentTimestamp);
-        candidateSession = testSessionDao.update(candidateSession);
+        candidateSession = qtiService.updateTestSession(candidateSession);
 
         /* Record current result state (final) */
-        candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
+        computeAndRecordTestAssessmentResult(candidateSession, testSessionController, true);
 
         /* Record and log event */
-        final CandidateEvent candidateTestEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
+        final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession,
                 CandidateTestEventType.EXIT_TEST, testSessionState, notificationRecorder);
         //candidateAuditLogger.logCandidateEvent(candidateTestEvent);
         this.lastEvent = candidateTestEvent;
-		
+        
+        doExitTest(ureq);
 	}
 	
 	//private CandidateSession enterCandidateSession(final CandidateSession candidateSession)
@@ -571,7 +570,7 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 
         /* Create fresh JQTI+ state & controller for it */
         TestSessionController testSessionController = createNewTestSessionStateAndController(notificationRecorder);
-        if (testSessionController==null) {
+        if (testSessionController == null) {
             return null;
         }
         
@@ -600,17 +599,19 @@ public class QTI21DisplayController extends FormBasicController implements Candi
         }
         
         /* Record and log event */
-        final CandidateEvent candidateEvent = candidateDataService.recordCandidateTestEvent(candidateSession,
+        final CandidateEvent candidateEvent = qtiService.recordCandidateTestEvent(candidateSession,
                 CandidateTestEventType.ENTER_TEST, testSessionState, notificationRecorder);
         //candidateAuditLogger.logCandidateEvent(candidateEvent);
         this.lastEvent = candidateEvent;
+        
+        boolean ended = testSessionState.isEnded();
 
         /* Record current result state */
-        final AssessmentResult assessmentResult = candidateDataService.computeAndRecordTestAssessmentResult(candidateSession, testSessionController);
+        final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(candidateSession, testSessionController, ended);
 
         /* Handle immediate end of test session */
-        if (testSessionState.isEnded()) {
-            candidateSessionFinisher.finishCandidateSession(ureq, candidateSession, assessmentResult);
+        if (ended) {
+            qtiService.finishTestSession(candidateSession, assessmentResult, timestamp);
         }
         
         return testSessionController;
@@ -639,10 +640,58 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 		return result;
 	}
 	
+	private AssessmentResult computeAndRecordTestAssessmentResult(UserTestSession candidateSession,
+			TestSessionController testSessionController, boolean submit) {
+		AssessmentResult assessmentResult = computeTestAssessmentResult(candidateSession, testSessionController);
+		qtiService.recordTestAssessmentResult(candidateSession, assessmentResult);
+		processOutcomeVariables(assessmentResult.getTestResult(), submit);
+		return assessmentResult;
+	}
+	
+	private void processOutcomeVariables(AbstractResult resultNode, boolean submit) {
+		Float score = null;
+		Boolean pass = null;
+		
+        for (final ItemVariable itemVariable : resultNode.getItemVariables()) {
+            if (itemVariable instanceof OutcomeVariable) {
+            	OutcomeVariable outcomeVariable = (OutcomeVariable)itemVariable;
+            	Identifier identifier = outcomeVariable.getIdentifier();
+            	if(QTI21Constants.SCORE_IDENTIFIER.equals(identifier)) {
+            		Value value = itemVariable.getComputedValue();
+            		if(value instanceof NumberValue) {
+            			score = (float) ((NumberValue)value).doubleValue();
+            		}
+            	} else if(QTI21Constants.PASS_IDENTIFIER.equals(identifier)) {
+            		Value value = itemVariable.getComputedValue();
+            		if(value instanceof BooleanValue) {
+            			pass = ((BooleanValue)value).booleanValue();
+            		}
+            	}
+            }
+        }
+        
+        if(score != null) {
+        	if(submit) {
+        		outcomesListener.updateOutcomes(score, pass);
+        	} else {
+        		outcomesListener.submit(score, pass);
+        	}
+        }
+    }
+	
+    private AssessmentResult computeTestAssessmentResult(final UserTestSession candidateSession, final TestSessionController testSessionController) {
+    	String baseUrl = "http://localhost:8080/olat";
+        final URI sessionIdentifierSourceId = URI.create(baseUrl);
+        final String sessionIdentifier = "testsession/" + candidateSession.getKey();
+        
+        Date timestamp = new Date();//requestTimestampContext.getCurrentRequestTimestamp();
+        return testSessionController.computeAssessmentResult(timestamp, sessionIdentifier, sessionIdentifierSourceId);
+    }
+	
 	private TestProcessingMap getTestProcessingMap() {
 		boolean assessmentPackageIsValid = true;
 
-		final ResolvedAssessmentTest resolvedAssessmentTest = loadAndResolveAssessmentObject();
+		final ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentObject(fUnzippedDirRoot);
 		BadResourceException ex = resolvedAssessmentTest.getTestLookup().getBadResourceException();
 		if(ex instanceof QtiXmlInterpretationException) {
 			QtiXmlInterpretationException exml = (QtiXmlInterpretationException)ex;
@@ -655,41 +704,6 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 		TestProcessingInitializer initializer = new TestProcessingInitializer(resolvedAssessmentTest, assessmentPackageIsValid);
 		TestProcessingMap result = initializer.initialize();
 		return result;
-	}
-	
-	public <E extends ResolvedAssessmentObject<?>> E loadAndResolveAssessmentObject() {
-		
-		QtiXmlReader qtiXmlReader = new QtiXmlReader(jqtiExtensionManager);
-        
-		ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
-		final ResourceLocator inputResourceLocator = 
-        		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
-        final URI assessmentObjectSystemId = createAssessmentObjectUri();
-        final AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, inputResourceLocator);
-        final AssessmentObjectType assessmentObjectType = AssessmentObjectType.ASSESSMENT_TEST;
-        E result;
-        if (assessmentObjectType==AssessmentObjectType.ASSESSMENT_ITEM) {
-            result = (E) assessmentObjectXmlLoader.loadAndResolveAssessmentItem(assessmentObjectSystemId);
-        }
-        else if (assessmentObjectType==AssessmentObjectType.ASSESSMENT_TEST) {
-            result = (E) assessmentObjectXmlLoader.loadAndResolveAssessmentTest(assessmentObjectSystemId);
-        }
-        else {
-            throw new OLATRuntimeException("Unexpected branch " + assessmentObjectType, null);
-        }
-        return result;
-    }
-	
-	public URI createAssessmentObjectUri() {
-		File manifestPath = new File(fUnzippedDirRoot, "imsmanifest.xml");
-		QTI21ContentPackage	cp = new QTI21ContentPackage(manifestPath.toPath());
-		try {
-			Path testPath = cp.getTest();
-			return testPath.toUri();
-		} catch (IOException e) {
-			logError("", e);
-		}
-		return null;
 	}
 	
 	/**
@@ -706,21 +720,59 @@ public class QTI21DisplayController extends FormBasicController implements Candi
 		return requestedLimitIntValue > 0 ? requestedLimitIntValue : JqtiPlus.DEFAULT_TEMPLATE_PROCESSING_LIMIT;
 	}
 	
-	private class CandidateSessionFinisher {
+	/**
+	 * QtiWorks manage the form tag itself.
+	 * 
+	 * Initial date: 20.05.2015<br>
+	 * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+	 *
+	 */
+	private class QtiWorksController extends FormBasicController {
 		
+		private QTI21FormItem qtiEl;
+		
+		public QtiWorksController(UserRequest ureq, WindowControl wControl) {
+			super(ureq, wControl, LAYOUT_BAREBONE);
+			initForm(ureq);
+		}
 
-	    public UserTestSession finishCandidateSession(UserRequest ureq, UserTestSession candidateSession, AssessmentResult assessmentResult) {
-	        /* Mark session as finished */
-	        candidateSession.setFinishTime(ureq.getRequestTimestamp());
+		@Override
+		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+			mainForm.setStandaloneRendering(true);
+			mainForm.setMultipartEnabled(true, Integer.MAX_VALUE);
+			
+			qtiEl = new QTI21FormItem("qtirun");
+			formLayout.add("qtirun", qtiEl);
 
-	        /* Also nullify LIS result info for session. These will be updated later, if pre-conditions match for sending the result back */
-	        //candidateSession.setLisOutcomeReportingStatus(null);
-	        //candidateSession.setLisScore(null);
-	        candidateSession = testSessionDao.update(candidateSession);
+			ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
+			final ResourceLocator inputResourceLocator = 
+	        		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
+			qtiEl.setResourceLocator(inputResourceLocator);
+			qtiEl.setTestSessionController(testSessionController);
+			qtiEl.setAssessmentObjectUri(qtiService.createAssessmentObjectUri(fUnzippedDirRoot));
+			qtiEl.setCandidateSessionContext(QTI21DisplayController.this);
+			qtiEl.setMapperUri(mapperUri);
+		}
+		
+		@Override
+		protected void doDispose() {
+			//
+		}
 
-	        /* Finally schedule LTI result return (if appropriate and sane) */
-	        //maybeScheduleLtiOutcomes(candidateSession, assessmentResult);
-	        return candidateSession;
-	    }
+		@Override
+		protected void formOK(UserRequest ureq) {
+			//
+		}
+
+		@Override
+		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+			if(source == qtiEl) {
+				if(event instanceof QTIWorksEvent) {
+					QTIWorksEvent qe = (QTIWorksEvent)event;
+					processQTIEvent(ureq, qe);
+				}
+			}
+			super.formInnerEvent(ureq, source, event);
+		}
 	}
 }

@@ -27,7 +27,7 @@ var QtiWorksRendering = (function() {
     };
 
     var queryInputElements = function(responseIdentifier) {
-        return $('input[name=qtiworks_response_' + responseIdentifier + ']');
+        return jQuery('input[name=qtiworks_response_' + responseIdentifier + ']');
     };
 
     /************************************************************/
@@ -35,9 +35,9 @@ var QtiWorksRendering = (function() {
 
     var SliderInteraction = function(responseIdentifier, configData) {
         this.responseIdentifier = responseIdentifier;
-        this.sliderQuery = $('#qtiworks_id_slider_' + responseIdentifier);
-        this.feedbackQuery = $('#qtiworks_id_slidervalue_' + responseIdentifier);
-        this.inputElementQuery = $('input[name="qtiworks_response_' + responseIdentifier + '"]');
+        this.sliderQuery = jQuery('#qtiworks_id_slider_' + responseIdentifier);
+        this.feedbackQuery = jQuery('#qtiworks_id_slidervalue_' + responseIdentifier);
+        this.inputElementQuery = jQuery('input[name="qtiworks_response_' + responseIdentifier + '"]');
         this.min = configData.min;
         this.max = configData.max;
         this.step = configData.step;
@@ -220,7 +220,7 @@ var QtiWorksRendering = (function() {
         var interaction = this;
 
         for(var key in gapChoiceData){
-            var query = $('#qtiworks_id_' + this.responseIdentifier + '_' + key);
+            var query = jQuery('#qtiworks_id_' + this.responseIdentifier + '_' + key);
             this.gapChoiceMap[key] = {
                 matchMax: gapChoiceData[key],
                 matchCount: 0,
@@ -229,7 +229,7 @@ var QtiWorksRendering = (function() {
             };
         }
         for(var key in gapData){
-            var query = $('#qtiworks_id_' + this.responseIdentifier + '_' + key);
+            var query = jQuery('#qtiworks_id_' + this.responseIdentifier + '_' + key);
             this.gapMap[key] = {
                 required: gapData[key], /* NB: This is not currently used in the JS */
                 matched: false,
@@ -357,11 +357,11 @@ var QtiWorksRendering = (function() {
         this.initialTargetOrder = initialTargetOrder;
         this.minChoices = minChoices;
         this.maxChoices = maxChoices;
-        this.containerQuery = $('#qtiworks_response_' + responseIdentifier);
-        this.targetBox = $('#qtiworks_response_' + responseIdentifier + ' div.target');
-        this.sourceList = $('#qtiworks_response_' + responseIdentifier + ' div.source ul');
-        this.targetList = $('#qtiworks_response_' + responseIdentifier + ' div.target ul');
-        this.hiddenInputContainer = $('#qtiworks_response_' + responseIdentifier + ' div.hiddenInputContainer');
+        this.containerQuery = jQuery('#qtiworks_response_' + responseIdentifier);
+        this.targetBox = jQuery('#qtiworks_response_' + responseIdentifier + ' div.target');
+        this.sourceList = jQuery('#qtiworks_response_' + responseIdentifier + ' div.source ul');
+        this.targetList = jQuery('#qtiworks_response_' + responseIdentifier + ' div.target ul');
+        this.hiddenInputContainer = jQuery('#qtiworks_response_' + responseIdentifier + ' div.hiddenInputContainer');
         var interaction = this;
 
         this.reset = function() {
@@ -396,7 +396,7 @@ var QtiWorksRendering = (function() {
             interaction.hiddenInputContainer.empty();
             interaction.targetList.children('li').each(function(index) {
                 var choiceId = this.id.substring('qtiworks_response_'.length); // Trim leading 'qtiworks_response_'
-                var inputElement = $('<input type="hidden">');
+                var inputElement = jQuery('<input type="hidden">');
                 inputElement.attr('name', 'qtiworks_response_' + interaction.responseIdentifier);
                 inputElement.attr('value', choiceId);
                 interaction.hiddenInputContainer.append(inputElement);
@@ -457,7 +457,7 @@ var QtiWorksRendering = (function() {
 
     var AppletBasedInteractionContainer = function(containerId, responseIdentifiers) {
         this.responseIdentifiers = responseIdentifiers;
-        this.divContainerQuery = $('#' + containerId);
+        this.divContainerQuery = jQuery('#' + containerId);
         this.appletQuery = this.divContainerQuery.find('object[type="application/x-java-applet"]');
         var interaction = this;
 
@@ -496,7 +496,7 @@ var QtiWorksRendering = (function() {
         this.setResponseData = function(responseIdentifier, values) {
             this.divContainerQuery.find('input').remove();
             for (var i in values) {
-                var inputElement = $('<input type="hidden">');
+                var inputElement = jQuery('<input type="hidden">');
                 inputElement.attr('name', 'qtiworks_response_' + responseIdentifier);
                 inputElement.attr('value', values[i]);
                 this.divContainerQuery.append(inputElement);
@@ -523,12 +523,13 @@ var QtiWorksRendering = (function() {
             if(submitCallbacks.length > 0) {
 	            for (var i in submitCallbacks) {
 	                allowSubmit = submitCallbacks[i]();
+	                console.log(allowSubmit, submitCallbacks[i]);
 	                if (!allowSubmit) {
 	                    break;
 	                }
 	            }
             }
-            return allowSubmit;
+            return true;
         },
 
         reset: function() {
@@ -538,7 +539,7 @@ var QtiWorksRendering = (function() {
         },
 
         showInfoControlContent: function(inputElement) {
-            $(inputElement).next('div').show();
+            jQuery(inputElement).next('div').show();
             inputElement.disabled = true;
             return false;
         },
@@ -564,7 +565,7 @@ var QtiWorksRendering = (function() {
         },
 
         registerReadyCallback: function(callback) {
-            $(document).ready(function() {
+            jQuery(document).ready(function() {
                 if (typeof(MathJax) !== "undefined") {
                     MathJax.Hub.Queue(callback);
                 }
@@ -601,23 +602,23 @@ var QtiWorksRendering = (function() {
             }
             if (errorMessage.length!=0) {
                 alert(errorMessage);
-                $(obj).addClass("badResponse");
+                jQuery(obj).addClass("badResponse");
                 return false;
             }
             else {
-                $(obj).removeClass("badResponse");
+                jQuery(obj).removeClass("badResponse");
                 return true;
             }
         },
 
         /* Used for <extendedTextInteraction/> */
         addNewTextBox: function(inputElement) {
-            var input = $(inputElement);
+            var input = jQuery(inputElement);
             var newInput = input.clone(true);
             input.removeAttr('onkeyup');
             newInput.attr('value', '');
 
-            var br = $("<br>");
+            var br = jQuery("<br>");
             input.after(br);
             br.after(newInput);
         }

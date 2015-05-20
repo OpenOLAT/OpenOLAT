@@ -31,7 +31,7 @@
           <param name="operation_mode" value="graphic_associate_interaction"/>
           <!-- (BoundedGraphicalApplet uses -1 to represent 'unlimited') -->
           <param name="number_of_responses" value="{if (@maxAssociations &gt; 0) then @maxAssocations else -1}"/>
-          <param name="background_image" value="{qw:convert-link($object/@data)}"/>
+          <param name="background_image" value="{qw:convert-link-full($object/@data)}"/>
           <xsl:variable name="hotspots" select="qw:filter-visible(qti:associableHotspot)" as="element(qti:associableHotspot)*"/>
           <param name="hotspot_count" value="{count($hotspots)}"/>
           <xsl:for-each select="$hotspots">
@@ -49,7 +49,7 @@
           </xsl:if>
         </object>
         <script type="text/javascript">
-          $(document).ready(function() {
+          jQuery(document).ready(function() {
             QtiWorksRendering.registerAppletBasedInteractionContainer('<xsl:value-of
               select="$appletContainerId"/>', ['<xsl:value-of select="@responseIdentifier"/>']);
           });

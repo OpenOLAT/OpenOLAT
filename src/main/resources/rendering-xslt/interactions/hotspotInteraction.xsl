@@ -22,7 +22,7 @@
 
       <xsl:variable name="object" select="qti:object" as="element(qti:object)"/>
       <xsl:variable name="appletContainerId" select="concat('qtiworks_id_appletContainer_', @responseIdentifier)" as="xs:string"/>
-      <div id="{$appletContainerId}" class="appletContainer">
+      <div id="{$appletContainerId}" class="appletContainer v2">
         <object type="application/x-java-applet" height="{$object/@height + 40}" width="{$object/@width}">
           <param name="code" value="BoundedGraphicalApplet"/>
           <param name="codebase" value="{$appletCodebase}"/>
@@ -30,7 +30,7 @@
           <param name="operation_mode" value="hotspot_interaction"/>
           <!-- (BoundedGraphicalApplet uses -1 to represent 'unlimited') -->
           <param name="number_of_responses" value="{if (@maxChoices &gt; 0) then @maxChoices else -1}"/>
-          <param name="background_image" value="{qw:convert-link($object/@data)}"/>
+          <param name="background_image" value="{qw:convert-link-full($object/@data)}"/>
           <xsl:variable name="hotspotChoices" select="qw:filter-visible(qti:hotspotChoice)" as="element(qti:hotspotChoice)*"/>
           <param name="hotspot_count" value="{count($hotspotChoices)}"/>
           <xsl:for-each select="qti:hotspotChoice">
@@ -48,7 +48,7 @@
           </xsl:if>
         </object>
         <script type="text/javascript">
-          $(document).ready(function() {
+          jQuery(document).ready(function() {
             QtiWorksRendering.registerAppletBasedInteractionContainer('<xsl:value-of
               select="$appletContainerId"/>', ['<xsl:value-of select="@responseIdentifier"/>']);
           });

@@ -30,7 +30,7 @@
           <param name="object_type" value="TEXT"/>
           <param name="operation_mode" value="graphic_order_interaction"/>
           <param name="number_of_responses" value="{count(qti:hotspotChoice)}"/>
-          <param name="background_image" value="{qw:convert-link($object/@data)}"/>
+          <param name="background_image" value="{qw:convert-link-full($object/@data)}"/>
           <xsl:variable name="hotspotChoices" select="qw:filter-visible(qti:hotspotChoice)" as="element(qti:hotspotChoice)*"/>
           <param name="hotspot_count" value="{count($hotspotChoices)}"/>
           <xsl:for-each select="$hotspotChoices">
@@ -52,7 +52,7 @@
           </xsl:if>
         </object>
         <script type="text/javascript">
-          $(document).ready(function() {
+          jQuery(document).ready(function() {
             QtiWorksRendering.registerAppletBasedInteractionContainer('<xsl:value-of
               select="$appletContainerId"/>', ['<xsl:value-of select="@responseIdentifier"/>']);
           });

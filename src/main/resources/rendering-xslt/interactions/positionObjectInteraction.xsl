@@ -32,7 +32,7 @@
           <param name="code" value="rhotspotV2"/>
           <param name="codebase" value="{$appletCodebase}"/>
           <param name="NoOfMainImages" value="1"/>
-          <param name="background_image" value="{qw:convert-link($object/@data)}"/>
+          <param name="background_image" value="{qw:convert-link-full($object/@data)}"/>
           <param name="Mainimageno1" value="{qw:convert-link($object/@data)}::0::0::{$object/@width}::{$object/@height}"/>
           <param name="baseType" value="point"/>
           <param name="noOfTargets" value="0"/>
@@ -69,7 +69,7 @@
           <param name="markerType" value="LABELS"/>
         </object>
         <script type="text/javascript">
-          $(document).ready(function() {
+          jQuery(document).ready(function() {
             QtiWorksRendering.registerAppletBasedInteractionContainer('<xsl:value-of
               select="$appletContainerId"/>', [<xsl:value-of
               select="qw:to-javascript-arguments(for $i in qti:positionObjectInteraction return $i/@responseIdentifier)"/>]);

@@ -50,7 +50,7 @@
           </xsl:if>
         </object>
         <script type="text/javascript">
-          $(document).ready(function() {
+          jQuery(document).ready(function() {
             QtiWorksRendering.registerAppletBasedInteractionContainer('<xsl:value-of
               select="$appletContainerId"/>', ['<xsl:value-of select="@responseIdentifier"/>']);
           });

@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.qti21;
 
+import java.io.File;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -34,12 +36,25 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.QTI21AssessmentCourseNode;
+import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
+import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.ui.InMemoryOutcomesListener;
 import org.olat.ims.qti21.ui.QTI21DisplayController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.resource.OLATResource;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import uk.ac.ed.ph.jqtiplus.node.outcome.declaration.OutcomeDeclaration;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
+import uk.ac.ed.ph.jqtiplus.value.NumberValue;
+import uk.ac.ed.ph.jqtiplus.value.Value;
 
 /**
  * 
@@ -60,6 +75,9 @@ public class QTI21ReferenceConfigurationController extends BasicController {
 	
 	private QTI21AssessmentCourseNode courseNode;
 	private final ModuleConfiguration config;
+	
+	@Autowired
+	private QTI21Service qtiService;
 	
 	public QTI21ReferenceConfigurationController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			QTI21AssessmentCourseNode courseNode) {
@@ -92,6 +110,7 @@ public class QTI21ReferenceConfigurationController extends BasicController {
 				previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayname, Link.NONTRANSLATED, mainVC, this);
 				previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 				previewLink.setTitle(getTranslator().translate("command.preview"));
+				updateModuleConfigFromQTIFile(re.getOlatResource());
 			}
 		} else {
 			// no valid config yet
@@ -132,7 +151,8 @@ public class QTI21ReferenceConfigurationController extends BasicController {
 				showError("error.entry.missing");
 			} else {
 				removeAsListenerAndDispose(previewCtr);
-				previewCtr = new QTI21DisplayController(ureq, getWindowControl(), re);
+				InMemoryOutcomesListener listener = new InMemoryOutcomesListener();
+				previewCtr = new QTI21DisplayController(ureq, getWindowControl(), listener, re);
 				stackPanel.pushController(translate("preview"), previewCtr);
 			}
 		} else if (source == editLink) {
@@ -150,6 +170,7 @@ public class QTI21ReferenceConfigurationController extends BasicController {
 				RepositoryEntry re = searchController.getSelectedEntry();
 				if (re != null) {
 					config.setStringValue(QTI21AssessmentCourseNode.CONFIG_KEY_REPOSITORY_SOFTKEY, re.getSoftkey());
+					updateModuleConfigFromQTIFile(re.getOlatResource());
 					mainVC.contextPut("showPreviewButton", Boolean.TRUE);
 					
 					String displayname = StringHelper.escapeHtml(re.getDisplayname());
@@ -169,5 +190,36 @@ public class QTI21ReferenceConfigurationController extends BasicController {
 				}
 			}
 		}
+	}
+
+	private void updateModuleConfigFromQTIFile(OLATResource res) {
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File fUnzippedDirRoot = frm.unzipFileResource(res);
+		
+		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentObject(fUnzippedDirRoot);
+		AssessmentTest test = resolvedAssessmentTest.getTestLookup().getRootNodeHolder().getRootNode();
+
+		Float minValue = null, maxValue = null, cutValue = null;
+		for (OutcomeDeclaration declaration : test.getOutcomeDeclarations()) {
+			if(QTI21Constants.SCORE_IDENTIFIER.equals(declaration.getIdentifier())) {
+				minValue = extractValue(declaration);
+			} else if(QTI21Constants.MAXSCORE_IDENTIFIER.equals(declaration.getIdentifier())) {
+				maxValue = extractValue(declaration);
+			}
+        }
+	
+		// Put values to module configuration
+		config.set(MSCourseNode.CONFIG_KEY_SCORE_MIN, minValue);
+		config.set(MSCourseNode.CONFIG_KEY_SCORE_MAX, maxValue);
+		config.set(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, cutValue);
+	}
+	
+	private Float extractValue(OutcomeDeclaration declaration) {
+		Float floatValue = null;
+		Value value = declaration.getDefaultValue().evaluate();
+		if(value instanceof NumberValue) {
+			floatValue = (float)((NumberValue)value).doubleValue();
+		}
+		return floatValue;
 	}
 }

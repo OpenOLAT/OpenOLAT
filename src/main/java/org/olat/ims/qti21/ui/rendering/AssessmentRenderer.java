@@ -53,6 +53,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.helpers.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -447,11 +448,11 @@ public class AssessmentRenderer {
 
     private void setBaseRenderingParameters(final Map<String, Object> xsltParameters) {
         xsltParameters.put("qtiWorksVersion", "1.0-SNAPSH0T-OO");
-        xsltParameters.put("webappContextPath", "");// WebappHelper.getServletContextPath());
-        
+        xsltParameters.put("webappContextPath", "");
+        xsltParameters.put("fullWebappContextPath", Settings.createServerURI());
         StringOutput target = new StringOutput();
         StaticMediaDispatcher.renderStaticURI(target, "", true);
-        xsltParameters.put("staticContextPath", target.toString());// WebappHelper.getServletContextPath());
+        xsltParameters.put("staticContextPath", target.toString());
     }
 
     //----------------------------------------------------

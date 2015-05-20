@@ -49,14 +49,15 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.AssessableCourseNode;
-import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.QTI21AssessmentCourseNode;
 import org.olat.course.nodes.iq.AssessmentEvent;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti.process.AssessmentInstance;
+import org.olat.ims.qti21.ui.OutcomesListener;
 import org.olat.ims.qti21.ui.QTI21DisplayController;
+import org.olat.ims.qti21.ui.QTI21Event;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
@@ -68,7 +69,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21AssessmentRunController extends BasicController implements GenericEventListener {
+public class QTI21AssessmentRunController extends BasicController implements GenericEventListener, OutcomesListener {
 	
 	private static final OLATResourceable assessmentEventOres = OresHelper.createOLATResourceableType(AssessmentEvent.class);
 	private static final OLATResourceable assessmentInstanceOres = OresHelper.createOLATResourceableType(AssessmentInstance.class);
@@ -78,11 +79,11 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private final VelocityContainer mainVC;
 	
 	private boolean assessmentStopped = true;
-	private final CourseNode courseNode;
 	private EventBus singleUserEventCenter;
 	private final UserSession userSession;
 	private final ModuleConfiguration config;
 	private final UserCourseEnvironment userCourseEnv;
+	private final QTI21AssessmentCourseNode courseNode;
 	
 	private QTI21DisplayController displayCtrl;
 	private LayoutMain3ColsController displayContainerController;
@@ -211,7 +212,13 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == displayCtrl) {
-			//do something
+			if(event instanceof QTI21Event) {
+				QTI21Event qe = (QTI21Event)event;
+				if(QTI21Event.EXIT.equals(qe.getCommand())) {
+					doExitAssessment(ureq, event);
+					exposeResults(ureq);
+				}
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -224,7 +231,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		
 		RepositoryEntry assessmentEntry = courseNode.getReferencedRepositoryEntry();
-		displayCtrl = new QTI21DisplayController(ureq, bwControl, assessmentEntry);
+		displayCtrl = new QTI21DisplayController(ureq, bwControl, this, assessmentEntry);
 		listenTo(displayCtrl);
 		if(displayCtrl.isTerminated()) {
 			//do nothing
@@ -256,5 +263,37 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			singleUserEventCenter.registerFor(this, getIdentity(), assessmentInstanceOres);
 			singleUserEventCenter.fireEventToListenersOf(new AssessmentEvent(AssessmentEvent.TYPE.STARTED, ureq.getUserSession()), assessmentEventOres);						
 		}
+	}
+	
+	private void doExitAssessment(UserRequest ureq, Event event) {
+		if(displayContainerController != null) {
+			displayContainerController.deactivate(ureq);
+		} else {
+			getWindowControl().pop();
+		}	
+		
+		removeHistory(ureq);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("test", -1l);
+		addToHistory(ureq, ores, null);
+		if (!assessmentStopped) {
+			assessmentStopped = true;
+			singleUserEventCenter.deregisterFor(this, assessmentInstanceOres);
+			AssessmentEvent assessmentStoppedEvent = new AssessmentEvent(AssessmentEvent.TYPE.STOPPED, userSession);
+			singleUserEventCenter.fireEventToListenersOf(assessmentStoppedEvent, assessmentEventOres);
+		}
+		fireEvent(ureq, event);
+	}
+
+	@Override
+	public void updateOutcomes(Float score, Boolean pass) {
+		ScoreEvaluation sceval = new ScoreEvaluation(score, pass, Boolean.FALSE);
+		courseNode.updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), false);
+	}
+
+	@Override
+	public void submit(Float score, Boolean pass) {
+		ScoreEvaluation sceval = new ScoreEvaluation(score, pass, Boolean.TRUE);
+		courseNode.updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), true);
 	}
 }
