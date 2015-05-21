@@ -151,29 +151,6 @@
 		<div class="o_bar"></div>
 		<h4 class="o_title"> <a href="#o_step_grading_content" data-toggle="collapse" aria-expanded="$collapse_grading">$r.translate("run.grading")</a></h4>
 		<div id="o_step_grading_content" class="o_content collpase #if($collapse_grading) in #end" aria-expanded="$collapse_grading">
-			#if($gradingInfoTextUser && !$gradingInfoTextUser.isEmpty())
-			<div class="panel panel-default o_disclaimer">
-			  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseDisclaimer">
-			  		<h4 class="panel-title">
-			  			<i id="collapseDisclaimerToggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i>
-			  			$r.translate("info.title")
-			  		</h4>
-			  	</div>
-				<div id="collapseDisclaimer" class="panel-collapse collapse in"><div class="panel-body">
-					$r.formatLatexFormulas($gradingInfoTextUser)
-		  		</div></div>
-			</div>
-			<script type="text/javascript">
-				/* <![CDATA[ */
-					jQuery('#collapseDisclaimer').on('hide.bs.collapse', function () {
-						jQuery('#collapseDisclaimerToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-					})
-					jQuery('#collapseDisclaimer').on('show.bs.collapse', function () {
-						jQuery('#collapseDisclaimerToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-					})
-				/* ]]> */
-			</script>
-			#end
 			#if($r.available("grading"))
 				$r.render("grading")
 			#end

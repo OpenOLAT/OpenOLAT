@@ -62,12 +62,12 @@ $r.render("contextualSubscription")
 		<div id="o_step_review_content" class="o_content collapse #if($collapse_reviewAndCorrection) in #end" aria-expanded="$collapse_reviewAndCorrection">
 		#if($r.available("corrections"))
 			$r.render("corrections")
-			#if($r.available("coach.reviewed.button") || $r.available("coach.need.revision.button"))
+			#if($r.visible("coach.reviewed.button") || $r.visible("coach.need.revision.button"))
 				<div class="o_button_group">
-				#if($r.available("coach.reviewed.button"))
+				#if($r.visible("coach.reviewed.button"))
 					$r.render("coach.reviewed.button")
 				#end
-				#if($r.available("coach.need.revision.button"))
+				#if($r.visible("coach.need.revision.button"))
 					$r.render("coach.need.revision.button")
 				#end
 				</div>

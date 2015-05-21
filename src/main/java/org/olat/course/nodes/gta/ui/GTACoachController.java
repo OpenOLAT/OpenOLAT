@@ -98,6 +98,11 @@ public class GTACoachController extends GTAAbstractController {
 	protected void initContainer(UserRequest ureq) {
 		mainVC = createVelocityContainer("coach");
 		
+		reviewedButton  = LinkFactory.createCustomLink("coach.reviewed.button", "reviewed", "coach.reviewed.button", Link.BUTTON, mainVC, this);
+		if(config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
+			needRevisionsButton  = LinkFactory.createCustomLink("coach.need.revision.button", "need-revision", "coach.need.revision.button", Link.BUTTON, mainVC, this);
+		}
+		
 		if(withTitle) {
 			if(assessedGroup != null) {
 				mainVC.contextPut("groupName", assessedGroup.getName());
@@ -171,6 +176,11 @@ public class GTACoachController extends GTAAbstractController {
 	protected Task stepReviewAndCorrection(UserRequest ureq, Task assignedTask) {
 		assignedTask = super.stepReviewAndCorrection(ureq, assignedTask);
 		
+		reviewedButton.setVisible(false);
+		if(needRevisionsButton != null) {
+			needRevisionsButton.setVisible(false);
+		}
+		
 		mainVC.contextPut("review", Boolean.FALSE);
 		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
@@ -209,9 +219,9 @@ public class GTACoachController extends GTAAbstractController {
 		listenTo(submitCorrectionsCtrl);
 		mainVC.put("corrections", submitCorrectionsCtrl.getInitialComponent());
 		
-		reviewedButton  = LinkFactory.createCustomLink("coach.reviewed.button", "reviewed", "coach.reviewed.button", Link.BUTTON, mainVC, this);
+		reviewedButton.setVisible(true);
 		if(config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
-			needRevisionsButton  = LinkFactory.createCustomLink("coach.need.revision.button", "need-revision", "coach.need.revision.button", Link.BUTTON, mainVC, this);
+			needRevisionsButton.setVisible(true);
 		}
 	}
 	
@@ -343,11 +353,15 @@ public class GTACoachController extends GTAAbstractController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(reviewedButton == source) {
-			Task assignedTask = submitCorrectionsCtrl.getAssignedTask();
-			doReviewedDocument(ureq, assignedTask);
+			if(submitCorrectionsCtrl != null) {
+				Task assignedTask = submitCorrectionsCtrl.getAssignedTask();
+				doReviewedDocument(ureq, assignedTask);
+			}
 		} else if(needRevisionsButton == source) {
-			Task assignedTask = submitCorrectionsCtrl.getAssignedTask();
-			doRevisions(ureq, assignedTask);
+			if(submitCorrectionsCtrl != null) {
+				Task assignedTask = submitCorrectionsCtrl.getAssignedTask();
+				doRevisions(ureq, assignedTask);
+			}
 		}
 		super.event(ureq, source, event);
 	}
