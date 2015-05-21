@@ -205,7 +205,7 @@ public class GTACoachController extends GTAAbstractController {
 			documentsContainer = gtaManager.getCorrectionContainer(courseEnv, gtaNode, assessedIdentity);
 		}
 		
-		submitCorrectionsCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer, -1, config);
+		submitCorrectionsCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer, -1, config, "coach.document");
 		listenTo(submitCorrectionsCtrl);
 		mainVC.put("corrections", submitCorrectionsCtrl.getInitialComponent());
 		
@@ -411,7 +411,9 @@ public class GTACoachController extends GTAAbstractController {
 	}
 	
 	private void doReviewedDocument(UserRequest ureq, Task task) {
-		gtaManager.updateTask(task, TaskProcess.solution);
+		//go to solution, grading or graded
+		TaskProcess nextStep = gtaManager.nextStep(TaskProcess.correction, gtaNode);
+		gtaManager.updateTask(task, nextStep);
 		showInfo("coach.documents.successfully.reviewed");
 		gtaManager.log("Review", "documents reviewed", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
 		

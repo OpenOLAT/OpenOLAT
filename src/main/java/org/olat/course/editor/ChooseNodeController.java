@@ -74,6 +74,10 @@ public class ChooseNodeController extends BasicController {
 		CourseNodeFactory cnf = CourseNodeFactory.getInstance();
 		for (String courseNodeAlias : cnf.getRegisteredCourseNodeAliases()) {
 			CourseNodeConfiguration cnConfig = cnf.getCourseNodeConfiguration(courseNodeAlias);
+			if(cnConfig.isDeprecated()) {
+				continue;
+			}
+			
 			try {
 				String group = cnConfig.getGroup();
 				CourseNodeTypesGroup typesGroup = linkNames.get(group);

@@ -437,14 +437,14 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 		Identity identity = uce.getIdentityEnvironment().getIdentity();
 		RepositoryEntry entry = uce.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		
-		org.olat.course.nodes.gta.Task task;
+		org.olat.course.nodes.gta.Task gtaTask;
 		TaskList taskList = gtaManager.getTaskList(entry, courseNode);
 		if(taskList == null) {
 			taskList = gtaManager.createIfNotExists(entry, courseNode);
-			task = gtaManager.createTask(null, taskList, status, null, identity, courseNode);
+			gtaTask = gtaManager.createTask(null, taskList, status, null, identity, courseNode);
 		} else {
-			task = gtaManager.getTask(identity, taskList);
-			if(task == null) {
+			gtaTask = gtaManager.getTask(identity, taskList);
+			if(gtaTask == null) {
 				gtaManager.createTask(null, taskList, status, null, identity, courseNode);
 			}
 		}

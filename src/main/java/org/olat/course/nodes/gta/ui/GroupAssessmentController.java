@@ -84,6 +84,7 @@ public class GroupAssessmentController extends FormBasicController {
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 
+	private Float cutValue;
 	private final boolean withScore, withPassed;
 	private final GTACourseNode gtaNode;
 	private final CourseEnvironment courseEnv;
@@ -112,6 +113,9 @@ public class GroupAssessmentController extends FormBasicController {
 
 		withScore = courseNode.hasScoreConfigured();
 		withPassed = courseNode.hasPassedConfigured();
+		if(withPassed) {
+			cutValue = courseNode.getCutValueConfiguration();
+		}
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -140,7 +144,7 @@ public class GroupAssessmentController extends FormBasicController {
 		applyToAllEl = uifactory.addCheckboxesHorizontal("applytoall", "group.apply.toall", groupGradingCont, onKeys, onValues);
 		applyToAllEl.addActionListener(FormEvent.ONCHANGE);
 		
-		if(withPassed) {
+		if(withPassed && cutValue == null) {
 			groupPassedEl = uifactory.addCheckboxesHorizontal("checkgroup", "group.passed", groupGradingCont, onKeys, onValues);
 		}
 		
@@ -175,7 +179,7 @@ public class GroupAssessmentController extends FormBasicController {
 			}
 		}
 		
-		if(withPassed) {
+		if(withPassed && cutValue == null) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passedEl.i18nKey(), Cols.passedEl.ordinal()));
 		}
 
@@ -280,7 +284,7 @@ public class GroupAssessmentController extends FormBasicController {
 				}
 			}
 			
-			if(withPassed) {
+			if(withPassed && cutValue == null) {
 				Boolean passed = scoreEval.getPassed();
 				MultipleSelectionElement passedEl = uifactory.addCheckboxesHorizontal("check" + count, null, flc, onKeys, onValues);
 				if(passed != null && passed.booleanValue()) {
@@ -373,7 +377,11 @@ public class GroupAssessmentController extends FormBasicController {
 			
 			Boolean passed = null;
 			if(withPassed) {
-				passed = groupPassedEl.isSelected(0);
+				if(cutValue == null) {
+					passed = groupPassedEl.isSelected(0);
+				} else if(score != null) {
+					passed = (score.floatValue() >= cutValue.floatValue()) ? Boolean.TRUE	: Boolean.FALSE;
+				}
 			}
 
 			for(AssessmentRow row:rows) {
@@ -395,7 +403,11 @@ public class GroupAssessmentController extends FormBasicController {
 				
 				Boolean passed = null;
 				if(withPassed) {
-					passed = row.getPassedEl().isSelected(0);
+					if(cutValue == null) {
+						passed = row.getPassedEl().isSelected(0);
+					} else if(score != null) {
+						passed = (score.floatValue() >= cutValue.floatValue()) ? Boolean.TRUE	: Boolean.FALSE;
+					}
 				}
 				
 				ScoreEvaluation newScoreEval = new ScoreEvaluation(score, passed);
