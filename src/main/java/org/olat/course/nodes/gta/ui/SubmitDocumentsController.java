@@ -83,18 +83,21 @@ class SubmitDocumentsController extends FormBasicController {
 	private HTMLEditorController newDocumentEditorCtrl, editDocumentEditorCtrl;
 	
 	private final int maxDocs;
+	private final String docI18nKey;
 	private final Task assignedTask;
 	private final File documentsDir;
 	private final VFSContainer documentsContainer;
 	private final ModuleConfiguration config;
 	
 	public SubmitDocumentsController(UserRequest ureq, WindowControl wControl, Task assignedTask,
-			File documentsDir, VFSContainer documentsContainer, int maxDocs, ModuleConfiguration config) {
+			File documentsDir, VFSContainer documentsContainer, int maxDocs, ModuleConfiguration config,
+			String docI18nKey) {
 		super(ureq, wControl, "documents");
 		this.assignedTask = assignedTask;
 		this.documentsDir = documentsDir;
 		this.documentsContainer = documentsContainer;
 		this.maxDocs = maxDocs;
+		this.docI18nKey = docI18nKey;
 		this.config = config;
 		initForm(ureq);
 		updateModel();
@@ -116,7 +119,7 @@ class SubmitDocumentsController extends FormBasicController {
 		}
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.document.i18nKey(), DocCols.document.ordinal()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(docI18nKey, DocCols.document.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.date.i18nKey(), DocCols.date.ordinal()));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit", DocCols.edit.ordinal(), "edit",
 				new BooleanCellRenderer(
@@ -150,6 +153,12 @@ class SubmitDocumentsController extends FormBasicController {
 			String msg = translate("error.max.documents", new String[]{ Integer.toString(maxDocs)});
 			flc.contextPut("maxDocsWarning", msg);
 		} else {
+			if(uploadDocButton != null) {
+				uploadDocButton.setEnabled(true);
+			}
+			if(createDocButton != null) {
+				createDocButton.setEnabled(true);
+			}
 			flc.contextPut("maxDocsWarning", Boolean.FALSE);
 		}
 	}

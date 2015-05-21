@@ -177,7 +177,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 			documentsContainer = gtaManager.getRevisedDocumentsCorrectionsContainer(courseEnv, gtaNode, iteration, assessedIdentity);
 		}
 		
-		uploadCorrectionsCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer, -1, config);
+		uploadCorrectionsCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer, -1, config, "coach.document");
 		listenTo(uploadCorrectionsCtrl);
 		mainVC.put("uploadCorrections", uploadCorrectionsCtrl.getInitialComponent());
 
@@ -218,7 +218,8 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 	}
 	
 	private void doCloseRevisionProcess() {
-		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.solution);
+		TaskProcess nextStep = gtaManager.nextStep(TaskProcess.correction, gtaNode);
+		assignedTask = gtaManager.updateTask(assignedTask, nextStep);
 		gtaManager.log("Revision", "close revision", assignedTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
 	}
 }

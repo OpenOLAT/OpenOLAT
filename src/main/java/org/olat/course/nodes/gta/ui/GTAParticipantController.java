@@ -143,6 +143,10 @@ public class GTAParticipantController extends GTAAbstractController {
 		
 		if(TaskHelper.inOrNull(assignedTask, TaskProcess.assignment)) {
 			mainVC.contextPut("assignmentCssClass", "o_active");
+			if(stepPreferences != null) {
+				//assignment is very important, open it always
+				stepPreferences.setAssignement(Boolean.TRUE);
+			}
 			
 			//assignment open?
 			Date dueDate = getAssignementDueDate();
@@ -244,7 +248,7 @@ public class GTAParticipantController extends GTAAbstractController {
 		}
 		
 		int maxDocs = config.getIntegerSafe(GTACourseNode.GTASK_MAX_SUBMITTED_DOCS, -1);
-		submitDocCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer, maxDocs, config);
+		submitDocCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer, maxDocs, config, "document");
 		listenTo(submitDocCtrl);
 		mainVC.put("submitDocs", submitDocCtrl.getInitialComponent());
 		
@@ -279,7 +283,8 @@ public class GTAParticipantController extends GTAAbstractController {
 	}
 	
 	private void doSubmitDocuments(UserRequest ureq, Task task) {
-		task = gtaManager.updateTask(task, TaskProcess.review);
+		TaskProcess review = gtaManager.nextStep(TaskProcess.submit, gtaNode);
+		task = gtaManager.updateTask(task, review);
 		showInfo("run.documents.successfully.submitted");
 		
 		gtaManager.log("Submit", "submit documents", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
@@ -592,7 +597,6 @@ public class GTAParticipantController extends GTAAbstractController {
 			if(event instanceof SubmitEvent) {
 				Task assignedTask = submitDocCtrl.getAssignedTask();
 				gtaManager.log("Submit", (SubmitEvent)event, assignedTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
-				doUpdateAttempts();
 			}
 		}
 		super.event(ureq, source, event);

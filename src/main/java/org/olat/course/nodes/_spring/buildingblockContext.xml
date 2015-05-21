@@ -79,7 +79,7 @@
 		<property name="order" value="130" />
 		<property name="alternativeCourseNodes">
 			<list>
-				<value>igta</value>
+				<value>ita</value>
 			</list>
 		</property>
 	</bean>

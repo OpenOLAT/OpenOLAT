@@ -280,7 +280,7 @@ public class EPMultipleMapController extends BasicController implements Activate
 					EPTargetResource resource = structMap.getTargetResource();
 					RepositoryEntry repoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(resource.getOLATResourceable(), false);
 					if(repoEntry != null) {
-						vC.contextPut("courseName" + i, repoEntry.getDisplayname());
+						vC.contextPut("courseName" + i, StringHelper.escapeHtml(repoEntry.getDisplayname()));
 						String url = Settings.getServerContextPathURI();
 						url += "/url/RepositoryEntry/" + repoEntry.getKey() + "/CourseNode/" + resource.getSubPath();
 						vC.contextPut("courseLink" + i, url);

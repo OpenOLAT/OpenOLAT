@@ -152,7 +152,7 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 			documentsDir = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, getIdentity());
 			documentsContainer = gtaManager.getRevisedDocumentsContainer(courseEnv, gtaNode, iteration, getIdentity());
 		}
-		uploadRevisionsCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer, -1, config);
+		uploadRevisionsCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer, -1, config, "document");
 		listenTo(uploadRevisionsCtrl);
 		mainVC.put("uploadRevisions", uploadRevisionsCtrl.getInitialComponent());
 		

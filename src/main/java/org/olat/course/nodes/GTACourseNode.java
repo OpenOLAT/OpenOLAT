@@ -201,6 +201,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 			config.set(MSCourseNode.CONFIG_KEY_SCORE_MIN, new Float(0));
 			config.set(MSCourseNode.CONFIG_KEY_SCORE_MAX, new Float(0));
 			config.set(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, Boolean.TRUE);
+			config.set(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, Boolean.TRUE);
 		}
 	}
 
