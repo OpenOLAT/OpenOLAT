@@ -131,7 +131,8 @@ public class InvitationDAO {
 	public Invitation findInvitation(Group group) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select invitation from binvitation as invitation ")
-		  .append(" where invitation.baseGroup=:group");
+		  .append(" inner join fetch invitation.baseGroup bGroup")
+		  .append(" where bGroup=:group");
 
 		List<Invitation> invitations = dbInstance.getCurrentEntityManager()
 				  .createQuery(sb.toString(), Invitation.class)
@@ -149,6 +150,7 @@ public class InvitationDAO {
 	public Invitation findInvitation(String token) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select invitation from binvitation as invitation ")
+		  .append(" inner join fetch invitation.baseGroup bGroup")
 		  .append(" where invitation.token=:token");
 
 		List<Invitation> invitations = dbInstance.getCurrentEntityManager()

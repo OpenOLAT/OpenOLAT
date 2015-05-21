@@ -288,7 +288,7 @@ public class EPPolicyManager {
 	private EPStructureElementToGroupRelation applyPolicyToGroup(Group group, EPMapPolicy policy, PortfolioStructureMap map) {
 		Collection<EPStructureElementToGroupRelation> currentRelations = map.getGroups();
 		for(EPStructureElementToGroupRelation currentRelation:currentRelations) {
-			if(currentRelation.getGroup().equals(group)) {
+			if(currentRelation.getGroup() != null && currentRelation.getGroup().equals(group)) {
 				updatePolicy(currentRelation, policy.getFrom(), policy.getTo());
 				return currentRelation;
 			}
