@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.Invitation;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -65,6 +66,21 @@ public class InvitationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void findInvitation_group() {
+		Invitation invitation = invitationDao.createAndPersistInvitation();
+		Group baseGroup = invitation.getBaseGroup();
+		Assert.assertNotNull(invitation);
+		dbInstance.commitAndCloseSession();
+		
+		Invitation reloadedInvitation = invitationDao.findInvitation(baseGroup);
+		Assert.assertNotNull(reloadedInvitation);
+		Assert.assertNotNull(reloadedInvitation.getKey());
+		Assert.assertEquals(baseGroup, reloadedInvitation.getBaseGroup());
+		Assert.assertEquals(invitation, reloadedInvitation);
+		Assert.assertEquals(invitation.getToken(), reloadedInvitation.getToken());
+	}
+	
+	@Test
 	public void findInvitation_token() {
 		Invitation invitation = invitationDao.createAndPersistInvitation();
 		Assert.assertNotNull(invitation);
@@ -77,6 +93,7 @@ public class InvitationDAOTest extends OlatTestCase {
 		Assert.assertEquals(invitation, reloadedInvitation);
 		Assert.assertEquals(invitation.getToken(), reloadedInvitation.getToken());
 	}
+	
 	
 	@Test
 	public void hasInvitationPolicies_testHQL() {
