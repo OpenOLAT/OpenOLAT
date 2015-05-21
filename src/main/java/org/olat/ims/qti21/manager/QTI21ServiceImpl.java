@@ -28,13 +28,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.WebappHelper;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.QTI21ContentPackage;
@@ -45,6 +45,7 @@ import org.olat.ims.qti21.model.CandidateEvent;
 import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.CandidateTestEventType;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
@@ -90,6 +91,8 @@ public class QTI21ServiceImpl implements QTI21Service {
 	private EventDAO eventDao;
 	@Autowired
 	private SessionDAO testSessionDao;
+	@Autowired
+	private QTI21Storage storage;
 	@Autowired
 	private QTI21Module qtiModule;
 	
@@ -155,13 +158,18 @@ public class QTI21ServiceImpl implements QTI21Service {
 	}
 
 	@Override
-	public UserTestSession createTestSession(RepositoryEntry testEntry, RepositoryEntry courseEntry, Identity identity) {
-		return testSessionDao.createTestSession(testEntry, courseEntry, identity);
+	public UserTestSession createTestSession(RepositoryEntry testEntry, RepositoryEntry courseEntry, String courseSubIdent, Identity identity) {
+		return testSessionDao.createTestSession(testEntry, courseEntry, courseSubIdent, identity);
 	}
 
 	@Override
 	public UserTestSession updateTestSession(UserTestSession session) {
 		return testSessionDao.update(session);
+	}
+
+	@Override
+	public List<UserTestSession> getUserTestSessions(RepositoryEntryRef courseEntry, String courseSubIdent, IdentityRef identity) {
+		return testSessionDao.getUserTestSessions(courseEntry, courseSubIdent, identity);
 	}
 
 	@Override
@@ -226,16 +234,12 @@ public class QTI21ServiceImpl implements QTI21Service {
     }
     
     private File getAssessmentResultFile(final UserTestSession candidateSession) {
-        File sessionFolder = new File(getFullQtiPath(), candidateSession.getKey().toString());
-        if(!sessionFolder.exists()) {
-        	sessionFolder.mkdirs();
+    	File myStore = storage.getDirectory(candidateSession.getStorage());
+        if(!myStore.exists()) {
+        	myStore.mkdirs();
         }
-        return new File(sessionFolder, "assessmentResult.xml");
+        return new File(myStore, "assessmentResult.xml");
     }
-    
-    private File getFullQtiPath() {
-    	return new File(WebappHelper.getUserDataRoot(), "qti21");
-	}
 
 	@Override
 	public CandidateEvent recordCandidateTestEvent(UserTestSession candidateSession, CandidateTestEventType textEventType,

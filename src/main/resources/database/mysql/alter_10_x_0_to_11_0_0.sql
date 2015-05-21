@@ -6,9 +6,11 @@ create table o_qti_test_session (
    q_author_mode bit not null default 0,
    q_finish_time datetime,
    q_termination_time datetime,
+   q_storage varchar(32),
    fk_identity bigint not null,
    fk_entry bigint not null,
    fk_course bigint,
+   q_course_subident varchar(36),
    primary key (id)
 );
 alter table o_qti_test_session ENGINE = InnoDB;

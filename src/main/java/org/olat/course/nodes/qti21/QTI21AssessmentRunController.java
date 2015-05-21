@@ -231,7 +231,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		
 		RepositoryEntry assessmentEntry = courseNode.getReferencedRepositoryEntry();
-		displayCtrl = new QTI21DisplayController(ureq, bwControl, this, assessmentEntry);
+		RepositoryEntry courseRe = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		displayCtrl = new QTI21DisplayController(ureq, bwControl, this, assessmentEntry, courseRe, courseNode.getIdent());
 		listenTo(displayCtrl);
 		if(displayCtrl.isTerminated()) {
 			//do nothing

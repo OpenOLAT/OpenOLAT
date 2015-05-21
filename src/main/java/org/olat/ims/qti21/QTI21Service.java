@@ -22,12 +22,15 @@ package org.olat.ims.qti21;
 import java.io.File;
 import java.net.URI;
 import java.util.Date;
+import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.ims.qti21.model.CandidateEvent;
 import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.CandidateTestEventType;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationRecorder;
@@ -48,9 +51,19 @@ public interface QTI21Service {
 	public <E extends ResolvedAssessmentObject<?>> E loadAndResolveAssessmentObject(File resourceDirectory);
 	
 	
-	public UserTestSession createTestSession(RepositoryEntry testEntry, RepositoryEntry courseEntry, Identity identity);
+	public UserTestSession createTestSession(RepositoryEntry testEntry, RepositoryEntry courseEntry, String subIdent, Identity identity);
 	
 	public UserTestSession updateTestSession(UserTestSession session);
+	
+	/**
+	 * Retrieve the sessions of a user.
+	 * 
+	 * @param courseEntry
+	 * @param subIdent
+	 * @param identity
+	 * @return
+	 */
+	public List<UserTestSession> getUserTestSessions(RepositoryEntryRef courseEntry, String subIdent, IdentityRef identity);
 	
 	public void recordTestAssessmentResult(UserTestSession candidateSession, AssessmentResult assessmentResult);
 	

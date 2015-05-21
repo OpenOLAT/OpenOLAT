@@ -28,6 +28,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -49,6 +51,10 @@ import org.olat.repository.RepositoryEntry;
  */
 @Entity(name="qtitestsession")
 @Table(name="o_qti_test_session")
+@NamedQueries({
+	@NamedQuery(name="loadTestSessionsByUserAndCourse", query="select session from qtitestsession session where session.courseEntry.key=:courseEntryKey and session.identity.key=:identityKey and session.courseSubIdent=:courseSubIdent")
+	
+})
 public class UserTestSessionImpl implements UserTestSession, Persistable {
 
 	private static final long serialVersionUID = -6069133323360142500L;
@@ -73,7 +79,9 @@ public class UserTestSessionImpl implements UserTestSession, Persistable {
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_course", nullable=true, insertable=true, updatable=false)
     private RepositoryEntry courseEntry;
-	
+
+    @Column(name="q_course_subident", nullable=true, insertable=true, updatable=false)
+	private String courseSubIdent;
 
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_identity", nullable=false, insertable=true, updatable=false)
@@ -82,6 +90,9 @@ public class UserTestSessionImpl implements UserTestSession, Persistable {
     /** Is this session running in author mode? (I.e. providing debugging information) */
     @Column(name="q_author_mode", nullable=false, insertable=true, updatable=true)
     private boolean authorMode;
+    
+    @Column(name="q_storage", nullable=false, insertable=true, updatable=false)
+    private String storage;
 
     /**
      * Timestamp indicating when the session has been <strong>finished</strong>.
@@ -168,6 +179,14 @@ public class UserTestSessionImpl implements UserTestSession, Persistable {
 		this.courseEntry = courseEntry;
 	}
 
+	public String getCourseSubIdent() {
+		return courseSubIdent;
+	}
+
+	public void setCourseSubIdent(String courseSubIdent) {
+		this.courseSubIdent = courseSubIdent;
+	}
+
 	public Identity getIdentity() {
 		return identity;
 	}
@@ -190,6 +209,14 @@ public class UserTestSessionImpl implements UserTestSession, Persistable {
 
 	public void setExploded(boolean exploded) {
 		this.exploded = exploded;
+	}
+
+	public String getStorage() {
+		return storage;
+	}
+
+	public void setStorage(String storage) {
+		this.storage = storage;
 	}
 
 	public Date getFinishTime() {

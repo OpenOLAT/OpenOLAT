@@ -6,9 +6,11 @@ create table o_qti_test_session (
    q_author_mode bool default false,
    q_finish_time timestamp,
    q_termination_time timestamp,
+   q_storage varchar(32),
    fk_identity int8 not null,
    fk_entry int8 not null,
    fk_course int8,
+   q_course_subident varchar(36),
    primary key (id)
 );
 

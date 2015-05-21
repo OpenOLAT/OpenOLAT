@@ -17,35 +17,41 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21;
+package org.olat.ims.qti21.manager;
 
-import java.util.Date;
+import java.io.File;
 
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.util.vfs.FileStorage;
+import org.olat.core.util.vfs.VFSContainer;
+import org.springframework.stereotype.Service;
 
 /**
+ * Factory for the file storage
  * 
- * Initial date: 12.05.2015<br>
+ * 
+ * Initial date: 21.05.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface UserTestSession extends CreateInfo, ModifiedInfo {
+@Service
+public class QTI21Storage {
 	
-	public Long getKey();
-	
-	public Date getFinishTime();
-	
-	public void setFinishTime(Date timestamp);
-	
-	public Date getTerminationTime();
-	
-	public void setTerminationTime(Date timestamp);
-	
-	public boolean isExploded();
-	
-	public String getStorage();
-	
+	public File getDirectory(String relativeDir) {
+		OlatRootFolderImpl rootContainer = getQtiSerializationPath();
+		return new File(rootContainer.getBasefile(), relativeDir);
+	}
 
+	public String getRelativeDir() {
+		VFSContainer rootContainer = getQtiSerializationPath();
+		FileStorage storage = new FileStorage(rootContainer);
+		return storage.generateDir();
+	}
+	
+    private OlatRootFolderImpl getQtiSerializationPath() {
+    	return new OlatRootFolderImpl("/qtiassessment/", null);
+	}
+	
+	
 
 }

@@ -17,35 +17,38 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21;
+package org.olat.ims.qti21.ui;
 
-import java.util.Date;
-
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 
 /**
  * 
- * Initial date: 12.05.2015<br>
+ * Initial date: 21.05.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface UserTestSession extends CreateInfo, ModifiedInfo {
+public class QTI21AssessmentResultController extends BasicController {
 	
-	public Long getKey();
+	public QTI21AssessmentResultController(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl);
+		
+		VelocityContainer mainVC = createVelocityContainer("assessment_results");
+		
+		putInitialPanel(mainVC);
+	}
 	
-	public Date getFinishTime();
+	@Override
+	protected void doDispose() {
+		//
+	}
 	
-	public void setFinishTime(Date timestamp);
-	
-	public Date getTerminationTime();
-	
-	public void setTerminationTime(Date timestamp);
-	
-	public boolean isExploded();
-	
-	public String getStorage();
-	
-
-
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		//
+	}
 }

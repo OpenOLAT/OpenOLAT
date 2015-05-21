@@ -20,12 +20,15 @@
 package org.olat.ims.qti21.manager;
 
 import java.util.Date;
+import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.ims.qti21.UserTestSession;
 import org.olat.ims.qti21.model.UserTestSessionImpl;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,24 +43,40 @@ public class SessionDAO {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private QTI21Storage storage;
 	
 
-	public UserTestSession createTestSession(RepositoryEntry testEntry, RepositoryEntry courseEntry, Identity identity) {
+	public UserTestSession createTestSession(RepositoryEntry testEntry,
+			RepositoryEntry courseEntry, String courseSubIdent, Identity identity) {
+		
 		UserTestSessionImpl testSession = new UserTestSessionImpl();
 		Date now = new Date();
 		testSession.setCreationDate(now);
 		testSession.setLastModified(now);
 		testSession.setTestEntry(testEntry);
 		testSession.setCourseEntry(courseEntry);
+		testSession.setCourseSubIdent(courseSubIdent);
 		testSession.setAuthorMode(false);
 		testSession.setExploded(false);
 		testSession.setIdentity(identity);
+		testSession.setStorage(storage.getRelativeDir());
 		dbInstance.getCurrentEntityManager().persist(testSession);
 		return testSession;
 	}
 	
 	public UserTestSession update(UserTestSession testSession) {
+		((UserTestSessionImpl)testSession).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(testSession);
+	}
+	
+	public List<UserTestSession> getUserTestSessions(RepositoryEntryRef courseEntry, String courseSubIdent, IdentityRef identity) {
+		return dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadTestSessionsByUserAndCourse", UserTestSession.class)
+				.setParameter("courseEntryKey", courseEntry.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("courseSubIdent", courseSubIdent)
+				.getResultList();
 	}
 
 }

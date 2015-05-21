@@ -136,7 +136,7 @@ public class QTI21AssessmentHandler extends FileHandler {
 					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
 							RepositoryEntry entry, RepositoryEntrySecurity reSecurity, AssessmentMode mode) {
 						InMemoryOutcomesListener listener = new InMemoryOutcomesListener();
-						return new QTI21DisplayController(uureq, wwControl, listener, entry);
+						return new QTI21DisplayController(uureq, wwControl, listener, entry, null, null);
 					}
 				});
 	}

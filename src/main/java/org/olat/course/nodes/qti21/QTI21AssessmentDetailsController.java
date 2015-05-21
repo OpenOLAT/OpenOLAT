@@ -19,14 +19,34 @@
  */
 package org.olat.course.nodes.qti21;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Identity;
 import org.olat.course.nodes.QTI21AssessmentCourseNode;
+import org.olat.course.nodes.qti21.QTI21TestSessionTableModel.TSCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.UserTestSession;
+import org.olat.ims.qti21.ui.QTI21AssessmentResultController;
+import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -34,26 +54,99 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21AssessmentDetailsController extends BasicController {
+public class QTI21AssessmentDetailsController extends FormBasicController {
+
+	private FlexiTableElement tableEl;
+	private QTI21TestSessionTableModel tableModel;
 	
-	private final VelocityContainer mainVC;
+	private Identity assessedIdentity;
+	private RepositoryEntry courseEntry;
+	private QTI21AssessmentCourseNode courseNode;
+	
+	private CloseableModalController cmc;
+	private QTI21AssessmentResultController resultCtrl;
+	
+	@Autowired
+	private QTI21Service qtiService;
 	
 	public QTI21AssessmentDetailsController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnvironment, QTI21AssessmentCourseNode qtiNode) {
-		super(ureq, wControl);
+			UserCourseEnvironment userCourseEnvironment, QTI21AssessmentCourseNode courseNode) {
+		super(ureq, wControl, "assessment_details");
 		
-		mainVC = createVelocityContainer("assessment_details");
+		this.courseNode = courseNode;
+		assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		courseEntry = userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		
-		putInitialPanel(mainVC);
+		initForm(ureq);
+		updateModel();
 	}
 
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.lastModified.i18nKey(), TSCols.lastModified.ordinal()));
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(TSCols.results.i18nKey(), TSCols.results.ordinal(), "result",
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate(TSCols.results.i18nKey()), "result"), null)));
+
+		tableModel = new QTI21TestSessionTableModel(columnsModel);
+		tableEl = uifactory.addTableElement(getWindowControl(), "sessions", tableModel, 20, false, getTranslator(), formLayout);
+	}
+	
 	@Override
 	protected void doDispose() {
 		//
 	}
 	
+	private void updateModel() {
+		List<UserTestSession> sessions = qtiService.getUserTestSessions(courseEntry, courseNode.getIdent(), assessedIdentity);
+		tableModel.setObjects(sessions);
+		tableEl.reset();
+	}
+
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(cmc == source) {
+			cmc.deactivate();
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(resultCtrl);
+		removeAsListenerAndDispose(cmc);
+		resultCtrl = null;
+		cmc = null;
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(tableEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				UserTestSession row = tableModel.getObject(se.getIndex());
+				if("result".equals(cmd)) {
+					doOpenResult(ureq, row);
+				}
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
 		//
+	}
+
+	private void doOpenResult(UserRequest ureq, UserTestSession row) {
+		if(resultCtrl != null) return;
+		
+		resultCtrl = new QTI21AssessmentResultController(ureq, getWindowControl());
+		listenTo(resultCtrl);
+		cmc = new CloseableModalController(getWindowControl(), "close", resultCtrl.getInitialComponent(),
+				true, translate("table.header.results"));
+		cmc.activate();
+		listenTo(cmc);
 	}
 }

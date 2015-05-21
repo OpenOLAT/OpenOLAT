@@ -152,7 +152,7 @@ public class QTI21ReferenceConfigurationController extends BasicController {
 			} else {
 				removeAsListenerAndDispose(previewCtr);
 				InMemoryOutcomesListener listener = new InMemoryOutcomesListener();
-				previewCtr = new QTI21DisplayController(ureq, getWindowControl(), listener, re);
+				previewCtr = new QTI21DisplayController(ureq, getWindowControl(), listener, re, null, null);
 				stackPanel.pushController(translate("preview"), previewCtr);
 			}
 		} else if (source == editLink) {

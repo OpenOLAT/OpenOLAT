@@ -107,7 +107,17 @@ public class QTI21DisplayController extends BasicController implements Candidate
 	@Autowired
 	private JqtiExtensionManager jqtiExtensionManager;
 	
-	public QTI21DisplayController(UserRequest ureq, WindowControl wControl, OutcomesListener listener, RepositoryEntry entry) {
+	/**
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param listener
+	 * @param entry
+	 * @param courseRe Course repository entry (optional)
+	 * @param subIdent The course node identifier (mandatory only if in a course is used)
+	 */
+	public QTI21DisplayController(UserRequest ureq, WindowControl wControl, OutcomesListener listener,
+			RepositoryEntry entry, RepositoryEntry courseRe, String courseSubIdent) {
 		super(ureq, wControl);
 		
 		this.outcomesListener = listener;
@@ -116,7 +126,8 @@ public class QTI21DisplayController extends BasicController implements Candidate
 		fUnzippedDirRoot = frm.unzipFileResource(entry.getOlatResource());
 		
 		currentRequestTimestamp = ureq.getRequestTimestamp();
-		candidateSession = qtiService.createTestSession(entry, null, getIdentity());
+		
+		candidateSession = qtiService.createTestSession(entry, courseRe, courseSubIdent, getIdentity());
 		mapperUri = registerCacheableMapper(null, "QTI21Resources::" + entry.getKey(), new ResourcesMapper());
 		
 		testSessionController = enterSession(ureq);
