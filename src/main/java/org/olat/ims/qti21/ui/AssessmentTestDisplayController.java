@@ -47,6 +47,7 @@ import org.olat.ims.qti21.UserTestSession;
 import org.olat.ims.qti21.model.CandidateEvent;
 import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.CandidateTestEventType;
+import org.olat.ims.qti21.ui.components.AssessmentTestFormItem;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -741,7 +742,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 */
 	private class QtiWorksController extends FormBasicController {
 		
-		private QTI21FormItem qtiEl;
+		private AssessmentTestFormItem qtiEl;
 		
 		public QtiWorksController(UserRequest ureq, WindowControl wControl) {
 			super(ureq, wControl, LAYOUT_BAREBONE);
@@ -753,7 +754,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			mainForm.setStandaloneRendering(true);
 			mainForm.setMultipartEnabled(true, Integer.MAX_VALUE);
 			
-			qtiEl = new QTI21FormItem("qtirun");
+			qtiEl = new AssessmentTestFormItem("qtirun");
 			formLayout.add("qtirun", qtiEl);
 
 			ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());

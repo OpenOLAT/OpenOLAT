@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui;
+package org.olat.ims.qti21.ui.components;
 
 import java.io.StringWriter;
 import java.io.Writer;
@@ -38,6 +38,7 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.ims.qti21.UserTestSession;
 import org.olat.ims.qti21.model.CandidateEvent;
 import org.olat.ims.qti21.model.CandidateTestEventType;
+import org.olat.ims.qti21.ui.CandidateSessionContext;
 import org.olat.ims.qti21.ui.rendering.AbstractRenderingOptions;
 import org.olat.ims.qti21.ui.rendering.AbstractRenderingRequest;
 import org.olat.ims.qti21.ui.rendering.AssessmentRenderer;
@@ -57,7 +58,7 @@ import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21ComponentRenderer extends DefaultComponentRenderer {
+public class AssessmentTestComponentRenderer extends DefaultComponentRenderer {
 	
 	private AssessmentRenderer assessmentRenderer = new AssessmentRenderer();
 
@@ -68,12 +69,12 @@ public class QTI21ComponentRenderer extends DefaultComponentRenderer {
 		AJAXFlags flags = renderer.getGlobalSettings().getAjaxFlags();
 		boolean iframePostEnabled = flags.isIframePostEnabled();
 		
-		QTI21Component cmp = (QTI21Component)source;
+		AssessmentTestComponent cmp = (AssessmentTestComponent)source;
 		TestSessionController testSessionController = cmp.getTestSessionController();
-		QTI21FormItem item = cmp.getQtiItem();
+		AssessmentTestFormItem item = cmp.getQtiItem();
 		
 		if(testSessionController.getTestSessionState().isEnded()) {
-			sb.append("<h1>The End</h1>");
+			sb.append("<h1>The End <small>say the renderer</small></h1>");
 		} else {
 			Component rootFormCmp = item.getRootForm().getInitialComponent();
 			
@@ -131,7 +132,7 @@ public class QTI21ComponentRenderer extends DefaultComponentRenderer {
     }
 	
 	private void renderCurrentCandidateTestSessionState(TestSessionController testSessionController,
-			TestRenderingOptions renderingOptions, StreamResult result, QTI21Component component) {
+			TestRenderingOptions renderingOptions, StreamResult result, AssessmentTestComponent component) {
 		TestSessionState testSessionState = testSessionController.getTestSessionState();
 		CandidateSessionContext candidateSessionContext = component.getCandidateSessionContext();
 		final UserTestSession candidateSession = candidateSessionContext.getCandidateSession();
@@ -161,23 +162,23 @@ public class QTI21ComponentRenderer extends DefaultComponentRenderer {
 		}
 	}
 	
-    private void renderExploded(AbstractRenderingOptions renderingOptions, StreamResult result, QTI21Component component) {
+    private void renderExploded(AbstractRenderingOptions renderingOptions, StreamResult result, AssessmentTestComponent component) {
         assessmentRenderer.renderExploded(createTerminatedRenderingRequest(renderingOptions, component), result);
     }
 
-    private void renderTerminated(AbstractRenderingOptions renderingOptions, StreamResult result, QTI21Component component) {
+    private void renderTerminated(AbstractRenderingOptions renderingOptions, StreamResult result, AssessmentTestComponent component) {
         assessmentRenderer.renderTeminated(createTerminatedRenderingRequest(renderingOptions, component), result);
     }
 
     private TerminatedRenderingRequest createTerminatedRenderingRequest(AbstractRenderingOptions renderingOptions,
-    		QTI21Component component) {
+    		AssessmentTestComponent component) {
         final TerminatedRenderingRequest renderingRequest = new TerminatedRenderingRequest();
         initRenderingRequest(renderingRequest, renderingOptions, component);
         return renderingRequest;
     }
 	
 	private void renderTestEvent(TestSessionController testSessionController, TestRenderingOptions renderingOptions,
-			StreamResult result, QTI21Component component) {
+			StreamResult result, AssessmentTestComponent component) {
 
 		CandidateSessionContext candidateSessionContext = component.getCandidateSessionContext();
 		CandidateEvent candidateEvent = candidateSessionContext.getLastEvent();
@@ -222,7 +223,7 @@ public class QTI21ComponentRenderer extends DefaultComponentRenderer {
     }
 	
 	private <P extends AbstractRenderingOptions> void initRenderingRequest(
-            final AbstractRenderingRequest<P> renderingRequest, final P renderingOptions, QTI21Component component) {
+            final AbstractRenderingRequest<P> renderingRequest, final P renderingOptions, AssessmentTestComponent component) {
 
         renderingRequest.setRenderingOptions(renderingOptions);
         renderingRequest.setAssessmentResourceLocator(component.getResourceLocator());

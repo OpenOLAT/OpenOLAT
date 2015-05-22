@@ -35,6 +35,7 @@ import org.olat.repository.RepositoryEntryRef;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationRecorder;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentObject;
+import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
 
@@ -77,5 +78,9 @@ public interface QTI21Service {
 
 	public CandidateEvent recordCandidateTestEvent(UserTestSession candidateSession, CandidateTestEventType textEventType,
 			CandidateItemEventType itemEventType, TestPlanNodeKey itemKey, TestSessionState testSessionState, NotificationRecorder notificationRecorder);
+	
+	
+	public CandidateEvent recordCandidateItemEvent(UserTestSession candidateSession, CandidateItemEventType itemEventType,
+			ItemSessionState itemSessionState, NotificationRecorder notificationRecorder);
 
 }

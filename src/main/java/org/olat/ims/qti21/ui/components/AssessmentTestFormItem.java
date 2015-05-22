@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui;
+package org.olat.ims.qti21.ui.components;
 
 import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.advanceTestPart;
 import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.endTestPart;
@@ -38,6 +38,8 @@ import java.util.Set;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
+import org.olat.ims.qti21.ui.CandidateSessionContext;
+import org.olat.ims.qti21.ui.QTIWorksEvent;
 
 import uk.ac.ed.ph.jqtiplus.exception.QtiParseException;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
@@ -51,15 +53,15 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21FormItem extends FormItemImpl {
+public class AssessmentTestFormItem extends FormItemImpl {
 	
-	private final QTI21Component component;
+	private final AssessmentTestComponent component;
 	
 	private String mapperUri;
 	
-	public QTI21FormItem(String name) {
+	public AssessmentTestFormItem(String name) {
 		super(name);
-		component = new QTI21Component(name + "_cmp", this);
+		component = new AssessmentTestComponent(name + "_cmp", this);
 	}
 	
 	public String getMapperUri() {

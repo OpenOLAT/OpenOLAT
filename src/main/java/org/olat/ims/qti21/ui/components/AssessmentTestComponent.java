@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui;
+package org.olat.ims.qti21.ui.components;
 
 import java.net.URI;
 
@@ -25,6 +25,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.render.ValidationResult;
+import org.olat.ims.qti21.ui.CandidateSessionContext;
 
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
@@ -35,23 +36,23 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21Component extends AbstractComponent {
+public class AssessmentTestComponent extends AbstractComponent {
 	
-	private static final QTI21ComponentRenderer RENDERER = new QTI21ComponentRenderer();
+	private static final AssessmentTestComponentRenderer RENDERER = new AssessmentTestComponentRenderer();
 	
 	private URI assessmentObjectUri;
 	private ResourceLocator resourceLocator;
 	private TestSessionController testSessionController;
 	private CandidateSessionContext candidateSessionContext;
 	
-	private final QTI21FormItem qtiItem;
+	private final AssessmentTestFormItem qtiItem;
 	
-	public QTI21Component(String name, QTI21FormItem qtiItem) {
+	public AssessmentTestComponent(String name, AssessmentTestFormItem qtiItem) {
 		super(name);
 		this.qtiItem = qtiItem;
 	}
 
-	public QTI21FormItem getQtiItem() {
+	public AssessmentTestFormItem getQtiItem() {
 		return qtiItem;
 	}
 

@@ -46,7 +46,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.ToolbarAware;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
@@ -74,6 +73,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private Controller currentEditorCtrl;
 	private final LayoutMain3ColsController columnLayoutCtr;
 	
+	private final File unzippedDirRoot;
 	private final RepositoryEntry testEntry;
 	private final ResolvedAssessmentTest resolvedAssessmentTest;
 	
@@ -101,7 +101,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		menuTree.addListener(this);
 
 		FileResourceManager frm = FileResourceManager.getInstance();
-		File unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
+		unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
 		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentObject(unzippedDirRoot);
 		menuTree.setTreeModel(new AssessmentTestEditorAndComposerTreeModel(resolvedAssessmentTest));
 		
@@ -177,8 +177,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		} else if(uobject instanceof AssessmentItemRef) {
 			AssessmentItemRef itemRef = (AssessmentItemRef)uobject;
 			ResolvedAssessmentItem item = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
-			AssessmentItem assessmentItem = item.getItemLookup().getRootNodeHolder().getRootNode();
-			currentEditorCtrl = new AssessmentItemEditorController(ureq, getWindowControl(), assessmentItem);
+			currentEditorCtrl = new AssessmentItemEditorController(ureq, getWindowControl(), item, itemRef, unzippedDirRoot);
 		}
 		
 		if(currentEditorCtrl != null) {

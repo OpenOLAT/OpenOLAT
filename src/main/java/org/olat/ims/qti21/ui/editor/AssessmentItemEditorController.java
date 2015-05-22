@@ -19,14 +19,18 @@
  */
 package org.olat.ims.qti21.ui.editor;
 
+import java.io.File;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
 
-import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 
 /**
  * 
@@ -36,15 +40,21 @@ import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
  */
 public class AssessmentItemEditorController extends BasicController {
 	
-	private final AssessmentItem assessmentItem;
+	private final ResolvedAssessmentItem resolvedAssessmentItem;
 	private final VelocityContainer mainVC;
 	
+	private AssessmentItemDisplayController displayCtrl;
+	
 	public AssessmentItemEditorController(UserRequest ureq, WindowControl wControl,
-			AssessmentItem assessmentItem) {
+			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef, File unzippedDirectory) {
 		super(ureq, wControl);
-		this.assessmentItem = assessmentItem;
+		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		
 		mainVC = createVelocityContainer("assessment_item_editor");
+		
+		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(), resolvedAssessmentItem, itemRef, unzippedDirectory);
+		listenTo(displayCtrl);
+		mainVC.put("display", displayCtrl.getInitialComponent());
 		
 		putInitialPanel(mainVC);
 		

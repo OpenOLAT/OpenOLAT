@@ -64,6 +64,7 @@ import uk.ac.ed.ph.jqtiplus.reading.AssessmentObjectXmlLoader;
 import uk.ac.ed.ph.jqtiplus.reading.QtiXmlReader;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentObject;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
+import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
 import uk.ac.ed.ph.jqtiplus.value.RecordValue;
@@ -261,4 +262,10 @@ public class QTI21ServiceImpl implements QTI21Service {
 			CandidateItemEventType itemEventType, TestPlanNodeKey itemKey, TestSessionState testSessionState, NotificationRecorder notificationRecorder) {
 		return eventDao.create(textEventType, itemEventType, itemKey);
 	}
+	
+	@Override
+    public CandidateEvent recordCandidateItemEvent(UserTestSession candidateSession, CandidateItemEventType itemEventType,
+    		ItemSessionState itemSessionState, NotificationRecorder notificationRecorder) {
+    	return eventDao.create(itemEventType, itemSessionState);
+    }
 }
