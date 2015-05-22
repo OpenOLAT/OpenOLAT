@@ -270,7 +270,7 @@ public class QTI21AssessmentCourseNode extends AbstractAccessableCourseNode impl
 		} else {
 			controller = new QTI21AssessmentRunController(ureq, wControl, userCourseEnv, this);
 		}
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_iqtest_icon");
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_qtiassessment_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
 	

@@ -19,23 +19,6 @@
  */
 package org.olat.ims.qti21.ui;
 
-/**
- * 
- * Initial date: 20.05.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
- *
- */
-public interface OutcomesListener {
-	
-	/**
-	 * Update the outcomes.
-	 * 
-	 * @param score
-	 * @param pass
-	 */
-	public void updateOutcomes(Float score, Boolean pass);
-	
-	
-	public void submit(Float score, Boolean pass);
+public class AssessmentItemDisplayController {
 
 }

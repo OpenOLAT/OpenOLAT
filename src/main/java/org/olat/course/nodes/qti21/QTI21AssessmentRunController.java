@@ -55,8 +55,8 @@ import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti.process.AssessmentInstance;
-import org.olat.ims.qti21.ui.OutcomesListener;
-import org.olat.ims.qti21.ui.QTI21DisplayController;
+import org.olat.ims.qti21.OutcomesListener;
+import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.QTI21Event;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
@@ -85,7 +85,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private final UserCourseEnvironment userCourseEnv;
 	private final QTI21AssessmentCourseNode courseNode;
 	
-	private QTI21DisplayController displayCtrl;
+	private AssessmentTestDisplayController displayCtrl;
 	private LayoutMain3ColsController displayContainerController;
 	
 	public QTI21AssessmentRunController(UserRequest ureq, WindowControl wControl,
@@ -232,7 +232,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		
 		RepositoryEntry assessmentEntry = courseNode.getReferencedRepositoryEntry();
 		RepositoryEntry courseRe = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		displayCtrl = new QTI21DisplayController(ureq, bwControl, this, assessmentEntry, courseRe, courseNode.getIdent());
+		displayCtrl = new AssessmentTestDisplayController(ureq, bwControl, this, assessmentEntry, courseRe, courseNode.getIdent());
 		listenTo(displayCtrl);
 		if(displayCtrl.isTerminated()) {
 			//do nothing

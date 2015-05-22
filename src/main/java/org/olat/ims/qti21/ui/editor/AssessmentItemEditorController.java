@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui;
+package org.olat.ims.qti21.ui.editor;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -26,29 +26,40 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+
 /**
  * 
- * Initial date: 21.05.2015<br>
+ * Initial date: 22.05.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21AssessmentResultController extends BasicController {
+public class AssessmentItemEditorController extends BasicController {
 	
-	public QTI21AssessmentResultController(UserRequest ureq, WindowControl wControl) {
+	private final AssessmentItem assessmentItem;
+	private final VelocityContainer mainVC;
+	
+	public AssessmentItemEditorController(UserRequest ureq, WindowControl wControl,
+			AssessmentItem assessmentItem) {
 		super(ureq, wControl);
+		this.assessmentItem = assessmentItem;
 		
-		VelocityContainer mainVC = createVelocityContainer("assessment_results");
+		mainVC = createVelocityContainer("assessment_item_editor");
 		
 		putInitialPanel(mainVC);
+		
 	}
-	
+
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		//
+	}
+
 	@Override
 	protected void doDispose() {
 		//
 	}
 	
-	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		//
-	}
+	
+
 }

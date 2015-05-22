@@ -21,7 +21,7 @@ package org.olat.ims.qti21;
 
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.ims.qti21.repository.handlers.QTI21AssessmentHandler;
+import org.olat.ims.qti21.repository.handlers.QTI21AssessmentTestHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,7 +37,7 @@ import org.springframework.stereotype.Service;
 public class QTI21Module extends AbstractSpringModule {
 	
 	@Autowired
-	private QTI21AssessmentHandler assessmentHandler;
+	private QTI21AssessmentTestHandler assessmentHandler;
 	
 	@Value("${qti21.math.assessment.extension.enabled:true}")
 	private boolean mathAssessExtensionEnabled;

@@ -17,18 +17,38 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21;
+package org.olat.ims.qti21.ui;
+
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 
 /**
  * 
- * 
- *  //TODO <rubricBlock><div></div></rubricBlock>: add a div
- *  //TODO <prompt><p></p></prompt>: remove the p's
- * 
- * Initial date: 11.05.2015<br>
+ * Initial date: 21.05.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class OnyxToQTIWorks {
-
+public class AssessmentResultController extends BasicController {
+	
+	public AssessmentResultController(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl);
+		
+		VelocityContainer mainVC = createVelocityContainer("assessment_results");
+		
+		putInitialPanel(mainVC);
+	}
+	
+	@Override
+	protected void doDispose() {
+		//
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		//
+	}
 }

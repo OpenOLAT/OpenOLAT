@@ -39,8 +39,9 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.InMemoryOutcomesListener;
-import org.olat.ims.qti21.ui.QTI21DisplayController;
+import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.EditionSupport;
@@ -59,7 +60,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class QTI21AssessmentHandler extends FileHandler {
+public class QTI21AssessmentTestHandler extends FileHandler {
 
 	@Override
 	public String getSupportedType() {
@@ -124,7 +125,7 @@ public class QTI21AssessmentHandler extends FileHandler {
 
 	@Override
 	public EditionSupport supportsEdit(OLATResourceable resource) {
-		return EditionSupport.no;
+		return EditionSupport.yes;
 	}
 
 	@Override
@@ -136,14 +137,15 @@ public class QTI21AssessmentHandler extends FileHandler {
 					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
 							RepositoryEntry entry, RepositoryEntrySecurity reSecurity, AssessmentMode mode) {
 						InMemoryOutcomesListener listener = new InMemoryOutcomesListener();
-						return new QTI21DisplayController(uureq, wwControl, listener, entry, null, null);
+						return new AssessmentTestDisplayController(uureq, wwControl, listener, entry, null, null);
 					}
 				});
 	}
 
 	@Override
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar) {
-		return null;
+		AssessmentTestComposerController editorCtrl = new AssessmentTestComposerController(ureq, wControl, toolbar, re);
+		return editorCtrl;
 	}
 
 	@Override

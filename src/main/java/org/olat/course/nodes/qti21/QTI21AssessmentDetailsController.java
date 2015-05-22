@@ -44,7 +44,7 @@ import org.olat.course.nodes.qti21.QTI21TestSessionTableModel.TSCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.UserTestSession;
-import org.olat.ims.qti21.ui.QTI21AssessmentResultController;
+import org.olat.ims.qti21.ui.AssessmentResultController;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -64,7 +64,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private QTI21AssessmentCourseNode courseNode;
 	
 	private CloseableModalController cmc;
-	private QTI21AssessmentResultController resultCtrl;
+	private AssessmentResultController resultCtrl;
 	
 	@Autowired
 	private QTI21Service qtiService;
@@ -142,7 +142,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private void doOpenResult(UserRequest ureq, UserTestSession row) {
 		if(resultCtrl != null) return;
 		
-		resultCtrl = new QTI21AssessmentResultController(ureq, getWindowControl());
+		resultCtrl = new AssessmentResultController(ureq, getWindowControl());
 		listenTo(resultCtrl);
 		cmc = new CloseableModalController(getWindowControl(), "close", resultCtrl.getInitialComponent(),
 				true, translate("table.header.results"));

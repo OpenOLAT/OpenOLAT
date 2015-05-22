@@ -17,40 +17,49 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui;
+package org.olat.ims.qti21.ui.editor;
 
-import org.olat.ims.qti21.OutcomesListener;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+
+import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 
 /**
- * Hold the score and pass values in memory
  * 
- * 
- * Initial date: 20.05.2015<br>
+ * Initial date: 22.05.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class InMemoryOutcomesListener implements OutcomesListener {
+public class AssessmentTestPartEditorController extends BasicController {
 	
-	private Float score;
-	private Boolean pass;
-
-	public Float getScore() {
-		return score;
-	}
+	private final TestPart testPart;
+	private final VelocityContainer mainVC;
 	
-	public Boolean getPass() {
-		return pass;
+	public AssessmentTestPartEditorController(UserRequest ureq, WindowControl wControl,
+			TestPart testPart) {
+		super(ureq, wControl);
+		this.testPart = testPart;
+		
+		mainVC = createVelocityContainer("assessment_test_part_editor");
+		
+		putInitialPanel(mainVC);
+		
 	}
 
 	@Override
-	public void updateOutcomes(Float score, Boolean pass) {
-		this.score = score;
-		this.pass = pass;
+	protected void event(UserRequest ureq, Component source, Event event) {
+		//
 	}
 
 	@Override
-	public void submit(Float score, Boolean pass) {
-		this.score = score;
-		this.pass = pass;
+	protected void doDispose() {
+		//
 	}
+	
+	
+
 }

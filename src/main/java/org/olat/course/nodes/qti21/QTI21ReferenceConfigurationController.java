@@ -43,7 +43,7 @@ import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.ui.InMemoryOutcomesListener;
-import org.olat.ims.qti21.ui.QTI21DisplayController;
+import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
@@ -152,7 +152,7 @@ public class QTI21ReferenceConfigurationController extends BasicController {
 			} else {
 				removeAsListenerAndDispose(previewCtr);
 				InMemoryOutcomesListener listener = new InMemoryOutcomesListener();
-				previewCtr = new QTI21DisplayController(ureq, getWindowControl(), listener, re, null, null);
+				previewCtr = new AssessmentTestDisplayController(ureq, getWindowControl(), listener, re, null, null);
 				stackPanel.pushController(translate("preview"), previewCtr);
 			}
 		} else if (source == editLink) {

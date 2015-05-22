@@ -195,6 +195,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_review:before { content: $fa-var-eye;}
 .o_icon_rss:before { content: $fa-var-rss;}
 .o_icon_rss_unsubscribe:before { content: $fa-var-rss; color: #996633;}
+.o_icon_save:before { content: $fa-var-save;}
 .o_icon_search:before { content: $fa-var-search;}
 .o_icon_select:before { content: $fa-var-check; }
 .o_icon_send:before { content: $fa-var-envelope;}
@@ -248,7 +249,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_FileResource-SCORMCP_icon:before { content: $fa-var-archive; }
 .o_FileResource-SURVEY_icon:before { content: $fa-var-meh-o; }
 .o_FileResource-TEST_icon:before { content: $fa-var-pencil-square-o; }
-.o_FileResource-IMSQTI21_icon:before { content: $fa-var-pencil-square-o; }
+.o_FileResource-IMSQTI21_icon:before { content: $fa-var-graduation-cap; }
 .o_FileResource-WIKI_icon:before { content: $fa-var-globe; }
 .o_FileResource-SHAREDFOLDER_icon:before { content: $fa-var-folder-open-o; }
 .o_FileResource-GLOSSARY_icon:before { content: $fa-var-graduation-cap; }

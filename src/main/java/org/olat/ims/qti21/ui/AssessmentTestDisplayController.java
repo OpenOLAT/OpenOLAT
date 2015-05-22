@@ -40,6 +40,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
+import org.olat.ims.qti21.OutcomesListener;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.UserTestSession;
@@ -86,7 +87,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21DisplayController extends BasicController implements CandidateSessionContext {
+public class AssessmentTestDisplayController extends BasicController implements CandidateSessionContext {
 	
 	private final File fUnzippedDirRoot;
 	private final String mapperUri;
@@ -116,7 +117,7 @@ public class QTI21DisplayController extends BasicController implements Candidate
 	 * @param courseRe Course repository entry (optional)
 	 * @param subIdent The course node identifier (mandatory only if in a course is used)
 	 */
-	public QTI21DisplayController(UserRequest ureq, WindowControl wControl, OutcomesListener listener,
+	public AssessmentTestDisplayController(UserRequest ureq, WindowControl wControl, OutcomesListener listener,
 			RepositoryEntry entry, RepositoryEntry courseRe, String courseSubIdent) {
 		super(ureq, wControl);
 		
@@ -761,7 +762,7 @@ public class QTI21DisplayController extends BasicController implements Candidate
 			qtiEl.setResourceLocator(inputResourceLocator);
 			qtiEl.setTestSessionController(testSessionController);
 			qtiEl.setAssessmentObjectUri(qtiService.createAssessmentObjectUri(fUnzippedDirRoot));
-			qtiEl.setCandidateSessionContext(QTI21DisplayController.this);
+			qtiEl.setCandidateSessionContext(AssessmentTestDisplayController.this);
 			qtiEl.setMapperUri(mapperUri);
 		}
 		
