@@ -36,6 +36,20 @@
 			#end
 			</ul></td>
 		</tr>
+		#if($referenceDetails && !$referenceDetails.isEmpty())
+		<tr>
+			<th>$r.translate("details.referenceinfoheader")</th>
+			<td><ul class="list-unstyled">
+			#foreach($reference in $referenceDetails)
+				<li>$reference</li>
+			#end
+			</ul></td>
+		</tr>
+		#end
+		#if($description && $description.length() > 0)
+		<tr>
+			<td colspan="2"><label>$r.translate("cif.description"):</label></br>$r.xssScan($description)</td>
+		</tr>
+		#end
 	</tbody></table>
-	<p>$r.xssScan($description)</p>
 </div>

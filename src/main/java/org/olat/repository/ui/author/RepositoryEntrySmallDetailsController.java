@@ -32,6 +32,7 @@ import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoyUIFactory;
+import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -45,6 +46,8 @@ public class RepositoryEntrySmallDetailsController extends BasicController {
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private ReferenceManager referenceManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	
@@ -72,6 +75,11 @@ public class RepositoryEntrySmallDetailsController extends BasicController {
     		}
 		}
 		mainVC.contextPut("authornames", authorNames);
+		
+		List<String> referenceDetails = referenceManager.getReferencesToSummary(entry.getOlatResource());
+        if (referenceDetails != null) {
+        	mainVC.contextPut("referenceDetails", referenceDetails);
+        }
 		
 		
 		putInitialPanel(mainVC);
