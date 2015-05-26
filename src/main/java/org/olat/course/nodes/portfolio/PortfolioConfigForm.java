@@ -178,7 +178,7 @@ public class PortfolioConfigForm extends FormBasicController {
 		if (source == changeMapLink || source == chooseMapLink) {
 			removeAsListenerAndDispose(searchController);
 			searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, new String[]{EPTemplateMapResource.TYPE_NAME}, translate("select.map2"),
-					false, true, false, false, false);			
+					false, true, false, false);			
 			listenTo(searchController);
 			removeAsListenerAndDispose(cmc);
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent(), true, translate("select.map"));

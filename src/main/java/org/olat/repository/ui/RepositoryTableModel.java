@@ -43,6 +43,8 @@ import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.components.table.TableController;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -81,7 +83,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	/**
 	 * Identifies a table launch event (if clicked on an item in the name column).
 	 */
-	public static final String TABLE_ACTION_SELECT_ENTRY = "rtbSelectEntry";
+	public static final String TABLE_ACTION_INFOS = "rtbInfos";
 	/**
 	 * Identifies a multi selection
 	 */
@@ -120,7 +122,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	 * @param enableDirectLaunch
 	 * @return the position of the display name column
 	 */
-	public ColumnDescriptor addColumnDescriptors(TableController tableCtr, boolean select, boolean remove, boolean preview) {
+	public ColumnDescriptor addColumnDescriptors(TableController tableCtr, boolean selectTitle, boolean selectIcon, boolean remove, boolean infos) {
 		Locale loc = translator.getLocale();
 
 		CustomCellRenderer acRenderer = new RepositoryEntryACColumnDescriptor();
@@ -170,7 +172,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 		tableCtr.addColumnDescriptor(new RepositoryEntryTypeColumnDescriptor("table.header.typeimg", RepoCols.repoEntry.ordinal(), null, 
 				loc, ColumnDescriptor.ALIGNMENT_LEFT));
 		
-		String selectAction = select ? TABLE_ACTION_SELECT_LINK : null;
+		String selectAction = selectTitle ? TABLE_ACTION_SELECT_LINK : null;
 		if(repositoryModule.isManagedRepositoryEntries()) {
 			tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.externalid", RepoCols.externalId.ordinal(), selectAction, loc));
 			tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.externalref", RepoCols.externalRef.ordinal(), selectAction, loc));
@@ -242,16 +244,20 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.date", RepoCols.creationDate.ordinal(), null, loc));
 		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.lastusage", RepoCols.lastUsage.ordinal(), null, loc));
 		
-		if(select) {		
+		if(infos) {
+			tableCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_INFOS, "info.header", translator.translate("info.header")){
+				@Override
+				public void renderValue(StringOutput so, int row, Renderer renderer) {
+					so.append("<i id='o_core").append(row).append("ref' class='o_icon o_icon-lg o_icon_info_resource'> </i>");
+				}
+			});
+		}
+		if(selectIcon) {		
 			tableCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_SELECT_LINK, "select", translator.translate("table.select")));
 		}
 		if(remove) {	
 			tableCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_REMOVE_LINK, "remove", translator.translate("remove")));
 		}
-		if(preview) {
-			tableCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_SELECT_ENTRY, "preview.header", translator.translate("table.preview")));
-		}
-		
 		return nameColDesc;
 	}
 	

@@ -107,6 +107,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_import:before { content: $fa-var-upload; }
 .o_icon_info:before { content: $fa-var-info-circle; color: $brand-info}
 .o_icon_info_msg:before { content: $fa-var-exclamation-circle; color: $brand-danger}
+.o_icon_info_resource:before { content: $fa-var-info-circle;}
 .o_icon_inline_editable:before { content: $fa-var-edit; } 
 .o_icon_institution:before { content: $fa-var-bank; }
 .o_icon_italic:before { content: $fa-var-italic; }

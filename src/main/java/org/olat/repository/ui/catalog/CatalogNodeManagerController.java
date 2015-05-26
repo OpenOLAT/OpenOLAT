@@ -619,7 +619,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		removeAsListenerAndDispose(entrySearchCtrl);
 		removeAsListenerAndDispose(cmc);
 		
-		entrySearchCtrl = new RepositorySearchController(translate("choose"), ureq, getWindowControl(), true, false, false, new String[0], null);
+		entrySearchCtrl = new RepositorySearchController(translate("choose"), ureq, getWindowControl(), true, false, new String[0], null);
 		listenTo(entrySearchCtrl);
 		// OLAT-Admin has search form
 		if (ureq.getUserSession().getRoles().isOLATAdmin()) {

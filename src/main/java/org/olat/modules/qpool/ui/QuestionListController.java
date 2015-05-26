@@ -608,7 +608,7 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(importTestCtrl);
 		String[] allowed = new String[]{ TestFileResource.TYPE_NAME, SurveyFileResource.TYPE_NAME };
 		importTestCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, allowed,
-				null, translate("import.repository"), false, false, false, false, true, Can.copyable);
+				null, translate("import.repository"), false, false, false, true, Can.copyable);
 		listenTo(importTestCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),

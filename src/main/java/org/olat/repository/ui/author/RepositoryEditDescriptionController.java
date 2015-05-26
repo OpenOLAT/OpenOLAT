@@ -63,7 +63,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.controllers.MediaContainerFilter;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;

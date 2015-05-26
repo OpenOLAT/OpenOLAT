@@ -37,6 +37,7 @@ import org.olat.core.gui.components.table.TableGuiConfiguration;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
@@ -49,6 +50,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.ui.RepositoryTableModel;
+import org.olat.repository.ui.author.RepositoryEntrySmallDetailsController;
 
 /**
  * 
@@ -60,8 +62,10 @@ public class BGConfigResourcesStepController extends StepFormBasicController {
 	private TableController resourcesCtr;
 	private RepositoryTableModel repoTableModel;
 	
-	private ReferencableEntriesSearchController repoSearchCtr;
 	private CloseableModalController cmc;
+	private CloseableCalloutWindowController calloutCtrl;
+	private RepositoryEntrySmallDetailsController infosCtrl;
+	private ReferencableEntriesSearchController repoSearchCtr;
 	
 	public BGConfigResourcesStepController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			StepsRunContext runContext) {
@@ -82,7 +86,7 @@ public class BGConfigResourcesStepController extends StepFormBasicController {
 		listenTo(resourcesCtr);
 
 		repoTableModel = new RepositoryTableModel(getLocale());
-		repoTableModel.addColumnDescriptors(resourcesCtr, false, true, false);
+		repoTableModel.addColumnDescriptors(resourcesCtr, false, false, true, true);
 		resourcesCtr.setTableDataModel(repoTableModel);
 		
 		((FormLayoutContainer)formLayout).put("resources", resourcesCtr.getInitialComponent());
@@ -135,6 +139,9 @@ public class BGConfigResourcesStepController extends StepFormBasicController {
 					if(repoTableModel.getObjects().remove(re)) {
 						resourcesCtr.modelChanged();
 					}
+				} else if(RepositoryTableModel.TABLE_ACTION_INFOS.equals(actionid)) {
+					int row = resourcesCtr.getIndexOfSortedObject(re);
+					doOpenInfos(ureq, re, row);
 				}
 			}
 		}
@@ -148,7 +155,7 @@ public class BGConfigResourcesStepController extends StepFormBasicController {
 			removeAsListenerAndDispose(cmc);
 			
 			repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, new String[]{CourseModule.getCourseTypeName()},
-					translate("resources.add"), true, true, true, true, true);
+					translate("resources.add"), true, true, true, true);
 			listenTo(repoSearchCtr);
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), this.repoSearchCtr.getInitialComponent(), true, translate("resources.add.title"));
 			listenTo(cmc);
@@ -167,5 +174,18 @@ public class BGConfigResourcesStepController extends StepFormBasicController {
 		List<RepositoryEntry> entries = repoTableModel.getObjects();
 		configuration.setResources(entries);
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+	}
+	
+	private void doOpenInfos(UserRequest ureq, RepositoryEntry repositoryEntry, int rowId) {
+		removeAsListenerAndDispose(calloutCtrl);
+		removeAsListenerAndDispose(infosCtrl);
+		
+		infosCtrl = new RepositoryEntrySmallDetailsController(ureq, getWindowControl(), repositoryEntry);
+		listenTo(infosCtrl);
+		
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), infosCtrl.getInitialComponent(),
+				"ore" + rowId + "ref", null, true, null);
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
 	}
 }

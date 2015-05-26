@@ -44,6 +44,7 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -60,6 +61,7 @@ import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.controllers.RepositoryEntryFilter;
 import org.olat.repository.controllers.RepositorySearchController.Can;
 import org.olat.repository.ui.RepositoryTableModel;
+import org.olat.repository.ui.author.RepositoryEntrySmallDetailsController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -83,6 +85,9 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 	private ReferencableEntriesSearchController repoSearchCtr;
 	private CloseableModalController cmc;
 	private DialogBoxController confirmRemoveResource;
+	private CloseableCalloutWindowController calloutCtrl;
+	private RepositoryEntrySmallDetailsController infosCtrl;
+	
 	private Link addTabResourcesButton;
 
 	private BusinessGroup group;
@@ -113,7 +118,7 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 		List<RepositoryEntry> repoTableModelEntries = businessGroupService.findRepositoryEntries(Collections.singletonList(group), 0, -1);
 		repoTableModel.setObjects(repoTableModelEntries);
 		
-		ColumnDescriptor sortCol = repoTableModel.addColumnDescriptors(resourcesCtr, false, !managed, false);	
+		ColumnDescriptor sortCol = repoTableModel.addColumnDescriptors(resourcesCtr, false, false, !managed, true);	
 		resourcesCtr.setTableDataModel(repoTableModel);
 		resourcesCtr.setSortColumn(sortCol, true);
 		
@@ -138,7 +143,7 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 			RepositoryEntryFilter filter = new ManagedEntryfilter();
 			repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq,
 					new String[]{ CourseModule.getCourseTypeName() }, filter,
-					translate("resources.add"), true, true, true, true, true, Can.referenceable);
+					translate("resources.add"), true, true, true, true, Can.referenceable);
 			listenTo(repoSearchCtr);
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), repoSearchCtr.getInitialComponent(), true, translate("resources.add.title"));
 			listenTo(cmc);
@@ -182,6 +187,9 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 					String text = getTranslator().translate("resource.remove", new String[] { group.getName(), re.getDisplayname() });
 					confirmRemoveResource = activateYesNoDialog(ureq, null, text, this.confirmRemoveResource);
 					confirmRemoveResource.setUserObject(re);
+				} else if(RepositoryTableModel.TABLE_ACTION_INFOS.equals(actionid)) {
+					int row = resourcesCtr.getIndexOfSortedObject(re);
+					doOpenInfos(ureq, re, row);
 				}
 			}
 		} else if (source == confirmRemoveResource) {
@@ -191,6 +199,19 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		}
+	}
+	
+	private void doOpenInfos(UserRequest ureq, RepositoryEntry repositoryEntry, int rowId) {
+		removeAsListenerAndDispose(calloutCtrl);
+		removeAsListenerAndDispose(infosCtrl);
+		
+		infosCtrl = new RepositoryEntrySmallDetailsController(ureq, getWindowControl(), repositoryEntry);
+		listenTo(infosCtrl);
+		
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), infosCtrl.getInitialComponent(),
+				"ore" + rowId + "ref", null, true, null);
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
 	}
 	
 	private void doRemoveResource(RepositoryEntry entry) {
