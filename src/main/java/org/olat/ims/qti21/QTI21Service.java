@@ -80,7 +80,17 @@ public interface QTI21Service {
 			CandidateItemEventType itemEventType, TestPlanNodeKey itemKey, TestSessionState testSessionState, NotificationRecorder notificationRecorder);
 	
 	
+	
+
+	public UserTestSession finishItemSession(UserTestSession candidateSession, AssessmentResult assessmentResul, Date timestamp);
+	
+
+	public void recordItemAssessmentResult(UserTestSession candidateSession, AssessmentResult assessmentResult);
+	
 	public CandidateEvent recordCandidateItemEvent(UserTestSession candidateSession, CandidateItemEventType itemEventType,
 			ItemSessionState itemSessionState, NotificationRecorder notificationRecorder);
+	
+	public CandidateEvent recordCandidateItemEvent(UserTestSession candidateSession,
+            CandidateItemEventType itemEventType, ItemSessionState itemSessionState);
 
 }

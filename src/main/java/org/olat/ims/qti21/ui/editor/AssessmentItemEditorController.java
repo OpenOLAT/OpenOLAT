@@ -28,6 +28,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
+import org.olat.repository.RepositoryEntry;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
@@ -45,14 +46,14 @@ public class AssessmentItemEditorController extends BasicController {
 	
 	private AssessmentItemDisplayController displayCtrl;
 	
-	public AssessmentItemEditorController(UserRequest ureq, WindowControl wControl,
+	public AssessmentItemEditorController(UserRequest ureq, WindowControl wControl, RepositoryEntry testEntry,
 			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef, File unzippedDirectory) {
 		super(ureq, wControl);
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		
 		mainVC = createVelocityContainer("assessment_item_editor");
 		
-		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(), resolvedAssessmentItem, itemRef, unzippedDirectory);
+		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(), testEntry, resolvedAssessmentItem, itemRef, unzippedDirectory);
 		listenTo(displayCtrl);
 		mainVC.put("display", displayCtrl.getInitialComponent());
 		

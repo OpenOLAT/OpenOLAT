@@ -191,7 +191,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		fireEvent(ureq, new QTI21Event(QTI21Event.EXIT));
 	}
 
-	private void processQTIEvent(UserRequest ureq, QTIWorksEvent qe) {
+	private void processQTIEvent(UserRequest ureq, QTIWorksAssessmentTestEvent qe) {
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		
 		switch(qe.getEvent()) {
@@ -211,7 +211,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				processTestPartNavigation(ureq);
 				break;
 			case response:
-				processResponse(ureq, qe.getStringResponseMap());
+				handleResponse(ureq, qe.getStringResponseMap());
 				break;
 			case endTestPart:
 				processEndTestPart(ureq);
@@ -379,7 +379,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
     //        final Map<Identifier, MultipartFile> fileResponseMap,
     //        final String candidateComment)
             
-	private void processResponse(UserRequest ureq, Map<Identifier, StringResponseData> stringResponseMap) {
+	private void handleResponse(UserRequest ureq, Map<Identifier, StringResponseData> stringResponseMap) {
 		String candidateComment = null;
 		
 		//Assert.notNull(candidateSessionContext, "candidateSessionContext");
@@ -780,8 +780,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 			if(source == qtiEl) {
-				if(event instanceof QTIWorksEvent) {
-					QTIWorksEvent qe = (QTIWorksEvent)event;
+				if(event instanceof QTIWorksAssessmentTestEvent) {
+					QTIWorksAssessmentTestEvent qe = (QTIWorksAssessmentTestEvent)event;
 					processQTIEvent(ureq, qe);
 				}
 			}

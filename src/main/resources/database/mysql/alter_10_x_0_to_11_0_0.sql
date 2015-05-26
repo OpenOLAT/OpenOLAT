@@ -10,7 +10,7 @@ create table o_qti_test_session (
    fk_identity bigint not null,
    fk_entry bigint not null,
    fk_course bigint,
-   q_course_subident varchar(36),
+   q_course_subident varchar(64),
    primary key (id)
 );
 alter table o_qti_test_session ENGINE = InnoDB;

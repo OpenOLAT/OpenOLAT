@@ -10,7 +10,7 @@ create table o_qti_test_session (
    fk_identity int8 not null,
    fk_entry int8 not null,
    fk_course int8,
-   q_course_subident varchar(36),
+   q_course_subident varchar(64),
    primary key (id)
 );
 

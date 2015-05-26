@@ -72,9 +72,9 @@ public class AssessmentItemComponentRenderer extends DefaultComponentRenderer {
 		ItemSessionController itemSessionController = cmp.getItemSessionController();
 		AssessmentItemFormItem item = cmp.getQtiItem();
 		
-		if(itemSessionController.getItemSessionState().isEnded()) {
-			sb.append("<h1>The End <small>say the renderer</small></h1>");
-		} else {
+		//if(itemSessionController.getItemSessionState().isEnded()) {
+		//	sb.append("<h1>The End <small>say the renderer</small></h1>");
+		//} else {
 			Component rootFormCmp = item.getRootForm().getInitialComponent();
 			
 			URLBuilder formUbuBuilder = renderer.getUrlBuilder().createCopyFor(rootFormCmp);
@@ -89,11 +89,11 @@ public class AssessmentItemComponentRenderer extends DefaultComponentRenderer {
 	        final String mapperUrl = item.getMapperUri();
 	        final ItemRenderingOptions renderingOptions = new ItemRenderingOptions();
 	        configureBaseRenderingOptions(sessionBaseUrl, mapperUrl, renderingOptions);
-	        renderingOptions.setEndUrl(sessionBaseUrl + "/close");
-	        renderingOptions.setSolutionUrl(sessionBaseUrl + "/solution");
-	        renderingOptions.setSoftResetUrl(sessionBaseUrl + "/reset-soft");
-	        renderingOptions.setHardResetUrl(sessionBaseUrl + "/reset-hard");
-	        renderingOptions.setExitUrl(sessionBaseUrl + "/exit");
+	        renderingOptions.setEndUrl(sessionBaseUrl + "close");
+	        renderingOptions.setSolutionUrl(sessionBaseUrl + "solution");
+	        renderingOptions.setSoftResetUrl(sessionBaseUrl + "reset-soft");
+	        renderingOptions.setHardResetUrl(sessionBaseUrl + "reset-hard");
+	        renderingOptions.setExitUrl(sessionBaseUrl + "exit");
 	
 	        Writer writer = new StringWriter();
 	        StreamResult result = new StreamResult(writer);
@@ -102,7 +102,7 @@ public class AssessmentItemComponentRenderer extends DefaultComponentRenderer {
 	        String output = writer.toString();
         	output = replaces(output);
         	sb.append(output);
-		}
+		//}
 	}
 	
 	private String replaces(String result) {
@@ -202,16 +202,16 @@ public class AssessmentItemComponentRenderer extends DefaultComponentRenderer {
         if (itemEventType==CandidateItemEventType.SOLUTION || itemSessionState.isEnded()) {
             /* Item session is ended (closed) */
             renderingRequest.setEndAllowed(false);
-            renderingRequest.setHardResetAllowed(true /* itemDeliverySettings.isAllowHardResetWhenEnded() */);
-            renderingRequest.setSoftResetAllowed(true /* itemDeliverySettings.isAllowSoftResetWhenEnded() */);
+            renderingRequest.setHardResetAllowed(false /* itemDeliverySettings.isAllowHardResetWhenEnded() */);
+            renderingRequest.setSoftResetAllowed(false /* itemDeliverySettings.isAllowSoftResetWhenEnded() */);
             renderingRequest.setSolutionAllowed(true /* itemDeliverySettings.isAllowSolutionWhenEnded() */);
             renderingRequest.setCandidateCommentAllowed(false);
         }
         else if (itemSessionState.isOpen()) {
             /* Item session is open (interacting) */
             renderingRequest.setEndAllowed(true /* itemDeliverySettings.isAllowEnd() */);
-            renderingRequest.setHardResetAllowed(true /* itemDeliverySettings.isAllowHardResetWhenOpen() */);
-            renderingRequest.setSoftResetAllowed(true /* itemDeliverySettings.isAllowSoftResetWhenOpen() */);
+            renderingRequest.setHardResetAllowed(false /* itemDeliverySettings.isAllowHardResetWhenOpen() */);
+            renderingRequest.setSoftResetAllowed(false /* itemDeliverySettings.isAllowSoftResetWhenOpen() */);
             renderingRequest.setSolutionAllowed(true /* itemDeliverySettings.isAllowSolutionWhenOpen() */);
             renderingRequest.setCandidateCommentAllowed(false /* itemDeliverySettings.isAllowCandidateComment() */);
         }
@@ -224,8 +224,7 @@ public class AssessmentItemComponentRenderer extends DefaultComponentRenderer {
         //final List<CandidateEventNotification> notifications = candidateEvent.getNotifications();
         try {
             assessmentRenderer.renderItem(renderingRequest, result);
-        }
-        catch (final RuntimeException e) {
+        } catch (final RuntimeException e) {
             /* Rendering is complex and may trigger an unexpected Exception (due to a bug in the XSLT).
              * In this case, the best we can do for the candidate is to 'explode' the session.
              * See bug #49.

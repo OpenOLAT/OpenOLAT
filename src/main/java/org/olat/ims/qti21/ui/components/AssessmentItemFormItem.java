@@ -19,16 +19,8 @@
  */
 package org.olat.ims.qti21.ui.components;
 
-import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.advanceTestPart;
-import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.endTestPart;
-import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.exitTest;
-import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.finishItem;
-import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.itemSolution;
-import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.response;
-import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.reviewItem;
-import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.reviewTestPart;
-import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.selectItem;
-import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.testPartNavigation;
+import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.response;
+import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.*;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -39,7 +31,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
-import org.olat.ims.qti21.ui.QTIWorksEvent;
+import org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent;
 
 import uk.ac.ed.ph.jqtiplus.exception.QtiParseException;
 import uk.ac.ed.ph.jqtiplus.running.ItemSessionController;
@@ -117,42 +109,26 @@ public class AssessmentItemFormItem extends FormItemImpl {
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		String uri = ureq.getModuleURI();
-		if(uri.startsWith(selectItem.getPath())) {
-			String sub = uri.substring(selectItem.getPath().length());
-			QTIWorksEvent event = new QTIWorksEvent(selectItem, sub, this);
-			getRootForm().fireFormEvent(ureq, event);
-		} else if(uri.startsWith(finishItem.getPath())) {
-			QTIWorksEvent event = new QTIWorksEvent(finishItem, this);
-			getRootForm().fireFormEvent(ureq, event);
-		} else if(uri.startsWith(reviewItem.getPath())) {
-			String sub = uri.substring(reviewItem.getPath().length());
-			QTIWorksEvent event = new QTIWorksEvent(reviewItem, sub, this);
-			getRootForm().fireFormEvent(ureq, event);
-		} else if(uri.startsWith(itemSolution.getPath())) {
-			String sub = uri.substring(itemSolution.getPath().length());
-			QTIWorksEvent event = new QTIWorksEvent(itemSolution, sub, this);
-			getRootForm().fireFormEvent(ureq, event);
-		} else if(uri.startsWith(testPartNavigation.getPath())) {
-			QTIWorksEvent event = new QTIWorksEvent(testPartNavigation, this);
+		if(uri.startsWith(solution.getPath())) {
+			QTIWorksAssessmentItemEvent event = new QTIWorksAssessmentItemEvent(solution, this);
 			getRootForm().fireFormEvent(ureq, event);
 		} else if(uri.startsWith(response.getPath())) {
 			final Map<Identifier, StringResponseData> stringResponseMap = extractStringResponseData();
 			//TODO Extract and import file responses (if appropriate)
-			QTIWorksEvent event = new QTIWorksEvent(response, stringResponseMap, this);
+			QTIWorksAssessmentItemEvent event = new QTIWorksAssessmentItemEvent(response, stringResponseMap, this);
 			getRootForm().fireFormEvent(ureq, event);
-		} else if(uri.startsWith(endTestPart.getPath())) {
-			QTIWorksEvent event = new QTIWorksEvent(endTestPart, this);
+		} else if(uri.startsWith(resethard.getPath())) {
+			QTIWorksAssessmentItemEvent event = new QTIWorksAssessmentItemEvent(resethard, this);
 			getRootForm().fireFormEvent(ureq, event);
-		} else if(uri.startsWith(advanceTestPart.getPath())) {
-			QTIWorksEvent event = new QTIWorksEvent(advanceTestPart, this);
+		} else if(uri.startsWith(resetsoft.getPath())) {
+			QTIWorksAssessmentItemEvent event = new QTIWorksAssessmentItemEvent(resetsoft, this);
 			getRootForm().fireFormEvent(ureq, event);
-		} else if(uri.startsWith(reviewTestPart.getPath())) {
-			QTIWorksEvent event = new QTIWorksEvent(reviewTestPart, this);
+		} else if(uri.startsWith(close.getPath())) {
+			QTIWorksAssessmentItemEvent event = new QTIWorksAssessmentItemEvent(close, this);
 			getRootForm().fireFormEvent(ureq, event);
-		} else if(uri.startsWith(exitTest.getPath())) {
-			QTIWorksEvent event = new QTIWorksEvent(exitTest, this);
+		} else if(uri.startsWith(exit.getPath())) {
+			QTIWorksAssessmentItemEvent event = new QTIWorksAssessmentItemEvent(exit, this);
 			getRootForm().fireFormEvent(ureq, event);
-			
 		}
 	}
 	

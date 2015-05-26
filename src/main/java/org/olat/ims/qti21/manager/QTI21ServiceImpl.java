@@ -268,4 +268,32 @@ public class QTI21ServiceImpl implements QTI21Service {
     		ItemSessionState itemSessionState, NotificationRecorder notificationRecorder) {
     	return eventDao.create(itemEventType, itemSessionState);
     }
+	
+	
+
+	@Override
+	public CandidateEvent recordCandidateItemEvent( UserTestSession candidateSession, CandidateItemEventType itemEventType,
+			ItemSessionState itemSessionState) {
+		return recordCandidateItemEvent(candidateSession, itemEventType, itemSessionState, null);
+	}
+
+	@Override
+	public UserTestSession finishItemSession(UserTestSession candidateSession, AssessmentResult assessmentResult, Date timestamp) {
+		/* Mark session as finished */
+        candidateSession.setFinishTime(timestamp);
+
+        /* Also nullify LIS result info for session. These will be updated later, if pre-conditions match for sending the result back */
+        //candidateSession.setLisOutcomeReportingStatus(null);
+        //candidateSession.setLisScore(null);
+        candidateSession = testSessionDao.update(candidateSession);
+
+        /* Finally schedule LTI result return (if appropriate and sane) */
+        //maybeScheduleLtiOutcomes(candidateSession, assessmentResult);
+		return candidateSession;
+	}
+
+	@Override
+	public void recordItemAssessmentResult(UserTestSession candidateSession, AssessmentResult assessmentResult) {
+		//do nothing for the mmoment
+	}
 }

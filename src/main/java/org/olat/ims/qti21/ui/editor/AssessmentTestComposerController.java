@@ -177,7 +177,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		} else if(uobject instanceof AssessmentItemRef) {
 			AssessmentItemRef itemRef = (AssessmentItemRef)uobject;
 			ResolvedAssessmentItem item = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
-			currentEditorCtrl = new AssessmentItemEditorController(ureq, getWindowControl(), item, itemRef, unzippedDirRoot);
+			currentEditorCtrl = new AssessmentItemEditorController(ureq, getWindowControl(), testEntry, item, itemRef, unzippedDirRoot);
 		}
 		
 		if(currentEditorCtrl != null) {

@@ -33,7 +33,7 @@ import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTIWorksEvent extends FormEvent {
+public class QTIWorksAssessmentTestEvent extends FormEvent {
 
 	private static final long serialVersionUID = 7767258131971848645L;
 	
@@ -75,19 +75,19 @@ public class QTIWorksEvent extends FormEvent {
 	private final String subCommand;
 	private final Map<Identifier, StringResponseData> stringResponseMap;
 	
-	public QTIWorksEvent(Event event,  FormItem source) {
+	public QTIWorksAssessmentTestEvent(Event event,  FormItem source) {
 		this(event, null, null, source);
 	}
 
-	public QTIWorksEvent(Event event, String subCommand, FormItem source) {
+	public QTIWorksAssessmentTestEvent(Event event, String subCommand, FormItem source) {
 		this(event, subCommand, null, source);
 	}
 	
-	public QTIWorksEvent(Event event, Map<Identifier, StringResponseData> stringResponseMap, FormItem source) {
+	public QTIWorksAssessmentTestEvent(Event event, Map<Identifier, StringResponseData> stringResponseMap, FormItem source) {
 		this(event, null, stringResponseMap, source);
 	}
 	
-	private QTIWorksEvent(Event event, String subCommand, Map<Identifier, StringResponseData> stringResponseMap, FormItem source) {
+	private QTIWorksAssessmentTestEvent(Event event, String subCommand, Map<Identifier, StringResponseData> stringResponseMap, FormItem source) {
 		super(event.name(), source);
 		this.subCommand = subCommand;
 		this.event = event;
