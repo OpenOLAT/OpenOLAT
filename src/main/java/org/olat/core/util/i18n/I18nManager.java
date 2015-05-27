@@ -201,11 +201,16 @@ public class I18nManager extends BasicManager {
 	 *         possible and not found
 	 */
 	public String getLocalizedString(String bundleName, String key, Object[] args, Locale locale, boolean overlayEnabled, boolean fallBackToDefaultLocale) {
-		return getLocalizedString(bundleName, key, args, locale, overlayEnabled, fallBackToDefaultLocale, true, true, 0);
+		return getLocalizedString(bundleName, key, args, locale, overlayEnabled, fallBackToDefaultLocale, true, true, true, 0);
 	}
 
 	public String getLocalizedString(String bundleName, String key, Object[] args, Locale locale, boolean overlayEnabled, boolean fallBackToDefaultLocale,
 			boolean fallBackToFallbackLocale, boolean resolveRecursively, int recursionLevel) {
+		return getLocalizedString(bundleName, key, args, locale, overlayEnabled, fallBackToDefaultLocale, fallBackToFallbackLocale, resolveRecursively, true, recursionLevel);
+	}
+	
+	private final String getLocalizedString(String bundleName, String key, Object[] args, Locale locale, boolean overlayEnabled, boolean fallBackToDefaultLocale,
+			boolean fallBackToFallbackLocale, boolean resolveRecursively, boolean allowDecoration, int recursionLevel) {
 		String msg = null;
 		Properties properties = null;
 		// a) If the overlay is enabled, lookup first in the overlay property
@@ -305,7 +310,7 @@ public class I18nManager extends BasicManager {
 		}
 
 		// Add markup code to identify translated strings
-		if (isCurrentThreadMarkLocalizedStringsEnabled() 
+		if (allowDecoration && isCurrentThreadMarkLocalizedStringsEnabled() 
 				&& !bundleName.startsWith(BUNDLE_INLINE_TRANSLATION_INTERCEPTOR)
 				&& !bundleName.startsWith(BUNDLE_EXCEPTION)
 				&& isInlineTranslationEnabledForKey(bundleName, key)) {
@@ -929,7 +934,7 @@ public class I18nManager extends BasicManager {
 				}
 			} else {
 				// Resolve using other bundle
-				String resolvedKey = getLocalizedString(toResolvedBundle, toResolvedKey, null, locale, overlayEnabled, true, true, true, recursionLevel);
+				String resolvedKey = getLocalizedString(toResolvedBundle, toResolvedKey, null, locale, overlayEnabled, true, true, true, false, recursionLevel);
 				if (StringHelper.containsNonWhitespace(resolvedKey)) {
 					resolvedValue.append(resolvedKey);
 					lastPos = matcher.end();
