@@ -56,6 +56,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.assessment.manager.AssessmentModeDAO;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.modules.reminder.manager.ReminderDAO;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
@@ -119,6 +120,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 	private UserCourseInformationsManager userCourseInformationsManager;
 	@Autowired
 	private AssessmentModeDAO assessmentModeDao;
+	@Autowired
+	private ReminderDAO reminderDao;
 
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
@@ -311,7 +314,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 		catalogManager.resourceableDeleted(entry);
 		// delete assessment modes
 		assessmentModeDao.delete(entry);
-		
+		// delete reminders
+		reminderDao.delete(entry);
 		//delete all policies
 		securityManager.deletePolicies(resource);
 		dbInstance.commit();

@@ -117,6 +117,15 @@ public class ReminderDAO {
 		numOfDeletedRows++;
 		return numOfDeletedRows;
 	}
+
+	public int delete(RepositoryEntry entry) {
+		int rowsDeleted = 0;
+		List<Reminder> reminders = getReminders(entry);
+		for(Reminder reminder:reminders) {
+			rowsDeleted += delete(reminder);
+		}
+		return rowsDeleted;
+	}
 	
 	/**
 	 * 
