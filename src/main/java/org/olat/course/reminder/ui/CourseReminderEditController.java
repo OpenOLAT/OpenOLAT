@@ -106,6 +106,7 @@ public class CourseReminderEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer generalCont = FormLayoutContainer.createVerticalFormLayout("general", getTranslator());
 		generalCont.setRootForm(mainForm);
+		generalCont.setFormContextHelp("Course Reminders");
 		formLayout.add(generalCont);
 
 		String key = reminder.getKey() == null ? "" : reminder.getKey().toString();
