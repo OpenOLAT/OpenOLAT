@@ -53,6 +53,8 @@ public class GroupTaskToCoachPage {
 		List<WebElement> rows = browser.findElements(tableRowBy);
 		WebElement selectLinkEl = null;
 		for(WebElement row:rows) {
+			String firstName = user.getFirstName();
+			String text = row.getText();
 			if(row.getText().contains(user.getFirstName())) {
 				selectLinkEl = row.findElement(selectLinkBy);
 			}
