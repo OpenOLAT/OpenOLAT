@@ -252,7 +252,8 @@ public class GTAParticipantController extends GTAAbstractController {
 		listenTo(submitDocCtrl);
 		mainVC.put("submitDocs", submitDocCtrl.getInitialComponent());
 		
-		submitButton  = LinkFactory.createCustomLink("run.submit.button", "submit", "run.submit.button", Link.BUTTON, mainVC, this);
+		submitButton = LinkFactory.createCustomLink("run.submit.button", "submit", "run.submit.button", Link.BUTTON, mainVC, this);
+		submitButton.setElementCssClass("o_sel_course_gta_submit_docs");
 		submitButton.setCustomEnabledLinkCSS("btn btn-primary");
 		submitButton.setIconLeftCSS("o_icon o_icon_submit");
 	}

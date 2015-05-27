@@ -141,6 +141,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		assessmentFormButton = uifactory.addFormLink("coach.assessment", "coach.assessment", null, formLayout, Link.BUTTON);
 		assessmentFormButton.setCustomEnabledLinkCSS("btn btn-primary");
 		assessmentFormButton.setIconLeftCSS("o_icon o_icon o_icon_submit");
+		assessmentFormButton.setElementCssClass("o_sel_course_gta_assessment_button");
 		
 		if(formLayout instanceof FormLayoutContainer) {
 			ModuleConfiguration config = gtaNode.getModuleConfiguration();

@@ -143,14 +143,17 @@ public class GroupAssessmentController extends FormBasicController {
 		
 		applyToAllEl = uifactory.addCheckboxesHorizontal("applytoall", "group.apply.toall", groupGradingCont, onKeys, onValues);
 		applyToAllEl.addActionListener(FormEvent.ONCHANGE);
+		applyToAllEl.setElementCssClass("o_sel_course_gta_apply_to_all");
 		
 		if(withPassed && cutValue == null) {
 			groupPassedEl = uifactory.addCheckboxesHorizontal("checkgroup", "group.passed", groupGradingCont, onKeys, onValues);
+			groupPassedEl.setElementCssClass("o_sel_course_gta_group_passed");
 		}
 		
 		if(withScore) {
 			String pointVal = "";
 			groupScoreEl = uifactory.addTextElement("pointgroup", "group.score", 5, pointVal, groupGradingCont);
+			groupScoreEl.setElementCssClass("o_sel_course_gta_group_score");
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();

@@ -49,9 +49,13 @@ import org.olat.selenium.page.course.AssessmentModePage;
 import org.olat.selenium.page.course.AssessmentToolPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
+import org.olat.selenium.page.course.GroupTaskConfigurationPage;
+import org.olat.selenium.page.course.GroupTaskPage;
+import org.olat.selenium.page.course.GroupTaskToCoachPage;
 import org.olat.selenium.page.course.MembersPage;
 import org.olat.selenium.page.course.PublisherPageFragment.Access;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.selenium.page.group.GroupPage;
 import org.olat.selenium.page.qti.QTI12Page;
 import org.olat.selenium.page.repository.ScormPage;
 import org.olat.selenium.page.repository.RepositoryAccessPage.UserAccess;
@@ -846,4 +850,190 @@ public class AssessmentTest {
 			.assertOnCourseDetails(assessmentNodeTitle, true);
 	}
 
+	/**
+	 * An author create a course for a group task with the default
+	 * settings, all steps are selected, grading with only passed,
+	 * 3 groups, 2 tasks, 1 solution...</br>
+	 * A group has 2 participants, the first select a task, the
+	 * second submit 2 documents, one with the embedded editor,
+	 * one with the upload mechanism.</br>
+	 * The author reviews the documents, use the assessment tool
+	 * for group within the course element to set passed to the
+	 * group.</br>
+	 * The 2 participants check if they sucessfully passed the task.
+	 * 
+	 * 
+	 * @param authorLoginPage
+	 * @param ryomouBrowser
+	 * @param kanuBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void taskWithGroupsAndStandardSettings(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver ryomouBrowser,
+			@Drone @Participant WebDriver kanuBrowser)
+	throws IOException, URISyntaxException {
+		//File upload only work with Firefox
+		Assume.assumeTrue(browser instanceof FirefoxDriver);
+						
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course-with-group-task-" + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+
+		//create a course element of type Test with the test that we create above
+		String gtaNodeTitle = "Group task 1";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("gta")
+			.nodeTitle(gtaNodeTitle);
+		
+		GroupTaskConfigurationPage gtaConfig = new GroupTaskConfigurationPage(browser);
+		gtaConfig
+			.selectWorkflow()
+			.createBusinessGroup("Group to task - 1")
+			.createBusinessGroup("Group to task - 2")
+			.createBusinessGroup("Group to task - 3")
+			.saveWorkflow()
+			.selectAssignment();
+		
+		URL task1Url = JunitTestHelper.class.getResource("file_resources/task_1_a.txt");
+		File task1File = new File(task1Url.toURI());
+		gtaConfig.uploadTask("Task 1", task1File);
+		
+		URL task2Url = JunitTestHelper.class.getResource("file_resources/task_1_b.txt");
+		File task2File = new File(task2Url.toURI());
+		gtaConfig
+			.uploadTask("Task 2 B", task2File)
+			.saveTasks()
+			.selectSolution();
+		
+		URL solutionUrl = JunitTestHelper.class.getResource("file_resources/solution_1.txt");
+		File solutionFile = new File(solutionUrl.toURI());
+		gtaConfig.uploadSolution("The Best Solution", solutionFile);
+		
+		courseEditor
+			.publish()
+			.quickPublish(Access.guests);
+		
+		MembersPage membersPage = courseEditor
+			.clickToolbarBack()
+			.members();
+		
+		GroupPage groupPage = membersPage
+			.selectBusinessGroups()
+			.selectBusinessGroup("Group to task - 1")
+			.openAdministration()
+			.openAdminMembers();
+		
+		groupPage
+			.addMember()
+			.searchMember(kanu, true)
+			.next().next().next()
+			.finish();
+		
+		groupPage
+			.addMember()
+			.searchMember(ryomou, true)
+			.next().next().next()
+			.finish();
+		
+		groupPage.close();
+		
+		//go to the course
+		CoursePageFragment coursePage = membersPage
+			.clickToolbarBack();
+		coursePage
+			.clickTree()
+			.selectWithTitle(gtaNodeTitle);
+		
+		//Participant log in
+		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		ryomouLoginPage
+			.loginAs(ryomou)
+			.resume();
+		
+		//open the course
+		NavigationPage ryomouNavBar = new NavigationPage(ryomouBrowser);
+		ryomouNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		//go to the group task
+		CoursePageFragment ryomouTestCourse = new CoursePageFragment(ryomouBrowser);
+		ryomouTestCourse
+			.clickTree()
+			.selectWithTitle(gtaNodeTitle);
+		
+		GroupTaskPage ryomouTask = new GroupTaskPage(ryomouBrowser);
+		ryomouTask
+			.assertAssignmentAvailable()
+			.selectTask(1)
+			.assertSubmissionAvailable();
+		
+		//Participant 2 log in
+		LoginPage kanuLoginPage = LoginPage.getLoginPage(kanuBrowser, deploymentUrl);
+		kanuLoginPage
+			.loginAs(kanu)
+			.resume();
+		
+		//open the course
+		NavigationPage kanuNavBar = new NavigationPage(kanuBrowser);
+		kanuNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		//go to the group task
+		CoursePageFragment kanuTestCourse = new CoursePageFragment(kanuBrowser);
+		kanuTestCourse
+			.clickTree()
+			.selectWithTitle(gtaNodeTitle);
+		
+		URL submit1Url = JunitTestHelper.class.getResource("file_resources/submit_1.txt");
+		File submit1File = new File(submit1Url.toURI());
+		String submittedFilename = "my_solution.html";
+		String submittedText = "This is my solution";
+		GroupTaskPage kanuTask = new GroupTaskPage(kanuBrowser);
+		kanuTask
+			.assertTask("Task 2 B")
+			.assertSubmissionAvailable()
+			.submitFile(submit1File)
+			.submitText(submittedFilename, submittedText)
+			.submitDocuments();
+		
+		//back to author
+		coursePage
+			.clickTree()
+			.selectWithTitle(gtaNodeTitle);
+		GroupTaskToCoachPage groupToCoach = new GroupTaskToCoachPage(browser);
+		groupToCoach
+			.selectBusinessGroupToCoach("Group to task - 1")
+			.assertSubmittedDocument("my_solution.html")
+			.assertSubmittedDocument("submit_1.txt")
+			.reviewed()
+			.openGroupAssessment()
+			.groupAssessment(Boolean.TRUE, null);
+		
+		//participant check if they passed
+		kanuTestCourse
+			.clickTree()
+			.selectWithTitle(gtaNodeTitle);
+		kanuTask.assertPassed();
+		
+		ryomouTestCourse
+			.clickTree()
+			.selectWithTitle(gtaNodeTitle);
+		ryomouTask.assertPassed();
+	}
 }

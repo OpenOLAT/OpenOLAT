@@ -1,11 +1,13 @@
-#if($duplicateWarning && !$duplicateWarning.isempty())
-	<div class="o_warning">$duplicateWarning</div>
-#end
-
-$r.render("groupGrading")
-<div class="o_form clearfix">
-	$r.render("group-list")
-	<div class="o_button_group">
-		$r.render("buttons")
+<div class="o_sel_course_gta_group_assessment_form">
+	#if($duplicateWarning && !$duplicateWarning.isempty())
+		<div class="o_warning">$duplicateWarning</div>
+	#end
+	
+	$r.render("groupGrading")
+	<div class="o_form clearfix">
+		$r.render("group-list")
+		<div class="o_button_group">
+			$r.render("buttons")
+		</div>
 	</div>
 </div>

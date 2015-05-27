@@ -98,6 +98,7 @@ public class GTAAssignmentEditController extends FormBasicController {
 		formLayout.add(tasksCont);
 		
 		addTaskLink = uifactory.addFormLink("add.task", tasksCont, Link.BUTTON);
+		addTaskLink.setElementCssClass("o_sel_course_gta_add_task");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.title.i18nKey(), TDCols.title.ordinal()));
@@ -110,6 +111,7 @@ public class GTAAssignmentEditController extends FormBasicController {
 		
 		FormLayoutContainer configCont = FormLayoutContainer.createDefaultFormLayout("config", getTranslator());
 		configCont.setFormTitle(translate("assignment.config.title"));
+		configCont.setElementCssClass("o_sel_course_gta_task_config_form");
 		configCont.setRootForm(mainForm);
 		formLayout.add(configCont);
 		//task assignment configuration
@@ -156,6 +158,7 @@ public class GTAAssignmentEditController extends FormBasicController {
 		
 		//save
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
+		buttonsCont.setElementCssClass("o_sel_course_gta_task_config_buttons");
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);

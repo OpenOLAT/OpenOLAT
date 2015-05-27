@@ -77,8 +77,11 @@ public class EditSolutionController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_course_gta_upload_solution_form");
+		
 		String title = solution.getTitle() == null ? "" : solution.getTitle();
 		titleEl = uifactory.addTextElement("title", "solution.title", 128, title, formLayout);
+		titleEl.setElementCssClass("o_sel_course_gta_upload_solution_title");
 		titleEl.setMandatory(true);
 
 		fileEl = uifactory.addFileElement("file", "solution.file", formLayout);

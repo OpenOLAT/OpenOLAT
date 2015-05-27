@@ -81,6 +81,7 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
 		addSolutionLink = uifactory.addFormLink("add.solution", formLayout, Link.BUTTON);
+		addSolutionLink.setElementCssClass("o_sel_course_gta_add_solution");
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.title.i18nKey(), TDCols.title.ordinal()));

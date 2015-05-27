@@ -98,9 +98,11 @@ public class GTACoachController extends GTAAbstractController {
 	protected void initContainer(UserRequest ureq) {
 		mainVC = createVelocityContainer("coach");
 		
-		reviewedButton  = LinkFactory.createCustomLink("coach.reviewed.button", "reviewed", "coach.reviewed.button", Link.BUTTON, mainVC, this);
+		reviewedButton = LinkFactory.createCustomLink("coach.reviewed.button", "reviewed", "coach.reviewed.button", Link.BUTTON, mainVC, this);
+		reviewedButton.setElementCssClass("o_sel_course_gta_reviewed");
 		if(config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
-			needRevisionsButton  = LinkFactory.createCustomLink("coach.need.revision.button", "need-revision", "coach.need.revision.button", Link.BUTTON, mainVC, this);
+			needRevisionsButton = LinkFactory.createCustomLink("coach.need.revision.button", "need-revision", "coach.need.revision.button", Link.BUTTON, mainVC, this);
+			needRevisionsButton.setElementCssClass("o_sel_course_gta_need_revision");
 		}
 		
 		if(withTitle) {

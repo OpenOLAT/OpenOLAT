@@ -112,10 +112,12 @@ class SubmitDocumentsController extends FormBasicController {
 		if(config.getBooleanSafe(GTACourseNode.GTASK_EXTERNAL_EDITOR)) {
 			uploadDocButton = uifactory.addFormLink("upload.document", formLayout, Link.BUTTON);
 			uploadDocButton.setIconLeftCSS("o_icon o_icon_upload");
+			uploadDocButton.setElementCssClass("o_sel_course_gta_submit_file");
 		}
 		if(config.getBooleanSafe(GTACourseNode.GTASK_EMBBEDED_EDITOR)) {
 			createDocButton = uifactory.addFormLink("open.editor", formLayout, Link.BUTTON);
 			createDocButton.setIconLeftCSS("o_icon o_icon_edit");
+			createDocButton.setElementCssClass("o_sel_course_gta_create_doc");
 		}
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();

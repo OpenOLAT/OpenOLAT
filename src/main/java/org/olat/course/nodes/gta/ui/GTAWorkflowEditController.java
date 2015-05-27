@@ -116,6 +116,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		FormLayoutContainer typeCont = FormLayoutContainer.createDefaultFormLayout("type", getTranslator());
 		typeCont.setFormTitle(translate("task.type.title"));
 		typeCont.setFormDescription(translate("task.type.description"));
+		typeCont.setElementCssClass("o_sel_course_gta_groups_areas");
 		typeCont.setRootForm(mainForm);
 		formLayout.add(typeCont);
 		
@@ -187,6 +188,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		stepsCont = FormLayoutContainer.createDefaultFormLayout("steps", getTranslator());
 		stepsCont.setFormTitle(translate("task.steps.title"));
 		stepsCont.setFormDescription(translate("task.steps.description"));
+		stepsCont.setElementCssClass("o_sel_course_gta_steps");
 		stepsCont.setRootForm(mainForm);
 		formLayout.add(stepsCont);
 
@@ -345,6 +347,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		//save
 		FormLayoutContainer buttonCont = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
 		buttonCont.setRootForm(mainForm);
+		buttonCont.setElementCssClass("o_sel_course_gta_save_workflow");
 		formLayout.add(buttonCont);
 		uifactory.addFormSubmitButton("save", "save", buttonCont);
 	}
