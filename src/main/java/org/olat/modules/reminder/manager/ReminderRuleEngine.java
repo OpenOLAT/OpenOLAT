@@ -34,6 +34,7 @@ import org.olat.modules.reminder.Reminder;
 import org.olat.modules.reminder.ReminderModule;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.ReminderService;
+import org.olat.modules.reminder.RepositoryEntryRuleSPI;
 import org.olat.modules.reminder.RuleSPI;
 import org.olat.modules.reminder.model.ReminderRules;
 import org.olat.modules.reminder.rule.BusinessGroupRoleRuleSPI;
@@ -89,6 +90,9 @@ public class ReminderRuleEngine {
 		List<ReminderRule> ruleList = new ArrayList<>(rules.getRules());
 		//1. Date rules doesn't need database queries
 		boolean allOk = evaluateDateRule(ruleList);
+		if(allOk) {
+			allOk = evaluateRepositoryEntryRule(reminder.getEntry(), ruleList);
+		}
 		
 		List<Identity> identities;
 		if(allOk) {
@@ -115,6 +119,25 @@ public class ReminderRuleEngine {
 			ReminderRule rule = ruleIt.next();
 			if(DATE_RULE_TYPE.equals(rule.getType())) {
 				allOk &= dateRuleSpi.evaluate(rule);
+				ruleIt.remove();
+			}
+		}
+
+		return allOk;
+	}
+	
+	/**
+	 * 
+	 * @param reminder
+	 */
+	protected boolean evaluateRepositoryEntryRule(RepositoryEntry entry, List<ReminderRule> ruleList) {
+		boolean allOk = true;
+		
+		for(Iterator<ReminderRule> ruleIt=ruleList.iterator(); ruleIt.hasNext(); ) {
+			ReminderRule rule = ruleIt.next();
+			RuleSPI ruleSpi = reminderModule.getRuleSPIByType(rule.getType());
+			if(ruleSpi instanceof RepositoryEntryRuleSPI) {
+				allOk &= ((RepositoryEntryRuleSPI)ruleSpi).evaluate(entry, rule);
 				ruleIt.remove();
 			}
 		}
