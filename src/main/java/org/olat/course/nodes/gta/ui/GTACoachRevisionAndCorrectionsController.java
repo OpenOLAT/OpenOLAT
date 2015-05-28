@@ -184,10 +184,12 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 		returnToRevisionsButton = LinkFactory.createCustomLink("coach.submit.corrections.to.revision.button", "submit", "coach.submit.corrections.to.revision.button", Link.BUTTON, mainVC, this);
 		returnToRevisionsButton.setCustomEnabledLinkCSS("btn btn-primary");
 		returnToRevisionsButton.setIconLeftCSS("o_icon o_icon o_icon_submit");
+		returnToRevisionsButton.setElementCssClass("o_sel_course_gta_return_revision");
 		
 		closeRevisionsButton = LinkFactory.createCustomLink("coach.close.revision.button", "close", "coach.close.revision.button", Link.BUTTON, mainVC, this);
 		closeRevisionsButton.setCustomEnabledLinkCSS("btn btn-primary");
 		closeRevisionsButton.setIconLeftCSS("o_icon o_icon o_icon_submit");
+		closeRevisionsButton.setElementCssClass("o_sel_course_gta_close_revision");
 	}
 	
 	@Override

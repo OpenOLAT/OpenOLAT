@@ -57,6 +57,11 @@ public class GroupTaskConfigurationPage {
 		return this;
 	}
 	
+	public GroupTaskConfigurationPage selectAssessment() {
+		By configBy = By.className("o_sel_course_ms_form");
+		return selectTab(configBy);
+	}
+	
 	public GroupTaskConfigurationPage selectAssignment() {
 		By configBy = By.className("o_sel_course_gta_tasks");
 		return selectTab(configBy);
@@ -105,6 +110,18 @@ public class GroupTaskConfigurationPage {
 		
 		//save
 		By saveBy = By.cssSelector(".o_sel_course_gta_upload_solution_form button.btn-primary");
+		browser.findElement(saveBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public GroupTaskConfigurationPage setAssessmentOptions(Float minVal, Float maxVal, Float cutVal) {
+		new AssessmentCEConfigurationPage(browser).setScoreAuto(minVal, maxVal, cutVal);
+		return this;
+	}
+	
+	public GroupTaskConfigurationPage saveAssessmentOptions() {
+		By saveBy = By.cssSelector(".o_sel_course_ms_form button.btn-primary");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;

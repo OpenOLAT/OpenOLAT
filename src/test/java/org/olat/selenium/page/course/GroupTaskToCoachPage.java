@@ -1,5 +1,6 @@
 package org.olat.selenium.page.course;
 
+import java.io.File;
 import java.util.List;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
@@ -47,26 +48,21 @@ public class GroupTaskToCoachPage {
 	}
 	
 	public GroupTaskToCoachPage selectIdentityToCoach(UserVO user) {
-		By tableRowBy = By.cssSelector(".table tr");
-		By selectLinkBy = By.xpath("//td//a[contains(@href,'sel3ect')]");
-		
-		List<WebElement> rows = browser.findElements(tableRowBy);
-		WebElement selectLinkEl = null;
-		for(WebElement row:rows) {
-			String firstName = user.getFirstName();
-			String text = row.getText();
-			if(row.getText().contains(user.getFirstName())) {
-				selectLinkEl = row.findElement(selectLinkBy);
-			}
-		}
-		Assert.assertNotNull(selectLinkEl);
-		selectLinkEl.click();
+		By selectLinkBy = By.xpath("//table[contains(@class,'table')]//td//a[contains(@href,'firstName')][contains(text(),'" + user.getFirstName() + "')]");
+		browser.findElement(selectLinkBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public GroupTaskToCoachPage assertSubmittedDocument(String title) {
 		By selectLinkBy = By.xpath("//div[@id='o_step_submit_content']//ul//a//span[contains(text(),'" + title + "')]");
+		List<WebElement> documentLinkEls = browser.findElements(selectLinkBy);
+		Assert.assertFalse(documentLinkEls.isEmpty());
+		return this;
+	}
+	
+	public GroupTaskToCoachPage assertRevision(String title) {
+		By selectLinkBy = By.xpath("//div[@id='o_step_revision_content']//ul//a//span[contains(text(),'" + title + "')]");
 		List<WebElement> documentLinkEls = browser.findElements(selectLinkBy);
 		Assert.assertFalse(documentLinkEls.isEmpty());
 		return this;
@@ -79,11 +75,62 @@ public class GroupTaskToCoachPage {
 		return this;
 	}
 	
+	public GroupTaskToCoachPage needRevision() {
+		By reviewBy = By.cssSelector("#o_step_review_content .o_sel_course_gta_need_revision");
+		browser.findElement(reviewBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public GroupTaskToCoachPage closeRevisions() {
+		By closeRevisionBy = By.cssSelector("#o_step_revision_content .o_sel_course_gta_close_revision");
+		browser.findElement(closeRevisionBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public GroupTaskToCoachPage uploadCorrection(File correctionFile) {
+		By uploadButtonBy = By.cssSelector("#o_step_review_content .o_sel_course_gta_submit_file");
+		browser.findElement(uploadButtonBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By inputBy = By.cssSelector(".o_fileinput input[type='file']");
+		OOGraphene.uploadFile(inputBy, correctionFile, browser);
+		
+		By saveButtonBy = By.cssSelector(".o_sel_course_gta_upload_form button.btn-primary");
+		browser.findElement(saveButtonBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public GroupTaskToCoachPage openIndividualAssessment() {
+		By assessmentButtonBy = By.cssSelector("#o_step_grading_content .o_sel_course_gta_assessment_button");
+		browser.findElement(assessmentButtonBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public GroupTaskToCoachPage individualAssessment(Boolean passed, Float score) {
+		if(passed != null) {
+			By passedBy = By.cssSelector(".o_sel_assessment_form_passed input[type='radio'][value='true']");
+			browser.findElement(passedBy).click();
+		}
+		
+		if(score != null) {
+			By scoreBy = By.cssSelector(".o_sel_assessment_form_score input[type='text']");
+			browser.findElement(scoreBy).sendKeys(Float.toString(score));
+		}
+		
+		By saveAndCloseBy = By.cssSelector(".o_sel_assessment_form a.o_sel_assessment_form_save_and_close");
+		browser.findElement(saveAndCloseBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
 	public GroupTaskToCoachPage openGroupAssessment() {
 		By assessmentButtonBy = By.cssSelector("#o_step_grading_content .o_sel_course_gta_assessment_button");
 		browser.findElement(assessmentButtonBy).click();
 		OOGraphene.waitBusy(browser);
-		
 		return this;
 	}
 	
@@ -117,6 +164,13 @@ public class GroupTaskToCoachPage {
 		By saveBy = By.cssSelector(".o_sel_course_gta_group_assessment_form button.btn-primary");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public GroupTaskToCoachPage assertPassed() {
+		By passedBy = By.cssSelector("#o_step_grading_content table tr.o_state.o_passed");
+		List<WebElement> passedEls = browser.findElements(passedBy);
+		Assert.assertFalse(passedEls.isEmpty());
 		return this;
 	}
 
