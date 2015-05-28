@@ -66,6 +66,9 @@ public class LDAPSyncConfiguration {
 	
 	private String groupAttribute;
 	private String groupAttributeSeparator;
+
+	private String coachedGroupAttribute;
+	private String coachedGroupAttributeSeparator;
 	
 	private Map<String, String> requestAttributes;
 	private Map<String, String> userAttributeMap;
@@ -178,7 +181,7 @@ public class LDAPSyncConfiguration {
 	}
 	
 	public boolean syncGroupWithAttribute() {
-		return StringHelper.containsNonWhitespace(groupAttribute);
+		return StringHelper.containsNonWhitespace(groupAttribute) || StringHelper.containsNonWhitespace(coachedGroupAttribute);
 	}
 
 	public String getCoachRoleAttribute() {
@@ -211,6 +214,22 @@ public class LDAPSyncConfiguration {
 
 	public void setGroupAttributeSeparator(String groupAttributeSeparator) {
 		this.groupAttributeSeparator = groupAttributeSeparator;
+	}
+
+	public String getCoachedGroupAttribute() {
+		return coachedGroupAttribute;
+	}
+
+	public void setCoachedGroupAttribute(String coachedGroupAttribute) {
+		this.coachedGroupAttribute = coachedGroupAttribute;
+	}
+
+	public String getCoachedGroupAttributeSeparator() {
+		return coachedGroupAttributeSeparator;
+	}
+
+	public void setCoachedGroupAttributeSeparator(String coachedGroupAttributeSeparator) {
+		this.coachedGroupAttributeSeparator = coachedGroupAttributeSeparator;
 	}
 
 	public List<String> getAuthorsGroupBase() {

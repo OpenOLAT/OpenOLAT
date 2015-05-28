@@ -34,6 +34,8 @@
 
 		<property name="groupAttribute" value="${ldap.user.groupAttribute}"/>
 		<property name="groupAttributeSeparator" value="${ldap.user.groupAttributeSeparator}"/>
+		<property name="coachedGroupAttribute" value="${ldap.user.coachedGroupAttribute}"/>
+		<property name="coachedGroupAttributeSeparator" value="${ldap.user.coachedGroupAttributeSeparator}"/>
 		<property name="coachRoleAttribute" value="${ldap.coachRoleAttribute}"/>
 		<property name="coachRoleValue" value="${ldap.coachRoleValue}"/>
 		

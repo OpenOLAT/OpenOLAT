@@ -41,6 +41,7 @@ public class LDAPUser {
 	private boolean qpoolManager;
 	private boolean learningResourceManager;
 	private List<String> groupIds;
+	private List<String> coachedGroupIds;
 	private Attributes attributes;
 	private Identity cachedIdentity;
 	
@@ -114,6 +115,14 @@ public class LDAPUser {
 
 	public void setGroupIds(List<String> groupIds) {
 		this.groupIds = groupIds;
+	}
+
+	public List<String> getCoachedGroupIds() {
+		return coachedGroupIds;
+	}
+
+	public void setCoachedGroupIds(List<String> coachedGroupIds) {
+		this.coachedGroupIds = coachedGroupIds;
 	}
 
 	public Identity getCachedIdentity() {

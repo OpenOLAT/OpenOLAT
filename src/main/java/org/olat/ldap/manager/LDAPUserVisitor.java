@@ -70,14 +70,23 @@ public class LDAPUserVisitor implements LDAPVisitor {
 		ldapUser.setGroupManager(hasAttributeValue(resAttribs, syncConfiguration.getGroupManagerRoleAttribute(), syncConfiguration.getGroupManagerRoleValue()));
 		ldapUser.setQpoolManager(hasAttributeValue(resAttribs, syncConfiguration.getQpoolManagerRoleAttribute(), syncConfiguration.getQpoolManagerRoleValue()));
 		ldapUser.setLearningResourceManager(hasAttributeValue(resAttribs, syncConfiguration.getLearningResourceManagerRoleAttribute(), syncConfiguration.getLearningResourceManagerRoleValue()));
+
+		List<String> groupList = parseGroupList(resAttribs, syncConfiguration.getGroupAttribute(), syncConfiguration.getGroupAttributeSeparator());
+		ldapUser.setGroupIds(groupList);
+		List<String> coachedGroupList = parseGroupList(resAttribs, syncConfiguration.getCoachedGroupAttribute(), syncConfiguration.getCoachedGroupAttributeSeparator());
+		ldapUser.setCoachedGroupIds(coachedGroupList);
 		
+		ldapUserList.add(ldapUser);
+	}
+	
+	private List<String> parseGroupList(Attributes resAttribs, String attributeName, String attributeSeparator) {
 		List<String> groupList = Collections.emptyList();
-		if(StringHelper.containsNonWhitespace(syncConfiguration.getGroupAttribute())) {
+		if(StringHelper.containsNonWhitespace(attributeName)) {
 			try {
-				Attribute groupAttr = resAttribs.get(syncConfiguration.getGroupAttribute());
+				Attribute groupAttr = resAttribs.get(attributeName);
 				if(groupAttr != null && groupAttr.get() instanceof String) {
 					String groupString = (String)groupAttr.get();
-					String[] groupArr = groupString.split(syncConfiguration.getGroupAttributeSeparator());
+					String[] groupArr = groupString.split(attributeSeparator);
 					groupList = new ArrayList<>(groupArr.length);
 					for(String group:groupArr) {
 						groupList.add(group);
@@ -87,8 +96,7 @@ public class LDAPUserVisitor implements LDAPVisitor {
 				log.error("");
 			}
 		}
-		ldapUser.setGroupIds(groupList);
-		ldapUserList.add(ldapUser);
+		return groupList;
 	}
 	
 	private boolean hasAttributeValue(Attributes resAttribs, String attribute, String value) {

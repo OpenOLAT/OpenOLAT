@@ -305,6 +305,9 @@ public class LDAPDAO {
 		if(StringHelper.containsNonWhitespace(syncConfiguration.getGroupAttribute())) {
 			userAttrList.add(syncConfiguration.getGroupAttribute());
 		}
+		if(StringHelper.containsNonWhitespace(syncConfiguration.getCoachedGroupAttribute())) {
+			userAttrList.add(syncConfiguration.getCoachedGroupAttribute());
+		}
 		return userAttrList.toArray(new String[userAttrList.size()]);
 	}
 	
