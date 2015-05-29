@@ -19,43 +19,31 @@
  */
 package org.olat.course.nodes.gta.ui;
 
-import org.olat.course.nodes.gta.TaskLight;
-import org.olat.course.nodes.gta.TaskProcess;
-import org.olat.group.BusinessGroup;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 
 /**
  * 
- * Initial date: 12.05.2015<br>
+ * Initial date: 21.11.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CoachedGroupRow {
-	
-	private final TaskLight task;
-	private final BusinessGroup businessGroup;
-	
-	public CoachedGroupRow(BusinessGroup businessGroup, TaskLight task) {
-		this.task = task;
-		this.businessGroup = businessGroup;
-	}
-	
-	public String getName() {
-		return businessGroup.getName();
-	}
-	
-	public String getTaskName() {
-		return task == null ? null : task.getTaskName();
-	}
-	
-	public TaskProcess getTaskStatus() {
-		return task == null ? null : task.getTaskStatus();
-	}
-	
-	public TaskLight getTask() {
-		return task;
-	}
-	
-	public BusinessGroup getBusinessGroup() {
-		return businessGroup;
+public class PassedCellRenderer implements FlexiCellRenderer {
+
+	@Override
+	public void render(Renderer renderer, StringOutput target, Object cellValue,
+			int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+		if(cellValue instanceof Boolean) {
+			Boolean passed = (Boolean)cellValue;
+			if(passed.booleanValue()) {
+				target.append(translator.translate("passed.true"));
+			} else {
+				target.append(translator.translate("passed.false"));
+			}	
+		}
 	}
 }

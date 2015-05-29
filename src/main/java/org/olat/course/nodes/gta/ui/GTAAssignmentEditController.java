@@ -157,11 +157,12 @@ public class GTAAssignmentEditController extends FormBasicController {
 		textEl = uifactory.addRichTextElementForStringDataMinimalistic("task.text", "task.text", text, 10, -1, configCont, getWindowControl());
 		
 		//save
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setElementCssClass("o_sel_course_gta_task_config_buttons");
 		buttonsCont.setRootForm(mainForm);
-		formLayout.add(buttonsCont);
+		configCont.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
 	private void updateModel() {

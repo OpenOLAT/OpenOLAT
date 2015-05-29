@@ -53,6 +53,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.gta.GTAManager;
@@ -133,8 +134,6 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		loadMembers();
 	}
 	
-	
-	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
@@ -178,12 +177,11 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 				columnsModel.addFlexiColumnModel(col);
 			}
 		}
-		
 
 		if(withPassed) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passedVal.i18nKey(), Cols.passedVal.ordinal()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passedVal.i18nKey(), Cols.passedVal.ordinal(),
+					new PassedCellRenderer()));
 		}
-
 		if(withScore) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.scoreVal.i18nKey(), Cols.scoreVal.ordinal()));
 		}

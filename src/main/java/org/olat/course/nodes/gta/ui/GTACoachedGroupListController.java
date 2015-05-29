@@ -79,6 +79,12 @@ public class GTACoachedGroupListController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.name.i18nKey(), CGCols.name.ordinal(),
 				true,  CGCols.name.name()));
+		
+		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskName.i18nKey(), CGCols.taskName.ordinal(),
+					true, CGCols.taskName.name()));
+		}
+		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskStatus.i18nKey(), CGCols.taskStatus.ordinal(),
 				true, CGCols.taskStatus.name(), new TaskStatusCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("select", translate("select"), "select"));

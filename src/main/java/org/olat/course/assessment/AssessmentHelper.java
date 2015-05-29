@@ -133,7 +133,9 @@ public class AssessmentHelper {
 			}
 			if (courseNode.hasDetails()) {
 				details = courseNode.getDetailsListView(uce);
-				if (details == null) details = DETAILS_NA_VALUE;
+				if (details == null) {
+					details = DETAILS_NA_VALUE;
+				}
 			}
 		}
 

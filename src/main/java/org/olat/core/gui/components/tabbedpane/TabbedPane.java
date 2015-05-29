@@ -114,11 +114,11 @@ public class TabbedPane extends Container implements Activateable2 {
 		super.put("atp", newSelComp); 
 		//setDirty(true); not needed since: line above marks this container automatically dirty
 	}
-	//fxdiff BAKS-7 Resume function
+	
 	public OLATResourceable getTabResource() {
 		return OresHelper.createOLATResourceableInstance("tab", new Long(selectedPane));
 	}
-	//fxdiff BAKS-7 Resume function
+	
 	public void addToHistory(UserRequest ureq, WindowControl wControl) {
 		OLATResourceable ores = getTabResource();
 		BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, null, wControl, true);
@@ -147,6 +147,13 @@ public class TabbedPane extends Container implements Activateable2 {
 		return displayNames.contains(displayName);
 	}
 	
+	public void replaceTab(int pos, Component component) {
+		tabbedPanes.set(pos, component);
+		if(pos == selectedPane) {
+			super.put("atp", component);
+		}
+	}
+	
 	public void removeTab(Component component) {
 		int index = tabbedPanes.indexOf(component);
 		if(index >= 0 && index < tabbedPanes.size()) {
@@ -170,8 +177,6 @@ public class TabbedPane extends Container implements Activateable2 {
 		selectedPane = -1;
 		setDirty(true);
 	}
-
-	
 	
 	/**
 	 * @param position
@@ -190,19 +195,11 @@ public class TabbedPane extends Container implements Activateable2 {
 	}
 
 	/**
-	 * @see org.olat.core.gui.components.Container#put(org.olat.core.gui.components.Component)
-	 */
-	public void put(Component component) {
-		throw new RuntimeException("please don't use put() in a TabbedPane, but addTab(...)");
-	}
-
-	/**
 	 * @return
 	 */
 	protected int getTabCount() {
 		return (tabbedPanes == null ? 0 : tabbedPanes.size());
 	}
-
 
 	/**
 	 * Returns the selectedPane.

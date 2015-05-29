@@ -86,7 +86,7 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.title.i18nKey(), TDCols.title.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.file.i18nKey(), TDCols.file.ordinal()));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit", translate("edit"), "edit"));
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("replace", translate("replace"), "replace"));
 		solutionModel = new SolutionTableModel(columnsModel);
 		solutionTable = uifactory.addTableElement(getWindowControl(), "table", solutionModel, getTranslator(), formLayout);
 		solutionTable.setExportEnabled(true);
@@ -144,8 +144,8 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				Solution row = solutionModel.getObject(se.getIndex());
-				if("edit".equals(se.getCommand())) {
-					doEdit(ureq, row);
+				if("replace".equals(se.getCommand())) {
+					doReplace(ureq, row);
 				}
 			}
 		}
@@ -167,7 +167,7 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 		cmc.activate();
 	}
 	
-	private void doEdit(UserRequest ureq, Solution solution) {
+	private void doReplace(UserRequest ureq, Solution solution) {
 		editSolutionCtrl = new EditSolutionController(ureq, getWindowControl(), solution, solutionContainer);
 		listenTo(editSolutionCtrl);
 

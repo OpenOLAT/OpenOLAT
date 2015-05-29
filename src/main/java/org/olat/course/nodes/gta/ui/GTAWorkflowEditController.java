@@ -345,11 +345,12 @@ public class GTAWorkflowEditController extends FormBasicController {
 		gradingEl.select(keys[0], grading);
 		
 		//save
-		FormLayoutContainer buttonCont = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
+		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonCont.setRootForm(mainForm);
 		buttonCont.setElementCssClass("o_sel_course_gta_save_workflow");
-		formLayout.add(buttonCont);
+		stepsCont.add(buttonCont);
 		uifactory.addFormSubmitButton("save", "save", buttonCont);
+		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 	}
 	
 	@Override
@@ -416,6 +417,11 @@ public class GTAWorkflowEditController extends FormBasicController {
 			}
 		}
 		return allOk;
+	}
+
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
 	@Override
@@ -538,7 +544,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(groupSelectionCtrl == source) {
-			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+			if (event == Event.DONE_EVENT) {
 				groupKeys = groupSelectionCtrl.getSelectedKeys();
 				groupListEl.setValue(getGroupNames(groupKeys));
 				if(courseEditorEnv.getCourseGroupManager().hasBusinessGroups()) {
@@ -546,11 +552,15 @@ public class GTAWorkflowEditController extends FormBasicController {
 				} else {
 					chooseGroupButton.setI18nKey("create.groups");
 				}
+				groupListEl.getRootForm().submit(ureq);
+				cmc.deactivate();
+				cleanUp();
+			} else if(event == Event.CANCELLED_EVENT) {
+				cmc.deactivate();
+				cleanUp();
 			}
-			cmc.deactivate();
-			cleanUp();
 		} else if(areaSelectionCtrl == source) {
-			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+			if (event == Event.DONE_EVENT) {
 				areaKeys = areaSelectionCtrl.getSelectedKeys();
 				areaListEl.setValue(getAreaNames(areaKeys));
 				if(courseEditorEnv.getCourseGroupManager().hasAreas()) {
@@ -558,9 +568,11 @@ public class GTAWorkflowEditController extends FormBasicController {
 				} else {
 					chooseAreaButton.setI18nKey("create.areas");
 				}
+				areaListEl.getRootForm().submit(ureq);
+			} else if (event == Event.CANCELLED_EVENT) {
+				cmc.deactivate();
+				cleanUp();
 			}
-			cmc.deactivate();
-			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		}

@@ -663,29 +663,40 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 
 	@Override
 	public String getDetailsListViewHeaderKey() {
-		return "table.header.details.gta";
+		if(getModuleConfiguration().getBooleanSafe(GTASK_ASSIGNMENT)) {
+			return "table.header.details.gta";
+		}
+		return null;
 	}
 	
 	@Override
 	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
-		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
-		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		RepositoryEntry entry = userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		List<Task> tasks = gtaManager.getTasks(assessedIdentity, entry, this);
 		String details;
-		if(tasks == null || tasks.isEmpty()) {
-			details = null;
-		} else {
-			StringBuilder sb = new StringBuilder();
-			for(Task task:tasks) {
-				if(sb.length() > 0) sb.append(", ");
-				if(sb.length() > 64) {
-					sb.append("...");
-					break;
+		if(getModuleConfiguration().getBooleanSafe(GTASK_ASSIGNMENT)) {
+			GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
+			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+			RepositoryEntry entry = userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			List<Task> tasks = gtaManager.getTasks(assessedIdentity, entry, this);
+			
+			if(tasks == null || tasks.isEmpty()) {
+				details = null;
+			} else {
+				StringBuilder sb = new StringBuilder();
+				for(Task task:tasks) {
+					if(sb.length() > 0) sb.append(", ");
+					if(sb.length() > 64) {
+						sb.append("...");
+						break;
+					}
+					String taskName = task.getTaskName();
+					if(StringHelper.containsNonWhitespace(taskName)) {
+						sb.append(StringHelper.escapeHtml(taskName));
+					}
 				}
-				sb.append(StringHelper.escapeHtml(task.getTaskName()));
+				details = sb.length() == 0 ? null : sb.toString();
 			}
-			details = sb.toString();
+		} else {
+			details = null;
 		}
 		return details;
 	}

@@ -35,11 +35,14 @@ public class GroupTaskConfigurationPage {
 		return this;
 	}
 	
-	public GroupTaskConfigurationPage createBusinessGroup(String name) {
+	public GroupTaskConfigurationPage openBusinessGroupChooser() {
 		By chooseGroupBy = By.cssSelector("a.o_form_groupchooser");
 		browser.findElement(chooseGroupBy).click();
 		OOGraphene.waitBusy(browser);
-		
+		return this;
+	}
+	
+	public GroupTaskConfigurationPage createBusinessGroup(String name) {
 		By createGroupBy = By.cssSelector("div.o_button_group_right a");
 		browser.findElement(createGroupBy).click();
 		OOGraphene.waitBusy(browser);
@@ -53,6 +56,14 @@ public class GroupTaskConfigurationPage {
 		By submitBy = By.cssSelector(".o_sel_group_edit_group_form button.btn-primary");
 		WebElement submitButton = browser.findElement(submitBy);
 		submitButton.click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public GroupTaskConfigurationPage confirmBusinessGroupsSelection() {
+		By saveBy = By.cssSelector(".o_sel_group_selection_groups button.btn-primary");
+		WebElement saveButton = browser.findElement(saveBy);
+		saveButton.click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

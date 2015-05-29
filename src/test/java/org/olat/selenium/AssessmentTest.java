@@ -902,9 +902,11 @@ public class AssessmentTest {
 		GroupTaskConfigurationPage gtaConfig = new GroupTaskConfigurationPage(browser);
 		gtaConfig
 			.selectWorkflow()
+			.openBusinessGroupChooser()
 			.createBusinessGroup("Group to task - 1")
 			.createBusinessGroup("Group to task - 2")
 			.createBusinessGroup("Group to task - 3")
+			.confirmBusinessGroupsSelection()
 			.saveWorkflow()
 			.selectAssignment();
 		
