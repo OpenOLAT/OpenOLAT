@@ -339,6 +339,15 @@ public class CountryCodePropertyHandler extends AbstractUserPropertyHandler {
 		return sse;
 	}
 
+	@Override
+	public String getUserProperty(User user, Locale locale) {
+		String val = super.getUserProperty(user, locale);
+		if(NO_SEL_KEY.equals(val)) {
+			val = "";
+		}
+		return val;
+	}
+
 	/**
 	 * @see org.olat.user.AbstractUserPropertyHandler#getInternalValue(org.olat.core.id.User)
 	 */
