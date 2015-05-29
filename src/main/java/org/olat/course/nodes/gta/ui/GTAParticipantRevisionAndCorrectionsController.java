@@ -159,6 +159,7 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 		submitRevisionButton  = LinkFactory.createCustomLink("run.submit.revision.button", "submit", "run.submit.revision.button", Link.BUTTON, mainVC, this);
 		submitRevisionButton.setCustomEnabledLinkCSS("btn btn-primary");
 		submitRevisionButton.setIconLeftCSS("o_icon o_icon o_icon_submit");
+		submitRevisionButton.setElementCssClass("o_sel_course_gta_submit_revisions");
 	}
 	
 	private boolean setRevision(UserRequest ureq, String cmpName, int iteration) {

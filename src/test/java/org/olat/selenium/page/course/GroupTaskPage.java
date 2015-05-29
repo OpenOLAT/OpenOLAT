@@ -80,7 +80,15 @@ public class GroupTaskPage {
 	}
 	
 	public GroupTaskPage submitFile(File file) {
-		By uploadButtonBy = By.cssSelector("#o_step_submit_content .o_sel_course_gta_submit_file");
+		return uploadFile("o_step_submit_content", file);
+	}
+	
+	public GroupTaskPage submitRevisedFile(File file) {
+		return uploadFile("o_step_revision_content", file);
+	}
+	
+	private GroupTaskPage uploadFile(String stepId, File file) {
+		By uploadButtonBy = By.cssSelector("#" + stepId + " .o_sel_course_gta_submit_file");
 		browser.findElement(uploadButtonBy).click();
 		OOGraphene.waitBusy(browser);
 		
@@ -90,7 +98,6 @@ public class GroupTaskPage {
 		By saveButtonBy = By.cssSelector(".o_sel_course_gta_upload_form button.btn-primary");
 		browser.findElement(saveButtonBy).click();
 		OOGraphene.waitBusy(browser);
-		
 		return this;
 	}
 	
@@ -121,6 +128,13 @@ public class GroupTaskPage {
 		By confirmButtonBy = By.cssSelector("div.modal-dialog div.modal-footer a");
 		List<WebElement> buttonsEl = browser.findElements(confirmButtonBy);
 		buttonsEl.get(0).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public GroupTaskPage submitRevision() {
+		By submitBy = By.cssSelector("#o_step_revision_content .o_sel_course_gta_submit_revisions");
+		browser.findElement(submitBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

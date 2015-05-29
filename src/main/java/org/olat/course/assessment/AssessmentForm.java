@@ -346,6 +346,7 @@ public class AssessmentForm extends FormBasicController {
 		uifactory.addFormSubmitButton("save", buttonGroupLayout);
 		if(saveAndClose) {
 			saveAndCloseLink = uifactory.addFormLink("save.close", buttonGroupLayout, Link.BUTTON);
+			saveAndCloseLink.setElementCssClass("o_sel_assessment_form_save_and_close");
 		}
 		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 	}
