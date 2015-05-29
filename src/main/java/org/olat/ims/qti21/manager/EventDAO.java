@@ -19,9 +19,9 @@
  */
 package org.olat.ims.qti21.manager;
 
-import org.olat.ims.qti21.model.CandidateEvent;
 import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.CandidateTestEventType;
+import org.olat.ims.qti21.model.jpa.CandidateEvent;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
 

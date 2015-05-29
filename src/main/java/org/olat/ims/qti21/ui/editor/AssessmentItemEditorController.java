@@ -20,16 +20,23 @@
 package org.olat.ims.qti21.ui.editor;
 
 import java.io.File;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
 import org.olat.repository.RepositoryEntry;
 
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 
@@ -42,8 +49,11 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 public class AssessmentItemEditorController extends BasicController {
 	
 	private final ResolvedAssessmentItem resolvedAssessmentItem;
+	
+	private final TabbedPane tabbedPane;
 	private final VelocityContainer mainVC;
 	
+	private FormBasicController itemEditor;
 	private AssessmentItemDisplayController displayCtrl;
 	
 	public AssessmentItemEditorController(UserRequest ureq, WindowControl wControl, RepositoryEntry testEntry,
@@ -52,13 +62,55 @@ public class AssessmentItemEditorController extends BasicController {
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		
 		mainVC = createVelocityContainer("assessment_item_editor");
+		tabbedPane = new TabbedPane("itemTabs", getLocale());
+		tabbedPane.addListener(this);
+		mainVC.put("tabbedpane", tabbedPane);
+
+		initItemEditor(ureq);
 		
 		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(), testEntry, resolvedAssessmentItem, itemRef, unzippedDirectory);
 		listenTo(displayCtrl);
-		mainVC.put("display", displayCtrl.getInitialComponent());
+		tabbedPane.addTab("Preview", displayCtrl.getInitialComponent());
 		
 		putInitialPanel(mainVC);
-		
+	}
+	
+	private void initItemEditor(UserRequest ureq) {
+
+		AssessmentItem item = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
+		if(QTI21Constants.TOOLNAME.equals(item.getToolName())) {
+			//we have create this one
+			List<Interaction> interactions = item.getItemBody().findInteractions();
+			
+			boolean choice = false;
+			boolean unkown = false;
+			
+			if(interactions != null && interactions.size() > 0) {
+				for(Interaction interaction: interactions) {
+					if(interaction instanceof ChoiceInteraction) {
+						choice = true;
+					} else {
+						unkown = true;
+					}	
+				}	
+			}
+			
+			if(choice && !unkown) {
+				itemEditor = new SingleChoiceEditorController(ureq, getWindowControl());
+				listenTo(itemEditor);
+				tabbedPane.addTab("Choice", itemEditor.getInitialComponent());
+			} else if(unkown) {
+				initItemCreatedByUnkownEditor(ureq);
+			}
+		} else {
+			initItemCreatedByUnkownEditor(ureq);
+		}
+	}
+	
+	private void initItemCreatedByUnkownEditor(UserRequest ureq) {
+		itemEditor = new UnkownItemEditorController(ureq, getWindowControl());
+		listenTo(itemEditor);
+		tabbedPane.addTab("Unkown", itemEditor.getInitialComponent());
 	}
 
 	@Override

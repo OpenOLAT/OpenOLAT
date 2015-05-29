@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assessmentItem xmlns="http://www.imsglobal.org/xsd/imsqti_v2p1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/qti/qtiv2p1/imsqti_v2p1p1.xsd http://www.w3.org/1998/Math/MathML http://www.w3.org/Math/XMLSchema/mathml2/mathml2.xsd" identifier="id1399ad03-4981-4240-8a39-dfd9857bf0e8_1" title="Single choice" adaptive="false" timeDependent="false">
+	<responseDeclaration identifier="RESPONSE_1" cardinality="single" baseType="identifier">
+		<correctResponse>
+			<value>id2c67a95f-608b-4d29-b0dc-1aba7f2f8b76_1</value>
+		</correctResponse>
+	</responseDeclaration>
+	<outcomeDeclaration identifier="SCORE" cardinality="single" baseType="float">
+		<defaultValue>
+			<value>0</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<outcomeDeclaration identifier="MAXSCORE" cardinality="single" baseType="float">
+		<defaultValue>
+			<value>1</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<outcomeDeclaration identifier="FEEDBACKBASIC" cardinality="single" baseType="identifier">
+		<defaultValue>
+			<value>empty</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<itemBody>
+		<p>Wo is a <strong>physicist</strong>?</p>
+		<choiceInteraction responseIdentifier="RESPONSE_1" shuffle="true" maxChoices="1">
+			<simpleChoice identifier="id2c67a95f-608b-4d29-b0dc-1aba7f2f8b76_1">
+				<p>Masamune Shirow</p>
+			</simpleChoice>
+			<simpleChoice identifier="id9c2a3e00-7759-4d14-8194-4b8fef39bf31">
+				<p>Alfred Bogart</p>
+			</simpleChoice>
+			<simpleChoice identifier="id2df244d9-6c2e-4856-9e18-48ad452d03ea">
+				<p>Louis de Broglie</p>
+			</simpleChoice>
+		</choiceInteraction>
+	</itemBody>
+	<responseProcessing>
+		<responseCondition>
+			<responseIf>
+				<isNull>
+					<variable identifier="RESPONSE_1" /> 
+				</isNull>
+				<setOutcomeValue identifier="FEEDBACKBASIC">
+					<baseValue baseType="identifier">empty</baseValue>
+				</setOutcomeValue>
+			</responseIf>
+			<responseElseIf>
+				<match>
+					<variable identifier="RESPONSE_1" /><correct identifier="RESPONSE_1" /> 
+				</match>
+				<setOutcomeValue identifier="SCORE">
+					<sum>
+						<variable identifier="SCORE" /><variable identifier="MAXSCORE" /> 
+					</sum>
+				</setOutcomeValue>
+				<setOutcomeValue identifier="FEEDBACKBASIC">
+					<baseValue baseType="identifier">correct</baseValue>
+				</setOutcomeValue>
+			</responseElseIf>
+			<responseElse>
+				<setOutcomeValue identifier="FEEDBACKBASIC">
+					<baseValue baseType="identifier">incorrect</baseValue>
+				</setOutcomeValue>
+			</responseElse>
+		</responseCondition>
+	</responseProcessing>
+</assessmentItem>

@@ -21,6 +21,11 @@ package org.olat.ims.qti21.repository.handlers;
 
 import java.io.File;
 import java.util.Locale;
+import java.util.UUID;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
@@ -33,15 +38,25 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.ims.qti21.model.xml.ManifestPackage;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.InMemoryOutcomesListener;
 import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
+import org.olat.imscp.xml.manifest.FileType;
+import org.olat.imscp.xml.manifest.ManifestMetadataType;
+import org.olat.imscp.xml.manifest.ManifestType;
+import org.olat.imscp.xml.manifest.ObjectFactory;
+import org.olat.imscp.xml.manifest.OrganizationsType;
+import org.olat.imscp.xml.manifest.ResourceType;
+import org.olat.imscp.xml.manifest.ResourcesType;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.EditionSupport;
@@ -61,6 +76,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class QTI21AssessmentTestHandler extends FileHandler {
+	
+	private static final OLog log = Tracing.createLoggerFor(QTI21AssessmentTestHandler.class);
 
 	@Override
 	public String getSupportedType() {
@@ -69,7 +86,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 
 	@Override
 	public boolean isCreate() {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -78,10 +95,38 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	}
 
 	@Override
-	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
-			Object createObject, Locale locale) {
-		return null;
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale) {
+		ImsQTI21Resource ores = new ImsQTI21Resource();
+		
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(ores);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		DBFactory.getInstance().commit();
+		
+		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(re.getOlatResource()), FileResourceManager.ZIPDIR);
+		if(!repositoryDir.exists()) {
+			
+		}
+		return re;
 	}
+	
+	public void createMinimalAssessmentTest() {
+        ManifestType manifestType = ManifestPackage.createEmptyManifest();
+        String testFilename = ManifestPackage.appendAssessmentTest(manifestType);
+        String itemFilename = ManifestPackage.appendAssessmentItem(manifestType);	
+        ManifestPackage.write(manifestType, System.out);
+        
+        //create basic assessment test
+        
+        
+        //create single choice
+		
+		
+		
+		
+	}
+	
+	
 
 	@Override
 	public boolean isPostCreateWizardAvailable() {

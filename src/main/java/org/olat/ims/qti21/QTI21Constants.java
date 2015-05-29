@@ -29,6 +29,10 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  */
 public class QTI21Constants {
 	
+	public static final String TOOLNAME = "OpenOLAT";
+	
+	public static final String TOOLVERSION = "v1.0";
+	
 	public static final String SCORE = "SCORE";
 	
 	public static final Identifier SCORE_IDENTIFIER = Identifier.assumedLegal(SCORE);

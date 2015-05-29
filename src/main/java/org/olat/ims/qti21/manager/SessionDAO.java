@@ -26,7 +26,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.ims.qti21.UserTestSession;
-import org.olat.ims.qti21.model.UserTestSessionImpl;
+import org.olat.ims.qti21.model.jpa.UserTestSessionImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;

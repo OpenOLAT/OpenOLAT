@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.model;
+package org.olat.ims.qti21.model.jpa;
 
 import java.util.Date;
 
