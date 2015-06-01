@@ -22,37 +22,82 @@
 
       <xsl:variable name="object" select="qti:object" as="element(qti:object)"/>
       <xsl:variable name="appletContainerId" select="concat('qtiworks_id_appletContainer_', @responseIdentifier)" as="xs:string"/>
+      <xsl:variable name="responseValue" select="qw:get-response-value(/, @responseIdentifier)" as="element(qw:responseVariable)?"/>
+      
       <div id="{$appletContainerId}" class="appletContainer v2">
-        <object type="application/x-java-applet" height="{$object/@height + 40}" width="{$object/@width}">
-          <param name="code" value="BoundedGraphicalApplet"/>
-          <param name="codebase" value="{$appletCodebase}"/>
-          <param name="identifier" value="{@responseIdentifier}"/>
-          <param name="operation_mode" value="hotspot_interaction"/>
-          <!-- (BoundedGraphicalApplet uses -1 to represent 'unlimited') -->
-          <param name="number_of_responses" value="{if (@maxChoices &gt; 0) then @maxChoices else -1}"/>
-          <param name="background_image" value="{qw:convert-link-full($object/@data)}"/>
-          <xsl:variable name="hotspotChoices" select="qw:filter-visible(qti:hotspotChoice)" as="element(qti:hotspotChoice)*"/>
-          <param name="hotspot_count" value="{count($hotspotChoices)}"/>
-          <xsl:for-each select="qti:hotspotChoice">
-            <param name="hotspot{position()-1}"
-              value="{@identifier}::::{@shape}::{@coords}{if (@label) then concat('::hotSpotLabel',@label) else ''}{if (@matchGroup) then concat('::', translate(normalize-space(@matchGroup), ' ', '::')) else ''}"/>
-          </xsl:for-each>
+        <img id="{$appletContainerId}_img" width="206" height="280" src="{qw:convert-link-full($object/@data)}" usemap="#{$appletContainerId}_map"></img>
+        <map name="{$appletContainerId}_map">
+        	<xsl:for-each select="qti:hotspotChoice">
+            	<!-- Match group, label -->
+          		<area id="{@identifier}" shape="{@shape}" coords="{@coords}" href="javascript:clickArea('{@identifier}')" data-maphilight=''></area>
+          	</xsl:for-each>
+		</map>
 
-          <xsl:variable name="responseValue" select="qw:get-response-value(/, @responseIdentifier)" as="element(qw:responseVariable)?"/>
-          <xsl:if test="qw:is-not-null-value($responseValue)">
-            <param name="feedback">
-              <xsl:attribute name="value">
-                <xsl:value-of select="$responseValue/qw:value" separator=","/>
-              </xsl:attribute>
-            </param>
-          </xsl:if>
-        </object>
-        <script type="text/javascript">
-          jQuery(document).ready(function() {
-            QtiWorksRendering.registerAppletBasedInteractionContainer('<xsl:value-of
-              select="$appletContainerId"/>', ['<xsl:value-of select="@responseIdentifier"/>']);
-          });
-        </script>
+		<script type="text/javascript">
+			jQuery(function() {
+				jQuery('#<xsl:value-of select="$appletContainerId"/>_img').maphilight({
+					fillColor: '888888',
+					strokeColor: '0000ff',
+					strokeWidth: 3
+				});
+			});
+			
+			<xsl:choose>
+				<xsl:when test="qw:is-not-null-value($responseValue)">
+
+			jQuery(function() {
+				var areaIds = '<xsl:value-of select="$responseValue/qw:value" separator=","/>'.split(',');
+				for(i=areaIds.length; i-->0; ) {
+					var areaEl = jQuery('#' + areaIds[i])
+					var data = areaEl.data('maphilight') || {};
+					data.alwaysOn = true;
+					areaEl.data('maphilight', data).trigger('alwaysOn.maphilight');
+				}
+			});
+			
+			function clickArea(spot) { };
+
+		        </xsl:when><xsl:otherwise>
+		        
+			function clickArea(spot) {
+				var areaEl = jQuery('#' + spot)
+				var data = areaEl.data('maphilight') || {};
+				if(!data.alwaysOn) {
+					var numOfChoices = 1;
+					if(numOfChoices > 0) {
+						var countChoices = 0;
+						jQuery("area", "map[name='<xsl:value-of select="$appletContainerId"/>_map']").each(function(index, el) {
+							var cData = jQuery(el).data('maphilight') || {};
+							if(cData.alwaysOn) {
+								countChoices++;
+								
+							}
+						});
+						if(countChoices >= numOfChoices) {
+							return false;
+						}
+					}
+				}
+            	data.alwaysOn = !data.alwaysOn;
+				areaEl.data('maphilight', data).trigger('alwaysOn.maphilight');
+
+				var divContainer = jQuery('#<xsl:value-of select="$appletContainerId"/>');
+				divContainer.find("input[type='hidden']").remove();
+				jQuery("area", "map[name='<xsl:value-of select="$appletContainerId"/>_map']").each(function(index, el) {
+					var cAreaEl = jQuery(el);
+					var cData = cAreaEl.data('maphilight') || {};
+					if(cData.alwaysOn) {
+						var inputElement = jQuery('<input type="hidden"/>')
+							.attr('name', 'qtiworks_response_<xsl:value-of select="@responseIdentifier"/>')
+							.attr('value', areaEl.attr('id'));
+						divContainer.append(inputElement);
+					}
+				});
+			};
+		        
+		        </xsl:otherwise>
+			</xsl:choose>
+		</script>
       </div>
     </div>
   </xsl:template>

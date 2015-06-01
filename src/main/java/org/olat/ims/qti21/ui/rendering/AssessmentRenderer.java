@@ -54,6 +54,8 @@ import javax.xml.transform.stream.StreamResult;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.helpers.Settings;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -73,6 +75,7 @@ import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
 import uk.ac.ed.ph.jqtiplus.state.marshalling.ItemSessionStateXmlMarshaller;
 import uk.ac.ed.ph.jqtiplus.state.marshalling.TestSessionStateXmlMarshaller;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ClassPathResourceLocator;
+import uk.ac.ed.ph.jqtiplus.xmlutils.locators.FileResourceLocator;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.SimpleXsltStylesheetCache;
 import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltStylesheetManager;
@@ -98,30 +101,47 @@ public class AssessmentRenderer {
 
     private static final Logger logger = LoggerFactory.getLogger(AssessmentRenderer.class);
 
-    private static final URI serializeXsltUri = URI.create("classpath:/rendering-xslt/serialize.xsl");
-    private static final URI ctopXsltUri = URI.create("classpath:/rendering-xslt/ctop.xsl");
-    private static final URI itemStandaloneXsltUri = URI.create("classpath:/rendering-xslt/item-standalone.xsl");
-    private static final URI testItemXsltUri = URI.create("classpath:/rendering-xslt/test-item.xsl");
-    private static final URI testEntryXsltUri = URI.create("classpath:/rendering-xslt/test-entry.xsl");
-    private static final URI testPartNavigationXsltUri = URI.create("classpath:/rendering-xslt/test-testpart-navigation.xsl");
-    private static final URI testPartFeedbackXsltUri = URI.create("classpath:/rendering-xslt/test-testpart-feedback.xsl");
-    private static final URI testFeedbackXsltUri = URI.create("classpath:/rendering-xslt/test-feedback.xsl");
-    private static final URI terminatedXsltUri = URI.create("classpath:/rendering-xslt/terminated.xsl");
-    private static final URI explodedXsltUri = URI.create("classpath:/rendering-xslt/exploded.xsl");
+    private static final URI serializeXsltUri;
+    private static final URI ctopXsltUri;
+    private static final URI itemStandaloneXsltUri;
+    private static final URI testItemXsltUri;
+    private static final URI testEntryXsltUri;
+    private static final URI testPartNavigationXsltUri;
+    private static final URI testPartFeedbackXsltUri;
+    private static final URI testFeedbackXsltUri;
+    private static final URI terminatedXsltUri;
+    private static final URI explodedXsltUri;
+	
+    static {
+    	String path;
+    	if(Settings.isDebuging() && StringHelper.containsNonWhitespace(WebappHelper.getSourcePath())) {
+    		path = "file://" + WebappHelper.getSourcePath().replace("/src/main/java", "/src/main/resources");
+    	} else {
+    		path = "classpath:";
+    	}
 
-
+		serializeXsltUri = URI.create(path + "/rendering-xslt/serialize.xsl");
+	    ctopXsltUri = URI.create(path + "/rendering-xslt/ctop.xsl");
+	    itemStandaloneXsltUri = URI.create(path + "/rendering-xslt/item-standalone.xsl");
+	    testItemXsltUri = URI.create(path + "/rendering-xslt/test-item.xsl");
+	    testEntryXsltUri = URI.create(path + "/rendering-xslt/test-entry.xsl");
+	    testPartNavigationXsltUri = URI.create(path + "/rendering-xslt/test-testpart-navigation.xsl");
+	    testPartFeedbackXsltUri = URI.create(path + "/rendering-xslt/test-testpart-feedback.xsl");
+	    testFeedbackXsltUri = URI.create(path + "/rendering-xslt/test-feedback.xsl");
+	    terminatedXsltUri = URI.create(path + "/rendering-xslt/terminated.xsl");
+	    explodedXsltUri = URI.create(path + "/rendering-xslt/exploded.xsl");
+    }
 
     /** Manager for the XSLT stylesheets, created during init. */
     private XsltStylesheetManager stylesheetManager;
 
     //----------------------------------------------------
-
-
-    
-
-    //----------------------------------------------------
     public AssessmentRenderer() {
-        this.stylesheetManager = new XsltStylesheetManager(new ClassPathResourceLocator(), new SimpleXsltStylesheetCache());
+    	if(Settings.isDebuging() && StringHelper.containsNonWhitespace(WebappHelper.getSourcePath())) {
+    		stylesheetManager = new XsltStylesheetManager(new FileResourceLocator(), null);
+    	} else {
+    		stylesheetManager = new XsltStylesheetManager(new ClassPathResourceLocator(), new SimpleXsltStylesheetCache());
+    	}
     }
 
     //----------------------------------------------------

@@ -24,6 +24,7 @@ import java.net.URI;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
 
@@ -96,7 +97,10 @@ public class AssessmentTestComponent extends AbstractComponent {
 	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		super.validate(ureq, vr);
-		vr.getJsAndCSSAdder().addRequiredStaticJsFile("assessment/rendering/javascript/QtiWorksRendering.js");
+
+		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
+		jsa.addRequiredStaticJsFile("assessment/rendering/javascript/QtiWorksRendering.js");
+		jsa.addRequiredStaticJsFile("js/jquery/maphilight/jquery.maphilight.js");
 	}
 
 	@Override
