@@ -22,41 +22,105 @@
 
       <xsl:variable name="object" select="qti:object" as="element(qti:object)"/>
       <xsl:variable name="appletContainerId" select="concat('qtiworks_id_appletContainer_', @responseIdentifier)" as="xs:string"/>
-      <div id="{$appletContainerId}" class="appletContainer">
-        <object type="application/x-java-applet" height="{$object/@height + 40}" width="{$object/@width}">
-          <param name="code" value="BoundedGraphicalApplet"/>
-          <param name="codebase" value="{$appletCodebase}"/>
-          <param name="identifier" value="{@responseIdentifier}"/>
-          <param name="object_type" value="TEXT"/>
-          <param name="operation_mode" value="graphic_order_interaction"/>
-          <param name="number_of_responses" value="{count(qti:hotspotChoice)}"/>
-          <param name="background_image" value="{qw:convert-link-full($object/@data)}"/>
-          <xsl:variable name="hotspotChoices" select="qw:filter-visible(qti:hotspotChoice)" as="element(qti:hotspotChoice)*"/>
-          <param name="hotspot_count" value="{count($hotspotChoices)}"/>
-          <xsl:for-each select="$hotspotChoices">
-            <param name="hotspot{position()-1}">
-              <xsl:attribute name="value"><xsl:value-of select="@identifier"/>::::<xsl:value-of select="@shape"/>::<xsl:value-of select="@coords"/><xsl:if test="@label">::hotSpotLabel:<xsl:value-of select="@label"/></xsl:if><xsl:if test="@matchGroup">::<xsl:value-of select="translate(normalize-space(@matchGroup), ' ', '::')"/></xsl:if></xsl:attribute>
-            </param>
-          </xsl:for-each>
-          <param name="movable_element_count" value="{count($hotspotChoices)}"/>
-          <xsl:for-each select="$hotspotChoices">
-            <param name="movable_object{position()-1}" value="{position()}::{position()}"/>
-          </xsl:for-each>
-          <xsl:variable name="responseValue" select="qw:get-response-value(/, @responseIdentifier)" as="element(qw:responseVariable)?"/>
-          <xsl:if test="qw:is-not-null-value($responseValue)">
-            <param name="feedback">
-              <xsl:attribute name="value">
-                <xsl:value-of select="$responseValue/qw:value" separator=","/>
-              </xsl:attribute>
-            </param>
-          </xsl:if>
-        </object>
-        <script type="text/javascript">
-          jQuery(document).ready(function() {
-            QtiWorksRendering.registerAppletBasedInteractionContainer('<xsl:value-of
-              select="$appletContainerId"/>', ['<xsl:value-of select="@responseIdentifier"/>']);
-          });
-        </script>
+      <xsl:variable name="hotspotChoices" select="qw:filter-visible(qti:hotspotChoice)" as="element(qti:hotspotChoice)*"/>
+      <xsl:variable name="responseValue" select="qw:get-response-value(/, @responseIdentifier)" as="element(qw:responseVariable)?"/>
+      
+      <div id="{$appletContainerId}_container" class="appletContainer" style="width:{$object/@width}px; height:{$object/@height}px; position:relative; background-image: url('{qw:convert-link-full($object/@data)}') " data-openolat="">
+
+		<canvas id="{$appletContainerId}_canvas_alt" width="{$object/@width}" height="{$object/@height}" style="position:absolute; top:0;left:0; opacity:1; " ></canvas>
+		<canvas id="{$appletContainerId}_canvas" width="{$object/@width}" height="{$object/@height}" style="position:absolute; top:0;left:0; "></canvas>
+		<img id="{$appletContainerId}" width="{$object/@width}" height="{$object/@height}" src="{qw:convert-link-full($object/@data)}" usemap="#{$appletContainerId}_map" style="position:absolute; top:0; left:0; opacity:0;"></img>
+		<map name="{$appletContainerId}_map">
+			<xsl:for-each select="$hotspotChoices">
+				<area id="{@identifier}" shape="{@shape}" coords="{@coords}" href="#" ></area>
+			</xsl:for-each>
+		</map>
+      
+		<script type="text/javascript">
+		<xsl:choose>
+			<xsl:when test="qw:is-not-null-value($responseValue)">
+			
+			jQuery(function() {
+				var canvas = document.getElementById('<xsl:value-of select="$appletContainerId"/>_canvas');
+				var c = canvas.getContext('2d');
+				c.clearRect(0, 0, jQuery(canvas).width(), jQuery(canvas).height());
+				
+				var areaIds = '<xsl:value-of select="$responseValue/qw:value" separator=","/>'.split(',');
+				for(i=areaIds.length; i-->0; ) {
+					var areaEl = jQuery('#' + areaIds[i]);
+					var position = areaEl.attr('coords').split(',');
+					var cx = position[0];
+					var cy = position[1];
+					console.log(cx, cy);
+					
+					c.font = "16px Arial";
+					c.fillText("" + (i+1), cx, cy);
+				}
+			});
+			
+			</xsl:when>
+			<xsl:otherwise>
+			
+		jQuery(function() {
+			jQuery('#<xsl:value-of select="$appletContainerId"/>_container area').on("click", function(e) {
+				var r = 8;
+				var maxChoices = <xsl:value-of select="count($hotspotChoices)"/>;
+
+				var areaId = jQuery(this).attr('id');
+				var position = jQuery(this).attr('coords').split(',');
+				var cx = position[0];
+				var cy = position[1];
+
+				var data = jQuery("#<xsl:value-of select="$appletContainerId"/>_container").data("openolat") || {};
+				if(data.listOfPoints == undefined) {
+					data.listOfPoints = [];
+					jQuery("#<xsl:value-of select="$appletContainerId"/>_container").data('openolat', data);
+				}
+					
+				var remove = false;
+				var newListOfPoints = [];
+				for(i=data.listOfPoints.length; i-->0;) {
+					var p = data.listOfPoints[i];
+					var rc = ((p.x - cx)*(p.x - cx)) + ((p.y - cy)*(p.y - cy));
+					if(r*r > rc) {
+						remove = true;
+					} else {
+						newListOfPoints.push(p);
+					}
+				}
+					
+				if(remove) {
+					data.listOfPoints = newListOfPoints;
+				} else if(data.listOfPoints.length >= maxChoices) {
+					return false;
+				} else {
+					data.listOfPoints.push({'x': cx, 'y': cy, 'areaId': areaId});
+				}
+
+				var canvas = document.getElementById('<xsl:value-of select="$appletContainerId"/>_canvas');
+				var c = canvas.getContext('2d');
+				c.clearRect(0, 0, jQuery(canvas).width(), jQuery(canvas).height());
+					
+				var divContainer = jQuery('#<xsl:value-of select="$appletContainerId"/>_container');
+				divContainer.find("input[type='hidden']").remove();
+					
+				for(i=data.listOfPoints.length; i-->0;) {
+					var p = data.listOfPoints[i];
+					c.font = "16px Arial";
+					c.fillText("" + (i+1), p.x, p.y);
+
+					var inputElement = jQuery('<input type="hidden"/>')
+						.attr('name', 'qtiworks_response_RESPONSE')
+						.attr('value', p.areaId);
+					divContainer.prepend(inputElement);
+				}
+			});
+		});
+			
+			</xsl:otherwise>
+		</xsl:choose>
+
+		</script>
       </div>
     </div>
   </xsl:template>
