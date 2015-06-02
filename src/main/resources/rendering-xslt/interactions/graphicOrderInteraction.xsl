@@ -46,7 +46,7 @@
 				c.clearRect(0, 0, jQuery(canvas).width(), jQuery(canvas).height());
 				
 				var areaIds = '<xsl:value-of select="$responseValue/qw:value" separator=","/>'.split(',');
-				for(i=areaIds.length; i-->0; ) {
+				for(var i=areaIds.length; i-->0; ) {
 					var areaEl = jQuery('#' + areaIds[i]);
 					var position = areaEl.attr('coords').split(',');
 					var cx = position[0];
@@ -79,7 +79,7 @@
 					
 				var remove = false;
 				var newListOfPoints = [];
-				for(i=data.listOfPoints.length; i-->0;) {
+				for(var i=data.listOfPoints.length; i-->0;) {
 					var p = data.listOfPoints[i];
 					var rc = ((p.x - cx)*(p.x - cx)) + ((p.y - cy)*(p.y - cy));
 					if(r*r > rc) {
@@ -104,7 +104,7 @@
 				var divContainer = jQuery('#<xsl:value-of select="$appletContainerId"/>_container');
 				divContainer.find("input[type='hidden']").remove();
 					
-				for(i=data.listOfPoints.length; i-->0;) {
+				for(var i=data.listOfPoints.length; i-->0;) {
 					var p = data.listOfPoints[i];
 					c.font = "16px Arial";
 					c.fillText("" + (i+1), p.x, p.y);
