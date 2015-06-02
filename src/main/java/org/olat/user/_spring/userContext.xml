@@ -252,6 +252,10 @@
 	    </property>
 	</bean>
 
+	<!-- Implementation to display "firstname lastname" -->
+    <bean id="userDisplayName_firstname_lastname" class="org.olat.user.UserDisplayNameCreator" />
+    <!-- Implementation to display "lastname, firstname" -->
+    <bean id="userDisplayName_lastname_firstname" class="org.olat.user.UserDisplayNameCreatorLastnameFirst" />
 
 	<bean id="userManager" class="org.olat.user.UserManagerImpl" >
 		<property name="userPropertiesConfig">
@@ -261,11 +265,7 @@
         	<ref bean="org.olat.user.UserNameAndPasswordSyntaxChecker"/>
         </property>
 		<property name="userDisplayNameCreator">
-				<!-- Implementation to display "firstname lastname" 
-                <bean id="org.olat.user.UserDisplayNameCreator" class="org.olat.user.UserDisplayNameCreator" />
-				-->
-                <!-- Implementation to display "lastname, firstname" -->
-                <bean id="org.olat.user.UserDisplayNameCreator" class="org.olat.user.UserDisplayNameCreatorLastnameFirst" />
+			 <ref bean="${userDisplayName}"/>
         </property>
 	</bean>
 
