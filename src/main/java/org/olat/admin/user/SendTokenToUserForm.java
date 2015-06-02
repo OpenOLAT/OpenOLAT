@@ -102,20 +102,12 @@ public class SendTokenToUserForm extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String text = mailText.getValue();
 		sendToken(ureq, text);
-		mailText.setValue(escapeLanguage(text));
+		mailText.setValue(text);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	
 	public FormItem getInitialFormItem() {
 		return flc;
-	}
-	
-	/**
-	 * Workaround for display where the &lang is considered as an html entity
-	 * @param text
-	 */
-	private String escapeLanguage(String text) {
-		return text.replace("&lang=", "&amp;lang=");
 	}
 	
 	private String generateMailText() {
@@ -131,7 +123,7 @@ public class SendTokenToUserForm extends FormBasicController {
 					+ userTrans.translate("pwchange.body", new String[] {
 							serverpath, dummyKey, I18nManager.getInstance().getLocaleKey(locale)
 					});
-			return escapeLanguage(body);
+			return body;
 		}
 		else return "This function is not available for users without an email-adress!";
 	}

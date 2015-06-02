@@ -84,7 +84,12 @@ public class RedirectToAutoGuestLoginDispatcher implements Dispatcher {
 			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
 			return;
 		}
-		int loginStatus = AuthHelper.doAnonymousLogin(ureq,I18nManager.getInstance().getLocaleOrDefault(ureq.getParameter("lang")) );
+		String lang = ureq.getParameter("language");
+		if (lang == null) {
+			// support for legacy lang parameter
+			lang = ureq.getParameter("lang");
+		}
+		int loginStatus = AuthHelper.doAnonymousLogin(ureq,I18nManager.getInstance().getLocaleOrDefault(lang) );
 		if ( loginStatus != AuthHelper.LOGIN_OK) {
 			if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
 				DispatcherModule.redirectToServiceNotAvailable(response);

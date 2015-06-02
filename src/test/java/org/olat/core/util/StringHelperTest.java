@@ -166,6 +166,7 @@ public class StringHelperTest {
 		Assert.assertFalse(StringHelper.isHtml("Mathemtics 5<6"));
 		Assert.assertFalse(StringHelper.isHtml("Du & ich"));
 		Assert.assertFalse(StringHelper.isHtml("http://a.link.to.some.where/bla.html?key=arg&umen=ts"));
+		Assert.assertFalse(StringHelper.isHtml("http://some.domain:8080/olat/dmz/registration/index.html?key=b67a28bd5e5820155b3ba496ef16d1d9&language=de"));
 		//is recognized as HTML because &lang; is an entity
 		Assert.assertTrue(StringHelper.isHtml("http://some.domain:8080/olat/dmz/registration/index.html?key=b67a28bd5e5820155b3ba496ef16d1d9&lang=de"));
 		

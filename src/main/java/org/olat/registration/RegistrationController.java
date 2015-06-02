@@ -112,7 +112,11 @@ public class RegistrationController extends BasicController implements Activatea
 		}
 		// override language when not the same as in ureq and add fallback to
 		// property handler translator for user properties
-		String lang = ureq.getParameter("lang");
+		String lang = ureq.getParameter("language");
+		if (lang == null) {
+			// support for legacy lang parameter
+			lang = ureq.getParameter("lang");
+		}
 		if (lang != null && ! lang.equals(I18nManager.getInstance().getLocaleKey(getLocale()))) {
 			Locale loc = I18nManager.getInstance().getLocaleOrDefault(lang);
 			ureq.getUserSession().setLocale(loc);

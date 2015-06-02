@@ -294,8 +294,12 @@ public class RESTDispatcher implements Dispatcher {
 	
 	private Locale getLang(UserRequest ureq) {
 	// try to log in as anonymous
-		// use the language from the lang paramter if available, otherwhise use the system default locale
-		String guestLang = ureq.getParameter("lang");
+		// use the language from the lang parameter if available, otherwise use the system default locale
+		String guestLang = ureq.getParameter("language");
+		if (guestLang == null) {
+			// support for legacy lang parameter
+			guestLang = ureq.getParameter("lang");
+		}
 		Locale guestLoc;
 		if (guestLang == null) {
 			guestLoc = I18nModule.getDefaultLocale();
