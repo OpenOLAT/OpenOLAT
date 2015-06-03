@@ -133,15 +133,18 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 	
 	private boolean setRevisions(UserRequest ureq, String cmpName, int iteration) {
 		File documentsDir;
+		VFSContainer documentsContainer = null;
 		if(businessGroupTask) {
 			documentsDir = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, assessedGroup);
+			documentsContainer = gtaManager.getRevisedDocumentsContainer(courseEnv, gtaNode, iteration, assessedGroup);
 		} else {
 			documentsDir = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, assessedIdentity);
 		}
 
 		boolean hasDocuments = TaskHelper.hasDocuments(documentsDir);
 		if(hasDocuments) {
-			revisionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, "coach.revisions.description");
+			revisionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
+					"coach.revisions.description");
 			listenTo(revisionsCtrl);
 			mainVC.put(cmpName, revisionsCtrl.getInitialComponent());
 		}
@@ -150,15 +153,18 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 	
 	private boolean setCorrections(UserRequest ureq, String cmpName, int iteration) {
 		File documentsDir;
+		VFSContainer documentsContainer = null;
 		if(businessGroupTask) {
 			documentsDir = gtaManager.getRevisedDocumentsCorrectionsDirectory(courseEnv, gtaNode, iteration, assessedGroup);
+			documentsContainer = gtaManager.getRevisedDocumentsCorrectionsContainer(courseEnv, gtaNode, iteration, assessedGroup);
 		} else {
 			documentsDir = gtaManager.getRevisedDocumentsCorrectionsDirectory(courseEnv, gtaNode, iteration, assessedIdentity);
 		}
 		
 		boolean hasDocuments = TaskHelper.hasDocuments(documentsDir);
 		if(hasDocuments) {
-			correctionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, "run.coach.corrections.description", "bulk.review", "review");
+			correctionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
+					"run.coach.corrections.description", "bulk.review", "review");
 			listenTo(correctionsCtrl);
 			mainVC.put(cmpName, correctionsCtrl.getInitialComponent());
 		}
@@ -184,10 +190,12 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 		returnToRevisionsButton = LinkFactory.createCustomLink("coach.submit.corrections.to.revision.button", "submit", "coach.submit.corrections.to.revision.button", Link.BUTTON, mainVC, this);
 		returnToRevisionsButton.setCustomEnabledLinkCSS("btn btn-primary");
 		returnToRevisionsButton.setIconLeftCSS("o_icon o_icon o_icon_submit");
+		returnToRevisionsButton.setElementCssClass("o_sel_course_gta_return_revision");
 		
 		closeRevisionsButton = LinkFactory.createCustomLink("coach.close.revision.button", "close", "coach.close.revision.button", Link.BUTTON, mainVC, this);
 		closeRevisionsButton.setCustomEnabledLinkCSS("btn btn-primary");
 		closeRevisionsButton.setIconLeftCSS("o_icon o_icon o_icon_submit");
+		closeRevisionsButton.setElementCssClass("o_sel_course_gta_close_revision");
 	}
 	
 	@Override

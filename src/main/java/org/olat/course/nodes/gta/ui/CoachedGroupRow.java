@@ -43,6 +43,10 @@ public class CoachedGroupRow {
 		return businessGroup.getName();
 	}
 	
+	public String getTaskName() {
+		return task == null ? null : task.getTaskName();
+	}
+	
 	public TaskProcess getTaskStatus() {
 		return task == null ? null : task.getTaskStatus();
 	}

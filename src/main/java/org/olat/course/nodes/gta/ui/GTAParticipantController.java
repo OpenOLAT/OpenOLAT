@@ -252,20 +252,24 @@ public class GTAParticipantController extends GTAAbstractController {
 		listenTo(submitDocCtrl);
 		mainVC.put("submitDocs", submitDocCtrl.getInitialComponent());
 		
-		submitButton  = LinkFactory.createCustomLink("run.submit.button", "submit", "run.submit.button", Link.BUTTON, mainVC, this);
+		submitButton = LinkFactory.createCustomLink("run.submit.button", "submit", "run.submit.button", Link.BUTTON, mainVC, this);
+		submitButton.setElementCssClass("o_sel_course_gta_submit_docs");
 		submitButton.setCustomEnabledLinkCSS("btn btn-primary");
 		submitButton.setIconLeftCSS("o_icon o_icon_submit");
 	}
 	
 	private void setSubmittedDocumentsController(UserRequest ureq) {
 		File documentsDir;
+		VFSContainer documentsContainer = null;
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
 			documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedGroup);
+			documentsContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, assessedGroup);
 		} else {
 			documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, getIdentity());
 		}
 		
-		submittedDocCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, "run.submitted.description");
+		submittedDocCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
+				"run.submitted.description");
 		listenTo(submittedDocCtrl);
 		mainVC.put("submittedDocs", submittedDocCtrl.getInitialComponent());
 	}
@@ -369,14 +373,17 @@ public class GTAParticipantController extends GTAAbstractController {
 	
 	private void setReviews(UserRequest ureq, boolean waiting) {
 		File documentsDir;
+		VFSContainer documentsContainer = null;
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
 			documentsDir = gtaManager.getCorrectionDirectory(courseEnv, gtaNode, assessedGroup);
+			documentsContainer = gtaManager.getCorrectionContainer(courseEnv, gtaNode, assessedGroup);
 		} else {
 			documentsDir = gtaManager.getCorrectionDirectory(courseEnv, gtaNode, getIdentity());
 		}
 		
 		if(TaskHelper.hasDocuments(documentsDir)) {
-			correctionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, "run.corrections.description", "bulk.review", "review");
+			correctionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
+					"run.corrections.description", "bulk.review", "review");
 			listenTo(correctionsCtrl);
 			mainVC.put("corrections", correctionsCtrl.getInitialComponent());
 		} else {
@@ -460,8 +467,9 @@ public class GTAParticipantController extends GTAAbstractController {
 		boolean visible = availableDate == null || availableDate.compareTo(new Date()) <= 0;
 		if(visible) {
 			File documentsDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);
+			VFSContainer documentsContainer = gtaManager.getSolutionsContainer(courseEnv, gtaNode);
 			if(TaskHelper.hasDocuments(documentsDir)) {
-				solutionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, "run.solutions.description", "bulk.solutions", "solutions");
+				solutionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer, "run.solutions.description", "bulk.solutions", "solutions");
 				listenTo(solutionsCtrl);
 				mainVC.put("solutions", solutionsCtrl.getInitialComponent());
 			}
@@ -488,8 +496,12 @@ public class GTAParticipantController extends GTAAbstractController {
 	    if(StringHelper.containsNonWhitespace(infoTextUser)) {
 	    	mainVC.contextPut("gradingInfoTextUser", StringHelper.xssScan(infoTextUser));
 	    }
-		
-		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
+	    
+	    boolean showGrading = false;
+	    MSCourseNodeRunController msCtrl = new MSCourseNodeRunController(ureq, getWindowControl(), userCourseEnv, gtaNode, false, false);
+	    if(msCtrl.hasScore() || msCtrl.hasPassed() || msCtrl.hasComment()) {
+	    	showGrading = true; 
+	    } else if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)
@@ -500,21 +512,21 @@ public class GTAParticipantController extends GTAAbstractController {
 					|| assignedTask.getTaskStatus() == TaskProcess.revision || assignedTask.getTaskStatus() == TaskProcess.solution) {
 				mainVC.contextPut("gradingCssClass", "");
 			} else if(assignedTask.getTaskStatus() == TaskProcess.graded || assignedTask.getTaskStatus() == TaskProcess.grading) {
-				mainVC.contextPut("gradingCssClass", "o_active");
-				setGrading(ureq);
+				showGrading = true;
 			}	
 		} else if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.graded || assignedTask.getTaskStatus() == TaskProcess.grading){
+			showGrading = true;
+		}
+		
+		if(showGrading) {
+			gradingCtrl = msCtrl;
+			listenTo(gradingCtrl);
 			mainVC.contextPut("gradingCssClass", "o_active");
-			setGrading(ureq);
+			mainVC.put("grading", gradingCtrl.getInitialComponent());
+			stepPreferences.setGrading(Boolean.TRUE);
 		}
 
 		return assignedTask;
-	}
-	
-	private void setGrading(UserRequest ureq) {
-		gradingCtrl = new MSCourseNodeRunController(ureq, getWindowControl(), userCourseEnv, gtaNode, false, false);
-		listenTo(gradingCtrl);
-		mainVC.put("grading", gradingCtrl.getInitialComponent());
 	}
 	
 	private TaskDefinition getTaskDefinition(Task task) {

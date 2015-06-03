@@ -32,6 +32,8 @@ public class LDAPGroup {
 	
 	private String commonName;
 	private List<String> members;
+	private List<LDAPUser> participants = new ArrayList<>();
+	private List<LDAPUser> coaches = new ArrayList<>();
 	
 	public LDAPGroup() {
 		//
@@ -58,6 +60,15 @@ public class LDAPGroup {
 		this.members = members;
 	}
 	
+	
+	public List<LDAPUser> getParticipants() {
+		return participants;
+	}
+
+	public List<LDAPUser> getCoaches() {
+		return coaches;
+	}
+
 	@Override
 	public int hashCode() {
 		return commonName == null ? 987234895 : commonName.hashCode();

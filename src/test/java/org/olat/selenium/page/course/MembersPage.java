@@ -21,6 +21,8 @@ package org.olat.selenium.page.course;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.selenium.page.group.GroupPage;
+import org.olat.selenium.page.group.GroupsPage;
 import org.olat.selenium.page.group.MembersWizardPage;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
@@ -51,8 +53,14 @@ public class MembersPage {
 	
 	public MembersWizardPage addMember() {
 		By addMemberBy = By.className("o_sel_course_add_member");
-		WebElement addMemberButton = browser.findElement(addMemberBy);
-		addMemberButton.click();
+		browser.findElement(addMemberBy).click();
+		OOGraphene.waitBusy(browser);
+		return new MembersWizardPage(browser);
+	}
+	
+	public MembersWizardPage importMembers() {
+		By importMembersBy = By.className("o_sel_course_import_members");
+		browser.findElement(importMembersBy).click();
 		OOGraphene.waitBusy(browser);
 		return new MembersWizardPage(browser);
 	}
@@ -62,6 +70,10 @@ public class MembersPage {
 		browser.findElement(groupsItemBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
+	}
+	
+	public GroupPage selectBusinessGroup(String name) {
+		return new GroupsPage(browser).selectGroup(name);
 	}
 	
 	public MembersPage createBusinessGroup(String name, String description,
@@ -75,8 +87,10 @@ public class MembersPage {
 		browser.findElement(nameBy).sendKeys(name);
 		OOGraphene.tinymce(description, browser);
 		
-		By maxParticipantBy = By.cssSelector(".o_sel_group_edit_max_members input[type='text']");
-		browser.findElement(maxParticipantBy).sendKeys(Integer.toString(maxParticipants));
+		if(maxParticipants > 0) {
+			By maxParticipantBy = By.cssSelector(".o_sel_group_edit_max_members input[type='text']");
+			browser.findElement(maxParticipantBy).sendKeys(Integer.toString(maxParticipants));
+		}
 		
 		if(waitingList) {
 			By waitingListBy = By.cssSelector(".o_sel_group_edit_waiting_list input[type='checkbox']");

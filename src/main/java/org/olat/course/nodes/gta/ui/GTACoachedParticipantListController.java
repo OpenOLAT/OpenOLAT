@@ -166,6 +166,11 @@ public class GTACoachedParticipantListController extends FormBasicController {
 				columnsModel.addFlexiColumnModel(col);
 			}
 		}
+
+		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskName.i18nKey(), CGCols.taskName.ordinal(),
+					true, CGCols.taskName.name()));
+		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskStatus.i18nKey(), CGCols.taskStatus.ordinal(),
 				true, CGCols.taskStatus.name(), new TaskStatusCellRenderer(getTranslator())));

@@ -21,6 +21,8 @@ package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
 
+import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
+import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -31,10 +33,12 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -42,6 +46,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.model.TaskDefinitionList;
@@ -60,24 +67,28 @@ public class GTAAssignmentEditController extends FormBasicController {
 	private static final String[] previewKeys = new String[] { "enabled", "disabled" };
 	private static final String[] samplingKeys = new String[] { GTACourseNode.GTASK_SAMPLING_UNIQUE, GTACourseNode.GTASK_SAMPLING_REUSE };
 	
-	private FormLink addTaskLink;
+	private FormLink addTaskLink, createTaskLink;
 	private RichTextElement textEl;
 	private FlexiTableElement taskDefTableEl;
 	private TaskDefinitionTableModel taskModel;
 	private SingleSelection typeEl, previewEl, samplingEl;
 	
 	private CloseableModalController cmc;
+	private NewTaskController newTaskCtrl;
 	private EditTaskController addTaskCtrl, editTaskCtrl;
+	private HTMLEditorController newTaskEditorCtrl, editTaskEditorCtrl;
 	
 	private final TaskDefinitionList taskList;
 	private final File tasksFolder;
+	private final VFSContainer tasksContainer;
 	private final ModuleConfiguration config;
 	
 	public GTAAssignmentEditController(UserRequest ureq, WindowControl wControl,
-			ModuleConfiguration config, File tasksFolder) {
+			ModuleConfiguration config, File tasksFolder, VFSContainer tasksContainer) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.config = config;
 		this.tasksFolder = tasksFolder;
+		this.tasksContainer = tasksContainer;
 		
 		if(config.get(GTACourseNode.GTASK_TASKS) == null) {
 			taskList = new TaskDefinitionList();
@@ -98,11 +109,20 @@ public class GTAAssignmentEditController extends FormBasicController {
 		formLayout.add(tasksCont);
 		
 		addTaskLink = uifactory.addFormLink("add.task", tasksCont, Link.BUTTON);
+		addTaskLink.setElementCssClass("o_sel_course_gta_add_task");
+		addTaskLink.setIconLeftCSS("o_icon o_icon_upload");
+		createTaskLink = uifactory.addFormLink("create.task", tasksCont, Link.BUTTON);
+		createTaskLink.setElementCssClass("o_sel_course_gta_create_task");
+		createTaskLink.setIconLeftCSS("o_icon o_icon_edit");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.title.i18nKey(), TDCols.title.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.file.i18nKey(), TDCols.file.ordinal()));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit", translate("edit"), "edit"));
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.edit", TDCols.edit.ordinal(), "edit",
+				new BooleanCellRenderer(
+						new StaticFlexiCellRenderer(translate("edit"), "edit"),
+						new StaticFlexiCellRenderer(translate("replace"), "edit"))));
+		
 		taskModel = new TaskDefinitionTableModel(columnsModel);
 		taskDefTableEl = uifactory.addTableElement(getWindowControl(), "taskTable", taskModel, getTranslator(), tasksCont);
 		taskDefTableEl.setExportEnabled(true);
@@ -110,6 +130,7 @@ public class GTAAssignmentEditController extends FormBasicController {
 		
 		FormLayoutContainer configCont = FormLayoutContainer.createDefaultFormLayout("config", getTranslator());
 		configCont.setFormTitle(translate("assignment.config.title"));
+		configCont.setElementCssClass("o_sel_course_gta_task_config_form");
 		configCont.setRootForm(mainForm);
 		formLayout.add(configCont);
 		//task assignment configuration
@@ -155,10 +176,12 @@ public class GTAAssignmentEditController extends FormBasicController {
 		textEl = uifactory.addRichTextElementForStringDataMinimalistic("task.text", "task.text", text, 10, -1, configCont, getWindowControl());
 		
 		//save
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonsCont.setElementCssClass("o_sel_course_gta_task_config_buttons");
 		buttonsCont.setRootForm(mainForm);
-		formLayout.add(buttonsCont);
+		configCont.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
 	private void updateModel() {
@@ -188,6 +211,26 @@ public class GTAAssignmentEditController extends FormBasicController {
 				fireEvent(ureq, Event.DONE_EVENT);
 				taskDefTableEl.reloadData();
 			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(newTaskCtrl == source) {
+			TaskDefinition newTask = newTaskCtrl.getTaskDefinition();
+			cmc.deactivate();
+			cleanUp();
+			
+			if(event == Event.DONE_EVENT) {
+				taskList.getTasks().add(newTask);
+				doCreateTaskEditor(ureq, newTask);
+				updateModel();
+			} 
+		} else if(newTaskEditorCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				updateModel();
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(editTaskEditorCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
 		} else if(cmc == source) {
@@ -228,6 +271,8 @@ public class GTAAssignmentEditController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addTaskLink == source) {
 			doAddTask(ureq);
+		} else if(createTaskLink == source) {
+			doCreateTask(ureq);
 		} else if(taskDefTableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -280,11 +325,61 @@ public class GTAAssignmentEditController extends FormBasicController {
 	}
 	
 	private void doEdit(UserRequest ureq, TaskDefinition taskDef) {
+		if(taskDef.getFilename().endsWith(".html")) {
+			doEditTaskEditor(ureq, taskDef);
+		} else {
+			doReplaceTask(ureq, taskDef);
+		}	
+	}
+	
+	private void doReplaceTask(UserRequest ureq, TaskDefinition taskDef) {
 		editTaskCtrl = new EditTaskController(ureq, getWindowControl(), taskDef, tasksFolder);
 		listenTo(editTaskCtrl);
 
 		String title = translate("edit.task");
 		cmc = new CloseableModalController(getWindowControl(), null, editTaskCtrl.getInitialComponent(), true, title, false);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doCreateTask(UserRequest ureq) {
+		newTaskCtrl = new NewTaskController(ureq, getWindowControl(), tasksContainer);
+		listenTo(newTaskCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", newTaskCtrl.getInitialComponent());
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doCreateTaskEditor(UserRequest ureq, TaskDefinition taskDef) {
+		String documentName = taskDef.getFilename();
+		VFSItem item = tasksContainer.resolve(documentName);
+		if(item == null) {
+			tasksContainer.createChildLeaf(documentName);
+		} else {
+			documentName = VFSManager.rename(tasksContainer, documentName);
+			tasksContainer.createChildLeaf(documentName);
+		}
+
+		newTaskEditorCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(),
+				tasksContainer, documentName, "media", true, true);
+		newTaskEditorCtrl.setNewFile(true);
+		newTaskEditorCtrl.setUserObject(taskDef);
+		listenTo(newTaskEditorCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", newTaskEditorCtrl.getInitialComponent());
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doEditTaskEditor(UserRequest ureq, TaskDefinition taskDef) {
+		String documentName = taskDef.getFilename();
+
+		editTaskEditorCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(),
+				tasksContainer, documentName, "media", true, true);
+		listenTo(editTaskEditorCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", editTaskEditorCtrl.getInitialComponent());
 		listenTo(cmc);
 		cmc.activate();
 	}

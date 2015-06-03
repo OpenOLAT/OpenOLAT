@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -40,9 +41,11 @@ public class AssessmentRow {
 	
 	private TextElement scoreEl;
 	private MultipleSelectionElement passedEl;
+	private FormLink commentTooltipLink, commentEditLink;
 	
 	private String score;
 	private Boolean passed;
+	private String comment;
 	
 	public AssessmentRow(UserCourseEnvironment userCourseEnv, boolean duplicate) {
 		this.userCourseEnv = userCourseEnv;
@@ -71,6 +74,30 @@ public class AssessmentRow {
 
 	public void setPassed(Boolean passed) {
 		this.passed = passed;
+	}
+
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
+
+	public FormLink getCommentTooltipLink() {
+		return commentTooltipLink;
+	}
+
+	public void setCommentTooltipLink(FormLink comment) {
+		this.commentTooltipLink = comment;
+	}
+
+	public FormLink getCommentEditLink() {
+		return commentEditLink;
+	}
+
+	public void setCommentEditLink(FormLink commentEditLink) {
+		this.commentEditLink = commentEditLink;
 	}
 
 	public TextElement getScoreEl() {

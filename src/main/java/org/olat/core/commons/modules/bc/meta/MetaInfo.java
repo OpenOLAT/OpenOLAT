@@ -90,6 +90,8 @@ public interface MetaInfo {
 	 */
 	public Identity getAuthorIdentity();
 	
+	public Long getAuthorIdentityKey();
+	
 	public boolean hasAuthorIdentity();
 
 	/**

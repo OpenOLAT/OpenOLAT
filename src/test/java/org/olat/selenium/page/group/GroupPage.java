@@ -142,6 +142,12 @@ public class GroupPage {
 		return this;
 	}
 	
+	public void close() {
+		By closeBy = By.cssSelector("a i.o_icon_close_tool");
+		browser.findElement(closeBy).click();
+		OOGraphene.waitBusy(browser);
+	}
+	
 	public GroupPage setVisibility(boolean owners, boolean participants, boolean waitingList) {	
 		if(owners) {
 			By showOwnersBy = By.cssSelector(".o_sel_group_show_owners input[type='checkbox']");

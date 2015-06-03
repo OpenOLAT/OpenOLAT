@@ -69,6 +69,26 @@ public class OOGraphene {
 		((JavascriptExecutor)browser).executeScript("top.tinymce.activeEditor.setContent('" + content + "')");
 	}
 	
+	/**
+	 * Make sure that the checkbox is in the correct state.
+	 * @param checkboxEl
+	 * @param val
+	 */
+	public static final void check(WebElement checkboxEl, Boolean val) {
+		if(val == null) return;
+		
+		String checked = checkboxEl.getAttribute("checked");
+		if(Boolean.TRUE.equals(val)) {
+			if(checked == null) {
+				checkboxEl.click();
+			}
+		} else {
+			if(checked != null) {
+				checkboxEl.click();
+			}
+		}
+	}
+	
 	public static final void textarea(WebElement textareaEl, String content, WebDriver browser) {
 		String id = textareaEl.getAttribute("id");
 		((JavascriptExecutor)browser).executeScript("document.getElementById('" + id + "').value = '" + content + "'");

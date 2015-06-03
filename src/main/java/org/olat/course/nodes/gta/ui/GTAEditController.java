@@ -28,6 +28,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
@@ -59,6 +60,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		PANE_TAB_ACCESSIBILITY, PANE_TAB_WORKLOW, PANE_TAB_ASSIGNMENT,
 		PANE_TAB_SUBMISSION, PANE_TAB_GRADING, PANE_TAB_SOLUTIONS
 	};
+	private int workflowPos, assignmentPos, submissionPos, gradingPos, solutionsPos;
 	
 	private TabbedPane myTabbedPane;
 	private GTAWorkflowEditController workflowCtrl;
@@ -68,7 +70,14 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	private ConditionEditController accessibilityCondCtrl;
 	private GTASampleSolutionsEditController solutionsCtrl;
 	
+	private final File tasksDir;
+	private final File solutionsDir;
+	private final VFSContainer tasksContainer;
+	private final VFSContainer solutionsContainer;
+	
+	private final GTACourseNode gtaNode;
 	private final ModuleConfiguration config;
+	private final UserCourseEnvironment euce;
 	
 	@Autowired
 	private GTAManager gtaManager;
@@ -77,10 +86,14 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 			ICourse course, UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		
+		this.euce = euce;
+		this.gtaNode = gtaNode;
 		config = gtaNode.getModuleConfiguration();
 		
-		File tasksDir = gtaManager.getTasksDirectory(course.getCourseEnvironment(), gtaNode);
-		File solutionsDir = gtaManager.getSolutionsDirectory(course.getCourseEnvironment(), gtaNode);
+		tasksDir = gtaManager.getTasksDirectory(course.getCourseEnvironment(), gtaNode);
+		tasksContainer = gtaManager.getTasksContainer(course.getCourseEnvironment(), gtaNode);
+		solutionsDir = gtaManager.getSolutionsDirectory(course.getCourseEnvironment(), gtaNode);
+		solutionsContainer = gtaManager.getSolutionsContainer(course.getCourseEnvironment(), gtaNode);
 
 		// Accessibility precondition
 		Condition accessCondition = gtaNode.getPreConditionAccess();
@@ -92,7 +105,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		workflowCtrl = new GTAWorkflowEditController(ureq, getWindowControl(), gtaNode, euce.getCourseEditorEnv());
 		listenTo(workflowCtrl);
 		//assignment
-		assignmentCtrl = new GTAAssignmentEditController(ureq, getWindowControl(), config, tasksDir);
+		assignmentCtrl = new GTAAssignmentEditController(ureq, getWindowControl(), config, tasksDir, tasksContainer);
 		listenTo(assignmentCtrl);
 		//submission
 		submissionCtrl = new GTASubmissionEditController(ureq, getWindowControl(), config);
@@ -101,7 +114,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		manualAssessmentCtrl = new MSEditFormController(ureq, getWindowControl(), config);
 		listenTo(manualAssessmentCtrl);
 		//solutions
-		solutionsCtrl = new GTASampleSolutionsEditController(ureq, getWindowControl(), config, solutionsDir);
+		solutionsCtrl = new GTASampleSolutionsEditController(ureq, getWindowControl(), config, solutionsDir, solutionsContainer);
 		listenTo(solutionsCtrl);
 	}
 	
@@ -114,11 +127,19 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondCtrl.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
-		tabbedPane.addTab(translate(PANE_TAB_WORKLOW), workflowCtrl.getInitialComponent());
-		tabbedPane.addTab(translate(PANE_TAB_ASSIGNMENT), assignmentCtrl.getInitialComponent());
-		tabbedPane.addTab(translate(PANE_TAB_SUBMISSION), submissionCtrl.getInitialComponent());
-		tabbedPane.addTab(translate(PANE_TAB_GRADING), manualAssessmentCtrl.getInitialComponent());
-		tabbedPane.addTab(translate(PANE_TAB_SOLUTIONS), solutionsCtrl.getInitialComponent());
+		workflowPos = tabbedPane.addTab(translate(PANE_TAB_WORKLOW), workflowCtrl.getInitialComponent());
+		assignmentPos = tabbedPane.addTab(translate(PANE_TAB_ASSIGNMENT), assignmentCtrl.getInitialComponent());
+		submissionPos = tabbedPane.addTab(translate(PANE_TAB_SUBMISSION), submissionCtrl.getInitialComponent());
+		gradingPos = tabbedPane.addTab(translate(PANE_TAB_GRADING), manualAssessmentCtrl.getInitialComponent());
+		solutionsPos = tabbedPane.addTab(translate(PANE_TAB_SOLUTIONS), solutionsCtrl.getInitialComponent());
+		updateEnabledDisabledTabs();
+	}
+	
+	private void updateEnabledDisabledTabs() {
+		myTabbedPane.setEnabled(assignmentPos, config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT));
+		myTabbedPane.setEnabled(submissionPos, config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT));
+		myTabbedPane.setEnabled(gradingPos, config.getBooleanSafe(GTACourseNode.GTASK_GRADING));
+		myTabbedPane.setEnabled(solutionsPos, config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION));
 	}
 
 	@Override
@@ -141,19 +162,40 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		if(workflowCtrl == source) {
 			 if(event == Event.DONE_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				updateEnabledDisabledTabs();
+			} else if(event == Event.CANCELLED_EVENT) {
+				removeAsListenerAndDispose(workflowCtrl);
+				workflowCtrl = new GTAWorkflowEditController(ureq, getWindowControl(), gtaNode, euce.getCourseEditorEnv());
+				listenTo(workflowCtrl);
+				myTabbedPane.replaceTab(workflowPos, workflowCtrl.getInitialComponent());
 			}
 		} else if(assignmentCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			} else if(event == Event.CANCELLED_EVENT) {
+				removeAsListenerAndDispose(assignmentCtrl);
+				assignmentCtrl = new GTAAssignmentEditController(ureq, getWindowControl(), config, tasksDir, tasksContainer);
+				listenTo(assignmentCtrl);
+				myTabbedPane.replaceTab(assignmentPos, assignmentCtrl.getInitialComponent());
 			}
 		} else if(submissionCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			} else if(event == Event.CANCELLED_EVENT) {
+				removeAsListenerAndDispose(submissionCtrl);
+				submissionCtrl = new GTASubmissionEditController(ureq, getWindowControl(), config);
+				listenTo(submissionCtrl);
+				myTabbedPane.replaceTab(submissionPos, submissionCtrl.getInitialComponent());
 			}
 		} else if(manualAssessmentCtrl == source) {
 			if (event == Event.DONE_EVENT){
 				manualAssessmentCtrl.updateModuleConfiguration(config);
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			} else if(event == Event.CANCELLED_EVENT) {
+				removeAsListenerAndDispose(manualAssessmentCtrl);
+				manualAssessmentCtrl = new MSEditFormController(ureq, getWindowControl(), config);
+				listenTo(manualAssessmentCtrl);
+				myTabbedPane.replaceTab(gradingPos, manualAssessmentCtrl.getInitialComponent());
 			}
 		} else if(solutionsCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {

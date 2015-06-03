@@ -95,4 +95,16 @@ public class MembersWizardPage {
 		}
 		return this;
 	}
+	
+	public MembersWizardPage setMembers(UserVO... users) {
+		StringBuilder sb = new StringBuilder();
+		for(UserVO user:users) {
+			if(sb.length() > 0) sb.append("\\n");
+			sb.append(user.getLogin());
+		}
+		By importAreaBy = By.cssSelector(".modal-content textarea");
+		WebElement importAreaEl = browser.findElement(importAreaBy);
+		OOGraphene.textarea(importAreaEl, sb.toString(), browser);
+		return this;
+	}
 }

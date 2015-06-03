@@ -138,7 +138,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	
 	public static final String INITVIEW_TOOLCAL = "action.calendar.group";
 	public static final OLATResourceable ORES_TOOLCAL = OresHelper.createOLATResourceableType(INITVIEW_TOOLCAL);
-	//fxdiff BAKS-7 Resume function
 	public static final OLATResourceable ORES_TOOLMSG = OresHelper.createOLATResourceableType("toolmsg");
 	public static final OLATResourceable ORES_TOOLADMIN = OresHelper.createOLATResourceableType("tooladmin");
 	public static final OLATResourceable ORES_TOOLCONTACT = OresHelper.createOLATResourceableType("toolcontact");
@@ -174,7 +173,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	/* activity identifyer: user selected show OPENMEETINGS in menu */
 	public static final String ACTIVITY_MENUSELECT_OPENMEETINGS = "MENU_SHOW_OPENMEETINGS";
 	/* activity identitfyer: user selected show access control in menu */
-	//fxdiff VCRP-1,2: access control of resources
+	/* access control of resources */
 	public static final String ACTIVITY_MENUSELECT_AC = "MENU_SHOW_AC";
 
 	private Panel mainPanel;
@@ -190,7 +189,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private Controller collabToolCtr;
 	
 	private BusinessGroupEditController bgEditCntrllr;
-	//fxdiff VCRP-1,2: access control of resources
 	private Controller bgACHistoryCtrl;
 	private TableController resourcesCtr;
 
@@ -422,6 +420,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// events from menutree
 		if (source == bgTree) { // user chose news, contactform, forum, folder or
@@ -430,13 +429,12 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				TreeNode selTreeNode = bgTree.getSelectedNode();
 				String cmd = (String) selTreeNode.getUserObject();
 				handleTreeActions(ureq, cmd);
-				//fxdiff BAKS-7 Resume function
 				if(collabToolCtr != null) {
 					addToHistory(ureq, collabToolCtr);
 				}
 			} else if (groupRunDisabled) {
 				handleTreeActions(ureq, ACTIVITY_MENUSELECT_OVERVIEW);
-				this.showError("grouprun.disabled");
+				showError("grouprun.disabled");
 			}
 		} else if(source == toolbarPanel) {
 			if (event == Event.CLOSE_EVENT) {
@@ -449,6 +447,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == bgEditCntrllr) {
 			// changes from the admin controller
@@ -467,8 +466,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				String actionid = te.getActionId();
 				int rowid = te.getRowId();
 				RepositoryTableModel repoTableModel = (RepositoryTableModel) resourcesCtr.getTableDataModel();
-				if (RepositoryTableModel.TABLE_ACTION_SELECT_ENTRY.equals(actionid)
-						|| RepositoryTableModel.TABLE_ACTION_SELECT_LINK.equals(actionid)) {
+				if (RepositoryTableModel.TABLE_ACTION_SELECT_LINK.equals(actionid)) {
 
 					RepositoryEntry currentRepoEntry = repoTableModel.getObject(rowid);
 					OLATResource ores = currentRepoEntry.getOlatResource();
@@ -490,7 +488,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				bgTree.setSelectedNodeId(bgTree.getTreeModel().getRootNode().getIdent());
 				mainPanel.setContent(main);
 			}
-		//fxdiff BAKS-7 Resume function -> need to be at the end, sendToChooserForm are collabToolCtr too
 		} else if (source == collabToolCtr) {
 			if (event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.BACK_EVENT || event == Event.FAILED_EVENT) {
 				// In all cases (success or failure) we
@@ -498,7 +495,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				bgTree.setSelectedNodeId(bgTree.getTreeModel().getRootNode().getIdent());
 				mainPanel.setContent(main);
 			}
-		//fxdiff VCRP-1,2: access control of resources
 		} else if (source == accessController) {
 			if(event.equals(AccessEvent.ACCESS_OK_EVENT)) {
 				removeAsListenerAndDispose(accessController);
@@ -688,7 +684,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			listenTo(collabToolCtr);
 			mainPanel.setContent(collabToolCtr.getInitialComponent());
 		} else if (ACTIVITY_MENUSELECT_INFORMATION.equals(cmd)) {
-			//fxdiff BAKS-7 Resume function
 			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ORES_TOOLMSG);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ce.getOLATResourceable()));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, getWindowControl());
@@ -705,7 +700,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ORES_TOOLFOLDER);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ce.getOLATResourceable()));
 			bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, bwControl);
-			//fxdiff VCRP-8: collaboration tools folder access control
 			collabToolCtr = collabTools.createFolderController(ureq, bwControl, businessGroup, isAdmin, sc);
 			listenTo(collabToolCtr);
 			mainPanel.setContent(collabToolCtr.getInitialComponent());
@@ -750,7 +744,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			collabToolCtr = collabTools.createOpenMeetingsController(ureq, bwControl, businessGroup, isAdmin);
 			listenTo(collabToolCtr);
 			mainPanel.setContent(collabToolCtr.getInitialComponent());
-			//fxdiff VCRP-1,2: access control of resources
 		}  else if (ACTIVITY_MENUSELECT_AC.equals(cmd)) {
 			doAccessControlHistory(ureq);
 		} 
@@ -758,7 +751,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 	private void doAdministration(UserRequest ureq) {
 		removeAsListenerAndDispose(bgEditCntrllr);
-		//fxdiff BAKS-7 Resume function
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ORES_TOOLADMIN));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ORES_TOOLADMIN, null, getWindowControl());
 		collabToolCtr = bgEditCntrllr = new BusinessGroupEditController(ureq, bwControl, toolbarPanel, businessGroup);
@@ -766,7 +758,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		mainPanel.setContent(bgEditCntrllr.getInitialComponent());
 	}
 	
-	//fxdiff VCRP-1,2: access control of resources
 	private void doAccessControlHistory(UserRequest ureq) {
 		removeAsListenerAndDispose(bgACHistoryCtrl);
 		OLATResource resource = businessGroup.getResource();
@@ -778,7 +769,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private void doContactForm(UserRequest ureq) {
 		if (vc_sendToChooserForm == null) vc_sendToChooserForm = createVelocityContainer("cosendtochooser");
 		removeAsListenerAndDispose(sendToChooserForm);
-		//fxdiff BAKS-7 Resume function
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ORES_TOOLCONTACT, null, getWindowControl());
 		sendToChooserForm = new BusinessGroupSendToChooserForm(ureq, bwControl, businessGroup, isAdmin);
 		listenTo(sendToChooserForm);
@@ -823,7 +813,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			membersVc.contextPut("showWaitingList", Boolean.FALSE);
 		}
 		mainPanel.setContent(membersVc);
-		//fxdiff BAKS-7 Resume function
 		collabToolCtr = null;
 		addToHistory(ureq, ORES_TOOLMEMBERS, null);
 	}
@@ -851,7 +840,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	}
 
 	@Override
-	//fxdiff BAKS-7 Resume function
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
@@ -865,7 +853,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		}
 	}
 
-	//fxdiff BAKS-7 Resume function
 	private void activate(UserRequest ureq, ContextEntry ce) {
 		OLATResourceable ores = ce.getOLATResourceable();
 		if (OresHelper.equals(ores, ORES_TOOLFORUM)) {
@@ -929,7 +916,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				listenTo(mc); // cleanup on dispose
 				mainPanel.setContent(mc.getInitialComponent());
 			}
-		//fxdiff BAKS-7 Resume function
 		} else if (OresHelper.equals(ores, ORES_TOOLADMIN)) {
 			if (this.nodeAdmin != null) {
 				handleTreeActions(ureq, ACTIVITY_MENUSELECT_ADMINISTRATION);
@@ -1016,13 +1002,12 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			listenTo(resourcesCtr);
 			
 			resourcesVC = createVelocityContainer("resources");
-			repoTableModel.addColumnDescriptors(resourcesCtr, false, false, true);
+			repoTableModel.addColumnDescriptors(resourcesCtr, true, false, false, false);
 			resourcesVC.put("resources", resourcesCtr.getInitialComponent());
 		}
 		// add table model to table
 		resourcesCtr.setTableDataModel(repoTableModel);
 		mainPanel.setContent(resourcesVC);
-		//fxdiff BAKS-7 Resume function
 		addToHistory(ureq, ORES_TOOLRESOURCES, null);
 	}
 

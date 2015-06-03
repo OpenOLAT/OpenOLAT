@@ -15,7 +15,7 @@ $fa-css-prefix: "o_icon" !default;
 @import "../../../font-awesome/scss/fixed-width";
 @import "../../../font-awesome/scss/list";
 @import "../../../font-awesome/scss/bordered-pulled";
-@import "../../../font-awesome/scss/spinning";
+@import "../../../font-awesome/scss/animated";
 @import "../../../font-awesome/scss/rotated-flipped";
 @import "../../../font-awesome/scss/stacked";
 
@@ -107,6 +107,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_import:before { content: $fa-var-upload; }
 .o_icon_info:before { content: $fa-var-info-circle; color: $brand-info}
 .o_icon_info_msg:before { content: $fa-var-exclamation-circle; color: $brand-danger}
+.o_icon_info_resource:before { content: $fa-var-info-circle;}
 .o_icon_inline_editable:before { content: $fa-var-edit; } 
 .o_icon_institution:before { content: $fa-var-bank; }
 .o_icon_italic:before { content: $fa-var-italic; }

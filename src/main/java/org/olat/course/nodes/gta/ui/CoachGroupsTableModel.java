@@ -61,6 +61,7 @@ public class CoachGroupsTableModel extends DefaultFlexiTableDataModel<CoachedGro
 	public Object getValueAt(CoachedGroupRow row, int col) {
 		switch(CGCols.values()[col]) {
 			case name: return row.getName();
+			case taskName: return row.getTaskName();
 			case taskStatus: return row.getTaskStatus();
 			default: return "ERROR";
 		}
@@ -68,6 +69,7 @@ public class CoachGroupsTableModel extends DefaultFlexiTableDataModel<CoachedGro
 	
 	public enum CGCols {
 		name("table.header.group.name"),
+		taskName("table.header.group.taskName"),
 		taskStatus("table.header.group.step");
 		
 		private final String i18nKey;

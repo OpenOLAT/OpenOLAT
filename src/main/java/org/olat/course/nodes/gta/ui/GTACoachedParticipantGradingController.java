@@ -39,8 +39,6 @@ import org.olat.course.assessment.AssessmentEditController;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
-import org.olat.course.nodes.gta.Task;
-import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +58,6 @@ public class GTACoachedParticipantGradingController extends BasicController {
 	private CloseableModalController cmc;
 	private MSCourseNodeRunController msCtrl;
 	
-	private Task assignedTask;
 	private final GTACourseNode gtaNode;
 	private final Identity assessedIdentity;
 	private final OLATResourceable courseOres;
@@ -69,10 +66,9 @@ public class GTACoachedParticipantGradingController extends BasicController {
 	private GTAManager gtaManager;
 	
 	public GTACoachedParticipantGradingController(UserRequest ureq, WindowControl wControl,
-			OLATResourceable courseOres, GTACourseNode gtaNode, Task assignedTask, Identity assessedIdentity) {
+			OLATResourceable courseOres, GTACourseNode gtaNode, Identity assessedIdentity) {
 		super(ureq, wControl);
 		this.gtaNode = gtaNode;
-		this.assignedTask = assignedTask;
 		this.courseOres = OresHelper.clone(courseOres);
 		this.assessedIdentity = assessedIdentity;
 		
@@ -80,6 +76,7 @@ public class GTACoachedParticipantGradingController extends BasicController {
 		
 		assessmentFormButton = LinkFactory.createCustomLink("coach.assessment", "assessment", "coach.assessment", Link.BUTTON, mainVC, this);
 		assessmentFormButton.setCustomEnabledLinkCSS("btn btn-primary");
+		assessmentFormButton.setElementCssClass("o_sel_course_gta_assessment_button");
 
 		putInitialPanel(mainVC);
 		setAssessmentDatas(ureq);
@@ -130,7 +127,7 @@ public class GTACoachedParticipantGradingController extends BasicController {
 	}
 	
 	private void doGraded() {
-		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.graded);
+		//assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.graded);
 	}
 
 	private void doOpenAssessmentForm(UserRequest ureq) {

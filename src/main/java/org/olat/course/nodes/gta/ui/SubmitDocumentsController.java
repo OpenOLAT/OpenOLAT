@@ -63,6 +63,8 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.Task;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -89,6 +91,9 @@ class SubmitDocumentsController extends FormBasicController {
 	private final VFSContainer documentsContainer;
 	private final ModuleConfiguration config;
 	
+	@Autowired
+	private UserManager userManager;
+	
 	public SubmitDocumentsController(UserRequest ureq, WindowControl wControl, Task assignedTask,
 			File documentsDir, VFSContainer documentsContainer, int maxDocs, ModuleConfiguration config,
 			String docI18nKey) {
@@ -112,15 +117,18 @@ class SubmitDocumentsController extends FormBasicController {
 		if(config.getBooleanSafe(GTACourseNode.GTASK_EXTERNAL_EDITOR)) {
 			uploadDocButton = uifactory.addFormLink("upload.document", formLayout, Link.BUTTON);
 			uploadDocButton.setIconLeftCSS("o_icon o_icon_upload");
+			uploadDocButton.setElementCssClass("o_sel_course_gta_submit_file");
 		}
 		if(config.getBooleanSafe(GTACourseNode.GTASK_EMBBEDED_EDITOR)) {
 			createDocButton = uifactory.addFormLink("open.editor", formLayout, Link.BUTTON);
 			createDocButton.setIconLeftCSS("o_icon o_icon_edit");
+			createDocButton.setElementCssClass("o_sel_course_gta_create_doc");
 		}
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(docI18nKey, DocCols.document.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.date.i18nKey(), DocCols.date.ordinal()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.uploadedBy.i18nKey(), DocCols.uploadedBy.ordinal()));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit", DocCols.edit.ordinal(), "edit",
 				new BooleanCellRenderer(
 						new StaticFlexiCellRenderer(translate("edit"), "edit"),
@@ -137,8 +145,18 @@ class SubmitDocumentsController extends FormBasicController {
 		List<SubmittedSolution> docList = new ArrayList<>(documents.length);
 		for(File document:documents) {
 			String filename = document.getName();
+			String uploadedBy = null;
+			VFSItem item = documentsContainer.resolve(filename);
+			if(item instanceof MetaTagged) {
+				MetaInfo metaInfo = ((MetaTagged)item).getMetaInfo();
+				if(metaInfo != null && metaInfo.getAuthorIdentityKey() != null) {
+					uploadedBy = userManager.getUserDisplayName(metaInfo.getAuthorIdentityKey());
+				}
+			}
+			
+			
 			DownloadLink download = uifactory.addDownloadLink("view-" + CodeHelper.getRAMUniqueID(), filename, null, document, tableEl);
-			docList.add(new SubmittedSolution(document, download));
+			docList.add(new SubmittedSolution(document, uploadedBy, download));
 		}
 		model.setObjects(docList);
 		tableEl.reset();
@@ -391,6 +409,7 @@ class SubmitDocumentsController extends FormBasicController {
 	public enum DocCols {
 		document("document"),
 		date("document.date"),
+		uploadedBy("table.header.uploaded.by"),
 		edit("edit");
 		
 		private final String i18nKey;
@@ -407,15 +426,21 @@ class SubmitDocumentsController extends FormBasicController {
 	public static class SubmittedSolution {
 		
 		private final File file;
+		private final String uploadedBy;
 		private final DownloadLink downloadLink;
 		
-		public SubmittedSolution(File file, DownloadLink downloadLink) {
+		public SubmittedSolution(File file, String uploadedBy, DownloadLink downloadLink) {
 			this.file = file;
+			this.uploadedBy = uploadedBy;
 			this.downloadLink = downloadLink;
 		}
 
 		public File getFile() {
 			return file;
+		}
+
+		public String getUploadedBy() {
+			return uploadedBy;
 		}
 
 		public DownloadLink getDownloadLink() {
@@ -444,6 +469,7 @@ class SubmitDocumentsController extends FormBasicController {
 					cal.setTimeInMillis(solution.getFile().lastModified());
 					return cal.getTime();
 				}
+				case uploadedBy: return solution.getUploadedBy();
 				case edit: return solution.getFile().getName().endsWith(".html");
 				default: return "ERROR";
 			}

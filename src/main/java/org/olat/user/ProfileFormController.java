@@ -509,7 +509,7 @@ public class ProfileFormController extends FormBasicController {
 		cal.add(Calendar.DAY_OF_WEEK, ChangeEMailController.TIME_OUT);
 		String time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ureq.getLocale()).format(cal.getTime());
 		// create body and subject for email
-		String link = serverpath + "/dmz/emchange/index.html?key=" + tk.getRegistrationKey() + "&lang=" + ureq.getLocale().getLanguage();
+		String link = serverpath + "/dmz/emchange/index.html?key=" + tk.getRegistrationKey() + "&language=" + ureq.getLocale().getLanguage();
 		if(Settings.isDebuging()) {
 			logInfo(link, null);
 		}

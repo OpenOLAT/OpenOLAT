@@ -57,10 +57,14 @@ import org.olat.modules.reminder.rule.DateRuleSPI;
 import org.olat.modules.reminder.rule.InitialCourseLaunchRuleSPI;
 import org.olat.modules.reminder.rule.LaunchUnit;
 import org.olat.modules.reminder.rule.RecentCourseLaunchRuleSPI;
+import org.olat.modules.reminder.rule.RepositoryEntryLifecycleAfterValidFromRuleSPI;
 import org.olat.modules.reminder.rule.RepositoryEntryRoleRuleSPI;
 import org.olat.modules.reminder.rule.UserPropertyRuleSPI;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.test.JunitTestHelper;
@@ -84,6 +88,10 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 	private ReminderRuleEngine ruleEngine;
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryEntryLifecycleDAO lifecycleDao;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
@@ -647,6 +655,91 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 		rule.setRightOperand(Integer.toString(amount));
 		rule.setRightUnit(unit.name());
 
+		List<ReminderRule> rules = new ArrayList<>(1);
+		rules.add(rule);
+		return rules;
+	}
+	
+	@Test
+	public void afterBeginDate() {
+		//create a course with 3 members
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("before-begin-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("before-begin-2");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("before-begin-3");
+
+		ICourse course = CoursesWebService.createEmptyCourse(null, "initial-launch-dates", "course long name", null);
+		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date());//now
+		cal.add(Calendar.DATE, -21);
+		Date validFrom = cal.getTime();
+		cal.add(Calendar.DATE, 90);
+		Date validTo = cal.getTime();
+		
+		RepositoryEntryLifecycle cycle = lifecycleDao.create("Cycle 1", "Cycle soft 1", false, validFrom, validTo);
+		re = repositoryManager.setDescriptionAndName(re, null, null, null, null, null, null, cycle);
+		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(id2, re, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(id3, re, GroupRoles.participant.name());
+		dbInstance.commit();
+		
+		{ // check after 2 days
+			List<ReminderRule> rules = getRepositoryEntryLifecycleRuleValidFromRule(2, LaunchUnit.day);
+			boolean match = ruleEngine.evaluateRepositoryEntryRule(re, rules);
+			Assert.assertTrue(match);
+		}
+		
+		{ // check after 7 days (between begin and and date)
+			List<ReminderRule> rules = getRepositoryEntryLifecycleRuleValidFromRule(7, LaunchUnit.day);
+			boolean match = ruleEngine.evaluateRepositoryEntryRule(re, rules);
+			Assert.assertTrue(match);
+		}
+		
+		{ // check after 2 week s
+			List<ReminderRule> rules = getRepositoryEntryLifecycleRuleValidFromRule(2, LaunchUnit.week);
+			boolean match = ruleEngine.evaluateRepositoryEntryRule(re, rules);
+			Assert.assertTrue(match);
+		}
+		
+		{ // check after 21 days
+			List<ReminderRule> rules = getRepositoryEntryLifecycleRuleValidFromRule(21, LaunchUnit.day);
+			boolean match = ruleEngine.evaluateRepositoryEntryRule(re, rules);
+			Assert.assertTrue(match);
+		}
+		
+		{ // check after 3 weeks
+			List<ReminderRule> rules = getRepositoryEntryLifecycleRuleValidFromRule(3, LaunchUnit.week);
+			boolean match = ruleEngine.evaluateRepositoryEntryRule(re, rules);
+			Assert.assertTrue(match);
+		}
+		
+		{ // check after 22 days
+			List<ReminderRule> rules = getRepositoryEntryLifecycleRuleValidFromRule(22, LaunchUnit.day);
+			boolean match = ruleEngine.evaluateRepositoryEntryRule(re, rules);
+			Assert.assertFalse(match);
+		}
+		
+		{ // check after 4 weeks
+			List<ReminderRule> rules = getRepositoryEntryLifecycleRuleValidFromRule(4, LaunchUnit.week);
+			boolean match = ruleEngine.evaluateRepositoryEntryRule(re, rules);
+			Assert.assertFalse(match);
+		}
+		
+		{ // check after 1 month
+			List<ReminderRule> rules = getRepositoryEntryLifecycleRuleValidFromRule(1, LaunchUnit.month);
+			boolean match = ruleEngine.evaluateRepositoryEntryRule(re, rules);
+			Assert.assertFalse(match);
+		}
+	}
+	
+	private List<ReminderRule> getRepositoryEntryLifecycleRuleValidFromRule(int amount, LaunchUnit unit) {
+		ReminderRuleImpl rule = new ReminderRuleImpl();
+		rule.setType(RepositoryEntryLifecycleAfterValidFromRuleSPI.class.getSimpleName());
+		rule.setOperator(">");
+		rule.setRightOperand(Integer.toString(amount));
+		rule.setRightUnit(unit.name());
+		
 		List<ReminderRule> rules = new ArrayList<>(1);
 		rules.add(rule);
 		return rules;

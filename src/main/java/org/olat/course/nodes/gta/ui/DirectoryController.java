@@ -23,6 +23,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.commons.modules.bc.meta.MetaInfo;
+import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -37,7 +39,11 @@ import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFileFilter;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.fileresource.ZippedDirectoryMediaResource;
+import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -52,12 +58,16 @@ public class DirectoryController extends BasicController {
 	private final String zipName;
 	private final File documentsDir;
 	
-	public DirectoryController(UserRequest ureq, WindowControl wControl, File documentsDir,
-			String i18nDescription) {
-		this(ureq, wControl, documentsDir, i18nDescription, null, null);
+	@Autowired
+	private UserManager userManager;
+	
+	public DirectoryController(UserRequest ureq, WindowControl wControl,
+			File documentsDir, VFSContainer documentsContainer, String i18nDescription) {
+		this(ureq, wControl, documentsDir, documentsContainer, i18nDescription, null, null);
 	}
 	
-	public DirectoryController(UserRequest ureq, WindowControl wControl, File documentsDir,
+	public DirectoryController(UserRequest ureq, WindowControl wControl,
+			File documentsDir, VFSContainer documentsContainer,
 			String i18nDescription, String i18nBulkDownload, String zipName) {
 		super(ureq, wControl);
 		this.zipName = zipName;
@@ -72,16 +82,29 @@ public class DirectoryController extends BasicController {
 			bulkReviewLink.setIconLeftCSS("o_icon o_icon_download");
 		}
 		
-		List<String> linkNames = new ArrayList<>();
+		List<DocumentInfos> linkNames = new ArrayList<>();
 		File[] documents = documentsDir.listFiles(SystemFileFilter.FILES_ONLY);
 		for(File document:documents) {
-			Link link = LinkFactory.createLink("doc-" + CodeHelper.getRAMUniqueID(), "download", getTranslator(), mainVC, this, Link.NONTRANSLATED);
+			String linkId = "doc-" + CodeHelper.getRAMUniqueID();
+			Link link = LinkFactory.createLink(linkId, "download", getTranslator(), mainVC, this, Link.NONTRANSLATED);
 			link.setCustomDisplayText(StringHelper.escapeHtml(document.getName()));
 			String cssClass = CSSHelper.createFiletypeIconCssClassFor(document.getName());
 			link.setIconLeftCSS("o_icon o_icon-fw " + cssClass);
 			link.setUserObject(document);
 			link.setTarget("_blank");
-			linkNames.add(link.getComponentName());
+			
+			String uploadedBy = null;
+			if(documentsContainer != null) {
+				VFSItem item = documentsContainer.resolve(document.getName());
+				if(item instanceof MetaTagged) {
+					MetaInfo metaInfo = ((MetaTagged)item).getMetaInfo();
+					if(metaInfo != null && metaInfo.getAuthorIdentityKey() != null) {
+						uploadedBy = userManager.getUserDisplayName(metaInfo.getAuthorIdentityKey());
+					}
+				}
+			}
+
+			linkNames.add(new DocumentInfos(link.getComponentName(), uploadedBy));
 		}
 		mainVC.contextPut("linkNames", linkNames);
 
@@ -111,5 +134,24 @@ public class DirectoryController extends BasicController {
 	private void doBulkdownload(UserRequest ureq) {
 		MediaResource mdr = new ZippedDirectoryMediaResource(zipName, documentsDir);
 		ureq.getDispatchResult().setResultingMediaResource(mdr);
+	}
+	
+	public static final class DocumentInfos {
+		
+		private final String linkName;
+		private final String uploadedBy;
+		
+		public DocumentInfos(String linkName, String uploadedBy) {
+			this.linkName = linkName;
+			this.uploadedBy = uploadedBy;
+		}
+
+		public String getLinkName() {
+			return linkName;
+		}
+
+		public String getUploadedBy() {
+			return uploadedBy;
+		}
 	}
 }

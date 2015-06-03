@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -748,19 +749,6 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		}
 	}
 	
-	private void doBatchSyncGroups(LdapContext ctx, List<LDAPUser> ldapUsers, Map<String,LDAPUser> dnToIdentityKeyMap, LDAPError errors)
-	throws NamingException {
-		ctx.close();
-		ctx = bindSystem();
-		//sync groups by LDAP groups or attributes
-		if(syncConfiguration.syncGroupWithLDAPGroup()) {
-			doSyncLDAPGroups(ctx, dnToIdentityKeyMap, errors);
-		}
-		if(syncConfiguration.syncGroupWithAttribute()) {
-			doSyncGroupAttribute(ldapUsers);
-		}
-	}
-	
 	private void doBatchSyncRoles(LdapContext ctx, List<LDAPUser> ldapUsers, Map<String,LDAPUser> dnToIdentityKeyMap, LDAPError errors)
 	throws NamingException {
 		ctx.close();
@@ -1024,44 +1012,101 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		return ldapUserList;
 	}
 	
-	private void doSyncGroupAttribute(List<LDAPUser> ldapUsers) {
-		log.info("LDAP batch sync LDAP user attributes to OO groups");
-		Map<String,List<LDAPUser>> externelIdToGroupMap = new HashMap<>();
-		for(LDAPUser ldapUser:ldapUsers) {
-			List<String> groupIds = ldapUser.getGroupIds();
-			if(groupIds != null && groupIds.size() > 0) {
-				Identity identity = ldapUser.getCachedIdentity();
-				if(identity == null) {
-					log.error("Identity with dn=" + ldapUser.getDn() + " not found");
-				} else {
-					for(String groupId:groupIds) {
-						if(!externelIdToGroupMap.containsKey(groupId)) {
-							externelIdToGroupMap.put(groupId, new ArrayList<LDAPUser>());
-						}
-						externelIdToGroupMap.get(groupId).add(ldapUser);
-					}
-				}
+	private void doBatchSyncGroups(LdapContext ctx, List<LDAPUser> ldapUsers, Map<String,LDAPUser> dnToIdentityKeyMap, LDAPError errors)
+	throws NamingException {
+		ctx.close();
+		
+		log.info("LDAP batch sync LDAP user to OO groups");
+		
+		ctx = bindSystem();
+		//sync groups by LDAP groups or attributes
+		Map<String,LDAPGroup> cnToGroupMap = new HashMap<>();
+		
+		// retrieve all ldap group's with their list of members
+		if(syncConfiguration.syncGroupWithLDAPGroup()) {
+			List<String> groupDNs = syncConfiguration.getLdapGroupBases();
+			List<LDAPGroup> ldapGroups = ldapDao.searchGroups(ctx, groupDNs);
+			for(LDAPGroup ldapGroup:ldapGroups) {
+				cnToGroupMap.put(ldapGroup.getCommonName(), ldapGroup);
 			}
 		}
+		if(syncConfiguration.syncGroupWithAttribute()) {
+			doSyncGroupByAttribute(ldapUsers, cnToGroupMap);
+		}
 		
-		for(Map.Entry<String, List<LDAPUser>> groupEntry:externelIdToGroupMap.entrySet()) {
-			String externalId = groupEntry.getKey();
-			List<LDAPUser> members = groupEntry.getValue();
-			BusinessGroup managedGroup = getManagerBusinessGroup(externalId);
+		for(LDAPGroup group:cnToGroupMap.values()) {
+			BusinessGroup managedGroup = getManagerBusinessGroup(group.getCommonName());
 			if(managedGroup != null) {
-				syncBusinessGroup(managedGroup, members);
+				syncBusinessGroup(ctx, managedGroup, group, dnToIdentityKeyMap, errors);
 			}
 			dbInstance.commitAndCloseSession();
 		}
 	}
 	
-	private void syncBusinessGroup(BusinessGroup businessGroup, List<LDAPUser> members) {
+	private void doSyncGroupByAttribute(List<LDAPUser> ldapUsers, Map<String,LDAPGroup> cnToGroupMap) {
+		for(LDAPUser ldapUser:ldapUsers) {
+			List<String> groupIds = ldapUser.getGroupIds();
+			List<String> coachedGroupIds = ldapUser.getCoachedGroupIds();
+			if((groupIds != null && groupIds.size() > 0) || (coachedGroupIds != null && coachedGroupIds.size() > 0)) {
+				Identity identity = ldapUser.getCachedIdentity();
+				if(identity == null) {
+					log.error("Identity with dn=" + ldapUser.getDn() + " not found");
+				} else {
+					if(groupIds != null && groupIds.size() > 0) {
+						for(String groupId:groupIds) {
+							if(!cnToGroupMap.containsKey(groupId)) {
+								cnToGroupMap.put(groupId, new LDAPGroup(groupId));
+							}
+							cnToGroupMap.get(groupId).getParticipants().add(ldapUser);
+						}
+					}
+					
+					if(coachedGroupIds != null && coachedGroupIds.size() > 0) {
+						for(String coachedGroupId:coachedGroupIds) {
+							if(!cnToGroupMap.containsKey(coachedGroupId)) {
+								cnToGroupMap.put(coachedGroupId, new LDAPGroup(coachedGroupId));
+							}
+							cnToGroupMap.get(coachedGroupId).getCoaches().add(ldapUser);
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	private void syncBusinessGroup(LdapContext ctx, BusinessGroup businessGroup, LDAPGroup ldapGroup, Map<String,LDAPUser> dnToIdentityKeyMap, LDAPError errors) {
 		List<Identity> currentMembers = businessGroupRelationDao
 				.getMembers(businessGroup, GroupRoles.coach.name(), GroupRoles.participant.name());
+
+		List<LDAPUser> coaches = new ArrayList<>(ldapGroup.getCoaches());
+		List<LDAPUser> participants = new ArrayList<>(ldapGroup.getParticipants());
+		// transfer member cn's to the participants list
+		for(String member:ldapGroup.getMembers()) {
+			LDAPUser ldapUser = getLDAPUser(ctx, member, dnToIdentityKeyMap, errors); dnToIdentityKeyMap.get(member);
+			if(ldapUser != null && !participants.contains(ldapUser)) {
+				participants.add(ldapUser);
+			}
+		}
+		// transfer to ldap user flagged as coach to the coach list
+		for(Iterator<LDAPUser> participantIt=participants.iterator(); participantIt.hasNext(); ) {
+			LDAPUser participant = participantIt.next();
+			if(participant.isCoach()) {
+				if(!coaches.contains(participant)) {
+					coaches.add(participant);
+				}
+				participantIt.remove();
+			}
+		}
 		
-		for(LDAPUser member:members) {
-			Identity memberIdentity = member.getCachedIdentity();
-			syncMembership(businessGroup, memberIdentity, member.isCoach());
+		for(LDAPUser participant:participants) {
+			Identity memberIdentity = participant.getCachedIdentity();
+			syncMembership(businessGroup, memberIdentity, false);
+			currentMembers.remove(memberIdentity);
+		}
+		
+		for(LDAPUser coach:coaches) {
+			Identity memberIdentity = coach.getCachedIdentity();
+			syncMembership(businessGroup, memberIdentity, true);
 			currentMembers.remove(memberIdentity);
 		}
 		
@@ -1104,21 +1149,6 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		}
 	}
 	
-	private void doSyncLDAPGroups(LdapContext ctx, Map<String,LDAPUser> dnToIdentityKeyMap, LDAPError errors) {
-		List<String> groupDNs = syncConfiguration.getLdapGroupBases();
-		List<LDAPGroup> ldapGroups = ldapDao.searchGroups(ctx, groupDNs);
-
-		log.info("LDAP batch sync " + ldapGroups.size() + " LDAP bases to OO groups");
-		for(LDAPGroup ldapGroup:ldapGroups) {
-			String externalId = ldapGroup.getCommonName();
-			BusinessGroup managedGroup = getManagerBusinessGroup(externalId);
-			if(managedGroup != null) {
-				syncBusinessGroup(ctx, ldapGroup, managedGroup, dnToIdentityKeyMap, errors);
-			}
-			dbInstance.commitAndCloseSession();
-		}
-	}
-	
 	private BusinessGroup getManagerBusinessGroup(String externalId) {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setExternalId(externalId);
@@ -1137,35 +1167,6 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			managedBusinessGroup = null;
 		}
 		return managedBusinessGroup;
-	}
-	
-	private void syncBusinessGroup(LdapContext ctx, LDAPGroup ldapGroup, BusinessGroup businessGroup, Map<String,LDAPUser> dnToIdentityKeyMap, LDAPError errors) {
-		List<String> members = ldapGroup.getMembers();
-		List<Identity> currentMembers = businessGroupRelationDao
-				.getMembers(businessGroup, GroupRoles.coach.name(), GroupRoles.participant.name());
-
-		int count = 0;
-		for(String member:members) {
-			LDAPUser ldapUser = getLDAPUser(ctx, member, dnToIdentityKeyMap, errors);
-			if(ldapUser != null) {
-				Identity identity = ldapUser.getCachedIdentity();
-				syncMembership(businessGroup, identity, ldapUser.isCoach());
-				currentMembers.remove(identity);
-				if(++count % 20 == 0) {
-					dbInstance.commitAndCloseSession();
-				}
-			}
-		}
-		
-		for(Identity currentMember:currentMembers) {
-			List<String> roles = businessGroupRelationDao.getRoles(currentMember, businessGroup);
-			for(String role:roles) {
-				businessGroupRelationDao.removeRole(currentMember, businessGroup, role);
-				if(++count % 20 == 0) {
-					dbInstance.commitAndCloseSession();
-				}
-			}
-		}
 	}
 	
 	private LDAPUser getLDAPUser(LdapContext ctx, String member, Map<String,LDAPUser> dnToIdentityKeyMap, LDAPError errors) {

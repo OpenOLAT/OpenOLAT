@@ -7,7 +7,7 @@
 #end
 </div>
 <ul class="list-unstyled">
-#foreach($linkName in $linkNames)
-	<li>$r.render($linkName)</li>
+#foreach($docInfo in $linkNames)
+	<li>$r.render($docInfo.linkName) #if($docInfo.uploadedBy)<small>$r.translate("uploaded.by",$docInfo.uploadedBy)</small>#end</li>
 #end
 </ul>

@@ -460,7 +460,7 @@ public class BusinessGroupTest {
 	 */
 	@Test
 	@RunAsClient
-	public void enrolmentWithWaitingList(@InitialPage LoginPage authorLoginPage,
+	public void enrollmentWithWaitingList(@InitialPage LoginPage authorLoginPage,
 			@Drone @User WebDriver ryomouBrowser,
 			@Drone @Participant WebDriver reiBrowser,
 			@Drone @Student WebDriver kanuBrowser)
@@ -574,7 +574,7 @@ public class BusinessGroupTest {
 
 	@Test
 	@RunAsClient
-	public void enrolmentWithMultiEnrollment(@InitialPage LoginPage authorLoginPage,
+	public void enrollmentWithMultiEnrollment(@InitialPage LoginPage authorLoginPage,
 			@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
 		
@@ -787,6 +787,134 @@ public class BusinessGroupTest {
 		}
 		Assert.assertEquals(1, participants);
 		Assert.assertEquals(participantDrivers.length - 1, errors);
+	}
+	
+	/**
+	 * Variant from the above test where the business group is not
+	 * limited in size. This was a bug while development of the 10.3
+	 * release.
+	 * 
+	 * @param authorLoginPage
+	 * @param ryomouBrowser
+	 * @param reiBrowser
+	 * @param kanuBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void enrollmentWithUnlimitedBusinessGroups(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver ryomouBrowser,
+			@Drone @Participant WebDriver reiBrowser,
+			@Drone @Student WebDriver kanuBrowser)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Enrollment-3-" + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		//create a group in members management
+		String groupName = "Enroll - " + UUID.randomUUID();
+		CoursePageFragment authorCourse = CoursePageFragment.getCourse(browser);
+		MembersPage membersPage = authorCourse
+			.members()
+			.selectBusinessGroups()
+			.createBusinessGroup(groupName, "-", -1, false, false);
+		//back to the members page
+		navBar.openCourse(courseTitle);
+		authorCourse = membersPage
+			.clickToolbarBack();
+		
+		//create an enrollment course element
+		String enNodeTitle = "Enroll - 3";
+		CourseEditorPageFragment courseEditor = authorCourse
+			.edit()
+			.createNode("en")
+			.nodeTitle(enNodeTitle);
+		
+		//select the group created above
+		EnrollmentConfigurationPage enrolmentConfig = new EnrollmentConfigurationPage(browser);
+		enrolmentConfig
+			.selectConfiguration()
+			.selectBusinessGroups();
+		
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish(Access.users);
+		
+		GroupPage authorGroup = navBar
+			.openGroups(browser)
+			.selectGroup(groupName)
+			.openAdministration()
+			.openAdminMembers()
+			.setVisibility(false, true, false)
+			.openMembers();
+		
+		Enrollment[] participantDrivers = new Enrollment[]{
+				new Enrollment(ryomou, ryomouBrowser),
+				new Enrollment(rei, reiBrowser),
+				new Enrollment(kanu, kanuBrowser)
+		};
+		for(Enrollment enrollment:participantDrivers) {
+			WebDriver driver = enrollment.getDriver();
+			LoginPage.getLoginPage(driver, deploymentUrl)
+				.loginAs(enrollment.getUser())
+				.resume();
+			
+			NavigationPage participantNavBar = new NavigationPage(driver);
+			participantNavBar
+				.openMyCourses()
+				.openSearch()
+				.extendedSearch(courseTitle)
+				.select(courseTitle)
+				.start();
+			
+			//go to the enrollment
+			CoursePageFragment participantCourse = new CoursePageFragment(driver);
+			participantCourse
+				.clickTree()
+				.selectWithTitle(enNodeTitle);
+		
+			EnrollmentPage enrollmentPage = new EnrollmentPage(driver);
+			enrollmentPage
+				.assertOnEnrolmentPage();
+			enrollment.setEnrollmentPage(enrollmentPage);
+		}
+		
+		//enroll
+		for(Enrollment enrollment:participantDrivers) {
+			enrollment.getEnrollmentPage().enrollNoWait();
+		}
+		//wait
+		int errors = 0;
+		for(Enrollment enrollment:participantDrivers) {
+			if(enrollment.getEnrollmentPage().hasError()) {
+				errors++;
+			}
+		}
+		
+		//author check the lists
+		authorGroup.openMembers();
+		//must a participant and 2 in waiting list
+		int participants = 0;
+		for(Enrollment enrollment:participantDrivers) {
+			if(authorGroup.isInMembersParticipantList(enrollment.getUser())) {
+				participants++;
+			}
+		}
+		Assert.assertEquals(3, participants);
+		Assert.assertEquals(0, errors);
 	}
 	
 	public static class Enrollment {

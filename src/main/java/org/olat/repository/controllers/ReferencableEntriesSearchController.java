@@ -45,7 +45,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLATRuntimeException;
 import org.olat.fileresource.types.BlogFileResource;
 import org.olat.fileresource.types.ImsCPFileResource;
 import org.olat.fileresource.types.PodcastFileResource;
@@ -61,7 +60,6 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.RepositorySearchController.Can;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
-import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryTableModel;
 import org.olat.repository.ui.author.CreateRepositoryEntryController;
 import org.olat.repository.ui.author.ImportRepositoryEntryController;
@@ -90,8 +88,6 @@ public class ReferencableEntriesSearchController extends BasicController {
 	private VelocityContainer mainVC;
 	private RepositorySearchController searchCtr;
 	private String[] limitTypes;
-	private CloseableModalController previewModalCtr;
-	private Controller previewCtr;
 
 	private SegmentViewComponent segmentView;
 	private Link myEntriesLink, allEntriesLink, searchEntriesLink, adminEntriesLink;
@@ -118,21 +114,21 @@ public class ReferencableEntriesSearchController extends BasicController {
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String limitType, String commandLabel) {
-		this(wControl, ureq, new String[]{ limitType }, null, commandLabel, true, true, true, false, false, Can.referenceable);
+		this(wControl, ureq, new String[]{ limitType }, null, commandLabel, true, true, false, false, Can.referenceable);
 	}
 	
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String[] limitTypes, String commandLabel) {
-		this(wControl, ureq, limitTypes, null, commandLabel, true, true, true, false, false, Can.referenceable);
+		this(wControl, ureq, limitTypes, null, commandLabel, true, true, false, false, Can.referenceable);
 	}
 	
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String[] limitTypes, String commandLabel,
-			boolean canImport, boolean canCreate, boolean canDirectLaunch, boolean multiSelect, boolean adminSearch) {
-		this(wControl, ureq, limitTypes, null, commandLabel, canImport, canCreate, canDirectLaunch, multiSelect, adminSearch, Can.referenceable);
+			boolean canImport, boolean canCreate, boolean multiSelect, boolean adminSearch) {
+		this(wControl, ureq, limitTypes, null, commandLabel, canImport, canCreate, multiSelect, adminSearch, Can.referenceable);
 	}
 
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq,
 			String[] limitTypes, RepositoryEntryFilter filter, String commandLabel,
-			boolean canImport, boolean canCreate, boolean canDirectLaunch, boolean multiSelect, boolean adminSearch,
+			boolean canImport, boolean canCreate, boolean multiSelect, boolean adminSearch,
 			Can canBe) {
 
 		super(ureq, wControl);
@@ -148,7 +144,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 		}
 
 		// add repo search controller
-		searchCtr = new RepositorySearchController(commandLabel, ureq, getWindowControl(), false, canDirectLaunch, multiSelect, limitTypes, filter);
+		searchCtr = new RepositorySearchController(commandLabel, ureq, getWindowControl(), false, multiSelect, limitTypes, filter);
 		listenTo(searchCtr);
 		
 		// do instantiate buttons
@@ -349,33 +345,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		String cmd = event.getCommand();
 		if (source == searchCtr) {
-			if (cmd.equals(RepositoryTableModel.TABLE_ACTION_SELECT_ENTRY)) {
-				// user selected entry to get a preview
-				selectedRepositoryEntry = searchCtr.getSelectedEntry();
-				RepositoryEntry repositoryEntry = searchCtr.getSelectedEntry();
-				RepositoryHandler typeToLaunch = repositoryHandlerFactory.getRepositoryHandler(repositoryEntry);
-				if (typeToLaunch == null) {
-					StringBuilder sb = new StringBuilder(translate("error.launch"));
-					sb.append(": No launcher for repository entry: ");
-					sb.append(repositoryEntry.getKey());
-					throw new OLATRuntimeException(ReferencableEntriesSearchController.class, sb.toString(), null);
-				}
-				// do skip the increment launch counter, this is only a preview!
-				removeAsListenerAndDispose(previewCtr);
-				RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, repositoryEntry);
-				previewCtr = typeToLaunch.createLaunchController(repositoryEntry, reSecurity, ureq, getWindowControl());
-				listenTo(previewCtr);
-				
-				removeAsListenerAndDispose(previewModalCtr);
-				previewModalCtr = new CloseableModalController(
-						getWindowControl(), translate("referencableSearch.preview.close"),
-						previewCtr.getInitialComponent()
-				);
-				listenTo(previewModalCtr);
-				
-				previewModalCtr.activate();
-
-			} else if (cmd.equals(RepositoryTableModel.TABLE_ACTION_SELECT_LINK)) {
+			if (cmd.equals(RepositoryTableModel.TABLE_ACTION_SELECT_LINK)) {
 				// done, user selected a repo entry
 				selectedRepositoryEntry = searchCtr.getSelectedEntry();
 				selectedRepositoryEntries = null;

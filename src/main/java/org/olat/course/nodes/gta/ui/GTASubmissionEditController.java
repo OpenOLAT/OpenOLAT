@@ -99,10 +99,11 @@ public class GTASubmissionEditController extends FormBasicController {
 		emailConfirmationEl.select(enableKeys[0], confirm);
 		
 		//save
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
-		formLayout.add(buttonsCont);
+		confirmationCont.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
 	@Override

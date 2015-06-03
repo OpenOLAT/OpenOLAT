@@ -679,7 +679,7 @@ public class BusinessGroupDAO {
 		}
 		
 		if(StringHelper.containsNonWhitespace(params.getIdRef())) {
-			dbq.setParameter("idRefString", params.getExternalId());
+			dbq.setParameter("idRefString", params.getIdRef());
 			if(id != null) {
 				dbq.setParameter("idRefLong", id);
 			}
@@ -942,7 +942,7 @@ public class BusinessGroupDAO {
 			dbq.setParameter("groupKeys", params.getGroupKeys());
 		}
 		if(StringHelper.containsNonWhitespace(params.getIdRef())) {
-			dbq.setParameter("idRefString", params.getExternalId());
+			dbq.setParameter("idRefString", params.getIdRef());
 			if(id != null) {
 				dbq.setParameter("idRefLong", id);
 			}

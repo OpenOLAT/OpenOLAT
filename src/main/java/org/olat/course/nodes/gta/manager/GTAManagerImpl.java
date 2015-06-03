@@ -103,7 +103,7 @@ public class GTAManagerImpl implements GTAManager {
 	 * @return the task folder path relative to the folder root.
 	 */
 	@Override
-	public VFSContainer getTasksFolder(CourseEnvironment courseEnv, GTACourseNode cNode) {
+	public VFSContainer getTasksContainer(CourseEnvironment courseEnv, GTACourseNode cNode) {
 		return getContainer(courseEnv, "tasks", cNode);
 	}
 	

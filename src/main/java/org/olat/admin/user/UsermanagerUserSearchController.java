@@ -79,7 +79,6 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
@@ -88,7 +87,6 @@ import org.olat.core.id.context.StateMapped;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
@@ -193,7 +191,8 @@ public class UsermanagerUserSearchController extends BasicController implements 
 			PermissionOnResourceable[] searchPermissionOnResources, String[] searchAuthProviders, Date searchCreatedAfter,
 			Date searchCreatedBefore, Integer status, boolean showEmailButton) {
 		super(ureq, wControl);
-		
+		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+
 		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 
@@ -230,6 +229,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	public UsermanagerUserSearchController(UserRequest ureq, WindowControl wControl, List<Identity> identitiesList,
 			Integer status, boolean showEmailButton, boolean showTitle) {
 		super(ureq, wControl);
+		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
@@ -671,8 +671,7 @@ class UsermanagerUserSearchForm extends FormBasicController {
 		this.isAdministrativeUser = isAdministrativeUser;
 
 		UserManager um = UserManager.getInstance();
-		Translator decoratedTranslator = um.getPropertyHandlerTranslator(this.getTranslator());
-		setTranslator(decoratedTranslator);
+		setTranslator(um.getPropertyHandlerTranslator(getTranslator()));
 		
 		userPropertyHandlers = um.getUserPropertyHandlersFor(formIdentifyer, true);
 		
@@ -853,11 +852,6 @@ class UsermanagerUserSearchForm extends FormBasicController {
 		login.setElementCssClass("o_sel_user_search_username");
 		items.put("login", login);
 
-		Translator tr = Util.createPackageTranslator(
-				UserPropertyHandler.class,
-				getLocale(), getTranslator()
-		);
-		
 		String currentGroup = null;
 		// Add all available user fields to this form
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -881,7 +875,7 @@ class UsermanagerUserSearchForm extends FormBasicController {
 			}
 
 			fi.setElementCssClass("o_sel_user_search_".concat(userPropertyHandler.getName().toLowerCase()));
-			fi.setTranslator(tr);
+			fi.setTranslator(getTranslator());
 			items.put(fi.getName(), fi);
 		}
 

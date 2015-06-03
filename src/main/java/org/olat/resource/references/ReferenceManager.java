@@ -244,6 +244,30 @@ public class ReferenceManager {
 		return result.toString();
 	}
 	
+	public List<String> getReferencesToSummary(OLATResourceable target) {
+		List<Reference> refs = getReferencesTo(target);
+		List<String> refNames = new ArrayList<>(refs.size());
+		if (refs.size() > 0) {
+			for (Reference ref:refs) {
+				OLATResource source = ref.getSource();
+				// special treatment for referenced courses: find out the course title
+				if (source.getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
+					try {
+						ICourse course = CourseFactory.loadCourse(source);
+						refNames.add(StringHelper.escapeHtml(course.getCourseTitle()));
+					} catch (Exception e) {
+						log.error("", e);
+						refNames.add("<strike>" + source.getKey().toString() + "</strike>");
+					}
+				} else {
+					refNames.add(source.getKey().toString());
+				}
+			}
+		}
+		return refNames;
+		
+	}
+	
 	/**
 	 * @param ref
 	 */

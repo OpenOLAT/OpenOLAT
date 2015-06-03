@@ -450,6 +450,20 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		}
 	}
 	
+	/**
+	 * Set an optional context help link for this form. If you use a custom
+	 * template this will have no effect
+	 * 
+	 * @param url The page in confluence 
+	 */
+	public void setFormContextHelp(String url) {
+		if (url == null) {
+			formLayoutContainer.contextRemove("off_chelp_url");
+		} else {
+			formLayoutContainer.contextPut("off_chelp_url", url);
+		}
+	}
+	
 
 	/**
 	 * 
