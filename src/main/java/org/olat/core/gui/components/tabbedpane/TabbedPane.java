@@ -234,8 +234,8 @@ public class TabbedPane extends Container implements Activateable2 {
 	 * @param enabled
 	 */
 	public void setEnabled(int pane, boolean enabled) {
-		boolean wasEnabled = isEnabled();
-		if (wasEnabled ^ enabled) {
+		boolean wasEnabled = isEnabled(pane);
+		if (wasEnabled != enabled) {
 			setDirty(true);
 		}
 		disabledPanes.set(pane, !enabled);

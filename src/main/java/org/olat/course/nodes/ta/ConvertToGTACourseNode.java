@@ -130,7 +130,7 @@ public class ConvertToGTACourseNode {
 		
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
 		File gtaskDirectory = gtaManager.getTasksDirectory(courseEnv, gtaNode);
-		VFSContainer gtaskContainer = gtaManager.getTasksFolder(courseEnv, gtaNode);
+		VFSContainer gtaskContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
 		
 		//make the task
 		TaskDefinitionList taskDefs = new TaskDefinitionList();

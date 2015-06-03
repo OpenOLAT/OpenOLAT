@@ -133,15 +133,18 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 	
 	private boolean setRevisions(UserRequest ureq, String cmpName, int iteration) {
 		File documentsDir;
+		VFSContainer documentsContainer = null;
 		if(businessGroupTask) {
 			documentsDir = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, assessedGroup);
+			documentsContainer = gtaManager.getRevisedDocumentsContainer(courseEnv, gtaNode, iteration, assessedGroup);
 		} else {
 			documentsDir = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, assessedIdentity);
 		}
 
 		boolean hasDocuments = TaskHelper.hasDocuments(documentsDir);
 		if(hasDocuments) {
-			revisionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, "coach.revisions.description");
+			revisionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
+					"coach.revisions.description");
 			listenTo(revisionsCtrl);
 			mainVC.put(cmpName, revisionsCtrl.getInitialComponent());
 		}
@@ -150,15 +153,18 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 	
 	private boolean setCorrections(UserRequest ureq, String cmpName, int iteration) {
 		File documentsDir;
+		VFSContainer documentsContainer = null;
 		if(businessGroupTask) {
 			documentsDir = gtaManager.getRevisedDocumentsCorrectionsDirectory(courseEnv, gtaNode, iteration, assessedGroup);
+			documentsContainer = gtaManager.getRevisedDocumentsCorrectionsContainer(courseEnv, gtaNode, iteration, assessedGroup);
 		} else {
 			documentsDir = gtaManager.getRevisedDocumentsCorrectionsDirectory(courseEnv, gtaNode, iteration, assessedIdentity);
 		}
 		
 		boolean hasDocuments = TaskHelper.hasDocuments(documentsDir);
 		if(hasDocuments) {
-			correctionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, "run.coach.corrections.description", "bulk.review", "review");
+			correctionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
+					"run.coach.corrections.description", "bulk.review", "review");
 			listenTo(correctionsCtrl);
 			mainVC.put(cmpName, correctionsCtrl.getInitialComponent());
 		}

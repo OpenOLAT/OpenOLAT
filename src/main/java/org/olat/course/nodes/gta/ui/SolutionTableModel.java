@@ -21,7 +21,6 @@ package org.olat.course.nodes.gta.ui;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.course.nodes.gta.model.Solution;
 
 /**
  * 
@@ -29,30 +28,34 @@ import org.olat.course.nodes.gta.model.Solution;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SolutionTableModel extends DefaultFlexiTableDataModel<Solution> {
+public class SolutionTableModel extends DefaultFlexiTableDataModel<SolutionRow> {
 	
 	public SolutionTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<Solution> createCopyWithEmptyList() {
+	public DefaultFlexiTableDataModel<SolutionRow> createCopyWithEmptyList() {
 		return new SolutionTableModel(getTableColumnModel());
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		Solution taskDef = getObject(row);
+		SolutionRow solutionRow = getObject(row);
 		switch(SolCols.values()[col]) {
-			case title: return taskDef.getTitle();
-			case file: return taskDef.getFilename();
+			case title: return solutionRow.getSolution().getTitle();
+			case file: return solutionRow.getSolution().getFilename();
+			case author: return solutionRow.getAuthor();
+			case edit: return solutionRow.getSolution().getFilename().endsWith(".html");
 			default: return "ERROR";
 		}
 	}
 
 	public enum SolCols {
 		title("task.title"),
-		file("task.file");
+		file("task.file"),
+		author("table.header.author"),
+		edit("table.header.edit");
 		
 		private final String i18nKey;
 	

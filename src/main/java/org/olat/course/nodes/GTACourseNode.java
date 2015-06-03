@@ -241,7 +241,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 		boolean hasScoring = config.getBooleanSafe(GTASK_GRADING);
 		if (hasScoring) {
 			if(!config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD)
-					&& !config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD)) {
+					&& !config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD)
+					&& !config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD)) {
 
 				addStatusErrorDescription("error.missing.score.config", GTAEditController.PANE_TAB_GRADING, sdList);
 			}

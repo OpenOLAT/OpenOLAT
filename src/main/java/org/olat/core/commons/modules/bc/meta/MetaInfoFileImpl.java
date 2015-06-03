@@ -558,9 +558,15 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		uuid = UUID.randomUUID().toString().replace("-", "");
 	}
 
+	@Override
+	public Long getAuthorIdentityKey() {
+		return authorIdentKey;
+	}
+
 	/**
 	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#getAuthorIdentity()
 	 */
+	@Override
 	public Identity getAuthorIdentity() {
 		if (authorIdentKey == null) {
 			return null;

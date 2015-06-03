@@ -260,13 +260,16 @@ public class GTAParticipantController extends GTAAbstractController {
 	
 	private void setSubmittedDocumentsController(UserRequest ureq) {
 		File documentsDir;
+		VFSContainer documentsContainer = null;
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
 			documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedGroup);
+			documentsContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, assessedGroup);
 		} else {
 			documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, getIdentity());
 		}
 		
-		submittedDocCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, "run.submitted.description");
+		submittedDocCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
+				"run.submitted.description");
 		listenTo(submittedDocCtrl);
 		mainVC.put("submittedDocs", submittedDocCtrl.getInitialComponent());
 	}
@@ -370,14 +373,17 @@ public class GTAParticipantController extends GTAAbstractController {
 	
 	private void setReviews(UserRequest ureq, boolean waiting) {
 		File documentsDir;
+		VFSContainer documentsContainer = null;
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
 			documentsDir = gtaManager.getCorrectionDirectory(courseEnv, gtaNode, assessedGroup);
+			documentsContainer = gtaManager.getCorrectionContainer(courseEnv, gtaNode, assessedGroup);
 		} else {
 			documentsDir = gtaManager.getCorrectionDirectory(courseEnv, gtaNode, getIdentity());
 		}
 		
 		if(TaskHelper.hasDocuments(documentsDir)) {
-			correctionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, "run.corrections.description", "bulk.review", "review");
+			correctionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
+					"run.corrections.description", "bulk.review", "review");
 			listenTo(correctionsCtrl);
 			mainVC.put("corrections", correctionsCtrl.getInitialComponent());
 		} else {
@@ -461,8 +467,9 @@ public class GTAParticipantController extends GTAAbstractController {
 		boolean visible = availableDate == null || availableDate.compareTo(new Date()) <= 0;
 		if(visible) {
 			File documentsDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);
+			VFSContainer documentsContainer = gtaManager.getSolutionsContainer(courseEnv, gtaNode);
 			if(TaskHelper.hasDocuments(documentsDir)) {
-				solutionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, "run.solutions.description", "bulk.solutions", "solutions");
+				solutionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer, "run.solutions.description", "bulk.solutions", "solutions");
 				listenTo(solutionsCtrl);
 				mainVC.put("solutions", solutionsCtrl.getInitialComponent());
 			}
@@ -484,6 +491,9 @@ public class GTAParticipantController extends GTAAbstractController {
 				mainVC.contextRemove("userLog");
 			}
 		}
+		
+		
+
 		
 		String infoTextUser = config.getStringValue(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
 	    if(StringHelper.containsNonWhitespace(infoTextUser)) {

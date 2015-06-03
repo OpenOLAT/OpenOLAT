@@ -1,8 +1,8 @@
 <fieldset class="o_form o_block_large_bottom o_sel_course_gta_tasks" role="form">
 	<legend>$r.translate("task.list.title")</legend>
 	<div class="o_desc">$r.translate("task.list.description")</div>
-	<div class="o_button_group o_button_group_right">
-		$r.render("add.task")
-	</div>
+	<div class="o_button_group o_button_group_right"><div class="btn-group">
+		$r.render("add.task") $r.render("create.task")
+	</div></div>
 	$r.render("taskTable")
 </fieldset>

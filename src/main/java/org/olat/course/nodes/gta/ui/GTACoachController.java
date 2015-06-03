@@ -160,12 +160,14 @@ public class GTACoachController extends GTAAbstractController {
 		
 		if(viewSubmittedDocument) {
 			File documentsDir;
+			VFSContainer documentsContainer = null;
 			if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
 				documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedGroup);
+				documentsContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, assessedGroup);
 			} else {
 				documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedIdentity);
 			}
-			submittedDocCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir,
+			submittedDocCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
 					"coach.submitted.documents.description", "bulk.submitted.documents", "submission");
 			listenTo(submittedDocCtrl);
 			mainVC.put("submittedDocs", submittedDocCtrl.getInitialComponent());
@@ -229,12 +231,16 @@ public class GTACoachController extends GTAAbstractController {
 	
 	private void setCorrections(UserRequest ureq) {
 		File documentsDir;
+		VFSContainer documentsContainer;
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
 			documentsDir = gtaManager.getCorrectionDirectory(courseEnv, gtaNode, assessedGroup);
+			documentsContainer = gtaManager.getCorrectionContainer(courseEnv, gtaNode, assessedGroup);
 		} else {
 			documentsDir = gtaManager.getCorrectionDirectory(courseEnv, gtaNode, assessedIdentity);
+			documentsContainer = gtaManager.getCorrectionContainer(courseEnv, gtaNode, assessedIdentity);
 		}
-		correctionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, "coach.corrections.description", "bulk.review", "review");
+		correctionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
+				"coach.corrections.description", "bulk.review", "review");
 		listenTo(correctionsCtrl);
 		mainVC.put("corrections", correctionsCtrl.getInitialComponent());
 	}
@@ -302,7 +308,8 @@ public class GTACoachController extends GTAAbstractController {
 		}
 		
 		File documentsDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);
-		solutionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, "run.solutions.description", "bulk.solutions", "solutions");
+		VFSContainer documentsContainer = gtaManager.getSolutionsContainer(courseEnv, gtaNode);
+		solutionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer, "run.solutions.description", "bulk.solutions", "solutions");
 		listenTo(solutionsCtrl);
 		mainVC.put("solutions", solutionsCtrl.getInitialComponent());
 		
@@ -313,24 +320,8 @@ public class GTACoachController extends GTAAbstractController {
 	protected Task stepGrading(UserRequest ureq, Task assignedTask) {
 		assignedTask = super.stepGrading(ureq, assignedTask);
 		if(withGrading) {
-			if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
-					|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)
-					|| config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)
-					|| config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)
-					|| config.getBooleanSafe(GTACourseNode.GTASK_GRADING)) {
-				
-				if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment || assignedTask.getTaskStatus() == TaskProcess.submit
-						|| assignedTask.getTaskStatus() == TaskProcess.review || assignedTask.getTaskStatus() == TaskProcess.correction
-						|| assignedTask.getTaskStatus() == TaskProcess.revision ) {
-					mainVC.contextPut("gradingCssClass", "");
-				} else if(assignedTask.getTaskStatus() == TaskProcess.grading || assignedTask.getTaskStatus() == TaskProcess.graded  || assignedTask.getTaskStatus() == TaskProcess.solution) {
-					mainVC.contextPut("gradingCssClass", "o_active");
-					setGrading(ureq, assignedTask);
-				}	
-			} else if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.grading || assignedTask.getTaskStatus() == TaskProcess.graded || assignedTask.getTaskStatus() == TaskProcess.solution) {
-				mainVC.contextPut("gradingCssClass", "o_active");
-				setGrading(ureq, assignedTask);
-			}
+			mainVC.contextPut("gradingCssClass", "o_active");
+			setGrading(ureq);
 		} else {
 			mainVC.contextPut("gradingEnabled", Boolean.FALSE);
 		}
@@ -338,15 +329,15 @@ public class GTACoachController extends GTAAbstractController {
 		return assignedTask;
 	}
 
-	private void setGrading(UserRequest ureq, Task assignedTask) {
+	private void setGrading(UserRequest ureq) {
 		mainVC.put("grading", new Panel("empty"));
 		if(assessedGroup != null) {
-			groupGradingCtrl = new GTACoachedGroupGradingController(ureq, getWindowControl(), courseEnv, gtaNode, assignedTask, assessedGroup);
+			groupGradingCtrl = new GTACoachedGroupGradingController(ureq, getWindowControl(), courseEnv, gtaNode, assessedGroup);
 			listenTo(groupGradingCtrl);
 			mainVC.put("grading", groupGradingCtrl.getInitialComponent());
 		} else if(assessedIdentity != null) {
 			OLATResource courseOres = courseEntry.getOlatResource();
-			participantGradingCtrl = new GTACoachedParticipantGradingController(ureq, getWindowControl(), courseOres, gtaNode, assignedTask, assessedIdentity);
+			participantGradingCtrl = new GTACoachedParticipantGradingController(ureq, getWindowControl(), courseOres, gtaNode, assessedIdentity);
 			listenTo(participantGradingCtrl);
 			mainVC.put("grading", participantGradingCtrl.getInitialComponent());
 		}

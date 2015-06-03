@@ -44,7 +44,7 @@ import org.olat.repository.RepositoryEntryRef;
  */
 public interface GTAManager {
 	
-	public VFSContainer getTasksFolder(CourseEnvironment courseEnv, GTACourseNode cNode);
+	public VFSContainer getTasksContainer(CourseEnvironment courseEnv, GTACourseNode cNode);
 	
 	public File getTasksDirectory(CourseEnvironment courseEnv, GTACourseNode cNode);
 	

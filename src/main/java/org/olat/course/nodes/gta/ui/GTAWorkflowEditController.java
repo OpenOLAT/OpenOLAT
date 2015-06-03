@@ -40,6 +40,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.course.condition.AreaSelectionController;
 import org.olat.course.condition.GroupSelectionController;
@@ -52,6 +53,8 @@ import org.olat.group.BusinessGroupShort;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -64,10 +67,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 	
 	private static final String[] keys = new String[]{ "on" };
 	private static final String[] executionKeys = new String[]{ GTAType.group.name(), GTAType.individual.name() };
-	private static final String[] relativeDatesKeys = new String[] {
-		GTARelativeToDates.courseStart.name(), GTARelativeToDates.courseLaunch.name(),
-		GTARelativeToDates.enrollment.name()
-	};
+	private final String[] relativeDatesKeys;
 	private final String[] relativeDatesValues;
 	
 	private CloseableModalController cmc;
@@ -93,6 +93,8 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private BGAreaManager areaManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	public GTAWorkflowEditController(UserRequest ureq, WindowControl wControl, GTACourseNode gtaNode, CourseEditorEnv courseEditorEnv) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
@@ -100,12 +102,31 @@ public class GTAWorkflowEditController extends FormBasicController {
 		this.config = gtaNode.getModuleConfiguration();
 		this.courseEditorEnv = courseEditorEnv;
 		
-		relativeDatesValues = new String[] {
-			translate("relative.to.course.start"),
-			translate("relative.to.course.launch"),
-			translate("relative.to.enrollment")
-		};
-		
+		//reload to make sure we have the last changes
+		RepositoryEntry re = repositoryService
+				.loadByKey(courseEditorEnv.getCourseGroupManager().getCourseEntry().getKey());
+		if(re.getLifecycle() != null && re.getLifecycle().getValidFrom() != null) {
+			Date validFrom = re.getLifecycle().getValidFrom();
+			String from = Formatter.getInstance(getLocale()).formatDate(validFrom);
+			
+			relativeDatesKeys = new String[] {
+				GTARelativeToDates.courseStart.name(), GTARelativeToDates.courseLaunch.name(),
+				GTARelativeToDates.enrollment.name()
+			};
+			relativeDatesValues = new String[] {
+				translate("relative.to.course.start", new String[]{ from }),
+				translate("relative.to.course.launch"),
+				translate("relative.to.enrollment")
+			};
+		} else {
+			relativeDatesKeys = new String[]{
+				GTARelativeToDates.courseLaunch.name(), GTARelativeToDates.enrollment.name()
+			};
+			relativeDatesValues = new String[] {
+				translate("relative.to.course.launch"), translate("relative.to.enrollment")
+			};
+		}
+
 		initForm(ureq);
 	}
 

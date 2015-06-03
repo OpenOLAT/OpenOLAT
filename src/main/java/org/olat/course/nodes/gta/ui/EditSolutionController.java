@@ -24,8 +24,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
+import org.olat.core.commons.modules.bc.meta.MetaInfo;
+import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -36,6 +37,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.course.nodes.gta.model.Solution;
 
 
@@ -52,21 +55,25 @@ public class EditSolutionController extends FormBasicController {
 	
 	private final boolean replaceFile;
 	private final Solution solution;
-	private final File solutionContainer;
-	
-	public EditSolutionController(UserRequest ureq, WindowControl wControl, File solutionContainer) {
-		this(ureq, wControl, new Solution(), solutionContainer, true);
-	}
-	
-	public EditSolutionController(UserRequest ureq, WindowControl wControl, Solution solution, File solutionContainer) {
-		this(ureq, wControl, solution, solutionContainer, false);
-	}
+	private final File solutionDir;
+	private final VFSContainer solutionContainer;
 	
 	public EditSolutionController(UserRequest ureq, WindowControl wControl,
-			Solution solution, File solutionContainer, boolean replaceFile) {
+			File solutionDir, VFSContainer solutionContainer) {
+		this(ureq, wControl, new Solution(), solutionDir, solutionContainer, true);
+	}
+	
+	public EditSolutionController(UserRequest ureq, WindowControl wControl, Solution solution,
+			File solutionDir, VFSContainer solutionContainer) {
+		this(ureq, wControl, solution, solutionDir, solutionContainer, false);
+	}
+	
+	private EditSolutionController(UserRequest ureq, WindowControl wControl,
+			Solution solution, File solutionDir, VFSContainer solutionContainer, boolean replaceFile) {
 		super(ureq, wControl);
 		this.replaceFile = replaceFile;
 		this.solution = solution;
+		this.solutionDir = solutionDir;
 		this.solutionContainer = solutionContainer;
 		initForm(ureq);
 	}
@@ -88,7 +95,7 @@ public class EditSolutionController extends FormBasicController {
 		fileEl.setMandatory(true);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		if(StringHelper.containsNonWhitespace(solution.getFilename())) {
-			File currentFile = new File(solutionContainer, solution.getFilename());
+			File currentFile = new File(solutionDir, solution.getFilename());
 			if(currentFile.exists()) {
 				fileEl.setInitialFile(currentFile);
 			}
@@ -126,17 +133,12 @@ public class EditSolutionController extends FormBasicController {
 	}
 
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		super.formInnerEvent(ureq, source, event);
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		solution.setTitle(titleEl.getValue());
 		
 		if(fileEl.getUploadFile() != null) {
 			if(replaceFile && StringHelper.containsNonWhitespace(solution.getFilename())) {
-				File currentFile = new File(solutionContainer, solution.getFilename());
+				File currentFile = new File(solutionDir, solution.getFilename());
 				if(currentFile.exists()) {
 					currentFile.delete();
 				}
@@ -147,8 +149,15 @@ public class EditSolutionController extends FormBasicController {
 			
 			try {
 				Path upload = fileEl.getUploadFile().toPath();
-				File newFile = new File(solutionContainer, filename);
+				File newFile = new File(solutionDir, filename);
 				Files.move(upload, newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+				
+				VFSItem uploadedItem = solutionContainer.resolve(filename);
+				if(uploadedItem instanceof MetaTagged) {
+					MetaInfo metaInfo = ((MetaTagged)uploadedItem).getMetaInfo();
+					metaInfo.setAuthor(ureq.getIdentity());
+					metaInfo.write();
+				}
 			} catch(Exception ex) {
 				logError("", ex);
 			}

@@ -28,6 +28,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
@@ -71,6 +72,9 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	
 	private final File tasksDir;
 	private final File solutionsDir;
+	private final VFSContainer tasksContainer;
+	private final VFSContainer solutionsContainer;
+	
 	private final GTACourseNode gtaNode;
 	private final ModuleConfiguration config;
 	private final UserCourseEnvironment euce;
@@ -87,7 +91,9 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		config = gtaNode.getModuleConfiguration();
 		
 		tasksDir = gtaManager.getTasksDirectory(course.getCourseEnvironment(), gtaNode);
+		tasksContainer = gtaManager.getTasksContainer(course.getCourseEnvironment(), gtaNode);
 		solutionsDir = gtaManager.getSolutionsDirectory(course.getCourseEnvironment(), gtaNode);
+		solutionsContainer = gtaManager.getSolutionsContainer(course.getCourseEnvironment(), gtaNode);
 
 		// Accessibility precondition
 		Condition accessCondition = gtaNode.getPreConditionAccess();
@@ -99,7 +105,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		workflowCtrl = new GTAWorkflowEditController(ureq, getWindowControl(), gtaNode, euce.getCourseEditorEnv());
 		listenTo(workflowCtrl);
 		//assignment
-		assignmentCtrl = new GTAAssignmentEditController(ureq, getWindowControl(), config, tasksDir);
+		assignmentCtrl = new GTAAssignmentEditController(ureq, getWindowControl(), config, tasksDir, tasksContainer);
 		listenTo(assignmentCtrl);
 		//submission
 		submissionCtrl = new GTASubmissionEditController(ureq, getWindowControl(), config);
@@ -108,7 +114,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		manualAssessmentCtrl = new MSEditFormController(ureq, getWindowControl(), config);
 		listenTo(manualAssessmentCtrl);
 		//solutions
-		solutionsCtrl = new GTASampleSolutionsEditController(ureq, getWindowControl(), config, solutionsDir);
+		solutionsCtrl = new GTASampleSolutionsEditController(ureq, getWindowControl(), config, solutionsDir, solutionsContainer);
 		listenTo(solutionsCtrl);
 	}
 	
@@ -168,7 +174,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			} else if(event == Event.CANCELLED_EVENT) {
 				removeAsListenerAndDispose(assignmentCtrl);
-				assignmentCtrl = new GTAAssignmentEditController(ureq, getWindowControl(), config, tasksDir);
+				assignmentCtrl = new GTAAssignmentEditController(ureq, getWindowControl(), config, tasksDir, tasksContainer);
 				listenTo(assignmentCtrl);
 				myTabbedPane.replaceTab(assignmentPos, assignmentCtrl.getInitialComponent());
 			}

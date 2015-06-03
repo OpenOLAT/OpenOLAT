@@ -164,15 +164,18 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 	
 	private boolean setRevision(UserRequest ureq, String cmpName, int iteration) {
 		File documentsDir;
+		VFSContainer documentsContainer = null;
 		if(businessGroupTask) {
 			documentsDir = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, assessedGroup);
+			documentsContainer = gtaManager.getRevisedDocumentsContainer(courseEnv, gtaNode, iteration, assessedGroup);
 		} else {
 			documentsDir = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, getIdentity());
 		}
 
 		boolean hasDocument = TaskHelper.hasDocuments(documentsDir);
 		if(hasDocument) {
-			revisionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, "run.revised.description");
+			revisionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
+					"run.revised.description");
 			listenTo(revisionsCtrl);
 			mainVC.put(cmpName, revisionsCtrl.getInitialComponent());
 		}
@@ -181,15 +184,18 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 	
 	private boolean setCorrections(UserRequest ureq, String cmpName, int iteration) {
 		File documentsDir;
+		VFSContainer documentsContainer = null;
 		if(businessGroupTask) {
 			documentsDir = gtaManager.getRevisedDocumentsCorrectionsDirectory(courseEnv, gtaNode, iteration, assessedGroup);
+			documentsContainer = gtaManager.getRevisedDocumentsCorrectionsContainer(courseEnv, gtaNode, iteration, assessedGroup);
 		} else {
 			documentsDir = gtaManager.getRevisedDocumentsCorrectionsDirectory(courseEnv, gtaNode, iteration, getIdentity());
 		}
 		
 		boolean hasDocument = TaskHelper.hasDocuments(documentsDir);
 		if(hasDocument) {
-			correctionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, "run.corrections.description", "bulk.review", "review");
+			correctionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
+					"run.corrections.description", "bulk.review", "review");
 			listenTo(correctionsCtrl);
 			mainVC.put(cmpName, correctionsCtrl.getInitialComponent());
 		}
