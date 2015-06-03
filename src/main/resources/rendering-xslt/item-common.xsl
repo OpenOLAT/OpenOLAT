@@ -45,8 +45,8 @@ rendering.
   <xsl:variable name="uncommittedResponseValues" select="$itemSessionState/qw:uncommittedResponseValue" as="element(qw:uncommittedResponseValue)*"/>
 
   <!-- Bad/invalid responses -->
-  <xsl:variable name="unboundResponseIdentifiers" select="$itemSessionState/@unboundResponseIdentifiers" as="xs:string*"/>
-  <xsl:variable name="invalidResponseIdentifiers" select="$itemSessionState/@invalidResponseIdentifiers" as="xs:string*"/>
+  <xsl:variable name="unboundResponseIdentifiers" select="tokenize($itemSessionState/@unboundResponseIdentifiers, '\s+')" as="xs:string*"/>
+  <xsl:variable name="invalidResponseIdentifiers" select="tokenize($itemSessionState/@invalidResponseIdentifiers, '\s+')" as="xs:string*"/>
 
   <!-- Is a model solution provided? -->
   <xsl:variable name="hasModelSolution" as="xs:boolean" select="exists(/qti:assessmentItem/qti:responseDeclaration/qti:correctResponse) or exists($overriddenCorrectResponses)"/>
@@ -79,6 +79,7 @@ rendering.
   <xsl:include href="interactions/mathEntryInteraction.xsl"/>
 
   <!-- ************************************************************ -->
+  <!-- Response helpers -->
 
   <xsl:function name="qw:get-response-input" as="element(qw:responseInput)?">
     <xsl:param name="identifier" as="xs:string"/>
@@ -120,6 +121,30 @@ rendering.
     </xsl:choose>
   </xsl:function>
 
+  <!-- ************************************************************ -->
+  <!-- Variable declaration helpers -->
+
+  <xsl:function name="qw:get-template-declaration" as="element(qti:templateDeclaration)?">
+    <xsl:param name="document" as="document-node()"/>
+    <xsl:param name="identifier" as="xs:string"/>
+    <xsl:sequence select="$document/qti:assessmentItem/qti:templateDeclaration[@identifier=$identifier]"/>
+  </xsl:function>
+
+  <xsl:function name="qw:get-outcome-declaration" as="element(qti:outcomeDeclaration)?">
+    <xsl:param name="document" as="document-node()"/>
+    <xsl:param name="identifier" as="xs:string"/>
+    <xsl:sequence select="$document/qti:assessmentItem/qti:outcomeDeclaration[@identifier=$identifier]"/>
+  </xsl:function>
+
+  <xsl:function name="qw:get-response-declaration" as="element(qti:responseDeclaration)?">
+    <xsl:param name="document" as="document-node()"/>
+    <xsl:param name="identifier" as="xs:string"/>
+    <xsl:sequence select="$document/qti:assessmentItem/qti:responseDeclaration[@identifier=$identifier]"/>
+  </xsl:function>
+
+  <!-- ************************************************************ -->
+  <!-- Variable value helpers -->
+
   <xsl:function name="qw:get-template-value" as="element(qw:templateVariable)?">
     <xsl:param name="identifier" as="xs:string"/>
     <xsl:sequence select="$templateValues[@identifier=$identifier]"/>
@@ -128,12 +153,6 @@ rendering.
   <xsl:function name="qw:get-outcome-value" as="element(qw:outcomeVariable)?">
     <xsl:param name="identifier" as="xs:string"/>
     <xsl:sequence select="$outcomeValues[@identifier=$identifier]"/>
-  </xsl:function>
-
-  <xsl:function name="qw:get-response-declaration" as="element(qti:responseDeclaration)?">
-    <xsl:param name="document" as="document-node()"/>
-    <xsl:param name="identifier" as="xs:string"/>
-    <xsl:sequence select="$document/qti:assessmentItem/qti:responseDeclaration[@identifier=$identifier]"/>
   </xsl:function>
 
   <!-- NB: This now checks *uncommitted* responses first, then *committed* responses -->
@@ -182,18 +201,6 @@ rendering.
     </xsl:choose>
   </xsl:function>
 
-  <xsl:function name="qw:get-template-declaration" as="element(qti:templateDeclaration)?">
-    <xsl:param name="document" as="document-node()"/>
-    <xsl:param name="identifier" as="xs:string"/>
-    <xsl:sequence select="$document/qti:assessmentItem/qti:templateDeclaration[@identifier=$identifier]"/>
-  </xsl:function>
-
-  <xsl:function name="qw:get-outcome-declaration" as="element(qti:outcomeDeclaration)?">
-    <xsl:param name="document" as="document-node()"/>
-    <xsl:param name="identifier" as="xs:string"/>
-    <xsl:sequence select="$document/qti:assessmentItem/qti:outcomeDeclaration[@identifier=$identifier]"/>
-  </xsl:function>
-
   <!-- ************************************************************ -->
 
   <!-- Tests the @showHide and @templateIdentifier attributes of the given (choice) element to determine whether it
@@ -236,8 +243,6 @@ rendering.
     </xsl:variable>
     <xsl:sequence select="qw:filter-visible($orderedChoices)"/>
   </xsl:function>
-
-  <!-- ************************************************************ -->
 
   <xsl:template name="qw:generic-bad-response-message">
     <div class="badResponse">

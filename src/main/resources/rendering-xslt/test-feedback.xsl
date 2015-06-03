@@ -57,7 +57,7 @@ combine the feedback for the test and the testPart.)
       <li>
         <form action="{$webappContextPath}{$exitTestUrl}" method="post"
           onsubmit="return confirm({qw:to-javascript-string($exitTestAlertMessage)})">
-          <input type="submit" value="Exit Test" class="btn btn-primary"/>
+          <input type="submit" value="Exit Test"/>
         </form>
       </li>
     </ul>
