@@ -116,7 +116,7 @@
 		jQuery(function() {
 			jQuery('#<xsl:value-of select="$appletContainerId"/>_container area').on("click", function(e) {
 				var r = 8;
-				var maxChoices = 3;
+				var maxAssociations = <xsl:value-of select="@maxAssociations"/>;
 				
 				var data = jQuery("#<xsl:value-of select="$appletContainerId"/>_container").data("openolat") || {};
 				if(data.listOfPairs == undefined) {
