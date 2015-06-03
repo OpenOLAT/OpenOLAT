@@ -22,7 +22,121 @@
 
       <xsl:variable name="object" select="qti:object" as="element(qti:object)"/>
       <xsl:variable name="appletContainerId" select="concat('qtiworks_id_appletContainer_', @responseIdentifier)" as="xs:string"/>
-      <div id="{$appletContainerId}" class="appletContainer">
+      <xsl:variable name="hotspots" select="qw:filter-visible(qti:associableHotspot)" as="element(qti:associableHotspot)*"/>
+      <xsl:variable name="gapImgs" select="qw:filter-visible(qti:gapImg)" as="element(qti:gapImg)*"/>
+      <xsl:variable name="responseValue" select="qw:get-response-value(/, @responseIdentifier)" as="element(qw:responseVariable)?"/>
+          
+      <div id="{$appletContainerId}" class="appletContainer" style="position:relative;">
+      	<img id="{$appletContainerId}_img" width="{$object/@width}" height="{$object/@height}" src="{qw:convert-link-full($object/@data)}" usemap="#{$appletContainerId}_map"></img>
+		<map name="{$appletContainerId}_map">
+			<xsl:for-each select="$hotspots">
+				<!-- @matchGroup, @matchMax -->
+				<area id="{@identifier}" shape="{@shape}" coords="{@coords}" href="#" title="{@label}" class="area-droppable"></area>
+			</xsl:for-each>
+		</map>
+		<div class="gap_container" style="width:{$object/@width}px; height:50px; background-color:#cccccc;">
+			<xsl:for-each select="$gapImgs">
+				<!-- @matchGroup, @matchMax, @label -->
+            	<div id="{@identifier}" class="gap_item" style="width:{qti:object/@width}px; height:{qti:object/@height}px; margin:5px; background-image:url('{qw:convert-link-full(qti:object/@data)}');"> </div>
+          </xsl:for-each>
+		</div>
+		
+		<script type="text/javascript">
+		<![CDATA[
+      	toCoords = function(area) {
+			var coords = area.attr('coords').split(',');
+			for (i=0; i < coords.length; i++) {
+				coords[i] = parseFloat(coords[i]);
+			}
+			return coords;
+		};
+      		]]>
+		<xsl:choose>
+			<xsl:when test="qw:is-not-null-value($responseValue)">
+			
+		jQuery(function() {
+			var pairs = '<xsl:value-of select="$responseValue/qw:value" separator=","/>'.split(',');
+			for(var i=pairs.length; i-->0; ) {
+				var ids = pairs[i].split(' ');
+				
+				var item1 = jQuery('#' + ids[0]);
+				var item2 = jQuery('#' + ids[1]);
+				
+				var gapitem, areaEl;
+				if(item1.hasClass('gap_item')) {
+					gapitem = item1;
+					areaEl = item2;
+				} else {
+					gapitem = item2;
+					areaEl = item1;
+				}
+				
+				var coords = toCoords(areaEl);
+				gapitem.css('position','absolute');
+	    		gapitem.css('left', coords[0] + 'px');
+	    		gapitem.css('top', coords[1] + 'px');
+	    		gapitem.addClass('oo-choosed');
+			}
+		});
+			
+			</xsl:when>
+			<xsl:otherwise>
+			
+		jQuery(function() {
+	    	
+	    	jQuery(".gap_item").on('click', function(e, el) {
+	    		var gapitem = jQuery(this);
+	    		
+	    		if(gapitem.hasClass('oo-choosed')) {
+	    			gapitem.removeClass('oo-choosed');
+	    			gapitem.css('position','relative');
+	    			gapitem.css('left','auto');
+	    			gapitem.css('top','auto');
+	    			
+	    			var gapitemId = gapitem.attr('id');
+	    			//remove
+	    			jQuery('#<xsl:value-of select="$appletContainerId"/>').find("input[type='hidden']").each(function(index, el) {
+	    				var value = jQuery(el).val();
+	    				if(value.indexOf(gapitemId + ' ') == 0) {
+	    					jQuery(el).remove();
+	    				}
+	    			});
+	    		} else {
+	    			gapitem.css('border','3px solid black');
+	    			gapitem.addClass('oo-selected');
+	    		}
+	    	});
+	    	
+	    	jQuery("#<xsl:value-of select="$appletContainerId"/> area").on('click', function(e, el) {
+	    		var areaEl = jQuery(this);
+	    		jQuery(".gap_item.oo-selected").each(function(index, el){
+	    			var gapitem = jQuery(el);
+	    			var coords = toCoords(areaEl);
+	    			var areaId = areaEl.attr('id');
+	    			var gapitemId = gapitem.attr('id');
+	    			
+	    			gapitem.css('position','absolute');
+	    			gapitem.css('left', coords[0] + 'px');
+	    			gapitem.css('top', coords[1] + 'px');
+	    		
+	    			gapitem.css('border', 'none');
+	    			gapitem.removeClass('oo-selected');
+	    			gapitem.addClass('oo-choosed');
+	    			
+	    			//add
+	    			var divContainer = jQuery('#<xsl:value-of select="$appletContainerId"/>');
+					var inputElement = jQuery('<input type="hidden"/>')
+						.attr('name', 'qtiworks_response_RESPONSE')
+						.attr('value', gapitemId + " " + areaId);
+					divContainer.prepend(inputElement);
+	    		});
+	    	});
+	    });
+			
+			</xsl:otherwise>
+      	</xsl:choose>
+      	</script>
+      	<!-- 
         <object type="application/x-java-applet" height="{$object/@height + 40}" width="{$object/@width}">
           <param name="code" value="BoundedGraphicalApplet"/>
           <param name="codebase" value="{$appletCodebase}"/>
@@ -60,6 +174,7 @@
               select="$appletContainerId"/>', ['<xsl:value-of select="@responseIdentifier"/>']);
           });
         </script>
+        -->
       </div>
     </div>
   </xsl:template>
