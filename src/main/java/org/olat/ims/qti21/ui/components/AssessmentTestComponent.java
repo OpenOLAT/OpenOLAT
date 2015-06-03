@@ -101,6 +101,7 @@ public class AssessmentTestComponent extends AbstractComponent {
 		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
 		jsa.addRequiredStaticJsFile("assessment/rendering/javascript/QtiWorksRendering.js");
 		jsa.addRequiredStaticJsFile("js/jquery/maphilight/jquery.maphilight.js");
+		jsa.addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.11.4.custom.dnd.min.js");
 	}
 
 	@Override
