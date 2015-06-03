@@ -492,15 +492,16 @@ public class GTAParticipantController extends GTAAbstractController {
 			}
 		}
 		
-		
-
-		
 		String infoTextUser = config.getStringValue(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
 	    if(StringHelper.containsNonWhitespace(infoTextUser)) {
 	    	mainVC.contextPut("gradingInfoTextUser", StringHelper.xssScan(infoTextUser));
 	    }
-		
-		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
+	    
+	    boolean showGrading = false;
+	    MSCourseNodeRunController msCtrl = new MSCourseNodeRunController(ureq, getWindowControl(), userCourseEnv, gtaNode, false, false);
+	    if(msCtrl.hasScore() || msCtrl.hasPassed() || msCtrl.hasComment()) {
+	    	showGrading = true; 
+	    } else if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)
@@ -511,21 +512,21 @@ public class GTAParticipantController extends GTAAbstractController {
 					|| assignedTask.getTaskStatus() == TaskProcess.revision || assignedTask.getTaskStatus() == TaskProcess.solution) {
 				mainVC.contextPut("gradingCssClass", "");
 			} else if(assignedTask.getTaskStatus() == TaskProcess.graded || assignedTask.getTaskStatus() == TaskProcess.grading) {
-				mainVC.contextPut("gradingCssClass", "o_active");
-				setGrading(ureq);
+				showGrading = true;
 			}	
 		} else if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.graded || assignedTask.getTaskStatus() == TaskProcess.grading){
+			showGrading = true;
+		}
+		
+		if(showGrading) {
+			gradingCtrl = msCtrl;
+			listenTo(gradingCtrl);
 			mainVC.contextPut("gradingCssClass", "o_active");
-			setGrading(ureq);
+			mainVC.put("grading", gradingCtrl.getInitialComponent());
+			stepPreferences.setGrading(Boolean.TRUE);
 		}
 
 		return assignedTask;
-	}
-	
-	private void setGrading(UserRequest ureq) {
-		gradingCtrl = new MSCourseNodeRunController(ureq, getWindowControl(), userCourseEnv, gtaNode, false, false);
-		listenTo(gradingCtrl);
-		mainVC.put("grading", gradingCtrl.getInitialComponent());
 	}
 	
 	private TaskDefinition getTaskDefinition(Task task) {
