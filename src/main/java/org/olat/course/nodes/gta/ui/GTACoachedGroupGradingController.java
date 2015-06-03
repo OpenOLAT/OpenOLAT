@@ -41,13 +41,17 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlex
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -88,12 +92,13 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 	
 	private CloseableModalController cmc;
 	private GroupAssessmentController assessmentCtrl;
+	private CloseableCalloutWindowController commentCalloutCtrl;
 
 	private final GTACourseNode gtaNode;
 	private final BusinessGroup assessedGroup;
 	private final CourseEnvironment courseEnv;
 	private final AssessmentManager assessmentManager;
-	private final boolean withScore, withPassed;
+	private final boolean withScore, withPassed, withComment;
 	
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -120,6 +125,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		
 		withScore = gtaNode.hasScoreConfigured();
 		withPassed = gtaNode.hasPassedConfigured();
+		withComment = gtaNode.hasCommentConfigured();
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -181,6 +187,9 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		if(withScore) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.scoreVal.i18nKey(), Cols.scoreVal.ordinal()));
 		}
+		if(withComment) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.commentVal.i18nKey(), Cols.commentVal.ordinal()));
+		}
 		
 		model = new GroupAssessmentModel(gtaNode, userPropertyHandlers, getLocale(), columnsModel);
 		table = uifactory.addTableElement(getWindowControl(), "group-list", model, getTranslator(), formLayout);
@@ -213,6 +222,18 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 			
 			if(withPassed) {
 				row.setPassed(scoreEval.getPassed());
+			}
+			
+			if(withComment) {
+				FormLink commentLink = null;
+				String comment = gtaNode.getUserUserComment(userCourseEnv);
+				if(StringHelper.containsNonWhitespace(comment)) {
+					commentLink = uifactory.addFormLink("comment-" + CodeHelper.getRAMUniqueID(), "comment", "comment", null, flc, Link.LINK);
+					commentLink.setIconLeftCSS("o_icon o_icon_comments");
+					commentLink.setUserObject(row);
+				}
+				row.setComment(comment);
+				row.setCommentTooltipLink(commentLink);
 			}
 		}
 		
@@ -252,7 +273,14 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(assessmentFormButton == source) {
 			doOpenAssessmentForm(ureq);
+		} else if(source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			if("comment".equals(link.getCmd())) {
+				AssessmentRow row = (AssessmentRow)link.getUserObject();
+				doComment(ureq, row);
+			}
 		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
@@ -274,5 +302,16 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), "close", assessmentCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doComment(UserRequest ureq, AssessmentRow row) {
+		removeAsListenerAndDispose(commentCalloutCtrl);
+
+		VelocityContainer descriptionVC = createVelocityContainer("comment_readonly_callout");
+		descriptionVC.contextPut("comment", row.getComment());
+		commentCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				descriptionVC, row.getCommentTooltipLink().getFormDispatchId(), "", true, "");
+		listenTo(commentCalloutCtrl);
+		commentCalloutCtrl.activate();
 	}
 }

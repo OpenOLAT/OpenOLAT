@@ -75,10 +75,14 @@ public class GroupAssessmentModel extends DefaultFlexiTableDataModel<AssessmentR
 			return row.getScore();
 		} else if(col == Cols.passedVal.ordinal()) {
 			return row.getPassed();
+		}  else if(col == Cols.commentVal.ordinal()) {
+			return row.getCommentTooltipLink();
 		} else if(col == Cols.scoreEl.ordinal()) {
 			return row.getScoreEl();
 		} else if(col == Cols.passedEl.ordinal()) {
 			return row.getPassedEl();
+		} else if(col == Cols.commentEl.ordinal()) {
+			return row.getCommentEditLink();
 		} else if(col >= GTACoachedGroupGradingController.USER_PROPS_OFFSET) {
 			int propIndex = col - GTACoachedGroupGradingController.USER_PROPS_OFFSET;
 			User user = row.getUserCourseEnvironment().getIdentityEnvironment().getIdentity().getUser();
@@ -91,8 +95,10 @@ public class GroupAssessmentModel extends DefaultFlexiTableDataModel<AssessmentR
 		username("username"),
 		passedVal("table.header.passed"),
 		scoreVal("table.header.score"),
+		commentVal("table.header.comment"),
 		passedEl("table.header.passed"),
-		scoreEl("table.header.score");
+		scoreEl("table.header.score"),
+		commentEl("table.header.comment");
 		
 		private final String i18nKey;
 		
