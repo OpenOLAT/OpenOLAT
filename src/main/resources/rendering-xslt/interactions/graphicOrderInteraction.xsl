@@ -51,7 +51,6 @@
 					var position = areaEl.attr('coords').split(',');
 					var cx = position[0];
 					var cy = position[1];
-					console.log(cx, cy);
 					
 					c.font = "16px Arial";
 					c.fillText("" + (i+1), cx, cy);

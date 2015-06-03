@@ -114,7 +114,22 @@ div.o_qti_metadatas .panel-body {
 .o_qti_menu_item_attempts_marked:after {
 	content: $fa-var-flag;
 	color: $brand-primary;
-} 
+}
+
+/* qti 2.1 */
+
+.association {
+	margin: 20px 20px 20px 40px;
+	background: transparent url('#{$o-images-path}association_bg.png') repeat-x center center;
+}
+
+.o_associate_item {
+	padding: 5px;
+}
+
+.association_box {
+	background-color: white;
+}
 	
 
 /* onyx   */
