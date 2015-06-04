@@ -55,7 +55,11 @@ public interface QTI21Service {
 	
 	public UserTestSession createTestSession(RepositoryEntry testEntry, RepositoryEntry courseEntry, String subIdent, Identity identity);
 	
+	public UserTestSession getResumableTestSession(RepositoryEntry testEntry, RepositoryEntry courseEntry, String subIdent, Identity identity);
+	
 	public UserTestSession updateTestSession(UserTestSession session);
+	
+	public TestSessionState loadTestSessionState(UserTestSession session);
 	
 	/**
 	 * Retrieve the sessions of a user.

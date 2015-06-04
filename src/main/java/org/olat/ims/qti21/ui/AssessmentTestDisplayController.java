@@ -128,13 +128,22 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		
 		FileResourceManager frm = FileResourceManager.getInstance();
 		fUnzippedDirRoot = frm.unzipFileResource(entry.getOlatResource());
+		mapperUri = registerCacheableMapper(null, "QTI21Resources::" + entry.getKey(), new ResourcesMapper());
 		
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		
-		candidateSession = qtiService.createTestSession(entry, courseRe, courseSubIdent, getIdentity());
-		mapperUri = registerCacheableMapper(null, "QTI21Resources::" + entry.getKey(), new ResourcesMapper());
-		
-		testSessionController = enterSession(ureq);
+		UserTestSession lastSession = qtiService.getResumableTestSession(entry, courseRe, courseSubIdent, getIdentity());
+		if(lastSession == null) {
+			candidateSession = qtiService.createTestSession(entry, courseRe, courseSubIdent, getIdentity());
+			testSessionController = enterSession(ureq);
+		} else {
+			candidateSession = lastSession;
+			lastEvent = new CandidateEvent();
+			lastEvent.setCandidateSession(candidateSession);
+			lastEvent.setTestEventType(CandidateTestEventType.ITEM_EVENT);
+			
+			testSessionController = resumeSession();
+		}
 
 		/* Handle immediate end of test session */
         if (testSessionController.getTestSessionState().isEnded()) {
@@ -672,6 +681,37 @@ public class AssessmentTestDisplayController extends BasicController implements 
         }
 		return result;
 	}
+	
+	private TestSessionController resumeSession() {
+        final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+		return createTestSessionController(notificationRecorder);
+	}
+	
+	private TestSessionController createTestSessionController(NotificationRecorder notificationRecorder) {
+        final TestSessionState testSessionState = qtiService.loadTestSessionState(candidateSession);
+        return createTestSessionController(testSessionState, notificationRecorder);
+    }
+	
+    public TestSessionController createTestSessionController(TestSessionState testSessionState,  NotificationRecorder notificationRecorder) {
+        /* Try to resolve the underlying JQTI+ object */
+        final TestProcessingMap testProcessingMap = getTestProcessingMap();
+        if (testProcessingMap == null) {
+            return null;
+        }
+
+        /* Create config for TestSessionController */
+        final TestSessionControllerSettings testSessionControllerSettings = new TestSessionControllerSettings();
+        testSessionControllerSettings.setTemplateProcessingLimit(computeTemplateProcessingLimit());
+
+        /* Create controller and wire up notification recorder (if passed) */
+        final TestSessionController result = new TestSessionController(jqtiExtensionManager,
+                testSessionControllerSettings, testProcessingMap, testSessionState);
+        if (notificationRecorder!=null) {
+            result.addNotificationListener(notificationRecorder);
+        }
+
+        return result;
+    }
 	
 	private AssessmentResult computeAndRecordTestAssessmentResult(UserTestSession candidateSession,
 			TestSessionController testSessionController, boolean submit) {

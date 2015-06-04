@@ -19,15 +19,13 @@
  */
 package org.olat.ims.qti21.manager;
 
+import org.olat.ims.qti21.UserTestSession;
 import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.CandidateTestEventType;
 import org.olat.ims.qti21.model.jpa.CandidateEvent;
 import org.springframework.stereotype.Service;
-import org.w3c.dom.Document;
 
-import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
-import uk.ac.ed.ph.jqtiplus.state.marshalling.ItemSessionStateXmlMarshaller;
 
 /**
  * 
@@ -38,10 +36,11 @@ import uk.ac.ed.ph.jqtiplus.state.marshalling.ItemSessionStateXmlMarshaller;
 @Service
 public class EventDAO {
 	
-	public CandidateEvent create(CandidateTestEventType textEventType,
+	public CandidateEvent create(UserTestSession candidateSession, CandidateTestEventType textEventType,
 			CandidateItemEventType itemEventType, TestPlanNodeKey itemKey) {
 		
 		CandidateEvent event = new CandidateEvent();
+		event.setCandidateSession(candidateSession);
 		event.setTestEventType(textEventType);
 		event.setItemEventType(itemEventType);
 		if (itemKey != null) {
@@ -49,27 +48,16 @@ public class EventDAO {
         }
 		return event;
 	}
-	
-	
-	public CandidateEvent create(CandidateItemEventType itemEventType, ItemSessionState itemSessionState) {
-		final CandidateEvent event = new CandidateEvent();
-        //event.setCandidateSession(candidateSession);
+
+	public CandidateEvent create(UserTestSession candidateSession, CandidateItemEventType itemEventType) {
+		
+		CandidateEvent event = new CandidateEvent();
+        event.setCandidateSession(candidateSession);
         event.setItemEventType(itemEventType);
         //event.setTimestamp(requestTimestampContext.getCurrentRequestTimestamp());
 
         /* Store event */
         //candidateEventDao.persist(event);
-
-        /* Save current ItemSessionState */
-        storeItemSessionState(event, itemSessionState);
-
-
         return event;
 	}
-	
-    public void storeItemSessionState(CandidateEvent candidateEvent, ItemSessionState itemSessionState) {
-        Document stateDocument = ItemSessionStateXmlMarshaller.marshal(itemSessionState);
-        //TODO storeStateDocument(candidateEvent, stateDocument);
-    }
-
 }

@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.manager;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
@@ -28,6 +29,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
@@ -46,11 +53,13 @@ import org.olat.ims.qti21.UserTestSession;
 import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.CandidateTestEventType;
 import org.olat.ims.qti21.model.jpa.CandidateEvent;
+import org.olat.ims.qti21.ui.rendering.XmlUtilities;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
+import org.w3c.dom.Document;
 
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionPackage;
@@ -69,10 +78,14 @@ import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
+import uk.ac.ed.ph.jqtiplus.state.marshalling.ItemSessionStateXmlMarshaller;
+import uk.ac.ed.ph.jqtiplus.state.marshalling.TestSessionStateXmlMarshaller;
 import uk.ac.ed.ph.jqtiplus.value.RecordValue;
 import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 import uk.ac.ed.ph.jqtiplus.value.Value;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
+import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltSerializationOptions;
+import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltStylesheetManager;
 import uk.ac.ed.ph.qtiworks.mathassess.GlueValueBinder;
 import uk.ac.ed.ph.qtiworks.mathassess.MathAssessConstants;
 import uk.ac.ed.ph.qtiworks.mathassess.MathAssessExtensionPackage;
@@ -166,6 +179,39 @@ public class QTI21ServiceImpl implements QTI21Service {
 	}
 
 	@Override
+	public UserTestSession getResumableTestSession(RepositoryEntry testEntry, RepositoryEntry courseEntry, String subIdent, Identity identity) {
+		UserTestSession session = testSessionDao.getLastTestSession(testEntry, courseEntry, subIdent, identity);
+		if(session == null || session.isExploded() || session.getTerminationTime() != null) {
+			session = null;
+		} else {
+			File sessionFile = getTestSessionStateFile(session);
+			if(sessionFile == null || !sessionFile.exists()) {
+				session = null;
+			}
+		}
+		return session;
+	}
+
+	@Override
+	public TestSessionState loadTestSessionState(UserTestSession candidateSession) {
+        Document document = loadStateDocument(candidateSession);
+        return document == null ? null: TestSessionStateXmlMarshaller.unmarshal(document.getDocumentElement());
+    }
+	
+    private Document loadStateDocument(UserTestSession candidateSession) {
+        File sessionFile = getTestSessionStateFile(candidateSession);
+        if(sessionFile.exists()) {
+	        DocumentBuilder documentBuilder = XmlUtilities.createNsAwareDocumentBuilder();
+	        try {
+	            return documentBuilder.parse(sessionFile);
+	        } catch (final Exception e) {
+	            throw new OLATRuntimeException("Could not parse serailized state XML. This is an internal error as we currently don't expose this data to clients", e);
+	        }
+        }
+        return null;
+    }
+
+	@Override
 	public UserTestSession updateTestSession(UserTestSession session) {
 		return testSessionDao.update(session);
 	}
@@ -250,8 +296,8 @@ public class QTI21ServiceImpl implements QTI21Service {
 	@Override
 	public CandidateEvent recordCandidateTestEvent(UserTestSession candidateSession, CandidateTestEventType textEventType,
 			CandidateItemEventType itemEventType, TestSessionState testSessionState, NotificationRecorder notificationRecorder) {
-		
 		CandidateEvent event = new CandidateEvent();
+		event.setCandidateSession(candidateSession);
 		event.setTestEventType(textEventType);
 		return recordCandidateTestEvent(candidateSession, textEventType, itemEventType, null, testSessionState, notificationRecorder);
 	}
@@ -259,22 +305,65 @@ public class QTI21ServiceImpl implements QTI21Service {
 	@Override
 	public CandidateEvent recordCandidateTestEvent(UserTestSession candidateSession, CandidateTestEventType textEventType,
 			CandidateItemEventType itemEventType, TestPlanNodeKey itemKey, TestSessionState testSessionState, NotificationRecorder notificationRecorder) {
-		return eventDao.create(textEventType, itemEventType, itemKey);
+		CandidateEvent event = eventDao.create(candidateSession, textEventType, itemEventType, itemKey);
+		storeTestSessionState(event, testSessionState);
+		return event;
 	}
 	
-	@Override
-    public CandidateEvent recordCandidateItemEvent(UserTestSession candidateSession, CandidateItemEventType itemEventType,
-    		ItemSessionState itemSessionState, NotificationRecorder notificationRecorder) {
-    	return eventDao.create(itemEventType, itemSessionState);
+	private void storeTestSessionState(CandidateEvent candidateEvent, TestSessionState testSessionState) {
+		Document stateDocument = TestSessionStateXmlMarshaller.marshal(testSessionState);
+		File sessionFile = getTestSessionStateFile(candidateEvent);
+		storeStateDocument(stateDocument, sessionFile);
+		System.out.println("Store state: " + sessionFile);
+	}
+
+    private File getTestSessionStateFile(CandidateEvent candidateEvent) {
+    	UserTestSession candidateSession = candidateEvent.getCandidateSession();
+    	return getTestSessionStateFile(candidateSession);
+    }
+    
+    private File getTestSessionStateFile(UserTestSession candidateSession) {
+    	File myStore = storage.getDirectory(candidateSession.getStorage());
+        return new File(myStore, "testSessionState.xml");
     }
 	
-	
-
-	@Override
-	public CandidateEvent recordCandidateItemEvent( UserTestSession candidateSession, CandidateItemEventType itemEventType,
+    @Override
+	public CandidateEvent recordCandidateItemEvent(UserTestSession candidateSession, CandidateItemEventType itemEventType,
 			ItemSessionState itemSessionState) {
 		return recordCandidateItemEvent(candidateSession, itemEventType, itemSessionState, null);
 	}
+		
+	@Override
+    public CandidateEvent recordCandidateItemEvent(UserTestSession candidateSession, CandidateItemEventType itemEventType,
+    		ItemSessionState itemSessionState, NotificationRecorder notificationRecorder) {
+    	return eventDao.create(candidateSession, itemEventType);
+    }
+	
+    public void storeItemSessionState(CandidateEvent candidateEvent, ItemSessionState itemSessionState) {
+        Document stateDocument = ItemSessionStateXmlMarshaller.marshal(itemSessionState);
+        File sessionFile = getItemSessionStateFile(candidateEvent);
+        storeStateDocument(stateDocument, sessionFile);
+    }
+    
+    private File getItemSessionStateFile(CandidateEvent candidateEvent) {
+    	UserTestSession candidateSession = candidateEvent.getCandidateSession();
+    	File myStore = storage.getDirectory(candidateSession.getStorage());
+        return new File(myStore, "itemSessionState.xml");
+    }
+    
+	private void storeStateDocument(Document stateXml, File sessionFile) {
+        XsltSerializationOptions xsltSerializationOptions = new XsltSerializationOptions();
+        xsltSerializationOptions.setIndenting(true);
+        xsltSerializationOptions.setIncludingXMLDeclaration(false);
+        
+        Transformer serializer = XsltStylesheetManager.createSerializer(xsltSerializationOptions);
+        try(OutputStream resultStream = new FileOutputStream(sessionFile)) {
+            serializer.transform(new DOMSource(stateXml), new StreamResult(resultStream));
+        } catch (TransformerException | IOException e) {
+            throw new OLATRuntimeException("Unexpected Exception serializing state DOM", e);
+        }
+    }
+
 
 	@Override
 	public UserTestSession finishItemSession(UserTestSession candidateSession, AssessmentResult assessmentResult, Date timestamp) {

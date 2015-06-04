@@ -22,6 +22,8 @@ package org.olat.ims.qti21.manager;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -63,6 +65,40 @@ public class SessionDAO {
 		testSession.setStorage(storage.getRelativeDir());
 		dbInstance.getCurrentEntityManager().persist(testSession);
 		return testSession;
+	}
+	
+	public UserTestSession getLastTestSession(RepositoryEntryRef testEntry,
+			RepositoryEntryRef courseEntry, String courseSubIdent, IdentityRef identity) {
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select session from qtitestsession session ")
+		  .append("where session.testEntry.key=:testEntryKey and session.identity.key=:identityKey");
+		if(courseEntry != null) {
+			sb.append(" and session.courseEntry.key=:courseEntryKey");
+		} else {
+			sb.append(" and session.courseEntry.key is null");
+		}
+		
+		if(courseSubIdent != null) {
+			sb.append(" and session.courseSubIdent=:courseSubIdent");
+		} else {
+			sb.append(" and session.courseSubIdent is null");
+		}
+		sb.append(" order by session.creationDate desc");
+		
+		TypedQuery<UserTestSession> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), UserTestSession.class)
+				.setParameter("testEntryKey", testEntry.getKey())
+				.setParameter("identityKey", identity.getKey());
+		if(courseEntry != null) {
+			query.setParameter("courseEntryKey", courseEntry.getKey());
+		}
+		if(courseSubIdent != null) {
+			query.setParameter("courseSubIdent", courseSubIdent);
+		}
+		
+		List<UserTestSession> lastSessions = query.setMaxResults(1).getResultList();
+		return lastSessions == null || lastSessions.isEmpty() ? null : lastSessions.get(0);
 	}
 	
 	public UserTestSession update(UserTestSession testSession) {
