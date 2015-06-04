@@ -88,10 +88,9 @@ public class AttemptsRuleSPI implements FilterRuleSPI {
 				Identity identity = identityIt.next();
 				Integer attempt = attempts.get(identity.getKey());
 				if(attempt == null) {
-					if(!operator.equals("!=")) {//always different
-						identityIt.remove();
-					}
-				} else if(!evaluateAttempt(attempt.intValue(), operator, value)) {
+					attempt = 0;
+				}
+				if(!evaluateAttempt(attempt.intValue(), operator, value)) {
 					identityIt.remove();
 				}
 			}

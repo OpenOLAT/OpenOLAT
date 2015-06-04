@@ -4,9 +4,12 @@
 #else 
 	$r.translate("step1.nonewusers")
 #end
+#if($r.visible("update.password"))
+	<br/><br/>$r.translate("step1.passwordEmails")
+#end
 
 #if($r.visible("update.user"))
-		<br/><br/>$r.render("update.user")
+	<br/><br/>$r.render("update.user")
 #end
 #if($r.visible("update.password"))
 	#if(!$r.visible("update.user"))

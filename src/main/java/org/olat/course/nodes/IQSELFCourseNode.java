@@ -191,6 +191,11 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 	public boolean needsReferenceToARepositoryEntry() {
 		return true;
 	}
+	
+	@Override
+	public boolean hasAttemptsConfigured() {
+		return false;
+	}
 
 	/**
 	 * @see org.olat.course.nodes.CourseNode#informOnDelete(org.olat.core.gui.UserRequest,
