@@ -314,7 +314,6 @@ public class QTI21ServiceImpl implements QTI21Service {
 		Document stateDocument = TestSessionStateXmlMarshaller.marshal(testSessionState);
 		File sessionFile = getTestSessionStateFile(candidateEvent);
 		storeStateDocument(stateDocument, sessionFile);
-		System.out.println("Store state: " + sessionFile);
 	}
 
     private File getTestSessionStateFile(CandidateEvent candidateEvent) {

@@ -96,7 +96,7 @@ NB: This is used both while being presented, and during review.
           <script src="{$webappContextPath}/rendering/javascript/UpConversionAjaxController.js?v={$qtiWorksVersion}"/>
           <script src="{$webappContextPath}/rendering/javascript/AsciiMathInputController.js?v={$qtiWorksVersion}"/>
           <script>
-            UpConversionAjaxController.setUpConversionServiceUrl('<xsl:value-of select="$webappContextPath"/>/candidate/verifyAsciiMath');
+            UpConversionAjaxController.setUpConversionServiceUrl('<xsl:value-of select="$webappContextPath"/>restapi/math/verifyAsciiMath');
             UpConversionAjaxController.setDelay(300);
           </script>
         </xsl:if>

@@ -34,7 +34,9 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.WebappHelper;
 import org.olat.ims.qti21.UserTestSession;
 import org.olat.ims.qti21.model.CandidateTestEventType;
 import org.olat.ims.qti21.model.jpa.CandidateEvent;
@@ -72,6 +74,16 @@ public class AssessmentTestComponentRenderer extends DefaultComponentRenderer {
 		AssessmentTestComponent cmp = (AssessmentTestComponent)source;
 		TestSessionController testSessionController = cmp.getTestSessionController();
 		AssessmentTestFormItem item = cmp.getQtiItem();
+		
+		/*
+		String restapi = "/olat/restapi/math/verifyAsciiMath";
+		sb.append("<script>/n")
+		  //.append("jQuery(function() {\n")
+		  .append(" UpConversionAjaxController.setUpConversionServiceUrl('").append(restapi).append("');\n")
+          .append(" UpConversionAjaxController.setDelay(300);\n")
+		  //.append("});")
+		  .append("</script>/n");
+		*/
 		
 		if(testSessionController.getTestSessionState().isEnded()) {
 			sb.append("<h1>The End <small>say the renderer</small></h1>");

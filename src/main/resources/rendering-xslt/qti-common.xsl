@@ -22,6 +22,7 @@ rendering.
   <xsl:param name="webappContextPath" as="xs:string" required="yes"/>
   <xsl:param name="staticContextPath" as="xs:string" required="yes"/>
   <xsl:param name="fullWebappContextPath" as="xs:string" required="yes"/>
+  <xsl:param name="olatWebappContextPath" as="xs:string" required="yes"/>
 
   <!-- QTIWorks version number -->
   <xsl:param name="qtiWorksVersion" as="xs:string" required="yes"/>

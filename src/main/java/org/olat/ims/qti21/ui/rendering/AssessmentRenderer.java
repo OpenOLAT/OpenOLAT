@@ -470,6 +470,7 @@ public class AssessmentRenderer {
         xsltParameters.put("qtiWorksVersion", "1.0-SNAPSH0T-OO");
         xsltParameters.put("webappContextPath", "");
         xsltParameters.put("fullWebappContextPath", Settings.createServerURI());
+        xsltParameters.put("olatWebappContextPath", Settings.getServerContextPathURI());
         StringOutput target = new StringOutput();
         StaticMediaDispatcher.renderStaticURI(target, "", true);
         xsltParameters.put("staticContextPath", target.toString());

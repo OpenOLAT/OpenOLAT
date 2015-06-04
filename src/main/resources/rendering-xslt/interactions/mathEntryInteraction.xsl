@@ -38,6 +38,9 @@
         </div>
       </div>
       <script type="text/javascript">
+      	UpConversionAjaxController.setUpConversionServiceUrl('<xsl:value-of select="$olatWebappContextPath"/>/restapi/math/verifyAsciiMath');
+        UpConversionAjaxController.setDelay(300);
+            
         QtiWorksRendering.registerReadyCallback(function() {
           var inputControlId = 'qtiworks_id_mathEntryInput_<xsl:value-of select="@responseIdentifier"/>';
           var messageContainerId = 'qtiworks_id_mathEntryMessages_<xsl:value-of select="@responseIdentifier"/>';
