@@ -249,6 +249,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(!security.isEntryAdmin() && !isGuestOnly) {
 			List<String> rights = cgm.getRights(getIdentity());
 			courseRightsCache.put(CourseRights.RIGHT_GROUPMANAGEMENT, new Boolean(rights.contains(CourseRights.RIGHT_GROUPMANAGEMENT)));
+			courseRightsCache.put(CourseRights.RIGHT_MEMBERMANAGEMENT, new Boolean(rights.contains(CourseRights.RIGHT_MEMBERMANAGEMENT)));
 			courseRightsCache.put(CourseRights.RIGHT_COURSEEDITOR, new Boolean(rights.contains(CourseRights.RIGHT_COURSEEDITOR)));
 			courseRightsCache.put(CourseRights.RIGHT_ARCHIVING, new Boolean(rights.contains(CourseRights.RIGHT_ARCHIVING)));
 			courseRightsCache.put(CourseRights.RIGHT_ASSESSMENT, new Boolean(rights.contains(CourseRights.RIGHT_ASSESSMENT)));
@@ -361,7 +362,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private void initTools(Dropdown tools, ICourse course, final UserCourseEnvironmentImpl uce) {
 		// 1) administrative tools
 		if (reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || reSecurity.isGroupCoach()
-				|| hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)
+				|| hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || hasCourseRight(CourseRights.RIGHT_MEMBERMANAGEMENT)
 				|| hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || hasCourseRight(CourseRights.RIGHT_ARCHIVING)
 				|| hasCourseRight(CourseRights.RIGHT_STATISTICS) || hasCourseRight(CourseRights.RIGHT_DB)
 				|| hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
@@ -384,7 +385,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				tools.addComponent(new Spacer(""));
 			}
 			
-			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT)) {
+			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || hasCourseRight(CourseRights.RIGHT_MEMBERMANAGEMENT)) {
 				membersLink = LinkFactory.createToolLink("unifiedusermngt", translate("command.opensimplegroupmngt"), this, "o_icon_membersmanagement");
 				membersLink.setElementCssClass("o_sel_course_members");
 				tools.addComponent(membersLink);
@@ -398,6 +399,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				archiverLink = LinkFactory.createToolLink("archiver", translate("command.openarchiver"), this, "o_icon_archive_tool");
 				tools.addComponent(archiverLink);
 			}
+			
 			tools.addComponent(new Spacer(""));
 			
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_STATISTICS)) {
@@ -976,12 +978,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	@Override
 	protected Activateable2 doMembers(UserRequest ureq) {
 		if(delayedClose == Delayed.members || requestForClose(ureq)) {
-			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT)) {
+			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || hasCourseRight(CourseRights.RIGHT_MEMBERMANAGEMENT)) {
 				removeCustomCSS(ureq);
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance("MembersMgmt", 0l);
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-				MembersManagementMainController ctrl = new MembersManagementMainController(ureq, addToHistory(ureq, bwControl), toolbarPanel, getRepositoryEntry());
+				MembersManagementMainController ctrl = new MembersManagementMainController(ureq, addToHistory(ureq, bwControl), toolbarPanel,
+						getRepositoryEntry(), reSecurity.isEntryAdmin(), hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT),
+						hasCourseRight(CourseRights.RIGHT_MEMBERMANAGEMENT));
 				listenTo(ctrl);
 				membersCtrl = pushController(ureq, translate("command.opensimplegroupmngt"), ctrl);
 				setActiveTool(membersLink);

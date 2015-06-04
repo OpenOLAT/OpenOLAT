@@ -82,15 +82,21 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 	private boolean membersDirty;
 	private RepositoryEntry repoEntry;
 	
+	private final boolean entryAdmin, groupManagementRight, memberManagementRight;
+	
 	@Autowired
 	private ACService acService;
 	@Autowired
 	private AccessControlModule acModule;
 
-	public MembersManagementMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel, RepositoryEntry re) {
+	public MembersManagementMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
+			RepositoryEntry re, boolean entryAdmin, boolean groupManagementRight, boolean memberManagementRight) {
 		super(ureq, wControl);
 		this.repoEntry = re;
 		this.toolbarPanel = toolbarPanel;
+		this.entryAdmin = entryAdmin;
+		this.groupManagementRight = groupManagementRight;
+		this.memberManagementRight = memberManagementRight;
 
 		//logging
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
@@ -109,7 +115,11 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 		listenTo(columnLayoutCtr);
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
 		
-		selectMenuItem(ureq, CMD_MEMBERS);
+		if(entryAdmin || memberManagementRight) {
+			selectMenuItem(ureq, CMD_MEMBERS);
+		} else if(groupManagementRight) {
+			selectMenuItem(ureq, CMD_GROUPS);
+		}
 	}
 	
 	private GenericTreeModel buildTreeModel() {
@@ -119,31 +129,37 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 		root.setAltText(translate("menu.members.alt"));
 		gtm.setRootNode(root);
 		
-		GenericTreeNode node = new GenericTreeNode(translate("menu.members"), CMD_MEMBERS);
-		node.setAltText(translate("menu.members.alt"));
-		node.setCssClass("o_sel_membersmgt_members");
-		root.addChild(node);
-		
-		node = new GenericTreeNode(translate("menu.groups"), CMD_GROUPS);
-		node.setAltText(translate("menu.groups.alt"));
-		node.setCssClass("o_sel_membersmgt_groups");
-		root.addChild(node);
+		if(entryAdmin || memberManagementRight) {
+			GenericTreeNode node = new GenericTreeNode(translate("menu.members"), CMD_MEMBERS);
+			node.setAltText(translate("menu.members.alt"));
+			node.setCssClass("o_sel_membersmgt_members");
+			root.addChild(node);
+		}
 
-		if(acModule.isEnabled()) {
+		if(entryAdmin || memberManagementRight || groupManagementRight) {
+			GenericTreeNode node = new GenericTreeNode(translate("menu.groups"), CMD_GROUPS);
+			node.setAltText(translate("menu.groups.alt"));
+			node.setCssClass("o_sel_membersmgt_groups");
+			root.addChild(node);
+		}
+
+		if(acModule.isEnabled() && (entryAdmin || memberManagementRight)) {
 			//check if the course is managed and/or has offers
 			if(!RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.bookings)
 					|| acService.isResourceAccessControled(repoEntry.getOlatResource(), null)) {
-				node = new GenericTreeNode(translate("menu.orders"), CMD_BOOKING);
+				GenericTreeNode node = new GenericTreeNode(translate("menu.orders"), CMD_BOOKING);
 				node.setAltText(translate("menu.orders.alt"));
 				node.setCssClass("o_sel_membersmgt_orders");
 				root.addChild(node);
 			}
 		}
 
-		node = new GenericTreeNode(translate("menu.rights"), CMD_RIGHTS);
-		node.setAltText(translate("menu.rights.alt"));
-		node.setCssClass("o_sel_membersmgt_rights");
-		root.addChild(node);
+		if(entryAdmin) {
+			GenericTreeNode node = new GenericTreeNode(translate("menu.rights"), CMD_RIGHTS);
+			node.setAltText(translate("menu.rights.alt"));
+			node.setCssClass("o_sel_membersmgt_rights");
+			root.addChild(node);
+		}
 		return gtm;
 	}
 	
@@ -194,36 +210,44 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 		
 		Controller selectedCtrl = null;
 		if(CMD_MEMBERS.equals(cmd)) {
-			if(membersOverviewCtrl == null) {
-				membersOverviewCtrl = new MembersOverviewController(ureq, bwControl, toolbarPanel, repoEntry);
-				listenTo(membersOverviewCtrl);
-			} else if(membersDirty) {
-				membersOverviewCtrl.reloadMembers();
+			if(entryAdmin || memberManagementRight) {
+				if(membersOverviewCtrl == null) {
+					membersOverviewCtrl = new MembersOverviewController(ureq, bwControl, toolbarPanel, repoEntry);
+					listenTo(membersOverviewCtrl);
+				} else if(membersDirty) {
+					membersOverviewCtrl.reloadMembers();
+				}
+				mainVC.put("content", membersOverviewCtrl.getInitialComponent());
+				selectedCtrl = membersOverviewCtrl;
 			}
-			mainVC.put("content", membersOverviewCtrl.getInitialComponent());
-			selectedCtrl = membersOverviewCtrl;
 		} else if(CMD_GROUPS.equals(cmd)) {
-			if(groupsCtrl == null) {
-				groupsCtrl = new CourseBusinessGroupListController(ureq, bwControl, repoEntry);
-				listenTo(groupsCtrl);
+			if(entryAdmin || memberManagementRight || groupManagementRight) {
+				if(groupsCtrl == null) {
+					groupsCtrl = new CourseBusinessGroupListController(ureq, bwControl, repoEntry);
+					listenTo(groupsCtrl);
+				}
+				groupsCtrl.reloadModel();
+				mainVC.put("content", groupsCtrl.getInitialComponent());
+				selectedCtrl = groupsCtrl;
 			}
-			groupsCtrl.reloadModel();
-			mainVC.put("content", groupsCtrl.getInitialComponent());
-			selectedCtrl = groupsCtrl;
 		} else if(CMD_BOOKING.equals(cmd)) {
-			if(ordersController == null) {
-				ordersController = new OrdersAdminController(ureq, bwControl, repoEntry.getOlatResource());
-				listenTo(ordersController);
+			if(acModule.isEnabled() && (entryAdmin || memberManagementRight)) {
+				if(ordersController == null) {
+					ordersController = new OrdersAdminController(ureq, bwControl, repoEntry.getOlatResource());
+					listenTo(ordersController);
+				}
+				mainVC.put("content", ordersController.getInitialComponent());
+				selectedCtrl = ordersController;
 			}
-			mainVC.put("content", ordersController.getInitialComponent());
-			selectedCtrl = ordersController;
 		} else if(CMD_RIGHTS.equals(cmd)) {
-			if(rightsController == null) {
-				rightsController = new GroupsAndRightsController(ureq, bwControl, repoEntry);
-				listenTo(rightsController);
+			if(entryAdmin) {
+				if(rightsController == null) {
+					rightsController = new GroupsAndRightsController(ureq, bwControl, repoEntry);
+					listenTo(rightsController);
+				}
+				mainVC.put("content", rightsController.getInitialComponent());
+				selectedCtrl = rightsController;
 			}
-			mainVC.put("content", rightsController.getInitialComponent());
-			selectedCtrl = rightsController;
 		}
 		
 		TreeNode selTreeNode = TreeHelper.findNodeByUserObject(cmd, menuTree.getTreeModel().getRootNode());
