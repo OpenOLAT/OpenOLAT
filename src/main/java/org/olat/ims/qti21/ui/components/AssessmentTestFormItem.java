@@ -30,22 +30,17 @@ import static org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event.reviewTest
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event.selectItem;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event.testPartNavigation;
 
-import java.net.URI;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
-import org.olat.ims.qti21.ui.CandidateSessionContext;
+import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent;
 
-import uk.ac.ed.ph.jqtiplus.exception.QtiParseException;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
-import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 
 /**
  * 
@@ -53,7 +48,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentTestFormItem extends FormItemImpl {
+public class AssessmentTestFormItem extends AbstractAssessmentFormItem {
 	
 	private final AssessmentTestComponent component;
 	
@@ -63,7 +58,12 @@ public class AssessmentTestFormItem extends FormItemImpl {
 		super(name);
 		component = new AssessmentTestComponent(name + "_cmp", this);
 	}
-	
+
+	@Override
+	public AssessmentTestComponent getComponent() {
+		return component;
+	}
+
 	public String getMapperUri() {
 		return mapperUri;
 	}
@@ -72,13 +72,7 @@ public class AssessmentTestFormItem extends FormItemImpl {
 		this.mapperUri = mapperUri;
 	}
 
-	public URI getAssessmentObjectUri() {
-		return component.getAssessmentObjectUri();
-	}
 
-	public void setAssessmentObjectUri(URI assessmentObjectUri) {
-		component.setAssessmentObjectUri(assessmentObjectUri);
-	}
 
 	public TestSessionController getTestSessionController() {
 		return component.getTestSessionController();
@@ -88,21 +82,9 @@ public class AssessmentTestFormItem extends FormItemImpl {
 		component.setTestSessionController(testSessionController);
 	}
 	
-	public CandidateSessionContext getCandidateSessionContext() {
-		return component.getCandidateSessionContext();
-	}
 
-	public void setCandidateSessionContext(CandidateSessionContext candidateSessionContext) {
-		component.setCandidateSessionContext(candidateSessionContext);
-	}
 
-	public ResourceLocator getResourceLocator() {
-		return component.getResourceLocator();
-	}
 
-	public void setResourceLocator(ResourceLocator resourceLocator) {
-		component.setResourceLocator(resourceLocator);
-	}
 
 	@Override
 	protected Component getFormItemComponent() {
@@ -136,9 +118,14 @@ public class AssessmentTestFormItem extends FormItemImpl {
 			QTIWorksAssessmentTestEvent event = new QTIWorksAssessmentTestEvent(testPartNavigation, this);
 			getRootForm().fireFormEvent(ureq, event);
 		} else if(uri.startsWith(response.getPath())) {
-			final Map<Identifier, StringResponseData> stringResponseMap = extractStringResponseData();
-			//TODO Extract and import file responses (if appropriate)
-			QTIWorksAssessmentTestEvent event = new QTIWorksAssessmentTestEvent(response, stringResponseMap, this);
+			Map<Identifier, StringResponseData> stringResponseMap = extractStringResponseData();
+			Map<Identifier, MultipartFileInfos> fileResponseMap;
+			if(getRootForm().isMultipartEnabled()) {
+				fileResponseMap = extractFileResponseData();
+			} else {
+				fileResponseMap = Collections.emptyMap();
+			}
+			QTIWorksAssessmentTestEvent event = new QTIWorksAssessmentTestEvent(response, stringResponseMap, fileResponseMap, this);
 			getRootForm().fireFormEvent(ureq, event);
 		} else if(uri.startsWith(endTestPart.getPath())) {
 			QTIWorksAssessmentTestEvent event = new QTIWorksAssessmentTestEvent(endTestPart, this);
@@ -155,31 +142,6 @@ public class AssessmentTestFormItem extends FormItemImpl {
 			
 		}
 	}
-	
-	private Map<Identifier, StringResponseData> extractStringResponseData() {
-        final Map<Identifier, StringResponseData> responseMap = new HashMap<Identifier, StringResponseData>();
-
-        final Set<String> parameterNames = getRootForm().getRequestParameterSet();;
-        for (final String name : parameterNames) {
-            if (name.startsWith("qtiworks_presented_")) {
-                final String responseIdentifierString = name.substring("qtiworks_presented_".length());
-                final Identifier responseIdentifier;
-                try {
-                    responseIdentifier = Identifier.parseString(responseIdentifierString);
-                }
-                catch (final QtiParseException e) {
-                    //throw new BadResponseWebPayloadException("Bad response identifier encoded in parameter  " + name, e);
-                	throw new RuntimeException("Bad response identifier encoded in parameter  " + name, e);
-                }
-                
-                final String[] responseValues = getRootForm().getRequestParameterValues("qtiworks_response_" + responseIdentifierString);
-                final StringResponseData stringResponseData = new StringResponseData(responseValues);
-                responseMap.put(responseIdentifier, stringResponseData);
-            }
-        }
-        return responseMap;
-    }
-	
 
 	@Override
 	public void reset() {

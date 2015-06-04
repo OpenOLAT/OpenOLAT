@@ -606,6 +606,13 @@ public class Form extends LogDelegator {
 	public File getRequestMultipartFile(String key) {
 		return requestMultipartFiles.get(key);
 	}
+	
+	public MultipartFileInfos getRequestMultipartFileInfos(String key) {
+		File file = requestMultipartFiles.get(key);
+		String mimeType = requestMultipartFileMimeTypes.get(key);
+		String filename = requestMultipartFileNames.get(key);
+		return new MultipartFileInfos(file, filename, mimeType);
+	}
 
 	/**
 	 * Return the multipart file name for this key: 

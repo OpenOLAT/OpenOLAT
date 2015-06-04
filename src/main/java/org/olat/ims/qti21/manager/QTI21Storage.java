@@ -39,7 +39,11 @@ public class QTI21Storage {
 	
 	public File getDirectory(String relativeDir) {
 		OlatRootFolderImpl rootContainer = getQtiSerializationPath();
-		return new File(rootContainer.getBasefile(), relativeDir);
+		File directory = new File(rootContainer.getBasefile(), relativeDir);
+		if(!directory.exists()) {
+			directory.mkdirs();
+		}
+		return directory;
 	}
 
 	public String getRelativeDir() {

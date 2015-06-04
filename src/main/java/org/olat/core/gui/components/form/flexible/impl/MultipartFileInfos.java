@@ -17,41 +17,44 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui.editor;
+package org.olat.core.gui.components.form.flexible.impl;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
+import java.io.File;
 
 /**
  * 
- * Initial date: 26.05.2015<br>
+ * Initial date: 03.06.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SingleChoiceEditorController extends FormBasicController {
+public class MultipartFileInfos {
 	
-	public SingleChoiceEditorController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
-		
-		initForm(ureq);
-	}
-
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("editor.sc.title");
-		//
+	private final File file;
+	private final String fileName;
+	private final String contentType;
+	
+	public MultipartFileInfos(File file, String fileName, String contentType) {
+		this.file = file;
+		this.fileName = fileName;
+		this.contentType = contentType;
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
+	public boolean isEmpty() {
+		return file == null || !file.exists() || file.length() <= 0;
 	}
 
-	@Override
-	protected void formOK(UserRequest ureq) {
-		//
+	public File getFile() {
+		return file;
 	}
+
+	public String getFileName() {
+		return fileName;
+	}
+
+	public String getContentType() {
+		return contentType;
+	}
+	
+	
+
 }

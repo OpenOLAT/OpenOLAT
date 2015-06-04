@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
@@ -70,23 +71,28 @@ public class QTIWorksAssessmentItemEvent extends FormEvent {
 	private final Event event;
 	private final String subCommand;
 	private final Map<Identifier, StringResponseData> stringResponseMap;
+	private final Map<Identifier, MultipartFileInfos> fileResponseMap;
 	
 	public QTIWorksAssessmentItemEvent(Event event,  FormItem source) {
-		this(event, null, null, source);
+		this(event, null, null, null, source);
 	}
 
 	public QTIWorksAssessmentItemEvent(Event event, String subCommand, FormItem source) {
-		this(event, subCommand, null, source);
+		this(event, subCommand, null, null, source);
 	}
 	
-	public QTIWorksAssessmentItemEvent(Event event, Map<Identifier, StringResponseData> stringResponseMap, FormItem source) {
-		this(event, null, stringResponseMap, source);
+	public QTIWorksAssessmentItemEvent(Event event, Map<Identifier, StringResponseData> stringResponseMap,
+			Map<Identifier, MultipartFileInfos> fileResponseMap, FormItem source) {
+		this(event, null, stringResponseMap, fileResponseMap, source);
 	}
 	
-	private QTIWorksAssessmentItemEvent(Event event, String subCommand, Map<Identifier, StringResponseData> stringResponseMap, FormItem source) {
+	private QTIWorksAssessmentItemEvent(Event event, String subCommand,
+			Map<Identifier, StringResponseData> stringResponseMap, Map<Identifier, MultipartFileInfos> fileResponseMap,
+			FormItem source) {
 		super(event.name(), source);
 		this.subCommand = subCommand;
 		this.event = event;
+		this.fileResponseMap = fileResponseMap;
 		this.stringResponseMap = stringResponseMap;
 	}
 
@@ -102,5 +108,7 @@ public class QTIWorksAssessmentItemEvent extends FormEvent {
 		return stringResponseMap;
 	}
 
-
+	public Map<Identifier, MultipartFileInfos> getFileResponseMap() {
+		return fileResponseMap;
+	}
 }

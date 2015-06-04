@@ -21,11 +21,10 @@
       </xsl:if>
       <xsl:variable name="appletContainerId" select="concat('qtiworks_id_appletContainer_', @responseIdentifier)" as="xs:string"/>
       <xsl:variable name="responseValue" select="qw:get-response-value(/, @responseIdentifier)" as="element(qw:responseVariable)?"/>
-          
+         
       <div id="{$appletContainerId}" class="appletContainer">
         <div id="{$appletContainerId}_items" style="padding:15px;">
         	<xsl:variable name="choices" as="element(qti:simpleAssociableChoice)*" select="qw:filter-visible(qti:simpleAssociableChoice)"/>
-  
         	<xsl:for-each select="$choices">
             	<div id="{@identifier}" class="o_associate_item" style="width: 100px; float:left; margin-right:15px; border:2px solid grey;">
               		<xsl:apply-templates/>

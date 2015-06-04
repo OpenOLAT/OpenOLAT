@@ -49,7 +49,6 @@ import org.olat.ims.qti21.ui.rendering.TerminatedRenderingRequest;
 
 import uk.ac.ed.ph.jqtiplus.running.ItemSessionController;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
-import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 
 /**
  * 
@@ -231,15 +230,6 @@ public class AssessmentItemComponentRenderer extends DefaultComponentRenderer {
              */
             //handleExplosion(e, candidateSession);
             assessmentRenderer.renderExploded(createTerminatedRenderingRequest(renderingOptions, component), result);
-        }
-    }
-	
-    private TestPlanNodeKey extractTargetItemKey(final CandidateEvent candidateEvent) {
-        final String keyString = candidateEvent.getTestItemKey();
-        try {
-            return TestPlanNodeKey.fromString(keyString);
-        } catch (final Exception e) {
-            throw new OLATRuntimeException("Unexpected Exception parsing TestPlanNodeKey " + keyString, e);
         }
     }
 	

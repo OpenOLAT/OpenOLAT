@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,6 +31,7 @@ import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
@@ -236,9 +238,6 @@ public class QTI21ServiceImpl implements QTI21Service {
     
     private File getAssessmentResultFile(final UserTestSession candidateSession) {
     	File myStore = storage.getDirectory(candidateSession.getStorage());
-        if(!myStore.exists()) {
-        	myStore.mkdirs();
-        }
         return new File(myStore, "assessmentResult.xml");
     }
 
@@ -295,5 +294,23 @@ public class QTI21ServiceImpl implements QTI21Service {
 	@Override
 	public void recordItemAssessmentResult(UserTestSession candidateSession, AssessmentResult assessmentResult) {
 		//do nothing for the mmoment
+	}
+
+	@Override
+	public String importFileSubmission(UserTestSession candidateSession, MultipartFileInfos multipartFile) {
+		File myStore = storage.getDirectory(candidateSession.getStorage());
+        File submissionDir = new File(myStore, "submissions");
+        if(!submissionDir.exists()) {
+        	submissionDir.mkdir();
+        }
+        
+        try {
+			File submittedFile = new File(submissionDir, multipartFile.getFileName());
+			Files.move(multipartFile.getFile().toPath(), submittedFile.toPath());
+		} catch (IOException e) {
+			log.error("", e);
+		}
+
+		return myStore.getAbsolutePath();
 	}
 }

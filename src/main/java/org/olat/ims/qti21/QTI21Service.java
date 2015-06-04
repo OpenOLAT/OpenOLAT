@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.id.Identity;
 import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.CandidateTestEventType;
@@ -92,5 +93,7 @@ public interface QTI21Service {
 	
 	public CandidateEvent recordCandidateItemEvent(UserTestSession candidateSession,
             CandidateItemEventType itemEventType, ItemSessionState itemSessionState);
+	
+	public String importFileSubmission(UserTestSession candidateSession, MultipartFileInfos multipartFile);
 
 }

@@ -19,17 +19,9 @@
  */
 package org.olat.ims.qti21.ui.components;
 
-import java.net.URI;
-
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.control.JSAndCSSAdder;
-import org.olat.core.gui.render.ValidationResult;
-import org.olat.ims.qti21.ui.CandidateSessionContext;
 
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
-import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 
 /**
  * 
@@ -37,14 +29,11 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentTestComponent extends AbstractComponent {
+public class AssessmentTestComponent extends AbstractAssessmentComponent {
 	
 	private static final AssessmentTestComponentRenderer RENDERER = new AssessmentTestComponentRenderer();
 	
-	private URI assessmentObjectUri;
-	private ResourceLocator resourceLocator;
 	private TestSessionController testSessionController;
-	private CandidateSessionContext candidateSessionContext;
 	
 	private final AssessmentTestFormItem qtiItem;
 	
@@ -57,51 +46,12 @@ public class AssessmentTestComponent extends AbstractComponent {
 		return qtiItem;
 	}
 
-	public ResourceLocator getResourceLocator() {
-		return resourceLocator;
-	}
-
-	public void setResourceLocator(ResourceLocator resourceLocator) {
-		this.resourceLocator = resourceLocator;
-	}
-
 	public TestSessionController getTestSessionController() {
 		return testSessionController;
 	}
 
 	public void setTestSessionController(TestSessionController testSessionController) {
 		this.testSessionController = testSessionController;
-	}
-	
-	public CandidateSessionContext getCandidateSessionContext() {
-		return candidateSessionContext;
-	}
-
-	public void setCandidateSessionContext(CandidateSessionContext candidateSessionContext) {
-		this.candidateSessionContext = candidateSessionContext;
-	}
-
-	public URI getAssessmentObjectUri() {
-		return assessmentObjectUri;
-	}
-
-	public void setAssessmentObjectUri(URI assessmentObjectUri) {
-		this.assessmentObjectUri = assessmentObjectUri;
-	}
-
-	@Override
-	protected void doDispatchRequest(UserRequest ureq) {
-		//
-	}
-
-	@Override
-	public void validate(UserRequest ureq, ValidationResult vr) {
-		super.validate(ureq, vr);
-
-		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
-		jsa.addRequiredStaticJsFile("assessment/rendering/javascript/QtiWorksRendering.js");
-		jsa.addRequiredStaticJsFile("js/jquery/maphilight/jquery.maphilight.js");
-		jsa.addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.11.4.custom.dnd.min.js");
 	}
 
 	@Override

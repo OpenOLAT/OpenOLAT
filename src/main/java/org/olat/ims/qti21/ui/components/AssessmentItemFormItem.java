@@ -19,25 +19,24 @@
  */
 package org.olat.ims.qti21.ui.components;
 
+import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.close;
+import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.exit;
+import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.resethard;
+import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.resetsoft;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.response;
-import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.*;
+import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.solution;
 
-import java.net.URI;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
-import org.olat.ims.qti21.ui.CandidateSessionContext;
+import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent;
 
-import uk.ac.ed.ph.jqtiplus.exception.QtiParseException;
 import uk.ac.ed.ph.jqtiplus.running.ItemSessionController;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
-import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 
 /**
  * 
@@ -45,7 +44,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentItemFormItem extends FormItemImpl {
+public class AssessmentItemFormItem extends AbstractAssessmentFormItem {
 	
 	private final AssessmentItemComponent component;
 	
@@ -55,7 +54,12 @@ public class AssessmentItemFormItem extends FormItemImpl {
 		super(name);
 		component = new AssessmentItemComponent(name + "_cmp", this);
 	}
-	
+
+	@Override
+	public AssessmentItemComponent getComponent() {
+		return component;
+	}
+
 	public String getMapperUri() {
 		return mapperUri;
 	}
@@ -64,36 +68,12 @@ public class AssessmentItemFormItem extends FormItemImpl {
 		this.mapperUri = mapperUri;
 	}
 
-	public URI getAssessmentObjectUri() {
-		return component.getAssessmentObjectUri();
-	}
-
-	public void setAssessmentObjectUri(URI assessmentObjectUri) {
-		component.setAssessmentObjectUri(assessmentObjectUri);
-	}
-
 	public ItemSessionController getItemSessionController() {
 		return component.getItemSessionController();
 	}
 
 	public void setItemSessionController(ItemSessionController itemSessionController) {
 		component.setItemSessionController(itemSessionController);
-	}
-	
-	public CandidateSessionContext getCandidateSessionContext() {
-		return component.getCandidateSessionContext();
-	}
-
-	public void setCandidateSessionContext(CandidateSessionContext candidateSessionContext) {
-		component.setCandidateSessionContext(candidateSessionContext);
-	}
-
-	public ResourceLocator getResourceLocator() {
-		return component.getResourceLocator();
-	}
-
-	public void setResourceLocator(ResourceLocator resourceLocator) {
-		component.setResourceLocator(resourceLocator);
 	}
 
 	@Override
@@ -113,9 +93,14 @@ public class AssessmentItemFormItem extends FormItemImpl {
 			QTIWorksAssessmentItemEvent event = new QTIWorksAssessmentItemEvent(solution, this);
 			getRootForm().fireFormEvent(ureq, event);
 		} else if(uri.startsWith(response.getPath())) {
-			final Map<Identifier, StringResponseData> stringResponseMap = extractStringResponseData();
-			//TODO Extract and import file responses (if appropriate)
-			QTIWorksAssessmentItemEvent event = new QTIWorksAssessmentItemEvent(response, stringResponseMap, this);
+			Map<Identifier, StringResponseData> stringResponseMap = extractStringResponseData();
+			Map<Identifier, MultipartFileInfos> fileResponseMap;
+			if(getRootForm().isMultipartEnabled()) {
+				fileResponseMap = extractFileResponseData();
+			} else {
+				fileResponseMap = Collections.emptyMap();
+			}
+			QTIWorksAssessmentItemEvent event = new QTIWorksAssessmentItemEvent(response, stringResponseMap, fileResponseMap, this);
 			getRootForm().fireFormEvent(ureq, event);
 		} else if(uri.startsWith(resethard.getPath())) {
 			QTIWorksAssessmentItemEvent event = new QTIWorksAssessmentItemEvent(resethard, this);
@@ -131,31 +116,6 @@ public class AssessmentItemFormItem extends FormItemImpl {
 			getRootForm().fireFormEvent(ureq, event);
 		}
 	}
-	
-	private Map<Identifier, StringResponseData> extractStringResponseData() {
-        final Map<Identifier, StringResponseData> responseMap = new HashMap<Identifier, StringResponseData>();
-
-        final Set<String> parameterNames = getRootForm().getRequestParameterSet();;
-        for (final String name : parameterNames) {
-            if (name.startsWith("qtiworks_presented_")) {
-                final String responseIdentifierString = name.substring("qtiworks_presented_".length());
-                final Identifier responseIdentifier;
-                try {
-                    responseIdentifier = Identifier.parseString(responseIdentifierString);
-                }
-                catch (final QtiParseException e) {
-                    //throw new BadResponseWebPayloadException("Bad response identifier encoded in parameter  " + name, e);
-                	throw new RuntimeException("Bad response identifier encoded in parameter  " + name, e);
-                }
-                
-                final String[] responseValues = getRootForm().getRequestParameterValues("qtiworks_response_" + responseIdentifierString);
-                final StringResponseData stringResponseData = new StringResponseData(responseValues);
-                responseMap.put(responseIdentifier, stringResponseData);
-            }
-        }
-        return responseMap;
-    }
-	
 
 	@Override
 	public void reset() {

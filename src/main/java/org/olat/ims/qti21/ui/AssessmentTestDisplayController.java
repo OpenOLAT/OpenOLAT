@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -74,6 +75,7 @@ import uk.ac.ed.ph.jqtiplus.state.TestPlanNode;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 import uk.ac.ed.ph.jqtiplus.state.TestProcessingMap;
 import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
+import uk.ac.ed.ph.jqtiplus.types.FileResponseData;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.types.ResponseData;
 import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
@@ -211,7 +213,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				processTestPartNavigation(ureq);
 				break;
 			case response:
-				handleResponse(ureq, qe.getStringResponseMap());
+				handleResponse(ureq, qe.getStringResponseMap(), qe.getFileResponseMap());
 				break;
 			case endTestPart:
 				processEndTestPart(ureq);
@@ -379,7 +381,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
     //        final Map<Identifier, MultipartFile> fileResponseMap,
     //        final String candidateComment)
             
-	private void handleResponse(UserRequest ureq, Map<Identifier, StringResponseData> stringResponseMap) {
+	private void handleResponse(UserRequest ureq,
+			Map<Identifier, StringResponseData> stringResponseMap,
+			Map<Identifier,MultipartFileInfos> fileResponseMap) {
 		String candidateComment = null;
 		
 		//Assert.notNull(candidateSessionContext, "candidateSessionContext");
@@ -399,6 +403,22 @@ public class AssessmentTestDisplayController extends BasicController implements 
                 final Identifier identifier = stringResponseEntry.getKey();
                 final StringResponseData stringResponseData = stringResponseEntry.getValue();
                 responseDataMap.put(identifier, stringResponseData);
+            }
+        }
+        
+       // final Map<Identifier, CandidateFileSubmission> fileSubmissionMap = new HashMap<Identifier, CandidateFileSubmission>();
+        if (fileResponseMap!=null) {
+            for (final Entry<Identifier, MultipartFileInfos> fileResponseEntry : fileResponseMap.entrySet()) {
+                final Identifier identifier = fileResponseEntry.getKey();
+                final MultipartFileInfos multipartFile = fileResponseEntry.getValue();
+                if (!multipartFile.isEmpty()) {
+                    //final CandidateFileSubmission fileSubmission = candidateUploadService.importFileSubmission(candidateSession, multipartFile);
+                	String storedFilePath = qtiService.importFileSubmission(candidateSession, multipartFile);
+                	File storedFile = new File(storedFilePath);
+                	final FileResponseData fileResponseData = new FileResponseData(storedFile, multipartFile.getContentType(), multipartFile.getFileName());
+                    responseDataMap.put(identifier, fileResponseData);
+                    //fileSubmissionMap.put(identifier, fileSubmission);
+                }
             }
         }
         
