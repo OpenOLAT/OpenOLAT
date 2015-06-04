@@ -1190,6 +1190,23 @@ create table o_mapper (
    primary key (id)
 );
 
+-- qti 2.1
+create table o_qti_assessment_session (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   q_exploded bit not null default 0,
+   q_author_mode bit not null default 0,
+   q_finish_time datetime,
+   q_termination_time datetime,
+   q_storage varchar(32),
+   fk_identity bigint not null,
+   fk_entry bigint not null,
+   fk_course bigint,
+   q_course_subident varchar(64),
+   primary key (id)
+);
+
 -- question item
 create table o_qp_pool (
    id bigint not null,
@@ -1735,6 +1752,7 @@ alter table o_as_mode_course ENGINE = InnoDB;
 alter table o_as_mode_course ENGINE = InnoDB;
 alter table o_as_mode_course_to_area ENGINE = InnoDB;
 alter table o_mapper ENGINE = InnoDB;
+alter table o_qti_assessment_session ENGINE = InnoDB;
 alter table o_qp_pool ENGINE = InnoDB;
 alter table o_qp_taxonomy_level ENGINE = InnoDB;
 alter table o_qp_item ENGINE = InnoDB;
@@ -2056,6 +2074,11 @@ alter table o_as_user_course_infos add unique (fk_identity, fk_resource_id);
 
 -- mapper
 create index o_mapper_uuid_idx on o_mapper (mapper_uuid);
+
+-- qti 2.1
+alter table o_qti_assessment_session add constraint qti_sess_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_qti_assessment_session add constraint qti_sess_to_course_entry_idx foreign key (fk_course) references o_repositoryentry (repositoryentry_id);
+alter table o_qti_assessment_session add constraint qti_sess_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 
 -- question pool
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);

@@ -25,6 +25,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -34,7 +35,6 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-import org.hibernate.annotations.GenericGenerator;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
@@ -49,10 +49,10 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="qtitestsession")
-@Table(name="o_qti_test_session")
+@Entity(name="qtiassessmentsession")
+@Table(name="o_qti_assessment_session")
 @NamedQueries({
-	@NamedQuery(name="loadTestSessionsByUserAndCourse", query="select session from qtitestsession session where session.courseEntry.key=:courseEntryKey and session.identity.key=:identityKey and session.courseSubIdent=:courseSubIdent")
+	@NamedQuery(name="loadTestSessionsByUserAndCourse", query="select session from qtiassessmentsession session where session.courseEntry.key=:courseEntryKey and session.identity.key=:identityKey and session.courseSubIdent=:courseSubIdent")
 	
 })
 public class UserTestSessionImpl implements UserTestSession, Persistable {
@@ -60,8 +60,7 @@ public class UserTestSessionImpl implements UserTestSession, Persistable {
 	private static final long serialVersionUID = -6069133323360142500L;
 
 	@Id
-	@GeneratedValue(generator = "system-uuid")
-	@GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
 

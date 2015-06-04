@@ -1,16 +1,16 @@
 create table o_qti_assessment_session (
-   id bigserial,
-   creationdate timestamp not null,
-   lastmodified timestamp not null,
-   q_exploded bool default false,
-   q_author_mode bool default false,
-   q_finish_time timestamp,
-   q_termination_time timestamp,
-   q_storage varchar(32),
-   fk_identity int8 not null,
-   fk_entry int8 not null,
-   fk_course int8,
-   q_course_subident varchar(64),
+   id NUMBER(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   lastmodified date not null,
+   q_exploded number default 0 not null,
+   q_author_mode number default 0 not null,
+   q_finish_time date,
+   q_termination_time date,
+   q_storage varchar2(32 char),
+   fk_identity number(20) not null,
+   fk_entry number(20) not null,
+   fk_course number(20),
+   q_course_subident varchar2(64 char),
    primary key (id)
 );
 

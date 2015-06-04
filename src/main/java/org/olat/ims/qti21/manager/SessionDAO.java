@@ -71,7 +71,7 @@ public class SessionDAO {
 			RepositoryEntryRef courseEntry, String courseSubIdent, IdentityRef identity) {
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select session from qtitestsession session ")
+		sb.append("select session from qtiassessmentsession session ")
 		  .append("where session.testEntry.key=:testEntryKey and session.identity.key=:identityKey");
 		if(courseEntry != null) {
 			sb.append(" and session.courseEntry.key=:courseEntryKey");
