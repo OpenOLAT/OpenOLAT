@@ -80,10 +80,17 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 			sb.append(" ").append(dropdown.getElementCssClass());
 		}
 		sb.append("' role='menu'>");
+		
+		boolean wantSpacer = false;
 		for(Component component:components) {
 			if(component instanceof Spacer) {
-				sb.append("<li class='divider'></li>");
-			} else {
+				wantSpacer = true;
+			} else if(component.isVisible()) {
+				if(wantSpacer) {
+					sb.append("<li class='divider'></li>");
+					wantSpacer = false;
+				}
+				
 				if(component.isEnabled()) {
 					sb.append("<li>");
 				} else {
