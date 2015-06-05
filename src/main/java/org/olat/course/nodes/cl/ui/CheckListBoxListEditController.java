@@ -34,10 +34,12 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -124,6 +126,14 @@ public class CheckListBoxListEditController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.release.i18nKey(), Cols.release.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.file.i18nKey(), Cols.file.ordinal()));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit", translate("edit"), "edit"));
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("up", Cols.up.ordinal(), "up",
+				new BooleanCellRenderer(
+						new StaticFlexiCellRenderer("", "up", "o_icon o_icon-lg o_icon_move_up", translate("up")),
+						null)));
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("down", Cols.down.ordinal(), "down",
+				new BooleanCellRenderer(
+						new StaticFlexiCellRenderer("", "down", "o_icon o_icon-lg o_icon_move_down", translate("down")),
+						null)));
 		
 		model = new CheckboxConfigDataModel(getTranslator(), columnsModel);
 		boxTable = uifactory.addTableElement(getWindowControl(), "checkbox-list", model, getTranslator(), tableCont);
@@ -176,6 +186,10 @@ public class CheckListBoxListEditController extends FormBasicController {
 				if("edit".equals(cmd)) {
 					CheckboxConfigRow row = model.getObject(se.getIndex());
 					doOpenEdit(ureq, row.getCheckbox(), false, translate("edit.checkbox"));
+				} else if("up".equals(cmd)) {
+					doUp(ureq, se.getIndex());	
+				} else if("down".equals(cmd)) {
+					doDown(ureq, se.getIndex());
 				}
 			}
 		}
@@ -205,6 +219,28 @@ public class CheckListBoxListEditController extends FormBasicController {
 			}
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void doUp(UserRequest ureq, int checkboxIndex) {
+		CheckboxList list = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
+		if(checkboxIndex > 0 && checkboxIndex < list.getList().size()) {
+			Checkbox box = list.getList().remove(checkboxIndex);
+			list.getList().add(checkboxIndex - 1, box);
+		}
+		
+		fireEvent(ureq, Event.DONE_EVENT);
+		updateModel();
+	}
+	
+	private void doDown(UserRequest ureq, int checkboxIndex) {
+		CheckboxList list = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
+		if(checkboxIndex >= 0 && checkboxIndex < list.getList().size() - 1) {
+			Checkbox box = list.getList().remove(checkboxIndex);
+			list.getList().add(checkboxIndex + 1, box);
+		}
+		
+		fireEvent(ureq, Event.DONE_EVENT);
+		updateModel();
 	}
 	
 	private void doDelete(UserRequest ureq, Checkbox checkbox ) {

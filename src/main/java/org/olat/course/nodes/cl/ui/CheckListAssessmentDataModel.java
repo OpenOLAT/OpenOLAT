@@ -229,11 +229,11 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 		private CellStyle headerCellStyle;
 		private CheckListAssessmentDataModel dataModel;
 
-		public MediaResource export(FlexiTableComponent ftC, CheckListAssessmentDataModel dataModel,
+		public MediaResource export(FlexiTableComponent ftC, CheckListAssessmentDataModel model,
 				List<FlexiColumnModel> columns, Translator translator) {
 			Workbook wb = new HSSFWorkbook();
 			headerCellStyle = XlsFlexiTableExporter.getHeaderCellStyle(wb);
-			this.dataModel = dataModel;
+			this.dataModel = model;
 			
 			Sheet exportSheet = wb.createSheet("Sheet 1");
 			createHeader(columns, translator, exportSheet);

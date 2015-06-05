@@ -121,7 +121,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 
 	private FormSubmit saveButton;
 	private FormCancel cancelButton;
-	private FormLink pdfExport, checkedPdfExport, editButton, boxAssessmentButton;
+	private FormLink pdfExportButton, checkedPdfExportButton, editButton, boxAssessmentButton;
 	private CheckListAssessmentDataModel model;
 	private FlexiTableElement table;
 	
@@ -259,10 +259,10 @@ public class CheckListAssessmentController extends FormBasicController implement
 		table.setCustomizeColumns(true);
 		table.setAndLoadPersistedPreferences(ureq, "checklist-assessment");
 		
-		pdfExport = uifactory.addFormLink("pdf.export", formLayout, Link.BUTTON);
-		pdfExport.setEnabled(numOfCheckbox > 0);
-		checkedPdfExport = uifactory.addFormLink("pdf.export.checked", formLayout, Link.BUTTON);
-		checkedPdfExport.setEnabled(numOfCheckbox > 0);
+		pdfExportButton = uifactory.addFormLink("pdf.export", formLayout, Link.BUTTON);
+		pdfExportButton.setEnabled(numOfCheckbox > 0);
+		checkedPdfExportButton = uifactory.addFormLink("pdf.export.checked", formLayout, Link.BUTTON);
+		checkedPdfExportButton.setEnabled(numOfCheckbox > 0);
 		
 		editButton = uifactory.addFormLink("edit", formLayout, Link.BUTTON);
 		editButton.setEnabled(numOfCheckbox > 0);
@@ -414,9 +414,9 @@ public class CheckListAssessmentController extends FormBasicController implement
 					doOpenIdentity(ureq, row);
 				}
 			}
-		} else if(pdfExport == source) {
+		} else if(pdfExportButton == source) {
 			doExportPDF(ureq);
-		} else if(checkedPdfExport == source) {
+		} else if(checkedPdfExportButton == source) {
 			doCheckedExportPDF(ureq);
 		} else if(editButton == source) {
 			saveButton.setVisible(true);

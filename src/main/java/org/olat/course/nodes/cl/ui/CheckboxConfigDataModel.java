@@ -57,6 +57,8 @@ public class CheckboxConfigDataModel extends DefaultFlexiTableDataModel<Checkbox
 				return translator.translate("release." + release.name());
 			}
 			case file: return box.getDownload();
+			case up: return row == 0 ? Boolean.FALSE : Boolean.TRUE;
+			case down: return row >= (getRowCount() - 1) ? Boolean.FALSE : Boolean.TRUE;
 		}
 		return box;
 	}
@@ -65,7 +67,9 @@ public class CheckboxConfigDataModel extends DefaultFlexiTableDataModel<Checkbox
 		title("checkbox.title"),
 		points("points"),
 		release("release"),
-		file("file");
+		file("file"),
+		up("up"),
+		down("down");
 		
 		private final String i18nKey;
 		
