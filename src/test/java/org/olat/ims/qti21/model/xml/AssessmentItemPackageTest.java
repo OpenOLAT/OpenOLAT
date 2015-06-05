@@ -329,7 +329,7 @@ public class AssessmentItemPackageTest {
 		ResourceLocator fileResourceLocator = new PathResourceLocator(outputFile.toPath());
         AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, fileResourceLocator);
         ItemValidationResult item = assessmentObjectXmlLoader.loadResolveAndValidateItem(outputFile.toURI());
-        System.out.println("Has errors: " + item.hasErrors());
+        System.out.println("Has errors: " + (item.getModelValidationErrors().size() > 0));
 	}
 	
 	private P getParagraph(QtiNode parent, String content) {

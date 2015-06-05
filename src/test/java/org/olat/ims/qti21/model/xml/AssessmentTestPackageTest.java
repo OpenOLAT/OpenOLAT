@@ -167,10 +167,10 @@ public class AssessmentTestPackageTest {
         AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, fileResourceLocator);
         TestValidationResult test = assessmentObjectXmlLoader.loadResolveAndValidateTest(outputFile.toURI());
 
-        System.out.println("Has errors: " + test.hasErrors());
-        for(Notification notification: test.getErrors()) {
+        System.out.println("Has errors: " + (test.getModelValidationErrors().size() > 0));
+        for(Notification notification: test.getModelValidationErrors()) {
         	System.out.println(notification.getQtiNode() + " : " + notification.getMessage());
         }
-        Assert.assertFalse(test.hasErrors());
+        Assert.assertTrue(test.getModelValidationErrors().isEmpty());
 	}
 }
