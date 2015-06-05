@@ -58,6 +58,7 @@ import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
@@ -290,6 +291,18 @@ public class VelocityRenderDecorator implements Closeable {
 	public StringOutput staticLink(String URI) {
 		StringOutput sb = new StringOutput(100);
 		Renderer.renderStaticURI(sb, URI);
+		return sb;
+	}
+	
+	public StringOutput mathJaxCdn() {
+		StringOutput sb = new StringOutput(100);
+		sb.append(WebappHelper.getMathJaxCdn());
+		return sb;
+	}
+	
+	public StringOutput contextPath() {
+		StringOutput sb = new StringOutput(100);
+		sb.append(Settings.getServerContextPath());
 		return sb;
 	}
 

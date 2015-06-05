@@ -44,6 +44,7 @@
 		<property name="version" value="${build.version}" />
 		<property name="applicationName" value="${application.name}" />
 		<property name="mobileContext" value="${mobile.context}" />
+		<property name="mathJaxCdn" value="${mathjax.cdn}"/>
 	</bean>
 
 	<bean id="org.olat.core.helpers.Settings" class="org.olat.core.helpers.Settings" depends-on="org.olat.core.util.WebappHelper" init-method="init" destroy-method="destroy">

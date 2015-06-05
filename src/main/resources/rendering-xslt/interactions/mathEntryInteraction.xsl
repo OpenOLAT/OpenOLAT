@@ -30,6 +30,7 @@
           </xsl:if>
         </input>
       </div>
+
       <div class="previewPanel">
         <div id="qtiworks_id_mathEntryMessages_{@responseIdentifier}"></div>
         <div id="qtiworks_id_mathEntryPreview_{@responseIdentifier}">
@@ -38,9 +39,11 @@
         </div>
       </div>
       <script type="text/javascript">
-      	UpConversionAjaxController.setUpConversionServiceUrl('<xsl:value-of select="$olatWebappContextPath"/>/restapi/math/verifyAsciiMath');
-        UpConversionAjaxController.setDelay(300);
-            
+      	jQuery(function() {
+      		//because we use ajax to render the page
+      		var math = document.getElementById("qtiworks_id_mathEntryPreview_{@responseIdentifier}");
+			MathJax.Hub.Queue(["Typeset",MathJax.Hub,math]);
+      	});
         QtiWorksRendering.registerReadyCallback(function() {
           var inputControlId = 'qtiworks_id_mathEntryInput_<xsl:value-of select="@responseIdentifier"/>';
           var messageContainerId = 'qtiworks_id_mathEntryMessages_<xsl:value-of select="@responseIdentifier"/>';

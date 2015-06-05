@@ -49,8 +49,7 @@ function o_start(){
 }
 /* ]]> */
 </script>
-## <script src='http://localhost/cdnjax/MathJax.js?config=MML_HTMLorMML'></script>
-<script src='//cdn.mathjax.org/mathjax/2.1-latest/MathJax.js?config=MML_HTMLorMML'></script>
+<script type="text/javascript" src='//cdn.mathjax.org/mathjax/2.1-latest/MathJax.js?config=MML_HTMLorMML'></script>
 <script type="text/javascript" src='$r.staticLink("js/jsMath/easy/load.js")'></script>
 ## jQuery libraries
 <!--[if lt IE 9]>
@@ -92,6 +91,8 @@ function o_start(){
 
 ## The OpenOLAT video player. In separate file as it is also used in content iframes
 <script type="text/javascript" src='$r.staticLink("movie/player.js")'></script>
+<script type="text/javascript" src='$r.staticLink("assessment/rendering/javascript/AsciiMathInputController.js")'></script>
+<script type="text/javascript" src='$r.staticLink("assessment/rendering/javascript/UpConversionAjaxController.js")'></script>
 
 #if($r.available("guidebug"))
 	<link type="text/css" href='$r.staticLink("js/jquery/tagsinput/bootstrap-tagsinput.css")' rel="stylesheet" />
@@ -105,7 +106,11 @@ function o_start(){
 
 <script type="text/javascript">
 /* <![CDATA[ */ 
-  jQuery.noConflict();
+	jQuery.noConflict();
+	
+	UpConversionAjaxController.setUpConversionServiceUrl('$r.contextPath()/restapi/math/verifyAsciiMath');
+    UpConversionAjaxController.setDelay(300);
+    
 	## references to objects for later access or cleanup
 	o_info.objectMap = new Hashtable();
 	## Initialize js translator factory with the js translator mapper path

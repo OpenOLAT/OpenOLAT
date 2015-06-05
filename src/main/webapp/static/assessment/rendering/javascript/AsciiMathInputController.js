@@ -83,12 +83,14 @@ var AsciiMathInputController = (function() {
                 var helpButton = jQuery("#" + this.helpButtonId);
                 helpButton.click(function() {
                     showHelpDialog(this);
+                    console.log('showHelpDialog false');
                     return false;
                 });
             }
 
             /* Set up handler to update preview when required */
             var inputSelector = jQuery("#" + this.asciiMathInputControlId);
+            console.log('_init inputSelector', inputSelector);
             inputSelector.bind("change keyup keydown", function() {
                 widget._userInputChanged();
             });
@@ -169,6 +171,7 @@ var AsciiMathInputController = (function() {
             if (this.rawSourceContainerId!=null) {
                 UpConversionAjaxController.replaceContainerPreformattedText(jQuery("#" + this.rawSourceContainerId), mathmlSource || message);
             }
+            console.log('_updateAsciiMathPreview', asciiMathInput);
             return asciiMathInput;
         };
 
