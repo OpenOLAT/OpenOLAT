@@ -128,29 +128,29 @@ Renders a standalone assessmentItem
     <ul class="sessionControl">
       <xsl:if test="$softSoftResetAllowed">
         <li>
-          <form action="{$webappContextPath}{$softResetUrl}" method="post">
-            <input type="submit" value="Reset{if ($isItemSessionEnded) then ' and play again' else ''}"/>
+          <form action="{$webappContextPath}{$softResetUrl}" method="post" target="oaa0">
+            <input type="submit" value="Reset{if ($isItemSessionEnded) then ' and play again' else ''}" class="btn btn-default"/>
           </form>
         </li>
       </xsl:if>
       <xsl:if test="$hardResetAllowed and $hasTemplateProcessing">
         <li>
-          <form action="{$webappContextPath}{$hardResetUrl}" method="post">
-            <input type="submit" value="Reinitialise{if ($isItemSessionEnded) then ' and play again' else ''}"/>
+          <form action="{$webappContextPath}{$hardResetUrl}" method="post" target="oaa0">
+            <input type="submit" value="Reinitialise{if ($isItemSessionEnded) then ' and play again' else ''}" class="btn btn-default"/>
           </form>
         </li>
       </xsl:if>
       <xsl:if test="$endAllowed and $hasResponseProcessing">
         <li>
-          <form action="{$webappContextPath}{$endUrl}" method="post">
-            <input type="submit" value="Finish and review"/>
+          <form action="{$webappContextPath}{$endUrl}" method="post" target="oaa0">
+            <input type="submit" value="Finish and review" class="btn btn-default"/>
           </form>
         </li>
       </xsl:if>
       <xsl:if test="$solutionAllowed and $hasModelSolution">
         <li>
-          <form action="{$webappContextPath}{$solutionUrl}" method="post">
-            <input type="submit" value="Show model solution">
+          <form action="{$webappContextPath}{$solutionUrl}" method="post" target="oaa0">
+            <input type="submit" value="Show model solution" class="btn btn-default">
               <xsl:if test="$solutionMode">
                 <!-- Already in solution mode -->
                 <xsl:attribute name="disabled" select="'disabled'"/>
@@ -160,8 +160,8 @@ Renders a standalone assessmentItem
         </li>
       </xsl:if>
       <li>
-        <form action="{$webappContextPath}{$exitUrl}" method="post">
-          <input type="submit" value="Exit"/>
+        <form action="{$webappContextPath}{$exitUrl}" method="post" target="oaa0">
+          <input type="submit" value="Exit" class="btn btn-default"/>
         </form>
       </li>
     </ul>
@@ -172,7 +172,7 @@ Renders a standalone assessmentItem
   <xsl:template match="qti:itemBody">
     <div id="itemBody">
       <form method="post" action="{$webappContextPath}{$responseUrl}"
-        enctype="multipart/form-data" accept-charset="UTF-8"
+        enctype="multipart/form-data" accept-charset="UTF-8" target="oaa0"
         onsubmit="return QtiWorksRendering.maySubmit()"
         onreset="QtiWorksRendering.reset()" autocomplete="off">
 

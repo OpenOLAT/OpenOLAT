@@ -127,8 +127,6 @@ public class AssessmentTestComponentRenderer extends DefaultComponentRenderer {
 		String output = result.substring(index + 5);
 		index = output.indexOf("</body>");
 		output = output.substring(0, index);
-		output = output.replace("<form action", "<form target='oaa0' action");
-		output = output.replace("<form method", "<form target='oaa0' method");
 		return "<div " + output + "</div>";
 	}
 	

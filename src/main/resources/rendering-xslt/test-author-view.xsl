@@ -75,18 +75,18 @@ Input document: doesn't matter
     <div class="buttonBar">
       <ul class="controls">
         <li>
-          <form action="{$webappContextPath}{$sourceUrl}" method="get" class="showXmlInDialog" title="Test Source XML">
-            <input type="submit" value="View Test source XML"/>
+          <form action="{$webappContextPath}{$sourceUrl}" method="get" target="oaa0" class="showXmlInDialog" title="Test Source XML">
+            <input type="submit" value="View Test source XML" class="btn btn-default"/>
           </form>
         </li>
         <li>
-          <form action="{$webappContextPath}{$stateUrl}" method="get" class="showXmlInDialog" title="Test State XML">
-            <input type="submit" value="View Test state XML"/>
+          <form action="{$webappContextPath}{$stateUrl}" method="get" target="oaa0" class="showXmlInDialog" title="Test State XML">
+            <input type="submit" value="View Test state XML" class="btn btn-default"/>
           </form>
         </li>
         <li>
-          <form action="{$webappContextPath}{$resultUrl}" method="get" class="showXmlInDialog" title="Test Result XML">
-            <input type="submit" value="View Test &lt;assessmentResult&gt; XML"/>
+          <form action="{$webappContextPath}{$resultUrl}" method="get" target="oaa0" class="showXmlInDialog" title="Test Result XML">
+            <input type="submit" value="View Test &lt;assessmentResult&gt; XML" class="btn btn-default"/>
           </form>
         </li>
       </ul>

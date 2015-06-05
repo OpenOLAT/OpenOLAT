@@ -254,7 +254,7 @@ rendering.
 
   <xsl:template match="qti:infoControl" as="element(div)">
     <div class="infoControl">
-      <input type="submit" onclick="return QtiWorksRendering.showInfoControlContent(this)" value="{@title}"/>
+      <input type="submit" onclick="return QtiWorksRendering.showInfoControlContent(this)" value="{@title}" class="btn btn-default"/>
       <div class="infoControlContent">
         <xsl:apply-templates/>
       </div>

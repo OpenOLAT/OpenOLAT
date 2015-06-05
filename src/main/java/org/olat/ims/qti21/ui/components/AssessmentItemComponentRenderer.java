@@ -123,8 +123,6 @@ public class AssessmentItemComponentRenderer extends DefaultComponentRenderer {
 			output = result.substring(index + 5);
 			index = output.indexOf("</body>");
 			output = output.substring(0, index);
-			output = output.replace("<form action", "<form target='oaa0' action");
-			output = output.replace("<form method", "<form target='oaa0' method");
 		} else {
 			output = "class='o_error'>ERROR";
 		}

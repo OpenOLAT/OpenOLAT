@@ -9,7 +9,7 @@
   <xsl:template match="qti:endAttemptInteraction">
     <input name="qtiworks_presented_{@responseIdentifier}" type="hidden" value="1"/>
     <span class="{local-name()}">
-      <input type="submit" name="qtiworks_response_{@responseIdentifier}" value="{@title}">
+      <input type="submit" name="qtiworks_response_{@responseIdentifier}" value="{@title}" class="btn btn-default">
         <xsl:if test="$isItemSessionEnded">
           <xsl:attribute name="disabled">disabled</xsl:attribute>
         </xsl:if>

@@ -60,9 +60,9 @@ Renders the test(Part) feedback
   <xsl:template name="qw:test-controls">
     <ul class="sessionControl">
       <li>
-        <form action="{$webappContextPath}{$advanceTestPartUrl}" method="post"
+        <form action="{$webappContextPath}{$advanceTestPartUrl}" method="post" target="oaa0"
           onsubmit="return confirm({qw:to-javascript-string($exitTestPartAlertMessage)})">
-          <input type="submit" value="Exit {$testOrTestPart}"/>
+          <input type="submit" value="Exit {$testOrTestPart}" class="btn btn-default"/>
         </form>
       </li>
     </ul>
@@ -95,9 +95,9 @@ Renders the test(Part) feedback
           <xsl:apply-templates select="$assessmentSection/qti:rubricBlock"/>
         </header>
         <!-- Descend -->
-        <ul class="testPartNavigationInner">
+        <div class="testPartNavigationInner btn-group-vertical">
           <xsl:apply-templates mode="testPart-review"/>
-        </ul>
+        </div>
       </li>
     </xsl:if>
   </xsl:template>
@@ -106,9 +106,8 @@ Renders the test(Part) feedback
     <xsl:variable name="reviewable" select="@allowReview='true' or @showFeedback='true'" as="xs:boolean"/>
     <xsl:variable name="itemSessionState" select="$testSessionState/qw:item[@key=current()/@key]/qw:itemSessionState" as="element(qw:itemSessionState)"/>
     <xsl:if test="$currentTestPart/@navigationMode='nonlinear' or exists($itemSessionState/@entryTime)">
-      <li class="assessmentItem">
-        <form action="{$webappContextPath}{$reviewTestItemUrl}/{@key}" method="post">
-          <button type="submit">
+        <form action="{$webappContextPath}{$reviewTestItemUrl}/{@key}" method="post" target="oaa0" class="assessmentItem btn-group">
+          <button type="submit" class="btn btn-default">
             <xsl:if test="not($reviewable)">
               <xsl:attribute name="disabled" select="'disabled'"/>
             </xsl:if>
@@ -132,7 +131,6 @@ Renders the test(Part) feedback
             </xsl:choose>
           </button>
         </form>
-      </li>
     </xsl:if>
   </xsl:template>
 

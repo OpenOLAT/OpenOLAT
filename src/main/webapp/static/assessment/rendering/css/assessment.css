@@ -130,6 +130,14 @@ ul.sessionControl li form {
   display: none;
 }
 
+tr.choiceinteraction td.control {
+  padding: 0.5em;
+}
+
+tr.choiceinteraction td.choiceInteraction {
+  padding: 0.5em;
+}
+
 .assessmentItem .sliderInteraction {
   margin: 1em;
 }
@@ -393,7 +401,7 @@ ul.testPartNavigation {
 }
 
 ul.testPartNavigation li.assessmentSection {
-  border: 2px solid #eeeeee;
+  border: 1px solid #eeeeee;
   border-radius: 0.5em;
   padding: 0 1em 0.5em 1em;
   margin: 0.5em 0;
@@ -425,7 +433,8 @@ ul.testPartNavigation li.assessmentItem span {
   vertical-align: middle;
 }
 
-ul.testPartNavigation li.assessmentItem .questionTitle {
+.testPartNavigation .assessmentItem .questionTitle {
+	margin-right: 1em;
 }
 
 ul.testPartNavigation li.assessmentItem .itemStatus {
@@ -446,7 +455,7 @@ ul.testPartDrilldown {
 }
 
 ul.testPartDrilldown li.assessmentSection {
-  border: 2px solid #eeeeee;
+  border: 1px solid #eeeeee;
   border-radius: 0.5em;
   padding: 0 1em 0.5em 1em;
 }
@@ -466,7 +475,7 @@ ul.testPartDrilldown li.assessmentSection ul.testPartDrilldownInner {
 }
 
 ul.testPartDrilldown li.currentItem {
-  border: 2px solid #eeeeee;
+  border: 1px solid #eeeeee;
   border-radius: 0.5em;
   padding: 0 1em;
   margin-top: 1em;

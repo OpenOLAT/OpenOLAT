@@ -50,9 +50,9 @@ Renders the navigation for the current testPart
   <xsl:template name="qw:test-controls">
     <ul class="sessionControl">
       <li>
-        <form action="{$webappContextPath}{$endTestPartUrl}" method="post"
+        <form action="{$webappContextPath}{$endTestPartUrl}" method="post" target="oaa0"
           onsubmit="return confirm('{$endTestPartAlertMessage}')">
-          <input type="submit" value="End {$testOrTestPart}">
+          <input type="submit" value="End {$testOrTestPart}" class="btn btn-default">
             <xsl:if test="not($endTestPartAllowed)">
               <xsl:attribute name="disabled" select="'disabled'"/>
             </xsl:if>
@@ -79,22 +79,22 @@ Renders the navigation for the current testPart
         <xsl:apply-templates select="$assessmentSection/qti:rubricBlock"/>
       </header>
       <!-- Descend -->
-      <ul class="testPartNavigationInner">
+      <div class="btn-group-vertical">
         <xsl:apply-templates mode="testPart-navigation"/>
-      </ul>
+      </div>
     </li>
   </xsl:template>
 
   <xsl:template match="qw:node[@type='ASSESSMENT_ITEM_REF']" mode="testPart-navigation">
     <xsl:variable name="itemSessionState" select="$testSessionState/qw:item[@key=current()/@key]/qw:itemSessionState" as="element(qw:itemSessionState)"/>
-    <li class="assessmentItem">
-      <form action="{$webappContextPath}{$selectTestItemUrl}/{@key}" method="post">
-        <button type="submit">
+    
+      <form action="{$webappContextPath}{$selectTestItemUrl}/{@key}" method="post" target="oaa0" class="assessmentItem btn-group">
+        <button type="submit" class="btn btn-default">
           <span class="questionTitle"><xsl:value-of select="@sectionPartTitle"/></span>
           <xsl:apply-templates select="$itemSessionState" mode="item-status"/>
         </button>
       </form>
-    </li>
+   
   </xsl:template>
 
 </xsl:stylesheet>

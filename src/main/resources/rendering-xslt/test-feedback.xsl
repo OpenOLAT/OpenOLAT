@@ -55,9 +55,9 @@ combine the feedback for the test and the testPart.)
   <xsl:template name="qw:test-controls">
     <ul class="sessionControl">
       <li>
-        <form action="{$webappContextPath}{$exitTestUrl}" method="post"
+        <form action="{$webappContextPath}{$exitTestUrl}" method="post" target="oaa0"
           onsubmit="return confirm({qw:to-javascript-string($exitTestAlertMessage)})">
-          <input type="submit" value="Exit Test"/>
+          <input type="submit" value="Exit Test" class="btn btn-default"/>
         </form>
       </li>
     </ul>

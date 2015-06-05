@@ -131,46 +131,46 @@ NB: This is used both while being presented, and during review.
       <!-- Interacting state -->
       <xsl:if test="$advanceTestItemAllowed">
         <li>
-          <form action="{$webappContextPath}{$advanceTestItemUrl}" method="post">
-            <input type="submit" value="Next Question"/>
+          <form action="{$webappContextPath}{$advanceTestItemUrl}" method="post" target="oaa0">
+            <input type="submit" value="Next Question" class="btn btn-default"/>
           </form>
         </li>
       </xsl:if>
       <xsl:if test="$testPartNavigationAllowed">
         <li>
-          <form action="{$webappContextPath}{$testPartNavigationUrl}" method="post">
-            <input type="submit" value="Test Question Menu"/>
+          <form action="{$webappContextPath}{$testPartNavigationUrl}" method="post" target="oaa0">
+            <input type="submit" value="Test Question Menu" class="btn btn-default"/>
           </form>
         </li>
       </xsl:if>
       <xsl:if test="$endTestPartAllowed">
         <li>
-          <form action="{$webappContextPath}{$endTestPartUrl}" method="post"
+          <form action="{$webappContextPath}{$endTestPartUrl}" method="post" target="oaa0"
             onsubmit="return confirm({qw:to-javascript-string($endTestPartAlertMessage)})">
-            <input type="submit" value="End {$testOrTestPart}"/>
+            <input type="submit" value="End {$testOrTestPart}" class="btn btn-default"/>
           </form>
         </li>
       </xsl:if>
       <!-- Review state -->
       <xsl:if test="$reviewMode">
         <li>
-          <form action="{$webappContextPath}{$reviewTestPartUrl}" method="post">
-            <input type="submit" value="Back to Test Feedback"/>
+          <form action="{$webappContextPath}{$reviewTestPartUrl}" method="post" target="oaa0">
+            <input type="submit" value="Back to Test Feedback" class="btn btn-default"/>
           </form>
         </li>
       </xsl:if>
       <xsl:if test="$provideItemSolutionButton">
         <li>
-          <form action="{$webappContextPath}{$showTestItemSolutionUrl}/{$itemKey}" method="post">
-            <input type="submit" value="Show Solution"/>
+          <form action="{$webappContextPath}{$showTestItemSolutionUrl}/{$itemKey}" method="post" target="oaa0">
+            <input type="submit" value="Show Solution" class="btn btn-default"/>
           </form>
         </li>
       </xsl:if>
       <xsl:if test="$reviewMode and $solutionMode">
         <!-- Allow return to item review state -->
         <li>
-          <form action="{$webappContextPath}{$reviewTestItemUrl}/{$itemKey}" method="post">
-            <input type="submit" value="Hide Solution"/>
+          <form action="{$webappContextPath}{$reviewTestItemUrl}/{$itemKey}" method="post" target="oaa0">
+            <input type="submit" value="Hide Solution" class="btn btn-default"/>
           </form>
         </li>
       </xsl:if>
@@ -258,7 +258,7 @@ NB: This is used both while being presented, and during review.
   <xsl:template match="qti:itemBody">
     <div id="itemBody">
       <form method="post" action="{$webappContextPath}{$responseUrl}"
-        enctype="multipart/form-data" accept-charset="UTF-8"
+        enctype="multipart/form-data" accept-charset="UTF-8" target="oaa0"
         onsubmit="return QtiWorksRendering.maySubmit()"
         onreset="QtiWorksRendering.reset()" autocomplete="off">
 
@@ -283,7 +283,7 @@ NB: This is used both while being presented, and during review.
 
         <xsl:if test="$isItemSessionOpen">
           <div class="testItemControl">
-            <input id="submit_button" name="submit" type="submit" value="{$submitButtonText}" class="btn btn-default"/>
+            <input id="submit_button" name="submit" type="submit" value="{$submitButtonText}" class="btn btn-primary"/>
           </div>
         </xsl:if>
       </form>
