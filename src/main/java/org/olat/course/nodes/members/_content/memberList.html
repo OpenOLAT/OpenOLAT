@@ -3,7 +3,7 @@
 		<div class="clearfix">
 			<div class="o_portrait pull-left">
 				#if($memberLink.getUserObject().isPortraitAvailable())
-					<img src="$r.staticLink("images/transparent.gif")" class="$memberLink.getUserObject().getPortraitCssClass()" style="background-image: url('$avatarBaseURL/$memberLink.getUserObject().getKey()/portrait_small.jpg')" alt="$r.escapeHtml("$memberLink.getUserObject().getFullName()")" />
+					<img src="$r.staticLink("images/transparent.gif")" class="$memberLink.getUserObject().getPortraitCssClass()" style="background-image: url('$avatarBaseURL/$memberLink.getUserObject().getKey()/portrait.jpg')" alt="$r.escapeHtml("$memberLink.getUserObject().getFullName()")" />
 				#else
 					<img src="$r.staticLink("images/transparent.gif")" class="$memberLink.getUserObject().getPortraitCssClass()" alt="$r.escapeHtml("$memberLink.getUserObject().getFullName()")" />
 				#end
