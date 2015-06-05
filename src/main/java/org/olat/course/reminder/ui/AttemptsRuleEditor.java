@@ -36,6 +36,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.reminder.rule.AttemptsRuleSPI;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
@@ -143,6 +144,11 @@ public class AttemptsRuleEditor extends RuleEditorFragment {
 	private void searchAttemptableNodes(CourseNode courseNode, List<CourseNode> nodes) {
 		if (courseNode instanceof AssessableCourseNode) {
 			AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
+			if (assessableCourseNode.hasAttemptsConfigured()) {
+				nodes.add(courseNode);
+			}
+		} else if (courseNode instanceof QTICourseNode) {
+			QTICourseNode assessableCourseNode = (QTICourseNode) courseNode;
 			if (assessableCourseNode.hasAttemptsConfigured()) {
 				nodes.add(courseNode);
 			}

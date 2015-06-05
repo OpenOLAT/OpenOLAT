@@ -61,8 +61,6 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	
 	private boolean member;
 	
-	public int visit;
-	
 	private Integer myRating;
 	private Double averageRating;
 	private long numOfRatings;
@@ -106,13 +104,6 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		//efficiency statement
 		setPassed(entry.getPassed());
 		setScore(AssessmentHelper.getRoundedScore(entry.getScore()));
-		
-		//user course infos
-		if(entry.getVisit() != null) {
-			setVisit(entry.getVisit().intValue());
-		} else {
-			setVisit(0);
-		}
 		
 		//rating
 		setMyRating(entry.getMyRating());
@@ -459,13 +450,5 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	
 	public boolean isFailed() {
 		return passed != null && !passed.booleanValue();
-	}
-	
-	public int getVisit() {
-		return visit;
-	}
-	
-	public void setVisit(int visit) {
-		this.visit = visit;
 	}
 }

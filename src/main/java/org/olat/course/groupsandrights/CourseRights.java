@@ -47,6 +47,8 @@ public class CourseRights {
     
     /** course right for groupmanagement */
     public static final String RIGHT_GROUPMANAGEMENT = BGRightManager.BG_RIGHT_PREFIX + "groupmngt";
+    /** course right for groupmanagement */
+    public static final String RIGHT_MEMBERMANAGEMENT = BGRightManager.BG_RIGHT_PREFIX + "membermngt";
     /** course right for course editor */
     public static final String RIGHT_COURSEEDITOR = BGRightManager.BG_RIGHT_PREFIX + "editor";
     /** course right for archive tool */
@@ -68,6 +70,7 @@ public class CourseRights {
         // initialize list of valid course rights
         rights = new ArrayList<String>();
         rights.add(RIGHT_GROUPMANAGEMENT);
+        rights.add(RIGHT_MEMBERMANAGEMENT);
         rights.add(RIGHT_COURSEEDITOR);
         rights.add(RIGHT_ARCHIVING);
         rights.add(RIGHT_ASSESSMENT);
@@ -95,6 +98,7 @@ public class CourseRights {
                 "",
                 RIGHT_ASSESSMENT,
                 RIGHT_GROUPMANAGEMENT,
+                RIGHT_MEMBERMANAGEMENT,
                 RIGHT_COURSEEDITOR,
                 RIGHT_ARCHIVING,
                 RIGHT_GLOSSARY,
@@ -112,6 +116,7 @@ public class CourseRights {
                 trans.translate("noRestriction"),
                 trans.translate(RIGHT_ASSESSMENT),
                 trans.translate(RIGHT_GROUPMANAGEMENT),
+                trans.translate(RIGHT_MEMBERMANAGEMENT),
                 trans.translate(RIGHT_COURSEEDITOR),
                 trans.translate(RIGHT_ARCHIVING),
                 trans.translate(RIGHT_GLOSSARY),

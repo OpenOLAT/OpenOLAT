@@ -127,12 +127,8 @@ public class RepositoryEntryMyCourseQueries {
 			RepositoryEntryMyCourseImpl view = new RepositoryEntryMyCourseImpl(re, stats, hasMarks, offers, myRating);
 			views.add(view);
 			viewsMap.put(re.getOlatResource(), view);
-			
-			Integer visit = (Integer)object[4];
-			if(visit != null && visit.intValue() >= 0) {
-				view.setVisit(visit);
-			}
-			Long effKey = (Long)object[5];
+
+			Long effKey = (Long)object[4];
 			if(effKey != null) {
 				effKeys.add(effKey);
 			}
@@ -188,11 +184,11 @@ public class RepositoryEntryMyCourseQueries {
 				  sb.append(" 0 as myrating");
 			  }  
 			  // user course informations
-			sb.append(" ,(select infos.visit from usercourseinfos as infos")
+			/*sb.append(" ,(select infos.visit from usercourseinfos as infos")
 			  .append("    where infos.resource=res and infos.identity=ident")
-			  .append(" ) as visit")
+			  .append(" ) as visit");*/
 			  //efficiency statements
-			  .append(" ,(select eff.key from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as eff")
+			sb.append(" ,(select eff.key from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as eff")
 			  .append("    where eff.resource=res and eff.identity=ident")
 			  .append(" ) as effKey");
 			appendOrderByInSelect(params, sb);

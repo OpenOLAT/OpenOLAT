@@ -23,7 +23,6 @@ import java.util.Date;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
-import org.olat.course.assessment.UserCourseInformations;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
@@ -65,7 +64,6 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	private final Double averageRating;
 	private final long numOfRatings;
 	private final long numOfComments;
-	private Integer visit;
 
 	private final long offersAvailable;
 	
@@ -107,12 +105,6 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 		if(efficiencyStatment != null) {
 			score = efficiencyStatment.getScore();
 			passed = efficiencyStatment.getPassed();
-		}
-	}
-	
-	public void setCourseInfos(UserCourseInformations courseInfos) {
-		if(courseInfos != null) {
-			visit = courseInfos.getVisit();
 		}
 	}
 
@@ -212,15 +204,6 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	}
 
 	@Override
-	public Integer getVisit() {
-		return visit;
-	}
-
-	public void setVisit(Integer visit) {
-		this.visit = visit;
-	}
-
-	@Override
 	public Integer getMyRating() {
 		return myRating;
 	}
@@ -244,7 +227,6 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	public boolean isValidOfferAvailable() {
 		return offersAvailable > 0;
 	}
-	
 
 	@Override
 	public boolean equals(Object obj) {

@@ -68,8 +68,6 @@ public interface RepositoryEntryMyView extends OLATResourceable {
 	 */
 	public boolean isMarked();
 	
-	public Integer getVisit();
-	
 	/**
 	 * @return The rating made by the user or null if the user has never rated the entry
 	 */
