@@ -19,8 +19,6 @@
  */
 package org.olat.ims.qti21.ui.components;
 
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.Date;
 
 import javax.xml.transform.stream.StreamResult;
@@ -34,9 +32,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.util.WebappHelper;
 import org.olat.ims.qti21.UserTestSession;
 import org.olat.ims.qti21.model.CandidateTestEventType;
 import org.olat.ims.qti21.model.jpa.CandidateEvent;
@@ -75,16 +71,6 @@ public class AssessmentTestComponentRenderer extends DefaultComponentRenderer {
 		TestSessionController testSessionController = cmp.getTestSessionController();
 		AssessmentTestFormItem item = cmp.getQtiItem();
 		
-		/*
-		String restapi = "/olat/restapi/math/verifyAsciiMath";
-		sb.append("<script>/n")
-		  //.append("jQuery(function() {\n")
-		  .append(" UpConversionAjaxController.setUpConversionServiceUrl('").append(restapi).append("');\n")
-          .append(" UpConversionAjaxController.setDelay(300);\n")
-		  //.append("});")
-		  .append("</script>/n");
-		*/
-		
 		if(testSessionController.getTestSessionState().isEnded()) {
 			sb.append("<h1>The End <small>say the renderer</small></h1>");
 		} else {
@@ -111,23 +97,10 @@ public class AssessmentTestComponentRenderer extends DefaultComponentRenderer {
 	        renderingOptions.setEndTestPartUrl(sessionBaseUrl + "end-test-part");
 	        renderingOptions.setAdvanceTestPartUrl(sessionBaseUrl + "advance-test-part");
 	        renderingOptions.setExitTestUrl(sessionBaseUrl + "exit-test");
-	
-	        Writer writer = new StringWriter();
-	        StreamResult result = new StreamResult(writer);
+
+	        StreamResult result = new StreamResult(sb);
 	        renderCurrentCandidateTestSessionState(testSessionController, renderingOptions, result, cmp);
-	        
-	        String output = writer.toString();
-        	output = replaces(output);
-        	sb.append(output);
 		}
-	}
-	
-	private String replaces(String result) {
-		int index = result.indexOf("<body");
-		String output = result.substring(index + 5);
-		index = output.indexOf("</body>");
-		output = output.substring(0, index);
-		return "<div " + output + "</div>";
 	}
 	
 	private void configureBaseRenderingOptions(final String sessionBaseUrl, final String mapperUrl, final AbstractRenderingOptions renderingOptions) {

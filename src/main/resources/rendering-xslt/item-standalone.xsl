@@ -76,7 +76,7 @@ Renders a standalone assessmentItem
         <!-- Include stylesheet declared within item -->
         <xsl:apply-templates select="qti:stylesheet"/>
       </head>
-      <body class="qtiworks assessmentItem">
+      <body><div class="qtiworks assessmentItem">
         <xsl:call-template name="maybeAddAuthoringLink"/>
 
         <!-- Item title -->
@@ -120,7 +120,7 @@ Renders a standalone assessmentItem
 
         <!-- Session control -->
         <xsl:call-template name="qw:item-controls"/>
-       </body>
+       </div></body>
     </html>
   </xsl:template>
 

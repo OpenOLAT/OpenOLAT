@@ -104,7 +104,7 @@ NB: This is used both while being presented, and during review.
         <!-- Include stylesheet declared within item -->
         <xsl:apply-templates select="qti:stylesheet"/>
       </head>
-      <body class="qtiworks assessmentItem assessmentTest">
+      <body><div class="qtiworks assessmentItem assessmentTest">
         <xsl:call-template name="maybeAddAuthoringLink"/>
 
         <!--
@@ -122,7 +122,7 @@ NB: This is used both while being presented, and during review.
 
         <!-- Drill down into current item via current testPart structure -->
         <xsl:apply-templates select="$currentTestPartNode" mode="testPart-drilldown"/>
-      </body>
+      </div></body>
     </html>
   </xsl:template>
 

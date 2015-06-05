@@ -32,7 +32,7 @@ Test Entry page (shown when there are multiple testParts)
         <title><xsl:value-of select="@title"/></title>
         <xsl:call-template name="includeAssessmentJsAndCss"/>
       </head>
-      <body class="qtiworks assessmentTest testEntry">
+      <body><div class="qtiworks assessmentTest testEntry">
         <xsl:call-template name="maybeAddAuthoringLink"/>
 
         <h2>Test Entry Page</h2>
@@ -46,7 +46,7 @@ Test Entry page (shown when there are multiple testParts)
 
         <!-- Test session control -->
         <xsl:call-template name="qw:test-controls"/>
-       </body>
+       </div></body>
     </html>
   </xsl:template>
 

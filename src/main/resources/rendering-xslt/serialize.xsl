@@ -29,67 +29,11 @@ hence slightly easier to debug.
   <!-- ************************************************************ -->
 
   <xsl:template match="xhtml:html" as="element()">
-    <xsl:variable name="containsMathML" select="exists(xhtml:body//m:*)" as="xs:boolean"/>
-    <!-- Generate XHTML tree in usual namespace -->
-    <xsl:variable name="html" as="element(xhtml:html)">
-      <html>
-        <xsl:copy-of select="@*"/>
-        <xsl:if test="$serializationMethod='IE_MATHPLAYER' and $containsMathML">
-          <xsl:namespace name="m" select="'http://www.w3.org/1998/Math/MathML'"/>
-        </xsl:if>
-        <head>
-          <xsl:choose>
-            <xsl:when test="$serializationMethod='HTML5_MATHJAX'">
-              <!-- Add in HTML5 Content Type meta -->
-              <meta charset="UTF-8"/>
-            </xsl:when>
-            <xsl:otherwise>
-              <!-- Add traditional HTML Content Type meta -->
-              <meta http-equiv="Content-Type" content="{$contentType}; charset=UTF-8"/>
-            </xsl:otherwise>
-          </xsl:choose>
-          <xsl:if test="$serializationMethod='IE_MATHPLAYER' and $containsMathML">
-            <object id="MathPlayer" classid="clsid:32F66A20-7614-11D4-BD11-00104BD3F987"/>
-            <xsl:processing-instruction name="import">
-              <xsl:text>namespace="m" implementation="#MathPlayer"</xsl:text>
-            </xsl:processing-instruction>
-          </xsl:if>
-          <!-- Pull in <head/> stuff added by other stylesheets -->
-          <xsl:for-each select="xhtml:head/*">
-            <xsl:apply-templates select="."/>
-            <xsl:text>&#x0a;</xsl:text>
-          </xsl:for-each>
-          <!-- Finally pull in MathJax if required -->
-          <xsl:if test="$containsMathML and $serializationMethod=('XHTML_MATHJAX','HTML5_MATHJAX')">
-            <xsl:if test="string($mathJaxConfig)">
-              <script type="text/x-mathjax-config">
-                <xsl:value-of select="$mathJaxConfig"/>
-              </script>
-            </xsl:if>
-            <xsl:text>&#x0a;</xsl:text>
-            <script src="{$mathJaxUrl}">
-              <xsl:if test="not($serializationMethod='XHTML5_MATHJAX')">
-                <xsl:attribute name="type" select="'text/javascript'"/>
-              </xsl:if>
-            </script>
-            <xsl:text>&#x0a;</xsl:text>
-          </xsl:if>
-        </head>
-        <xsl:apply-templates select="xhtml:body"/>
-      </html>
-    </xsl:variable>
-    <!--
-    For strict HTML outputs, move HTML elements into no namespace,
-    otherwise output tree as-is.
-    -->
-    <xsl:choose>
-      <xsl:when test="$outputMethod='html'">
-        <xsl:apply-templates select="$html" mode="no-namespace"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:sequence select="$html"/>
-      </xsl:otherwise>
-    </xsl:choose>
+	<xsl:apply-templates select="xhtml:body"/>
+  </xsl:template>
+  
+  <xsl:template match="xhtml:body">
+	<xsl:apply-templates />
   </xsl:template>
 
   <!-- Add @type attribute to <script> if we're not generating HTML5 -->

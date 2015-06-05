@@ -29,7 +29,7 @@ Input document: doesn't matter
         <title>Assessment Completed</title>
         <link rel="stylesheet" href="{$webappContextPath}/rendering/css/assessment.css" type="text/css" media="screen"/>
       </head>
-      <body class="qtiworks">
+      <body><div class="qtiworks">
         <p>
           This assessment is now closed and you can no longer interact with it.
         </p>
@@ -38,7 +38,7 @@ Input document: doesn't matter
             <a href="{$exitSessionUrlAbsolute}">Exit and return</a>
           </p>
         </xsl:if>
-      </body>
+      </div></body>
     </html>
   </xsl:template>
 

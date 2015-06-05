@@ -31,7 +31,7 @@ Input document: doesn't matter
         <xsl:call-template name="includeQtiWorksJsAndCss"/>
         <title>Assessment failure</title>
       </head>
-      <body class="page exploded">
+      <body><div class="page exploded">
         <div class="container_12">
           <header class="pageHeader">
             <h1>QTIWorks</h1>
@@ -68,7 +68,7 @@ Input document: doesn't matter
             </p>
           </xsl:if>
         </div>
-      </body>
+      </div></body>
     </html>
   </xsl:template>
 

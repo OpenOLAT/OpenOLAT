@@ -38,7 +38,7 @@ combine the feedback for the test and the testPart.)
         <title><xsl:value-of select="@title"/></title>
         <xsl:call-template name="includeAssessmentJsAndCss"/>
       </head>
-      <body class="qtiworks assessmentTest testFeedback">
+      <body><div class="qtiworks assessmentTest testFeedback">
         <xsl:call-template name="maybeAddAuthoringLink"/>
 
         <h1>Test Complete</h1>
@@ -48,7 +48,7 @@ combine the feedback for the test and the testPart.)
 
         <!-- Test session control -->
         <xsl:call-template name="qw:test-controls"/>
-       </body>
+       </div></body>
     </html>
   </xsl:template>
 

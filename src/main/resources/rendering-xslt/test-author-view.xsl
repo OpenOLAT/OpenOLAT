@@ -56,7 +56,7 @@ Input document: doesn't matter
         <title>Author Debug View</title>
         <xsl:call-template name="includeQtiWorksJsAndCss"/>
       </head>
-      <body class="page authorInfo">
+      <body><div class="page authorInfo">
         <div class="container_12">
           <header class="pageHeader">
             <h1>QTIWorks</h1>
@@ -67,7 +67,7 @@ Input document: doesn't matter
           <xsl:call-template name="buttonBar"/>
           <xsl:apply-templates select="$testSessionState"/>
         </div>
-      </body>
+      </div></body>
     </html>
   </xsl:template>
 

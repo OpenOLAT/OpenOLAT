@@ -35,7 +35,7 @@ Renders the navigation for the current testPart
         <title><xsl:value-of select="@title"/></title>
         <xsl:call-template name="includeAssessmentJsAndCss"/>
       </head>
-      <body class="qtiworks assessmentTest testPartNavigation">
+      <body><div class="qtiworks assessmentTest testPartNavigation">
         <xsl:call-template name="maybeAddAuthoringLink"/>
 
         <h1><xsl:value-of select="$testOrTestPart"/> Question Menu</h1>
@@ -43,7 +43,7 @@ Renders the navigation for the current testPart
 
         <!-- Test session control -->
         <xsl:call-template name="qw:test-controls"/>
-       </body>
+       </div></body>
     </html>
   </xsl:template>
 

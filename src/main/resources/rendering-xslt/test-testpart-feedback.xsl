@@ -35,7 +35,7 @@ Renders the test(Part) feedback
         <title><xsl:value-of select="@title"/></title>
         <xsl:call-template name="includeAssessmentJsAndCss"/>
       </head>
-      <body class="qtiworks assessmentTest testFeedback">
+      <body><div class="qtiworks assessmentTest testFeedback">
         <xsl:call-template name="maybeAddAuthoringLink"/>
 
         <h1><xsl:value-of select="$testOrTestPart"/> Complete</h1>
@@ -53,7 +53,7 @@ Renders the test(Part) feedback
 
         <!-- Test session control -->
         <xsl:call-template name="qw:test-controls"/>
-       </body>
+       </div></body>
     </html>
   </xsl:template>
 

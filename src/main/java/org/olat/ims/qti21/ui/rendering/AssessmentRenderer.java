@@ -33,7 +33,6 @@
  */
 package org.olat.ims.qti21.ui.rendering;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
@@ -560,21 +559,22 @@ public class AssessmentRenderer {
         }
 
         /* If we're building HTML5, send its custom pseudo-DOCTYPE to the Result, as we can't generate this in XSLT. */
+        /* No doc type, we produce only a fragment
         if (streamResult!=null && serializationMethod==SerializationMethod.HTML5_MATHJAX) {
             final String html5Doctype = "<!DOCTYPE html>\n";
             try {
                 if (isOutputStreamResult) {
-                    /* Need to send doctype in correct encoding */
-                    streamResult.getOutputStream().write(html5Doctype.getBytes(outputStreamEncoding));
+                    // Need to send doctype in correct encoding
+                   streamResult.getOutputStream().write(html5Doctype.getBytes(outputStreamEncoding));
                 }
                 else if (streamResult.getWriter()!=null) {
-                    streamResult.getWriter().write(html5Doctype);
+                   streamResult.getWriter().write(html5Doctype);
                 }
             }
-            catch (final IOException e) {
+            catch (final Exception e) {
                 throw new QtiWorksRenderingException("Could not write HTML5 prolog to result", e);
             }
-        }
+        }*/
 
         /* Set up the XML source */
         final InputSource assessmentSaxSource;
