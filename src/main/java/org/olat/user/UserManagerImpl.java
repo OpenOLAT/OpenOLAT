@@ -433,6 +433,10 @@ public class UserManagerImpl extends UserManager {
 
 	@Override
 	public String getUsername(Long identityKey) {
+		if(identityKey == null || identityKey.longValue() <= 0) {
+			return null;
+		}
+		
 		String username = userToNameCache.get(identityKey);
 		if(username == null) {
 			IdentityShort identity = securityManager.loadIdentityShortByKey(identityKey);
@@ -444,6 +448,7 @@ public class UserManagerImpl extends UserManager {
 
 	@Override
 	public String getUserDisplayName(String username) {
+		if(username == null) return null;
 		String fullName = userToFullnameCache.get(username);
 		if(fullName == null) {
 			List<IdentityShort> identities = securityManager.findShortIdentitiesByName(Collections.singletonList(username));
