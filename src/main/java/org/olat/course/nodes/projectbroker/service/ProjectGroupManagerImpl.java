@@ -254,13 +254,13 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 		final BusinessGroupAddResponse response = new BusinessGroupAddResponse();
 		BusinessGroupAddResponse state = businessGroupService.addParticipants(actionIdentity, null, identities, reloadedProject.getProjectGroup(), null);
 		response.getAddedIdentities().addAll(state.getAddedIdentities());
-		response.getIdentitiesAlreadyInGroup().addAll(state.getAddedIdentities());
+		response.getIdentitiesAlreadyInGroup().addAll(state.getIdentitiesAlreadyInGroup());
 		
 		Boolean result = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<Boolean>(){
 			@Override
 			public Boolean execute() {
 				for (final Identity identity : identities) {
-					if (!businessGroupService.hasRoles(identity, reloadedProject.getProjectGroup(), GroupRoles.participant.name())) {
+					if (businessGroupService.hasRoles(identity, reloadedProject.getProjectGroup(), GroupRoles.participant.name())) {
 						securityManager.removeIdentityFromSecurityGroup(identity, reloadedProject.getCandidateGroup());
 						logAudit("ProjectBroker: Accept candidate, identity=" + identity + " project=" + reloadedProject);
 					}		
