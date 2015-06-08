@@ -1240,7 +1240,7 @@ public class ForumController extends BasicController implements GenericEventList
 		numOfChildren = countNumOfChildren(m, threadMsgs);
 		Integer nOfCh = new Integer(numOfChildren);
 		map.put("nOfCh", nOfCh);
-		boolean userIsMsgCreator = ureq.getIdentity().getKey().equals(creator.getKey());
+		boolean userIsMsgCreator = getIdentity().getKey().equals(creator.getKey());
 		Boolean uIsMsgC = new Boolean(userIsMsgCreator);
 		map.put("uIsMsgC", uIsMsgC);
 		boolean isThreadtop = m.getThreadtop()==null;
