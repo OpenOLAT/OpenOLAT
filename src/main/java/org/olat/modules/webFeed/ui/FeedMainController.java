@@ -117,6 +117,9 @@ public class FeedMainController extends BasicController implements Activateable2
 			putInitialPanel(vcMain);
 		} else {
 			String authorFullname = userManager.getUserDisplayName(feed.getAuthor());
+			if(authorFullname == null) {
+				authorFullname = "???";
+			}
 			helper = new FeedViewHelper(feed, getIdentity(), authorFullname, uiFactory.getTranslator(), courseId, nodeId, callback);
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), feed);
 			display(ureq, wControl, displayConfig);
