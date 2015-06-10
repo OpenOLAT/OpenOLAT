@@ -87,7 +87,7 @@ public class RepositoryMembersController extends AbstractMemberListController {
 		
 		boolean managed = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);
 		addMemberLink = uifactory.addFormLink("add.member", formLayout, Link.BUTTON);
-		addMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+		addMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 		addMemberLink.setVisible(!managed);
 
 		importMemberLink = uifactory.addFormLink("import.member", formLayout, Link.BUTTON);

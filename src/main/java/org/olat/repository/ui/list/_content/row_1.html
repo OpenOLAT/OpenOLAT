@@ -53,7 +53,7 @@
 			#end
 		#end
 
-		#if($row && ($row.isMember() || $row.getVisit() > 0))
+		#if($row)
 			#if($row.passed || $row.failed)
 			<div class="row">
 				#if($row.passed)
