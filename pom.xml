@@ -72,7 +72,7 @@
 		<org.postgresql.version>9.4-1201-jdbc41</org.postgresql.version>
 		<org.infinispan.version>6.0.2.Final</org.infinispan.version>
 		<lucene.version>4.8.0</lucene.version>
-		<version.selenium>2.45.0</version.selenium>
+		<version.selenium>2.46.0</version.selenium>
 		<activemq.version>5.11.1</activemq.version>
 
 	    <!-- properties for testing and Q&A -->

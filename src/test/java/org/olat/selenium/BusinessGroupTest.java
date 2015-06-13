@@ -504,7 +504,8 @@ public class BusinessGroupTest {
 			.openAdministration()
 			.openAdminMembers()
 			.setVisibility(true, true, true)
-			.openMembers();
+			.openMembers()
+			.assertParticipantList();
 		
 		//Rei open the course
 		Enrollment[] participantDrivers = new Enrollment[]{
@@ -731,7 +732,8 @@ public class BusinessGroupTest {
 			.openAdministration()
 			.openAdminMembers()
 			.setVisibility(false, true, false)
-			.openMembers();
+			.openMembers()
+			.assertParticipantList();
 		
 		Enrollment[] participantDrivers = new Enrollment[]{
 				new Enrollment(ryomou, ryomouBrowser),
@@ -769,6 +771,9 @@ public class BusinessGroupTest {
 			enrollment.getEnrollmentPage().enrollNoWait();
 		}
 		//wait
+		for(Enrollment enrollment:participantDrivers) {
+			OOGraphene.waitBusy(enrollment.getDriver());
+		}
 		int errors = 0;
 		for(Enrollment enrollment:participantDrivers) {
 			if(enrollment.getEnrollmentPage().hasError()) {
@@ -859,7 +864,8 @@ public class BusinessGroupTest {
 			.openAdministration()
 			.openAdminMembers()
 			.setVisibility(false, true, false)
-			.openMembers();
+			.openMembers()
+			.assertParticipantList();
 		
 		Enrollment[] participantDrivers = new Enrollment[]{
 				new Enrollment(ryomou, ryomouBrowser),

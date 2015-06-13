@@ -273,6 +273,15 @@ public class GroupPage {
 		return this;
 	}
 	
+	public GroupPage assertParticipantList() {
+		By participantListBy = By.id("o_sel_group_participants");
+		List<WebElement> participantListEl = browser.findElements(participantListBy);
+		if(participantListEl.size() == 0) {
+			System.out.println();
+		}
+		return this;
+	}
+	
 	public GroupPage assertMembersInOwnerList(UserVO owner) {
 		return assertMembers(owner, "o_sel_group_coaches");
 	}
