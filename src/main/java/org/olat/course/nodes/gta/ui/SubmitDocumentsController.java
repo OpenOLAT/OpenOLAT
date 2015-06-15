@@ -179,6 +179,8 @@ class SubmitDocumentsController extends FormBasicController {
 			}
 			flc.contextPut("maxDocsWarning", Boolean.FALSE);
 		}
+		
+		flc.contextPut("hasDocuments", Boolean.valueOf((documents.length > 0)));
 	}
 	
 	@Override

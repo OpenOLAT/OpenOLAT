@@ -13,4 +13,6 @@
 #if($maxDocsWarning && !$maxDocsWarning.isEmpty())
 	<div class="o_warning">$maxDocsWarning</div>
 #end
-$r.render("table")
+#if($hasDocuments)
+	$r.render("table")
+#end
