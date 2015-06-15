@@ -111,6 +111,12 @@ class SubmitDocumentsController extends FormBasicController {
 	public Task getAssignedTask() {
 		return assignedTask;
 	}
+	
+
+	public boolean hasUploadDocuments() {
+		return (model.getRowCount() > 0);
+	}
+
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -123,6 +129,7 @@ class SubmitDocumentsController extends FormBasicController {
 			createDocButton = uifactory.addFormLink("open.editor", formLayout, Link.BUTTON);
 			createDocButton.setIconLeftCSS("o_icon o_icon_edit");
 			createDocButton.setElementCssClass("o_sel_course_gta_create_doc");
+			createDocButton.setI18nKey(docI18nKey + ".open.editor");
 		}
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -180,7 +187,7 @@ class SubmitDocumentsController extends FormBasicController {
 			flc.contextPut("maxDocsWarning", Boolean.FALSE);
 		}
 		
-		flc.contextPut("hasDocuments", Boolean.valueOf((documents.length > 0)));
+		flc.contextPut("hasDocuments", Boolean.valueOf(hasUploadDocuments()));
 	}
 	
 	@Override

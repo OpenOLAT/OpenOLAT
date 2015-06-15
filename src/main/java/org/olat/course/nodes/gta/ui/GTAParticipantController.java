@@ -256,6 +256,8 @@ public class GTAParticipantController extends GTAAbstractController {
 		submitButton.setElementCssClass("o_sel_course_gta_submit_docs");
 		submitButton.setCustomEnabledLinkCSS("btn btn-primary");
 		submitButton.setIconLeftCSS("o_icon o_icon_submit");
+		submitButton.setVisible(submitDocCtrl.hasUploadDocuments());
+
 	}
 	
 	private void setSubmittedDocumentsController(UserRequest ureq) {
@@ -610,6 +612,7 @@ public class GTAParticipantController extends GTAAbstractController {
 				Task assignedTask = submitDocCtrl.getAssignedTask();
 				gtaManager.log("Submit", (SubmitEvent)event, assignedTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
 			}
+			submitButton.setVisible(submitDocCtrl.hasUploadDocuments());
 		}
 		super.event(ureq, source, event);
 	}

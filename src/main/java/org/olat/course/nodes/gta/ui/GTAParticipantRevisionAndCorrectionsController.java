@@ -160,6 +160,7 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 		submitRevisionButton.setCustomEnabledLinkCSS("btn btn-primary");
 		submitRevisionButton.setIconLeftCSS("o_icon o_icon o_icon_submit");
 		submitRevisionButton.setElementCssClass("o_sel_course_gta_submit_revisions");
+		submitRevisionButton.setVisible(uploadRevisionsCtrl.hasUploadDocuments());
 	}
 	
 	private boolean setRevision(UserRequest ureq, String cmpName, int iteration) {
@@ -207,8 +208,9 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 		if(uploadRevisionsCtrl == source) {
 			if(event instanceof SubmitEvent) {
 				Task aTask = uploadRevisionsCtrl.getAssignedTask();
-				gtaManager.log("Revision", (SubmitEvent)event, aTask, getIdentity(), getIdentity(), assessedGroup, courseEnv, gtaNode);
+				gtaManager.log("Revision", (SubmitEvent)event, aTask, getIdentity(), getIdentity(), assessedGroup, courseEnv, gtaNode);				
 			}
+			submitRevisionButton.setVisible(uploadRevisionsCtrl.hasUploadDocuments());
 		}
 		super.event(ureq, source, event);
 	}

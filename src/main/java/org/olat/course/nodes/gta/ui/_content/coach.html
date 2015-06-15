@@ -18,7 +18,9 @@ $r.render("contextualSubscription")
 		#if($r.available("assignedTask"))
 			$r.render("assignedTask")
 		#else
-			$r.translate("coach.waiting.assignment")
+			<b>$r.translate("coach.waiting.assignment")</b>
+			<br />
+			$r.translate("coach.waiting.assignment.description")
 		#end
 		</div>
 	</div>
@@ -42,7 +44,9 @@ $r.render("contextualSubscription")
 		#if($r.available("submittedDocs"))
 			$r.render("submittedDocs")
 		#else
-			$r.translate("coach.waiting.submitted.documents")
+			<b>$r.translate("coach.waiting.submitted.documents")</b>
+			<br />
+			$r.translate("coach.waiting.submitted.documents.description")
 		#end
 		</div>
 	</div>

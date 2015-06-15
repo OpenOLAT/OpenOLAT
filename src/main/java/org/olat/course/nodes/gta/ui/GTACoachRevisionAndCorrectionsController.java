@@ -191,6 +191,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 		returnToRevisionsButton.setCustomEnabledLinkCSS("btn btn-primary");
 		returnToRevisionsButton.setIconLeftCSS("o_icon o_icon o_icon_submit");
 		returnToRevisionsButton.setElementCssClass("o_sel_course_gta_return_revision");
+		returnToRevisionsButton.setVisible(uploadCorrectionsCtrl.hasUploadDocuments());
 		
 		closeRevisionsButton = LinkFactory.createCustomLink("coach.close.revision.button", "close", "coach.close.revision.button", Link.BUTTON, mainVC, this);
 		closeRevisionsButton.setCustomEnabledLinkCSS("btn btn-primary");
@@ -205,6 +206,8 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 				Task aTask = uploadCorrectionsCtrl.getAssignedTask();
 				gtaManager.log("Corrections", (SubmitEvent)event, aTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
 			}
+			returnToRevisionsButton.setVisible(uploadCorrectionsCtrl.hasUploadDocuments());
+
 		}
 		super.event(ureq, source, event);
 	}
