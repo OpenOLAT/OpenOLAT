@@ -10,13 +10,12 @@ jQuery(function(){
 #end
 
 <div class="o_efficiencystatement container-fluid">
-	#if($r.available("collectArtefactLink"))
-		<div class="pull-right">$r.render("collectArtefactLink")</div>
-	#end
-	<h3><i class="o_icon o_icon_certificate"> </i> $r.translate("efficiencystatement.title")</h3>	
-	
-	
 	<div class="row">
+		#if($r.available("collectArtefactLink"))
+			<div class="pull-right">$r.render("collectArtefactLink")</div>
+		#end
+		<h3><i class="o_icon o_icon_certificate"> </i> $r.translate("efficiencystatement.title")</h3>	
+		
 		#if($r.available("home.link") || $r.available("contact.link"))
 		<div class="o_button_group_right o_block_bottom">
 			<div class=" btn-group">
@@ -31,7 +30,7 @@ jQuery(function(){
 		#end
 		<div class="row">
 		<div class="col-xs-12 col-sm-6">
-			<table class="table table-bordered table-condensed table-striped">
+			<table class="table table-condensed table-striped">
 			<tbody>
 				<tr>
 					<th style="width: 30%;">$r.translate("username")</th>
@@ -58,7 +57,7 @@ jQuery(function(){
 		</div>
 		
 		<div class="col-xs-12 col-sm-6">
-			<table class="table table-bordered table-condensed table-striped">
+			<table class="table table-condensed table-striped">
 			<tbody>
 			#if($courseTitle)
 				<tr>
