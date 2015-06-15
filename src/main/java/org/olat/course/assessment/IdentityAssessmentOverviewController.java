@@ -192,14 +192,13 @@ public class IdentityAssessmentOverviewController extends BasicController {
 
 			TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 			tableConfig.setDownloadOffered(false);
-			//fxdiff VCRP-4: assessment overview with max score
 			tableConfig.setSortingEnabled(true);
 			tableConfig.setDisplayTableHeader(true);
 			tableConfig.setDisplayRowCount(false);
 			tableConfig.setPageingEnabled(false);
 			tableConfig.setTableEmptyMessage(translate("nodesoverview.emptylist"));
-		//fxdiff VCRP-4: assessment overview with max score
 			tableConfig.setPreferencesOffered(true, "assessmentIdentityNodeList");
+			tableConfig.setDisplayTableGrid(true);
 
 			removeAsListenerAndDispose(tableFilterCtr);
 			if (allowTableFiltering) {

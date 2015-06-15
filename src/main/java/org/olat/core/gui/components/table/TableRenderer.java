@@ -103,7 +103,9 @@ public class TableRenderer extends DefaultComponentRenderer {
 		// Render table wrapper and table
 		String formName = renderMultiselectForm(target, source, ubu, iframePostEnabled);
 		target.append("<div class=\"o_table_wrapper\" id=\"o_table_wrapper_").append(table.hashCode()).append("\">")
-		      .append("<table id=\"o_table").append(table.hashCode()).append("\" class=\"o_table table table-striped table-condensed table-hover").append(CLOSE_HTML_BRACE);		
+		      .append("<table id=\"o_table").append(table.hashCode()).append("\" class=\"o_table table table-striped table-condensed table-hover")
+		      .append(" table-bordered", table.isDisplayTableGrid())
+		      .append(CLOSE_HTML_BRACE);		
 		appendHeaderLinks(target, translator, table, formName, cols);
 		appendDataRows(renderer, target, ubu, table, iframePostEnabled, cols, selRowUnSelectable, selRowId, startRowId, endRowId);
 		target.append("</table><div class='o_table_footer'>");

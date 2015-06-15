@@ -46,6 +46,7 @@ public class TableGuiConfiguration {
 	private String preferencesKey;
 	
 	private boolean displayTableHeader = true;
+	private boolean displayTableGrid = false; // default
 	private boolean sortingEnabled = true;
 	private boolean selectedRowUnselectable = false;
 	private boolean multiSelect = false;
@@ -238,6 +239,20 @@ public class TableGuiConfiguration {
 	public TableExporter getDownloadOffered() {
 		assert((tableExporter != null) && downloadOffered);
 		return tableExporter;
+	}
+
+	/**
+	 * Option to display a table grid
+	 * @param enabled true: show the table grid; false: don't show table grid (default)
+	 */
+	public void setDisplayTableGrid(boolean enabled) {
+		this.displayTableGrid = enabled;		
+	}
+	/**
+	 * @return true: show the table grid; false: don't show table grid (default)
+	 */
+	public boolean isDisplayTableGrid() {
+		return this.displayTableGrid;
 	}
 
 }

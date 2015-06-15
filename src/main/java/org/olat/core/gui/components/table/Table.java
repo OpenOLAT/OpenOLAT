@@ -128,6 +128,7 @@ public class Table extends AbstractComponent {
 	private boolean selectedRowUnselectable = false;
 	private boolean sortingEnabled = true;
 	private boolean displayTableHeader = true;
+	private boolean displayTableGrid = false; // default
 	private boolean pageingEnabled = true;
 	private Integer currentPageId;
 	private int resultsPerPage;
@@ -634,6 +635,20 @@ public class Table extends AbstractComponent {
 	 */
 	protected void setDisplayTableHeader(final boolean displayTableHeader) {
 		this.displayTableHeader = displayTableHeader;
+	}
+
+	/**
+	 * Option to display a table grid
+	 * @param enabled true: show the table grid; false: don't show table grid (default)
+	 */
+	protected void setDisplayTableGrid(boolean enabled) {
+		this.displayTableGrid = enabled;		
+	}
+	/**
+	 * @return true: show the table grid; false: don't show table grid (default)
+	 */
+	protected boolean isDisplayTableGrid() {
+		return this.displayTableGrid;
 	}
 
 	/**
