@@ -71,5 +71,9 @@ create index log_gptarget_resid_idx on o_loggingtable(grandparentresid);
 create index log_ggptarget_resid_idx on o_loggingtable(greatgrandparentresid);
 create index log_creationdate_idx on o_loggingtable(creationdate);
 
+-- add constraint
+alter table o_gp_business add constraint gp_to_group_business_ctx foreign key (fk_group_id) references o_bs_group (id);
+
+
 
 
