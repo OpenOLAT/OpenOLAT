@@ -76,6 +76,7 @@ public class GTACoachedParticipantGradingController extends BasicController {
 		
 		assessmentFormButton = LinkFactory.createCustomLink("coach.assessment", "assessment", "coach.assessment", Link.BUTTON, mainVC, this);
 		assessmentFormButton.setCustomEnabledLinkCSS("btn btn-primary");
+		assessmentFormButton.setIconLeftCSS("o_icon o_icon o_icon_submit");
 		assessmentFormButton.setElementCssClass("o_sel_course_gta_assessment_button");
 
 		putInitialPanel(mainVC);

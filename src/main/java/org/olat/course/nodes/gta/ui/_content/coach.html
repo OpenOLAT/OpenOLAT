@@ -1,10 +1,16 @@
 $r.render("contextualSubscription")
 
 #if($groupName && !$groupName.isEmpty())
-	<h4><i class="o_icon o_icon_group"> </i> $r.escapeHtml($groupName)</h4>
+	<h4>
+		<i class="o_icon o_icon_group"> </i> $r.escapeHtml($groupName)
+		$r.render("mailto.group")
+	</h4>
 #elseif($identityFullName && !$identityFullName.isEmpty())
-	<h4><i class="o_icon o_icon_user"> </i> $r.escapeHtml($identityFullName)</h4>
-#end
+	<h4>
+		<span class="o_block_inline_right">$r.render("image")</span>
+		$r.render("mailto.user")
+	</h4>
+#end	
 
 <div class="o_process">
 #if($assignmentEnabled)
@@ -68,11 +74,11 @@ $r.render("contextualSubscription")
 			$r.render("corrections")
 			#if($r.visible("coach.reviewed.button") || $r.visible("coach.need.revision.button"))
 				<div class="o_button_group">
-				#if($r.visible("coach.reviewed.button"))
-					$r.render("coach.reviewed.button")
-				#end
 				#if($r.visible("coach.need.revision.button"))
 					$r.render("coach.need.revision.button")
+				#end
+				#if($r.visible("coach.reviewed.button"))
+					$r.render("coach.reviewed.button")
 				#end
 				</div>
 			#end 
@@ -88,7 +94,7 @@ $r.render("contextualSubscription")
 	/* ]]> */</script>
 #end
 
-#if($revisionEnabled)
+#if($revisionEnabled  && !$skipRevisions)
 	<div class="o_step $revisionCssClass">
 		<div class="o_bar"></div>
 		<h4 class="o_title"> <a href="#o_step_revision_content" data-toggle="collapse" aria-expanded="$collapse_revision">$r.translate("run.revision")</a></h4>

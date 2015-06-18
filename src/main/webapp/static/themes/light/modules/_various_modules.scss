@@ -226,6 +226,11 @@ ul.o_dropdown {
 .o_portrait_name { 
 	margin-top: $padding-base-vertical;
 }
+.o_block_inline, .o_block_inline_right, .o_block_inline_left, .o_block_inline_both {
+	.o_portait, .o_portrait_name, .o_portrait_image {
+		display: inline-block;
+	}
+}
 
 /* Dummy user portrait (avatar) display - portrait sizes must match with DisplayPortraitManager.WIDTH_PORTRAIT_SMALL  DisplayPortraitManager.WIDTH_PORTRAIT_BIG */
 .o_portrait_avatar,

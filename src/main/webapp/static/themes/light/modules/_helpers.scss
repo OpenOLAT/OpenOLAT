@@ -23,6 +23,23 @@
 	@extend %o_block_large_top;
 	@extend %o_block_large_bottom;
 }
+.o_block_inline, %o_block_inline {
+	display: inline-block;
+}
+.o_block_inline_left, %o_block_inline_left {
+	@extend %o_block_inline;
+	margin-left: 0.5em;
+}
+
+.o_block_inline_right, %o_block_inline_right {
+	@extend %o_block_inline;
+	margin-right: 0.5em;
+}
+.o_block_inline_both {
+	@extend %o_block_inline_left;
+	@extend %o_block_inline_right;
+}
+
 
 /* overflowing content that should have scrollbar when content overflows available space */
 .o_scrollblock, %o_scrollblock {

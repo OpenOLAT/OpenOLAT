@@ -3,7 +3,10 @@
 #end
 
 #if($r.available("uploadRevisions"))
-	<p>$r.translate("run.revision.period.description")</p>
+	<p>
+		<i class="o_icon o_icon_error"> </i>
+		$r.translate("run.revision.period.description")
+	</p>
 	$r.render("uploadRevisions")
 	<div class="o_button_group">
 		$r.render("run.submit.revision.button")

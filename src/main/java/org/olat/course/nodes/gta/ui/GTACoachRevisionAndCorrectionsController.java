@@ -27,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -147,6 +148,11 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 					"coach.revisions.description");
 			listenTo(revisionsCtrl);
 			mainVC.put(cmpName, revisionsCtrl.getInitialComponent());
+		} else if (assignedTask.getTaskStatus() == TaskProcess.revision) {
+			String msg = "<i class='o_icon o_icon_error'> </i> " + translate("coach.corrections.rejected");
+			TextFactory.createTextComponentFromString(cmpName, msg, null, true, mainVC);
+		} else {
+			TextFactory.createTextComponentFromI18nKey(cmpName, "coach.revisions.nofiles", getTranslator(), null, true, mainVC);			
 		}
 		return hasDocuments;
 	}
@@ -168,6 +174,18 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 			listenTo(correctionsCtrl);
 			mainVC.put(cmpName, correctionsCtrl.getInitialComponent());
 		}
+		
+		String msg = null;
+		if (assignedTask.getTaskStatus() == TaskProcess.revision) {
+			// message already displayed in setRevisions method for this case
+		} else if (assignedTask.getTaskStatus() == TaskProcess.correction) {
+			msg = "<i class='o_icon o_icon_info'> </i> " + translate("coach.corrections.waiting");
+		} else {				
+			msg = "<i class='o_icon o_icon_ok'> </i> " + translate("coach.corrections.closed");				
+		}
+		mainVC.contextPut("revisionMessage", msg);
+
+		
 		return hasDocuments;
 	}
 	
@@ -189,13 +207,12 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 
 		returnToRevisionsButton = LinkFactory.createCustomLink("coach.submit.corrections.to.revision.button", "submit", "coach.submit.corrections.to.revision.button", Link.BUTTON, mainVC, this);
 		returnToRevisionsButton.setCustomEnabledLinkCSS("btn btn-primary");
-		returnToRevisionsButton.setIconLeftCSS("o_icon o_icon o_icon_submit");
+		returnToRevisionsButton.setIconLeftCSS("o_icon o_icon o_icon_rejected");
 		returnToRevisionsButton.setElementCssClass("o_sel_course_gta_return_revision");
-		returnToRevisionsButton.setVisible(uploadCorrectionsCtrl.hasUploadDocuments());
 		
 		closeRevisionsButton = LinkFactory.createCustomLink("coach.close.revision.button", "close", "coach.close.revision.button", Link.BUTTON, mainVC, this);
 		closeRevisionsButton.setCustomEnabledLinkCSS("btn btn-primary");
-		closeRevisionsButton.setIconLeftCSS("o_icon o_icon o_icon_submit");
+		closeRevisionsButton.setIconLeftCSS("o_icon o_icon o_icon_accepted");
 		closeRevisionsButton.setElementCssClass("o_sel_course_gta_close_revision");
 	}
 	
@@ -206,7 +223,6 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 				Task aTask = uploadCorrectionsCtrl.getAssignedTask();
 				gtaManager.log("Corrections", (SubmitEvent)event, aTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
 			}
-			returnToRevisionsButton.setVisible(uploadCorrectionsCtrl.hasUploadDocuments());
 
 		}
 		super.event(ureq, source, event);

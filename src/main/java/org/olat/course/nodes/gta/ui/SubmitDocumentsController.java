@@ -391,6 +391,13 @@ class SubmitDocumentsController extends FormBasicController {
 				documentName = VFSManager.rename(documentsContainer, documentName);
 				documentsContainer.createChildLeaf(documentName);
 			}
+			// add missing identity in meta info
+			item = documentsContainer.resolve(documentName);
+			if(item instanceof MetaTagged) {
+				MetaInfo  metadata = ((MetaTagged)item).getMetaInfo();
+				metadata.setAuthor(ureq.getIdentity());
+				metadata.write();
+			}				
 	
 			newDocumentEditorCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(),
 					documentsContainer, documentName, "media", true, true);

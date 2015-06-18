@@ -218,8 +218,10 @@ public class GTAWorkflowEditController extends FormBasicController {
 		boolean useRelativeDates = config.getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES);
 		relativeDatesEl.select(keys[0], useRelativeDates);
 		
+		uifactory.addSpacerElement("s1", stepsCont, true);
+		
 		//assignment
-		String[] assignmentValues = new String[] { translate("enabled") };
+		String[] assignmentValues = new String[] { translate("task.assignment.enabled") };
 		taskAssignmentEl = uifactory.addCheckboxesHorizontal("task.assignment", "task.assignment", stepsCont, keys, assignmentValues);
 		taskAssignmentEl.addActionListener(FormEvent.ONCHANGE);
 		boolean assignement = config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT);
@@ -260,6 +262,8 @@ public class GTAWorkflowEditController extends FormBasicController {
 			assignementDeadlineRelToEl.select(relativeDatesKeys[0], true);
 		}
 		
+		uifactory.addSpacerElement("s2", stepsCont, true);
+
 		//turning in
 		String[] submissionValues = new String[] { translate("submission.enabled") };
 		submissionEl = uifactory.addCheckboxesHorizontal("submission", "submission", stepsCont, keys, submissionValues);
@@ -302,6 +306,8 @@ public class GTAWorkflowEditController extends FormBasicController {
 			submissionDeadlineRelToEl.select(relativeDatesKeys[0], true);
 		}
 		
+		uifactory.addSpacerElement("s3", stepsCont, true);
+
 		//review and correction
 		String[] reviewValues = new String[] { translate("review.enabled") };
 		reviewEl = uifactory.addCheckboxesHorizontal("review", "review.and.correction", stepsCont, keys, reviewValues);
@@ -316,8 +322,10 @@ public class GTAWorkflowEditController extends FormBasicController {
 		boolean revision = config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD);
 		revisionEl.select(keys[0], revision);
 		
+		uifactory.addSpacerElement("s4", stepsCont, true);
+
 		//sample solution
-		String[] sampleValues = new String[] { translate("enabled") };
+		String[] sampleValues = new String[] { translate("sample.solution.enabled") };
 		sampleEl = uifactory.addCheckboxesHorizontal("sample", "sample.solution", stepsCont, keys, sampleValues);
 		sampleEl.addActionListener(FormEvent.ONCHANGE);
 		boolean sample = config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION);
@@ -358,8 +366,10 @@ public class GTAWorkflowEditController extends FormBasicController {
 			solutionVisibleRelToEl.select(relativeDatesKeys[0], true);
 		}
 		
+		uifactory.addSpacerElement("s5", stepsCont, true);
+
 		//grading
-		String[] gradingValues = new String[] { translate("enabled") };
+		String[] gradingValues = new String[] { translate("grading.enabled") };
 		gradingEl = uifactory.addCheckboxesHorizontal("grading", "grading", stepsCont, keys, gradingValues);
 		gradingEl.addActionListener(FormEvent.ONCHANGE);
 		boolean grading = config.getBooleanSafe(GTACourseNode.GTASK_GRADING);
@@ -641,7 +651,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		for(BusinessGroupShort group:groups) {
 			if(sb.length() > 0) sb.append("&nbsp;&nbsp;");
 			sb.append("<i class='o_icon o_icon-fw o_icon_group'>&nbsp;</i> ")
-			  .append(group.getName());
+			  .append(StringHelper.escapeHtml(group.getName()));
 		}
 		return sb.toString();
 	}
@@ -652,7 +662,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		for(BGArea area:areas) {
 			if(sb.length() > 0) sb.append("&nbsp;&nbsp;");
 			sb.append("<i class='o_icon o_icon-fw o_icon_courseareas'>&nbsp;</i> ")
-			  .append(area.getName());
+			  .append(StringHelper.escapeHtml(area.getName()));
 		}
 		return sb.toString();
 	}

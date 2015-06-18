@@ -30,6 +30,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 
 /**
@@ -52,7 +53,7 @@ public class BusinessGroupChooserController extends BasicController {
 		for(BusinessGroup myGroup:myGroups) {
 			String name = "gp-" + myGroup.getKey();
 			Link link = LinkFactory.createLink(name, myGroup.getName(), getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
-			link.setCustomDisplayText(myGroup.getName());
+			link.setCustomDisplayText(StringHelper.escapeHtml(myGroup.getName()));
 			link.setUserObject(myGroup);
 			mainVC.put(name, link);
 			links.add(name);

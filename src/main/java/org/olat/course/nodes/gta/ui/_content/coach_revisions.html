@@ -5,6 +5,9 @@
 #if($r.available("revisions"))
 	$r.render("revisions")
 #end
+#if($revisionMessage && !$revisionMessage.isEmpty())
+	<p>$revisionMessage</p>
+#end
 #if($r.available("uploadCorrections"))
 	$r.render("uploadCorrections")
 	<div class="o_button_group">
