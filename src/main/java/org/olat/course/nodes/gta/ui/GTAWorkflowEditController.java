@@ -321,6 +321,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		revisionEl.addActionListener(FormEvent.ONCHANGE);
 		boolean revision = config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD);
 		revisionEl.select(keys[0], revision);
+		revisionEl.setVisible(review);
 		
 		uifactory.addSpacerElement("s4", stepsCont, true);
 
@@ -542,6 +543,8 @@ public class GTAWorkflowEditController extends FormBasicController {
 			updateAssignmentDeadline();
 			updateSubmissionDeadline();
 			updateSolutionDeadline();
+		} else if (reviewEl == source) {
+			updateRevisions();
 		} else if(chooseGroupButton == source) {
 			doChooseGroup(ureq);
 		} else if(chooseAreaButton == source) {
@@ -571,6 +574,13 @@ public class GTAWorkflowEditController extends FormBasicController {
 		solutionVisibleAfterEl.setVisible(solution && !userRelativeDate);
 		solutionVisibleRelCont.setVisible(solution && userRelativeDate);
 	}
+	
+	private void updateRevisions() {
+		boolean review = reviewEl.isAtLeastSelected(1);
+		revisionEl.setVisible(review);
+		revisionEl.select(keys[0], review);
+	}
+	
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
