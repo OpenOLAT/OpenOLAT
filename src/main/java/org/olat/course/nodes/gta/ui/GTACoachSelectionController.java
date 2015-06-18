@@ -146,6 +146,13 @@ public class GTACoachSelectionController extends BasicController {
 			coachingCtrl = null;
 		}
 		backLink.setVisible(false);
+		if (participantListCtrl != null) {
+			participantListCtrl.updateModel();			
+		} 
+		if (groupListCtrl != null) {
+			groupListCtrl.updateModel();
+			
+		}
 	}
 	
 	private void doSelectBusinessGroup(UserRequest ureq, BusinessGroup group) {

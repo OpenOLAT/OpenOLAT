@@ -53,7 +53,7 @@ public class TaskStatusCellRenderer implements FlexiCellRenderer {
 				case revision: target.append("<i class='o_icon o_icon-fw'>&nbsp;</i>").append(translator.translate("process.revision")); break;
 				case correction: target.append("<i class='o_icon o_icon-fw o_icon_info'>&nbsp;</i>").append(translator.translate("process.correction")); break;
 				case solution: target.append("<i class='o_icon o_icon-fw'>&nbsp;</i>").append(translator.translate("process.solution")); break;
-				case grading: target.append("<i class='o_icon o_icon-fw o_icon_warn'>&nbsp;</i>").append(translator.translate("process.grading")); break;
+				case grading: target.append("<i class='o_icon o_icon-fw o_icon_info'>&nbsp;</i>").append(translator.translate("process.grading")); break;
 				case graded: target.append("<i class='o_icon o_icon-fw'>&nbsp;</i>").append(translator.translate("process.graded")); break;
 			}
 		} else if(cellValue == null) {
