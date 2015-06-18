@@ -102,6 +102,7 @@ public class CourseReminderListController extends FormBasicController implements
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		addButton = uifactory.addFormLink("add.reminder", formLayout, Link.BUTTON);
+		addButton.setIconLeftCSS("o_icon o_icon_add");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ReminderCols.id.i18nKey(), ReminderCols.id.ordinal(),
@@ -138,6 +139,7 @@ public class CourseReminderListController extends FormBasicController implements
 		}
 		tableModel.setObjects(rows);
 		tableEl.reset();
+		tableEl.setVisible(rows.size() > 0);
 	}
 	
 	@Override
