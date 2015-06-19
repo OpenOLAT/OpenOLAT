@@ -119,6 +119,7 @@ public class GroupTaskConfigurationPage {
 		
 		By inputBy = By.cssSelector(".o_fileinput input[type='file']");
 		OOGraphene.uploadFile(inputBy, file, browser);
+		OOGraphene.waitBusy(browser);
 		
 		//save
 		By saveBy = By.cssSelector(".o_sel_course_gta_upload_task_form button.btn-primary");
@@ -129,7 +130,9 @@ public class GroupTaskConfigurationPage {
 	
 	public GroupTaskConfigurationPage saveTasks() {
 		By saveBy = By.cssSelector(".o_sel_course_gta_task_config_buttons button.btn-primary");
-		browser.findElement(saveBy).click();
+		List<WebElement> saveEls = browser.findElements(saveBy);
+		Assert.assertEquals(1, saveEls.size());
+		saveEls.get(0).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -144,10 +147,13 @@ public class GroupTaskConfigurationPage {
 		
 		By inputBy = By.cssSelector(".o_fileinput input[type='file']");
 		OOGraphene.uploadFile(inputBy, file, browser);
+		OOGraphene.waitBusy(browser);
 		
 		//save
 		By saveBy = By.cssSelector(".o_sel_course_gta_upload_solution_form button.btn-primary");
-		browser.findElement(saveBy).click();
+		List<WebElement> saveEls = browser.findElements(saveBy);
+		Assert.assertEquals(1, saveEls.size());
+		saveEls.get(0).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
