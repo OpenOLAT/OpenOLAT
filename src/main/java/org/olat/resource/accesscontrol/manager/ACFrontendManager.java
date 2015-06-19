@@ -416,9 +416,7 @@ public class ACFrontendManager implements ACService {
 	public boolean reserveAccessToResource(final Identity identity, final OfferAccess offer) {
 		final OLATResource resource = offer.getOffer().getResource();
 		String resourceType = resource.getResourceableTypeName();
-		if("CourseModule".equals(resourceType)) {
-			return true;//don't need reservation
-		} else if("BusinessGroup".equals(resourceType)) {
+		if("BusinessGroup".equals(resourceType)) {
 			boolean reserved = false;
 			final BusinessGroup group = businessGroupDao.loadForUpdate(resource.getResourceableId());
 			if(group.getMaxParticipants() == null && group.getMaxParticipants() <= 0) {
@@ -439,7 +437,7 @@ public class ACFrontendManager implements ACService {
 			}
 			return reserved;
 		}
-		return false;
+		return true;
 	}
 
 	@Override
@@ -468,19 +466,19 @@ public class ACFrontendManager implements ACService {
 		}
 		
 		String resourceType = resource.getResourceableTypeName();
-		if("CourseModule".equals(resourceType)) {
+		if("BusinessGroup".equals(resourceType)) {
+			BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
+			if(group != null) {
+				EnrollState result = businessGroupService.enroll(identity, null, identity, group, null);
+				return result.isFailed() ? Boolean.FALSE : Boolean.TRUE;
+			}
+		} else {
 			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(resource, false);
 			if(entry != null) {
 				if(!repositoryEntryRelationDao.hasRole(identity, entry, GroupRoles.participant.name())) {
 					repositoryEntryRelationDao.addRole(identity, entry, GroupRoles.participant.name());
 				}
 				return true;
-			}
-		} else if("BusinessGroup".equals(resourceType)) {
-			BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
-			if(group != null) {
-				EnrollState result = businessGroupService.enroll(identity, null, identity, group, null);
-				return result.isFailed() ? Boolean.FALSE : Boolean.TRUE;
 			}
 		}
 		return false;
@@ -500,19 +498,19 @@ public class ACFrontendManager implements ACService {
 		}
 		
 		String resourceType = resource.getResourceableTypeName();
-		if("CourseModule".equals(resourceType)) {
-			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(resource, false);
-			if(entry != null) {
-				if(repositoryEntryRelationDao.hasRole(identity, entry, GroupRoles.participant.name())) {
-					repositoryEntryRelationDao.removeRole(identity, entry, GroupRoles.participant.name());
-				}
-				return true;
-			}
-		} else if("BusinessGroup".equals(resourceType)) {
+		if("BusinessGroup".equals(resourceType)) {
 			BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
 			if(group != null) {
 				if(businessGroupService.hasRoles(identity, group, GroupRoles.participant.name())) {
 					businessGroupRelationDao.removeRole(identity, group, GroupRoles.participant.name());
+				}
+				return true;
+			}
+		} else {
+			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(resource, false);
+			if(entry != null) {
+				if(repositoryEntryRelationDao.hasRole(identity, entry, GroupRoles.participant.name())) {
+					repositoryEntryRelationDao.removeRole(identity, entry, GroupRoles.participant.name());
 				}
 				return true;
 			}
@@ -523,15 +521,15 @@ public class ACFrontendManager implements ACService {
 	@Override
 	public String resolveDisplayName(OLATResource resource) {
 		String resourceType = resource.getResourceableTypeName();
-		if("CourseModule".equals(resourceType)) {
-			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(resource, false);
-			if(entry != null) {
-				return entry.getDisplayname();
-			}
-		} else if("BusinessGroup".equals(resourceType)) {
+		if("BusinessGroup".equals(resourceType)) {
 			BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
 			if(group != null) {
 				return group.getName();
+			}
+		} else {
+			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(resource, false);
+			if(entry != null) {
+				return entry.getDisplayname();
 			}
 		}
 		return null;
