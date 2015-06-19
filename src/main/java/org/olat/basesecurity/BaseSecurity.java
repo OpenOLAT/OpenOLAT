@@ -250,6 +250,12 @@ public interface BaseSecurity {
 	 * @return
 	 */
 	public List<Identity> loadIdentities(int firstResult, int maxResults);
+	
+	/**
+	 * 
+	 * @return The keys of identities where status < STATUS_VISIBLE_LIMIT
+	 */
+	public List<Long> loadVisibleIdentityKeys();
 
 	/**
 	 * get number of users with last login greater than lastLoginLimit

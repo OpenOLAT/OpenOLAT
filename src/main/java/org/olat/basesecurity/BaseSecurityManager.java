@@ -1164,22 +1164,32 @@ public class BaseSecurityManager implements BaseSecurity {
 				.getResultList();
 	}
 	
+	@Override
 	public List<Identity> loadIdentities(int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident order by ident.key");
-		
 		return DBFactory.getInstance().getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setFirstResult(firstResult)
 				.setMaxResults(maxResults)
 				.getResultList();
-		
+	}
+	
+	@Override
+	public List<Long> loadVisibleIdentityKeys() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident.key from ").append(IdentityImpl.class.getName()).append(" as ident")
+		  .append(" where ident.status<").append(Identity.STATUS_VISIBLE_LIMIT).append(" order by ident.key");
+		return DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.getResultList();
 	}
 
 	/**
 	 * 
 	 * @see org.olat.basesecurity.Manager#countUniqueUserLoginsSince(java.util.Date)
 	 */
+	@Override
 	public Long countUniqueUserLoginsSince (Date lastLoginLimit){
 		String queryStr ="Select count(ident) from org.olat.core.id.Identity as ident where " 
 			+ "ident.lastLogin > :lastLoginLimit and ident.lastLogin != ident.creationDate";	

@@ -58,14 +58,14 @@ public class IdentityIndexer extends AbstractHierarchicalIndexer {
 		
 		int counter = 0;
 		BaseSecurity secMgr = BaseSecurityManager.getInstance();
-		List<Identity> identities = secMgr.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, Identity.STATUS_ACTIV);
-		if (isLogDebugEnabled()) logDebug("Found " + identities.size() + " active identities to index");
+		List<Long> identityKeys = secMgr.loadVisibleIdentityKeys();
+		if (isLogDebugEnabled()) logDebug("Found " + identityKeys.size() + " active identities to index");
 		DBFactory.getInstance().commitAndCloseSession();
   	
-		for (Identity identity : identities) {
+		for (Long identityKey : identityKeys) {
 			try {
 				// reload the identity here before indexing it to make sure it has not been deleted in the meantime
-				identity = secMgr.findIdentityByName(identity.getName());
+				Identity identity = secMgr.loadIdentityByKey(identityKey);
 				if (identity == null || (identity.getStatus()>=Identity.STATUS_VISIBLE_LIMIT)) {
 					logInfo("doIndex: identity was deleted while we were indexing. The deleted identity was: "+identity);
 					continue;
@@ -84,7 +84,7 @@ public class IdentityIndexer extends AbstractHierarchicalIndexer {
 				
 				counter++;
 			} catch (Exception ex) {
-				logWarn("Exception while indexing identity::" + identity.getName() + ". Skipping this user, try next one.", ex);
+				logWarn("Exception while indexing identity::" + identityKey + ". Skipping this user, try next one.", ex);
 				DBFactory.getInstance(false).rollbackAndCloseSession();
 			}
 		}

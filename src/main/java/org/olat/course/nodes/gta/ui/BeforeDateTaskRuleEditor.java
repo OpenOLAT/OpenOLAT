@@ -100,7 +100,7 @@ public class BeforeDateTaskRuleEditor extends RuleEditorFragment {
 		}
 		
 		List<CourseNode> attemptableNodes = new ArrayList<>();
-		searchAttemptableNodes(course.getRunStructure().getRootNode(), attemptableNodes);
+		searchNodesWithDeadlines(course.getRunStructure().getRootNode(), attemptableNodes);
 		
 		String[] nodeKeys = new String[attemptableNodes.size()];
 		String[] nodeValues = new String[attemptableNodes.size()];
@@ -156,7 +156,7 @@ public class BeforeDateTaskRuleEditor extends RuleEditorFragment {
 		return ruleCont;
 	}
 	
-	private void searchAttemptableNodes(CourseNode courseNode, List<CourseNode> nodes) {
+	private void searchNodesWithDeadlines(CourseNode courseNode, List<CourseNode> nodes) {
 		if (courseNode instanceof GTACourseNode) {
 			GTACourseNode assessableCourseNode = (GTACourseNode) courseNode;
 			ModuleConfiguration config = assessableCourseNode.getModuleConfiguration();
@@ -178,7 +178,7 @@ public class BeforeDateTaskRuleEditor extends RuleEditorFragment {
 		
 		for(int i=0; i<courseNode.getChildCount(); i++) {
 			CourseNode child = (CourseNode)courseNode.getChildAt(i);
-			searchAttemptableNodes(child, nodes);
+			searchNodesWithDeadlines(child, nodes);
 		}
 	}
 
