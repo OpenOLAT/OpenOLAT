@@ -32,6 +32,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -256,6 +257,7 @@ public class GTAParticipantController extends GTAAbstractController {
 		submitButton.setElementCssClass("o_sel_course_gta_submit_docs");
 		submitButton.setCustomEnabledLinkCSS("btn btn-primary");
 		submitButton.setIconLeftCSS("o_icon o_icon_submit");
+
 	}
 	
 	private void setSubmittedDocumentsController(UserRequest ureq) {
@@ -267,18 +269,22 @@ public class GTAParticipantController extends GTAAbstractController {
 		} else {
 			documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, getIdentity());
 		}
-		
-		submittedDocCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
-				"run.submitted.description");
-		listenTo(submittedDocCtrl);
-		mainVC.put("submittedDocs", submittedDocCtrl.getInitialComponent());
+		boolean hasDocuments = TaskHelper.hasDocuments(documentsDir);
+		if(hasDocuments) {
+			submittedDocCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
+					"run.submitted.description");
+			listenTo(submittedDocCtrl);
+			mainVC.put("submittedDocs", submittedDocCtrl.getInitialComponent());
+		} else {
+			TextFactory.createTextComponentFromI18nKey("submittedDocs", "run.submitted.nofiles", getTranslator(), null, true, mainVC);	
+		}
 	}
 	
 	private void doConfirmSubmit(UserRequest ureq, Task task) {
 		String title = translate("run.submit.button");
 		String text;
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
-			text = translate("run.submit.confirm.group", new String[]{ assessedGroup.getName() });
+			text = translate("run.submit.confirm.group", new String[]{ StringHelper.escapeHtml(assessedGroup.getName()) });
 		} else {
 			text = translate("run.submit.confirm");
 		}
@@ -354,24 +360,23 @@ public class GTAParticipantController extends GTAAbstractController {
 				mainVC.contextPut("reviewCssClass", "");
 			} else if(assignedTask.getTaskStatus() == TaskProcess.review) {
 				mainVC.contextPut("reviewCssClass", "o_active");
-				
-				setReviews(ureq, true);
+				setReviews(ureq, true, false);
 			} else {
 				mainVC.contextPut("reviewCssClass", "o_done");
-				setReviews(ureq, false);
+				setReviews(ureq, false, (assignedTask.getRevisionLoop() > 0));
 			}
 		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.review) {
 			mainVC.contextPut("reviewCssClass", "o_active");
-			setReviews(ureq, true);
+			setReviews(ureq, true, false);
 		} else {
 			mainVC.contextPut("reviewCssClass", "o_done");
-			setReviews(ureq, false);
+			setReviews(ureq, false, false);
 		}
 		
 		return assignedTask;
 	}
 	
-	private void setReviews(UserRequest ureq, boolean waiting) {
+	private void setReviews(UserRequest ureq, boolean waiting, boolean hasRevisions) {
 		File documentsDir;
 		VFSContainer documentsContainer = null;
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
@@ -386,11 +391,17 @@ public class GTAParticipantController extends GTAAbstractController {
 					"run.corrections.description", "bulk.review", "review");
 			listenTo(correctionsCtrl);
 			mainVC.put("corrections", correctionsCtrl.getInitialComponent());
-		} else {
-			//folder is empty
-			String msg = waiting ? translate("run.review.waiting") : translate("run.review.closed.without.documents");
-			mainVC.contextPut("reviewMessage", msg);
 		}
+		String msg;
+		if (hasRevisions) {
+			msg = "<i class='o_icon o_icon_warn'> </i> " + translate("run.corrections.rejected");
+		} else if (waiting) {
+			msg = "<i class='o_icon o_icon_info'> </i> " + translate("run.review.waiting");
+		} else {				
+			msg = "<i class='o_icon o_icon_ok'> </i> " + translate("run.review.closed");				
+		}
+		
+		mainVC.contextPut("reviewMessage", msg);
 	}
 
 	@Override
@@ -428,6 +439,22 @@ public class GTAParticipantController extends GTAAbstractController {
 					userCourseEnv, task, gtaNode, assessedGroup);
 			listenTo(revisionDocumentsCtrl);
 			mainVC.put("revisionDocs", revisionDocumentsCtrl.getInitialComponent());
+			
+			String msg = null;
+			if (task.getTaskStatus() == TaskProcess.revision) {
+				// message about rejected work is displayed in GTAParticipantRevisionAndCorrectionsController
+			} else if (task.getTaskStatus() == TaskProcess.correction) {
+				msg = "<i class='o_icon o_icon_info'> </i> " + translate("run.review.waiting");
+			} else {				
+				msg = "<i class='o_icon o_icon_ok'> </i> " + translate("run.review.closed");				
+			}
+			mainVC.contextPut("revisionMessage", msg);
+			
+		} else {
+			TaskProcess status = task.getTaskStatus();
+			if (status == TaskProcess.solution || status == TaskProcess.grading || status == TaskProcess.graded) {
+				mainVC.contextPut("skipRevisions", Boolean.TRUE);
+			}
 		}
 	}
 	

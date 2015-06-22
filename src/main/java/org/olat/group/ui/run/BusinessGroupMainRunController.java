@@ -71,6 +71,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
@@ -220,6 +221,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private HistoryPoint launchedFromPoint;
 
 	// not null indicates tool is enabled
+	private final String nodeIdPrefix;
 	private GenericTreeNode nodeFolder, nodeForum, nodeWiki, nodeCal, nodePortfolio, nodeOpenMeetings;
 	private GenericTreeNode nodeContact, nodeGroupOwners, nodeResources, nodeInformation, nodeAdmin;
 	private boolean groupRunDisabled;
@@ -243,6 +245,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		super(ureq, control);
 		
 		assessmentEventOres = OresHelper.createOLATResourceableType(AssessmentEvent.class);
+		nodeIdPrefix = "bgmr".concat(Long.toString(CodeHelper.getRAMUniqueID()));
 		
 		toolbarPanel = new TooledStackedPanel("courseStackPanel", getTranslator(), this);
 		toolbarPanel.setInvisibleCrumb(0); // show root (course) level
@@ -454,6 +457,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			if (event == Event.CHANGED_EVENT) {
 				TreeModel trMdl = buildTreeModel();
 				bgTree.setTreeModel(trMdl);
+				bgTree.setSelectedNode(nodeAdmin);
 			} else if (event == Event.CANCELLED_EVENT) {
 				// could not get lock on business group, back to inital screen
 				bgTree.setSelectedNodeId(bgTree.getTreeModel().getRootNode().getIdent());
@@ -1029,7 +1033,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		GenericTreeNode gtnChild, root;
 
 		GenericTreeModel gtm = new GenericTreeModel();
-		root = new GenericTreeNode();
+		root = new GenericTreeNode(nodeIdPrefix.concat("-root"));
 		root.setTitle(businessGroup.getName());
 		root.setUserObject(ACTIVITY_MENUSELECT_OVERVIEW);
 		root.setAltText(translate("menutree.top.alt") + " " + businessGroup.getName());
@@ -1039,7 +1043,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(this.businessGroup);
 
 		if (collabTools.isToolEnabled(CollaborationTools.TOOL_NEWS)) {
-			gtnChild = new GenericTreeNode();
+			gtnChild = new GenericTreeNode(nodeIdPrefix.concat("new"));
 			gtnChild.setTitle(translate("menutree.news"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_INFORMATION);
 			gtnChild.setAltText(translate("menutree.news.alt"));
@@ -1050,7 +1054,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		}
 
 		if (calendarModule.isEnabled() && calendarModule.isEnableGroupCalendar() && collabTools.isToolEnabled(CollaborationTools.TOOL_CALENDAR)) {
-			gtnChild = new GenericTreeNode();
+			gtnChild = new GenericTreeNode(nodeIdPrefix.concat("cal"));
 			gtnChild.setTitle(translate("menutree.calendar"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_CALENDAR);
 			gtnChild.setAltText(translate("menutree.calendar.alt"));
@@ -1062,7 +1066,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		
 		boolean hasResources = businessGroupService.hasResources(businessGroup);
 		if(hasResources) {
-			gtnChild = new GenericTreeNode();
+			gtnChild = new GenericTreeNode(nodeIdPrefix.concat("courses"));
 			gtnChild.setTitle(translate("menutree.resources"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_SHOW_RESOURCES);
 			gtnChild.setAltText(translate("menutree.resources.alt"));
@@ -1075,7 +1079,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		if (businessGroup.isOwnersVisibleIntern() || businessGroup.isParticipantsVisibleIntern()) {
 			// either owners or participants, or both are visible
 			// otherwise the node is not visible
-			gtnChild = new GenericTreeNode();
+			gtnChild = new GenericTreeNode(nodeIdPrefix.concat("members"));
 			gtnChild.setTitle(translate("menutree.members"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_MEMBERSLIST);
 			gtnChild.setAltText(translate("menutree.members.alt"));
@@ -1086,7 +1090,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		}
 
 		if (collabTools.isToolEnabled(CollaborationTools.TOOL_CONTACT)) {
-			gtnChild = new GenericTreeNode();
+			gtnChild = new GenericTreeNode(nodeIdPrefix.concat("contact"));
 			gtnChild.setTitle(translate("menutree.contactform"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_CONTACTFORM);
 			gtnChild.setAltText(translate("menutree.contactform.alt"));
@@ -1097,7 +1101,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		}
 
 		if (collabTools.isToolEnabled(CollaborationTools.TOOL_FOLDER)) {
-			gtnChild = new GenericTreeNode();
+			gtnChild = new GenericTreeNode(nodeIdPrefix.concat("folder"));
 			gtnChild.setTitle(translate("menutree.folder"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_FOLDER);
 			gtnChild.setAltText(translate("menutree.folder.alt"));
@@ -1108,7 +1112,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		}
 
 		if (collabTools.isToolEnabled(CollaborationTools.TOOL_FORUM)) {
-			gtnChild = new GenericTreeNode();
+			gtnChild = new GenericTreeNode(nodeIdPrefix.concat("forum"));
 			gtnChild.setTitle(translate("menutree.forum"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_FORUM);
 			gtnChild.setAltText(translate("menutree.forum.alt"));
@@ -1118,9 +1122,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			nodeForum = gtnChild;
 		}
 
-		
 		if (chatAvailable) {
-			gtnChild = new GenericTreeNode();
+			gtnChild = new GenericTreeNode(nodeIdPrefix.concat("chat"));
 			gtnChild.setTitle(translate("menutree.chat"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_CHAT);
 			gtnChild.setAltText(translate("menutree.chat.alt"));
@@ -1131,7 +1134,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class); 
 		if (collabTools.isToolEnabled(CollaborationTools.TOOL_WIKI) && securityModule.isWikiEnabled()) {
-			gtnChild = new GenericTreeNode();
+			gtnChild = new GenericTreeNode(nodeIdPrefix.concat("wiki"));
 			gtnChild.setTitle(translate("menutree.wiki"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_WIKI);
 			gtnChild.setAltText(translate("menutree.wiki.alt"));
@@ -1143,7 +1146,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		
 		PortfolioModule portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");		
 		if (collabTools.isToolEnabled(CollaborationTools.TOOL_PORTFOLIO) && portfolioModule.isEnabled()) {
-			gtnChild = new GenericTreeNode();
+			gtnChild = new GenericTreeNode(nodeIdPrefix.concat("eportfolio"));
 			gtnChild.setTitle(translate("menutree.portfolio"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_PORTFOLIO);
 			gtnChild.setAltText(translate("menutree.portfolio.alt"));
@@ -1155,7 +1158,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		
 		OpenMeetingsModule openMeetingsModule = CoreSpringFactory.getImpl(OpenMeetingsModule.class);		
 		if (openMeetingsModule.isEnabled() && collabTools.isToolEnabled(CollaborationTools.TOOL_OPENMEETINGS)) {
-			gtnChild = new GenericTreeNode();
+			gtnChild = new GenericTreeNode(nodeIdPrefix.concat("meetings"));
 			gtnChild.setTitle(translate("menutree.openmeetings"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_OPENMEETINGS);
 			gtnChild.setAltText(translate("menutree.openmeetings.alt"));
@@ -1165,7 +1168,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		}
 
 		if (isAdmin) {
-			gtnChild = new GenericTreeNode();
+			gtnChild = new GenericTreeNode(nodeIdPrefix.concat("admin"));
 			gtnChild.setTitle(translate("menutree.administration"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_ADMINISTRATION);
 			gtnChild.setIdent(ACTIVITY_MENUSELECT_ADMINISTRATION);
@@ -1177,7 +1180,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 			AccessControlModule acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
 			if(acModule.isEnabled() && acService.isResourceAccessControled(businessGroup.getResource(), null)) {
-				gtnChild = new GenericTreeNode();
+				gtnChild = new GenericTreeNode(nodeIdPrefix.concat("ac"));
 				gtnChild.setTitle(translate("menutree.ac"));
 				gtnChild.setUserObject(ACTIVITY_MENUSELECT_AC);
 				gtnChild.setIdent(ACTIVITY_MENUSELECT_AC);

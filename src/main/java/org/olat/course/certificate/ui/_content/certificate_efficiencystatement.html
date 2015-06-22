@@ -10,82 +10,87 @@ jQuery(function(){
 #end
 
 <div class="o_efficiencystatement container-fluid">
-	#if($r.available("collectArtefactLink"))
-		<div class="pull-right">$r.render("collectArtefactLink")</div>
-	#end
-	<h3><i class="o_icon o_icon_certificate"> </i> $r.translate("efficiencystatement.title")</h3>
-	<div class="row form-horizontal">
-		<div class="col-md-6">
-    		<div class="form-group">
-				<label class="col-sm-3 control-label">$r.translate("username")</label>
-    			<div class="col-sm-9">
-					<div class="input-group">
-      					<p class="form-control-static">$username</p>
-				     	<div class="input-group-btn">
-				     	#if($r.available("home.link"))
-							$r.render("home.link")
-						#end
-						#if($r.available("contact.link"))
-							$r.render("contact.link")
-						#end
-						</div>
-				    </div>
-    			</div>
-    		</div>
+	<div class="row">
+		#if($r.available("collectArtefactLink"))
+			<div class="pull-right">$r.render("collectArtefactLink")</div>
+		#end
+		<h3><i class="o_icon o_icon_certificate"> </i> $r.translate("efficiencystatement.title")</h3>	
+		
+		#if($r.available("home.link") || $r.available("contact.link"))
+		<div class="o_button_group_right o_block_bottom">
+			<div class=" btn-group">
+		    	#if($r.available("home.link"))
+				$r.render("home.link")
+				#end
+				#if($r.available("contact.link"))
+					$r.render("contact.link")
+				#end
+			</div>
+		</div>
+		#end
+		<div class="row">
+		<div class="col-xs-12 col-sm-6">
+			<table class="table table-condensed table-striped">
+			<tbody>
+				<tr>
+					<th style="width: 30%;">$r.translate("username")</th>
+					<td>$username</td>
+				</tr>
 			#foreach( $propertyHandler in $userPropertyHandlers )
 				#if ($propertyHandler.getUserPropertyAsHTML($user, $locale) && $propertyHandler.getUserPropertyAsHTML($user, $locale) != "")
-					<div class="form-group">
-						<label class="col-sm-3 control-label">$r.translate($propertyHandler.i18nFormElementLabelKey())</label>
-						<div class="col-sm-9">
-							<p class="form-control-static">
-							#if($propertyHandler.name == "email")
-								$propertyHandler.getUserProperty($user, $locale)
-							#else
-								$propertyHandler.getUserPropertyAsHTML($user, $locale)
-							#end
-							</p>
-						</div>
-					</div>
+				<tr>
+					<th>
+						$r.translate($propertyHandler.i18nFormElementLabelKey())
+					</th>
+					<td>
+						#if($propertyHandler.name == "email")
+							$propertyHandler.getUserProperty($user, $locale)
+						#else
+							$propertyHandler.getUserPropertyAsHTML($user, $locale)
+						#end
+					</td>
+				</tr>
 				#end
 			#end
+			</tbody>
+			</table>
 		</div>
-		<div class="col-md-6">
+		
+		<div class="col-xs-12 col-sm-6">
+			<table class="table table-condensed table-striped">
+			<tbody>
 			#if($courseTitle)
-				<div class="form-group">
-					<label class="col-sm-3 control-label">$r.translate("course")</label>
-					<div class="col-sm-9">
-						<div class="input-group">
-     							<p class="form-control-static">$courseTitle</p>
-							#if($r.available("course.link"))
-								<span class="input-group-btn">$r.render("course.link")</span>
-							#end
-						</div>
-					</div>
-				</div>
+				<tr>
+					<th style="width: 30%;">$r.translate("course")</th>
+					<td>$courseTitle
+						#if($r.available("course.link"))
+							<div>$r.render("course.link")</div>
+						#end
+					</td>
+				</tr>
 			#end
 			#if($date)
-				<div class="form-group">
-					<label class="col-sm-3 control-label">$r.translate("date")</label>
-					<div class="col-sm-9">
-						<p class="form-control-static">$date</p>
-					</div>
-				</div>
+				<tr>
+					<th style="width: 30%;">$r.translate("date")</th>
+					<td>$date</td>
+				</tr>
 			#end
 			#if($groupName)
-				<div class="form-group">
-					<label class="col-sm-3 control-label">$r.translate("group")</label>
-					<div class="col-sm-9">
-						<div class="input-group">
-      						<p class="form-control-static">$groupName</p>
-				    		#if($r.available("group.link"))
-								<span class="input-group-btn">$r.render("group.link")</span>
-							#end
-						</div>
-					</div>
-				</div>
+				<tr>
+					<th style="width: 30%;">$r.translate("group")</th>
+					<td>
+						$groupName 
+						#if($r.available("group.link"))
+							<div>$r.render("group.link")</div>
+						#end
+					</td>
+				</tr>
 			#end
+			</tbody>
+			</table>
 		</div>
-	</div>
+	</div></div>
+	
 	<div class="row">
 	#if($r.available("segments"))
 		$r.render("segments")

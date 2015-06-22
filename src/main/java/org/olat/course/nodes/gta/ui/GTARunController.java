@@ -81,7 +81,7 @@ public class GTARunController extends BasicController {
 			doOpenRun(ureq);
 			mainVC.put("segments", segmentView);
 			putInitialPanel(mainVC);
-		} else if(membership.isCoach()) {
+		} else if(membership.isCoach() || userCourseEnv.isAdmin()) {
 			createCoach(ureq);
 			putInitialPanel(coachCtrl.getInitialComponent());
 		} else if(membership.isParticipant()) {

@@ -57,6 +57,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.mail.ContactList;
+import org.olat.core.util.mail.EmailAddressValidator;
 import org.olat.core.util.mail.MailModule;
 import org.olat.user.UserManager;
 
@@ -196,6 +197,14 @@ public class ContactForm extends FormBasicController {
 		if(readOnly){
 			return true;
 		}
+		boolean fromMailAddOk = true;
+		if(tfrom.isEnabled()) {
+			String mailInputValue = tfrom.getValue().trim();
+			fromMailAddOk = EmailAddressValidator.isValidEmailAddress(mailInputValue);
+			if(!fromMailAddOk){
+				tfrom.setErrorKey("error.field.not.valid.email",null);
+			}
+		}
 		boolean subjectOk = !tsubject.isEmpty("error.field.not.empty");
 		boolean bodyOk = !tbody.isEmpty("error.field.not.empty");
 		// the body message may not be longer than about 4 pages or 10000
@@ -211,14 +220,14 @@ public class ContactForm extends FormBasicController {
 			//toOk = toOk && ttoBig.notLongerThan(30000, "input.toolong");
 		}
 		boolean fromOk = !tfrom.isEmpty("error.field.not.empty");
-		return subjectOk && bodyOk && toOk && fromOk;
+		return subjectOk && bodyOk && toOk && fromOk && fromMailAddOk;
 	}
 
 	/**
 	 * @return
 	 */
-	public Identity getEmailFrom() {
-		return emailFrom;
+	public String getEmailFrom() {
+		return tfrom.getValue().trim();
 	}
 
 	/**
@@ -374,7 +383,8 @@ public class ContactForm extends FormBasicController {
 		}
 		tfrom = uifactory.addTextElement("ttfrom", NLS_CONTACT_FROM, 255, fullName, formLayout);
 		tfrom.setElementCssClass("o_sel_contact_to");
-		tfrom.setEnabled(false);
+		// When no identity is set, let user enter a valid email address
+		tfrom.setEnabled((this.emailFrom == null));
 		
 		tto = uifactory.addTextElement("tto", NLS_CONTACT_TO, 255, "", formLayout);
 		tto.setEnabled(false);

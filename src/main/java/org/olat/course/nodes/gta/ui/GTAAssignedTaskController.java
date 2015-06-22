@@ -51,7 +51,7 @@ public class GTAAssignedTaskController extends BasicController {
 	
 	
 	
-	private final Link downloadButton;
+	private final Link downloadButton, downloadLink;
 	
 	private final File taskFile;
 	
@@ -76,15 +76,22 @@ public class GTAAssignedTaskController extends BasicController {
 		String[] infos = new String[] { taskFile.getName(), TaskHelper.format(fileSizeInMB) };
 		String taskInfos = translate("download.task.infos", infos);
 		String cssIcon = CSSHelper.createFiletypeIconCssClassFor(taskFile.getName());
-		mainVC.contextPut("taskInfo", taskInfos);
-		mainVC.contextPut("taskCssIcon", cssIcon);
 		if(taskDef != null) {
-			mainVC.contextPut("taskName", taskDef.getTitle());
 			mainVC.contextPut("taskDescription", taskDef.getDescription());
 		}
-		downloadButton = LinkFactory.createButton("download.task", mainVC, this);
+		// two links to same file: explicit button and task name
+		downloadButton = LinkFactory.createCustomLink("download.task", "download.task", null, Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
+		downloadButton.setCustomDisplayText(translate("download.task"));
+		downloadButton.setTitle(taskInfos);
 		downloadButton.setIconLeftCSS("o_icon o_icon_download");
 		downloadButton.setTarget("_blank");
+
+		downloadLink = LinkFactory.createCustomLink("download.link", "download.link", null, Link.NONTRANSLATED, mainVC, this);
+		downloadLink.setCustomDisplayText(StringHelper.escapeHtml(taskDef.getTitle()));
+		downloadLink.setTitle(taskInfos);
+		downloadLink.setIconLeftCSS("o_icon " + cssIcon);
+		downloadLink.setTarget("_blank");
+
 		putInitialPanel(mainVC);
 	}
 	
@@ -95,8 +102,8 @@ public class GTAAssignedTaskController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(downloadButton == source) {
-			MediaResource mdr = new FileMediaResource(taskFile);
+		if(downloadButton == source || downloadLink == source) {
+			MediaResource mdr = new FileMediaResource(taskFile, true);
 			ureq.getDispatchResult().setResultingMediaResource(mdr);
 		}
 	}

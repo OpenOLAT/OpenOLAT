@@ -25,6 +25,16 @@
 	hr.o_spacer_noline {
 		border-top: 1px solid transparent;
 	}
+
+	hr.o_spacer,
+	hr.o_spacer_noline {
+		&.form {
+			/* there is already enough space in the form by the wrapper divs */
+			margin-top: 0px;
+			margin-bottom: 0px;
+		}
+	}
+
 	
 	.form-group.o_omit_margin {
 		margin-bottom: 0;

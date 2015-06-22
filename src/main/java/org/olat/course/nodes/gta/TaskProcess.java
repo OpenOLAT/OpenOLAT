@@ -27,12 +27,12 @@ package org.olat.course.nodes.gta;
  */
 public enum TaskProcess {
 	//the list is in the chronological order
-	assignment,
-	submit,
-	review,
-	revision,
-	correction,
-	solution,
-	grading,
-	graded
+	assignment, 	// Student has to get the assignment, assignment not yet done 
+	submit,			// Student has assignment and is now working on his assignment. In the end he has to submit his work
+	review,			// Submission is done, the coach has now access to the submitted docs and reviews them. The coach uploads a corrected version or some feedback.
+	revision,		// The coach decided that the submitted docs are not yet good enough. The student can read the coach feedback and can submit a revised version or additional docs.
+	correction,		// The submission of the revised docs is done, the coach has now access to them. If satisfied he closes the review or sets the process to another revision state.
+	solution,		// The example solutions are now accessible to the student
+	grading,		// The review and correction process are done, the coach can now grade the word
+	graded			// Grading is done and the students gets his results
 }

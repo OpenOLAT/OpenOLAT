@@ -801,6 +801,10 @@ public class GTAManagerImpl implements GTAManager {
 					break;
 				}
 			}
+			default: {
+				previousStep = TaskProcess.assignment;
+				break;
+			}
 		}
 
 		return previousStep;
@@ -852,6 +856,10 @@ public class GTAManagerImpl implements GTAManager {
 					nextStep = TaskProcess.graded;
 					break;
 				}
+			}
+			default: {
+				nextStep = TaskProcess.graded;
+				break;
 			}
 		}
 

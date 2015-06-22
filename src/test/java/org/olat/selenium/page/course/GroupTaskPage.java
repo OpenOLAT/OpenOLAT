@@ -57,7 +57,7 @@ public class GroupTaskPage {
 	}
 	
 	public GroupTaskPage assertTask(String taskName) {
-		By selectLinkBy = By.xpath("//div[@id='o_step_assignement_content']//h5[contains(text(),'" + taskName + "')]");
+		By selectLinkBy = By.xpath("//div[@id='o_step_assignement_content']//h5//span[contains(text(),'" + taskName + "')]");
 		List<WebElement> selectLinkEls = browser.findElements(selectLinkBy);
 		Assert.assertFalse(selectLinkEls.isEmpty());
 		return this;
@@ -94,6 +94,7 @@ public class GroupTaskPage {
 		
 		By inputBy = By.cssSelector(".o_fileinput input[type='file']");
 		OOGraphene.uploadFile(inputBy, file, browser);
+		OOGraphene.waitBusy(browser);
 		
 		By saveButtonBy = By.cssSelector(".o_sel_course_gta_upload_form button.btn-primary");
 		browser.findElement(saveButtonBy).click();

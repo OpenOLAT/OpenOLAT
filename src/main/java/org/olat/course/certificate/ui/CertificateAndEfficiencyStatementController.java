@@ -215,7 +215,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		}
 		
 		if(courseRepoEntry != null && links) {
-			courseLink = LinkFactory.createButton("course.link", mainVC, this);
+			courseLink = LinkFactory.createButtonXSmall("course.link", mainVC, this);
 			courseLink.setIconLeftCSS("o_icon o_CourseModule_icon");
 			mainVC.put("course.link", courseLink);
 		}
@@ -241,7 +241,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		if(group != null) {
 			mainVC.contextPut("groupName", StringHelper.escapeHtml(group.getName()));
 			if(links) {
-				groupLink = LinkFactory.createButton("group.link", mainVC, this);
+				groupLink = LinkFactory.createButtonXSmall("group.link", mainVC, this);
 				groupLink.setIconLeftCSS("o_icon o_icon_group");
 				mainVC.put("group.link", groupLink);
 			}

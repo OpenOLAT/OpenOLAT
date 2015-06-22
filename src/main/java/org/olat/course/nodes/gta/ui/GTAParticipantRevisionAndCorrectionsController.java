@@ -207,7 +207,7 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 		if(uploadRevisionsCtrl == source) {
 			if(event instanceof SubmitEvent) {
 				Task aTask = uploadRevisionsCtrl.getAssignedTask();
-				gtaManager.log("Revision", (SubmitEvent)event, aTask, getIdentity(), getIdentity(), assessedGroup, courseEnv, gtaNode);
+				gtaManager.log("Revision", (SubmitEvent)event, aTask, getIdentity(), getIdentity(), assessedGroup, courseEnv, gtaNode);				
 			}
 		}
 		super.event(ureq, source, event);

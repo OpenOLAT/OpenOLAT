@@ -47,17 +47,17 @@ public class TaskStatusCellRenderer implements FlexiCellRenderer {
 		if(cellValue instanceof TaskProcess) {
 			TaskProcess step = (TaskProcess)cellValue;
 			switch(step) {
-				case assignment: target.append(translator.translate("process.assignment")); break;
-				case submit: target.append(translator.translate("process.submission")); break;
-				case review: target.append(translator.translate("process.review")); break;
-				case revision: target.append(translator.translate("process.revision")); break;
-				case correction: target.append(translator.translate("process.correction")); break;
-				case solution: target.append(translator.translate("process.solution")); break;
-				case grading: target.append(translator.translate("process.grading")); break;
-				case graded: target.append(translator.translate("process.graded")); break;
+				case assignment: target.append("<i class='o_icon o_icon-fw'>&nbsp;</i>").append(translator.translate("process.assignment")); break;
+				case submit: target.append("<i class='o_icon o_icon-fw'>&nbsp;</i>").append(translator.translate("process.submission")); break;
+				case review: target.append("<i class='o_icon o_icon-fw o_icon_info'>&nbsp;</i>").append(translator.translate("process.review")); break;
+				case revision: target.append("<i class='o_icon o_icon-fw'>&nbsp;</i>").append(translator.translate("process.revision")); break;
+				case correction: target.append("<i class='o_icon o_icon-fw o_icon_info'>&nbsp;</i>").append(translator.translate("process.correction")); break;
+				case solution: target.append("<i class='o_icon o_icon-fw'>&nbsp;</i>").append(translator.translate("process.solution")); break;
+				case grading: target.append("<i class='o_icon o_icon-fw o_icon_info'>&nbsp;</i>").append(translator.translate("process.grading")); break;
+				case graded: target.append("<i class='o_icon o_icon-fw'>&nbsp;</i>").append(translator.translate("process.graded")); break;
 			}
 		} else if(cellValue == null) {
-			target.append(translator.translate("process.no"));
+			target.append("<i class='o_icon o_icon-fw '>&nbsp;</i>").append(translator.translate("process.no"));
 		}
 	}
 }

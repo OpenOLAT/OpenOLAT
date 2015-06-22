@@ -1067,8 +1067,8 @@ public class AssessmentTest {
 		Assume.assumeTrue(browser instanceof FirefoxDriver);
 						
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
-		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
-		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
 		
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		

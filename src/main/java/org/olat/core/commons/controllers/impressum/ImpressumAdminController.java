@@ -89,7 +89,7 @@ public class ImpressumAdminController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("menu.impressum");
-		
+		setFormDescription("config.hint");
 		boolean enabled = impressumModule.isEnabled();
 		
 		String[] enableKeys = new String[]{ "on" };

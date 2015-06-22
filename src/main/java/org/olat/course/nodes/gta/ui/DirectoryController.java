@@ -75,11 +75,12 @@ public class DirectoryController extends BasicController {
 
 		VelocityContainer mainVC = createVelocityContainer("documents_readonly");
 		mainVC.contextPut("description", translate(i18nDescription));
-		mainVC.contextPut("zipName", zipName + ".zip");
 		
 		if(StringHelper.containsNonWhitespace(i18nBulkDownload)) {
-			bulkReviewLink = LinkFactory.createCustomLink("bulk", "bulk", i18nBulkDownload, Link.BUTTON, mainVC, this);
+			bulkReviewLink = LinkFactory.createCustomLink("bulk", "bulk", null, Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
 			bulkReviewLink.setIconLeftCSS("o_icon o_icon_download");
+			bulkReviewLink.setCustomDisplayText(translate(i18nBulkDownload));
+			bulkReviewLink.setTitle(zipName + ".zip");
 		}
 		
 		List<DocumentInfos> linkNames = new ArrayList<>();
@@ -127,7 +128,7 @@ public class DirectoryController extends BasicController {
 	}
 	
 	private void doDownload(UserRequest ureq, File file) {
-		MediaResource mdr = new FileMediaResource(file);
+		MediaResource mdr = new FileMediaResource(file, true);
 		ureq.getDispatchResult().setResultingMediaResource(mdr);
 	}
 	

@@ -204,7 +204,7 @@ public class DatabaseWebService {
 				}
 
 				vo.setActiveConnectionCount(activeConnectionCount);
-				vo.setCurrentConnectionCount(activeConnectionCount - idleConnectionCount);
+				vo.setCurrentConnectionCount(activeConnectionCount + idleConnectionCount);
 			}
 		} catch (Exception e) {
 			log.error("", e);

@@ -190,7 +190,7 @@ public class ProjectGroupController extends BasicController {
 			fireEvent(urequest, Event.CHANGED_EVENT );		
 			// Participant and waiting-list were changed => reload both
 			projectMemberController.reloadData();
-		  projectCandidatesController.reloadData(); // Do only reload data in case of IdentitiesMoveEvent (IdentitiesAddEvent and reload data resulting in doublicate values)
+			projectCandidatesController.reloadData(); // Do only reload data in case of IdentitiesMoveEvent (IdentitiesAddEvent and reload data resulting in doublicate values)
 		}
 	}
 

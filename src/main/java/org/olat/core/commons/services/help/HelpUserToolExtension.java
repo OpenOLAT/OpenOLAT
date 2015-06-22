@@ -59,8 +59,11 @@ public class HelpUserToolExtension extends UserToolExtension {
 
 	@Override
 	public UserTool createUserTool(UserRequest ureq, WindowControl wControl, Locale locale) {
+		if(ureq == null || ureq.getUserSession() == null) {
+			return null;
+		}
 		Roles roles = ureq.getUserSession().getRoles();
-		if(roles.isInvitee()) {
+		if(roles == null || roles.isInvitee()) {
 			return null;
 		}
 		

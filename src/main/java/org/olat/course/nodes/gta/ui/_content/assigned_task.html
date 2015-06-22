@@ -3,9 +3,10 @@
 #end
 <div>$description
 	<div class="pull-right">
-		$r.render("download.task")<br>
-		<i class="o_icon $taskCssIcon"> </i> $r.escapeHtml($taskInfo)
+		$r.render("download.task")
 	</div>
 </div>
-<h5>$r.escapeHtml($taskName)</h5>
+<h5>
+	$r.render("download.link")
+</h5>
 <p>$r.xssScan($taskDescription)</p>

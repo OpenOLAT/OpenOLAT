@@ -126,7 +126,7 @@ public class BGEmailCompositionStepController extends StepFormBasicController   
 				MailBundle ccBundle = new MailBundle();
 				ccBundle.setContext(context);
 				ccBundle.setFromId(getIdentity());
-				ccBundle.setCc(contactForm.getEmailFrom());
+				ccBundle.setCc(getIdentity());
 				ccBundle.setContent(contactForm.getSubject(), contactForm.getBody(), attachments);
 				
 				MailerResult ccResult = mailService.sendMessage(ccBundle);

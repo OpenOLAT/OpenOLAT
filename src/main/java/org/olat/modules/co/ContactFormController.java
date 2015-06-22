@@ -203,12 +203,16 @@ public class ContactFormController extends BasicController {
 				boolean success = false;
 				try {
 					File[] attachments = cntctForm.getAttachments();
-					//fxdiff VCRP-16: intern mail system		
 					MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
 					
 					MailBundle bundle = new MailBundle();
 					bundle.setContext(context);
-					bundle.setFromId(emailFrom);
+					if (emailFrom == null) {
+						// in case the user provides his own email in form						
+						bundle.setFrom(cntctForm.getEmailFrom()); 
+					} else {
+						bundle.setFromId(emailFrom);						
+					}
 					bundle.setContactLists(cntctForm.getEmailToContactLists());
 					bundle.setContent(cntctForm.getSubject(), cntctForm.getBody(), attachments);
 					
@@ -218,8 +222,14 @@ public class ContactFormController extends BasicController {
 						
 						MailBundle ccBundle = new MailBundle();
 						ccBundle.setContext(context);
-						ccBundle.setFromId(emailFrom);
-						ccBundle.setCc(cntctForm.getEmailFrom());
+						if (emailFrom == null) {
+							// in case the user provides his own email in form
+							ccBundle.setFrom(cntctForm.getEmailFrom()); 
+							ccBundle.setTo(cntctForm.getEmailFrom()); 
+						} else {
+							ccBundle.setFromId(emailFrom); 
+							ccBundle.setCc(emailFrom);							
+						}
 						ccBundle.setContent(cntctForm.getSubject(), cntctForm.getBody(), attachments);
 						
 						MailerResult ccResult = mailService.sendMessage(ccBundle);

@@ -12,7 +12,7 @@
 #if($r.available("open.group"))
 <div class="o_block">
 	<div class="pull-right">$r.render("open.group")</div>
-	<p>$r.translate("selected.group", $groupName)</p>
+	<p>$r.translate("selected.group", $r.escapeHtml($groupName))</p>
 	
 	#if($r.available("change.group"))
 		<p>$r.translate("change.group.description") $r.render("change.group")</p>
@@ -34,7 +34,7 @@
 			#end
 			#if($r.available("availableTasks"))
 				#if($groupWarning)
-					<div class="o_warning" role="alert">$r.translate("warning.group.pick.task", $groupName)</div>
+					<div class="o_warning" role="alert">$r.translate("warning.group.pick.task", $r.escapeHtml($groupName))</div>
 				#end
 				$r.render("availableTasks")
 			#elseif($r.available("myAssignedTask"))
@@ -62,7 +62,7 @@
 			#if($r.available("submitDocs"))
 				<p>$r.translate("run.submit.individual.description.${sumbitWay}")</p>
 				#if($groupWarning)
-					<div class="o_warning" role="alert">$r.translate("warning.group.submit", $groupName)</div>
+					<div class="o_warning" role="alert">$r.translate("warning.group.submit", $r.escapeHtml($groupName))</div>
 				#end
 				$r.render("submitDocs")
 				
@@ -89,7 +89,7 @@
 		<h4 class="o_title"> <a href="#o_step_review_content" data-toggle="collapse" aria-expanded="$collapse_reviewAndCorrection">$r.translate("run.review")</a></h4>
 		<div id="o_step_review_content" class="o_content collapse #if($collapse_reviewAndCorrection) in #end" aria-expanded="$collapse_reviewAndCorrection">
 			#if($reviewMessage && !$reviewMessage.isEmpty())
-				<p>$r.escapeHtml($reviewMessage)</p>
+				<p>$reviewMessage</p>
 			#end
 			#if($r.available("corrections"))
 				$r.render("corrections")
@@ -105,13 +105,16 @@
 	/* ]]> */</script>
 #end
 
-#if($revisionEnabled)
+#if($revisionEnabled && !$skipRevisions)
 	<div class="o_step $revisionCssClass">
 		<div class="o_bar"></div>
 		<h4 class="o_title"> <a href="#o_step_revision_content" data-toggle="collapse" aria-expanded="$collapse_revision">$r.translate("run.revision")</a></h4>
 		<div id="o_step_revision_content" class="o_content collapse #if($collapse_revision) in #end" aria-expanded="$collapse_revision">
 			#if($r.available("revisionDocs"))
 				$r.render("revisionDocs")
+			#end
+			#if($revisionMessage && !$revisionMessage.isEmpty())
+				<p>$revisionMessage</p>
 			#end
 		</div>
 	</div>

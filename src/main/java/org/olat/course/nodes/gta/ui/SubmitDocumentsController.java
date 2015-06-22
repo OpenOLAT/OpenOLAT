@@ -111,6 +111,12 @@ class SubmitDocumentsController extends FormBasicController {
 	public Task getAssignedTask() {
 		return assignedTask;
 	}
+	
+
+	public boolean hasUploadDocuments() {
+		return (model.getRowCount() > 0);
+	}
+
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -123,6 +129,7 @@ class SubmitDocumentsController extends FormBasicController {
 			createDocButton = uifactory.addFormLink("open.editor", formLayout, Link.BUTTON);
 			createDocButton.setIconLeftCSS("o_icon o_icon_edit");
 			createDocButton.setElementCssClass("o_sel_course_gta_create_doc");
+			createDocButton.setI18nKey(docI18nKey + ".open.editor");
 		}
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -179,6 +186,8 @@ class SubmitDocumentsController extends FormBasicController {
 			}
 			flc.contextPut("maxDocsWarning", Boolean.FALSE);
 		}
+		
+		flc.contextPut("hasDocuments", Boolean.valueOf(hasUploadDocuments()));
 	}
 	
 	@Override
@@ -382,6 +391,13 @@ class SubmitDocumentsController extends FormBasicController {
 				documentName = VFSManager.rename(documentsContainer, documentName);
 				documentsContainer.createChildLeaf(documentName);
 			}
+			// add missing identity in meta info
+			item = documentsContainer.resolve(documentName);
+			if(item instanceof MetaTagged) {
+				MetaInfo  metadata = ((MetaTagged)item).getMetaInfo();
+				metadata.setAuthor(ureq.getIdentity());
+				metadata.write();
+			}				
 	
 			newDocumentEditorCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(),
 					documentsContainer, documentName, "media", true, true);

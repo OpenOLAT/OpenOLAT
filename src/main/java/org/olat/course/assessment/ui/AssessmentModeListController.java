@@ -143,6 +143,10 @@ public class AssessmentModeListController extends FormBasicController implements
 		List<AssessmentMode> modes = assessmentModeMgr.getAssessmentModeFor(entry);
 		model.setObjects(modes);
 		tableEl.reloadData();
+		// don't show table and button if there is nothing
+		tableEl.setVisible(modes.size() > 0);
+		deleteLink.setVisible(modes.size() > 0);
+
 	}
 
 	@Override

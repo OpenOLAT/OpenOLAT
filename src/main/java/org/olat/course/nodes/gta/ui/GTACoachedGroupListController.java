@@ -93,7 +93,7 @@ public class GTACoachedGroupListController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "entries", tableModel, getTranslator(), formLayout);
 	}
 	
-	private void updateModel() {
+	protected void updateModel() {
 		RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
 		List<TaskLight> tasks = gtaManager.getTasksLight(entry, gtaNode);
 		Map<Long,TaskLight> groupToTasks = new HashMap<>();

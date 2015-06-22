@@ -359,7 +359,7 @@ public class CourseFactory extends BasicManager {
 
 		// delete course directory
 		VFSContainer fCourseBasePath = getCourseBaseContainer(res.getResourceableId());
-		VFSStatus status = fCourseBasePath.delete();
+		VFSStatus status = fCourseBasePath.deleteSilently();
 		boolean deletionSuccessful = (status == VFSConstants.YES || status == VFSConstants.SUCCESS);
 		log.info("deleteCourse: finished deletion. res="+res+", deletion successful: "+deletionSuccessful+", duration: "+(System.currentTimeMillis()-start)+" ms.");
 	}

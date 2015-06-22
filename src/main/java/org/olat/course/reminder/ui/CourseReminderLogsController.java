@@ -158,6 +158,7 @@ public class CourseReminderLogsController extends FormBasicController {
 
 		tableModel.setObjects(rows);
 		tableEl.reset();
+		tableEl.setVisible(rows.size() > 0);
 	}
 	
 	@Override
