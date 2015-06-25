@@ -159,7 +159,13 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(workflowCtrl == source) {
+		if (source == accessibilityCondCtrl) {
+			if (event == Event.CHANGED_EVENT) {
+				Condition cond = accessibilityCondCtrl.getCondition();
+				gtaNode.setPreConditionAccess(cond);
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
+		} else if(workflowCtrl == source) {
 			 if(event == Event.DONE_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 				updateEnabledDisabledTabs();
