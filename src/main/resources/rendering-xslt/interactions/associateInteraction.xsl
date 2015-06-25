@@ -44,81 +44,16 @@
 		</div>
 		
 		<script type="text/javascript">
+		jQuery(function() {
 		<xsl:choose>
 			<xsl:when test="qw:is-not-null-value($responseValue)">
-			
-	jQuery(function() {
-		var associationPairs = '<xsl:value-of select="$responseValue/qw:value" separator=","/>'.split(',');
-		var associationEls = jQuery('#<xsl:value-of select="$appletContainerId"/>_panel .association');
-		for(var i=associationPairs.length; i-->0; ) {
-			var associationPair = associationPairs[i].split(' ');
-			var associationEl = jQuery(associationEls.get(i));
-			var association1 = jQuery('#' + associationPair[0]);
-			var association2 = jQuery('#' + associationPair[1]);
-			jQuery(association1).css('border','none');
-			jQuery(association2).css('border','none');
-			
-			jQuery(associationEl.find('.association_box.left'))
-				.css('border','3px solid grey')
-				.append(association1);
-			jQuery(associationEl.find('.association_box.right'))
-				.css('border','3px solid grey')
-				.append(association2);
-		}
-	});	
-			
+			associateDrawResponse('<xsl:value-of select="$appletContainerId"/>','<xsl:value-of select="$responseValue/qw:value" separator=","/>');
 			</xsl:when>
 			<xsl:otherwise>
-			
-	function recalculateAssociations() {
-		var divContainer = jQuery('#<xsl:value-of select="$appletContainerId"/>_panel');
-		divContainer.find("input[type='hidden']").remove();
-		
-		jQuery("#<xsl:value-of select="$appletContainerId"/>_panel .association").each(function(index, associationEl) {
-			var associations = jQuery(associationEl).find('.o_associate_item');
-			if(associations.length == 2) {
-				var id1 = jQuery(associations.get(0)).attr('id');
-				var id2 = jQuery(associations.get(1)).attr('id');			
-				var inputElement = jQuery('<input type="hidden"/>')
-						.attr('name', 'qtiworks_response_RESPONSE')
-						.attr('value', id1 + " " + id2);
-				divContainer.prepend(inputElement);
-			}
-		});
-	};
-	
-	jQuery(function() {
-    	jQuery("#<xsl:value-of select="$appletContainerId"/>_items .o_associate_item").on('click', function(e, el) {
-    		var itemEl = jQuery(this);
-    		if(itemEl.hasClass('oo-choosed')) {
-    			itemEl.removeClass('oo-choosed');
-    			itemEl.parent('.association_box').each(function(index, el) {
-    				jQuery(el).css('border', '3px dotted grey');
-    			});
-    			itemEl.css('border', '2px solid grey');
-    			jQuery('#<xsl:value-of select="$appletContainerId"/>_items').prepend(itemEl);
-    		} else {
-    			itemEl.css('border', '2px solid red');
-    			itemEl.addClass('oo-selected');
-    		}
-    	});
-    	
-    	jQuery("#<xsl:value-of select="$appletContainerId"/>_panel .association_box").on('click', function(e, el) {
-    		var box = jQuery(this);
-    		jQuery("#<xsl:value-of select="$appletContainerId"/>_items .o_associate_item.oo-selected").each(function(index, selectedEl) {
-    			jQuery(selectedEl)
-    				.css('border', 'none')
-    				.removeClass('oo-selected')
-    				.addClass('oo-choosed');
-    			box.append(selectedEl);
-    			box.css('border', '3px solid grey');
-				recalculateAssociations();
-    		});
-    	});
-    });
-			
+			associateItem('<xsl:value-of select="$appletContainerId"/>', '<xsl:value-of select="@responseIdentifier"/>');
 			</xsl:otherwise>
 		</xsl:choose>
+		});
 		</script>
         
         <!--

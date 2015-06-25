@@ -84,7 +84,8 @@ public abstract class AbstractAssessmentComponent extends AbstractComponent {
 		//jsa.addRequiredStaticJsFile("assessment/rendering/javascript/UpConversionAjaxController.js");
 		
 		jsa.addRequiredStaticJsFile("js/jquery/maphilight/jquery.maphilight.js");
-		jsa.addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.11.4.custom.dnd.min.js");
+		jsa.addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.11.4.custom.qti.min.js");
+		jsa.addRequiredStaticJsFile("js/openolat/qti21.js");
 	}
 
 }

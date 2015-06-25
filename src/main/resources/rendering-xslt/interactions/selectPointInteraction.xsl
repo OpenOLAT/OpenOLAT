@@ -23,88 +23,21 @@
       <xsl:variable name="object" select="qti:object" as="element(qti:object)"/>
       <xsl:variable name="appletContainerId" select="concat('qtiworks_id_appletContainer_', @responseIdentifier)" as="xs:string"/>
       <xsl:variable name="responseValue" select="qw:get-response-value(/, @responseIdentifier)" as="element(qw:responseVariable)?"/>
+      
       <div id="{$appletContainerId}" class="appletContainer" data-openolat="">
 		<canvas id="{$appletContainerId}_canvas" width="{$object/@width}" height="{$object/@height}" style="background-image:url('{qw:convert-link($object/@data)}');"></canvas>
 
-	    <script type="text/javascript">
+	  <script type="text/javascript">
       <xsl:choose>
         <xsl:when test="qw:is-not-null-value($responseValue)">  
 			jQuery(function() {
-				var r = 8;
-				var points = '<xsl:value-of select="$responseValue/qw:value" separator=":"/>'.split(':');
-				var canvas = document.getElementById('<xsl:value-of select="$appletContainerId"/>_canvas');
-				var c = canvas.getContext('2d');
-				c.clearRect(0, 0, jQuery(canvas).width(), jQuery(canvas).height());
-				for(i=points.length; i-->0; ) {
-					var p = points[i].split(' ');
-					c.beginPath();
-					c.arc(p[0], p[1], r, 0, Math.PI * 2, false);
-					c.stroke();
-					c.closePath();
-				}
+				selectPointDrawResponse('<xsl:value-of select="$appletContainerId"/>','<xsl:value-of select="$responseValue/qw:value" separator=":"/>');
 			});
         </xsl:when>
         <xsl:otherwise>
-
 			jQuery(function() {
-				jQuery('#<xsl:value-of select="$appletContainerId"/>_canvas').on("click", function(e, t) {
-					var r = 8;
-					var maxChoices = <xsl:value-of select="@maxChoices"/>;
-				
-					var offset_t = jQuery(this).offset().top - jQuery(window).scrollTop();
-					var offset_l = jQuery(this).offset().left - jQuery(window).scrollLeft();
-
-					var cx = Math.round( (e.clientX - offset_l) );
-					var cy = Math.round( (e.clientY - offset_t) );
-					
-					var data = jQuery("#<xsl:value-of select="$appletContainerId"/>").data("openolat") || {};
-					if(data.listOfPoints == undefined) {
-						data.listOfPoints = [];
-						jQuery("#<xsl:value-of select="$appletContainerId"/>").data('openolat', data);
-					}
-					
-					var remove = false;
-					var newListOfPoints = [];
-					for(i=data.listOfPoints.length; i-->0;) {
-						var p = data.listOfPoints[i];
-						var rc = ((p.x - cx)*(p.x - cx)) + ((p.y - cy)*(p.y - cy));
-						if(Math.pow(r,2) > rc) {
-							remove = true;
-						} else {
-							newListOfPoints.push(p);
-						}
-					}
-					
-					if(remove) {
-						data.listOfPoints = newListOfPoints;
-					} else if(data.listOfPoints.length >= maxChoices) {
-						return false;
-					} else {
-						data.listOfPoints.push({'x': cx, 'y': cy});
-					}
-
-					var canvas = document.getElementById('<xsl:value-of select="$appletContainerId"/>_canvas');
-					var c = canvas.getContext('2d');
-					c.clearRect(0, 0, jQuery(canvas).width(), jQuery(canvas).height());
-					
-					var divContainer = jQuery('#<xsl:value-of select="$appletContainerId"/>');
-					divContainer.find("input[type='hidden']").remove();
-					
-					for(i=data.listOfPoints.length; i-->0;) {
-						var p = data.listOfPoints[i];
-						c.beginPath();
-						c.arc(p.x, p.y, r, 0, Math.PI * 2, false);
-						c.stroke();
-						c.closePath();
-						
-						var inputElement = jQuery('<input type="hidden"/>')
-							.attr('name', 'qtiworks_response_<xsl:value-of select="@responseIdentifier"/>')
-							.attr('value', p.x + " " + p.y);
-						divContainer.append(inputElement);
-					}
-				});
-			});
-			
+				selectPointItem('<xsl:value-of select="$appletContainerId"/>',<xsl:value-of select="@maxChoices"/>,'<xsl:value-of select="@responseIdentifier"/>');	
+			});			
         </xsl:otherwise>
       </xsl:choose>
       </script>

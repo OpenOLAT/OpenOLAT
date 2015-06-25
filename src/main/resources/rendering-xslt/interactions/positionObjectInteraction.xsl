@@ -34,66 +34,20 @@
 			<xsl:for-each select="qti:positionObjectInteraction">
             	<xsl:variable name="interaction" select="." as="element(qti:positionObjectInteraction)"/>
             	<xsl:variable name="responseValue" select="qw:get-response-value(/, @responseIdentifier)" as="element(qw:responseVariable)?"/>
-           
-				<xsl:choose>
-                  <xsl:when test="qw:is-not-null-value($responseValue)">
-
+          
  		<script type="text/javascript">
-	jQuery(function() {
-		var positions = '<xsl:value-of select="$responseValue/qw:value" separator=":"/>'.split(':');
-		var items = jQuery('#<xsl:value-of select="$appletContainerId"/> .items_container .o_item.o_<xsl:value-of select="$interaction/@responseIdentifier"/>');
-		for(var i=positions.length; i-->0; ) {
-			var pos = positions[i].split(' ');
-			var item = jQuery(items.get(i));
-			item.css('position', 'absolute');
-			item.css('top', pos[1] + 'px');
-			item.css('left', pos[0] + 'px');
-		}
-	});
+		jQuery(function() {
+		<xsl:choose>
+        	<xsl:when test="qw:is-not-null-value($responseValue)">
+			positionObjectDrawResponse('<xsl:value-of select="$appletContainerId"/>','<xsl:value-of select="$interaction/@responseIdentifier"/>','<xsl:value-of select="$responseValue/qw:value" separator=":"/>');
+			</xsl:when>
+            <xsl:otherwise>
+			positionObjectItem('<xsl:value-of select="$appletContainerId"/>','<xsl:value-of select="$interaction/@responseIdentifier"/>');
+			</xsl:otherwise>
+		</xsl:choose>
+		});
 		</script>                   
-                    
-                  </xsl:when>
-                  <xsl:otherwise>
-
-		<script type="text/javascript">
-	jQuery(function() {
-		jQuery('#<xsl:value-of select="$appletContainerId"/> .items_container .o_item.o_<xsl:value-of select="$interaction/@responseIdentifier"/>').each(function(index, el) {
-    		jQuery(el).attr('id','object-item-' + index);
-    	}).draggable({
-    		containment: "#<xsl:value-of select="$appletContainerId"/>",
-    		scroll: false,
-    		stop: function( event, ui ) {
-    			var imgEl = jQuery('#<xsl:value-of select="$appletContainerId"/>_img');
-    			var img_offset_t = jQuery(imgEl).offset().top - jQuery(window).scrollTop();
-				var img_offset_l = jQuery(imgEl).offset().left - jQuery(window).scrollLeft();
-				
-				var offset_t = jQuery(this).offset().top - jQuery(window).scrollTop();
-				var offset_l = jQuery(this).offset().left - jQuery(window).scrollLeft();
-
-				var cx = Math.round( (offset_l - img_offset_l) );
-				var cy = Math.round( (offset_t - img_offset_t) );
-				
-				var itemId = jQuery(this).attr('id');
-				var inputId = 'in-' + itemId + '-<xsl:value-of select="$interaction/@responseIdentifier"/>';
-				var divContainer = jQuery('#<xsl:value-of select="$appletContainerId"/>');
-				var inputEl = divContainer.find(inputId);
-				if(inputEl.length == 0) {
-					var inputElement = jQuery('<input type="hidden"/>')
-						.attr('id', inputId)
-						.attr('name', 'qtiworks_response_<xsl:value-of select="$interaction/@responseIdentifier"/>')
-						.attr('value', cx + " " + cy);
-					divContainer.prepend(inputElement);
-				} else {
-					inputEl.val(cx + " " + cy);
-				}
-    		}
-    	});
-    });
-		</script>
-
-                  </xsl:otherwise>
-                </xsl:choose>
-                
+ 
             	<xsl:for-each select="1 to @maxChoices">
               		<!-- {$interaction/qti:object/@type} -->
             		<div class="o_item o_{$interaction/@responseIdentifier}" style="width:{$interaction/qti:object/@width}px; height:{$interaction/qti:object/@height}px; background-image:url('{qw:convert-link($interaction/qti:object/@data)}');"> </div>

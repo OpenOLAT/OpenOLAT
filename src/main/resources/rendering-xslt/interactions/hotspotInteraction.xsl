@@ -25,14 +25,14 @@
       <xsl:variable name="responseValue" select="qw:get-response-value(/, @responseIdentifier)" as="element(qw:responseVariable)?"/>
       
       <div id="{$appletContainerId}" class="appletContainer v2">
-        <img id="{$appletContainerId}_img" width="206" height="280" src="{qw:convert-link-full($object/@data)}" usemap="#{$appletContainerId}_map"></img>
+        <img id="{$appletContainerId}_img" width="{$object/@width}" height="{$object/@height}" src="{qw:convert-link-full($object/@data)}" usemap="#{$appletContainerId}_map"></img>
         <map name="{$appletContainerId}_map">
         	<xsl:for-each select="qti:hotspotChoice">
             	<!-- Match group, label -->
           		<area id="{@identifier}" shape="{@shape}" coords="{@coords}" href="javascript:clickArea('{@identifier}')" data-maphilight=''></area>
           	</xsl:for-each>
 		</map>
-
+	
 		<script type="text/javascript">
 			jQuery(function() {
 				jQuery('#<xsl:value-of select="$appletContainerId"/>_img').maphilight({
@@ -44,57 +44,16 @@
 			
 			<xsl:choose>
 				<xsl:when test="qw:is-not-null-value($responseValue)">
-
 			jQuery(function() {
-				var areaIds = '<xsl:value-of select="$responseValue/qw:value" separator=","/>'.split(',');
-				for(i=areaIds.length; i-->0; ) {
-					var areaEl = jQuery('#' + areaIds[i])
-					var data = areaEl.data('maphilight') || {};
-					data.alwaysOn = true;
-					areaEl.data('maphilight', data).trigger('alwaysOn.maphilight');
-				}
+				highlighHotspotAreas('<xsl:value-of select="$responseValue/qw:value" separator=","/>');
 			});
 			
 			function clickArea(spot) { };
-
-		        </xsl:when><xsl:otherwise>
-		        
+		        </xsl:when>
+		        <xsl:otherwise>
 			function clickArea(spot) {
-				var areaEl = jQuery('#' + spot)
-				var data = areaEl.data('maphilight') || {};
-				if(!data.alwaysOn) {
-					var numOfChoices = 1;
-					if(numOfChoices > 0) {
-						var countChoices = 0;
-						jQuery("area", "map[name='<xsl:value-of select="$appletContainerId"/>_map']").each(function(index, el) {
-							var cData = jQuery(el).data('maphilight') || {};
-							if(cData.alwaysOn) {
-								countChoices++;
-								
-							}
-						});
-						if(countChoices >= numOfChoices) {
-							return false;
-						}
-					}
-				}
-            	data.alwaysOn = !data.alwaysOn;
-				areaEl.data('maphilight', data).trigger('alwaysOn.maphilight');
-
-				var divContainer = jQuery('#<xsl:value-of select="$appletContainerId"/>');
-				divContainer.find("input[type='hidden']").remove();
-				jQuery("area", "map[name='<xsl:value-of select="$appletContainerId"/>_map']").each(function(index, el) {
-					var cAreaEl = jQuery(el);
-					var cData = cAreaEl.data('maphilight') || {};
-					if(cData.alwaysOn) {
-						var inputElement = jQuery('<input type="hidden"/>')
-							.attr('name', 'qtiworks_response_<xsl:value-of select="@responseIdentifier"/>')
-							.attr('value', areaEl.attr('id'));
-						divContainer.append(inputElement);
-					}
-				});
+				clickHotspotArea(spot, '<xsl:value-of select="$appletContainerId"/>','<xsl:value-of select="@responseIdentifier"/>')
 			};
-		        
 		        </xsl:otherwise>
 			</xsl:choose>
 		</script>

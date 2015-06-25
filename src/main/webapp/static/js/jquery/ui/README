@@ -1,7 +1,17 @@
 The custom build (http://jqueryui.com/download/) contains:
+----------------------------------------------------------
 
 UI Core: all
 Interactions: all
 Widgets: remove accordion, progressbar, slider, spinner, tabs
 Effects: need only Effects Core and Pulsate Effect
 Theme: Smoothness
+
+
+The custom build (http://jqueryui.com/download/) for QTI 2.1 contains:
+----------------------------------------------------------------------
+
+UI Core: all
+Interactions: all
+UI Core: none
+Interactions: none

@@ -24,7 +24,6 @@
       <xsl:variable name="appletContainerId" select="concat('qtiworks_id_appletContainer_', @responseIdentifier)" as="xs:string"/>
       <xsl:variable name="hotspotChoices" select="qw:filter-visible(qti:hotspotChoice)" as="element(qti:hotspotChoice)*"/>
       <xsl:variable name="responseValue" select="qw:get-response-value(/, @responseIdentifier)" as="element(qw:responseVariable)?"/>
-      
       <div id="{$appletContainerId}_container" class="appletContainer" style="width:{$object/@width}px; height:{$object/@height}px; position:relative; background-image: url('{qw:convert-link-full($object/@data)}') " data-openolat="">
 
 		<canvas id="{$appletContainerId}_canvas_alt" width="{$object/@width}" height="{$object/@height}" style="position:absolute; top:0;left:0; opacity:1; " ></canvas>
@@ -41,79 +40,14 @@
 			<xsl:when test="qw:is-not-null-value($responseValue)">
 			
 			jQuery(function() {
-				var canvas = document.getElementById('<xsl:value-of select="$appletContainerId"/>_canvas');
-				var c = canvas.getContext('2d');
-				c.clearRect(0, 0, jQuery(canvas).width(), jQuery(canvas).height());
-				
-				var areaIds = '<xsl:value-of select="$responseValue/qw:value" separator=","/>'.split(',');
-				for(var i=areaIds.length; i-->0; ) {
-					var areaEl = jQuery('#' + areaIds[i]);
-					var position = areaEl.attr('coords').split(',');
-					var cx = position[0];
-					var cy = position[1];
-					
-					c.font = "16px Arial";
-					c.fillText("" + (i+1), cx, cy);
-				}
+				graphicOrderDrawResponse('<xsl:value-of select="$appletContainerId"/>','<xsl:value-of select="$responseValue/qw:value" separator=","/>');
 			});
 			
 			</xsl:when>
 			<xsl:otherwise>
 			
 		jQuery(function() {
-			jQuery('#<xsl:value-of select="$appletContainerId"/>_container area').on("click", function(e) {
-				var r = 8;
-				var maxChoices = <xsl:value-of select="count($hotspotChoices)"/>;
-
-				var areaId = jQuery(this).attr('id');
-				var position = jQuery(this).attr('coords').split(',');
-				var cx = position[0];
-				var cy = position[1];
-
-				var data = jQuery("#<xsl:value-of select="$appletContainerId"/>_container").data("openolat") || {};
-				if(data.listOfPoints == undefined) {
-					data.listOfPoints = [];
-					jQuery("#<xsl:value-of select="$appletContainerId"/>_container").data('openolat', data);
-				}
-					
-				var remove = false;
-				var newListOfPoints = [];
-				for(var i=data.listOfPoints.length; i-->0;) {
-					var p = data.listOfPoints[i];
-					var rc = ((p.x - cx)*(p.x - cx)) + ((p.y - cy)*(p.y - cy));
-					if(r*r > rc) {
-						remove = true;
-					} else {
-						newListOfPoints.push(p);
-					}
-				}
-					
-				if(remove) {
-					data.listOfPoints = newListOfPoints;
-				} else if(data.listOfPoints.length >= maxChoices) {
-					return false;
-				} else {
-					data.listOfPoints.push({'x': cx, 'y': cy, 'areaId': areaId});
-				}
-
-				var canvas = document.getElementById('<xsl:value-of select="$appletContainerId"/>_canvas');
-				var c = canvas.getContext('2d');
-				c.clearRect(0, 0, jQuery(canvas).width(), jQuery(canvas).height());
-					
-				var divContainer = jQuery('#<xsl:value-of select="$appletContainerId"/>_container');
-				divContainer.find("input[type='hidden']").remove();
-					
-				for(var i=data.listOfPoints.length; i-->0;) {
-					var p = data.listOfPoints[i];
-					c.font = "16px Arial";
-					c.fillText("" + (i+1), p.x, p.y);
-
-					var inputElement = jQuery('<input type="hidden"/>')
-						.attr('name', 'qtiworks_response_RESPONSE')
-						.attr('value', p.areaId);
-					divContainer.prepend(inputElement);
-				}
-			});
+			graphicOrderItem('<xsl:value-of select="$appletContainerId"/>', <xsl:value-of select="count($hotspotChoices)"/>,'<xsl:value-of select="@responseIdentifier"/>');
 		});
 			
 			</xsl:otherwise>
