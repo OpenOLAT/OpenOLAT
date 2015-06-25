@@ -20,12 +20,24 @@
 package org.olat.ims.qti21.repository.handlers;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Locale;
-import java.util.UUID;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
@@ -40,6 +52,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.PathUtils.YesMatcher;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.fileresource.FileResourceManager;
@@ -47,16 +60,11 @@ import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.ims.qti21.model.xml.ManifestPackage;
+import org.olat.ims.qti21.model.xml.OnyxToQtiWorksHandler;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.InMemoryOutcomesListener;
 import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
-import org.olat.imscp.xml.manifest.FileType;
-import org.olat.imscp.xml.manifest.ManifestMetadataType;
 import org.olat.imscp.xml.manifest.ManifestType;
-import org.olat.imscp.xml.manifest.ObjectFactory;
-import org.olat.imscp.xml.manifest.OrganizationsType;
-import org.olat.imscp.xml.manifest.ResourceType;
-import org.olat.imscp.xml.manifest.ResourcesType;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.EditionSupport;
@@ -145,12 +153,88 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 		OLATResource resource = OLATResourceManager.getInstance().createAndPersistOLATResourceInstance(ores);
 		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(resource).getBasefile();
 		File zipDir = new File(fResourceFileroot, FileResourceManager.ZIPDIR);
-		FileResource.copyResource(file, filename, zipDir);
+		copyResource(file, filename, zipDir);
 
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
 				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 		DBFactory.getInstance().commit();
 		return re;
+	}
+	
+	private boolean copyResource(File file, String filename, File targetDirectory) {
+		try {
+			Path path = FileResource.getResource(file, filename);
+			if(path == null) {
+				return false;
+			}
+			
+			Path destDir = targetDirectory.toPath();
+			Files.walkFileTree(path, new CopyAndConvertVisitor(path, destDir, new YesMatcher()));
+			return true;
+		} catch (IOException e) {
+			log.error("", e);
+			return false;
+		}
+	}
+	
+	private static class CopyAndConvertVisitor extends SimpleFileVisitor<Path> {
+
+		private final Path source;
+		private final Path destDir;
+		private final PathMatcher filter;
+		
+		public CopyAndConvertVisitor(Path source, Path destDir, PathMatcher filter) {
+			this.source = source;
+			this.destDir = destDir;
+			this.filter = filter;
+		}
+		
+		@Override
+		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+	    throws IOException {
+			Path relativeFile = source.relativize(file);
+	        final Path destFile = Paths.get(destDir.toString(), relativeFile.toString());
+	        if(filter.matches(file)) {
+	        	String filename = file.getFileName().toString();
+	        	if(filename != null && filename.endsWith("xml")) {
+	        		convertXmlFile(file, destFile);
+	        	} else {
+	        		Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
+	        	}
+	        }
+	        return FileVisitResult.CONTINUE;
+		}
+	 
+		@Override
+		public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
+		throws IOException {
+			Path relativeDir = source.relativize(dir);
+	        final Path dirToCreate = Paths.get(destDir.toString(), relativeDir.toString());
+	        if(Files.notExists(dirToCreate)){
+	        	Files.createDirectory(dirToCreate);
+	        }
+	        return FileVisitResult.CONTINUE;
+		}
+		
+		/**
+		 * Convert the XML files
+		 * @param inputFile
+		 * @param outputFile
+		 */
+		private void convertXmlFile(Path inputFile, Path outputFile) {
+			try(InputStream in = Files.newInputStream(inputFile);
+					Writer out = Files.newBufferedWriter(outputFile, Charset.forName("UTF-8"))) {
+				XMLOutputFactory xof = XMLOutputFactory.newInstance();
+		        XMLStreamWriter xtw = xof.createXMLStreamWriter(out);
+		
+				SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
+				OnyxToQtiWorksHandler myHandler = new OnyxToQtiWorksHandler(xtw);
+				saxParser.setProperty("http://xml.org/sax/properties/lexical-handler", myHandler);
+				saxParser.parse(in, myHandler);
+			} catch(Exception e) {
+				log.error("", e);
+			}
+		}
 	}
 
 	@Override
