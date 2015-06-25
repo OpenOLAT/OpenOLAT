@@ -48,9 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class GTAAssignedTaskController extends BasicController {
-	
-	
-	
+
 	private final Link downloadButton, downloadLink;
 	
 	private final File taskFile;
@@ -87,9 +85,15 @@ public class GTAAssignedTaskController extends BasicController {
 		downloadButton.setTarget("_blank");
 
 		downloadLink = LinkFactory.createCustomLink("download.link", "download.link", null, Link.NONTRANSLATED, mainVC, this);
-		downloadLink.setCustomDisplayText(StringHelper.escapeHtml(taskDef.getTitle()));
+		if(taskDef != null) {
+			downloadLink.setCustomDisplayText(StringHelper.escapeHtml(taskDef.getTitle()));
+			downloadLink.setIconLeftCSS("o_icon " + cssIcon);
+		} else {
+			downloadLink.setCustomDisplayText(StringHelper.escapeHtml(taskFile.getName()));
+			downloadLink.setIconLeftCSS("o_icon " + cssIcon + " o_icon_warning");
+			downloadLink.setEnabled(false);
+		}
 		downloadLink.setTitle(taskInfos);
-		downloadLink.setIconLeftCSS("o_icon " + cssIcon);
 		downloadLink.setTarget("_blank");
 
 		putInitialPanel(mainVC);
