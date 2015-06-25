@@ -55,7 +55,7 @@ public class ConfluenceLinkSPI implements HelpLinkSPI {
 		String version = Settings.getVersion();
 		sb.append(generateSpace(version, locale));
 		if (page != null) {
-			sb.append(page);			
+			sb.append(page.replace(" ", "%20"));			
 		}
 		return sb.toString();
 	}

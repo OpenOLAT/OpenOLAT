@@ -65,7 +65,12 @@ public class StaticTextElementImpl extends FormItemImpl implements StaticTextEle
 	@Override
 	public void reset() {
 		// static text can not be resetted
-	};
+	}
+
+	@Override
+	public String getForId() {
+		return null;//text is not a form control
+	}
 	
 	protected Component getFormItemComponent() {
 		return component;

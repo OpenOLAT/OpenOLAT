@@ -28,6 +28,7 @@ package org.olat.core.gui.components.form.flexible.impl.components;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -49,10 +50,12 @@ public class SimpleLabelText extends FormBaseComponentImpl {
 	
 	private final String text;
 	private boolean componentIsMandatory;
+	private final FormItem item;
 
-	public SimpleLabelText(String name, String text, boolean mandatory) {
+	public SimpleLabelText(FormItem item, String name, String text, boolean mandatory) {
 		super(name);
 		this.text = text;
+		this.item = item;
 		this.componentIsMandatory = mandatory;
 		// to minimize DOM tree we provide our own DOM ID (o_c12245)
 		this.setDomReplacementWrapperRequired(false);
@@ -80,23 +83,21 @@ public class SimpleLabelText extends FormBaseComponentImpl {
 				RenderResult renderResult, String[] args) {
 			SimpleLabelText stc = (SimpleLabelText) source;
 			sb.append("<label class='control-label ");
-			String target = null;
 			if (args !=  null && args.length > 0) {
 				for (int i = 0; i < args.length; i++) {
 					String arg = args[i];
 					if (arg.startsWith("col-")) {
 						sb.append(arg);
-					} else {
-						target = arg;
 					}
 				}
 			}
 			sb.append("' id='o_c").append(source.getDispatchID()).append("'");
 			// add the reference to form element for which this label stands. this is important for screen readers
-			if (target !=  null) {
-				sb.append(" for=\"");
-				sb.append(target);
-				sb.append("\"");
+			if (stc.item != null) {
+				String forId = stc.item.getForId();
+				if(forId != null) {
+					sb.append(" for=\"").append(forId).append("\"");
+				}
 			}
 			sb.append(">");
 			if (StringHelper.containsNonWhitespace(stc.text)) {

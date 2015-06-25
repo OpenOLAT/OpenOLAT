@@ -477,9 +477,9 @@ public class GTAWorkflowEditController extends FormBasicController {
 			if(relativeDates) {
 				setRelativeDates(assignementDeadlineDaysEl, GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE,
 						assignementDeadlineRelToEl, GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE_TO);
-			} else if(assignmentDeadlineEl.getDate() != null) {
+			} else {
 				config.setDateValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE, assignmentDeadlineEl.getDate());
-			}
+			}	
 		} else {
 			config.remove(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
 		}
@@ -506,7 +506,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 			if(relativeDates) {
 				setRelativeDates(solutionVisibleRelDaysEl, GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE,
 						solutionVisibleRelToEl, GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE_TO);
-			} else if(solutionVisibleAfterEl.getDate() != null) {
+			} else {
 				config.setDateValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER, solutionVisibleAfterEl.getDate());
 			}
 		} else {

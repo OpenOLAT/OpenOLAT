@@ -141,7 +141,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 				sb.append("</div>");
 			}
 		} else{
-			renderTextElementReadonly(sb, teC, maxlength);
+			renderTextElementReadonly(sb, jsdcc, maxlength);
 		}
 		sb.append("</div>");
 	}
@@ -154,7 +154,8 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		return dc;
 	}
 
-	private void renderTextElementReadonly(StringOutput sb, TextElementComponent teC, int maxlength) {
+	private void renderTextElementReadonly(StringOutput sb, JSDateChooserComponent jsdcc, int maxlength) {
+		TextElementComponent teC = jsdcc.getTextElementComponent();
 		TextElementImpl te = teC.getTextElementImpl();
 		//display size cannot be bigger the maxlenght given by dateformat
 		te.displaySize = te.displaySize <= maxlength ? te.displaySize : maxlength;
@@ -166,7 +167,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			value = "";
 		}
 		value = StringEscapeUtils.escapeHtml(value);
-		sb.append("<span\" id=\"").append(id).append("\" ")
+		sb.append("<span id='").append(id).append("_wp' ")
 		  .append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()))
 		  .append("title=\"").append(value).append("\">");
 		String shorter;
@@ -181,9 +182,30 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 				shorter += "&nbsp;";
 			}
 		}				
-		sb.append("<input disabled=\"disabled\" class=\"o_form_element_disabled\" size=\"")
+		sb.append("<input id='").append(id).append("' disabled='disabled' class='o_form_element_disabled' size=\"")
 		  .append(te.displaySize)
 		  .append("\" value=\"").append(shorter).append("\" /></span>");
+		
+		if (jsdcc.isDateChooserTimeEnabled()) {
+			int hour, minute;
+			Date currentDate = jsdcc.getDate();
+			if(currentDate == null) {
+				hour = minute = 0;
+			} else {
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(currentDate);
+				hour = cal.get(Calendar.HOUR_OF_DAY);
+				minute = cal.get(Calendar.MINUTE);
+			}
+			sb.append("<span class='o_form_element_disabled'> ")
+			  .append(hour)
+			  .append(" : ");
+			if(minute < 10) {
+				sb.append("0");
+			}
+			sb.append(minute)
+			  .append("</span>");
+		}
 	}
 	
 	private void renderTextElement(StringOutput sb, TextElementComponent teC, int maxlength) {

@@ -86,10 +86,17 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 		dateComponent = (TextElementComponent) super.getFormItemComponent();
 	}
 
+	@Override
+	public String getForId() {
+		return dateComponent.getFormDispatchId();
+	}
+
+	@Override
 	public void setDisplaySize(int dispSize){
 		displaySize = dispSize;
 	}
-	
+
+	@Override
 	protected Component getFormItemComponent() {
 		return jscomponent;
 	}

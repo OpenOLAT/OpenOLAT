@@ -105,19 +105,28 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 		examplePanel = new Panel(PREFIX + name + FormItem.EXAMPLEC);
 		labelPanel = new Panel(PREFIX + name + FormItem.LABELC);
 	}
-	
+
+	@Override
 	public String getFormItemId() {
 		return id;
 	}
-	
+
+	@Override
+	public String getForId() {
+		return getFormDispatchId();
+	}
+
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	public String getElementCssClass() {
 		return elementCssClass;
 	}
 
+	@Override
 	public void setElementCssClass(String elementCssClass) {
 		this.elementCssClass = elementCssClass;
 	}
@@ -203,7 +212,7 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 			}
 		}
 		if(labelKey != null) {
-			labelC = new SimpleLabelText(labelKey, labelTrsl, componentIsMandatory);
+			labelC = new SimpleLabelText(this, labelKey, labelTrsl, componentIsMandatory);
 			labelC.setTranslator(translator);
 			labelPanel.setContent(labelC);
 		}
@@ -240,7 +249,7 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 		labelParams = params;
 		// set label may be called before the translator is available
 		if (getTranslator() != null && labelKey != null) {
-			labelC = new SimpleLabelText(label, getLabelText(), componentIsMandatory);
+			labelC = new SimpleLabelText(this, label, getLabelText(), componentIsMandatory);
 			labelC.setTranslator(getTranslator());
 			labelPanel.setContent(labelC);
 		} else if(label == null) {
