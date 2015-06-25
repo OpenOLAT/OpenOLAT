@@ -77,7 +77,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 			sb.append(FormJSHelper.getRawJSFor(te.getRootForm(), domID, te.getAction()));
 			sb.append(" id=\"");
 			sb.append(domID);
-			sb.append("_disabled\" readonly class='form-control-static o_disabled' style=\"");
+			sb.append("_disabled\" class='form-control-static o_disabled' style=\"");
 			if (rows != -1) {
 				sb.append(" min-height:").append(rows).append("em;");
 			}

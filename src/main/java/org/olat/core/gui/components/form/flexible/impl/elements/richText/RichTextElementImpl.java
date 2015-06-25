@@ -91,6 +91,11 @@ public class RichTextElementImpl extends AbstractTextElement implements
 		configuration = new RichTextConfiguration(getFormDispatchId(), rootForm.getDispatchFieldId());
 	}
 	
+	@Override
+	public String getForId() {
+		return isEnabled() ? super.getForId() : null;
+	}
+	
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.elements.AbstractTextElement#getValue()
 	 * The returned value is XSS save and
