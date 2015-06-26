@@ -867,6 +867,17 @@ public class GTAManagerImpl implements GTAManager {
 	}
 
 	@Override
+	public int updateTaskName(TaskList taskList, String currentTaskName, String newTaskName) {
+		String q = "update gtatask set taskName=:newTaskName where taskList.key=:taskListKey and taskName=:oldTaskName";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(q)
+				.setParameter("taskListKey", taskList.getKey())
+				.setParameter("oldTaskName", currentTaskName)
+				.setParameter("newTaskName", newTaskName)
+				.executeUpdate();
+	}
+
+	@Override
 	public Task updateTask(Task task, TaskProcess newStatus) {
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setTaskStatus(newStatus);

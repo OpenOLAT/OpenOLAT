@@ -105,7 +105,9 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		workflowCtrl = new GTAWorkflowEditController(ureq, getWindowControl(), gtaNode, euce.getCourseEditorEnv());
 		listenTo(workflowCtrl);
 		//assignment
-		assignmentCtrl = new GTAAssignmentEditController(ureq, getWindowControl(), config, tasksDir, tasksContainer);
+		assignmentCtrl = new GTAAssignmentEditController(ureq, getWindowControl(),
+				gtaNode, config, euce.getCourseEditorEnv(),
+				tasksDir, tasksContainer);
 		listenTo(assignmentCtrl);
 		//submission
 		submissionCtrl = new GTASubmissionEditController(ureq, getWindowControl(), config);
@@ -180,7 +182,9 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			} else if(event == Event.CANCELLED_EVENT) {
 				removeAsListenerAndDispose(assignmentCtrl);
-				assignmentCtrl = new GTAAssignmentEditController(ureq, getWindowControl(), config, tasksDir, tasksContainer);
+				assignmentCtrl = new GTAAssignmentEditController(ureq, getWindowControl(),
+						gtaNode, config, euce.getCourseEditorEnv(),
+						tasksDir, tasksContainer);
 				listenTo(assignmentCtrl);
 				myTabbedPane.replaceTab(assignmentPos, assignmentCtrl.getInitialComponent());
 			}

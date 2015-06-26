@@ -52,12 +52,14 @@ public class EditTaskController extends FormBasicController {
 	private final TaskDefinition task;
 	private final File taskContainer;
 	
+	private final String filenameToReplace;
+	
 	public EditTaskController(UserRequest ureq, WindowControl wControl, File taskContainer) {
-		this(ureq, wControl, new TaskDefinition(), taskContainer, true);
+		this(ureq, wControl, new TaskDefinition(), taskContainer, false);
 	}
 	
 	public EditTaskController(UserRequest ureq, WindowControl wControl, TaskDefinition task, File taskContainer) {
-		this(ureq, wControl, task, taskContainer, false);
+		this(ureq, wControl, task, taskContainer, true);
 	}
 	
 	public EditTaskController(UserRequest ureq, WindowControl wControl,
@@ -65,12 +67,17 @@ public class EditTaskController extends FormBasicController {
 		super(ureq, wControl);
 		this.replaceFile = replaceFile;
 		this.task = task;
+		this.filenameToReplace = task != null ? task.getFilename() : null;
 		this.taskContainer = taskContainer;
 		initForm(ureq);
 	}
 	
 	public TaskDefinition getTask() {
 		return task;
+	}
+	
+	public String getFilenameToReplace() {
+		return filenameToReplace;
 	}
 
 	@Override
