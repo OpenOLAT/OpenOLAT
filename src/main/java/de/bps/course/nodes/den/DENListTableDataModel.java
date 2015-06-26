@@ -22,13 +22,12 @@ package de.bps.course.nodes.den;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.Identity;
-import org.olat.core.id.User;
-import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
+import org.olat.user.UserManager;
 
 public class DENListTableDataModel extends DefaultTableDataModel<KalendarEvent> {
 	
@@ -38,12 +37,15 @@ public class DENListTableDataModel extends DefaultTableDataModel<KalendarEvent> 
 	
 	// subject, date, location, comment, participants, usernames, action 
 	private static final int COLUMN_COUNT = 7;
-	private DENManager denManager;
-	private Translator translator;
+	
+	private final Translator translator;
+	private final DENManager denManager;
+	private final UserManager userManager;
 
 	public DENListTableDataModel(List<KalendarEvent> objects, Translator translator) {
 		super(objects);
 		denManager = DENManager.getInstance();
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		this.translator = translator;
 	}
 
@@ -55,54 +57,41 @@ public class DENListTableDataModel extends DefaultTableDataModel<KalendarEvent> 
 	@Override
 	public Object getValueAt(int row, int col) {
 		KalendarEvent event = getObject(row);
-		
 		switch (col) {
-		case 0:
-			//subject
-			return event.getSubject();
-		case 1:
-			//begin
-			return event.getBegin();
-		case 2:
-			//duration
-			Date begin = event.getBegin();
-			Date end = event.getEnd();
-			long milliSeconds = denManager.getDuration(begin, end);
-			
-			return denManager.formatDuration(milliSeconds, translator);
-		case 3:
-			//location
-			return event.getLocation();
-		case 4:
-			//comment
-			return event.getComment();
-		case 5:
-			//participants
-			StringBuilder names = new StringBuilder("");
-			if(event.getParticipants() == null || event.getParticipants().length < 1)
-				return "";
-			for( String participant : event.getParticipants() ) {
-				Identity identity = BaseSecurityManager.getInstance().findIdentityByName(participant);
-				User user = identity.getUser();
-				names.append(user.getProperty(UserConstants.LASTNAME, getLocale()) + ", " + user.getProperty(UserConstants.FIRSTNAME, getLocale()) + "<br>");
-			}
-			return names.toString();
-		case 6:
-			//usernames
-			StringBuilder usernames = new StringBuilder("");
-			if(event.getParticipants() == null || event.getParticipants().length < 1)
-				return "";
-			for( String participant : event.getParticipants() ) {
-				Identity identity = BaseSecurityManager.getInstance().findIdentityByName(participant);
-				usernames.append(identity.getName() + "<br>");
-			}
-			return usernames.toString();
-		case 7:
-			//action
-			return Boolean.TRUE;
-
-		default:	return "error";
+			case 0: return event.getSubject();
+			case 1: return event.getBegin();
+			case 2://duration
+				Date begin = event.getBegin();
+				Date end = event.getEnd();
+				long milliSeconds = denManager.getDuration(begin, end);
+				return denManager.formatDuration(milliSeconds, translator);
+			case 3: return event.getLocation();
+			case 4: return event.getComment();
+			case 5:
+				//participants
+				StringBuilder names = new StringBuilder();
+				if(event.getParticipants() != null && event.getParticipants().length > 0) {
+					for( String participant : event.getParticipants() ) {
+						if(names.length() > 0) names.append("<br/>");
+						String fullName = userManager.getUserDisplayName(participant);
+						if(StringHelper.containsNonWhitespace(fullName)) {
+							names.append(fullName);
+						}
+					}
+				}
+				return names.toString();
+			case 6:
+				//usernames
+				StringBuilder usernames = new StringBuilder();
+				if(event.getParticipants() != null && event.getParticipants().length > 0) {
+					for( String participant : event.getParticipants()) {
+						if(usernames.length() > 0) usernames.append("<br/>");
+						usernames.append(participant);
+					}
+				}
+				return usernames.toString();
+			case 7: return Boolean.TRUE;
+			default:	return "error";
 		}
 	}
-
 }
