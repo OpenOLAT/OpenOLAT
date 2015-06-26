@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.qti21;
+package org.olat.course.nodes.iq;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -40,6 +40,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.Util;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
@@ -49,9 +50,8 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.AssessableCourseNode;
-import org.olat.course.nodes.QTI21AssessmentCourseNode;
-import org.olat.course.nodes.iq.AssessmentEvent;
-import org.olat.course.nodes.iq.IQEditController;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti.process.AssessmentInstance;
@@ -83,14 +83,14 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private final UserSession userSession;
 	private final ModuleConfiguration config;
 	private final UserCourseEnvironment userCourseEnv;
-	private final QTI21AssessmentCourseNode courseNode;
+	private final IQTESTCourseNode courseNode;
 	
 	private AssessmentTestDisplayController displayCtrl;
 	private LayoutMain3ColsController displayContainerController;
 	
 	public QTI21AssessmentRunController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, QTI21AssessmentCourseNode courseNode) {
-		super(ureq, wControl);
+			UserCourseEnvironment userCourseEnv, IQTESTCourseNode courseNode) {
+		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		
 		this.courseNode = courseNode;
 		this.userCourseEnv = userCourseEnv;
@@ -98,7 +98,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		config = courseNode.getModuleConfiguration();
 		singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
 		
-		mainVC = createVelocityContainer("run");
+		mainVC = createVelocityContainer("assessment_run");
 		init();
 		initAssessment(ureq);
 		putInitialPanel(mainVC);
@@ -112,11 +112,11 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	
 	private void initAssessment(UserRequest ureq) {
 	    // config : show score info
-		boolean enableScoreInfo= config.getBooleanSafe(QTI21AssessmentCourseNode.CONFIG_KEY_ENABLESCOREINFO);
+		boolean enableScoreInfo= config.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLESCOREINFO);
 		mainVC.contextPut("enableScoreInfo", new Boolean(enableScoreInfo));	
 	   
 	    // configuration data
-		mainVC.contextPut("attemptsConfig", config.get(QTI21AssessmentCourseNode.CONFIG_KEY_ATTEMPTS));
+		mainVC.contextPut("attemptsConfig", config.get(IQEditController.CONFIG_KEY_ATTEMPTS));
 	    // user data
 	    if (!(courseNode instanceof AssessableCourseNode)) {
 	    	throw new AssertException("exposeUserTestDataToVC can only be called for test nodes, not for selftest or questionnaire");
@@ -126,7 +126,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		ScoreEvaluation scoreEval = acn.getUserScoreEvaluation(userCourseEnv);
 		
 		//block if test passed (and config set to check it)
-		boolean blockAfterSuccess = config.getBooleanSafe(QTI21AssessmentCourseNode.CONFIG_KEY_BLOCK_AFTER_SUCCESS);
+		boolean blockAfterSuccess = config.getBooleanSafe(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS);
 		Boolean blocked = Boolean.FALSE;
 		if(blockAfterSuccess) {
 			Boolean passed = scoreEval.getPassed();
@@ -253,7 +253,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			Controller disposedRestartController = new LayoutMain3ColsController(ureq, getWindowControl(), empty, courseCloser.getInitialComponent(), "disposed course while in assessment run " + courseResId);
 			displayContainerController.setDisposedMessageController(disposedRestartController);
 			
-			boolean fullWindow = config.getBooleanSafe(QTI21AssessmentCourseNode.CONFIG_FULLWINDOW);
+			boolean fullWindow = config.getBooleanSafe(IQEditController.CONFIG_FULLWINDOW);
 			if(fullWindow) {
 				displayContainerController.setAsFullscreen(ureq);
 			}

@@ -28,6 +28,7 @@ public enum QTIType {
 	test,
 	survey,
 	self,
-	onyx
+	onyx,
+	qtiworks
 
 }

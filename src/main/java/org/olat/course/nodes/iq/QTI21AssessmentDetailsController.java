@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.qti21;
+package org.olat.course.nodes.iq;
 
 import java.util.List;
 
@@ -39,8 +39,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
-import org.olat.course.nodes.QTI21AssessmentCourseNode;
-import org.olat.course.nodes.qti21.QTI21TestSessionTableModel.TSCols;
+import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.nodes.iq.QTI21TestSessionTableModel.TSCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.UserTestSession;
@@ -61,7 +61,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	
 	private Identity assessedIdentity;
 	private RepositoryEntry courseEntry;
-	private QTI21AssessmentCourseNode courseNode;
+	private IQTESTCourseNode courseNode;
 	
 	private CloseableModalController cmc;
 	private AssessmentResultController resultCtrl;
@@ -70,7 +70,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private QTI21Service qtiService;
 	
 	public QTI21AssessmentDetailsController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnvironment, QTI21AssessmentCourseNode courseNode) {
+			UserCourseEnvironment userCourseEnvironment, IQTESTCourseNode courseNode) {
 		super(ureq, wControl, "assessment_details");
 		
 		this.courseNode = courseNode;

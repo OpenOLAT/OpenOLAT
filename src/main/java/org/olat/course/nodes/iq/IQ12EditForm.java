@@ -120,7 +120,6 @@ public class IQ12EditForm extends FormBasicController {
 	}
 	
 	protected boolean validateFormLogic (UserRequest ureq) {
-
 		startDateElement.clearError();
 		endDateElement.clearError();
 		
@@ -153,6 +152,42 @@ public class IQ12EditForm extends FormBasicController {
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
+		modConfig.set(IQEditController.CONFIG_KEY_DISPLAYMENU, new Boolean(isDisplayMenu()));
+		modConfig.set(IQEditController.CONFIG_FULLWINDOW, new Boolean(isFullWindow()));
+		
+		if (isDisplayMenu()) {
+			modConfig.set(IQEditController.CONFIG_KEY_RENDERMENUOPTION, isMenuRenderSectionsOnly());
+			modConfig.set(IQEditController.CONFIG_KEY_ENABLEMENU, new Boolean(isEnableMenu()));
+		} else {
+			// set default values when menu is not displayed
+			modConfig.set(IQEditController.CONFIG_KEY_RENDERMENUOPTION, Boolean.FALSE);
+			modConfig.set(IQEditController.CONFIG_KEY_ENABLEMENU, Boolean.FALSE); 
+		}
+		
+		modConfig.set(IQEditController.CONFIG_KEY_QUESTIONPROGRESS, new Boolean(isDisplayQuestionProgress()));
+		modConfig.set(IQEditController.CONFIG_KEY_SEQUENCE, getSequence());
+		modConfig.set(IQEditController.CONFIG_KEY_ENABLECANCEL, new Boolean(isEnableCancel()));
+		modConfig.set(IQEditController.CONFIG_KEY_ENABLESUSPEND, new Boolean(isEnableSuspend()));
+		modConfig.set(IQEditController.CONFIG_KEY_QUESTIONTITLE, new Boolean(isDisplayQuestionTitle()));
+		modConfig.set(IQEditController.CONFIG_KEY_AUTOENUM_CHOICES, new Boolean(isAutoEnumChoices()));
+		modConfig.set(IQEditController.CONFIG_KEY_MEMO, new Boolean(isProvideMemoField()));
+		// Only tests and selftests have summaries and score progress
+		if (!isSurvey) {
+			modConfig.set(IQEditController.CONFIG_KEY_SUMMARY, getSummary());
+			modConfig.set(IQEditController.CONFIG_KEY_SCOREPROGRESS, new Boolean(isDisplayScoreProgress()));
+			modConfig.set(IQEditController.CONFIG_KEY_ENABLESCOREINFO, new Boolean(isEnableScoreInfo()));
+			modConfig.set(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS, new Boolean(isShowResultsDateDependent()));
+			modConfig.set(IQEditController.CONFIG_KEY_RESULTS_START_DATE, getShowResultsStartDate());
+			modConfig.set(IQEditController.CONFIG_KEY_RESULTS_END_DATE, getShowResultsEndDate());
+			modConfig.set(IQEditController.CONFIG_KEY_RESULT_ON_FINISH, isShowResultsAfterFinishTest());
+			modConfig.set(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE, isShowResultsOnHomePage());
+		}
+		// Only tests have a limitation on number of attempts
+		if (isAssessment) {
+			modConfig.set(IQEditController.CONFIG_KEY_ATTEMPTS, getAttempts());
+			modConfig.set(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS, new Boolean(isBlockAfterSuccess()));
+		}
+		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
@@ -428,65 +463,72 @@ public class IQ12EditForm extends FormBasicController {
 		flc.setDirty(true);
 	}
 	
+	private boolean isDisplayMenu() {
+		return displayMenu.isSelected(0);
+	}
 	
 	/**
 	 * @return true: menu is enabled
 	 */
-	boolean isEnableMenu() { return enableMenu.isSelected(0); }
+	private boolean isEnableMenu() {
+		return enableMenu.isSelected(0);
+	}
+
 	/**
 	 * @return true: menu should be displayed
 	 */
-	boolean isDisplayMenu() { return displayMenu.isSelected(0); }
-	/**
-	 * @return true: menu should be displayed
-	 */
-	boolean isFullWindow() { return fullWindowEl.isSelected(0); }
+	private boolean isFullWindow() {
+		return fullWindowEl.isSelected(0);
+	}
 	
 	/**
 	 * @return true: score progress is enabled
 	 */
-	boolean isDisplayScoreProgress() { return displayScoreProgress.isSelected(0); }
+	private boolean isDisplayScoreProgress() {
+		return displayScoreProgress.isSelected(0);
+	}
+	
 	/**
 	 * @return true: score progress is enabled
 	 */
-	boolean isDisplayQuestionProgress() { return displayQuestionProgress.isSelected(0); }
+	private boolean isDisplayQuestionProgress() { return displayQuestionProgress.isSelected(0); }
 	/**
 	 * @return true: question title is enabled
 	 */
-	boolean isDisplayQuestionTitle() { return displayQuestionTitle.isSelected(0); }
+	private boolean isDisplayQuestionTitle() { return displayQuestionTitle.isSelected(0); }
 	/**
 	 * @return true: automatic enumeration of choice options enabled 
 	 */
-	boolean isAutoEnumChoices() { return autoEnumerateChoices.isSelected(0); }
+	private boolean isAutoEnumChoices() { return autoEnumerateChoices.isSelected(0); }
 	/**
 	 * @return true: provide memo field
 	 */
-	boolean isProvideMemoField() { return provideMemoField.isSelected(0); }
+	private boolean isProvideMemoField() { return provideMemoField.isSelected(0); }
 	/**
 	 * @return sequence configuration: section or item
 	 */
-	String getSequence() { return sequence.getSelectedKey(); }
+	private String getSequence() { return sequence.getSelectedKey(); }
 	/**
 	 * @return true: cancel is enabled
 	 */
-	boolean isEnableCancel() { return enableCancel.isSelected(0); }
+	private boolean isEnableCancel() { return enableCancel.isSelected(0); }
 	/**
 	 * @return true: suspend is enabled
 	 */
-	boolean isEnableSuspend() { return enableSuspend.isSelected(0); }
+	private boolean isEnableSuspend() { return enableSuspend.isSelected(0); }
 	/**
 	 * @return summary type: compact or detailed
 	 */
-	String getSummary() { return summary.getSelectedKey();}
+	private String getSummary() { return summary.getSelectedKey();}
 	/**
 	 * @return number of max attempts
 	 */
-	Integer getAttempts() { 
+	private Integer getAttempts() { 
 		Integer a =  attempts.getIntValue();
 		return a == 0 ? null : attempts.getIntValue();
 	}
 	
-	boolean isBlockAfterSuccess() {
+	private boolean isBlockAfterSuccess() {
 		return blockAfterSuccess.isSelected(0);
 	}
 	
@@ -494,41 +536,41 @@ public class IQ12EditForm extends FormBasicController {
 	 * 
 	 * @return true if only section title should be rendered
 	 */
-	Boolean isMenuRenderSectionsOnly() {	return Boolean.valueOf(menuRenderOptions.getSelectedKey());}
+	private Boolean isMenuRenderSectionsOnly() {	return Boolean.valueOf(menuRenderOptions.getSelectedKey());}
 	/**
 	 * @return true: score-info on start-page is enabled
 	 */
-	boolean isEnableScoreInfo() { return scoreInfo.isSelected(0); }	
+	private boolean isEnableScoreInfo() { return scoreInfo.isSelected(0); }	
 	
 	/**
 	 * 
 	 * @return true is the results are shown date dependent
 	 */
-	boolean isShowResultsDateDependent() { return showResultsDateDependentButton.isSelected(0); }
+	private boolean isShowResultsDateDependent() { return showResultsDateDependentButton.isSelected(0); }
 	
 	/**
 	 * 
 	 * @return Returns the start date for the result visibility.
 	 */
-	Date getShowResultsStartDate() { return startDateElement.getDate(); }
+	private Date getShowResultsStartDate() { return startDateElement.getDate(); }
 	
 	/**
 	 * 
 	 * @return Returns the end date for the result visibility.
 	 */
-	Date getShowResultsEndDate() { return endDateElement.getDate(); }
+	private Date getShowResultsEndDate() { return endDateElement.getDate(); }
 	
 	/**
 	 * 
 	 * @return Returns true if the results are shown after test finished.
 	 */
-	boolean isShowResultsAfterFinishTest() { return showResultsAfterFinishTest.isSelected(0); }
+	private boolean isShowResultsAfterFinishTest() { return showResultsAfterFinishTest.isSelected(0); }
 	
 	/**
 	 * 
 	 * @return Returns true if the results are shown on the test home page.
 	 */
-	boolean isShowResultsOnHomePage() { return showResultsOnHomePage.isSelected(0); }
+	private boolean isShowResultsOnHomePage() { return showResultsOnHomePage.isSelected(0); }
 	
 	
 	@Override

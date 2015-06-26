@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.qti21;
+package org.olat.course.nodes.iq;
 
 import java.util.Date;
 

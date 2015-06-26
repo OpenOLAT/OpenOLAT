@@ -42,7 +42,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  * 
  * @author Felix Jost
  */
-class IQPreviewController extends BasicController {
+public class IQPreviewController extends BasicController {
 
 	private PreviewForm pf;
 	private final UserCourseEnvironment userCourseEnv;
@@ -55,7 +55,7 @@ class IQPreviewController extends BasicController {
 	 * @param cn
 	 * @param ne
 	 */
-	IQPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, IQTESTCourseNode cn) {
+	public IQPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, IQTESTCourseNode cn) {
 		super(ureq, wControl);
 
 		this.userCourseEnv = userCourseEnv;
@@ -65,9 +65,12 @@ class IQPreviewController extends BasicController {
 		putInitialPanel(pf.getInitialComponent());
 	}
 
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
+	
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == pf) {
 			if (event == Event.DONE_EVENT) {
@@ -86,6 +89,7 @@ class IQPreviewController extends BasicController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 	// nothing to dispose
 	}

@@ -37,15 +37,18 @@ import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.KnownIssueException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
@@ -53,9 +56,12 @@ import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.nodes.iq.CourseIQSecurityCallback;
 import org.olat.course.nodes.iq.IQEditController;
+import org.olat.course.nodes.iq.IQPreviewController;
 import org.olat.course.nodes.iq.IQRunController;
-import org.olat.course.nodes.iq.IQUIFactory;
+import org.olat.course.nodes.iq.QTI21AssessmentDetailsController;
+import org.olat.course.nodes.iq.QTI21AssessmentRunController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -64,6 +70,7 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
+import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti.QTI12ResultDetailsController;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.QTIResultSet;
@@ -77,15 +84,18 @@ import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
 import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.ui.QTI12StatisticsToolController;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.resource.OLATResource;
 
 import de.bps.ims.qti.QTIResultDetailsController;
 import de.bps.onyx.plugin.OnyxExportManager;
 import de.bps.onyx.plugin.OnyxModule;
+import de.bps.onyx.plugin.run.OnyxRunController;
 
 /**
  * Initial Date: Feb 9, 2004
@@ -111,22 +121,51 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		updateModuleConfigDefaults(false);
-		TabbableController childTabCntrllr = IQUIFactory.createIQTestEditController(ureq, wControl, stackPanel, course, this, course.getCourseEnvironment().getCourseGroupManager(), euce); 
+		TabbableController childTabCntrllr = new IQEditController(ureq, wControl, stackPanel, course, this, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		updateModuleConfigDefaults(false);		
-		Controller controller = IQUIFactory.createIQTestRunController(ureq, wControl, userCourseEnv, this);
+		
+		Controller controller;
+		// Do not allow guests to start tests
+		Roles roles = ureq.getUserSession().getRoles();
+		Translator trans = Util.createPackageTranslator(IQTESTCourseNode.class, ureq.getLocale());
+		if (roles.isGuestOnly()) {
+			String title = trans.translate("guestnoaccess.title");
+			String message = trans.translate("guestnoaccess.message");
+			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+		} else {
+			ModuleConfiguration config = getModuleConfiguration();
+			boolean onyx = IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI));
+			if (onyx) {
+				controller = new OnyxRunController(userCourseEnv, config, ureq, wControl, this);
+			} else {
+				RepositoryEntry repositoryEntry = getReferencedRepositoryEntry();
+				OLATResource ores = repositoryEntry.getOlatResource();
+				if(ImsQTI21Resource.TYPE_NAME.equals(ores.getResourceableTypeName())) {
+					//QTI 2.1
+					controller = new QTI21AssessmentRunController(ureq, wControl, userCourseEnv, this);
+				} else {
+					//QTI 1.2
+					TestFileResource fr = new TestFileResource();
+					fr.overrideResourceableId(ores.getResourceableId());
+					if(!CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(fr, null)) {
+						AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+						IQSecurityCallback sec = new CourseIQSecurityCallback(this, am, ureq.getIdentity());
+						controller = new IQRunController(userCourseEnv, getModuleConfiguration(), sec, ureq, wControl, this);
+					} else {
+						String title = trans.translate("editor.lock.title");
+						String message = trans.translate("editor.lock.message");
+						controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+					}
+				}
+			}
+		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_iqtest_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
@@ -139,7 +178,15 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	 */
 	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
-		return IQUIFactory.createIQTestPreviewController(ureq, wControl, userCourseEnv, this);
+		Controller controller;
+		ModuleConfiguration config = getModuleConfiguration();
+		boolean onyx = IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI));
+		if (onyx) {
+			controller = new OnyxRunController(ureq, wControl, this);
+		} else {
+			controller = new IQPreviewController(ureq, wControl, userCourseEnv, this);
+		}
+		return controller;
 	}
 
 	@Override
@@ -159,9 +206,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", courseId);
 		QTIStatisticSearchParams searchParams = new QTIStatisticSearchParams(courseOres.getResourceableId(), getIdent());
 		searchParams.setLimitToGroups(options.getParticipantsGroups());
-
-		QTIStatisticResourceResult result = new QTIStatisticResourceResult(courseOres, this, searchParams);
-		return result;
+		return new QTIStatisticResourceResult(courseOres, this, searchParams);
 	}
 	
 	@Override
@@ -174,7 +219,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 		if(types.length == 0 || (types.length == 1 && types[0] == null)) return true;
 		
 		for(QTIType type:types) {
-			if(QTIType.test.equals(type) || QTIType.onyx.equals(type)) {
+			if(QTIType.test.equals(type) || QTIType.onyx.equals(type) || QTIType.qtiworks.equals(type)) {
 				return true;
 			}
 		}
@@ -557,15 +602,22 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	 */
 	@Override
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, UserCourseEnvironment userCourseEnvironment) {
+		Controller detailsCtrl = null;
 		RepositoryEntry ref = getReferencedRepositoryEntry();
-		Long courseResourceableId = userCourseEnvironment.getCourseEnvironment().getCourseResourceableId();
-		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		boolean onyx = OnyxModule.isOnyxTest(ref.getOlatResource());
-		if(onyx) {
-			return new QTIResultDetailsController(courseResourceableId, getIdent(), assessedIdentity, ref, AssessmentInstance.QMD_ENTRY_TYPE_ASSESS, ureq, wControl);
-		} else {
-			return new QTI12ResultDetailsController(ureq, wControl, courseResourceableId, getIdent(), assessedIdentity, ref, AssessmentInstance.QMD_ENTRY_TYPE_ASSESS);
+		if(ref != null) {
+			OLATResource resource = ref.getOlatResource();
+			Long courseResourceableId = userCourseEnvironment.getCourseEnvironment().getCourseResourceableId();
+			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+			
+			if(ImsQTI21Resource.TYPE_NAME.equals(resource.getResourceableTypeName())) {
+				detailsCtrl = new QTI21AssessmentDetailsController(ureq, wControl, userCourseEnvironment, this);
+			} else if(OnyxModule.isOnyxTest(ref.getOlatResource())) {
+				detailsCtrl =  new QTIResultDetailsController(courseResourceableId, getIdent(), assessedIdentity, ref, AssessmentInstance.QMD_ENTRY_TYPE_ASSESS, ureq, wControl);
+			} else {
+				detailsCtrl = new QTI12ResultDetailsController(ureq, wControl, courseResourceableId, getIdent(), assessedIdentity, ref, AssessmentInstance.QMD_ENTRY_TYPE_ASSESS);
+			}	
 		}
+		return detailsCtrl;
 	}
 
 	/**

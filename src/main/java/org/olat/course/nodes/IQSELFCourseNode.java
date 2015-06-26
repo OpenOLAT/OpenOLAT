@@ -47,9 +47,9 @@ import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.nodes.iq.CourseIQSecurityCallback;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.IQRunController;
-import org.olat.course.nodes.iq.IQUIFactory;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
@@ -63,6 +63,7 @@ import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.iq.IQManager;
+import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
@@ -70,6 +71,7 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 
 import de.bps.onyx.plugin.OnyxModule;
+import de.bps.onyx.plugin.run.OnyxRunController;
 
 /**
  * Initial Date: Feb 9, 2004
@@ -97,10 +99,8 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 	 */
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
-		
-		TabbableController childTabCntrllr = IQUIFactory.createIQSelftestEditController(ureq, wControl, stackPanel, course, this, course.getCourseEnvironment().getCourseGroupManager(), euce);
+		TabbableController childTabCntrllr = new IQEditController(ureq, wControl, stackPanel, course, this, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		
 		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
 	}
 
@@ -114,9 +114,18 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		
-		Controller runController = IQUIFactory.createIQSelftestRunController(ureq, wControl, userCourseEnv, this);
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runController, this, "o_iqself_icon");
+		Controller runController;
+		ModuleConfiguration config = getModuleConfiguration();
+		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+		boolean onyx = IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI));
+		if (onyx) {
+			runController = new OnyxRunController(userCourseEnv, config, ureq, wControl, this);
+		} else {
+			IQSecurityCallback sec = new CourseIQSecurityCallback(this, am, ureq.getIdentity());
+			runController = new IQRunController(userCourseEnv, getModuleConfiguration(), sec, ureq, wControl, this);
+		}
 		
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runController, this, "o_iqself_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
 

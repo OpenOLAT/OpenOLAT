@@ -30,24 +30,24 @@ import java.util.concurrent.TimeUnit;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-class StatisticFormatter {
+public class StatisticFormatter {
 	
 	private final static DecimalFormat numberFormat = new DecimalFormat("#0.#", new DecimalFormatSymbols(Locale.ENGLISH));
 	private final static DecimalFormat scoreFormat = new DecimalFormat("#0.##", new DecimalFormatSymbols(Locale.ENGLISH));
 	
-	protected static String getLabel(int i) {
+	public static String getLabel(int i) {
 		String label = Character.toString((char)(65 + i));
 		return label;
 	}
 	
-	protected static String format(Float score) {
+	public static String format(Float score) {
 		if(score == null) return "";
 		synchronized(numberFormat) {
 			return numberFormat.format(score);
 		}
 	}
 	
-	protected static String format(double score) {
+	public static String format(double score) {
 		if(Double.isNaN(score)) {
 			return "";
 		}
@@ -57,7 +57,7 @@ class StatisticFormatter {
 		}
 	}
 	
-	protected static String formatTwo(double score) {
+	public static String formatTwo(double score) {
 		if(Double.isNaN(score)) {
 			return "";
 		}
@@ -67,7 +67,7 @@ class StatisticFormatter {
 		}
 	}
 	
-	protected static String duration(long duration) {
+	public static String duration(long duration) {
 		return String.format("%d min %d sec", 
 			    TimeUnit.MILLISECONDS.toMinutes(duration),
 			    TimeUnit.MILLISECONDS.toSeconds(duration) - 
@@ -75,7 +75,7 @@ class StatisticFormatter {
 			);
 	}
 	
-	protected static String getModeString(List<Double> modes) {
+	public static String getModeString(List<Double> modes) {
 		StringBuilder sb = new StringBuilder();
 		for(Double mode:modes) {
 			if(sb.length() > 0) sb.append(", ");

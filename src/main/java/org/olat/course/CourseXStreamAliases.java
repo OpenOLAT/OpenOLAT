@@ -97,6 +97,7 @@ public class CourseXStreamAliases {
 		//start read configuration (mostly for compatibility with OLAT 7.3 and greater)
 		readXstream.alias("CourseConfig", CourseConfig.class);
 		readXstream.alias("com.frentix.olat.course.nodes.ViteroCourseNode", ViteroCourseNode.class);
+		readXstream.alias("org.olat.course.nodes.QTI21AssessmentCourseNode", IQTESTCourseNode.class);
 		readXstream.alias("CourseEditorTreeModel", CourseEditorTreeModel.class);
 		readXstream.alias("CourseEditorTreeNode", CourseEditorTreeNode.class);
 		readXstream.alias("Structure", Structure.class);

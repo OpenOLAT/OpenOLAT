@@ -1,0 +1,28 @@
+<div class="panel panel-default">
+	<div class="panel-heading"><h4>$r.translate("fig.title")</h4></div>	  	
+	<table class="table"><tbody>
+		<tr><th>$r.translate("fig.participants")</th>
+			<td>$numOfParticipants</td>
+			<th>$r.translate("fig.avg")</th>
+			<td>$average</td></tr>
+		<tr><th>$r.translate("fig.span")</th>
+			<td>$range</td>
+			<th>$r.translate("fig.stddev")</th>
+			<td>$standardDeviation</td></tr>
+		<tr><th>$r.translate("fig.mode")</th>
+			<td>$mode</td>
+			<th>$r.translate("fig.median")</th>
+			<td>$median</td></tr>
+		<tr><th>$r.translate("fig.averagedur")</th>
+			<td>$averageDuration</td>
+			<th></th><td></td>
+			</tr>
+	</tbody></table>
+</div>
+
+#if($r.available("scoreHistogram"))
+	$r.render("scoreHistogram")
+#end
+#if($r.available("durationHistogram"))
+	$r.render("durationHistogram")
+#end

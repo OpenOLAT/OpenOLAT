@@ -139,7 +139,7 @@ public class IQRunController extends BasicController implements GenericEventList
 	 * @param wControl
 	 * @param testCourseNode
 	 */
-	IQRunController(UserCourseEnvironment userCourseEnv, ModuleConfiguration moduleConfiguration, IQSecurityCallback secCallback, UserRequest ureq, WindowControl wControl, IQTESTCourseNode testCourseNode) {
+	public IQRunController(UserCourseEnvironment userCourseEnv, ModuleConfiguration moduleConfiguration, IQSecurityCallback secCallback, UserRequest ureq, WindowControl wControl, IQTESTCourseNode testCourseNode) {
 		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		
 		this.modConfig = moduleConfiguration;
@@ -230,7 +230,7 @@ public class IQRunController extends BasicController implements GenericEventList
 	 * @param wControl
 	 * @param selftestCourseNode
 	 */
-	IQRunController(UserCourseEnvironment userCourseEnv, ModuleConfiguration moduleConfiguration, IQSecurityCallback secCallback, UserRequest ureq, WindowControl wControl, IQSELFCourseNode selftestCourseNode) {
+	public IQRunController(UserCourseEnvironment userCourseEnv, ModuleConfiguration moduleConfiguration, IQSecurityCallback secCallback, UserRequest ureq, WindowControl wControl, IQSELFCourseNode selftestCourseNode) {
 		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		
 		this.modConfig = moduleConfiguration;
@@ -271,7 +271,7 @@ public class IQRunController extends BasicController implements GenericEventList
 	 * @param wControl
 	 * @param surveyCourseNode
 	 */
-	IQRunController(UserCourseEnvironment userCourseEnv, ModuleConfiguration moduleConfiguration, IQSecurityCallback secCallback, UserRequest ureq, WindowControl wControl, IQSURVCourseNode surveyCourseNode) {
+	public IQRunController(UserCourseEnvironment userCourseEnv, ModuleConfiguration moduleConfiguration, IQSecurityCallback secCallback, UserRequest ureq, WindowControl wControl, IQSURVCourseNode surveyCourseNode) {
 		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		
 		this.modConfig = moduleConfiguration;

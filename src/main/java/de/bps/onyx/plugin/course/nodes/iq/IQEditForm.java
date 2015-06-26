@@ -174,6 +174,22 @@ public class IQEditForm extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		modConfig.set(IQEditController.CONFIG_KEY_TEMPLATE, getTemplate());
+		if (!isSurvey) {
+			modConfig.set(IQEditController.CONFIG_KEY_ATTEMPTS, getAttempts());
+			modConfig.set(IQEditController.CONFIG_KEY_CUTVALUE, getCutValue());
+		}
+		modConfig.set(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS, new Boolean(isShowResultsDateDependent()));
+		modConfig.set(IQEditController.CONFIG_KEY_RESULTS_START_DATE, getShowResultsStartDate());
+		modConfig.set(IQEditController.CONFIG_KEY_RESULTS_END_DATE, getShowResultsEndDate());
+		modConfig.set(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE, isShowResultsOnHomePage());
+		//<OLATCE-982>
+		modConfig.set(IQEditController.CONFIG_KEY_ALLOW_SHOW_SOLUTION, allowShowSolution());
+		//</OLATCE-982>
+		//<OLATCE-2009>
+		modConfig.set(IQEditController.CONFIG_KEY_ALLOW_SUSPENSION_ALLOWED, allowSuspension());
+		//</OLATCE-2009>
+		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
