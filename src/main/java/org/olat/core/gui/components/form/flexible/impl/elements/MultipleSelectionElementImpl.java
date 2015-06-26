@@ -78,7 +78,10 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		this.columns = columns;
 	}
 	
-	
+	@Override
+	public String getForId() {
+		return null;
+	}
 	
 	@Override
 	public void setDomReplacementWrapperRequired(boolean required) {

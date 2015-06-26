@@ -89,7 +89,7 @@
 	<div class="form-group">
 		<label class="control-label col-sm-3">$r.translate("form.assessment.order_type")</label>
 		<div class="col-sm-9">
-			<select id="order_type" name="order_type" class="form-control" onchange="return setFormDirty('ofo_assessform')" onclick="return setFormDirty('ofo_assessform')" $readonly class="$css">
+			<select id="order_type" name="order_type" class="form-control $css" onchange="return setFormDirty('ofo_assessform')" onclick="return setFormDirty('ofo_assessform')" $readonly>
 			<option value="Random" #if ($order_type == "Random") selected="selected" #end
 			>$r.translate("form.section.order_type.random")</option>
 			<option value="Sequential" #if ($order_type == "Sequential") selected="selected" #end

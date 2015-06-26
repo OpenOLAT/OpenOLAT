@@ -88,13 +88,13 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			FormJSHelper.appendFlexiFormDirty(sb, te.getRootForm(), teC.getFormDispatchId());	
 		} else {
 			//read only view
-			sb.append("<span id=\"").append(id).append("\" ")
+			sb.append("<span id=\"").append(id).append("_wp\" ")
 			  .append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()))
 			  .append(" title=\"").append(htmlVal) //the uncutted value in tooltip
 			  .append("\" ").append(" >");
 			// use the longer from display size or real value length
 			int size = (te.displaySize > value.length() ? te.displaySize : value.length());
-			sb.append("<input type=\"").append(te.getHtmlInputType())
+			sb.append("<input id=\"").append(id).append("\" type=\"").append(te.getHtmlInputType())
 			  .append("\" disabled=\"disabled\" class=\"form-control o_disabled\" size=\"")
 			  .append(size)
 			  .append("\" value=\"").append(htmlVal).append("\" />")

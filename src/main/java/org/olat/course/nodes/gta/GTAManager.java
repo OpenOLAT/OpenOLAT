@@ -145,6 +145,8 @@ public interface GTAManager {
 	
 	public TaskList getTaskList(RepositoryEntryRef entry, GTACourseNode cNode);
 	
+	public int updateTaskName(TaskList taskList, String currentTaskName, String newTaskName);
+	
 	public int deleteTaskList(RepositoryEntryRef entry, GTACourseNode cNode);
 	
 	

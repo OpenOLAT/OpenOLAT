@@ -49,11 +49,16 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.model.TaskDefinitionList;
 import org.olat.course.nodes.gta.ui.TaskDefinitionTableModel.TDCols;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -81,12 +86,21 @@ public class GTAAssignmentEditController extends FormBasicController {
 	private final TaskDefinitionList taskList;
 	private final File tasksFolder;
 	private final VFSContainer tasksContainer;
+	private final GTACourseNode gtaNode;
 	private final ModuleConfiguration config;
+	private final CourseEditorEnv courseEditorEnv;
+	
+	@Autowired
+	private GTAManager gtaManager;
 	
 	public GTAAssignmentEditController(UserRequest ureq, WindowControl wControl,
-			ModuleConfiguration config, File tasksFolder, VFSContainer tasksContainer) {
+			GTACourseNode gtaNode, ModuleConfiguration config, CourseEditorEnv courseEditorEnv,
+			File tasksFolder, VFSContainer tasksContainer) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.config = config;
+		this.gtaNode = gtaNode;
+		this.courseEditorEnv = courseEditorEnv;
+		
 		this.tasksFolder = tasksFolder;
 		this.tasksContainer = tasksContainer;
 		
@@ -210,6 +224,7 @@ public class GTAAssignmentEditController extends FormBasicController {
 			if(event == Event.DONE_EVENT) {
 				fireEvent(ureq, Event.DONE_EVENT);
 				taskDefTableEl.reloadData();
+				doFinishReplacementOfTask(editTaskCtrl.getFilenameToReplace(), editTaskCtrl.getTask());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -340,6 +355,14 @@ public class GTAAssignmentEditController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), null, editTaskCtrl.getInitialComponent(), true, title, false);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doFinishReplacementOfTask(String replacedFilename, TaskDefinition taskDef) {
+		RepositoryEntry re = courseEditorEnv.getCourseGroupManager().getCourseEntry();
+		TaskList taskList = gtaManager.getTaskList(re, gtaNode);
+		if(taskList != null) {
+			gtaManager.updateTaskName(taskList, replacedFilename, taskDef.getFilename());
+		}
 	}
 	
 	private void doCreateTask(UserRequest ureq) {

@@ -208,6 +208,12 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	 * The id of the item, can be null
 	 */
 	public String getFormItemId();
+	
+	/**
+	 * Return the id for the attribute for of the label or null
+	 * if the component isn't an HTML form control.
+	 */
+	public String getForId();
 
 	/**
 	 * The elements panel to be rendered by the GUI Framework.

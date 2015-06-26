@@ -225,6 +225,84 @@ public class GTAManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void updateTaskName() {
+		//create an individual task
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-7");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-8");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
+		GTACourseNode node = new GTACourseNode();
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		TaskList taskList = gtaManager.createIfNotExists(re, node);
+		dbInstance.commit();
+		Assert.assertNotNull(taskList);
+		
+		//select
+		gtaManager.selectTask(id1, taskList, node, new File("work_1.txt"));
+		gtaManager.selectTask(id2, taskList, node, new File("work_2.txt"));
+		dbInstance.commit();
+		
+		//change a name
+		int rowUpdated = gtaManager.updateTaskName(taskList, "work_1.txt", "changed_work.txt");
+		dbInstance.commitAndCloseSession();
+		Assert.assertEquals(1, rowUpdated);
+		
+		//check
+		Task assignedTaskToId1 = gtaManager.getTask(id1, taskList);
+		Assert.assertNotNull(assignedTaskToId1);
+		Assert.assertEquals("changed_work.txt", assignedTaskToId1.getTaskName());
+
+		List<Task> assignedTaskToId2 = gtaManager.getTasks(id2, re, node);
+		Assert.assertNotNull(assignedTaskToId2);
+		Assert.assertEquals(1, assignedTaskToId2.size());
+		Assert.assertEquals("work_2.txt", assignedTaskToId2.get(0).getTaskName());	
+	}
+	
+	@Test
+	public void updateTaskName_paranoia() {
+		//create an individual task
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-7");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-8");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
+		GTACourseNode node = new GTACourseNode();
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		TaskList taskList = gtaManager.createIfNotExists(re, node);
+		dbInstance.commit();
+		Assert.assertNotNull(taskList);
+		
+		//create a reference individual task
+		GTACourseNode nodeRef = new GTACourseNode();
+		nodeRef.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		TaskList taskListRef = gtaManager.createIfNotExists(re, nodeRef);
+		dbInstance.commit();
+		Assert.assertNotNull(taskListRef);
+		
+		//select
+		gtaManager.selectTask(id1, taskList, node, new File("work_1.txt"));
+		gtaManager.selectTask(id1, taskListRef, nodeRef, new File("work_1.txt"));
+		gtaManager.selectTask(id2, taskList, node, new File("work_2.txt"));
+		dbInstance.commit();
+		
+		//change a name
+		int rowUpdated = gtaManager.updateTaskName(taskList, "work_1.txt", "changed_work.txt");
+		dbInstance.commitAndCloseSession();
+		Assert.assertEquals(1, rowUpdated);
+		
+		//check
+		Task assignedTaskToId1 = gtaManager.getTask(id1, taskList);
+		Assert.assertNotNull(assignedTaskToId1);
+		Assert.assertEquals("changed_work.txt", assignedTaskToId1.getTaskName());
+
+		List<Task> assignedTaskToId2 = gtaManager.getTasks(id2, re, node);
+		Assert.assertNotNull(assignedTaskToId2);
+		Assert.assertEquals(1, assignedTaskToId2.size());
+		Assert.assertEquals("work_2.txt", assignedTaskToId2.get(0).getTaskName());	
+		
+		Task assignedTaskRefToId1 = gtaManager.getTask(id1, taskListRef);
+		Assert.assertNotNull(assignedTaskRefToId1);
+		Assert.assertEquals("work_1.txt", assignedTaskRefToId1.getTaskName());
+	}
+	
+	@Test
 	public void deleteTaskList() {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-9");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-10");

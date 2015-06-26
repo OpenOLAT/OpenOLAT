@@ -37,6 +37,7 @@
 				<ref bean="userPropertyRegion" />
 				<ref bean="userPropertyCity" />
 				<ref bean="userPropertyCountry" />
+				<ref bean="userPropertyCountryCode" />
 				<ref bean="userPropertyInstitutionalName" />
 				<ref bean="userPropertyInstitutionalUserIdentifier" />
 				<ref bean="userPropertyInstitutionalEmail" />

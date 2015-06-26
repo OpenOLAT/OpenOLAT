@@ -105,7 +105,9 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		workflowCtrl = new GTAWorkflowEditController(ureq, getWindowControl(), gtaNode, euce.getCourseEditorEnv());
 		listenTo(workflowCtrl);
 		//assignment
-		assignmentCtrl = new GTAAssignmentEditController(ureq, getWindowControl(), config, tasksDir, tasksContainer);
+		assignmentCtrl = new GTAAssignmentEditController(ureq, getWindowControl(),
+				gtaNode, config, euce.getCourseEditorEnv(),
+				tasksDir, tasksContainer);
 		listenTo(assignmentCtrl);
 		//submission
 		submissionCtrl = new GTASubmissionEditController(ureq, getWindowControl(), config);
@@ -159,7 +161,13 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(workflowCtrl == source) {
+		if (source == accessibilityCondCtrl) {
+			if (event == Event.CHANGED_EVENT) {
+				Condition cond = accessibilityCondCtrl.getCondition();
+				gtaNode.setPreConditionAccess(cond);
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
+		} else if(workflowCtrl == source) {
 			 if(event == Event.DONE_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 				updateEnabledDisabledTabs();
@@ -174,7 +182,9 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			} else if(event == Event.CANCELLED_EVENT) {
 				removeAsListenerAndDispose(assignmentCtrl);
-				assignmentCtrl = new GTAAssignmentEditController(ureq, getWindowControl(), config, tasksDir, tasksContainer);
+				assignmentCtrl = new GTAAssignmentEditController(ureq, getWindowControl(),
+						gtaNode, config, euce.getCourseEditorEnv(),
+						tasksDir, tasksContainer);
 				listenTo(assignmentCtrl);
 				myTabbedPane.replaceTab(assignmentPos, assignmentCtrl.getInitialComponent());
 			}
