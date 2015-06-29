@@ -489,17 +489,19 @@ public class DENManager {
 		BaseSecurity manager = BaseSecurityManager.getInstance();
 		for( String participant : participants ) {
 			Identity identity = manager.findIdentityByName(participant);
-			Kalendar userCal = calManager.getPersonalCalendar(identity).getKalendar();
-			Collection<KalendarEvent> userEvents = new ArrayList<KalendarEvent>();
-			userEvents.addAll(userCal.getEvents());
-			KalendarEvent userNewEvent = new KalendarEvent(CodeHelper.getGlobalForeverUniqueID(), newEvent.getSubject(), newEvent.getBegin(), newEvent.getEnd());
-			userNewEvent.setLocation(newEvent.getLocation());
-			userNewEvent.setSourceNodeId(newEvent.getSourceNodeId());
-			userNewEvent.setClassification(KalendarEvent.CLASS_PRIVATE);
-			List<KalendarEventLink> kalendarEventLinks = userNewEvent.getKalendarEventLinks();
-			kalendarEventLinks.clear();
-			kalendarEventLinks.addAll(newEvent.getKalendarEventLinks());
-			calManager.addEventTo(userCal, userNewEvent);
+			if(identity != null) {
+				Kalendar userCal = calManager.getPersonalCalendar(identity).getKalendar();
+				Collection<KalendarEvent> userEvents = new ArrayList<KalendarEvent>();
+				userEvents.addAll(userCal.getEvents());
+				KalendarEvent userNewEvent = new KalendarEvent(CodeHelper.getGlobalForeverUniqueID(), newEvent.getSubject(), newEvent.getBegin(), newEvent.getEnd());
+				userNewEvent.setLocation(newEvent.getLocation());
+				userNewEvent.setSourceNodeId(newEvent.getSourceNodeId());
+				userNewEvent.setClassification(KalendarEvent.CLASS_PRIVATE);
+				List<KalendarEventLink> kalendarEventLinks = userNewEvent.getKalendarEventLinks();
+				kalendarEventLinks.clear();
+				kalendarEventLinks.addAll(newEvent.getKalendarEventLinks());
+				calManager.addEventTo(userCal, userNewEvent);
+			}
 		}
 	}
 
@@ -513,13 +515,15 @@ public class DENManager {
 		BaseSecurity manager = BaseSecurityManager.getInstance();
 		for( String participant : participants ) {
 			Identity identity = manager.findIdentityByName(participant);
-			Kalendar userCal = calManager.getPersonalCalendar(identity).getKalendar();
-			Collection<KalendarEvent> userEvents = new ArrayList<KalendarEvent>();
-			userEvents.addAll(userCal.getEvents());
-			for( KalendarEvent userEvent : userEvents ) {
-				String sourceNodeId = userEvent.getSourceNodeId();
-				if(sourceNodeId != null && sourceNodeId.equals(oldEvent.getSourceNodeId())) {
-					calManager.removeEventFrom(userCal, userEvent);
+			if(identity != null) {
+				Kalendar userCal = calManager.getPersonalCalendar(identity).getKalendar();
+				Collection<KalendarEvent> userEvents = new ArrayList<KalendarEvent>();
+				userEvents.addAll(userCal.getEvents());
+				for( KalendarEvent userEvent : userEvents ) {
+					String sourceNodeId = userEvent.getSourceNodeId();
+					if(sourceNodeId != null && sourceNodeId.equals(oldEvent.getSourceNodeId())) {
+						calManager.removeEventFrom(userCal, userEvent);
+					}
 				}
 			}
 		}
@@ -700,8 +704,9 @@ public class DENManager {
 				if(parts != null) {
 					for(String participant : parts) {
 						Identity identity = manager.findIdentityByName(participant);
-						if(identity != null)
+						if(identity != null) {
 							identities.add(identity);
+						}
 					}
 				}
 			}
