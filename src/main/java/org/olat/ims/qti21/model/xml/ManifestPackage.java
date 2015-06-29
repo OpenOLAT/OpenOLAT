@@ -65,7 +65,6 @@ public class ManifestPackage {
 	public static String appendAssessmentTest(ManifestType manifest) {
 		String testId = "id" + UUID.randomUUID().toString();
         String testFileName = testId + ".xml";
-       
         ResourceType testResourceType = objectFactory.createResourceType();
         testResourceType.setIdentifier(testId);
         testResourceType.setType("imsqti_test_xmlv2p1");
@@ -73,7 +72,18 @@ public class ManifestPackage {
         manifest.getResources().getResource().add(testResourceType);
 
         appendFile(testResourceType, testFileName);
-		return testFileName;
+        return testFileName;
+	}
+	
+	public static void appendAssessmentTest(String testFileName, ManifestType manifest) {  
+		String testId = "id" + UUID.randomUUID().toString();
+        ResourceType testResourceType = objectFactory.createResourceType();
+        testResourceType.setIdentifier(testId);
+        testResourceType.setType("imsqti_test_xmlv2p1");
+        testResourceType.setHref(testFileName);
+        manifest.getResources().getResource().add(testResourceType);
+
+        appendFile(testResourceType, testFileName);
 	}
 	
 	public static String appendAssessmentItem(ManifestType manifest) {
@@ -90,6 +100,17 @@ public class ManifestPackage {
 		return itemFileName;
 	}
 	
+	public static void appendAssessmentItem(String itemFileName, ManifestType manifest) {
+		String itemId = "id" + UUID.randomUUID().toString();
+
+        ResourceType itemResourceType = objectFactory.createResourceType();
+        itemResourceType.setIdentifier(itemId);
+        itemResourceType.setType("imsqti_item_xmlv2p1");
+        itemResourceType.setHref(itemFileName);
+        manifest.getResources().getResource().add(itemResourceType);
+        
+        appendFile(itemResourceType, itemFileName);
+	}
 
 	public static void appendFile(ResourceType resource, String href) {
 		FileType itemFileType = objectFactory.createFileType();

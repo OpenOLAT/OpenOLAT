@@ -64,7 +64,10 @@ import uk.ac.ed.ph.jqtiplus.node.item.response.processing.SetOutcomeValue;
 import uk.ac.ed.ph.jqtiplus.node.outcome.declaration.OutcomeDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.shared.FieldValue;
 import uk.ac.ed.ph.jqtiplus.node.shared.declaration.DefaultValue;
+import uk.ac.ed.ph.jqtiplus.provision.BadResourceException;
 import uk.ac.ed.ph.jqtiplus.reading.AssessmentObjectXmlLoader;
+import uk.ac.ed.ph.jqtiplus.reading.QtiModelBuildingError;
+import uk.ac.ed.ph.jqtiplus.reading.QtiXmlInterpretationException;
 import uk.ac.ed.ph.jqtiplus.reading.QtiXmlReader;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
@@ -106,11 +109,8 @@ public class AssessmentItemPackageTest {
 		qtiSerializer.serializeJqtiObject(assessmentItem, System.out);
 	}
 
-	@Test
-	public void buildAssessmentItem() throws URISyntaxException {
-		
-		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
-		
+
+	protected AssessmentItem createAssessmentItem() {
 		AssessmentItem assessmentItem = new AssessmentItem();
 		assessmentItem.setIdentifier("id" + UUID.randomUUID());
 		assessmentItem.setTitle("Physicists");
@@ -303,21 +303,27 @@ public class AssessmentItemPackageTest {
 			incorrectFeedbackVar.setExpression(incorrectFeedbackVal);
 			responseElse.getResponseRules().add(incorrectFeedbackVar);
 		}
-		
-		
-		
+
 		responseProcessing.getResponseRules().add(rule);
 		
+		return assessmentItem;
+	}	
 		
+
+	@Test
+	public void buildAssessmentItem() throws URISyntaxException {	
+
+		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
 		
+		AssessmentItem assessmentItem = createAssessmentItem();
 		
 		qtiSerializer.serializeJqtiObject(assessmentItem, System.out);
 		System.out.println("\n-------------");
 		
-		File outputFile = new File("/Users/srosse/Desktop/generated_item.xml");
+		File outputFile = new File("/Users/srosse/Desktop/QTI/generated_item.xml");
 		if(outputFile.exists()) {
 			outputFile.delete();
-			outputFile = new File("/Users/srosse/Desktop/generated_item.xml");
+			outputFile = new File("/Users/srosse/Desktop/QTI/generated_item.xml");
 		}
 		try(FileOutputStream out = new FileOutputStream(outputFile)) {
 			qtiSerializer.serializeJqtiObject(assessmentItem, out);	
@@ -330,6 +336,17 @@ public class AssessmentItemPackageTest {
         AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, fileResourceLocator);
         ItemValidationResult item = assessmentObjectXmlLoader.loadResolveAndValidateItem(outputFile.toURI());
         System.out.println("Has errors: " + (item.getModelValidationErrors().size() > 0));
+        
+        BadResourceException e = item.getResolvedAssessmentItem().getItemLookup().getBadResourceException();
+        if(e instanceof QtiXmlInterpretationException) {
+        	QtiXmlInterpretationException qe = (QtiXmlInterpretationException)e;
+        	for(QtiModelBuildingError error :qe.getQtiModelBuildingErrors()) {
+        		String localName = error.getElementLocalName();
+        		String msg = error.getException().getMessage();
+        		int lineNumber = error.getElementLocation().getLineNumber();
+        		System.out.println(lineNumber + " :: " + localName + " :: " + msg);
+        	}
+        }
 	}
 	
 	private P getParagraph(QtiNode parent, String content) {

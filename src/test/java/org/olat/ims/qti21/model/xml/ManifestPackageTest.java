@@ -50,7 +50,7 @@ public class ManifestPackageTest {
         Assert.assertNotNull(testFilename);
         Assert.assertNotNull(itemFilename);
         
-        File tmpDir = new File("/HotCoffee/tmp/imsmanifest/");
+        File tmpDir = new File("/Users/srosse/Desktop/QTI/");
         if(!tmpDir.exists()) {
         	tmpDir.mkdirs();
         }
