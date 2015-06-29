@@ -38,10 +38,8 @@ import org.olat.course.assessment.AssessedIdentityWrapper;
 import org.olat.course.assessment.AssessmentEditController;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.GTACourseNode;
-import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -61,9 +59,6 @@ public class GTACoachedParticipantGradingController extends BasicController {
 	private final GTACourseNode gtaNode;
 	private final Identity assessedIdentity;
 	private final OLATResourceable courseOres;
-
-	@Autowired
-	private GTAManager gtaManager;
 	
 	public GTACoachedParticipantGradingController(UserRequest ureq, WindowControl wControl,
 			OLATResourceable courseOres, GTACourseNode gtaNode, Identity assessedIdentity) {
