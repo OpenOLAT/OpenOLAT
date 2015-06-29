@@ -22,7 +22,6 @@ package org.olat.course.nodes.gta.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
@@ -60,7 +59,6 @@ import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.MSCourseNode;
-import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.ui.GroupAssessmentModel.Cols;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -104,11 +102,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	@Autowired
-	private GTAManager gtaManager;
-	@Autowired
 	private UserManager userManager;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired

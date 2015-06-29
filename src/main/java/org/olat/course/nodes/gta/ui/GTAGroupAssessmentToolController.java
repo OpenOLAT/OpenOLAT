@@ -29,10 +29,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.course.nodes.GTACourseNode;
-import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -50,9 +48,6 @@ public class GTAGroupAssessmentToolController extends BasicController {
 	private final GTACourseNode gtaNode;
 	private final CourseEnvironment courseEnv;
 	private final BusinessGroup assessedGroup;
-	
-	@Autowired
-	private GTAManager gtaManager;
 	
 	public GTAGroupAssessmentToolController(UserRequest ureq, WindowControl wControl, 
 			CourseEnvironment courseEnv, BusinessGroup assessedGroup, GTACourseNode gtaNode) {
