@@ -36,9 +36,7 @@ import org.olat.group.ui.main.MemberListTableModel.Cols;
  *
  */
 public class MemberListTableSort extends SortableFlexiTableModelDelegate<MemberView> {
-	
-	
-	
+
 	public MemberListTableSort(SortKey orderBy, SortableFlexiTableDataModel<MemberView> tableModel, Locale locale) {
 		super(orderBy, tableModel, locale);
 	}
@@ -46,16 +44,20 @@ public class MemberListTableSort extends SortableFlexiTableModelDelegate<MemberV
 	@Override
 	protected void sort(List<MemberView> rows) {
 		int columnIndex = getColumnIndex();
-		Cols column = Cols.values()[columnIndex];
-		switch(column) {
-			case role:
-				Collections.sort(rows, new RoleMemberViewComparator());
-				break;
-			case groups:
-				Collections.sort(rows, new GroupMemberViewComparator(getCollator()));
-				break;
-			default: {
-				super.sort(rows);
+		if(columnIndex >= AbstractMemberListController.USER_PROPS_OFFSET) {
+			super.sort(rows);
+		} else {
+			Cols column = Cols.values()[columnIndex];
+			switch(column) {
+				case role:
+					Collections.sort(rows, new RoleMemberViewComparator());
+					break;
+				case groups:
+					Collections.sort(rows, new GroupMemberViewComparator(getCollator()));
+					break;
+				default: {
+					super.sort(rows);
+				}
 			}
 		}
 	}
