@@ -43,6 +43,10 @@ public interface FlexiColumnModel {
 	
 	public void setSortable(boolean enable);
 	
+	public boolean isExportable();
+	
+	public void setExportable(boolean export);
+	
 	public boolean isDefaultVisible();
 	
 	public boolean isAlwaysVisible();
