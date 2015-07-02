@@ -416,6 +416,9 @@ public class CourseFactory extends BasicManager {
 		PersistingCourseImpl targetCourse = new PersistingCourseImpl(targetRes.getResourceableId());
 		File fTargetCourseBasePath = targetCourse.getCourseBaseContainer().getBasefile();
 		
+		//close connection before file copy
+		DBFactory.getInstance(false).commitAndCloseSession();
+		
 		synchronized (sourceCourse) { // o_clusterNOK - cannot be solved with doInSync since could take too long (leads to error: "Lock wait timeout exceeded")
 			// copy configuration
 			CourseConfig courseConf = CourseConfigManagerImpl.getInstance().copyConfigOf(sourceCourse);
@@ -439,9 +442,6 @@ public class CourseFactory extends BasicManager {
 			File fSourceTaskfoldernodesFolder = new File(FolderConfig.getCanonicalRoot()
 					+ TACourseNode.getTaskFoldersPathRelToFolderRoot(sourceCourse.getCourseEnvironment()));
 			if (fSourceTaskfoldernodesFolder.exists()) FileUtils.copyDirToDir(fSourceTaskfoldernodesFolder, fTargetCourseBasePath, false, "copy task folder directories");
-
-			//make sure the DB connection is available after this point
-			DBFactory.getInstance(false).commitAndCloseSession();
 			
 			// update references
 			List<Reference> refs = referenceManager.getReferences(sourceCourse);
