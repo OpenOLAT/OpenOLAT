@@ -94,7 +94,7 @@ import de.vitero.schema.booking.CreateBookingResponse;
 import de.vitero.schema.booking.DeleteBookingRequest;
 import de.vitero.schema.booking.DeleteBookingResponse;
 import de.vitero.schema.booking.GetBookingListByDateRequest;
-import de.vitero.schema.booking.GetBookingListByUserInFutureRequest;
+import de.vitero.schema.booking.GetBookingListByUserAndCustomerInFutureRequest;
 import de.vitero.schema.booking.Newbookingtype;
 import de.vitero.schema.group.ChangeGroupRoleRequest;
 import de.vitero.schema.group.Completegrouptype;
@@ -1226,11 +1226,12 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	protected List<Booking_Type> getBookingInFutureByUserId(int userId)
 	throws VmsNotAvailableException {
 		try {
-			GetBookingListByUserInFutureRequest request = new GetBookingListByUserInFutureRequest();
+			GetBookingListByUserAndCustomerInFutureRequest request = new GetBookingListByUserAndCustomerInFutureRequest();
 			request.setUserid(userId);
+			request.setCustomerid(viteroModule.getCustomerId());
 			request.setTimezone(viteroModule.getTimeZoneId());
 			
-			Bookinglist bookingList = getBookingWebService().getBookingListByUserInFuture(request);
+			Bookinglist bookingList = getBookingWebService().getBookingListByUserAndCustomerInFuture(request);
 			
 			return bookingList.getBooking();
 		} catch(SOAPFaultException f) {
