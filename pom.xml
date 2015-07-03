@@ -1723,7 +1723,7 @@
 		<dependency>
 			<groupId>org.openolat</groupId>
 			<artifactId>viterows</artifactId>
-			<version>4.4</version>
+			<version>6.0</version>
 		</dependency>
 		<!-- docx4j need poi scratchpad version 3.8 -->
 		<dependency>

@@ -22,7 +22,6 @@ package org.olat.course.nodes.gta.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -102,8 +101,6 @@ public class GroupAssessmentController extends FormBasicController {
 	private GTAManager gtaManager;
 	@Autowired
 	private UserManager userManager;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired

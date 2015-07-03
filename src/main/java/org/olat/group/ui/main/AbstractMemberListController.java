@@ -216,6 +216,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		membersTable.setEmtpyTableMessageKey("nomembers");
 		membersTable.setAndLoadPersistedPreferences(ureq, this.getClass().getSimpleName());
 		membersTable.setSearchEnabled(true);
+		membersTable.setExportEnabled(true);
 
 		if(!globallyManaged) {
 			editButton = uifactory.addFormLink("edit.members", formLayout, Link.BUTTON);
@@ -250,7 +251,9 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	
 	protected void initColumns(FlexiTableColumnModel columnsModel) {
 		if(chatEnabled) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.online.i18n(), Cols.online.ordinal()));
+			DefaultFlexiColumnModel chatCol = new DefaultFlexiColumnModel(Cols.online.i18n(), Cols.online.ordinal());
+			chatCol.setExportable(false);
+			columnsModel.addFlexiColumnModel(chatCol);
 		}
 		if(isAdministrativeUser) {
 			FlexiCellRenderer renderer = new StaticFlexiCellRenderer(TABLE_ACTION_EDIT, new TextFlexiCellRenderer());
@@ -290,7 +293,9 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.groups.i18n(), Cols.groups.ordinal(), true, Cols.groups.name(), groupRenderer));
 		}
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.tools.i18n(), Cols.tools.ordinal()));
+		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(Cols.tools.i18n(), Cols.tools.ordinal());
+		toolsCol.setExportable(false);
+		columnsModel.addFlexiColumnModel(toolsCol);
 	}
 
 	@Override
@@ -860,13 +865,11 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	protected void forgeLinks(MemberView row) {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + counter.incrementAndGet(), "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
-		toolsLink.setTitle(translate("tools"));
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 		
 		FormLink chatLink = uifactory.addFormLink("tools_" + counter.incrementAndGet(), "im", "", null, null, Link.NONTRANSLATED);
 		chatLink.setIconLeftCSS("o_icon o_icon_status_unavailable");
-		chatLink.setTitle(" ");
 		chatLink.setUserObject(row);
 		row.setChatLink(chatLink);
 	}

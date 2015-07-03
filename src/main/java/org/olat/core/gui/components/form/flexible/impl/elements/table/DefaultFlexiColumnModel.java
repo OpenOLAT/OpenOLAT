@@ -39,6 +39,7 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 	private int columnIndex;
 
 	private boolean sortable;
+	private boolean exportable = true;
 	private String sortedKey;
 
 	private boolean defaultVisible;
@@ -114,18 +115,29 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 	public boolean isSortable() {
 		return sortable;
 	}
-
+	
+	@Override
+	public void setSortable(boolean enable) {
+		sortable = enable;
+	}
+	
+	@Override
+	public boolean isExportable() {
+		return exportable;
+	}
+	
+	@Override
+	public void setExportable(boolean exportable) {
+		this.exportable = exportable;
+	}
+	
+	@Override
 	public boolean isDefaultVisible() {
 		return defaultVisible;
 	}
 	
 	public void setDefaultVisible(boolean defaultVisible) {
 		this.defaultVisible = defaultVisible;
-	}
-
-	@Override
-	public void setSortable(boolean enable) {
-		sortable = enable;
 	}
 
 	@Override

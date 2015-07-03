@@ -173,30 +173,40 @@ public abstract class GTAAbstractController extends BasicController {
 		mainVC.contextPut("submitEnabled", submit);
 		if(submit) {
 			task = stepSubmit(ureq, task);
+		} else if(task != null && task.getTaskStatus() == TaskProcess.submit) {
+			task = gtaManager.nextStep(task, gtaNode);
 		}
 		
 		boolean reviewAndCorrection = config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION);
 		mainVC.contextPut("reviewAndCorrectionEnabled", reviewAndCorrection);
 		if(reviewAndCorrection) {
 			task = stepReviewAndCorrection(ureq, task);
+		} else if(task != null && task.getTaskStatus() == TaskProcess.review) {
+			task = gtaManager.nextStep(task, gtaNode);
 		}
 		
 		boolean revision = config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD);
-		mainVC.contextPut("revisionEnabled", revision);
-		if(revision) {
+		mainVC.contextPut("revisionEnabled", reviewAndCorrection && revision);
+		if(reviewAndCorrection && revision) {
 			task = stepRevision(ureq, task);
+		} else if(task != null && (task.getTaskStatus() == TaskProcess.revision || task.getTaskStatus() == TaskProcess.correction)) {
+			task = gtaManager.nextStep(task, gtaNode);
 		}
 		
 		boolean solution = config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION);
 		mainVC.contextPut("solutionEnabled", solution);
 		if(solution) {
 			stepSolution(ureq, task);
+		} else if(task != null && task.getTaskStatus() == TaskProcess.solution) {
+			task = gtaManager.nextStep(task, gtaNode);
 		}
 		
 		boolean grading = config.getBooleanSafe(GTACourseNode.GTASK_GRADING);
 		mainVC.contextPut("gradingEnabled", grading);
 		if(grading) {
 			stepGrading(ureq, task);
+		} else if(task != null && task.getTaskStatus() == TaskProcess.grading) {
+			task = gtaManager.nextStep(task, gtaNode);
 		}
 		
 		collapsedContents(task);

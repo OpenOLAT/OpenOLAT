@@ -26,16 +26,12 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.GTACourseNode;
-import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.ui.BeforeDateTaskRuleEditor;
-import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.manager.RepositoryEntryRelationDAO;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -46,13 +42,6 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class SubmissionTaskRuleSPI extends AbstractDueDateTaskRuleSPI {
-	
-	@Autowired
-	private GTAManager gtaManager;
-	@Autowired
-	private BusinessGroupService businessGroupService;
-	@Autowired
-	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 
 	@Override
 	public String getLabelI18nKey() {

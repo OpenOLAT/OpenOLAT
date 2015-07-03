@@ -32,6 +32,7 @@ public abstract class AbstractFlexiColumnModel implements FlexiColumnModel {
 	private String headerLabel;
 	private String columnKey;
 	private boolean sortable;
+	private boolean exportable = true;
 	private String sortedKey;
 	private int columnIndex;
 	private FlexiCellRenderer cellRenderer;
@@ -87,6 +88,16 @@ public abstract class AbstractFlexiColumnModel implements FlexiColumnModel {
 	@Override
 	public void setSortable(boolean sortable) {
 		this.sortable = sortable;
+	}
+
+	@Override
+	public boolean isExportable() {
+		return exportable;
+	}
+
+	@Override
+	public void setExportable(boolean exportable) {
+		this.exportable = exportable;
 	}
 
 	@Override

@@ -497,8 +497,13 @@ public class GTAWorkflowEditController extends FormBasicController {
 			config.remove(GTACourseNode.GTASK_SUBMIT_DEADLINE);
 		}
 
-		config.setBooleanEntry(GTACourseNode.GTASK_REVIEW_AND_CORRECTION, reviewEl.isAtLeastSelected(1));
-		config.setBooleanEntry(GTACourseNode.GTASK_REVISION_PERIOD, revisionEl.isAtLeastSelected(1));
+		boolean review = reviewEl.isAtLeastSelected(1);
+		config.setBooleanEntry(GTACourseNode.GTASK_REVIEW_AND_CORRECTION, review);
+		if(review) {
+			config.setBooleanEntry(GTACourseNode.GTASK_REVISION_PERIOD, revisionEl.isAtLeastSelected(1));
+		} else {
+			config.setBooleanEntry(GTACourseNode.GTASK_REVISION_PERIOD, false);
+		}
 		
 		boolean sample = sampleEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_SAMPLE_SOLUTION, sample);

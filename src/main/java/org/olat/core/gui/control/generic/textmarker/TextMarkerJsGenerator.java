@@ -33,6 +33,7 @@ import java.util.List;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.commons.modules.glossary.GlossaryItem;
 import org.olat.core.commons.modules.glossary.GlossaryItemManager;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 
 
@@ -76,9 +77,13 @@ public class TextMarkerJsGenerator {
 			ArrayList<String> allHighlightStrings = glossaryItem.getAllStringsToMarkup();
 			sb.append("new Array(\"");
 			for (Iterator<String> iterator2 = allHighlightStrings.iterator(); iterator2.hasNext();) {
-				String termFlexionSynonym = StringEscapeUtils.escapeJava(iterator2.next());
-				sb.append(termFlexionSynonym);
-				sb.append("\"");
+				String termFlexionSynonym = iterator2.next();
+				String javaEscapedTermFlexionSynonym = StringEscapeUtils.escapeJava(termFlexionSynonym);
+				sb.append(javaEscapedTermFlexionSynonym).append("\"");
+				if(!termFlexionSynonym.equals(javaEscapedTermFlexionSynonym)) {
+					String htmlEscapedTermFlexionSynonym = StringHelper.escapeHtml(termFlexionSynonym);
+					sb.append(",\"").append(htmlEscapedTermFlexionSynonym).append("\"");
+				}
 				if (iterator2.hasNext()) {
 					sb.append(",\"");
 				}

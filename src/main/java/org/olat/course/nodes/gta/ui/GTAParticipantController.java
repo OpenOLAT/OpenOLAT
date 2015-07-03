@@ -66,7 +66,6 @@ import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.area.BGAreaManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -93,8 +92,6 @@ public class GTAParticipantController extends GTAAbstractController {
 	
 	@Autowired
 	private MailManager mailManager;
-	@Autowired
-	private BGAreaManager areaManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 
