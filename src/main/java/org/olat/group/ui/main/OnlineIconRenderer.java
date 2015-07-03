@@ -19,8 +19,12 @@
  */
 package org.olat.group.ui.main;
 
+import java.util.Locale;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.table.CustomCssCellRenderer;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.model.Presence;
 
@@ -29,7 +33,19 @@ import org.olat.instantMessaging.model.Presence;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class OnlineIconRenderer extends CustomCssCellRenderer {
-	private InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
+	
+	private final InstantMessagingModule imModule;
+	
+	public OnlineIconRenderer() {
+		imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
+	}
+
+	@Override
+	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
+		if(renderer != null) {
+			super.render(sb, renderer, val, locale, alignment, action);
+		}
+	}
 
 	@Override
 	protected String getCssClass(Object val) {

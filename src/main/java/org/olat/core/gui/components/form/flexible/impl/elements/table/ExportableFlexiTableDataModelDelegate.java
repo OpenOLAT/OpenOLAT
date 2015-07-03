@@ -53,7 +53,7 @@ public class ExportableFlexiTableDataModelDelegate  {
 		List<FlexiColumnModel> columns = new ArrayList<>(numOfColumns);
 		for(int i=0; i<numOfColumns; i++) {
 			FlexiColumnModel column = columnModel.getColumnModel(i);
-			if(column.isDefaultVisible()) {
+			if(column.isDefaultVisible() && column.isExportable()) {
 				columns.add(column);
 			}
 		}
