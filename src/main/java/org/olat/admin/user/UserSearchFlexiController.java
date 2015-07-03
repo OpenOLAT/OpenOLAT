@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
@@ -111,6 +111,8 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	private boolean isAdministrativeUser;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
 
@@ -247,23 +249,21 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	
 	@Override
 	protected void doFireSelection(UserRequest ureq, List<String> res) {
-		// if we get the event, we have a result or an incorrect selection see OLAT-5114 -> check for empty
 		String mySel = res.isEmpty() ? null : res.get(0);
-		if (( mySel == null) || mySel.trim().equals("")) {
-			getWindowControl().setWarning(translate("error.search.form.notempty"));
-			return;
-		}
-		Long key = -1l; // default not found
-		try {
-			key = Long.valueOf(mySel);				
-			if (key > 0) {
-				Identity chosenIdent = BaseSecurityManager.getInstance().loadIdentityByKey(key);
-				// No need to check for null, exception is thrown when identity does not exist which really 
-				// should not happen at all. Tell that an identity has been chosen
-				fireEvent(ureq, new SingleIdentityChosenEvent(chosenIdent));
+		if(StringHelper.containsNonWhitespace(mySel) && StringHelper.isLong(mySel)) {
+			try {
+				Long key = Long.valueOf(mySel);				
+				if (key > 0) {
+					Identity chosenIdent = securityManager.loadIdentityByKey(key);
+					if(chosenIdent != null) {
+						fireEvent(ureq, new SingleIdentityChosenEvent(chosenIdent));
+					}
+				}
+			} catch (NumberFormatException e) {
+				getWindowControl().setWarning(translate("error.no.user.found"));								
 			}
-		} catch (NumberFormatException e) {
-			getWindowControl().setWarning(translate("error.no.user.found"));								
+		} else {
+			getWindowControl().setWarning(translate("error.search.form.notempty"));
 		}
 	}
 
@@ -434,7 +434,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	 * @return
 	 */
 	private List<Identity> searchUsers(String login, Map<String, String> userPropertiesSearch, boolean userPropertiesAsIntersectionSearch) {
-	  return BaseSecurityManager.getInstance().getVisibleIdentitiesByPowerSearch(
+	  return securityManager.getVisibleIdentitiesByPowerSearch(
 			(login.equals("") ? null : login),
 			userPropertiesSearch, userPropertiesAsIntersectionSearch,	// in normal search fields are intersected
 			null, null, null, null, null);
