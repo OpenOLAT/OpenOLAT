@@ -20,11 +20,10 @@
 package org.olat.ims.qti21.ui.editor;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Event;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 
@@ -34,32 +33,29 @@ import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentTestPartEditorController extends BasicController {
-	
-	private final TestPart testPart;
-	private final VelocityContainer mainVC;
-	
+public class AssessmentTestPartEditorController extends ItemSessionControlController {
+		
 	public AssessmentTestPartEditorController(UserRequest ureq, WindowControl wControl,
-			TestPart testPart) {
-		super(ureq, wControl);
-		this.testPart = testPart;
-		
-		mainVC = createVelocityContainer("assessment_test_part_editor");
-		
-		putInitialPanel(mainVC);
-		
+			TestPart testPart, boolean restrictedEdit) {
+		super(ureq, wControl, testPart, restrictedEdit);
+
+		initForm(ureq);
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("assessment.testpart.config");
+		
+		super.initForm(formLayout, listener, ureq);
+		
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		formLayout.add(buttonsCont);
+		uifactory.addFormSubmitButton("save", "save", buttonsCont);
 	}
 
 	@Override
-	protected void doDispose() {
-		//
+	protected void formOK(UserRequest ureq) {
+		super.formOK(ureq);
+		fireEvent(ureq, AssessmentTestEvent.ASSESSMENT_TEST_CHANGED_EVENT);
 	}
-	
-	
-
 }

@@ -67,7 +67,7 @@ public class AssessmentTestEditorAndComposerTreeModel extends GenericTreeModel i
 	
 	private void buildRecursively(TestPart part, int pos, TreeNode parentNode) {
 		GenericTreeNode partNode = new GenericTreeNode(part.getIdentifier().toString());
-		partNode.setTitle("Test part: " +pos);
+		partNode.setTitle(pos + ". Test part");
 		partNode.setIconCssClass("o_icon o_qtiassessment_icon");
 		partNode.setUserObject(part);
 		parentNode.addChild(partNode);

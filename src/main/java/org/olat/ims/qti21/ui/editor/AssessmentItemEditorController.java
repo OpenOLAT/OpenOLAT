@@ -20,6 +20,8 @@
 package org.olat.ims.qti21.ui.editor;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.net.URI;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -27,18 +29,21 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
+import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 
 /**
  * 
@@ -47,7 +52,7 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
  *
  */
 public class AssessmentItemEditorController extends BasicController {
-	
+
 	private final ResolvedAssessmentItem resolvedAssessmentItem;
 	
 	private final TabbedPane tabbedPane;
@@ -55,6 +60,9 @@ public class AssessmentItemEditorController extends BasicController {
 	
 	private FormBasicController itemEditor;
 	private AssessmentItemDisplayController displayCtrl;
+	
+	@Autowired
+	private QtiSerializer qtiSerializer;
 	
 	public AssessmentItemEditorController(UserRequest ureq, WindowControl wControl, RepositoryEntry testEntry,
 			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef, File unzippedDirectory) {
@@ -75,8 +83,12 @@ public class AssessmentItemEditorController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 	
+	@Override
+	protected void doDispose() {
+		//
+	}
+	
 	private void initItemEditor(UserRequest ureq) {
-
 		AssessmentItem item = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
 		if(QTI21Constants.TOOLNAME.equals(item.getToolName())) {
 			//we have create this one
@@ -117,12 +129,28 @@ public class AssessmentItemEditorController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-
+	
 	@Override
-	protected void doDispose() {
-		//
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(event instanceof AssessmentItemEvent) {
+			if(event == AssessmentItemEvent.CHANGED_EVENT) {
+				doSaveAssessmentItem();
+			}
+			
+		}
+		super.event(ureq, source, event);
 	}
-	
-	
 
+	private void doSaveAssessmentItem() {
+		URI itemUri = resolvedAssessmentItem.getItemLookup().getSystemId();
+		File itemFile = new File(itemUri);
+		AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
+		
+		try(FileOutputStream out = new FileOutputStream(itemFile)) {
+			qtiSerializer.serializeJqtiObject(assessmentItem, out);	
+		} catch(Exception e) {
+			logError("", e);
+			showError("serialize.error");
+		}
+	}
 }

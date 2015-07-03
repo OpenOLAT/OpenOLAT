@@ -28,6 +28,7 @@ import javax.xml.bind.Marshaller;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.imscp.xml.manifest.FileType;
 import org.olat.imscp.xml.manifest.ManifestMetadataType;
 import org.olat.imscp.xml.manifest.ManifestType;
@@ -63,7 +64,7 @@ public class ManifestPackage {
 	}
 	
 	public static String appendAssessmentTest(ManifestType manifest) {
-		String testId = "id" + UUID.randomUUID().toString();
+		String testId = "test" + UUID.randomUUID().toString();
         String testFileName = testId + ".xml";
         ResourceType testResourceType = objectFactory.createResourceType();
         testResourceType.setIdentifier(testId);
@@ -76,7 +77,8 @@ public class ManifestPackage {
 	}
 	
 	public static void appendAssessmentTest(String testFileName, ManifestType manifest) {  
-		String testId = "id" + UUID.randomUUID().toString();
+		String testId = IdentifierGenerator.newAsString();
+		
         ResourceType testResourceType = objectFactory.createResourceType();
         testResourceType.setIdentifier(testId);
         testResourceType.setType("imsqti_test_xmlv2p1");
@@ -101,7 +103,7 @@ public class ManifestPackage {
 	}
 	
 	public static void appendAssessmentItem(String itemFileName, ManifestType manifest) {
-		String itemId = "id" + UUID.randomUUID().toString();
+		String itemId = IdentifierGenerator.newAsString();
 
         ResourceType itemResourceType = objectFactory.createResourceType();
         itemResourceType.setIdentifier(itemId);

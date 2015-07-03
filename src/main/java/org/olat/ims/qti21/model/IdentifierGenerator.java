@@ -17,30 +17,37 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.repository.handlers;
+package org.olat.ims.qti21.model;
 
-import java.io.File;
+import java.util.UUID;
 
-import org.junit.Test;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
+ * Generate an identifier, max length 32 characters (to be conform with QTI 2.1)
+ * with an oo prefix.
  * 
- * Initial date: 04.06.2015<br>
+ * 
+ * Initial date: 03.07.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21AssessmentTestHandlerTest {
+public class IdentifierGenerator {
 	
-	private static final File fullPackage = new File("/Users/srosse/Desktop/QTI/Full/");
+	public static final String newAsString() {
+		return "oo".concat(UUID.randomUUID().toString().replace("-", "").substring(2));
+	}
 	
-	@Test
-	public void createImsManifest() {
-		if(!fullPackage.exists()) {
-			fullPackage.mkdirs();
-		}
-		
-		QTI21AssessmentTestHandler handler = new QTI21AssessmentTestHandler();
-		handler.createMinimalAssessmentTest("Generated test", fullPackage);
+	public static final Identifier newAsIdentifier() {
+		return Identifier.parseString(newAsString());
+	}
+	
+	public static final String newAssessmentTestFilename() {
+		return "test" + UUID.randomUUID() + ".xml";
+	}
+	
+	public static final String newAssessmentItemFilename() {
+		return "item" + UUID.randomUUID() + ".xml";
 	}
 
 }

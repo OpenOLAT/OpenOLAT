@@ -17,30 +17,23 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.repository.handlers;
+package org.olat.ims.qti21.ui.editor;
 
-import java.io.File;
-
-import org.junit.Test;
+import org.olat.core.gui.control.Event;
 
 /**
  * 
- * Initial date: 04.06.2015<br>
+ * Initial date: 03.07.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21AssessmentTestHandlerTest {
+public class AssessmentTestEvent extends Event {
+
+	private static final long serialVersionUID = 2489279701746043979L;
+	public static final AssessmentTestEvent ASSESSMENT_TEST_CHANGED_EVENT = new AssessmentTestEvent("changed");
 	
-	private static final File fullPackage = new File("/Users/srosse/Desktop/QTI/Full/");
-	
-	@Test
-	public void createImsManifest() {
-		if(!fullPackage.exists()) {
-			fullPackage.mkdirs();
-		}
-		
-		QTI21AssessmentTestHandler handler = new QTI21AssessmentTestHandler();
-		handler.createMinimalAssessmentTest("Generated test", fullPackage);
+	public AssessmentTestEvent(String cmd) {
+		super(cmd);
 	}
 
 }

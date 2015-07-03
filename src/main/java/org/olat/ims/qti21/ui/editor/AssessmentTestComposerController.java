@@ -20,6 +20,8 @@
 package org.olat.ims.qti21.ui.editor;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.net.URI;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
@@ -29,6 +31,7 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
+import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.tree.TreeNode;
@@ -77,10 +80,12 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private final RepositoryEntry testEntry;
 	private final ResolvedAssessmentTest resolvedAssessmentTest;
 	
+	private final boolean restrictedEdit;
+	
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
-	private QtiSerializer serializer;
+	private QtiSerializer qtiSerializer;
 	
 	public AssessmentTestComposerController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar,
 			RepositoryEntry testEntry) {
@@ -89,6 +94,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		
 		this.toolbar = toolbar;
 		this.testEntry = testEntry;
+		restrictedEdit = false;
 		
 		// test structure
 		menuTree = new MenuTree("atTree");
@@ -136,6 +142,23 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(event instanceof AssessmentTestEvent) {
+			AssessmentTestEvent ate = (AssessmentTestEvent)event;
+			if(ate == AssessmentTestEvent.ASSESSMENT_TEST_CHANGED_EVENT) {
+				doSaveAssessmentTest();
+			}
+		} else if(event instanceof AssessmentSectionEvent) {
+			AssessmentSectionEvent ase = (AssessmentSectionEvent)event;
+			if(AssessmentSectionEvent.ASSESSMENT_SECTION_CHANGED.equals(ase.getCommand())) {
+				doSaveAssessmentTest();
+				doUpdate(ase.getSection());
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(menuTree == source) {
 			if (event instanceof TreeEvent) {
@@ -148,10 +171,35 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				}
 			}
 		} else if(saveLink == source) {
-			AssessmentTest test = resolvedAssessmentTest.getTestLookup().getRootNodeHolder().getRootNode();
-			String testXml = serializer.serializeJqtiObject(test);
-			System.out.println(testXml);
+			doSaveAssessmentTest();
 		}
+	}
+	
+	private void doSaveAssessmentTest() {
+		URI testURI = resolvedAssessmentTest.getTestLookup().getSystemId();
+		File testFile = new File(testURI);
+		AssessmentTest assessmentTest = resolvedAssessmentTest.getTestLookup().getRootNodeHolder().getRootNode();
+
+		try(FileOutputStream out = new FileOutputStream(testFile)) {
+			qtiSerializer.serializeJqtiObject(assessmentTest, out);	
+		} catch(Exception e) {
+			logError("", e);
+			showError("serialize.error");
+		}
+	}
+	
+	private void doUpdate(AssessmentSection section) {
+		TreeNode node = menuTree.getTreeModel()
+				.getNodeById(section.getIdentifier().toString());
+		if(node instanceof GenericTreeNode) {
+			GenericTreeNode sectionNode = (GenericTreeNode)node;
+			if(!section.getTitle().equals(sectionNode.getTitle())) {
+				sectionNode.setTitle(section.getTitle());
+				menuTree.setDirty(true);
+			}
+		}
+		
+		
 	}
 	
 	private void partEditorFactory(UserRequest ureq, TreeNode selectedNode) {
@@ -171,9 +219,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		if(uobject instanceof AssessmentTest) {
 			currentEditorCtrl = new AssessmentTestEditorController(ureq, getWindowControl(), (AssessmentTest)uobject);
 		} else if(uobject instanceof TestPart) {
-			currentEditorCtrl = new AssessmentTestPartEditorController(ureq, getWindowControl(), (TestPart)uobject);
+			currentEditorCtrl = new AssessmentTestPartEditorController(ureq, getWindowControl(), (TestPart)uobject, restrictedEdit);
 		} else if(uobject instanceof AssessmentSection) {
-			currentEditorCtrl = new AssessmentSectionEditorController(ureq, getWindowControl(), (AssessmentSection)uobject);
+			currentEditorCtrl = new AssessmentSectionEditorController(ureq, getWindowControl(), (AssessmentSection)uobject, restrictedEdit);
 		} else if(uobject instanceof AssessmentItemRef) {
 			AssessmentItemRef itemRef = (AssessmentItemRef)uobject;
 			ResolvedAssessmentItem item = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);

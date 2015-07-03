@@ -20,11 +20,12 @@
 package org.olat.ims.qti21.ui.editor;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Event;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 
@@ -34,32 +35,57 @@ import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentSectionEditorController extends BasicController {
-	
-	private final VelocityContainer mainVC;
+public class AssessmentSectionEditorController extends ItemSessionControlController {
+
+	private TextElement titleEl;
 	private final AssessmentSection section;
 	
 	public AssessmentSectionEditorController(UserRequest ureq, WindowControl wControl,
-			AssessmentSection section) {
-		super(ureq, wControl);
+			AssessmentSection section, boolean restrictedEdit) {
+		super(ureq, wControl, section, restrictedEdit);
 		this.section = section;
 		
-		mainVC = createVelocityContainer("assessment_section_editor");
-		
-		putInitialPanel(mainVC);
-		
+		initForm(ureq);
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("assessment.section.config");
+		
+		String title = section.getTitle();
+		titleEl = uifactory.addTextElement("title", "form.metadata.title", 255, title, formLayout);
+		titleEl.setMandatory(true);
+		
+		super.initForm(formLayout, listener, ureq);
+		
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("butons", getTranslator());
+		formLayout.add(buttonsCont);
+		uifactory.addFormSubmitButton("save", "save", buttonsCont);
 	}
 
 	@Override
 	protected void doDispose() {
 		//
 	}
-	
-	
 
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		titleEl.clearError();
+		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
+			titleEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		return allOk & super.validateFormLogic(ureq);
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		section.setTitle(titleEl.getValue());
+		
+		super.formOK(ureq);
+		fireEvent(ureq, new AssessmentSectionEvent(AssessmentSectionEvent.ASSESSMENT_SECTION_CHANGED, section));
+	}
 }

@@ -20,9 +20,11 @@
 package org.olat.ims.qti21.repository.handlers;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -59,6 +61,9 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.ims.qti21.model.IdentifierGenerator;
+import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
+import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestPackage;
 import org.olat.ims.qti21.model.xml.OnyxToQtiWorksHandler;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
@@ -75,6 +80,12 @@ import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeController
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.springframework.stereotype.Service;
+
+import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
+import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 
 /**
  * 
@@ -113,28 +124,52 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 		
 		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(re.getOlatResource()), FileResourceManager.ZIPDIR);
 		if(!repositoryDir.exists()) {
-			
+			repositoryDir.mkdirs();
 		}
+		createMinimalAssessmentTest(displayname, repositoryDir);
 		return re;
 	}
 	
-	public void createMinimalAssessmentTest() {
+	public void createMinimalAssessmentTest(String displayName, File directory) {
         ManifestType manifestType = ManifestPackage.createEmptyManifest();
-        String testFilename = ManifestPackage.appendAssessmentTest(manifestType);
-        String itemFilename = ManifestPackage.appendAssessmentItem(manifestType);	
-        ManifestPackage.write(manifestType, System.out);
+
+		//single choice
+		File itemFile = new File(directory, IdentifierGenerator.newAssessmentTestFilename());
+		AssessmentItem assessmentItem = AssessmentItemFactory.createSingleChoice();
+		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
+		ManifestPackage.appendAssessmentItem(itemFile.getName(), manifestType);	
+		
+		//test
+        File testFile = new File(directory, IdentifierGenerator.newAssessmentItemFilename());
+		AssessmentTest assessmentTest = AssessmentTestFactory.createAssessmentTest(displayName);
+        ManifestPackage.appendAssessmentTest(testFile.getName(), manifestType);
         
-        //create basic assessment test
+        // item -> test
+        try {
+			AssessmentSection section = assessmentTest.getTestParts().get(0).getAssessmentSections().get(0);
+			AssessmentTestFactory.appendAssessmentItem(section, itemFile.getName());
+		} catch (URISyntaxException e) {
+			log.error("", e);
+		}
         
+        try(FileOutputStream out = new FileOutputStream(itemFile)) {
+			qtiSerializer.serializeJqtiObject(assessmentItem, out);	
+		} catch(Exception e) {
+			log.error("", e);
+		}
         
-        //create single choice
-		
-		
-		
-		
+		try(FileOutputStream out = new FileOutputStream(testFile)) {
+			qtiSerializer.serializeJqtiObject(assessmentTest, out);	
+		} catch(Exception e) {
+			log.error("", e);
+		}
+
+        try(FileOutputStream out = new FileOutputStream(new File(directory, "imsmanifest.xml"))) {
+        	ManifestPackage.write(manifestType, out);
+        } catch(Exception e) {
+        	log.error("", e);
+        }
 	}
-	
-	
 
 	@Override
 	public boolean isPostCreateWizardAvailable() {

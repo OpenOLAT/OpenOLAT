@@ -19,7 +19,9 @@
  */
 package org.olat.ims.qti21;
 
+import uk.ac.ed.ph.jqtiplus.types.ComplexReferenceIdentifier;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
 
 /**
  * 
@@ -37,12 +39,24 @@ public class QTI21Constants {
 	
 	public static final Identifier SCORE_IDENTIFIER = Identifier.assumedLegal(SCORE);
 	
+	public static final ComplexReferenceIdentifier SCORE_CLX_IDENTIFIER = ComplexReferenceIdentifier.parseString(SCORE);
+	
 	public static final String MAXSCORE = "MAXSCORE";
 	
 	public static final Identifier MAXSCORE_IDENTIFIER = Identifier.assumedLegal(MAXSCORE);
 	
+	public static final ComplexReferenceIdentifier MAXSCORE_CLX_IDENTIFIER = ComplexReferenceIdentifier.parseString(MAXSCORE);
+	
 	public static final String PASS = "PASS";
 
 	public static final Identifier PASS_IDENTIFIER = Identifier.assumedLegal(PASS);
+	
+	public static final String FEEDBACKBASIC = "FEEDBACKBASIC";
+	
+	public static final Identifier FEEDBACKBASIC_IDENTIFIER = Identifier.parseString(FEEDBACKBASIC);
+	
+	public static final IdentifierValue CORRECT = new IdentifierValue("correct");
+	
+	public static final IdentifierValue INCORRECT = new IdentifierValue("incorrect");
 
 }

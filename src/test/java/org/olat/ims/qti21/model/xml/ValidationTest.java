@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.model.xml;
 
 import java.io.File;
+import java.util.UUID;
 
 import org.junit.Test;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
@@ -41,6 +42,13 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  *
  */
 public class ValidationTest {
+	
+	@Test
+	public void generateUUID() {
+		for(int i=0; i<1000; i++) {
+			System.out.println("oo" + UUID.randomUUID().toString().replace("-", "").substring(2));
+		}
+	}
 	
 	@Test
 	public void validateItem() {
