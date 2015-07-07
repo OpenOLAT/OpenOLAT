@@ -31,6 +31,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tree.MenuTree;
+import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -68,7 +69,7 @@ public class CustomLinkChooserController extends BasicController {
 		mainVC.put("internalLinkTree", jumpInSelectionTree);
 
 		selectButton = LinkFactory.createButton("selectfile", mainVC, this);
-		selectButton.setElementCssClass("btn btn-primary");
+		selectButton.setCustomEnabledLinkCSS("btn btn-default");
 		cancelButton = LinkFactory.createButton("cancel", mainVC, this);
 		
 		putInitialPanel(mainVC);
@@ -84,8 +85,19 @@ public class CustomLinkChooserController extends BasicController {
 		if(source == cancelButton) {
 			fireEvent(ureq, Event.CANCELLED_EVENT);
 		} else if(selectButton == source) {
-			String url = customLinkTreeModel.getInternalLinkUrlFor(jumpInSelectionTree.getSelectedNode().getIdent());
-			fireEvent(ureq, new URLChoosenEvent(url));
+			if(jumpInSelectionTree.getSelectedNode() != null) {
+				String url = customLinkTreeModel.getInternalLinkUrlFor(jumpInSelectionTree.getSelectedNode().getIdent());
+				fireEvent(ureq, new URLChoosenEvent(url));
+			}
+		} else if (source == jumpInSelectionTree) {
+			TreeEvent te = (TreeEvent) event;
+			if (te.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
+				if(jumpInSelectionTree.getSelectedNode() != null) {
+					selectButton.setCustomEnabledLinkCSS("btn btn-default o_button_dirty");
+				} else {
+					selectButton.setCustomEnabledLinkCSS("btn btn-default");
+				}
+			}
 		}
 	}
 }
