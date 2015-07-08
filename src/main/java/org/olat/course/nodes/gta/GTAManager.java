@@ -139,8 +139,24 @@ public interface GTAManager {
 	 */
 	public List<IdentityRef> getDuplicatedMemberships(GTACourseNode gtaNode);
 	
+	/**
+	 * Are users already processing the tasks?
+	 * 
+	 * @param entry
+	 * @param gtaNode
+	 * @return
+	 */
+	public boolean isTasksInProcess(RepositoryEntryRef entry, GTACourseNode gtaNode);
 	
-	public boolean isAnyTasks(RepositoryEntryRef entry, GTACourseNode gtaNode);
+	/**
+	 * Are users already processing this task?
+	 * 
+	 * @param entry
+	 * @param gtaNode
+	 * @param taskName
+	 * @return
+	 */
+	public boolean isTaskInProcess(RepositoryEntryRef entry, GTACourseNode gtaNode, String taskName);
 	
 	public TaskList createIfNotExists(RepositoryEntry entry, GTACourseNode cNode);
 	

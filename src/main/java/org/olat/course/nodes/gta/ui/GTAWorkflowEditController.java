@@ -465,7 +465,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		RepositoryEntry entry = courseEditorEnv.getCourseGroupManager().getCourseEntry();
-		if(gtaManager.isAnyTasks(entry, gtaNode)) {
+		if(gtaManager.isTasksInProcess(entry, gtaNode)) {
 			doConfirmChanges(ureq);
 		} else {
 			commitChanges();

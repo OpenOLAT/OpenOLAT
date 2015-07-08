@@ -58,7 +58,9 @@ import org.olat.group.BusinessGroupImpl;
 @Table(name="o_gta_task")
 @NamedQueries({
 	@NamedQuery(name="countTaskByNameAndTaskList", query="select count(task) from gtatask task where task.taskList.key=:taskListKey and task.taskName=:taskName"),
-	@NamedQuery(name="tasksByTaskList", query="select task.taskName from gtatask task where task.taskList.key=:taskListKey")
+	@NamedQuery(name="tasksByTaskList", query="select task.taskName from gtatask task where task.taskList.key=:taskListKey"),
+	@NamedQuery(name="isTaskInProcess", query="select count(task) from gtatask task inner join task.taskList tasklist where task.taskName=:taskName and tasklist.entry.key=:entryKey and tasklist.courseNodeIdent=:courseNodeIdent"),
+	@NamedQuery(name="isTasksInProcess", query="select count(task) from gtatask task inner join task.taskList tasklist where tasklist.entry.key=:entryKey and tasklist.courseNodeIdent=:courseNodeIdent")
 })
 public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 

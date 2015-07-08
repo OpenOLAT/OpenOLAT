@@ -201,6 +201,71 @@ public class GTAManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void isTaskInProcess() {
+		//prepare
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-11");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
+		GTACourseNode node = new GTACourseNode();
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+		File taskFile = new File("solo.txt");
+		Assert.assertNotNull(tasks);
+		dbInstance.commit();
+		
+		//select
+		AssignmentResponse response = gtaManager.selectTask(participant, tasks, node, taskFile);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(response);
+		Assert.assertNotNull(response.getTask());
+		
+		//check
+		boolean inProcess = gtaManager.isTaskInProcess(re, node, taskFile.getName());
+		Assert.assertTrue(inProcess);
+		
+		//check dummy file name which cannot be in process
+		boolean notInProcess = gtaManager.isTaskInProcess(re, node, "qwertz");
+		Assert.assertFalse(notInProcess);
+	}
+	
+	@Test
+	public void isTasksInProcess_yes() {
+		//prepare
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-12");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
+		GTACourseNode node = new GTACourseNode();
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+		File taskFile = new File("solo.txt");
+		Assert.assertNotNull(tasks);
+		dbInstance.commit();
+		
+		//select
+		AssignmentResponse response = gtaManager.selectTask(participant, tasks, node, taskFile);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(response);
+		Assert.assertNotNull(response.getTask());
+
+		//check
+		boolean inProcess = gtaManager.isTasksInProcess(re, node);
+		Assert.assertTrue(inProcess);
+	}
+	
+	@Test
+	public void isTasksInProcess_no() {
+		//prepare
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
+		GTACourseNode node = new GTACourseNode();
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+		Assert.assertNotNull(tasks);
+		dbInstance.commit();
+		
+		//check
+		boolean inProcess = gtaManager.isTasksInProcess(re, node);
+		Assert.assertFalse(inProcess);
+	}
+	
+	@Test
 	public void getAssignedTasks() {
 		//create an individual task
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-7");
