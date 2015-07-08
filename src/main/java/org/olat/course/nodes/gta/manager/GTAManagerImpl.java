@@ -418,6 +418,17 @@ public class GTAManagerImpl implements GTAManager {
 	}
 
 	@Override
+	public boolean isAnyTasks(RepositoryEntryRef entry, GTACourseNode cNode) {
+		String q = "select count(task) from gtatask task inner join task.taskList tasklist where tasklist.entry.key=:entryKey and tasklist.courseNodeIdent=:courseNodeIdent";
+		List<Number> numOfTasks = dbInstance.getCurrentEntityManager()
+				.createQuery(q, Number.class)
+				.setParameter("entryKey", entry.getKey())
+				.setParameter("courseNodeIdent", cNode.getIdent())
+				.getResultList();
+		return numOfTasks != null && !numOfTasks.isEmpty() && numOfTasks.get(0) != null && numOfTasks.get(0).intValue() > 0;
+	}
+
+	@Override
 	public TaskList createIfNotExists(RepositoryEntry entry, GTACourseNode cNode) {
 		TaskList tasks = getTaskList(entry, cNode);
 		if(tasks == null) {

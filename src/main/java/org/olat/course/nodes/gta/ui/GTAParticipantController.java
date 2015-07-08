@@ -193,7 +193,7 @@ public class GTAParticipantController extends GTAAbstractController {
 		TaskDefinition taskDef = getTaskDefinition(assignedTask);
 		assignedTaskCtrl = new GTAAssignedTaskController(ureq, getWindowControl(), assignedTask,
 				taskDef, courseEnv, gtaNode,
-				"task.assigned.description", message);
+				"task.assigned.description", "warning.no.task.choosed", message);
 		listenTo(assignedTaskCtrl);
 		mainVC.put("myAssignedTask", assignedTaskCtrl.getInitialComponent());
 	}

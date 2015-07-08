@@ -140,6 +140,7 @@ public interface GTAManager {
 	public List<IdentityRef> getDuplicatedMemberships(GTACourseNode gtaNode);
 	
 	
+	public boolean isAnyTasks(RepositoryEntryRef entry, GTACourseNode gtaNode);
 	
 	public TaskList createIfNotExists(RepositoryEntry entry, GTACourseNode cNode);
 	
