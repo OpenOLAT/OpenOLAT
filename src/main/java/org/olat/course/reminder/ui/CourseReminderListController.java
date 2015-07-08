@@ -278,7 +278,7 @@ public class CourseReminderListController extends FormBasicController implements
 	
 	private void doDuplicate(ReminderRow row) {
 		Reminder reminder = reminderManager.loadByKey(row.getKey());
-		reminderManager.duplicate(reminder);
+		reminderManager.duplicate(reminder, getIdentity());
 		updateModel();
 	}
 	
