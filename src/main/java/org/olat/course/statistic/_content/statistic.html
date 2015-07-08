@@ -3,10 +3,7 @@
 	<legend>
 		$r.contextHelpWithWrapper($package, $packageHtml,"help.hover.statistic")
 		$r.translate("statistic.title")</legend>
-<div class="o_desc">$r.translate("statistic.intro", $statsSince)
-#if(!$r.translate('statistic.intro.more').startsWith('no translation::::'))
-	$r.translate('statistic.intro.more')
-#end</div>
+	<div class="o_desc">$r.translate("statistic.intro", $statsSince)</div>
 </fieldset>
 $r.render("statisticResult")
 #if($hasChart)
