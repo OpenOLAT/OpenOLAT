@@ -163,15 +163,27 @@ public class BeforeDateTaskRuleEditor extends RuleEditorFragment {
 			
 			if(AssignTaskRuleSPI.class.getSimpleName().equals(ruleType)) {
 				boolean assignment = config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT);
-				Date dueDate = config.getDateValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
-				if(assignment && dueDate != null) {
-					nodes.add(courseNode);
+				if(assignment) {
+					Date dueDate = config.getDateValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
+					int numOfDays = config.getIntegerSafe(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE, -1);
+					String relativeTo = config.getStringValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE_TO);
+					if(dueDate != null) {
+						nodes.add(courseNode);
+					} else if(numOfDays >= 0 && StringHelper.containsNonWhitespace(relativeTo)) {
+						nodes.add(courseNode);
+					}
 				}
 			} else if(SubmissionTaskRuleSPI.class.getSimpleName().equals(ruleType)) {
 				boolean submit = config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT);
-				Date dueDate = config.getDateValue(GTACourseNode.GTASK_SUBMIT_DEADLINE);
-				if(submit && dueDate != null) {
-					nodes.add(courseNode);
+				if(submit) {
+					Date dueDate = config.getDateValue(GTACourseNode.GTASK_SUBMIT_DEADLINE);
+					int numOfDays = config.getIntegerSafe(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE, -1);
+					String relativeTo = config.getStringValue(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE_TO);
+					if(dueDate != null) {
+						nodes.add(courseNode);
+					} else if(numOfDays >= 0 && StringHelper.containsNonWhitespace(relativeTo)) {
+						nodes.add(courseNode);
+					}
 				}
 			}
 		}
