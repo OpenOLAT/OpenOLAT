@@ -76,6 +76,7 @@ public class AuthoringEditAccessController extends BasicController {
 
 		boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
 		acCtr = new AccessConfigurationController(ureq, getWindowControl(), entry.getOlatResource(), entry.getDisplayname(), true, !managedBookings);
+		listenTo(acCtr);
 		int access = propPupForm.getAccess();
 		int numOfBookingConfigs = acCtr.getNumOfBookingConfigurations();
 		if(access == RepositoryEntry.ACC_USERS || access == RepositoryEntry.ACC_USERS_GUESTS) {
@@ -138,6 +139,10 @@ public class AuthoringEditAccessController extends BasicController {
 
 				MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess);
 				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, entry);	
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+		} else if(acCtr == source) {
+			if(event == Event.CHANGED_EVENT) {
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		}

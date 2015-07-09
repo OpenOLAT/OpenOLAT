@@ -61,7 +61,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
-import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -152,8 +151,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected UserManager userManager;
 	@Autowired
 	protected MarkManager markManager;
-	@Autowired
-	private AssessmentModule assessmentModule;
 	@Autowired
 	protected RepositoryModule repositoryModule;
 	@Autowired
@@ -530,6 +527,10 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		} else if(accessCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
 				re = accessCtrl.getEntry();
+				if(ordersLink != null) {
+					boolean booking = acService.isResourceAccessControled(re.getOlatResource(), null);
+					ordersLink.setVisible(!corrupted && booking);
+				}
 			}
 		} else if(descriptionCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {

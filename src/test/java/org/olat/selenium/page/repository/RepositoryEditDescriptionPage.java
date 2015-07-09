@@ -64,4 +64,5 @@ public class RepositoryEditDescriptionPage {
 		WebElement main = browser.findElement(By.id("o_main_wrapper"));
 		Assert.assertTrue(main.isDisplayed());
 	}
+	
 }

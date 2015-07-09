@@ -26,6 +26,7 @@ import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
 import org.olat.restapi.support.vo.CourseVO;
+import org.olat.selenium.page.core.BookingPage;
 import org.olat.selenium.page.core.MenuTreePageFragment;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.repository.RepositoryAccessPage;
@@ -50,6 +51,7 @@ public class CoursePageFragment {
 	
 	public static final By editCourseBy = By.className("o_sel_course_editor");
 	public static final By accessConfigBy = By.className("o_sel_course_access");
+	public static final By bookingBy = By.className("o_sel_course_ac_tool");
 	public static final By assessmentToolBy = By.className("o_sel_course_assessment_tool");
 	public static final By assessmentModeBy = By.className("o_sel_course_assessment_mode");
 	public static final By membersCourseBy = By.className("o_sel_course_members");
@@ -200,5 +202,14 @@ public class CoursePageFragment {
 
 		WebElement main = browser.findElement(By.id("o_main_container"));
 		return Graphene.createPageFragment(EfficiencyStatementConfigurationPage.class, main);
+	}
+	
+	public BookingPage bookingTool() {
+		if(!browser.findElement(toolsMenu).isDisplayed()) {
+			openToolsMenu();
+		}
+		browser.findElement(bookingBy).click();
+		OOGraphene.waitBusy(browser);
+		return new BookingPage(browser);
 	}
 }

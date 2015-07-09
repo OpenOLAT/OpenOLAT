@@ -41,6 +41,7 @@ import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
 import org.olat.selenium.page.User;
+import org.olat.selenium.page.core.BookingPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseWizardPage;
@@ -50,7 +51,9 @@ import org.olat.selenium.page.course.PublisherPageFragment.Access;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.FeedPage;
+import org.olat.selenium.page.repository.RepositoryAccessPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
+import org.olat.selenium.page.repository.RepositoryAccessPage.UserAccess;
 import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.rest.UserRestClient;
@@ -819,5 +822,92 @@ public class CourseTest {
 		
 		int numOfSurvivingMessages = infoMsgConfig.countMessages();
 		Assert.assertEquals(3, numOfSurvivingMessages);
+	}
+	
+	/**
+	 * An author creates a course, make it visible for
+	 * members and add an access control by password.
+	 * The user search for the course, books it and give
+	 * the password.<br/>
+	 * The author checks in the list of orders if the booking
+	 * of the user is there and after it checks if the user is
+	 * in the member list too.
+	 * 
+	 * @param loginPage
+	 * @param ryomouBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseBooking(@InitialPage LoginPage loginPage,
+			@Drone @User WebDriver ryomouBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		
+		//go to authoring
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+		
+		String title = "Create-Selen-" + UUID.randomUUID().toString();
+		//create course
+		authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.course)
+			.fillCreateForm(title)
+			.assertOnGeneralTab();
+
+		//open course editor
+		CoursePageFragment course = new CoursePageFragment(browser);
+		RepositoryAccessPage courseAccess = course
+			.openToolsMenu()
+			.edit()
+			.createNode("info")
+			.autoPublish()
+			.accessConfiguration()
+			.setUserAccess(UserAccess.registred);
+		//add booking by secret token
+		courseAccess
+			.boooking()
+			.openAddDropMenu()
+			.addTokenMethod()
+			.configureTokenMethod("secret", "The password is secret");
+		courseAccess
+			.clickToolbarBack();
+		
+		//a user search the course
+		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		ryomouLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		NavigationPage ryomouNavBar = new NavigationPage(ryomouBrowser);
+		ryomouNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(title)
+			.book(title);
+		//book the course
+		BookingPage booking = new BookingPage(ryomouBrowser);
+		booking
+			.bookToken("secret");
+		//check the course
+		CoursePageFragment bookedCourse = CoursePageFragment.getCourse(ryomouBrowser);
+		bookedCourse
+			.assertOnTitle(title);
+		
+		//Author go in the list of bookings of the course
+		BookingPage bookingList = course
+			.openToolsMenu()
+			.bookingTool();
+		bookingList
+			.assertFirstNameInListIsOk(ryomou);
+		
+		//Author go to members list
+		course
+			.members()
+			.assertFirstNameInList(ryomou);
 	}
 }
