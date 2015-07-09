@@ -350,6 +350,9 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 		File fSolImportDir = new File(fNodeImportDir, "solutions");
 		File solutionsDirectory = gtaManager.getSolutionsDirectory(course.getCourseEnvironment(), this);
 		FileUtils.copyDirContentsToDir(fSolImportDir, solutionsDirectory, false, "import task course node solutions");
+		
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		gtaManager.createIfNotExists(entry, this);
 	}
 
 	@Override
@@ -366,6 +369,9 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 		File sourceSolutionsDirectory = gtaManager.getSolutionsDirectory(sourceCourse.getCourseEnvironment(), this);
 		File copySolutionsDirectory = gtaManager.getSolutionsDirectory(course.getCourseEnvironment(), this);
 		FileUtils.copyDirContentsToDir(sourceSolutionsDirectory, copySolutionsDirectory, false, "copy task course node solutions");
+		
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		gtaManager.createIfNotExists(entry, this);
 	}
 
 	@Override
