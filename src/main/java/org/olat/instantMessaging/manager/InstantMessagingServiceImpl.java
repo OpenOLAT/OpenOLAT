@@ -77,8 +77,6 @@ public class InstantMessagingServiceImpl extends BasicManager implements Instant
 	@Autowired
 	private InstantMessagePreferencesDAO prefsDao;
 	@Autowired
-	private ChatLogHelper logHelper;
-	@Autowired
 	private CoordinatorManager coordinator;
 	@Autowired
 	private ContactDAO contactDao;

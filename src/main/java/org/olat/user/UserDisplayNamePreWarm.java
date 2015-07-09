@@ -19,7 +19,6 @@
  */
 package org.olat.user;
 
-import org.olat.core.configuration.PreWarm;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
@@ -32,7 +31,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class UserDisplayNamePreWarm implements PreWarm {
+public class UserDisplayNamePreWarm implements Runnable {
 	
 	private static final OLog log = Tracing.createLoggerFor(UserDisplayNamePreWarm.class);
 
