@@ -171,6 +171,9 @@ public class GTAParticipantController extends GTAAbstractController {
 					} else if(response == null || response.getStatus() == AssignmentResponse.Status.noMoreTasks) {
 						showError("error.nomoretasks");
 					} else if(response == null || response.getStatus() == AssignmentResponse.Status.ok) {
+						if(response != null) {
+							assignedTask = response.getTask();
+						}
 						showInfo("task.successfully.assigned");
 						showAssignedTask(ureq, assignedTask);
 					}
