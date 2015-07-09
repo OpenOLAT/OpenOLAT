@@ -49,52 +49,69 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GTAAssignedTaskController extends BasicController {
 
-	private final Link downloadButton, downloadLink;
+	private Link downloadButton, downloadLink;
 	
-	private final File taskFile;
+	private File taskFile;
 	
 	@Autowired
 	private GTAManager gtaManager;
 	
+	/**
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param task The task
+	 * @param taskDef The task definition if any
+	 * @param courseEnv The course environment
+	 * @param gtaNode The course node
+	 * @param i18nDescription The description of the step
+	 * @param i18nWarning The warning message if the assignee wasn't able to choose a task
+	 * @param message
+	 */
 	public GTAAssignedTaskController(UserRequest ureq, WindowControl wControl, Task task,
 			TaskDefinition taskDef, CourseEnvironment courseEnv, GTACourseNode gtaNode,
-			String i18nDescription, String message) {
+			String i18nDescription, String i18nWarning, String message) {
 		super(ureq, wControl);
-
-		File taskDir = gtaManager.getTasksDirectory(courseEnv, gtaNode);
-		taskFile = new File(taskDir, task.getTaskName());
 		
 		VelocityContainer mainVC = createVelocityContainer("assigned_task");
 		mainVC.contextPut("description", translate(i18nDescription));
 		if(StringHelper.containsNonWhitespace(message)) {
 			mainVC.contextPut("message", message);
 		}
-		
-		double fileSizeInMB = taskFile.length() / (1024.0d * 1024.0d);
-		String[] infos = new String[] { taskFile.getName(), TaskHelper.format(fileSizeInMB) };
-		String taskInfos = translate("download.task.infos", infos);
-		String cssIcon = CSSHelper.createFiletypeIconCssClassFor(taskFile.getName());
-		if(taskDef != null) {
-			mainVC.contextPut("taskDescription", taskDef.getDescription());
-		}
-		// two links to same file: explicit button and task name
-		downloadButton = LinkFactory.createCustomLink("download.task", "download.task", null, Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
-		downloadButton.setCustomDisplayText(translate("download.task"));
-		downloadButton.setTitle(taskInfos);
-		downloadButton.setIconLeftCSS("o_icon o_icon_download");
-		downloadButton.setTarget("_blank");
 
-		downloadLink = LinkFactory.createCustomLink("download.link", "download.link", null, Link.NONTRANSLATED, mainVC, this);
-		if(taskDef != null) {
-			downloadLink.setCustomDisplayText(StringHelper.escapeHtml(taskDef.getTitle()));
-			downloadLink.setIconLeftCSS("o_icon " + cssIcon);
+		File taskDir = gtaManager.getTasksDirectory(courseEnv, gtaNode);
+		
+		if(task == null || !StringHelper.containsNonWhitespace(task.getTaskName())) {
+			mainVC.contextPut("warningMsg", translate(i18nWarning));
 		} else {
-			downloadLink.setCustomDisplayText(StringHelper.escapeHtml(taskFile.getName()));
-			downloadLink.setIconLeftCSS("o_icon " + cssIcon + " o_icon_warning");
-			downloadLink.setEnabled(false);
+			taskFile = new File(taskDir, task.getTaskName());
+
+			double fileSizeInMB = taskFile.length() / (1024.0d * 1024.0d);
+			String[] infos = new String[] { taskFile.getName(), TaskHelper.format(fileSizeInMB) };
+			String taskInfos = translate("download.task.infos", infos);
+			String cssIcon = CSSHelper.createFiletypeIconCssClassFor(taskFile.getName());
+			if(taskDef != null) {
+				mainVC.contextPut("taskDescription", taskDef.getDescription());
+			}
+			// two links to same file: explicit button and task name
+			downloadButton = LinkFactory.createCustomLink("download.task", "download.task", null, Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
+			downloadButton.setCustomDisplayText(translate("download.task"));
+			downloadButton.setTitle(taskInfos);
+			downloadButton.setIconLeftCSS("o_icon o_icon_download");
+			downloadButton.setTarget("_blank");
+	
+			downloadLink = LinkFactory.createCustomLink("download.link", "download.link", null, Link.NONTRANSLATED, mainVC, this);
+			if(taskDef != null) {
+				downloadLink.setCustomDisplayText(StringHelper.escapeHtml(taskDef.getTitle()));
+				downloadLink.setIconLeftCSS("o_icon " + cssIcon);
+			} else {
+				downloadLink.setCustomDisplayText(StringHelper.escapeHtml(taskFile.getName()));
+				downloadLink.setIconLeftCSS("o_icon " + cssIcon + " o_icon_warning");
+				downloadLink.setEnabled(false);
+			}
+			downloadLink.setTitle(taskInfos);
+			downloadLink.setTarget("_blank");
 		}
-		downloadLink.setTitle(taskInfos);
-		downloadLink.setTarget("_blank");
 
 		putInitialPanel(mainVC);
 	}

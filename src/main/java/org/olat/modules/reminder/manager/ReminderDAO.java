@@ -87,7 +87,7 @@ public class ReminderDAO {
 		return reminders.isEmpty() ? null : reminders.get(0);
 	}
 
-	public Reminder duplicate(Reminder toCopy) {
+	public Reminder duplicate(Reminder toCopy, Identity creator) {
 		ReminderImpl reminder = new ReminderImpl();
 		Date now = new Date();
 		reminder.setCreationDate(now);
@@ -97,7 +97,7 @@ public class ReminderDAO {
 					.getReference(RepositoryEntry.class, toCopy.getEntry().getKey());
 			reminder.setEntry(entryRef);
 		}
-		
+		reminder.setCreator(creator);
 		reminder.setDescription(toCopy.getDescription() + " (Copy)");
 		reminder.setConfiguration(toCopy.getConfiguration());
 		reminder.setEmailBody(toCopy.getEmailBody());

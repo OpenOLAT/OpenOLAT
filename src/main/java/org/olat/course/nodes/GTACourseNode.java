@@ -66,6 +66,7 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
@@ -349,6 +350,22 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 		File fSolImportDir = new File(fNodeImportDir, "solutions");
 		File solutionsDirectory = gtaManager.getSolutionsDirectory(course.getCourseEnvironment(), this);
 		FileUtils.copyDirContentsToDir(fSolImportDir, solutionsDirectory, false, "import task course node solutions");
+	}
+
+	@Override
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse) {
+		super.postCopy(envMapper, processType, course, sourceCourse);
+		
+		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
+		//copy tasks
+		File sourceTaskDirectory = gtaManager.getTasksDirectory(sourceCourse.getCourseEnvironment(), this);
+		File copyTaskDirectory = gtaManager.getTasksDirectory(course.getCourseEnvironment(), this);
+		FileUtils.copyDirContentsToDir(sourceTaskDirectory, copyTaskDirectory, false, "copy task course node");
+				
+		//copy solutions
+		File sourceSolutionsDirectory = gtaManager.getSolutionsDirectory(sourceCourse.getCourseEnvironment(), this);
+		File copySolutionsDirectory = gtaManager.getSolutionsDirectory(course.getCourseEnvironment(), this);
+		FileUtils.copyDirContentsToDir(sourceSolutionsDirectory, copySolutionsDirectory, false, "copy task course node solutions");
 	}
 
 	@Override

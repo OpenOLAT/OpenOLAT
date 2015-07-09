@@ -31,6 +31,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.reminder.Reminder;
 import org.olat.modules.reminder.SentReminder;
+import org.olat.modules.reminder.model.ReminderImpl;
 import org.olat.modules.reminder.model.ReminderInfos;
 import org.olat.modules.reminder.model.SentReminderImpl;
 import org.olat.repository.RepositoryEntry;
@@ -292,6 +293,28 @@ public class ReminderDAOTest extends OlatTestCase {
 		Assert.assertTrue(recipientKeys.contains(recepient1.getKey()));
 		Assert.assertTrue(recipientKeys.contains(recepient2.getKey()));
 		Assert.assertTrue(recipientKeys.contains(recepient3.getKey()));
+	}
+	
+	@Test
+	public void duplicateReminder() {
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("creator-rem-12");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Reminder reminderToCopy = createAndSaveReminder(entry, creator, 12);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(reminderToCopy);
+		
+		Reminder duplicate = reminderDao.duplicate(reminderToCopy, creator);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(duplicate);
+		Assert.assertNotNull(duplicate.getKey());
+		
+		ReminderImpl reloadedDuplicate = (ReminderImpl)reminderDao.loadByKey(duplicate.getKey());
+		Assert.assertNotNull(reloadedDuplicate);
+		Assert.assertEquals(creator, reloadedDuplicate.getCreator());
+		Assert.assertEquals(entry, reloadedDuplicate.getEntry());
+		Assert.assertEquals(reminderToCopy.getEmailBody(), reloadedDuplicate.getEmailBody());
+		Assert.assertTrue(reloadedDuplicate.getDescription().startsWith(reminderToCopy.getDescription()));
+		Assert.assertEquals(reminderToCopy.getConfiguration(), reloadedDuplicate.getConfiguration());
 	}
 	
 	@Test

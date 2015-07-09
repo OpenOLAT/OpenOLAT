@@ -40,12 +40,12 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class RepositoryEntryLifecycleAfterValidFromRuleSPI implements RepositoryEntryRuleSPI  {
+public class RepositoryEntryLifecycleAfterValidToRuleSPI implements RepositoryEntryRuleSPI  {
 
 
 	@Override
 	public String getLabelI18nKey() {
-		return "rule.lifecycle.validfrom";
+		return "rule.lifecycle.validto";
 	}
 	
 	@Override
@@ -60,7 +60,7 @@ public class RepositoryEntryLifecycleAfterValidFromRuleSPI implements Repository
 	
 	@Override
 	public RuleEditorFragment getEditorFragment(ReminderRule rule, RepositoryEntry entry) {
-		return new RepositoryEntryLifecycleAfterValidRuleEditor(rule, this.getClass().getSimpleName(), "/repo_valid_from.html");
+		return new RepositoryEntryLifecycleAfterValidRuleEditor(rule, this.getClass().getSimpleName(), "/repo_valid_to.html");
 	}
 
 	@Override
@@ -68,7 +68,7 @@ public class RepositoryEntryLifecycleAfterValidFromRuleSPI implements Repository
 		boolean allOk = true;
 		if(rule instanceof ReminderRuleImpl) {
 			RepositoryEntryLifecycle lifecycle = entry.getLifecycle();
-			if(lifecycle != null && lifecycle.getValidFrom() != null) {
+			if(lifecycle != null && lifecycle.getValidTo() != null) {
 				allOk &= evaluate(lifecycle, rule);
 			} else {
 				allOk &= false;
@@ -79,15 +79,10 @@ public class RepositoryEntryLifecycleAfterValidFromRuleSPI implements Repository
 	
 	public boolean evaluate(RepositoryEntryLifecycle lifecycle, ReminderRule rule) {
 		Date now = cleanNow();
-		Date validTo = lifecycle.getValidTo();
-		if(validTo != null && now.compareTo(validTo) >= 0) {
-			return false;//the course is at the end
-		}
-
 		ReminderRuleImpl r = (ReminderRuleImpl)rule;
 		int distance = Integer.parseInt(r.getRightOperand());
 		LaunchUnit unit = LaunchUnit.valueOf(r.getRightUnit());
-		Date referenceDate = getDate(lifecycle.getValidFrom(), distance, unit);
+		Date referenceDate = getDate(lifecycle.getValidTo(), distance, unit);
 		return now.compareTo(referenceDate) >= 0;
 	}
 

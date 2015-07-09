@@ -41,7 +41,7 @@ import org.olat.modules.reminder.rule.LaunchUnit;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class RepositoryEntryLifecycleAfterValidFromRuleEditor extends RuleEditorFragment {
+public class RepositoryEntryLifecycleAfterValidRuleEditor extends RuleEditorFragment {
 	
 	private static final String[] unitKeys = new String[]{
 		LaunchUnit.day.name(), LaunchUnit.week.name(), LaunchUnit.month.name(), LaunchUnit.year.name()
@@ -51,16 +51,18 @@ public class RepositoryEntryLifecycleAfterValidFromRuleEditor extends RuleEditor
 	private SingleSelection unitEl;
 	
 	private final String ruleType;
+	private final String templateName;
 	
-	public RepositoryEntryLifecycleAfterValidFromRuleEditor(ReminderRule rule, String ruleType) {
+	public RepositoryEntryLifecycleAfterValidRuleEditor(ReminderRule rule, String ruleType, String templateName) {
 		super(rule);
 		this.ruleType = ruleType;
+		this.templateName = templateName;
 	}
 
 	@Override
 	public FormItem initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
-		String page = Util.getPackageVelocityRoot(this.getClass()) + "/repo_valid.html";
+		String page = Util.getPackageVelocityRoot(this.getClass()) + templateName;
 		String id = Long.toString(CodeHelper.getRAMUniqueID());
 		
 		Translator trans = formLayout.getTranslator();

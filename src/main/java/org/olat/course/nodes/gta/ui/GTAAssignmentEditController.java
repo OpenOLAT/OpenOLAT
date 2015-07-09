@@ -45,6 +45,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -80,6 +82,7 @@ public class GTAAssignmentEditController extends FormBasicController {
 	
 	private CloseableModalController cmc;
 	private NewTaskController newTaskCtrl;
+	private DialogBoxController confirmDeleteCtrl;
 	private EditTaskController addTaskCtrl, editTaskCtrl;
 	private HTMLEditorController newTaskEditorCtrl, editTaskEditorCtrl;
 	
@@ -136,6 +139,7 @@ public class GTAAssignmentEditController extends FormBasicController {
 				new BooleanCellRenderer(
 						new StaticFlexiCellRenderer(translate("edit"), "edit"),
 						new StaticFlexiCellRenderer(translate("replace"), "edit"))));
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.edit", translate("delete"), "delete"));
 		
 		taskModel = new TaskDefinitionTableModel(columnsModel);
 		taskDefTableEl = uifactory.addTableElement(getWindowControl(), "taskTable", taskModel, getTranslator(), tasksCont);
@@ -248,6 +252,12 @@ public class GTAAssignmentEditController extends FormBasicController {
 		} else if(editTaskEditorCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
+		} else if(confirmDeleteCtrl == source) {
+			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				TaskDefinition row = (TaskDefinition)confirmDeleteCtrl.getUserObject();
+				doDelete(ureq, row);
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -294,6 +304,13 @@ public class GTAAssignmentEditController extends FormBasicController {
 				TaskDefinition row = taskModel.getObject(se.getIndex());
 				if("edit".equals(se.getCommand())) {
 					doEdit(ureq, row);
+				} else if("delete".equals(se.getCommand())) {
+					RepositoryEntry entry = courseEditorEnv.getCourseGroupManager().getCourseEntry();
+					if(gtaManager.isTaskInProcess(entry, gtaNode, row.getFilename())) {
+						doConfirmDelete(ureq, row);
+					} else {
+						doDelete(ureq, row);
+					}
 				}
 			}
 		} else if(typeEl == source) {
@@ -405,5 +422,24 @@ public class GTAAssignmentEditController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), "close", editTaskEditorCtrl.getInitialComponent());
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doConfirmDelete(UserRequest ureq, TaskDefinition row) {
+		String title = translate("warning.tasks.in.process.delete.title");
+		String text = translate("warning.tasks.in.process.delete.text");
+		confirmDeleteCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteCtrl);
+		confirmDeleteCtrl.setUserObject(row);
+	}
+	
+	private void doDelete(UserRequest ureq, TaskDefinition taskDef) {
+		taskList.getTasks().remove(taskDef);
+		
+		VFSItem item = tasksContainer.resolve(taskDef.getFilename());
+		if(item != null) {
+			item.delete();
+		}
+		
+		updateModel();
+		fireEvent(ureq, Event.DONE_EVENT);
 	}
 }
