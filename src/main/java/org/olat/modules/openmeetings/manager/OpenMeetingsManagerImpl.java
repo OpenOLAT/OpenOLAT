@@ -346,10 +346,18 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			Room omRoom = roomWs.getRoomById(sid, roomId);
 			if(omRoom != null) {
 				room.setComment(omRoom.getComment());
-				room.setModerated(omRoom.isIsModeratedRoom());
-				room.setAudioOnly(omRoom.isIsAudioOnly());
+				if(omRoom.isIsModeratedRoom() != null) {
+					room.setModerated(omRoom.isIsModeratedRoom());
+				}
+				if(omRoom.isIsAudioOnly() != null) {
+					room.setAudioOnly(omRoom.isIsAudioOnly());
+				}
 				room.setName(omRoom.getName());
-				room.setRoomId(omRoom.getRoomsId());
+				if(omRoom.getRoomsId() != null) {
+					room.setRoomId(omRoom.getRoomsId());
+				} else {
+					room.setRoomId(roomId);
+				}
 				room.setSize(omRoom.getNumberOfPartizipants());
 				room.setType(omRoom.getRoomtype().getRoomtypesId());
 				room.setClosed(omRoom.isIsClosed());
@@ -717,7 +725,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		RoomService ss = new RoomService();
 		RoomServicePortType port = ss.getRoomServiceHttpSoap11Endpoint();
 		String endPoint = getOpenMeetingsEndPoint() + "RoomService?wsdl";
-    ((BindingProvider)port).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endPoint);
+		((BindingProvider)port).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endPoint);
 		return port;
 	}
 	
@@ -725,7 +733,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		UserService ss = new UserService();
 		UserServicePortType port = ss.getUserServiceHttpSoap11Endpoint();
 		String endPoint = getOpenMeetingsEndPoint() + "UserService?wsdl";
-    ((BindingProvider)port).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endPoint);
+		((BindingProvider)port).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endPoint);
 		return port;
 	}
 	
