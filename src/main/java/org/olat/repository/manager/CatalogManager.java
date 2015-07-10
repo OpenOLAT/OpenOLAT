@@ -64,7 +64,6 @@ import org.olat.repository.CatalogEntry;
 import org.olat.repository.CatalogEntryRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
@@ -112,8 +111,6 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	private ImageService imageHelper;
 	@Autowired
 	private BaseSecurity securityManager;
-	@Autowired
-	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
 

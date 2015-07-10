@@ -148,21 +148,22 @@ public class LDAPDAO {
 						NamingEnumeration<SearchResult> enm = ctx.search(ldapBase, filter, ctls);
 						while (enm.hasMore()) {
 							visitor.visit(enm.next());
+							counter++;
 						}
-				    cookie = getCookie(ctx);
+						cookie = getCookie(ctx);
 					} while (cookie != null);
 				} else {
 					ctx.setRequestControls(null); // reset on failure, see FXOLAT-299
 					NamingEnumeration<SearchResult> enm = ctx.search(ldapBase, filter, ctls);
 					while (enm.hasMore()) {
 						visitor.visit(enm.next());
+						counter++;
 					}
-					counter++;
 				}
 			} catch (SizeLimitExceededException e) {
 				log.error("SizeLimitExceededException after "
 								+ counter
-								+ " records when getting all users from LDAP, reconfigure your LDAP server, hints: http://www.ldapbrowser.com/forum/viewtopic.php?t=14", null);
+								+ " records when getting all users from LDAP, reconfigure your LDAP server, hints: http://www.ldapbrowser.com/forum/viewtopic.php?t=14", e);
 			} catch (NamingException e) {
 				log.error("NamingException when trying to search users from LDAP using ldapBase::" + ldapBase + " on row::" + counter, e);
 			} catch (Exception e) {
@@ -277,7 +278,7 @@ public class LDAPDAO {
 		return ldapUserList;
 	}
 	
-	private String[] getEnhancedUserAttributes() {
+	public String[] getEnhancedUserAttributes() {
 		String[] userAttrs = syncConfiguration.getUserAttributes();
 		
 		List<String> userAttrList = new ArrayList<>(userAttrs.length + 7);

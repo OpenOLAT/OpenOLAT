@@ -39,11 +39,9 @@ import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
 
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
-import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
@@ -54,7 +52,6 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
-import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -77,7 +74,6 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.group.GroupLoggingAction;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
@@ -112,25 +108,17 @@ public class RepositoryManager extends BasicManager {
 	public static final int PICTUREWIDTH = 570;
 
 	@Autowired
-	private BaseSecurity securityManager;
-	@Autowired
 	private ImageService imageHelper;
-	@Autowired
-	private UserCourseInformationsManager userCourseInformationsManager;
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private RepositoryModule repositoryModule;
-	@Autowired
-	private GroupDAO groupDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private ACReservationDAO reservationDao;
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
-	@Autowired
-	private NotificationsManager notificationsManager;
 
 	/**
 	 * @return Singleton.

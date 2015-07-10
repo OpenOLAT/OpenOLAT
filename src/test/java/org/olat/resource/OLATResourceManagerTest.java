@@ -130,6 +130,60 @@ public class OLATResourceManagerTest extends OlatTestCase {
 		OLATResource deletedRes = rm.findResourceable(8213651l, resName);
 		Assert.assertNull(deletedRes);
 	}
+	
+	@Test
+	public void findResourceById() {
+		String resName = UUID.randomUUID().toString();
+		TestResourceable resource = new TestResourceable(8213652l, resName);
+		OLATResource ores = rm.findOrPersistResourceable(resource);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(ores);
+		Assert.assertNotNull(ores.getKey());
+		
+		//find by id
+		OLATResource reloadedOres = rm.findResourceById(ores.getKey());
+		Assert.assertNotNull(reloadedOres);
+		Assert.assertEquals(ores, reloadedOres);
+	}
+	
+	@Test
+	public void findResourceByTypes() {
+		String resName1 = UUID.randomUUID().toString();
+		TestResourceable resource1 = new TestResourceable(8213653l, resName1);
+		OLATResource ores1 = rm.findOrPersistResourceable(resource1);
+		String resName2 = UUID.randomUUID().toString();
+		TestResourceable resource2 = new TestResourceable(8213654l, resName2);
+		OLATResource ores2 = rm.findOrPersistResourceable(resource2);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(ores1);
+		Assert.assertNotNull(ores2);
+
+		//find by types
+		List<String> types = new ArrayList<>(2);
+		types.add(resName1);
+		types.add(resName2);
+		
+		List<OLATResource> reloadedOres = rm.findResourceByTypes(types);
+		Assert.assertNotNull(reloadedOres);
+		Assert.assertEquals(2, reloadedOres.size());
+		Assert.assertTrue(reloadedOres.contains(ores1));
+		Assert.assertTrue(reloadedOres.contains(ores2));
+	}
+	
+	@Test
+	public void findResourceable() {
+		String resName = UUID.randomUUID().toString();
+		TestResourceable resource = new TestResourceable(8213655l, resName);
+		OLATResource ores = rm.findOrPersistResourceable(resource);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(ores);
+		Assert.assertNotNull(ores.getKey());
+		
+		//find by id
+		OLATResource reloadedOres = rm.findResourceable(8213655l, resName);
+		Assert.assertNotNull(reloadedOres);
+		Assert.assertEquals(ores, reloadedOres);
+	}
 
 	/**
 	 * Test find/persist of a resource
