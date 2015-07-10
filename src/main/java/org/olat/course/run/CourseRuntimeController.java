@@ -493,7 +493,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			if(reminderModule.isEnabled()) {
 				reminderLink = LinkFactory.createToolLink("reminders.cmd", translate("command.options.reminders"), this, "o_icon_reminder");
-				reminderLink.setElementCssClass("o_sel_course_options_certificates");
+				reminderLink.setElementCssClass("o_sel_course_reminders");
 				settings.addComponent(reminderLink);
 			}
 		}

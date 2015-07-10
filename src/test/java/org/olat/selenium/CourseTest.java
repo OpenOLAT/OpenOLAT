@@ -22,7 +22,10 @@ package org.olat.selenium;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -47,6 +50,7 @@ import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseWizardPage;
 import org.olat.selenium.page.course.InfoMessageCEPage;
 import org.olat.selenium.page.course.PublisherPageFragment;
+import org.olat.selenium.page.course.RemindersPage;
 import org.olat.selenium.page.course.PublisherPageFragment.Access;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
@@ -909,5 +913,97 @@ public class CourseTest {
 		course
 			.members()
 			.assertFirstNameInList(ryomou);
+	}
+	
+	/**
+	 * An author create a course, set a start and end date for life-cycle.
+	 * It add a participant to the course. It creates a reminder
+	 * with a rule to catch only participant, an other to send
+	 * the reminder after the start of the course. It sends the reminder
+	 * manually, checks the reminders send, checks the log.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseReminders(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
+		
+		//go to authoring
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date());
+		cal.add(Calendar.DATE, -10);
+		Date validFrom = cal.getTime();
+		cal.add(Calendar.DATE, 20);
+		Date validTo = cal.getTime();
+		
+		String title = "Remind-me-" + UUID.randomUUID().toString();
+		//create course
+		authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.course)
+			.fillCreateForm(title)
+			.assertOnGeneralTab()
+			.setLifecycle(validFrom, validTo, Locale.GERMAN)
+			.save();
+
+		//open course editor, create a node, set access
+		CoursePageFragment course = new CoursePageFragment(browser);
+		course
+			.openToolsMenu()
+			.edit()
+			.createNode("info")
+			.autoPublish()
+			.accessConfiguration()
+			.setUserAccess(UserAccess.registred)
+			.clickToolbarBack();
+		// add a participant
+		course
+			.members()
+			.quickAdd(kanu);
+		
+		//go to reminders
+		RemindersPage reminders = course
+				.reminders()
+				.assertOnRemindersList();
+		
+		String reminderTitle = "REM-" + UUID.randomUUID();
+		reminders
+			.addReminder()
+			.setDescription(reminderTitle)
+			.setTimeBasedRule(1, "RepositoryEntryLifecycleAfterValidFromRuleSPI", 5, "day")
+			.addRule(1)
+			.setRoleBasedRule(2, "RepositoryEntryRoleRuleSPI", "participant")
+			.saveReminder()
+			.assertOnRemindersList()
+			.assertOnReminderInList(reminderTitle);
+		//send the reminders
+		reminders
+			.openActionMenu(reminderTitle)
+			.sendReminders();
+		//check the reminder is send to user
+		reminders
+			.openActionMenu(reminderTitle)
+			.showSentReminders()
+			//reminder send to user
+			.assertSentRemindersList(kanu, true)
+			//reminder not send to author
+			.assertSentRemindersList(author, false);
+		
+		//open reminders log
+		reminders
+			.clickToolbarBack()
+			.openLog()
+			.assertLogList(kanu, reminderTitle, true)
+			.assertLogList(author, reminderTitle, false);
 	}
 }

@@ -101,8 +101,11 @@ public class CourseReminderListController extends FormBasicController implements
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_course_reminder_list");
+		
 		addButton = uifactory.addFormLink("add.reminder", formLayout, Link.BUTTON);
 		addButton.setIconLeftCSS("o_icon o_icon_add");
+		addButton.setElementCssClass("o_sel_add_course_reminder");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ReminderCols.id.i18nKey(), ReminderCols.id.ordinal(),
@@ -131,6 +134,7 @@ public class CourseReminderListController extends FormBasicController implements
 			
 			FormLink toolsLink = uifactory.addFormLink("tools_" + counter.incrementAndGet(), "tools", "", null, null, Link.NONTRANSLATED);
 			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
+			toolsLink.setElementCssClass("o_sel_course_reminder_tools");
 			toolsLink.setTitle(translate("tools"));
 
 			ReminderRow row = new ReminderRow(reminder, toolsLink);
@@ -300,20 +304,23 @@ public class CourseReminderListController extends FormBasicController implements
 			mainVC = createVelocityContainer("tools");
 			List<String> links = new ArrayList<>();
 
-			addLink("edit", "edit", "o_icon o_icon-fw o_icon_edit", links);
-			addLink("duplicate", "duplicate", "o_icon o_icon-fw o_icon_copy", links);
-			addLink("send", "send", "o_icon o_icon-fw o_icon_send", links);
-			addLink("show.sent", "show.sent", "o_icon o_icon-fw o_icon_show_send", links);
-			addLink("delete", "delete", "o_icon o_icon-fw o_icon_delete_item", links);
+			addLink("edit", "edit", "o_icon o_icon-fw o_icon_edit", links, "o_sel_course_reminder_edit");
+			addLink("duplicate", "duplicate", "o_icon o_icon-fw o_icon_copy", links, "o_sel_course_reminder_duplicate");
+			addLink("send", "send", "o_icon o_icon-fw o_icon_send", links, "o_sel_course_reminder_send");
+			addLink("show.sent", "show.sent", "o_icon o_icon-fw o_icon_show_send", links, "o_sel_course_reminder_showsent");
+			addLink("delete", "delete", "o_icon o_icon-fw o_icon_delete_item", links, "o_sel_course_reminder_delete");
 
 			mainVC.contextPut("links", links);
 			putInitialPanel(mainVC);
 		}
 		
-		private void addLink(String name, String cmd, String iconCSS, List<String> links) {
+		private void addLink(String name, String cmd, String iconCSS, List<String> links, String elementCssClass) {
 			Link link = LinkFactory.createLink(name, cmd, getTranslator(), mainVC, this, Link.LINK);
 			if(iconCSS != null) {
 				link.setIconLeftCSS(iconCSS);
+			}
+			if(elementCssClass != null) {
+				link.setElementCssClass(elementCssClass);
 			}
 			mainVC.put(name, link);
 			links.add(name);
