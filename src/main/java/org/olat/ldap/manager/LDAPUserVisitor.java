@@ -86,10 +86,12 @@ public class LDAPUserVisitor implements LDAPVisitor {
 				Attribute groupAttr = resAttribs.get(attributeName);
 				if(groupAttr != null && groupAttr.get() instanceof String) {
 					String groupString = (String)groupAttr.get();
-					String[] groupArr = groupString.split(attributeSeparator);
-					groupList = new ArrayList<>(groupArr.length);
-					for(String group:groupArr) {
-						groupList.add(group);
+					if(!"-".equals(groupString)) {
+						String[] groupArr = groupString.split(attributeSeparator);
+						groupList = new ArrayList<>(groupArr.length);
+						for(String group:groupArr) {
+							groupList.add(group);
+						}
 					}
 				}
 			} catch (Exception e) {
