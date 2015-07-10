@@ -72,6 +72,8 @@ import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
 import org.olat.course.nodes.gta.TaskList;
+import org.olat.course.nodes.gta.model.TaskDefinition;
+import org.olat.course.nodes.gta.model.TaskDefinitionList;
 import org.olat.course.nodes.gta.ui.BulkDownloadToolController;
 import org.olat.course.nodes.gta.ui.GTAAssessmentDetailsController;
 import org.olat.course.nodes.gta.ui.GTAEditController;
@@ -273,6 +275,26 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 				File taskDirectory = gtaManager.getTasksDirectory(course.getCourseEnvironment(), this);
 				if(!TaskHelper.hasDocuments(taskDirectory)) {
 					addStatusErrorDescription("error.missing.tasks", GTAEditController.PANE_TAB_ASSIGNMENT, sdList);
+				} else {
+					TaskDefinitionList taskList = (TaskDefinitionList)config.get(GTACourseNode.GTASK_TASKS);
+					if(taskList == null || taskList.getTasks() == null || taskList.getTasks().isEmpty()) {
+						addStatusErrorDescription("error.missing.tasks", GTAEditController.PANE_TAB_ASSIGNMENT, sdList);
+					} else {
+						String[] filenames = taskDirectory.list();
+						for(TaskDefinition taskDef: taskList.getTasks()) {
+							boolean found = false;
+							for(String filename:filenames) {
+								if(filename.equals(taskDef.getFilename())) {
+									found = true;
+									break;
+								}
+							}
+							
+							if(!found) {
+								addStatusWarningDescription("error.missing.file", GTAEditController.PANE_TAB_ASSIGNMENT, sdList);
+							}
+						}
+					}
 				}
 			}
 			
@@ -308,6 +330,14 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 	private void addStatusErrorDescription(String key, String pane, List<StatusDescription> status) {
 		String[] params = new String[] { getShortTitle() };
 		StatusDescription sd = new StatusDescription(StatusDescription.ERROR, key, key, params, PACKAGE_GTA);
+		sd.setDescriptionForUnit(getIdent());
+		sd.setActivateableViewIdentifier(pane);
+		status.add(sd);
+	}
+	
+	private void addStatusWarningDescription(String key, String pane, List<StatusDescription> status) {
+		String[] params = new String[] { getShortTitle() };
+		StatusDescription sd = new StatusDescription(StatusDescription.WARNING, key, key, params, PACKAGE_GTA);
 		sd.setDescriptionForUnit(getIdent());
 		sd.setActivateableViewIdentifier(pane);
 		status.add(sd);
