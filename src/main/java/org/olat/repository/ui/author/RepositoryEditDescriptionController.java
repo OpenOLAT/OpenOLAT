@@ -53,7 +53,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -106,8 +105,6 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	
 	private static final String[] dateKeys = new String[]{ "none", "private", "public"};
 
-	@Autowired
-	private I18nManager i18nmanager;
 	@Autowired
 	private UserManager userManager;
 	@Autowired

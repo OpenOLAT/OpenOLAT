@@ -36,6 +36,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
+import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,6 +58,8 @@ public class AuthoringEditAccessController extends BasicController {
 	
 	private RepositoryEntry entry;
 	@Autowired
+	private AccessControlModule acModule;
+	@Autowired
 	private RepositoryManager repositoryManager;
 	
 	public AuthoringEditAccessController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
@@ -76,10 +79,11 @@ public class AuthoringEditAccessController extends BasicController {
 
 		boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
 		acCtr = new AccessConfigurationController(ureq, getWindowControl(), entry.getOlatResource(), entry.getDisplayname(), true, !managedBookings);
+		listenTo(acCtr);
 		int access = propPupForm.getAccess();
 		int numOfBookingConfigs = acCtr.getNumOfBookingConfigurations();
 		if(access == RepositoryEntry.ACC_USERS || access == RepositoryEntry.ACC_USERS_GUESTS) {
-			if(!managedBookings || numOfBookingConfigs > 0) {
+			if((!managedBookings && acModule.isEnabled()) || numOfBookingConfigs > 0) {
 				editproptabpubVC.put("accesscontrol", acCtr.getInitialComponent());
 				editproptabpubVC.contextPut("isGuestAccess", Boolean.valueOf(access == RepositoryEntry.ACC_USERS_GUESTS));
 			}
@@ -118,7 +122,7 @@ public class AuthoringEditAccessController extends BasicController {
 
 				boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
 				if(access == RepositoryEntry.ACC_USERS || access == RepositoryEntry.ACC_USERS_GUESTS) {
-					if(!managedBookings || numOfBookingConfigs > 0) {
+					if((!managedBookings && acModule.isEnabled()) || numOfBookingConfigs > 0) {
 						editproptabpubVC.put("accesscontrol", acCtr.getInitialComponent());
 						editproptabpubVC.contextPut("isGuestAccess", Boolean.valueOf(access == RepositoryEntry.ACC_USERS_GUESTS));
 					}
@@ -138,6 +142,10 @@ public class AuthoringEditAccessController extends BasicController {
 
 				MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess);
 				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, entry);	
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+		} else if(acCtr == source) {
+			if(event == Event.CHANGED_EVENT) {
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		}

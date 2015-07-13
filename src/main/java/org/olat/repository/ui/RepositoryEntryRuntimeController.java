@@ -61,7 +61,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
-import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -152,8 +151,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected UserManager userManager;
 	@Autowired
 	protected MarkManager markManager;
-	@Autowired
-	private AssessmentModule assessmentModule;
 	@Autowired
 	protected RepositoryModule repositoryModule;
 	@Autowired

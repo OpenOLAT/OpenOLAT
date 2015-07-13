@@ -89,7 +89,6 @@ import org.olat.course.assessment.AssessmentChangedEvent;
 import org.olat.course.assessment.AssessmentMainController;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CoachingGroupAccessAssessmentCallback;
-import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.assessment.FullAccessAssessmentCallback;
 import org.olat.course.assessment.ui.AssessmentModeListController;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
@@ -191,8 +190,6 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private AssessmentModule assessmentModule;
-	@Autowired
-	private EfficiencyStatementManager efficiencyStatementManager;
 	
 	public CourseRuntimeController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator,
