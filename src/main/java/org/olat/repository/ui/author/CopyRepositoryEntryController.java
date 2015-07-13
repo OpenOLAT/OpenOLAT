@@ -32,7 +32,6 @@ import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.resource.OLATResourceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -49,11 +48,7 @@ public class CopyRepositoryEntryController extends FormBasicController {
 	private final RepositoryEntry sourceEntry;
 
 	@Autowired
-	private RepositoryManager repositoryManager;
-	@Autowired
 	private RepositoryService repositoryService;
-	@Autowired
-	private OLATResourceManager resourceManager;
 	
 	public CopyRepositoryEntryController(UserRequest ureq, WindowControl wControl, RepositoryEntry sourceEntry) {
 		super(ureq, wControl);

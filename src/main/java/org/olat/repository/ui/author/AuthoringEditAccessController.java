@@ -36,6 +36,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
+import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -56,6 +57,8 @@ public class AuthoringEditAccessController extends BasicController {
 	private AccessConfigurationController acCtr;
 	
 	private RepositoryEntry entry;
+	@Autowired
+	private AccessControlModule acModule;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	
@@ -80,7 +83,7 @@ public class AuthoringEditAccessController extends BasicController {
 		int access = propPupForm.getAccess();
 		int numOfBookingConfigs = acCtr.getNumOfBookingConfigurations();
 		if(access == RepositoryEntry.ACC_USERS || access == RepositoryEntry.ACC_USERS_GUESTS) {
-			if(!managedBookings || numOfBookingConfigs > 0) {
+			if((!managedBookings && acModule.isEnabled()) || numOfBookingConfigs > 0) {
 				editproptabpubVC.put("accesscontrol", acCtr.getInitialComponent());
 				editproptabpubVC.contextPut("isGuestAccess", Boolean.valueOf(access == RepositoryEntry.ACC_USERS_GUESTS));
 			}
@@ -119,7 +122,7 @@ public class AuthoringEditAccessController extends BasicController {
 
 				boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
 				if(access == RepositoryEntry.ACC_USERS || access == RepositoryEntry.ACC_USERS_GUESTS) {
-					if(!managedBookings || numOfBookingConfigs > 0) {
+					if((!managedBookings && acModule.isEnabled()) || numOfBookingConfigs > 0) {
 						editproptabpubVC.put("accesscontrol", acCtr.getInitialComponent());
 						editproptabpubVC.contextPut("isGuestAccess", Boolean.valueOf(access == RepositoryEntry.ACC_USERS_GUESTS));
 					}
