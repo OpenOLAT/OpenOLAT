@@ -44,6 +44,7 @@ public enum ErrorCode {
 	moduleCollision(502, "error.moduleCollision"),
 	bookingInPast(505, "error.bookingInPast"),
 	bookingDoesntExist(506, "error.bookingDoesntExist"),
+	noRoomsAvailable(508, "error.noRoomsAvailable"),
 	bookingDoesntExistPrime(509, "error.bookingDoesntExist"),
 	licenseExpired(703, "error.licenseExpired");
 	

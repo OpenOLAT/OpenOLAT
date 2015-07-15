@@ -57,6 +57,7 @@ import org.olat.modules.vitero.manager.VmsNotAvailableException;
 import org.olat.modules.vitero.model.GroupRole;
 import org.olat.modules.vitero.model.ViteroBooking;
 import org.olat.modules.vitero.model.ViteroGroupRoles;
+import org.olat.modules.vitero.model.ViteroStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -206,7 +207,8 @@ public class ViteroUserToGroupController extends BasicController {
 			for(Identity identity:identities) {
 				boolean upgrade = members.getCoaches().contains(identity) || members.getOwners().contains(identity);
 				GroupRole role = upgrade ? GroupRole.teamleader : null;
-				if(viteroManager.addToRoom(booking, identity, role)) {
+				ViteroStatus status = viteroManager.addToRoom(booking, identity, role);
+				if(status.isOk()) {
 					showInfo("signin.ok");
 				} else {
 					showInfo("signin.nok");
@@ -223,7 +225,8 @@ public class ViteroUserToGroupController extends BasicController {
 	private void signOut(List<Identity> identities) {
 		try {
 			for(Identity identity:identities) {
-				if(viteroManager.removeFromRoom(booking, identity)) {
+				ViteroStatus status = viteroManager.removeFromRoom(booking, identity);
+				if(status.isOk()) {
 					showInfo("signout.ok");
 				} else {
 					showInfo("signout.nok");
@@ -282,7 +285,7 @@ public class ViteroUserToGroupController extends BasicController {
 		
 		//add all self signed participants
 		if(booking.isAutoSignIn()) {
-			List<String> emailsOfParticipants = groupRoles.getEmailsOfParticipants();
+			List<String> emailsOfParticipants = new ArrayList<>(groupRoles.getEmailsOfParticipants());
 			//remove owners, coaches and already participating users
 			for(Identity owner:owners) {
 				emailsOfParticipants.remove(owner.getUser().getProperty(UserConstants.EMAIL, null));

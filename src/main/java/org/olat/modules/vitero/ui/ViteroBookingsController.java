@@ -43,6 +43,7 @@ import org.olat.modules.vitero.manager.ViteroManager;
 import org.olat.modules.vitero.manager.VmsNotAvailableException;
 import org.olat.modules.vitero.model.StartBookingComparator;
 import org.olat.modules.vitero.model.ViteroBooking;
+import org.olat.modules.vitero.model.ViteroStatus;
 
 /**
  * 
@@ -167,8 +168,8 @@ public class ViteroBookingsController extends BasicController {
 	
 	protected void signInVitero(UserRequest ureq, ViteroBooking booking) {
 		try {
-			boolean ok = viteroManager.addToRoom(booking, ureq.getIdentity(), null);
-			if(ok) {
+			ViteroStatus status = viteroManager.addToRoom(booking, ureq.getIdentity(), null);
+			if(status.isOk()) {
 				showInfo("signin.ok");
 			} else {
 				showError("signin.nok");
@@ -181,8 +182,8 @@ public class ViteroBookingsController extends BasicController {
 	
 	protected void signOutVitero(UserRequest ureq, ViteroBooking booking) {
 		try {
-			boolean ok = viteroManager.removeFromRoom(booking, ureq.getIdentity());
-			if(ok) {
+			ViteroStatus status = viteroManager.removeFromRoom(booking, ureq.getIdentity());
+			if(status.isOk()) {
 				showInfo("signout.ok");
 			} else {
 				showError("signout.nok");

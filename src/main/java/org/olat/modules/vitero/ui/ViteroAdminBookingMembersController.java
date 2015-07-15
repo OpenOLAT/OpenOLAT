@@ -44,6 +44,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.modules.vitero.manager.ViteroManager;
 import org.olat.modules.vitero.manager.VmsNotAvailableException;
 import org.olat.modules.vitero.model.ViteroBooking;
+import org.olat.modules.vitero.model.ViteroStatus;
 import org.olat.modules.vitero.model.ViteroUser;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -143,7 +144,8 @@ public class ViteroAdminBookingMembersController extends BasicController {
 	private void signOut(List<ViteroUser> members) {
 		try {
 			for(ViteroUser member:members) {
-				if(viteroManager.removeFromRoom(booking, member.getUserId())) {
+				ViteroStatus status = viteroManager.removeFromRoom(booking, member.getUserId());
+				if(status.isOk()) {
 					showInfo("signout.ok");
 				} else {
 					showInfo("signout.nok");

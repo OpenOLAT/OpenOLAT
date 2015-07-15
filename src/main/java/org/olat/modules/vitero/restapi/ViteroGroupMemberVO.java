@@ -14,45 +14,50 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * 12.10.2011 by frentix GmbH, http://www.frentix.com
+ * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.vitero.model;
+package org.olat.modules.vitero.restapi;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * 
- * Description:<br>
- * 
- * <P>
- * Initial Date:  10 nov. 2011 <br>
- *
+ * Initial date: 13.07.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class ViteroGroupRoles {
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name = "viteroGroupMemberVO")
+public class ViteroGroupMemberVO {
 	
-
-	private final List<String> emailsOfParticipants = new ArrayList<String>();
-	private final Map<String, GroupRole> emailsToRole = new HashMap<String,GroupRole>();
-	private final Map<String, Integer> emailsToVmsUserId = new HashMap<String,Integer>();
+	private Long identityKey;
+	private String groupRole;
 	
-	public List<String> getEmailsOfParticipants() {
-		return emailsOfParticipants;
+	public ViteroGroupMemberVO() {
+		//
 	}
 	
-	public Map<String, GroupRole> getEmailsToRole() {
-		return emailsToRole;
+	public ViteroGroupMemberVO(Long identityKey, String groupRole) {
+		this.identityKey = identityKey;
+		this.groupRole = groupRole;
 	}
 	
-	public Map<String, Integer> getEmailsToVmsUserId() {
-		return emailsToVmsUserId;
+	public Long getIdentityKey() {
+		return identityKey;
 	}
 	
-	public int size() {
-		return emailsOfParticipants.size();
+	public void setIdentityKey(Long identityKey) {
+		this.identityKey = identityKey;
+	}
+	
+	public String getGroupRole() {
+		return groupRole;
+	}
+	
+	public void setGroupRole(String groupRole) {
+		this.groupRole = groupRole;
 	}
 }
