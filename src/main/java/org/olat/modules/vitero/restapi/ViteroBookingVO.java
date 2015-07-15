@@ -14,27 +14,30 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * 12.10.2011 by frentix GmbH, http://www.frentix.com
+ * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.vitero.model;
+package org.olat.modules.vitero.restapi;
 
 import java.util.Date;
 
-import org.olat.properties.Property;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+
+import org.olat.modules.vitero.model.ViteroBooking;
 
 /**
  * 
- * Description:<br>
- * 
- * <P>
- * Initial Date:  6 oct. 2011 <br>
- *
+ * Initial date: 06.07.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class ViteroBooking {
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name = "viteroBookingVO")
+public class ViteroBookingVO {
 	
-	private int bookingId;
+	private int bookingId = -1;
 	private int groupId;
 	private String groupName;
 	private String eventName;
@@ -46,56 +49,50 @@ public class ViteroBooking {
 	private int roomSize;
 	private boolean autoSignIn;
 	private String timeZoneId;
-
-	private String resourceName;
 	
-	private Property property;
+	public ViteroBookingVO() {
+		//
+	}
 	
+	public ViteroBookingVO(ViteroBooking booking) {
+		bookingId = booking.getBookingId();
+		groupId = booking.getGroupId();
+		groupName = booking.getGroupName();
+		eventName = booking.getEventName();
+		externalId = booking.getExternalId();
+		start = booking.getStart();
+		startBuffer = booking.getStartBuffer();
+		end = booking.getEnd();
+		endBuffer = booking.getEndBuffer();
+		roomSize = booking.getRoomSize();
+		autoSignIn = booking.isAutoSignIn();
+		timeZoneId = booking.getTimeZoneId();
+	}
 	
-	public ViteroBooking() {
-		// nothing to do
-	}
-
-	public String getResourceName() {
-		return resourceName;
-	}
-
-	public void setResourceName(String resourceName) {
-		this.resourceName = resourceName;
-	}
-
-	public Property getProperty() {
-		return property;
-	}
-
-	public void setProperty(Property property) {
-		this.property = property;
-	}
-
 	public int getBookingId() {
 		return bookingId;
 	}
-
+	
 	public void setBookingId(int bookingId) {
 		this.bookingId = bookingId;
 	}
-
+	
 	public int getGroupId() {
 		return groupId;
 	}
-
+	
 	public void setGroupId(int groupId) {
 		this.groupId = groupId;
 	}
-
+	
 	public String getGroupName() {
 		return groupName;
 	}
-
+	
 	public void setGroupName(String groupName) {
 		this.groupName = groupName;
 	}
-
+	
 	public String getEventName() {
 		return eventName;
 	}
@@ -112,38 +109,22 @@ public class ViteroBooking {
 		this.externalId = externalId;
 	}
 
-	public int getRoomSize() {
-		return roomSize;
-	}
-
-	public void setRoomSize(int roomSize) {
-		this.roomSize = roomSize;
-	}
-
-	public int getStartBuffer() {
-		return startBuffer;
-	}
-
-	public void setStartBuffer(int startBuffer) {
-		this.startBuffer = startBuffer;
-	}
-
 	public Date getStart() {
 		return start;
 	}
-
+	
 	public void setStart(Date start) {
 		this.start = start;
 	}
 	
-	public int getEndBuffer() {
-		return endBuffer;
+	public int getStartBuffer() {
+		return startBuffer;
 	}
-
-	public void setEndBuffer(int endBuffer) {
-		this.endBuffer = endBuffer;
+	
+	public void setStartBuffer(int startBuffer) {
+		this.startBuffer = startBuffer;
 	}
-
+	
 	public Date getEnd() {
 		return end;
 	}
@@ -151,20 +132,36 @@ public class ViteroBooking {
 	public void setEnd(Date end) {
 		this.end = end;
 	}
-
-	public String getTimeZoneId() {
-		return timeZoneId;
+	
+	public int getEndBuffer() {
+		return endBuffer;
 	}
-
-	public void setTimeZoneId(String timeZoneId) {
-		this.timeZoneId = timeZoneId;
+	
+	public void setEndBuffer(int endBuffer) {
+		this.endBuffer = endBuffer;
 	}
-
+	
+	public int getRoomSize() {
+		return roomSize;
+	}
+	
+	public void setRoomSize(int roomSize) {
+		this.roomSize = roomSize;
+	}
+	
 	public boolean isAutoSignIn() {
 		return autoSignIn;
 	}
-
+	
 	public void setAutoSignIn(boolean autoSignIn) {
 		this.autoSignIn = autoSignIn;
+	}
+	
+	public String getTimeZoneId() {
+		return timeZoneId;
+	}
+	
+	public void setTimeZoneId(String timeZoneId) {
+		this.timeZoneId = timeZoneId;
 	}
 }

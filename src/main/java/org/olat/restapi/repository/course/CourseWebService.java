@@ -72,6 +72,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.cal.CourseCalendars;
+import org.olat.modules.vitero.restapi.ViteroBookingWebService;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -153,6 +154,13 @@ public class CourseWebService {
 			return new CalWebService(wrapper);
 		}
 		return null;
+	}
+	
+	@Path("vitero/{subIdentifier}")
+	public ViteroBookingWebService getViteroWebService(@PathParam("subIdentifier") String subIdentifier) {
+		ViteroBookingWebService service = new ViteroBookingWebService(courseOres, subIdentifier);
+		CoreSpringFactory.autowireObject(service);
+		return service;
 	}
 
 	/**

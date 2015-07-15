@@ -266,13 +266,14 @@ public class ViteroBookingsEditController extends FormBasicController {
 	}
 	
 	protected void usersBooking(UserRequest ureq, ViteroBooking viteroBooking) {
+		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(usersController);
 
 		usersController = new ViteroUserToGroupController(ureq, getWindowControl(), group, ores, viteroBooking);			
 		listenTo(usersController);
 		
-		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), usersController.getInitialComponent(), true, translate("users"));
+		String title = translate("users.title");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), usersController.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

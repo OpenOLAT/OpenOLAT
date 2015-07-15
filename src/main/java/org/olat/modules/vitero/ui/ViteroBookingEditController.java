@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
@@ -92,12 +93,16 @@ public class ViteroBookingEditController extends FormBasicController {
 			showError(VmsNotAvailableException.I18N_KEY);
 			sizes = Collections.emptyList();
 		}
-		roomSizes = new String[sizes.size()];
-		
-		int i=0;
-		for(Integer size:sizes) {
-			roomSizes[i++] = size.toString();
+		if(Settings.isDebuging() && sizes.isEmpty()) {
+			roomSizes = new String[]{ "22" };
+		} else {
+			roomSizes = new String[sizes.size()];
+			int i=0;
+			for(Integer size:sizes) {
+				roomSizes[i++] = size.toString();
+			}
 		}
+
 		autoSignInValues = new String[]{ translate("enabled") };
 		
 		initForm(ureq);
@@ -105,7 +110,6 @@ public class ViteroBookingEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("booking.admin.title");
 		boolean editable = booking.getBookingId() <= 0;
 		if(editable) {
 			setFormWarning("new.booking.warning");
@@ -115,6 +119,10 @@ public class ViteroBookingEditController extends FormBasicController {
 		groupName = uifactory.addTextElement("group.name", "group.name", 32, name, formLayout);
 		groupName.setMandatory(true);
 		groupName.setEnabled(editable);
+		
+		if(StringHelper.containsNonWhitespace(booking.getExternalId())) {
+			uifactory.addStaticTextElement("external.id", booking.getExternalId(), formLayout);
+		}
 		
 		//begin
 		beginChooser = uifactory.addDateChooser("booking.begin", null, formLayout);

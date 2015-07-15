@@ -14,45 +14,35 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * 12.10.2011 by frentix GmbH, http://www.frentix.com
+ * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.vitero.model;
+package org.olat.modules.vitero.restapi;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.resource.OresHelper;
 
 /**
  * 
- * Description:<br>
- * 
- * <P>
- * Initial Date:  10 nov. 2011 <br>
- *
+ * Initial date: 06.07.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class ViteroGroupRoles {
+@Path("vitero")
+public class ViteroWebService {
 	
-
-	private final List<String> emailsOfParticipants = new ArrayList<String>();
-	private final Map<String, GroupRole> emailsToRole = new HashMap<String,GroupRole>();
-	private final Map<String, Integer> emailsToVmsUserId = new HashMap<String,Integer>();
-	
-	public List<String> getEmailsOfParticipants() {
-		return emailsOfParticipants;
+	@Path("{resourceName}/{resourceId}/{subIdentifier}")
+	public ViteroBookingWebService getBookingWebService(@PathParam("resourceName") String resourceName,
+			@PathParam("resourceId") Long resourceId, @PathParam("subIdentifier") String subIdentifier) {
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(resourceName, resourceId);
+		ViteroBookingWebService service = new ViteroBookingWebService(ores, subIdentifier);
+		CoreSpringFactory.autowireObject(service);
+		return service;
 	}
 	
-	public Map<String, GroupRole> getEmailsToRole() {
-		return emailsToRole;
-	}
-	
-	public Map<String, Integer> getEmailsToVmsUserId() {
-		return emailsToVmsUserId;
-	}
-	
-	public int size() {
-		return emailsOfParticipants.size();
-	}
 }
