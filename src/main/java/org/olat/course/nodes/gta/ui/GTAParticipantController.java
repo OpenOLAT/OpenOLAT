@@ -171,6 +171,9 @@ public class GTAParticipantController extends GTAAbstractController {
 					} else if(response == null || response.getStatus() == AssignmentResponse.Status.noMoreTasks) {
 						showError("error.nomoretasks");
 					} else if(response == null || response.getStatus() == AssignmentResponse.Status.ok) {
+						if(response != null) {
+							assignedTask = response.getTask();
+						}
 						showInfo("task.successfully.assigned");
 						showAssignedTask(ureq, assignedTask);
 					}
@@ -193,7 +196,7 @@ public class GTAParticipantController extends GTAAbstractController {
 		TaskDefinition taskDef = getTaskDefinition(assignedTask);
 		assignedTaskCtrl = new GTAAssignedTaskController(ureq, getWindowControl(), assignedTask,
 				taskDef, courseEnv, gtaNode,
-				"task.assigned.description", message);
+				"task.assigned.description", "warning.no.task.choosed", message);
 		listenTo(assignedTaskCtrl);
 		mainVC.put("myAssignedTask", assignedTaskCtrl.getInitialComponent());
 	}

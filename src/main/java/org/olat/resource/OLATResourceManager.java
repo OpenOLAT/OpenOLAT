@@ -25,6 +25,7 @@
 
 package org.olat.resource;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
@@ -36,6 +37,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
+
 
 /**
  * A <b>SecurityResourceManager</b> is 
@@ -220,5 +222,18 @@ public class OLATResourceManager extends BasicManager {
 				.setParameter("resourceKey", key)
 				.getResultList();
 		return resources.isEmpty() ? null : resources.get(0);
+	}
+	
+	public List<OLATResource> findResourceByTypes(List<String> types) {
+		if(types == null || types.isEmpty()) return Collections.<OLATResource>emptyList();
+		
+		String s = "select ori from org.olat.resource.OLATResourceImpl ori where ori.resName in (:restrictedType)";
+		List<OLATResource> resources = dbInstance.getCurrentEntityManager()
+				.createQuery(s, OLATResource.class)
+				.setParameter("restrictedType", types)
+				.getResultList();
+		return resources;
+		
+		
 	}
 }

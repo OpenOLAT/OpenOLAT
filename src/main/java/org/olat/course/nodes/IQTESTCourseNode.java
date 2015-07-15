@@ -79,9 +79,11 @@ import org.olat.ims.qti.export.QTIExportFormatterCSVType1;
 import org.olat.ims.qti.export.QTIExportManager;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
+import org.olat.ims.qti.process.FilePersister;
 import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
 import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
 import org.olat.ims.qti.statistics.QTIType;
+import org.olat.ims.qti.statistics.ui.QTI12PullTestsToolController;
 import org.olat.ims.qti.statistics.ui.QTI12StatisticsToolController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.iq.IQSecurityCallback;
@@ -194,7 +196,21 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 			CourseEnvironment courseEnv, AssessmentToolOptions options) {
 		List<Controller> tools = new ArrayList<>();
 		tools.add(new QTI12StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
+		if(options.getGroup() == null && options.getIdentities() != null && options.getIdentities().size() > 0) {
+			for(Identity assessedIdentity:options.getIdentities()) {
+				if(isTestRunning(assessedIdentity, courseEnv)) {
+					tools.add(new QTI12PullTestsToolController(ureq, wControl, courseEnv, options, this));
+					break;
+				}
+			}
+		}
 		return tools;
+	}
+	
+	public boolean isTestRunning(Identity assessedIdentity, CourseEnvironment courseEnv) {
+		String resourcePath = courseEnv.getCourseResourceableId() + File.separator + getIdent();
+		FilePersister qtiPersister = new FilePersister(assessedIdentity, resourcePath);
+		return qtiPersister.exists();
 	}
 
 	@Override

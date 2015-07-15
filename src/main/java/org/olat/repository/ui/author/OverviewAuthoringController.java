@@ -42,11 +42,8 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
-import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -64,11 +61,6 @@ public class OverviewAuthoringController extends BasicController implements Acti
 	private AuthorListController currentCtrl, markedCtrl, myEntriesCtrl, searchEntriesCtrl;
 
 	private boolean isGuestonly;
-	
-	@Autowired
-	private UserManager userManager;
-	@Autowired
-	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	public OverviewAuthoringController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);

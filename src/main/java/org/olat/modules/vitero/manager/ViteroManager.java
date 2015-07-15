@@ -55,7 +55,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.xml.XStreamHelper;
@@ -96,6 +97,7 @@ import de.vitero.schema.booking.DeleteBookingResponse;
 import de.vitero.schema.booking.GetBookingListByDateRequest;
 import de.vitero.schema.booking.GetBookingListByUserAndCustomerInFutureRequest;
 import de.vitero.schema.booking.Newbookingtype;
+import de.vitero.schema.booking.UpdateBookingRequest;
 import de.vitero.schema.group.ChangeGroupRoleRequest;
 import de.vitero.schema.group.Completegrouptype;
 import de.vitero.schema.group.CreateGroupRequest;
@@ -143,8 +145,9 @@ import de.vitero.schema.user.Usertype;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service
-public class ViteroManager extends BasicManager implements UserDataDeletable {
+public class ViteroManager implements UserDataDeletable {
 	
+	private static final OLog log = Tracing.createLoggerFor(ViteroManager.class);
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
 	
 	private static final String VMS_PROVIDER = "VMS";
@@ -256,7 +259,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 					updateVmsUser(identity, userId);
 					storePortrait(identity, userId);
 				} catch (Exception e) {
-					logError("Cannot update user on vitero system:" + identity.getName(), e);
+					log.error("Cannot update user on vitero system:" + identity.getName(), e);
 				}
 			}
 			
@@ -276,12 +279,12 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		} catch(SOAPFaultException f) {
 			ErrorCode code = handleAxisFault(f);
 			switch(code) {
-				case userDoesntExist: logError("User does not exist.", f); break;
-				case userNotAssignedToGroup: logError("User not assigned to group.", f); break;
-				case invalidAttribut: logError("Invalid attribute.", f); break; 
-				case invalidTimezone: logError("Invalid time zone.", f); break;
+				case userDoesntExist: log.error("User does not exist.", f); break;
+				case userNotAssignedToGroup: log.error("User not assigned to group.", f); break;
+				case invalidAttribut: log.error("Invalid attribute.", f); break; 
+				case invalidTimezone: log.error("Invalid time zone.", f); break;
 				case bookingDoesntExist:
-				case bookingDoesntExistPrime: logError("Booking does not exist.", f); break;
+				case bookingDoesntExistPrime: log.error("Booking does not exist.", f); break;
 				default: logAxisError("Cannot create session code.", f);
 			}
 			return null;
@@ -289,7 +292,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			if(e.getCause() instanceof ConnectException) {
 				throw new VmsNotAvailableException();
 			}
-			logError("Cannot create session code.", e);
+			log.error("Cannot create session code.", e);
 			return null;
 		}
 	}
@@ -312,7 +315,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 					updateVmsUser(identity, userId);
 					storePortrait(identity, userId);
 				} catch (Exception e) {
-					logError("Cannot update user on vitero system:" + identity.getName(), e);
+					log.error("Cannot update user on vitero system:" + identity.getName(), e);
 				}
 			}
 
@@ -334,12 +337,12 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		} catch(SOAPFaultException f) {
 			ErrorCode code = handleAxisFault(f);
 			switch(code) {
-				case userDoesntExist: logError("User does not exist.", f); break;
-				case userNotAssignedToGroup: logError("User not assigned to group.", f); break;
-				case invalidAttribut: logError("Invalid attribute.", f); break; 
-				case invalidTimezone: logError("Invalid time zone.", f); break;
+				case userDoesntExist: log.error("User does not exist.", f); break;
+				case userNotAssignedToGroup: log.error("User not assigned to group.", f); break;
+				case invalidAttribut: log.error("Invalid attribute.", f); break; 
+				case invalidTimezone: log.error("Invalid time zone.", f); break;
 				case bookingDoesntExist:
-				case bookingDoesntExistPrime: logError("Booking does not exist.", f); break;
+				case bookingDoesntExistPrime: log.error("Booking does not exist.", f); break;
 				default: logAxisError("Cannot create session code.", f);
 			}
 			return null;
@@ -347,11 +350,17 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			if(e.getCause() instanceof ConnectException) {
 				throw new VmsNotAvailableException();
 			}
-			logError("Cannot create session code.", e);
+			log.error("Cannot create session code.", e);
 			return null;
 		}
 	}
 	
+	/**
+	 * 
+	 * @param id The group id
+	 * @return
+	 * @throws VmsNotAvailableException
+	 */
 	public ViteroGroupRoles getGroupRoles(int id)
 	throws VmsNotAvailableException {
 		try {
@@ -384,6 +393,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 					if(email != null) {
 						GroupRole role = GroupRole.valueOf(participant.getRole());
 						groupRoles.getEmailsToRole().put(email, role);
+						groupRoles.getEmailsToVmsUserId().put(email, userId);
 					}
 				}
 			}
@@ -443,7 +453,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			if(e.getCause() instanceof ConnectException) {
 				throw new VmsNotAvailableException();
 			}
-			logError("Cannot get the list of users of customer: " + viteroModule.getCustomerId(), e);
+			log.error("Cannot get the list of users of customer: " + viteroModule.getCustomerId(), e);
 			return null;
 		}
 	}
@@ -466,7 +476,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			if(e.getCause() instanceof ConnectException) {
 				throw new VmsNotAvailableException();
 			}
-			logError("Cannot get the list of users in group: " + groupId, e);
+			log.error("Cannot get the list of users in group: " + groupId, e);
 			return null;
 		}
 	}
@@ -502,7 +512,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		try {
 			dbInstance.commitAndCloseSession();
 		} catch (Exception e) {
-			logError("Close safely for VMS", e);
+			log.error("Close safely for VMS", e);
 		}
 	}
 	
@@ -578,7 +588,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			if(e.getCause() instanceof ConnectException) {
 				throw new VmsNotAvailableException();
 			}
-			logError("Cannot create vms user.", e);
+			log.error("Cannot create vms user.", e);
 			return true;
 		}
 	}
@@ -664,7 +674,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			if(e.getCause() instanceof ConnectException) {
 				throw new VmsNotAvailableException();
 			}
-			logError("Cannot create vms user.", e);
+			log.error("Cannot create vms user.", e);
 			return -1;
 		}
 	}
@@ -699,7 +709,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			if(e.getCause() instanceof ConnectException) {
 				throw new VmsNotAvailableException();
 			}
-			logError("Cannot store the portrait of " + userId, e);
+			log.error("Cannot store the portrait of " + userId, e);
 			return false;
 		}
 	}
@@ -715,7 +725,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 				deleteVmsUser(userId);
 			}
 		} catch (VmsNotAvailableException e) {
-			logError("Cannot delete a vms user after a OLAT user deletion.", e);
+			log.error("Cannot delete a vms user after a OLAT user deletion.", e);
 		}
 	}
 	
@@ -734,7 +744,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			if(e.getCause() instanceof ConnectException) {
 				throw new VmsNotAvailableException();
 			}
-			logError("Cannot delete vms user: " + userId, e);
+			log.error("Cannot delete vms user: " + userId, e);
 		}
 	}
 
@@ -758,14 +768,14 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		} catch(SOAPFaultException f) {
 			ErrorCode code = handleAxisFault(f);
 			switch(code) {
-				case invalidAttribut: logError("ids <=0 or invalid attributs", f); break;
+				case invalidAttribut: log.error("ids <=0 or invalid attributs", f); break;
 				default: logAxisError("Cannot get licence for customer: " + viteroModule.getCustomerId(), f);
 			}
 		} catch (WebServiceException e) {
 			if(e.getCause() instanceof ConnectException) {
 				throw new VmsNotAvailableException();
 			}
-			logError("Cannot get licence for customer: " + viteroModule.getCustomerId(), e);
+			log.error("Cannot get licence for customer: " + viteroModule.getCustomerId(), e);
 		}
 		return roomSizes;
 	}
@@ -795,7 +805,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			if(e.getCause() instanceof ConnectException) {
 				throw new VmsNotAvailableException();
 			}
-			logError("Cannot get licence for available room by dates.", e);
+			log.error("Cannot get licence for available room by dates.", e);
 		}
 		return roomSizes;
 	}
@@ -821,7 +831,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			if(e.getCause() instanceof ConnectException) {
 				throw new VmsNotAvailableException();
 			}
-			logError("Cannot create a group.", e);
+			log.error("Cannot create a group.", e);
 			return -1;
 		}
 	}
@@ -844,7 +854,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			if(e.getCause() instanceof ConnectException) {
 				throw new VmsNotAvailableException();
 			}
-			logError("Cannot create a group.", e);
+			log.error("Cannot create a group.", e);
 			return null;
 		}
 	}
@@ -859,8 +869,8 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		} catch(SOAPFaultException f) {
 			ErrorCode code = handleAxisFault(f);
 			switch(code) {
-				case groupDoesntExist: logError("Group doesn't exist!", f); break;
-				case invalidAttribut: logError("Group id <= 0!", f);
+				case groupDoesntExist: log.error("Group doesn't exist!", f); break;
+				case invalidAttribut: log.error("Group id <= 0!", f);
 				default: logAxisError("Cannot delete group: " + vBooking.getGroupId(), f);
 			}
 			return false;
@@ -868,18 +878,45 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			if(e.getCause() instanceof ConnectException) {
 				throw new VmsNotAvailableException();
 			}
-			logError("Cannot delete group: " + vBooking.getGroupId(), e);
+			log.error("Cannot delete group: " + vBooking.getGroupId(), e);
 			return false;
 		}
 	}
 	
-	public boolean addToRoom(ViteroBooking booking, Identity identity, GroupRole role)
+	public ViteroStatus changeGroupRole(int groupId, int vmsUserId, int roleId)
+	throws VmsNotAvailableException {
+		try {
+			Group groupWs = getGroupWebService();
+			ChangeGroupRoleRequest roleRequest = new ChangeGroupRoleRequest();
+			roleRequest.setGroupid(groupId);
+			roleRequest.setUserid(vmsUserId);
+			roleRequest.setRole(roleId);
+			groupWs.changeGroupRole(roleRequest);
+			return new ViteroStatus();
+		} catch(SOAPFaultException f) {
+			ErrorCode code = handleAxisFault(f);
+			switch(code) {
+				case userDoesntExist: log.error("The user doesn ́t exist!", f); break;
+				case groupDoesntExist: log.error("The group doesn ́t exist", f); break;
+				default: logAxisError("Cannot add an user to a group", f);
+			}
+			return new ViteroStatus(code);
+		} catch (WebServiceException e) {
+			if(e.getCause() instanceof ConnectException) {
+				throw new VmsNotAvailableException();
+			}
+			log.error("Cannot add an user to a group", e);
+			return new ViteroStatus(ErrorCode.unkown);
+		}
+	}
+	
+	public ViteroStatus addToRoom(ViteroBooking booking, Identity identity, GroupRole role)
 	throws VmsNotAvailableException {
 		try {
 			GetUserInfo userInfo = getVmsUserId(identity, true);
 			int userId = userInfo.getUserId();
 			if(userId < 0) {
-				return false;
+				return new ViteroStatus(ErrorCode.userDoesntExist);
 			}
 			
 			if(!userInfo.isCreated()) {
@@ -888,7 +925,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 					updateVmsUser(identity, userId);
 					//storePortrait(identity, userId);
 				} catch (Exception e) {
-					logError("Cannot update user on vitero system:" + identity.getName(), e);
+					log.error("Cannot update user on vitero system:" + identity.getName(), e);
 				}
 			}
 			
@@ -907,59 +944,59 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 				groupWs.changeGroupRole(roleRequest);
 			}
 			
-			return true;
+			return new ViteroStatus();
 		} catch(SOAPFaultException f) {
 			ErrorCode code = handleAxisFault(f);
 			switch(code) {
-				case userDoesntExist: logError("The user doesn ́t exist!", f); break;
-				case userNotAttachedToCustomer: logError("The user is not attached to the customer (to which this group belongs)", f); break;
-				case groupDoesntExist: logError("The group doesn ́t exist", f); break;
-				case invalidAttribut: logError("An id <= 0", f); break;
+				case userDoesntExist: log.error("The user doesn ́t exist!", f); break;
+				case userNotAttachedToCustomer: log.error("The user is not attached to the customer (to which this group belongs)", f); break;
+				case groupDoesntExist: log.error("The group doesn ́t exist", f); break;
+				case invalidAttribut: log.error("An id <= 0", f); break;
 				default: logAxisError("Cannot add an user to a group", f);
 			}
-			return false;
+			return new ViteroStatus(code);
 		} catch (WebServiceException e) {
 			if(e.getCause() instanceof ConnectException) {
 				throw new VmsNotAvailableException();
 			}
-			logError("Cannot add an user to a group", e);
-			return false;
+			log.error("Cannot add an user to a group", e);
+			return new ViteroStatus(ErrorCode.unkown);
 		}
 	}
 	
-	public boolean removeFromRoom(ViteroBooking booking, Identity identity)
+	public ViteroStatus removeFromRoom(ViteroBooking booking, Identity identity)
 	throws VmsNotAvailableException {
 		GetUserInfo userInfo = getVmsUserId(identity, true);
 		int userId = userInfo.getUserId();
 		if(userId < 0) {
-			return true;//nothing to remove
+			return new ViteroStatus();//nothing to remove
 		}
 		return removeFromRoom(booking, userId);
 	}
 	
-	public boolean removeFromRoom(ViteroBooking booking, int userId)
+	public ViteroStatus removeFromRoom(ViteroBooking booking, int userId)
 	throws VmsNotAvailableException {
 		try {
 			Groupiduserid groupuserId = new Groupiduserid();
 			groupuserId.setGroupid(booking.getGroupId());
 			groupuserId.setUserid(userId);
 			getGroupWebService().removeUserFromGroup(groupuserId);
-			return true;
+			return new ViteroStatus();
 		} catch(SOAPFaultException f) {
 			ErrorCode code = handleAxisFault(f);
 			switch(code) {
-				case userDoesntExist: logError("The user doesn ́t exist!", f); break;
-				case groupDoesntExist: logError("The group doesn ́t exist", f); break;
-				case invalidAttribut: logError("An id <= 0", f); break;
+				case userDoesntExist: log.error("The user doesn ́t exist!", f); break;
+				case groupDoesntExist: log.error("The group doesn ́t exist", f); break;
+				case invalidAttribut: log.error("An id <= 0", f); break;
 				default: logAxisError("Cannot remove an user from a group", f);
 			}
-			return false;
+			return new ViteroStatus(code);
 		} catch (WebServiceException e) {
 			if(e.getCause() instanceof ConnectException) {
 				throw new VmsNotAvailableException();
 			}
-			logError("Cannot remove an user from a group", e);
-			return false;
+			log.error("Cannot remove an user from a group", e);
+			return new ViteroStatus(ErrorCode.unkown);
 		}
 	}
 	
@@ -1002,9 +1039,9 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 
 	public ViteroStatus createBooking(BusinessGroup group, OLATResourceable ores, String subIdentifier, ViteroBooking vBooking)
 	throws VmsNotAvailableException {
-		Bookingtype booking = getBookingById(vBooking.getBookingId());
+		Bookingtype booking = getVmsBookingById(vBooking.getBookingId());
 		if(booking != null) {
-			logInfo("Booking already exists: " + vBooking.getBookingId());
+			log.info("Booking already exists: " + vBooking.getBookingId());
 			return new ViteroStatus();
 		}
 
@@ -1028,25 +1065,10 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			newBooking.setEndbuffer(vBooking.getEndBuffer());
 			newBooking.setGroupid(groupId);
 			newBooking.setRoomsize(vBooking.getRoomSize());
-			
-			//optional
-			/*
-			newBooking.setIgnorefaults(false);
-			newBooking.setCafe(false);
-			newBooking.setCapture(false);
-			//phone
-			BookingServiceStub.Phonetype phone = new BookingServiceStub.Phonetype();
-			phone.setDialout(false);
-			phone.setPhoneconference(false);
-			phone.setShowdialogue(false);
-			newBooking.setPhone(phone);
-
-			newBooking.setPcstateokrequired(false);
-			newBooking.setRepetitionpattern("once");
-			newBooking.setRepetitionenddate("");
-			*/
 			newBooking.setTimezone(viteroModule.getTimeZoneId());
-			
+			if(StringHelper.containsNonWhitespace(vBooking.getEventName())) {
+				newBooking.setEventname(vBooking.getEventName());
+			}
 			createRequest.setBooking(newBooking);
 
 			CreateBookingResponse response = bookingWs.createBooking(createRequest);
@@ -1065,11 +1087,11 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		} catch(SOAPFaultException f) {
 			ErrorCode code = handleAxisFault(f);
 			switch(code) {
-				case invalidTimezone: logError("Invalid time zone!", f); break;
-				case bookingCollision: logError("Booking collision!", f); break;
-				case moduleCollision: logError("Invalid module selection!", f); break;
-				case bookingInPast: logError("Booking in the past!", f); break;
-				case licenseExpired: logError("License/customer expired!", f); break;
+				case invalidTimezone: log.error("Invalid time zone!", f); break;
+				case bookingCollision: log.error("Booking collision!", f); break;
+				case moduleCollision: log.error("Invalid module selection!", f); break;
+				case bookingInPast: log.error("Booking in the past!", f); break;
+				case licenseExpired: log.error("License/customer expired!", f); break;
 				default: logAxisError("Cannot create a booking.", f);
 			}
 			return new ViteroStatus(code);
@@ -1077,7 +1099,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			if(e.getCause() instanceof ConnectException) {
 				throw new VmsNotAvailableException();
 			}
-			logError("Cannot create a booking.", e);
+			log.error("Cannot create a booking.", e);
 			return new ViteroStatus(ErrorCode.remoteException);
 		}
 	}
@@ -1092,18 +1114,61 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	 */
 	public ViteroBooking updateBooking(BusinessGroup group, OLATResourceable ores, String subIdentifier, ViteroBooking vBooking)
 	throws VmsNotAvailableException {
-		Bookingtype bookingType = getBookingById(vBooking.getBookingId());
+		Bookingtype bookingType = getVmsBookingById(vBooking.getBookingId());
 		if(bookingType == null) {
-			logInfo("Booking doesn't exist: " + vBooking.getBookingId());
+			log.info("Booking doesn't exist: " + vBooking.getBookingId());
 			return null;
 		}
-		
+
 		Booking_Type booking = bookingType.getBooking();
 		//set the vms values
 		update(vBooking, booking);
 		//update the property
 		updateProperty(group, ores, subIdentifier, vBooking);
 		return vBooking;
+	}
+	
+	public ViteroStatus updateVmsBooking(BusinessGroup group, OLATResourceable ores, String subIdentifier, ViteroBooking vBooking)
+	throws VmsNotAvailableException {
+		try {
+			UpdateBookingRequest updateRequest = new UpdateBookingRequest();
+			updateRequest.setBookingid(vBooking.getBookingId());
+			if(StringHelper.containsNonWhitespace(vBooking.getEventName())) {
+				updateRequest.setEventname(vBooking.getEventName());
+			}
+			updateRequest.setEnd(format(vBooking.getEnd()));
+			updateRequest.setEndbuffer(vBooking.getEndBuffer());
+			updateRequest.setStart(format(vBooking.getStart()));
+			updateRequest.setStartbuffer(vBooking.getStartBuffer());
+			updateRequest.setTimezone(viteroModule.getTimeZoneId());
+			getBookingWebService().updateBooking(updateRequest);
+			return new ViteroStatus();
+		} catch(SOAPFaultException f) {
+			ErrorCode code = handleAxisFault(f);
+			switch(code) {
+				case unsufficientRights:
+				case bookingCollision:
+				case bookingInPast:
+				case noRoomsAvailable:
+					return new ViteroStatus(code);
+				case bookingDoesntExist:
+				case bookingDoesntExistPrime: {
+					deleteGroup(vBooking);
+					deleteProperty(vBooking);
+					return new ViteroStatus(code);//ok, vms deleted, group deleted...
+				}
+				default: {
+					logAxisError("Cannot update a booking.", f);
+				}
+			}
+			return new ViteroStatus(ErrorCode.unkown);
+		} catch (WebServiceException e) {
+			if(e.getCause() instanceof ConnectException) {
+				throw new VmsNotAvailableException();
+			}
+			log.error("Cannot update a booking.", e);
+			return new ViteroStatus(ErrorCode.unkown);
+		}
 	}
 	
 	public boolean deleteBooking(ViteroBooking vBooking)
@@ -1135,7 +1200,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			if(e.getCause() instanceof ConnectException) {
 				throw new VmsNotAvailableException();
 			}
-			logError("Cannot delete a booking.", e);
+			log.error("Cannot delete a booking.", e);
 			return false;
 		}
 	}
@@ -1149,7 +1214,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 				deleteBooking(booking);
 			}
 		} catch (VmsNotAvailableException e) {
-			logError("", e);
+			log.error("", e);
 			markAsZombie(group, ores, subIdentifier);
 		}
 	}
@@ -1175,9 +1240,9 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 				deleteBooking(booking);
 			} catch (VmsNotAvailableException e) {
 				//try later
-				logDebug("Cannot clean-up vitero room, vms not available");
+				log.debug("Cannot clean-up vitero room, vms not available");
 			} catch (Exception e) {
-				logError("", e);
+				log.error("", e);
 			}
 		}
 	}
@@ -1211,7 +1276,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 					)) {
 				String bookingStr = property.getTextValue();
 				ViteroBooking booking = deserializeViteroBooking(bookingStr);
-				Bookingtype bookingType = getBookingById(booking.getBookingId());
+				Bookingtype bookingType = getVmsBookingById(booking.getBookingId());
 				if(bookingType != null) {
 					Booking_Type vmsBooking = bookingType.getBooking();
 					booking.setProperty(property);
@@ -1221,6 +1286,30 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			}
 		}
 		return bookings;
+	}
+	
+	public ViteroBooking getBookingById(BusinessGroup group, OLATResourceable ores, String subIdentifier, int bookingId)
+	throws VmsNotAvailableException {
+		ViteroBooking booking = null;
+		List<Property> properties = propertyManager.listProperties(null, group, ores, VMS_CATEGORY, Integer.toString(bookingId));
+		if(properties.size() > 0) {
+			Property property = properties.get(0);
+			String propIdentifier = property.getStringValue();
+			if((propIdentifier == null || subIdentifier == null)
+					|| (subIdentifier != null
+						&& (propIdentifier == null || subIdentifier.equals(propIdentifier))
+					)) {
+				String bookingStr = property.getTextValue();
+				booking = deserializeViteroBooking(bookingStr);
+				Bookingtype bookingType = getVmsBookingById(booking.getBookingId());
+				if(bookingType != null) {
+					Booking_Type vmsBooking = bookingType.getBooking();
+					booking.setProperty(property);
+					update(booking, vmsBooking);
+				}
+			}
+		}
+		return booking;
 	}
 	
 	protected List<Booking_Type> getBookingInFutureByUserId(int userId)
@@ -1237,9 +1326,9 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		} catch(SOAPFaultException f) {
 			ErrorCode code = handleAxisFault(f);
 			switch(code) {
-				case userDoesntExist: logError("The user does not exist!", f); break;
-				case invalidAttribut: logError("ids <= 0!", f); break;
-				case invalidTimezone: logError("Invalid time zone!", f); break;
+				case userDoesntExist: log.error("The user does not exist!", f); break;
+				case invalidAttribut: log.error("ids <= 0!", f); break;
+				case invalidTimezone: log.error("Invalid time zone!", f); break;
 				default: logAxisError("Cannot get booking in future for user: " + userId, f);
 			}
 			return null;
@@ -1247,12 +1336,12 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			if(e.getCause() instanceof ConnectException) {
 				throw new VmsNotAvailableException();
 			}
-			logError("Cannot get booking in future for custom: " + userId, e);
+			log.error("Cannot get booking in future for custom: " + userId, e);
 			return null;
 		}
 	}
 
-	protected Bookingtype getBookingById(int id)
+	private Bookingtype getVmsBookingById(int id)
 	throws VmsNotAvailableException {
 		if(id < 0) return null;
 		
@@ -1264,8 +1353,8 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		} catch(SOAPFaultException f) {
 			ErrorCode code = handleAxisFault(f);
 			switch(code) {
-				case invalidAttribut: logError("ids <= 0", f); break;
-				case bookingDoesntExist: logError("The booking does not exist", f); break;
+				case invalidAttribut: log.error("ids <= 0", f); break;
+				case bookingDoesntExist: log.error("The booking does not exist", f); break;
 				default: logAxisError("Cannot get booking by id: " + id, f);
 			}
 			return null;
@@ -1273,7 +1362,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			if(e.getCause() instanceof ConnectException) {
 				throw new VmsNotAvailableException();
 			}
-			logError("Cannot get booking by id: " + id, e);
+			log.error("Cannot get booking by id: " + id, e);
 			return null;
 		}
 	}
@@ -1299,7 +1388,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 						if(identity != null) {
 							authenticationCreated++;
 							securityManager.createAndPersistAuthentication(identity, VMS_PROVIDER, Integer.toString(user.getId()), null, null);
-							logInfo("Recreate VMS authentication for: " + identity.getName());
+							log.info("Recreate VMS authentication for: " + identity.getName());
 						}
 					}
 				}	
@@ -1369,7 +1458,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		} catch(SOAPFaultException f) {
 			ErrorCode code = handleAxisFault(f);
 			switch(code) {
-				case unsufficientRights: logError("Unsufficient rights", f); break;
+				case unsufficientRights: log.error("Unsufficient rights", f); break;
 				default: logAxisError("Cannot check connection", f);
 			}
 			return false;
@@ -1377,7 +1466,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			if(e.getCause() instanceof ConnectException) {
 				throw new VmsNotAvailableException();
 			}
-			logWarn("Error checking connection", e);
+			log.warn("Error checking connection", e);
 			return false;
 		}
 	}
@@ -1409,7 +1498,10 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 				if("errorCode".equals(nodeName)) {
 					return extractText(soapElement);
 				} else {
-					extractErrorCode(soapElement);
+					String code = extractErrorCode(soapElement);
+					if(code != null) {
+						return code;
+					}
 				}
 			}
 		}
@@ -1441,7 +1533,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			sb.append(f.getMessage());
 		}
 
-		logError(sb.toString(), f);
+		log.error(sb.toString(), f);
 	}
 	
 	private final List<ViteroBooking> convert(List<Booking_Type> bookings) {
@@ -1464,6 +1556,9 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	private final ViteroBooking update(ViteroBooking vb, Booking_Type booking) {
 		vb.setBookingId(booking.getBookingid());
 		vb.setGroupId(booking.getGroupid());
+		if(StringHelper.containsNonWhitespace(booking.getEventname())) {
+			vb.setEventName(booking.getEventname());
+		}
 		vb.setRoomSize(booking.getRoomsize());
 		vb.setStart(parse(booking.getStart()));
 		vb.setStartBuffer(booking.getStartbuffer());
@@ -1638,7 +1733,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		try {
 			return dateFormat.parse(dateString);
 		} catch (ParseException e) {
-			logError("Cannot parse a date: " + dateString, e);
+			log.error("Cannot parse a date: " + dateString, e);
 			return null;
 		}
 	}

@@ -35,7 +35,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
@@ -45,6 +47,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -77,9 +85,11 @@ public class GTAAssignmentEditController extends FormBasicController {
 	private FlexiTableElement taskDefTableEl;
 	private TaskDefinitionTableModel taskModel;
 	private SingleSelection typeEl, previewEl, samplingEl;
+	private WarningFlexiCellRenderer fileExistsRenderer;
 	
 	private CloseableModalController cmc;
 	private NewTaskController newTaskCtrl;
+	private DialogBoxController confirmDeleteCtrl;
 	private EditTaskController addTaskCtrl, editTaskCtrl;
 	private HTMLEditorController newTaskEditorCtrl, editTaskEditorCtrl;
 	
@@ -131,11 +141,13 @@ public class GTAAssignmentEditController extends FormBasicController {
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.title.i18nKey(), TDCols.title.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.file.i18nKey(), TDCols.file.ordinal()));
+		fileExistsRenderer = new WarningFlexiCellRenderer();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.file.i18nKey(), TDCols.file.ordinal(), fileExistsRenderer));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.edit", TDCols.edit.ordinal(), "edit",
 				new BooleanCellRenderer(
 						new StaticFlexiCellRenderer(translate("edit"), "edit"),
 						new StaticFlexiCellRenderer(translate("replace"), "edit"))));
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.edit", translate("delete"), "delete"));
 		
 		taskModel = new TaskDefinitionTableModel(columnsModel);
 		taskDefTableEl = uifactory.addTableElement(getWindowControl(), "taskTable", taskModel, getTranslator(), tasksCont);
@@ -199,6 +211,7 @@ public class GTAAssignmentEditController extends FormBasicController {
 	}
 	
 	private void updateModel() {
+		fileExistsRenderer.setFilenames(tasksFolder.list());
 		taskModel.setObjects(taskList.getTasks());
 		taskDefTableEl.reset();
 	}
@@ -248,6 +261,12 @@ public class GTAAssignmentEditController extends FormBasicController {
 		} else if(editTaskEditorCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
+		} else if(confirmDeleteCtrl == source) {
+			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				TaskDefinition row = (TaskDefinition)confirmDeleteCtrl.getUserObject();
+				doDelete(ureq, row);
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -294,6 +313,13 @@ public class GTAAssignmentEditController extends FormBasicController {
 				TaskDefinition row = taskModel.getObject(se.getIndex());
 				if("edit".equals(se.getCommand())) {
 					doEdit(ureq, row);
+				} else if("delete".equals(se.getCommand())) {
+					RepositoryEntry entry = courseEditorEnv.getCourseGroupManager().getCourseEntry();
+					if(gtaManager.isTaskInProcess(entry, gtaNode, row.getFilename())) {
+						doConfirmDelete(ureq, row);
+					} else {
+						doDelete(ureq, row);
+					}
 				}
 			}
 		} else if(typeEl == source) {
@@ -405,5 +431,57 @@ public class GTAAssignmentEditController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), "close", editTaskEditorCtrl.getInitialComponent());
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doConfirmDelete(UserRequest ureq, TaskDefinition row) {
+		String title = translate("warning.tasks.in.process.delete.title");
+		String text = translate("warning.tasks.in.process.delete.text");
+		confirmDeleteCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteCtrl);
+		confirmDeleteCtrl.setUserObject(row);
+	}
+	
+	private void doDelete(UserRequest ureq, TaskDefinition taskDef) {
+		taskList.getTasks().remove(taskDef);
+		
+		VFSItem item = tasksContainer.resolve(taskDef.getFilename());
+		if(item != null) {
+			item.delete();
+		}
+		
+		updateModel();
+		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	private class WarningFlexiCellRenderer implements FlexiCellRenderer {
+		
+		private String[] tasks;
+
+		public void setFilenames(String[] tasks) {
+			this.tasks = tasks;
+		}
+
+		@Override
+		public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
+				FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+			
+			if(cellValue instanceof String) {
+				String filename = (String)cellValue;
+				boolean found = false;
+				
+				if(tasks != null && tasks.length > 0) {
+					for(String task:tasks) {
+						if(task.equals(filename)) {
+							found = true;
+							break;
+						}
+					}
+				}
+				
+				if(!found) {
+					target.append("<i class='o_icon o_icon_warn'> </i> ");
+				}
+				StringHelper.escapeHtml(target, filename);
+			}
+		}
 	}
 }

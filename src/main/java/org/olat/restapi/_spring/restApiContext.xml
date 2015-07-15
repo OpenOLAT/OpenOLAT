@@ -52,6 +52,7 @@
 				<value>org.olat.modules.fo.restapi.ForumCourseNodeWebService</value>
 				<value>org.olat.modules.fo.restapi.MyForumsWebService</value>
 				<value>org.olat.modules.openmeetings.restapi.OpenMeetingsWebService</value>
+				<value>org.olat.modules.vitero.restapi.ViteroWebService</value>
 				<value>org.olat.core.commons.services.notifications.restapi.NotificationsWebService</value>
 				<value>org.olat.registration.restapi.RegistrationWebService</value>
 				<value>org.olat.registration.restapi.ChangePasswordWebService</value>

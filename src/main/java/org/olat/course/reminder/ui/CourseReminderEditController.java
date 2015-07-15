@@ -21,6 +21,7 @@ package org.olat.course.reminder.ui;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -53,8 +54,6 @@ import org.olat.modules.reminder.rule.DateRuleSPI;
 import org.olat.modules.reminder.ui.ReminderAdminController;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 
@@ -114,6 +113,7 @@ public class CourseReminderEditController extends FormBasicController {
 		
 		String desc = reminder.getDescription();
 		descriptionEl = uifactory.addTextElement("reminder.description", "reminder.description", 128, desc, generalCont);
+		descriptionEl.setElementCssClass("o_sel_course_reminder_desc");
 		
 		String sendTime = getSendTimeDescription();
 		uifactory.addStaticTextElement("send.time.description.label", sendTime, generalCont);
@@ -199,8 +199,10 @@ public class CourseReminderEditController extends FormBasicController {
 		
 		FormLink addRuleButton = uifactory.addFormLink("add.rule.".concat(id), "add", "add.rule", null, rulesCont, Link.BUTTON);
 		addRuleButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+		addRuleButton.setElementCssClass("o_sel_course_add_rule");
 		FormLink deleteRuleButton = uifactory.addFormLink("delete.rule.".concat(id), "delete", "delete.rule", null, rulesCont, Link.BUTTON);
 		deleteRuleButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+		deleteRuleButton.setElementCssClass("o_sel_course_delete_rule");
 		
 		RuleEditorFragment editor = ruleSpi.getEditorFragment(rule, entry);
 		FormItem customItem = editor.initForm(rulesCont, this, ureq);

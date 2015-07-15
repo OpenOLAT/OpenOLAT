@@ -40,12 +40,15 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.course.condition.AreaSelectionController;
 import org.olat.course.condition.GroupSelectionController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTARelativeToDates;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.group.BusinessGroupService;
@@ -71,6 +74,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private final String[] relativeDatesValues;
 	
 	private CloseableModalController cmc;
+	private DialogBoxController confirmChangesCtrl;
 	private AreaSelectionController areaSelectionCtrl;
 	private GroupSelectionController groupSelectionCtrl;
 	
@@ -89,6 +93,8 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private List<Long> areaKeys;
 	private List<Long> groupKeys;
 	
+	@Autowired
+	private GTAManager gtaManager;
 	@Autowired
 	private BGAreaManager areaManager;
 	@Autowired
@@ -458,6 +464,22 @@ public class GTAWorkflowEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		RepositoryEntry entry = courseEditorEnv.getCourseGroupManager().getCourseEntry();
+		if(gtaManager.isTasksInProcess(entry, gtaNode)) {
+			doConfirmChanges(ureq);
+		} else {
+			commitChanges();
+			fireEvent(ureq, Event.DONE_EVENT);
+		}
+	}
+	
+	private void doConfirmChanges(UserRequest ureq) {
+		String title = translate("warning.tasks.in.process.title");
+		String text = translate("warning.tasks.in.process.text");
+		confirmChangesCtrl = activateOkCancelDialog(ureq, title, text, confirmChangesCtrl);
+	}
+	
+	private void commitChanges() {
 		if(typeEl.isSelected(0)) {
 			config.setStringValue(GTACourseNode.GTASK_TYPE, GTAType.group.name());
 			config.setList(GTACourseNode.GTASK_AREAS, areaKeys);
@@ -519,7 +541,6 @@ public class GTAWorkflowEditController extends FormBasicController {
 		}
 
 		config.setBooleanEntry(GTACourseNode.GTASK_GRADING, gradingEl.isAtLeastSelected(1));
-		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	
 	private void setRelativeDates(TextElement daysEl, String daysKey, SingleSelection relativeToEl, String relativeToKey) {
@@ -586,7 +607,6 @@ public class GTAWorkflowEditController extends FormBasicController {
 		revisionEl.select(keys[0], review);
 	}
 	
-	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(groupSelectionCtrl == source) {
@@ -618,6 +638,11 @@ public class GTAWorkflowEditController extends FormBasicController {
 			} else if (event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
 				cleanUp();
+			}
+		} else if(confirmChangesCtrl == source) {
+			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				commitChanges();
+				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		} else if(cmc == source) {
 			cleanUp();

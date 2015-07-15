@@ -19,7 +19,10 @@
  */
 package org.olat.selenium.page.repository;
 
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
@@ -57,6 +60,32 @@ public class RepositoryEditDescriptionPage {
 		return this;
 	}
 	
+	public RepositoryEditDescriptionPage setLifecycle(Date validFrom, Date validTo, Locale locale) {
+		//select private
+		By radioPrivateBy = By.cssSelector(".o_sel_repo_lifecycle_type input[type='radio'][value='private']");
+		browser.findElement(radioPrivateBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By validFromBy = By.cssSelector(".o_sel_repo_lifecycle_validfrom .o_date_picker input[type='text']");
+		DateFormat shortDateFormat = DateFormat.getDateInstance(DateFormat.SHORT, locale);
+		String validFromStr = shortDateFormat.format(validFrom);
+		browser.findElement(validFromBy).sendKeys(validFromStr);
+		
+		By validToBy = By.cssSelector(".o_sel_repo_lifecycle_validto .o_date_picker input[type='text']");
+		String validToStr = shortDateFormat.format(validTo);
+		browser.findElement(validToBy).sendKeys(validToStr);
+		
+		return this;
+	}
+	
+	public RepositoryEditDescriptionPage save() {
+		By saveBy = By.cssSelector("div.o_sel_repo_save_details button.btn-primary");
+		WebElement saveButton = browser.findElement(saveBy);
+		saveButton.click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
 	public void clickToolbarBack() {
 		browser.findElement(NavigationPage.toolbarBackBy).click();
 		OOGraphene.waitBusy(browser);
@@ -64,4 +93,5 @@ public class RepositoryEditDescriptionPage {
 		WebElement main = browser.findElement(By.id("o_main_wrapper"));
 		Assert.assertTrue(main.isDisplayed());
 	}
+	
 }

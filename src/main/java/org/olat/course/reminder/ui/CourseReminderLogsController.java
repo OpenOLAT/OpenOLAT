@@ -142,6 +142,7 @@ public class CourseReminderLogsController extends FormBasicController {
 		
 		tableModel = new CourseSendReminderTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
+		tableEl.setElementCssClass("o_sel_course_sent_reminder_log_list");
 		updateModel();
 	}
 	

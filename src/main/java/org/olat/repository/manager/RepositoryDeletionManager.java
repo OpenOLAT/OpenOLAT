@@ -32,7 +32,6 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.mail.MailManager;
 import org.olat.repository.RepositoryDeletionModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -59,8 +58,6 @@ public class RepositoryDeletionManager implements UserDataDeletable {
 
 	private final RepositoryDeletionModule deletionModule;
 	
-	@Autowired
-	private MailManager mailManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	

@@ -77,6 +77,11 @@ public class Formatter {
 		mediumTimeFormat.setLenient(false);
 		shortDateTimeFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
 		shortDateTimeFormat.setLenient(false);
+		if (shortDateTimeFormat instanceof SimpleDateFormat) {
+			SimpleDateFormat sdf = (SimpleDateFormat) shortDateTimeFormat;
+			String pattern = sdf.toPattern().replaceAll("y+","yyyy");
+			sdf.applyPattern(pattern); 
+		}
 		shortTimeFormat = DateFormat.getTimeInstance(DateFormat.SHORT, locale);
 		shortTimeFormat.setLenient(false);
 	}

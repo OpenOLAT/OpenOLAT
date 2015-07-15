@@ -89,7 +89,6 @@ import org.olat.course.assessment.AssessmentChangedEvent;
 import org.olat.course.assessment.AssessmentMainController;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CoachingGroupAccessAssessmentCallback;
-import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.assessment.FullAccessAssessmentCallback;
 import org.olat.course.assessment.ui.AssessmentModeListController;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
@@ -191,8 +190,6 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private AssessmentModule assessmentModule;
-	@Autowired
-	private EfficiencyStatementManager efficiencyStatementManager;
 	
 	public CourseRuntimeController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator,
@@ -443,6 +440,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			ordersLink = LinkFactory.createToolLink("bookings", translate("details.orders"), this, "o_sel_repo_booking");
 			ordersLink.setIconLeftCSS("o_icon o_icon-fw o_icon_booking");
+			ordersLink.setElementCssClass("o_sel_course_ac_tool");
 			boolean booking = acService.isResourceAccessControled(getRepositoryEntry().getOlatResource(), null);
 			ordersLink.setVisible(!corrupted && booking);
 			tools.addComponent(ordersLink);
@@ -495,7 +493,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			if(reminderModule.isEnabled()) {
 				reminderLink = LinkFactory.createToolLink("reminders.cmd", translate("command.options.reminders"), this, "o_icon_reminder");
-				reminderLink.setElementCssClass("o_sel_course_options_certificates");
+				reminderLink.setElementCssClass("o_sel_course_reminders");
 				settings.addComponent(reminderLink);
 			}
 		}

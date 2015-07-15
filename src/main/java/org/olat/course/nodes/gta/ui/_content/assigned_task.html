@@ -1,12 +1,19 @@
 #if($message && !$message.isEmpty())
 	<div class="o_info">$r.xssScan($message)</div>
 #end
+#if($warningMsg && !$warningMsg.isEmpty())
+	<div class="o_warning">$r.xssScan($warningMsg)</div>
+#end
+#if($r.available("download.task"))
 <div>$description
 	<div class="pull-right">
 		$r.render("download.task")
 	</div>
 </div>
-<h5>
-	$r.render("download.link")
-</h5>
-<p>$r.xssScan($taskDescription)</p>
+#end
+#if($r.available("download.link"))
+	<h5>$r.render("download.link")</h5>
+#end
+#if($taskDescription && !$taskDescription.isEmpty())
+	<p>$r.xssScan($taskDescription)</p>
+#end

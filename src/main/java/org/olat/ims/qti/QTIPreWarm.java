@@ -22,15 +22,16 @@ package org.olat.ims.qti;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.configuration.PreWarm;
-import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 import org.springframework.stereotype.Service;
 
 import de.bps.onyx.plugin.OnyxModule;
@@ -53,15 +54,14 @@ public class QTIPreWarm implements PreWarm {
 		long start = System.nanoTime();
 		log.info("Start scanning for QTI resources");
 		
-		Roles adminRoles = new Roles(true, false, false, false, false, false, false);
 		List<String> types = new ArrayList<>(2);
 		types.add(TestFileResource.TYPE_NAME);
 		types.add(SurveyFileResource.TYPE_NAME);
-
-		List<RepositoryEntry> res = RepositoryManager.getInstance().queryByTypeLimitAccess(null, types, adminRoles);
-		for(RepositoryEntry re:res) {
-			OnyxModule.isOnyxTest(re.getOlatResource());
+		List<OLATResource> qtiResources = CoreSpringFactory.getImpl(OLATResourceManager.class).findResourceByTypes(types);
+		DBFactory.getInstance().commitAndCloseSession();
+		for(OLATResource qtiResource:qtiResources) {
+			OnyxModule.isOnyxTest(qtiResource);
 		}
-		log.info("QTI Resources scanned in (ms): " + CodeHelper.nanoToMilliTime(start));
+		log.info(qtiResources.size() + " QTI Resources scanned in (ms): " + CodeHelper.nanoToMilliTime(start));
 	}
 }

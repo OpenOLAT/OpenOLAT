@@ -466,7 +466,6 @@ public class CatalogWebService {
 			}
 			
 			//only update if needed
-			//fxdiff FXOLAT-122: course management
 			if(StringHelper.containsNonWhitespace(entryVo.getName())) {
 				ce.setName(entryVo.getName());
 			}
@@ -493,13 +492,13 @@ public class CatalogWebService {
 	/**
 	 * Deletes the catalog entry with the path specified in the URL.
 	 * @response.representation.200.qname {http://www.example.com}catalogEntryVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The catalog entry
-   * @response.representation.200.example {@link org.olat.catalog.restapi.Examples#SAMPLE_CATALOGENTRYVO}
-   * @response.representation.401.doc Not authorized
-   * @response.representation.404.doc The path could not be resolved to a valid catalog entry
-   * @param path The path
-   * @param httpRquest The HTTP request
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The catalog entry
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_CATALOGENTRYVO}
+	 * @response.representation.401.doc Not authorized
+	 * @response.representation.404.doc The path could not be resolved to a valid catalog entry
+	 * @param path The path
+	 * @param httpRquest The HTTP request
 	 * @return The response
 	 */
 	@DELETE

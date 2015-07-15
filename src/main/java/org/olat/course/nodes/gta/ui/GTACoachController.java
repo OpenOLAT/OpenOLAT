@@ -153,7 +153,7 @@ public class GTACoachController extends GTAAbstractController {
 			TaskDefinition taskDef = getTaskDefinition(assignedTask);
 			assignedTaskCtrl = new GTAAssignedTaskController(ureq, getWindowControl(), assignedTask,
 					taskDef, courseEnv, gtaNode,
-					"coach.task.assigned.description", null);
+					"coach.task.assigned.description", "warning.no.task.choosed.coach", null);
 			listenTo(assignedTaskCtrl);
 			mainVC.put("assignedTask", assignedTaskCtrl.getInitialComponent());
 		}

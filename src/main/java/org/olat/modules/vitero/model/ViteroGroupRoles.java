@@ -38,6 +38,7 @@ public class ViteroGroupRoles {
 
 	private final List<String> emailsOfParticipants = new ArrayList<String>();
 	private final Map<String, GroupRole> emailsToRole = new HashMap<String,GroupRole>();
+	private final Map<String, Integer> emailsToVmsUserId = new HashMap<String,Integer>();
 	
 	public List<String> getEmailsOfParticipants() {
 		return emailsOfParticipants;
@@ -45,6 +46,10 @@ public class ViteroGroupRoles {
 	
 	public Map<String, GroupRole> getEmailsToRole() {
 		return emailsToRole;
+	}
+	
+	public Map<String, Integer> getEmailsToVmsUserId() {
+		return emailsToVmsUserId;
 	}
 	
 	public int size() {

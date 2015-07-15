@@ -1,7 +1,7 @@
 <div class="o_block_large">
 	<p>$r.translate("rules.description")</p>
 	#foreach($rule in $rules)
-	<div class="o_reminder_rule row">
+	<div class="o_reminder_rule row o_sel_row-$velocityCount">
 		<div class="col-md-4">$r.render($rule.typeComponentName)</div>
 		<div class="col-md-6">
 			$r.render($rule.customItemName)

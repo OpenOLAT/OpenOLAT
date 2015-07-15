@@ -27,7 +27,7 @@ import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RepositoryEntryRuleSPI;
 import org.olat.modules.reminder.RuleEditorFragment;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
-import org.olat.modules.reminder.ui.RepositoryEntryLifecycleAfterValidFromRuleEditor;
+import org.olat.modules.reminder.ui.RepositoryEntryLifecycleAfterValidRuleEditor;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.springframework.stereotype.Service;
@@ -60,7 +60,7 @@ public class RepositoryEntryLifecycleAfterValidFromRuleSPI implements Repository
 	
 	@Override
 	public RuleEditorFragment getEditorFragment(ReminderRule rule, RepositoryEntry entry) {
-		return new RepositoryEntryLifecycleAfterValidFromRuleEditor(rule, this.getClass().getSimpleName());
+		return new RepositoryEntryLifecycleAfterValidRuleEditor(rule, this.getClass().getSimpleName(), "/repo_valid_from.html");
 	}
 
 	@Override

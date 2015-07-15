@@ -54,7 +54,7 @@ public interface ReminderService {
 	
 	public List<ReminderInfos> getReminderInfos(RepositoryEntryRef entry);
 	
-	public Reminder duplicate(Reminder toCopy);
+	public Reminder duplicate(Reminder toCopy, Identity creator);
 	
 	public void delete(Reminder reminder);
 	

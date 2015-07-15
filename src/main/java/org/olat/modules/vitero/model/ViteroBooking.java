@@ -37,6 +37,8 @@ public class ViteroBooking {
 	private int bookingId;
 	private int groupId;
 	private String groupName;
+	private String eventName;
+	private String externalId;
 	private Date start;
 	private int startBuffer;
 	private Date end;
@@ -92,6 +94,22 @@ public class ViteroBooking {
 
 	public void setGroupName(String groupName) {
 		this.groupName = groupName;
+	}
+
+	public String getEventName() {
+		return eventName;
+	}
+
+	public void setEventName(String eventName) {
+		this.eventName = eventName;
+	}
+
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
 	}
 
 	public int getRoomSize() {

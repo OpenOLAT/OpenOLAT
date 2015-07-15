@@ -73,6 +73,9 @@ public class ViteroRoomsOverviewController extends BasicController {
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("booking.roomSize", ViteroBookingDataModel.Column.roomSize.ordinal(), null, ureq.getLocale()));
 		
 		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.MILLISECOND, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MINUTE, 0);
 		Date begin = cal.getTime();
 		cal.add(Calendar.DATE, 2);
 		Date end = cal.getTime();
@@ -93,9 +96,4 @@ public class ViteroRoomsOverviewController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-
-
-	
-	
-
 }

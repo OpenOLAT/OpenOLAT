@@ -241,6 +241,7 @@ public class AccessConfigurationController extends FormBasicController {
 				AccessInfo infos = (AccessInfo)source.getUserObject();
 				acService.deleteOffer(infos.getLink().getOffer());
 				confControllers.remove(infos);
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if("edit".equals(cmd)) {
 				AccessInfo infos = (AccessInfo)source.getUserObject();
 				editMethod(ureq, infos);

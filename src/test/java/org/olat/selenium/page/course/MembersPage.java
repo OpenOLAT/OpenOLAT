@@ -19,7 +19,10 @@
  */
 package org.olat.selenium.page.course;
 
+import java.util.List;
+
 import org.jboss.arquillian.drone.api.annotation.Drone;
+import org.jcodec.common.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.group.GroupPage;
 import org.olat.selenium.page.group.GroupsPage;
@@ -122,6 +125,27 @@ public class MembersPage {
 		addMember()
 			.searchMember(user, true)
 			.next().next().next().finish();
+	}
+	
+	/**
+	 * Check if the user with the specified first name is in the member list.
+	 * @param user
+	 * @return
+	 */
+	public MembersPage assertFirstNameInList(UserVO user) {
+		By firstNameBy = By.xpath("//td//a[contains(text(),'" + user.getFirstName() + "')]");
+		By rowBy = By.cssSelector(".o_sel_member_list table.table tr");
+		List<WebElement> rows = browser.findElements(rowBy);
+		boolean found = false;
+		for(WebElement row:rows) {
+			List<WebElement> firstNameEl = row.findElements(firstNameBy);
+			if(firstNameEl.size() > 0) {
+				found = true;
+				break;
+			}
+		}
+		Assert.assertTrue(found);
+		return this;
 	}
 	
 	/**

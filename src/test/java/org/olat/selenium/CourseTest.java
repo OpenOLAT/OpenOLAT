@@ -22,7 +22,10 @@ package org.olat.selenium;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -41,16 +44,20 @@ import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
 import org.olat.selenium.page.User;
+import org.olat.selenium.page.core.BookingPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseWizardPage;
 import org.olat.selenium.page.course.InfoMessageCEPage;
 import org.olat.selenium.page.course.PublisherPageFragment;
+import org.olat.selenium.page.course.RemindersPage;
 import org.olat.selenium.page.course.PublisherPageFragment.Access;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.FeedPage;
+import org.olat.selenium.page.repository.RepositoryAccessPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
+import org.olat.selenium.page.repository.RepositoryAccessPage.UserAccess;
 import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.rest.UserRestClient;
@@ -819,5 +826,184 @@ public class CourseTest {
 		
 		int numOfSurvivingMessages = infoMsgConfig.countMessages();
 		Assert.assertEquals(3, numOfSurvivingMessages);
+	}
+	
+	/**
+	 * An author creates a course, make it visible for
+	 * members and add an access control by password.
+	 * The user search for the course, books it and give
+	 * the password.<br/>
+	 * The author checks in the list of orders if the booking
+	 * of the user is there and after it checks if the user is
+	 * in the member list too.
+	 * 
+	 * @param loginPage
+	 * @param ryomouBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseBooking(@InitialPage LoginPage loginPage,
+			@Drone @User WebDriver ryomouBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		
+		//go to authoring
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+		
+		String title = "Create-Selen-" + UUID.randomUUID().toString();
+		//create course
+		authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.course)
+			.fillCreateForm(title)
+			.assertOnGeneralTab();
+
+		//open course editor
+		CoursePageFragment course = new CoursePageFragment(browser);
+		RepositoryAccessPage courseAccess = course
+			.openToolsMenu()
+			.edit()
+			.createNode("info")
+			.autoPublish()
+			.accessConfiguration()
+			.setUserAccess(UserAccess.registred);
+		//add booking by secret token
+		courseAccess
+			.boooking()
+			.openAddDropMenu()
+			.addTokenMethod()
+			.configureTokenMethod("secret", "The password is secret");
+		courseAccess
+			.clickToolbarBack();
+		
+		//a user search the course
+		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		ryomouLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		NavigationPage ryomouNavBar = new NavigationPage(ryomouBrowser);
+		ryomouNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(title)
+			.book(title);
+		//book the course
+		BookingPage booking = new BookingPage(ryomouBrowser);
+		booking
+			.bookToken("secret");
+		//check the course
+		CoursePageFragment bookedCourse = CoursePageFragment.getCourse(ryomouBrowser);
+		bookedCourse
+			.assertOnTitle(title);
+		
+		//Author go in the list of bookings of the course
+		BookingPage bookingList = course
+			.openToolsMenu()
+			.bookingTool();
+		bookingList
+			.assertFirstNameInListIsOk(ryomou);
+		
+		//Author go to members list
+		course
+			.members()
+			.assertFirstNameInList(ryomou);
+	}
+	
+	/**
+	 * An author create a course, set a start and end date for life-cycle.
+	 * It add a participant to the course. It creates a reminder
+	 * with a rule to catch only participant, an other to send
+	 * the reminder after the start of the course. It sends the reminder
+	 * manually, checks the reminders send, checks the log.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseReminders(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
+		
+		//go to authoring
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date());
+		cal.add(Calendar.DATE, -10);
+		Date validFrom = cal.getTime();
+		cal.add(Calendar.DATE, 20);
+		Date validTo = cal.getTime();
+		
+		String title = "Remind-me-" + UUID.randomUUID().toString();
+		//create course
+		authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.course)
+			.fillCreateForm(title)
+			.assertOnGeneralTab()
+			.setLifecycle(validFrom, validTo, Locale.GERMAN)
+			.save();
+
+		//open course editor, create a node, set access
+		CoursePageFragment course = new CoursePageFragment(browser);
+		course
+			.openToolsMenu()
+			.edit()
+			.createNode("info")
+			.autoPublish()
+			.accessConfiguration()
+			.setUserAccess(UserAccess.registred)
+			.clickToolbarBack();
+		// add a participant
+		course
+			.members()
+			.quickAdd(kanu);
+		
+		//go to reminders
+		RemindersPage reminders = course
+				.reminders()
+				.assertOnRemindersList();
+		
+		String reminderTitle = "REM-" + UUID.randomUUID();
+		reminders
+			.addReminder()
+			.setDescription(reminderTitle)
+			.setTimeBasedRule(1, "RepositoryEntryLifecycleAfterValidFromRuleSPI", 5, "day")
+			.addRule(1)
+			.setRoleBasedRule(2, "RepositoryEntryRoleRuleSPI", "participant")
+			.saveReminder()
+			.assertOnRemindersList()
+			.assertOnReminderInList(reminderTitle);
+		//send the reminders
+		reminders
+			.openActionMenu(reminderTitle)
+			.sendReminders();
+		//check the reminder is send to user
+		reminders
+			.openActionMenu(reminderTitle)
+			.showSentReminders()
+			//reminder send to user
+			.assertSentRemindersList(kanu, true)
+			//reminder not send to author
+			.assertSentRemindersList(author, false);
+		
+		//open reminders log
+		reminders
+			.clickToolbarBack()
+			.openLog()
+			.assertLogList(kanu, reminderTitle, true)
+			.assertLogList(author, reminderTitle, false);
 	}
 }

@@ -25,14 +25,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.id.Identity;
-import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.modules.reminder.FilterRuleSPI;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
 import org.olat.modules.reminder.ui.CourseLaunchRuleEditor;
 import org.olat.repository.RepositoryEntry;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -41,9 +39,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public abstract class AbstractLaunchDateRuleSPI  implements FilterRuleSPI {
-	
-	@Autowired
-	private UserCourseInformationsManager userCourseInformationsManager;
 
 	@Override
 	public String getCategory() {

@@ -111,7 +111,6 @@ public class OrdersController extends BasicController implements Activateable2 {
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("order.total", Col.total.ordinal(), null, getLocale()));
 		
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor(CMD_SELECT, "table.order.details", getTranslator().translate("order.details")));
-		
 		listenTo(tableCtr);
 		
 		loadModel();

@@ -55,7 +55,6 @@ import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.portfolio.EPTemplateMapResource;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.RepositorySearchController.Can;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -108,8 +107,6 @@ public class ReferencableEntriesSearchController extends BasicController {
 	
 	private Object userObject;
 	
-	@Autowired
-	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 

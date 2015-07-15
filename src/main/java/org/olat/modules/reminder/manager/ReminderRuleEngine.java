@@ -65,10 +65,6 @@ public class ReminderRuleEngine {
 	private DateRuleSPI dateRuleSpi;
 	@Autowired
 	private UserPropertyRuleSPI userPropertyRuleSpi;
-	@Autowired
-	private BusinessGroupRoleRuleSPI groupRoleRuleSpi;
-	@Autowired
-	private RepositoryEntryRoleRuleSPI repoRoleRuleSpi;
 	
 	@Autowired
 	private ReminderDAO reminderDao;

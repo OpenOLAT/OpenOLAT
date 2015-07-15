@@ -71,8 +71,10 @@ public class CourseRemindersController extends BasicController implements Activa
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		remindersLink = LinkFactory.createLink("reminders", mainVC, this);
+		remindersLink.setElementCssClass("o_sel_course_reminder_list_segment");
 		segmentView.addSegment(remindersLink, true);
 		logsLink = LinkFactory.createLink("logs", mainVC, this);
+		logsLink.setElementCssClass("o_sel_course_reminder_log_segment");
 		segmentView.addSegment(logsLink, false);
 		
 		doOpenRemindersConfiguration(ureq);

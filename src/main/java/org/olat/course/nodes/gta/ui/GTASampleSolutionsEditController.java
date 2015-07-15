@@ -115,6 +115,7 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 				new BooleanCellRenderer(
 						new StaticFlexiCellRenderer(translate("edit"), "edit"),
 						new StaticFlexiCellRenderer(translate("replace"), "edit"))));
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.edit", translate("delete"), "delete"));
 
 		solutionModel = new SolutionTableModel(columnsModel);
 		solutionTable = uifactory.addTableElement(getWindowControl(), "table", solutionModel, getTranslator(), formLayout);
@@ -213,6 +214,8 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 				SolutionRow row = solutionModel.getObject(se.getIndex());
 				if("edit".equals(se.getCommand())) {
 					doEdit(ureq, row.getSolution());
+				} else if("delete".equals(se.getCommand())) {
+					doDelete(ureq, row);
 				}
 			}
 		}
@@ -293,5 +296,17 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), "close", editSolutionEditorCtrl.getInitialComponent());
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doDelete(UserRequest ureq, SolutionRow solution) {
+		String documentName = solution.getSolution().getFilename();
+		VFSItem item = solutionContainer.resolve(documentName);
+		if(item != null) {
+			item.delete();
+		}
+		solutions.getSolutions().remove(solution.getSolution());
+		
+		fireEvent(ureq, Event.DONE_EVENT);
+		updateModel();
 	}
 }

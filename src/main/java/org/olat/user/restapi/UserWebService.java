@@ -656,17 +656,17 @@ public class UserWebService {
 	 * @response.representation.qname {http://www.example.com}userVO
 	 * @response.representation.mediaType application/xml, application/json
 	 * @response.representation.doc The user
-   * @response.representation.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVO}
+	 * @response.representation.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVO}
 	 * @response.representation.200.qname {http://www.example.com}userVO
 	 * @response.representation.200.mediaType application/xml, application/json
 	 * @response.representation.200.doc The user
-   * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVO}
+	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The identity not found
-   * @response.representation.406.qname {http://www.example.com}errorVO
+	 * @response.representation.404.doc The identity not found
+	 * @response.representation.406.qname {http://www.example.com}errorVO
 	 * @response.representation.406.mediaType application/xml, application/json
 	 * @response.representation.406.doc The list of validation errors
-   * @response.representation.406.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_ERRORVOes}
+	 * @response.representation.406.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_ERRORVOes}
 	 * @param identityKey The user key identifier
 	 * @param user The user datas
 	 * @param request The HTTP request
@@ -694,6 +694,11 @@ public class UserWebService {
 			User retrievedUser = retrievedIdentity.getUser();
 			List<ErrorVO> errors = validateUser(retrievedUser, user, request);
 			if(errors.isEmpty()) {
+				if(StringHelper.containsNonWhitespace(user.getExternalId())
+						&& !user.getExternalId().equals(retrievedIdentity.getExternalId())) {
+					retrievedIdentity = baseSecurity.setExternalId(retrievedIdentity, user.getExternalId());
+					retrievedUser = retrievedIdentity.getUser();
+				}
 				post(retrievedUser, user, getLocale(request));
 				UserManager.getInstance().updateUser(retrievedUser);
 				return Response.ok(get(retrievedIdentity, true, true)).build();

@@ -124,7 +124,7 @@ public abstract class GTAAbstractController extends BasicController {
 		
 		businessGroupTask = GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE));
 		
-		taskList = gtaManager.getTaskList(courseEntry, gtaNode);
+		taskList = gtaManager.createIfNotExists(courseEntry, gtaNode);
 		publisherData = gtaManager.getPublisherData(courseEnv, gtaNode);
 		subsContext = gtaManager.getSubscriptionContext(courseEnv, gtaNode);
 		

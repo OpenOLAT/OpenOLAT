@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -119,5 +120,31 @@ public class BookingPage {
 		By saveButtonBy = By.cssSelector("form button.btn-primary");
 		browser.findElement(saveButtonBy).click();
 		OOGraphene.waitBusy(browser);
+	}
+	
+	/**
+	 * Check if a the booking of a user is in the list
+	 * of orders. The assert check by first name and
+	 * if the order is ok.
+	 * 
+	 * @param user
+	 * @return
+	 */
+	public BookingPage assertFirstNameInListIsOk(UserVO user) {
+		By firstNameBy = By.xpath("//td[contains(text(),'" + user.getFirstName() + "')]");
+		By okBy = By.className("o_ac_order_status_payed_icon");
+		By rowBy = By.cssSelector(".o_sel_order_list table.o_table.table tr");
+		boolean found = false;
+		List<WebElement> rows = browser.findElements(rowBy);
+		for(WebElement row:rows) {
+			List<WebElement> firstNameEl = row.findElements(firstNameBy);
+			List<WebElement> okEl = row.findElements(okBy);
+			if(firstNameEl.size() == 1 && okEl.size() == 1) {
+				found = true;
+				break;
+			}
+		}
+		Assert.assertTrue(found);
+		return this;
 	}
 }

@@ -42,7 +42,7 @@
 		ThemeJS.prototype.initDmzCarrousel = function() {
 			this.dmzCarrousel = jQuery().ooBgCarrousel();
 			this.dmzCarrousel.initCarrousel({
-				query: "#o_body #o_bg", 
+				query: "#o_body.o_dmz #o_bg", 
 				images: ['learn-bg.jpg', 'christian-bg.jpg', 'classroom-bg.jpg', 'holger-bg.jpg', 'oo-bg.jpg', 'florian-bg.jpg' ], 
 				shuffle: false,
 				shuffleFirst: false,
