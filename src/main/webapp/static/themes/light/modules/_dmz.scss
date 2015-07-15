@@ -51,6 +51,10 @@ body.o_dmz {
 			filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#00ffffff',GradientType=0 );
 		} 
 	}
+	
+	#o_toplink {
+		display: none;
+	}
 
 	#o_main_wrapper, #o_main_wrapper #o_main_container {
 		background: transparent;
