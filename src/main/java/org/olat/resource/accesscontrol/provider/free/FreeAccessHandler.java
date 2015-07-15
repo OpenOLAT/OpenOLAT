@@ -102,7 +102,6 @@ public class FreeAccessHandler implements AccessMethodHandler {
 	public FormController createTransactionDetailsController(UserRequest ureq, WindowControl wControl, Order order, OrderPart part, AccessMethod method, Form form) {
 		return null;
 	}
-	
 
 	@Override
 	public boolean checkArgument(OfferAccess link, Object argument) {
