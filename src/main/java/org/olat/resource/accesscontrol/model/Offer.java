@@ -62,5 +62,12 @@ public interface Offer {
 	public String getDescription();
 	
 	public void setDescription(String description);
+	
+	/**
+	 * @return true if the method allow it, and if configured for the offer.
+	 */
+	public boolean isAutoBooking();
+	
+	public void setAutoBooking(boolean autoBooking);
 
 }

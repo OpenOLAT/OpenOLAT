@@ -868,22 +868,23 @@ create table o_mail_attachment (
 
 -- access control
 create table  if not exists o_ac_offer (
-	offer_id bigint NOT NULL,
+  offer_id bigint NOT NULL,
   creationdate datetime,
-	lastmodified datetime,
-	is_valid bit default 1,
-	validfrom datetime,
-	validto datetime,
+  lastmodified datetime,
+  is_valid bit default 1,
+  validfrom datetime,
+  validto datetime,
   version mediumint unsigned not null,
   resourceid bigint,
   resourcetypename varchar(255),
   resourcedisplayname varchar(255),
+  autobooking boolean default 0,
   token varchar(255),
   price_amount DECIMAL(12,4),
-	price_currency_code VARCHAR(3),
-	offer_desc VARCHAR(2000),
+  price_currency_code VARCHAR(3),
+  offer_desc VARCHAR(2000),
   fk_resource_id bigint,
-	primary key (offer_id)
+  primary key (offer_id)
 );
 
 create table if not exists o_ac_method (

@@ -46,6 +46,7 @@ public class OfferImpl extends PersistentObject implements Offer, ModifiedInfo {
 	private Date validTo;
 	
 	private String token;
+	private boolean autoBooking;
 	
 	private Long resourceId;
 	private String resourceTypeName;
@@ -130,6 +131,14 @@ public class OfferImpl extends PersistentObject implements Offer, ModifiedInfo {
 	@Override
 	public void setDescription(String description) {
 		this.description = description;
+	}
+	
+	public boolean isAutoBooking() {
+		return autoBooking;
+	}
+	
+	public void setAutoBooking(boolean autoBooking) {
+		this.autoBooking = autoBooking;
 	}
 
 	public String getToken() {

@@ -735,22 +735,23 @@ create table o_mail_attachment (
 
 -- access control
 create table o_ac_offer (
-	offer_id int8 NOT NULL,
+  offer_id int8 NOT NULL,
   creationdate timestamp,
-	lastmodified timestamp,
-	is_valid boolean default true,
-	validfrom timestamp,
-	validto timestamp,
+  lastmodified timestamp,
+  is_valid boolean default true,
+  validfrom timestamp,
+  validto timestamp,
   version int4 not null,
   resourceid int8,
   resourcetypename varchar(255),
   resourcedisplayname varchar(255),
+  autobooking bool not null default false,
   token varchar(255),
-	price_amount DECIMAL,
-	price_currency_code VARCHAR(3),
-	offer_desc VARCHAR(2000),
+  price_amount DECIMAL,
+  price_currency_code VARCHAR(3),
+  offer_desc VARCHAR(2000),
   fk_resource_id int8,
-	primary key (offer_id)
+  primary key (offer_id)
 );
 
 create table o_ac_method (

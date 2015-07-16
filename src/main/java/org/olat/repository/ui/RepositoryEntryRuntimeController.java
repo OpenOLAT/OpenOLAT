@@ -85,6 +85,7 @@ import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.resource.accesscontrol.model.OfferAccess;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
 import org.olat.resource.accesscontrol.ui.AccessListController;
 import org.olat.resource.accesscontrol.ui.AccessRefusedController;
@@ -717,9 +718,17 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				if(acResult.isAccessible()) {
 					launchContent(ureq, security);
 				} else if (re != null && acResult.getAvailableMethods().size() > 0) {
-					accessController = new AccessListController(ureq, getWindowControl(), acResult.getAvailableMethods());
-					listenTo(accessController);
-					toolbarPanel.rootController(re.getDisplayname(), accessController);
+					//try auto booking
+					ACResultAndSecurity autoResult = tryAutoBooking(ureq, acResult, security);
+					acResult = autoResult.getAcResult();
+					security = autoResult.getSecurity();
+					if(acResult.isAccessible()) {
+						launchContent(ureq, security);
+					} else {
+						accessController = new AccessListController(ureq, getWindowControl(), acResult.getAvailableMethods());
+						listenTo(accessController);
+						toolbarPanel.rootController(re.getDisplayname(), accessController);
+					}
 				} else {
 					Controller ctrl = new AccessRefusedController(ureq, getWindowControl());
 					listenTo(ctrl);
@@ -727,6 +736,19 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				}
 			}
 		}
+	}
+	
+	private ACResultAndSecurity tryAutoBooking(UserRequest ureq, AccessResult acResult, RepositoryEntrySecurity security) {
+		if(acResult.getAvailableMethods().size() == 1) {
+			OfferAccess offerAccess = acResult.getAvailableMethods().get(0);
+			if(offerAccess.getOffer().isAutoBooking() && !offerAccess.getMethod().isNeedUserInteraction()) {
+				acResult = acService.accessResource(getIdentity(), offerAccess, null);
+				 if(acResult.isAccessible()) {
+					 security = repositoryManager.isAllowed(ureq, re);
+				 }
+			}
+		}
+		return new ACResultAndSecurity(acResult, security);
 	}
 	
 	protected boolean doMark() {
@@ -870,5 +892,24 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		
 		public void initToolbar();
 		
+	}
+	
+	private static class ACResultAndSecurity {
+		
+		private final AccessResult acResult;
+		private final RepositoryEntrySecurity security;
+		
+		public ACResultAndSecurity(AccessResult acResult, RepositoryEntrySecurity security) {
+			this.acResult = acResult;
+			this.security = security;
+		}
+
+		public AccessResult getAcResult() {
+			return acResult;
+		}
+
+		public RepositoryEntrySecurity getSecurity() {
+			return security;
+		}
 	}
 }
