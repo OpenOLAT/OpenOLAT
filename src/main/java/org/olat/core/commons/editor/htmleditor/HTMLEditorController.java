@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.util.Date;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
-import org.olat.core.commons.editor.plaintexteditor.PlainTextEditorController;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -32,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -45,7 +45,6 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.SimpleHtmlParser;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
@@ -103,7 +102,8 @@ public class HTMLEditorController extends FormBasicController {
 	private RichTextElement htmlElement;
 	private VFSContainer baseContainer;
 	private VFSLeaf fileLeaf;
-	private FormLink cancel, save, saveClose;
+	private FormCancel cancel;
+	private FormLink save, saveClose;
 	private CustomLinkTreeModel customLinkTreeModel;
 	
 	private VelocityContainer metadataVC;
@@ -152,7 +152,6 @@ public class HTMLEditorController extends FormBasicController {
 		long size = fileLeaf.getSize();
 		if ( size > FolderConfig.getMaxEditSizeLimit()) {
 			// limit to reasonable size, see OO-57
-			setTranslator(Util.createPackageTranslator(PlainTextEditorController.class, getLocale(),getTranslator()));
 			fileToLargeError = translate("plaintext.error.tolarge", new String[]{(size / 1000) + "", (FolderConfig.getMaxEditSizeLimit()/1000)+""});
 			this.body = "";
 			this.editable = false;
@@ -169,7 +168,7 @@ public class HTMLEditorController extends FormBasicController {
 			// is already locked by someone else. Since the lock token must be smaller than 50 characters we us an 
 			// MD5 hash of the absolute file path which will always be 32 characters long and virtually unique.
 			String lockToken = Encoder.md5hash(getFileDebuggingPath(baseContainer, relFilePath));
-			this.lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockResourceable, ureq.getIdentity(), lockToken);
+			lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockResourceable, ureq.getIdentity(), lockToken);
 			VelocityContainer vc = (VelocityContainer) flc.getComponent();
 			if (!lock.isSuccess()) {
 				vc.contextPut("locked", Boolean.TRUE);
@@ -216,11 +215,16 @@ public class HTMLEditorController extends FormBasicController {
 	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
-		// form does not have button, form ok is triggered when user presses
-		// command-save or uses the save icon in the toolbar
-		doSaveData();
+		// do not save data, Tomcat will not send content bigger than the maxPostSize
+		// (default size 2 megabytes) 
 		// override dirtyness of form layout container to prevent redrawing of editor
-		this.flc.setDirty(false);
+		flc.setDirty(false);
+	}
+	
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
+		releaseLock();
 	}
 
 	@Override
@@ -229,12 +233,14 @@ public class HTMLEditorController extends FormBasicController {
 		if (source == htmlElement) {
 			// nothing to catch
 		} else if (source == save && lock != null) {
-			doSaveData();
-			newFile = false;//saved, it's not a new file anymore
+			if(doSaveData()) {
+				newFile = false;//saved, it's not a new file anymore
+			}
 		} else if (source == saveClose && lock != null) {
-			doSaveData();
-			fireEvent(ureq, Event.DONE_EVENT);
-			releaseLock();
+			if(doSaveData()) {
+				fireEvent(ureq, Event.DONE_EVENT);
+				releaseLock();
+			}
 		} else if (source == cancel) {
 			fireEvent(ureq, Event.CANCELLED_EVENT);
 			releaseLock();
@@ -263,13 +269,9 @@ public class HTMLEditorController extends FormBasicController {
 
 			// The buttons
 			save = uifactory.addFormLink("savebuttontext", formLayout, Link.BUTTON);
-
-			save.addActionListener(FormEvent.ONCLICK);
-			cancel = uifactory.addFormLink("cancel", formLayout, Link.BUTTON);
-			cancel.addActionListener(FormEvent.ONCLICK);
+			cancel = uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 			saveClose = uifactory.addFormLink("saveandclosebuttontext", formLayout, Link.BUTTON);
-			saveClose.addActionListener(FormEvent.ONCLICK);
-			//
+			
 			// Add some file metadata		
 			VelocityContainer vc = (VelocityContainer) formLayout.getComponent();
 			metadataVC = createVelocityContainer("metadata");		
@@ -394,7 +396,7 @@ public class HTMLEditorController extends FormBasicController {
 	 * 
 	 * @param ureq
 	 */
-	private void doSaveData() {
+	private boolean doSaveData() {
 		// No XSS checks, are done in the HTML editor - users can upload illegal
 		// stuff, JS needs to be enabled for users
 		String content = htmlElement.getRawValue();
@@ -417,6 +419,16 @@ public class HTMLEditorController extends FormBasicController {
 			fileContent.append(preface).append(content).append(CLOSE_BODY_HTML);
 		}
 		
+		int fileSize = fileContent.toString().getBytes().length;
+		if(fileSize >= FolderConfig.getMaxEditSizeLimit()) {
+			String msg = translate("plaintext.error.tolarge", new String[] {
+					(fileSize / 1000) + "",
+					(FolderConfig.getMaxEditSizeLimit() / 1000) + ""
+			});
+			getWindowControl().setError(msg);
+			return false;
+		}
+		
 		// save the file
 		if(versions && fileLeaf instanceof Versionable && ((Versionable)fileLeaf).getVersions().isVersioned()) {
 			InputStream inStream = FileUtils.getInputStream(fileContent.toString(), charSet);
@@ -429,7 +441,8 @@ public class HTMLEditorController extends FormBasicController {
 		long lm = fileLeaf.getLastModified();
 		metadataVC.contextPut("lastModified", Formatter.getInstance(getLocale()).formatDateAndTime(new Date(lm)));
 		// Set new content as default value in element
-		htmlElement.setNewOriginalValue(content);		
+		htmlElement.setNewOriginalValue(content);
+		return true;
 	}
 
 	
@@ -443,7 +456,6 @@ public class HTMLEditorController extends FormBasicController {
 	 */
 	private String getFileDebuggingPath(VFSContainer root, String relPath) {
 		String path = relPath;
-		//fxdiff: FXOLAT-167
 		VFSItem item = root.resolve(relPath);
 		if (item instanceof LocalFileImpl) {
 			LocalFileImpl file = (LocalFileImpl) item;
@@ -474,9 +486,5 @@ public class HTMLEditorController extends FormBasicController {
 
 	public void setNewFile(boolean newFile) {
 		this.newFile = newFile;
-	}
-	
-	public void setmedia() {
-		
 	}
 }
