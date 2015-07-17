@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
@@ -85,8 +84,6 @@ public class EnrollmentManager extends BasicManager {
 	private MailManager mailManager;
 	@Autowired
 	private BGAreaManager areaManager;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 

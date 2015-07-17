@@ -36,7 +36,6 @@ import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.model.DBMailLight;
 import org.olat.core.util.mail.ui.MailContextResolver;
@@ -45,6 +44,9 @@ import org.olat.group.BusinessGroupShort;
 import org.olat.home.HomeSite;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserDataDeletable;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -55,50 +57,27 @@ import org.olat.user.UserDataDeletable;
  * Initial Date:  25 mars 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class MailBoxExtension extends BasicManager implements MailContextResolver, UserDataDeletable {
+@Service("mailBoxExtension")
+public class MailBoxExtension implements MailContextResolver, UserDataDeletable, InitializingBean {
 	
 	private static final OLog log = Tracing.createLoggerFor(MailBoxExtension.class);
 
+	@Autowired
 	private MailManager mailManager;
+	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
 	private BusinessGroupService businessGroupService;
 	
-	public MailBoxExtension() {
-		//
-	}
-	
-	public void init() {
+	@Override
+	public void afterPropertiesSet() throws Exception {
 		NewControllerFactory.getInstance().addContextEntryControllerCreator("Inbox", new InboxContextEntry());	
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param mailManager
-	 */
-	public void setMailManager(MailManager mailManager) {
-		this.mailManager = mailManager;
-	}
-
-	/**
-	 * [used by Spring]
-	 * @param mailManager
-	 */
-	public void setRepositoryManager(RepositoryManager repositoryManager) {
-		this.repositoryManager = repositoryManager;
-	}
-
-	/**
-	 * [used by Spring]
-	 * @param mailManager
-	 */
-	public void setBusinessGroupService(BusinessGroupService businessGroupService) {
-		this.businessGroupService = businessGroupService;
 	}
 
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		//set as deleted all recipients
-		logInfo("Delete intern messages");
+		log.info("Delete intern messages");
 		
 		Collection<DBMailLight> inbox = new HashSet<DBMailLight>(mailManager.getInbox(identity, null, Boolean.FALSE, null, 0, 0));
 		for(DBMailLight inMail:inbox) {
@@ -110,7 +89,7 @@ public class MailBoxExtension extends BasicManager implements MailContextResolve
 			mailManager.delete(outMail, identity, true);
 		}
 		
-		logInfo("Delete " + inbox.size() + " messages in INBOX and " + outbox.size() + " in OUTBOX");
+		log.info("Delete " + inbox.size() + " messages in INBOX and " + outbox.size() + " in OUTBOX");
 	}
 
 	@Override

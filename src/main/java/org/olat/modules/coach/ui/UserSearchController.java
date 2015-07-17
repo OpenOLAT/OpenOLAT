@@ -22,7 +22,6 @@ package org.olat.modules.coach.ui;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.StackedPanel;
@@ -34,9 +33,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -49,11 +46,6 @@ public class UserSearchController extends BasicController implements Activateabl
 	private final UserSearchForm searchForm;
 	private final UserListController userListCtrl;
 	private final StackedPanel mainPanel;
-
-	@Autowired
-	private BaseSecurity securityManager;
-	@Autowired
-	private CoachingService coachingService;
 	
 	public UserSearchController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);

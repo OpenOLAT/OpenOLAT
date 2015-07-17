@@ -22,12 +22,15 @@ package org.olat.core.util.mail;
 import java.io.File;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.configuration.AbstractOLATModule;
-import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -38,39 +41,25 @@ import org.olat.core.util.vfs.VFSContainer;
  * Initial Date:  24 mars 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http.//www.frentix.com
  */
-public class MailModule extends AbstractOLATModule {
+@Service("mailModule")
+public class MailModule extends AbstractSpringModule{
 	
 	private static final String INTERN_MAIL_SYSTEM = "internSystem";
 	private static final String RECEIVE_REAL_MAIL_USER_DEFAULT_SETTING = "receiveRealMailUserDefaultSetting";
 	
+	@Value("${mail.intern:false}")
 	private boolean internSystem;
+	@Value("${mail.receiveRealMailUserDefaultSetting:true}")
 	private boolean receiveRealMailUserDefaultSetting;
+	
 	private int maxSizeOfAttachments = 5;
 	
 	private static final String ATTACHMENT_DEFAULT = "/mail";
 	private String attachmentsRoot = ATTACHMENT_DEFAULT;
 	
-	private WebappHelper webappHelper;
-	
-	public MailModule() {
-		//make Spring happy
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param webappHelper
-	 */
-	public void setWebappHelper(WebappHelper webappHelper) {
-		this.webappHelper = webappHelper;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @see org.olat.core.configuration.AbstractOLATModule#setPersistedProperties(org.olat.core.configuration.PersistedProperties)
-	 */
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
+	@Autowired
+	public MailModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
 	}
 
 	@Override
@@ -84,12 +73,6 @@ public class MailModule extends AbstractOLATModule {
 		if(StringHelper.containsNonWhitespace(receiveRealMailUserDefaultSettingValue)) {
 			receiveRealMailUserDefaultSetting = "true".equalsIgnoreCase(receiveRealMailUserDefaultSettingValue);
 		}
-	}
-
-	@Override
-	protected void initDefaultProperties() {
-		internSystem = getBooleanConfigParameter(INTERN_MAIL_SYSTEM, false);
-		receiveRealMailUserDefaultSetting = getBooleanConfigParameter(RECEIVE_REAL_MAIL_USER_DEFAULT_SETTING, true);
 	}
 
 	@Override

@@ -42,13 +42,9 @@ import org.olat.basesecurity.model.GroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
-import org.olat.group.BusinessGroupService;
-import org.olat.group.manager.BusinessGroupRelationDAO;
-import org.olat.group.right.BGRightManager;
 import org.olat.portfolio.manager.EPMapPolicy;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.resource.OLATResource;
 import org.olat.upgrade.model.BGResourceRelation;
@@ -91,15 +87,7 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
-	private RepositoryManager repositoryManager;
-	@Autowired
-	private BGRightManager bgRightManager;
-	@Autowired
-	private BusinessGroupRelationDAO businessGroupRelationDao;
-	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryToGroupDAO;
-	@Autowired
-	private BusinessGroupService businessGroupService;
 	@Autowired
 	private PropertyManager propertyManager;
 	@Autowired

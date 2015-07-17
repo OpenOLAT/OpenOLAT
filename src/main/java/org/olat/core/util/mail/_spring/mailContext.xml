@@ -1,34 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans 
-                        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+                        http://www.springframework.org/schema/beans/spring-beans.xsd
+                        http://www.springframework.org/schema/context 
+                        http://www.springframework.org/schema/context/spring-context.xsd">
 
-
-	<!-- MAIL CONFIGURATION -->
-	<!-- ========================= -->
-	
-	<bean id="mailModule" class="org.olat.core.util.mail.MailModule" depends-on="org.olat.core.util.WebappHelper,coordinatorManager,org.olat.core.util.event.FrameworkStartupEventChannel">
-		<property name="persistedProperties">
-	  	<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy" 
-	  		depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
-	    	<constructor-arg index="0" ref="coordinatorManager"/>
-	    	<constructor-arg index="1" ref="mailModule" />
-	  	</bean>
-		</property>
-		<property name="webappHelper" ref="org.olat.core.util.WebappHelper"/>
-	</bean>
-	
-	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetObject" ref="mailModule" />
-		<property name="targetMethod" value="init" />
-		<property name="arguments">
-			<value>
-				internSystem=${mail.intern}
-				receiveRealMailUserDefaultSetting=${mail.receiveRealMailUserDefaultSetting}
-			</value>
-		</property>
-	</bean>
+	<context:component-scan base-package="org.olat.core.util.mail" />
 	
 	<bean id="sendDocumentByEMailControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator" >
 		<property name="className" value="org.olat.core.util.mail.ui.SendDocumentsByEMailController"/>
@@ -52,23 +31,6 @@
 			</list>
 		</property>
 		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
-	</bean> 
-	
-	<bean id="mailManager" class="org.olat.core.util.mail.manager.MailManagerImpl" init-method="init">
-		<constructor-arg index="0" ref="mailModule" />
-		<property name="dbInstance" ref="database"/>
-		<property name="notificationsManager" ref="notificationsManager"/>
-	</bean>
-	
-	<bean id="org.olat.core.util.mail.manager.MailNotificationsHandler" class="org.olat.core.util.mail.manager.MailNotificationsHandler">
-		<property name="mailModule" ref="mailModule"/>
-	</bean>
-	
-		<!-- Inbox in users Home -->
-	<bean id="mailBoxExtension" class="org.olat.core.util.mail.MailBoxExtension" init-method="init">
-		<property name="mailManager" ref="mailManager" />
-		<property name="repositoryManager" ref="repositoryManager"/>
-		<property name="businessGroupService" ref="businessGroupService"/>
 	</bean>
 	
 	<!--  the email-parent-menu  -->

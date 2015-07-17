@@ -59,7 +59,6 @@ import de.bps.course.nodes.den.DENRunController;
  */
 public class DENCourseNode extends AbstractAccessableCourseNode {
 
-	private static final String PACKAGE = Util.getPackageName(DENCourseNode.class);
 	private static final String TYPE = "den";
 	/** is cancel of the enrollment allowed */
 	public static final String CONF_CANCEL_ENROLL_ENABLED = "cancel_enroll_enabled";

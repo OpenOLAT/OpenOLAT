@@ -29,7 +29,6 @@ import org.olat.admin.user.tools.UserToolExtension;
 import org.olat.admin.user.tools.UserToolsModule;
 import org.olat.core.commons.fullWebApp.LockableController;
 import org.olat.core.dispatcher.DispatcherModule;
-import org.olat.core.extensions.ExtManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -46,8 +45,6 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.user.DisplayPortraitController;
-import org.olat.user.DisplayPortraitManager;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -63,13 +60,7 @@ public class OlatTopNavController extends BasicController implements LockableCon
 	private List<Disposable> disposableTools = new ArrayList<>();
 
 	@Autowired
-	private ExtManager extManager;
-	@Autowired
-	private UserManager userManager;
-	@Autowired
 	private UserToolsModule userToolsModule;
-	@Autowired
-	private DisplayPortraitManager portraitManager;
 	
 	public OlatTopNavController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);

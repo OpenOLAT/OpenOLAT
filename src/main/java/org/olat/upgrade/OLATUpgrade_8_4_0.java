@@ -38,8 +38,6 @@ import org.olat.core.util.DirectoryFilter;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.repository.RepositoryManager;
-import org.olat.resource.OLATResourceManager;
 import org.olat.upgrade.model.BookmarkImpl;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserManager;
@@ -68,10 +66,6 @@ public class OLATUpgrade_8_4_0 extends OLATUpgrade {
 	private DB dbInstance;
 	@Autowired
 	private BaseSecurity securityManager;
-	@Autowired
-	private OLATResourceManager resourceManager;
-	@Autowired
-	private RepositoryManager repositoryManager;
 	@Autowired
 	private MarkManager markManager;
 	@Autowired

@@ -63,8 +63,6 @@ public class ContactsTest extends OlatJerseyTestCase {
 	private static OLATResource course;
 
 	@Autowired
-	private RepositoryService repositoryService;
-	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private BusinessGroupService businessGroupService;

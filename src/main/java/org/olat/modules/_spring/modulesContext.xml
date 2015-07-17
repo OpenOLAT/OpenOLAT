@@ -14,7 +14,6 @@
 	<import resource="classpath:/org/olat/modules/glossary/_spring/glossaryContext.xml"/>
 	<import resource="classpath:/org/olat/modules/iq/_spring/iqContext.xml"/>
 	<import resource="classpath:/org/olat/modules/openmeetings/_spring/openmeetingsContext.xml"/>
-	<import resource="classpath:/org/olat/modules/qpool/_spring/qpoolContext.xml"/>
 	<import resource="classpath:/org/olat/modules/vitero/_spring/viteroContext.xml"/>
 	<import resource="classpath:/org/olat/modules/webFeed/_spring/webFeedContext.xml"/>
 	<import resource="classpath:/org/olat/modules/wiki/_spring/wikiContext.xml"/>

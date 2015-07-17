@@ -29,10 +29,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -44,9 +42,6 @@ public class ShareItemSourceOptionController extends FormBasicController {
 
 	private final String[] keys = {"yes","no"};
 	private SingleSelection editableEl;
-	
-	@Autowired
-	private QPoolService qpoolService;
 	
 	private final List<QuestionItem> items;
 	private final QuestionItemsSource source;

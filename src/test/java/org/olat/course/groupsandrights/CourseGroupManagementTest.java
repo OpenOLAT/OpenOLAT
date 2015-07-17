@@ -33,7 +33,6 @@ import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -70,8 +69,6 @@ public class CourseGroupManagementTest extends OlatTestCase {
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private BusinessGroupService businessGroupService;
-	@Autowired
-	private BaseSecurity securityManager;
 
 
 	@Before

@@ -47,7 +47,6 @@ import org.codehaus.jackson.type.TypeReference;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
@@ -83,8 +82,6 @@ public class CalendarTest extends OlatJerseyTestCase {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private DB dbInstance;
 	

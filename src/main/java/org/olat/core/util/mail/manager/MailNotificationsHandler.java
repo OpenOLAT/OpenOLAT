@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
@@ -40,6 +39,8 @@ import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailModule;
 import org.olat.core.util.mail.model.DBMailLight;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -50,37 +51,29 @@ import org.olat.core.util.mail.model.DBMailLight;
  * Initial Date:  24 mars 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+@Service("mailNotificationsHandler")
 public class MailNotificationsHandler extends LogDelegator implements NotificationsHandler  {
 	
+	@Autowired
 	private MailModule mailModule;
-	
-	public MailNotificationsHandler() {
-		//
-	}
-	
-	/**
-	 * [user by Spring]
-	 * @param mailModule
-	 */
-	public void setMailModule(MailModule mailModule) {
-		this.mailModule = mailModule;
-	}
-
-
+	@Autowired
+	private MailManager mailManager;
+	@Autowired
+	private NotificationsManager notificationsManager;
 
 	@Override
 	public SubscriptionInfo createSubscriptionInfo(Subscriber subscriber, Locale locale, Date compareDate) { 
 		if(!mailModule.isInternSystem()) {
-			return NotificationsManager.getInstance().getNoSubscriptionInfo();
+			return notificationsManager.getNoSubscriptionInfo();
 		}
 		
 		String realMail = subscriber.getIdentity().getUser().getPreferences().getReceiveRealMail();
 		if("true".equals(realMail)) {
 			//receive real e-mails
-			return NotificationsManager.getInstance().getNoSubscriptionInfo();
+			return notificationsManager.getNoSubscriptionInfo();
 		} else if (!StringHelper.containsNonWhitespace(realMail) && mailModule.isReceiveRealMailUserDefaultSetting()) {
 			//user has no settings, check the default setting
-			return NotificationsManager.getInstance().getNoSubscriptionInfo();
+			return notificationsManager.getNoSubscriptionInfo();
 		}
 		
 		SubscriptionInfo si = null;
@@ -90,9 +83,9 @@ public class MailNotificationsHandler extends LogDelegator implements Notificati
 		// do not try to create a subscription info if state is deleted - results in
 		// exceptions, course
 		// can't be loaded when already deleted
-		if (NotificationsManager.getInstance().isPublisherValid(p) && compareDate.before(latestNews)) {
+		if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
 			try {
-				List<DBMailLight> inbox = CoreSpringFactory.getImpl(MailManager.class).getInbox(subscriber.getIdentity(), Boolean.TRUE, Boolean.FALSE, compareDate, 0, -1);
+				List<DBMailLight> inbox = mailManager.getInbox(subscriber.getIdentity(), Boolean.TRUE, Boolean.FALSE, compareDate, 0, -1);
 				if(!inbox.isEmpty()) {
 					Translator translator = Util.createPackageTranslator(MailModule.class, locale);
 					si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(translator.translate("mail.notification.type"), "o_co_icon"), null);
@@ -110,7 +103,7 @@ public class MailNotificationsHandler extends LogDelegator implements Notificati
 		}
 		
 		if( si == null) {
-			si = NotificationsManager.getInstance().getNoSubscriptionInfo();
+			si = notificationsManager.getNoSubscriptionInfo();
 		}
 		return si;
 	}

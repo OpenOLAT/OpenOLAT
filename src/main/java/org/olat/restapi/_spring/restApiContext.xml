@@ -1,25 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
-           http://www.springframework.org/schema/beans/spring-beans.xsd">
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                        http://www.springframework.org/schema/beans/spring-beans.xsd
+                        http://www.springframework.org/schema/context 
+                        http://www.springframework.org/schema/context/spring-context.xsd">
 
-	<bean id="restModule" class="org.olat.restapi.RestModule">
-		<property name="defaultEnabled" value="${restapi.enable}"/>
-		<property name="coordinator" ref="coordinatorManager" />
-		<property name="persistedProperties">
-			<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy"
-				depends-on="org.olat.core.util.WebappHelper">
-				<constructor-arg index="0" ref="coordinatorManager" />
-				<constructor-arg index="1" ref="restModule" />
-			</bean>
-		</property>
-		<property name="ipsByPass" value="${restapi.ips.system}"/>
-	</bean>
-
-	<bean id="restSecurityBean" class="org.olat.restapi.security.RestSecurityBeanImpl">
-		<property name="securityManager" ref="baseSecurityManager"/>
-	</bean>
+	<context:component-scan base-package="org.olat.restapi" />
 	
 	<bean id="org.olat.restapi.support.RestRegistrationService" class="org.olat.restapi.support.RestRegistrationServiceImpl">
 		<property name="classnames">
@@ -98,32 +86,6 @@
 	</bean>
 	<bean id="restTokenJob.disabled" class="org.springframework.scheduling.quartz.JobDetailBean"  lazy-init="true">
 		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
-	</bean>
-	
-	<!-- Definition of the providers -->
-	<bean id="monitoringModule" class="org.olat.restapi.system.MonitoringModule">
-		<property name="databaseHost" value="${db.host}" />
-		<property name="persistedProperties">
-	  		<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy" 
-	  			depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
-	    		<constructor-arg index="0" ref="coordinatorManager"/>
-	    		<constructor-arg index="1" ref="monitoringModule" />
-	  		</bean>
-		</property>
-	</bean>
-	
-	<!-- default configuration -->
-	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetObject" ref="monitoringModule" />
-		<property name="targetMethod" value="init" />
-		<property name="arguments">
-			<value>
-				monitoring.enabled=${monitoring.enabled}
-				description=${monitoring.instance.description}
-				probes=${monitored.probes}
-				dependency.server=${monitoring.dependency.server}
-			</value>
-		</property>
 	</bean>
 
 </beans>

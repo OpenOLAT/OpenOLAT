@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.olat.admin.user.tools.UserToolExtension;
 import org.olat.admin.user.tools.UserToolsModule;
-import org.olat.core.extensions.ExtManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -48,8 +47,6 @@ public class UserToolsAdminController extends FormBasicController {
 	
 	private MultipleSelectionElement availableEl, presetEl;
 	
-	@Autowired
-	private ExtManager extManager;
 	@Autowired
 	private UserToolsModule userToolsModule;
 	

@@ -28,7 +28,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Policy;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DB;
-import org.olat.group.BusinessGroupService;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.right.BGRightsRole;
 import org.olat.upgrade.model.BusinessGroupUpgrade;
@@ -52,8 +51,6 @@ public class OLATUpgrade_10_0_3 extends OLATUpgrade {
 	private BaseSecurity securityManager;
 	@Autowired
 	private BGRightManager bgRightManager;
-	@Autowired
-	private BusinessGroupService businessGroupService;
 	
 	public OLATUpgrade_10_0_3() {
 		super();

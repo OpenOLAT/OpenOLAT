@@ -26,7 +26,6 @@ import java.util.concurrent.Callable;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
@@ -56,8 +55,6 @@ public class BusinessGroupMembershipProcessorTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private GroupDAO groupDao;
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
 	@Autowired

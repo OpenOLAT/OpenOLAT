@@ -78,7 +78,8 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -105,6 +106,9 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -117,42 +121,30 @@ import org.olat.core.util.vfs.VFSManager;
  * Initial Date:  24 mars 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class MailManagerImpl extends BasicManager implements MailManager {
+@Service("mailManager")
+public class MailManagerImpl implements MailManager, InitializingBean  {
+	
+	private static final OLog log = Tracing.createLoggerFor(MailManagerImpl.class);
 
 	public static final String MAIL_TEMPLATE_FOLDER = "/customizing/mail/";
 	
 	private VelocityEngine velocityEngine;
-	
-	private final MailModule mailModule;
+
+	@Autowired
 	private DB dbInstance;
-	private FileStorage attachmentStorage;
+	@Autowired
 	private NotificationsManager notificationsManager;
+	private final MailModule mailModule;
+
+	private FileStorage attachmentStorage;
 	
+	@Autowired
 	public MailManagerImpl(MailModule mailModule) {
 		this.mailModule = mailModule;
 	}
 	
-	/**
-	 * [used by Spring]
-	 * 
-	 * @param dbInstance
-	 */
-	public void setDbInstance(DB dbInstance) {
-		this.dbInstance = dbInstance;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param notificationsManager
-	 */
-	public void setNotificationsManager(NotificationsManager notificationsManager) {
-		this.notificationsManager = notificationsManager;
-	}
-	
-	/**
-	 * [used by Spring]
-	 */
-	public void init() {
+	@Override
+	public void afterPropertiesSet() throws Exception {
 		VFSContainer root = mailModule.getRootForAttachments();
 		attachmentStorage = new FileStorage(root);
 		
@@ -599,7 +591,7 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 			try(InputStream in = new FileInputStream(template)) {
 				return IOUtils.toString(in);
 			} catch (IOException e) {
-				logError("", e);
+				log.error("", e);
 			}
 		}
 		return getDefaultMailTemplate();
@@ -618,7 +610,7 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 			out = new FileOutputStream(templateFile);
 			IOUtils.copy(reader, out);
 		} catch (IOException e) {
-			logError("", e);
+			log.error("", e);
 		} finally {
 			IOUtils.closeQuietly(out);
 		}
@@ -629,7 +621,7 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 		try(InputStream in = MailModule.class.getResourceAsStream("_content/mail_template.html")) {
 			return IOUtils.toString(in);
 		} catch (IOException e) {
-			logError("Cannot read the default mail template", e);
+			log.error("Cannot read the default mail template", e);
 			return null;
 		}
 	}
@@ -763,20 +755,20 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 			if (result) {
 				mailerResult.setReturnCode(MailerResult.OK);
 			} else {
-				logWarn("can't send email from user template with no reason", null);
+				log.warn("can't send email from user template with no reason", null);
 				mailerResult.setReturnCode(MailerResult.TEMPLATE_GENERAL_ERROR);
 			}
 		} catch (ParseErrorException e) {
-			logWarn("can't send email from user template", e);
+			log.warn("can't send email from user template", e);
 			mailerResult.setReturnCode(MailerResult.TEMPLATE_PARSE_ERROR);
 		} catch (MethodInvocationException e) {
-			logWarn("can't send email from user template", e);
+			log.warn("can't send email from user template", e);
 			mailerResult.setReturnCode(MailerResult.TEMPLATE_GENERAL_ERROR);
 		} catch (ResourceNotFoundException e) {
-			logWarn("can't send email from user template", e);
+			log.warn("can't send email from user template", e);
 			mailerResult.setReturnCode(MailerResult.TEMPLATE_GENERAL_ERROR);
 		} catch (Exception e) {
-			logWarn("can't send email from user template", e);
+			log.warn("can't send email from user template", e);
 			mailerResult.setReturnCode(MailerResult.TEMPLATE_GENERAL_ERROR);
 		}
 	}
@@ -843,7 +835,7 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 				sendMessage(message, result);
 			}
 		} catch (AddressException e) {
-			logError("mailFrom is not configured", e);
+			log.error("mailFrom is not configured", e);
 		}
 		return result;
 	}
@@ -937,13 +929,13 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 			mail.setMetaId(metaId);
 			String subject = content.getSubject();
 			if(subject != null && subject.length() > 500) {
-				logWarn("Cut a too long subkect in name. Size: " + subject.length(), null);
+				log.warn("Cut a too long subkect in name. Size: " + subject.length(), null);
 				subject = subject.substring(0, 500);
 			}
 			mail.setSubject(subject);
 			String body = content.getBody();
 			if(body != null && body.length() > 16777210) {
-				logWarn("Cut a too long body in mail. Size: " + body.length(), null);
+				log.warn("Cut a too long body in mail. Size: " + body.length(), null);
 				body = body.substring(0, 16000000);
 			}
 			mail.setBody(body);
@@ -954,7 +946,7 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 				if(ores != null) {
 					String resName = ores.getResourceableTypeName();
 					if(resName != null && resName.length() > 50) {
-						logWarn("Cut a too long resourceable type name in mail context: " + resName, null);
+						log.warn("Cut a too long resourceable type name in mail context: " + resName, null);
 						resName = resName.substring(0, 49);
 					}
 					mail.getContext().setResName(ores.getResourceableTypeName());
@@ -963,14 +955,14 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 				
 				String resSubPath = context.getResSubPath();
 				if(resSubPath != null && resSubPath.length() > 2000) {
-					logWarn("Cut a too long resSubPath in mail context: " + resSubPath, null);
+					log.warn("Cut a too long resSubPath in mail context: " + resSubPath, null);
 					resSubPath = resSubPath.substring(0, 2000);
 				}
 				mail.getContext().setResSubPath(resSubPath);
 				
 				String businessPath = context.getBusinessPath();
 				if(businessPath != null && businessPath.length() > 2000) {
-					logWarn("Cut a too long resSubPath in mail context: " + businessPath, null);
+					log.warn("Cut a too long resSubPath in mail context: " + businessPath, null);
 					businessPath = businessPath.substring(0, 2000);
 				}
 				mail.getContext().setBusinessPath(businessPath);
@@ -1051,9 +1043,9 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 
 						dbInstance.getCurrentEntityManager().persist(data);
 					} catch (FileNotFoundException e) {
-						logError("File attachment not found: " + attachment, e);
+						log.error("File attachment not found: " + attachment, e);
 					} catch (IOException e) {
-						logError("Error with file attachment: " + attachment, e);
+						log.error("Error with file attachment: " + attachment, e);
 					} finally {
 						IOUtils.closeQuietly(in);
 					}
@@ -1078,7 +1070,7 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 			notificationsManager.markPublisherNews(subContext, null, false);
 			return mail;
 		} catch (AddressException e) {
-			logError("Cannot send e-mail: ", e);
+			log.error("Cannot send e-mail: ", e);
 			result.setReturnCode(MailerResult.RECIPIENT_ADDRESS_ERROR);
 			return null;
 		}
@@ -1178,7 +1170,7 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 				// fxdiff: change from/replyto, see FXOLAT-74 . if no from is set, use default sysadmin-address (adminemail).
 				from = createAddress(WebappHelper.getMailConfig("mailReplyTo"));
 				if(from == null) {
-					logError("MailConfigError: mailReplyTo is not set", null);
+					log.error("MailConfigError: mailReplyTo is not set", null);
 				}
 			}
 
@@ -1226,7 +1218,7 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 			Address[] bccs = bccList.toArray(new Address[bccList.size()]);
 			return createMimeMessage(from, tos, ccs, bccs, content.getSubject(), content.getBody(), content.getAttachments(), result);
 		} catch (MessagingException e) {
-			logError("", e);
+			log.error("", e);
 			return null;
 		}
 	}
@@ -1411,7 +1403,7 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 					// abort if attachment does not exist
 					if (attachment == null || attachment.getSize()  <= 0) {
 						result.setReturnCode(MailerResult.ATTACHMENT_INVALID);
-						logError("Tried to send mail wit attachment that does not exist::"
+						log.error("Tried to send mail wit attachment that does not exist::"
 								+ (attachment == null ? null : attachment.getName()), null);
 						return msg;
 					}
@@ -1433,7 +1425,7 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 			msg.saveChanges();
 			return msg;
 		} catch (MessagingException e) {
-			logError("", e);
+			log.error("", e);
 			return null;
 		}
 	}
@@ -1473,7 +1465,7 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 			p.put("mail.smtp.auth", "true");
 			mailSession = Session.getDefaultInstance(p, smtpAuth); 
 		}
-		if (isLogDebugEnabled()) {
+		if (log.isDebug()) {
 			// enable mail session debugging on console
 			mailSession.setDebug(true);
 		}
@@ -1537,7 +1529,7 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 					// abort if attachment does not exist
 					if (attachmentFile == null || !attachmentFile.exists()) {
 						result.setReturnCode(MailerResult.ATTACHMENT_INVALID);
-						logError("Tried to send mail wit attachment that does not exist::"
+						log.error("Tried to send mail wit attachment that does not exist::"
 								+ (attachmentFile == null ? null : attachmentFile.getAbsolutePath()), null);
 						return msg;
 					}
@@ -1562,15 +1554,15 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 			return msg;
 		} catch (AddressException e) {
 			result.setReturnCode(MailerResult.SENDER_ADDRESS_ERROR);
-			logError("", e);
+			log.error("", e);
 			return null;
 		} catch (MessagingException e) {
 			result.setReturnCode(MailerResult.SEND_GENERAL_ERROR);
-			logError("", e);
+			log.error("", e);
 			return null;
 		} catch (UnsupportedEncodingException e) {
 			result.setReturnCode(MailerResult.SENDER_ADDRESS_ERROR);
-			logError("", e);
+			log.error("", e);
 			return null;
 		}
 	}
@@ -1599,26 +1591,26 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 				// now send the mail
 				if(Settings.isDebuging()) {
 					try {
-						logInfo("E-mail send: " + msg.getSubject());
-						logInfo("Content    : " + msg.getContent());
+						log.info("E-mail send: " + msg.getSubject());
+						log.info("Content    : " + msg.getContent());
 					} catch (IOException e) {
-						logError("", e);
+						log.error("", e);
 					}
 				}
 				Transport.send(msg);
 			} else if(Settings.isDebuging() && result.getReturnCode() == MailerResult.OK) {
 				try {
-					logInfo("E-mail send: " + msg.getSubject());
-					logInfo("Content    : " + msg.getContent());
+					log.info("E-mail send: " + msg.getSubject());
+					log.info("Content    : " + msg.getContent());
 				} catch (IOException e) {
-					logError("", e);
+					log.error("", e);
 				}
 			} else {
 				result.setReturnCode(MailerResult.MAILHOST_UNDEFINED);
 			}
 		} catch (MessagingException e) {
 			result.setReturnCode(MailerResult.SEND_GENERAL_ERROR);
-			logWarn("Could not send mail", e);
+			log.warn("Could not send mail", e);
 		}
 	}
 	

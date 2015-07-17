@@ -30,10 +30,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
@@ -72,8 +70,6 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private ACService acService;
 	@Autowired

@@ -83,8 +83,6 @@ public class BusinessGroupDAO {
 	private OLATResourceManager olatResourceManager;
 	@Autowired
 	private BusinessGroupModule businessGroupModule;
-	@Autowired
-	private BusinessGroupRelationDAO businessGroupRelationDao;
 	
 	public BusinessGroup createAndPersist(Identity creator, String name, String description,
 			Integer minParticipants, Integer maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,

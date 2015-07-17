@@ -26,7 +26,6 @@ import java.util.concurrent.Callable;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
@@ -35,9 +34,7 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupDAO;
-import org.olat.group.manager.BusinessGroupMembershipProcessor;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -56,21 +53,15 @@ public class RepositoryEntryMembershipProcessorTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private GroupDAO groupDao;
-	@Autowired
 	private BusinessGroupDAO businessGroupDao;
 	@Autowired
 	private NotificationsManager notificationManager;
-	@Autowired
-	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
-	@Autowired
-	private BusinessGroupMembershipProcessor businessGroupMembershipProcessor;
 	
 	@Test
 	public void testRemoveParticipant() {

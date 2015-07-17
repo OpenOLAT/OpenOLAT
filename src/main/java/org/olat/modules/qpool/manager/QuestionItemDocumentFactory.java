@@ -26,7 +26,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
@@ -56,8 +55,6 @@ public class QuestionItemDocumentFactory {
 
 	@Autowired
 	private PoolDAO poolDao;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private QuestionPoolModule qpoolModule;
 	@Autowired

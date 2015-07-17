@@ -106,8 +106,6 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 	private RestConnection conn;
 
 	@Autowired
-	private RepositoryService repositoryService;
-	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;

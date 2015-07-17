@@ -24,7 +24,6 @@ import java.util.List;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
@@ -52,8 +51,6 @@ public class OLATUpgrade_9_4_0 extends OLATUpgrade {
 	
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private MailManager mailManager;
 	@Autowired
 	private PropertyManager propertyManager;
 	@Autowired
