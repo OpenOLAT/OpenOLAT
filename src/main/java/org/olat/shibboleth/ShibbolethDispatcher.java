@@ -50,7 +50,6 @@ import org.olat.core.gui.exception.MsgFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLATSecurityException;
@@ -152,15 +151,6 @@ public class ShibbolethDispatcher implements Dispatcher{
 		uri = uri.substring(uriPrefix.length()); // guaranteed to exist by DispatcherAction	
 			
 		Map<String, String> attributesMap = getShibbolethAttributesFromRequest(req);
-		/* Simulate a user */
-		if(Settings.isDebuging()) {
-			attributesMap.put("Shib-SwissEP-UniqueID", "moka");
-			attributesMap.put("Shib-InetOrgPerson-givenName", "Akashiya");
-			attributesMap.put("Shib-Person-surname", "Moka");
-			attributesMap.put("Shib-InetOrgPerson-mail", "moka@cyberiacafe.ch");
-			attributesMap.put("Shib-SwissEP-HomeOrganization", "Yokai High School");
-		}
-		
 		String uniqueID = getUniqueIdentifierFromRequest(req, resp, attributesMap);
 		if(uniqueID == null) {
 			return;
