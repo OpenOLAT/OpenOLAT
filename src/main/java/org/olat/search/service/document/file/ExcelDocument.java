@@ -69,18 +69,15 @@ public class ExcelDocument extends FileDocument {
 
 	@Override
 	protected FileContent readContent(VFSLeaf leaf) throws IOException, DocumentException {
-		BufferedInputStream bis = null;
+		
 		int cellNullCounter = 0;
 		int rowNullCounter = 0;
 		int sheetNullCounter = 0;
 
-		try {
-			bis = new BufferedInputStream(leaf.getInputStream());
+		try(BufferedInputStream bis = new BufferedInputStream(leaf.getInputStream());
+				HSSFWorkbook workbook = new HSSFWorkbook(new POIFSFileSystem(bis));) {
 
-			LimitedContentWriter content = new LimitedContentWriter(bis.available(), FileDocumentFactory.getMaxFileSize());
-			POIFSFileSystem fs = new POIFSFileSystem(bis);
-			HSSFWorkbook workbook = new HSSFWorkbook(fs);
-
+			LimitedContentWriter content = new LimitedContentWriter((int)leaf.getSize(), FileDocumentFactory.getMaxFileSize());
 			for (int sheetNumber = 0; sheetNumber < workbook.getNumberOfSheets(); sheetNumber++) {
 				HSSFSheet sheet = workbook.getSheetAt(sheetNumber);
 				if (sheet != null) {
@@ -116,12 +113,7 @@ public class ExcelDocument extends FileDocument {
 			content.close();
 			return new FileContent(content.toString());
 		} catch (Exception ex) {
-			throw new DocumentException("Can not read XLS Content. File=" + leaf.getName());
-		} finally {
-			if (bis != null) {
-				bis.close();
-			}
+			throw new DocumentException("Can not read XLS Content. File=" + leaf.getName(), ex);
 		}
 	}
-
 }

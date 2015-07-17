@@ -99,24 +99,11 @@ public class WordDocument extends FileDocument {
 	}
 
 	private void collectWordDocument(POIFSFileSystem filesystem, Writer sb) throws IOException {
-		WordExtractor extractor = new WordExtractor(filesystem);
-		addTextIfAny(sb, extractor.getHeaderText());
-		for (String paragraph : extractor.getParagraphText()) {
-			sb.append(paragraph).append(' ');
+		try(WordExtractor extractor = new WordExtractor(filesystem)) {
+			addTextIfAny(sb, extractor.getTextFromPieces());
+		} catch(Exception e) {
+			log.error("", e);
 		}
-
-		for (String paragraph : extractor.getFootnoteText()) {
-			sb.append(paragraph).append(' ');
-		}
-
-		for (String paragraph : extractor.getCommentsText()) {
-			sb.append(paragraph).append(' ');
-		}
-
-		for (String paragraph : extractor.getEndnoteText()) {
-			sb.append(paragraph).append(' ');
-		}
-		addTextIfAny(sb, extractor.getFooterText());
 	}
 
 	private void addTextIfAny(Writer sb, String text) throws IOException {
