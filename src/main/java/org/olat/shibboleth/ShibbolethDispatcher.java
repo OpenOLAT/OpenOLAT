@@ -32,6 +32,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -39,8 +40,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.core.CoreSpringFactory;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
@@ -50,12 +50,14 @@ import org.olat.core.gui.exception.MsgFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nModule;
@@ -79,6 +81,10 @@ public class ShibbolethDispatcher implements Dispatcher{
 	
 	private Translator translator;
 	private boolean mobile = false;
+	private BaseSecurity securityManager;
+	private ShibbolethModule shibbolethModule;
+	private RestSecurityBean restSecurityBean;
+	private UserDeletionManager userDeletionManager;
 	
 	
 	/**
@@ -87,6 +93,38 @@ public class ShibbolethDispatcher implements Dispatcher{
 	 */
 	public void setMobile(boolean mobile) {
 		this.mobile = mobile;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param shibbolethModule
+	 */
+	public void setShibbolethModule(ShibbolethModule shibbolethModule) {
+		this.shibbolethModule = shibbolethModule;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param restSecurityBean
+	 */
+	public void setRestSecurityBean(RestSecurityBean restSecurityBean) {
+		this.restSecurityBean = restSecurityBean;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param securityManager
+	 */
+	public void setSecurityManager(BaseSecurity securityManager) {
+		this.securityManager = securityManager;
+	}
+
+	/**
+	 * [used by Spring]
+	 * @param userDeletionManager
+	 */
+	public void setUserDeletionManager(UserDeletionManager userDeletionManager) {
+		this.userDeletionManager = userDeletionManager;
 	}
 
 	/**
@@ -103,8 +141,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 			translator = Util.createPackageTranslator(ShibbolethDispatcher.class, I18nModule.getDefaultLocale());
 		}
 		String uri = req.getRequestURI();
-		
-		if (!ShibbolethModule.isEnableShibbolethLogins()){
+		if (!shibbolethModule.isEnableShibbolethLogins()){
 			throw new OLATSecurityException("Got shibboleth request but shibboleth is not enabled: " + uri);
 		}
 		try {	uri = URLDecoder.decode(uri, "UTF-8");
@@ -114,17 +151,30 @@ public class ShibbolethDispatcher implements Dispatcher{
 		String uriPrefix = DispatcherModule.getLegacyUriPrefix(req);
 		uri = uri.substring(uriPrefix.length()); // guaranteed to exist by DispatcherAction	
 			
-		Map<String, String> attributesMap = getShibbolethAttributesFromRequest(req);		
+		Map<String, String> attributesMap = getShibbolethAttributesFromRequest(req);
+		/* Simulate a user */
+		if(Settings.isDebuging()) {
+			attributesMap.put("Shib-SwissEP-UniqueID", "moka");
+			attributesMap.put("Shib-InetOrgPerson-givenName", "Akashiya");
+			attributesMap.put("Shib-Person-surname", "Moka");
+			attributesMap.put("Shib-InetOrgPerson-mail", "moka@cyberiacafe.ch");
+			attributesMap.put("Shib-SwissEP-HomeOrganization", "Yokai High School");
+		}
+		
 		String uniqueID = getUniqueIdentifierFromRequest(req, resp, attributesMap);
-		if(uniqueID == null){
+		if(uniqueID == null) {
 			return;
 		}
 		
+		if(!authorization(req, resp, attributesMap)) {
+			return;
+		}
+
 		UserRequest ureq = null;
 		try{
 			//upon creation URL is checked for 
 			ureq = new UserRequestImpl(uriPrefix, req, resp);
-		}catch(NumberFormatException nfe){
+		} catch(NumberFormatException nfe) {
 			//MODE could not be decoded
 			//typically if robots with wrong urls hit the system
 			//or user have bookmarks
@@ -136,9 +186,9 @@ public class ShibbolethDispatcher implements Dispatcher{
 			}
 			DispatcherModule.sendBadRequest(req.getPathInfo(), resp);
 			return;
-		}		
+		}
 		
-		Authentication auth = BaseSecurityManager.getInstance().findAuthenticationByAuthusername(uniqueID, PROVIDER_SHIB);
+		Authentication auth = securityManager.findAuthenticationByAuthusername(uniqueID, PROVIDER_SHIB);
 		if (auth == null) { // no matching authentication...
 			ShibbolethRegistrationController.putShibAttributes(req, attributesMap);
 			ShibbolethRegistrationController.putShibUniqueID(req, uniqueID);
@@ -160,13 +210,12 @@ public class ShibbolethDispatcher implements Dispatcher{
 		}
 		
 		// successfull login
-		UserDeletionManager.getInstance().setIdentityAsActiv(ureq.getIdentity());
+		userDeletionManager.setIdentityAsActiv(ureq.getIdentity());
 		ureq.getUserSession().getIdentityEnvironment().addAttributes(
-				ShibbolethModule.getAttributeTranslator().translateAttributesMap(attributesMap));
+				shibbolethModule.getAttributeTranslator().translateAttributesMap(attributesMap));
 		
 		if(mobile) {
-			RestSecurityBean secBean = CoreSpringFactory.getImpl(RestSecurityBean.class);
-			String token = secBean.generateToken(ureq.getIdentity(), ureq.getHttpReq().getSession(true));
+			String token = restSecurityBean.generateToken(ureq.getIdentity(), ureq.getHttpReq().getSession(true));
 			
 			try {
 				resp.sendRedirect(WebappHelper.getServletContextPath() + "/mobile?x-olat-token=" + token + "&username=" + ureq.getIdentity().getName());
@@ -185,7 +234,8 @@ public class ShibbolethDispatcher implements Dispatcher{
 	}
 
 	private String getUniqueIdentifierFromRequest(HttpServletRequest req, HttpServletResponse resp, Map<String, String> attributesMap) {
-		String uniqueID = attributesMap.get(ShibbolethModule.getDefaultUIDAttribute());				
+
+		String uniqueID = attributesMap.get(shibbolethModule.getDefaultUIDAttribute());				
 		if (uniqueID == null) {				
 			handleException(new ShibbolethException(ShibbolethException.UNIQUE_ID_NOT_FOUND,"Unable to get unique identifier for subject. Make sure you are listed in the metadata.xml file and your resources your are trying to access are available and your are allowed to see them. (Resourceregistry). "), 
 					req, resp, translator);
@@ -199,7 +249,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 	}
 
 	private Map<String, String> getShibbolethAttributesFromRequest(HttpServletRequest req) {
-		Set<String> translateableAttributes = ShibbolethModule.getAttributeTranslator().getTranslateableAttributes();
+		Set<String> translateableAttributes = shibbolethModule.getAttributeTranslator().getTranslateableAttributes();
 		Map<String, String> attributesMap = new HashMap<String, String>();
 		Enumeration<String> headerEnum = req.getHeaderNames();
 		while(headerEnum.hasMoreElements()) {
@@ -231,11 +281,11 @@ public class ShibbolethDispatcher implements Dispatcher{
 			return false;
 		}
 		try {
-			String lastname = attributesMap.get(ShibbolethModule.getLastName());
-			String firstname = attributesMap.get(ShibbolethModule.getFirstName());
-			String email = ShibbolethHelper.getFirstValueOf(ShibbolethModule.getEMail(), attributesMap);
-			String institutionalEMail = ShibbolethHelper.getFirstValueOf(ShibbolethModule.getInstitutionalEMail(), attributesMap);
-			String institutionalName = attributesMap.get(ShibbolethModule.getInstitutionalName());
+			String lastname = attributesMap.get(shibbolethModule.getLastName());
+			String firstname = attributesMap.get(shibbolethModule.getFirstName());
+			String email = ShibbolethHelper.getFirstValueOf(shibbolethModule.getEMail(), attributesMap);
+			String institutionalEMail = ShibbolethHelper.getFirstValueOf(shibbolethModule.getInstitutionalEMail(), attributesMap);
+			String institutionalName = attributesMap.get(shibbolethModule.getInstitutionalName());
 			//String institutionalUserIdentifier = userMapping.getInstitutionalUserIdentifier();
 			if(lastname!=null && !lastname.equals("") && firstname!=null && !firstname.equals("") && email!=null && !email.equals("") &&
 					institutionalEMail!=null && !institutionalEMail.equals("") && institutionalName!=null && !institutionalName.equals("")) {
@@ -253,6 +303,42 @@ public class ShibbolethDispatcher implements Dispatcher{
 		} catch (IOException e) {
 			log.error("Redirect failed: url=" + WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault(),e);
 		}
+	}
+	
+	private boolean authorization(HttpServletRequest req, HttpServletResponse resp, Map<String,String> attributesMap) {
+		boolean authorized = false;
+		if(shibbolethModule.isAccessControlByAttributes()) {
+			if(StringHelper.containsNonWhitespace(shibbolethModule.getAttribute1()) && StringHelper.containsNonWhitespace(shibbolethModule.getAttribute1Values())) {
+				authorized |= authorization(shibbolethModule.getAttribute1(), shibbolethModule.getAttribute1Values(), attributesMap);
+			}
+			if(StringHelper.containsNonWhitespace(shibbolethModule.getAttribute2()) && StringHelper.containsNonWhitespace(shibbolethModule.getAttribute2Values())) {
+				authorized |= authorization(shibbolethModule.getAttribute2(), shibbolethModule.getAttribute2Values(), attributesMap);
+			}
+		} else {
+			authorized = true;
+		}
+		
+		if(!authorized) {
+			UserRequest ureq = new UserRequestImpl(ShibbolethDispatcher.PATH_SHIBBOLETH, req, resp);
+			String userMsg = translator.translate("error.shibboleth.not.authorized"); 
+			ChiefController msgcc = MessageWindowController.createMessageChiefController(ureq, null, userMsg, null);
+			msgcc.getWindow().dispatchRequest(ureq, true);
+		}
+		return authorized;
+	}
+	
+	private boolean authorization(String attribute, String allowedValues, Map<String,String> attributesMap) {
+		String val = attributesMap.get(attribute);
+		if(StringHelper.containsNonWhitespace(val)) {
+			val = val.trim();
+			for(StringTokenizer tokenizer = new StringTokenizer(allowedValues, "\n\r,;", false); tokenizer.hasMoreTokens(); ) {
+				String allowedValue = tokenizer.nextToken().trim();
+				if(val.equalsIgnoreCase(allowedValue)) {
+					return true;
+				}	
+			}	
+		}
+		return false;
 	}
 
 	/**

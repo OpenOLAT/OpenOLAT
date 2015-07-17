@@ -39,6 +39,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -52,8 +53,11 @@ import org.olat.login.auth.AuthenticationController;
  */
 public class DefaultShibbolethAuthenticationController extends AuthenticationController {
 
-	private VelocityContainer loginComp;	
 	private Link shibLink;
+	
+	@Autowired
+	private ShibbolethModule shibbolethModule;
+	
 	/**
 	 * @param ureq
 	 * @param wControl
@@ -68,9 +72,11 @@ public class DefaultShibbolethAuthenticationController extends AuthenticationCon
 		// Can't use constructor with fallback translator because it gets overriden by setBasePackage call above
 		setTranslator(Util.createPackageTranslator(this.getClass(), ureq.getLocale(), Util.createPackageTranslator(LoginModule.class, ureq.getLocale())));
 				
-		if (!ShibbolethModule.isEnableShibbolethLogins()) throw new OLATSecurityException("Shibboleth is not enabled.");
+		if (!shibbolethModule.isEnableShibbolethLogins()) {
+			throw new OLATSecurityException("Shibboleth is not enabled.");
+		}
 		
-		loginComp = createVelocityContainer(ShibbolethModule.getLoginTemplateDefault());				
+		VelocityContainer loginComp = createVelocityContainer(shibbolethModule.getLoginTemplateDefault());				
 		shibLink = LinkFactory.createButton("shib.redirect", loginComp, this);	
 		shibLink.setIconRightCSS("o_icon o_icon_start");
 		shibLink.setPrimary(true);

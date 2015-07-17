@@ -1,65 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans.xsd">
+  http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context.xsd">
 
-<bean id="shibbolethModule" class="org.olat.shibboleth.ShibbolethModule">
-<property name="attributeTranslator" ref="attributeTranslator" />
-<!-- Define the template of the ShibbolethAuthenticationController.java (without .html) -->
-<property name="loginTemplate" value="shibbolethlogin" />
-<!-- Define the template of the DefaultShibbolethAuthenticationController.java (without .html) -->
-<property name="loginTemplateDefault" value="default_shibbolethlogin" />
-<property name="operators">
-	<list>
-		<value>isin</value>
-		<value>isnotin</value>
-		<value>has</value>
-		<value>hasnot</value>
-		<value>startswith</value>
-		<value>endswith</value>
-	</list>
-</property>
-<property name="userMapping">
-	<map>
-		<entry key="FirstName" value="Shib-InetOrgPerson-givenName" />
-		<entry key="LastName" value="Shib-Person-surname" />
-		<entry key="EMail" value="Shib-InetOrgPerson-mail" />
-		<entry key="InstitutionalName" value="Shib-SwissEP-HomeOrganization" />
-		<entry key="InstitutionalEMail" value="Shib-InetOrgPerson-mail" />
-		<entry key="InstitutionalUserIdentifier" value="Shib-InetOrgPerson-employeeNumber" />
-		<!--  <entry key="PreferedLanguage" value="" />-->
-	</map>
-</property>
+	<context:component-scan base-package="org.olat.shibboleth" />
+	
+	<!-- Shibboleth admin. panel -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" id="sysadmin.menupoint.syscfg.shibbolethcfg" init-method="initExtensionPoints">
+		<property name="order" value="8830" />
+		<property name="enabled" value="${shibboleth.enable}" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.shibboleth.ShibbolethAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="shibbolethadmin" />
+		<property name="i18nActionKey" value="admin.menu.shibboleth"/>
+		<property name="i18nDescriptionKey" value="admin.menu.shibboleth.desc"/>
+		<property name="translationPackage" value="org.olat.shibboleth"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+		<property name="parentTreeNodeIdentifier" value="loginAndSecurityParent" /> 
+	</bean>
 
-<property name="persistedProperties">
-  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
-    <constructor-arg index="0" ref="coordinatorManager"/>
-    <constructor-arg index="1" ref="shibbolethModule" />
-  </bean>
-</property>
-</bean>
-                       
-       <bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-        <property name="targetObject" ref="shibbolethModule" />
-        <property name="targetMethod" value="init" />
-        <property name="arguments">
-        			<value>
-                    <!-- Enable/disable shibboleth logins. Make sure to enable/disable the Shibboleth authentication provider aswell. -->
-					EnableShibbolethLogins=${shibboleth.enable}
-					
-					<!-- 
-						enable sending language with specified parameter name in the AAI get request.
-						Used to display a localized AAI login page, where the language is taken from the olats login page.
-					-->
-					UseLanguageInRequest=${language.enable}
-					LanguageParamName=${language.param}
-					defaultUIDAttribute=${shibboleth.defaultUID}
-                    </value>
-         </property>
-</bean>
-
+	<bean name="shibbolethOperators" class="java.util.ArrayList" scope="prototype" >
+	    <constructor-arg>
+			<list>
+				<value>isin</value>
+				<value>isnotin</value>
+				<value>has</value>
+				<value>hasnot</value>
+				<value>startswith</value>
+				<value>endswith</value>
+			</list>
+	    </constructor-arg>
+	</bean>
+	
+	<bean name="shibbolethUserMapping" class="java.util.HashMap" scope="prototype" >
+	    <constructor-arg>
+	        <map key-type="java.lang.String" value-type="java.lang.String">
+	            <entry key="FirstName" value="Shib-InetOrgPerson-givenName" />
+				<entry key="LastName" value="Shib-Person-surname" />
+				<entry key="EMail" value="Shib-InetOrgPerson-mail" />
+				<entry key="InstitutionalName" value="Shib-SwissEP-HomeOrganization" />
+				<entry key="InstitutionalEMail" value="Shib-InetOrgPerson-mail" />
+				<entry key="InstitutionalUserIdentifier" value="Shib-InetOrgPerson-employeeNumber" />
+				<!-- <entry key="PreferedLanguage" value="" /> -->
+	        </map>
+	    </constructor-arg>
+	</bean>
 
 <bean id="attributeTranslator" class="org.olat.shibboleth.util.AttributeTranslator" >
 	<property name="attributeTranslations">
@@ -556,17 +553,17 @@
 	</property>
 </bean>
 
-<bean id="switchShibbolethAuthenticationConfigurator" class="org.olat.shibboleth.SwitchShibbolethAuthenticationConfigurator">		
+	<bean id="switchShibbolethAuthenticationConfigurator" class="org.olat.shibboleth.SwitchShibbolethAuthenticationConfigurator">		
 		<property name="wayfSPEntityID" value="${shibboleth.wayfSPEntityID}" />	
 		<property name="wayfSPHandlerURL" value="${shibboleth.wayfSPHandlerURL}" />
 		<property name="wayfSPSamlDSURL" value="${shibboleth.wayfSPSamlDSURL}" />
 		<property name="wayfReturnUrl" value="${shibboleth.wayfReturnUrl}" />
 		<property name="wayfReturnMobileUrl" value="${shibboleth.wayfReturnMobileUrl}" />
 		<property name="additionalIdentityProviders" value="${shibboleth.wayf.additionalIDPs}" />	
-</bean>	
+	</bean>	
 
-<bean id="registrationPresetUsername.byShibbolethAttribute"
-	class="org.olat.shibboleth.ShibbolethUserNameFromAttributeUserNameCreationInterceptor" lazy-init="true">
+	<bean id="registrationPresetUsername.byShibbolethAttribute"
+		class="org.olat.shibboleth.ShibbolethUserNameFromAttributeUserNameCreationInterceptor" lazy-init="true">
 		<property name="allowChangeOfUsername" value="${registration.preset.username.allowChanges}"/>
 		<property name="shibUsernameAttr" value="${registration.preset.username.shibbolethAttribute}"/>
 		<property name="regexp">
@@ -574,6 +571,6 @@
 				<value>^[^@]*</value>
 			</list>
 		</property>
-</bean>
+	</bean>
 
 </beans>
