@@ -4,9 +4,8 @@
 		<h5>
 			$r.render("nodeLink_${message.getKey()}")
 			<small class="o_nowrap">
-				#set($user=$message.getCreator().getUser())
-				$r.escapeHtml($user.getProperty("firstName", null)) $r.escapeHtml($user.getProperty("lastName", null))
-				($formatter.formatDateAndTime($message.getCreationDate()))
+				$r.escapeHtml($message.creator)
+				$formatter.formatDateAndTime($message.getCreationDate())
 			</small>
 		</h5>
 		<div>

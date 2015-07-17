@@ -19,8 +19,11 @@
  */
 package org.olat.course.nodes.fo;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
@@ -34,9 +37,12 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
+import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <h3>Description:</h3> The forum peekview controller displays the configurable
@@ -54,6 +60,11 @@ import org.olat.modules.fo.Message;
 public class FOPeekviewController extends BasicController implements Controller {
 	// the current course node id
 	private final String nodeId;
+	
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private ForumManager forumManager;
 
 	/**
 	 * Constructor
@@ -70,9 +81,9 @@ public class FOPeekviewController extends BasicController implements Controller 
 	
 		VelocityContainer peekviewVC = createVelocityContainer("peekview");
 		// add items, only as many as configured
-		ForumManager foMgr = ForumManager.getInstance();
-		List<Message> messages = foMgr.getMessagesByForumID(forum.getKey(), 0, itemsToDisplay, Message.OrderBy.creationDate, false);
+		List<Message> messages = forumManager.getMessagesByForumID(forum.getKey(), 0, itemsToDisplay, Message.OrderBy.creationDate, false);
 		// only take the configured amount of messages
+		List<MessageView> views = new ArrayList<MessageView>(itemsToDisplay);
 		for (Message message :messages) {
 			// add link to item
 			// Add link to jump to course node
@@ -80,17 +91,32 @@ public class FOPeekviewController extends BasicController implements Controller 
 			nodeLink.setCustomDisplayText(StringHelper.escapeHtml(message.getTitle()));
 			nodeLink.setIconLeftCSS("o_icon o_icon_post");
 			nodeLink.setCustomEnabledLinkCSS("o_gotoNode");
-			nodeLink.setUserObject(Long.toString(message.getKey()));				
+			nodeLink.setUserObject(message.getKey());	
+			
+			String creator = userManager.getUserDisplayName(message.getCreator());
+			String body = message.getBody();
+			if(body.length() > 256) {
+				String truncateBody = FilterFactory.getHtmlTagsFilter().filter(body);
+				truncateBody = StringEscapeUtils.unescapeHtml(truncateBody);// remove entities
+				if(truncateBody.length() < 256) {
+					body = StringHelper.xssScan(body);
+				} else {
+					truncateBody = Formatter.truncate(truncateBody, 256);// truncate
+					body = StringHelper.escapeHtml(truncateBody);//ok because html tags are filtered
+				}
+			} else {
+				body = StringHelper.xssScan(body);
+			}
+			views.add(new MessageView(message.getKey(), message.getCreationDate(), creator, body));
 		}
-		peekviewVC.contextPut("messages", messages);
+		peekviewVC.contextPut("messages", views);
 		// Add link to show all items (go to node)
 		Link allItemsLink = LinkFactory.createLink("peekview.allItemsLink", peekviewVC, this);
 		allItemsLink.setIconRightCSS("o_icon o_icon_start");
 		allItemsLink.setCustomEnabledLinkCSS("pull-right");
 		// Add Formatter for proper date formatting
 		peekviewVC.contextPut("formatter", Formatter.getInstance(getLocale()));
-		//
-		this.putInitialPanel(peekviewVC);
+		putInitialPanel(peekviewVC);
 	}
 
 	/**
@@ -100,7 +126,7 @@ public class FOPeekviewController extends BasicController implements Controller 
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source instanceof Link) {
 			Link nodeLink = (Link) source;
-			String messageId = (String) nodeLink.getUserObject();
+			Object messageId = nodeLink.getUserObject();
 			if (messageId == null) {
 				fireEvent(ureq, new OlatCmdEvent(OlatCmdEvent.GOTONODE_CMD, nodeId));								
 			} else {
@@ -116,5 +142,35 @@ public class FOPeekviewController extends BasicController implements Controller 
 	protected void doDispose() {
 		// nothing to dispose
 	}
+	
+	public static class MessageView {
+		
+		private final Long key;
+		private final String body;
+		private final Date creationDate;
+		private final String creatorFullname;
+		
+		public MessageView(Long key, Date creationDate, String creatorFullname, String body) {
+			this.key = key;
+			this.body = body;
+			this.creationDate = creationDate;
+			this.creatorFullname = creatorFullname;
+		}
+		
+		public Long getKey() {
+			return key;
+		}
+		
+		public Date getCreationDate() {
+			return creationDate;
+		}
 
+		public String getCreatorFullname() {
+			return creatorFullname;
+		}
+
+		public String getBody() {
+			return body;
+		}
+	}
 }
