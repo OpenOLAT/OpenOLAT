@@ -17,7 +17,7 @@
 		<property name="ipsByPass" value="${restapi.ips.system}"/>
 	</bean>
 
-	<bean id="org.olat.restapi.security.RestSecurityBean" class="org.olat.restapi.security.RestSecurityBeanImpl">
+	<bean id="restSecurityBean" class="org.olat.restapi.security.RestSecurityBeanImpl">
 		<property name="securityManager" ref="baseSecurityManager"/>
 	</bean>
 	

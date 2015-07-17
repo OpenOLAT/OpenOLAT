@@ -57,6 +57,7 @@ import org.olat.course.condition.operators.OperatorManager;
 import org.olat.shibboleth.ShibbolethModule;
 import org.olat.shibboleth.util.AttributeTranslator;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -95,6 +96,9 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 	private int rowCreationCounter = 0;
 	//
 	private boolean isinit = false;
+	
+	@Autowired
+	private ShibbolethModule shibbolethModule;
 
 	/**
 	 * Constructor for a shibboleth attribute rule creator form.
@@ -107,11 +111,11 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 		super(ureq, wControl, FormBasicController.LAYOUT_CUSTOM, EASYROWS, parentForm);
 		// Set custom translator to use translations from shibb module as well
 		setTranslator(Util.createPackageTranslator(ShibbolethModule.class, ureq.getLocale(), getTranslator()));
-		attributeTranslator = ShibbolethModule.getAttributeTranslator();
+		attributeTranslator = shibbolethModule.getAttributeTranslator();
 		attrKeys = getShibAttributes();
-		preselectedAttribute = ShibbolethModule.getPreselectedAttributeKey(ShibbolethModule.CONF_OLATUSERMAPPING_INSTITUTIONALNAME);
+		preselectedAttribute = shibbolethModule.getPreselectedAttributeKey(ShibbolethModule.CONF_OLATUSERMAPPING_INSTITUTIONALNAME);
 		preselectedAttributeValue = ureq.getIdentity().getUser().getProperty(UserConstants.INSTITUTIONALNAME, getLocale());
-		operatorKeys = OperatorManager.getRegisteredOperatorKeys(ShibbolethModule.getOperatorKeys());
+		operatorKeys = OperatorManager.getRegisteredOperatorKeys(shibbolethModule.getOperatorKeys());
 		this.init();
 	}
 
@@ -558,7 +562,7 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 	 * @return String[] - will never returh null
 	 */
 	private String[] getShibAttributes() {
-		if (ShibbolethModule.isEnableShibbolethLogins()) {
+		if (shibbolethModule.isEnableShibbolethLogins()) {
 			final AttributeTranslator attTrans = getAttributeTranslator();
 			final Set<String> attributes = attTrans.getTranslateableAttributes();
 			final String[] outNames = new String[attributes.size()];

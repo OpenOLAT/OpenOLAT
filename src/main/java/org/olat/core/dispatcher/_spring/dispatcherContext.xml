@@ -179,24 +179,31 @@
 	-->
 	<bean id="remoteloginbean" class="org.olat.dispatcher.RemoteLoginformDispatcher" />
 
-	<bean id="shibbean" class="org.olat.shibboleth.ShibbolethDispatcher" />
+	<bean id="shibbean" class="org.olat.shibboleth.ShibbolethDispatcher">
+		<property name="shibbolethModule" ref="shibbolethModule"/>
+		<property name="restSecurityBean" ref="restSecurityBean"/>
+		<property name="securityManager" ref="baseSecurityManager"/>
+		<property name="userDeletionManager" ref="userDeletionManager"/>
+	</bean>
 	
 	<bean id="shibmobilebean" class="org.olat.shibboleth.ShibbolethDispatcher">
 		<property name="mobile" value="true"/>
+		<property name="shibbolethModule" ref="shibbolethModule"/>
+		<property name="restSecurityBean" ref="restSecurityBean"/>
+		<property name="securityManager" ref="baseSecurityManager"/>
+		<property name="userDeletionManager" ref="userDeletionManager"/>
 	</bean>
 		
 	<!--  static files delivery. See org.olat.core.dispatcher.mapper.package.html for more infos -->
 	<bean id="staticsrawbean"
-		class="org.olat.core.dispatcher.impl.StaticMediaDispatcher"
-		>
+		class="org.olat.core.dispatcher.impl.StaticMediaDispatcher">
 		<constructor-arg index="0">
 			<value>/raw/</value>
 		</constructor-arg>
 	</bean>
 	
 	<bean id="contexthelpbean"
-		class="org.olat.core.commons.contextHelp.ContextHelpDispatcher"
-		>
+		class="org.olat.core.commons.contextHelp.ContextHelpDispatcher">
 		<constructor-arg index="0">
 			<value>/help/</value>
 		</constructor-arg>

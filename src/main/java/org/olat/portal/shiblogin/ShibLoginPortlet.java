@@ -30,6 +30,7 @@ package org.olat.portal.shiblogin;
 
 import java.util.Map;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -65,12 +66,13 @@ public class ShibLoginPortlet extends AbstractPortlet {
 	 */
 	@Override
 	public boolean isEnabled() {
-		return ShibbolethModule.isEnableShibbolethLogins() && super.isEnabled();
+		return CoreSpringFactory.getImpl(ShibbolethModule.class).isEnableShibbolethLogins() && super.isEnabled();
 	}
 
 	/**
 	 * @see org.olat.gui.control.generic.portal.Portlet#getTitle()
 	 */
+	@Override
 	public String getTitle() {
 		String title = getConfiguration().get("title_" + getTranslator().getLocale().toString());
 		if (title == null) {
@@ -82,6 +84,7 @@ public class ShibLoginPortlet extends AbstractPortlet {
 	/**
 	 * @see org.olat.gui.control.generic.portal.Portlet#getDescription()
 	 */
+	@Override
 	public String getDescription() {
 		String desc = getConfiguration().get("description_" + getTranslator().getLocale().toString());
 		if (desc == null) {
@@ -93,8 +96,9 @@ public class ShibLoginPortlet extends AbstractPortlet {
 	/**
 	 * @see org.olat.gui.control.generic.portal.AbstractPortlet#createInstance(org.olat.gui.control.WindowControl, org.olat.gui.UserRequest, java.util.Map)
 	 */
+	@Override
 	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
-		if (!ShibbolethModule.isEnableShibbolethLogins())
+		if (!CoreSpringFactory.getImpl(ShibbolethModule.class).isEnableShibbolethLogins())
 			throw new OLATSecurityException("Got shibboleth wayf form request but shibboleth is not enabled.");		
 		ShibLoginPortlet p = new ShibLoginPortlet(config);
 		p.setName(this.getName());

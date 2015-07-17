@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.registration.AbstractUserNameCreationInterceptor;
 
@@ -71,7 +72,7 @@ public class ShibbolethUserNameFromAttributeUserNameCreationInterceptor extends 
 	public String getUsernameFor(Map<String, String> userAttributes) {
 		String proposedUsername = userAttributes.get(shibUsernameAttr);
 		if(proposedUsername == null) {
-			shibUsernameAttr = ShibbolethModule.getAttributeTranslator().translateAttribute(shibUsernameAttr);
+			shibUsernameAttr = CoreSpringFactory.getImpl(ShibbolethModule.class).getAttributeTranslator().translateAttribute(shibUsernameAttr);
 			proposedUsername = userAttributes.get(shibUsernameAttr);
 		}
 		

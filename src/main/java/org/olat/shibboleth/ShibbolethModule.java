@@ -25,12 +25,21 @@
 
 package org.olat.shibboleth;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.olat.core.configuration.AbstractOLATModule;
-import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.configuration.AbstractSpringModule;
+import org.olat.core.configuration.ConfigOnOff;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.shibboleth.util.AttributeTranslator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Initial Date:  16.07.2004
@@ -40,15 +49,15 @@ import org.olat.shibboleth.util.AttributeTranslator;
  * Comment:  
  * 
  */
-public class ShibbolethModule extends AbstractOLATModule {
+@Service("shibbolethModule")
+public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOff {
+	
+	private static final OLog log = Tracing.createLoggerFor(ShibbolethModule.class);
+	
 	/**
 	 * Path identifier for shibboleth registration workflows.
 	 */
-	static final String PATH_REGISTER_SHIBBOLETH = "shibregister";
-	private static final String CONF_ENABLE = "EnableShibbolethLogins";		
-	private static final String CONF_UNIQUEIDENTIFIER = "defaultUIDAttribute";
-	private static final String CONF_USELANGUAGEINREQ ="UseLanguageInRequest";
-	private static final String CONF_LANGUAGEPARAMNAM ="LanguageParamName";
+	static final String PATH_REGISTER_SHIBBOLETH = "shibregister";	
 	
 	private static final String CONF_OLATUSERMAPPING_FIRSTNAME = "FirstName";
 	private static final String CONF_OLATUSERMAPPING_LASTNAME = "LastName";
@@ -58,114 +67,137 @@ public class ShibbolethModule extends AbstractOLATModule {
 	private static final String CONF_OLATUSERMAPPING_INSTITUTIONALUSERIDENTIFIER = "InstitutionalUserIdentifier";
 	private static final String CONF_OLATUSERMAPPING_PREFERED_LANGUAGE = "PreferedLanguage";
 	
-	private static boolean enableShibbolethLogins = false;
-	private static AttributeTranslator attributeTranslator;
-
-	private static boolean useLanguageInReq = false;
-	private static String languageParamName;
-	private static List<String> operators;
-	private static String defaultUIDAttribute;
-	private static String loginTemplate;
-	private static String loginTemplateDefault;
-
-	public static final String MULTIVALUE_SEPARATOR = ";";
-	private static Map<String, String> userMapping;
+	@Value("${shibboleth.enable}")
+	private boolean enableShibbolethLogins = false;
 	
-	/**
-	 * [used by spring]
-	 */
-	private ShibbolethModule() {
-		//
+	@Autowired
+	private AttributeTranslator attributeTranslator;
+
+	@Value("${language.enable}")
+	private boolean useLanguageInReq = false;
+	@Value("${language.param:en}")
+	private String languageParamName;
+	
+	@Autowired @Qualifier("shibbolethOperators")
+	private ArrayList<String> operators;
+
+	@Value("${shibboleth.template.login:shibbolethlogin}")
+	private String loginTemplate;
+	@Value("${shibboleth.template.login.default:default_shibbolethlogin}")
+	private String loginTemplateDefault;
+
+	public final String MULTIVALUE_SEPARATOR = ";";
+	
+	@Value("${shibboleth.defaultUID:Shib-SwissEP-UniqueID}")
+	private String defaultUIDAttribute;
+	@Autowired @Qualifier("shibbolethUserMapping")
+	private HashMap<String, String> userMapping;
+
+	@Value("${shibboleth.ac.byAttributes:false}")
+	private boolean accessControlByAttributes;
+	@Value("${shibboleth.ac.attribute1:#{null}}")
+	private String attribute1;
+	@Value("${shibboleth.ac.attribute1Values:#{null}}")
+	private String attribute1Values;
+	@Value("${shibboleth.ac.attribute2:#{null}}")
+	private String attribute2;
+	@Value("${shibboleth.ac.attribute2Values:#{null}}")
+	private String attribute2Values;
+	
+	@Autowired
+	public ShibbolethModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
 	}
 	
 	@Override
 	public void init() {
-	}
-
-	@Override
-	protected void initDefaultProperties() {
-		enableShibbolethLogins = getBooleanConfigParameter(CONF_ENABLE, false);
 		if (enableShibbolethLogins) {
-			logInfo("Shibboleth logins enabled.");
+			log.info("Shibboleth logins enabled.");
+			
+			if(useLanguageInReq) {
+				log.info("Language code is sent as parameter in the AAI request with lang: "+languageParamName);
+			} else {
+				log.info("Language code is not sent with AAI request.");
+			}
 		} else {
-			logInfo("Shibboleth logins disabled.");
+			log.info("Shibboleth logins disabled.");
 		}
 		
-		useLanguageInReq  = getBooleanConfigParameter(CONF_USELANGUAGEINREQ, true);
-		languageParamName = getStringConfigParameter(CONF_LANGUAGEPARAMNAM, "en", true);
-		if(useLanguageInReq) {
-			logInfo("Language code is sent as parameter in the AAI request with lang: "+languageParamName);
-		} else {
-			logInfo("Language code is not sent with AAI request.");
+		//module enabled/disabled
+		String accessControlByAttributesObj = getStringPropertyValue("accessControlByAttributes", true);
+		if(StringHelper.containsNonWhitespace(accessControlByAttributesObj)) {
+			accessControlByAttributes = "true".equals(accessControlByAttributesObj);
 		}
 		
-		defaultUIDAttribute = getStringConfigParameter(CONF_UNIQUEIDENTIFIER, "Shib-SwissEP-UniqueID", false);
-	}
-
-	/**
-	 * [used by spring]
-	 * @param attributeTranslator
-	 */
-	public void setAttributeTranslator(AttributeTranslator attributeTranslator) {
-		ShibbolethModule.attributeTranslator = attributeTranslator;
-	}
-
-	/**
-	 * [used by spring]
-	 * @param operators
-	 */
-	public void setOperators(List<String> operators) {
-		ShibbolethModule.operators = operators;
+		String attribute1Obj = getStringPropertyValue("attribute1", true);
+		if(StringHelper.containsNonWhitespace(attribute1Obj)) {
+			attribute1 = attribute1Obj;
+		}
+		
+		String attribute1ValuesObj = getStringPropertyValue("attribute1Values", true);
+		if(StringHelper.containsNonWhitespace(attribute1ValuesObj)) {
+			attribute1Values = attribute1ValuesObj;
+		}
+		
+		String attribute2Obj = getStringPropertyValue("attribute2", true);
+		if(StringHelper.containsNonWhitespace(attribute2Obj)) {
+			attribute2 = attribute2Obj;
+		}
+		
+		String attribute2ValuesObj = getStringPropertyValue("attribute2Values", true);
+		if(StringHelper.containsNonWhitespace(attribute2ValuesObj)) {
+			attribute2Values = attribute2ValuesObj;
+		}
 	}
 	
-	// Getters and Setters //
+	@Override
+	protected void initFromChangedProperties() {
+		init();
+	}
+	
 	/**
 	 * @return True if shibboleth logins are allowed.
 	 */
-	public static boolean isEnableShibbolethLogins() {
+	public boolean isEnableShibbolethLogins() {
 		return enableShibbolethLogins;
+	}
+	
+	@Override
+	public boolean isEnabled() {
+		return isEnableShibbolethLogins();
 	}
 
 	/**
 	 * @return true if the language should be sent in the aai request
 	 */
-	public static boolean useLanguageInReq() {
+	public boolean useLanguageInReq() {
 		return useLanguageInReq;
 	}
 
 	/**
 	 * @return the get request parameter name to be used sending the language code.
 	 */
-	public static String getLanguageParamName() {
+	public String getLanguageParamName() {
 		return languageParamName;
 	}
 
-	public static AttributeTranslator getAttributeTranslator() {
+	public AttributeTranslator getAttributeTranslator() {
 		return attributeTranslator;
 	}
 
-	public static String[] getRegisteredOperatorKeys() {
+	public String[] getRegisteredOperatorKeys() {
 		return null;
 	}
 	
-	public static List<String> getOperatorKeys() {
+	public List<String> getOperatorKeys() {
 		return operators;
-	}
-
-	@Override
-	protected void initFromChangedProperties() {
-		// 
-	}
-	
-	public void setUserMapping(Map<String, String> userMapping) {
-		ShibbolethModule.userMapping = userMapping;
 	}
 
 	/**
 	 * 
 	 * @return the shib. default attribute which identifies an user by an unique key
 	 */
-	public static String getDefaultUIDAttribute() {
+	public String getDefaultUIDAttribute() {
 		return defaultUIDAttribute;
 	}
 	
@@ -173,76 +205,115 @@ public class ShibbolethModule extends AbstractOLATModule {
 	 * @param attributesMap
 	 * @return First Name value from shibboleth attributes.
 	 */
-	public static String getFirstName() {
+	public String getFirstName() {
 		return userMapping.get(CONF_OLATUSERMAPPING_FIRSTNAME);
 	}
 	
 	/**
 	 * @return Last Name value from shibboleth attributes.
 	 */
-	public static String getLastName() {
+	public String getLastName() {
 		return userMapping.get(CONF_OLATUSERMAPPING_LASTNAME);
 	}
 	
 	/**
 	 * @return EMail value from shibboleth attributes.
 	 */
-	public static String getEMail() {
+	public String getEMail() {
 		return userMapping.get(CONF_OLATUSERMAPPING_EMAIL);
 	}
 	
 	/**
 	 * @return Institutional EMail value from shibboleth attributes.
 	 */
-	public static String getInstitutionalEMail() {
+	public String getInstitutionalEMail() {
 		return userMapping.get(CONF_OLATUSERMAPPING_INSTITUTIONALEMAIL);
 	}
 	
 	/**
 	 * @return Institutional Name value from shibboleth attributes.
 	 */
-	public static String getInstitutionalName() {
+	public String getInstitutionalName() {
 		return userMapping.get(CONF_OLATUSERMAPPING_INSTITUTIONALNAME);
 	}
 	
 	/**
 	 * @return Institutional User Identifyer value from shibboleth attributes.
 	 */
-	public static String getInstitutionalUserIdentifier() {
+	public String getInstitutionalUserIdentifier() {
 		return userMapping.get(CONF_OLATUSERMAPPING_INSTITUTIONALUSERIDENTIFIER);
 	}
 	
 	/**
 	 * @return Prefered language value from shibboleth attributes.
 	 */
-	public static String getPreferedLanguage() {
+	public String getPreferedLanguage() {
 		return userMapping.get(CONF_OLATUSERMAPPING_PREFERED_LANGUAGE);
 	}
 
-	public static String getLoginTemplate() {
+	public String getLoginTemplate() {
 		return loginTemplate;
 	}
 
-	public static void setLoginTemplate(String loginTemplate) {
-		ShibbolethModule.loginTemplate = loginTemplate;
+	public void setLoginTemplate(String loginTemplate) {
+		this.loginTemplate = loginTemplate;
 	}
 
-	public static String getLoginTemplateDefault() {
+	public String getLoginTemplateDefault() {
 		return loginTemplateDefault;
 	}
 
-	public static void setLoginTemplateDefault(String loginTemplateDefault) {
-		ShibbolethModule.loginTemplateDefault = loginTemplateDefault;
+	public void setLoginTemplateDefault(String loginTemplateDefault) {
+		this.loginTemplateDefault = loginTemplateDefault;
 	}
 
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
-	}
-
-	public static String getPreselectedAttributeKey(String userAttribute) {
+	public String getPreselectedAttributeKey(String userAttribute) {
 		String shibKey = userMapping.get(userAttribute);
 		return attributeTranslator.translateAttribute(shibKey);
 	}
 
+	public boolean isAccessControlByAttributes() {
+		return accessControlByAttributes;
+	}
+
+	public void setAccessControlByAttributes(boolean accessControlByAttributes) {
+		this.accessControlByAttributes = accessControlByAttributes;
+		setStringProperty("accessControlByAttributes", accessControlByAttributes ? "true" : "false", true);
+	}
+
+	public String getAttribute1() {
+		return attribute1;
+	}
+
+	public void setAttribute1(String attribute1) {
+		this.attribute1 = attribute1;
+		setStringProperty("attribute1", attribute1, true);
+	}
+
+	public String getAttribute1Values() {
+		return attribute1Values;
+	}
+
+	public void setAttribute1Values(String attribute1Values) {
+		this.attribute1Values = attribute1Values;
+		setStringProperty("attribute1Values", attribute1Values, true);
+	}
+
+	public String getAttribute2() {
+		return attribute2;
+	}
+
+	public void setAttribute2(String attribute2) {
+		this.attribute2 = attribute2;
+		setStringProperty("attribute2", attribute2, true);
+	}
+
+	public String getAttribute2Values() {
+		return attribute2Values;
+	}
+
+	public void setAttribute2Values(String attribute2Values) {
+		this.attribute2Values = attribute2Values;
+		setStringProperty("attribute2Values", attribute2Values, true);
+	}
 }

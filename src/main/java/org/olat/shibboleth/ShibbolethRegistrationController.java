@@ -68,6 +68,7 @@ import org.olat.registration.RegistrationModule;
 import org.olat.registration.UserNameCreationInterceptor;
 import org.olat.shibboleth.util.ShibbolethHelper;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  09.08.2004
@@ -111,6 +112,9 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 	
 	private boolean hasEmailInShibAttr;
 	
+	@Autowired
+	private ShibbolethModule shibbolethModule;
+	
 	/**
 	 * Implements the shibboleth registration workflow.
 	 * @param ureq
@@ -133,11 +137,11 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 		if (shibbolethAttributesMap == null)
 			throw new AssertException("ShibbolethRegistrationController was unable to fetch ShibbolethAttribuitesMap from session.");
 
-		hasEmailInShibAttr = (ShibbolethModule.getEMail() == null) ? false : true;
+		hasEmailInShibAttr = (shibbolethModule.getEMail() == null) ? false : true;
 		
 		Locale locale = (Locale)ureq.getUserSession().getEntry(LocaleNegotiator.NEGOTIATED_LOCALE);
 		if(locale == null) {
-			String preferedLanguage = ShibbolethModule.getPreferedLanguage();
+			String preferedLanguage = shibbolethModule.getPreferedLanguage();
 			if(preferedLanguage == null) {
 				locale = LocaleNegotiator.getPreferedLocale(ureq);
 			} else {
@@ -249,6 +253,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == migrationForm) {
 			if (event == Event.CANCELLED_EVENT) {
@@ -328,7 +333,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 					if(!hasEmailInShibAttr){
 						email = regWithEmailForm.getEmail();
 					} else {
-						email = ShibbolethHelper.getFirstValueOf(ShibbolethModule.getEMail(), shibbolethAttributesMap);
+						email = ShibbolethHelper.getFirstValueOf(shibbolethModule.getEMail(), shibbolethAttributesMap);
 					}
 
 					User user = null;
@@ -346,15 +351,15 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 						return;
 					}
 
-					String firstName = shibbolethAttributesMap.get(ShibbolethModule.getFirstName());
-					String lastName = shibbolethAttributesMap.get(ShibbolethModule.getLastName());
+					String firstName = shibbolethAttributesMap.get(shibbolethModule.getFirstName());
+					String lastName = shibbolethAttributesMap.get(shibbolethModule.getLastName());
 					user = UserManager.getInstance().createUser(firstName, lastName, email);
-					user.setProperty(UserConstants.INSTITUTIONALNAME, shibbolethAttributesMap.get(ShibbolethModule.getInstitutionalName()));
+					user.setProperty(UserConstants.INSTITUTIONALNAME, shibbolethAttributesMap.get(shibbolethModule.getInstitutionalName()));
 					if(hasEmailInShibAttr){
-						String institutionalEmail = ShibbolethHelper.getFirstValueOf(ShibbolethModule.getInstitutionalEMail(), shibbolethAttributesMap);
+						String institutionalEmail = ShibbolethHelper.getFirstValueOf(shibbolethModule.getInstitutionalEMail(), shibbolethAttributesMap);
 						user.setProperty(UserConstants.INSTITUTIONALEMAIL, institutionalEmail);
 					}
-					user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, shibbolethAttributesMap.get(ShibbolethModule.getInstitutionalUserIdentifier()));
+					user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, shibbolethAttributesMap.get(shibbolethModule.getInstitutionalUserIdentifier()));
 					identity = secMgr.createAndPersistIdentityAndUser(choosenLogin, null, user, ShibbolethDispatcher.PROVIDER_SHIB, shibbolethUniqueID);
 					SecurityGroup olatUserGroup = secMgr.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
 					secMgr.addIdentityToSecurityGroup(identity, olatUserGroup);
@@ -371,15 +376,15 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 					
 					// update user profile
 					User user = authenticationedIdentity.getUser();
-					String s = shibbolethAttributesMap.get(ShibbolethModule.getFirstName());
+					String s = shibbolethAttributesMap.get(shibbolethModule.getFirstName());
 					if (s != null) user.setProperty(UserConstants.FIRSTNAME, s);
-					s = shibbolethAttributesMap.get(ShibbolethModule.getLastName());
+					s = shibbolethAttributesMap.get(shibbolethModule.getLastName());
 					if (s != null) user.setProperty(UserConstants.LASTNAME, s);
-					s = shibbolethAttributesMap.get(ShibbolethModule.getInstitutionalName());
+					s = shibbolethAttributesMap.get(shibbolethModule.getInstitutionalName());
 					if (s != null) user.setProperty(UserConstants.INSTITUTIONALNAME, s);		
-					s = ShibbolethHelper.getFirstValueOf(ShibbolethModule.getInstitutionalEMail(), shibbolethAttributesMap);
+					s = ShibbolethHelper.getFirstValueOf(shibbolethModule.getInstitutionalEMail(), shibbolethAttributesMap);
 					if (s != null) user.setProperty(UserConstants.INSTITUTIONALEMAIL, s);
-					s = shibbolethAttributesMap.get(ShibbolethModule.getInstitutionalUserIdentifier());
+					s = shibbolethAttributesMap.get(shibbolethModule.getInstitutionalUserIdentifier());
 					if (s != null) user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, s);
 					UserManager.getInstance().updateUser(user);
 					doLogin(authenticationedIdentity, ureq);
@@ -405,7 +410,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 		}
 		// successfull login
 		ureq.getUserSession().getIdentityEnvironment().addAttributes(
-				ShibbolethModule.getAttributeTranslator().translateAttributesMap(shibbolethAttributesMap));
+				shibbolethModule.getAttributeTranslator().translateAttributesMap(shibbolethAttributesMap));
 	}
 	
 	/**
