@@ -241,7 +241,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 		if (ne.isAtLeastOneAccessible()) {
 			// Create a forum peekview controller that shows the latest two messages		
 			Forum theForum = loadOrCreateForum(userCourseEnv.getCourseEnvironment());
-			Controller peekViewController = new FOPeekviewController(ureq, wControl, theForum, getIdent(), 2);
+			Controller peekViewController = new FOPeekviewController(ureq, wControl, theForum, getIdent(), 3);
 			return peekViewController;			
 		} else {
 			// use standard peekview
@@ -336,8 +336,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
 		//only here we know which translator to take for translating condition error messages
-		String translatorStr = Util.getPackageName(FOCourseNodeEditController.class);
-		List<StatusDescription> sds = isConfigValidWithTranslator(cev, translatorStr,getConditionExpressions());
+		List<StatusDescription> sds = isConfigValidWithTranslator(cev, PACKAGE_FO, getConditionExpressions());
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}
