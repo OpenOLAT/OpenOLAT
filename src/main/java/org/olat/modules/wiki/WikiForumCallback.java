@@ -40,40 +40,46 @@ public class WikiForumCallback implements ForumCallback {
 
 	private boolean isGuestOnly;
 	private boolean isModerator;
-	
+	private SubscriptionContext context;
 
-	public WikiForumCallback(boolean isGuestOnly, boolean isModerator) {
+	public WikiForumCallback(boolean isGuestOnly, boolean isModerator, SubscriptionContext context) {
 		this.isGuestOnly = isGuestOnly;
-		this.isModerator = isModerator;		
+		this.isModerator = isModerator;
+		this.context = context;
 	}
-	
+
+	@Override
 	public boolean mayOpenNewThread() {
 		return !isGuestOnly ;
 	}
 
+	@Override
 	public boolean mayReplyMessage() {
 		return !isGuestOnly;
 	}
 
+	@Override
 	public boolean mayEditMessageAsModerator() {		
 		return !isGuestOnly && isModerator;
 	}
 
+	@Override
 	public boolean mayDeleteMessageAsModerator() {		
 		return !isGuestOnly && isModerator;
 	}
 
+	@Override
 	public boolean mayArchiveForum() {
 		return !isGuestOnly;
 	}
 
+	@Override
 	public boolean mayFilterForUser() {
 		return !isGuestOnly && isModerator;
 	}
 
+	@Override
 	public SubscriptionContext getSubscriptionContext() {
-		// TODO Auto-generated method stub
-		return null;
+		return context;
 	}
-
 }

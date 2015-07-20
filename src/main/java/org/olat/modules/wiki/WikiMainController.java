@@ -37,8 +37,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.FileUploadController;
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
@@ -90,7 +88,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -143,13 +140,13 @@ public class WikiMainController extends BasicController implements CloneableCont
 	private WikiMarkupComponent wikiArticleComp, wikiVersionDisplayComp;
 	private ContextualSubscriptionController cSubscriptionCtrl;
 	private TableController versioningTableCtr;
+	private WikiFileUploadController wikiUploadFileCtr;
 	private HistoryTableDateModel versioningTableModel;
-	private FileUploadController fileUplCtr;
 	private DialogBoxController removePageDialogCtr, archiveWikiDialogCtr;
 	private List<ChangeInfo> diffs = new ArrayList<ChangeInfo>(2);
 	private SubscriptionContext subsContext;
 	private LockResult lockEntry;
-	private Link archiveLink, closePreviewButton, createLink, manageMediaButton, toMainPageLink,
+	private Link archiveLink, closePreviewButton, createLink, toMainPageLink,
 		a2zLink, changesLink, editMenuButton, revertVersionButton;
 	private TableController mediaTableCtr;
 	private MediaFilesTableModel mediaFilesTableModel;
@@ -167,7 +164,6 @@ public class WikiMainController extends BasicController implements CloneableCont
 	public static final String ACTION_SHOW = "view.version";
 	private static final String ACTION_EDIT_MENU = "editMenu";
 	private static final String ACTION_CLOSE_PREVIEW = "preview.close";
-	private static final String ACTION_MANAGE_MEDIA = "manage.media";
 	private static final String ACTION_DELETE_MEDIAS = "delete.medias";
 	private static final String ACTION_DELETE_MEDIA = "delete.media";
 	protected static final String ACTION_SHOW_MEDIA = "show.media";
@@ -310,7 +306,6 @@ public class WikiMainController extends BasicController implements CloneableCont
 		editContent = createVelocityContainer("edit");
 		imageDisplay = createVelocityContainer("imagedisplay");
 		closePreviewButton = LinkFactory.createButtonSmall(ACTION_CLOSE_PREVIEW, editContent, this);
-		manageMediaButton = LinkFactory.createButtonSmall(ACTION_MANAGE_MEDIA, editContent, this);
 		
 		editContent.contextPut("isGuest", Boolean.valueOf(ureq.getUserSession().getRoles().isGuestOnly()));
 		wikiEditForm = new WikiEditArticleForm(ureq, wControl, page, securityCallback);
@@ -321,11 +316,6 @@ public class WikiMainController extends BasicController implements CloneableCont
 		
 		JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/openolat/wiki.js" }, null);
 		content.put("js", js);
-		// FIXME:gs:a FileUploadCtr should accept vfsContainers instead of
-		// OLATrootfolderimpl. Refactor it!!!!!!!
-		fileUplCtr = new FileUploadController(getWindowControl(), WikiManager.getInstance().getMediaFolder(ores), ureq, (int)FolderConfig.getLimitULKB(), Quota.UNLIMITED, null, false);
-		listenTo(fileUplCtr);
-		editContent.put("fileUplCtr", fileUplCtr.getInitialComponent());
 		editContent.contextPut("fileList", wiki.getMediaFileList());
 		editContent.contextPut("linkList", wiki.getListOfAllPageNames());
 		
@@ -584,18 +574,6 @@ public class WikiMainController extends BasicController implements CloneableCont
 			//nothing to do
 		} else if (source == closePreviewButton){
 			editContent.remove(wikiVersionDisplayComp);
-		} else if (source == manageMediaButton){
-			if(wiki.getMediaFileListWithMetadata().size() > 0){
-				mediaMgntContent = createVelocityContainer("media");
-				refreshTableDataModel(ureq, wiki);
-				mediaMgntContent.put("mediaMgmtTable", mediaTableCtr.getInitialComponent());
-				
-				removeAsListenerAndDispose(cmc);
-				cmc = new CloseableModalController(getWindowControl(), translate("close"), mediaMgntContent, true, translate("manage.media"));
-				listenTo(cmc);
-				
-				cmc.activate();
-			}
 		} else if (source == revertVersionButton) {
 			wikiEditForm.setPage(selectedPage);
 			tabs.setSelectedPane(2);
@@ -661,9 +639,9 @@ public class WikiMainController extends BasicController implements CloneableCont
 				page.setForumKey(forum.getKey().longValue());
 				WikiManager.getInstance().updateWikiPageProperties(ores, page);
 			}
-			// TODO enhance forum callback with subscription stuff								
+			
 			boolean isModerator = securityCallback.mayModerateForum();				
-			ForumCallback forumCallback = new WikiForumCallback(ureq.getUserSession().getRoles().isGuestOnly(), isModerator);
+			ForumCallback forumCallback = new WikiForumCallback(ureq.getUserSession().getRoles().isGuestOnly(), isModerator, subsContext);
 			
 			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(forum);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, getWindowControl());
@@ -862,17 +840,14 @@ public class WikiMainController extends BasicController implements CloneableCont
 					versioningContent.contextPut("page", selectedPage);
 				}
 			}
-		} else if (source == fileUplCtr) {
-			/*************************************************************************
-			 * file upload controller events
-			 ************************************************************************/
-			if (event == Event.DONE_EVENT) {
-				fileUplCtr.reset();
-			} else if (event.getCommand().equals(FolderEvent.UPLOAD_EVENT)) {
+		} else if (source == wikiUploadFileCtr) {
+			if(event.getCommand().equals(FolderEvent.UPLOAD_EVENT)) {
 				FolderEvent fEvent = (FolderEvent)event;
 				createMediaMetadataFile(fEvent.getFilename(), ureq.getIdentity().getKey());
 				editContent.contextPut("fileList", wiki.getMediaFileList());
 			}
+			cmc.deactivate();
+			cleanUp();
 		} else if (source == removePageDialogCtr) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				wiki.removePage(page);
@@ -958,14 +933,20 @@ public class WikiMainController extends BasicController implements CloneableCont
 				String msg = translate("question", page.getPageName());
 				removePageDialogCtr = activateOkCancelDialog(ureq, null, msg, removePageDialogCtr);
 				return;
+			} else if(event.getCommand().equals("media.upload")) {
+				doUploadFiles(ureq);
+				return;
+			} else if(event.getCommand().equals("manage.media")) {
+				doManageMedias(ureq, wiki);
+				return;
 			}
 
 			boolean dirty = !wikiEditForm.getWikiContent().equals(page.getContent());	
 			if (wantPreview) {
-					WikiPage preview = new WikiPage("temp");
-					preview.setContent(wikiEditForm.getWikiContent());
-					wikiVersionDisplayComp.setWikiContent(preview.getContent());
-					editContent.put("versionDisplay", wikiVersionDisplayComp);
+				WikiPage preview = new WikiPage("temp");
+				preview.setContent(wikiEditForm.getWikiContent());
+				wikiVersionDisplayComp.setWikiContent(preview.getContent());
+				editContent.put("versionDisplay", wikiVersionDisplayComp);
 			}
 
 			if (wantSave && dirty) {
@@ -996,6 +977,14 @@ public class WikiMainController extends BasicController implements CloneableCont
 				return;
 			}
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(wikiUploadFileCtr);
+
+		cmc = null;
+		wikiUploadFileCtr = null;
 	}
 	
 	private boolean isImage(String filename) {
@@ -1068,6 +1057,34 @@ public class WikiMainController extends BasicController implements CloneableCont
 			tabs.setEnabled(2, false);
 		}
 		tabs.setEnabled(3,enable);
+	}
+	
+	private void doUploadFiles(UserRequest ureq) {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(wikiUploadFileCtr);
+		
+		wikiUploadFileCtr = new WikiFileUploadController(ureq, getWindowControl(), WikiManager.getInstance().getMediaFolder(ores));
+		listenTo(wikiUploadFileCtr);
+		
+		String title = translate("media.upload");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), wikiUploadFileCtr.getInitialComponent(),
+				true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doManageMedias(UserRequest ureq, Wiki wiki) {
+		if(wiki.getMediaFileListWithMetadata().size() > 0){
+			mediaMgntContent = createVelocityContainer("media");
+			refreshTableDataModel(ureq, wiki);
+			mediaMgntContent.put("mediaMgmtTable", mediaTableCtr.getInitialComponent());
+			
+			removeAsListenerAndDispose(cmc);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), mediaMgntContent, true, translate("manage.media"));
+			listenTo(cmc);
+			
+			cmc.activate();
+		}
 	}
 
 	@Override
