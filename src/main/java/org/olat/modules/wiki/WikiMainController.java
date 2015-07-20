@@ -96,7 +96,6 @@ import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
 import org.olat.modules.fo.ForumController;
 import org.olat.modules.fo.ForumManager;
-import org.olat.modules.fo.ForumUIFactory;
 import org.olat.modules.wiki.gui.components.wikiToHtml.ErrorEvent;
 import org.olat.modules.wiki.gui.components.wikiToHtml.FilterUtil;
 import org.olat.modules.wiki.gui.components.wikiToHtml.RequestImageEvent;
@@ -420,14 +419,14 @@ public class WikiMainController extends BasicController implements CloneableCont
 		
 		ContextEntry ce = entries.get(0);
 		String typ = ce.getOLATResourceable().getResourceableTypeName();
-		if("az".equals(typ)) {
+		if("az".equalsIgnoreCase(typ)) {
 			openAtoZPage(ureq, wiki);
-		} else if ("lastChanges".equals(typ)) {
+		} else if ("lastChanges".equalsIgnoreCase(typ)) {
 			openLastChangesPage(ureq, wiki);
-		} else if ("index".equals(typ)) {
+		} else if ("index".equalsIgnoreCase(typ)) {
 			WikiPage page = openIndexPage(ureq, wiki);
 			pageId = page.getPageId();
-		} else if ("Forum".equals(typ)) {
+		} else if ("Forum".equalsIgnoreCase(typ)) {
 			Long forumKey = ce.getOLATResourceable().getResourceableId();
 			for(WikiPage page:wiki.getAllPagesWithContent()) {
 				if(forumKey.longValue() == page.getForumKey()) {
@@ -462,8 +461,14 @@ public class WikiMainController extends BasicController implements CloneableCont
 				if(entries.size() > 1) {
 					List<ContextEntry> subEntries = entries.subList(1, entries.size());
 					String subTyp = subEntries.get(0).getOLATResourceable().getResourceableTypeName();
-					if("tab".equals(subTyp)) {
+					if("tab".equalsIgnoreCase(subTyp)) {
 						tabs.activate(ureq, subEntries, ce.getTransientState());
+					} else if("message".equalsIgnoreCase(subTyp)) {
+						OLATResourceable tabOres = OresHelper.createOLATResourceableInstance("tab", 1l);
+						ContextEntry tabCe = BusinessControlFactory.getInstance().createContextEntry(tabOres);
+						tabs.activate(ureq, Collections.singletonList(tabCe), null);
+					
+						forumController.activate(ureq, subEntries, null);		
 					}
 				}
 			}
@@ -647,7 +652,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, getWindowControl());
 			
 			removeAsListenerAndDispose(forumController);
-			forumController = ForumUIFactory.getStandardForumController(ureq, bwControl, forum, forumCallback);
+			forumController = new ForumController(ureq, bwControl, forum, forumCallback, false);
 			listenTo(forumController);
 			discussionContent.put("articleforum", forumController.getInitialComponent());
 		}
