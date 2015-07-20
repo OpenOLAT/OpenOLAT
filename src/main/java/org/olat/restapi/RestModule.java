@@ -44,9 +44,9 @@ import org.springframework.stereotype.Service;
 public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	private static final String ENABLED = "enabled";
-	
+
+	@Value("${restapi.enable:false}")
 	private boolean enabled;
-	private boolean defaultEnabled;
 	@Value("${restapi.ips.system}")
 	private String ipsByPass;
 	
@@ -68,14 +68,6 @@ public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 	@Override
 	protected void initFromChangedProperties() {
 		init();
-	}
-
-	public Boolean getDefaultEnabled() {
-		return defaultEnabled;
-	}
-
-	public void setDefaultEnabled(Boolean defaultEnabled) {
-		this.defaultEnabled = defaultEnabled;
 	}
 	
 	@Override
