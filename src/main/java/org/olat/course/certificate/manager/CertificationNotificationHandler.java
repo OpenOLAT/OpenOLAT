@@ -123,7 +123,7 @@ public class CertificationNotificationHandler implements NotificationsHandler {
 	public String createTitleInfo(Subscriber subscriber, Locale locale) {
 		try {
 			Long resId = subscriber.getPublisher().getResId();
-			String displayName = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(resId);
+			String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(resId);
 			Translator trans = Util.createPackageTranslator(CertificateController.class, locale);
 			return trans.translate("notifications.title", new String[]{ displayName });
 		} catch (Exception e) {

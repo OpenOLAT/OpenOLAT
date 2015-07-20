@@ -23,6 +23,7 @@ package org.olat.resource.accesscontrol.provider.free.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -46,7 +47,10 @@ public class FreeAccessConfigurationController extends AbstractConfigurationMeth
 
 	private TextElement descEl;
 	private DateChooser dateFrom, dateTo;
+	private MultipleSelectionElement autoEl;
 	private final OfferAccess link;
+	
+	private String[] autoKeys = new String[]{ "x" };
 	
 	public FreeAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link, boolean edit) {
 		super(ureq, wControl, edit);
@@ -62,6 +66,14 @@ public class FreeAccessConfigurationController extends AbstractConfigurationMeth
 			desc = link.getOffer().getDescription();
 		}
 		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, desc, formLayout);
+		
+		String[] autoValues = new String[]{ translate("auto.booking.value") };
+		autoEl = uifactory.addCheckboxesHorizontal("auto.booking", "auto.booking", formLayout, autoKeys, autoValues);
+		if(link.getOffer() != null && link.getOffer().getKey() != null) {
+			autoEl.select(autoKeys[0], link.getOffer().isAutoBooking());
+		} else {
+			autoEl.select(autoKeys[0], true);
+		}
 
 		dateFrom = uifactory.addDateChooser("from_" + link.getKey(), "from", link.getValidFrom(), formLayout);
 		dateTo = uifactory.addDateChooser("to_" + link.getKey(), "to", link.getValidTo(), formLayout);
@@ -80,6 +92,7 @@ public class FreeAccessConfigurationController extends AbstractConfigurationMeth
 		offer.setDescription(descEl.getValue());
 		offer.setValidFrom(dateFrom.getDate());
 		offer.setValidTo(dateTo.getDate());
+		offer.setAutoBooking(autoEl.isAtLeastSelected(1));
 		link.setValidFrom(dateFrom.getDate());
 		link.setValidTo(dateTo.getDate());
 		return link;

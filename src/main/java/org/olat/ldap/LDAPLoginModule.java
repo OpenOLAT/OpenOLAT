@@ -35,7 +35,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.user.UserManager;
 import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
@@ -152,8 +151,6 @@ public class LDAPLoginModule extends AbstractSpringModule {
 	private BaseSecurity securityManager;
 	@Autowired
 	private LDAPLoginManager ldapManager;
-	@Autowired
-	private UserManager userManager;
 	
 	@Autowired
 	public LDAPLoginModule(CoordinatorManager coordinatorManager) {

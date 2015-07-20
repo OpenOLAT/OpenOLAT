@@ -37,7 +37,6 @@ import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Grant;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.manager.GroupDAO;
@@ -79,8 +78,6 @@ public class BGRightManagerTest extends OlatTestCase {
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private BGRightManager rightManager;
-	@Autowired
-	private BaseSecurity securityManager;
 
 	/**
 	 * SetUp is called before each test.

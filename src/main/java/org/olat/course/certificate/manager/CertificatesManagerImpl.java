@@ -270,7 +270,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	public void markPublisherNews(Identity ident, ICourse course) {
 		SubscriptionContext subsContext = getSubscriptionContext(course);
 		if (subsContext != null) {
-			NotificationsManager.getInstance().markPublisherNews(subsContext, ident, true);
+			notificationsManager.markPublisherNews(subsContext, ident, true);
 		}
 	}
 	
@@ -278,7 +278,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		ICourse course = CourseFactory.loadCourse(courseResource);
 		SubscriptionContext subsContext = getSubscriptionContext(course);
 		if (subsContext != null) {
-			NotificationsManager.getInstance().markPublisherNews(subsContext, ident, true);
+			notificationsManager.markPublisherNews(subsContext, ident, true);
 		}
 	}
 	

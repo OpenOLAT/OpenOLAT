@@ -24,7 +24,6 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.control.Event;
@@ -62,8 +61,6 @@ public class InstantMessageServiceTest extends OlatTestCase {
 	private RosterDAO rosterDao;
 	@Autowired
 	private InstantMessagingService imService;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired

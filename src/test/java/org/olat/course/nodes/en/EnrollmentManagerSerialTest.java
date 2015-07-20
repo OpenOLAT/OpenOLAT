@@ -25,7 +25,6 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -51,8 +50,6 @@ public class EnrollmentManagerSerialTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private BGAreaManager areaManager;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private EnrollmentManager enrollmentManager;
 	@Autowired

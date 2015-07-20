@@ -189,9 +189,9 @@ public class QTIArchiveWizardController extends BasicController {
 		else if (source == backLinkAtDelimChoose){
 			wc.setWizardTitle(getTranslator().translate("wizard.optionschoose.title"));
 			wc.setBackWizardStep(getTranslator().translate("wizard.optionschoose.howto"), optionsChooseVC);
-		}
-		else if (source == showFileButton){
-			ureq.getDispatchResult().setResultingMediaResource(new FileMediaResource(new File(exportDir, targetFileName), true));
+		} else if (source == showFileButton ){
+			MediaResource resource = new FileMediaResource(new File(exportDir, targetFileName), true);
+			ureq.getDispatchResult().setResultingMediaResource(resource);
 		}
 	}
 
@@ -277,48 +277,52 @@ public class QTIArchiveWizardController extends BasicController {
 				    
 							QTIResultManager qrm = QTIResultManager.getInstance();
 							results = qrm.selectResults(olatResource, currentCourseNode.getIdent(), repKey, null, type);
-							QTIResult res0 = results.get(0);
+							if(results.isEmpty()) {
+								success = false;
+							} else {
+								qtiItemObjectList = new QTIObjectTreeBuilder().getQTIItemObjectList(repKey);
+								qtiItemConfigs = getQTIItemConfigs(qtiItemObjectList);
 							
-							qtiItemObjectList = new QTIObjectTreeBuilder().getQTIItemObjectList(new Long(res0.getResultSet().getRepositoryRef()));
-							
-							qtiItemConfigs = getQTIItemConfigs(qtiItemObjectList);
-						
-							if(dummyMode){
-								finishedVC = createVelocityContainer("finished");
-								showFileButton = LinkFactory.createButton("showfile", finishedVC, this);
-								finishedVC.contextPut("nodetitle", currentCourseNode.getShortTitle());
-							
-								this.sep = convert2CtrlChars(sep);
-								this.car = convert2CtrlChars(car);
-							
-								formatter = getFormatter(ureq.getLocale(), sep, emb, esc, car, true);
-								formatter.setMapWithExportItemConfigs(qtiItemConfigs);
-							
-								exportDir = CourseFactory.getOrCreateDataExportDirectory(ureq.getIdentity(), course.getCourseTitle());
-								UserManager um = UserManager.getInstance();
-								String charset = um.getUserCharset(ureq.getIdentity());
-					    
-								QTIExportManager qem = QTIExportManager.getInstance();
-
-								targetFileName = qem.exportResults(formatter, results, qtiItemObjectList, currentCourseNode.getShortTitle(),exportDir, charset, suf);
-								finishedVC.contextPut("filename", targetFileName);
-								wc.setWizardTitle(getTranslator().translate("wizard.finished.title"));
-								wc.setNextWizardStep(getTranslator().translate("wizard.finished.howto"), finishedVC);
-							
-							} else { // expert mode
-								optionsChooseVC = createVelocityContainer("optionschoose");
-								backLinkAtOptionChoose = LinkFactory.createLinkBack(optionsChooseVC, this);
-								optionsChooseVC.contextPut("nodetitle", currentCourseNode.getShortTitle());
-								removeAsListenerAndDispose(ocForm);
-								ocForm = new OptionsChooseForm(ureq, getWindowControl(), qtiItemConfigs);
-								listenTo(ocForm);
-								optionsChooseVC.put("ocForm", ocForm.getInitialComponent());
-							
-								wc.setWizardTitle(getTranslator().translate("wizard.optionschoose.title"));
-								wc.setNextWizardStep(getTranslator().translate("wizard.optionschoose.howto"), optionsChooseVC);
+								if(dummyMode) {
+									finishedVC = createVelocityContainer("finished");
+									showFileButton = LinkFactory.createButton("showfile", finishedVC, this);
+									showFileButton.setTarget("_blank");
+									finishedVC.contextPut("nodetitle", currentCourseNode.getShortTitle());
+								
+									this.sep = convert2CtrlChars(sep);
+									this.car = convert2CtrlChars(car);
+								
+									formatter = getFormatter(ureq.getLocale(), sep, emb, esc, car, true);
+									formatter.setMapWithExportItemConfigs(qtiItemConfigs);
+								
+									exportDir = CourseFactory.getOrCreateDataExportDirectory(ureq.getIdentity(), course.getCourseTitle());
+									UserManager um = UserManager.getInstance();
+									String charset = um.getUserCharset(ureq.getIdentity());
+						    
+									QTIExportManager qem = QTIExportManager.getInstance();
+	
+									targetFileName = qem.exportResults(formatter, results, qtiItemObjectList, currentCourseNode.getShortTitle(),exportDir, charset, suf);
+									finishedVC.contextPut("filename", targetFileName);
+									wc.setWizardTitle(getTranslator().translate("wizard.finished.title"));
+									wc.setNextWizardStep(getTranslator().translate("wizard.finished.howto"), finishedVC);
+								
+								} else { // expert mode
+									optionsChooseVC = createVelocityContainer("optionschoose");
+									backLinkAtOptionChoose = LinkFactory.createLinkBack(optionsChooseVC, this);
+									optionsChooseVC.contextPut("nodetitle", currentCourseNode.getShortTitle());
+									removeAsListenerAndDispose(ocForm);
+									ocForm = new OptionsChooseForm(ureq, getWindowControl(), qtiItemConfigs);
+									listenTo(ocForm);
+									optionsChooseVC.put("ocForm", ocForm.getInitialComponent());
+								
+									wc.setWizardTitle(getTranslator().translate("wizard.optionschoose.title"));
+									wc.setNextWizardStep(getTranslator().translate("wizard.optionschoose.howto"), optionsChooseVC);
+								}
 							}
 						}
-					} else { // no success
+					} 
+				    
+				    if(!success) { // no success
 						noResultsVC = createVelocityContainer("noresults");
 						backLinkAtNoResults = LinkFactory.createLinkBack(noResultsVC, this);
 						noResultsVC.contextPut("nodetitle", currentCourseNode.getShortTitle());

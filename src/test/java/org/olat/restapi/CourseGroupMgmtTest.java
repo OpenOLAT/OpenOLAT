@@ -53,7 +53,6 @@ import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -98,8 +97,6 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	

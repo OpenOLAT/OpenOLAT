@@ -26,11 +26,13 @@
 
 package org.olat.instantMessaging;
 
-import org.olat.core.configuration.AbstractOLATModule;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
-import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 
 /**
@@ -42,7 +44,8 @@ import org.olat.core.util.event.GenericEventListener;
  * 
  * @author Guido Schnider
  */
-public class InstantMessagingModule extends AbstractOLATModule implements ConfigOnOff, GenericEventListener {
+@Service("instantMessagingModule")
+public class InstantMessagingModule extends AbstractSpringModule implements ConfigOnOff {
 
 	private static final String CONFIG_ENABLED = "im.enabled";
 	private static final String CONFIG_GROUP_ENABLED = "im.enabled.group";
@@ -55,17 +58,24 @@ public class InstantMessagingModule extends AbstractOLATModule implements Config
 	private static final String CONFIG_ONLINESTATUS_ENABLED = "im.enabled.onlinestatus";
 	private static final String CONFIG_GROUPPEERS_ENABLED = "im.enabled.grouppeers";
 
-	private boolean enabled = false;
-	private boolean groupEnabled = false;
-	private boolean groupAnonymEnabled = false;
+	@Value("${instantMessaging.enable}")
+	private boolean enabled;
+	private boolean groupEnabled = true;
+	private boolean groupAnonymEnabled = true;
 	private boolean groupAnonymDefaultEnabled = false;	
-	private boolean courseEnabled = false;
-	private boolean courseAnonymEnabled = false;
-	private boolean courseAnonymDefaultEnabled = false;
-	private boolean privateEnabled = false;
-	private boolean onlineStatusEnabled = false;
-	private boolean groupPeersEnabled = false;
+	private boolean courseEnabled = true;
+	private boolean courseAnonymEnabled = true;
+	private boolean courseAnonymDefaultEnabled = true;
+	private boolean privateEnabled = true;
+	private boolean onlineStatusEnabled = true;
+	private boolean groupPeersEnabled = true;
+	
+	@Autowired
+	public InstantMessagingModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
+	}
 
+	@Override
 	public void init() {
 		String enabledObj = getStringPropertyValue(CONFIG_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
@@ -110,27 +120,8 @@ public class InstantMessagingModule extends AbstractOLATModule implements Config
 	}
 
 	@Override
-	protected void initDefaultProperties() {
-		enabled = getBooleanConfigParameter(CONFIG_ENABLED, true);
-		groupEnabled = getBooleanConfigParameter(CONFIG_GROUP_ENABLED, true);
-		groupAnonymEnabled= getBooleanConfigParameter(CONFIG_GROUP_ANONYM_ENABLED, true);
-		groupAnonymDefaultEnabled = getBooleanConfigParameter(CONFIG_GROUP_ANONYM_DEFAULT_ENABLED, false);
-		courseEnabled = getBooleanConfigParameter(CONFIG_COURSE_ENABLED, true);
-		courseAnonymEnabled = getBooleanConfigParameter(CONFIG_COURSE_ANONYM_ENABLED, true);
-		courseAnonymDefaultEnabled = getBooleanConfigParameter(CONFIG_COURSE_ANONYM_DEFAULT_ENABLED, true);
-		privateEnabled = getBooleanConfigParameter(CONFIG_PRIVATE_ENABLED, true);
-		onlineStatusEnabled = getBooleanConfigParameter(CONFIG_ONLINESTATUS_ENABLED, true);
-		groupPeersEnabled = getBooleanConfigParameter(CONFIG_GROUPPEERS_ENABLED, true);
-	}
-
-	@Override
 	protected void initFromChangedProperties() {
 		init();
-	}
-	
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
 	}
 
 	/**

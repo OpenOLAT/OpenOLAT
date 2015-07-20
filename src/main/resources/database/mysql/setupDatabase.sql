@@ -868,22 +868,23 @@ create table o_mail_attachment (
 
 -- access control
 create table  if not exists o_ac_offer (
-	offer_id bigint NOT NULL,
+  offer_id bigint NOT NULL,
   creationdate datetime,
-	lastmodified datetime,
-	is_valid bit default 1,
-	validfrom datetime,
-	validto datetime,
+  lastmodified datetime,
+  is_valid bit default 1,
+  validfrom datetime,
+  validto datetime,
   version mediumint unsigned not null,
   resourceid bigint,
   resourcetypename varchar(255),
   resourcedisplayname varchar(255),
+  autobooking boolean default 0,
   token varchar(255),
   price_amount DECIMAL(12,4),
-	price_currency_code VARCHAR(3),
-	offer_desc VARCHAR(2000),
+  price_currency_code VARCHAR(3),
+  offer_desc VARCHAR(2000),
   fk_resource_id bigint,
-	primary key (offer_id)
+  primary key (offer_id)
 );
 
 create table if not exists o_ac_method (
@@ -2039,6 +2040,7 @@ alter table o_tag add constraint FK6491FCA5A4FA5DC foreign key (fk_author_id) re
 
 -- mail
 alter table o_mail add constraint FKF86663165A4FA5DC foreign key (fk_from_id) references o_mail_recipient (recipient_id);
+create index idx_mail_meta_id_idx on o_mail (meta_mail_id);
 
 alter table o_mail_recipient add constraint FKF86663165A4FA5DG foreign key (fk_recipient_id) references o_bs_identity (id);
 

@@ -29,7 +29,6 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -60,8 +59,6 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 	private RepositoryManager rm;
 	@Autowired
 	private RepositoryService repositoryService;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private UserManager userManager;
 	

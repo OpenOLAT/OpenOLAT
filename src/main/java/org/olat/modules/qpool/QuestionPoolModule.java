@@ -26,12 +26,14 @@ import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
-import org.olat.core.configuration.AbstractOLATModule;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
-import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.qpool.site.QuestionPoolSite;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -39,33 +41,29 @@ import org.olat.modules.qpool.site.QuestionPoolSite;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionPoolModule extends AbstractOLATModule implements ConfigOnOff {
+@Service("qpoolModule")
+public class QuestionPoolModule extends AbstractSpringModule implements ConfigOnOff {
 	
-	private final List<QPoolSPI> questionPoolProviders = new ArrayList<QPoolSPI>();
+	@Autowired
+	private List<QPoolSPI> questionPoolProviders;
 
 	private VFSContainer rootContainer;
+	
+	@Autowired
+	public QuestionPoolModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
+	}
 
 	@Override
 	public void init() {
-		
 		NewControllerFactory.getInstance().addContextEntryControllerCreator("QPool",
 				new SiteContextEntryControllerCreator(QuestionPoolSite.class));
 
 	}
 
 	@Override
-	protected void initDefaultProperties() {
-		//
-	}
-
-	@Override
 	protected void initFromChangedProperties() {
-		init();
-	}
-	
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
+		//
 	}
 
 	@Override
@@ -84,14 +82,6 @@ public class QuestionPoolModule extends AbstractOLATModule implements ConfigOnOf
 		List<QPoolSPI> providers = new ArrayList<QPoolSPI>(questionPoolProviders);
 		Collections.sort(providers, new QuestionPoolSPIComparator());
 		return providers;
-	}
-
-	public void setQuestionPoolProviders(List<QPoolSPI> providers) {
-		if(providers != null) {
-			for(QPoolSPI provider:providers) {
-				addQuestionPoolProvider(provider);
-			}
-		}
 	}
 	
 	public QPoolSPI getQuestionPoolProvider(String format) {

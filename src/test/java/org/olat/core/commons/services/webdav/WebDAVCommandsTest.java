@@ -43,7 +43,6 @@ import org.apache.poi.util.IOUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
@@ -84,8 +83,6 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	private WebDAVModule webDAVModule;
 	@Autowired
 	private VFSLockManager lockManager;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired

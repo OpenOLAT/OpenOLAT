@@ -46,6 +46,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -62,13 +63,16 @@ import org.olat.login.auth.AuthenticationController;
  */
 
 public class ShibbolethAuthenticationController extends AuthenticationController {
+	
+	private static OLog log = Tracing.createLoggerFor(ShibbolethAuthenticationController.class);
+	
 	protected static final String IDP_HOMESITE_COOKIE = "idpsite-presel";
 	protected static final String SHIB_MOBILE = "shibbolet-mobile";
 
-	private Translator fallbackTranslator;
-	private VelocityContainer loginComp;		
+	private Translator fallbackTranslator;	
 	
-	private static OLog log = Tracing.createLoggerFor(ShibbolethAuthenticationController.class);
+	@Autowired
+	private ShibbolethModule shibbolethModule;
 		
 	public ShibbolethAuthenticationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -79,10 +83,10 @@ public class ShibbolethAuthenticationController extends AuthenticationController
 		// Can't use constructor with fallback translator because it gets overriden by setBasePackage call above
 		setTranslator(Util.createPackageTranslator(this.getClass(), ureq.getLocale(), Util.createPackageTranslator(LoginModule.class, ureq.getLocale())));
 
-		if (!ShibbolethModule.isEnableShibbolethLogins()) throw new OLATSecurityException(
+		if (!shibbolethModule.isEnableShibbolethLogins()) throw new OLATSecurityException(
 				"Tried to access shibboleth wayf but shibboleth is not enabled.");
 		
-		loginComp = createVelocityContainer(ShibbolethModule.getLoginTemplate());
+		VelocityContainer loginComp = createVelocityContainer(shibbolethModule.getLoginTemplate());
 		
 		SwitchShibbolethAuthenticationConfigurator config = (SwitchShibbolethAuthenticationConfigurator)CoreSpringFactory.getBean(SwitchShibbolethAuthenticationConfigurator.class);
 		loginComp.contextPut("wayfSPEntityID", config.getWayfSPEntityID());

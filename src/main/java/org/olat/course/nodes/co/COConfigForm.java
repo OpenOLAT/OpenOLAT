@@ -55,7 +55,6 @@ import org.olat.group.BusinessGroupShort;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -112,10 +111,6 @@ public class COConfigForm extends FormBasicController {
 	private BGAreaManager areaManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
-	@Autowired	
-	private RepositoryManager repositoryManager;
-	
-
 
 
 	/**

@@ -25,11 +25,16 @@
 */
 package org.olat.core.configuration;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.gui.control.Event;
 import org.olat.core.logging.LogDelegator;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.StartupException;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.GenericEventListener;
 
@@ -80,6 +85,25 @@ import org.olat.core.util.event.GenericEventListener;
 public abstract class AbstractOLATModule extends LogDelegator implements GenericEventListener {
 	protected PersistedProperties moduleConfigProperties;
 	private Properties moduleDefaultConfig;
+	
+	public static final Map<Class<?>,AtomicInteger> starts = new HashMap<Class<?>,AtomicInteger>();
+	
+	public AbstractOLATModule() {
+		if(!starts.containsKey(this.getClass())) {
+			starts.put(this.getClass(), new AtomicInteger(1));
+		} else {
+			starts.get(this.getClass()).incrementAndGet();
+		}
+	}
+	
+	public static void printStats() {
+		OLog logger = Tracing.createLoggerFor(AbstractOLATModule.class);
+		for(Map.Entry<Class<?>, AtomicInteger> entry:starts.entrySet()) {
+			if(entry.getValue().get() > 1) {
+				logger.info(entry.getValue().get() + " :: " + entry.getKey());
+			}
+		}
+	}
 
 	/**
 	 * Initialize the module. Called by the spring framework at startup time

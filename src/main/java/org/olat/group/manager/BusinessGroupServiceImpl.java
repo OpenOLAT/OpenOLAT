@@ -1525,7 +1525,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			for(RepositoryEntry re:resources) {
 				boolean found = false;
 				for(RepositoryEntryToGroupRelation relation:relations) {
-					if(relation.getGroup().equals(group) && relation.getEntry().equals(re)) {
+					if(relation.getGroup().equals(baseGroup) && relation.getEntry().equals(re)) {
 						found = true;
 					}
 				}

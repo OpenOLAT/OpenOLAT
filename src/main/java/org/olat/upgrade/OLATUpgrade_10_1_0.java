@@ -20,7 +20,6 @@
 package org.olat.upgrade;
 
 import org.olat.admin.user.tools.UserToolsModule;
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -35,8 +34,6 @@ public class OLATUpgrade_10_1_0 extends OLATUpgrade {
 	private static final String TASK_USER_TOOLS = "Upgrade user tools";
 	private static final String VERSION = "OLAT_10.1.0";
 
-	@Autowired
-	private DB dbInstance;
 	@Autowired
 	private UserToolsModule userToolsModule;
 

@@ -27,9 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
-import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.tagging.manager.TaggingManager;
@@ -98,10 +96,6 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 
 	@Autowired
 	private Coordinator coordinator;
-	@Autowired
-	private GroupDAO groupDao;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private EPArtefactManager artefactManager;
 	@Autowired

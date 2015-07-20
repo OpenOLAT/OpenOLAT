@@ -32,7 +32,6 @@ import org.junit.Test;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.test.OlatTestCase;
 import org.olat.test.VFSJavaIOFile;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Test the low memory text extractor for OpenXML (Microsoft Office XML)
@@ -41,9 +40,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class OfficeDocumentTest extends OlatTestCase {
-	
-	@Autowired
-	private FileDocumentFactory fileDocumentFactory;
 	
 	@Test
 	public void testWordOpenXMLDocument() throws IOException, DocumentException, DocumentAccessException, URISyntaxException {
@@ -91,7 +87,8 @@ public class OfficeDocumentTest extends OlatTestCase {
 		FileContent content =	document.readContent(doc);
 		Assert.assertNotNull(content);
 		String body = content.getContent();
-		Assert.assertTrue(body.contains("Lorem ipsum dolor sit amet"));
+		Assert.assertTrue(body.contains("Lorem ipsum dolor sit amet"));//content
+		Assert.assertTrue(body.contains("Rue (domicile)"));//footer
 	}
 	
 	@Test

@@ -39,7 +39,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.EfficiencyStatementManager;
-import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.model.UserEfficiencyStatementImpl;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.repository.RepositoryEntry;
@@ -78,8 +77,6 @@ public class RepositoryEntryMyCourseQueries {
 	private RepositoryModule repositoryModule;
 	@Autowired
 	private EfficiencyStatementManager efficiencyStatementManager;
-	@Autowired
-	private UserCourseInformationsManager userCourseInformationsManager;
 	
 	public int countViews(SearchMyRepositoryEntryViewParams params) {
 		if(params.getIdentity() == null) {

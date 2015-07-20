@@ -33,7 +33,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.DependencyRuleApplayable;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -76,6 +75,7 @@ import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.shibboleth.ShibbolethModule;
+import org.springframework.beans.factory.annotation.Autowired;
 /**
  * Description:<br>
  * The ConditionConfigEasyController implements the easy condition editing
@@ -136,8 +136,12 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	private EventBus singleUserEventCenter;
 	private OLATResourceable groupConfigChangeEventOres;
 	
-	private final BGAreaManager areaManager;
-	private final BusinessGroupService businessGroupService;
+	@Autowired
+	private BGAreaManager areaManager;
+	@Autowired
+	private ShibbolethModule shibbolethModule;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	private boolean managedGroup;
 	
@@ -157,9 +161,6 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	public ConditionConfigEasyController(UserRequest ureq, WindowControl wControl, Condition cond,
 			List<CourseNode> nodeIdentList, CourseEditorEnv env) {
 		super(ureq, wControl, "easycondedit");
-		
-		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
 		groupConfigChangeEventOres = OresHelper.createOLATResourceableType(MultiUserEvent.class);
@@ -282,7 +283,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			}
 
 			// 6) attribute switch
-			if (ShibbolethModule.isEnableShibbolethLogins()) {
+			if (shibbolethModule.isEnableShibbolethLogins()) {
 				if (attributeSwitch.getSelectedKeys().size() == 1) {
 					List<ExtendedCondition> le = attribteRowAdderSubform.getAttributeConditions();
 		
@@ -554,7 +555,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			}
 		}
 		
-		if (ShibbolethModule.isEnableShibbolethLogins()) {
+		if (shibbolethModule.isEnableShibbolethLogins()) {
 			retVal=validateAttibuteFields()&&retVal;	
 		}
 		//
@@ -721,10 +722,10 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		addEasyGroupAreaChoosers(formLayout);
 		addAssessmentSwitch(formLayout);
 		//
-		if(ShibbolethModule.isEnableShibbolethLogins()){
+		if(shibbolethModule.isEnableShibbolethLogins()){
 			addAttributeSwitch(formLayout, ureq);
 		}
-		flc.contextPut("shibbolethEnabled", new Boolean(ShibbolethModule.isEnableShibbolethLogins()));
+		flc.contextPut("shibbolethEnabled", new Boolean(shibbolethModule.isEnableShibbolethLogins()));
 		addAssessmentMode(formLayout);
 		addApplyRulesForTutorsToo(formLayout);
 		
@@ -833,7 +834,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		
 		final Set<FormItem> dependenciesAttributeSwitch = new HashSet<FormItem>();
 		// only add when initialized. is null when shibboleth module is not enabled
-		if (ShibbolethModule.isEnableShibbolethLogins()) {
+		if (shibbolethModule.isEnableShibbolethLogins()) {
 			dependenciesAttributeSwitch.add(attributeBconnector);
 		}
 		
@@ -875,7 +876,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			}
 		});
 		
-		if (ShibbolethModule.isEnableShibbolethLogins()) {
+		if (shibbolethModule.isEnableShibbolethLogins()) {
 			FormItemDependencyRule hideClearAttibuteSwitchDeps = RulesFactory.createCustomRule(attributeSwitch, null, dependenciesAttributeSwitch, formLayout);
 			
 			hideClearAttibuteSwitchDeps.setDependencyRuleApplayable(new DependencyRuleApplayable() {
@@ -918,7 +919,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 				groupSwitch.clearError();
 				groupSubContainer.setVisible(false);			
 				
-				if (ShibbolethModule.isEnableShibbolethLogins()) {
+				if (shibbolethModule.isEnableShibbolethLogins()) {
 					attributeSwitch.clearError();
 				}
 				easyGroupList.setFocus(false);
@@ -1052,7 +1053,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		switchesOnly.add(groupSwitch);
 		switchesOnly.add(assessmentSwitch);
 		switchesOnly.add(applyRulesForCoach);
-		if (ShibbolethModule.isEnableShibbolethLogins()) {
+		if (shibbolethModule.isEnableShibbolethLogins()) {
 			switchesOnly.add(attributeSwitch);
 		}
 
@@ -1067,7 +1068,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 				assessmentMode.setEnabled(true);
 								
 				//default is a checked disabled apply rules for coach
-				if (ShibbolethModule.isEnableShibbolethLogins()) {
+				if (shibbolethModule.isEnableShibbolethLogins()) {
 					attributeSwitch.setEnabled(true);
 				}
 				if(!firedDuringInit){

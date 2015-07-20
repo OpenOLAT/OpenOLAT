@@ -18,6 +18,7 @@
 	  <property  name="validFrom" column="validfrom" type="timestamp" />
 	  <property  name="validTo" column="validto" type="timestamp" />
 	  
+	  <property  name="autoBooking" column="autobooking" type="boolean" />
 	  <property  name="token" column="token" type="string" length="255"/>
 	  <property  name="description" column="offer_desc" type="string" length="2000"/>
 	  

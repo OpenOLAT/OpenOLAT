@@ -40,7 +40,6 @@ import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.manager.BasicManager;
 import org.olat.group.BusinessGroup;
-import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -59,8 +58,6 @@ public class BGRightManagerImpl extends BasicManager implements BGRightManager {
 	private DB dbInstance;
 	@Autowired
 	private GroupDAO groupDao;
-	@Autowired
-	private BusinessGroupRelationDAO businessGroupRelationDAO;
 
 	/**
 	 * @see org.olat.group.right.BGRightManager#addBGRight(java.lang.String,

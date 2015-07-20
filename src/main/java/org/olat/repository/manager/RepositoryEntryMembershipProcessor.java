@@ -28,7 +28,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
@@ -56,8 +55,6 @@ public class RepositoryEntryMembershipProcessor implements InitializingBean, Gen
 	private NotificationsManager notificationsManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
-	@Autowired
-	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	

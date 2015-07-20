@@ -30,7 +30,6 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
@@ -55,8 +54,6 @@ public class QTIResultManagerTest extends OlatTestCase {
 	private QTIResultManager qtiResultManager;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
-	@Autowired
-	private BaseSecurity securityManager;
 	
 	
 	@Test

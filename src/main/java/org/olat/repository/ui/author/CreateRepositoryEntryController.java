@@ -128,13 +128,12 @@ public class CreateRepositoryEntryController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
+		displaynameEl.clearError();
 		if (!StringHelper.containsNonWhitespace(displaynameEl.getValue())) {
 			displaynameEl.setErrorKey("cif.error.displayname.empty", new String[] {});
-			allOk = false;
+			allOk &= false;
 		} else if (displaynameEl.hasError()) {
-			allOk = false;
-		} else {
-			displaynameEl.clearError();
+			allOk &= false;
 		}
 		
 		return allOk & super.validateFormLogic(ureq);

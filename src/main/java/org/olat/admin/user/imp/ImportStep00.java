@@ -124,6 +124,8 @@ class ImportStep00 extends BasicStep {
 		private UserManager um;
 		@Autowired
 		private BaseSecurity securityManager;
+		@Autowired
+		private ShibbolethModule shibbolethModule;
 
 		public ImportStepForm00(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
 			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
@@ -220,7 +222,7 @@ class ImportStep00 extends BasicStep {
 					if (parts.length > columnId) {
 						pwd = parts[columnId].trim();
 						if (StringHelper.containsNonWhitespace(pwd)) {
-							if(pwd.startsWith(UserImportController.SHIBBOLETH_MARKER) && ShibbolethModule.isEnableShibbolethLogins()) {
+							if(pwd.startsWith(UserImportController.SHIBBOLETH_MARKER) && shibbolethModule.isEnableShibbolethLogins()) {
 								String authusername = pwd.substring(UserImportController.SHIBBOLETH_MARKER.length());
 								Authentication auth = securityManager.findAuthenticationByAuthusername(authusername, ShibbolethDispatcher.PROVIDER_SHIB);
 								if(auth != null) {

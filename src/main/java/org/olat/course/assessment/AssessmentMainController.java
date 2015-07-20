@@ -254,7 +254,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		initialLaunchDates = new ConcurrentHashMap<Long,Date>();
 		
 		//use the PropertyHandlerTranslator	as tableCtr translator
-		propertyHandlerTranslator = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());
+		propertyHandlerTranslator = userManager.getPropertyHandlerTranslator(getTranslator());
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);

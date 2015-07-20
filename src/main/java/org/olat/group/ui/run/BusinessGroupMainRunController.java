@@ -30,7 +30,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
@@ -210,8 +209,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 	@Autowired
 	private ACService acService;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private CalendarModule calendarModule;
 	@Autowired

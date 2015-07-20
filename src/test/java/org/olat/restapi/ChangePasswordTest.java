@@ -33,7 +33,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPut;
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
@@ -53,8 +52,6 @@ public class ChangePasswordTest extends OlatJerseyTestCase {
 
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private BaseSecurity securityManager;
 	
 	@Test
 	public void testRegistration() throws IOException, URISyntaxException {

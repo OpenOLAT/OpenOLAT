@@ -735,22 +735,23 @@ create table o_mail_attachment (
 
 -- access control
 create table o_ac_offer (
-	offer_id int8 NOT NULL,
+  offer_id int8 NOT NULL,
   creationdate timestamp,
-	lastmodified timestamp,
-	is_valid boolean default true,
-	validfrom timestamp,
-	validto timestamp,
+  lastmodified timestamp,
+  is_valid boolean default true,
+  validfrom timestamp,
+  validto timestamp,
   version int4 not null,
   resourceid int8,
   resourcetypename varchar(255),
   resourcedisplayname varchar(255),
+  autobooking bool not null default false,
   token varchar(255),
-	price_amount DECIMAL,
-	price_currency_code VARCHAR(3),
-	offer_desc VARCHAR(2000),
+  price_amount DECIMAL,
+  price_currency_code VARCHAR(3),
+  offer_desc VARCHAR(2000),
   fk_resource_id int8,
-	primary key (offer_id)
+  primary key (offer_id)
 );
 
 create table o_ac_method (
@@ -2029,6 +2030,7 @@ create index idx_mail_from_idx on o_mail (fk_from_id);
 
 alter table o_mail_recipient add constraint FKF86663165A4FA5DG foreign key (fk_recipient_id) references o_bs_identity (id);
 create index idx_mailrec_rcp_idx on o_mail_recipient (fk_recipient_id);
+create index idx_mail_meta_id_idx on o_mail (meta_mail_id);
 
 alter table o_mail_to_recipient add constraint FKF86663165A4FA5DE foreign key (fk_mail_id) references o_mail (mail_id);
 create index idx_mailtorec_mail_idx on o_mail_to_recipient (fk_mail_id);

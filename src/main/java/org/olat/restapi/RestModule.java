@@ -23,12 +23,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.olat.core.configuration.PersistedProperties;
-import org.olat.core.configuration.PersistedPropertiesChangedEvent;
-import org.olat.core.gui.control.Event;
+import org.olat.core.configuration.AbstractSpringModule;
+import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.event.GenericEventListener;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -39,33 +40,36 @@ import org.olat.core.util.event.GenericEventListener;
  * Initial Date:  18 juin 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-public class RestModule implements GenericEventListener {
+@Service("restModule")
+public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	private static final String ENABLED = "enabled";
 	
-	private Boolean enabled;
-	private Boolean defaultEnabled;
+	private boolean enabled;
+	private boolean defaultEnabled;
+	@Value("${restapi.ips.system}")
 	private String ipsByPass;
-	private PersistedProperties persistedProperties;
 	
-	private String monitoredProbes;
-	
-	public RestModule() {
-		//
+
+	@Autowired
+	public RestModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
 	}
 	
-	public void setCoordinator(CoordinatorManager coordinatorManager) {
-		//nothing to do
+	@Override
+	public void init() {
+		//module enabled/disabled
+		String enabledObj = getStringPropertyValue(ENABLED, true);
+		if(StringHelper.containsNonWhitespace(enabledObj)) {
+			enabled = "enabled".equals(enabledObj);
+		}
 	}
-	
-	/**
-	 * [used by spring]
-	 * @param persistedProperties
-	 */
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.persistedProperties = persistedProperties;
+
+	@Override
+	protected void initFromChangedProperties() {
+		init();
 	}
-	
+
 	public Boolean getDefaultEnabled() {
 		return defaultEnabled;
 	}
@@ -74,19 +78,14 @@ public class RestModule implements GenericEventListener {
 		this.defaultEnabled = defaultEnabled;
 	}
 	
+	@Override
 	public boolean isEnabled() {
-		if(enabled == null) {
-			String enabledStr = persistedProperties.getStringPropertyValue(ENABLED, true);
-			enabled = StringHelper.containsNonWhitespace(enabledStr) ? "enabled".equals(enabledStr) : defaultEnabled.booleanValue();
-		}
-		return enabled.booleanValue();
+		return enabled;
 	}
 	
 	public void setEnabled(boolean enabled) {
-		if (getPersistedProperties() != null) {
-			String enabledStr = enabled ? "enabled" : "disabled";
-			getPersistedProperties().setStringProperty(ENABLED, enabledStr, true);
-		}
+		String enabledStr = enabled ? "enabled" : "disabled";
+		setStringProperty(ENABLED, enabledStr, true);
 	}
 	
 	public String getIpsByPass() {
@@ -107,33 +106,4 @@ public class RestModule implements GenericEventListener {
 	public void setIpsByPass(String ipsByPass) {
 		this.ipsByPass = ipsByPass;
 	}
-
-	/**
-	 * @return the persisted properties
-	 */
-	private PersistedProperties getPersistedProperties() {
-		return persistedProperties;
-	}
-	
-	@Override
-	public void event(Event event) {
-		if (event instanceof PersistedPropertiesChangedEvent) {
-			// Reload the properties
-			if (!((PersistedPropertiesChangedEvent)event).isEventOnThisNode()) {
-				persistedProperties.loadPropertiesFromFile();
-			}
-			enabled = null;
-		}
-	}
-
-	public String getMonitoredProbes() {
-		return monitoredProbes;
-	}
-
-	public void setMonitoredProbes(String monitoredProbes) {
-		this.monitoredProbes = monitoredProbes;
-	}
-	
-	
-
 }

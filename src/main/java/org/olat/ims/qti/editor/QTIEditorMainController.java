@@ -263,6 +263,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
 	private QTIQPoolServiceProvider qtiQpoolServiceProvider;
 	
 	public QTIEditorMainController(UserRequest ureq, WindowControl wControl, RepositoryEntry qtiEntry, List<Reference> referencees, FileResource fileResource) {
@@ -1198,10 +1200,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		 */
 		changeEmail = new ContactMessage(ureq.getIdentity());
 
-		RepositoryManager rm = RepositoryManager.getInstance();
-		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		// the owners of this qtiPkg
-		RepositoryEntry myEntry = rm.lookupRepositoryEntry(qtiPackage.getRepresentingResourceable(), false);
+		RepositoryEntry myEntry = repositoryManager.lookupRepositoryEntry(qtiPackage.getRepresentingResourceable(), false);
 		
 		// add qti resource owners as group
 		ContactList cl = new ContactList("qtiPkgOwners");
@@ -1228,7 +1228,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				StringBuilder stakeHolders = new StringBuilder();
 				
 				// the course owners
-				RepositoryEntry entry = rm.lookupRepositoryEntry(course, false);
+				RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(course, false);
 				if(entry != null) {//OO-1300
 					List<Identity> stakeHoldersIds = repositoryService.getMembers(entry, GroupRoles.owner.name());
 	

@@ -102,8 +102,6 @@ public class EPStructureManager extends BasicManager {
 	@Autowired
 	private OLATResourceManager resourceManager;
 	@Autowired
-	private EPPolicyManager policyManager;
-	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
 	private RepositoryService repositoryService;

@@ -56,11 +56,8 @@ import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.portfolio.model.structel.StructureStatusEnum;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,13 +98,7 @@ public class EPFrontendManagerTest extends OlatTestCase {
 	private InvitationDAO invitationDao;
 	
 	@Autowired
-	private RepositoryManager repositoryManager;
-	@Autowired
 	private RepositoryService repositoryService;
-	@Autowired
-	private OLATResourceManager resourceManager;
-	@Autowired
-	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	@Before
 	public void setUp() {

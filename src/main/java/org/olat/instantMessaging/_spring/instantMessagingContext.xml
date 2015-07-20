@@ -8,28 +8,7 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context.xsd">
 
-	<context:component-scan base-package="org.olat.instantMessaging.manager" />
-	
-	<bean id="instantMessagingModule" class="org.olat.instantMessaging.InstantMessagingModule">
-		<property name="persistedProperties">
-	  	<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy" 
-	  		depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
-	    	<constructor-arg index="0" ref="coordinatorManager"/>
-	    	<constructor-arg index="1" ref="instantMessagingModule" />
-	  	</bean>
-		</property>
-	</bean>
-	
-	<!-- default configuration -->
-	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetObject" ref="instantMessagingModule" />
-		<property name="targetMethod" value="init" />
-		<property name="arguments">
-			<value>
-				im.enabled=${instantMessaging.enable}
-			</value>
-		</property>
-	</bean>
+	<context:component-scan base-package="org.olat.instantMessaging" />
 	
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="7210" />
