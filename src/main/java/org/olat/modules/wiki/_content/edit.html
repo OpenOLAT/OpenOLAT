@@ -73,20 +73,6 @@
 	<div class="o_wikimod_editform_wrapper">
 		$r.render('editForm')
 	</div>
-	
-	#o_togglebox_start("o_wikimod_uploader" $r.translate("media.upload"))
-		<span class='xsmall'>
-			$r.translate('upload.example')
-		</span>
-		$r.render('fileUplCtr')
-		<br />
-		<span class='emphasis'>
-			$r.translate('media.insert.hint')
-		</span>
-		<br /><br />
-		$r.render('manage.media')
-		<br />
-	#o_togglebox_end()
 #end
 
 #if (!$r.available("versionDisplay"))

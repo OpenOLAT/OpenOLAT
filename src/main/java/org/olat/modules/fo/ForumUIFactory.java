@@ -81,7 +81,7 @@ public class ForumUIFactory {
 	 * @return a TitledWrapperController
 	 */
   public static Controller getTitledForumController(UserRequest ureq, WindowControl wControl, Forum forum, ForumCallback forumCallback, TitleInfo titleInfo) {			
-		ForumController popupFoCtr = new ForumController(forum, forumCallback, ureq, wControl);												
+		ForumController popupFoCtr = new ForumController(ureq, wControl, forum, forumCallback, true);												
 		TitledWrapperController forumWrapperController = new TitledWrapperController(ureq, wControl, popupFoCtr, "o_course_run", titleInfo);
 		// Set CSS values to default forum icons if no values are set in the title info
 		if (!StringHelper.containsNonWhitespace(titleInfo.getIconCssClass())) {
@@ -99,7 +99,7 @@ public class ForumUIFactory {
    * @return
    */
 	public static ForumController getStandardForumController(UserRequest ureq, WindowControl wControl, Forum forum,	ForumCallback forumCallback) {
-		return new ForumController(forum, forumCallback, ureq, wControl);												
+		return new ForumController(ureq, wControl, forum, forumCallback, true);												
 	}
   
 }

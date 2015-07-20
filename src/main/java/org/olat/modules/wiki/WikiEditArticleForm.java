@@ -52,13 +52,12 @@ public class WikiEditArticleForm extends FormBasicController {
 
 	private TextElement wikiContent;
 	private TextElement updateComment;
-	private WikiPage page;
-	
 
+	private final WikiPage page;
 	private final WikiSecurityCallback securityCallback;
 	
-	public WikiEditArticleForm(UserRequest ureq, WindowControl wControl, WikiPage page,
-			WikiSecurityCallback securityCallback) {
+	public WikiEditArticleForm(UserRequest ureq, WindowControl wControl,
+			WikiPage page, WikiSecurityCallback securityCallback) {
 		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
 		this.page = page;
 		this.securityCallback = securityCallback;
@@ -97,7 +96,7 @@ public class WikiEditArticleForm extends FormBasicController {
 	}
 	
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event){	
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		fireEvent (ureq, new Event(source.getName()));
 	}
 	
@@ -122,6 +121,9 @@ public class WikiEditArticleForm extends FormBasicController {
 			uifactory.addFormLink("delete.page", buttonLayout, Link.BUTTON);
 		}
 		uifactory.addFormLink("preview", buttonLayout, Link.BUTTON);
+		uifactory.addFormLink("media.upload", buttonLayout, Link.BUTTON);
+		uifactory.addFormLink("manage.media", buttonLayout, Link.BUTTON);
+
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 
@@ -129,5 +131,4 @@ public class WikiEditArticleForm extends FormBasicController {
 	protected void doDispose() {
 		//
 	}
-
 }
