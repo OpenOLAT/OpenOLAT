@@ -58,8 +58,10 @@ public class PasswordVerificationController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("password.title");
 		setFormWarning("password.inputorder");
+		formLayout.setElementCssClass("o_sel_course_password_form");
 
 		pwElement = uifactory.addPasswordElement("password.field", "password.field", 255, "", formLayout);
+		pwElement.setElementCssClass("o_sel_course_password");
 		pwElement.setMandatory(true);
 		pwElement.setDisplaySize(30);
 		

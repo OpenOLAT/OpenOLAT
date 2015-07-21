@@ -45,6 +45,7 @@ import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
 import org.olat.selenium.page.User;
 import org.olat.selenium.page.core.BookingPage;
+import org.olat.selenium.page.core.MenuTreePageFragment;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseWizardPage;
@@ -1005,5 +1006,126 @@ public class CourseTest {
 			.openLog()
 			.assertLogList(kanu, reminderTitle, true)
 			.assertLogList(author, reminderTitle, false);
+	}
+	
+	/**
+	 * An author creates a course with a structure element. The structure
+	 * element is password protected. Under it, there is an info node. The
+	 * course is published and a first user search the course, go to the
+	 * structure element, give the password and see the info node. A second
+	 * user grabs the rest url of the structure node, use it, give the password
+	 * and go to the info node.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void coursePassword(@InitialPage LoginPage loginPage,
+			@Drone @Participant WebDriver kanuBrowser,
+			@Drone @User WebDriver ryomouBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//go to authoring
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+		
+		String title = "Password-me-" + UUID.randomUUID();
+		//create course
+		authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.course)
+			.fillCreateForm(title)
+			.assertOnGeneralTab()
+			.save();
+		
+		String infoTitle = "Info - " + UUID.randomUUID();
+		String structureTitle = "St - " + UUID.randomUUID();
+
+		//open course editor, create a structure node
+		CoursePageFragment course = new CoursePageFragment(browser);
+		CourseEditorPageFragment editor = course
+			.openToolsMenu()
+			.edit();
+		editor
+			.createNode("st")
+			.nodeTitle(structureTitle);
+		String courseInfoUrl = editor.getRestUrl();
+		editor
+		//create an info node and move it under the structure node
+			.createNode("info")
+			.nodeTitle(infoTitle)
+			.moveUnder(structureTitle)
+			.selectNode(structureTitle)
+		//select and set password on structure node
+			.selectTabPassword()
+			.setPassword("super secret")
+		//publish
+			.autoPublish()
+			.accessConfiguration()
+			.setUserAccess(UserAccess.registred)
+			.clickToolbarBack();
+		
+		MenuTreePageFragment courseTree = course
+			.clickTree()
+			.selectWithTitle(structureTitle.substring(0, 20));
+		course
+			.assertOnPassword()
+			.enterPassword("super secret");
+		courseTree
+			.selectWithTitle(infoTitle.substring(0, 20));
+		course
+			.assertOnTitle(infoTitle);
+		
+		//First user go to the course
+		LoginPage kanuLoginPage = LoginPage.getLoginPage(kanuBrowser, deploymentUrl);
+		kanuLoginPage
+			.loginAs(kanu.getLogin(), kanu.getPassword())
+			.resume();
+
+		NavigationPage kanuNavBar = new NavigationPage(kanuBrowser);
+		kanuNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(title)
+			.select(title)
+			.start();
+		
+		//go to the structure, give the password
+		CoursePageFragment kanuCourse = new CoursePageFragment(kanuBrowser);
+		MenuTreePageFragment kanuTree = kanuCourse
+			.clickTree()
+			.selectWithTitle(structureTitle.substring(0, 20));
+		kanuCourse
+			.assertOnPassword()
+			.enterPassword("super secret");
+		kanuTree
+			.selectWithTitle(infoTitle.substring(0, 20));
+		kanuCourse
+			.assertOnTitle(infoTitle);
+		
+		//Second user use the rest url
+		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, new URL(courseInfoUrl));
+		ryomouLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		
+		CoursePageFragment ryomouCourse = new CoursePageFragment(ryomouBrowser);
+		ryomouCourse
+			.assertOnPassword()
+			.enterPassword("super secret");
+		//find the secret info course element
+		ryomouCourse
+			.clickTree()
+			.selectWithTitle(structureTitle.substring(0, 20))
+			.selectWithTitle(infoTitle.substring(0, 20));
+		ryomouCourse
+			.assertOnTitle(infoTitle);
 	}
 }
