@@ -336,6 +336,9 @@
 				height: $o-coursesite-rowelem-width-xs;	
 				margin: 0 0 0 $o-coursesite-rowelem-width-xs;
 				padding: 0 0 0 1em;
+				
+				overflow: hidden;
+				
 				.o_title {
 					line-height: $o-coursesite-rowelem-width-xs;
 				}
