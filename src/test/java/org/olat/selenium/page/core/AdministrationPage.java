@@ -21,7 +21,6 @@ package org.olat.selenium.page.core;
 
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -36,25 +35,32 @@ import org.openqa.selenium.WebElement;
  *
  */
 public class AdministrationPage {
-	
-	//private static final By 
-	
-	@Drone
-	private WebDriver browser;
-	
-	public AdministrationPage() {
-		//
-	}
+
+	private final WebDriver browser;
 
 	public AdministrationPage(WebDriver browser) {
 		this.browser = browser;
 	}
 	
-	public AdministrationPage clearCache(String cacheName) {
-		//system tree node
-		WebElement systemLink = browser.findElement(By.xpath("//div[contains(@class,'o_tree')]//a[contains(@href,'systemParent/')]"));
-		systemLink.click();
+	public AdministrationMessagesPage selectInfoMessages() {
+		this.selectSystemInfo();
+		
+		By messagesBy = By.cssSelector(".o_sel_sysinfo span.o_tree_level_label_leaf>a");
+		browser.findElement(messagesBy).click();
 		OOGraphene.waitBusy(browser);
+		return new AdministrationMessagesPage(browser);
+	}
+	
+	public AdministrationPage selectSystemInfo() {
+		By systemLinkby = By.xpath("//div[contains(@class,'o_tree')]//a[contains(@href,'systemParent/')]");
+		browser.findElement(systemLinkby).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public AdministrationPage clearCache(String cacheName) {
+		selectSystemInfo();
+		
 		//cache tree node
 		WebElement cacheLink = browser.findElement(By.cssSelector(".o_sel_caches span.o_tree_level_label_leaf>a"));
 		cacheLink.click();

@@ -85,7 +85,9 @@ public class InfoMessageControllerSingleVM extends BasicController {
 		infomsgEditButton = LinkFactory.createButton("infomsgEdit", infoMsgView, this);
 		infomsgClearButton = LinkFactory.createButton("infomsgClear", infoMsgView, this);
 		maintenancemsgEditButton = LinkFactory.createButton("maintenancemsgEdit", infoMsgView, this);
+		maintenancemsgEditButton.setElementCssClass("o_sel_maintenance_msg_edit");
 		maintenancemsgClearButton = LinkFactory.createButton("maintenancemsgClear", infoMsgView, this);
+		maintenancemsgClearButton.setElementCssClass("o_sel_maintenance_msg_clear");
 		
 		//login
 		String infoMsg = mrg.getInfoMessage();

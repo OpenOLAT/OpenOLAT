@@ -22,6 +22,7 @@ package org.olat.selenium;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -33,6 +34,10 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.selenium.page.LoginPage;
+import org.olat.selenium.page.NavigationPage;
+import org.olat.selenium.page.Participant;
+import org.olat.selenium.page.Student;
+import org.olat.selenium.page.core.AdministrationMessagesPage;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
@@ -102,5 +107,62 @@ public class LoginTest {
 		loginPage.assertOnLoginPage();
 		//login
 		loginPage.loginAs(user.getLogin(), user.getPassword());
+	}
+	
+	/**
+	 * An administrator set a maintenance message. A first user
+	 * logs in before and wait until the message appears. A second
+	 * user load the login page, check that the message is visible,
+	 * logs in and check that the message is visible too.
+	 * 
+	 * 
+	 * @param loginPage
+	 * @param reiBrowser
+	 * @param kanuBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void maintenanceMessage(@InitialPage LoginPage loginPage, 
+			@Drone @Participant WebDriver reiBrowser,
+			@Drone @Student WebDriver kanuBrowser)
+	throws IOException, URISyntaxException {
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
+		
+		//a first user log in
+		LoginPage kanuLogin = LoginPage.getLoginPage(kanuBrowser, deploymentUrl)
+			.loginAs(kanu)
+			.resume();
+		
+		// administrator come in, and set a maintenance message
+		loginPage
+			.assertOnLoginPage()
+			.loginAs("administrator", "openolat");
+		
+		String message = "Hello - " + UUID.randomUUID();
+		AdministrationMessagesPage messagesPage = new NavigationPage(browser)
+			.openAdministration()
+			.selectInfoMessages()
+			.newMaintenanceMessage(message);
+		
+		//A new user see the login page 	
+		LoginPage.getLoginPage(reiBrowser, deploymentUrl)
+			.waitOnMaintenanceMessage(message)
+			.loginAs(rei)
+			.resume()
+			.assertOnMaintenanceMessage(message);
+		
+		kanuLogin
+			.waitOnMaintenanceMessage(message);
+		
+		//administrator remove the message
+		messagesPage
+			.clearMaintenanceMessage();
+		
+		//we wait it disappears
+		kanuLogin
+			.waitOnMaintenanceMessageCleared();
 	}
 }
