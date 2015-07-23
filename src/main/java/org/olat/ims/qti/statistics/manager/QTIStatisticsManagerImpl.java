@@ -74,8 +74,8 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 		}
 		
 		if(searchParams.isMayViewAllUsersAssessments()) {
-			sb.append(" and rset.identityKey in (select nodeassessment.identity.key from coursenodeassessment nodeassessment ")
-			  .append("   where nodeassessment.courseEntry.key=rset.repositoryEntryKey and nodeassessment.courseNodeIdent=rset.olatResourceDetail")
+			sb.append(" and rset.identityKey in (select data.identity.key from assessmententry data ")
+			  .append("   where data.repositoryEntry.key=rset.repositoryEntryKey and data.subIdent=rset.olatResourceDetail")
 			  .append(" )");
 		}
 		return sb;

@@ -50,10 +50,10 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 	public void createCourseNodeAssessment() {
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-1");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		String courseNodeIdent = "39485349759";
+		String subIdent = "39485349759";
 
 		AssessmentEntry nodeAssessment = courseNodeAssessmentDao
-				.createCourseNodeAssessment(assessedIdentity, entry, courseNodeIdent, entry);
+				.createCourseNodeAssessment(assessedIdentity, entry, subIdent, entry);
 		Assert.assertNotNull(nodeAssessment);
 		dbInstance.commitAndCloseSession();
 		
@@ -63,16 +63,16 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		Assert.assertNotNull(nodeAssessment.getLastModified());
 		Assert.assertEquals(assessedIdentity, nodeAssessment.getIdentity());
 		Assert.assertEquals(entry, nodeAssessment.getRepositoryEntry());
-		Assert.assertEquals(courseNodeIdent, nodeAssessment.getSubIdent());
+		Assert.assertEquals(subIdent, nodeAssessment.getSubIdent());
 	}
 	
 	@Test
 	public void loadCourseNodeAssessmentById() {
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-2");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		String courseNodeIdent = UUID.randomUUID().toString();
+		String subIdent = UUID.randomUUID().toString();
 		AssessmentEntry nodeAssessment = courseNodeAssessmentDao
-				.createCourseNodeAssessment(assessedIdentity, entry, courseNodeIdent, entry);
+				.createCourseNodeAssessment(assessedIdentity, entry, subIdent, entry);
 		dbInstance.commitAndCloseSession();
 		
 		AssessmentEntry reloadedAssessment = courseNodeAssessmentDao.loadAssessmentEntryById(nodeAssessment.getKey());
@@ -80,25 +80,25 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		Assert.assertEquals(nodeAssessment, reloadedAssessment);
 		Assert.assertEquals(assessedIdentity, reloadedAssessment.getIdentity());
 		Assert.assertEquals(entry, reloadedAssessment.getRepositoryEntry());
-		Assert.assertEquals(courseNodeIdent, reloadedAssessment.getSubIdent());
+		Assert.assertEquals(subIdent, reloadedAssessment.getSubIdent());
 	}
 	
 	@Test
 	public void loadCourseNodeAssessment() {
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-3");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		String courseNodeIdent = UUID.randomUUID().toString();
+		String subIdent = UUID.randomUUID().toString();
 		AssessmentEntry nodeAssessment = courseNodeAssessmentDao
-				.createCourseNodeAssessment(assessedIdentity, entry, courseNodeIdent, entry);
+				.createCourseNodeAssessment(assessedIdentity, entry, subIdent, entry);
 		dbInstance.commitAndCloseSession();
 		
 		AssessmentEntry reloadedAssessment = courseNodeAssessmentDao
-				.loadAssessmentEntry(assessedIdentity, entry, courseNodeIdent);
+				.loadAssessmentEntry(assessedIdentity, entry, subIdent);
 		Assert.assertEquals(nodeAssessment.getKey(), reloadedAssessment.getKey());
 		Assert.assertEquals(nodeAssessment, reloadedAssessment);
 		Assert.assertEquals(assessedIdentity, reloadedAssessment.getIdentity());
 		Assert.assertEquals(entry, reloadedAssessment.getRepositoryEntry());
-		Assert.assertEquals(courseNodeIdent, reloadedAssessment.getSubIdent());
+		Assert.assertEquals(subIdent, reloadedAssessment.getSubIdent());
 	}
 
 }

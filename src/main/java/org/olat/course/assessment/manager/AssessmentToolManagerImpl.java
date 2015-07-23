@@ -19,8 +19,6 @@
  */
 package org.olat.course.assessment.manager;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
@@ -28,7 +26,6 @@ import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.AssessmentToolManager;
-import org.olat.course.assessment.model.AssessedIdentityWithCertificate;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,13 +39,13 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class AssessmentToolManagerImpl implements AssessmentToolManager{
+public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	
 	@Autowired
 	private DB dbInstance;
 	
 	@Override
-	public List<Identity> getAssessedIdentityWithCertificates(SearchAssessedIdentityParams params) {
+	public List<Identity> getAssessedIdentities(SearchAssessedIdentityParams params) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select ident")
 		  .append(" from ").append(IdentityImpl.class.getName()).append(" as ident ")

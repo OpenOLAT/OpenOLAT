@@ -17,23 +17,29 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment;
+package org.olat.course.assessment.manager;
 
-import java.util.List;
-
-import org.olat.core.id.Identity;
-import org.olat.course.assessment.model.SearchAssessedIdentityParams;
+import org.junit.Assert;
+import org.junit.Test;
+import org.olat.course.assessment.AssessmentToolManager;
+import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * The manager taylored for the assessment tool.
  * 
- * 
- * Initial date: 22.07.2015<br>
+ * Initial date: 23.07.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface AssessmentToolManager {
-	
-	public List<Identity> getAssessedIdentities(SearchAssessedIdentityParams params);
+public class AssessmentToolManagerTest extends OlatTestCase {
 
+	@Autowired
+	private AssessmentToolManager assessmentToolManager;
+	
+	@Test
+	public void getAssessedIdentities() {
+		
+		Assert.assertNotNull(assessmentToolManager);
+		
+	}
 }

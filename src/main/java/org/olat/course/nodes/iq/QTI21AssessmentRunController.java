@@ -35,7 +35,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -49,7 +48,6 @@ import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.auditing.UserNodeAuditManager;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -118,12 +116,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	    // configuration data
 		mainVC.contextPut("attemptsConfig", config.get(IQEditController.CONFIG_KEY_ATTEMPTS));
 	    // user data
-	    if (!(courseNode instanceof AssessableCourseNode)) {
-	    	throw new AssertException("exposeUserTestDataToVC can only be called for test nodes, not for selftest or questionnaire");
-	    }
 	    
-		AssessableCourseNode acn = (AssessableCourseNode)courseNode; // assessment nodes are assesable
-		ScoreEvaluation scoreEval = acn.getUserScoreEvaluation(userCourseEnv);
+		ScoreEvaluation scoreEval = courseNode.getUserScoreEvaluation(userCourseEnv);
 		
 		//block if test passed (and config set to check it)
 		boolean blockAfterSuccess = config.getBooleanSafe(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS);
@@ -140,9 +134,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		mainVC.contextPut("score", AssessmentHelper.getRoundedScore(scoreEval.getScore()));
 		mainVC.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 		mainVC.contextPut("passed", scoreEval.getPassed());
-		StringBuilder comment = Formatter.stripTabsAndReturns(acn.getUserUserComment(userCourseEnv));
+		StringBuilder comment = Formatter.stripTabsAndReturns(courseNode.getUserUserComment(userCourseEnv));
 		mainVC.contextPut("comment", StringHelper.xssScan(comment));
-		mainVC.contextPut("attempts", acn.getUserAttempts(userCourseEnv));
+		mainVC.contextPut("attempts", courseNode.getUserAttempts(userCourseEnv));
 		
 		UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
 		mainVC.contextPut("log", am.getUserNodeLog(courseNode, identity));

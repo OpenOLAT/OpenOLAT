@@ -142,7 +142,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 	private void updateModel() {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry);
 		params.setWithCertificates(true);
-		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentityWithCertificates(params);
+		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(params);
 		List<AssessedIdentityRow> rows = new ArrayList<>(assessedIdentities.size());
 		for(Identity assessedIdentity:assessedIdentities) {
 			rows.add(new AssessedIdentityRow(assessedIdentity, userPropertyHandlers, getLocale()));
