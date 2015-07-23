@@ -1276,8 +1276,10 @@ public class ForumController extends BasicController implements GenericEventList
 		edLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 
 		Link qtLink = LinkFactory.createCustomLink("qt_"+msgCount, "qt_"+msgCount, "msg.quote", Link.BUTTON_SMALL, vcThreadView, this);
+		qtLink.setElementCssClass("o_sel_forum_reply_quoted");
 		qtLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reply_with_quote");
 		Link rpLink = LinkFactory.createCustomLink("rp_"+msgCount, "rp_"+msgCount, "msg.reply", Link.BUTTON_SMALL, vcThreadView, this);
+		rpLink.setElementCssClass("o_sel_forum_reply");
 		rpLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reply");
 
 		Link splitLink = LinkFactory.createCustomLink("split_"+msgCount, "split_"+msgCount, "msg.split", Link.LINK, vcThreadView, this);

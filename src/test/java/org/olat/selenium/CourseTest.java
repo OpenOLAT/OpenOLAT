@@ -43,6 +43,7 @@ import org.olat.selenium.page.Administrator;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
+import org.olat.selenium.page.Student;
 import org.olat.selenium.page.User;
 import org.olat.selenium.page.core.BookingPage;
 import org.olat.selenium.page.core.MenuTreePageFragment;
@@ -53,6 +54,7 @@ import org.olat.selenium.page.course.InfoMessageCEPage;
 import org.olat.selenium.page.course.PublisherPageFragment;
 import org.olat.selenium.page.course.RemindersPage;
 import org.olat.selenium.page.course.PublisherPageFragment.Access;
+import org.olat.selenium.page.forum.ForumPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.FeedPage;
@@ -1127,5 +1129,132 @@ public class CourseTest {
 			.selectWithTitle(infoTitle.substring(0, 20));
 		ryomouCourse
 			.assertOnTitle(infoTitle);
+	}
+	
+	/**
+	 * An author creates a course with a forum, publish it, open a new thread.
+	 * A first user come to see the thread. A second come via the peekview.
+	 * The three make a reply at the same time. And they check that they see
+	 * the replies, and the ones of the others.
+	 * 
+	 * @param loginPage
+	 * @param kanuBrowser
+	 * @param reiBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void concurrentForum(@InitialPage LoginPage loginPage,
+			@Drone @Participant WebDriver kanuBrowser,
+			@Drone @Student WebDriver reiBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course FO " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+	
+		//go the authoring environment to create a forum
+		String foTitle = "FO - " + UUID.randomUUID();
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("fo")
+			.nodeTitle(foTitle)
+		//publish the course
+			.publish()
+			.quickPublish(Access.users);
+		
+		//go to the forum
+		courseEditor
+			.clickToolbarBack()
+			.clickTree()
+			.selectWithTitle(foTitle.substring(0, 20));
+		
+		ForumPage authorForum = ForumPage
+			.getCourseForumPage(browser);
+		authorForum
+			.createThread("The best anime ever", "What is the best anime ever?");
+		
+		//First user go to the course
+		LoginPage kanuLoginPage = LoginPage.getLoginPage(kanuBrowser, deploymentUrl);
+		kanuLoginPage
+			.loginAs(kanu.getLogin(), kanu.getPassword())
+			.resume();
+
+		NavigationPage kanuNavBar = new NavigationPage(kanuBrowser);
+		kanuNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(courseTitle)
+			.select(courseTitle)
+			.start();
+		
+		//go to the forum
+		new CoursePageFragment(kanuBrowser)
+			.clickTree()
+			.selectWithTitle(foTitle.substring(0, 20));
+		
+		ForumPage kanuForum = ForumPage
+			.getCourseForumPage(kanuBrowser)
+			.openThread("The best anime ever");
+
+		
+		//First user go to the course
+		LoginPage reiLoginPage = LoginPage.getLoginPage(reiBrowser, deploymentUrl);
+		reiLoginPage
+			.loginAs(rei)
+			.resume();
+
+		NavigationPage reiNavBar = new NavigationPage(reiBrowser);
+		reiNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(courseTitle)
+			.select(courseTitle)
+			.start();
+		//select the thread in peekview
+		ForumPage reiForum = new ForumPage(reiBrowser)
+			.openThreadInPeekview("The best anime ever");
+		
+		//concurrent reply
+		String kanuReply = "Ikki Touzen";
+		String reiReply = "Neon Genesis Evangelion";
+		String authorReply = "Lain, serial experiment";
+		
+		authorForum
+			.replyToMessageNoWait("The best anime ever", null, authorReply);
+		reiForum
+			.replyToMessageNoWait("The best anime ever", null, reiReply);
+		kanuForum
+			.replyToMessageNoWait("The best anime ever", null, kanuReply);
+	
+		//wait the responses
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitBusy(kanuBrowser);
+		OOGraphene.waitBusy(reiBrowser);
+		
+		//check own responses
+		authorForum.assertMessageBody(authorReply);
+		kanuForum.assertMessageBody(kanuReply);
+		reiForum.assertMessageBody(reiReply);
+
+		//check others responses
+		authorForum
+			.flatView()
+			.waitMessageBody(kanuReply);
+		reiForum
+			.flatView()
+			.waitMessageBody(kanuReply);
+		kanuForum
+			.flatView()
+			.waitMessageBody(reiReply);
 	}
 }
