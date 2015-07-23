@@ -210,6 +210,10 @@ public interface AssessmentManager {
 	 *         set to not fully assessed, null if no info is available
 	 */
 	public Boolean getNodeFullyAssessed(CourseNode courseNode, Identity identity);
+	
 
-	public List<AssessmentEntry> getAssessmentData(CourseNode courseNode);
+	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, Identity assessedIdentity, String referenceSoftKey);
+
+	public List<AssessmentEntry> getAssessmentEntries(CourseNode courseNode);
+	
 }

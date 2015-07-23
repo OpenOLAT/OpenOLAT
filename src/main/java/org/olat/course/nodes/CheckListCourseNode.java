@@ -74,6 +74,7 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -170,18 +171,28 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserScoreEvaluation(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
 	@Override
-	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnvironment) {
-		// read score from properties
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
 		Boolean passed = null;
 		Float score = null;
-		// only db lookup if configured, else return null
-		if (hasPassedConfigured()) passed = am.getNodePassed(this, mySelf);
-		if (hasScoreConfigured()) score = am.getNodeScore(this, mySelf);
+		if(hasPassedConfigured() || hasScoreConfigured()) {
+			AssessmentEntry entry = getUserAssessmentEntry(userCourseEnv);
+			if(entry != null) {
+				if (hasPassedConfigured()) {
+					passed = entry.getPassed();
+				}
+				if (hasScoreConfigured() && entry.getScore() != null) {
+					score = entry.getScore().floatValue();
+				}
+			}
+		}
+		return new ScoreEvaluation(score, passed);
+	}
 
-		ScoreEvaluation se = new ScoreEvaluation(score, passed);
-		return se;
+	@Override
+	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
+		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
+		return am.getAssessmentEntry(this, mySelf, null);
 	}
 
 	/**

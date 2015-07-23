@@ -48,7 +48,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
-import org.olat.modules.assessment.manager.AssessmentEntryDAO;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -64,31 +64,29 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	private static final Integer INTEGER_ZERO = new Integer(0);
 	
 	private final RepositoryEntry courseEntry;
+	private final AssessmentService assessmentService;
 	private final CertificatesManager certificatesManager;
-	private final AssessmentEntryDAO courseNodeAssessmentDao;
 	private final EfficiencyStatementManager efficiencyStatementManager;
 	
 	public CourseAssessmentManagerImpl(RepositoryEntry courseEntry) {
 		this.courseEntry = courseEntry;
+		assessmentService = CoreSpringFactory.getImpl(AssessmentService.class);
 		certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
-		courseNodeAssessmentDao = CoreSpringFactory.getImpl(AssessmentEntryDAO.class);
 		efficiencyStatementManager = CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
 	}
 	
 	private AssessmentEntry getOrCreate(Identity assessedIdentity, CourseNode courseNode) {
-		AssessmentEntry nodeAssessment = courseNodeAssessmentDao
-				.loadAssessmentEntry(assessedIdentity, courseEntry, courseNode.getIdent());
-		if(nodeAssessment == null) {
-			nodeAssessment = courseNodeAssessmentDao
-					.createCourseNodeAssessment(assessedIdentity, courseEntry,
-							courseNode.getIdent(), courseNode.getReferencedRepositoryEntry());
-		}
-		return nodeAssessment;
+		return assessmentService.getOrCreateAssessmentEntry(assessedIdentity, courseEntry, courseNode.getIdent(), courseNode.getReferencedRepositoryEntry());
 	}
 
 	@Override
-	public List<AssessmentEntry> getAssessmentData(CourseNode courseNode) {
-		return courseNodeAssessmentDao.loadAssessmentEntryBySubIdent(courseEntry, courseNode.getIdent());
+	public List<AssessmentEntry> getAssessmentEntries(CourseNode courseNode) {
+		return assessmentService.loadAssessmentEntriesBySubIdent(courseEntry, courseNode.getIdent());
+	}
+
+	@Override
+	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, Identity assessedIdentity, String referenceSoftKey) {
+		return assessmentService.loadAssessmentEntry(assessedIdentity, courseEntry, courseNode.getIdent(), referenceSoftKey);
 	}
 
 	@Override
@@ -97,7 +95,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
 		nodeAssessment.setAttempts(attempts);
-		courseNodeAssessmentDao.updateCourseNodeAssessment(nodeAssessment);
+		assessmentService.updateAssessmentEntry(nodeAssessment);
 
 		//node log
 		UserNodeAuditManager am = course.getCourseEnvironment().getAuditManager();
@@ -120,7 +118,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
 		nodeAssessment.setComment(comment);
-		courseNodeAssessmentDao.updateCourseNodeAssessment(nodeAssessment);
+		assessmentService.updateAssessmentEntry(nodeAssessment);
 		
 		// node log
 		UserNodeAuditManager am = course.getCourseEnvironment().getAuditManager();
@@ -143,7 +141,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
 		nodeAssessment.setCoachComment(comment);
-		courseNodeAssessmentDao.updateCourseNodeAssessment(nodeAssessment);
+		assessmentService.updateAssessmentEntry(nodeAssessment);
 		
 		// notify about changes
 		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_COACH_COMMENT_CHANGED, assessedIdentity);
@@ -163,7 +161,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
 		int attempts = nodeAssessment.getAttempts() == null ? 1 :nodeAssessment.getAttempts().intValue() + 1;
 		nodeAssessment.setAttempts(attempts);
-		courseNodeAssessmentDao.updateCourseNodeAssessment(nodeAssessment);
+		assessmentService.updateAssessmentEntry(nodeAssessment);
 		if(courseNode instanceof AssessableCourseNode) {
 			// Update users efficiency statement
 			efficiencyStatementManager.updateUserEfficiencyStatement(userCourseEnv);
@@ -187,7 +185,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
 		int attempts = nodeAssessment.getAttempts() == null ? 1 :nodeAssessment.getAttempts().intValue() + 1;
 		nodeAssessment.setAttempts(attempts);
-		courseNodeAssessmentDao.updateCourseNodeAssessment(nodeAssessment);
+		assessmentService.updateAssessmentEntry(nodeAssessment);
 		if(courseNode instanceof AssessableCourseNode) {
 			// Update users efficiency statement
 			efficiencyStatementManager.updateUserEfficiencyStatement(userCourseEnv);
@@ -221,7 +219,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			int attempts = nodeAssessment.getAttempts() == null ? 1 :nodeAssessment.getAttempts().intValue() + 1;
 			nodeAssessment.setAttempts(attempts);
 		}
-		nodeAssessment = courseNodeAssessmentDao.updateCourseNodeAssessment(nodeAssessment);
+		nodeAssessment = assessmentService.updateAssessmentEntry(nodeAssessment);
 		
 		
 		if(courseNode instanceof AssessableCourseNode) {
@@ -249,26 +247,25 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			return FLOAT_ZERO; // return default value
 		}
 		
-		AssessmentEntry nodeAssessment = courseNodeAssessmentDao
-				.loadAssessmentEntry(identity, courseEntry, courseNode.getIdent());	
-		if(nodeAssessment != null && nodeAssessment.getScore() != null) {
-			return nodeAssessment.getScore().floatValue();
+		AssessmentEntry entry = assessmentService.loadAssessmentEntry(identity, courseEntry, courseNode.getIdent());	
+		if(entry != null && entry.getScore() != null) {
+			return entry.getScore().floatValue();
 		}
 		return FLOAT_ZERO;
 	}
 
 	@Override
 	public String getNodeComment(CourseNode courseNode, Identity identity) {
-		AssessmentEntry nodeAssessment = courseNodeAssessmentDao
+		AssessmentEntry entry = assessmentService
 				.loadAssessmentEntry(identity, courseEntry, courseNode.getIdent());	
-		return nodeAssessment == null ? null : nodeAssessment.getComment();
+		return entry == null ? null : entry.getComment();
 	}
 
 	@Override
 	public String getNodeCoachComment(CourseNode courseNode, Identity identity) {
-		AssessmentEntry nodeAssessment = courseNodeAssessmentDao
+		AssessmentEntry entry = assessmentService
 				.loadAssessmentEntry(identity, courseEntry, courseNode.getIdent());	
-		return nodeAssessment == null ? null : nodeAssessment.getCoachComment();
+		return entry == null ? null : entry.getCoachComment();
 	}
 
 	@Override
@@ -277,7 +274,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			return Boolean.FALSE; // return default value
 		}
 		
-		AssessmentEntry nodeAssessment = courseNodeAssessmentDao
+		AssessmentEntry nodeAssessment = assessmentService
 				.loadAssessmentEntry(identity, courseEntry, courseNode.getIdent());	
 		return nodeAssessment == null ? null : nodeAssessment.getPassed();
 	}
@@ -286,14 +283,14 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	public Integer getNodeAttempts(CourseNode courseNode, Identity identity) {
 		if(courseNode == null) return INTEGER_ZERO;
 		
-		AssessmentEntry nodeAssessment = courseNodeAssessmentDao
+		AssessmentEntry nodeAssessment = assessmentService
 				.loadAssessmentEntry(identity, courseEntry, courseNode.getIdent());	
 		return nodeAssessment == null ? INTEGER_ZERO : nodeAssessment.getAttempts();
 	}
 
 	@Override
 	public Long getAssessmentID(CourseNode courseNode, Identity identity) {
-		AssessmentEntry nodeAssessment = courseNodeAssessmentDao
+		AssessmentEntry nodeAssessment = assessmentService
 				.loadAssessmentEntry(identity, courseEntry, courseNode.getIdent());	
 		return nodeAssessment == null ? null : nodeAssessment.getAssessmentId();
 	}
@@ -301,14 +298,14 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	@Override
 	public Date getScoreLastModifiedDate(CourseNode courseNode, Identity identity) {
 		if(courseNode == null) return null;
-		AssessmentEntry nodeAssessment = courseNodeAssessmentDao
+		AssessmentEntry nodeAssessment = assessmentService
 				.loadAssessmentEntry(identity, courseEntry, courseNode.getIdent());
 		return nodeAssessment == null ? null : nodeAssessment.getLastModified();
 	}
 
 	@Override
 	public Boolean getNodeFullyAssessed(CourseNode courseNode, Identity identity) {
-		AssessmentEntry nodeAssessment = courseNodeAssessmentDao
+		AssessmentEntry nodeAssessment = assessmentService
 				.loadAssessmentEntry(identity, courseEntry, courseNode.getIdent());	
 		return nodeAssessment == null ? null : nodeAssessment.getFullyAssessed();
 	}

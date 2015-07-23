@@ -83,7 +83,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 	public static final String PANE_TAB_CPCONFIG = "pane.tab.cpconfig";
 	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	private static final String PANE_TAB_DELIVERYOPTIONS = "pane.tab.deliveryOptions";
-	private static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "reporef";
+	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "reporef";
 	private static final String VC_CHOSENCP = "chosencp";
 	public static final String CONFIG_DELIVERYOPTIONS = "deliveryOptions";
   

@@ -30,6 +30,7 @@ import org.olat.core.id.Identity;
 import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.CandidateTestEventType;
 import org.olat.ims.qti21.model.jpa.CandidateEvent;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -53,9 +54,11 @@ public interface QTI21Service {
 	public <E extends ResolvedAssessmentObject<?>> E loadAndResolveAssessmentObject(File resourceDirectory);
 	
 	
-	public UserTestSession createTestSession(RepositoryEntry testEntry, RepositoryEntry courseEntry, String subIdent, Identity identity);
+	public UserTestSession createTestSession(Identity identity, AssessmentEntry assessmentEntry,
+			RepositoryEntry entry, String subIdent, RepositoryEntry testEntry,
+			boolean authorMode);
 	
-	public UserTestSession getResumableTestSession(RepositoryEntry testEntry, RepositoryEntry courseEntry, String subIdent, Identity identity);
+	public UserTestSession getResumableTestSession(Identity identity, RepositoryEntry entry, String subIdent, RepositoryEntry testEntry);
 	
 	public UserTestSession updateTestSession(UserTestSession session);
 	

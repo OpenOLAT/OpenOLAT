@@ -49,6 +49,8 @@ import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.CandidateTestEventType;
 import org.olat.ims.qti21.model.jpa.CandidateEvent;
 import org.olat.ims.qti21.ui.components.AssessmentTestFormItem;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -102,12 +104,15 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private CandidateEvent lastEvent;
 	private Date currentRequestTimestamp;
 	private UserTestSession candidateSession;
+	private AssessmentEntry assessmentEntry;
 	
 	private OutcomesListener outcomesListener;
 
 
 	@Autowired
 	private QTI21Service qtiService;
+	@Autowired
+	private AssessmentService assessmentService;
 	@Autowired
 	private JqtiExtensionManager jqtiExtensionManager;
 	
@@ -116,25 +121,27 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 * @param ureq
 	 * @param wControl
 	 * @param listener
-	 * @param entry
-	 * @param courseRe Course repository entry (optional)
+	 * @param testEntry
+	 * @param entry Course repository entry (optional)
 	 * @param subIdent The course node identifier (mandatory only if in a course is used)
 	 */
 	public AssessmentTestDisplayController(UserRequest ureq, WindowControl wControl, OutcomesListener listener,
-			RepositoryEntry entry, RepositoryEntry courseRe, String courseSubIdent) {
+			RepositoryEntry testEntry, RepositoryEntry entry, String subIdent) {
 		super(ureq, wControl);
 		
 		this.outcomesListener = listener;
 		
 		FileResourceManager frm = FileResourceManager.getInstance();
-		fUnzippedDirRoot = frm.unzipFileResource(entry.getOlatResource());
-		mapperUri = registerCacheableMapper(null, "QTI21Resources::" + entry.getKey(), new ResourcesMapper());
+		fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
+		mapperUri = registerCacheableMapper(null, "QTI21Resources::" + testEntry.getKey(), new ResourcesMapper());
 		
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		
-		UserTestSession lastSession = qtiService.getResumableTestSession(entry, courseRe, courseSubIdent, getIdentity());
+		assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), entry, subIdent, testEntry);
+		
+		UserTestSession lastSession = qtiService.getResumableTestSession(getIdentity(), entry, subIdent, testEntry);
 		if(lastSession == null) {
-			candidateSession = qtiService.createTestSession(entry, courseRe, courseSubIdent, getIdentity());
+			candidateSession = qtiService.createTestSession(getIdentity(), assessmentEntry, entry, subIdent, testEntry, false);
 			testSessionController = enterSession(ureq);
 		} else {
 			candidateSession = lastSession;

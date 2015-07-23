@@ -54,6 +54,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -75,6 +76,7 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -265,6 +267,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	 * 
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserScoreEvaluation(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
 		Float score = null;
 		Boolean passed = null;
@@ -284,8 +287,14 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 		if (passedExpressionStr != null) {
 			passed = new Boolean(ci.evaluateCondition(passedExpressionStr));
 		}
-		ScoreEvaluation se = new ScoreEvaluation(score, passed);
-		return se;
+		return new ScoreEvaluation(score, passed);
+	}
+
+	@Override
+	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
+		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
+		return am.getAssessmentEntry(this, mySelf, null);
 	}
 
 	/**

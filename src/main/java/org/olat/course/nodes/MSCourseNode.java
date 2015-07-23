@@ -62,6 +62,7 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -75,7 +76,6 @@ import org.olat.resource.OLATResource;
 public class MSCourseNode extends AbstractAccessableCourseNode implements AssessableCourseNode {
 	private static final long serialVersionUID = -7741172700015384397L;
 	private static final String PACKAGE_MS = Util.getPackageName(MSCourseNodeRunController.class);
-	private static final String PACKAGE = Util.getPackageName(MSCourseNode.class);
 
 	private static final String TYPE = "ms";
 	/** configuration: score can be set */
@@ -144,7 +144,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Assess
 		// Do not allow guests to have manual scoring
 		Roles roles = ureq.getUserSession().getRoles();
 		if (roles.isGuestOnly()) {
-			Translator trans = new PackageTranslator(PACKAGE, ureq.getLocale());
+			Translator trans = Util.createPackageTranslator(MSCourseNode.class, ureq.getLocale());
 			String title = trans.translate("guestnoaccess.title");
 			String message = trans.translate("guestnoaccess.message");
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
@@ -187,8 +187,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Assess
 			String shortKey = "error.missingconfig.short";
 			String longKey = "error.missingconfig.long";
 			String[] params = new String[] { this.getShortTitle() };
-			String translPackage = Util.getPackageName(MSEditFormController.class);
-			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, translPackage);
+			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, PACKAGE_MS);
 			sd.setDescriptionForUnit(getIdent());
 			// set which pane is affected by error
 			sd.setActivateableViewIdentifier(MSCourseNodeEditController.PANE_TAB_CONFIGURATION);
@@ -204,8 +203,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Assess
 		oneClickStatusCache = null;
 		// only here we know which translator to take for translating condition
 		// error messages
-		String translatorStr = Util.getPackageName(MSEditFormController.class);
-		List<StatusDescription> sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		List<StatusDescription> sds = isConfigValidWithTranslator(cev, PACKAGE_MS, getConditionExpressions());
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}
@@ -213,18 +211,28 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Assess
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserScoreEvaluation(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
-	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnvironment) {
-		// read score from properties
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
 		Boolean passed = null;
 		Float score = null;
-		// only db lookup if configured, else return null
-		if (hasPassedConfigured()) passed = am.getNodePassed(this, mySelf);
-		if (hasScoreConfigured()) score = am.getNodeScore(this, mySelf);
+		if(hasPassedConfigured() || hasScoreConfigured()) {
+			AssessmentEntry entry = getUserAssessmentEntry(userCourseEnv);
+			if(entry != null) {
+				if (hasPassedConfigured()) {
+					passed = entry.getPassed();
+				}
+				if (hasScoreConfigured() && entry.getScore() != null) {
+					score = entry.getScore().floatValue();
+				}
+			}
+		}
+		return new ScoreEvaluation(score, passed);
+	}
 
-		ScoreEvaluation se = new ScoreEvaluation(score, passed);
-		return se;
+	@Override
+	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
+		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
+		return am.getAssessmentEntry(this, mySelf, null);
 	}
 
 	/**

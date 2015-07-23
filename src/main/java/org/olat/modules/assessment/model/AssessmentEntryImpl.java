@@ -53,9 +53,15 @@ import org.olat.repository.RepositoryEntry;
 @Entity(name="assessmententry")
 @Table(name="o_as_entry")
 @NamedQueries({
-	@NamedQuery(name="loadAssessmentEntryById", query="select data from assessmententry data where data.key=:key"),
-	@NamedQuery(name="loadAssessmentEntryByRepositoryEntryAndUser", query="select data from assessmententry data where data.repositoryEntry.key=:repositoryEntryKey and data.identity.key=:identityKey and data.subIdent=:subIdent"),
-	@NamedQuery(name="loadAssessmentEntryByRepositoryEntryAndSubIdent", query="select data from assessmententry data where data.repositoryEntry.key=:repositoryEntryKey and data.subIdent=:subIdent")
+	@NamedQuery(name="loadAssessmentEntryById",
+		query="select data from assessmententry data where data.key=:key"),
+	@NamedQuery(name="loadAssessmentEntryByRepositoryEntryAndUserAndSubIdent",
+		query="select data from assessmententry data where data.repositoryEntry.key=:repositoryEntryKey and data.identity.key=:identityKey and data.subIdent=:subIdent"),
+	@NamedQuery(name="loadAssessmentEntryByRepositoryEntryAndUserAndNullSubIdent",
+		query="select data from assessmententry data where data.repositoryEntry.key=:repositoryEntryKey and data.identity.key=:identityKey and data.subIdent is null"),
+	@NamedQuery(name="loadAssessmentEntryByRepositoryEntryAndSubIdent",
+		query="select data from assessmententry data where data.repositoryEntry.key=:repositoryEntryKey and data.subIdent=:subIdent")
+	
 	
 	
 })

@@ -19,6 +19,11 @@
  */
 package org.olat.modules.assessment;
 
+import java.util.List;
+
+import org.olat.core.id.Identity;
+import org.olat.repository.RepositoryEntry;
+
 /**
  * 
  * Initial date: 22.07.2015<br>
@@ -26,5 +31,32 @@ package org.olat.modules.assessment;
  *
  */
 public interface AssessmentService {
+	
+	/**
+	 * 
+	 * @param assessedIdentity
+	 * @param entry The repository entry, the course
+	 * @param subIdent An additional reference for the cours element
+	 * @param referenceEntry The test repository entry 
+	 * @return
+	 */
+	public AssessmentEntry getOrCreateAssessmentEntry(Identity assessedIdentity,
+			RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry);
+	
+	public AssessmentEntry loadAssessmentEntry(Identity assessedIdentity, RepositoryEntry entry, String subIdent);
+	
+	/**
+	 * The search by the reference soft key is set not is null if the value is null.
+	 * @param assessedIdentity
+	 * @param entry
+	 * @param subIdent
+	 * @param referenceSoftKey
+	 * @return
+	 */
+	public AssessmentEntry loadAssessmentEntry(Identity assessedIdentity, RepositoryEntry entry, String subIdent, String referenceSoftKey);
+	
+	public AssessmentEntry updateAssessmentEntry(AssessmentEntry entry);
+	
+	public List<AssessmentEntry> loadAssessmentEntriesBySubIdent(RepositoryEntry entry, String subIdent);
 
 }

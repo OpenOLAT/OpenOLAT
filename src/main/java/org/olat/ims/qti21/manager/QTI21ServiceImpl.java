@@ -53,6 +53,7 @@ import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.CandidateTestEventType;
 import org.olat.ims.qti21.model.jpa.CandidateEvent;
 import org.olat.ims.qti21.ui.rendering.XmlUtilities;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -171,13 +172,15 @@ public class QTI21ServiceImpl implements QTI21Service {
 	}
 
 	@Override
-	public UserTestSession createTestSession(RepositoryEntry testEntry, RepositoryEntry courseEntry, String courseSubIdent, Identity identity) {
-		return testSessionDao.createTestSession(testEntry, courseEntry, courseSubIdent, identity);
+	public UserTestSession createTestSession(Identity identity, AssessmentEntry assessmentEntry,
+			RepositoryEntry entry, String subIdent, RepositoryEntry testEntry,
+			boolean authorMode) {
+		return testSessionDao.createTestSession(testEntry, entry, subIdent, assessmentEntry, identity, authorMode);
 	}
 
 	@Override
-	public UserTestSession getResumableTestSession(RepositoryEntry testEntry, RepositoryEntry courseEntry, String subIdent, Identity identity) {
-		UserTestSession session = testSessionDao.getLastTestSession(testEntry, courseEntry, subIdent, identity);
+	public UserTestSession getResumableTestSession(Identity identity, RepositoryEntry entry, String subIdent, RepositoryEntry testEntry) {
+		UserTestSession session = testSessionDao.getLastTestSession(testEntry, entry, subIdent, identity);
 		if(session == null || session.isExploded() || session.getTerminationTime() != null) {
 			session = null;
 		} else {

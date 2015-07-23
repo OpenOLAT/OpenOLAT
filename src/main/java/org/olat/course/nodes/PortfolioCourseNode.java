@@ -55,6 +55,7 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.portfolio.EPTemplateMapResource;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.manager.EPStructureManager;
@@ -197,6 +198,10 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 		return null;
 	}
 	
+	private String getReferencedRepositoryEntrySoftkey() {
+		return (String)getModuleConfiguration().get(PortfolioCourseNodeConfiguration.REPO_SOFT_KEY);
+	}
+	
 	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return true;
@@ -305,18 +310,43 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 	}
 
 	@Override
-	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnvironment) {
-		// read score from properties
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
 		Boolean passed = null;
 		Float score = null;
-		// only db lookup if configured, else return null
-		if (hasPassedConfigured()) passed = am.getNodePassed(this, mySelf);
-		if (hasScoreConfigured()) score = am.getNodeScore(this, mySelf);
-
-		ScoreEvaluation se = new ScoreEvaluation(score, passed);
-		return se;
+		if (hasPassedConfigured() || hasScoreConfigured()) {
+			AssessmentEntry entry = getUserAssessmentEntry(userCourseEnv);
+			if(entry != null) {
+				if (hasPassedConfigured()) {
+					passed = entry.getPassed();
+				}
+				if (hasScoreConfigured() && entry.getScore() != null) {
+					score = entry.getScore().floatValue();
+				}
+			}
+		}
+		return new ScoreEvaluation(score, passed);
+	}
+	
+	@Override
+	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
+		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
+		String referenceSoftkey = getReferencedRepositoryEntrySoftkey();
+		if(referenceSoftkey == null) {
+			Long mapKey = (Long)getModuleConfiguration().get(PortfolioCourseNodeConfiguration.MAP_KEY);
+			if(mapKey != null) {
+				RepositoryEntry re = CoreSpringFactory.getImpl(EPStructureManager.class)
+						.loadPortfolioRepositoryEntryByMapKey(mapKey);
+				if(re != null) {
+					referenceSoftkey = re.getSoftkey();
+				}
+			}
+		}
+		
+		if(referenceSoftkey != null) {
+			return am.getAssessmentEntry(this, mySelf, referenceSoftkey);
+		}
+		return null;
 	}
 
 	@Override

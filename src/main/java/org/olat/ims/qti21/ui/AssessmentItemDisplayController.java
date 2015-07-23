@@ -47,6 +47,7 @@ import org.olat.ims.qti21.UserTestSession;
 import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.jpa.CandidateEvent;
 import org.olat.ims.qti21.ui.components.AssessmentItemFormItem;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -96,7 +97,8 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	@Autowired
 	private JqtiExtensionManager jqtiExtensionManager;
 	
-	public AssessmentItemDisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry testEntry,
+	public AssessmentItemDisplayController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry testEntry, AssessmentEntry assessmentEntry, boolean authorMode,
 			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef, File fUnzippedDirRoot) {
 		super(ureq, wControl);
 		
@@ -104,7 +106,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		this.fUnzippedDirRoot = fUnzippedDirRoot;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		currentRequestTimestamp = ureq.getRequestTimestamp();
-		candidateSession = qtiService.createTestSession(testEntry, null, itemRef.getIdentifier().toString(), getIdentity());
+		candidateSession = qtiService.createTestSession(getIdentity(), assessmentEntry, testEntry, itemRef.getIdentifier().toString(), testEntry, authorMode);
 		mapperUri = registerCacheableMapper(null, UUID.randomUUID().toString(), new ResourcesMapper());
 		
 		itemSessionController = enterSession(ureq);

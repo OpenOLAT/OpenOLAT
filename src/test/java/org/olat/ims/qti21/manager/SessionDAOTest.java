@@ -27,6 +27,8 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.ims.qti21.UserTestSession;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -44,15 +46,18 @@ public class SessionDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private SessionDAO testSessionDao;
+	@Autowired
+	private AssessmentService assessmentService;
 	
 	@Test
 	public void createTestSession_repo() {
 		// prepare a test and a user
 		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-1");
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, testEntry, "-", testEntry);
 		dbInstance.commit();
 		
-		UserTestSession testSession = testSessionDao.createTestSession(testEntry, null, null, assessedIdentity);
+		UserTestSession testSession = testSessionDao.createTestSession(testEntry, testEntry, "-", assessmentEntry, assessedIdentity, true);
 		Assert.assertNotNull(testSession);
 		dbInstance.commit();
 	}
@@ -64,9 +69,10 @@ public class SessionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-2");
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, courseEntry, subIdent, testEntry);
 		dbInstance.commit();
 		
-		UserTestSession testSession = testSessionDao.createTestSession(testEntry, courseEntry, subIdent, assessedIdentity);
+		UserTestSession testSession = testSessionDao.createTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, false);
 		Assert.assertNotNull(testSession);
 		dbInstance.commit();
 	}
@@ -78,9 +84,10 @@ public class SessionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-3");
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, courseEntry, subIdent, testEntry);
 		dbInstance.commit();
 		
-		UserTestSession testSession = testSessionDao.createTestSession(testEntry, courseEntry, subIdent, assessedIdentity);
+		UserTestSession testSession = testSessionDao.createTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, true);
 		Assert.assertNotNull(testSession);
 		dbInstance.commitAndCloseSession();
 		
@@ -88,6 +95,33 @@ public class SessionDAOTest extends OlatTestCase {
 		Assert.assertNotNull(sessions);
 		Assert.assertEquals(1, sessions.size());
 		Assert.assertEquals(testSession, sessions.get(0));
+	}
+	
+	@Test
+	public void getLastTestSession() {
+		// prepare a test and a user
+		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = UUID.randomUUID().toString();
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-3");
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, courseEntry, subIdent, testEntry);
+		dbInstance.commit();
+		
+		UserTestSession testSession1 = testSessionDao.createTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, false);
+		Assert.assertNotNull(testSession1);
+		dbInstance.commitAndCloseSession();
+		
+		//to have a time difference
+		sleep(1500);
+		
+		UserTestSession testSession2 = testSessionDao.createTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, false);
+		Assert.assertNotNull(testSession2);
+		dbInstance.commitAndCloseSession();
+		
+		//load the last session
+		UserTestSession lastTestSession = testSessionDao.getLastTestSession(testEntry, courseEntry, subIdent, assessedIdentity);
+		Assert.assertNotNull(lastTestSession);
+		Assert.assertEquals(testSession2, lastTestSession);
 	}
 
 }

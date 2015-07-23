@@ -43,14 +43,14 @@ public class InMemoryOutcomesListener implements OutcomesListener {
 	}
 
 	@Override
-	public void updateOutcomes(Float score, Boolean pass) {
-		this.score = score;
-		this.pass = pass;
+	public void updateOutcomes(Float updatedScore, Boolean updatedPassed) {
+		score = updatedScore;
+		pass = updatedPassed;
 	}
 
 	@Override
-	public void submit(Float score, Boolean pass) {
-		this.score = score;
-		this.pass = pass;
+	public void submit(Float submittedScore, Boolean submittedPass) {
+		score = submittedScore;
+		pass = submittedPass;
 	}
 }

@@ -63,6 +63,7 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.ScormCPFileResource;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.scorm.ScormMainManager;
 import org.olat.modules.scorm.ScormPackageConfig;
 import org.olat.modules.scorm.archiver.ScormExportManager;
@@ -187,6 +188,10 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Ass
 		// the reference still exists or not
 		RepositoryEntry entry = CPEditController.getCPReference(getModuleConfiguration(), false);
 		return entry;
+	}
+	
+	public String getReferencedRepositoryEntrySoftkey() {
+		return (String)getModuleConfiguration().get(CPEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
 	}
 
 	/**
@@ -371,14 +376,27 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Ass
 	}
 
 	@Override
-	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnvironment) {
-		// read score from properties save score, passed and attempts information
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		Boolean passed = am.getNodePassed(this, mySelf);
-		Float score = am.getNodeScore(this, mySelf);
-		ScoreEvaluation se = new ScoreEvaluation(score, passed);
-		return se;
+	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
+		AssessmentEntry entry = getUserAssessmentEntry(userCourseEnv);
+		Boolean passed = null;
+		Float score = null;
+		if(entry != null) {
+			passed = entry.getPassed();
+			if(entry.getScore() != null) {
+				score = entry.getScore().floatValue();
+			}
+		}
+		return new ScoreEvaluation(score, passed);
+	}
+
+	@Override
+	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
+		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
+		if(getReferencedRepositoryEntrySoftkey() != null) {
+			return am.getAssessmentEntry(this, mySelf, getReferencedRepositoryEntrySoftkey());
+		}
+		return null;
 	}
 
 	/**

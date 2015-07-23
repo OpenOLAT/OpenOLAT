@@ -1222,10 +1222,11 @@ create table o_qti_assessment_session (
    q_finish_time timestamp,
    q_termination_time timestamp,
    q_storage varchar(32),
+   fk_reference_entry int8 not null,
+   fk_entry int8,
+   q_subident varchar(64),
    fk_identity int8 not null,
-   fk_entry int8 not null,
-   fk_course int8,
-   q_course_subident varchar(64),
+   fk_assessment_entry int8 not null,
    primary key (id)
 );
 
@@ -2108,10 +2109,13 @@ create index o_mapper_uuid_idx on o_mapper (mapper_uuid);
 -- qti 2.1
 alter table o_qti_assessment_session add constraint qti_sess_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_testess_to_repo_entry_idx on o_qti_assessment_session (fk_entry);
-alter table o_qti_assessment_session add constraint qti_sess_to_course_entry_idx foreign key (fk_course) references o_repositoryentry (repositoryentry_id);
-create index idx_qti_sess_to_course_entry_idx on o_qti_assessment_session (fk_course);
+alter table o_qti_assessment_session add constraint qti_sess_to_course_entry_idx foreign key (fk_reference_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_qti_sess_to_course_entry_idx on o_qti_assessment_session (fk_reference_entry);
 alter table o_qti_assessment_session add constraint qti_sess_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_qti_sess_to_identity_idx on o_qti_assessment_session (fk_identity);
+alter table o_qti_assessment_session add constraint qti_sess_to_as_entry_idx foreign key (fk_assessment_entry) references o_as_entry (id);
+create index idx_qti_sess_to_as_entry_idx on o_qti_assessment_session (fk_assessment_entry);
+
 
 -- question pool
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);

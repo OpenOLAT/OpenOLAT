@@ -51,6 +51,7 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.lti.ui.LTIResultDetailsController;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 
@@ -61,6 +62,7 @@ import org.olat.resource.OLATResource;
 public class BasicLTICourseNode extends AbstractAccessableCourseNode implements AssessableCourseNode {
 
 	private static final long serialVersionUID = 2210572148308757127L;
+	private static final String translatorStr = Util.getPackageName(LTIEditController.class);
 	private static final String TYPE = "lti";
 
 	public static final String CONFIG_KEY_AUTHORROLE = "authorRole";
@@ -144,8 +146,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 		if (!isValid) {
 			// FIXME: refine statusdescriptions
 			String[] params = new String[] { this.getShortTitle() };
-			String translPackage = Util.getPackageName(LTIConfigForm.class);
-			sd = new StatusDescription(StatusDescription.ERROR, NLS_ERROR_HOSTMISSING_SHORT, NLS_ERROR_HOSTMISSING_LONG, params, translPackage);
+			sd = new StatusDescription(StatusDescription.ERROR, NLS_ERROR_HOSTMISSING_SHORT, NLS_ERROR_HOSTMISSING_LONG, params, translatorStr);
 			sd.setDescriptionForUnit(getIdent());
 			// set which pane is affected by error
 			sd.setActivateableViewIdentifier(LTIEditController.PANE_TAB_LTCONFIG);
@@ -161,7 +162,6 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 		oneClickStatusCache = null;
 		// only here we know which translator to take for translating condition
 		// error messages
-		String translatorStr = Util.getPackageName(LTIEditController.class);
 		List<StatusDescription> sds =  isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
@@ -289,6 +289,12 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 		Boolean score = config.getBooleanEntry(CONFIG_KEY_HAS_SCORE_FIELD);
 		return (score == null) ? false : score.booleanValue();
 	}
+	
+	@Override
+	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
+		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+		return am.getAssessmentEntry(this, userCourseEnv.getIdentityEnvironment().getIdentity(), null);
+	}
 
 	@Override
 	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
@@ -301,24 +307,21 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 		if (hasPassedConfigured()) passed = am.getNodePassed(this, mySelf);
 		if (hasScoreConfigured()) score = am.getNodeScore(this, mySelf);
 
-		ScoreEvaluation se = new ScoreEvaluation(score, passed);
-		return se;
+		return new ScoreEvaluation(score, passed);
 	}
 
 	@Override
 	public String getUserUserComment(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		String userCommentValue = am.getNodeComment(this, mySelf);
-		return userCommentValue;
+		return am.getNodeComment(this, mySelf);
 	}
 
 	@Override
 	public String getUserCoachComment(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		String coachCommentValue = am.getNodeCoachComment(this, mySelf);
-		return coachCommentValue;
+		return am.getNodeCoachComment(this, mySelf);
 	}
 
 	@Override
@@ -326,16 +329,14 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 		// having score defined means the node is assessable
  		UserNodeAuditManager am = userCourseEnvironment.getCourseEnvironment().getAuditManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		String logValue = am.getUserNodeLog(this, mySelf);
-		return logValue;
+		return am.getUserNodeLog(this, mySelf);
 	}
 
 	@Override
 	public Integer getUserAttempts(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		Integer userAttemptsValue = am.getNodeAttempts(this, mySelf);
-		return userAttemptsValue;
+		return am.getNodeAttempts(this, mySelf);
 	}
 
 	@Override

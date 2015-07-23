@@ -555,7 +555,7 @@ public class IQRunController extends BasicController implements GenericEventList
 	}
 
 	private void exposeUserTestDataToVC(UserRequest ureq) {
-    // config : show score info
+		// config : show score info
 		Object enableScoreInfoObject = modConfig.get(IQEditController.CONFIG_KEY_ENABLESCOREINFO);
 		if (enableScoreInfoObject != null) {
 			myContent.contextPut("enableScoreInfo", enableScoreInfoObject );	
@@ -563,24 +563,25 @@ public class IQRunController extends BasicController implements GenericEventList
 			myContent.contextPut("enableScoreInfo", Boolean.TRUE );
 		}
    
-    // configuration data
-    myContent.contextPut("attemptsConfig", modConfig.get(IQEditController.CONFIG_KEY_ATTEMPTS));
-    // user data
-    if ( !(courseNode instanceof AssessableCourseNode))
-    	throw new AssertException("exposeUserTestDataToVC can only be called for test nodes, not for selftest or questionnaire");
+		// configuration data
+		myContent.contextPut("attemptsConfig", modConfig.get(IQEditController.CONFIG_KEY_ATTEMPTS));
+		// user data
+    	if ( !(courseNode instanceof AssessableCourseNode)) {
+    		throw new AssertException("exposeUserTestDataToVC can only be called for test nodes, not for selftest or questionnaire");
+    	}
 		AssessableCourseNode acn = (AssessableCourseNode)courseNode; // assessment nodes are assesable
 		ScoreEvaluation scoreEval = acn.getUserScoreEvaluation(userCourseEnv);
 		
 		//block if test passed (and config set to check it)
 		Boolean blockAfterSuccess = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS);
-    Boolean blocked = Boolean.FALSE;
-    if(blockAfterSuccess != null && blockAfterSuccess.booleanValue()) {
-    	Boolean passed = scoreEval.getPassed();
-    	if(passed != null && passed.booleanValue()) {
-    		blocked = Boolean.TRUE;
-    	}
-    }
-    myContent.contextPut("blockAfterSuccess", blocked );
+		Boolean blocked = Boolean.FALSE;
+		if(blockAfterSuccess != null && blockAfterSuccess.booleanValue()) {
+    		Boolean passed = scoreEval.getPassed();
+    		if(passed != null && passed.booleanValue()) {
+    			blocked = Boolean.TRUE;
+    		}
+		}
+		myContent.contextPut("blockAfterSuccess", blocked );
 		
 		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
 		myContent.contextPut("score", AssessmentHelper.getRoundedScore(scoreEval.getScore()));

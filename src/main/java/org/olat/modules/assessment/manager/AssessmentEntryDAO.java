@@ -22,6 +22,8 @@ package org.olat.modules.assessment.manager;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -66,19 +68,59 @@ public class AssessmentEntryDAO {
 		return nodeAssessment.isEmpty() ? null : nodeAssessment.get(0);
 	}
 
-	public AssessmentEntry loadAssessmentEntry(IdentityRef assessedIdentity, RepositoryEntryRef entry,
-			String subIdent) {
-		
-		List<AssessmentEntry> nodeAssessment = dbInstance.getCurrentEntityManager()
-				.createNamedQuery("loadAssessmentEntryByRepositoryEntryAndUser", AssessmentEntry.class)
-				.setParameter("repositoryEntryKey", entry.getKey())
-				.setParameter("identityKey", assessedIdentity.getKey())
-				.setParameter("subIdent", subIdent)
-				.getResultList();
-		return nodeAssessment.isEmpty() ? null : nodeAssessment.get(0);
+	public AssessmentEntry loadAssessmentEntry(IdentityRef assessedIdentity, RepositoryEntryRef entry, String subIdent) {
+		TypedQuery<AssessmentEntry> query;
+		if(subIdent == null) {
+			query = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadAssessmentEntryByRepositoryEntryAndUserAndNullSubIdent", AssessmentEntry.class);
+		} else {
+			query = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadAssessmentEntryByRepositoryEntryAndUserAndSubIdent", AssessmentEntry.class)
+				.setParameter("subIdent", subIdent);
+		}
+		List<AssessmentEntry> entries = query
+			.setParameter("repositoryEntryKey", entry.getKey())
+			.setParameter("identityKey", assessedIdentity.getKey())
+			.getResultList();
+		return entries.isEmpty() ? null : entries.get(0);
 	}
 	
-	public AssessmentEntry updateCourseNodeAssessment(AssessmentEntry nodeAssessment) {
+	public AssessmentEntry loadAssessmentEntry(IdentityRef assessedIdentity, RepositoryEntryRef entry, String subIdent, String referenceSoftKey) {
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append("select data from assessmententry data");
+		if(referenceSoftKey != null) {
+			sb.append(" inner join data.referenceEntry referenceEntry");
+		}
+		
+		sb.append(" where data.repositoryEntry.key=:repositoryEntryKey and data.identity.key=:identityKey");
+		if(subIdent != null) {
+			sb.append(" and data.subIdent=:subIdent");
+		} else {
+			sb.append(" and data.subIdent is null");
+		}
+		
+		if(referenceSoftKey != null) {
+			sb.append(" and referenceEntry.softkey=:softkey");
+		} else {
+			sb.append(" and referenceEntry.softkey is null");
+		}
+
+		TypedQuery<AssessmentEntry> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentEntry.class)
+				.setParameter("repositoryEntryKey", entry.getKey())
+				.setParameter("identityKey", assessedIdentity.getKey());
+		if(subIdent != null) {
+			query.setParameter("subIdent", subIdent);
+		}
+		if(referenceSoftKey != null) {
+			query.setParameter("softkey", referenceSoftKey);
+		}
+		List<AssessmentEntry> entries = query.getResultList();
+		return entries.isEmpty() ? null : entries.get(0);
+	}
+	
+	public AssessmentEntry updateAssessmentEntry(AssessmentEntry nodeAssessment) {
 		((AssessmentEntryImpl)nodeAssessment).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(nodeAssessment);
 	}

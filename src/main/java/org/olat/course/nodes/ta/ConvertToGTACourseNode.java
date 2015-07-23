@@ -219,7 +219,7 @@ public class ConvertToGTACourseNode {
 		CoursePropertyManager propertyMgr = courseEnv.getCoursePropertyManager();
 		
 		Map<Long,AssessmentEntry> datas = new HashMap<>();
-		List<AssessmentEntry> properties = courseEnv.getAssessmentManager().getAssessmentData(sourceNode);
+		List<AssessmentEntry> properties = courseEnv.getAssessmentManager().getAssessmentEntries(sourceNode);
 
 		for(AssessmentEntry property:properties) {
 			Identity identity = property.getIdentity();
@@ -266,14 +266,14 @@ public class ConvertToGTACourseNode {
 		List<Property> logEntries = propertyMgr
 				.listCourseNodeProperties(sourceNode, null, null, UserNodeAuditManager.LOG_IDENTIFYER);
 		for(Property logEntry:logEntries) {
-			String log = logEntry.getTextValue();
+			String logText = logEntry.getTextValue();
 			Identity identity = securityManager.loadIdentityByKey(logEntry.getIdentity().getKey());
 			Property targetProp = propertyMgr.findCourseNodeProperty(gtaNode, identity, null, UserNodeAuditManager.LOG_IDENTIFYER);
 			if(targetProp == null) {
 				targetProp = propertyMgr
-					.createCourseNodePropertyInstance(gtaNode, identity, null, UserNodeAuditManager.LOG_IDENTIFYER, null, null, null, log);
+					.createCourseNodePropertyInstance(gtaNode, identity, null, UserNodeAuditManager.LOG_IDENTIFYER, null, null, null, logText);
 			} else {
-				targetProp.setTextValue(log);
+				targetProp.setTextValue(logText);
 			}
 			propertyMgr.saveProperty(targetProp);
 		}	

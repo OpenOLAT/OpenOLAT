@@ -86,6 +86,7 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
@@ -788,18 +789,27 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 
 	@Override
 	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		Identity assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
 		Boolean passed = null;
 		Float score = null;
-		// only db lookup if configured, else return null
-		if (hasPassedConfigured()) {
-			passed = am.getNodePassed(this, assessedIdentity);
-		}
-		if (hasScoreConfigured()) {
-			score = am.getNodeScore(this, assessedIdentity);
+		if(hasPassedConfigured() || hasScoreConfigured()) {
+			AssessmentEntry entry = getUserAssessmentEntry(userCourseEnv);
+			if(entry != null) {
+				if (hasPassedConfigured()) {
+					passed = entry.getPassed();
+				}
+				if (hasScoreConfigured() && entry.getScore() != null) {
+					score = entry.getScore().floatValue();
+				}
+			}
 		}
 		return new ScoreEvaluation(score, passed);
+	}
+
+	@Override
+	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
+		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
+		return am.getAssessmentEntry(this, mySelf, null);
 	}
 
 	@Override

@@ -39,6 +39,8 @@ import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.ims.qti21.UserTestSession;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.model.AssessmentEntryImpl;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -52,7 +54,7 @@ import org.olat.repository.RepositoryEntry;
 @Entity(name="qtiassessmentsession")
 @Table(name="o_qti_assessment_session")
 @NamedQueries({
-	@NamedQuery(name="loadTestSessionsByUserAndCourse", query="select session from qtiassessmentsession session where session.courseEntry.key=:courseEntryKey and session.identity.key=:identityKey and session.courseSubIdent=:courseSubIdent")
+	@NamedQuery(name="loadTestSessionsByUserAndRepositoryEntryAndSubIdent", query="select session from qtiassessmentsession session where session.repositoryEntry.key=:repositoryEntryKey and session.identity.key=:identityKey and session.subIdent=:subIdent")
 	
 })
 public class UserTestSessionImpl implements UserTestSession, Persistable {
@@ -70,17 +72,21 @@ public class UserTestSessionImpl implements UserTestSession, Persistable {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
+	
+	@ManyToOne(targetEntity=AssessmentEntryImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_assessment_entry", nullable=false, insertable=true, updatable=false)
+    private AssessmentEntry assessmentEntry;
 
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
-	@JoinColumn(name="fk_entry", nullable=false, insertable=true, updatable=false)
+	@JoinColumn(name="fk_reference_entry", nullable=false, insertable=true, updatable=false)
     private RepositoryEntry testEntry;
 	
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=true)
-	@JoinColumn(name="fk_course", nullable=true, insertable=true, updatable=false)
-    private RepositoryEntry courseEntry;
+	@JoinColumn(name="fk_entry", nullable=true, insertable=true, updatable=false)
+    private RepositoryEntry repositoryEntry;
 
-    @Column(name="q_course_subident", nullable=true, insertable=true, updatable=false)
-	private String courseSubIdent;
+    @Column(name="q_subident", nullable=true, insertable=true, updatable=false)
+	private String subIdent;
 
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_identity", nullable=false, insertable=true, updatable=false)
@@ -162,6 +168,14 @@ public class UserTestSessionImpl implements UserTestSession, Persistable {
 		this.lastModified = lastModified;
 	}
 
+	public AssessmentEntry getAssessmentEntry() {
+		return assessmentEntry;
+	}
+
+	public void setAssessmentEntry(AssessmentEntry assessmentEntry) {
+		this.assessmentEntry = assessmentEntry;
+	}
+
 	public RepositoryEntry getTestEntry() {
 		return testEntry;
 	}
@@ -170,20 +184,20 @@ public class UserTestSessionImpl implements UserTestSession, Persistable {
 		this.testEntry = testEntry;
 	}
 
-	public RepositoryEntry getCourseEntry() {
-		return courseEntry;
+	public RepositoryEntry getRepositoryEntry() {
+		return repositoryEntry;
 	}
 
-	public void setCourseEntry(RepositoryEntry courseEntry) {
-		this.courseEntry = courseEntry;
+	public void setRepositoryEntry(RepositoryEntry repositoryEntry) {
+		this.repositoryEntry = repositoryEntry;
 	}
 
-	public String getCourseSubIdent() {
-		return courseSubIdent;
+	public String getSubIdent() {
+		return subIdent;
 	}
 
-	public void setCourseSubIdent(String courseSubIdent) {
-		this.courseSubIdent = courseSubIdent;
+	public void setSubIdent(String subIdent) {
+		this.subIdent = subIdent;
 	}
 
 	public Identity getIdentity() {

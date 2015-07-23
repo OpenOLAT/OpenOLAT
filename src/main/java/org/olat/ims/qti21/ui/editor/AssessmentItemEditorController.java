@@ -35,6 +35,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -63,6 +65,8 @@ public class AssessmentItemEditorController extends BasicController {
 	
 	@Autowired
 	private QtiSerializer qtiSerializer;
+	@Autowired
+	private AssessmentService assessmentService;
 	
 	public AssessmentItemEditorController(UserRequest ureq, WindowControl wControl, RepositoryEntry testEntry,
 			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef, File unzippedDirectory) {
@@ -76,7 +80,9 @@ public class AssessmentItemEditorController extends BasicController {
 
 		initItemEditor(ureq);
 		
-		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(), testEntry, resolvedAssessmentItem, itemRef, unzippedDirectory);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), testEntry, null, testEntry);
+		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(),
+				testEntry, assessmentEntry, true, resolvedAssessmentItem, itemRef, unzippedDirectory);
 		listenTo(displayCtrl);
 		tabbedPane.addTab("Preview", displayCtrl.getInitialComponent());
 		

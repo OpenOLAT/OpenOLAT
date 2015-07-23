@@ -299,9 +299,9 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 				new RuntimeControllerCreator() {
 					@Override
 					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
-							RepositoryEntry entry, RepositoryEntrySecurity reSecurity, AssessmentMode mode) {
+							RepositoryEntry entry, RepositoryEntrySecurity repoSecurity, AssessmentMode mode) {
 						InMemoryOutcomesListener listener = new InMemoryOutcomesListener();
-						return new AssessmentTestDisplayController(uureq, wwControl, listener, entry, null, null);
+						return new AssessmentTestDisplayController(uureq, wwControl, listener, entry, entry, null);
 					}
 				});
 	}

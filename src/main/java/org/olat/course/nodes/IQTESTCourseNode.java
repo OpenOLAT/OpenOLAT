@@ -86,6 +86,7 @@ import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.ui.QTI12PullTestsToolController;
 import org.olat.ims.qti.statistics.ui.QTI12StatisticsToolController;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
@@ -107,6 +108,7 @@ import de.bps.onyx.plugin.run.OnyxRunController;
 public class IQTESTCourseNode extends AbstractAccessableCourseNode implements AssessableCourseNode, QTICourseNode {
 	private static final long serialVersionUID = 5806292895738005387L;
 	private static final OLog log = Tracing.createLoggerFor(IQTESTCourseNode.class);
+	private static final String translatorStr = Util.getPackageName(IQEditController.class);
 	private static final String TYPE = "iqtest";
 
 	private static final int CURRENT_CONFIG_VERSION = 2;
@@ -269,9 +271,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 		if (!isValid) {
 			String shortKey = "error.test.undefined.short";
 			String longKey = "error.test.undefined.long";
-			String[] params = new String[] { this.getShortTitle() };
-			String translPackage = Util.getPackageName(IQEditController.class);
-			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, translPackage);
+			String[] params = new String[] { getShortTitle() };
+			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, translatorStr);
 			sd.setDescriptionForUnit(getIdent());
 			// set which pane is affected by error
 			sd.setActivateableViewIdentifier(IQEditController.PANE_TAB_IQCONFIG_TEST);
@@ -287,7 +288,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 		oneClickStatusCache = null;
 		// only here we know which translator to take for translating condition
 		// error messages
-		String translatorStr = Util.getPackageName(IQEditController.class);
 		List<StatusDescription> sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
@@ -297,16 +297,26 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserScoreEvaluation(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
 	@Override
-	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnvironment) {
+	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
 		// read score from properties save score, passed and attempts information
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
 		Boolean passed = am.getNodePassed(this, mySelf);
 		Float score = am.getNodeScore(this, mySelf);		
 		Long assessmentID = am.getAssessmentID(this, mySelf);	
 		Boolean fullyAssessed = am.getNodeFullyAssessed(this, mySelf);	
 		ScoreEvaluation se = new ScoreEvaluation(score, passed, fullyAssessed, assessmentID);
 		return se;
+	}
+
+	@Override
+	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
+		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
+		if(getRepositoryEntrySoftKey() != null) {
+			return am.getAssessmentEntry(this, mySelf, getRepositoryEntrySoftKey());
+		}
+		return null;
 	}
 
 	/**
@@ -463,6 +473,10 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 		// the reference still exists or not
 		RepositoryEntry re = IQEditController.getIQReference(getModuleConfiguration(), false);
 		return re;
+	}
+	
+	private String getRepositoryEntrySoftKey() {
+		return (String)getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
 	}
 
 	/**
