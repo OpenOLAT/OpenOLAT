@@ -532,11 +532,9 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 		throw new OLATRuntimeException(STCourseNode.class, "Details controler not available in ST nodes", null);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsListView(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
+	@Override
 	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
-		throw new OLATRuntimeException(STCourseNode.class, "Details not available in ST nodes", null);
+		return null;
 	}
 
 	/**

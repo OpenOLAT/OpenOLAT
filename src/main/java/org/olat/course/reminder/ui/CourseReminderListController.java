@@ -36,7 +36,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -110,7 +109,7 @@ public class CourseReminderListController extends FormBasicController implements
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ReminderCols.id.i18nKey(), ReminderCols.id.ordinal(),
 				true, ReminderCols.id.name()));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(ReminderCols.description.i18nKey(), ReminderCols.description.ordinal(),
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.description.i18nKey(), ReminderCols.description.ordinal(),
 				"edit", true, ReminderCols.description.name(), new StaticFlexiCellRenderer("edit", new TextFlexiCellRenderer())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.creator.i18nKey(), ReminderCols.creator.ordinal(),
 				true, ReminderCols.creator.name()));

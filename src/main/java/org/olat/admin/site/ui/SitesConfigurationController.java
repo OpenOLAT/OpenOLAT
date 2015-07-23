@@ -41,7 +41,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.navigation.SiteAlternativeControllerCreator;
@@ -136,9 +135,9 @@ public class SitesConfigurationController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SiteCols.altController.i18nKey(), SiteCols.altController.ordinal()));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SiteCols.defaultOrder.i18nKey(), SiteCols.defaultOrder.ordinal(), false, null));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("up", SiteCols.up.ordinal(), "up",
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("up", SiteCols.up.ordinal(), "up",
 				new StaticFlexiCellRenderer("", "up", "o_icon o_icon-lg o_icon_move_up", translate("up"))));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("down", SiteCols.down.ordinal(), "down",
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("down", SiteCols.down.ordinal(), "down",
 				new StaticFlexiCellRenderer("", "down", "o_icon o_icon-lg o_icon_move_down", translate("down"))));
 
 		model = new SiteDefModel(columnsModel);

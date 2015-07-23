@@ -51,7 +51,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -258,7 +257,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		}
 		if(isAdministrativeUser) {
 			FlexiCellRenderer renderer = new StaticFlexiCellRenderer(TABLE_ACTION_EDIT, new TextFlexiCellRenderer());
-			columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(Cols.username.i18n(), Cols.username.ordinal(), TABLE_ACTION_EDIT,
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.username.i18n(), Cols.username.ordinal(), TABLE_ACTION_EDIT,
 					true, Cols.username.name(), renderer));
 		}
 		
@@ -272,7 +271,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 				FlexiColumnModel col;
 				if(UserConstants.FIRSTNAME.equals(propName)
 						|| UserConstants.LASTNAME.equals(propName)) {
-					col = new StaticFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(),
+					col = new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(),
 							colPos++, TABLE_ACTION_EDIT, true, propName,
 							new StaticFlexiCellRenderer(TABLE_ACTION_EDIT, new TextFlexiCellRenderer()));
 				} else {

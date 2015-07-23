@@ -43,7 +43,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.control.Controller;
@@ -109,7 +108,7 @@ public class PoolsController extends FormBasicController {
 						new CSSIconFlexiCellRenderer("o_private"))
 		));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18nKey(), Cols.name.ordinal(), true, "name"));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("select", translate("select"), "select-pool"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select-pool"));
 
 		model = new PoolDataModel(columnsModel, getTranslator());
 		poolTable = uifactory.addTableElement(getWindowControl(), "pools", model, getTranslator(), formLayout);

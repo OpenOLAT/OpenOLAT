@@ -40,7 +40,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -125,12 +124,12 @@ public class CheckListBoxListEditController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(pointColModel);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.release.i18nKey(), Cols.release.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.file.i18nKey(), Cols.file.ordinal()));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit", translate("edit"), "edit"));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("up", Cols.up.ordinal(), "up",
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("up", Cols.up.ordinal(), "up",
 				new BooleanCellRenderer(
 						new StaticFlexiCellRenderer("", "up", "o_icon o_icon-lg o_icon_move_up", translate("up")),
 						null)));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("down", Cols.down.ordinal(), "down",
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("down", Cols.down.ordinal(), "down",
 				new BooleanCellRenderer(
 						new StaticFlexiCellRenderer("", "down", "o_icon o_icon-lg o_icon_move_down", translate("down")),
 						null)));

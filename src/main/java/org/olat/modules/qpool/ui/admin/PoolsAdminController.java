@@ -44,7 +44,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.control.Controller;
@@ -108,9 +107,9 @@ public class PoolsAdminController extends FormBasicController {
 						new CSSIconFlexiCellRenderer("o_icon_pool_private"))
 		));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18nKey(), Cols.name.ordinal(), true, "name"));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit", translate("edit"), "edit-pool"));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("pool.owners", translate("pool.owners"), "owners-pool"));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("delete", translate("delete"), "delete-pool"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit-pool"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("pool.owners", translate("pool.owners"), "owners-pool"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete-pool"));
 
 		model = new PoolDataModel(columnsModel, getTranslator());
 		poolTable = uifactory.addTableElement(getWindowControl(), "pools", model, getTranslator(), formLayout);

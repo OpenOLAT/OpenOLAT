@@ -67,7 +67,7 @@ import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
-import org.olat.course.assessment.AssessmentNotificationsHandler;
+import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -92,6 +92,7 @@ import org.olat.modules.iq.IQSubmittedEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<BR>
@@ -128,7 +129,10 @@ public class IQRunController extends BasicController implements GenericEventList
 	
 	private OLATResourceable assessmentInstanceOres;
 	
-	private final IQManager iqManager;
+	@Autowired
+	private IQManager iqManager;
+	@Autowired
+	private AssessmentNotificationsHandler assessmentNotificationsHandler;
 	
 	/**
 	 * Constructor for a test run controller
@@ -152,7 +156,6 @@ public class IQRunController extends BasicController implements GenericEventList
 		this.assessmentInstanceOres = OresHelper.createOLATResourceableType(AssessmentInstance.class);
 		
 		this.userSession = ureq.getUserSession();
-		iqManager = CoreSpringFactory.getImpl(IQManager.class);
 		
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
 		
@@ -469,9 +472,8 @@ public class IQRunController extends BasicController implements GenericEventList
 			acn.updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), incrementUserAttempts);
 				
 			// Mark publisher for notifications
-			AssessmentNotificationsHandler anh = AssessmentNotificationsHandler.getInstance();
 			Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
-			anh.markPublisherNews(getIdentity(), courseId);
+			assessmentNotificationsHandler.markPublisherNews(getIdentity(), courseId);
 			if(!assessmentStopped) {
 			  assessmentStopped = true;					  
 			  AssessmentEvent assessmentStoppedEvent = new AssessmentEvent(AssessmentEvent.TYPE.STOPPED, userSession);

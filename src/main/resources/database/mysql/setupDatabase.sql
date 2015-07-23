@@ -1064,6 +1064,26 @@ create table o_as_user_course_infos (
    primary key (id)
 );
 
+create table o_as_entry (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   a_attemtps bigint default null,
+   a_score float(65,30) default null,
+   a_passed bit default null, 
+   a_fully_assessed bit default null,
+   a_assessment_id bigint default null,
+   a_completion float(65,30),
+   a_comment text,
+   a_coach_comment text,
+   fk_entry bigint not null,
+   a_subident varchar(64),
+   fk_reference_entry bigint not null,
+   fk_identity bigint not null,
+   primary key (id),
+   unique (fk_identity, fk_entry, a_subident)
+);
+
 create table o_as_mode_course (
    id bigint not null,
    creationdate datetime not null,
@@ -1750,7 +1770,7 @@ alter table o_ac_paypal_transaction ENGINE = InnoDB;
 alter table o_as_eff_statement ENGINE = InnoDB;
 alter table o_as_user_course_infos ENGINE = InnoDB;
 alter table o_as_mode_course ENGINE = InnoDB;
-alter table o_as_mode_course ENGINE = InnoDB;
+alter table o_as_entry ENGINE = InnoDB;
 alter table o_as_mode_course_to_area ENGINE = InnoDB;
 alter table o_mapper ENGINE = InnoDB;
 alter table o_qti_assessment_session ENGINE = InnoDB;
@@ -2073,6 +2093,12 @@ create index eff_statement_repo_key_idx on o_as_eff_statement (course_repo_key);
 alter table o_as_user_course_infos add index user_course_infos_id_cstr (fk_identity), add constraint user_course_infos_id_cstr foreign key (fk_identity) references o_bs_identity (id);
 alter table o_as_user_course_infos add index user_course_infos_res_cstr (fk_resource_id), add constraint user_course_infos_res_cstr foreign key (fk_resource_id) references o_olatresource (resource_id);
 alter table o_as_user_course_infos add unique (fk_identity, fk_resource_id);
+
+alter table o_as_entry add constraint as_entry_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+alter table o_as_entry add constraint as_entry_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_as_entry add constraint as_entry_to_refentry_idx foreign key (fk_reference_entry) references o_repositoryentry (repositoryentry_id);
+
+create index idx_as_entry_to_id_idx on o_as_entry (a_assessment_id);
 
 -- mapper
 create index o_mapper_uuid_idx on o_mapper (mapper_uuid);

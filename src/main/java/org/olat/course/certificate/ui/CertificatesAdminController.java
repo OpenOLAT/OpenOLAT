@@ -33,7 +33,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -75,8 +74,8 @@ public class CertificatesAdminController extends FormBasicController {
 		
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18n(), Cols.name.ordinal()));
-		tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel("replace", translate("replace"), "replace"));
-		tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel("delete", translate("delete"), "delete"));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("replace", translate("replace"), "replace"));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
 		
 		tableModel = new TemplatesDataModel(tableColumnModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "templates", tableModel, getTranslator(), formLayout);

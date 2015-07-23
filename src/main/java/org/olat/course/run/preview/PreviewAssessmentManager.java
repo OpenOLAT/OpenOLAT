@@ -25,6 +25,7 @@
 
 package org.olat.course.run.preview;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +40,7 @@ import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.AssessmentEntry;
 
 /**
  * Initial Date:  08.02.2005
@@ -56,6 +58,11 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	 */
 	private void saveNodeScore(CourseNode courseNode, Float score) {
 		nodeScores.put(courseNode.getIdent(), score);
+	}
+
+	@Override
+	public List<AssessmentEntry> getAssessmentData(CourseNode courseNode) {
+		return Collections.emptyList();
 	}
 
 	/**

@@ -25,6 +25,7 @@
 
 package org.olat.course.assessment;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
@@ -243,12 +244,18 @@ public class AssessmentHelper {
 
 		return nodes;
 	}
+	
+	public static String getRoundedScore(BigDecimal score) {
+		if (score == null) return null;
+		
+		Float fscore = score.floatValue();
+		return getRoundedScore(fscore); 
+	}
 
 	/**
 	 * @param score The score to be rounded
 	 * @return The rounded score for GUI presentation
 	 */
-	//fxdiff VCRP-4: assessment overview with max score
 	public static String getRoundedScore(Float score) {
 		if (score == null) return null;
 
@@ -256,7 +263,6 @@ public class AssessmentHelper {
 		synchronized(scoreFormat) {
 			return scoreFormat.format(score);
 		}
-		//return Formatter.roundToString(score.floatValue(), 3);
 	}
 	
 	public static Float getRoundedScore(String score) {

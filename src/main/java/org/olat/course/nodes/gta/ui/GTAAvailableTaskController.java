@@ -40,7 +40,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -124,7 +123,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 		if(preview) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ATDCols.preview.i18nKey(), ATDCols.preview.ordinal()));
 		}
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("select", -1, "select",
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", -1, "select",
 				new StaticFlexiCellRenderer(translate("select"), "select", "btn btn-primary", "o_icon o_icon_submit")));
 		
 		taskModel = new AvailableTaskTableModel(columnsModel);

@@ -96,6 +96,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.NodeTableDataModel.Cols;
 import org.olat.course.assessment.bulk.BulkAssessmentOverviewController;
+import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateLight;
@@ -234,6 +235,8 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private CertificatesManager certificatesManager;
+	@Autowired
+	private AssessmentNotificationsHandler assessmentNotificationsHandler;
 	
 	/**
 	 * Constructor for the assessment tool controller. 
@@ -284,10 +287,11 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			
 		if (hasAssessableNodes) {
 			index.contextPut("hasAssessableNodes", new Boolean(hasAssessableNodes));
-			
-			// --- assessment notification subscription ---
-			csc = AssessmentUIFactory.createContextualSubscriptionController(ureq, wControl, course);
-			if (csc != null) {
+
+			SubscriptionContext subsContext = assessmentNotificationsHandler.getAssessmentSubscriptionContext(ureq.getIdentity(), course);
+			if (subsContext != null) {
+				PublisherData pData = assessmentNotificationsHandler.getAssessmentPublisherData(course, wControl.getBusinessControl().getAsString());
+				csc = new ContextualSubscriptionController(ureq, wControl, subsContext, pData);
 				listenTo(csc); // cleanup on dispose
 				index.put("assessmentSubscription", csc.getInitialComponent());
 			}

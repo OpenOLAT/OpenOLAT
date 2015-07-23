@@ -128,7 +128,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 	 * Called in AssessmentManager in a <code>doInSync</code> block, toghether with the saveScore.
 	 * @param userCourseEnv
 	 */
-	protected void updateUserEfficiencyStatement(UserCourseEnvironment userCourseEnv) {
+	public void updateUserEfficiencyStatement(UserCourseEnvironment userCourseEnv) {
 		Long courseResId = userCourseEnv.getCourseEnvironment().getCourseResourceableId(); 
 		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance(CourseModule.class, courseResId);
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(courseOres, false);

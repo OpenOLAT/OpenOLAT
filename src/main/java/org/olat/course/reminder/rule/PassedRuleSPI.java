@@ -80,7 +80,7 @@ public class PassedRuleSPI implements FilterRuleSPI {
 			ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
 			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
 			
-			Map<Long, Boolean> passeds = helperDao.getPassed(entry.getOlatResource().getResourceableId(), courseNode, identities);
+			Map<Long, Boolean> passeds = helperDao.getPassed(entry, courseNode, identities);
 			
 			if("passed".equals(status)) {
 				for(Iterator<Identity> identityIt=identities.iterator(); identityIt.hasNext(); ) {

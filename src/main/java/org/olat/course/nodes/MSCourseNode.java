@@ -441,11 +441,9 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Assess
 		return tools;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsListView(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
+	@Override
 	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
-		throw new OLATRuntimeException(MSCourseNode.class, "Details not available in MS nodes", null);
+		return null;
 	}
 
 	/**

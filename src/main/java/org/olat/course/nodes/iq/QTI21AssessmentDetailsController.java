@@ -33,7 +33,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -85,7 +84,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.lastModified.i18nKey(), TSCols.lastModified.ordinal()));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(TSCols.results.i18nKey(), TSCols.results.ordinal(), "result",
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.results.i18nKey(), TSCols.results.ordinal(), "result",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate(TSCols.results.i18nKey()), "result"), null)));
 
 		tableModel = new QTI21TestSessionTableModel(columnsModel);

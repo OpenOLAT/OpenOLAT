@@ -53,7 +53,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -139,12 +138,12 @@ public class LandingPagesAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RCols.landingPage.i18nKey(), RCols.landingPage.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RCols.landingPageChooser.i18nKey(), RCols.landingPageChooser.ordinal()));
 		
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("up", -1, "up",
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("up", -1, "up",
 				new StaticFlexiCellRenderer("", "up", "o_icon o_icon-lg o_icon_move_up",translate("up"))));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("down", -1, "down",
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("down", -1, "down",
 				new StaticFlexiCellRenderer("", "down", "o_icon o_icon-lg o_icon_move_down", translate("down"))));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("add", translate("add"), "add"));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("delete", translate("delete"), "delete"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("add", translate("add"), "add"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
 
 		//pack the rules
 		Rules rules = lpModule.getRules();

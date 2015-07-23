@@ -58,6 +58,8 @@ public class QTIStatisticResultSet implements CreateInfo, Persistable {
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=false)
 	private Date lastModified;
 
+	@Column(name="repositoryref_fk", nullable=false, insertable=true, updatable=false)
+	private Long repositoryEntryKey;
 	@Column(name="olatresource_fk", nullable=false, insertable=true, updatable=false)
 	private Long olatResource;
 	@Column(name="olatresourcedetail", nullable=false, insertable=true, updatable=false)
@@ -103,6 +105,13 @@ public class QTIStatisticResultSet implements CreateInfo, Persistable {
 		this.identityKey = identityKey;
 	}
 
+	public Long getRepositoryEntryKey() {
+		return repositoryEntryKey;
+	}
+
+	public void setRepositoryEntryKey(Long repositoryEntryKey) {
+		this.repositoryEntryKey = repositoryEntryKey;
+	}
 
 	public Long getOlatResource() {
 		return olatResource;

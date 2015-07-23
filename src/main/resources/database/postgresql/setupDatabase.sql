@@ -1065,6 +1065,26 @@ create table o_as_user_course_infos (
    primary key (id)
 );
 
+create table o_as_entry (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   a_attemtps int8 default null,
+   a_score decimal default null,
+   a_passed bool default null,
+   a_fully_assessed bool default null,
+   a_assessment_id int8 default null,
+   a_completion float(24),
+   a_comment text,
+   a_coach_comment text,
+   fk_entry int8 not null,
+   a_subident varchar(64),
+   fk_reference_entry int8 not null,
+   fk_identity int8 not null,
+   primary key (id),
+   unique(fk_identity, fk_entry, a_subident)
+);
+
 create table o_as_mode_course (
    id int8 not null,
    creationdate timestamp not null,
@@ -2072,6 +2092,15 @@ create index idx_ucourseinfos_ident_idx on o_as_user_course_infos (fk_identity);
 alter table o_as_user_course_infos add constraint user_course_infos_res_cstr foreign key (fk_resource_id) references o_olatresource (resource_id);
 create index idx_ucourseinfos_rsrc_idx on o_as_user_course_infos (fk_resource_id);
 alter table o_as_user_course_infos add unique (fk_identity, fk_resource_id);
+
+alter table o_as_entry add constraint as_entry_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_as_entry_to_ident_idx on o_as_entry (fk_identity);
+alter table o_as_entry add constraint as_entry_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_as_entry_to_entry_idx on o_as_entry (fk_entry);
+alter table o_as_entry add constraint as_entry_to_refentry_idx foreign key (fk_reference_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_as_entry_to_refentry_idx on o_as_entry (fk_reference_entry);
+
+create index idx_as_entry_to_id_idx on o_as_entry (a_assessment_id);
 
 -- mapper
 create index o_mapper_uuid_idx on o_mapper (mapper_uuid);

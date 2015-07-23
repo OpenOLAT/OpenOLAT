@@ -31,7 +31,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.PersistingCourseImpl;
 import org.olat.course.Structure;
 import org.olat.course.assessment.AssessmentManager;
-import org.olat.course.assessment.NewCachePersistingAssessmentManager;
+import org.olat.course.assessment.manager.CourseAssessmentManagerImpl;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.auditing.UserNodeAuditManagerImpl;
 import org.olat.course.config.CourseConfig;
@@ -106,7 +106,7 @@ public class CourseEnvironmentImpl implements CourseEnvironment {
 		if(assessmentManager == null) {
 			synchronized(this) {
 				if(assessmentManager == null) {
-					assessmentManager = NewCachePersistingAssessmentManager.getInstance(course);
+					assessmentManager = new CourseAssessmentManagerImpl(cgm.getCourseEntry());
 				}
 			}
 		}

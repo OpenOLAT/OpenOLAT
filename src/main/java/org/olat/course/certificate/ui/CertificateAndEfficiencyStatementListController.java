@@ -40,7 +40,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
@@ -176,20 +175,20 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.score.i18n(), Cols.score.ordinal()));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passed.i18n(), Cols.passed.ordinal(),
 				new PassedCellRenderer()));
-		tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.show",
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.show",
 				translate("table.header.show"), CMD_SHOW));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lastModified.i18n(), Cols.lastModified.ordinal()));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.certificate.i18n(), Cols.certificate.ordinal(),
 				new DownloadCertificateCellRenderer(assessedIdentity)));
-		tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.launchcourse",
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.launchcourse",
 				translate("table.header.launchcourse"), CMD_LAUNCH_COURSE));
-		tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.delete",
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.delete",
 				translate("table.action.delete"), CMD_DELETE));
 		
 		//delete
 		EPArtefactHandler<?> artHandler = portfolioModule.getArtefactHandler(EfficiencyStatementArtefact.ARTEFACT_TYPE);
 		if(portfolioModule.isEnabled() && artHandler != null && artHandler.isEnabled() && assessedIdentity.equals(getIdentity())) {
-			tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.artefact",
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.artefact",
 					Cols.efficiencyStatement.ordinal(), CMD_ARTEFACT,
 					new StaticFlexiCellRenderer(CMD_ARTEFACT, new AsArtefactCellRenderer())));
 		}

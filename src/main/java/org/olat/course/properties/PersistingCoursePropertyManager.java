@@ -25,24 +25,22 @@
 
 package org.olat.course.properties;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import javax.persistence.TypedQuery;
-
-import org.olat.basesecurity.IdentityImpl;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.manager.BasicManager;
-import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.properties.NarrowedPropertyManager;
 import org.olat.properties.Property;
 import org.olat.resource.OLATResource;
@@ -225,34 +223,8 @@ public class PersistingCoursePropertyManager extends BasicManager implements Cou
 	 */
 	@Override
 	public List<Identity> getAllIdentitiesWithCourseAssessmentData(Collection<Identity> excludeIdentities) {
-		StringBuilder query = new StringBuilder();
-		query.append("select distinct i from ")
-			.append(IdentityImpl.class.getName()).append(" as i,")
-			.append(Property.class.getName()).append(" as p")
-			.append(" where i = p.identity and p.resourceTypeName = :resname")
-			.append(" and p.resourceTypeId = :resid")
-			.append(" and p.identity is not null")
-			.append(" and p.name in ('").append(AssessmentManager.SCORE).append("','").append(AssessmentManager.PASSED).append("')");
-		
-		if(excludeIdentities != null && !excludeIdentities.isEmpty()) {
-			query.append(" and p.identity.key not in (:excludeIdentities) ");
-		}
-
-		TypedQuery<Identity> db = DBFactory.getInstance().getCurrentEntityManager()
-				.createQuery(query.toString(), Identity.class)
-				.setParameter("resid", ores.getResourceableId())
-				.setParameter("resname", ores.getResourceableTypeName());
-		if(excludeIdentities != null && !excludeIdentities.isEmpty()) {
-			List<Long> excludeKeys = new ArrayList<Long>();
-			for(Identity identity:excludeIdentities) {
-				excludeKeys.add(identity.getKey());
-			}
-			//limit because Oracle and Hibernate doesn't like more than 1000
-			if(excludeKeys.size() > 900) {
-				excludeKeys = excludeKeys.subList(0, 900);
-			}
-			db.setParameter("excludeIdentities", excludeKeys);
-		}
-		return db.getResultList();
+		ICourse course = CourseFactory.loadCourse(ores);
+		AssessmentEntryDAO courseNodeAssessmentDao = CoreSpringFactory.getImpl(AssessmentEntryDAO.class);
+		return courseNodeAssessmentDao.getAllIdentitiesWithAssessmentData(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 	}
 }

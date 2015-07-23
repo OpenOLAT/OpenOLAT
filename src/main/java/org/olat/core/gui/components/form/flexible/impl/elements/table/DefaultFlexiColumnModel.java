@@ -43,31 +43,99 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 	private String sortedKey;
 
 	private boolean defaultVisible;
+	private boolean alwaysVisible;
 	private int alignment;
+	
+	private final String action;
+	
 	private FlexiCellRenderer cellRenderer;
+	
+	public DefaultFlexiColumnModel(FlexiColumnDef def) {
+		this(def.i18nHeaderKey(), def.ordinal(), false, null);
+	}
+	
+	public DefaultFlexiColumnModel(FlexiColumnDef def, String action) {
+		this(true, false, def.i18nHeaderKey(), def.ordinal(), action, false, null, FlexiColumnModel.ALIGNMENT_LEFT, 
+				new StaticFlexiCellRenderer(action, new TextFlexiCellRenderer()));
+	}
 
+	/**
+	 * 
+	 * @param headerKey
+	 * @param columnIndex
+	 */
 	public DefaultFlexiColumnModel(String headerKey, int columnIndex) {
 		this(headerKey, columnIndex, false, null);
 	}
 	
+	/**
+	 * Always visible
+	 * @param headerKey
+	 * @param label
+	 * @param action
+	 */
+	public DefaultFlexiColumnModel(String headerKey, String label, String action) {
+		this(true, true, headerKey, -1, action, false, null, FlexiColumnModel.ALIGNMENT_LEFT, new StaticFlexiCellRenderer(label, action));
+	}
+	
 	public DefaultFlexiColumnModel(String headerKey, int columnIndex, boolean sortable, String sortKey) {
-		this(true, headerKey, columnIndex, sortable, sortKey, FlexiColumnModel.ALIGNMENT_LEFT,  new TextFlexiCellRenderer());
+		this(true, false, headerKey, columnIndex, null, sortable, sortKey, FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer());
+	}
+	
+	public DefaultFlexiColumnModel(FlexiColumnDef def, FlexiCellRenderer renderer) {
+		this(true, false, def.i18nHeaderKey(), def.ordinal(), null, false, null, FlexiColumnModel.ALIGNMENT_LEFT, renderer);
 	}
 	
 	public DefaultFlexiColumnModel(String headerKey, int columnIndex, FlexiCellRenderer renderer) {
-		this(true, headerKey, columnIndex, false, null, FlexiColumnModel.ALIGNMENT_LEFT, renderer);
+		this(true, false, headerKey, columnIndex, null, false, null, FlexiColumnModel.ALIGNMENT_LEFT, renderer);
+	}
+	
+	/**
+	 * Always visible
+	 * @param headerKey
+	 * @param columnIndex
+	 * @param action
+	 * @param renderer
+	 */
+	public DefaultFlexiColumnModel(String headerKey, int columnIndex, String action, FlexiCellRenderer renderer) {
+		this(true, true, headerKey, columnIndex, action, false, null, FlexiColumnModel.ALIGNMENT_LEFT, renderer);
 	}
 	
 	public DefaultFlexiColumnModel(String headerKey, int columnIndex, boolean sortable, String sortKey, FlexiCellRenderer renderer) {
-		this(true, headerKey, columnIndex, sortable, sortKey, FlexiColumnModel.ALIGNMENT_LEFT, renderer);
+		this(true, false, headerKey, columnIndex, null, sortable, sortKey, FlexiColumnModel.ALIGNMENT_LEFT, renderer);
 	}
 	
 	public DefaultFlexiColumnModel(boolean defVisible, String headerKey, int columnIndex, boolean sortable, String sortKey) {
-		this(defVisible, headerKey, columnIndex, sortable, sortKey, FlexiColumnModel.ALIGNMENT_LEFT,  new TextFlexiCellRenderer());
+		this(defVisible, false, headerKey, columnIndex, null, sortable, sortKey, FlexiColumnModel.ALIGNMENT_LEFT,
+				new TextFlexiCellRenderer());
+	}
+	
+	public DefaultFlexiColumnModel(boolean defVisible, String headerKey, int columnIndex, String action, boolean sortable, String sortKey) {
+		this(defVisible, false, headerKey, columnIndex, action, sortable, sortKey, FlexiColumnModel.ALIGNMENT_LEFT,
+				new StaticFlexiCellRenderer(action, new TextFlexiCellRenderer()));
+	}
+	
+	/**
+	 * Always visible
+	 * @param headerKey
+	 * @param columnIndex
+	 * @param action
+	 * @param sortable
+	 * @param sortedKey
+	 * @param renderer
+	 */
+	public DefaultFlexiColumnModel(String headerKey, int columnIndex, String action, boolean sortable, String sortedKey, FlexiCellRenderer renderer) {
+		this(true, true, headerKey, columnIndex, action, sortable, sortedKey, FlexiColumnModel.ALIGNMENT_LEFT, renderer);
 	}
 	
 	public DefaultFlexiColumnModel(boolean defVisible, String headerKey, int columnIndex, boolean sortable, String sortKey, int alignment, FlexiCellRenderer cellRenderer) {
+		this(defVisible, false, headerKey, columnIndex, null, sortable, sortKey, alignment, cellRenderer);
+	}
+	
+	public DefaultFlexiColumnModel(boolean defVisible, boolean alwaysVisible, String headerKey, int columnIndex, String action,
+			boolean sortable, String sortKey, int alignment, FlexiCellRenderer cellRenderer) {
 		this.defaultVisible = defVisible;
+		this.alwaysVisible = alwaysVisible;
 		this.sortable = sortable;
 		this.sortedKey = sortKey;
 		this.headerKey = headerKey;
@@ -75,16 +143,17 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 		this.columnKey = headerKey.replace(".", "").toLowerCase();
 		this.alignment = alignment;
 		this.cellRenderer = cellRenderer;
+		this.action = action;
 	}
 
 	@Override
 	public boolean isAlwaysVisible() {
-		return false;
+		return alwaysVisible;
 	}
 
 	@Override
 	public String getAction() {
-		return null;
+		return action;
 	}
 
 	@Override

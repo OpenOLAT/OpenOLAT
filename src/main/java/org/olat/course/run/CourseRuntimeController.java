@@ -90,7 +90,8 @@ import org.olat.course.assessment.AssessmentMainController;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CoachingGroupAccessAssessmentCallback;
 import org.olat.course.assessment.FullAccessAssessmentCallback;
-import org.olat.course.assessment.ui.AssessmentModeListController;
+import org.olat.course.assessment.ui.mode.AssessmentModeListController;
+import org.olat.course.assessment.ui.tool.AssessmentOverviewController;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
 import org.olat.course.certificate.ui.CertificatesOptionsController;
 import org.olat.course.config.CourseConfig;
@@ -148,7 +149,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private Delayed delayedClose;
 	//tools
 	private Link folderLink,
-		assessmentLink, archiverLink,
+		assessmentLink, assessment_v2_Link, archiverLink,
 		courseStatisticLink, surveyStatisticLink, testStatisticLink,
 		areaLink, dbLink,
 		//settings
@@ -169,6 +170,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private CourseOptionsController optionsToolCtr;
 	private CourseRemindersController remindersCtrl;
 	private AssessmentMainController assessmentToolCtr;
+	private AssessmentOverviewController assessmentTool_v2_Ctr;
 	private MembersManagementMainController membersCtrl;
 	private StatisticCourseNodesController statsToolCtr;
 	private AssessmentModeListController assessmentModeCtrl;
@@ -391,6 +393,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				assessmentLink = LinkFactory.createToolLink("assessment",translate("command.openassessment"), this, "o_icon_assessment_tool");
 				assessmentLink.setElementCssClass("o_sel_course_assessment_tool");
 				tools.addComponent(assessmentLink);
+				
+				assessment_v2_Link = LinkFactory.createToolLink("assessment", translate("command.openassessment") + " v2", this, "o_icon_rocket");
+				assessment_v2_Link.setElementCssClass("o_sel_course_assessment_tool");
+				tools.addComponent(assessment_v2_Link);
+				
 			}
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_ARCHIVING)) {
 				archiverLink = LinkFactory.createToolLink("archiver", translate("command.openarchiver"), this, "o_icon_archive_tool");
@@ -718,6 +725,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doAssessmentSurveyStatistics(ureq);
 		} else if(assessmentLink == source) {
 			doAssessmentTool(ureq);
+		} else if(assessment_v2_Link == source) {
+			doAssessmentTool_v2(ureq);
 		} else if(calendarLink == source) {
 			launchCalendar(ureq);
 		} else if(chatLink == source) {
@@ -1268,6 +1277,42 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				listenTo(ctrl);
 				assessmentToolCtr = pushController(ureq, translate("command.openassessment"), ctrl);
 				currentToolCtr = assessmentToolCtr;
+				setActiveTool(assessmentLink);
+				return assessmentToolCtr;
+			}
+		} else {
+			delayedClose = Delayed.assessmentTool;
+		}
+		return null;
+	}
+	
+	private Activateable2 doAssessmentTool_v2(UserRequest ureq) {
+		if(delayedClose == Delayed.assessmentTool || requestForClose(ureq)) {
+			OLATResourceable ores = OresHelper.createOLATResourceableType("assessmentTool");
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			
+			// 1) course admins and users with tool right: full access
+			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
+				removeCustomCSS(ureq);
+				AssessmentOverviewController ctrl = new AssessmentOverviewController(ureq, swControl, toolbarPanel,
+						getRepositoryEntry(), new FullAccessAssessmentCallback(reSecurity.isEntryAdmin()));
+				ctrl.activate(ureq, null, null);
+				listenTo(ctrl);
+				assessmentTool_v2_Ctr = pushController(ureq, translate("command.openassessment"), ctrl);
+				currentToolCtr = assessmentTool_v2_Ctr;
+				setActiveTool(assessmentLink);
+				return assessmentToolCtr;
+			}
+			// 2) users with coach right: limited access to coached groups
+			if (reSecurity.isCourseCoach() || reSecurity.isGroupCoach()) {
+				removeCustomCSS(ureq);
+				AssessmentOverviewController ctrl = new AssessmentOverviewController(ureq, swControl, toolbarPanel,
+						getRepositoryEntry(), new CoachingGroupAccessAssessmentCallback());
+				ctrl.activate(ureq, null, null);
+				listenTo(ctrl);
+				assessmentTool_v2_Ctr = pushController(ureq, translate("command.openassessment"), ctrl);
+				currentToolCtr = assessmentTool_v2_Ctr;
 				setActiveTool(assessmentLink);
 				return assessmentToolCtr;
 			}

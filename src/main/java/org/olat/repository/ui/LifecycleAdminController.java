@@ -37,7 +37,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -89,8 +88,8 @@ public class LifecycleAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LCCols.validTo.i18nKey(), LCCols.validTo.ordinal()));
 
 		FlexiCellRenderer delRenderer = new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("delete"), "delete-cycle"), null);
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("delete", LCCols.delete.ordinal(), "delete-cycle", delRenderer));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit", translate(LCCols.edit.i18nKey()), "edit-lifecycle"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", LCCols.delete.ordinal(), "delete-cycle", delRenderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate(LCCols.edit.i18nKey()), "edit-lifecycle"));
 
 		model = new LifecycleDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "cycles", model, getTranslator(), formLayout);

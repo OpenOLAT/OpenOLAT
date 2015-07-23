@@ -30,7 +30,6 @@ import java.util.Map;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
-import org.olat.course.assessment.AssessmentManager;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.editor.beecom.objects.FIBResponse;
 import org.olat.ims.qti.editor.beecom.objects.Item;
@@ -48,7 +47,6 @@ import org.olat.ims.qti.statistics.model.StatisticKPrimOption;
 import org.olat.ims.qti.statistics.model.StatisticSurveyItem;
 import org.olat.ims.qti.statistics.model.StatisticSurveyItemResponse;
 import org.olat.ims.qti.statistics.model.StatisticsItem;
-import org.olat.properties.Property;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -76,9 +74,8 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 		}
 		
 		if(searchParams.isMayViewAllUsersAssessments()) {
-			sb.append(" and rset.identityKey in ( select p.identity.key from ").append(Property.class.getName()).append(" p ")
-			  .append("   where p.resourceTypeId=:resourceId and p.resourceTypeName='CourseModule'")
-			  .append(" and p.name in ('").append(AssessmentManager.SCORE).append("','").append(AssessmentManager.PASSED).append("')")
+			sb.append(" and rset.identityKey in (select nodeassessment.identity.key from coursenodeassessment nodeassessment ")
+			  .append("   where nodeassessment.courseEntry.key=rset.repositoryEntryKey and nodeassessment.courseNodeIdent=rset.olatResourceDetail")
 			  .append(" )");
 		}
 		return sb;

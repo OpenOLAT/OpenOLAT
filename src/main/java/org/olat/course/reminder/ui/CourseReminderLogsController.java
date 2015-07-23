@@ -40,7 +40,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
@@ -107,7 +106,7 @@ public class CourseReminderLogsController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.status.i18nKey(), SendCols.status.ordinal(),
 				 true, SendCols.status.name(), new StatusCellRenderer()));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(SendCols.reminder.i18nKey(), SendCols.reminder.ordinal(),
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.reminder.i18nKey(), SendCols.reminder.ordinal(),
 				"reminder", true, SendCols.reminder.name(), new StaticFlexiCellRenderer("reminder", new TextFlexiCellRenderer())));
 
 		if(isAdministrativeUser) {
@@ -126,7 +125,7 @@ public class CourseReminderLogsController extends FormBasicController {
 			FlexiColumnModel col;
 			if(UserConstants.FIRSTNAME.equals(propName)
 					|| UserConstants.LASTNAME.equals(propName)) {
-				col = new StaticFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(),
+				col = new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(),
 						colIndex, userPropertyHandler.getName(), true, propName,
 						new StaticFlexiCellRenderer(userPropertyHandler.getName(), new TextFlexiCellRenderer()));
 			} else {
@@ -138,7 +137,7 @@ public class CourseReminderLogsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.sendTime.i18nKey(), SendCols.sendTime.ordinal(),
 				true, SendCols.sendTime.name()));
 		//user properties
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("resend", translate("resend"), "resend"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("resend", translate("resend"), "resend"));
 		
 		tableModel = new CourseSendReminderTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);

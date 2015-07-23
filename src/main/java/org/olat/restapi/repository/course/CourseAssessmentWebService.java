@@ -50,7 +50,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.OLog;
@@ -61,7 +60,6 @@ import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
-import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -83,7 +81,6 @@ import org.olat.ims.qti.process.AssessmentFactory;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.iq.IQManager;
-import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -555,30 +552,8 @@ public class CourseAssessmentWebService {
 	}
 	
 	private Date getLastModificationDate(Identity assessedIdentity, ICourse course, CourseNode courseNode) {
-		//try to load the exact score prpoerty saved on the DB
-		
-		final CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
-		Property scoreProperty = cpm.findCourseNodeProperty(courseNode, assessedIdentity, null, AssessmentManager.SCORE);
-		if(scoreProperty != null) {
-			return scoreProperty.getLastModified();
-		}
-	  
-		//last change in course
-		StringBuilder sb = new StringBuilder();
-		sb.append("select max(p.lastModified) from ").append(Property.class.getName()).append(" as p where")
-			.append(" p.resourceTypeName = :restypename and p.resourceTypeId = :restypeid")
-			.append(" and p.name = '").append(AssessmentManager.SCORE).append("'")
-			.append(" and p.identity = :id");
-		List<Date> properties = DBFactory.getInstance().getCurrentEntityManager()
-				.createQuery(sb.toString(), Date.class)
-				.setParameter("restypename", course.getResourceableTypeName())
-				.setParameter("restypeid", course.getResourceableId().longValue())
-				.setParameter("id", assessedIdentity)
-				.getResultList();
-		if(!properties.isEmpty()) {
-			return properties.get(0);
-		}
-		return null;
+		AssessmentManager am = course.getCourseEnvironment().getAssessmentManager();
+		return am.getScoreLastModifiedDate(courseNode, assessedIdentity);
 	}
 
 	private List<Identity> loadUsers(ICourse course) {

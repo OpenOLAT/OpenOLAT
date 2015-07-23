@@ -20,3 +20,30 @@ alter table o_qti_assessment_session add constraint qti_sess_to_course_entry_idx
 alter table o_qti_assessment_session add constraint qti_sess_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 
 
+
+create table o_as_entry (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   a_attemtps bigint default null,
+   a_score float(65,30) default null,
+   a_passed bit default null, 
+   a_fully_assessed bit default null,
+   a_assessment_id bigint default null,
+   a_completion float(65,30),
+   a_comment text,
+   a_coach_comment text,
+   fk_entry bigint not null,
+   a_subident varchar(64),
+   fk_reference_entry bigint not null,
+   fk_identity bigint not null,
+   primary key (id),
+   unique (fk_identity, fk_entry, a_subident)
+);
+alter table o_as_entry ENGINE = InnoDB;
+
+alter table o_as_entry add constraint as_entry_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+alter table o_as_entry add constraint as_entry_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_as_entry add constraint as_entry_to_refentry_idx foreign key (fk_reference_entry) references o_repositoryentry (repositoryentry_id);
+
+create index idx_as_entry_to_id_idx on o_as_entry (a_assessment_id);

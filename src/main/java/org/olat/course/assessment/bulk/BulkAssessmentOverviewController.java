@@ -42,7 +42,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -118,11 +117,11 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.numOfAssessedUsers", Cols.numOfAssessedUsers.ordinal()));
 		
 		FlexiCellRenderer renderer = new StaticFlexiCellRenderer("select-owner", new TextFlexiCellRenderer());
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.owner", Cols.owner.ordinal(), "select-owner", renderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.owner", Cols.owner.ordinal(), "select-owner", renderer));
 		
 		
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit", translate("edit"), "edit"));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("delete", translate("delete"), "delete"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
 		
 		taskModel = new TaskDataModel(Collections.<TaskData>emptyList(), columnsModel);
 		taskListEl = uifactory.addTableElement(getWindowControl(), "taskList", taskModel, getTranslator(), formLayout);

@@ -44,7 +44,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -109,9 +108,9 @@ public class CourseSiteAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CSCols.title.i18nKey(), CSCols.title.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CSCols.courseId.i18nKey(), CSCols.courseId.ordinal(), false, null));
 		FlexiCellRenderer renderer = new StaticFlexiCellRenderer("openre", new TextFlexiCellRenderer());
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(CSCols.courseTitle.i18nKey(), CSCols.courseTitle.ordinal(), "openre", renderer));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("select", translate("select"), "select"));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("remove", translate("remove"), "remove"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CSCols.courseTitle.i18nKey(), CSCols.courseTitle.ordinal(), "openre", renderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("remove", translate("remove"), "remove"));
 
 		String page = velocity_root + "/lang_options.html";
 		tableLayout = FormLayoutContainer.createCustomFormLayout("site.options.lang", getTranslator(), page);

@@ -34,6 +34,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.AssessmentEntry;
 
 /**
  * Description:<BR>
@@ -52,6 +53,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 public interface AssessmentManager {
 
 	// Names used to save user data in the properties table
+	/*
 	public static final String SCORE = "SCORE";
 	public static final String PASSED = "PASSED";
 	public static final String ATTEMPTS = "ATTEMPTS";
@@ -60,6 +62,7 @@ public interface AssessmentManager {
 	public static final String ASSESSMENT_ID = "ASSESSMENT_ID";
 
 	public final static String FULLY_ASSESSED = "FULLY_ASSESSED";
+	*/
 	
 	/**
 	 * Load all persisted assessment data into a local cache if such a cache is available
@@ -208,4 +211,5 @@ public interface AssessmentManager {
 	 */
 	public Boolean getNodeFullyAssessed(CourseNode courseNode, Identity identity);
 
+	public List<AssessmentEntry> getAssessmentData(CourseNode courseNode);
 }

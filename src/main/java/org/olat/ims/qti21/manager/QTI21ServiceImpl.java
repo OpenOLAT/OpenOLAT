@@ -37,7 +37,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.olat.basesecurity.IdentityRef;
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
@@ -101,8 +100,6 @@ public class QTI21ServiceImpl implements QTI21Service {
 	
 	private static final OLog log = Tracing.createLoggerFor(QTI21ServiceImpl.class);
 	
-	@Autowired
-	private DB dbInstance;
 	@Autowired
 	private EventDAO eventDao;
 	@Autowired

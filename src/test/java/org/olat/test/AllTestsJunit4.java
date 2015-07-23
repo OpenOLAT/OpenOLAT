@@ -129,6 +129,7 @@ import org.junit.runners.Suite;
 	org.olat.course.assessment.AssessmentManagerTest.class,
 	org.olat.course.assessment.manager.UserCourseInformationsManagerTest.class,
 	org.olat.course.assessment.manager.AssessmentModeManagerTest.class,
+	org.olat.modules.assessment.manager.AssessmentEntryDAOTest.class,
 	org.olat.course.certificate.manager.CertificatesManagerTest.class,
 	org.olat.course.config.CourseConfigManagerImplTest.class,
 	org.olat.course.groupsandrights.CourseGroupManagementTest.class,

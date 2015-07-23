@@ -41,9 +41,9 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.NewCachePersistingAssessmentManager;
+import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.manager.CourseAssessmentManagerImpl;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -204,9 +204,8 @@ public class ReturnWSService {
 								ICourse course = CourseFactory.loadCourse(resourceId);
 
 								CourseNode courseNode = course.getRunStructure().getNode(qtiResultSet.getOlatResourceDetail());
-								NewCachePersistingAssessmentManager am = (NewCachePersistingAssessmentManager) NewCachePersistingAssessmentManager.getInstance(course);
+								AssessmentManager am = new CourseAssessmentManagerImpl(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 
-								CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 								// create an identenv with no roles, no
 								// attributes, no locale
 								IdentityEnvironment ienv = new IdentityEnvironment();
@@ -215,7 +214,8 @@ public class ReturnWSService {
 
 								ScoreEvaluation scoreEvaluation = new ScoreEvaluation(qtiResultSet.getScore(), qtiResultSet.getIsPassed(), qtiResultSet.getFullyAssessed(),
 										qtiResultSet.getAssessmentID());
-								am.syncAndsaveScoreEvaluation(courseNode, assessedIdentity, assessedIdentity, scoreEvaluation, false, userCourseEnvironment, cpm);
+								am.saveScoreEvaluation(courseNode, null, assessedIdentity, scoreEvaluation, userCourseEnvironment, false);
+
 							}
 						} else {
 							if (log.isDebug()) {

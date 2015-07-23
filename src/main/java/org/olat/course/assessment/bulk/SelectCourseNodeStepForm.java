@@ -36,7 +36,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -80,7 +79,7 @@ public class SelectCourseNodeStepForm extends StepFormBasicController {
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.header.node",
 				Cols.node.ordinal(), false, null, FlexiColumnModel.ALIGNMENT_LEFT, new CourseNodeRenderer()));
-		tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.action.select",
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.action.select",
 				Cols.assessable.ordinal(), "select",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.action.select"), "select"), null)));
 		tableModel.setTableColumnModel(tableColumnModel);

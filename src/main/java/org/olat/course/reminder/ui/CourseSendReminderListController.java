@@ -38,7 +38,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -117,7 +116,7 @@ public class CourseSendReminderListController extends FormBasicController {
 			FlexiColumnModel col;
 			if(UserConstants.FIRSTNAME.equals(propName)
 					|| UserConstants.LASTNAME.equals(propName)) {
-				col = new StaticFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(),
+				col = new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(),
 						colIndex, userPropertyHandler.getName(), true, propName,
 						new StaticFlexiCellRenderer(userPropertyHandler.getName(), new TextFlexiCellRenderer()));
 			} else {
@@ -126,7 +125,7 @@ public class CourseSendReminderListController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(col);
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.sendTime.i18nKey(), SendCols.sendTime.ordinal(), true, SendCols.sendTime.name()));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("resend", translate("resend"), "resend"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("resend", translate("resend"), "resend"));
 		
 		tableModel = new CourseSendReminderTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
