@@ -337,18 +337,18 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		changeTestButton = LinkFactory.createButtonSmall("command.changeRepFile", myContent, this);
 		changeTestButton.setElementCssClass("o_sel_test_change_repofile");
 		
-
 		// fetch repository entry
 		RepositoryEntry re = null;
-		String displayName = "";
-		String repoSoftkey = (String) moduleConfiguration.get(CONFIG_KEY_REPOSITORY_SOFTKEY);
+		Object repoSoftkey = moduleConfiguration.get(CONFIG_KEY_REPOSITORY_SOFTKEY);
 		if (repoSoftkey != null) {
 			re = getIQReference(moduleConfiguration, false);
-			displayName = StringHelper.escapeHtml(re.getDisplayname());
 		}
-		 
-		myContent.contextPut(VC_CHOSENTEST, re == null ? translate("no.file.chosen") : displayName);
-		if (re != null) {
+
+		if (re == null) {
+			myContent.contextPut(VC_CHOSENTEST, translate("no.file.chosen"));
+		} else {
+			String displayName = StringHelper.escapeHtml(re.getDisplayname());
+			myContent.contextPut(VC_CHOSENTEST, displayName);
 			myContent.contextPut("dontRenderRepositoryButton", new Boolean(true));
 			// Put values to velocity container
 
@@ -364,7 +364,6 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 				myContent.contextPut(CONFIG_KEY_MAXSCORE, moduleConfiguration.get(CONFIG_KEY_MAXSCORE));
 				myContent.contextPut(CONFIG_KEY_CUTVALUE, moduleConfiguration.get(CONFIG_KEY_CUTVALUE));
 			}
-
 			previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayName, Link.NONTRANSLATED, myContent, this);
 			previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 			previewLink.setCustomEnabledLinkCSS("o_preview");
