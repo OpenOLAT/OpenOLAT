@@ -47,10 +47,12 @@ import org.olat.selenium.page.Student;
 import org.olat.selenium.page.User;
 import org.olat.selenium.page.core.BookingPage;
 import org.olat.selenium.page.core.MenuTreePageFragment;
+import org.olat.selenium.page.course.AssessmentCEConfigurationPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseWizardPage;
 import org.olat.selenium.page.course.InfoMessageCEPage;
+import org.olat.selenium.page.course.MembersPage;
 import org.olat.selenium.page.course.PublisherPageFragment;
 import org.olat.selenium.page.course.RemindersPage;
 import org.olat.selenium.page.course.PublisherPageFragment.Access;
@@ -1256,5 +1258,141 @@ public class CourseTest {
 		kanuForum
 			.flatView()
 			.waitMessageBody(reiReply);
+	}
+	
+	/**
+	 * An author creates a course with 4 course elements. A folder
+	 * which is visible to group, a forum which is visible to coaches,
+	 * an assessment and an info visible to the students which passed
+	 * the assessment above.<br>
+	 * a student come and checks what it can see, the author make it
+	 * pass the assessment and the student sees the info.
+	 * 
+	 * @param loginPage
+	 * @param kanuBrowser
+	 * @param reiBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseAccessRules(@InitialPage LoginPage loginPage,
+			@Drone @Student WebDriver reiBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("rei");
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course FO " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+	
+		//go the authoring environment to create a forum
+		String bcTitle = "BC - " + UUID.randomUUID();
+		String foTitle = "FO - " + UUID.randomUUID();
+		String msTitle = "MS - " + UUID.randomUUID();
+		String infoTitle = "Info - " + UUID.randomUUID();
+		
+		String groupName = "Students";
+		
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		//folder is group protected
+		courseEditor
+			.createNode("bc")
+			.nodeTitle(bcTitle)
+			.selectTabVisibility()
+			.setGroupCondition()
+			.createBusinessGroup(groupName);
+		//forum is coach exclusive
+		courseEditor
+			.createNode("fo")
+			.nodeTitle(foTitle)
+			.selectTabVisibility()
+			.setCoachExclusive()
+			.save();
+		//assessment is open
+		courseEditor
+			.createNode("ms")
+			.nodeTitle(msTitle);
+		//configure assessment
+		AssessmentCEConfigurationPage assessmentConfig = new AssessmentCEConfigurationPage(browser);
+		assessmentConfig
+			.selectConfiguration()
+			.setScoreAuto(0.0f, 6.0f, 4.0f);
+		
+		//wiki is assessment dependent
+		courseEditor
+			.createNode("info")
+			.nodeTitle(infoTitle)
+			.selectTabVisibility()
+			.setAssessmentCondition(1)
+			.save();
+
+		courseEditor
+			.publish()
+			.quickPublish(Access.membersOnly);
+		courseEditor
+			.clickToolbarBack();
+		
+		//add a member to the group we create above
+		MembersPage members = CoursePageFragment
+			.getCourse(browser)
+			.members();
+		members
+			.addMember()
+			.searchMember(rei, true)
+			.next()
+			.next()
+			.selectGroupAsParticipant(groupName)
+			.next()
+			.finish();
+		
+		//participant search the course
+		LoginPage.getLoginPage(reiBrowser, deploymentUrl)
+			.loginAs(rei)
+			.resume();
+		NavigationPage reiNavBar = new NavigationPage(reiBrowser);
+		reiNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		MenuTreePageFragment reiTree = new MenuTreePageFragment(reiBrowser);
+		reiTree
+			.assertWithTitle(bcTitle.substring(0, 20))
+			.assertWithTitle(msTitle.substring(0, 20))
+			.assertTitleNotExists(foTitle.substring(0, 20))
+			.assertTitleNotExists(infoTitle.substring(0, 20));
+		
+		//author set assessment to passed
+		members
+			.clickToolbarBack()
+			.assessmentTool()
+			.users()
+			.assertOnUsers(rei)
+			.selectUser(rei)
+			.selectCourseNode(msTitle.substring(0, 20))
+			.setAssessmentScore(5.5f)
+			.assertUserPassedCourseNode(msTitle.substring(0, 20));
+		
+		//student can see info
+		reiTree
+			.selectRoot()
+			.assertWithTitle(bcTitle.substring(0, 20))
+			.assertWithTitle(msTitle.substring(0, 20))
+			.assertTitleNotExists(foTitle.substring(0, 20))
+			.assertWithTitle(infoTitle.substring(0, 20));
+		
+		//author can see all
+		members
+			.clickToolbarBack()
+			.clickTree()
+			.assertWithTitle(bcTitle.substring(0, 20))
+			.assertWithTitle(msTitle.substring(0, 20))
+			.assertWithTitle(foTitle.substring(0, 20))
+			.assertWithTitle(infoTitle.substring(0, 20));
 	}
 }

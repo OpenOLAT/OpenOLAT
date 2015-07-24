@@ -1109,6 +1109,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		 * yes / no chooser defines if learner do not see the building block at all
 		 */
 		coachExclusive = uifactory.addCheckboxesHorizontal("coachExclusive", null, formLayout, new String[] { "ison" }, new String[] { translate("form.easy.coachExclusive") });
+		coachExclusive.setElementCssClass("o_sel_condition_coach_exclusive");
 		boolean coachesAndAdminsInitValue = validatedCondition.isEasyModeCoachesAndAdmins();
 		coachExclusive.select("ison", coachesAndAdminsInitValue);
 		
@@ -1201,6 +1202,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		String areaInitVal = getAreaNames(areaKeyList);
 
 		groupSwitch = uifactory.addCheckboxesHorizontal("groupSwitch", null, formLayout, new String[] { "ison" }, new String[] { translate("form.easy.groupSwitch") });
+		groupSwitch.setElementCssClass("o_sel_condition_groups");
 		// initialize selection
 		if (!groupKeyList.isEmpty() || !areaKeyList.isEmpty()) {
 			groupSwitch.select("ison", true);
@@ -1217,7 +1219,9 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		easyGroupList.setUserObject(groupKeyList);
 
 		chooseGroupsLink = uifactory.addFormLink("choose", groupChooseSubContainer, "o_form_groupchooser");
+		chooseGroupsLink.setElementCssClass("o_sel_condition_choose_groups");
 		createGroupsLink = uifactory.addFormLink("create", groupChooseSubContainer, "o_form_groupchooser");	
+		createGroupsLink.setElementCssClass("o_sel_condition_create_groups");
 		
 		//areas
 		areaChooseSubContainer = FormLayoutContainer.createDefaultFormLayout("areaChooseSubContainer", getTranslator());
