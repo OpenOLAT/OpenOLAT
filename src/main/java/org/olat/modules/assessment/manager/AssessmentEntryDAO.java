@@ -103,7 +103,7 @@ public class AssessmentEntryDAO {
 		if(referenceSoftKey != null) {
 			sb.append(" and referenceEntry.softkey=:softkey");
 		} else {
-			sb.append(" and referenceEntry.softkey is null");
+			sb.append(" and data.referenceEntry is null");
 		}
 
 		TypedQuery<AssessmentEntry> query = dbInstance.getCurrentEntityManager()

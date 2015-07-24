@@ -19,6 +19,7 @@
  */
 package org.olat.ims.qti21.model.jpa;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -132,6 +133,12 @@ public class UserTestSessionImpl implements UserTestSession, Persistable {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name="q_termination_time", nullable=true, insertable=true, updatable=true)
     private Date terminationTime;
+    
+    @Column(name="q_passed", nullable=true, insertable=true, updatable=true)
+    private Boolean passed;
+
+    @Column(name="q_score", nullable=true, insertable=true, updatable=true)
+    private BigDecimal score;
 
     /**
      * Flag to indicate if this session blew up while running, either because
@@ -246,6 +253,22 @@ public class UserTestSessionImpl implements UserTestSession, Persistable {
 
 	public void setTerminationTime(Date terminationTime) {
 		this.terminationTime = terminationTime;
+	}
+
+	public Boolean getPassed() {
+		return passed;
+	}
+
+	public void setPassed(Boolean passed) {
+		this.passed = passed;
+	}
+
+	public BigDecimal getScore() {
+		return score;
+	}
+
+	public void setScore(BigDecimal score) {
+		this.score = score;
 	}
 
 	@Override

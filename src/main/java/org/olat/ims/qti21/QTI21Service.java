@@ -74,7 +74,7 @@ public interface QTI21Service {
 	 */
 	public List<UserTestSession> getUserTestSessions(RepositoryEntryRef courseEntry, String subIdent, IdentityRef identity);
 	
-	public void recordTestAssessmentResult(UserTestSession candidateSession, AssessmentResult assessmentResult);
+	public UserTestSession recordTestAssessmentResult(UserTestSession candidateSession, AssessmentResult assessmentResult);
 	
 	public UserTestSession finishTestSession(UserTestSession candidateSession, AssessmentResult assessmentResul, Date timestamp);
 	

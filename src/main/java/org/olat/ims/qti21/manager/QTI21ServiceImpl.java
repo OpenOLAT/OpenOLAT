@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -45,6 +46,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21ContentPackage;
 import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
@@ -80,6 +82,9 @@ import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
 import uk.ac.ed.ph.jqtiplus.state.marshalling.ItemSessionStateXmlMarshaller;
 import uk.ac.ed.ph.jqtiplus.state.marshalling.TestSessionStateXmlMarshaller;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.value.BooleanValue;
+import uk.ac.ed.ph.jqtiplus.value.NumberValue;
 import uk.ac.ed.ph.jqtiplus.value.RecordValue;
 import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 import uk.ac.ed.ph.jqtiplus.value.Value;
@@ -222,12 +227,13 @@ public class QTI21ServiceImpl implements QTI21Service {
 	}
 
 	@Override
-	public void recordTestAssessmentResult(UserTestSession candidateSession, AssessmentResult assessmentResult) {
+	public UserTestSession recordTestAssessmentResult(UserTestSession candidateSession, AssessmentResult assessmentResult) {
 		// First record full result XML to filesystem
         storeAssessmentResultFile(candidateSession, assessmentResult);
 
         // Then record test outcome variables to DB
         recordOutcomeVariables(candidateSession, assessmentResult.getTestResult());
+        return testSessionDao.update(candidateSession);
 	}
 
 	@Override
@@ -247,9 +253,25 @@ public class QTI21ServiceImpl implements QTI21Service {
 	
     private void recordOutcomeVariables(UserTestSession candidateSession, AbstractResult resultNode) {
         for (final ItemVariable itemVariable : resultNode.getItemVariables()) {
-            if (itemVariable instanceof OutcomeVariable
-                    || QtiConstants.VARIABLE_DURATION_IDENTIFIER.equals(itemVariable.getIdentifier())) {
-                log.audit(candidateSession.getKey() + " :: " + itemVariable.getIdentifier() + " - " + stringifyQtiValue(itemVariable.getComputedValue()));
+            if (itemVariable instanceof OutcomeVariable) {
+                
+                OutcomeVariable outcomeVariable = (OutcomeVariable)itemVariable;
+            	Identifier identifier = outcomeVariable.getIdentifier();
+            	if(QtiConstants.VARIABLE_DURATION_IDENTIFIER.equals(identifier)) {
+            		log.audit(candidateSession.getKey() + " :: " + itemVariable.getIdentifier() + " - " + stringifyQtiValue(itemVariable.getComputedValue()));
+            	} else  if(QTI21Constants.SCORE_IDENTIFIER.equals(identifier)) {
+            		Value value = itemVariable.getComputedValue();
+            		if(value instanceof NumberValue) {
+            			double score = ((NumberValue)value).doubleValue();
+            			candidateSession.setScore(new BigDecimal(Double.toString(score)));
+            		}
+            	} else if(QTI21Constants.PASS_IDENTIFIER.equals(identifier)) {
+            		Value value = itemVariable.getComputedValue();
+            		if(value instanceof BooleanValue) {
+            			boolean pass = ((BooleanValue)value).booleanValue();
+            			candidateSession.setPassed(pass);
+            		}
+            	}
             }
         }
     }

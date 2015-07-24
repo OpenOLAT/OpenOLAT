@@ -12,7 +12,7 @@ create table o_as_entry (
    a_coach_comment text,
    fk_entry int8 not null,
    a_subident varchar(64),
-   fk_reference_entry int8 not null,
+   fk_reference_entry int8,
    fk_identity int8 not null,
    primary key (id),
    unique(fk_identity, fk_entry, a_subident)
@@ -36,6 +36,8 @@ create table o_qti_assessment_session (
    q_author_mode bool default false,
    q_finish_time timestamp,
    q_termination_time timestamp,
+   q_score decimal default null,
+   q_passed bool default null,
    q_storage varchar(32),
    fk_reference_entry int8 not null,
    fk_entry int8,

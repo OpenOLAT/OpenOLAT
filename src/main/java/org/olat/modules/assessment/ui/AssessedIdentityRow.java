@@ -17,44 +17,28 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21;
+package org.olat.modules.assessment.ui;
 
-import java.math.BigDecimal;
-import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
+import org.olat.core.id.Identity;
+import org.olat.user.UserPropertiesRow;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
- * Initial date: 12.05.2015<br>
+ * Initial date: 21.07.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface UserTestSession extends CreateInfo, ModifiedInfo {
+public class AssessedIdentityRow extends UserPropertiesRow {
 	
-	public Long getKey();
 	
-	public Date getFinishTime();
-	
-	public void setFinishTime(Date timestamp);
-	
-	public Date getTerminationTime();
-	
-	public void setTerminationTime(Date timestamp);
-	
-	public Boolean getPassed();
+	public AssessedIdentityRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		super(identity, userPropertyHandlers, locale);
+	}
 
-	public void setPassed(Boolean passed);
-
-	public BigDecimal getScore();
-
-	public void setScore(BigDecimal score);
-	
-	public boolean isExploded();
-	
-	public String getStorage();
-	
 
 
 }

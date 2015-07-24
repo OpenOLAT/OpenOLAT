@@ -17,44 +17,47 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21;
+package org.olat.ims.qti21.model;
 
-import java.math.BigDecimal;
-import java.util.Date;
+import java.util.List;
 
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
+import org.olat.basesecurity.Group;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Initial date: 12.05.2015<br>
+ * Initial date: 24.07.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface UserTestSession extends CreateInfo, ModifiedInfo {
+public class QTI21StatisticSearchParams {
 	
-	public Long getKey();
-	
-	public Date getFinishTime();
-	
-	public void setFinishTime(Date timestamp);
-	
-	public Date getTerminationTime();
-	
-	public void setTerminationTime(Date timestamp);
-	
-	public Boolean getPassed();
+	private final RepositoryEntry entry;
 
-	public void setPassed(Boolean passed);
-
-	public BigDecimal getScore();
-
-	public void setScore(BigDecimal score);
+	private List<Group> limitToGroups;
+	private boolean mayViewAllUsersAssessments;
 	
-	public boolean isExploded();
-	
-	public String getStorage();
-	
+	public QTI21StatisticSearchParams(RepositoryEntry entry) {
+		this.entry = entry;
+	}
 
+	public RepositoryEntry getEntry() {
+		return entry;
+	}
 
+	public List<Group> getLimitToGroups() {
+		return limitToGroups;
+	}
+	
+	public void setLimitToGroups(List<Group> limitToGroups) {
+		this.limitToGroups = limitToGroups;
+	}
+	
+	public boolean isMayViewAllUsersAssessments() {
+		return mayViewAllUsersAssessments;
+	}
+	
+	public void setMayViewAllUsersAssessments(boolean mayViewAllUsersAssessments) {
+		this.mayViewAllUsersAssessments = mayViewAllUsersAssessments;
+	}
 }

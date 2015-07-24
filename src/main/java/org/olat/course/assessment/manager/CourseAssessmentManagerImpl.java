@@ -206,23 +206,24 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		Boolean passed = scoreEvaluation.getPassed();
 		Long assessmentId = scoreEvaluation.getAssessmentID();
 
-		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
+		AssessmentEntry assessmentEntry = getOrCreate(assessedIdentity, courseNode);
 		if(score == null) {
-			nodeAssessment.setScore(null);
+			assessmentEntry.setScore(null);
 		} else {
-			nodeAssessment.setScore(new BigDecimal(Float.toString(score)));
+			assessmentEntry.setScore(new BigDecimal(Float.toString(score)));
 		}
-		nodeAssessment.setPassed(passed);
-		nodeAssessment.setFullyAssessed(scoreEvaluation.getFullyAssessed());
-		nodeAssessment.setAssessmentId(assessmentId);
+		assessmentEntry.setPassed(passed);
+		assessmentEntry.setFullyAssessed(scoreEvaluation.getFullyAssessed());
+		assessmentEntry.setAssessmentId(assessmentId);
 		if(incrementUserAttempts) {
-			int attempts = nodeAssessment.getAttempts() == null ? 1 :nodeAssessment.getAttempts().intValue() + 1;
-			nodeAssessment.setAttempts(attempts);
+			int attempts = assessmentEntry.getAttempts() == null ? 1 :assessmentEntry.getAttempts().intValue() + 1;
+			assessmentEntry.setAttempts(attempts);
 		}
-		nodeAssessment = assessmentService.updateAssessmentEntry(nodeAssessment);
+		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
 		
 		
 		if(courseNode instanceof AssessableCourseNode) {
+			userCourseEnv.getScoreAccounting().scoreInfoChanged((AssessableCourseNode)courseNode, scoreEvaluation);
 			// Update users efficiency statement
 			efficiencyStatementManager.updateUserEfficiencyStatement(userCourseEnv);
 		}

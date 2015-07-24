@@ -288,6 +288,25 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	protected void initToolbar(Dropdown toolsDropdown, Dropdown settingsDropdown) {
+		initRuntimeTools(toolsDropdown);
+		initSettingsTools(settingsDropdown);
+		initEditionTools(settingsDropdown);
+
+		detailsLink = LinkFactory.createToolLink("details", translate("details.header"), this, "o_sel_repo_details");
+		detailsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_details");
+		detailsLink.setElementCssClass("o_sel_author_details");
+		detailsLink.setVisible(showInfos);
+		toolbarPanel.addTool(detailsLink);
+		
+		boolean marked = markManager.isMarked(re, getIdentity(), null);
+		String css = marked ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON;
+		bookmarkLink = LinkFactory.createToolLink("bookmark", translate("details.bookmark.label"), this, css);
+		bookmarkLink.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
+		bookmarkLink.setVisible(allowBookmark);
+		toolbarPanel.addTool(bookmarkLink, Align.right);
+	}
+	
+	protected void initRuntimeTools(Dropdown toolsDropdown) {
 		if (reSecurity.isEntryAdmin()) {
 			//tools
 			if(handler.supportsEdit(re.getOlatResource()) == EditionSupport.yes) {
@@ -308,22 +327,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			ordersLink.setEnabled(booking);
 			toolsDropdown.addComponent(ordersLink);	
 		}
-		
-		initSettingsTools(settingsDropdown);
-		initEditionTools(settingsDropdown);
-
-		detailsLink = LinkFactory.createToolLink("details", translate("details.header"), this, "o_sel_repo_details");
-		detailsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_details");
-		detailsLink.setElementCssClass("o_sel_author_details");
-		detailsLink.setVisible(showInfos);
-		toolbarPanel.addTool(detailsLink);
-		
-		boolean marked = markManager.isMarked(re, getIdentity(), null);
-		String css = marked ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON;
-		bookmarkLink = LinkFactory.createToolLink("bookmark", translate("details.bookmark.label"), this, css);
-		bookmarkLink.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
-		bookmarkLink.setVisible(allowBookmark);
-		toolbarPanel.addTool(bookmarkLink, Align.right);
 	}
 	
 	protected void initSettingsTools(Dropdown settingsDropdown) {

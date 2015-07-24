@@ -68,6 +68,7 @@ import org.olat.ims.qti21.model.xml.ManifestPackage;
 import org.olat.ims.qti21.model.xml.OnyxToQtiWorksHandler;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.InMemoryOutcomesListener;
+import org.olat.ims.qti21.ui.QTI21RuntimeController;
 import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
 import org.olat.imscp.xml.manifest.ManifestType;
 import org.olat.repository.RepositoryEntry;
@@ -75,7 +76,6 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.handlers.FileHandler;
 import org.olat.repository.model.RepositoryEntrySecurity;
-import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -295,7 +295,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re, RepositoryEntrySecurity reSecurity,
 			UserRequest ureq, WindowControl wControl) {
-		return new RepositoryEntryRuntimeController(ureq, wControl, re, reSecurity,
+		return new QTI21RuntimeController(ureq, wControl, re, reSecurity,
 				new RuntimeControllerCreator() {
 					@Override
 					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,

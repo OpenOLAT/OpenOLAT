@@ -50,8 +50,8 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		sb.append("select ident")
 		  .append(" from ").append(IdentityImpl.class.getName()).append(" as ident ")
 		  .append(" where exists (")
-		  .append("  select infos from usercourseinfos infos where infos.identity=ident")
-		  .append("     and infos.resource.key=:resourceKey")
+		  .append("  select infos from assessmententry infos where infos.identity=ident")
+		  .append("     and infos.repositoryEntry.key=:courseEntryKey")
 		  .append(" ) or exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
 		  .append("    where rel.entry.key=:courseEntryKey and rel.group=baseGroup and membership.group=baseGroup and membership.identity=ident")
 		  .append("      and membership.role='").append(GroupRoles.participant.name()).append("'")
@@ -60,7 +60,6 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		List<Identity> list = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Identity.class)
 			.setParameter("courseEntryKey", params.getCourseEntry().getKey())
-			.setParameter("resourceKey", params.getCourseEntry().getOlatResource().getKey())
 			.getResultList();
 		return list;	
 	}

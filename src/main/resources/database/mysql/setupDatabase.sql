@@ -1078,7 +1078,7 @@ create table o_as_entry (
    a_coach_comment text,
    fk_entry bigint not null,
    a_subident varchar(64),
-   fk_reference_entry bigint not null,
+   fk_reference_entry bigint,
    fk_identity bigint not null,
    primary key (id),
    unique (fk_identity, fk_entry, a_subident)
@@ -1220,6 +1220,8 @@ create table o_qti_assessment_session (
    q_author_mode bit not null default 0,
    q_finish_time datetime,
    q_termination_time datetime,
+   q_score float(65,30) default null,
+   q_passed bit default null, 
    q_storage varchar(32),
    fk_reference_entry bigint not null,
    fk_entry bigint,

@@ -54,7 +54,7 @@ import org.olat.ims.qti.statistics.model.StatisticAssessment;
 import org.olat.ims.qti.statistics.ui.QTI12AssessmentStatisticsController;
 import org.olat.ims.qti.statistics.ui.QTI12ItemStatisticsController;
 import org.olat.ims.qti.statistics.ui.QTI21OnyxAssessmentStatisticsController;
-import org.olat.ims.qti21.statistics.ui.QTI21AssessmentTestStatisticsController;
+import org.olat.ims.qti21.ui.statistics.QTI21AssessmentTestStatisticsController;
 import org.olat.repository.RepositoryEntry;
 
 import de.bps.onyx.plugin.OnyxModule;
