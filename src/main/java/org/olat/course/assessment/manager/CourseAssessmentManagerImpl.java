@@ -47,6 +47,7 @@ import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
@@ -87,6 +88,16 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	@Override
 	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, Identity assessedIdentity, String referenceSoftKey) {
 		return assessmentService.loadAssessmentEntry(assessedIdentity, courseEntry, courseNode.getIdent(), referenceSoftKey);
+	}
+
+	@Override
+	public List<AssessmentEntry> getAssessmentEntries(Identity assessedIdentity) {
+		return assessmentService.loadAssessmentEntriesByAssessedIdentity(assessedIdentity, courseEntry);
+	}
+
+	@Override
+	public List<AssessmentEntry> getAssessmentEntries(BusinessGroup assessedGoup, CourseNode courseNode) {
+		return assessmentService.loadAssessmentEntries(assessedGoup, courseEntry, courseNode.getIdent());
 	}
 
 	@Override

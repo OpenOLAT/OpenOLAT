@@ -388,6 +388,19 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Ass
 		}
 		return new ScoreEvaluation(score, passed);
 	}
+	
+	@Override
+	public ScoreEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
+		Boolean passed = null;
+		Float score = null;
+		if(entry != null) {
+			passed = entry.getPassed();
+			if(entry.getScore() != null) {
+				score = entry.getScore().floatValue();
+			}
+		}
+		return new ScoreEvaluation(score, passed);
+	}
 
 	@Override
 	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {

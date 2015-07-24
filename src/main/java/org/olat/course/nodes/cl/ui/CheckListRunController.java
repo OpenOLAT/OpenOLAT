@@ -61,9 +61,9 @@ import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.model.DBCheck;
 import org.olat.course.nodes.cl.model.DBCheckbox;
-import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -181,12 +181,20 @@ public class CheckListRunController extends FormBasicController implements Contr
 	}
 	
 	private void exposeUserDataToVC(FormLayoutContainer layoutCont) {
-		ScoreEvaluation scoreEval = courseNode.getUserScoreEvaluation(userCourseEnv);
-		layoutCont.contextPut("score", AssessmentHelper.getRoundedScore(scoreEval.getScore()));
-		layoutCont.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
-		layoutCont.contextPut("passed", scoreEval.getPassed());
-		StringBuilder comment = Formatter.stripTabsAndReturns(courseNode.getUserUserComment(userCourseEnv));
-		layoutCont.contextPut("comment", StringHelper.xssScan(comment));
+		AssessmentEntry scoreEval = courseNode.getUserAssessmentEntry(userCourseEnv);
+		if(scoreEval == null) {
+			layoutCont.contextPut("score", null);
+			layoutCont.contextPut("hasPassedValue", Boolean.FALSE);
+			layoutCont.contextPut("passed", null);
+			layoutCont.contextPut("comment", null);
+		} else {
+			layoutCont.contextPut("score", AssessmentHelper.getRoundedScore(scoreEval.getScore()));
+			layoutCont.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
+			layoutCont.contextPut("passed", scoreEval.getPassed());
+			StringBuilder comment = Formatter.stripTabsAndReturns(scoreEval.getComment());
+			layoutCont.contextPut("comment", StringHelper.xssScan(comment));
+		}
+
 		UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
 		layoutCont.contextPut("log", am.getUserNodeLog(courseNode, userCourseEnv.getIdentityEnvironment().getIdentity()));
 	}

@@ -40,6 +40,7 @@ import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 
 /**
@@ -68,6 +69,16 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	@Override
 	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, Identity assessedIdentity, String referenceSoftKey) {
 		return null;
+	}
+
+	@Override
+	public List<AssessmentEntry> getAssessmentEntries(Identity assessedIdentity) {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public List<AssessmentEntry> getAssessmentEntries(BusinessGroup group, CourseNode courseNode) {
+		return Collections.emptyList();
 	}
 
 	/**

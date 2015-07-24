@@ -111,6 +111,13 @@ public interface AssessableCourseNode extends CourseNode {
 	 */
 	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv);
 	
+	/**
+	 * 
+	 * @param entry
+	 * @return
+	 */
+	public ScoreEvaluation getUserScoreEvaluation(AssessmentEntry entry);
+	
 	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv);
 
 	/**

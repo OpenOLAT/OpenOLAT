@@ -291,6 +291,11 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	}
 
 	@Override
+	public ScoreEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
+		return null;
+	}
+
+	@Override
 	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();

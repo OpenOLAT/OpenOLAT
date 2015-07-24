@@ -22,6 +22,7 @@ package org.olat.modules.assessment;
 import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -58,5 +59,9 @@ public interface AssessmentService {
 	public AssessmentEntry updateAssessmentEntry(AssessmentEntry entry);
 	
 	public List<AssessmentEntry> loadAssessmentEntriesBySubIdent(RepositoryEntry entry, String subIdent);
+	
+	public List<AssessmentEntry> loadAssessmentEntriesByAssessedIdentity(Identity assessedIdentity, RepositoryEntry entry);
+	
+	public List<AssessmentEntry> loadAssessmentEntries(BusinessGroup assessedGroup, RepositoryEntry entry, String subIdent);
 
 }

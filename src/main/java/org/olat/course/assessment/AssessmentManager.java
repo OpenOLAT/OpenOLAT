@@ -34,6 +34,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 
 /**
@@ -215,5 +216,9 @@ public interface AssessmentManager {
 	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, Identity assessedIdentity, String referenceSoftKey);
 
 	public List<AssessmentEntry> getAssessmentEntries(CourseNode courseNode);
+	
+	public List<AssessmentEntry> getAssessmentEntries(BusinessGroup group, CourseNode courseNode);
+	
+	public List<AssessmentEntry> getAssessmentEntries(Identity assessedIdentity);
 	
 }

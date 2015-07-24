@@ -70,7 +70,7 @@ public class GroupAssessmentModel extends DefaultFlexiTableDataModel<AssessmentR
 	@Override
 	public Object getValueAt(AssessmentRow row, int col) {
 		if(col == Cols.username.ordinal()) {
-			return row.getUserCourseEnvironment().getIdentityEnvironment().getIdentity().getName();
+			return row.getIdentity().getName();
 		} else if(col == Cols.scoreVal.ordinal()) {
 			return row.getScore();
 		} else if(col == Cols.passedVal.ordinal()) {
@@ -85,7 +85,7 @@ public class GroupAssessmentModel extends DefaultFlexiTableDataModel<AssessmentR
 			return row.getCommentEditLink();
 		} else if(col >= GTACoachedGroupGradingController.USER_PROPS_OFFSET) {
 			int propIndex = col - GTACoachedGroupGradingController.USER_PROPS_OFFSET;
-			User user = row.getUserCourseEnvironment().getIdentityEnvironment().getIdentity().getUser();
+			User user = row.getIdentity().getUser();
 			return userPropertyHandlers.get(propIndex).getUserProperty(user, locale);
 		}
 		return row;

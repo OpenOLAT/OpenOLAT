@@ -26,8 +26,10 @@
 package org.olat.course.run.scoring;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
@@ -36,6 +38,7 @@ import org.olat.core.util.tree.Visitor;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.AssessmentEntry;
 
 /**
  * Description:<BR/>
@@ -45,7 +48,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  *
  * @author Felix Jost
  */
-public class ScoreAccounting implements Visitor {
+public class ScoreAccounting {
 	private UserCourseEnvironment userCourseEnvironment;
 
 	private boolean error;
@@ -67,8 +70,17 @@ public class ScoreAccounting implements Visitor {
 	 * Retrieve all the score evaluations for all course nodes
 	 */
 	public void evaluateAll() {
-		cachedScoreEvals.clear();
-		recursionCnt = 0;
+		Identity identity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		List<AssessmentEntry> entries = userCourseEnvironment.getCourseEnvironment()
+				.getAssessmentManager().getAssessmentEntries(identity);
+		
+		
+		AssessableTreeVisitor visitor = new AssessableTreeVisitor(entries);
+		
+		
+		
+		
+		
 		// collect all assessable nodes and eval 'em
 		CourseNode root = userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode();
 		// breadth first traversal gives an easier order of evaluation for debugging
@@ -76,8 +88,58 @@ public class ScoreAccounting implements Visitor {
 		// the score accoutings local cache hash map will never be used. this can slow down things like 
 		// crazy (course with 10 tests, 300 users and some crazy score and passed calculations will have
 		// 10 time performance differences) 
-		TreeVisitor tv = new TreeVisitor(this, root, true); // true=depth first
+		TreeVisitor tv = new TreeVisitor(visitor, root, true); // true=depth first
 		tv.visitAll();
+		cachedScoreEvals.clear();
+		cachedScoreEvals.putAll(visitor.nodeToScoreEvals);
+	}
+	
+	private class AssessableTreeVisitor implements Visitor {
+		
+		private int recursionCnt = 0;
+		private final  Map<String,AssessmentEntry> identToEntries = new HashMap<>();
+		private final  Map<AssessableCourseNode, ScoreEvaluation> nodeToScoreEvals = new HashMap<>();
+		
+		public AssessableTreeVisitor(List<AssessmentEntry> entries) {
+			for(AssessmentEntry entry:entries) {
+				String ident = entry.getSubIdent();
+				if(identToEntries.containsKey(ident)) {
+					AssessmentEntry currentEntry = identToEntries.get(ident);
+					if(entry.getLastModified().after(currentEntry.getLastModified())) {
+						identToEntries.put(ident, entry);
+					}
+				} else {
+					identToEntries.put(ident, entry);
+				}
+			}
+		}
+
+		@Override
+		public void visit(INode node) {
+			CourseNode cn = (CourseNode) node;
+			if (cn instanceof AssessableCourseNode) {
+				evalCourseNode((AssessableCourseNode)cn);
+			}
+		}
+		
+		public ScoreEvaluation evalCourseNode(AssessableCourseNode cn) {
+			// make sure we have no circular calculations
+			recursionCnt++;
+			if (recursionCnt > 15) throw new OLATRuntimeException("scoreaccounting.stackoverflow", 
+					new String[]{cn.getIdent(), cn.getShortTitle()},
+					Util.getPackageName(ScoreAccounting.class), 
+					"stack overflow in scoreaccounting, probably circular logic: acn ="
+					+ cn.toString(), null);
+
+			ScoreEvaluation se = nodeToScoreEvals.get(cn);
+			if (se == null) { // result of this node has not been calculated yet, do it
+				AssessmentEntry entry = identToEntries.get(cn.getIdent());
+				se = cn.getUserScoreEvaluation(entry);
+				nodeToScoreEvals.put(cn, se);
+			}
+			recursionCnt--;
+			return se;
+		}
 	}
 
 	/**
@@ -185,24 +247,11 @@ public class ScoreAccounting implements Visitor {
 	 * @param se
 	 */
 	public void scoreInfoChanged(AssessableCourseNode acn, ScoreEvaluation se) {
-
-		//FIXME:fj:b use cache infos
-		/*
-		 // either add a new entry if this is the first score that is provided,
-		 // or overwrite the entry in the cache if a scoreeval existed
-		 cachedScoreEvals.put(cn, se);
-		 // go up the ladder and force each parent to recalulate the score
-		 while ((cn = (CourseNode) cn.getParent()) != null) {
-		 ScoreEvaluation sceval = cn.evalScore(userCourseEnvironment);
-		 cachedScoreEvals.put(cn, sceval);
-		 }*/
-		//System.out.println("scoreInfoChanged - calc anew:\n"+cachedScoreEvals.toString());
 		evaluateAll();
 	}
 
 	private CourseNode findChildByID(String id) {
-		CourseNode foundNode = userCourseEnvironment.getCourseEnvironment().getRunStructure().getNode(id);
-		return foundNode;
+		return userCourseEnvironment.getCourseEnvironment().getRunStructure().getNode(id);
 	}
 
 	/**

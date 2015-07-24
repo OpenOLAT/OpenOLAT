@@ -806,6 +806,23 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 	}
 
 	@Override
+	public ScoreEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
+		Boolean passed = null;
+		Float score = null;
+		if(hasPassedConfigured() || hasScoreConfigured()) {
+			if(entry != null) {
+				if (hasPassedConfigured()) {
+					passed = entry.getPassed();
+				}
+				if (hasScoreConfigured() && entry.getScore() != null) {
+					score = entry.getScore().floatValue();
+				}
+			}
+		}
+		return new ScoreEvaluation(score, passed);
+	}
+
+	@Override
 	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();

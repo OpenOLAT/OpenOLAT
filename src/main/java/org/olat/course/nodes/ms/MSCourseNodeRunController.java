@@ -41,9 +41,9 @@ import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.ObjectivesHelper;
-import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentEntry;
 
 /**
  * Initial Date:  Jun 16, 2004
@@ -140,23 +140,29 @@ public class MSCourseNodeRunController extends DefaultController {
 	}
 	
 	private void exposeUserDataToVC(UserCourseEnvironment userCourseEnv, AssessableCourseNode courseNode) {
-		ScoreEvaluation scoreEval = courseNode.getUserScoreEvaluation(userCourseEnv);
-		myContent.contextPut("score", AssessmentHelper.getRoundedScore(scoreEval.getScore()));
-		myContent.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
-		myContent.contextPut("passed", scoreEval.getPassed());
+		AssessmentEntry assessmentEntry = courseNode.getUserAssessmentEntry(userCourseEnv);
+		if(assessmentEntry == null) {
+			myContent.contextPut("hasPassedValue", Boolean.FALSE);
+			myContent.contextPut("passed", Boolean.FALSE);
+			hasPassed = hasScore = hasComment = false;
+		} else {
+			String rawComment = assessmentEntry.getComment();
+			hasPassed = assessmentEntry.getPassed() != null;
+			hasScore = assessmentEntry.getScore() != null;
+			hasComment = StringHelper.containsNonWhitespace(rawComment);
 		
-		String rawComment = courseNode.getUserUserComment(userCourseEnv);
-		StringBuilder comment = Formatter.stripTabsAndReturns(rawComment);
-		myContent.contextPut("comment", StringHelper.xssScan(comment));
-		
+			myContent.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
+			myContent.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
+			myContent.contextPut("passed", assessmentEntry.getPassed());
+			
+			StringBuilder comment = Formatter.stripTabsAndReturns(rawComment);
+			myContent.contextPut("comment", StringHelper.xssScan(comment));
+		}
+
 		if(showLog) {
 			UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
 			myContent.contextPut("log", am.getUserNodeLog(courseNode, userCourseEnv.getIdentityEnvironment().getIdentity()));
 		}
-		
-		hasPassed = scoreEval.getPassed() != null;
-		hasScore = scoreEval.getScore() != null;
-		hasComment = StringHelper.containsNonWhitespace(rawComment);
 	}
 	
 	/**

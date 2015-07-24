@@ -26,7 +26,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
@@ -41,11 +44,14 @@ public class EditCommentController extends FormBasicController {
 	private TextElement commentEl;
 	private final AssessmentRow row;
 	private final GTACourseNode gtaNode;
+	private final OLATResourceable courseOres;
 	
-	public EditCommentController(UserRequest ureq, WindowControl wControl, GTACourseNode gtaNode, AssessmentRow row) {
+	public EditCommentController(UserRequest ureq, WindowControl wControl,
+			OLATResourceable courseOres, GTACourseNode gtaNode, AssessmentRow row) {
 		super(ureq, wControl, "comment_callout");
 		this.row = row;
 		this.gtaNode = gtaNode;
+		this.courseOres = courseOres;
 		initForm(ureq);
 	}
 
@@ -68,7 +74,8 @@ public class EditCommentController extends FormBasicController {
 		String comment = commentEl.getValue();
 		row.setComment(comment);
 		
-		UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment();
+		ICourse course = CourseFactory.loadCourse(courseOres);
+		UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
 		gtaNode.updateUserUserComment(comment, userCourseEnv, getIdentity());
 		
 		if(StringHelper.containsNonWhitespace(comment)) {

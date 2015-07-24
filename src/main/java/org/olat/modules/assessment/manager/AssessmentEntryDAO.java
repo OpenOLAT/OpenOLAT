@@ -24,6 +24,7 @@ import java.util.List;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -133,13 +134,38 @@ public class AssessmentEntryDAO {
 				.getResultList();
 	}
 	
-	public List<Identity> getAllIdentitiesWithAssessmentData(RepositoryEntryRef courseEntry) {
+	public List<Identity> getAllIdentitiesWithAssessmentData(RepositoryEntryRef entry) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct data.identity from assessmententry data where data.repositoryEntry.key=:repositoryEntryKey");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
-				.setParameter("repositoryEntryKey", courseEntry.getKey())
+				.setParameter("repositoryEntryKey", entry.getKey())
 				.getResultList();
+	}
+
+	public List<AssessmentEntry> loadAssessmentEntriesByAssessedIdentity(Identity assessedIdentity, RepositoryEntry entry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select data from assessmententry data where data.repositoryEntry.key=:repositoryEntryKey and data.identity.key=:identityKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentEntry.class)
+				.setParameter("repositoryEntryKey", entry.getKey())
+				.setParameter("identityKey", assessedIdentity.getKey())
+				.getResultList();
+	}
+
+	public List<AssessmentEntry> loadAssessmentEntryByBusinessGroup(Group assessedGroup, RepositoryEntry entry, String subIdent) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select data from assessmententry data")
+		  .append(" inner join data.repositoryEntry v")
+		  .append(" inner join v.groups as relGroup on relGroup.defaultGroup=false")
+		  .append(" where relGroup.group.key=:groupKey and v.key=:repositoryEntryKey and data.subIdent=:subIdent");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentEntry.class)
+				.setParameter("repositoryEntryKey", entry.getKey())
+				.setParameter("groupKey", assessedGroup.getKey())
+				.setParameter("subIdent", subIdent)
+				.getResultList();
+
 	}
 	
 

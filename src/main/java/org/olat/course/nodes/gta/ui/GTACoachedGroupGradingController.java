@@ -20,7 +20,9 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
@@ -51,8 +53,6 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
@@ -61,11 +61,10 @@ import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.gta.ui.GroupAssessmentModel.Cols;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.course.run.scoring.ScoreEvaluation;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -192,35 +191,34 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 
 	private void loadMembers() {
 		//load participants, load datas
-		ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
 		List<Identity> identities = businessGroupService.getMembers(assessedGroup, GroupRoles.participant.name());
-		assessmentManager.preloadCache(identities);
+		
+		Map<Identity, AssessmentEntry> identityToEntryMap = new HashMap<>();
+		List<AssessmentEntry> assessmentEntries = assessmentManager.getAssessmentEntries(assessedGroup, gtaNode);
+		for(AssessmentEntry entry : assessmentEntries) {
+			identityToEntryMap.put(entry.getIdentity(), entry);
+		}
 
 		List<AssessmentRow> rows = new ArrayList<>(identities.size());
 		for(Identity identity:identities) {
-			UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-			ScoreEvaluation scoreEval = userCourseEnv.getScoreAccounting().evalCourseNode(gtaNode);
-			if (scoreEval == null) {
-				scoreEval = new ScoreEvaluation(null, null);
-			}
-
-			AssessmentRow row = new AssessmentRow(userCourseEnv, false);
+			AssessmentEntry entry = identityToEntryMap.get(identity);
+			AssessmentRow row = new AssessmentRow(identity, false);
 			rows.add(row);
 			
-			if(withScore) {
-				Float score = scoreEval.getScore();
-				String pointVal = AssessmentHelper.getRoundedScore(score);
+			if(withScore && entry != null) {
+				String pointVal = AssessmentHelper.getRoundedScore(entry.getScore());
 				row.setScore(pointVal);
 			}
 			
-			if(withPassed) {
-				row.setPassed(scoreEval.getPassed());
+			if(withPassed && entry != null) {
+				row.setPassed(entry.getPassed());
 			}
 			
 			if(withComment) {
 				FormLink commentLink = null;
-				String comment = gtaNode.getUserUserComment(userCourseEnv);
-				if(StringHelper.containsNonWhitespace(comment)) {
+				String comment = null;
+				if(entry != null && StringHelper.containsNonWhitespace(entry.getComment())) {
+					comment = entry.getComment();
 					commentLink = uifactory.addFormLink("comment-" + CodeHelper.getRAMUniqueID(), "comment", "comment", null, flc, Link.LINK);
 					commentLink.setIconLeftCSS("o_icon o_icon_comments");
 					commentLink.setUserObject(row);

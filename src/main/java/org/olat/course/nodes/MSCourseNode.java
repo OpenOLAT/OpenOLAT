@@ -211,11 +211,29 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Assess
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserScoreEvaluation(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
 		Boolean passed = null;
 		Float score = null;
 		if(hasPassedConfigured() || hasScoreConfigured()) {
 			AssessmentEntry entry = getUserAssessmentEntry(userCourseEnv);
+			if(entry != null) {
+				if (hasPassedConfigured()) {
+					passed = entry.getPassed();
+				}
+				if (hasScoreConfigured() && entry.getScore() != null) {
+					score = entry.getScore().floatValue();
+				}
+			}
+		}
+		return new ScoreEvaluation(score, passed);
+	}
+
+	@Override
+	public ScoreEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
+		Boolean passed = null;
+		Float score = null;
+		if(hasPassedConfigured() || hasScoreConfigured()) {
 			if(entry != null) {
 				if (hasPassedConfigured()) {
 					passed = entry.getPassed();

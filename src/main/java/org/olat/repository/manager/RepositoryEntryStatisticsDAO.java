@@ -99,8 +99,8 @@ public class RepositoryEntryStatisticsDAO implements UserRatingsDelegate, UserCo
 		if(lastUsage == null || (newUsage.getTime() - lastUsage.getTime()) > 60000) {
 			stats.setLastUsage(newUsage);
 			dbInstance.getCurrentEntityManager().merge(stats);
-			dbInstance.commit();
 		}
+		dbInstance.commit();
 	}
 	
 	protected RepositoryEntryStatistics loadStatistics(OLATResourceable repositoryEntryRes) {

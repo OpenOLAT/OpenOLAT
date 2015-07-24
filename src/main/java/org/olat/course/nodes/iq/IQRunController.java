@@ -85,6 +85,7 @@ import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.ImsRepositoryResolver;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.iq.IQDisplayController;
 import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQSecurityCallback;
@@ -129,6 +130,8 @@ public class IQRunController extends BasicController implements GenericEventList
 	
 	private OLATResourceable assessmentInstanceOres;
 	
+	private RepositoryEntry referenceTestEntry; 
+	
 	@Autowired
 	private IQManager iqManager;
 	@Autowired
@@ -143,7 +146,10 @@ public class IQRunController extends BasicController implements GenericEventList
 	 * @param wControl
 	 * @param testCourseNode
 	 */
-	public IQRunController(UserCourseEnvironment userCourseEnv, ModuleConfiguration moduleConfiguration, IQSecurityCallback secCallback, UserRequest ureq, WindowControl wControl, IQTESTCourseNode testCourseNode) {
+	public IQRunController(UserCourseEnvironment userCourseEnv, ModuleConfiguration moduleConfiguration,
+			IQSecurityCallback secCallback, UserRequest ureq, WindowControl wControl,
+			IQTESTCourseNode testCourseNode, RepositoryEntry testEntry) {
+		
 		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		
 		this.modConfig = moduleConfiguration;
@@ -154,6 +160,7 @@ public class IQRunController extends BasicController implements GenericEventList
 		this.singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
 		this.assessmentEventOres = OresHelper.createOLATResourceableType(AssessmentEvent.class);
 		this.assessmentInstanceOres = OresHelper.createOLATResourceableType(AssessmentInstance.class);
+		this.referenceTestEntry = testEntry;
 		
 		this.userSession = ureq.getUserSession();
 		
@@ -189,13 +196,13 @@ public class IQRunController extends BasicController implements GenericEventList
 		/*
 		 * TODO:pb:is ImsRepositoryResolver the right place for getting the change log?
 		 */
-		RepositoryEntry re = courseNode.getReferencedRepositoryEntry();
+
 		//re could be null, but if we are here it should not be null!
 		Roles userRoles = ureq.getUserSession().getRoles();
 		boolean showAll = userRoles.isAuthor() || userRoles.isOLATAdmin();
 		//get changelog
 		Formatter formatter = Formatter.getInstance(ureq.getLocale());
-		ImsRepositoryResolver resolver = new ImsRepositoryResolver(re);
+		ImsRepositoryResolver resolver = new ImsRepositoryResolver(referenceTestEntry);
 		QTIChangeLogMessage[] qtiChangeLog = resolver.getDocumentChangeLog();
 		StringBuilder qtiChangelog = new StringBuilder();
 
@@ -562,36 +569,42 @@ public class IQRunController extends BasicController implements GenericEventList
 		} else {
 			myContent.contextPut("enableScoreInfo", Boolean.TRUE );
 		}
-   
 		// configuration data
 		myContent.contextPut("attemptsConfig", modConfig.get(IQEditController.CONFIG_KEY_ATTEMPTS));
+
 		// user data
-    	if ( !(courseNode instanceof AssessableCourseNode)) {
-    		throw new AssertException("exposeUserTestDataToVC can only be called for test nodes, not for selftest or questionnaire");
-    	}
-		AssessableCourseNode acn = (AssessableCourseNode)courseNode; // assessment nodes are assesable
-		ScoreEvaluation scoreEval = acn.getUserScoreEvaluation(userCourseEnv);
-		
-		//block if test passed (and config set to check it)
-		Boolean blockAfterSuccess = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS);
-		Boolean blocked = Boolean.FALSE;
-		if(blockAfterSuccess != null && blockAfterSuccess.booleanValue()) {
-    		Boolean passed = scoreEval.getPassed();
-    		if(passed != null && passed.booleanValue()) {
-    			blocked = Boolean.TRUE;
-    		}
-		}
-		myContent.contextPut("blockAfterSuccess", blocked );
-		
 		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
-		myContent.contextPut("score", AssessmentHelper.getRoundedScore(scoreEval.getScore()));
-		myContent.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
-		myContent.contextPut("passed", scoreEval.getPassed());
-		StringBuilder comment = Formatter.stripTabsAndReturns(acn.getUserUserComment(userCourseEnv));
-		myContent.contextPut("comment", StringHelper.xssScan(comment));
-		myContent.contextPut("attempts", acn.getUserAttempts(userCourseEnv));
-		
-		UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
+    	if(courseNode instanceof AssessableCourseNode) {
+    		AssessableCourseNode acn = (AssessableCourseNode)courseNode;
+    		AssessmentEntry assessmentEntry = acn.getUserAssessmentEntry(userCourseEnv);
+    		if(assessmentEntry == null) {
+    			myContent.contextPut("blockAfterSuccess", Boolean.FALSE);
+	    		myContent.contextPut("score", null);
+	    		myContent.contextPut("hasPassedValue", Boolean.FALSE);
+	    		myContent.contextPut("passed", Boolean.FALSE);
+	    		myContent.contextPut("comment", null);
+	    		myContent.contextPut("attempts", 0);
+    		} else {
+	    		//block if test passed (and config set to check it)
+	    		Boolean blockAfterSuccess = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS);
+	    		Boolean blocked = Boolean.FALSE;
+	    		if(blockAfterSuccess != null && blockAfterSuccess.booleanValue()) {
+	        		Boolean passed = assessmentEntry.getPassed();
+	        		if(passed != null && passed.booleanValue()) {
+	        			blocked = Boolean.TRUE;
+	        		}
+	    		}
+	    		myContent.contextPut("blockAfterSuccess", blocked);
+	    		myContent.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
+	    		myContent.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
+	    		myContent.contextPut("passed", assessmentEntry.getPassed());
+	    		StringBuilder comment = Formatter.stripTabsAndReturns(assessmentEntry.getComment());
+	    		myContent.contextPut("comment", StringHelper.xssScan(comment));
+	    		myContent.contextPut("attempts", assessmentEntry.getAttempts());
+    		}
+    	}
+    	
+    	UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
 		myContent.contextPut("log", am.getUserNodeLog(courseNode, identity));
 						
 		exposeResults(ureq);

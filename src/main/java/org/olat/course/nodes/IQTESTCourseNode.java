@@ -149,8 +149,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 			if (onyx) {
 				controller = new OnyxRunController(userCourseEnv, config, ureq, wControl, this);
 			} else {
-				RepositoryEntry repositoryEntry = getReferencedRepositoryEntry();
-				OLATResource ores = repositoryEntry.getOlatResource();
+				RepositoryEntry testEntry = getReferencedRepositoryEntry();
+				OLATResource ores = testEntry.getOlatResource();
 				if(ImsQTI21Resource.TYPE_NAME.equals(ores.getResourceableTypeName())) {
 					//QTI 2.1
 					controller = new QTI21AssessmentRunController(ureq, wControl, userCourseEnv, this);
@@ -161,7 +161,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 					if(!CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(fr, null)) {
 						AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 						IQSecurityCallback sec = new CourseIQSecurityCallback(this, am, ureq.getIdentity());
-						controller = new IQRunController(userCourseEnv, getModuleConfiguration(), sec, ureq, wControl, this);
+						controller = new IQRunController(userCourseEnv, getModuleConfiguration(), sec, ureq, wControl, this, testEntry);
 					} else {
 						String title = trans.translate("editor.lock.title");
 						String message = trans.translate("editor.lock.message");
@@ -301,12 +301,38 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 		// read score from properties save score, passed and attempts information
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
-		Boolean passed = am.getNodePassed(this, mySelf);
-		Float score = am.getNodeScore(this, mySelf);		
-		Long assessmentID = am.getAssessmentID(this, mySelf);	
-		Boolean fullyAssessed = am.getNodeFullyAssessed(this, mySelf);	
-		ScoreEvaluation se = new ScoreEvaluation(score, passed, fullyAssessed, assessmentID);
-		return se;
+		AssessmentEntry entry = am.getAssessmentEntry(this, mySelf, getRepositoryEntrySoftKey());
+		
+		Boolean passed = null;
+		Float score = null;		
+		Long assessmentID = null;	
+		Boolean fullyAssessed = null;
+		if(entry != null) {
+			passed = entry.getPassed();
+			if(entry.getScore() != null) {
+				score = entry.getScore().floatValue();
+			}
+			assessmentID = entry.getAssessmentId();
+			fullyAssessed = entry.getFullyAssessed();
+		}	
+		return new ScoreEvaluation(score, passed, fullyAssessed, assessmentID);
+	}
+
+	@Override
+	public ScoreEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
+		Boolean passed = null;
+		Float score = null;		
+		Long assessmentID = null;	
+		Boolean fullyAssessed = null;
+		if(entry != null) {
+			passed = entry.getPassed();
+			if(entry.getScore() != null) {
+				score = entry.getScore().floatValue();
+			}
+			assessmentID = entry.getAssessmentId();
+			fullyAssessed = entry.getFullyAssessed();
+		}	
+		return new ScoreEvaluation(score, passed, fullyAssessed, assessmentID);
 	}
 
 	@Override

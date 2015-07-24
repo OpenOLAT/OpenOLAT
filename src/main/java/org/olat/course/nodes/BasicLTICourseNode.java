@@ -298,15 +298,26 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 
 	@Override
 	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		// read score from properties
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
+		AssessmentEntry entry = am.getAssessmentEntry(this, mySelf, null);
+		return getUserScoreEvaluation(entry) ;
+	}
+
+	@Override
+	public ScoreEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
 		Boolean passed = null;
 		Float score = null;
-		// only db lookup if configured, else return null
-		if (hasPassedConfigured()) passed = am.getNodePassed(this, mySelf);
-		if (hasScoreConfigured()) score = am.getNodeScore(this, mySelf);
-
+		if(hasPassedConfigured() || hasScoreConfigured()) {
+			if(entry != null) {
+				if (hasPassedConfigured()) {
+					passed = entry.getPassed();
+				}
+				if (hasScoreConfigured() && entry.getScore() != null) {
+					score = entry.getScore().floatValue();
+				}
+			}
+		}
 		return new ScoreEvaluation(score, passed);
 	}
 

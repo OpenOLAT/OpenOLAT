@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
@@ -76,6 +77,20 @@ public class AssessmentServiceImpl implements AssessmentService {
 	public List<AssessmentEntry> loadAssessmentEntriesBySubIdent(RepositoryEntry entry, String subIdent) {
 		return assessmentEntryDao.loadAssessmentEntryBySubIdent(entry, subIdent);
 	}
+
+	@Override
+	public List<AssessmentEntry> loadAssessmentEntriesByAssessedIdentity(Identity assessedIdentity, RepositoryEntry entry) {
+		return assessmentEntryDao.loadAssessmentEntriesByAssessedIdentity(assessedIdentity, entry);
+	}
+
+	@Override
+	public List<AssessmentEntry> loadAssessmentEntries(BusinessGroup assessedGroup, RepositoryEntry entry, String subIdent) {
+		return assessmentEntryDao.loadAssessmentEntryByBusinessGroup(assessedGroup.getBaseGroup(), entry, subIdent);
+	}
+	
+	
+	
+	
 	
 	
 	

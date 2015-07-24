@@ -63,7 +63,7 @@ public class WikiCourseNodeIndexer extends AbstractHierarchicalIndexer implement
 			if(repositoryEntry == null) return;
 			
 			repoEntryName = repositoryEntry.getDisplayname();
-			Wiki wiki = WikiManager.getInstance().getOrLoadWiki(courseNode.getReferencedRepositoryEntry().getOlatResource());
+			Wiki wiki = WikiManager.getInstance().getOrLoadWiki(repositoryEntry.getOlatResource());
 			// loop over all wiki pages
 			List<WikiPage> wikiPageList = wiki.getAllPagesWithContent();
 			for (WikiPage wikiPage : wikiPageList) {

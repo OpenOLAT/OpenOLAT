@@ -22,6 +22,9 @@ package org.olat.course.nodes.gta.ui;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.id.Identity;
+import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
 
@@ -37,7 +40,8 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 public class AssessmentRow {
 
 	private final boolean duplicate;
-	private final UserCourseEnvironment userCourseEnv;
+	private final Identity identity;
+	private UserCourseEnvironment userCourseEnv;
 	
 	private TextElement scoreEl;
 	private MultipleSelectionElement passedEl;
@@ -47,12 +51,19 @@ public class AssessmentRow {
 	private Boolean passed;
 	private String comment;
 	
-	public AssessmentRow(UserCourseEnvironment userCourseEnv, boolean duplicate) {
-		this.userCourseEnv = userCourseEnv;
+	public AssessmentRow(Identity identity, boolean duplicate) {
+		this.identity = identity;
 		this.duplicate = duplicate;
 	}
+	
+	public Identity getIdentity() {
+		return identity;
+	}
 
-	public UserCourseEnvironment getUserCourseEnvironment() {
+	public UserCourseEnvironment getUserCourseEnvironment(ICourse course) {
+		if(userCourseEnv == null) {
+			userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
+		}
 		return userCourseEnv;
 	}
 

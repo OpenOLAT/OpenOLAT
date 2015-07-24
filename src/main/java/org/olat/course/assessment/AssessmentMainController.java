@@ -970,9 +970,10 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		} else {
 			userChoose.contextPut("showBack", Boolean.TRUE);
 
-			if (currentCourseNode != null && currentCourseNode.getReferencedRepositoryEntry() != null
-					&& currentCourseNode.getReferencedRepositoryEntry().getOlatResource() != null
-					&& OnyxModule.isOnyxTest(currentCourseNode.getReferencedRepositoryEntry().getOlatResource())) {
+			RepositoryEntry refEntry = currentCourseNode.getReferencedRepositoryEntry();
+			if (currentCourseNode != null && refEntry != null
+					&& refEntry.getOlatResource() != null
+					&& OnyxModule.isOnyxTest(refEntry.getOlatResource())) {
 				userChoose.contextPut("showOnyxReporterButton", Boolean.TRUE);
 			} else {
 				userChoose.contextPut("showOnyxReporterButton", Boolean.FALSE);
@@ -1109,8 +1110,9 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			// the user assessment overview table. Leave user data empty since not used in
 			// this table. (use only node data)
 			NodeTableRow nodeData = new NodeTableRow(recursionLevel, courseNode);
-			if (courseNode.getReferencedRepositoryEntry() != null) {
-				if (OnyxModule.isOnyxTest(courseNode.getReferencedRepositoryEntry().getOlatResource())) {
+			RepositoryEntry refEntry = courseNode.getReferencedRepositoryEntry();
+			if (refEntry != null) {
+				if (OnyxModule.isOnyxTest(refEntry.getOlatResource())) {
 					nodeData.setOnyx(true);
 					if (getAllAssessableIdentities().size() <= 0) {
 						nodeData.setOnyx(false);

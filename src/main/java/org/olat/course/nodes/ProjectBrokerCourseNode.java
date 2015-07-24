@@ -470,20 +470,12 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 
 	@Override
 	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		Boolean passed = null;
-		Float score = null;
-		if(hasPassedConfigured() || hasScoreConfigured()) {
-			AssessmentEntry entry = getUserAssessmentEntry(userCourseEnv);
-			if(entry != null) {
-				if (hasPassedConfigured()) {
-					passed = entry.getPassed();
-				}
-				if (hasScoreConfigured() && entry.getScore() != null) {
-					score = entry.getScore().floatValue();
-				}
-			}
-		}
-		return new ScoreEvaluation(score, passed);
+		return null;
+	}
+
+	@Override
+	public ScoreEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
+		return null;
 	}
 
 	@Override
