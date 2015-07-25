@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.course.assessment;
+package org.olat.course.assessment.manager;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -45,6 +45,12 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentChangedEvent;
+import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.EfficiencyStatement;
+import org.olat.course.assessment.EfficiencyStatementArchiver;
+import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.model.UserEfficiencyStatementImpl;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.course.assessment.model.UserEfficiencyStatementStandalone;
@@ -58,6 +64,8 @@ import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -70,58 +78,21 @@ import com.thoughtworks.xstream.XStream;
  * Initial Date:  11.08.2005 <br>
  * @author gnaegi
  */
+@Service
 public class EfficiencyStatementManager extends BasicManager implements UserDataDeletable {
 
 	public static final String KEY_ASSESSMENT_NODES = "assessmentNodes";
 	public static final String KEY_COURSE_TITLE = "courseTitle";
 	public static final String PROPERTY_CATEGORY = "efficiencyStatement";
-	
-	private static EfficiencyStatementManager INSTANCE;
 
+	@Autowired
 	private DB dbInstance;
+	@Autowired
 	private UserManager userManager;
+	@Autowired
 	private RepositoryManager repositoryManager;
+	
 	private final XStream xstream = XStreamHelper.createXStreamInstance();
-
-	
-	/**
-	 * Constructor
-	 */
-	private EfficiencyStatementManager() {
-		INSTANCE = this;
-	}
-	
-	/**
-	 * Factory method
-	 * @return
-	 */
-	public static EfficiencyStatementManager getInstance() {
-		return INSTANCE;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param dbInstance
-	 */
-	public void setDbInstance(DB dbInstance) {
-		this.dbInstance = dbInstance;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param repositoryManager
-	 */
-	public void setRepositoryManager(RepositoryManager repositoryManager) {
-		this.repositoryManager = repositoryManager;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param userManager
-	 */
-	public void setUserManager(UserManager userManager) {
-		this.userManager = userManager;
-	}
 
 	/**
 	 * Updates the users efficiency statement for this course. <p>

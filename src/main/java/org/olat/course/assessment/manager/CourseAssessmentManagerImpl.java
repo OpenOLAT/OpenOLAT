@@ -38,7 +38,6 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentChangedEvent;
 import org.olat.course.assessment.AssessmentLoggingAction;
 import org.olat.course.assessment.AssessmentManager;
-import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;

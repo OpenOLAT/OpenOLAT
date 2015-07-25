@@ -42,6 +42,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.Structure;
+import org.olat.course.assessment.manager.UpdateEfficiencyStatementsWorker;
 import org.olat.course.editor.PublishEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

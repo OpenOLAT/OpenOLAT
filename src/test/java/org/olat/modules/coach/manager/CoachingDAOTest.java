@@ -41,7 +41,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.CodeHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.EfficiencyStatementManager;
+import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;

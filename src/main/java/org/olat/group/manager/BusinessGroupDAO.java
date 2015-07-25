@@ -488,15 +488,17 @@ public class BusinessGroupDAO {
 
 		//inner joins
 		if(BusinessGroup.class.equals(resultClass)) {
-			query.append("inner join fetch bgi.resource bgResource ");
+			query.append("inner join fetch bgi.resource bgResource ")
+			     .append("inner join fetch bgi.baseGroup as baseGroup");
 		} else {
 			query.append("inner join bgi.resource bgResource ");
+			if(StringHelper.containsNonWhitespace(params.getOwnerName()) || params.getResources() != null ||
+					resource != null || params.isOwner() || params.isAttendee() || params.isWaiting()) {
+				query.append(" inner join bgi.baseGroup as baseGroup");
+			}
 		}
 
-		if(StringHelper.containsNonWhitespace(params.getOwnerName()) || params.getResources() != null ||
-				resource != null || params.isOwner() || params.isAttendee() || params.isWaiting()) {
-			query.append(" inner join bgi.baseGroup as baseGroup");
-		}
+		
 
 		boolean where = false;
 		if(StringHelper.containsNonWhitespace(params.getOwnerName())) {

@@ -25,8 +25,9 @@
 
 package org.olat.course.condition.interpreter.score;
 
-import org.olat.course.assessment.EfficiencyStatementManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.course.assessment.UserEfficiencyStatement;
+import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.condition.interpreter.AbstractFunction;
 import org.olat.course.condition.interpreter.ArgumentParseException;
 import org.olat.course.editor.CourseEditorEnv;
@@ -75,7 +76,7 @@ public class GetScoreWithCourseIdFunction extends AbstractFunction {
 		if (cev != null) { return defaultValue(); }
 
 		// the real function evaluation which is used during run time
-		EfficiencyStatementManager esm = EfficiencyStatementManager.getInstance();
+		EfficiencyStatementManager esm = CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
 		RepositoryEntryRef courseRef = new RepositoryEntryRefImpl(courseRepoEntryKey);
 		UserEfficiencyStatement es = esm.getUserEfficiencyStatementLightByRepositoryEntry(courseRef, getUserCourseEnv().getIdentityEnvironment().getIdentity());
 		if (es == null) return defaultValue();

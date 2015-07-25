@@ -59,9 +59,9 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.assessment.EfficiencyStatement;
-import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.assessment.IdentityAssessmentEditController;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
+import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.course.assessment.portfolio.EfficiencyStatementArtefact;
 import org.olat.course.certificate.CertificateEvent;
@@ -334,7 +334,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			//no business path becouse we cannot launch an efficiency statement
 			artefact.setCollectionDate(new Date());
 			artefact.setTitle(translate("artefact.title", new String[]{ title }));
-			EfficiencyStatement fullStatement = EfficiencyStatementManager.getInstance().getUserEfficiencyStatementByKey(efficiencyStatementKey);
+			EfficiencyStatement fullStatement = esm.getUserEfficiencyStatementByKey(efficiencyStatementKey);
 			artHandler.prefillArtefactAccordingToSource(artefact, fullStatement);
 			ePFCollCtrl = new ArtefactWizzardStepsController(ureq, getWindowControl(), artefact, (VFSContainer)null);
 			listenTo(ePFCollCtrl);

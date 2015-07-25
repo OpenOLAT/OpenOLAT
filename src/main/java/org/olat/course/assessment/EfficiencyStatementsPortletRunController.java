@@ -60,8 +60,10 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.CourseModule;
+import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -81,6 +83,9 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 	private boolean needReloadModel;
 	private Identity cOwner;
 	private Link showAllLink;
+	
+	@Autowired
+	private EfficiencyStatementManager esm;
 
 	/**
 	 * Constructor
@@ -132,7 +137,7 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 	 * @return the PortletEntry list.
 	 */
 	private List<PortletEntry<UserEfficiencyStatementLight>> getAllPortletEntries() {
-		List<UserEfficiencyStatementLight> efficiencyStatementsList = EfficiencyStatementManager.getInstance().findEfficiencyStatementsLight(getIdentity());	
+		List<UserEfficiencyStatementLight> efficiencyStatementsList = esm.findEfficiencyStatementsLight(getIdentity());	
 		List<PortletEntry<UserEfficiencyStatementLight>> portletEntryList = convertEfficiencyStatementToPortletEntryList(efficiencyStatementsList);
 		return portletEntryList;
 	}
@@ -158,7 +163,6 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 	 */
 	protected void reloadModel(SortingCriteria sortingCriteria) {
 		if (sortingCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
-			EfficiencyStatementManager esm = EfficiencyStatementManager.getInstance();
 			List<UserEfficiencyStatementLight> efficiencyStatementsList = esm.findEfficiencyStatementsLight(getIdentity());
 
 			efficiencyStatementsList = getSortedList(efficiencyStatementsList, sortingCriteria);  		

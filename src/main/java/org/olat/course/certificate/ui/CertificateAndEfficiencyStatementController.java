@@ -57,9 +57,9 @@ import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.assessment.EfficiencyStatement;
-import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.assessment.IdentityAssessmentEditController;
 import org.olat.course.assessment.IdentityAssessmentOverviewController;
+import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.portfolio.EfficiencyStatementArtefact;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
@@ -133,14 +133,14 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	public CertificateAndEfficiencyStatementController(WindowControl wControl, UserRequest ureq, Long resourceKey) {
 		this(wControl, ureq, 
 				ureq.getIdentity(), null, resourceKey, CoreSpringFactory.getImpl(RepositoryService.class).loadByResourceKey(resourceKey),
-				EfficiencyStatementManager.getInstance().getUserEfficiencyStatementByResourceKey(resourceKey, ureq.getIdentity()),
+				CoreSpringFactory.getImpl(EfficiencyStatementManager.class).getUserEfficiencyStatementByResourceKey(resourceKey, ureq.getIdentity()),
 				false);
 	}
 	
 	public CertificateAndEfficiencyStatementController(WindowControl wControl, UserRequest ureq, RepositoryEntry entry) {
 		this(wControl, ureq, 
 				ureq.getIdentity(), null, entry.getOlatResource().getKey(), entry,
-				EfficiencyStatementManager.getInstance().getUserEfficiencyStatementByResourceKey(entry.getOlatResource().getKey(), ureq.getIdentity()),
+				CoreSpringFactory.getImpl(EfficiencyStatementManager.class).getUserEfficiencyStatementByResourceKey(entry.getOlatResource().getKey(), ureq.getIdentity()),
 				false);
 	}
 	

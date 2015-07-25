@@ -33,7 +33,7 @@ import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.id.Identity;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.assessment.EfficiencyStatement;
-import org.olat.course.assessment.EfficiencyStatementManager;
+import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManagerImpl;
 import org.olat.course.assessment.model.UserCourseInfosImpl;

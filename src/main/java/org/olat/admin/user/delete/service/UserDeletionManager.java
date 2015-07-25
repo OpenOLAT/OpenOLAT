@@ -58,7 +58,7 @@ import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.course.assessment.EfficiencyStatementManager;
+import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.registration.RegistrationManager;
@@ -297,7 +297,7 @@ public class UserDeletionManager extends BasicManager {
 		}
 		
 		logInfo("Start EfficiencyStatementManager.archiveUserData for identity=" + identity);
-		EfficiencyStatementManager.getInstance().archiveUserData(identity, getArchivFilePath(identity) );
+		CoreSpringFactory.getImpl(EfficiencyStatementManager.class).archiveUserData(identity, getArchivFilePath(identity) );
 
 		logInfo("Start Deleting user=" + identity);
 		Map<String,UserDataDeletable> userDataDeletableResources = CoreSpringFactory.getBeansOfType(UserDataDeletable.class);

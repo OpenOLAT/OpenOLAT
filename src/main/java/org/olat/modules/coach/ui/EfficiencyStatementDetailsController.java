@@ -43,9 +43,9 @@ import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.EfficiencyStatement;
-import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.assessment.IdentityAssessmentEditController;
 import org.olat.course.assessment.UserEfficiencyStatement;
+import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.repository.RepositoryEntry;
@@ -164,7 +164,7 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 		UserEfficiencyStatement statement = statementEntry.getUserEfficencyStatement();
 		EfficiencyStatement efficiencyStatement = null;
 		if(statement != null) {
-			efficiencyStatement = EfficiencyStatementManager.getInstance().getUserEfficiencyStatementByCourseRepoKey(statement.getCourseRepoKey(), assessedIdentity);
+			efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatementByCourseRepoKey(statement.getCourseRepoKey(), assessedIdentity);
 		}
 		return new CertificateAndEfficiencyStatementController(getWindowControl(), ureq, assessedIdentity, null, entry.getOlatResource().getKey(), entry, efficiencyStatement, true);
 	}

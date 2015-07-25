@@ -310,7 +310,7 @@ public class AssessmentHelper {
 	 * @param discardComments
 	 * @return list of object arrays or null if empty
 	 */
-	static List<Map<String,Object>> addAssessableNodeAndDataToList(int recursionLevel, CourseNode courseNode, UserCourseEnvironment userCourseEnv, boolean discardEmptyNodes, boolean discardComments) {
+	public static List<Map<String,Object>> addAssessableNodeAndDataToList(int recursionLevel, CourseNode courseNode, UserCourseEnvironment userCourseEnv, boolean discardEmptyNodes, boolean discardComments) {
 		// 1) Get list of children data using recursion of this method
 		List<Map<String, Object>> childrenData = new ArrayList<Map<String, Object>>(50);
 		for (int i = 0; i < courseNode.getChildCount(); i++) {

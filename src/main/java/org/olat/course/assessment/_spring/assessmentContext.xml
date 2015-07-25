@@ -9,12 +9,6 @@
   http://www.springframework.org/schema/context/spring-context.xsd">
 
 	<context:component-scan base-package="org.olat.course.assessment" />
-
-	<bean id="org.olat.course.assessment.EfficiencyStatementManager" class="org.olat.course.assessment.EfficiencyStatementManager">
-		<property name="dbInstance" ref="database"/>
-		<property name="userManager" ref="userManager"/>
-		<property name="repositoryManager" ref="repositoryManager"/>
-	</bean>
 	
 	<bean id="assessmentNotificationsTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
 	    <property name="jobDetail" ref="assessmentNotificationsJob" />

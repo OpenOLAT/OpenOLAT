@@ -23,16 +23,18 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.course.assessment;
+package org.olat.course.assessment.manager;
 
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.course.assessment.EfficiencyStatementEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
@@ -59,11 +61,11 @@ public class UpdateEfficiencyStatementsWorker implements Runnable {
 	public void run() {
 		boolean success = false;
 		try{
-			RepositoryManager rm = RepositoryManager.getInstance();
-			EfficiencyStatementManager esm = EfficiencyStatementManager.getInstance();
+			RepositoryManager rm = CoreSpringFactory.getImpl(RepositoryManager.class);
+			EfficiencyStatementManager esm = CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
 			RepositoryEntry re = rm.lookupRepositoryEntry(ores, false);
 			
-			List<Identity> identities = EfficiencyStatementManager.getInstance().findIdentitiesWithEfficiencyStatements(re.getKey());
+			List<Identity> identities = esm.findIdentitiesWithEfficiencyStatements(re.getKey());
 			esm.updateEfficiencyStatements(ores, identities);
 			// close db session in this thread
 			DBFactory.getInstance(false).commitAndCloseSession();

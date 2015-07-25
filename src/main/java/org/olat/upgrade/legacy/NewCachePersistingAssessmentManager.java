@@ -58,7 +58,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentChangedEvent;
 import org.olat.course.assessment.AssessmentLoggingAction;
 import org.olat.course.assessment.AssessmentManager;
-import org.olat.course.assessment.EfficiencyStatementManager;
+import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
@@ -584,7 +584,7 @@ public class NewCachePersistingAssessmentManager {
 				long attempts = incrementNodeAttemptsProperty(courseNode, identity, cpm);
 				if(courseNode instanceof AssessableCourseNode) {
           // Update users efficiency statement
-				  EfficiencyStatementManager esm =	EfficiencyStatementManager.getInstance();
+				  EfficiencyStatementManager esm =	CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
 				  esm.updateUserEfficiencyStatement(userCourseEnv);
 				}
 				return attempts;
@@ -879,7 +879,7 @@ public class NewCachePersistingAssessmentManager {
 				if(courseNode instanceof AssessableCourseNode) {
 				  userCourseEnv.getScoreAccounting().scoreInfoChanged((AssessableCourseNode)courseNode, scoreEvaluation);
 				  // Update users efficiency statement
-				  EfficiencyStatementManager esm =	EfficiencyStatementManager.getInstance();
+				  EfficiencyStatementManager esm =	CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
 				  esm.updateUserEfficiencyStatement(userCourseEnv);
 				}
 				
@@ -971,7 +971,7 @@ public class NewCachePersistingAssessmentManager {
 		DBFactory.getInstance().commitAndCloseSession();
 		if (courseNode instanceof AssessableCourseNode) {
 			userCourseEnv.getScoreAccounting().scoreInfoChanged((AssessableCourseNode) courseNode, scoreEvaluation);
-			EfficiencyStatementManager esm = EfficiencyStatementManager.getInstance();
+			EfficiencyStatementManager esm = CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
 			esm.updateUserEfficiencyStatement(userCourseEnv);
 		}
 		return attempts;
