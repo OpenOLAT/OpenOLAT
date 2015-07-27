@@ -67,6 +67,7 @@ public class CourseLaunchRuleEditor extends RuleEditorFragment {
 				.createCustomFormLayout("course.launch.".concat(id), formLayout.getTranslator(), page);
 		ruleCont.setRootForm(formLayout.getRootForm());
 		formLayout.add(ruleCont);
+		ruleCont.getFormItemComponent().contextPut("id", id);
 		
 		String currentValue = null;
 		String currentUnit = null;
@@ -76,7 +77,7 @@ public class CourseLaunchRuleEditor extends RuleEditorFragment {
 			currentUnit = r.getRightUnit();
 		}
 
-		valueEl = uifactory.addTextElement("launchvalue", null, 128, currentValue, ruleCont);
+		valueEl = uifactory.addTextElement("launchvalue.".concat(id), null, 128, currentValue, ruleCont);
 		valueEl.setDomReplacementWrapperRequired(false);
 		valueEl.setDisplaySize(3);
 		
@@ -85,7 +86,7 @@ public class CourseLaunchRuleEditor extends RuleEditorFragment {
 				trans.translate(LaunchUnit.month.name()), trans.translate(LaunchUnit.year.name())
 		};
 		
-		unitEl = uifactory.addDropdownSingleselect("launchunit", null, ruleCont, unitKeys, unitValues, null);
+		unitEl = uifactory.addDropdownSingleselect("launchunit.".concat(id), null, ruleCont, unitKeys, unitValues, null);
 		unitEl.setDomReplacementWrapperRequired(false);
 		boolean selected = false;
 		if(currentUnit != null) {

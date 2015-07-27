@@ -618,9 +618,9 @@ public class GTAWorkflowEditController extends FormBasicController {
 				} else {
 					chooseGroupButton.setI18nKey("create.groups");
 				}
-				groupListEl.getRootForm().submit(ureq);
 				cmc.deactivate();
 				cleanUp();
+				groupListEl.getRootForm().submit(ureq);
 			} else if(event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
 				cleanUp();
@@ -634,6 +634,8 @@ public class GTAWorkflowEditController extends FormBasicController {
 				} else {
 					chooseAreaButton.setI18nKey("create.areas");
 				}
+				cmc.deactivate();
+				cleanUp();
 				areaListEl.getRootForm().submit(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
