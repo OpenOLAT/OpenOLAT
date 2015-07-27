@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.velocity.VelocityContext;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
@@ -39,6 +40,8 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
@@ -58,6 +61,7 @@ import org.olat.modules.reminder.model.ReminderInfos;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
 import org.olat.modules.reminder.model.ReminderRules;
 import org.olat.modules.reminder.rule.DateRuleSPI;
+import org.olat.modules.reminder.ui.ReminderAdminController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.UserManager;
@@ -238,7 +242,8 @@ public class ReminderServiceImpl implements ReminderService {
 		contactList.addAllIdentites(identitiesToRemind);
 		
 		MailContext context = new MailContextImpl("[RepositoryEntry:" + entry.getKey() + "]");
-		String subject = "Reminder";
+		Translator trans = Util.createPackageTranslator(ReminderAdminController.class, I18nModule.getDefaultLocale());
+		String subject = trans.translate("reminder.subject");
 		String body = reminder.getEmailBody();
 		String metaId = UUID.randomUUID().toString();
 		String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
