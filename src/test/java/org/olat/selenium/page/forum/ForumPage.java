@@ -21,8 +21,6 @@ package org.olat.selenium.page.forum;
 
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.portfolio.ArtefactWizardPage;
@@ -39,13 +37,8 @@ import org.openqa.selenium.WebElement;
  *
  */
 public class ForumPage {
-	
-	@Drone
+
 	private WebDriver browser;
-	
-	public ForumPage() {
-		//
-	}
 	
 	public ForumPage(WebDriver browser) {
 		this.browser = browser;
@@ -64,14 +57,14 @@ public class ForumPage {
 	
 		By mainBy = By.cssSelector("div.o_course_run");
 		WebElement main = browser.findElement(mainBy);
-		return Graphene.createPageFragment(ForumPage.class, main);
+		Assert.assertTrue(main.isDisplayed());
+		return new ForumPage(browser);
 	}
 	
 	public static ForumPage getGroupForumPage(WebDriver browser) {
 		By forumBy = By.cssSelector("div.o_forum");
 		List<WebElement> forumEl = browser.findElements(forumBy);
 		Assert.assertFalse(forumEl.isEmpty());
-	
 		return new ForumPage(browser);
 	}
 	
@@ -103,6 +96,27 @@ public class ForumPage {
 		return this;
 	}
 	
+	public ForumPage openThread(String title) {
+		By threadBy = By.xpath("//table[contains(@class,'o_table')]//tr//a[span[text()='" + title + "']]");
+		browser.findElement(threadBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public ForumPage openThreadInPeekview(String title) {
+		By threadBy = By.xpath("//div[contains(@class,'o_forum_peekview_message')]//a[span[text()='" + title + "']]");
+		browser.findElement(threadBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public ForumPage flatView() {
+		By flatBy = By.cssSelector("input[value='flat'][type='radio']");
+		browser.findElement(flatBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
 	public ForumPage assertMessageBody(String text) {
 		By messageBodyBy = By.className("o_forum_message_body");
 		List<WebElement> messages = browser.findElements(messageBodyBy);
@@ -113,6 +127,34 @@ public class ForumPage {
 			}
 		}
 		Assert.assertTrue(found);
+		return this;
+	}
+	
+	public ForumPage waitMessageBody(String text) {
+		By messageBy = By.xpath("//div[contains(@class,'o_forum_message_body')][//p[contains(text(),'" + text + "')]]");
+		OOGraphene.waitElement(messageBy, 10, browser);
+		return this;
+	}
+
+	public ForumPage replyToMessage(String reference, String title, String reply) {
+		replyToMessageNoWait(reference, title, reply);
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public ForumPage replyToMessageNoWait(String reference, String title, String reply) {
+		By replyBy = By.xpath("//div[contains(@class,'o_forum_message')][//h4[contains(text(),'" + reference + "')]]//a[contains(@class,'o_sel_forum_reply')]");
+		browser.findElement(replyBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		if(title != null) {
+			By titleBy = By.cssSelector(".o_sel_forum_message_title input[type='text']");
+			browser.findElement(titleBy).sendKeys(title);
+		}
+		OOGraphene.tinymce(reply, browser);
+		
+		By saveBy = By.cssSelector("fieldset.o_sel_forum_message_form button.btn-primary");
+		browser.findElement(saveBy).click();
 		return this;
 	}
 	

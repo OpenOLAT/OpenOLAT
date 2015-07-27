@@ -107,4 +107,11 @@ public class MembersWizardPage {
 		OOGraphene.textarea(importAreaEl, sb.toString(), browser);
 		return this;
 	}
+	
+	public MembersWizardPage selectGroupAsParticipant(String groupName) {
+		By rolesBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td[text()='" + groupName + "']]//label[contains(@class,'o_sel_role_participant')]/input");
+		List<WebElement> roleEls = browser.findElements(rolesBy);
+		roleEls.get(0).click();
+		return this;
+	}
 }

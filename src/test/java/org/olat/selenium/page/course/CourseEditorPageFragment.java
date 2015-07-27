@@ -99,6 +99,12 @@ public class CourseEditorPageFragment {
 		return this;
 	}
 	
+	public EasyConditionConfigPage selectTabVisibility() {
+		By passwordTabBy = By.cssSelector("fieldset.o_sel_course_visibility_condition_form");
+		selectTab(passwordTabBy);
+		return new EasyConditionConfigPage(browser);
+	}
+	
 	/**
 	 * Select the tab where the password setting are
 	 * @return
