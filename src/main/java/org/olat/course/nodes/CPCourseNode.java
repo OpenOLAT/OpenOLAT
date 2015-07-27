@@ -100,12 +100,10 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
-		NodeRunConstructionResult ncr;
 		updateModuleConfigDefaults(false);
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ICourse.class, userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		CPRunController cprunC = new CPRunController(getModuleConfiguration(), ureq, wControl, this, nodecmd, ores);
-		ncr = cprunC.createNodeRunConstructionResult(ureq);
-		return ncr;
+		return cprunC.createNodeRunConstructionResult(ureq, null);
 	}
 
 	/**
