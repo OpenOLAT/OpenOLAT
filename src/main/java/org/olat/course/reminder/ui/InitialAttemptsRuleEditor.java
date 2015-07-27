@@ -78,6 +78,7 @@ public class InitialAttemptsRuleEditor extends RuleEditorFragment {
 				.createCustomFormLayout("attempts.".concat(id), formLayout.getTranslator(), page);
 		ruleCont.setRootForm(formLayout.getRootForm());
 		formLayout.add(ruleCont);
+		ruleCont.getFormItemComponent().contextPut("id", id);
 		
 		ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
 		
@@ -105,7 +106,7 @@ public class InitialAttemptsRuleEditor extends RuleEditorFragment {
 			nodeValues[i] = attemptableNode.getShortTitle() + " ( " + attemptableNode.getIdent() + " )";
 		}
 		
-		courseNodeEl = uifactory.addDropdownSingleselect("coursenodes", null, ruleCont, nodeKeys, nodeValues, null);
+		courseNodeEl = uifactory.addDropdownSingleselect("coursenodes.".concat(id), null, ruleCont, nodeKeys, nodeValues, null);
 		courseNodeEl.setDomReplacementWrapperRequired(false);
 		boolean nodeSelected = false;
 		if(currentCourseNode != null) {
@@ -123,7 +124,7 @@ public class InitialAttemptsRuleEditor extends RuleEditorFragment {
 			courseNodeEl.setErrorKey("error.course.node.found", null);
 		}
 
-		valueEl = uifactory.addTextElement("attemptvalue", null, 128, currentValue, ruleCont);
+		valueEl = uifactory.addTextElement("attemptvalue.".concat(id), null, 128, currentValue, ruleCont);
 		valueEl.setDomReplacementWrapperRequired(false);
 		valueEl.setDisplaySize(3);
 
@@ -132,7 +133,7 @@ public class InitialAttemptsRuleEditor extends RuleEditorFragment {
 				trans.translate(LaunchUnit.month.name()), trans.translate(LaunchUnit.year.name())
 		};
 
-		unitEl = uifactory.addDropdownSingleselect("attemptunit", null, ruleCont, unitKeys, unitValues, null);
+		unitEl = uifactory.addDropdownSingleselect("attemptunit.".concat(id), null, ruleCont, unitKeys, unitValues, null);
 		unitEl.setDomReplacementWrapperRequired(false);
 		boolean selected = false;
 		if(currentUnit != null) {
@@ -183,6 +184,9 @@ public class InitialAttemptsRuleEditor extends RuleEditorFragment {
 		valueEl.clearError();
 		if(!StringHelper.containsNonWhitespace(valueEl.getValue())) {
 			valueEl.setErrorKey("form.mandatory.hover", null);
+			allOk &= false;
+		} else if(!StringHelper.isLong(valueEl.getValue())) {
+			valueEl.setErrorKey("error.int", null);
 			allOk &= false;
 		}
 		

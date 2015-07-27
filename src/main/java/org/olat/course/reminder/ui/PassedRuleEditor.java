@@ -72,6 +72,7 @@ public class PassedRuleEditor extends RuleEditorFragment {
 				.createCustomFormLayout("attempts.".concat(id), formLayout.getTranslator(), page);
 		ruleCont.setRootForm(formLayout.getRootForm());
 		formLayout.add(ruleCont);
+		ruleCont.getFormItemComponent().contextPut("id", id);
 		
 		ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
 
@@ -95,7 +96,7 @@ public class PassedRuleEditor extends RuleEditorFragment {
 			nodeValues[i] = attemptableNode.getShortTitle() + " ( " + attemptableNode.getIdent() + " )";
 		}
 		
-		courseNodeEl = uifactory.addDropdownSingleselect("coursenodes", null, ruleCont, nodeKeys, nodeValues, null);
+		courseNodeEl = uifactory.addDropdownSingleselect("coursenodes.".concat(id), null, ruleCont, nodeKeys, nodeValues, null);
 		courseNodeEl.setDomReplacementWrapperRequired(false);
 		boolean nodeSelected = false;
 		if(currentCourseNode != null) {
@@ -118,7 +119,7 @@ public class PassedRuleEditor extends RuleEditorFragment {
 			trans.translate("passed"), trans.translate("failed")
 		};
 
-		statusEl = uifactory.addDropdownSingleselect("status", null, ruleCont, statusKeys, statusValues, null);
+		statusEl = uifactory.addDropdownSingleselect("status.".concat(id), null, ruleCont, statusKeys, statusValues, null);
 		statusEl.setDomReplacementWrapperRequired(false);
 		boolean statusSelected = false;
 		if(currentStatus != null) {

@@ -72,6 +72,7 @@ public class ScoreRuleEditor extends RuleEditorFragment {
 				.createCustomFormLayout("attempts.".concat(id), formLayout.getTranslator(), page);
 		ruleCont.setRootForm(formLayout.getRootForm());
 		formLayout.add(ruleCont);
+		ruleCont.getFormItemComponent().contextPut("id", id);
 		
 		ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
 		
@@ -99,7 +100,7 @@ public class ScoreRuleEditor extends RuleEditorFragment {
 			nodeValues[i] = attemptableNode.getShortTitle() + " ( " + attemptableNode.getIdent() + " )";
 		}
 		
-		courseNodeEl = uifactory.addDropdownSingleselect("coursenodes", null, ruleCont, nodeKeys, nodeValues, null);
+		courseNodeEl = uifactory.addDropdownSingleselect("coursenodes.".concat(id), null, ruleCont, nodeKeys, nodeValues, null);
 		courseNodeEl.setDomReplacementWrapperRequired(false);
 		boolean nodeSelected = false;
 		if(currentCourseNode != null) {
@@ -117,7 +118,7 @@ public class ScoreRuleEditor extends RuleEditorFragment {
 			courseNodeEl.setErrorKey("error.course.node.found", null);
 		}
 
-		operatorEl = uifactory.addDropdownSingleselect("operators", null, ruleCont, operatorKeys, operatorKeys, null);
+		operatorEl = uifactory.addDropdownSingleselect("operators.".concat(id), null, ruleCont, operatorKeys, operatorKeys, null);
 		operatorEl.setDomReplacementWrapperRequired(false);
 		boolean opSelected = false;
 		if(currentOperator != null) {
@@ -132,7 +133,7 @@ public class ScoreRuleEditor extends RuleEditorFragment {
 			operatorEl.select(operatorKeys[2], true);
 		}
 
-		valueEl = uifactory.addTextElement("value", null, 128, currentValue, ruleCont);
+		valueEl = uifactory.addTextElement("value.".concat(id), null, 128, currentValue, ruleCont);
 		valueEl.setDomReplacementWrapperRequired(false);
 		valueEl.setDisplaySize(3);
 		

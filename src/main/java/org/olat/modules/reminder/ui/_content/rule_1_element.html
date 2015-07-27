@@ -1,4 +1,4 @@
-$r.render("ruleElement")
-#if($f.hasError("ruleElement"))
-	<br/>$r.render("ruleElement_ERROR")
+$r.render("ruleElement.${id}")
+#if($f.hasError("ruleElement.${id}"))
+	<br/>$r.render("ruleElement.${id}_ERROR")
 #end
