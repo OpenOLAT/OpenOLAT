@@ -175,6 +175,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_provider_linkedin:before { content: $fa-var-linkedin;}
 .o_icon_provider_oauth:before { content: $fa-var-cloud;}
 .o_icon_provider_olat:before { @extend %o_icon_openolat; }
+.o_icon_provider_performx:before { content: $fa-var-caret-down;}
 .o_icon_provider_shibboleth:before { content: $fa-var-university;}
 .o_icon_provider_twitter:before { content: $fa-var-twitter;}
 .o_icon_publish:before { content: $fa-var-share;}
