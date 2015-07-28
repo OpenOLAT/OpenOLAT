@@ -58,9 +58,11 @@ public class PasswordConditionEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		passwordSwitch = uifactory.addCheckboxesHorizontal("password.field", "password.field", formLayout, new String[]{"ison"}, new String[]{ "" });
 		passwordSwitch.addActionListener(FormEvent.ONCHANGE);
+		passwordSwitch.setElementCssClass("o_sel_course_password_condition_switch");
 		
 		passwordField = uifactory.addTextElement("passwordField", null, 30, "", formLayout);
 		passwordField.setExampleKey("password.example", null);
+		passwordField.setElementCssClass("o_sel_course_password_condition_value");
 		passwordField.showError(false);
 		if (condition != null && StringHelper.containsNonWhitespace(condition.getPassword())) {
 			passwordSwitch.select("ison", true);

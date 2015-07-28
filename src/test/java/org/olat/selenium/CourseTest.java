@@ -43,15 +43,20 @@ import org.olat.selenium.page.Administrator;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
+import org.olat.selenium.page.Student;
 import org.olat.selenium.page.User;
 import org.olat.selenium.page.core.BookingPage;
+import org.olat.selenium.page.core.MenuTreePageFragment;
+import org.olat.selenium.page.course.AssessmentCEConfigurationPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseWizardPage;
 import org.olat.selenium.page.course.InfoMessageCEPage;
+import org.olat.selenium.page.course.MembersPage;
 import org.olat.selenium.page.course.PublisherPageFragment;
 import org.olat.selenium.page.course.RemindersPage;
 import org.olat.selenium.page.course.PublisherPageFragment.Access;
+import org.olat.selenium.page.forum.ForumPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.FeedPage;
@@ -1005,5 +1010,389 @@ public class CourseTest {
 			.openLog()
 			.assertLogList(kanu, reminderTitle, true)
 			.assertLogList(author, reminderTitle, false);
+	}
+	
+	/**
+	 * An author creates a course with a structure element. The structure
+	 * element is password protected. Under it, there is an info node. The
+	 * course is published and a first user search the course, go to the
+	 * structure element, give the password and see the info node. A second
+	 * user grabs the rest url of the structure node, use it, give the password
+	 * and go to the info node.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void coursePassword(@InitialPage LoginPage loginPage,
+			@Drone @Participant WebDriver kanuBrowser,
+			@Drone @User WebDriver ryomouBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//go to authoring
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+		
+		String title = "Password-me-" + UUID.randomUUID();
+		//create course
+		authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.course)
+			.fillCreateForm(title)
+			.assertOnGeneralTab()
+			.save();
+		
+		String infoTitle = "Info - " + UUID.randomUUID();
+		String structureTitle = "St - " + UUID.randomUUID();
+
+		//open course editor, create a structure node
+		CoursePageFragment course = new CoursePageFragment(browser);
+		CourseEditorPageFragment editor = course
+			.openToolsMenu()
+			.edit();
+		editor
+			.createNode("st")
+			.nodeTitle(structureTitle);
+		String courseInfoUrl = editor.getRestUrl();
+		editor
+		//create an info node and move it under the structure node
+			.createNode("info")
+			.nodeTitle(infoTitle)
+			.moveUnder(structureTitle)
+			.selectNode(structureTitle)
+		//select and set password on structure node
+			.selectTabPassword()
+			.setPassword("super secret")
+		//publish
+			.autoPublish()
+			.accessConfiguration()
+			.setUserAccess(UserAccess.registred)
+			.clickToolbarBack();
+		
+		MenuTreePageFragment courseTree = course
+			.clickTree()
+			.selectWithTitle(structureTitle.substring(0, 20));
+		course
+			.assertOnPassword()
+			.enterPassword("super secret");
+		courseTree
+			.selectWithTitle(infoTitle.substring(0, 20));
+		course
+			.assertOnTitle(infoTitle);
+		
+		//First user go to the course
+		LoginPage kanuLoginPage = LoginPage.getLoginPage(kanuBrowser, deploymentUrl);
+		kanuLoginPage
+			.loginAs(kanu.getLogin(), kanu.getPassword())
+			.resume();
+
+		NavigationPage kanuNavBar = new NavigationPage(kanuBrowser);
+		kanuNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(title)
+			.select(title)
+			.start();
+		
+		//go to the structure, give the password
+		CoursePageFragment kanuCourse = new CoursePageFragment(kanuBrowser);
+		MenuTreePageFragment kanuTree = kanuCourse
+			.clickTree()
+			.selectWithTitle(structureTitle.substring(0, 20));
+		kanuCourse
+			.assertOnPassword()
+			.enterPassword("super secret");
+		kanuTree
+			.selectWithTitle(infoTitle.substring(0, 20));
+		kanuCourse
+			.assertOnTitle(infoTitle);
+		
+		//Second user use the rest url
+		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, new URL(courseInfoUrl));
+		ryomouLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		
+		CoursePageFragment ryomouCourse = new CoursePageFragment(ryomouBrowser);
+		ryomouCourse
+			.assertOnPassword()
+			.enterPassword("super secret");
+		//find the secret info course element
+		ryomouCourse
+			.clickTree()
+			.selectWithTitle(structureTitle.substring(0, 20))
+			.selectWithTitle(infoTitle.substring(0, 20));
+		ryomouCourse
+			.assertOnTitle(infoTitle);
+	}
+	
+	/**
+	 * An author creates a course with a forum, publish it, open a new thread.
+	 * A first user come to see the thread. A second come via the peekview.
+	 * The three make a reply at the same time. And they check that they see
+	 * the replies, and the ones of the others.
+	 * 
+	 * @param loginPage
+	 * @param kanuBrowser
+	 * @param reiBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void concurrentForum(@InitialPage LoginPage loginPage,
+			@Drone @Participant WebDriver kanuBrowser,
+			@Drone @Student WebDriver reiBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course FO " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+	
+		//go the authoring environment to create a forum
+		String foTitle = "FO - " + UUID.randomUUID();
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("fo")
+			.nodeTitle(foTitle)
+		//publish the course
+			.publish()
+			.quickPublish(Access.users);
+		
+		//go to the forum
+		courseEditor
+			.clickToolbarBack()
+			.clickTree()
+			.selectWithTitle(foTitle.substring(0, 20));
+		
+		ForumPage authorForum = ForumPage
+			.getCourseForumPage(browser);
+		authorForum
+			.createThread("The best anime ever", "What is the best anime ever?");
+		
+		//First user go to the course
+		LoginPage kanuLoginPage = LoginPage.getLoginPage(kanuBrowser, deploymentUrl);
+		kanuLoginPage
+			.loginAs(kanu.getLogin(), kanu.getPassword())
+			.resume();
+
+		NavigationPage kanuNavBar = new NavigationPage(kanuBrowser);
+		kanuNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(courseTitle)
+			.select(courseTitle)
+			.start();
+		
+		//go to the forum
+		new CoursePageFragment(kanuBrowser)
+			.clickTree()
+			.selectWithTitle(foTitle.substring(0, 20));
+		
+		ForumPage kanuForum = ForumPage
+			.getCourseForumPage(kanuBrowser)
+			.openThread("The best anime ever");
+
+		
+		//First user go to the course
+		LoginPage reiLoginPage = LoginPage.getLoginPage(reiBrowser, deploymentUrl);
+		reiLoginPage
+			.loginAs(rei)
+			.resume();
+
+		NavigationPage reiNavBar = new NavigationPage(reiBrowser);
+		reiNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(courseTitle)
+			.select(courseTitle)
+			.start();
+		//select the thread in peekview
+		ForumPage reiForum = new ForumPage(reiBrowser)
+			.openThreadInPeekview("The best anime ever");
+		
+		//concurrent reply
+		String kanuReply = "Ikki Touzen";
+		String reiReply = "Neon Genesis Evangelion";
+		String authorReply = "Lain, serial experiment";
+		
+		authorForum
+			.replyToMessageNoWait("The best anime ever", null, authorReply);
+		reiForum
+			.replyToMessageNoWait("The best anime ever", null, reiReply);
+		kanuForum
+			.replyToMessageNoWait("The best anime ever", null, kanuReply);
+	
+		//wait the responses
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitBusy(kanuBrowser);
+		OOGraphene.waitBusy(reiBrowser);
+		
+		//check own responses
+		authorForum.assertMessageBody(authorReply);
+		kanuForum.assertMessageBody(kanuReply);
+		reiForum.assertMessageBody(reiReply);
+
+		//check others responses
+		authorForum
+			.flatView()
+			.waitMessageBody(kanuReply);
+		reiForum
+			.flatView()
+			.waitMessageBody(kanuReply);
+		kanuForum
+			.flatView()
+			.waitMessageBody(reiReply);
+	}
+	
+	/**
+	 * An author creates a course with 4 course elements. A folder
+	 * which is visible to group, a forum which is visible to coaches,
+	 * an assessment and an info visible to the students which passed
+	 * the assessment above.<br>
+	 * a student come and checks what it can see, the author make it
+	 * pass the assessment and the student sees the info.
+	 * 
+	 * @param loginPage
+	 * @param kanuBrowser
+	 * @param reiBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseAccessRules(@InitialPage LoginPage loginPage,
+			@Drone @Student WebDriver reiBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("rei");
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course FO " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+	
+		//go the authoring environment to create a forum
+		String bcTitle = "BC - " + UUID.randomUUID();
+		String foTitle = "FO - " + UUID.randomUUID();
+		String msTitle = "MS - " + UUID.randomUUID();
+		String infoTitle = "Info - " + UUID.randomUUID();
+		
+		String groupName = "Students";
+		
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		//folder is group protected
+		courseEditor
+			.createNode("bc")
+			.nodeTitle(bcTitle)
+			.selectTabVisibility()
+			.setGroupCondition()
+			.createBusinessGroup(groupName);
+		//forum is coach exclusive
+		courseEditor
+			.createNode("fo")
+			.nodeTitle(foTitle)
+			.selectTabVisibility()
+			.setCoachExclusive()
+			.save();
+		//assessment is open
+		courseEditor
+			.createNode("ms")
+			.nodeTitle(msTitle);
+		//configure assessment
+		AssessmentCEConfigurationPage assessmentConfig = new AssessmentCEConfigurationPage(browser);
+		assessmentConfig
+			.selectConfiguration()
+			.setScoreAuto(0.0f, 6.0f, 4.0f);
+		
+		//wiki is assessment dependent
+		courseEditor
+			.createNode("info")
+			.nodeTitle(infoTitle)
+			.selectTabVisibility()
+			.setAssessmentCondition(1)
+			.save();
+
+		courseEditor
+			.publish()
+			.quickPublish(Access.membersOnly);
+		courseEditor
+			.clickToolbarBack();
+		
+		//add a member to the group we create above
+		MembersPage members = CoursePageFragment
+			.getCourse(browser)
+			.members();
+		members
+			.addMember()
+			.searchMember(rei, true)
+			.next()
+			.next()
+			.selectGroupAsParticipant(groupName)
+			.next()
+			.finish();
+		
+		//participant search the course
+		LoginPage.getLoginPage(reiBrowser, deploymentUrl)
+			.loginAs(rei)
+			.resume();
+		NavigationPage reiNavBar = new NavigationPage(reiBrowser);
+		reiNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		MenuTreePageFragment reiTree = new MenuTreePageFragment(reiBrowser);
+		reiTree
+			.assertWithTitle(bcTitle.substring(0, 20))
+			.assertWithTitle(msTitle.substring(0, 20))
+			.assertTitleNotExists(foTitle.substring(0, 20))
+			.assertTitleNotExists(infoTitle.substring(0, 20));
+		
+		//author set assessment to passed
+		members
+			.clickToolbarBack()
+			.assessmentTool()
+			.users()
+			.assertOnUsers(rei)
+			.selectUser(rei)
+			.selectCourseNode(msTitle.substring(0, 20))
+			.setAssessmentScore(5.5f)
+			.assertUserPassedCourseNode(msTitle.substring(0, 20));
+		
+		//student can see info
+		reiTree
+			.selectRoot()
+			.assertWithTitle(bcTitle.substring(0, 20))
+			.assertWithTitle(msTitle.substring(0, 20))
+			.assertTitleNotExists(foTitle.substring(0, 20))
+			.assertWithTitle(infoTitle.substring(0, 20));
+		
+		//author can see all
+		members
+			.clickToolbarBack()
+			.clickTree()
+			.assertWithTitle(bcTitle.substring(0, 20))
+			.assertWithTitle(msTitle.substring(0, 20))
+			.assertWithTitle(foTitle.substring(0, 20))
+			.assertWithTitle(infoTitle.substring(0, 20));
 	}
 }

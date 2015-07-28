@@ -99,6 +99,27 @@ public class CoursePageFragment {
 	}
 	
 	/**
+	 * Assert if the password field is displayed.
+	 * @return
+	 */
+	public CoursePageFragment assertOnPassword() {
+		By passwordBy = By.cssSelector(".o_sel_course_password_form input[type='password']");
+		List<WebElement> passwordEls = browser.findElements(passwordBy);
+		Assert.assertEquals(1, passwordEls.size());
+		return this;
+	}
+	
+	public CoursePageFragment enterPassword(String password) {
+		By passwordBy = By.cssSelector(".o_sel_course_password_form .o_sel_course_password input[type='password']");
+		browser.findElement(passwordBy).sendKeys(password);
+		
+		By enterBy = By.cssSelector(".o_sel_course_password_form button.btn-primary");
+		browser.findElement(enterBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	/**
 	 * Click the first element of the menu tree
 	 * @return
 	 */

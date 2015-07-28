@@ -70,6 +70,7 @@ public class UserPropertyEditor extends RuleEditorFragment {
 				.createCustomFormLayout("user.prop.".concat(id), formLayout.getTranslator(), page);
 		userPropCont.setRootForm(formLayout.getRootForm());
 		formLayout.add(userPropCont);
+		userPropCont.getFormItemComponent().contextPut("id", id);
 		
 		Translator trans = Util.createPackageTranslator(UserPropertyHandler.class, ureq.getLocale(), formLayout.getTranslator());
 		
@@ -91,7 +92,7 @@ public class UserPropertyEditor extends RuleEditorFragment {
 			currentPropertyValue = r.getRightOperand();
 		}
 		
-		propEl = uifactory.addDropdownSingleselect("user.prop", null, userPropCont, propKeys, propValues, null);
+		propEl = uifactory.addDropdownSingleselect("user.prop.".concat(id), null, userPropCont, propKeys, propValues, null);
 		propEl.setDomReplacementWrapperRequired(false);
 		if(currentPropertyName != null) {
 			for(String propKey:propKeys) {
@@ -101,7 +102,7 @@ public class UserPropertyEditor extends RuleEditorFragment {
 			}
 		}
 
-		valueEl = uifactory.addTextElement("user.value", null, 128, currentPropertyValue, userPropCont);
+		valueEl = uifactory.addTextElement("user.value.".concat(id), null, 128, currentPropertyValue, userPropCont);
 		valueEl.setDomReplacementWrapperRequired(false);
 
 		return userPropCont;

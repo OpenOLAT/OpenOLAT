@@ -161,15 +161,16 @@ public class IQConfigurationController extends BasicController {
 
 		// fetch repository entry
 		RepositoryEntry re = null;
-		String displayName = "";
 		String repoSoftkey = (String)moduleConfiguration.get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
 		if (repoSoftkey != null) {
 			re = getIQReference(moduleConfiguration, false);
-			displayName = StringHelper.escapeHtml(re.getDisplayname());
 		}
-		 
-		myContent.contextPut(VC_CHOSENTEST, re == null ? translate("no.file.chosen") : displayName);
-		if (re != null) {
+		
+		if(re == null) {
+			myContent.contextPut(VC_CHOSENTEST, translate("no.file.chosen"));
+		} else {
+			String displayName = StringHelper.escapeHtml(re.getDisplayname());
+			myContent.contextPut(VC_CHOSENTEST, displayName);
 			myContent.contextPut("dontRenderRepositoryButton", new Boolean(true));
 			// Put values to velocity container
 

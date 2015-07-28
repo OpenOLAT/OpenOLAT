@@ -197,7 +197,7 @@ public class NavigationHandler implements Disposable {
 				}
 				if(subtreemodelListener != currentNodeController) {
 					if(subtreemodelListener instanceof CPRunController) {
-						nrcr =  ((CPRunController)subtreemodelListener).createNodeRunConstructionResult(ureq);
+						nrcr =  ((CPRunController)subtreemodelListener).createNodeRunConstructionResult(ureq, selTN.getIdent());
 					} else {
 						nrcr = new NodeRunConstructionResult((Controller)subtreemodelListener);
 					}
@@ -213,18 +213,28 @@ public class NavigationHandler implements Disposable {
 			treeEvent = new TreeEvent(treeEvent.getCommand(), treeEvent.getSubCommand(), selTN.getIdent());
 
 			boolean dispatch = true;
+			String selectedNodeId = null;
 			if(userObject instanceof String) {
+				String sObject = (String)userObject;
 				if(MenuTree.COMMAND_TREENODE_CLICKED.equals(treeEvent.getCommand()) && treeEvent.getSubCommand() == null) {
-					openCourseNodeIds.add((String)userObject);
-					openTreeNodeIds.add((String)userObject);
+					openCourseNodeIds.add(sObject);
+					if(!openTreeNodeIds.contains(sObject)) {
+						openTreeNodeIds.add(sObject);
+					}
+					selectedNodeId = selTN.getIdent();
 				} else if(TreeEvent.COMMAND_TREENODE_OPEN.equals(treeEvent.getSubCommand())) {
-					openCourseNodeIds.add((String)userObject);
-					openTreeNodeIds.add((String)userObject);
+					openCourseNodeIds.add(sObject);
+					if(!openTreeNodeIds.contains(sObject)) {
+						openTreeNodeIds.add(sObject);
+					}
+					selectedNodeId = selTN.getIdent();
 					dispatch = false;
 				} else if(TreeEvent.COMMAND_TREENODE_CLOSE.equals(treeEvent.getSubCommand())) {
 					removeChildrenFromOpenNodes(selTN);
-					openCourseNodeIds.remove(userObject);
-					openTreeNodeIds.remove(userObject);
+					openCourseNodeIds.remove(sObject);
+					openTreeNodeIds.remove(sObject);
+					openCourseNodeIds.remove(selTN.getIdent());
+					openTreeNodeIds.remove(selTN.getIdent());
 					dispatch = false;
 				}
 			}
@@ -234,7 +244,7 @@ public class NavigationHandler implements Disposable {
 				subtreemodelListener.dispatchEvent(ureq, null, treeEvent);
 				// no node construction result indicates handled
 			}
-			ncr = new NodeClickedRef(treeModel, true, selTN.getIdent(), openTreeNodeIds, internCourseNode, nrcr, true);
+			ncr = new NodeClickedRef(treeModel, true, selectedNodeId, openTreeNodeIds, internCourseNode, nrcr, true);
 		} else {
 			// normal dispatching to a coursenode.
 			// get the courseNode that was called

@@ -4,7 +4,7 @@
 	$r.render("defaultAccessConditionView")
 </fieldset>
 #if($renderPW)
-	<fieldset>
+	<fieldset class="o_sel_course_node_password_config">
 		<legend>$r.contextHelpWithWrapper("org.olat.course.condition.additionalconditions","ced-password.html","help.hover.password")
 		$r.translate("password.field")</legend>
 		$r.render("pwcond")

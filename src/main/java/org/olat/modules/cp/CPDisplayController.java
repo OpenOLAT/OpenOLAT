@@ -297,7 +297,6 @@ public class CPDisplayController extends BasicController implements Activateable
 				// adjust the tree selection to the current choice if found
 				selectTreeNode(ureq, nue.getNewUri());
 			}
-		//fxdiff VCRP-13: cp navigation
 		} else if (source == nextLink) {
 			TreeNode nextUri = (TreeNode)nextLink.getUserObject();
 			switchToPage(ureq, nextUri);
@@ -305,7 +304,6 @@ public class CPDisplayController extends BasicController implements Activateable
 				cpTree.setSelectedNode(nextUri);
 			}
 			fireEvent(ureq, new TreeNodeEvent(nextUri));
-		//fxdiff VCRP-13: cp navigation
 		} else if (source == previousLink) {
 			TreeNode previousUri = (TreeNode)previousLink.getUserObject();
 			if(cpTree != null) {
@@ -313,7 +311,6 @@ public class CPDisplayController extends BasicController implements Activateable
 			}
 			switchToPage(ureq, previousUri);
 			fireEvent(ureq, new TreeNodeEvent(previousUri));
-		//fxdiff VCRP-14: print cp
 		} else if (source == printLink) {
 			selectPagesToPrint(ureq);
 		}
@@ -331,13 +328,11 @@ public class CPDisplayController extends BasicController implements Activateable
 					selectTreeNode(ureq, nue.getNewUri());
 				}// else ignore (e.g. misplaced olatcmd event (inner olat link found in a
 					// contentpackaging file)
-			//fxdiff VCRP-14: print cp
 			} else if (source == printPopup) {
 				removeAsListenerAndDispose(printPopup);
 				removeAsListenerAndDispose(printController);
 				printController = null;
 				printPopup = null;
-			//fxdiff VCRP-14: print cp
 			} else if (source == printController) {
 				if(Event.DONE_EVENT == event) {
 					List<String> nodeToPrint = printController.getSelectedNodeIdentifiers();
@@ -377,8 +372,7 @@ public class CPDisplayController extends BasicController implements Activateable
 		printMapper.setSelectedNodeIds(selectedNodeIds);
 		getWindowControl().getWindowBackOffice().sendCommandTo(new JSCommand(sb.toString()));
 	}
-		
-	//fxdiff VCRP-14: print cp
+
 	private void selectPagesToPrint(UserRequest ureq) {
 		removeAsListenerAndDispose(printController);
 		removeAsListenerAndDispose(printPopup);

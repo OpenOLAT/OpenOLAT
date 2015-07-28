@@ -61,6 +61,7 @@ public class DateRuleEditor extends RuleEditorFragment {
 				.createCustomFormLayout(".".concat(id), formLayout.getTranslator(), page);
 		ruleCont.setRootForm(formLayout.getRootForm());
 		formLayout.add(ruleCont);
+		ruleCont.getFormItemComponent().contextPut("id", id);
 		
 		Date after = null;
 		if(rule instanceof ReminderRuleImpl) {
@@ -72,7 +73,7 @@ public class DateRuleEditor extends RuleEditorFragment {
 			}
 		}
 		
-		afterEl = uifactory.addDateChooser("ruleElement", null, after, ruleCont);
+		afterEl = uifactory.addDateChooser("ruleElement.".concat(id), null, after, ruleCont);
 		afterEl.setDateChooserTimeEnabled(true);
 		return ruleCont;
 	}

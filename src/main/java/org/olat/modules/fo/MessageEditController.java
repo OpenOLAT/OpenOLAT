@@ -146,7 +146,10 @@ public class MessageEditController extends FormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_forum_message_form");
+		
 		msgTitle = uifactory.addTextElement("msgTitle", "msg.title", 100, message.getTitle(), formLayout);
+		msgTitle.setElementCssClass("o_sel_forum_message_title");
 		msgTitle.setMandatory(true);
 		msgTitle.setNotEmptyCheck("error.field.not.empty");
 		msgBody = uifactory.addRichTextElementForStringData("msgBody", "msg.body", message.getBody(), 15, -1, true, null, null,

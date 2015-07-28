@@ -1,12 +1,13 @@
+<fieldset class="o_sel_maintenance_msg_form">
 #if ($infoEdit)
-	<h3>$r.translate("infomsgEdit")</h3>
+	<legend>$r.translate("infomsgEdit")</legend>
 	#if ($cluster)
 		$r.render("infoMsgFormCluster")
 	#else
 		$r.render("infoMsgForm")
 	#end
 #else
-	<h3>$r.translate("maintenancemsgEdit")</h3>
+	<legend>$r.translate("maintenancemsgEdit")</legend>
 	#if ($cluster)
 		$r.render("maintenanceMsgFormCluster")
 	#else
@@ -14,6 +15,7 @@
 	#end
 #end
 
-<h3>$r.translate("staticFolder")</h3>
+<h4>$r.translate("staticFolder")</h4>
 <div class="o_copy_code o_nowrap">$extlink</div>
 $r.render("staticFolder")
+</fieldset>

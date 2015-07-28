@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
@@ -192,21 +193,22 @@ public class EditMembershipController extends FormBasicController {
 			boolean managed = BusinessGroupManagedFlag.isManaged(group.getManagedFlags(), BusinessGroupManagedFlag.membersmanagement);
 			MemberOption option = new MemberOption(group);
 			BGPermission bgPermission = PermissionHelper.getPermission(group.getKey(), memberToLoad, groupMemberships);
-			option.setTutor(createSelection(bgPermission.isTutor(), !managed));
-			option.setParticipant(createSelection(bgPermission.isParticipant() || defaultMembership, !managed));
+			option.setTutor(createSelection(bgPermission.isTutor(), !managed, GroupRoles.coach.name()));
+			option.setParticipant(createSelection(bgPermission.isParticipant() || defaultMembership, !managed, GroupRoles.participant.name()));
 			boolean waitingListEnable = !managed && group.getWaitingListEnabled() != null && group.getWaitingListEnabled().booleanValue();
-			option.setWaiting(createSelection(bgPermission.isWaitingList(), waitingListEnable));
+			option.setWaiting(createSelection(bgPermission.isWaitingList(), waitingListEnable, GroupRoles.waiting.name()));
 			options.add(option);
 		}
 		
 		tableDataModel.setObjects(options);
 	}
 	
-	private MultipleSelectionElement createSelection(boolean selected, boolean enabled) {
+	private MultipleSelectionElement createSelection(boolean selected, boolean enabled, String role) {
 		String name = "cb" + UUID.randomUUID().toString().replace("-", "");
 		MultipleSelectionElement selection = new MultipleSelectionElementImpl(name, Layout.horizontal);
+		selection.setElementCssClass("o_sel_role");
 		selection.addActionListener(FormEvent.ONCHANGE);
-		selection.setKeysAndValues(keys, values);
+		selection.setKeysAndValues(keys, values, new String[]{ "o_sel_role_".concat(role) }, null);
 		flc.add(name, selection);
 		selection.select(keys[0], selected);
 		selection.setEnabled(enabled);

@@ -634,6 +634,8 @@ public class GTAWorkflowEditController extends FormBasicController {
 				} else {
 					chooseAreaButton.setI18nKey("create.areas");
 				}
+				cmc.deactivate();
+				cleanUp();
 				areaListEl.getRootForm().submit(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();

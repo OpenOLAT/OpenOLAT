@@ -58,6 +58,9 @@ public class CourseEditorPageFragment {
 	public static final By chooseScormButton = By.className("o_sel_scorm_choose_repofile");
 	public static final By choosePortfolioButton = By.className("o_sel_map_choose_repofile");
 	
+	public static final By changeNodeToolsMenu = By.cssSelector("ul.o_sel_course_editor_change_node");
+	public static final By changeNodeToolsMenuCaret = By.cssSelector("a.o_sel_course_editor_change_node");
+	
 	
 	public static final List<By> chooseRepoEntriesButtonList = new ArrayList<>();
 	static {
@@ -92,6 +95,35 @@ public class CourseEditorPageFragment {
 	public CourseEditorPageFragment selectRoot() {
 		By rootNodeBy = By.cssSelector("span.o_tree_link.o_tree_l0>a");
 		browser.findElement(rootNodeBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public EasyConditionConfigPage selectTabVisibility() {
+		By passwordTabBy = By.cssSelector("fieldset.o_sel_course_visibility_condition_form");
+		selectTab(passwordTabBy);
+		return new EasyConditionConfigPage(browser);
+	}
+	
+	/**
+	 * Select the tab where the password setting are
+	 * @return
+	 */
+	public CourseEditorPageFragment selectTabPassword() {
+		By passwordTabBy = By.cssSelector("fieldset.o_sel_course_node_password_config");
+		return selectTab(passwordTabBy);
+	}
+	
+	public CourseEditorPageFragment setPassword(String password) {
+		By switchBy = By.cssSelector(".o_sel_course_password_condition_switch input[type='checkbox']");
+		browser.findElement(switchBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By passwordBy = By.cssSelector(".o_sel_course_password_condition_value input[type='text']");
+		browser.findElement(passwordBy).sendKeys(password);
+		
+		By saveBy = By.cssSelector("fieldset.o_sel_course_node_password_config button.btn-primary");
+		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -206,6 +238,66 @@ public class CourseEditorPageFragment {
 		browser.findElement(saveButton).click();
 		OOGraphene.waitBusy(browser);
 		
+		return this;
+	}
+	
+	public String getRestUrl() {
+		By openerBy = By.cssSelector("a.o_opener");
+		browser.findElement(openerBy).click();
+
+		By urlBy = By.cssSelector("div.o_copy_code");
+		OOGraphene.waitElement(urlBy, browser);
+		
+		String url = null;
+		List<WebElement> urlEls = browser.findElements(urlBy);
+		for(WebElement urlEl:urlEls) {
+			String text = urlEl.getText();
+			if(text.contains("http")) {
+				url = text.trim();
+				break;
+			}
+		}
+		Assert.assertNotNull(url);
+		return url;
+	}
+	
+	public CourseEditorPageFragment moveUnder(String targetNodeTitle) {
+		if(!browser.findElement(changeNodeToolsMenu).isDisplayed()) {
+			openChangeNodeToolsMenu();
+		}
+		By changeNodeLinkBy = By.cssSelector("a.o_sel_course_editor_move_node");
+		browser.findElement(changeNodeLinkBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By targetNodeBy = By.xpath("//div[contains(@class,'o_tree_insert_tool')]//a[contains(@title,'" + targetNodeTitle + "')]");
+		browser.findElement(targetNodeBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By underBy = By.xpath("//div[contains(@class,'o_tree_insert_tool')]//a[i[contains(@class,'o_icon_node_under')]]");
+		browser.findElement(underBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By saveBy = By.cssSelector("div.modal-content div.o_button_group a.btn-primary");
+		browser.findElement(saveBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
+		return this;
+	}
+	
+	public CourseEditorPageFragment selectNode(String nodeTitle) {
+		By targetNodeBy = By.xpath("//div[contains(@class,'o_editor_menu')]//a[contains(@title,'" + nodeTitle + "')]");
+		browser.findElement(targetNodeBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	/**
+	 * Open the tools drop-down
+	 * @return
+	 */
+	public CourseEditorPageFragment openChangeNodeToolsMenu() {
+		browser.findElement(changeNodeToolsMenuCaret).click();
+		OOGraphene.waitElement(changeNodeToolsMenu, browser);
 		return this;
 	}
 	

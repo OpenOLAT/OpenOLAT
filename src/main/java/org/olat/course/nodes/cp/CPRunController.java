@@ -47,6 +47,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.course.editor.NodeEditController;
@@ -243,11 +244,14 @@ public class CPRunController extends BasicController implements ControllerEventL
 		}
 	}
 
-	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq) {
+	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, String selectedNodeId) {
 		NodeRunConstructionResult ncr;
 		if (isExternalMenuConfigured()) {
 			// integrate it into the olat menu
 			Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), this, cpNode, "o_cp_icon");
+			if(StringHelper.containsNonWhitespace(selectedNodeId) && treeModel.getNodeById(selectedNodeId) != null) {
+				selNodeId = selectedNodeId;
+			}
 			ncr = new NodeRunConstructionResult(ctrl, treeModel, selNodeId, treeNodeClickListener);
 		} else { // no menu to integrate
 			Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), this, cpNode, "o_cp_icon");

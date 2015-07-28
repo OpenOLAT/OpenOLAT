@@ -59,6 +59,11 @@ public class OOGraphene {
 			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
 	}
 	
+	public static void waitElementDisappears(By element, int timeoutInSeconds, WebDriver browser) {
+		Graphene.waitModel(browser).withTimeout(timeoutInSeconds, TimeUnit.SECONDS)
+			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().not().present();
+	}
+	
 	public static void waitElement(WebElement element, WebDriver browser) {
 		Graphene.waitModel(browser).pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
 	}

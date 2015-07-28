@@ -299,10 +299,12 @@ public class EditorMainController extends MainLayoutBasicController implements G
 
 				nodeTools = new Dropdown("insertNodes", NLS_COMMAND_DELETENODE_HEADER, false, getTranslator());
 				nodeTools.setIconCSS("o_icon o_icon_customize");
+				nodeTools.setElementCssClass("o_sel_course_editor_change_node");
 
 				deleteNodeLink = LinkFactory.createToolLink(CMD_DELNODE, translate(NLS_COMMAND_DELETENODE), this, "o_icon_delete_item");
 				nodeTools.addComponent(deleteNodeLink);
 				moveNodeLink = LinkFactory.createToolLink(CMD_MOVENODE, translate(NLS_COMMAND_MOVENODE), this, "o_icon_move");
+				moveNodeLink.setElementCssClass("o_sel_course_editor_move_node");
 				nodeTools.addComponent(moveNodeLink);
 				copyNodeLink = LinkFactory.createToolLink(CMD_COPYNODE, translate(NLS_COMMAND_COPYNODE), this, "o_icon_copy");
 				nodeTools.addComponent(copyNodeLink);

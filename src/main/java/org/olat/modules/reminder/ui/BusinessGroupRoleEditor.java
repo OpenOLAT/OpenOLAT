@@ -68,6 +68,7 @@ public class BusinessGroupRoleEditor extends RuleEditorFragment {
 				.createCustomFormLayout(".".concat(id), formLayout.getTranslator(), page);
 		ruleCont.setRootForm(formLayout.getRootForm());
 		formLayout.add(ruleCont);
+		ruleCont.getFormItemComponent().contextPut("id", id);
 		
 		String currentKey = null;
 		if(rule instanceof ReminderRuleImpl) {
@@ -89,7 +90,7 @@ public class BusinessGroupRoleEditor extends RuleEditorFragment {
 			values[count++] = businessGroup.getName();
 		}
 		
-		groupEl = uifactory.addDropdownSingleselect("ruleElement", null, ruleCont, keys, values, null);
+		groupEl = uifactory.addDropdownSingleselect("ruleElement.".concat(id), null, ruleCont, keys, values, null);
 		if(selectedKey != null) {
 			groupEl.select(selectedKey, true);
 		}

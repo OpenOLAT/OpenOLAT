@@ -1,6 +1,6 @@
 <div class='form-inline'>
-	$r.render("user.prop") $r.render("user.value")
-	#if($f.hasError("user.value"))
-		<br/>$r.render("user.value_ERROR")
+	$r.render("user.prop.${id}") $r.render("user.value.${id}")
+	#if($f.hasError("user.value.${id}"))
+		<br/>$r.render("user.value.${id}_ERROR")
 	#end
 </div>

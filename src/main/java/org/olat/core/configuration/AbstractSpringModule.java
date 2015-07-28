@@ -19,6 +19,8 @@
  */
 package org.olat.core.configuration;
 
+import java.util.Properties;
+
 import org.olat.core.gui.control.Event;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -93,6 +95,10 @@ public abstract class AbstractSpringModule implements GenericEventListener, Init
 	 * cluster node). The properties have been reloaded prior to when this method is executed.
 	 */
 	protected abstract void initFromChangedProperties();
+	
+	protected Properties createPropertiesFromPersistedProperties() {
+		return moduleConfigProperties.createPropertiesFromPersistedProperties();
+	}
 
 	/**
 	 * Return a string value for certain propertyName-parameter.

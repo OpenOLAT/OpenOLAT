@@ -56,6 +56,8 @@ public class LoginPage {
 	public static final By resumeButton = By.className("o_sel_resume_yes");	
 	public static final By usernameFooterBy = By.id("o_username");
 	
+	public static final By maintenanceMessageBy = By.cssSelector("#o_msg_sticky p");
+	
 	@Drone
 	private WebDriver browser;
 	
@@ -85,6 +87,23 @@ public class LoginPage {
 		Assert.assertTrue(username.isDisplayed());
 		String name = username.getText();
 		Assert.assertTrue(name.contains(lastName));
+	}
+	
+	public LoginPage assertOnMaintenanceMessage(String text) {
+		WebElement messageEl = browser.findElement(maintenanceMessageBy);
+		String message = messageEl.getText();
+		Assert.assertTrue(message.contains(text));
+		return this;
+	}
+	
+	public LoginPage waitOnMaintenanceMessage(String text) {
+		OOGraphene.waitElement(maintenanceMessageBy, 10, browser);
+		return assertOnMaintenanceMessage(text);
+	}
+	
+	public LoginPage waitOnMaintenanceMessageCleared() {
+		OOGraphene.waitElementDisappears(maintenanceMessageBy, 10, browser);
+		return this;
 	}
 	
 	/**
