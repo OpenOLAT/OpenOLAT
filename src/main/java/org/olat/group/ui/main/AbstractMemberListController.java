@@ -217,6 +217,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		membersTable.setAndLoadPersistedPreferences(ureq, this.getClass().getSimpleName());
 		membersTable.setSearchEnabled(true);
 		membersTable.setExportEnabled(true);
+		membersTable.setSelectAllEnable(true);
 
 		if(!globallyManaged) {
 			editButton = uifactory.addFormLink("edit.members", formLayout, Link.BUTTON);
