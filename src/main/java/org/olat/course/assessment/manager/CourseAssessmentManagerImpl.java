@@ -225,13 +225,56 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		assessmentEntry.setPassed(passed);
 		assessmentEntry.setFullyAssessed(scoreEvaluation.getFullyAssessed());
 		assessmentEntry.setAssessmentId(assessmentId);
+		Integer attempts = null;
 		if(incrementUserAttempts) {
-			int attempts = assessmentEntry.getAttempts() == null ? 1 :assessmentEntry.getAttempts().intValue() + 1;
+			attempts = assessmentEntry.getAttempts() == null ? 1 :assessmentEntry.getAttempts().intValue() + 1;
 			assessmentEntry.setAttempts(attempts);
 		}
 		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
 		
+		// node log
+		UserNodeAuditManager am = course.getCourseEnvironment().getAuditManager();
+		am.appendToUserNodeLog(courseNode, identity, assessedIdentity,  "score set to: " + String.valueOf(scoreEvaluation.getScore()));
+		if(scoreEvaluation.getPassed()!=null) {
+			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "passed set to: " + scoreEvaluation.getPassed().toString());
+		} else {
+			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "passed set to \"undefined\"");
+		}
+		if(scoreEvaluation.getAssessmentID()!=null) {
+			am.appendToUserNodeLog(courseNode, assessedIdentity, assessedIdentity, "assessmentId set to: " + scoreEvaluation.getAssessmentID().toString());
+		}
 		
+		// notify about changes
+		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_SCORE_EVAL_CHANGED, assessedIdentity);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
+		
+		// user activity logging
+		if (scoreEvaluation.getScore()!=null) {
+			ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_SCORE_UPDATED, 
+					getClass(), 
+					LoggingResourceable.wrap(assessedIdentity), 
+					LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiScore, "", String.valueOf(scoreEvaluation.getScore())));
+		}
+
+		if (scoreEvaluation.getPassed()!=null) {
+			ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_PASSED_UPDATED, 
+					getClass(), 
+					LoggingResourceable.wrap(assessedIdentity), 
+					LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiPassed, "", String.valueOf(scoreEvaluation.getPassed())));
+		} else {
+			ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_PASSED_UPDATED, 
+					getClass(), 
+					LoggingResourceable.wrap(assessedIdentity), 
+					LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiPassed, "", "undefined"));
+		}
+
+		if (incrementUserAttempts && attempts!=null) {
+			ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_ATTEMPTS_UPDATED, 
+					getClass(), 
+					LoggingResourceable.wrap(identity), 
+					LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiAttempts, "", String.valueOf(attempts)));	
+		}
+				
 		if(courseNode instanceof AssessableCourseNode) {
 			userCourseEnv.getScoreAccounting().scoreInfoChanged((AssessableCourseNode)courseNode, scoreEvaluation);
 			// Update users efficiency statement
