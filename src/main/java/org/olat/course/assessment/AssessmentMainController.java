@@ -1309,6 +1309,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			gtn.setTitle(translate("menu.bulkfocus"));
 			gtn.setUserObject(CMD_BULKFOCUS);
 			gtn.setAltText(translate("menu.bulkfocus.alt"));
+			gtn.setCssClass("o_sel_assessment_tool_bulk");
 			root.addChild(gtn);
 			
 			if(callback.mayRecalculateEfficiencyStatements()) {

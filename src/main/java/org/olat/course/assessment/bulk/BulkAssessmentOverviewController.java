@@ -104,6 +104,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		newButton = uifactory.addFormLink("new.bulk", formLayout, Link.BUTTON);
+		newButton.setElementCssClass("o_sel_assessment_tool_new_bulk_assessment");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.taskStatus", Cols.taskStatus.ordinal(),
