@@ -336,7 +336,7 @@ public class SystemTest extends OlatJerseyTestCase {
 		assertTrue(memoryInfos.getCommittedHeap() > 0);
 		assertTrue(memoryInfos.getCommittedNonHeap() > 0);
 		assertTrue(memoryInfos.getMaxHeap() > 0);
-		assertTrue(memoryInfos.getMaxNonHeap() > 0);
+		assertTrue(memoryInfos.getMaxNonHeap() >= 0);
 
 		conn.shutdown();	
 	}
