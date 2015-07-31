@@ -156,6 +156,9 @@ public class StaticServlet extends HttpServlet {
 				path = path.substring(path.indexOf("/static/themes/") + 15);
 				staticFile = new File(customThemesDir, path);
 				expiration &= false;//themes can be update any time
+			} else if(normalizedRelPath.contains("/js/images/ui-")) {
+				normalizedRelPath = normalizedRelPath.replace("/js/images/ui-", "/js/jquery/ui/images/ui-");
+				staticFile = new File(staticAbsPath, normalizedRelPath);
 			}
 			
 			// only serve if file exists
