@@ -106,7 +106,7 @@
 	
 	<namedCache name="Velocity@templates">
 		<locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
-		<eviction maxEntries="1000" strategy="LIRS"/>
+		<eviction maxEntries="7700" strategy="LRU"/>
 		<expiration lifespan="-1" maxIdle="-1" wakeUpInterval="0"/>
 		<transaction transactionMode="NON_TRANSACTIONAL" />
 	</namedCache>
