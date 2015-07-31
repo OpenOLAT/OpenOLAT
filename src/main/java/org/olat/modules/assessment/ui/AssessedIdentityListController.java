@@ -206,13 +206,20 @@ public class AssessedIdentityListController extends FormBasicController implemen
 	}
 	
 	private void doSelectUser(UserRequest ureq, AssessedIdentityRow row) {
-		ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
-		IdentityAssessmentEditController userController = new IdentityAssessmentEditController(getWindowControl(), ureq,
+		
+		Controller userController;
+		if("CourseModule".equalsIgnoreCase(entry.getOlatResource().getResourceableTypeName())) {
+			ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+			userController = new IdentityAssessmentEditController(getWindowControl(), ureq,
 				stackPanel, assessedIdentity, course, true, false, true);
-		listenTo(userController);
-		String fullname = userManager.getUserDisplayName(assessedIdentity);
-		stackPanel.pushController(fullname, userController);
+			
+			listenTo(userController);
+			String fullname = userManager.getUserDisplayName(assessedIdentity);
+			stackPanel.pushController(fullname, userController);
+		} else {
+			getWindowControl().setWarning("Not implemented");
+		}
 	}
 
 	public static class AssessedUserTableModel extends DefaultFlexiTableDataModel<AssessedIdentityRow> implements SortableFlexiTableDataModel<AssessedIdentityRow> {
