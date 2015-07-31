@@ -26,7 +26,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -39,7 +38,7 @@ import org.olat.modules.scorm.ScormDirectoryHelper;
 import org.olat.modules.scorm.server.servermodels.ScoDocument;
 
 
-public class ScormExportManager extends BasicManager {
+public class ScormExportManager {
 	private static final String CMI_OBJECTIVES = "cmi.objectives.";
 	private static final String CMI_INTERACTIONS = "cmi.interactions.";
 	private static final String CMI_RAW_SCORE = "cmi.core.score.raw";
@@ -79,9 +78,9 @@ public class ScormExportManager extends BasicManager {
 	 * @return the name of the file, if any created or empty string otherwise
 	 */
 	public String getResults(CourseEnvironment courseEnv, ScormCourseNode node, Translator translator) {
-		ScormExportVisitor visitor = new ScormExportFormatter(translator);
-		String content = visitor.toString();
-		return content;
+		ScormExportFormatter visitor = new ScormExportFormatter(translator);
+		visitScoDatas(courseEnv, node, visitor);
+		return visitor.export();
 	}
 	
 	/**
