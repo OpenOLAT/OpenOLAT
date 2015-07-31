@@ -79,7 +79,7 @@ public class ScormExportManager {
 	 */
 	public String getResults(CourseEnvironment courseEnv, ScormCourseNode node, Translator translator) {
 		ScormExportFormatter visitor = new ScormExportFormatter(translator);
-		visitScoDatas(courseEnv, (ScormCourseNode)node, visitor);
+		visitScoDatas(courseEnv, node, visitor);
 		return visitor.export();
 	}
 	
