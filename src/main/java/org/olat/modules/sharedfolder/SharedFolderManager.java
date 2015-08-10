@@ -80,7 +80,8 @@ public class SharedFolderManager {
 		if(urlCompliant) {
 			name = RequestUtil.normalizeFilename(name);
 		}
-		return new OlatNamedContainerImpl(name, getSharedFolder(re.getOlatResource()));
+		OlatRootFolderImpl folder = getSharedFolder(re.getOlatResource());
+		return folder == null ? null : new OlatNamedContainerImpl(name, folder);
 	}
 
 	public OlatRootFolderImpl getSharedFolder(OLATResourceable res) {

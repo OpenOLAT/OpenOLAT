@@ -212,9 +212,8 @@ public class SharedFolderHandler implements RepositoryHandler {
 	public boolean cleanupOnDelete(OLATResourceable res) {
 		// do not need to notify all current users of this resource, since the only
 		// way to access this resource
-		// FIXME:fj:c to be perfect, still need to notify
-		// repositorydetailscontroller and searchresultcontroller....
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new OLATResourceableJustBeforeDeletedEvent(res), res);
+		DBFactory.getInstance().commitAndCloseSession();
 		SharedFolderManager.getInstance().deleteSharedFolder(res);
 		return true;
 	}
