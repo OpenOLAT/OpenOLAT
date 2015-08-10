@@ -248,11 +248,13 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		
 		if(select) {
 			tableEl.setMultiSelect(true);
+			tableEl.setSelectAllEnable(true);
 			selectButton = uifactory.addFormLink("select", TABLE_ACTION_SELECT, "select", null, formLayout, Link.BUTTON);
 		}
 
 		if(adminTools) {
 			tableEl.setMultiSelect(true);
+			tableEl.setSelectAllEnable(true);
 			
 			boolean canCreateGroup = canCreateBusinessGroup(ureq);
 			if(canCreateGroup) {
