@@ -61,6 +61,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
+import org.olat.repository.ui.CorruptedCourseController;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
@@ -143,6 +144,7 @@ public class SharedFolderHandler implements RepositoryHandler {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getCreateWizardController(org.olat.core.id.OLATResourceable, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
+	@Override
 	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		throw new AssertException("Trying to get wizard where no creation wizard is provided for this type.");
 	}
@@ -170,13 +172,18 @@ public class SharedFolderHandler implements RepositoryHandler {
 							RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
 						OLATResource res = entry.getOlatResource();
 						VFSContainer sfContainer = SharedFolderManager.getInstance().getSharedFolder(res);
-						boolean canEdit = security.isEntryAdmin() || security.isCourseCoach();
+						
 						Controller sfdCtr;
-						if(canEdit) {
-							sfdCtr = new SharedFolderEditorController(entry, uureq, wwControl);
+						if(sfContainer == null || !sfContainer.exists()) {
+							sfdCtr = new CorruptedCourseController(uureq, wwControl);
 						} else {
-							sfdCtr = new SharedFolderDisplayController(uureq, wwControl, sfContainer, res);
-						}	
+							boolean canEdit = security.isEntryAdmin() || security.isCourseCoach();
+							if(canEdit) {
+								sfdCtr = new SharedFolderEditorController(entry, uureq, wwControl);
+							} else {
+								sfdCtr = new SharedFolderDisplayController(uureq, wwControl, sfContainer, res);
+							}
+						}
 						return sfdCtr;
 					}
 			});
