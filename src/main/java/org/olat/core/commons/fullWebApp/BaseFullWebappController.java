@@ -894,7 +894,9 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 
 	@Override
 	public boolean wishAsyncReload(UserRequest ureq, boolean erase) {
-		return checkAssessmentGuard(ureq, lockMode);
+		boolean screen = getScreenMode().wishScreenModeSwitch(erase);
+		boolean l = checkAssessmentGuard(ureq, lockMode);
+		return screen || l; 
 	}
 
 	@Override

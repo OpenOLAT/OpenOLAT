@@ -64,8 +64,10 @@ public class SharedFolderWebDAVMergeSource extends WebDAVMergeSource {
 		List<RepositoryEntry> ownerEntries = repoManager.queryByMembership(getIdentity(), true, true, false, SharedFolderFileResource.TYPE_NAME);
 		for (RepositoryEntry entry : ownerEntries) {
 			VFSContainer container = sfm.getNamedSharedFolder(entry, true);
-			addContainerToList(container, containers);
-			addedEntries.add(entry.getKey());
+			if(container != null) {
+				addContainerToList(container, containers);
+				addedEntries.add(entry.getKey());
+			}
 		}
 		
 		List<RepositoryEntry> participantEntries = repoManager.queryByMembership(getIdentity(), false, false, true, SharedFolderFileResource.TYPE_NAME);
@@ -111,9 +113,11 @@ public class SharedFolderWebDAVMergeSource extends WebDAVMergeSource {
 		if (!addedEntries.contains(entry.getKey())) {
 			// add the entry (readonly)
 			VFSContainer folder = sfm.getNamedSharedFolder(entry, true);
-			folder.setLocalSecurityCallback(readOnlyCallback);
-			addContainerToList(folder, containers);
-			addedEntries.add(entry.getKey());
+			if(folder != null) {
+				folder.setLocalSecurityCallback(readOnlyCallback);
+				addContainerToList(folder, containers);
+				addedEntries.add(entry.getKey());
+			}
 		}
 	}
 	
