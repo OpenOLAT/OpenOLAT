@@ -27,8 +27,19 @@ package org.olat.course.nodes.gta;
  */
 public enum GTARelativeToDates {
 	
-	courseStart,// relative to course start defined by a life-cycle
-	courseLaunch,// relative to the course launch by a user
-	enrollment//relative to the enrollment date
+	courseStart("relative.to.course.start"),// relative to course start defined by a life-cycle
+	courseLaunch("relative.to.course.launch"),// relative to the course launch by a user
+	enrollment("relative.to.enrollment"),//relative to the enrollment date
+	assignment("relative.to.assignment");
+	
+	private final String i18n;
+	
+	private GTARelativeToDates(String i18n) {
+		this.i18n = i18n;
+	}
+	
+	public String i18nKey() {
+		return i18n;
+	}
 
 }

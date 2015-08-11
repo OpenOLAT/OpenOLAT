@@ -27,6 +27,8 @@
 		<h4 class="o_title" > <a href="#o_step_assignement_content" data-toggle="collapse" aria-expanded="$collapse_assignement">$r.translate("run.assignment.title")</a></h4>
 		#if($assignmentDueDate)
 			<div class="o_meta">$r.translate("run.assignment.due.date", $assignmentDueDate)</div>
+		#elseif($assignmentDueDateMsg)
+			<div class="o_meta">$r.escapeHtml($assignmentDueDateMsg)</div>
 		#end
 		<div id="o_step_assignement_content" class="o_content collapse #if($collapse_assignement) in #end" aria-expanded="$collapse_assignement">
 			#if($assignmentClosed)
@@ -57,6 +59,8 @@
 		<h4 class="o_title"> <a href="#o_step_submit_content" data-toggle="collapse" aria-expanded="$collapse_submit">$r.translate("run.submit")</a></h4>
 		#if($submitDueDate)
 			<div class="o_meta">$r.translate("run.submit.due.date", $submitDueDate)</div>
+		#elseif($submitDueDateMsg)
+			<div class="o_meta">$r.escapeHtml($submitDueDateMsg)</div>
 		#end
 		<div id="o_step_submit_content" class="o_content collapse #if($collapse_submit) in #end" aria-expanded="$collapse_submit">
 			#if($r.available("submitDocs"))
@@ -133,6 +137,8 @@
 		<h4 class="o_title"> <a href="#o_step_solution_content" data-toggle="collapse" aria-expanded="$collapse_solution">$r.translate("run.solution")</a></h4>
 		#if($solutionAvailableDate)
 			<div class="o_meta">$r.translate("run.solution.available.date", $solutionAvailableDate)</div>
+		#elseif($solutionAvailableDateMsg)
+			<div class="o_meta">$r.escapeHtml($solutionAvailableDateMsg)</div>
 		#end
 		<div id="o_step_solution_content" class="o_content collapse #if($collapse_solution) in #end" aria-expanded="$collapse_solution">
 			#if($r.available("solutions"))

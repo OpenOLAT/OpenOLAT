@@ -147,8 +147,8 @@ public class GTAParticipantController extends GTAAbstractController {
 			}
 			
 			//assignment open?
-			Date dueDate = getAssignementDueDate();
-			if(dueDate != null && dueDate.compareTo(new Date()) < 0) {
+			DueDate dueDate = getAssignementDueDate(assignedTask);
+			if(dueDate != null && dueDate.getDueDate() != null && dueDate.getDueDate().compareTo(new Date()) < 0) {
 				//assignment is closed
 				mainVC.contextPut("assignmentClosed", Boolean.TRUE);
 			} else {
@@ -473,25 +473,26 @@ public class GTAParticipantController extends GTAAbstractController {
 				mainVC.contextPut("solutionCssClass", "");
 			} else if(assignedTask.getTaskStatus() == TaskProcess.solution) {
 				mainVC.contextPut("solutionCssClass", "o_active");
-				setSolutions(ureq);
+				setSolutions(ureq, assignedTask);
 			} else {
 				mainVC.contextPut("solutionCssClass", "o_done");
-				setSolutions(ureq);
+				setSolutions(ureq, assignedTask);
 			}	
 		} else if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.solution){
 			mainVC.contextPut("solutionCssClass", "o_active");
-			setSolutions(ureq);
+			setSolutions(ureq, assignedTask);
 		} else {
 			mainVC.contextPut("solutionCssClass", "o_done");
-			setSolutions(ureq);
+			setSolutions(ureq, assignedTask);
 		}
 		
 		return assignedTask;
 	}
 	
-	private void setSolutions(UserRequest ureq) {
-		Date availableDate = getSolutionDueDate();
-		boolean visible = availableDate == null || availableDate.compareTo(new Date()) <= 0;
+	private void setSolutions(UserRequest ureq, Task assignedTask) {
+		DueDate availableDate = getSolutionDueDate(assignedTask);
+		boolean visible = availableDate == null || 
+				(availableDate.getDueDate() != null && availableDate.getDueDate().compareTo(new Date()) <= 0);
 		if(visible) {
 			File documentsDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);
 			VFSContainer documentsContainer = gtaManager.getSolutionsContainer(courseEnv, gtaNode);
@@ -608,6 +609,7 @@ public class GTAParticipantController extends GTAAbstractController {
 		if(availableTaskCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				cleanUpProcess();
+				resetDueDates();
 				process(ureq);
 			}
 		} else if(revisionDocumentsCtrl == source) {
@@ -645,6 +647,8 @@ public class GTAParticipantController extends GTAAbstractController {
 	 * Remove all the stuff in the main velocity template, discard all controllers
 	 */
 	private void cleanUpProcess() {
+		
+		
 		if(availableTaskCtrl != null) {
 			mainVC.remove(availableTaskCtrl.getInitialComponent());
 		}

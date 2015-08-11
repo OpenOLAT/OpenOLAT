@@ -28,6 +28,7 @@ import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.logging.LogDelegator;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
@@ -107,7 +108,7 @@ public class CustomCSS extends LogDelegator implements Disposable {
 		} else {
 			// Add classname to the file path to remove conflicts with other
 			// usages of the same file path
-			mapperID = this.getClass().getSimpleName() + ":" + mapperID + System.currentTimeMillis();
+			mapperID = this.getClass().getSimpleName() + ":" + mapperID + CodeHelper.getRAMUniqueID();
 			mapperKey = CoreSpringFactory.getImpl(MapperService.class).register(uSess, mapperID, cssUriMapper);
 		}
 		return mapperKey;
@@ -147,6 +148,11 @@ public class CustomCSS extends LogDelegator implements Disposable {
 		} else {
 			return getCSSURL();
 		}
+	}
+
+	@Override
+	public String toString() {
+		return "customCss[url=" + cssUriMapperKey.getUrl() + "]" + super.toString();
 	}
 
 	/**
