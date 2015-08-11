@@ -45,6 +45,8 @@ public interface TaskLight {
 	
 	public String getTaskName();
 	
+	public Date getAssignmentDate();
+	
 	public Long getIdentityKey();
 	
 	public Long getBusinessGroupKey();

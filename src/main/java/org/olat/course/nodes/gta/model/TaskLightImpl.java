@@ -67,6 +67,10 @@ public class TaskLightImpl implements TaskLight, CreateInfo, Persistable, Modifi
 	@Column(name="lastmodified", nullable=false, insertable=false, updatable=false)
 	private Date lastModified;
 	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_assignment_date", nullable=true, insertable=true, updatable=true)
+	private Date assignmentDate;
+	
 	@Column(name="g_status", nullable=false, insertable=false, updatable=false)
 	private String status;
 	
@@ -151,6 +155,15 @@ public class TaskLightImpl implements TaskLight, CreateInfo, Persistable, Modifi
 
 	public void setTaskName(String taskName) {
 		this.taskName = taskName;
+	}
+
+	@Override
+	public Date getAssignmentDate() {
+		return assignmentDate;
+	}
+
+	public void setAssignmentDate(Date assignmentDate) {
+		this.assignmentDate = assignmentDate;
 	}
 
 	@Override

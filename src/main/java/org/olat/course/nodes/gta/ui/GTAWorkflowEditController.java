@@ -70,8 +70,6 @@ public class GTAWorkflowEditController extends FormBasicController {
 	
 	private static final String[] keys = new String[]{ "on" };
 	private static final String[] executionKeys = new String[]{ GTAType.group.name(), GTAType.individual.name() };
-	private final String[] relativeDatesKeys;
-	private final String[] relativeDatesValues;
 	
 	private CloseableModalController cmc;
 	private DialogBoxController confirmChangesCtrl;
@@ -92,6 +90,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private final CourseEditorEnv courseEditorEnv;
 	private List<Long> areaKeys;
 	private List<Long> groupKeys;
+	private final RepositoryEntry courseRe;
 	
 	@Autowired
 	private GTAManager gtaManager;
@@ -109,30 +108,9 @@ public class GTAWorkflowEditController extends FormBasicController {
 		this.courseEditorEnv = courseEditorEnv;
 		
 		//reload to make sure we have the last changes
-		RepositoryEntry re = repositoryService
+		courseRe = repositoryService
 				.loadByKey(courseEditorEnv.getCourseGroupManager().getCourseEntry().getKey());
-		if(re.getLifecycle() != null && re.getLifecycle().getValidFrom() != null) {
-			Date validFrom = re.getLifecycle().getValidFrom();
-			String from = Formatter.getInstance(getLocale()).formatDate(validFrom);
-			
-			relativeDatesKeys = new String[] {
-				GTARelativeToDates.courseStart.name(), GTARelativeToDates.courseLaunch.name(),
-				GTARelativeToDates.enrollment.name()
-			};
-			relativeDatesValues = new String[] {
-				translate("relative.to.course.start", new String[]{ from }),
-				translate("relative.to.course.launch"),
-				translate("relative.to.enrollment")
-			};
-		} else {
-			relativeDatesKeys = new String[]{
-				GTARelativeToDates.courseLaunch.name(), GTARelativeToDates.enrollment.name()
-			};
-			relativeDatesValues = new String[] {
-				translate("relative.to.course.launch"), translate("relative.to.enrollment")
-			};
-		}
-
+		
 		initForm(ureq);
 	}
 
@@ -251,13 +229,15 @@ public class GTAWorkflowEditController extends FormBasicController {
 		assignementDeadlineDaysEl = uifactory.addTextElement("assignment.numOfDays", null, 4, assignmentNumOfDays, assignmentRelDeadlineCont);
 		assignementDeadlineDaysEl.setDisplaySize(4);
 		assignementDeadlineDaysEl.setDomReplacementWrapperRequired(false);
+		RelativeDateKeysAndValues assignmentKeysAndValues = getRelativesDatesOption(true);
 		assignementDeadlineRelToEl = uifactory
-				.addDropdownSingleselect("assignmentrelativeto", "assignment.relative.to", null, assignmentRelDeadlineCont, relativeDatesKeys, relativeDatesValues, null);
+				.addDropdownSingleselect("assignmentrelativeto", "assignment.relative.to", null, assignmentRelDeadlineCont,
+						assignmentKeysAndValues.getKeys(), assignmentKeysAndValues.getValues(), null);
 		assignementDeadlineRelToEl.setDomReplacementWrapperRequired(false);
 		
 		boolean found = false;
 		if(StringHelper.containsNonWhitespace(assignmentRelativeTo)) {
-			for(String relativeDatesKey:relativeDatesKeys) {
+			for(String relativeDatesKey:assignmentKeysAndValues.getKeys()) {
 				if(relativeDatesKey.equals(assignmentRelativeTo)) {
 					assignementDeadlineRelToEl.select(relativeDatesKey, true);
 					found = true;
@@ -265,7 +245,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 			}
 		}
 		if(!found) {
-			assignementDeadlineRelToEl.select(relativeDatesKeys[0], true);
+			assignementDeadlineRelToEl.select(assignmentKeysAndValues.getKeys()[0], true);
 		}
 		
 		uifactory.addSpacerElement("s2", stepsCont, true);
@@ -296,12 +276,14 @@ public class GTAWorkflowEditController extends FormBasicController {
 		submissionDeadlineDaysEl = uifactory.addTextElement("submit.numOfDays", null, 4, submitRelDays, submissionRelDeadlineCont);
 		submissionDeadlineDaysEl.setDomReplacementWrapperRequired(false);
 		submissionDeadlineDaysEl.setDisplaySize(4);
+		RelativeDateKeysAndValues submissionKeysAndValues = getRelativesDatesOption(false);
 		submissionDeadlineRelToEl = uifactory
-				.addDropdownSingleselect("submitrelativeto", "submit.relative.to", null, submissionRelDeadlineCont, relativeDatesKeys, relativeDatesValues, null);
+				.addDropdownSingleselect("submitrelativeto", "submit.relative.to", null, submissionRelDeadlineCont,
+						submissionKeysAndValues.getKeys(), submissionKeysAndValues.getValues(), null);
 		submissionDeadlineRelToEl.setDomReplacementWrapperRequired(false);
 		found = false;
 		if(StringHelper.containsNonWhitespace(submitRelTo)) {
-			for(String relativeDatesKey:relativeDatesKeys) {
+			for(String relativeDatesKey:submissionKeysAndValues.getKeys()) {
 				if(relativeDatesKey.equals(submitRelTo)) {
 					submissionDeadlineRelToEl.select(relativeDatesKey, true);
 					found = true;
@@ -309,7 +291,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 			}
 		}
 		if(!found) {
-			submissionDeadlineRelToEl.select(relativeDatesKeys[0], true);
+			submissionDeadlineRelToEl.select(submissionKeysAndValues.getKeys()[0], true);
 		}
 		
 		uifactory.addSpacerElement("s3", stepsCont, true);
@@ -357,12 +339,14 @@ public class GTAWorkflowEditController extends FormBasicController {
 		solutionVisibleRelDaysEl = uifactory.addTextElement("solution.numOfDays", null, 4, solutionRelDays, solutionVisibleRelCont);
 		solutionVisibleRelDaysEl.setDisplaySize(4);
 		solutionVisibleRelDaysEl.setDomReplacementWrapperRequired(false);
+		RelativeDateKeysAndValues solutionKeysAndValues = getRelativesDatesOption(false);
 		solutionVisibleRelToEl = uifactory
-				.addDropdownSingleselect("solutionrelativeto", "solution.relative.to", null, solutionVisibleRelCont, relativeDatesKeys, relativeDatesValues, null);
+				.addDropdownSingleselect("solutionrelativeto", "solution.relative.to", null, solutionVisibleRelCont,
+						solutionKeysAndValues.getKeys(), solutionKeysAndValues.getValues(), null);
 		solutionVisibleRelToEl.setDomReplacementWrapperRequired(false);
 		found = false;
 		if(StringHelper.containsNonWhitespace(solutionRelTo)) {
-			for(String relativeDatesKey:relativeDatesKeys) {
+			for(String relativeDatesKey:solutionKeysAndValues.getKeys()) {
 				if(relativeDatesKey.equals(solutionRelTo)) {
 					solutionVisibleRelToEl.select(relativeDatesKey, true);
 					found = true;
@@ -370,7 +354,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 			}
 		}
 		if(!found) {
-			solutionVisibleRelToEl.select(relativeDatesKeys[0], true);
+			solutionVisibleRelToEl.select(solutionKeysAndValues.getKeys()[0], true);
 		}
 		
 		uifactory.addSpacerElement("s5", stepsCont, true);
@@ -581,24 +565,59 @@ public class GTAWorkflowEditController extends FormBasicController {
 	}
 	
 	private void updateAssignmentDeadline() {
-		boolean userRelativeDate = relativeDatesEl.isAtLeastSelected(1);
+		boolean useRelativeDate = relativeDatesEl.isAtLeastSelected(1);
 		boolean assignment = taskAssignmentEl.isAtLeastSelected(1);
-		assignmentDeadlineEl.setVisible(assignment && !userRelativeDate);
-		assignmentRelDeadlineCont.setVisible(assignment && userRelativeDate);
+		assignmentDeadlineEl.setVisible(assignment && !useRelativeDate);
+		assignmentRelDeadlineCont.setVisible(assignment && useRelativeDate);
+		RelativeDateKeysAndValues keysAndValues = getRelativesDatesOption(true);
+		assignementDeadlineRelToEl.setKeysAndValues(keysAndValues.getKeys(), keysAndValues.getValues(), null);
 	}
 	
 	private void updateSubmissionDeadline() {
-		boolean userRelativeDate = relativeDatesEl.isAtLeastSelected(1);
+		boolean useRelativeDate = relativeDatesEl.isAtLeastSelected(1);
 		boolean submit = submissionEl.isAtLeastSelected(1);
-		submissionDeadlineEl.setVisible(submit && !userRelativeDate);
-		submissionRelDeadlineCont.setVisible(submit && userRelativeDate);
+		submissionDeadlineEl.setVisible(submit && !useRelativeDate);
+		submissionRelDeadlineCont.setVisible(submit && useRelativeDate);
+		RelativeDateKeysAndValues keysAndValues = getRelativesDatesOption(false);
+		submissionDeadlineRelToEl.setKeysAndValues(keysAndValues.getKeys(), keysAndValues.getValues(), null);
 	}
 	
 	private void updateSolutionDeadline() {
-		boolean userRelativeDate = relativeDatesEl.isAtLeastSelected(1);
+		boolean useRelativeDate = relativeDatesEl.isAtLeastSelected(1);
 		boolean solution = sampleEl.isAtLeastSelected(1);
-		solutionVisibleAfterEl.setVisible(solution && !userRelativeDate);
-		solutionVisibleRelCont.setVisible(solution && userRelativeDate);
+		solutionVisibleAfterEl.setVisible(solution && !useRelativeDate);
+		solutionVisibleRelCont.setVisible(solution && useRelativeDate);
+		RelativeDateKeysAndValues keysAndValues = getRelativesDatesOption(false);
+		solutionVisibleRelToEl.setKeysAndValues(keysAndValues.getKeys(), keysAndValues.getValues(), null);
+	}
+	
+	private RelativeDateKeysAndValues getRelativesDatesOption(boolean excludeAssignment) {
+		List<String> optionKeys = new ArrayList<>(4);
+		List<String> optionValues = new ArrayList<>(4);
+		
+		if(courseRe.getLifecycle() != null && courseRe.getLifecycle().getValidFrom() != null) {
+			Date validFrom = courseRe.getLifecycle().getValidFrom();
+			String from = Formatter.getInstance(getLocale()).formatDate(validFrom);
+			optionKeys.add(GTARelativeToDates.courseStart.name());
+			optionValues.add(translate("relative.to.course.start", new String[]{ from }));
+		}
+		
+		optionKeys.add(GTARelativeToDates.courseLaunch.name());
+		optionValues.add(translate("relative.to.course.launch"));
+		optionKeys.add(GTARelativeToDates.enrollment.name());
+		optionValues.add(translate("relative.to.enrollment"));
+		
+		if(!excludeAssignment) {
+			boolean assignment = taskAssignmentEl.isAtLeastSelected(1);
+			if(assignment) {
+				optionKeys.add(GTARelativeToDates.assignment.name());
+				optionValues.add(translate("relative.to.assignment"));
+			}
+		}
+		
+		String[] keys = optionKeys.toArray(new String[optionKeys.size()]);
+		String[] values = optionValues.toArray(new String[optionValues.size()]);
+		return new RelativeDateKeysAndValues(keys, values);
 	}
 	
 	private void updateRevisions() {
@@ -707,5 +726,24 @@ public class GTAWorkflowEditController extends FormBasicController {
 			  .append(StringHelper.escapeHtml(area.getName()));
 		}
 		return sb.toString();
+	}
+	
+	private class RelativeDateKeysAndValues {
+		
+		private final String[] keys;
+		private final String[] values;
+		
+		public RelativeDateKeysAndValues(String[] keys, String[] values) {
+			this.keys = keys;
+			this.values = values;
+		}
+
+		public String[] getKeys() {
+			return keys;
+		}
+
+		public String[] getValues() {
+			return values;
+		}
 	}
 }
