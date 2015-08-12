@@ -28,6 +28,7 @@ package org.olat.fileresource.types;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -43,6 +44,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.PathUtils;
 import org.olat.ims.resources.IMSLoader;
+import org.olat.repository.handlers.CourseHandler;
 
 /**
  * Initial Date:  Apr 6, 2004
@@ -68,11 +70,27 @@ public class ImsCPFileResource extends FileResource {
 		try {
 			ImsManifestFileFilter visitor = new ImsManifestFileFilter();
 			Path fPath = PathUtils.visit(file, filename, visitor);
-			if(visitor.isValid()) {
-				Path manifestPath = fPath.resolve(visitor.getManifestPath());
+			if(visitor.hasManifest()) {
+				Path realManifestPath = visitor.getManifestPath();
+				Path manifestPath = fPath.resolve(realManifestPath);
+				
+				RootSearcher rootSearcher = new RootSearcher();
+				Files.walkFileTree(fPath, rootSearcher);
+				if(rootSearcher.foundRoot()) {
+					manifestPath = rootSearcher.getRoot().resolve(IMS_MANIFEST);
+				} else {
+					manifestPath = fPath.resolve(IMS_MANIFEST);
+				}
+
 				Document doc = IMSLoader.loadIMSDocument(manifestPath);
 				if(validateImsManifest(doc)) {
-					eval.setValid(true);
+					if(visitor.hasEditorTreeModel()) {
+						XMLScanner scanner = new XMLScanner();
+						scanner.scan(visitor.getEditorTreeModelPath());
+						eval.setValid(!scanner.hasEditorTreeModelMarkup());	
+					} else {
+						eval.setValid(true);
+					}
 				} else {
 					eval.setValid(false);
 				}
@@ -153,8 +171,11 @@ public class ImsCPFileResource extends FileResource {
 	}
 	
 	private static class ImsManifestFileFilter extends SimpleFileVisitor<Path> {
+		private boolean course;
 		private boolean manifestFile;
+		
 		private Path manifestPath;
+		private Path editorTreeModelPath;
 
 		@Override
 		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
@@ -165,15 +186,28 @@ public class ImsCPFileResource extends FileResource {
 				manifestFile = true;
 				manifestPath = file;
 			}
+			
+			if(CourseHandler.EDITOR_XML.equals(filename)) {
+				course = true;
+				editorTreeModelPath = file;
+			}
 			return manifestFile ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
 		}
 		
-		public boolean isValid() {
+		public boolean hasManifest() {
 			return manifestFile;
+		}
+		
+		public boolean hasEditorTreeModel() {
+			return course;
 		}
 		
 		public Path getManifestPath() {
 			return manifestPath;
+		}
+
+		public Path getEditorTreeModelPath() {
+			return editorTreeModelPath;
 		}
 	}
 }

@@ -90,10 +90,13 @@ public class GlossaryResource extends FileResource {
 		try {
 			GlossaryFileFilter visitor = new GlossaryFileFilter();
 			PathUtils.visit(file, filename, visitor);
-			if(visitor.isValid()) {
-				eval.setValid(true);
+			if(visitor.hasFile()) {
+				XMLScanner scanner = new XMLScanner();
+				scanner.scan(visitor.glossaryFile);
+				eval.setValid(scanner.hasGlossaryListMarkup());
+			} else {
+				eval.setValid(false);
 			}
-			eval.setValid(visitor.isValid());
 		} catch (IOException | IllegalArgumentException e) {
 			log.error("", e);
 		}
@@ -101,7 +104,7 @@ public class GlossaryResource extends FileResource {
 	}
 	
 	private static class GlossaryFileFilter extends SimpleFileVisitor<Path> {
-		private boolean glossaryFile;
+		private Path glossaryFile;
 
 		@Override
 		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
@@ -109,13 +112,13 @@ public class GlossaryResource extends FileResource {
 
 			String filename = file.getFileName().toString();
 			if(GLOSSARY_DEFAULT_FILEREF.equals(filename) || GLOSSARY_OLD_FILEREF.equals(filename)) {
-				glossaryFile = true;
+				glossaryFile = file;
 			}
-			return glossaryFile ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
+			return glossaryFile != null ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
 		}
 		
-		public boolean isValid() {
-			return glossaryFile;
+		public boolean hasFile() {
+			return glossaryFile != null;
 		}
 	}
 }
