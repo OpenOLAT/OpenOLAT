@@ -403,7 +403,9 @@ public abstract class AbstractMemberListController extends FormBasicController i
 				doChangePermission(ureq, e, confirmation.getMembers(), sendMail);
 			}
 		} else if (source == contactCtrl) {
-			cmc.deactivate();
+			if(cmc != null) {
+				cmc.deactivate();
+			}
 			cleanUpPopups();
 		} else if(toolsCtrl == source) {
 			if(event == Event.DONE_EVENT) {
