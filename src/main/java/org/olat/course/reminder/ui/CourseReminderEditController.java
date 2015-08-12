@@ -181,8 +181,9 @@ public class CourseReminderEditController extends FormBasicController {
 		} else {
 			time = "ERROR";
 		}
-		
-		return translate("send.time.description", new String[] { desc, time} );
+		String descText = translate("send.time.description", new String[] { desc, time} );
+		String infoText = "<br /><em class='text-muted'>" + translate("send.time.info") + "</em>";
+		return descText + infoText;
 	}
 	
 	protected RuleElement initRuleForm(UserRequest ureq, RuleSPI ruleSpi, ReminderRule rule) {
