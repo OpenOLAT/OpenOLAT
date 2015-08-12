@@ -146,6 +146,8 @@ public class NodeConfigFormController extends FormBasicController {
 		
 		// add the title input text element
 		title = uifactory.addTextElement("nodeConfigForm.displaytitle", "nodeConfigForm.displaytitle", 255, (displayTitle==null? "": displayTitle), formLayout);
+		String longTitle = new String(translate("longtitle.placeholder", new String[]{menuTitle}));
+		title.setPlaceholderText(longTitle);
 		title.setElementCssClass("o_sel_node_editor_title");
 		
 		// add the learning objectives rich text input element

@@ -138,8 +138,6 @@ public class ChooseNodeController extends BasicController {
 		// Set some default values
 		String title = new String(newNodeConfig.getLinkText(getLocale()));
 		createdNode.setShortTitle(title);
-		String longTitle = new String(translate("longtitle.default") + " " + title);
-		createdNode.setLongTitle(longTitle);
 		createdNode.setNoAccessExplanation(translate("form.noAccessExplanation.default"));
 		
 		// Insert it now

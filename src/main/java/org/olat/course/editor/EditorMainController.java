@@ -537,8 +537,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		alternativeLink.setVisible((disabled || deprecated) && !cnConfig.getAlternativeCourseNodes().isEmpty());
 		alternativeLink.setUserObject(chosenNode);
 		String nodeCssClass = null;
-		if (chosenNode.getParent() == null) {
-			// Spacial case for root node
+		if (this.cetm.getRootNode().getIdent().equals(chosenNode.getIdent())) {
+			// Special case for root node
 			nodeCssClass = "o_CourseModule_icon";
 		} else {
 			nodeCssClass = cnConfig.getIconCSSClass();					
