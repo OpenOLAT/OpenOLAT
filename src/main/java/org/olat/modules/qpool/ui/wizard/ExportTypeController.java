@@ -74,7 +74,8 @@ public class ExportTypeController extends StepFormBasicController {
 		for(ExportFormatOptions format:formatSet) {
 			String outcome = format.getOutcome().name();
 			String key = format.getFormat() + "__" + outcome;
-			String translation = translate("export.outcome." + outcome, new String[]{ format.getFormat() });
+			String formatName = format.getFormat().replace(" ", "_");
+			String translation = translate("export.outcome." + outcome + "." + formatName);
 			formatKeyList.add(key);
 			formatValueList.add(translation);
 			formatMap.put(key, format);
