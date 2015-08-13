@@ -135,18 +135,19 @@ public abstract class QTIHandler extends FileHandler {
 	public abstract MainLayoutController createLaunchController(RepositoryEntry re, RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl);
 
 	@Override
-	public boolean readyToDelete(OLATResourceable res, Identity identity, Roles roles, Locale locale, ErrorList errors) {
+	public boolean readyToDelete(RepositoryEntry entry, Identity identity, Roles roles, Locale locale, ErrorList errors) {
 		ReferenceManager refM = CoreSpringFactory.getImpl(ReferenceManager.class);
-		String referencesSummary = refM.getReferencesToSummary(res, locale);
+		String referencesSummary = refM.getReferencesToSummary(entry.getOlatResource(), locale);
 		if (referencesSummary != null) {
 			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);
 			errors.setError(translator.translate("details.delete.error.references",
-					new String[] { referencesSummary }));
+					new String[] { referencesSummary, entry.getDisplayname() }));
 			return false;
 		}
-		if (CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(res, null)) {
+		if (CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(entry.getOlatResource(), null)) {
 			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);
-			errors.setError(translator.translate("details.delete.error.editor"));
+			errors.setError(translator.translate("details.delete.error.editor",
+					new String[] { entry.getDisplayname() }));
 			return false;
 		}
 		return true;

@@ -268,7 +268,7 @@
 				/* ]]> */
 			</script>
 
-			#if ($referenceDetails)
+			#if ($referenceLinks && $referenceLinks.size() > 0)
 			<div class="panel panel-default o_usagepanel">
 				<div class="panel-heading" data-toggle="collapse" data-target="#collapseUsage">
 			    	<h3 class="panel-title">
@@ -281,7 +281,11 @@
 					<table class="table table-condensed table-striped"><tbody>
 						<tr>
 							<th>$r.translate("details.referenceinfo")</th>
-							<td>$referenceDetails</td>
+							<td>
+								#foreach($referenceLink in $referenceLinks)
+									#if($velocityCount != 1), #end$r.render($referenceLink)
+								#end
+							</td>
 						</tr>
 						<tr><th>$r.translate("cif.lastusage")</th><td>$r.formatDateAndTime($v.getStatistics().getLastUsage())</td></tr>
 						<tr><th>$r.translate("cif.usedbycnt")</th><td>$numUsers</td></tr>

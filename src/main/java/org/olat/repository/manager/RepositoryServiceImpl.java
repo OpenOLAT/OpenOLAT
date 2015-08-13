@@ -301,7 +301,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(entry);
 		OLATResource resource = entry.getOlatResource();
 		//delete old context
-		if (!handler.readyToDelete(resource, identity, roles, locale, errors)) {
+		if (!handler.readyToDelete(entry, identity, roles, locale, errors)) {
 			return errors;
 		}
 

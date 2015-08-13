@@ -574,13 +574,13 @@ public class CourseHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public boolean readyToDelete(OLATResourceable res, Identity identity, Roles roles, Locale locale, ErrorList errors) {
+	public boolean readyToDelete(RepositoryEntry entry, Identity identity, Roles roles, Locale locale, ErrorList errors) {
 		ReferenceManager refM = CoreSpringFactory.getImpl(ReferenceManager.class);
-		String referencesSummary = refM.getReferencesToSummary(res, locale);
+		String referencesSummary = refM.getReferencesToSummary(entry.getOlatResource(), locale);
 		if (referencesSummary != null) {
 			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);
 			errors.setError(translator.translate("details.delete.error.references",
-					new String[] { referencesSummary }));
+					new String[] { referencesSummary, entry.getDisplayname() }));
 			return false;
 		}
 		/*
@@ -589,9 +589,9 @@ public class CourseHandler implements RepositoryHandler {
 		UserManager um = UserManager.getInstance();
 		String charset = um.getUserCharset(identity);
 		try {
-			CourseFactory.archiveCourse(res,charset, locale, identity, roles);
+			CourseFactory.archiveCourse(entry.getOlatResource(),charset, locale, identity, roles);
 		} catch (CorruptedCourseException e) {
-			log.error("The course is corrupted, cannot archive it: " + res, e);
+			log.error("The course is corrupted, cannot archive it: " + entry, e);
 		}
 		return true;
 	}
