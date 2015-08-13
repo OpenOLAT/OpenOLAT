@@ -133,6 +133,18 @@ public class ReferenceManager {
 				.getResultList();
 	}
 	
+	public List<RepositoryEntry> getRepositoryReferencesTo(OLATResourceable target) {
+		Long targetKey = getResourceKey(target);
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v")
+		  .append(" where v.olatResource in (select ref.source from references as ref where ref.target.key=:targetKey)");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setParameter("targetKey", targetKey)
+				.getResultList();
+	}
+	
 	public List<ReferenceInfos> getReferencesInfos(List<RepositoryEntry> res, Identity identity, Roles roles) {
 		if(res == null || res.isEmpty()) return Collections.emptyList();
 		
@@ -226,6 +238,8 @@ public class ReferenceManager {
 		List<Reference> refs = getReferencesTo(target);
 		if (refs.size() == 0) return null;
 		for (Reference ref:refs) {
+			if(result.length() > 0) result.append(", ");
+			
 			OLATResource source = ref.getSource();
 			// special treatment for referenced courses: find out the course title
 			if (source.getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
@@ -237,9 +251,8 @@ public class ReferenceManager {
 					result.append(translator.translate("ref.course", new String[] { "<strike>" + source.getKey().toString() + "</strike>" }));
 				}
 			} else {
-				result.append(translator.translate("ref.generic", new String[] { source.getKey().toString() }));
+				result.append(source.getKey().toString());
 			}
-			result.append("<br />");
 		}
 		return result.toString();
 	}

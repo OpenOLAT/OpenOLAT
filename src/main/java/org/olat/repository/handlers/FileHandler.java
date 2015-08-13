@@ -70,12 +70,13 @@ public abstract class FileHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public boolean readyToDelete(OLATResourceable res, Identity identity, Roles roles, Locale locale, ErrorList errors) {
-		String referencesSummary = CoreSpringFactory.getImpl(ReferenceManager.class).getReferencesToSummary(res, locale);
+	public boolean readyToDelete(RepositoryEntry entry, Identity identity, Roles roles, Locale locale, ErrorList errors) {
+		String referencesSummary = CoreSpringFactory.getImpl(ReferenceManager.class)
+				.getReferencesToSummary(entry.getOlatResource(), locale);
 		if (referencesSummary != null) {
 			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);
 			errors.setError(translator.translate("details.delete.error.references",
-					new String[] { referencesSummary }));
+					new String[] { referencesSummary, entry.getDisplayname() }));
 			return false;
 		}
 		return true;

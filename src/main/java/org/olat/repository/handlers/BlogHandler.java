@@ -192,12 +192,13 @@ public class BlogHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public boolean readyToDelete(OLATResourceable res, Identity identity, Roles roles, Locale locale, ErrorList errors) {
+	public boolean readyToDelete(RepositoryEntry entry, Identity identity, Roles roles, Locale locale, ErrorList errors) {
 		ReferenceManager refM = CoreSpringFactory.getImpl(ReferenceManager.class);
-		String referencesSummary = refM.getReferencesToSummary(res, locale);
+		String referencesSummary = refM.getReferencesToSummary(entry.getOlatResource(), locale);
 		if (referencesSummary != null) {
 			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);
-			errors.setError(translator.translate("details.delete.error.references", new String[] { referencesSummary }));
+			errors.setError(translator.translate("details.delete.error.references",
+					new String[] { referencesSummary, entry.getDisplayname() }));
 			return false;
 		}
 		return true;
