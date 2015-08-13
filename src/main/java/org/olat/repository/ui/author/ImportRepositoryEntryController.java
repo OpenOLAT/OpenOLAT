@@ -110,6 +110,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		typeEl.setVisible(false);
 		
 		selectType = uifactory.addDropdownSingleselect("cif.types", "cif.type", formLayout, new String[0], new String[0], null);
+		selectType.addActionListener(FormEvent.ONCHANGE);
 		selectType.setVisible(false);
 		
 		displaynameEl = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, "", formLayout);
@@ -144,6 +145,19 @@ public class ImportRepositoryEntryController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(uploadFileEl == source) {
 			doAnalyseUpload();
+		} else if(selectType == source) {
+			if(selectType.isOneSelected()) {
+				String type = selectType.getSelectedKey();
+				for(ResourceHandler handler:handlerForUploadedResources) {
+					if(type.equals(handler.getHandler().getSupportedType())) {
+						boolean references = handler.getEval().isReferences();
+						referencesEl.setVisible(references);
+						if(references && !referencesEl.isSelected(0)) {
+							referencesEl.select(refKeys[0], true);
+						}
+					}
+				}
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -292,6 +306,8 @@ public class ImportRepositoryEntryController extends FormBasicController {
 				selectType.select(keys[0], true);
 				selectType.setVisible(true);
 				typeEl.setVisible(false);
+				
+				references = handlers.get(0).getEval().isReferences();
 			}
 		} else {
 			typeEl.setValue(translate("cif.type.na"));
