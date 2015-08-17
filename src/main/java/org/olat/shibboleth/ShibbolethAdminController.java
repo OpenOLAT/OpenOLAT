@@ -29,6 +29,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.helpers.Settings;
+import org.olat.core.util.WebappHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -57,6 +59,8 @@ public class ShibbolethAdminController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("admin.title");
 		setFormDescription("admin.description");
+		
+		uifactory.addStaticTextElement("admin.ac.url", Settings.getServerContextPathURI() + "/shib/", formLayout);
 		
 		boolean enabled = shibbolethModule.isAccessControlByAttributes();
 		String[] values = new String[]{ translate("enabled") };
