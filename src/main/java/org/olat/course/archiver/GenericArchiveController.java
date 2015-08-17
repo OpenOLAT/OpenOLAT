@@ -70,7 +70,7 @@ public class GenericArchiveController extends BasicController {
 	private CloseableModalController cmc;
 	private ChooseGroupController chooseGroupCtrl;
 	
-	private final CourseNode nodeType;
+	private final CourseNode[] nodeTypes;
 	private final OLATResourceable ores;
 
 	/**
@@ -80,15 +80,15 @@ public class GenericArchiveController extends BasicController {
 	 * @param wControl
 	 * @param course
 	 */
-	public GenericArchiveController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, CourseNode nodeType) {
+	public GenericArchiveController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, CourseNode... nodeTypes) {
 		super(ureq, wControl);
 
 		this.ores = ores;
-		this.nodeType = nodeType;
+		this.nodeTypes = nodeTypes;
 		
 		main = new Panel("main");
 		VelocityContainer nodeChoose = createVelocityContainer("nodechoose");
-		nodeChoose.contextPut("nodeType",nodeType.getType());
+		nodeChoose.contextPut("nodeType", nodeTypes[0].getType());
 		doNodeChoose(ureq, nodeChoose);		
 		putInitialPanel(main);
 	}
@@ -191,12 +191,13 @@ public class GenericArchiveController extends BasicController {
 			}
 		}
 
-		if (childrenData.size() > 0 || courseNode.getType().equals(nodeType.getType())) {
+		boolean matchType = matchTypes(courseNode);
+		if (childrenData.size() > 0 || matchType) {
 			// Store node data in map. This map array serves as data model for
 			// the tasks overview table. Leave user data empty since not used in
 			// this table. (use only node data)
 			NodeTableRow nodeData = new NodeTableRow(new Integer(recursionLevel), courseNode);
-			nodeData.setSelectable(courseNode.getType().equals(nodeType.getType()));
+			nodeData.setSelectable(matchType);
 			
 			List<NodeTableRow> nodeAndChildren = new ArrayList<>();
 			nodeAndChildren.add(nodeData);
@@ -204,6 +205,14 @@ public class GenericArchiveController extends BasicController {
 			return nodeAndChildren;
 		}
 		return null;
+	}
+	
+	private boolean matchTypes(CourseNode courseNode) {
+		boolean match = false;
+		for(CourseNode nodeType:nodeTypes) {
+			match |= courseNode.getType().equals(nodeType.getType());
+		}
+		return match;
 	}
 	
 	private void doSelectNode(UserRequest ureq, NodeTableRow nodeData) {

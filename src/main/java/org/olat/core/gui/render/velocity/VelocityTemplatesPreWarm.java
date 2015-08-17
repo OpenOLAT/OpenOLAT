@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
+import org.olat.core.configuration.PreWarm;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -45,7 +46,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class VelocityTemplatesPreWarm implements Runnable {
+public class VelocityTemplatesPreWarm implements PreWarm {
 	private static final OLog log = Tracing.createLoggerFor(VelocityTemplatesPreWarm.class);
 
 	@Override
@@ -72,15 +73,15 @@ public class VelocityTemplatesPreWarm implements Runnable {
 							numOfTemplates.incrementAndGet();
 						}
 					} catch (ResourceNotFoundException e) {
-						e.printStackTrace();
+						log.error("", e);
 					} catch (ParseErrorException e) {
-						e.printStackTrace();
+						log.error("", e);
 					}
 					return FileVisitResult.CONTINUE;
 				}
 			});
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("", e);
 		}
 		log.info("Velocity cache filled with " + numOfTemplates + " templates in (ms): " + CodeHelper.nanoToMilliTime(start));
 	}

@@ -48,6 +48,8 @@ public interface Task {
 	
 	public String getTaskName();
 	
+	public Date getAssignmentDate();
+	
 	public TaskList getTaskList();
 	
 	public Identity getIdentity();

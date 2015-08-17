@@ -232,7 +232,8 @@ public class ConfirmDeleteController extends FormBasicController {
 	}
 	
 	private void doCompleteDelete(UserRequest ureq) {
-		boolean allOk = deleteEntries(ureq, rows) ;
+		List<ErrorList> errorList = new ArrayList<>();
+		boolean allOk = deleteEntries(ureq, rows, errorList) ;
 		
 		if(allOk && deleteReferencesEl.isVisible() && deleteReferencesEl.isEnabled()
 				&& deleteReferencesEl.isOneSelected() && deleteReferencesEl.isSelected(0)) {
@@ -250,17 +251,36 @@ public class ConfirmDeleteController extends FormBasicController {
 					referencesToDelete.add(referencesMap.get(key).getEntry());
 				}
 			}
-			allOk &= deleteEntries(ureq, referencesToDelete);
+			allOk &= deleteEntries(ureq, referencesToDelete, errorList);
 		}
 		
 		if(allOk) {
 			showInfo("info.entry.deleted");
 		} else {
-			showWarning("info.could.not.delete.entry");
+			List<String> msgs = new ArrayList<>();
+			for(ErrorList error:errorList) {
+				if(StringHelper.containsNonWhitespace(error.getFirstError())) {
+					msgs.add(error.getFirstError());
+				}
+			}
+			
+			if(msgs.size() == 1) {
+				getWindowControl().setWarning(msgs.get(0));
+			} else if(msgs.size() > 1) {
+				StringBuilder sb = new StringBuilder();
+				sb.append("<ul>");
+				for(String msg:msgs) {
+					sb.append("<li>").append(msg).append("</li>");
+				}
+				sb.append("</ul>");
+				getWindowControl().setWarning(sb.toString());
+			} else {
+				showWarning("info.could.not.delete.entry");
+			}
 		}
 	}
 	
-	private boolean deleteEntries(UserRequest ureq, List<RepositoryEntry> entries) {
+	private boolean deleteEntries(UserRequest ureq, List<RepositoryEntry> entries, List<ErrorList> errorList) {
 		boolean allOk = true;
 		Roles roles = ureq.getUserSession().getRoles();
 		for(RepositoryEntry entry:entries) {
@@ -269,6 +289,7 @@ public class ConfirmDeleteController extends FormBasicController {
 				ErrorList errors = repositoryService.delete(reloadedEntry, getIdentity(), roles, getLocale());
 				if (errors.hasErrors()) {
 					allOk = false;
+					errorList.add(errors);
 				} else {
 					fireEvent(ureq, new EntryChangedEvent(reloadedEntry, getIdentity(), Change.deleted));
 				}

@@ -595,6 +595,7 @@ public class GTAManagerImpl implements GTAManager {
 			} else {
 				TaskProcess nextStep = nextStep(TaskProcess.assignment, cNode);
 				TaskImpl task = createTask(taskName, reloadedTasks, nextStep, businessGroup, identity, cNode);
+				task.setAssignmentDate(new Date());
 				dbInstance.getCurrentEntityManager().persist(task);
 				dbInstance.commit();
 				response = new AssignmentResponse(task, Status.ok);
@@ -704,6 +705,7 @@ public class GTAManagerImpl implements GTAManager {
 			} else {
 				TaskProcess nextStep = nextStep(TaskProcess.assignment, cNode);
 				TaskImpl task = createTask(taskName, reloadedTasks, nextStep, businessGroup, identity, cNode);
+				task.setAssignmentDate(new Date());
 				dbInstance.getCurrentEntityManager().persist(task);
 				response = new AssignmentResponse(task, Status.ok);
 			}

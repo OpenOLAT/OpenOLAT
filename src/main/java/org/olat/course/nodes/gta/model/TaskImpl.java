@@ -79,6 +79,10 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_assignment_date", nullable=true, insertable=true, updatable=true)
+	private Date assignmentDate;
+	
 	@Column(name="g_status", nullable=false, insertable=true, updatable=true)
 	private String status;
 	
@@ -157,6 +161,15 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	@Override
+	public Date getAssignmentDate() {
+		return assignmentDate;
+	}
+
+	public void setAssignmentDate(Date assignmentDate) {
+		this.assignmentDate = assignmentDate;
 	}
 
 	@Override

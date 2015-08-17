@@ -1397,6 +1397,7 @@ create table o_gta_task (
    lastmodified datetime not null,
    g_status varchar(36),
    g_rev_loop mediumint not null default 0,
+   g_assignment_date datetime,
    g_taskname varchar(36),
    fk_tasklist bigint not null,
    fk_identity bigint,

@@ -88,6 +88,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		initButtons(formLayout, ureq, true, false, false);
 		
 		tableEl.setMultiSelect(true);
+		tableEl.setSelectAllEnable(true);
 		
 		boolean managed = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups);
 		if(!managed) {
