@@ -421,7 +421,7 @@ public class HTMLEditorController extends FormBasicController {
 		
 		int fileSize = fileContent.toString().getBytes().length;
 		if(fileSize >= FolderConfig.getMaxEditSizeLimit()) {
-			String msg = translate("plaintext.error.tolarge", new String[] {
+			String msg = translate("file.too.large.server", new String[] {
 					(fileSize / 1000) + "",
 					(FolderConfig.getMaxEditSizeLimit() / 1000) + ""
 			});

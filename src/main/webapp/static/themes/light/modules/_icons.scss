@@ -392,9 +392,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_scorm_incomplete:before { content: $fa-var-warning; }
 .o_scorm_not_attempted:before { background: none; }
 .o_midpub:before { content: $fa-var-check-circle;}
-.o_midwarn:before { content: $fa-var-warning;}
+.o_midwarn:before { content: $fa-var-exclamation-triangle;}
 .o_midlock:before { content: $fa-var-lock;}
-.o_miderr:before { content: $fa-var-warning;}
+.o_miderr:before { content: $fa-var-exclamation-circle;}
 .o_middel:before { content: $fa-var-eraser;}
 
 
