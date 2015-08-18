@@ -301,7 +301,6 @@ public class WebDAVDispatcherImpl
         if (log.isDebug()) {
             log.debug("[" + method + "] " + path);
         }
-        System.out.println("[" + method + "] " + path);
         
         if (method.equals(METHOD_PROPFIND)) {
             doPropfind(req, resp);
