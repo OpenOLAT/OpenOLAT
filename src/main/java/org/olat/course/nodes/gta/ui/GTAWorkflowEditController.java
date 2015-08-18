@@ -68,7 +68,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GTAWorkflowEditController extends FormBasicController {
 	
-	private static final String[] keys = new String[]{ "on" };
+	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] executionKeys = new String[]{ GTAType.group.name(), GTAType.individual.name() };
 	
 	private CloseableModalController cmc;
@@ -197,19 +197,19 @@ public class GTAWorkflowEditController extends FormBasicController {
 		stepsCont.setRootForm(mainForm);
 		formLayout.add(stepsCont);
 
-		relativeDatesEl = uifactory.addCheckboxesHorizontal("relative.dates", "relative.dates", stepsCont, keys, new String[]{ "" });
+		relativeDatesEl = uifactory.addCheckboxesHorizontal("relative.dates", "relative.dates", stepsCont, onKeys, new String[]{ "" });
 		relativeDatesEl.addActionListener(FormEvent.ONCHANGE);
 		boolean useRelativeDates = config.getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES);
-		relativeDatesEl.select(keys[0], useRelativeDates);
+		relativeDatesEl.select(onKeys[0], useRelativeDates);
 		
 		uifactory.addSpacerElement("s1", stepsCont, true);
 		
 		//assignment
 		String[] assignmentValues = new String[] { translate("task.assignment.enabled") };
-		taskAssignmentEl = uifactory.addCheckboxesHorizontal("task.assignment", "task.assignment", stepsCont, keys, assignmentValues);
+		taskAssignmentEl = uifactory.addCheckboxesHorizontal("task.assignment", "task.assignment", stepsCont, onKeys, assignmentValues);
 		taskAssignmentEl.addActionListener(FormEvent.ONCHANGE);
 		boolean assignement = config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT);
-		taskAssignmentEl.select(keys[0], assignement);
+		taskAssignmentEl.select(onKeys[0], assignement);
 		
 		Date assignmentDeadline = config.getDateValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
 		assignmentDeadlineEl = uifactory.addDateChooser("assignementdeadline", "assignment.deadline", assignmentDeadline, stepsCont);
@@ -252,10 +252,10 @@ public class GTAWorkflowEditController extends FormBasicController {
 
 		//turning in
 		String[] submissionValues = new String[] { translate("submission.enabled") };
-		submissionEl = uifactory.addCheckboxesHorizontal("submission", "submission", stepsCont, keys, submissionValues);
+		submissionEl = uifactory.addCheckboxesHorizontal("submission", "submission", stepsCont, onKeys, submissionValues);
 		submissionEl.addActionListener(FormEvent.ONCHANGE);
 		boolean submit = config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT);
-		submissionEl.select(keys[0], submit);
+		submissionEl.select(onKeys[0], submit);
 		
 		Date submissionDeadline = config.getDateValue(GTACourseNode.GTASK_SUBMIT_DEADLINE);
 		submissionDeadlineEl = uifactory.addDateChooser("submitdeadline", "submit.deadline", submissionDeadline, stepsCont);
@@ -298,27 +298,27 @@ public class GTAWorkflowEditController extends FormBasicController {
 
 		//review and correction
 		String[] reviewValues = new String[] { translate("review.enabled") };
-		reviewEl = uifactory.addCheckboxesHorizontal("review", "review.and.correction", stepsCont, keys, reviewValues);
+		reviewEl = uifactory.addCheckboxesHorizontal("review", "review.and.correction", stepsCont, onKeys, reviewValues);
 		reviewEl.addActionListener(FormEvent.ONCHANGE);
 		boolean review = config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION);
-		reviewEl.select(keys[0], review);
+		reviewEl.select(onKeys[0], review);
 		
 		//revision
 		String[] revisionValues = new String[] { translate("revision.enabled") };
-		revisionEl = uifactory.addCheckboxesHorizontal("revision", "revision.period", stepsCont, keys, revisionValues);
+		revisionEl = uifactory.addCheckboxesHorizontal("revision", "revision.period", stepsCont, onKeys, revisionValues);
 		revisionEl.addActionListener(FormEvent.ONCHANGE);
 		boolean revision = config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD);
-		revisionEl.select(keys[0], revision);
+		revisionEl.select(onKeys[0], revision);
 		revisionEl.setVisible(review);
 		
 		uifactory.addSpacerElement("s4", stepsCont, true);
 
 		//sample solution
 		String[] sampleValues = new String[] { translate("sample.solution.enabled") };
-		sampleEl = uifactory.addCheckboxesHorizontal("sample", "sample.solution", stepsCont, keys, sampleValues);
+		sampleEl = uifactory.addCheckboxesHorizontal("sample", "sample.solution", stepsCont, onKeys, sampleValues);
 		sampleEl.addActionListener(FormEvent.ONCHANGE);
 		boolean sample = config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION);
-		sampleEl.select(keys[0], sample);
+		sampleEl.select(onKeys[0], sample);
 		
 		Date solutionVisibleAfter = config.getDateValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
 		solutionVisibleAfterEl = uifactory.addDateChooser("visibleafter", "sample.solution.visible.after", solutionVisibleAfter, stepsCont);
@@ -361,10 +361,10 @@ public class GTAWorkflowEditController extends FormBasicController {
 
 		//grading
 		String[] gradingValues = new String[] { translate("grading.enabled") };
-		gradingEl = uifactory.addCheckboxesHorizontal("grading", "grading", stepsCont, keys, gradingValues);
+		gradingEl = uifactory.addCheckboxesHorizontal("grading", "grading", stepsCont, onKeys, gradingValues);
 		gradingEl.addActionListener(FormEvent.ONCHANGE);
 		boolean grading = config.getBooleanSafe(GTACourseNode.GTASK_GRADING);
-		gradingEl.select(keys[0], grading);
+		gradingEl.select(onKeys[0], grading);
 		
 		//save
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -569,8 +569,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		boolean assignment = taskAssignmentEl.isAtLeastSelected(1);
 		assignmentDeadlineEl.setVisible(assignment && !useRelativeDate);
 		assignmentRelDeadlineCont.setVisible(assignment && useRelativeDate);
-		RelativeDateKeysAndValues keysAndValues = getRelativesDatesOption(true);
-		assignementDeadlineRelToEl.setKeysAndValues(keysAndValues.getKeys(), keysAndValues.getValues(), null);
+		updateDeadline(assignementDeadlineRelToEl, false);
 	}
 	
 	private void updateSubmissionDeadline() {
@@ -578,8 +577,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		boolean submit = submissionEl.isAtLeastSelected(1);
 		submissionDeadlineEl.setVisible(submit && !useRelativeDate);
 		submissionRelDeadlineCont.setVisible(submit && useRelativeDate);
-		RelativeDateKeysAndValues keysAndValues = getRelativesDatesOption(false);
-		submissionDeadlineRelToEl.setKeysAndValues(keysAndValues.getKeys(), keysAndValues.getValues(), null);
+		updateDeadline(submissionDeadlineRelToEl, false);
 	}
 	
 	private void updateSolutionDeadline() {
@@ -587,8 +585,28 @@ public class GTAWorkflowEditController extends FormBasicController {
 		boolean solution = sampleEl.isAtLeastSelected(1);
 		solutionVisibleAfterEl.setVisible(solution && !useRelativeDate);
 		solutionVisibleRelCont.setVisible(solution && useRelativeDate);
-		RelativeDateKeysAndValues keysAndValues = getRelativesDatesOption(false);
-		solutionVisibleRelToEl.setKeysAndValues(keysAndValues.getKeys(), keysAndValues.getValues(), null);
+		updateDeadline(solutionVisibleRelToEl, false);
+	}
+	
+	private void updateDeadline(SingleSelection selectionEl, boolean excludeAssignment) {
+		String selectedKey = null;
+		if(selectionEl.isOneSelected()) {
+			selectedKey = selectionEl.getSelectedKey();
+		}
+		RelativeDateKeysAndValues keysAndValues = getRelativesDatesOption(excludeAssignment);
+		selectionEl.setKeysAndValues(keysAndValues.getKeys(), keysAndValues.getValues(), null);
+		
+		boolean found = false;
+		for(String key:keysAndValues.getKeys()) {
+			if(key.equals(selectedKey)) {
+				selectionEl.select(key, true);
+				found = true;
+			}	
+		}
+		
+		if(!found) {
+			selectionEl.select(keysAndValues.getKeys()[0], true);
+		}
 	}
 	
 	private RelativeDateKeysAndValues getRelativesDatesOption(boolean excludeAssignment) {
@@ -623,7 +641,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private void updateRevisions() {
 		boolean review = reviewEl.isAtLeastSelected(1);
 		revisionEl.setVisible(review);
-		revisionEl.select(keys[0], review);
+		revisionEl.select(onKeys[0], review);
 	}
 	
 	@Override
