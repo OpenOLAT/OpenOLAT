@@ -79,7 +79,7 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 	private EfficiencyStatementManager efficiencyStatementManager;
 	
 	public EfficiencyStatementDetailsController(UserRequest ureq, WindowControl wControl,
-			EfficiencyStatementEntry statementEntry) {
+			EfficiencyStatementEntry statementEntry, boolean selectAssessmentTool) {
 		super(ureq, wControl);
 
 		mainVC = createVelocityContainer("efficiency_details");
@@ -89,9 +89,10 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 		assessedIdentity = securityManager.loadIdentityByKey(statementEntry.getStudentKey());
 		statementCtrl = createEfficiencyStatementController(ureq);
 		listenTo(statementCtrl);
-		mainVC.put("segmentCmp", statementCtrl.getInitialComponent());
 		
-		if(entry != null) {
+		if(entry == null) {
+			mainVC.put("segmentCmp", statementCtrl.getInitialComponent());
+		} else {
 			try {
 				ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
 				assessmentCtrl = new IdentityAssessmentEditController(wControl, ureq, null,
@@ -100,10 +101,16 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 				
 				segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 				efficiencyStatementLink = LinkFactory.createLink("details.statement", mainVC, this);
-				segmentView.addSegment(efficiencyStatementLink, true);
+				segmentView.addSegment(efficiencyStatementLink, !selectAssessmentTool);
 				
 				assessmentLink = LinkFactory.createLink("details.assessment", mainVC, this);
-				segmentView.addSegment(assessmentLink, false);
+				segmentView.addSegment(assessmentLink, selectAssessmentTool);
+				
+				if(selectAssessmentTool) {
+					mainVC.put("segmentCmp", assessmentCtrl.getInitialComponent());
+				} else {
+					mainVC.put("segmentCmp", statementCtrl.getInitialComponent());
+				}
 			} catch(CorruptedCourseException e) {
 				logError("", e);
 			}
@@ -114,6 +121,10 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 	
 	public EfficiencyStatementEntry getEntry() {
 		return statementEntry;
+	}
+	
+	public boolean isAssessmentToolSelected() {
+		return assessmentCtrl != null && assessmentCtrl.getInitialComponent() == mainVC.getComponent("segmentCmp"); 
 	}
 	
 	@Override

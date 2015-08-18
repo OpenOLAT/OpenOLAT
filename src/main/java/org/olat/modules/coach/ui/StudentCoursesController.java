@@ -386,11 +386,15 @@ public class StudentCoursesController extends BasicController implements Activat
 	}
 	
 	private void selectDetails(UserRequest ureq, EfficiencyStatementEntry entry) {
-		removeAsListenerAndDispose(statementCtrl);
+		boolean selectAssessmentTool = false;
+		if(statementCtrl != null) {
+			selectAssessmentTool = statementCtrl.isAssessmentToolSelected();
+			removeAsListenerAndDispose(statementCtrl);
+		}
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(RepositoryEntry.class, entry.getCourse().getKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, entry);
+		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, entry, selectAssessmentTool);
 		listenTo(statementCtrl);
 		detailsCmp.setText(entry.getCourse().getDisplayname());
 

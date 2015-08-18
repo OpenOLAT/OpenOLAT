@@ -283,13 +283,17 @@ public class StudentOverviewController extends BasicController implements Activa
 	}
 	
 	private void selectDetails(UserRequest ureq, UserEfficiencyStatement statement) {
-		removeAsListenerAndDispose(statementCtrl);
+		boolean selectAssessmentTool = false;
+		if(statementCtrl != null) {
+			selectAssessmentTool = statementCtrl.isAssessmentToolSelected();
+			removeAsListenerAndDispose(statementCtrl);
+		}
 		
 		EfficiencyStatementEntry entry = coachingService.getEfficencyStatement(statement);
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(RepositoryEntry.class, statement.getCourseRepoKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, entry);
+		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, entry, selectAssessmentTool);
 		listenTo(statementCtrl);
 		detailsCmp.setText(statement.getShortTitle());
 
