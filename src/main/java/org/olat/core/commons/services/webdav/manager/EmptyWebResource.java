@@ -99,6 +99,11 @@ public class EmptyWebResource implements WebResource {
 	}
 
 	@Override
+	public long getCreation() {
+		return 0;
+	}
+
+	@Override
 	public byte[] getContent() {
 		return null;//use the input stream instead
 	}
