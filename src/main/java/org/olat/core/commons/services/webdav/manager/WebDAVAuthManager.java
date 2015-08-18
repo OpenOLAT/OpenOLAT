@@ -81,6 +81,8 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 				if(verity.equals(response)) {
 					Identity identity = olatAuth.getIdentity();
 					return identity;
+				} else {
+					log.error("Verity doesn't equals response");
 				}
 			}
 		}
