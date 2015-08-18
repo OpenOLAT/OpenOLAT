@@ -30,7 +30,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
-import org.olat.core.util.WebappHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

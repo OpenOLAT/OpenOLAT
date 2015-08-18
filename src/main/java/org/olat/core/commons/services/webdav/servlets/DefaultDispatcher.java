@@ -25,6 +25,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.StringTokenizer;
@@ -92,13 +93,6 @@ public abstract class DefaultDispatcher implements Serializable {
     private static final OLog log = Tracing.createLoggerFor(DefaultDispatcher.class);
 
     // ----------------------------------------------------- Instance Variables
-
-
-    /**
-     * The debugging detail level for this servlet.
-     */
-    protected final int debug = 0;
-
 
     /**
      * The input buffer size to use when serving resources.
@@ -188,7 +182,7 @@ public abstract class DefaultDispatcher implements Serializable {
     protected String getRelativePath(HttpServletRequest request) {
         // IMPORTANT: DefaultServlet can be mapped to '/' or '/path/*' but always
         // serves resources from the web app root with context rooted paths.
-        // i.e. it can not be used to mount the web app root under a sub-path
+        // i.e. it cannot be used to mount the web app root under a sub-path
         // This method must construct a complete context rooted path, although
         // subclasses can change this behaviour.
 
@@ -329,23 +323,19 @@ public abstract class DefaultDispatcher implements Serializable {
 
         // If the resource is not a collection, and the resource path
         // ends with "/" or "\", return NOT FOUND
-        if (resource.isFile()) {
-            if (path.endsWith("/") || (path.endsWith("\\"))) {
-                // Check if we're included so we can return the appropriate
-                // missing resource name in the error
-                String requestUri = (String) request.getAttribute(
-                        RequestDispatcher.INCLUDE_REQUEST_URI);
-                if (requestUri == null) {
-                    requestUri = request.getRequestURI();
-                }
-                response.sendError(HttpServletResponse.SC_NOT_FOUND,
-                                   requestUri);
-                return;
+        if (resource.isFile() && path.endsWith("/") || path.endsWith("\\")) {
+            // Check if we're included so we can return the appropriate
+            // missing resource name in the error
+            String requestUri = (String) request.getAttribute(
+                    RequestDispatcher.INCLUDE_REQUEST_URI);
+            if (requestUri == null) {
+                requestUri = request.getRequestURI();
             }
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, requestUri);
+            return;
         }
 
-        boolean isError =
-            response.getStatus() >= HttpServletResponse.SC_BAD_REQUEST;
+        boolean isError = response.getStatus() >= HttpServletResponse.SC_BAD_REQUEST;
 
         boolean included = false;
         // Check if the conditions specified in the optional If headers are
@@ -354,11 +344,9 @@ public abstract class DefaultDispatcher implements Serializable {
             // Checking If headers
             included = (request.getAttribute(
                     RequestDispatcher.INCLUDE_CONTEXT_PATH) != null);
-            if (!included && !isError &&
-                    !checkIfHeaders(request, response, resource)) {
+            if (!included && !isError && !checkIfHeaders(request, response, resource)) {
                 return;
             }
-
         }
 
         // Find content type.
@@ -381,16 +369,26 @@ public abstract class DefaultDispatcher implements Serializable {
 
         // Serve a gzipped version of the file if present
         boolean usingGzippedVersion = false;
-        if (gzip &&
-                resource.isFile() &&
-                !included &&
-                !path.endsWith(".gz") &&
-                checkIfGzip(request)) {
+        if (gzip && !included && resource.isFile() && !path.endsWith(".gz")) {
             WebResource gzipResource = resources.getResource(path + ".gz");
             if (gzipResource.exists() && gzipResource.isFile()) {
-                response.addHeader("Content-Encoding", "gzip");
-                resource = gzipResource;
-                usingGzippedVersion = true;
+                Collection<String> varyHeaders = response.getHeaders("Vary");
+                boolean addRequired = true;
+                for (String varyHeader : varyHeaders) {
+                    if ("*".equals(varyHeader) ||
+                            "accept-encoding".equalsIgnoreCase(varyHeader)) {
+                        addRequired = false;
+                        break;
+                    }
+                }
+                if (addRequired) {
+                    response.addHeader("Vary", "accept-encoding");
+                }
+                if (checkIfGzip(request)) {
+                    response.addHeader("Content-Encoding", "gzip");
+                    resource = gzipResource;
+                    usingGzippedVersion = true;
+                }
             }
         }
 
@@ -423,16 +421,13 @@ public abstract class DefaultDispatcher implements Serializable {
             if (contentLength == 0L) {
                 serveContent = false;
             }
-
         }
 
         ServletOutputStream ostream = null;
         PrintWriter writer = null;
 
         if (serveContent) {
-
             // Trying to retrieve the servlet output stream
-
             try {
                 ostream = response.getOutputStream();
             } catch (IllegalStateException e) {
@@ -451,7 +446,6 @@ public abstract class DefaultDispatcher implements Serializable {
                     throw e;
                 }
             }
-
         }
 
         // Check to see if a Filter, Valve of wrapper has written some content.
@@ -507,10 +501,28 @@ public abstract class DefaultDispatcher implements Serializable {
                 } catch (IllegalStateException e) {
                     // Silent catch
                 }
-                if (ostream != null) {
-                  copy(resource, renderResult, ostream);
-                } else {
+
+                if (ostream == null) {
+                    // Output via a writer so can't use sendfile or write
+                    // content directly.
+                    if (resource.isDirectory()) {
+                        renderResult = null;//render(getPathPrefix(request), resource);
+                    } else {
+                        renderResult = resource.getInputStream();
+                    }
                     copy(resource, renderResult, writer, encoding);
+                } else {
+                    // Output is via an InputStream
+                    if (resource.isDirectory()) {
+                        renderResult = null;//render(getPathPrefix(request), resource);
+                    } else {
+                        renderResult = resource.getInputStream();
+                    }
+                    // If a stream was configured, it needs to be copied to
+                    // the output (this method closes the stream)
+                    if (renderResult != null) {
+                        copy(renderResult, ostream);
+                    }
                 }
             }
 
@@ -553,12 +565,9 @@ public abstract class DefaultDispatcher implements Serializable {
                         throw new IllegalStateException();
                     }
                 }
-
             } else {
-
                 response.setContentType("multipart/byteranges; boundary="
                                         + mimeSeparation);
-
                 if (serveContent) {
                     try {
                         response.setBufferSize(output);
@@ -566,8 +575,7 @@ public abstract class DefaultDispatcher implements Serializable {
                         // Silent catch
                     }
                     if (ostream != null) {
-                        copy(resource, ostream, ranges.iterator(),
-                             contentType);
+                        copy(resource, ostream, ranges.iterator(), contentType);
                     } else {
                         // we should not get here
                         throw new IllegalStateException();
@@ -647,7 +655,7 @@ public abstract class DefaultDispatcher implements Serializable {
      * @param resource  The resource
      * @return Vector of ranges
      */
-    private ArrayList<Range> parseRange(HttpServletRequest request,
+    protected ArrayList<Range> parseRange(HttpServletRequest request,
             HttpServletResponse response,
             WebResource resource) throws IOException {
 
@@ -708,7 +716,7 @@ public abstract class DefaultDispatcher implements Serializable {
 
         // Vector which will contain all the ranges which are successfully
         // parsed.
-        ArrayList<Range> result = new ArrayList<Range>();
+        ArrayList<Range> result = new ArrayList<>();
         StringTokenizer commaTokenizer = new StringTokenizer(rangeHeader, ",");
 
         // Parsing the range list
@@ -790,7 +798,7 @@ public abstract class DefaultDispatcher implements Serializable {
      * and false if the condition is not satisfied, in which case request
      * processing is stopped
      */
-    private boolean checkIfMatch(HttpServletRequest request,
+    protected boolean checkIfMatch(HttpServletRequest request,
             HttpServletResponse response, WebResource resource)
             throws IOException {
 
@@ -833,7 +841,7 @@ public abstract class DefaultDispatcher implements Serializable {
      * and false if the condition is not satisfied, in which case request
      * processing is stopped
      */
-    private boolean checkIfModifiedSince(HttpServletRequest request,
+    protected boolean checkIfModifiedSince(HttpServletRequest request,
             HttpServletResponse response, WebResource resource) {
         try {
             long headerValue = request.getDateHeader("If-Modified-Since");
@@ -869,7 +877,7 @@ public abstract class DefaultDispatcher implements Serializable {
      * and false if the condition is not satisfied, in which case request
      * processing is stopped
      */
-    private boolean checkIfNoneMatch(HttpServletRequest request,
+    protected boolean checkIfNoneMatch(HttpServletRequest request,
             HttpServletResponse response, WebResource resource)
             throws IOException {
 
@@ -921,7 +929,7 @@ public abstract class DefaultDispatcher implements Serializable {
      * @return boolean true if the user agent supports gzip encoding,
      * and false if the user agent does not support gzip encoding
      */
-    private boolean checkIfGzip(HttpServletRequest request) {
+    protected boolean checkIfGzip(HttpServletRequest request) {
         Enumeration<String> headers = request.getHeaders("Accept-Encoding");
         while (headers.hasMoreElements()) {
             String header = headers.nextElement();
@@ -943,7 +951,7 @@ public abstract class DefaultDispatcher implements Serializable {
      * and false if the condition is not satisfied, in which case request
      * processing is stopped
      */
-    private boolean checkIfUnmodifiedSince(HttpServletRequest request,
+    protected boolean checkIfUnmodifiedSince(HttpServletRequest request,
             HttpServletResponse response, WebResource resource)
             throws IOException {
         try {
@@ -969,34 +977,17 @@ public abstract class DefaultDispatcher implements Serializable {
      * output stream, and ensure that both streams are closed before returning
      * (even in the face of an exception).
      *
-     * @param resource  The source resource
      * @param is        The input stream to read the source resource from
      * @param ostream   The output stream to write to
      *
      * @exception IOException if an input/output error occurs
      */
-    private void copy(WebResource resource, InputStream is,
+    private void copy(InputStream is,
                       ServletOutputStream ostream)
         throws IOException {
 
         IOException exception = null;
-        InputStream resourceInputStream = null;
-
-        // Optimization: If the binary content has already been loaded, send
-        // it directly
-        if (resource.isFile()) {
-            byte buffer[] = resource.getContent();
-            if (buffer != null) {
-                ostream.write(buffer, 0, buffer.length);
-                return;
-            }
-            resourceInputStream = resource.getInputStream();
-        } else {
-            resourceInputStream = is;
-        }
-
-        InputStream istream = new BufferedInputStream
-            (resourceInputStream, input);
+        InputStream istream = new BufferedInputStream(is, input);
 
         // Copy the input stream to the output stream
         exception = copyRange(istream, ostream);
@@ -1063,7 +1054,7 @@ public abstract class DefaultDispatcher implements Serializable {
      * @param range     Range the client wanted to retrieve
      * @exception IOException if an input/output error occurs
      */
-    private void copy(WebResource resource, ServletOutputStream ostream,
+    protected void copy(WebResource resource, ServletOutputStream ostream,
                       Range range)
         throws IOException {
 
@@ -1096,7 +1087,7 @@ public abstract class DefaultDispatcher implements Serializable {
      * @param contentType   Content type of the resource
      * @exception IOException if an input/output error occurs
      */
-    private void copy(WebResource resource, ServletOutputStream ostream,
+    protected void copy(WebResource resource, ServletOutputStream ostream,
                       Iterator<Range> ranges, String contentType)
         throws IOException {
 
@@ -1105,27 +1096,24 @@ public abstract class DefaultDispatcher implements Serializable {
         while ( (exception == null) && (ranges.hasNext()) ) {
 
             InputStream resourceInputStream = resource.getInputStream();
-            InputStream istream =
-                new BufferedInputStream(resourceInputStream, input);
+            try (InputStream istream = new BufferedInputStream(resourceInputStream, input)) {
 
-            Range currentRange = ranges.next();
+                Range currentRange = ranges.next();
 
-            // Writing MIME header.
-            ostream.println();
-            ostream.println("--" + mimeSeparation);
-            if (contentType != null)
-                ostream.println("Content-Type: " + contentType);
-            ostream.println("Content-Range: bytes " + currentRange.start
-                           + "-" + currentRange.end + "/"
-                           + currentRange.length);
-            ostream.println();
+                // Writing MIME header.
+                ostream.println();
+                ostream.println("--" + mimeSeparation);
+                if (contentType != null)
+                    ostream.println("Content-Type: " + contentType);
+                ostream.println("Content-Range: bytes " + currentRange.start
+                               + "-" + currentRange.end + "/"
+                               + currentRange.length);
+                ostream.println();
 
-            // Printing content
-            exception = copyRange(istream, ostream, currentRange.start,
-                                  currentRange.end);
-
-            istream.close();
-
+                // Printing content
+                exception = copyRange(istream, ostream, currentRange.start,
+                                      currentRange.end);
+            }
         }
 
         ostream.println();
@@ -1147,7 +1135,7 @@ public abstract class DefaultDispatcher implements Serializable {
      * @param ostream The output stream to write to
      * @return Exception which occurred during processing
      */
-    private IOException copyRange(InputStream istream,
+    protected IOException copyRange(InputStream istream,
                                   ServletOutputStream ostream) {
 
         // Copy the input stream to the output stream
@@ -1180,7 +1168,7 @@ public abstract class DefaultDispatcher implements Serializable {
      * @param writer The writer to write to
      * @return Exception which occurred during processing
      */
-    private IOException copyRange(Reader reader, PrintWriter writer) {
+    protected IOException copyRange(Reader reader, PrintWriter writer) {
 
         // Copy the input stream to the output stream
         IOException exception = null;
@@ -1214,7 +1202,7 @@ public abstract class DefaultDispatcher implements Serializable {
      * @param end End of the range which will be copied
      * @return Exception which occurred during processing
      */
-    private IOException copyRange(InputStream istream,
+    protected IOException copyRange(InputStream istream,
                                   ServletOutputStream ostream,
                                   long start, long end) {
 
@@ -1261,9 +1249,6 @@ public abstract class DefaultDispatcher implements Serializable {
     }
 
 
-    // ------------------------------------------------------ Range Inner Class
-
-
     protected static class Range {
 
         public long start;
@@ -1272,6 +1257,8 @@ public abstract class DefaultDispatcher implements Serializable {
 
         /**
          * Validate range.
+         *
+         * @return true if the range is valid, otherwise false
          */
         public boolean validate() {
             if (end >= length)
