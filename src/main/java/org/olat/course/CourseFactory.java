@@ -176,13 +176,13 @@ public class CourseFactory extends BasicManager {
 	 * 
 	 * @param ureq
 	 * @param wControl
-	 * @param olatResource
+	 * @param courseEntry
 	 * @return editor controller for the given course resourceable; if the editor
 	 *         is already locked, it returns a controller with a lock message
 	 */
 	public static EditorMainController createEditorController(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel toolbar, OLATResourceable olatResource, CourseNode selectedNode) {
-		ICourse course = loadCourse(olatResource);
+			TooledStackedPanel toolbar, RepositoryEntry courseEntry, CourseNode selectedNode) {
+		ICourse course = loadCourse(courseEntry);
 		EditorMainController emc = new EditorMainController(ureq, wControl, toolbar, course, selectedNode);
 		if (emc.getLockEntry() == null) {
 			Translator translator = Util.createPackageTranslator(RunMainController.class, ureq.getLocale());
@@ -243,6 +243,32 @@ public class CourseFactory extends BasicManager {
 	 * @return the course with the given id (the type is always
 	 *         CourseModule.class.toString())
 	 */
+	public static ICourse loadCourse(RepositoryEntry courseEntry) {
+		if (courseEntry == null) {
+			throw new AssertException("No resourceable ID found.");
+		}
+		Long resourceableId = courseEntry.getOlatResource().getResourceableId();
+		PersistingCourseImpl course = loadedCourses.get(resourceableId);
+		if (course == null) {
+			// o_clusterOK by:ld - load and put in cache in doInSync block to ensure
+			// that no invalidate cache event was missed
+			PersistingCourseImpl theCourse = new PersistingCourseImpl(courseEntry);
+			theCourse.load();
+			
+			PersistingCourseImpl cachedCourse = loadedCourses.putIfAbsent(resourceableId, theCourse);
+			if(cachedCourse != null) {
+				course = cachedCourse;
+				course.updateCourseEntry(courseEntry);
+			} else {
+				course = theCourse;
+			}
+		} else {
+			course.updateCourseEntry(courseEntry);
+		}
+		
+		return course;
+	}
+	
 	public static ICourse loadCourse(final Long resourceableId) {
 		if (resourceableId == null) throw new AssertException("No resourceable ID found.");
 		PersistingCourseImpl course = loadedCourses.get(resourceableId);
@@ -556,8 +582,8 @@ public class CourseFactory extends BasicManager {
 		re.setSoftkey(softKey);
 		repositoryService.update(re);
 		
-		ICourse course = CourseFactory.loadCourse(re.getOlatResource());
-		CourseFactory.publishCourse(course, access, false,  null, Locale.ENGLISH);
+		ICourse course = loadCourse(re);
+		publishCourse(course, access, false,  null, Locale.ENGLISH);
 		return re;
 	}
 
@@ -634,8 +660,7 @@ public class CourseFactory extends BasicManager {
 		} else {
 			// Increment launch counter
 			rs.incrementLaunchCounter(entry);
-			OLATResource ores = entry.getOlatResource();
-			ICourse course = loadCourse(ores);
+			ICourse course = loadCourse(entry);
 			
 			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(entry);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);	

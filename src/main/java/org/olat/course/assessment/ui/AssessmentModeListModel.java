@@ -73,7 +73,7 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 				List<String> warnings = null;
 				Status status = mode.getStatus();
 				if(StringHelper.containsNonWhitespace(mode.getStartElement())) {
-					ICourse course = CourseFactory.loadCourse(mode.getRepositoryEntry().getOlatResource());
+					ICourse course = CourseFactory.loadCourse(mode.getRepositoryEntry());
 					CourseNode node = course.getRunStructure().getNode(mode.getStartElement());
 					if(node == null) {
 						warnings = new ArrayList<>(2);
@@ -81,7 +81,7 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 					}
 				}
 				if(StringHelper.containsNonWhitespace(mode.getElementList())) {
-					ICourse course = CourseFactory.loadCourse(mode.getRepositoryEntry().getOlatResource());
+					ICourse course = CourseFactory.loadCourse(mode.getRepositoryEntry());
 					String elements = mode.getElementList();
 					for(String element:elements.split(",")) {
 						CourseNode node = course.getRunStructure().getNode(element);

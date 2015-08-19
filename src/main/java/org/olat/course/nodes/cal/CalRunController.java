@@ -22,8 +22,6 @@ package org.olat.course.nodes.cal;
 
 import java.util.Date;
 
-import org.olat.commons.calendar.CalendarManager;
-import org.olat.commons.calendar.ui.events.KalendarModifiedEvent;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
@@ -38,11 +36,9 @@ import org.olat.core.gui.control.generic.clone.CloneController;
 import org.olat.core.gui.control.generic.clone.CloneLayoutControllerCreatorCallback;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CalCourseNode;
-import org.olat.course.run.calendar.CourseCalendarSubscription;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.modules.ModuleConfiguration;
@@ -77,17 +73,9 @@ public class CalRunController extends BasicController {
 		this.config = calCourseNode.getModuleConfiguration();
 		mainVC = createVelocityContainer("run");
 
-		ICourse course = CourseFactory.loadCourse(cenv.getCourseResourceableId());
+		ICourse course = CourseFactory.loadCourse(cenv.getCourseGroupManager().getCourseEntry());
 		CourseCalendars myCal = CourseCalendars.createCourseCalendarsWrapper(ureq, wControl, course, ne);
-		CourseCalendarSubscription calSubscription = myCal.createSubscription(ureq);
-		if(CalEditController.getAutoSubscribe(config)) {
-			if(!calSubscription.isSubscribed()) {
-				calSubscription.subscribe(false);
-				ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(new KalendarModifiedEvent(), OresHelper.lookupType(CalendarManager.class));
-			}
-		}
-		
-		calCtr = new CourseCalendarController(ureq, wControl, myCal, calSubscription, course, ne);
+		calCtr = new CourseCalendarController(ureq, wControl, myCal, course, ne);
 
 		boolean focused = false;
 		ContextEntry ce = wControl.getBusinessControl().popLauncherContextEntry();
@@ -115,8 +103,8 @@ public class CalRunController extends BasicController {
 		}
 
 		CloneLayoutControllerCreatorCallback clccc = new CloneLayoutControllerCreatorCallback() {
-			public ControllerCreator createLayoutControllerCreator(UserRequest ureq, final ControllerCreator contentControllerCreator) {
-				return BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, new ControllerCreator() {
+			public ControllerCreator createLayoutControllerCreator(UserRequest uureq, final ControllerCreator contentControllerCreator) {
+				return BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(uureq, new ControllerCreator() {
 					@SuppressWarnings("synthetic-access")
 					public Controller createController(UserRequest lureq, WindowControl lwControl) {
 						// wrapp in column layout, popup window needs a layout controller

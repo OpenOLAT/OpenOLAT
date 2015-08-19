@@ -86,7 +86,7 @@ public class BeforeDateTaskRuleEditor extends RuleEditorFragment {
 		ruleCont.setTranslator(trans);
 		formLayout.add(ruleCont);
 		
-		ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+		ICourse course = CourseFactory.loadCourse(entry);
 
 		String currentValue = null;
 		String currentUnit = null;

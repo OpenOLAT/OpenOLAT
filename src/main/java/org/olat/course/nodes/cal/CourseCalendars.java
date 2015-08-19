@@ -77,7 +77,7 @@ public class CourseCalendars {
 		return courseKalendarWrapper.getKalendar();
 	}
 
-	public CourseCalendarSubscription createSubscription(UserRequest ureq) {
+	public CourseCalendarSubscription createSubscription2(UserRequest ureq) {
 		CourseCalendarSubscription calSubscription = new CourseCalendarSubscription(getKalendar(), ureq.getUserSession().getGuiPreferences());
 		return calSubscription;
 	}

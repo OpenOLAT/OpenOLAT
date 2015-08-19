@@ -431,7 +431,7 @@ public class CourseHandler implements RepositoryHandler {
 		CourseFactory.copyCourse(sourceResource, targetResource);
 		 
 		//transaction copied
-		ICourse sourceCourse = CourseFactory.loadCourse(source.getOlatResource().getResourceableId());
+		ICourse sourceCourse = CourseFactory.loadCourse(source);
 		CourseGroupManager sourceCgm = sourceCourse.getCourseEnvironment().getCourseGroupManager();
 		CourseEnvironmentMapper env = PersistingCourseGroupManager.getInstance(sourceCourse).getBusinessGroupEnvironment();
 			
@@ -439,7 +439,7 @@ public class CourseHandler implements RepositoryHandler {
 		fExportDir.mkdirs();
 		sourceCgm.exportCourseBusinessGroups(fExportDir, env, false, false);
 
-		ICourse course = CourseFactory.loadCourse(target.getOlatResource().getResourceableId());
+		ICourse course = CourseFactory.loadCourse(target);
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		// import groups
 		CourseEnvironmentMapper envMapper = cgm.importCourseBusinessGroups(fExportDir);
@@ -499,7 +499,7 @@ public class CourseHandler implements RepositoryHandler {
 					@Override
 					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
 							RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
-						ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+						ICourse course = CourseFactory.loadCourse(entry);
 						return new RunMainController(uureq, wwControl, toolbarPanel, course, entry, security, assessmentMode);
 					}
 			}, true, true);
@@ -534,14 +534,14 @@ public class CourseHandler implements RepositoryHandler {
 
 	@Override
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar) {
-		return CourseFactory.createEditorController(ureq, wControl, toolbar, re.getOlatResource(), null);
+		return CourseFactory.createEditorController(ureq, wControl, toolbar, re, null);
 	}
 
 	@Override
 	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		// load the course structure
 		final RepositoryEntry repoEntry = (RepositoryEntry) res;
-		ICourse course = CourseFactory.loadCourse(repoEntry.getOlatResource());
+		ICourse course = CourseFactory.loadCourse(repoEntry);
 		Translator cceTranslator = Util.createPackageTranslator(CourseCreationHelper.class, ureq.getLocale());
 		final CourseCreationConfiguration courseConfig = new CourseCreationConfiguration(course.getCourseTitle(), Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + repoEntry.getKey());
 		// wizard finish callback called after "finish" is called
@@ -602,7 +602,7 @@ public class CourseHandler implements RepositoryHandler {
 	 */
 	@Override
 	public String archive(Identity archiveOnBehalfOf, String archivFilePath, RepositoryEntry entry) {
-		ICourse course = CourseFactory.loadCourse(entry.getOlatResource() );
+		ICourse course = CourseFactory.loadCourse(entry);
 		// Archive course runtime data (like delete course, archive e.g. logfiles, node-data)
 		File tmpExportDir = new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID());
 		tmpExportDir.mkdirs();

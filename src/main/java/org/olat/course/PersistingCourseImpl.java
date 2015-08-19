@@ -100,7 +100,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	private boolean hasAssessableNodes = false;
 	private CourseEditorTreeModel editorTreeModel;
 	private CourseConfig courseConfig;
-	private CourseEnvironment courseEnvironment;
+	private final CourseEnvironmentImpl courseEnvironment;
 	private OlatRootFolderImpl courseRootContainer;
 	private String courseTitle = null;
 	/** courseTitleSyncObj is a final Object only used for synchronizing the courseTitle getter - see OLAT-5654 */
@@ -131,6 +131,15 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		prepareFilesystem();
 		courseConfig = CourseConfigManagerImpl.getInstance().loadConfigFor(this); // load or init defaults
 		courseEnvironment = new CourseEnvironmentImpl(this);
+	}
+	
+	PersistingCourseImpl(RepositoryEntry courseEntry) {
+		this.courseTitle = courseEntry.getDisplayname();
+		this.resourceableId = courseEntry.getOlatResource().getResourceableId();
+		// prepare filesystem and set course base path and course folder paths
+		prepareFilesystem();
+		courseConfig = CourseConfigManagerImpl.getInstance().loadConfigFor(this); // load or init defaults
+		courseEnvironment = new CourseEnvironmentImpl(this, courseEntry);
 	}
 	
 
@@ -202,6 +211,11 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 			}
 		}
 		return courseTitle;
+	}
+	
+	public void updateCourseEntry(RepositoryEntry courseEntry) {
+		courseTitle = courseEntry.getDisplayname();
+		courseEnvironment.updateCourseEntry(courseEntry);
 	}
 
 	/**

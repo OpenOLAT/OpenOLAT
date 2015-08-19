@@ -58,7 +58,8 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.home.HomeCalendarController;
+import org.olat.home.HomeCalendarManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -77,6 +78,9 @@ public class CalendarPortletRunController extends BasicController {
 	private TableController tableController;
 	private boolean dirty = false;
 	private Link showAllLink;
+	
+	@Autowired
+	private HomeCalendarManager homeCalendarManager;
 
 	/**
 	 * Constructor
@@ -127,8 +131,8 @@ public class CalendarPortletRunController extends BasicController {
 		cal.set(Calendar.DAY_OF_YEAR, cal.get(Calendar.DAY_OF_YEAR) + 7);
 		Date endDate = cal.getTime();
 		List<KalendarEvent> events = new ArrayList<>();
-		List<KalendarRenderWrapper> calendars = HomeCalendarController.getListOfCalendarWrappers(ureq, wControl);
-		calendars.addAll( HomeCalendarController.getListOfImportedCalendarWrappers(ureq) );
+		List<KalendarRenderWrapper> calendars = homeCalendarManager.getListOfCalendarWrappers(ureq, wControl);
+		calendars.addAll( homeCalendarManager.getListOfImportedCalendarWrappers(ureq) );
 		for (Iterator<KalendarRenderWrapper> iter = calendars.iterator(); iter.hasNext();) {
 			KalendarRenderWrapper calendarWrapper = iter.next();
 			boolean readOnly = (calendarWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY) && !calendarWrapper.isImported();

@@ -159,10 +159,10 @@ public class CalendarPrintMapper implements Mapper {
 </div>
 	*/
 	
-	private void renderEvents(StringBuilder sb, List<KalendarEventRenderWrapper> eventList, Date from , Date to) {
+	private void renderEvents(StringBuilder sb, List<KalendarEventRenderWrapper> eventList, Date dateFrom , Date dateTo) {
 		sb.append("<div class='o_cal_wv_print'><fieldset>")
-		  .append("<legend>").append(StringHelper.formatLocaleDateFull(from, translator.getLocale()))
-		  .append(" - ").append(StringHelper.formatLocaleDateFull(to, translator.getLocale()))
+		  .append("<legend>").append(StringHelper.formatLocaleDateFull(dateFrom, translator.getLocale()))
+		  .append(" - ").append(StringHelper.formatLocaleDateFull(dateTo, translator.getLocale()))
 		  .append("</legend>")
 		  .append("<ul class='o_cal_wv_list'>");
 		
@@ -231,7 +231,7 @@ public class CalendarPrintMapper implements Mapper {
 		}
 		sb.append("</span></div>\n");
 		// event name (subject)
-		//fxdiff BAKS-13: firefox doesn't break lines with only <br />, we need <p>
+		// firefox doesn't break lines with only <br />, we need <p>
 		sb.append("<div class=\"o_cal_subject " + eventWrapper.getCssClass() + "\"><p>");
 		if (hidden) {
 			sb.append("-");
@@ -275,8 +275,8 @@ public class CalendarPrintMapper implements Mapper {
 		  .append("</div>");
 	}
 	
-	private void renderCalendar(StringBuilder sb, List<KalendarRenderWrapper> calendarWrappers) {
-		for(KalendarRenderWrapper calendarWrapper:calendarWrappers) {
+	private void renderCalendar(StringBuilder sb, List<KalendarRenderWrapper> calendarWrapperList) {
+		for(KalendarRenderWrapper calendarWrapper:calendarWrapperList) {
 			String cssClass = calendarWrapper.getKalendarConfig().getCss();
 			sb.append("<div class='o_cal_config_row'><div class='o_cal_config_calendar ").append(cssClass).append("'>")
 			  .append(StringHelper.escapeHtml(calendarWrapper.getKalendarConfig().getDisplayName()))

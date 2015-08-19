@@ -39,6 +39,7 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * Initial Date: 09.03.2004
@@ -47,9 +48,9 @@ import org.olat.course.properties.PersistingCoursePropertyManager;
  */
 public class CourseEnvironmentImpl implements CourseEnvironment {
 
-	private PersistingCourseImpl course;
-	private CourseGroupManager cgm;
-	private CoursePropertyManager propertyManager;
+	private final PersistingCourseImpl course;
+	private final PersistingCourseGroupManager cgm;
+	private final CoursePropertyManager propertyManager;
 	private AssessmentManager assessmentManager;
 	private UserNodeAuditManager auditManager;
 
@@ -62,6 +63,16 @@ public class CourseEnvironmentImpl implements CourseEnvironment {
 		this.course = course;
 		this.propertyManager = PersistingCoursePropertyManager.getInstance(course);
 		this.cgm = PersistingCourseGroupManager.getInstance(course);
+	}
+	
+	public CourseEnvironmentImpl(PersistingCourseImpl course, RepositoryEntry courseEntry) {
+		this.course = course;
+		this.propertyManager = PersistingCoursePropertyManager.getInstance(course);
+		this.cgm = PersistingCourseGroupManager.getInstance(courseEntry);
+	}
+	
+	public void updateCourseEntry(RepositoryEntry courseEntry) {
+		cgm.updateCourseEntry(courseEntry);
 	}
 
 	/**

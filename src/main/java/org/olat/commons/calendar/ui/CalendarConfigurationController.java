@@ -26,12 +26,14 @@
 package org.olat.commons.calendar.ui;
 
 import java.util.Date;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.ICalTokenGenerator;
+import org.olat.commons.calendar.model.ICalToken;
 import org.olat.commons.calendar.model.KalendarConfig;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.commons.calendar.ui.events.KalendarGUIAddEvent;
@@ -46,10 +48,10 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.course.run.calendar.CourseCalendarSubscription;
 
-public class KalendarConfigurationController extends BasicController {
+public class CalendarConfigurationController extends BasicController {
 
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(CalendarManager.class);
 
@@ -60,51 +62,47 @@ public class KalendarConfigurationController extends BasicController {
 	private static final Object CMD_ICAL_FEED = "if";
 	private static final Object CMD_ICAL_REGENERATE = "rf";
 	private static final Object CMD_ICAL_REMOVE_FEED = "rmif";
-	private static final Object CMD_UNSUBSCRIBE = "unsub";
 	private static final String PARAM_ID = "id";
 
 	private VelocityContainer configVC;
 	private List<KalendarRenderWrapper> calendars;
-	private CalendarColorChooserController colorChooser;
-	private KalendarRenderWrapper lastCalendarWrapper;
+
 	private CloseableModalController cmc;
-	private String currentCalendarID;
 	private CalendarExportController exportController;
+	private CalendarColorChooserController colorChooser;
+
 	private DialogBoxController confirmRemoveDialog;
 	private DialogBoxController confirmRegenerateDialog;
-	
-	private List<String> subscriptionIds;
 
-	public KalendarConfigurationController(List<KalendarRenderWrapper> calendars, UserRequest ureq, WindowControl wControl, boolean insideManager) {
+	public CalendarConfigurationController(List<KalendarRenderWrapper> calendars, UserRequest ureq, WindowControl wControl, boolean insideManager) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, ureq.getLocale()));
 		
 		configVC = new VelocityContainer("calEdit", VELOCITY_ROOT + "/calConfig.html", getTranslator(), this);
-		setCalendars(ureq, calendars);
+		setCalendars(calendars);
 		configVC.contextPut("insideManager", insideManager);
 		configVC.contextPut("identity", ureq.getIdentity());
-		configVC.contextPut("removeFromPersonalCalendar", Boolean.TRUE);
 		putInitialPanel(configVC);
 	}
 	
-	public void setEnableRemoveFromPersonalCalendar(boolean enable) {
-		configVC.contextPut("removeFromPersonalCalendar", new Boolean(enable));
-	}
-
-	public void setCalendars(UserRequest ureq, List<KalendarRenderWrapper> calendars) {
-		subscriptionIds = CourseCalendarSubscription.getSubscribedCourseCalendarIDs(ureq.getUserSession().getGuiPreferences());
-		setCalendars(calendars);
+	@Override
+	protected void doDispose() {
+		//
 	}
 	
 	public void setCalendars(List<KalendarRenderWrapper> calendars) {
 		this.calendars = calendars;
-		for (KalendarRenderWrapper calendar: calendars) {
-			calendar.setSubscribed(subscriptionIds.contains(calendar.getKalendar().getCalendarID()));
-		}
-
 		configVC.contextPut("calendars", calendars);
+		
+		Map<ICalTokenKey, ICalToken> tokenMap = new HashMap<>();
+		List<ICalToken> tokens = ICalTokenGenerator.getICalAuthTokens(getIdentity());
+		for(ICalToken token:tokens) {
+			tokenMap.put(new ICalTokenKey(token.getType(), token.getResourceId()), token);
+		}
+		configVC.contextPut("icalTokens", new ICalTokens(getIdentity().getKey(), tokenMap));
 	}
 	
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == configVC) {
 			String command = event.getCommand();
@@ -125,45 +123,15 @@ public class KalendarConfigurationController extends BasicController {
 						config, calendarWrapper.getKalendar(), ureq);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if (command.equals(CMD_CHOOSE_COLOR)) {
-				String calendarID = ureq.getParameter(PARAM_ID);
-				lastCalendarWrapper = findKalendarRenderWrapper(calendarID);
-				removeAsListenerAndDispose(colorChooser);
-				colorChooser = new CalendarColorChooserController(ureq, getWindowControl(), lastCalendarWrapper.getKalendarConfig().getCss());
-				listenTo(colorChooser);
-				removeAsListenerAndDispose(cmc);
-				cmc = new CloseableModalController(getWindowControl(), translate("close"),  colorChooser.getInitialComponent(), false, translate("cal.color.title"));
-				listenTo(cmc);
-				cmc.activate();
+				doOpenColorChooser(ureq, ureq.getParameter(PARAM_ID));
 			} else if (command.equals(CMD_ICAL_FEED)) {
-				String calendarID = ureq.getParameter(PARAM_ID);
-				KalendarRenderWrapper calendarWrapper = findKalendarRenderWrapper(calendarID);
-				String calFeedLink = ICalTokenGenerator.getIcalFeedLink(calendarWrapper.getKalendar().getType(), calendarID, ureq.getIdentity());
-				exportController = new CalendarExportController(getLocale(), getWindowControl(), calFeedLink);
-				listenTo(exportController);
-				removeAsListenerAndDispose(cmc);
-				cmc = new CloseableModalController(getWindowControl(), translate("close"), exportController.getInitialComponent());
-				cmc.activate();
-				listenTo(cmc);
+				doShowICalink(ureq.getParameter(PARAM_ID));
 			} else if (command.equals(CMD_ICAL_REGENERATE)) {
-				currentCalendarID = ureq.getParameter(PARAM_ID);
 				confirmRegenerateDialog = activateOkCancelDialog(ureq, translate("cal.icalfeed.regenerate.title"), translate("cal.icalfeed.regenerate.warning"), confirmRegenerateDialog);
+				confirmRegenerateDialog.setUserObject(ureq.getParameter(PARAM_ID));
 			} else if (command.equals(CMD_ICAL_REMOVE_FEED)) {
-				currentCalendarID = ureq.getParameter(PARAM_ID);
 				confirmRemoveDialog = activateOkCancelDialog(ureq, translate("cal.icalfeed.remove.title"), translate("cal.icalfeed.remove.confirmation_message"), confirmRemoveDialog);
-			} else if (command.equals(CMD_UNSUBSCRIBE)) {
-				currentCalendarID = ureq.getParameter(PARAM_ID);
-				KalendarRenderWrapper calendarWrapper = findKalendarRenderWrapper(currentCalendarID);
-				CalendarSubscription subscription = new CourseCalendarSubscription(calendarWrapper.getKalendar(), ureq.getUserSession().getGuiPreferences());
-				subscription.unsubscribe();
-				
-				for (Iterator<KalendarRenderWrapper> it=calendars.iterator(); it.hasNext(); ) {
-					KalendarRenderWrapper calendar = it.next();
-					if (calendarWrapper.getKalendar().getCalendarID().equals(calendar.getKalendar().getCalendarID())) {
-						it.remove();
-					}
-				}
-				configVC.contextPut("calendars", calendars);
-				fireEvent(ureq, Event.CHANGED_EVENT);
+				confirmRemoveDialog.setUserObject(ureq.getParameter(PARAM_ID));
 			}
 		}
 	}
@@ -173,34 +141,95 @@ public class KalendarConfigurationController extends BasicController {
 		if (source == colorChooser) {
 			cmc.deactivate();
 			if (event == Event.DONE_EVENT) {
-				String choosenColor = colorChooser.getChoosenColor();
-				KalendarConfig config = lastCalendarWrapper.getKalendarConfig();
-				config.setCss(choosenColor);
-				CalendarManagerFactory.getInstance().getCalendarManager().saveKalendarConfigForIdentity(
-						config, lastCalendarWrapper.getKalendar(), ureq);
-				fireEvent(ureq, Event.CHANGED_EVENT);
+				doChooseColor(ureq);
 			}
+			cleanUp();
 		} else if (source == confirmRemoveDialog ) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
-				KalendarRenderWrapper calendarWrapper = findKalendarRenderWrapper(currentCalendarID);
-				ICalTokenGenerator.destroyIcalAuthToken(calendarWrapper.getKalendar().getType(), currentCalendarID, ureq.getIdentity());							
+				doRemoveToken((String)confirmRemoveDialog.getUserObject());
 				showInfo("cal.icalfeed.remove.info");
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if (source == confirmRegenerateDialog) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
-				KalendarRenderWrapper calendarWrapper = findKalendarRenderWrapper(currentCalendarID);
-				ICalTokenGenerator.regenerateIcalAuthToken(calendarWrapper.getKalendar().getType(), currentCalendarID, ureq.getIdentity());			
-				String calFeedLink = ICalTokenGenerator.getIcalFeedLink(calendarWrapper.getKalendar().getType(), currentCalendarID, ureq.getIdentity());
-				exportController = new CalendarExportController(getLocale(), getWindowControl(), calFeedLink);
-				listenTo(exportController);
-				removeAsListenerAndDispose(cmc);
-				cmc = new CloseableModalController(getWindowControl(), translate("close"), exportController.getInitialComponent());
-				cmc.activate();
-				listenTo(cmc);		
+				doRegenerateToken((String)confirmRegenerateDialog.getUserObject()); 	
 			}
+		} else if (source == cmc) {
+			cleanUp();
 		}
 		configVC.setDirty(true);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(colorChooser);
+		removeAsListenerAndDispose(exportController);
+		
+		cmc = null;
+		colorChooser = null;
+		exportController = null;
+	}
+	
+	private void doShowICalink(String calendarID) {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(exportController);
+		
+		KalendarRenderWrapper calendarWrapper = findKalendarRenderWrapper(calendarID);
+		String calFeedLink = ICalTokenGenerator.getIcalFeedLink(calendarWrapper.getKalendar().getType(), calendarID, getIdentity());
+		exportController = new CalendarExportController(getLocale(), getWindowControl(), calFeedLink);
+		listenTo(exportController);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), exportController.getInitialComponent());
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doOpenColorChooser(UserRequest ureq, String calendarID) {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(colorChooser);
+		
+		KalendarRenderWrapper calendarWrapper = findKalendarRenderWrapper(calendarID);
+		colorChooser = new CalendarColorChooserController(ureq, getWindowControl(), calendarWrapper, calendarWrapper.getKalendarConfig().getCss());
+
+		listenTo(colorChooser);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),  colorChooser.getInitialComponent(), false, translate("cal.color.title"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doChooseColor(UserRequest ureq) {
+		String choosenColor = colorChooser.getChoosenColor();
+		KalendarRenderWrapper calendarWrapper = colorChooser.getCalendarWrapper();
+		KalendarConfig config = calendarWrapper.getKalendarConfig();
+		config.setCss(choosenColor);
+		CalendarManagerFactory.getInstance().getCalendarManager().saveKalendarConfigForIdentity(
+				config, calendarWrapper.getKalendar(), ureq);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void doRegenerateToken(String calendarId) {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(exportController);
+		
+		KalendarRenderWrapper calendarWrapper = findKalendarRenderWrapper(calendarId);
+		ICalTokenGenerator.regenerateIcalAuthToken(calendarWrapper.getKalendar().getType(), calendarId, getIdentity());			
+		String calFeedLink = ICalTokenGenerator.getIcalFeedLink(calendarWrapper.getKalendar().getType(), calendarId, getIdentity());
+		
+		exportController = new CalendarExportController(getLocale(), getWindowControl(), calFeedLink);
+		listenTo(exportController);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), exportController.getInitialComponent());
+		cmc.activate();
+		listenTo(cmc);
+		
+		//update token
+	}
+	
+	private void doRemoveToken(String calendarId) {
+		KalendarRenderWrapper calendarWrapper = findKalendarRenderWrapper(calendarId);
+		ICalTokenGenerator.destroyIcalAuthToken(calendarWrapper.getKalendar().getType(), calendarId, getIdentity());
+		//remove tokens
 	}
 	
 	private KalendarRenderWrapper findKalendarRenderWrapper(String calendarID) {
@@ -210,12 +239,58 @@ public class KalendarConfigurationController extends BasicController {
 		}
 		return null;
 	}
-	
 
-	protected void doDispose() {
-		// controllers disposed by BasicController
-		cmc = null;
-		colorChooser = null;
+	public static class ICalTokens {
+		
+		private final Long identityKey;
+		private final Map<ICalTokenKey, ICalToken> tokenMap;
+		
+		public ICalTokens(Long identityKey, Map<ICalTokenKey, ICalToken> tokenMap) {
+			this.identityKey = identityKey;
+			this.tokenMap = tokenMap;
+		}
+		
+		public boolean hasIcalFeed(KalendarRenderWrapper wrapper) {
+			String type = wrapper.getKalendar().getType();
+			Long calendarId;
+			if(CalendarManager.TYPE_USER.equals(type)) {
+				calendarId = identityKey;
+			} else {
+				calendarId = Long.valueOf(wrapper.getKalendar().getCalendarID());
+			}
+			ICalTokenKey tokenKey = new ICalTokenKey(type, calendarId);
+			ICalToken token = tokenMap.get(tokenKey);
+			return token != null && StringHelper.containsNonWhitespace(token.getToken());
+		}
 	}
+	
+	public static class ICalTokenKey {
+		
+		private final String type;
+		private final Long resourceId;
+		
+		public ICalTokenKey(String type, Long resourceId) {
+			this.type = type;
+			this.resourceId = resourceId;
+		}
 
+		@Override
+		public int hashCode() {
+			return type.hashCode()
+					+ resourceId.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof ICalTokenKey) {
+				ICalTokenKey key = (ICalTokenKey)obj;
+				return key.resourceId.equals(resourceId)
+						&& key.type.equals(type);
+			}
+			return false;
+		}	
+	}
 }

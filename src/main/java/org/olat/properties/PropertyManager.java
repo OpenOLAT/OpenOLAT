@@ -33,6 +33,7 @@ import java.util.List;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -167,6 +168,28 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 			return null;
 		}
 		return props.get(0);
+	}
+	
+	/**
+	 * Return all the properties with the specified name and category
+	 * 
+	 * @param identity
+	 * @param category
+	 * @param name
+	 * @return
+	 */
+	public List<Property> findAllUserProperties(IdentityRef identity, String category, String name) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from ").append(Property.class.getName()).append(" as v ")
+		  .append(" inner join v.identity identity ")
+		  .append(" where identity.key=:identityKey and v.category=:cat and v.name=:name");
+		
+		return DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Property.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("cat", category)
+				.setParameter("name", name)
+				.getResultList();
 	}
 
 	

@@ -88,7 +88,7 @@ public class ConditionTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("condition");
 		Roles roles = new Roles(false, false, false, false, false, false, false);
 		RepositoryEntry re = JunitTestHelper.deployDemoCourse(author);
-		ICourse course = CourseFactory.loadCourse(re.getOlatResource());
+		ICourse course = CourseFactory.loadCourse(re);
 		IdentityEnvironment identityEnv = new IdentityEnvironment(id, roles);
 		UserCourseEnvironment uce = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
 		return uce;

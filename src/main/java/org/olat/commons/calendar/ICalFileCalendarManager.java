@@ -45,6 +45,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.olat.commons.calendar.model.Kalendar;
+import org.olat.commons.calendar.model.KalendarConfig;
+import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.model.KalendarEventLink;
+import org.olat.commons.calendar.model.KalendarRecurEvent;
+import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.commons.calendar.ui.events.KalendarModifiedEvent;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.cache.CacheWrapper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.coordinate.SyncerCallback;
+import org.olat.core.util.prefs.Preferences;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.course.ICourse;
+import org.olat.group.BusinessGroup;
+
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.CalendarOutputter;
 import net.fortuna.ical4j.model.Calendar;
@@ -74,33 +99,7 @@ import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
 import net.fortuna.ical4j.model.property.XProperty;
 
-import org.olat.commons.calendar.model.Kalendar;
-import org.olat.commons.calendar.model.KalendarConfig;
-import org.olat.commons.calendar.model.KalendarEvent;
-import org.olat.commons.calendar.model.KalendarEventLink;
-import org.olat.commons.calendar.model.KalendarRecurEvent;
-import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
-import org.olat.commons.calendar.ui.events.KalendarModifiedEvent;
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.gui.UserRequest;
-import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
-import org.olat.core.util.CodeHelper;
-import org.olat.core.util.FileUtils;
-import org.olat.core.util.StringHelper;
-import org.olat.core.util.cache.CacheWrapper;
-import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.SyncerCallback;
-import org.olat.core.util.prefs.Preferences;
-import org.olat.core.util.resource.OresHelper;
-import org.olat.course.ICourse;
-import org.olat.group.BusinessGroup;
-
-public class ICalFileCalendarManager extends BasicManager implements CalendarManager {
+public class ICalFileCalendarManager implements CalendarManager {
 
 	private static final OLog log = Tracing.createLoggerFor(ICalFileCalendarManager.class);
 
@@ -672,6 +671,7 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 		fDirectory.mkdirs();
 	}
 
+	@Override
 	public KalendarRenderWrapper getPersonalCalendar(Identity identity) {
 		Kalendar cal = getCalendar(CalendarManager.TYPE_USER, identity.getName());
 		KalendarRenderWrapper calendarWrapper = new KalendarRenderWrapper(cal);
@@ -680,6 +680,7 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 		return calendarWrapper;
 	}
 
+	@Override
 	public KalendarRenderWrapper getImportedCalendar(Identity identity, String calendarName) {
 		Kalendar cal = getCalendar(CalendarManager.TYPE_USER, ImportCalendarManager.getImportedCalendarID(identity, calendarName));
 		KalendarRenderWrapper calendarWrapper = new KalendarRenderWrapper(cal);
@@ -687,7 +688,8 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 		calendarWrapper.setKalendarConfig(config);
 		return calendarWrapper;
 	}
-	
+
+	@Override
 	public KalendarRenderWrapper getGroupCalendar(BusinessGroup businessGroup) {
 		Kalendar cal = getCalendar(CalendarManager.TYPE_GROUP, businessGroup.getResourceableId().toString());
 		KalendarRenderWrapper calendarWrapper = new KalendarRenderWrapper(cal);

@@ -79,7 +79,7 @@ public class AttemptsRuleSPI implements FilterRuleSPI {
 			String operator = r.getOperator();
 			int value = Integer.parseInt(r.getRightOperand());
 			
-			ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+			ICourse course = CourseFactory.loadCourse(entry);
 			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
 
 			Map<Long, Integer> attempts = helperDao.getAttempts(entry.getOlatResource().getResourceableId(), courseNode, identities);

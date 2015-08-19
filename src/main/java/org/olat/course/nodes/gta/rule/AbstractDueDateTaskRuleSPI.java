@@ -80,7 +80,7 @@ public abstract class AbstractDueDateTaskRuleSPI implements IdentitiesProviderRu
 			ReminderRuleImpl r = (ReminderRuleImpl)rule;
 			String nodeIdent = r.getLeftOperand();
 	
-			ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+			ICourse course = CourseFactory.loadCourse(entry);
 			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
 			if(courseNode instanceof GTACourseNode) {
 				identities = evaluateRule(entry, (GTACourseNode)courseNode, r);

@@ -26,8 +26,12 @@
 
 package org.olat.commons.calendar;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang.RandomStringUtils;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.commons.calendar.model.ICalToken;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -112,6 +116,31 @@ public class ICalTokenGenerator {
   	//return the generated token
   	return token;
   }
+  
+  	public static List<ICalToken> getICalAuthTokens(Identity identity) {
+  		PropertyManager pm = PropertyManager.getInstance();
+  		List<Property> tokenProperties = pm.findAllUserProperties(identity, PROP_CAT_ICALTOKEN, PROP_NAME_ICALTOKEN);
+  		List<ICalToken> tokens = new ArrayList<>();
+  		for(Property tokenProperty:tokenProperties) {
+  			Long resourceId = tokenProperty.getResourceTypeId();
+  			String resourceName = tokenProperty.getResourceTypeName();
+  			String value = tokenProperty.getStringValue();
+  			
+  			String type;
+  			if(resourceId == null) {
+  				type = CalendarManager.TYPE_USER;
+  				resourceId = identity.getKey();
+  			} else if("CourseModule".equals(resourceName)) {
+  				type = CalendarManager.TYPE_COURSE;
+  			} else if("BusinessGroup".equals(resourceName)) {
+  				type = CalendarManager.TYPE_GROUP;
+  			} else {
+  				continue;
+  			}
+  			tokens.add(new ICalToken(type, value, resourceId));
+  		}
+  		return tokens;
+	}
   
   private static String getIcalAuthToken(OLATResourceable resourceable, Identity identity, boolean create) {
   	// find the property for the resourceable
