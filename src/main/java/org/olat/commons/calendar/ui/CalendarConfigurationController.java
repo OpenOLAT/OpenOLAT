@@ -33,6 +33,7 @@ import java.util.Map;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.ICalTokenGenerator;
+import org.olat.commons.calendar.ICalTokenGenerator.FeedLink;
 import org.olat.commons.calendar.model.ICalToken;
 import org.olat.commons.calendar.model.KalendarConfig;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
@@ -64,6 +65,7 @@ public class CalendarConfigurationController extends BasicController {
 	private static final Object CMD_ICAL_REMOVE_FEED = "rmif";
 	private static final String PARAM_ID = "id";
 
+	private ICalTokens iCalTokens;
 	private VelocityContainer configVC;
 	private List<KalendarRenderWrapper> calendars;
 
@@ -79,9 +81,10 @@ public class CalendarConfigurationController extends BasicController {
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, ureq.getLocale()));
 		
 		configVC = new VelocityContainer("calEdit", VELOCITY_ROOT + "/calConfig.html", getTranslator(), this);
-		setCalendars(calendars);
 		configVC.contextPut("insideManager", insideManager);
 		configVC.contextPut("identity", ureq.getIdentity());
+		
+		setCalendars(calendars);
 		putInitialPanel(configVC);
 	}
 	
@@ -94,12 +97,13 @@ public class CalendarConfigurationController extends BasicController {
 		this.calendars = calendars;
 		configVC.contextPut("calendars", calendars);
 		
-		Map<ICalTokenKey, ICalToken> tokenMap = new HashMap<>();
+		ICalTokens newICalTokens = new ICalTokens(getIdentity().getKey());
 		List<ICalToken> tokens = ICalTokenGenerator.getICalAuthTokens(getIdentity());
 		for(ICalToken token:tokens) {
-			tokenMap.put(new ICalTokenKey(token.getType(), token.getResourceId()), token);
+			newICalTokens.put(new ICalTokenKey(token.getType(), token.getResourceId()), token);
 		}
-		configVC.contextPut("icalTokens", new ICalTokens(getIdentity().getKey(), tokenMap));
+		configVC.contextPut("icalTokens", newICalTokens);
+		iCalTokens = newICalTokens;
 	}
 	
 	@Override
@@ -115,13 +119,7 @@ public class CalendarConfigurationController extends BasicController {
 				String calendarID = ureq.getParameter(PARAM_ID);
 				fireEvent(ureq, new KalendarGUIImportEvent(calendarID));
 			} else if (command.equals(CMD_TOGGLE_DISPLAY)) {
-				String calendarID = ureq.getParameter(PARAM_ID);
-				KalendarRenderWrapper calendarWrapper = findKalendarRenderWrapper(calendarID);
-				KalendarConfig config = calendarWrapper.getKalendarConfig();
-				config.setVis(!config.isVis());
-				CalendarManagerFactory.getInstance().getCalendarManager().saveKalendarConfigForIdentity(
-						config, calendarWrapper.getKalendar(), ureq);
-				fireEvent(ureq, Event.CHANGED_EVENT);
+				doToogleDisplay(ureq, ureq.getParameter(PARAM_ID));
 			} else if (command.equals(CMD_CHOOSE_COLOR)) {
 				doOpenColorChooser(ureq, ureq.getParameter(PARAM_ID));
 			} else if (command.equals(CMD_ICAL_FEED)) {
@@ -175,13 +173,21 @@ public class CalendarConfigurationController extends BasicController {
 		removeAsListenerAndDispose(exportController);
 		
 		KalendarRenderWrapper calendarWrapper = findKalendarRenderWrapper(calendarID);
-		String calFeedLink = ICalTokenGenerator.getIcalFeedLink(calendarWrapper.getKalendar().getType(), calendarID, getIdentity());
-		exportController = new CalendarExportController(getLocale(), getWindowControl(), calFeedLink);
+		FeedLink calFeedLink = ICalTokenGenerator.getIcalFeedLink(calendarWrapper.getKalendar().getType(), calendarID, getIdentity());
+		exportController = new CalendarExportController(getLocale(), getWindowControl(), calFeedLink.getLink());
 		listenTo(exportController);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), exportController.getInitialComponent());
 		listenTo(cmc);
 		cmc.activate();
+		
+		String type = calendarWrapper.getKalendar().getType();
+		if(CalendarManager.TYPE_USER.equals(type)) {
+			iCalTokens.update(new ICalTokenKey(type, getIdentity().getKey()), calFeedLink.getToken());
+		} else {
+			iCalTokens.update(new ICalTokenKey(type, Long.valueOf(calendarID)), calFeedLink.getToken());
+		}
+		configVC.setDirty(true);
 	}
 	
 	private void doOpenColorChooser(UserRequest ureq, String calendarID) {
@@ -203,8 +209,15 @@ public class CalendarConfigurationController extends BasicController {
 		KalendarRenderWrapper calendarWrapper = colorChooser.getCalendarWrapper();
 		KalendarConfig config = calendarWrapper.getKalendarConfig();
 		config.setCss(choosenColor);
-		CalendarManagerFactory.getInstance().getCalendarManager().saveKalendarConfigForIdentity(
-				config, calendarWrapper.getKalendar(), ureq);
+		CalendarManagerFactory.getInstance().getCalendarManager().saveKalendarConfigForIdentity(config, calendarWrapper.getKalendar(), ureq);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void doToogleDisplay(UserRequest ureq, String calendarID) {
+		KalendarRenderWrapper calendarWrapper = findKalendarRenderWrapper(calendarID);
+		KalendarConfig config = calendarWrapper.getKalendarConfig();
+		config.setVis(!config.isVis());
+		CalendarManagerFactory.getInstance().getCalendarManager().saveKalendarConfigForIdentity(config, calendarWrapper.getKalendar(), ureq);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -213,23 +226,35 @@ public class CalendarConfigurationController extends BasicController {
 		removeAsListenerAndDispose(exportController);
 		
 		KalendarRenderWrapper calendarWrapper = findKalendarRenderWrapper(calendarId);
-		ICalTokenGenerator.regenerateIcalAuthToken(calendarWrapper.getKalendar().getType(), calendarId, getIdentity());			
-		String calFeedLink = ICalTokenGenerator.getIcalFeedLink(calendarWrapper.getKalendar().getType(), calendarId, getIdentity());
+		FeedLink calFeedLink = ICalTokenGenerator.regenerateIcalAuthToken(calendarWrapper.getKalendar().getType(), calendarId, getIdentity());
 		
-		exportController = new CalendarExportController(getLocale(), getWindowControl(), calFeedLink);
+		exportController = new CalendarExportController(getLocale(), getWindowControl(), calFeedLink.getLink());
 		listenTo(exportController);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), exportController.getInitialComponent());
 		cmc.activate();
 		listenTo(cmc);
 		
-		//update token
+		String type = calendarWrapper.getKalendar().getType();
+		if(CalendarManager.TYPE_USER.equals(type)) {
+			iCalTokens.update(new ICalTokenKey(type, getIdentity().getKey()), calFeedLink.getToken());
+		} else {
+			iCalTokens.update(new ICalTokenKey(type, Long.valueOf(calendarId)), calFeedLink.getToken());
+		}
+		configVC.setDirty(true);
 	}
 	
 	private void doRemoveToken(String calendarId) {
 		KalendarRenderWrapper calendarWrapper = findKalendarRenderWrapper(calendarId);
 		ICalTokenGenerator.destroyIcalAuthToken(calendarWrapper.getKalendar().getType(), calendarId, getIdentity());
-		//remove tokens
+		
+		String type = calendarWrapper.getKalendar().getType();
+		if(CalendarManager.TYPE_USER.equals(type)) {
+			iCalTokens.remove(new ICalTokenKey(type, getIdentity().getKey()));
+		} else {
+			iCalTokens.remove(new ICalTokenKey(type, Long.valueOf(calendarId)));
+		}
+		configVC.setDirty(true);
 	}
 	
 	private KalendarRenderWrapper findKalendarRenderWrapper(String calendarID) {
@@ -243,11 +268,33 @@ public class CalendarConfigurationController extends BasicController {
 	public static class ICalTokens {
 		
 		private final Long identityKey;
-		private final Map<ICalTokenKey, ICalToken> tokenMap;
+		private final Map<ICalTokenKey, ICalToken> tokenMap = new HashMap<>();
 		
-		public ICalTokens(Long identityKey, Map<ICalTokenKey, ICalToken> tokenMap) {
+		public ICalTokens(Long identityKey) {
 			this.identityKey = identityKey;
-			this.tokenMap = tokenMap;
+		}
+		
+		public void put(ICalTokenKey key, ICalToken token) {
+			synchronized(tokenMap) {
+				tokenMap.put(key, token);
+			}
+		}
+		
+		public void remove(ICalTokenKey key) {
+			synchronized(tokenMap) {
+				tokenMap.remove(key);
+			}
+		}
+		
+		public void update(ICalTokenKey key, String newToken) {
+			ICalToken token = tokenMap.get(key);
+			synchronized(tokenMap) {
+				if(token != null) {
+					tokenMap.put(key, new ICalToken(token, newToken));
+				} else {
+					tokenMap.put(key, new ICalToken(key.getType(), newToken, key.getResourceId()));
+				}
+			}
 		}
 		
 		public boolean hasIcalFeed(KalendarRenderWrapper wrapper) {
@@ -259,8 +306,10 @@ public class CalendarConfigurationController extends BasicController {
 				calendarId = Long.valueOf(wrapper.getKalendar().getCalendarID());
 			}
 			ICalTokenKey tokenKey = new ICalTokenKey(type, calendarId);
-			ICalToken token = tokenMap.get(tokenKey);
-			return token != null && StringHelper.containsNonWhitespace(token.getToken());
+			synchronized(tokenMap) {
+				ICalToken token = tokenMap.get(tokenKey);
+				return token != null && StringHelper.containsNonWhitespace(token.getToken());
+			}
 		}
 	}
 	
@@ -272,6 +321,14 @@ public class CalendarConfigurationController extends BasicController {
 		public ICalTokenKey(String type, Long resourceId) {
 			this.type = type;
 			this.resourceId = resourceId;
+		}
+		
+		public String getType() {
+			return type;
+		}
+		
+		public Long getResourceId() {
+			return resourceId;
 		}
 
 		@Override

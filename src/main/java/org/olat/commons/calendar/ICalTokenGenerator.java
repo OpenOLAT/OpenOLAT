@@ -331,19 +331,21 @@ public class ICalTokenGenerator {
    * @param identity
    * @return authentication token
    */
-  public static String regenerateIcalAuthToken(String calendarType, String calendarID, Identity identity) {
-  	
-  	if (!calendarType.equals(ICalFileCalendarManager.TYPE_USER)) {
-  		// get the resourceable
-  		OLATResourceable resourceable = getResourceable(calendarType, calendarID);
-  		if (resourceable == null) {
-  			return null;
-  		}
-  		return regenerateIcalAuthToken(resourceable, identity);
-  	} else {
-  		return regenerateIcalAuthToken(identity);
-  	}
-  }
+	public static FeedLink regenerateIcalAuthToken(String calendarType, String calendarID, Identity identity) {
+		String authToken;
+	  	if (!calendarType.equals(ICalFileCalendarManager.TYPE_USER)) {
+	  		// get the resourceable
+	  		OLATResourceable resourceable = getResourceable(calendarType, calendarID);
+	  		if (resourceable == null) {
+	  			return null;
+	  		}
+	  		authToken = regenerateIcalAuthToken(resourceable, identity);
+	  	} else {
+	  		authToken = regenerateIcalAuthToken(identity);
+	  	}
+	  	String path = constructIcalFeedPath(calendarType, identity.getName(), authToken, calendarID);
+	  	return new FeedLink(authToken, path);
+	}
   
   /**
    * return the ical feed link for the calendar. 
@@ -353,12 +355,10 @@ public class ICalTokenGenerator {
    * @param identity
    * @return
    */
-  public static String getIcalFeedLink(String calendarType, String calendarID, Identity identity) {
-  	
-  	// get the authentication token
-  	String authToken = getIcalAuthToken(calendarType, calendarID, identity, true);
-  	
-  	return constructIcalFeedPath(calendarType, identity.getName(), authToken, calendarID);
+	public static FeedLink getIcalFeedLink(String calendarType, String calendarID, Identity identity) {
+	  	String authToken = getIcalAuthToken(calendarType, calendarID, identity, true);
+	  	String path = constructIcalFeedPath(calendarType, identity.getName(), authToken, calendarID);
+	  	return new FeedLink(authToken, path);
   }
   
   /**
@@ -368,7 +368,7 @@ public class ICalTokenGenerator {
    * @param identity
    * @return
    */
-  public static boolean existIcalFeedLink(String calendarType, String calendarID, Identity identity) {
+	public static boolean existIcalFeedLink(String calendarType, String calendarID, Identity identity) {
   	Property tokenProperty = null;
   	if (!calendarType.equals(ICalFileCalendarManager.TYPE_USER)) {
 	  	// find the property for the resourceable
@@ -380,5 +380,24 @@ public class ICalTokenGenerator {
     	tokenProperty = pm.findProperty(identity, null, null, PROP_CAT_ICALTOKEN, PROP_NAME_ICALTOKEN);
   	}
   	return tokenProperty != null;
-   }
+	}
+	
+	public static class FeedLink {
+		
+		private final String token;
+		private final String link;
+		
+		public FeedLink(String token, String link) {
+			this.token = token;
+			this.link = link;
+		}
+		
+		public String getToken() {
+			return token;
+		}
+		
+		public String getLink() {
+			return link;
+		}
+	}
 }

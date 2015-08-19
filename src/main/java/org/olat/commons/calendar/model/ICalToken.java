@@ -36,6 +36,12 @@ public class ICalToken {
 		this.token = token;
 		this.resourceId = resourceId;
 	}
+	
+	public ICalToken(ICalToken iCalToken, String token) {
+		this.type = iCalToken.getType();
+		this.token = token;
+		this.resourceId = iCalToken.getResourceId();
+	}
 
 	public String getType() {
 		return type;
