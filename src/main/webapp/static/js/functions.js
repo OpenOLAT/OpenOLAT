@@ -1200,7 +1200,7 @@ function o_ffXHRNFEvent(targetUrl) {
 		cache: false,
 		dataType: 'json',
 		success: function(data, textStatus, jqXHR) {
-			console.log('Hourra');
+			if(window.console) console.log('Hourra');
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
 			if(window.console) console.log('Error status', textStatus);

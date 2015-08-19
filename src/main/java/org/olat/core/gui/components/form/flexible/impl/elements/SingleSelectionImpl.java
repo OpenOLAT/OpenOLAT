@@ -225,7 +225,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	
 	@Override
 	public void validate(List<ValidationStatus> validationResults) {
-		if ( ! isOneSelected()) {
+		if (isVisible() && !isOneSelected()) {
 			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
 			return;
 		}
