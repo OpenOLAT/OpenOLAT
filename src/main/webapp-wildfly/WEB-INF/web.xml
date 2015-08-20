@@ -159,20 +159,9 @@
 	<!-- ICAL feed requests -->
 	<servlet>
 		<servlet-name>ical</servlet-name>
-		<servlet-class>org.olat.commons.servlets.ICalServlet</servlet-class>
-
-		<init-param>
-			<param-name>input</param-name>
-			<param-value>32768</param-value>
-		</init-param>
-
-		<init-param>
-			<param-name>output</param-name>
-			<param-value>32768</param-value>
-		</init-param>
-
+		<servlet-class>org.olat.commons.calendar.ICalServlet</servlet-class>
 		<load-on-startup>3</load-on-startup>
-  </servlet>	
+	</servlet>	
 
 	<!-- 5.Servlet-Mapping -->
 	<!-- The mapping for the OLAT servlet -->
