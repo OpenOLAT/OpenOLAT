@@ -600,7 +600,7 @@ public class OnyxReporterConnector {
 				}
 			}
 		} catch (Exception e) {
-			Tracing.createLoggerFor(getClass()).error("Error while trying to connect to webservice: " + target, e);
+			log.error("Error while trying to connect to webservice: " + target, e);
 		}
 		return false;
 	}

@@ -35,12 +35,15 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
 public class InstitutionPortletRunController extends BasicController {
+	
+	private static final OLog log = Tracing.createLoggerFor(InstitutionPortletRunController.class);
 	
 	private VelocityContainer portletVC;
 	private List<String> polyLinks;
@@ -153,13 +156,13 @@ public class InstitutionPortletRunController extends BasicController {
 				try {
 					resultIDForUser = Long.parseLong(resultIDForUserS);
 				} catch (NumberFormatException e) {
-					Tracing.createLoggerFor(InstitutionPortletRunController.class).error(e.getMessage());
+					log.error(e.getMessage());
 				}
 			}
 			try {
 				defaultID = Long.parseLong(polyLink.getDefaultLink());
 			} catch (NumberFormatException e) {
-				Tracing.createLoggerFor(InstitutionPortletRunController.class).error(e.getMessage());
+				log.error(e.getMessage());
 			}
 
 			if (polyLink.getLinkType().equals(InstitutionPortlet.TYPE_COURSE)) {
@@ -188,7 +191,7 @@ public class InstitutionPortletRunController extends BasicController {
 					String businessPath = "[CatalogEntry:" + ceKey + "]";
 					NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 				} catch (Exception e) {
-					Tracing.createLoggerFor(InstitutionPortletRunController.class).error(e.getMessage());
+					log.error(e.getMessage());
 					getWindowControl().setWarning(translate("warn.cantlaunch"));
 				}
 			}

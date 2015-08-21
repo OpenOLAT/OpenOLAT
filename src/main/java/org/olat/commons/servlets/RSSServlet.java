@@ -28,8 +28,6 @@ package org.olat.commons.servlets;
 import java.io.Writer;
 import java.util.Date;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -63,32 +61,12 @@ public class RSSServlet extends HttpServlet {
 	private static final long serialVersionUID = -674630331334472714L;
 	private static final OLog log = Tracing.createLoggerFor(RSSServlet.class);
 	public static final String DEFAULT_ENCODING = "UTF-8";
-	private static int outputBufferSize = 2048;
-	private static int inputBufferSize = 2048;
-
-
-	/**
-	 * @see javax.servlet.Servlet#init(javax.servlet.ServletConfig)
-	 */
-	public void init(ServletConfig servletConfig) throws ServletException {
-		super.init(servletConfig);
-		log.info("init statics servlet");
-		try {
-			String bufSize = servletConfig.getInitParameter("input");
-			inputBufferSize = Integer.parseInt(bufSize);
-			bufSize = servletConfig.getInitParameter("output");
-			outputBufferSize = Integer.parseInt(bufSize);
-		} catch (Exception e) {
-			log.warn("problem with config parameters for rss servlets:", e);
-		}
-		log.info("input buffer size: " + inputBufferSize);
-		log.info("output buffer size: " + outputBufferSize);
-	}
 
 	/**
 	 * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest,
 	 *      javax.servlet.http.HttpServletResponse)
 	 */
+	@Override
 	protected void service(HttpServletRequest req, HttpServletResponse resp) {
 		Tracing.setUreq(req);
 		I18nManager.attachI18nInfoToThread(req);
@@ -138,7 +116,7 @@ public class RSSServlet extends HttpServlet {
 			// on the client-side which remains unnoticed (network partitioning)
 			DBFactory.getInstance().intermediateCommit();
 			
-			response.setBufferSize(outputBufferSize);
+			response.setBufferSize(response.getBufferSize());
 
 			String encoding = feed.getEncoding();
 			if (encoding == null) {

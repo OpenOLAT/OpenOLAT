@@ -201,9 +201,10 @@ public class ServletUtil {
 					if (size != null) {
 						httpResp.setContentLength(size.intValue());
 					}
+					int bufferSize = httpResp.getBufferSize();
 					// buffer input stream
-					bis = new BufferedInputStream(in);
-					IOUtils.copy(bis, out);
+					bis = new BufferedInputStream(in, bufferSize);
+					IOUtils.copyLarge(bis, out, new byte[bufferSize]);
 				}
 				
 				if (debug) {

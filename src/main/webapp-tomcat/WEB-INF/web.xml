@@ -195,17 +195,6 @@
 	<servlet>
 		<servlet-name>rss</servlet-name>
 		<servlet-class>org.olat.commons.servlets.RSSServlet</servlet-class>
-
-		<init-param>
-			<param-name>input</param-name>
-			<param-value>32768</param-value>
-		</init-param>
-
-		<init-param>
-			<param-name>output</param-name>
-			<param-value>32768</param-value>
-		</init-param>
-
 		<load-on-startup>3</load-on-startup>
 	</servlet>	
 

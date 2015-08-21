@@ -229,7 +229,6 @@ public class Wiki implements WikiContainer, Serializable {
 		}
 		String pageName = p.getProperty(WikiManager.PAGENAME);
 		if(pageName == null){
-			OLog log = Tracing.createLoggerFor(Wiki.class);
 			log.warn("wiki properties page is persent but without content. Name:"+leaf.getName());
 			return null;
 		}
