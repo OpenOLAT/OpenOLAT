@@ -43,7 +43,7 @@
 	   href="$r.commandURIbg("if", "id", "$calendarWrapper.getKalendar().getCalendarID()")" $r.bgTarget() 
 	   title="$r.translateInAttribute("cal.icalfeed.subscribe")"><i class="o_icon o_icon-lg o_icon_rss"> </i></a>
 
-	#if ($calendarWrapper.hasIcalFeed($identity))
+	#if ($icalTokens.hasIcalFeed($calendarWrapper))
 		<a class="o_cal_config_remove_subscribeical" 
     		href="$r.commandURIbg("rmif", "id", "$calendarWrapper.getKalendar().getCalendarID()")" $r.bgTarget() 
 	  		title="$r.translateInAttribute("cal.icalfeed.subscribe.remove")"><i class="o_icon o_icon-lg o_icon_remove"> </i></a>
@@ -51,12 +51,6 @@
 			href="$r.commandURIbg("rf", "id", "$calendarWrapper.getKalendar().getCalendarID()")" $r.bgTarget()
 			title="$r.translateInAttribute("cal.icalfeed.regenerate.title")"><i class="o_icon o_icon-lg o_icon_refresh"> </i></a>
     #end
-
-	#if ($removeFromPersonalCalendar && $calendarWrapper.isSubscribed())
-		<a class="o_cal_config_unsubscribe" 
-			href="$r.commandURIbg("unsub", "id", "$calendarWrapper.getKalendar().getCalendarID()")" $r.bgTarget() 
-			title="$r.translate("cal.unsubscribe")"><i class="o_icon o_icon-lg o_icon_rss_unsubscribe"> </i></a>
-	#end
 	</div>
 #end
 </fieldset>

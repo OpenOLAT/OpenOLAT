@@ -42,7 +42,6 @@ import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.commons.chiefcontrollers.ChiefControllerMessageEvent;
 import org.olat.core.commons.chiefcontrollers.LanguageChangedEvent;
 import org.olat.core.commons.fullWebApp.util.GlobalStickyMessage;
-import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.gui.GUIMessage;
 import org.olat.core.gui.UserRequest;
@@ -180,10 +179,10 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	
 	private StackedPanel initialPanel;
 	private DTabs myDTabsImpl;
-	private static Integer MAX_TAB;
 	private WindowSettings wSettings;
 	
 	private final boolean isAdmin;
+	private final int maxTabs = 20;
 	
 	public BaseFullWebappController(UserRequest ureq, BaseFullWebappControllerParts baseFullWebappControllerParts) {
 		// only-use-in-super-call, since we define our own
@@ -1069,7 +1068,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	 */
 	public DTab createDTab(OLATResourceable ores, OLATResourceable repoOres, String title) {
 		final DTabImpl dt;
-		if (dtabs.size() >= getMaxTabs()) {
+		if (dtabs.size() >= maxTabs) {
 			getWindowControl().setError(translate("warn.tabsfull"));
 			dt = null;
 		} else if(lockResource != null && (
@@ -1080,20 +1079,6 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			dt = new DTabImpl(ores, repoOres, title, getWindowControl());
 		}
 		return dt;
-	}
-
-	/**
-	 * fxdiff: load max dTab-Amount from Properties, set default to 5
-	 * @return
-	 */
-	private int getMaxTabs() {
-		if (MAX_TAB == null) {
-			PersistedProperties prop = new PersistedProperties(this);
-			prop.init();
-			prop.setIntPropertyDefault("max.dtabs", 5);
-			MAX_TAB = prop.getIntPropertyValue("max.dtabs");
-		}
-		return MAX_TAB;
 	}
 
 	/**

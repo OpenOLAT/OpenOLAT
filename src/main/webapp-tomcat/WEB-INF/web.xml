@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app version="2.5"
-         xmlns="http://java.sun.com/xml/ns/javaee"
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-         metadata-complete="true">
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
+            http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1">
 
 	<!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!   -->
 	<!-- IMPORTANT : DO NOT CHANGE SEQUENCE OF XML TYPES BECAUSE VALIDATION MAY FAIL  -->
@@ -188,6 +188,9 @@
 			<param-name>javax.ws.rs.Application</param-name>
 			<param-value>org.olat.restapi.support.OlatRestApplication</param-value>
 		</init-param>
+		<multipart-config>
+            <file-size-threshold>10240</file-size-threshold>
+        </multipart-config>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 	
@@ -195,37 +198,15 @@
 	<servlet>
 		<servlet-name>rss</servlet-name>
 		<servlet-class>org.olat.commons.servlets.RSSServlet</servlet-class>
-
-		<init-param>
-			<param-name>input</param-name>
-			<param-value>32768</param-value>
-		</init-param>
-
-		<init-param>
-			<param-name>output</param-name>
-			<param-value>32768</param-value>
-		</init-param>
-
 		<load-on-startup>3</load-on-startup>
 	</servlet>	
 
 	<!-- ICAL feed requests -->
 	<servlet>
 		<servlet-name>ical</servlet-name>
-		<servlet-class>org.olat.commons.servlets.ICalServlet</servlet-class>
-
-		<init-param>
-			<param-name>input</param-name>
-			<param-value>32768</param-value>
-		</init-param>
-
-		<init-param>
-			<param-name>output</param-name>
-			<param-value>32768</param-value>
-		</init-param>
-
+		<servlet-class>org.olat.commons.calendar.ICalServlet</servlet-class>
 		<load-on-startup>3</load-on-startup>
-  </servlet>	
+	</servlet>	
 
 	<!-- 5.Servlet-Mapping -->
 	<!-- The mapping for the OLAT servlet -->

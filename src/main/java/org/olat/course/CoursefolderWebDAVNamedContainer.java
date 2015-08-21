@@ -20,13 +20,12 @@
 package org.olat.course;
 
 import org.olat.core.id.IdentityEnvironment;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -36,13 +35,13 @@ class CoursefolderWebDAVNamedContainer extends NamedContainerImpl {
 	
 	private static final OLog log = Tracing.createLoggerFor(CoursefolderWebDAVNamedContainer.class);
 	
-	private OLATResourceable res;
+	private RepositoryEntry entry;
 	private VFSContainer parentContainer;
 	private IdentityEnvironment identityEnv;
 	
-	public CoursefolderWebDAVNamedContainer(String courseTitle, OLATResourceable res, IdentityEnvironment identityEnv) {
+	public CoursefolderWebDAVNamedContainer(String courseTitle, RepositoryEntry entry, IdentityEnvironment identityEnv) {
 		super(courseTitle, null);
-		this.res = OresHelper.clone(res);
+		this.entry = entry;
 		this.identityEnv = identityEnv;
 	}
 
@@ -55,7 +54,7 @@ class CoursefolderWebDAVNamedContainer extends NamedContainerImpl {
 	public VFSContainer getDelegate() {
 		if(super.getDelegate() == null) {
 			try {
-				ICourse course = CourseFactory.loadCourse(res.getResourceableId());
+				ICourse course = CourseFactory.loadCourse(entry);
 				VFSContainer courseFolder = course.getCourseFolderContainer(identityEnv);
 				setDelegate(courseFolder);
 				if(parentContainer != null) {
@@ -63,7 +62,7 @@ class CoursefolderWebDAVNamedContainer extends NamedContainerImpl {
 					parentContainer = null;
 				}
 			} catch (Exception e) {
-				log.error("Error loading course: " + res, e);
+				log.error("Error loading course: " + entry, e);
 			}
 		}
 		return super.getDelegate();

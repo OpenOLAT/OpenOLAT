@@ -225,7 +225,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 					wControl = bcf.createBusinessWindowControl(businessControl, wControl);
 				} catch (NumberFormatException e) {
 					// ups, nodecmd is not a message, what the heck is it then?
-					Tracing.createLoggerFor(this.getClass()).warn("Could not create message ID from given nodemcd::" + nodecmd, e);
+					log.warn("Could not create message ID from given nodemcd::" + nodecmd, e);
 				}
 			}
 			controller = ProjectBrokerControllerFactory.createRunController(ureq, wControl,userCourseEnv, this);

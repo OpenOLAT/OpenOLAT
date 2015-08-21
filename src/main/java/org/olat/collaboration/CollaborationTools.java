@@ -407,7 +407,7 @@ public class CollaborationTools implements Serializable {
 		List<ICourse> courses = new ArrayList<ICourse>(repoEntries.size());
 		for (RepositoryEntry repoEntry:repoEntries) {
 			if (repoEntry.getOlatResource().getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
-				ICourse course = CourseFactory.loadCourse(repoEntry.getOlatResource());
+				ICourse course = CourseFactory.loadCourse(repoEntry);
 				courses.add(course);
 			}
 		}

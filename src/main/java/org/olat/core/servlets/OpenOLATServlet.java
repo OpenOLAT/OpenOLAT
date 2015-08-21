@@ -26,6 +26,7 @@ import java.util.Map;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -54,6 +55,8 @@ import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.threadlog.RequestBasedLogLevelManager;
 import org.olat.core.util.threadlog.UserBasedLogLevelManager;
 
+
+@MultipartConfig(fileSizeThreshold=10240)
 public class OpenOLATServlet extends HttpServlet {
 
 	private static final long serialVersionUID = -2777749229549683775L;

@@ -58,7 +58,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
 
 
-public class KalendarEntryDetailsController extends BasicController {
+public class CalendarEntryDetailsController extends BasicController {
 
 	private Collection<KalendarRenderWrapper> availableCalendars;
 	private boolean isNew, isReadOnly;
@@ -66,7 +66,7 @@ public class KalendarEntryDetailsController extends BasicController {
 	private StackedPanel mainPanel;
 	private VelocityContainer mainVC, eventVC, linkVC;
 	private TabbedPane pane;
-	private KalendarEntryForm eventForm;
+	private CalendarEntryForm eventForm;
 	private LinkProvider activeLinkProvider;
 	private CustomMediaChooserController customMediaChooserCtr;
 	private DialogBoxController deleteYesNoController;
@@ -75,7 +75,7 @@ public class KalendarEntryDetailsController extends BasicController {
 	private MediaLinksController mediaLinksController;
 	private Link deleteButton;
 
-	public KalendarEntryDetailsController(UserRequest ureq, KalendarEvent kalendarEvent, KalendarRenderWrapper calendarWrapper,
+	public CalendarEntryDetailsController(UserRequest ureq, KalendarEvent kalendarEvent, KalendarRenderWrapper calendarWrapper,
 			List<KalendarRenderWrapper> availableCalendars, boolean isNew, String caller, WindowControl wControl) {
 		super(ureq, wControl);
 		
@@ -94,7 +94,7 @@ public class KalendarEntryDetailsController extends BasicController {
 		eventVC = createVelocityContainer("calEditDetails");
 		deleteButton = LinkFactory.createButton("cal.edit.delete", eventVC, this);
 		eventVC.contextPut("caller", caller);
-		eventForm = new KalendarEntryForm(ureq, wControl, kalendarEvent, calendarWrapper, availableCalendars, isNew);
+		eventForm = new CalendarEntryForm(ureq, wControl, kalendarEvent, calendarWrapper, availableCalendars, isNew);
 		listenTo(eventForm);
 		eventVC.put("eventForm", eventForm.getInitialComponent());
 		eventVC.contextPut("isNewEvent", new Boolean(isNew));

@@ -90,11 +90,11 @@ public class CourseDBTest extends OlatJerseyTestCase {
 		Assert.assertTrue(conn.login(auth.getName(), JunitTestHelper.PWD));
 		
 		String category = createRndCategory();
-		String name = "myKeyName";
+		String key = "myKeyName";
 		String value = "an interessant value";
 		
 		UriBuilder uri = getUriBuilder(course.getResourceableId(), category).path("values")
-				.path(name).queryParam("value", value);
+				.path(key).queryParam("value", value);
 		HttpPut put = conn.createPut(uri.build(), MediaType.APPLICATION_JSON, true);
 	
 		HttpResponse response = conn.execute(put);
@@ -103,9 +103,9 @@ public class CourseDBTest extends OlatJerseyTestCase {
 		
 		conn.shutdown();
 		
-		CourseDBEntry entry = courseDbManager.getValue(course, auth, category, name);
+		CourseDBEntry entry = courseDbManager.getValue(course, auth, category, key);
 		Assert.assertNotNull(entry);
-		Assert.assertEquals(name, entry.getName());
+		Assert.assertEquals(key, entry.getName());
 		Assert.assertEquals(value, entry.getValue());
 		Assert.assertEquals(category, entry.getCategory());
 	}
@@ -119,11 +119,11 @@ public class CourseDBTest extends OlatJerseyTestCase {
 		RepositoryEntry courseRe = repositoryManager.lookupRepositoryEntry(courseOres, true);
 		
 		String category = createRndCategory();
-		String name = "myKeyName";
+		String key = "myKeyName";
 		String value = "an interessant value";
 		
 		UriBuilder uri = getUriBuilder(courseRe.getKey(), category).path("values")
-				.path(name).queryParam("value", value);
+				.path(key).queryParam("value", value);
 		HttpPut put = conn.createPut(uri.build(), MediaType.APPLICATION_JSON, true);
 	
 		HttpResponse response = conn.execute(put);
@@ -132,9 +132,9 @@ public class CourseDBTest extends OlatJerseyTestCase {
 		
 		conn.shutdown();
 		
-		CourseDBEntry entry = courseDbManager.getValue(course, auth, category, name);
+		CourseDBEntry entry = courseDbManager.getValue(course, auth, category, key);
 		Assert.assertNotNull(entry);
-		Assert.assertEquals(name, entry.getName());
+		Assert.assertEquals(key, entry.getName());
 		Assert.assertEquals(value, entry.getValue());
 		Assert.assertEquals(category, entry.getCategory());
 	}
@@ -167,10 +167,10 @@ public class CourseDBTest extends OlatJerseyTestCase {
 		Assert.assertTrue(conn.login(auth.getName(), JunitTestHelper.PWD));
 		
 		String category = createRndCategory();
-		String name = "postit";
+		String key = "postit";
 		String value = "create the value by POST";
 		
-		UriBuilder uri = getUriBuilder(course.getResourceableId(), category).path("values").path(name);
+		UriBuilder uri = getUriBuilder(course.getResourceableId(), category).path("values").path(key);
 		HttpPost put = conn.createPost(uri.build(), MediaType.APPLICATION_JSON);
 		conn.addEntity(put, new BasicNameValuePair("val", value));
 		
@@ -180,9 +180,9 @@ public class CourseDBTest extends OlatJerseyTestCase {
 		
 		conn.shutdown();
 		
-		CourseDBEntry entry = courseDbManager.getValue(course, auth, category, name);
+		CourseDBEntry entry = courseDbManager.getValue(course, auth, category, key);
 		Assert.assertNotNull(entry);
-		Assert.assertEquals(name, entry.getName());
+		Assert.assertEquals(key, entry.getName());
 		Assert.assertEquals(value, entry.getValue());
 		Assert.assertEquals(category, entry.getCategory());
 	}
@@ -190,17 +190,17 @@ public class CourseDBTest extends OlatJerseyTestCase {
 	@Test
 	public void createEntry_get() throws IOException, URISyntaxException {
 		String category = createRndCategory();
-		String name = "getit";
+		String key = "getit";
 		String value = "get a value";
 		
-		CourseDBEntry entry = courseDbManager.setValue(course, auth, category, name, value);
+		CourseDBEntry entry = courseDbManager.setValue(course, auth, category, key, value);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(entry);
 		
 		RestConnection conn = new RestConnection();
 		Assert.assertTrue(conn.login(auth.getName(), JunitTestHelper.PWD));
 
-		UriBuilder uri = getUriBuilder(course.getResourceableId(), category).path("values").path(name);
+		UriBuilder uri = getUriBuilder(course.getResourceableId(), category).path("values").path(key);
 		HttpGet get = conn.createGet(uri.build(), MediaType.APPLICATION_JSON, true);
 		
 		HttpResponse response = conn.execute(get);
@@ -210,7 +210,7 @@ public class CourseDBTest extends OlatJerseyTestCase {
 		conn.shutdown();
 		
 		Assert.assertNotNull(savedEntry);
-		Assert.assertEquals(name, savedEntry.getKey());
+		Assert.assertEquals(key, savedEntry.getKey());
 		Assert.assertEquals(value, savedEntry.getValue());
 	}
 	

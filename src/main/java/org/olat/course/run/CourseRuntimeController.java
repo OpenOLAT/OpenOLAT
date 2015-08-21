@@ -223,7 +223,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	@Override
 	protected boolean isCorrupted(RepositoryEntry entry) {
 		try {
-			CourseFactory.loadCourse(entry.getOlatResource());
+			CourseFactory.loadCourse(entry);
 			return false;
 		} catch (Exception e) {
 			return true;
@@ -343,7 +343,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		toolbarPanel.removeAllTools();
 		if(corrupted) return;
 		
-		ICourse course = CourseFactory.loadCourse(getRepositoryEntry().getOlatResource());
+		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 		UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
 		if(!isAssessmentLock()) {
 			initTools(toolsDropdown, course, uce);
@@ -956,9 +956,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			popToRoot(ureq);
 			cleanUp();
 			
-			ICourse course = CourseFactory.loadCourse(getRepositoryEntry().getOlatResource());
 			CourseNode currentCourseNode = getCurrentCourseNode();
-			EditorMainController ctrl = CourseFactory.createEditorController(ureq, getWindowControl(), toolbarPanel, course, currentCourseNode);
+			EditorMainController ctrl = CourseFactory.createEditorController(ureq, getWindowControl(), toolbarPanel, getRepositoryEntry(), currentCourseNode);
 			//user activity logger which was initialized with course run
 			if(ctrl != null){
 				editorCtrl = pushController(ureq, "Editor", ctrl);
@@ -1046,7 +1045,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(delayedClose == Delayed.layout || requestForClose(ureq)) {
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
 				removeCustomCSS(ureq);
-				ICourse course = CourseFactory.loadCourse(getRepositoryEntry().getOlatResource());
+				ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 				boolean managedLayout = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.layout);
 				CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig().clone();
 				CourseLayoutGeneratorController ctrl = new CourseLayoutGeneratorController(ureq, getWindowControl(), course, courseConfig,
@@ -1374,7 +1373,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	private void launchChat(UserRequest ureq) {
 		boolean vip = reSecurity.isCourseCoach() || reSecurity.isGroupCoach() || reSecurity.isEntryAdmin();
-		ICourse course = CourseFactory.loadCourse(getRepositoryEntry().getOlatResource());
+		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 		OpenInstantMessageEvent event = new OpenInstantMessageEvent(ureq, course, course.getCourseTitle(), vip);
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(event, InstantMessagingService.TOWER_EVENT_ORES);
 	}
@@ -1383,7 +1382,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private void launchCalendar(UserRequest ureq) {
 		ControllerCreator ctrlCreator = new ControllerCreator() {
 			public Controller createController(UserRequest lureq, WindowControl lwControl) {
-				ICourse course = CourseFactory.loadCourse(getRepositoryEntry().getOlatResource());
+				ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 				ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(getRepositoryEntry());
 				WindowControl llwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, lwControl);
 				CourseCalendarController calendarController = new CourseCalendarController(lureq, llwControl, course);					
@@ -1427,7 +1426,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		// will not be disposed on course run dispose, popus up as new browserwindow
 		ControllerCreator ctrlCreator = new ControllerCreator() {
 			public Controller createController(UserRequest lureq, WindowControl lwControl) {
-				ICourse course = CourseFactory.loadCourse(getRepositoryEntry().getOlatResource());
+				ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 				Controller notesCtr = new NoteController(lureq, course, course.getCourseTitle(), lwControl);
 				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, notesCtr);
 				layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), course.getCourseEnvironment()));

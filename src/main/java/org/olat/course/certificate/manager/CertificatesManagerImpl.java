@@ -515,7 +515,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	public boolean isRecertificationAllowed(Identity identity, RepositoryEntry entry) {
 		boolean allowed = false;
 		try {
-			ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+			ICourse course = CourseFactory.loadCourse(entry);
 			CourseConfig config = course.getCourseEnvironment().getCourseConfig();
 			if(config.isRecertificationEnabled()) {
 				int time = config.getRecertificationTimelapse();

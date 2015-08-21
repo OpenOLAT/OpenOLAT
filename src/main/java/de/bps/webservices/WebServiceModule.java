@@ -81,7 +81,7 @@ public class WebServiceModule implements Initializable {
 						String address = services.get(serviceName).get(1);
 						mapIdToInstName.put(id, instName);
 						mapInstNameToAddress.put(instName, address);
-						Tracing.createLoggerFor(getClass()).audit(serviceName + " # " + id + " # " + instName + " # " + address);
+						log.audit(serviceName + " # " + id + " # " + instName + " # " + address);
 					Service service = new Service(serviceName, mapIdToInstName, mapInstNameToAddress);
 					configuration.put(service.getName(), service);
 				}

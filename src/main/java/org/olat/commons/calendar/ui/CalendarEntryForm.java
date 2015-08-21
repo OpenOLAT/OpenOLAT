@@ -55,7 +55,7 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.StringHelper;
 
 
-public class KalendarEntryForm extends FormBasicController {
+public class CalendarEntryForm extends FormBasicController {
 
 	public static final String SUBMIT_MULTI = "multi";
 	public static final String SUBMIT_SINGLE = "single";
@@ -91,7 +91,7 @@ public class KalendarEntryForm extends FormBasicController {
 	 * @param isNew		If it is a new event, display a list of calendars to choose from.
 	 * @param locale
 	 */
-	public KalendarEntryForm(UserRequest ureq, WindowControl wControl, KalendarEvent event, KalendarRenderWrapper choosenWrapper,
+	public CalendarEntryForm(UserRequest ureq, WindowControl wControl, KalendarEvent event, KalendarRenderWrapper choosenWrapper,
 			Collection<KalendarRenderWrapper> availableCalendars, boolean isNew) {
 		super(ureq, wControl);
 		

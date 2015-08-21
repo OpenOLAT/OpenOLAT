@@ -341,11 +341,15 @@ public class GroupController extends BasicController implements Activateable2, G
 	}
 	
 	private void selectDetails(UserRequest ureq, EfficiencyStatementEntry statementEntry) {
-		removeAsListenerAndDispose(statementCtrl);
+		boolean selectAssessmentTool = false;
+		if(statementCtrl != null) {
+			selectAssessmentTool = statementCtrl.isAssessmentToolSelected();
+			removeAsListenerAndDispose(statementCtrl);
+		}
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, statementEntry.getStudentKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, statementEntry);
+		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, statementEntry, selectAssessmentTool);
 		listenTo(statementCtrl);
 		mainVC.put("efficiencyDetails", statementCtrl.getInitialComponent());
 		

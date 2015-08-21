@@ -66,10 +66,8 @@ public class CourseCalendarController extends BasicController {
 		super(ureq, wControl);
 		this.ores = course;
 		List<KalendarRenderWrapper> calendars = getListOfCalendarWrappers(ureq);
-		CourseCalendarSubscription calendarSubscription = new CourseCalendarSubscription(
-				courseKalendarWrapper.getKalendar(), ureq.getUserSession().getGuiPreferences());
-		calendarController = new WeeklyCalendarController(
-				ureq, wControl, calendars, WeeklyCalendarController.CALLER_COURSE, calendarSubscription, true);
+		calendarController = new WeeklyCalendarController(ureq, wControl, calendars,
+				WeeklyCalendarController.CALLER_COURSE, true);
 		listenTo(calendarController);
 		putInitialPanel(calendarController.getInitialComponent());
 	}

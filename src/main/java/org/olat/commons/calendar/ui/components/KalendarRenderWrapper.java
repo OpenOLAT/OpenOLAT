@@ -26,11 +26,9 @@
 package org.olat.commons.calendar.ui.components;
 
 import org.olat.commons.calendar.CalendarManagerFactory;
-import org.olat.commons.calendar.ICalTokenGenerator;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarConfig;
 import org.olat.commons.calendar.ui.LinkProvider;
-import org.olat.core.id.Identity;
 
 
 public class KalendarRenderWrapper {
@@ -52,10 +50,10 @@ public class KalendarRenderWrapper {
 	
 	
 	private Kalendar kalendar;
-	private int access;
+	private int access = ACCESS_READ_ONLY;
 	private boolean imported = false;
 	private boolean subscribed = false;
-	private KalendarConfig kalendarConfig;
+	private KalendarConfig kalendarConfig = new KalendarConfig();
 	private LinkProvider linkProvider;
 	
 	/**
@@ -67,20 +65,7 @@ public class KalendarRenderWrapper {
 	 * @param access
 	 */
 	public KalendarRenderWrapper(Kalendar kalendar) {
-		this(kalendar, new KalendarConfig(), ACCESS_READ_ONLY);
-	}
-
-	/**
-	 * Configure a calendar for rendering.
-	 * 
-	 * @param kalendar
-	 * @param calendarColor
-	 * @param access
-	 */
-	public KalendarRenderWrapper(Kalendar kalendar, KalendarConfig config, int access) {
 		this.kalendar = kalendar;
-		this.kalendarConfig = config;
-		this.access = access;
 	}
 
 	public void setAccess(int access) {
@@ -136,9 +121,5 @@ public class KalendarRenderWrapper {
 	 */
 	public void setLinkProvider(LinkProvider linkProvider) {
 		this.linkProvider = linkProvider;
-	}
-	
-	public boolean hasIcalFeed(Identity identity) {
-		return ICalTokenGenerator.existIcalFeedLink(this.getKalendar().getType(), this.getKalendar().getCalendarID(), identity);
 	}
 }

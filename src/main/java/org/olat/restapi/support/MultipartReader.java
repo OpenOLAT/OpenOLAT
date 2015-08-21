@@ -19,22 +19,17 @@
  */
 package org.olat.restapi.support;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
 
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.fileupload.util.Streams;
+import org.apache.commons.io.IOUtils;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -53,42 +48,34 @@ public class MultipartReader {
 	private Map<String, String> fields = new HashMap<String, String>();
 
 	public MultipartReader(HttpServletRequest request) {
-		long uploadLimit = 500000l;
-		apache(request, uploadLimit);
+		servlet31(request);
 	}
-
-	private final void apache(HttpServletRequest request, long uploadLimit) {
-		ServletFileUpload uploadParser = new ServletFileUpload();
-		uploadParser.setSizeMax((uploadLimit * 1024l) + 512000l);
-		// Parse the request
+	private final void servlet31(HttpServletRequest request) {
 		try {
-			FileItemIterator iter = uploadParser.getItemIterator(request);
-			while (iter.hasNext()) {
-				FileItemStream item = iter.next();
-				String itemName = item.getFieldName();
-				InputStream itemStream = item.openStream();
-				if (item.isFormField()) {
-					String value = Streams.asString(itemStream, "UTF-8");
-					fields.put(itemName, value);
-				} else {
-					// File item, store it to temp location
-					filename = item.getName();
-					contentType = item.getContentType();
-					
+			for(Part part:request.getParts()) {
+				if(part.getContentType() != null) {
+					contentType = part.getContentType();
+					filename = part.getSubmittedFileName();
 					if(filename != null) {
 						filename = UUID.randomUUID().toString().replace("-", "") + "_" + filename;
 					} else {
 						filename = "upload-" + UUID.randomUUID().toString().replace("-", "");
 					}
 					file = new File(WebappHelper.getTmpDir(), filename);
-					try {
-						save(itemStream, file);
-					} catch (Exception e) {
-						log.error("", e);
-					}
+					part.write(file.getAbsolutePath());
+					file = new File(WebappHelper.getTmpDir(), filename);
+				} else {
+					String value = IOUtils.toString(part.getInputStream());
+					fields.put(part.getName(), value);
+				}
+				
+				try {
+					part.delete();
+				} catch (Exception e) {
+					//we try (tomcat doesn't send exception but undertow)
 				}
 			}
-		} catch (Exception e) {
+		} catch (IOException | ServletException e) {
 			log.error("", e);
 		}
 	}
@@ -140,23 +127,6 @@ public class MultipartReader {
 
 	public File getFile() {
 		return file;
-	}
-
-	private void save(InputStream source, File targetFile)
-	throws IOException {
-		InputStream in = new BufferedInputStream(source);
-		OutputStream out = new FileOutputStream(targetFile);
-
-		byte[] buffer = new byte[4096];
-
-		int c;
-		while ((c = in.read(buffer, 0, buffer.length)) != -1) {
-			out.write(buffer, 0, c);
-		}
-
-		out.flush();
-		out.close();
-		in.close();
 	}
 
 	public void close() {

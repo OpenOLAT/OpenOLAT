@@ -19,11 +19,17 @@
  */
 package org.olat.core.commons.services.webdav.manager;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
 
 import org.olat.core.commons.services.webdav.servlets.ConcurrentDateFormat;
 import org.olat.core.commons.services.webdav.servlets.WebResource;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -34,6 +40,8 @@ import org.olat.core.util.vfs.VFSLeaf;
  *
  */
 public class VFSResource implements WebResource {
+	
+	private static final OLog log = Tracing.createLoggerFor(VFSResource.class);
 	
 	private final VFSItem item;
 	private final String path;
@@ -119,6 +127,22 @@ public class VFSResource implements WebResource {
 	@Override
 	public InputStream getInputStream() {
 		return (item instanceof VFSLeaf ? ((VFSLeaf)item).getInputStream() : null);
+	}
+
+	@Override
+	public long getCreation() {
+        try {
+        	if(item instanceof JavaIOItem) {
+        		JavaIOItem ioItem = (JavaIOItem)item;
+	            BasicFileAttributes attrs = Files.readAttributes(ioItem.getBasefile().toPath(),
+	                    BasicFileAttributes.class);
+	            return attrs.creationTime().toMillis();
+        	}
+        	return 0;
+        } catch (IOException e) {
+            log.warn("getCreationFail" + item, e);
+            return 0;
+        }
 	}
 
 	@Override

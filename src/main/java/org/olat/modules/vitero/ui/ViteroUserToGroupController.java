@@ -266,7 +266,7 @@ public class ViteroUserToGroupController extends BasicController {
 			RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntry(ores, false);
 			if ("CourseModule".equals(ores.getResourceableTypeName())) {
 				if(courseGroupManager == null) {
-					ICourse course = CourseFactory.loadCourse(ores);
+					ICourse course = CourseFactory.loadCourse(repoEntry);
 					courseGroupManager = course.getCourseEnvironment().getCourseGroupManager();
 				}
 				coaches.addAll(courseGroupManager.getCoachesFromAreas());

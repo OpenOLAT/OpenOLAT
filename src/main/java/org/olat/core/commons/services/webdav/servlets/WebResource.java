@@ -93,6 +93,12 @@ public interface WebResource {
      *          represent a file
      */
     InputStream getInputStream();
+    
+    /**
+     * The time the file was created. If not available, the result of
+     * {@link #getLastModified()} will be returned.
+     */
+    long getCreation();
 
     /**
      * Obtain the cached binary content of this resource.

@@ -57,15 +57,13 @@ public class CourseCalendarController extends DefaultController implements Clone
 	private List<KalendarRenderWrapper> calendars;
 
 	public CourseCalendarController(UserRequest ureq, WindowControl wControl, CourseCalendars myCal,
-			CourseCalendarSubscription calendarSubscription, OLATResourceable course, NodeEvaluation ne) {
+			OLATResourceable course, NodeEvaluation ne) {
 		super(wControl);
 		this.ores = course;
 		this.nodeEvaluation = ne;
 		calendars = myCal.getCalendars();
 		courseKalendarWrapper = myCal.getCourseKalendarWrapper();
-		calendarController = new WeeklyCalendarController(ureq, wControl, calendars, WeeklyCalendarController.CALLER_COURSE,
-				calendarSubscription, true);
-		calendarController.setEnableRemoveFromPersonalCalendar(false);
+		calendarController = new WeeklyCalendarController(ureq, wControl, calendars, WeeklyCalendarController.CALLER_COURSE, true);
 		setInitialComponent(calendarController.getInitialComponent());
 	}
 
@@ -112,10 +110,9 @@ public class CourseCalendarController extends DefaultController implements Clone
 	@Override
 	public Controller cloneController(UserRequest ureq, WindowControl wControl) {
 		CourseCalendars myCal = new CourseCalendars(courseKalendarWrapper, calendars);
-		CourseCalendarSubscription calSubscription = myCal.createSubscription(ureq);
-		
+
 		Date focus = calendarController.getFocus();
-		CourseCalendarController ctrl = new CourseCalendarController(ureq, wControl, myCal, calSubscription, ores, nodeEvaluation);
+		CourseCalendarController ctrl = new CourseCalendarController(ureq, wControl, myCal, ores, nodeEvaluation);
 		ctrl.calendarController.setFocus(focus);
 		return ctrl;
 	}

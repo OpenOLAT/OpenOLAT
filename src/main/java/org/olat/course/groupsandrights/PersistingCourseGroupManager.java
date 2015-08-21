@@ -89,6 +89,19 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 	}
+	
+	private PersistingCourseGroupManager(RepositoryEntry courseRepoEntry) {
+		this.courseRepoEntry = courseRepoEntry;
+		this.courseResource = courseRepoEntry.getOlatResource();
+		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
+		rightManager = CoreSpringFactory.getImpl(BGRightManager.class);
+		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+	}
+	
+	public void updateCourseEntry(RepositoryEntry courseEntry) {
+		this.courseRepoEntry = courseEntry;
+	}
 
 	@Override
 	public OLATResource getCourseResource() {
@@ -117,6 +130,10 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 */
 	public static PersistingCourseGroupManager getInstance(OLATResource courseResource) {
 		return new PersistingCourseGroupManager(courseResource);
+	}
+	
+	public static PersistingCourseGroupManager getInstance(RepositoryEntry courseRepoEntry) {
+		return new PersistingCourseGroupManager(courseRepoEntry);
 	}
 
 	/**

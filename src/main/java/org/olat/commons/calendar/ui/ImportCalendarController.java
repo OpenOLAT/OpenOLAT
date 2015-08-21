@@ -138,7 +138,10 @@ public class ImportCalendarController extends FormBasicController {
 			String url = importUrl.getValue();
 			if(StringHelper.containsNonWhitespace(url)) {
 				try {
-					new URL(url);
+					String host = new URL(url).getHost();
+					if(host == null) {
+						importUrl.setErrorKey("cal.import.url.invalid", null);
+					}
 				} catch (MalformedURLException e) {
 					importUrl.setErrorKey("cal.import.url.invalid", null);
 					allOk &= false;

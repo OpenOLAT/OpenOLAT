@@ -139,7 +139,7 @@ public class CloseResourceCallback implements StepRunnerCallback {
 	 * do unsubscribe all group members from this course
 	 */
 	private void doCleanGroups(Identity identity) {
-		ICourse course = CourseFactory.loadCourse(repositoryEntry.getOlatResource());
+		ICourse course = CourseFactory.loadCourse(repositoryEntry);
 		if(course != null) {
 			// LearningGroups
 			List<BusinessGroup> allGroups = course.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups();

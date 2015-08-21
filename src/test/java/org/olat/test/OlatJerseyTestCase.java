@@ -30,15 +30,13 @@ import static io.undertow.servlet.Servlets.defaultContainer;
 import static io.undertow.servlet.Servlets.deployment;
 import static io.undertow.servlet.Servlets.filter;
 import static io.undertow.servlet.Servlets.servlet;
-import io.undertow.Undertow;
-import io.undertow.servlet.api.DeploymentInfo;
-import io.undertow.servlet.api.DeploymentManager;
 
 import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 
 import javax.servlet.DispatcherType;
+import javax.servlet.MultipartConfigElement;
 import javax.servlet.ServletException;
 import javax.ws.rs.core.UriBuilder;
 
@@ -55,6 +53,10 @@ import org.olat.restapi.support.vo.ErrorVO;
 import org.olat.restapi.support.vo.FileVO;
 import org.olat.restapi.support.vo.LinkVO;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import io.undertow.Undertow;
+import io.undertow.servlet.api.DeploymentInfo;
+import io.undertow.servlet.api.DeploymentManager;
 
 /**
  * 
@@ -105,6 +107,7 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
 				        .addServlets(
 				                servlet("REST Servlet",  com.sun.jersey.spi.container.servlet.ServletContainer.class)
 		        		        		.addInitParam("javax.ws.rs.Application", OlatRestApplication.class.getName())
+		        		        		.setMultipartConfig(new MultipartConfigElement((String)null))
 				                        .addMapping("/*"))
 				        .addFilters(filter("REST security filter", RestApiLoginFilter.class))
 				        .addFilterUrlMapping("REST security filter", "/*", DispatcherType.REQUEST);

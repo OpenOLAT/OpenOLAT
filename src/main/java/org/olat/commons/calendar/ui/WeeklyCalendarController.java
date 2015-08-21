@@ -58,11 +58,9 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.ComponentUtil;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -97,15 +95,12 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	private List<KalendarRenderWrapper> calendarWrappers;
 	private List<KalendarRenderWrapper> importedCalendarWrappers;
 	private FullCalendarElement weeklyCalendar;
-	private KalendarConfigurationController calendarConfig;
+	private CalendarConfigurationController calendarConfig;
 	private ImportedCalendarConfigurationController importedCalendarConfig;
-	private KalendarEntryDetailsController editController;
+	private CalendarEntryDetailsController editController;
 	private ImportCalendarController importCalendarController;
-	private CalendarSubscription calendarSubscription;
-	private Controller subscriptionController;
 	private String caller;
 	private boolean dirty = false;
-	private FormLink subscribeButton, unsubscribeButton;
 
 	private CloseableModalController cmc;
 	private SubscriptionContext subsContext;
@@ -127,6 +122,9 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	private boolean modifiedCalenderDirty = false;
 	private final boolean eventAlwaysVisible;
 	
+	private CalendarPrintMapper printMapper;
+	private String printUrl;
+	
 	private ILoggingAction calLoggingAction;
 	
 	private final CalendarNotificationManager calendarNotificationsManager;
@@ -141,37 +139,8 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	 * @param eventAlwaysVisible  When true, the 'isVis()' check is disabled and events will be displayed always.
 	 */
 	public WeeklyCalendarController(UserRequest ureq, WindowControl wControl, List<KalendarRenderWrapper> calendarWrappers, String caller, boolean eventAlwaysVisible) {
-		this(ureq, wControl, calendarWrappers, new ArrayList<KalendarRenderWrapper>(), caller, null, eventAlwaysVisible);
+		this(ureq, wControl, calendarWrappers, new ArrayList<KalendarRenderWrapper>(), caller, eventAlwaysVisible);
 	}
-
-	/**
-	 * Used for Home 
-	 * @param ureq
-	 * @param wControl
-	 * @param calendarWrappers
-	 * @param importedCalendarWrappers
-	 * @param caller
-	 * @param eventAlwaysVisible  When true, the 'isVis()' check is disabled and events will be displayed always.
-	 */
-	public WeeklyCalendarController(UserRequest ureq, WindowControl wControl, List<KalendarRenderWrapper> calendarWrappers, List<KalendarRenderWrapper> importedCalendarWrappers, String caller, boolean eventAlwaysVisible) {
-		this(ureq, wControl, calendarWrappers, importedCalendarWrappers, caller, null, eventAlwaysVisible );
-	}
-
-	/**
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param calendarWrappers
-	 * @param caller
-	 * @param calendarSubscription
-	 * @param eventAlwaysVisible  When true, the 'isVis()' check is disabled and events will be displayed always.
-	 */
-	public WeeklyCalendarController(UserRequest ureq, WindowControl wControl, List<KalendarRenderWrapper> calendarWrappers, String caller, CalendarSubscription calendarSubscription, boolean eventAlwaysVisible) {
-		this(ureq, wControl, calendarWrappers, new ArrayList<KalendarRenderWrapper>(), caller, calendarSubscription, eventAlwaysVisible);
-	}
-	
-	private CalendarPrintMapper printMapper;
-	private String printUrl;
 	
 	/**
 	 * Display week view of calendar. Add the calendars to be displayed via
@@ -185,7 +154,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	 * @param eventAlwaysVisible  When true, the 'isVis()' check is disabled and events will be displayed always.
 	 */
 	public WeeklyCalendarController(UserRequest ureq, WindowControl wControl, List<KalendarRenderWrapper> calendarWrappers, List<KalendarRenderWrapper> importedCalendarWrappers,
-			String caller, CalendarSubscription calendarSubscription, boolean eventAlwaysVisible) {
+			String caller, boolean eventAlwaysVisible) {
 		super(ureq,wControl, "indexWeekly");
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, ureq.getLocale(), getTranslator()));
 
@@ -194,7 +163,6 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		this.eventAlwaysVisible = eventAlwaysVisible;
 		this.calendarWrappers = calendarWrappers;
 		this.importedCalendarWrappers = importedCalendarWrappers;
-		this.calendarSubscription = calendarSubscription;
 		this.caller = caller;
 		
 		String themeBaseUri = wControl.getWindowBackOffice().getWindow().getGuiTheme().getBaseURI();
@@ -210,9 +178,6 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		boolean isGuest = ureq.getUserSession().getRoles().isGuestOnly();
 
-		subscribeButton = uifactory.addFormLink("cal.subscribe", formLayout, Link.BUTTON_XSMALL);
-		unsubscribeButton = uifactory.addFormLink("cal.unsubscribe", formLayout, Link.BUTTON_XSMALL);
-
 		Collections.sort(calendarWrappers, KalendarComparator.getInstance());
 		Collections.sort(importedCalendarWrappers, KalendarComparator.getInstance());
 		
@@ -226,7 +191,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			layoutCont.contextPut("caller", caller);
 			
 			// calendarConfiguration component
-			calendarConfig = new KalendarConfigurationController(calendarWrappers, ureq, getWindowControl(), eventAlwaysVisible);
+			calendarConfig = new CalendarConfigurationController(calendarWrappers, ureq, getWindowControl(), eventAlwaysVisible);
 			listenTo(calendarConfig);
 			layoutCont.put("calendarConfig", calendarConfig.getInitialComponent());
 			
@@ -241,13 +206,6 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				if (subsContext != null) {
 					csc = getContextualSubscriptionController(ureq, calendarWrappers.get(0), subsContext);
 					layoutCont.put("calsubscription", csc.getInitialComponent());
-				}
-				
-				if (calendarSubscription == null || isGuest) {
-					layoutCont.contextPut("hasSubscription", Boolean.FALSE);
-				} else {
-					layoutCont.contextPut("hasSubscription", Boolean.TRUE);
-					layoutCont.contextPut("isSubscribed", new Boolean(calendarSubscription.isSubscribed()));
 				}
 			}
 		}
@@ -274,10 +232,6 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			}
 		}
 		return null;
-	}
-	
-	public void setEnableRemoveFromPersonalCalendar(boolean enable) {
-		calendarConfig.setEnableRemoveFromPersonalCalendar(enable);
 	}
 	
 	public Date getFocus() {
@@ -377,19 +331,6 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				doMove(moveEvent.getKalendarEvent(), moveEvent.getDayDelta(),
 						moveEvent.getMinuteDelta(), moveEvent.getAllDay());
 			}
-		} else if (source == subscribeButton || source == unsubscribeButton) {
-			removeAsListenerAndDispose(subscriptionController);
-			if(calendarSubscription.isSubscribed() == (source == unsubscribeButton)) {
-				subscriptionController = calendarSubscription.triggerSubscribeAction();
-			}
-			if (subscriptionController != null) {
-				// activate subscription controller
-				listenTo(subscriptionController);
-				flc.put("calsubscription", subscriptionController.getInitialComponent());
-			} else {
-				flc.contextPut("isSubscribed", new Boolean(calendarSubscription.isSubscribed()));
-				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new KalendarModifiedEvent(), OresHelper.lookupType(CalendarManager.class));
-			}
 		} else if (event instanceof KalendarGUIPrintEvent) {
 			KalendarGUIPrintEvent printEvent = (KalendarGUIPrintEvent)event;
 			if(printEvent.getFrom() != null && printEvent.getTo() != null) {
@@ -401,6 +342,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		super.formInnerEvent(ureq, source, event);
 	}
 
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (event == ComponentUtil.VALIDATE_EVENT && dirty) {
 			dirty = false;
@@ -412,6 +354,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		super.event(ureq, source, event);
 	}
 
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		Kalendar affectedCal = null;
 		if (dirty) {
@@ -458,8 +401,6 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				setCalendars(calendarWrappers, importedCalendarWrappers);
 				weeklyCalendar.getComponent().setDirty(true);
 			}
-		} else if (source == subscriptionController) {
-			// nothing to do here
 		} else if (source == dbcSequence) {
 			if(event != Event.CANCELLED_EVENT) {
 				int pos = DialogBoxUIFactory.getButtonPos(event);
@@ -621,7 +562,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		}
 		
 		if(canEdit) {
-			editController = new KalendarEntryDetailsController(ureq, kalendarEvent, kalendarWrapper,	calendarWrappers, false, caller, getWindowControl());
+			editController = new CalendarEntryDetailsController(ureq, kalendarEvent, kalendarWrapper,	calendarWrappers, false, caller, getWindowControl());
 			listenTo(editController);
 			
 			removeAsListenerAndDispose(cmc);
@@ -668,7 +609,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		allCalendarWrappers.addAll(importedCalendarWrappers);
 		
 		removeAsListenerAndDispose(editController);
-		editController = new KalendarEntryDetailsController(ureq, newEvent, calendarWrapper, allCalendarWrappers, true, caller, getWindowControl());
+		editController = new CalendarEntryDetailsController(ureq, newEvent, calendarWrapper, allCalendarWrappers, true, caller, getWindowControl());
 		listenTo(editController);
 		
 		removeAsListenerAndDispose(cmc);

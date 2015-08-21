@@ -48,6 +48,14 @@ public interface CalendarManager {
 	public static final String TYPE_GROUP = "group";
 	public static final String TYPE_COURSE = "course";
 	
+	public static final String ICAL_X_OLAT_LINK = "X-OLAT-LINK";
+	public static final String ICAL_X_OLAT_COMMENT = "X-OLAT-COMMENT";
+	public static final String ICAL_X_OLAT_NUMPARTICIPANTS = "X-OLAT-NUMPARTICIPANTS";
+	public static final String ICAL_X_OLAT_PARTICIPANTS = "X-OLAT-PARTICIPANTS";
+	public static final String ICAL_X_OLAT_SOURCENODEID = "X-OLAT-SOURCENODEID";
+	public static final String ICAL_X_OLAT_MANAGED = "X-OLAT-MANAGED";
+	public static final String ICAL_X_OLAT_EXTERNAL_ID = "X-OLAT-EXTERNAL-ID";
+	
 	public static final int MAX_SUBJECT_DISPLAY_LENGTH = 30;
 
 	/**

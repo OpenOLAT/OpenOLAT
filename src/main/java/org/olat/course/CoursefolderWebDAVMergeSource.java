@@ -110,7 +110,7 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 			duplicates.add(re);
 			
 			String courseTitle = RequestUtil.normalizeFilename(re.getDisplayname());
-			NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(courseTitle, re.getOlatResource(), editor ? null : identityEnv);
+			NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(courseTitle, re, editor ? null : identityEnv);
 			
 			if (useTerms) {
 				RepositoryEntryLifecycle lc = re.getLifecycle();

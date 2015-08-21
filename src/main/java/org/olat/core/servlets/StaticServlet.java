@@ -205,7 +205,7 @@ public class StaticServlet extends HttpServlet {
 			
 			String mimeType = WebappHelper.getMimeType(file.getName());
 			response.setContentType(mimeType);
-			response.setContentLength((int)file.length());
+			response.setContentLengthLong(file.length());
 
 			try(InputStream in = new FileInputStream(file)) {
 				FileUtils.cpio(in, response.getOutputStream(), "static");

@@ -38,6 +38,7 @@ import java.util.Stack;
 import java.util.TimeZone;
 import java.util.Vector;
 
+import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -300,7 +301,7 @@ public class WebDAVDispatcherImpl
         if (log.isDebug()) {
             log.debug("[" + method + "] " + path);
         }
-
+        
         if (method.equals(METHOD_PROPFIND)) {
             doPropfind(req, resp);
         } else if (method.equals(METHOD_PROPPATCH)) {
@@ -514,14 +515,16 @@ public class WebDAVDispatcherImpl
             } catch (SAXException e) {
                 // Something went wrong - bad request
                 resp.sendError(WebdavStatus.SC_BAD_REQUEST);
+                return;
             } catch (IOException e) {
                 // Something went wrong - bad request
                 resp.sendError(WebdavStatus.SC_BAD_REQUEST);
+                return;
             }
         }
 
         if (type == FIND_BY_PROPERTY) {
-            properties = new Vector<String>();
+            properties = new Vector<>();
             // propNode must be non-null if type == FIND_BY_PROPERTY
             NodeList childList = propNode.getChildNodes();
 
@@ -799,7 +802,8 @@ public class WebDAVDispatcherImpl
     protected void doHead(HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException {
         // Serve the requested resource, without the data content
-        serveResource(request, response, false, fileEncoding);
+    	boolean serveContent = DispatcherType.INCLUDE.equals(request.getDispatcherType());
+        serveResource(request, response, serveContent, fileEncoding);
     }
   
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -1424,7 +1428,7 @@ public class WebDAVDispatcherImpl
     /**
      * UNLOCK Method.
      */
-    public void doUnlock(HttpServletRequest req, HttpServletResponse resp)
+    protected void doUnlock(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
     	
         if (isLocked(req)) {
@@ -1546,7 +1550,7 @@ public class WebDAVDispatcherImpl
     throws IOException {
 
         // Parsing destination header
-    	String destinationPath = this.getDestinationPath(req);
+    	String destinationPath = getDestinationPath(req);
     	if (destinationPath == null) {
             resp.sendError(WebdavStatus.SC_BAD_REQUEST);
             return false;
@@ -1613,7 +1617,7 @@ public class WebDAVDispatcherImpl
 
         // Copying source to destination
 
-        Hashtable<String,Integer> errorList = new Hashtable<String,Integer>();
+        Hashtable<String,Integer> errorList = new Hashtable<>();
 
         boolean result = copyResource(req, errorList, path, destinationPath, moved);
 
@@ -1735,6 +1739,19 @@ public class WebDAVDispatcherImpl
                 copyResource(req, errorList, childSrc, childDest, moved);
             }
         } else if (sourceResource.isFile()) {
+        	WebResource destResource = resources.getResource(dest);
+            if (!destResource.exists() && !destResource.getPath().endsWith("/")) {
+                int lastSlash = destResource.getPath().lastIndexOf('/');
+                if (lastSlash > 0) {
+                    String parent = destResource.getPath().substring(0, lastSlash);
+                    WebResource parentResource = resources.getResource(parent);
+                    if (!parentResource.isDirectory()) {
+                        errorList.put(source, new Integer(WebdavStatus.SC_CONFLICT));
+                        return false;
+                    }
+                }
+            }
+
         	WebResource movedFrom = moved ? sourceResource : null; 
             try {
 				if (!resources.write(dest, sourceResource.getInputStream(), false, movedFrom)) {
@@ -2004,8 +2021,8 @@ public class WebDAVDispatcherImpl
             generatedXML.writeElement("D", "propstat", XMLWriter.OPENING);
             generatedXML.writeElement("D", "prop", XMLWriter.OPENING);
 
-            //TODO jdk 1.7 generatedXML.writeProperty("D", "creationdate",
-            //        getISOCreationDate(resource.getCreation()));
+            generatedXML.writeProperty("D", "creationdate",
+                    getISOCreationDate(resource.getCreation()));
             generatedXML.writeElement("D", "displayname", XMLWriter.OPENING);
             generatedXML.writeData(resourceName);
             generatedXML.writeElement("D", "displayname", XMLWriter.CLOSING);
@@ -2082,7 +2099,7 @@ public class WebDAVDispatcherImpl
 
         case FIND_BY_PROPERTY :
 
-            Vector<String> propertiesNotFound = new Vector<String>();
+            Vector<String> propertiesNotFound = new Vector<>();
 
             // Parse the list of properties
 
@@ -2096,9 +2113,9 @@ public class WebDAVDispatcherImpl
                 String property = properties.nextElement();
 
                 if (property.equals("creationdate")) {
-                	//TODO jdk 1.7generatedXML.writeProperty
-                    //    ("D", "creationdate",
-                    //     getISOCreationDate(resource.getCreation()));
+                    generatedXML.writeProperty
+                        ("D", "creationdate",
+                         getISOCreationDate(resource.getCreation()));
                 } else if (property.equals("displayname")) {
                     generatedXML.writeElement
                         ("D", "displayname", XMLWriter.OPENING);
@@ -2349,7 +2366,7 @@ public class WebDAVDispatcherImpl
 
         case FIND_BY_PROPERTY :
 
-            Vector<String> propertiesNotFound = new Vector<String>();
+            Vector<String> propertiesNotFound = new Vector<>();
 
             // Parse the list of properties
 
@@ -2493,7 +2510,6 @@ public class WebDAVDispatcherImpl
         if (wroteStart) {
             generatedXML.writeElement("D", "lockdiscovery", XMLWriter.CLOSING);
         } else {
-            generatedXML.writeElement("D", "lockdiscovery", XMLWriter.NO_CONTENT);
             return false;
         }
 
@@ -2537,7 +2553,6 @@ public class WebDAVDispatcherImpl
 
     // --------------------------------------------------  LockInfo Inner Class
 
-    
 
 
     // --------------------------------------------- WebdavResolver Inner Class
@@ -2589,7 +2604,7 @@ class WebdavStatus {
      * variable.
      */
     private static final Hashtable<Integer,String> mapStatusCodes =
-            new Hashtable<Integer,String>();
+            new Hashtable<>();
 
 
     // ------------------------------------------------------ HTTP Status Codes

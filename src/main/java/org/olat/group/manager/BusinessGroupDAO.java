@@ -395,7 +395,8 @@ public class BusinessGroupDAO {
 	public List<BusinessGroup> findBusinessGroup(Identity identity, int maxResults, BusinessGroupOrder... ordering) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select bgi from ").append(BusinessGroupImpl.class.getName()).append(" as bgi ")
-		  .append(" inner join bgi.baseGroup as baseGroup")
+		  .append(" inner join fetch bgi.resource as bgResource")
+		  .append(" inner join fetch bgi.baseGroup as baseGroup")
 		  .append(" where exists (select bmember from bgroupmember as bmember")
 		  .append("   where bmember.identity.key=:identKey and bmember.group=baseGroup and bmember.role in ('").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("')")
 		  .append(" )");

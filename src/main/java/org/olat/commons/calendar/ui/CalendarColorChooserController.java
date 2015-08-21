@@ -25,6 +25,7 @@
 
 package org.olat.commons.calendar.ui;
 
+import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -39,14 +40,19 @@ public class CalendarColorChooserController extends BasicController {
 
 	private VelocityContainer colorVC;
 	private String choosenColor;
+	private final KalendarRenderWrapper calendarWrapper;
 
 	private static final String[] colors = new String[]{
 		"o_cal_green", "o_cal_blue", "o_cal_orange",
 		"o_cal_yellow", "o_cal_red", "o_cal_rebeccapurple", "o_cal_grey"
 	};
 
-	public CalendarColorChooserController(UserRequest ureq, WindowControl wControl, String currentCssSelection) {
+	public CalendarColorChooserController(UserRequest ureq, WindowControl wControl,
+			KalendarRenderWrapper calendarWrapper, String currentCssSelection) {
 		super(ureq, wControl);
+		
+		this.calendarWrapper = calendarWrapper;
+
 		colorVC = createVelocityContainer("calEdit", "calColor");
 		
 		for(String color:colors) {
@@ -78,6 +84,11 @@ public class CalendarColorChooserController extends BasicController {
 		return choosenColor;
 	}
 	
+	public KalendarRenderWrapper getCalendarWrapper() {
+		return calendarWrapper;
+	}
+
+	@Override
 	protected void doDispose() {
 		// nothing to dispose
 	}

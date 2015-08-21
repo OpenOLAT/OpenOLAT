@@ -1,29 +1,19 @@
 <div id="o_cal_config_below_cal_container">
 	<div class="o_cal_toptoolbar clearfix">
-		#if ($hasSubscription)
-			<div class="o_cal_toptoolbar_sub">
-			#if ($isSubscribed)
-				$r.render("cal.unsubscribe")
-			#else
-				$r.render("cal.subscribe")
-			#end
-			</div>
-			<div class="o_cal_toptoolbar_help">
-			#if ($caller == "home")
-				$r.contextHelp("org.olat.commons.calendar","personal-calendar.html","help.hover.personalcal")
-			#elseif ($caller == "course")
-				$r.contextHelp("org.olat.commons.calendar","course-calendar.html","help.hover.coursecal")
-			#elseif ($caller == "collab")
-				$r.contextHelp("org.olat.commons.calendar","group-calendar.html","help.hover.groupcal")
-			#elseif ($caller == "profile")
-				$r.contextHelp("org.olat.commons.calendar","personal-calendar.html","help.hover.cal")
-			#end
-			</div>
+		<div class="o_cal_toptoolbar_help">
+		#if ($caller == "home")
+			$r.contextHelp("org.olat.commons.calendar","personal-calendar.html","help.hover.personalcal")
+		#elseif ($caller == "course")
+			$r.contextHelp("org.olat.commons.calendar","course-calendar.html","help.hover.coursecal")
+		#elseif ($caller == "collab")
+			$r.contextHelp("org.olat.commons.calendar","group-calendar.html","help.hover.groupcal")
+		#elseif ($caller == "profile")
+			$r.contextHelp("org.olat.commons.calendar","personal-calendar.html","help.hover.cal")
 		#end
+		</div>
 		#if ($r.available("calsubscription"))
 			$r.render("calsubscription")
 		#end
-
 	</div>
 	<div class="o_cal">
 	  $r.render("calendar")

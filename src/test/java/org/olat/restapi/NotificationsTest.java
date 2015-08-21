@@ -274,16 +274,16 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		BusinessGroup group = businessGroupService.createBusinessGroup(id, "Notifications 1", "REST forum notifications for group", null, null, false, false, null);
 		CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
 		tools.setToolEnabled(CollaborationTools.TOOL_FORUM, true);
-		Forum forum = tools.getForum();
+		Forum groupForum = tools.getForum();
 		dbInstance.commitAndCloseSession();
 		
 		//publish
 		String businessPath = "[BusinessGroup:" + group.getKey() + "][toolforum:0]";
 		SubscriptionContext forumSubContext = new SubscriptionContext("BusinessGroup", group.getKey(), "toolforum");
 		PublisherData forumPdata =
-				new PublisherData(OresHelper.calculateTypeName(Forum.class), forum.getKey().toString(), businessPath);
+				new PublisherData(OresHelper.calculateTypeName(Forum.class), groupForum.getKey().toString(), businessPath);
 		notificationManager.subscribe(id, forumSubContext, forumPdata);
-		Message message = createMessage(id, forum);
+		Message message = createMessage(id, groupForum);
 		notificationManager.markPublisherNews(forumSubContext, null, true);
 		dbInstance.commitAndCloseSession();
 		
@@ -362,7 +362,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		forumNode.setShortTitle("Forum");
 		forumNode.setLearningObjectives("forum objectives");
 		forumNode.setNoAccessExplanation("You don't have access");
-		Forum forum = forumNode.loadOrCreateForum(course.getCourseEnvironment());
+		Forum courseForum = forumNode.loadOrCreateForum(course.getCourseEnvironment());
 		course.getEditorTreeModel().addCourseNode(forumNode, course.getRunStructure().getRootNode());
 		CourseFactory.publishCourse(course, RepositoryEntry.ACC_USERS, false, id, Locale.ENGLISH);
 		dbInstance.intermediateCommit();
@@ -372,9 +372,9 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		String businessPath = "[RepositoryEntry:" + re.getKey() + "][CourseNode:" + forumNode.getIdent() + "]";
 		SubscriptionContext forumSubContext = new SubscriptionContext("CourseModule", course.getResourceableId(), forumNode.getIdent());
 		PublisherData forumPdata =
-				new PublisherData(OresHelper.calculateTypeName(Forum.class), forum.getKey().toString(), businessPath);
+				new PublisherData(OresHelper.calculateTypeName(Forum.class), courseForum.getKey().toString(), businessPath);
 		notificationManager.subscribe(id, forumSubContext, forumPdata);
-		Message message = createMessage(id, forum);
+		Message message = createMessage(id, courseForum);
 		notificationManager.markPublisherNews(forumSubContext, null, true);
 		dbInstance.commitAndCloseSession();
 		
@@ -449,8 +449,8 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	}
 	
 	private String addFile(VFSContainer folder) throws IOException {
-		String name = UUID.randomUUID().toString();
-		VFSLeaf file = folder.createChildLeaf(name + ".jpg");
+		String filename = UUID.randomUUID().toString();
+		VFSLeaf file = folder.createChildLeaf(filename + ".jpg");
 		OutputStream out = file.getOutputStream(true);
 		InputStream in = UserMgmtTest.class.getResourceAsStream("portrait.jpg");
 		IOUtils.copy(in, out);
@@ -459,12 +459,12 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		return file.getName();
 	}
 	
-	private Message createMessage(Identity id, Forum forum) {
+	private Message createMessage(Identity id, Forum fo) {
 		ForumManager fm = ForumManager.getInstance();
 		Message m1 = fm.createMessage();
 		m1.setTitle("Thread-1");
 		m1.setBody("Body of Thread-1");
-		fm.addTopMessage(id, forum, m1);
+		fm.addTopMessage(id, fo, m1);
 		return m1;
 	}
 	

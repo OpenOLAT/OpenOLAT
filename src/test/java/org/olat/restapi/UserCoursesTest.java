@@ -35,7 +35,6 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.MarkManager;
@@ -66,8 +65,6 @@ public class UserCoursesTest extends OlatJerseyTestCase {
 	private DB dbInstance;
 	@Autowired
 	private MarkManager markManager;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired

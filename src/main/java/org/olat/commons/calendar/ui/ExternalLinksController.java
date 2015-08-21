@@ -164,7 +164,10 @@ public class ExternalLinksController extends FormBasicController {
 					allOk &= false;
 				} else {
 					try {
-						new URL(url);
+						String host = new URL(url).getHost();
+						if(host == null) {
+							link.getUrl().setErrorKey("tab.links.extern.url.invalid", null);
+						}
 					} catch(MalformedURLException e) {
 						link.getUrl().setErrorKey("tab.links.extern.url.invalid", null);
 						allOk &= false;

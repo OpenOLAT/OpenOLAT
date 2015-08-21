@@ -27,23 +27,22 @@ package org.olat.core.gui.components.form.flexible.impl;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.FileUploadBase.SizeLimitExceededException;
-import org.apache.commons.fileupload.MultipartStream.MalformedStreamException;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.fileupload.util.Streams;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
+
+import org.apache.commons.io.IOUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
@@ -56,10 +55,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.LogDelegator;
-import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.CodeHelper;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.component.FormComponentTraverser;
@@ -141,6 +140,8 @@ import org.olat.core.util.component.FormComponentVisitor;
  * @author patrickb
  */
 public class Form extends LogDelegator {
+	
+	private static final OLog log = Tracing.createLoggerFor(Form.class);
 	//
 	public final static String FORMCMD = "fid";
 	public final static String FORMID = "ofo_";
@@ -227,7 +228,11 @@ public class Form extends LogDelegator {
 	 */
 	public void evalFormRequest(UserRequest ureq) {
 		// Initialize temporary request parameters
-		doInitRequestParameterAndMulipartData(ureq);
+		if (isMultipartEnabled() && isMultipartContent(ureq.getHttpReq())) {
+			doInitRequestMultipartDataParameter(ureq);
+		} else {
+			doInitRequestParameter(ureq);
+		}
 		
 		String dispatchUri = getRequestParameter("dispatchuri");
 		String dispatchAction = getRequestParameter("dispatchevent");
@@ -322,106 +327,67 @@ public class Form extends LogDelegator {
 		// End of request dispatch: cleanup temp files: ureq requestParams and multipart files
 		doClearRequestParameterAndMultipartData();
 	}
+	
+	private void doInitRequestMultipartDataParameter(UserRequest ureq) {
+		HttpServletRequest req = ureq.getHttpReq();
+		try {				
+			for(Part part:req.getParts()) {
+				String contentType = part.getContentType();
+				String name = part.getName();
 
+				if(contentType == null) {
+					String value = IOUtils.toString(part.getInputStream());
+					addRequestParameter(name, value);
+				} else {
+					File tmpFile = new File(WebappHelper.getTmpDir(), "upload-" + CodeHelper.getGlobalForeverUniqueID());
+					part.write(tmpFile.getAbsolutePath());
+					
+					String fileName = part.getSubmittedFileName();
+					
+					// Cleanup IE filenames that are absolute
+					int slashpos = fileName.lastIndexOf("/");
+					if (slashpos != -1) fileName = name.substring(slashpos + 1);
+					slashpos = fileName.lastIndexOf("\\");
+					if (slashpos != -1) fileName = fileName.substring(slashpos + 1);
+					
+					requestMultipartFiles.put(name, tmpFile);
+					requestMultipartFileNames.put(name, fileName);
+					requestMultipartFileMimeTypes.put(name, contentType);
+				}
+				part.delete();
+			}
+		} catch (IOException | ServletException e) {
+			log.error("", e);
+		}
+	}
+	
+	private boolean isMultipartContent(HttpServletRequest request) {
+		if (!"POST".equalsIgnoreCase(request.getMethod())) {
+            return false;
+        }
+		
+		String contentType = request.getContentType();
+		if (contentType == null) {
+            return false;
+        }
+        if (contentType.toLowerCase(Locale.ENGLISH).startsWith("multipart/")) {
+            return true;
+        }
+		return false;
+	}
+	
 	/**
-	 * Internal helper to initialize the request parameter map an to temporary
-	 * store the uploaded files when a multipart request is used. The files are
-	 * stored to a temporary location and a filehandle is added to the
-	 * requestMultipartFiles map for later retrieval by the responsible FormItem.
-	 * 
+	 * Get parameters the standard way
 	 * @param ureq
 	 */
-	private void doInitRequestParameterAndMulipartData(UserRequest ureq) {
-		// First fill parameter map either from multipart data or standard http request
-		if (isMultipartEnabled() && ServletFileUpload.isMultipartContent(ureq.getHttpReq())) {
-			long uploadSize = -1; // default unlimited
-			// Limit size of complete upload form: upload size limit + 500k for
-			// other input fields
-			if (multipartUploadMaxSizeKB > -1) {
-				uploadSize = (multipartUploadMaxSizeKB * 1024l * 1024l) + 512000l;
-			}
-
-			// Create a new file upload handler, use commons fileupload streaming
-			// API to save files right to the tmp location
-			ServletFileUpload uploadParser = new ServletFileUpload();
-			uploadParser.setSizeMax(uploadSize);
-			// Parse the request
-			try {
-				FileItemIterator iter = uploadParser.getItemIterator(ureq.getHttpReq());
-				while (iter.hasNext()) {
-					FileItemStream item = iter.next();
-					String itemName = item.getFieldName();
-					InputStream itemStream = item.openStream();
-					if (item.isFormField()) {
-						// Normal form item
-						// analog to ureq.getParameter in non-multipart mode
-						String value = Streams.asString(itemStream, "UTF-8");
-						addRequestParameter(itemName, value);
-					} else {
-						// File item, store it to temp location
-						String fileName = item.getName();
-						// Cleanup IE filenames that are absolute
-						int slashpos = fileName.lastIndexOf("/");
-						if (slashpos != -1) fileName = fileName.substring(slashpos + 1);
-						slashpos = fileName.lastIndexOf("\\");
-						if (slashpos != -1) fileName = fileName.substring(slashpos + 1);
-
-						File tmpFile = new File(WebappHelper.getTmpDir() + File.separator + "upload-" + CodeHelper.getGlobalForeverUniqueID());
-						
-						try {
-							FileUtils.save(itemStream, tmpFile);
-							// Only save non-empty file transfers, ignore empty transfers
-							// (e.g. already submitted in a previous form submit, not an error!)
-							
-							// Removing empty file check for now ... was introduced to cope with
-							// browser trouble which probably is  not there any more ...
-							// so empty fileName means nothing selected in the file element
-							
-							//if (tmpFile.length() > 0) {
-							if (fileName.length() > 0) {
-								// a file was selected
-								// Save file and also original file name
-								requestMultipartFiles.put(itemName, tmpFile);
-								requestMultipartFileNames.put(itemName, fileName);
-								requestMultipartFileMimeTypes.put(itemName, item.getContentType());
-							} else {
-								if (tmpFile.exists()) tmpFile.delete();
-							}
-						} catch (OLATRuntimeException e) {
-							// Could not save stream for whatever reason, cleanup temp file and delegate exception
-							if (tmpFile.exists()) tmpFile.delete();
-							
-							if (e.getCause() instanceof MalformedStreamException){
-								logWarn("Could not read uploaded file >"+fileName+"< from stream. Possibly an attempt to upload a directory instead of a file (happens on Mac)",e);
-								return;
-							}
-							
-							throw new OLATRuntimeException("Could not save uploaded file",e);							
-						}
-					}
-				}
-			} catch (SizeLimitExceededException sizeLimitExceededException) {
-				logError("Error while dispatching multipart form: file limit (" + uploadSize + ") exceeded", sizeLimitExceededException);
-				requestError = REQUEST_ERROR_UPLOAD_LIMIT_EXCEEDED;
-			} catch (IOException e) {
-				logWarn("Error while dispatching multipart form: ioexception", e);
-				requestError = REQUEST_ERROR_GENERAL;
-			} catch (Exception e) {
-				logError("Error while dispatching multipart form: general exception", e);
-				requestError = REQUEST_ERROR_GENERAL;
-			}
-		} else {
-			// Get parameters the standard way
-			logDebug("Dispatching non-multipart form", null);
-			
-			Set<String> keys = ureq.getParameterSet();
-			for (String key : keys) {
-				String[] values = ureq.getHttpReq().getParameterValues(key);
-				if (values != null) {
-					requestParams.put(key, values);	
-				} else {
-					addRequestParameter(key, ureq.getParameter(key));					
-				}
+	private void doInitRequestParameter(UserRequest ureq) {
+		Set<String> keys = ureq.getParameterSet();
+		for (String key : keys) {
+			String[] values = ureq.getHttpReq().getParameterValues(key);
+			if (values != null) {
+				requestParams.put(key, values);	
+			} else {
+				addRequestParameter(key, ureq.getParameter(key));					
 			}
 		}
 	}

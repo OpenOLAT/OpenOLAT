@@ -28,6 +28,7 @@ import java.util.Locale;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
@@ -45,6 +46,7 @@ import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -58,9 +60,11 @@ public class CalendarDetailsController extends BasicController {
 	private final KalendarRenderWrapper calWrapper;
 	
 	private Link editButton;
-	private final VelocityContainer mainVC;
 	
 	private final boolean isGuestOnly;
+	
+	@Autowired
+	private CalendarModule calendarModule;
 	
 	public CalendarDetailsController(UserRequest ureq, WindowControl wControl,
 			KalendarEvent event, KalendarRenderWrapper calWrapper) {
@@ -68,9 +72,10 @@ public class CalendarDetailsController extends BasicController {
 		this.calEvent = event;
 		this.calWrapper = calWrapper;
 		isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
-		mainVC = createVelocityContainer("event_details");
+		VelocityContainer mainVC = createVelocityContainer("event_details");
 		
-		if(!isGuestOnly) {
+		if(!isGuestOnly &&
+				!(calendarModule.isManagedCalendars() && event.isManaged())) {
 			editButton = LinkFactory.createButton("edit", mainVC, this);
 			mainVC.put("edit", editButton);
 		}

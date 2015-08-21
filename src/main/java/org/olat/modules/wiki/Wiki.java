@@ -39,13 +39,14 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.jamwiki.utils.Utilities;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -54,6 +55,7 @@ import org.olat.core.util.vfs.filters.VFSLeafFilter;
 import org.olat.modules.wiki.gui.components.wikiToHtml.FilterUtil;
 import org.olat.modules.wiki.versioning.ChangeInfo;
 import org.olat.modules.wiki.versioning.DifferenceService;
+import org.olat.user.UserManager;
 
 /**
  * Description:<br>
@@ -77,7 +79,7 @@ public class Wiki implements WikiContainer, Serializable {
 	protected static final String NEW_PAGE = "O_new_page";
 	private String IMAGE_NAMESPACE = "Image:";
 	private String MEDIA_NAMESPACE = "Media:";
-	OLog log = Tracing.createLoggerFor(this.getClass());
+	private static final OLog log = Tracing.createLoggerFor(Wiki.class);
 	
 	protected Wiki(VFSContainer wikiRootContainer) {
 		if(wikiRootContainer == null) throw new AssertException("null values are not allowed for the wiki constructor!");
@@ -227,7 +229,6 @@ public class Wiki implements WikiContainer, Serializable {
 		}
 		String pageName = p.getProperty(WikiManager.PAGENAME);
 		if(pageName == null){
-			OLog log = Tracing.createLoggerFor(Wiki.class);
 			log.warn("wiki properties page is persent but without content. Name:"+leaf.getName());
 			return null;
 		}
@@ -282,9 +283,12 @@ public class Wiki implements WikiContainer, Serializable {
 		final int MAX_RESULTS = 5;
 		ArrayList<WikiPage> pages = new ArrayList<WikiPage>(wikiPages.values());
 		Collections.sort(pages, WikiPageSort.MODTIME_ORDER);
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(512);
 		int counter = 0;
+		
 		Formatter f = Formatter.getInstance(locale);
+		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
+		
 		for (Iterator<WikiPage> iter = pages.iterator(); iter.hasNext();) {
 			if (counter > MAX_RESULTS) break;
 			WikiPage page = iter.next();
@@ -295,7 +299,14 @@ public class Wiki implements WikiContainer, Serializable {
 				sb.append(f.formatDateAndTime(new Date(page.getModificationTime())));
 				sb.append(" Author: ");
 				long author = page.getModifyAuthor();
-				if (author != 0) sb.append(BaseSecurityManager.getInstance().loadIdentityByKey(Long.valueOf(page.getModifyAuthor())).getName());
+				if (author != 0) {
+					String authorFullname = userManager.getUserDisplayName(author);
+					if(StringHelper.containsNonWhitespace(authorFullname)) {
+						sb.append(" Author: ").append(authorFullname);
+					} else {
+						sb.append("???");
+					}
+				}
 				sb.append("\n");
 				counter++;
 			}

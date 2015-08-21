@@ -157,7 +157,7 @@ class CcStep01 extends BasicStep {
 			formLayout.add(fic);
 
 			// load course
-			ICourse course = CourseFactory.loadCourse(getRepoEntry().getOlatResource());
+			ICourse course = CourseFactory.loadCourse(getRepoEntry());
 
 			// show catalog selection tree
 			if (course != null) {

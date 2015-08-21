@@ -54,7 +54,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
 public class CalendarUtils {
-	static OLog log = Tracing.createLoggerFor(CalendarUtils.class);
+	private static final OLog log = Tracing.createLoggerFor(CalendarUtils.class);
 	private static final SimpleDateFormat ical4jFormatter = new SimpleDateFormat("yyyyMMdd");
 
 	public static String getTimeAsString(Date date, Locale locale) {
@@ -291,7 +291,7 @@ public class CalendarUtils {
 					return frequency;
 				}
 			} catch (ParseException e) {
-				Tracing.createLoggerFor(CalendarUtils.class).error("cannot restore recurrence rule", e);
+				log.error("cannot restore recurrence rule", e);
 			}
 		}
 		
@@ -317,7 +317,7 @@ public class CalendarUtils {
 					return dtUntil;
 				}
 			} catch (ParseException e) {
-				Tracing.createLoggerFor(CalendarUtils.class).error("cannot restore recurrence rule", e);
+				log.error("cannot restore recurrence rule", e);
 			}
 		}
 		
@@ -366,7 +366,7 @@ public class CalendarUtils {
 				RRule rrule = new RRule(recur);
 				return rrule.getValue();
 			} catch (ParseException e) {
-				Tracing.createLoggerFor(CalendarUtils.class).error("cannot create recurrence rule: " + recurrence.toString(), e);
+				log.error("cannot create recurrence rule: " + recurrence.toString(), e);
 			}
 		}
 		
@@ -390,7 +390,7 @@ public class CalendarUtils {
 					recurExcDates.add(excDate);
 				}
 			} catch (ParseException e) {
-				Tracing.createLoggerFor(CalendarUtils.class).error("cannot restore recurrence exceptions", e);
+				log.error("cannot restore recurrence exceptions", e);
 			}
 		}
 		
