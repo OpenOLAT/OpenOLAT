@@ -342,6 +342,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		super.formInnerEvent(ureq, source, event);
 	}
 
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (event == ComponentUtil.VALIDATE_EVENT && dirty) {
 			dirty = false;
@@ -353,6 +354,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		super.event(ureq, source, event);
 	}
 
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		Kalendar affectedCal = null;
 		if (dirty) {

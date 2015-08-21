@@ -52,6 +52,7 @@ public class CalendarModule extends AbstractSpringModule {
 	private static final String CALENDAR_GROUP_ENABLED = "calendar.group.enabled";
 	private static final String CALENDAR_COURSE_TOOL_ENABLED = "calendar.course.tool.enabled";
 	private static final String CALENDAR_COURSE_ELEMENT_ENABLED = "calendar.course.element.enabled";
+	private static final String MANAGED_CAL_ENABLED = "managedCalendars";
 	
 	private TimeZone defaultTimeZone;
 	private TimeZoneRegistry timeZoneRegistry;
@@ -66,6 +67,9 @@ public class CalendarModule extends AbstractSpringModule {
 	private boolean enableCourseToolCalendar;
 	@Value("${calendar.course.element.enabled:true}")
 	private boolean enableCourseElementCalendar;
+
+	@Value("${calendar.managed:false}")
+	private boolean managedCalendars;
 	
 	@Autowired
 	public CalendarModule(CoordinatorManager coordinatorManager) {
@@ -118,6 +122,11 @@ public class CalendarModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(courseElementEnabledObj)) {
 			enableCourseElementCalendar = "true".equals(courseElementEnabledObj);
 		}
+		
+		String managedCalEnabledObj = getStringPropertyValue(MANAGED_CAL_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(managedCalEnabledObj)) {
+			managedCalendars = "true".equals(managedCalEnabledObj);
+		}
 	}
 	
 	public TimeZone getDefaultTimeZone() {
@@ -167,5 +176,14 @@ public class CalendarModule extends AbstractSpringModule {
 	public void setEnableCourseElementCalendar(boolean enableCourseElementCalendar) {
 		this.enableCourseElementCalendar = enableCourseElementCalendar;
 		setStringProperty(CALENDAR_COURSE_ELEMENT_ENABLED, Boolean.toString(enableCourseElementCalendar), true);
+	}
+	
+	public boolean isManagedCalendars() {
+		return managedCalendars;
+	}
+
+	public void setManagedCalendars(boolean enabled) {
+		this.managedCalendars = enabled;
+		setStringProperty(MANAGED_CAL_ENABLED, Boolean.toString(enabled), true);
 	}
 }

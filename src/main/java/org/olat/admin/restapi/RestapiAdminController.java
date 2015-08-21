@@ -19,7 +19,7 @@
  */
 package org.olat.admin.restapi;
 
-import org.olat.core.CoreSpringFactory;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -34,36 +34,37 @@ import org.olat.group.BusinessGroupModule;
 import org.olat.repository.RepositoryModule;
 import org.olat.restapi.RestModule;
 import org.olat.restapi.security.RestSecurityHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
  * Description:<br>
- * This is a controller to configure the SimpleVersionConfig, the configuration
- * of the versioning system for briefcase.
+ * This is a controller to configure the REST API and the
+ * managed courses, groups and calendars.
  * 
  * <P>
  * Initial Date:  21 sept. 2009 <br>
  *
- * @author srosse
+ * @author srosse, stephane.rosse@frentix.com, https://ww.frentix.com
  */
 public class RestapiAdminController extends FormBasicController {
 	
-	private MultipleSelectionElement enabled, managedGroupsEl, managedRepoEl;
+	private MultipleSelectionElement enabled, managedGroupsEl, managedRepoEl, managedCalendarEl;
 	private FormLayoutContainer docLinkFlc;
 	
 	private static final String[] keys = {"on"};
 	
-	private final RestModule restModule;
-	private final BusinessGroupModule groupModule;
-	private final RepositoryModule repositoryModule;
+	@Autowired
+	private RestModule restModule;
+	@Autowired
+	private CalendarModule calendarModule;
+	@Autowired
+	private BusinessGroupModule groupModule;
+	@Autowired
+	private RepositoryModule repositoryModule;
 
 	public RestapiAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "rest");
-
-		restModule = CoreSpringFactory.getImpl(RestModule.class);
-		groupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
-		repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
-		
 		initForm(ureq);
 	}
 	
@@ -106,6 +107,11 @@ public class RestapiAdminController extends FormBasicController {
 			managedRepoEl = uifactory.addCheckboxesHorizontal("managed.repo", managedFlc, keys, valueRes);
 			managedRepoEl.addActionListener(FormEvent.ONCHANGE);
 			managedRepoEl.select(keys[0], repositoryModule.isManagedRepositoryEntries());
+			
+			String[] valueCal = new String[] { getTranslator().translate("rest.on") };
+			managedCalendarEl = uifactory.addCheckboxesHorizontal("managed.cal", managedFlc, keys, valueCal);
+			managedCalendarEl.addActionListener(FormEvent.ONCHANGE);
+			managedCalendarEl.select(keys[0], calendarModule.isManagedCalendars());
 		}
 	}
 
@@ -127,11 +133,14 @@ public class RestapiAdminController extends FormBasicController {
 			docLinkFlc.setVisible(on);
 			getWindowControl().setInfo("saved");
 		} else if(source == managedGroupsEl) {
-			boolean enabled = managedGroupsEl.isAtLeastSelected(1);
-			groupModule.setManagedBusinessGroups(enabled);
+			boolean enable = managedGroupsEl.isAtLeastSelected(1);
+			groupModule.setManagedBusinessGroups(enable);
 		} else if (source == managedRepoEl) {
 			boolean enable = managedRepoEl.isAtLeastSelected(1);
 			repositoryModule.setManagedRepositoryEntries(enable);
+		} else if (source == managedCalendarEl) {
+			boolean enable = managedCalendarEl.isAtLeastSelected(1);
+			calendarModule.setManagedCalendars(enable);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

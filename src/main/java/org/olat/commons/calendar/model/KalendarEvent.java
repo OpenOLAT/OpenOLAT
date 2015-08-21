@@ -69,6 +69,9 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 
 	private String recurrenceRule;
 	private String recurrenceExc;
+	
+	private boolean managed;
+	private String externalId;
 
 	public KalendarEvent() {
 		// save no-args constructor for XStream
@@ -163,6 +166,22 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	}
 	public void setSubject(String subject) {
 		this.subject = subject;
+	}
+
+	public boolean isManaged() {
+		return managed;
+	}
+
+	public void setManaged(boolean managed) {
+		this.managed = managed;
+	}
+
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
 	}
 
 	public int getClassification() {

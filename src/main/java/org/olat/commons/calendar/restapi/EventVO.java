@@ -41,6 +41,9 @@ public class EventVO {
 	private Date end;
 	private boolean allDayEvent;
 	
+	private boolean managed;
+	private String externalId;
+	
 	public EventVO() {
 		//
 	}
@@ -54,6 +57,8 @@ public class EventVO {
 		end = event.getEnd();
 		allDayEvent = event.isAllDayEvent();
 		calendarId = event.getCalendar().getType() + "_" + event.getCalendar().getCalendarID();
+		managed = event.isManaged();
+		externalId = event.getExternalId();
 	}
 
 	public String getId() {
@@ -118,5 +123,21 @@ public class EventVO {
 
 	public void setCalendarId(String calendarId) {
 		this.calendarId = calendarId;
+	}
+
+	public boolean isManaged() {
+		return managed;
+	}
+
+	public void setManaged(boolean managed) {
+		this.managed = managed;
+	}
+
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
 	}
 }

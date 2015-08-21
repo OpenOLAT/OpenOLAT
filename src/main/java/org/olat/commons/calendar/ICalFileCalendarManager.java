@@ -452,6 +452,14 @@ public class ICalFileCalendarManager implements CalendarManager {
 			vEventProperties.add(new XProperty(ICAL_X_OLAT_SOURCENODEID, kEvent.getSourceNodeId()));
 		}
 		
+		if(kEvent.isManaged()) {
+			vEventProperties.add(new XProperty(ICAL_X_OLAT_MANAGED, "true"));
+		}
+		
+		if(StringHelper.containsNonWhitespace(kEvent.getExternalId())) {
+			vEventProperties.add(new XProperty(ICAL_X_OLAT_EXTERNAL_ID, kEvent.getExternalId()));
+		}
+		
 		// recurrence
 		String recurrence = kEvent.getRecurrenceRule();
 		if(recurrence != null && !recurrence.equals("")) {
@@ -460,9 +468,10 @@ public class ICalFileCalendarManager implements CalendarManager {
 				RRule rrule = new RRule(recur);
 				vEventProperties.add(rrule);
 			} catch (ParseException e) {
-				Tracing.createLoggerFor(getClass()).error("cannot create recurrence rule: " + recurrence.toString(), e);
+				log.error("cannot create recurrence rule: " + recurrence.toString(), e);
 			}
 		}
+		
 		// recurrence exclusions
 		String recurrenceExc = kEvent.getRecurrenceExc();
 		if(recurrenceExc != null && !recurrenceExc.equals("")) {
@@ -471,7 +480,7 @@ public class ICalFileCalendarManager implements CalendarManager {
 				exdate.setValue(recurrenceExc);
 				vEventProperties.add(exdate);
 			} catch (ParseException e) {
-				e.printStackTrace();
+				log.error("", e);
 			}
 		}
 		
@@ -603,8 +612,19 @@ public class ICalFileCalendarManager implements CalendarManager {
 		}
 		
 		Property sourceNodId = event.getProperty(ICAL_X_OLAT_SOURCENODEID);
-		if (sourceNodId != null)
+		if (sourceNodId != null) {
 			calEvent.setSourceNodeId(sourceNodId.getValue());
+		}
+		
+		Property managed = event.getProperty(ICAL_X_OLAT_MANAGED);
+		if(managed != null) {
+			calEvent.setManaged("true".equals(managed.getValue()));
+		}
+		
+		Property externalId = event.getProperty(ICAL_X_OLAT_EXTERNAL_ID);
+		if(externalId != null) {
+			calEvent.setExternalId(externalId.getValue());
+		}
 		
 		// recurrence
 		if (event.getProperty(ICAL_RRULE) != null) {

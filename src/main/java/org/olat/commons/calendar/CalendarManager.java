@@ -53,6 +53,8 @@ public interface CalendarManager {
 	public static final String ICAL_X_OLAT_NUMPARTICIPANTS = "X-OLAT-NUMPARTICIPANTS";
 	public static final String ICAL_X_OLAT_PARTICIPANTS = "X-OLAT-PARTICIPANTS";
 	public static final String ICAL_X_OLAT_SOURCENODEID = "X-OLAT-SOURCENODEID";
+	public static final String ICAL_X_OLAT_MANAGED = "X-OLAT-MANAGED";
+	public static final String ICAL_X_OLAT_EXTERNAL_ID = "X-OLAT-EXTERNAL-ID";
 	
 	public static final int MAX_SUBJECT_DISPLAY_LENGTH = 30;
 
