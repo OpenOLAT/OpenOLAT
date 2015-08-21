@@ -32,6 +32,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.WriteListener;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -184,6 +185,12 @@ public class SpyFilter implements Filter {
 		public void setContentLength(int len) {
 			System.out.println("setContentLength: " + len);
 			response.setContentLength(len);
+		}
+
+		@Override
+		public void setContentLengthLong(long len) {
+			System.out.println("setContentLengthLong: " + len);
+			response.setContentLengthLong(len);
 		}
 
 		public void setContentType(String type) {
@@ -540,6 +547,18 @@ public class SpyFilter implements Filter {
 		public void close() throws IOException {
 			System.out.println("close outputStream");
 			delegate.close();
+		}
+
+		@Override
+		public boolean isReady() {
+			System.out.println("isReady");
+			return delegate.isReady();
+		}
+
+		@Override
+		public void setWriteListener(WriteListener writeListener) {
+			System.out.println("setWriteListener");
+			delegate.setWriteListener(writeListener);
 		}
 	}
 }

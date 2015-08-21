@@ -133,8 +133,6 @@ public class RSSServlet extends HttpServlet {
 			if (pubDate != null) {
 				response.setDateHeader("Last-Modified", pubDate.getTime());
 			}
-			// TODO:GW Do we need this?
-			// response.setContentLength(feed.get);
 
 			writer = response.getWriter();
 			SyndFeedOutput output = new SyndFeedOutput();

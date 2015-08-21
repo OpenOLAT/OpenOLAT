@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Locale;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
@@ -71,6 +72,11 @@ public class HttpServletResponseOutputStream implements HttpServletResponse {
 
 	@Override
 	public void setContentLength(int len) {
+		//
+	}
+	
+	@Override
+	public void setContentLengthLong(long len) {
 		//
 	}
 
@@ -245,6 +251,16 @@ public class HttpServletResponseOutputStream implements HttpServletResponse {
 		@Override
 		public void write(byte[] b, int off, int len) throws IOException {
 			out.write(b, off, len);
+		}
+
+		@Override
+		public boolean isReady() {
+			return true;
+		}
+
+		@Override
+		public void setWriteListener(WriteListener writeListener) {
+			//
 		}
 
 		@Override

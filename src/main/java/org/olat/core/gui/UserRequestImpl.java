@@ -26,6 +26,7 @@
 
 package org.olat.core.gui;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Enumeration;
@@ -37,6 +38,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -253,7 +255,7 @@ public class UserRequestImpl implements UserRequest {
 		String contentType = hreq.getContentType();
 
 		// do not waste inputstream on file uploads
-		if (contentType == null || !contentType.startsWith("multipart/form-data")) {
+		if (contentType == null || !contentType.startsWith("multipart/")) {
 			//if you encouter problems with content in url like german umlauts
 			//make sure you set <Connector port="8080" URIEncoding="utf-8" /> to utf-8 encoding
 			//this will decode content in get requests like request.getParameter(...
@@ -262,6 +264,12 @@ public class UserRequestImpl implements UserRequest {
 				String key = ksi.next();
 				String val = hreq.getParameterValues(key)[0];
 				params.put(key, val);
+			}
+		} else if(contentType.startsWith("multipart/")) {
+			try {
+				hreq.getParts();
+			} catch (IOException | ServletException e) {
+				log.error("", e);
 			}
 		}
 

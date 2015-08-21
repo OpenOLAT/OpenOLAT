@@ -737,7 +737,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		}
 	}
 	
-	private RepositoryEntry createRepository(String name) {
+	private RepositoryEntry createRepository(String displayName) {
 		OLATResourceManager rm = OLATResourceManager.getInstance();
 		// create course and persist as OLATResourceImpl
 		
@@ -745,7 +745,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		DBFactory.getInstance().saveObject(r);
 		DBFactory.getInstance().intermediateCommit();
 
-		RepositoryEntry d = repositoryService.create(name, "-", name, "Repo entry", r);
+		RepositoryEntry d = repositoryService.create(displayName, "-", displayName, "Repo entry", r);
 		DBFactory.getInstance().commit();
 		return d;
 	}

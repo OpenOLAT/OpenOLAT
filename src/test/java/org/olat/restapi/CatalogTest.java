@@ -88,7 +88,6 @@ public class CatalogTest extends OlatJerseyTestCase {
 	
 	private Identity admin, id1;
 	private CatalogEntry root1, entry1, entry2, subEntry11, subEntry12;
-	//fxdiff FXOLAT-122: course management
 	private CatalogEntry entryToMove1, entryToMove2, subEntry13move;
 	
 	@Before
@@ -672,7 +671,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		}
 	}
 	
-	private RepositoryEntry createRepository(String name, final Long resourceableId) {
+	private RepositoryEntry createRepository(String displayName, final Long resourceableId) {
 		OLATResourceable resourceable = new OLATResourceable() {
 			public String getResourceableTypeName() {	return CourseModule.ORES_TYPE_COURSE;}
 			public Long getResourceableId() {return resourceableId;}
@@ -690,7 +689,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		
 		RepositoryEntry d = RepositoryManager.getInstance().lookupRepositoryEntry(resourceable, false);
 		if(d == null) {
-			d = repositoryService.create("Rei Ayanami", "-", name, "Repo entry", r);
+			d = repositoryService.create("Rei Ayanami", "-", displayName, "Repo entry", r);
 			DBFactory.getInstance().saveObject(d);
 		}
 		DBFactory.getInstance().intermediateCommit();
