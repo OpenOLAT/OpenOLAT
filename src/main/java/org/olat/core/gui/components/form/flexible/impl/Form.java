@@ -59,6 +59,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.component.FormComponentTraverser;
@@ -322,17 +323,12 @@ public class Form extends LogDelegator {
 		HttpServletRequest req = ureq.getHttpReq();
 		try {				
 			for(Part part:req.getParts()) {
-				String contentType = part.getContentType();
 				String name = part.getName();
-
-				if(contentType == null) {
-					String value = IOUtils.toString(part.getInputStream());
-					addRequestParameter(name, value);
-				} else {
+				String contentType = part.getContentType();
+				String fileName = part.getSubmittedFileName();
+				if(StringHelper.containsNonWhitespace(fileName)) {
 					File tmpFile = new File(WebappHelper.getTmpDir(), "upload-" + CodeHelper.getGlobalForeverUniqueID());
 					part.write(tmpFile.getAbsolutePath());
-					
-					String fileName = part.getSubmittedFileName();
 					
 					// Cleanup IE filenames that are absolute
 					int slashpos = fileName.lastIndexOf("/");
@@ -343,6 +339,9 @@ public class Form extends LogDelegator {
 					requestMultipartFiles.put(name, tmpFile);
 					requestMultipartFileNames.put(name, fileName);
 					requestMultipartFileMimeTypes.put(name, contentType);
+				} else {
+					String value = IOUtils.toString(part.getInputStream());
+					addRequestParameter(name, value);
 				}
 				part.delete();
 			}
