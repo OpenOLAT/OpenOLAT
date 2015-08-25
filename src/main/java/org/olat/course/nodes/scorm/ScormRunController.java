@@ -296,13 +296,13 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 						attemptsIncremented, deliveryOptions);
 			} else if (chooseScormRunMode.getSelectedElement().equals(ScormConstants.SCORM_MODE_NORMAL)) {
 				// When not assessible users can choose between normal mode where data is stored...
-				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
+				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, this,
 						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
 						ScormConstants.SCORM_MODE_CREDIT, false, assessableType, doActivate, fullWindow,
 						attemptsIncremented, deliveryOptions);
 			} else {
 				// ... and preview mode where no data is stored
-				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
+				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, this,
 						cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT,
 						false, assessableType, doActivate, fullWindow, attemptsIncremented, deliveryOptions);
 			}
@@ -336,7 +336,6 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		//
 	}
 
-	// <BPS-620>
 	/**
 	 * @see org.olat.modules.scorm.ScormAPICallback#lmsFinish(java.lang.String,
 	 *      java.util.Properties)
@@ -347,8 +346,6 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 			scormDispC.close();
 		}
 	}
-
-	// </BPS-620>
 
 	/**
 	 * @return true if there is a treemodel and an event listener ready to be

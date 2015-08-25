@@ -277,9 +277,9 @@
 									align: 'center',
 									spacing: 5,
 									items: [
-										{name: 'width', type: 'textbox', maxLength: 3, size: 3, onchange: generatePreview},
+										{name: 'width', type: 'textbox', maxLength: 4, size: 4, onchange: generatePreview},
 										{type: 'label', text: 'x'},
-										{name: 'height', type: 'textbox', maxLength: 3, size: 3, onchange: generatePreview}
+										{name: 'height', type: 'textbox', maxLength: 4, size: 4, onchange: generatePreview}
 									]
 								},
 					    	    { name: 'preview', type: 'panel', label: '', minHeight: 320,
