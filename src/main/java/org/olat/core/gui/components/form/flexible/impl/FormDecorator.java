@@ -88,6 +88,24 @@ public class FormDecorator {
 	}
 
 	/**
+	 * Check if there is a help text available
+	 * @return true if help is available, false otherwise
+	 */
+	public boolean hasHelpText(String formItemName) {
+		FormItem foco = getFormItem(formItemName);
+		return foco == null ? false : foco.getHelpText() != null;
+	}
+
+	/**
+	 * Get the translated context help text string for this form item
+	 * @return The help text or NULL if no help text is available
+	 */
+	public String getHelpText(String formItemName) {
+		FormItem foco = getFormItem(formItemName);
+		return foco == null ? null : foco.getHelpText();
+	}
+
+	/**
 	 * @see org.olat.core.gui.components.form.flexible.FormDecorator#isEnabled(java.lang.String)
 	 */
 	public boolean isEnabled(String formItemName) {

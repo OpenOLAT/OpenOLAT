@@ -49,26 +49,32 @@ public class SimpleLabelText extends FormBaseComponentImpl {
 	private static final ComponentRenderer RENDERER = new LabelComponentRenderer();
 	
 	private final String text;
-	private boolean componentIsMandatory;
 	private final FormItem item;
 
-	public SimpleLabelText(FormItem item, String name, String text, boolean mandatory) {
+	public SimpleLabelText(FormItem item, String name, String text) {
 		super(name);
 		this.text = text;
 		this.item = item;
-		this.componentIsMandatory = mandatory;
 		// to minimize DOM tree we provide our own DOM ID (o_c12245)
 		this.setDomReplacementWrapperRequired(false);
 	}
 
+	/**
+	 * return true: the component is mandatory; false: the component is optional
+	 */
 	public boolean isComponentIsMandatory() {
-		return componentIsMandatory;
+		return item.isMandatory();
 	}
 
-	public void setComponentIsMandatory(boolean componentIsMandatory) {
-		this.componentIsMandatory = componentIsMandatory;
+	/**
+	 * return the context help text for this component or NULL if not available
+	 */
+	public String getComponentHelpText() {
+		return item.getHelpText();
 	}
 
+	
+	
 	/**
 	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
 	 */
@@ -100,12 +106,17 @@ public class SimpleLabelText extends FormBaseComponentImpl {
 				}
 			}
 			sb.append(">");
+			if (stc.isComponentIsMandatory()) {
+				String hover = stc.getTranslator().translate("form.mandatory.hover");
+				sb.append("<i class='o_icon o_icon_mandatory' title='").append(hover).append("'></i> ");
+			}
 			if (StringHelper.containsNonWhitespace(stc.text)) {
 				sb.append(stc.text);
 			}
-			if (stc.componentIsMandatory) {
-				String hover = stc.getTranslator().translate("form.mandatory.hover");
-				sb.append("<i class='o_icon o_icon_mandatory' title='").append(hover).append("'></i>");
+			if (stc.getComponentHelpText() != null) {
+				sb.append("<i class='o_form_chelp o_icon o_icon-fw o_icon_help help-block' id='o_ch").append(source.getDispatchID()).append("'></i>");
+				String escaped = StringHelper.escapeJavaScript(stc.getComponentHelpText());
+				sb.append("<script>jQuery(function () {jQuery('#o_ch").append(source.getDispatchID()).append("').tooltip({placement:\"top\",container: \"body\",html:true,title:\"").append(escaped).append("\"});})</script>");		
 			}
 			sb.append("</label>");
 		}

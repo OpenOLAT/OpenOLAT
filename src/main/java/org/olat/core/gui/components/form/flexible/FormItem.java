@@ -339,6 +339,27 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	public void setExampleKey(String exampleKey, String[] params);
 
 	/**
+	 * Set an optional context help i18n key for this form item
+	 * @param helpKey i18n key to be translated with current translator
+	 * @param params parameters for i18n key or NULL if no parameters are used
+	 */
+	public void setHelpTextKey(String helpKey, String[] params);
+	
+	/**
+	 * Set an option context help text for this form item. The help text must be
+	 * already translated. Calling this method will override any help text i18n keys.
+	 * 
+	 * @param helpText The context help text or NULL to use no context help
+	 */
+	public void setHelpText(String helpText);
+	
+	/**
+	 * Get the translated context help text string for this form item
+	 * @return The help text or NULL if no help text is available
+	 */
+	public String getHelpText();
+	
+	/**
 	 * 
 	 * @param translator
 	 */
