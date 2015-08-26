@@ -26,7 +26,10 @@
 package org.olat.core.gui.components.form.flexible.impl;
 
 import java.util.List;
+import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
@@ -61,6 +64,7 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 	private String[] helpParams;
 	private String helpKey;
 	private String helpText;
+	private String helpUrl;
 	private Component exampleC;
 	private Panel examplePanel;
 	private String[] labelParams;
@@ -301,6 +305,13 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 		// always translated
 		return helpText;		
 	}
+	
+	/**
+	 * @see org.olat.core.gui.components.form.flexible.FormComponent#getHelpUrl()
+	 */
+	public String getHelpUrl() {
+		return helpUrl;
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.FormComponent#setExampleKey(java.lang.String,
@@ -340,6 +351,21 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 		this.helpText = helpText;
 	}
 
+	/**
+	 * @see org.olat.core.gui.components.form.flexible.FormComponent#setHelpUrl(java.lang.String)
+	 */
+	public void setHelpUrl(String helpUrl) {
+		this.helpUrl = helpUrl;
+	}
+	
+	/**
+	 * @see org.olat.core.gui.components.form.flexible.FormComponent#setHelpUrlForManualPage(java.lang.String)
+	 */
+	public void setHelpUrlForManualPage(String manualAliasName) {
+		HelpModule helpModule = CoreSpringFactory.getImpl(HelpModule.class);
+		Locale locale = getTranslator().getLocale();
+		this.helpUrl = helpModule.getHelpProvider().getURL(locale, manualAliasName);
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.FormComponent#setErrorKey(java.lang.String,

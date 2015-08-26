@@ -142,12 +142,14 @@ public class GuiDemoFlexiForm extends FormBasicController {
 		firstName.setEnabled(inputMode);
 		firstName.setPlaceholderText("Hans");
 		firstName.setHelpText("If you have a middle name, add it to the first name input field");
+		firstName.setHelpUrlForManualPage("Personal menu");
 
 		lastName = uifactory.addTextElement("lastname", "guidemo.flexi.form.lastname", 256, personData.getLastName(), formLayout);
 		lastName.setDisplaySize(defaultDisplaySize);
 		lastName.setNotEmptyCheck("guidemo.flexi.form.mustbefilled");
 		lastName.setEnabled(inputMode);
 		lastName.setPlaceholderText("Muster");
+		lastName.setHelpUrl("https://en.wikipedia.org/wiki/Family_name");
 
 		fileElement = uifactory.addFileElement("file", formLayout);
 		fileElement.setLabel("guidemo.flexi.form.file", null);

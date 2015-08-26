@@ -39,11 +39,13 @@ import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
- * TODO: patrickb Class Description for SimpleLabelTextComponent
+ * The label form component displays a label for the given form item. For DOM
+ * reasons the label does also include information about mandatory items and
+ * includes the item help text or links if available.
  * <P>
  * Initial Date: 06.12.2006 <br>
  * 
- * @author patrickb
+ * @author patrickb, gnaegi
  */
 public class SimpleLabelText extends FormBaseComponentImpl {
 	private static final ComponentRenderer RENDERER = new LabelComponentRenderer();
@@ -71,6 +73,13 @@ public class SimpleLabelText extends FormBaseComponentImpl {
 	 */
 	public String getComponentHelpText() {
 		return item.getHelpText();
+	}
+	
+	/**
+	 * return the context help url for this component or NULL if not available
+	 */
+	public String getComponentHelpUrl() {
+		return item.getHelpUrl();
 	}
 
 	
@@ -113,10 +122,34 @@ public class SimpleLabelText extends FormBaseComponentImpl {
 			if (StringHelper.containsNonWhitespace(stc.text)) {
 				sb.append(stc.text);
 			}
-			if (stc.getComponentHelpText() != null) {
-				sb.append("<i class='o_form_chelp o_icon o_icon-fw o_icon_help help-block' id='o_ch").append(source.getDispatchID()).append("'></i>");
-				String escaped = StringHelper.escapeJavaScript(stc.getComponentHelpText());
-				sb.append("<script>jQuery(function () {jQuery('#o_ch").append(source.getDispatchID()).append("').tooltip({placement:\"top\",container: \"body\",html:true,title:\"").append(escaped).append("\"});})</script>");		
+			// component help is optional, can be text or link or both
+			if (stc.getComponentHelpText() != null || stc.getComponentHelpUrl() != null) {
+				String helpIconId = "o_fh" + source.getDispatchID();
+				// Wrap tooltip with link to external url if available
+				String helpUrl = stc.getComponentHelpUrl();
+				if (helpUrl != null) {
+					sb.append("<a href=\"").append(helpUrl).append("\" target='_blank'>"); 
+				}
+				// tooltip is bound to this icon
+				sb.append("<i class='o_form_chelp o_icon o_icon-fw o_icon_help help-block' id='").append(helpIconId).append("'></i>");
+				if (helpUrl != null) {
+					sb.append("</a>");
+				}			
+				// Attach bootstrap tooltip handler to help icon
+				sb.append("<script>jQuery(function () {jQuery('#").append(helpIconId).append("').tooltip({placement:\"top\",container: \"body\",html:true,title:\"");
+				String text = stc.getComponentHelpText();
+				if (text != null) {
+					sb.append(StringHelper.escapeJavaScript(text));
+				}
+				String url = stc.getComponentHelpUrl();
+				if (url != null) {
+					if (text != null) {
+						// append spacer between custom and generic link text
+						sb.append("<br />");
+					}
+					sb.append(translator.translate("form.fhelp.link", new String[]{"<i class='o_icon o_icon-fw o_icon_help'></i>"}));					
+				}
+				sb.append("\"});})</script>");		
 			}
 			sb.append("</label>");
 		}

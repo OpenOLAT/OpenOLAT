@@ -11,27 +11,18 @@
 
 	/* as of 10.4 the mandatory icon is left from the label to make place for the help o_form_chelp */
 	.o_icon_mandatory {
-		position: relative;
-		right: 0;
-		line-height: inherit;
 		margin-right: 0.25em;
-	}
-
-	/* example, positioned below the input field */	
-	.help-block {
-		font-size: 90%;
 	}
 
 	/* context help for input element, right from label */
 	.o_form_chelp {
-		position: relative;
-		right: 0;
-		line-height: inherit;
 		padding-left: 0.25em;
 		margin-right: -1.25em;	
-		&.help-block {
-			font-size: 100%;
-		}
+	}
+	
+	/* example, positioned below the input field */	
+	.o_form_example {
+		font-size: 90%;	
 	}
 		
 	.o_error {
