@@ -613,7 +613,7 @@ public class QuestionListController extends AbstractItemListController implement
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				importTestCtrl.getInitialComponent(), true, translate("import.repository"));
-		cmc.setContextHelp(ureq, "org.olat.modules.qpool.ui", "import-repo.html", "help.hover.importrepo");
+		cmc.setContextHelp(getTranslator(),"TODO");
 		cmc.activate();
 		listenTo(cmc);
 	}
@@ -855,7 +855,7 @@ public class QuestionListController extends AbstractItemListController implement
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				selectGroupCtrl.getInitialComponent(), true, translate("select.group"));
-		cmc.setContextHelp(ureq, "org.olat.modules.qpool.ui", "share-group.html", "help.hover.sharegroup");
+		cmc.setContextHelp(getTranslator(), "TODO");
 		cmc.activate();
 		listenTo(cmc);
 	}
