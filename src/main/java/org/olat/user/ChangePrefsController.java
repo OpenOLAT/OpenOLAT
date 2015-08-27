@@ -259,7 +259,7 @@ class SpecialPrefsForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("title.prefs.special");
-		setFormContextHelp(this.getClass().getPackage().getName(), "home-prefs-special.html", "help.hover.home.prefs.special");
+		setFormContextHelp("Configuration#_specifics");
 		
 		if(keys != null) {
 			prefsElement = uifactory.addCheckboxesHorizontal("prefs", "title.prefs.accessibility", formLayout, keys, values);

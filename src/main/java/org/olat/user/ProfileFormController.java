@@ -179,7 +179,7 @@ public class ProfileFormController extends FormBasicController {
 				groupContainer = FormLayoutContainer.createDefaultFormLayout(formId, getTranslator());
 				groupContainer.setFormTitle(translate("form.group." + group));
 				if(first) {
-					groupContainer.setFormContextHelp("org.olat.user","home-vcard.html","help.hover.vcard");
+					groupContainer.setFormContextHelp("Configuration");
 					first = false;
 				}
 				formItems.put(formId, groupContainer);
@@ -234,7 +234,6 @@ public class ProfileFormController extends FormBasicController {
 		//upload image
 		groupContainer = FormLayoutContainer.createDefaultFormLayout("portraitupload", getTranslator());
 		groupContainer.setFormTitle(translate("ul.header"));
-		groupContainer.setFormContextHelp("org.olat.user","home-picture.html","chelp.home-picture.hover");
 		formLayout.add(groupContainer);
 
 		deletePortrait = uifactory.addFormLink("command.delete", groupContainer, Link.BUTTON);
@@ -251,6 +250,7 @@ public class ProfileFormController extends FormBasicController {
 		portraitUpload.setMaxUploadSizeKB(10000, null, null);
 		portraitUpload.setPreview(ureq.getUserSession(), true);
 		portraitUpload.addActionListener(FormEvent.ONCHANGE);
+		portraitUpload.setHelpTextKey("ul.select.fhelp", null);
 		if(portraitFile != null) {
 			portraitUpload.setInitialFile(portraitFile);
 		}

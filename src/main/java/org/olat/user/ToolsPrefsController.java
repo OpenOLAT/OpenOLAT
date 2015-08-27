@@ -95,7 +95,7 @@ public class ToolsPrefsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("usertools.title");
 		setFormDescription("usertools.descr");
-		setFormContextHelp("org.olat.user", "usertools-prefs.html", "help.hover.usertools");
+		setFormContextHelp("Configuration#_tools");
 
 		String[] toolKeys;
 		String[] toolValues;
