@@ -55,7 +55,19 @@ public class ConfluenceLinkSPI implements HelpLinkSPI {
 		String version = Settings.getVersion();
 		sb.append(generateSpace(version, locale));
 		if (page != null) {
-			sb.append(page.replace(" ", "%20"));			
+			int anchorPos = page.indexOf("#");
+			if (anchorPos != -1) {
+				// page with anchor
+				String realPage = page.substring(0,anchorPos);
+				String anchor = page.substring(anchorPos+1);
+				// confluence has some super-fancy way to addressing pages with anchors 
+				sb.append(realPage.replace(" ", "%20"));			
+				sb.append("#").append(realPage.replace(" ", "")).append("-").append(anchor);
+				
+			} else {
+				// page without anchor
+				sb.append(page.replace(" ", "%20"));			
+			}
 		}
 		return sb.toString();
 	}
