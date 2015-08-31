@@ -51,11 +51,13 @@ public class TextInputController extends StepFormBasicController {
 	
 	private List<ItemAndMetadata> parsedItems;
 	private final ItemsPackage importedItems;
+	private final ImportOptions options;
 	
 	public TextInputController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form rootForm,
-			ItemsPackage importedItems) {
+			ItemsPackage importedItems, ImportOptions options) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		this.importedItems = importedItems;
+		this.options = options;
 		initForm(ureq);
 	}
 	
@@ -101,7 +103,7 @@ public class TextInputController extends StepFormBasicController {
 	private boolean convertInputField() {
 		boolean importDataError = false;
 
-		CSVToQuestionConverter converter = new CSVToQuestionConverter(getTranslator());
+		CSVToQuestionConverter converter = new CSVToQuestionConverter(getTranslator(), options);
 		converter.parse(inputElement.getValue());
 		parsedItems = converter.getItems();
 
