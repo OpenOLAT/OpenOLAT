@@ -58,7 +58,9 @@ public class CSVToQuestionConverterTest {
 		String input = FileUtils.readFileToString(importTxt);
 		
 		Translator translator = new KeyTranslator(Locale.ENGLISH);
-		CSVToQuestionConverter converter = new CSVToQuestionConverter(translator);
+		ImportOptions options = new ImportOptions();
+		options.setShuffle(true);
+		CSVToQuestionConverter converter = new CSVToQuestionConverter(translator, options);
 		converter.parse(input);
 		
 		List<ItemAndMetadata> items = converter.getItems();
@@ -119,7 +121,9 @@ public class CSVToQuestionConverterTest {
 		String input = FileUtils.readFileToString(importTxt);
 		
 		Translator translator = new KeyTranslator(Locale.ENGLISH);
-		CSVToQuestionConverter converter = new CSVToQuestionConverter(translator);
+		ImportOptions options = new ImportOptions();
+		options.setShuffle(true);
+		CSVToQuestionConverter converter = new CSVToQuestionConverter(translator, options);
 		converter.parse(input);
 		
 		List<ItemAndMetadata> items = converter.getItems();
@@ -169,7 +173,9 @@ public class CSVToQuestionConverterTest {
 		String input = FileUtils.readFileToString(importTxt);
 		
 		Translator translator = new KeyTranslator(Locale.ENGLISH);
-		CSVToQuestionConverter converter = new CSVToQuestionConverter(translator);
+		ImportOptions options = new ImportOptions();
+		options.setShuffle(true);
+		CSVToQuestionConverter converter = new CSVToQuestionConverter(translator, options);
 		converter.parse(input);
 		
 		List<ItemAndMetadata> items = converter.getItems();

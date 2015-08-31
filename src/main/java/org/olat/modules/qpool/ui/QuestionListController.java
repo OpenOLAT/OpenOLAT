@@ -56,6 +56,7 @@ import org.olat.group.ui.main.SelectBusinessGroupController;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.qpool.QTIQPoolServiceProvider;
+import org.olat.ims.qti.questionimport.ImportOptions;
 import org.olat.ims.qti.questionimport.ItemAndMetadata;
 import org.olat.ims.qti.questionimport.ItemsPackage;
 import org.olat.ims.qti.questionimport.QImport_1_InputStep;
@@ -626,7 +627,10 @@ public class QuestionListController extends AbstractItemListController implement
 		if(getSource().askEditable()) {
 			additionalStep = new EditableStep(ureq);
 		}
-		Step start = new QImport_1_InputStep(ureq, importPackage, additionalStep);
+		
+		final ImportOptions options = new ImportOptions();
+		options.setShuffle(true);
+		Step start = new QImport_1_InputStep(ureq, importPackage, options, additionalStep);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {

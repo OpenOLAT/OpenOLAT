@@ -27,6 +27,7 @@ package org.olat.repository.controllers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -557,7 +558,13 @@ public class RepositorySearchController extends BasicController implements Activ
 				TableMultiSelectEvent mse = (TableMultiSelectEvent)event;	
 				if(!mse.getSelection().isEmpty()) {
 					selectedEntry = null;
-					selectedEntries = repoTableModel.getObjects(mse.getSelection());
+					
+					BitSet objectMarkers = mse.getSelection();
+					selectedEntries = new ArrayList<>(objectMarkers.size());
+					for(int i=objectMarkers.nextSetBit(0); i >= 0; i=objectMarkers.nextSetBit(i+1)) {
+						RepositoryEntry entry =  (RepositoryEntry)tableCtr.getTableDataModel().getObject(i);
+						selectedEntries.add(entry);
+					}
 					fireEvent(urequest, new Event(RepositoryTableModel.TABLE_ACTION_SELECT_ENTRIES));
 				}
 			} else if (TableController.EVENT_FILTER_SELECTED.equals(event)) {
