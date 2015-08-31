@@ -3,12 +3,12 @@
 		#if($impressumInfos.top)
 		<li id="o_navbar_impress">$r.render("topnav.impressum")</li>
 		#end
-		#if ($isContextHelpEnabled)
 		<li id="o_navbar_my_menu" class="dropdown o_navbar_dmz_help_menu">
 			<a href="#" class="dropdown-toggle" data-toggle="dropdown" title="$r.translate("search")">
 				<i class="o_icon o_icon_help o_icon-lg"></i> $r.translate("topnav.help")
 			</a>
 			<ul class="dropdown-menu dropdown-menu-right">          
+			#if ($isContextHelpEnabled)
 				<li><a href="javascript:contextHelpWindow('$r.relLink("help/${r.getLanguageCode()}/org.olat.login/dmz.html")')" title="$r.translateInAttribute("topnav.help.alt")">
 					<i class="o_icon o_icon_help o_icon-fw"></i> <span>$r.translate("topnav.help")</span></a></li>
 					#if($r.available("topnav.help"))
@@ -18,17 +18,18 @@
 					#end
 				<li><a href="javascript:$r.contextHelpJSCommand("org.olat.login","browsercheck.html")" title="$r.translateWithPackage("org.olat.login","menu.check.alt")">
 					<i class="o_icon o_icon_browsercheck o_icon-fw"></i> <span>$r.translateWithPackage("org.olat.login","menu.check")</span></a></li>
-				<li><a href="javascript:$r.contextHelpJSCommand("org.olat.login","about.html")" title="$r.translateWithPackage("org.olat.login","menu.about.alt")">
-					<i class="o_icon o_icon_openolat o_icon-fw"></i> <span>$r.translateWithPackage("org.olat.login","menu.about")</span></a></li>
+			#else
+				#if($r.available("topnav.help"))
+				<li id="o_navbar_help">
+					$r.render("topnav.help")
+				</li>
+				#end		
+			#end		
+				<li id="o_navbar_about">
+					$r.render("topnav.about")
+				</li>
 			</ul>
 		</li>
-		#else
-			#if($r.available("topnav.help"))
-			<li id="o_navbar_help">
-				$r.render("topnav.help")
-			</li>
-			#end		
-		#end		
 		<li id="o_navbar_langchooser">$r.render("languageChooser")</li>
 	</ul>	
 </div>	

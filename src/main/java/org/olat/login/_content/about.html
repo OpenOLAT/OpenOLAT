@@ -1,0 +1,152 @@
+<p class="clearfix o_large">
+	<a href="http://www.openolat.org" target="_blank">
+		<img border="0" class="pull-left"  src="$r.staticLink("images/openolat/openolat_logo_495x115_with_claim_transparent.png")" alt="$r.translate("about.title")" />
+	</a>
+</p>
+
+#if($r.translate("about.custom.title") != "")
+<div id="o_about_custom">
+	<h2>
+		$r.translate("about.custom.title")
+	</h2>
+	<p>
+		$r.translate("about.custom")
+	</p>
+</div>
+#end
+
+<div id="o_about_lms">
+	<h2>
+		LMS OpenOLAT
+	</h2>
+	<a href="http://www.openolat.org" target="_blank" class="o_link_extern">http://www.openolat.org</a>
+	<p class="text-muted">
+		$r.translate("about.version") $r.getVersion()
+	</p>
+	<a href="https://www.frentix.com/testbericht-openolat-sehr-gut/" target="_blank" title="The OpenOLAT LMS got a high score in the e-learning journal ranking">
+		<img border="0" src="$r.staticLink("images/openolat/openolat-test-sehr-gut_large.png")" alt="The OpenOLAT LMS got a high score in the e-learning journal ranking" style="float: right; padding-left: 2em; padding-bottom: 2em; max-width: 40%;" />
+	</a>
+	<p>
+		$r.translate("about.history")
+	</p>
+	<p>
+		$r.translate("about.elearningjournal.test.2015")
+	</p>
+	<p>
+		<a href="http://www.frentix.com/wp-uploads/2015/08/elearningJournal_Test_OpenOLAT_2015.pdf" target="_blank" class="o_link_extern"><i class="o_icon o_icon_external_link"> </i> OpenOLAT 8.3 im Test, eLearning Journal Testbericht</a>
+	</p>
+	<p>
+		$r.translate("about.social")
+	</p>
+	<p>
+		<a href="http://www.twitter.com/OpenOLAT" target="_blank"><i class="o_icon o_icon_twitter o_icon-2x"> </i></a>
+		<a href="http://facebook.com/OpenOLAT" target="_blank"><i class="o_icon o_icon_facebook o_icon-2x"> </i></a>
+		<a href="https://plus.google.com/communities/117966447506177997483" target="_blank"><i class="o_icon o_icon_google o_icon-2x"> </i></a>
+	</p>
+</div>
+
+<div id="o_about_financing">
+	<h3 style="clear:both;">
+		$r.translate("about.financing")
+	</h3>
+	<p>
+		$r.translate("about.financing.intro")
+	<p>
+	<center>
+		<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+			<input type="hidden" name="cmd" value="_s-xclick" />
+			<input type="hidden" name="hosted_button_id" value="BJWR7L8N7SX7S" />
+			<input type="image" src="https://www.paypalobjects.com/en_US/CH/i/btn/btn_donateCC_LG.gif" border="0" style="border:0;background:none;" name="submit" alt="PayPal - The safer, easier way to pay online!" />
+			<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1" />
+		</form>
+	</center>
+</div>
+
+<div class="o_about_partner">
+	<h3 >
+		$r.translate("about.partner")
+	</h3>
+	<p>
+		$r.translate("about.partner.intro")
+	<p>
+	<table class="table table-striped table-condensed ">
+	<thead>
+		<tr>
+			<th>Level</th>
+			<th>Institution</th>
+		</tr>
+	</thead>	
+	<tbody>
+		<tr>
+			<td>Gold</td>
+			<td><a href="http://www.uibk.ac.at" target="_blank" class="o_extern">Universität Innsbruck</a></td>
+		</tr>
+		<tr>
+			<td>Gold</td>
+			<td><a href="http://www.vcrp.de" target="_blank" class="o_extern">Virtueller Campus Rheinland-Pfalz, VCRP</a></td>
+		</tr>
+		<tr>
+			<td>Bronze</td>
+			<td><a href="http://www.bzgbs.ch" target="_blank" class="o_extern">BZG Bildungszentrum Gesundheit Basel-Stadt</a></td>
+		</tr>
+		<tr>
+			<td>Bronze</td>
+			<td><a href="http://www.hfgs.ch" target="_blank" class="o_extern">Höheren Fachschule Gesundheit und Soziales, HFGS</a></td>
+		</tr>
+		<tr>
+			<td>Bronze</td>
+			<td><a href="http://www.fhnw.ch/sozialearbeit" target="_blank" class="o_extern">Fachhochschule Nordwestschweiz FHNW,
+	Hochschule für Soziale Arbeit</a></td>
+		</tr>
+		<tr>
+			<td>Bronze</td>
+			<td><a href="http://www.uni-kiel.de" target="_blank" class="o_extern">Christian-Albrechts-Universität zu Kiel, CAU</a></td>
+		</tr>
+		<tr>
+			<td>Bronze</td>
+			<td><a href="http://www.bbw.ch" target="_blank" class="o_extern">Berufsbildungsschule Winterthur BBW</a></td>
+		</tr>
+		<tr>
+			<td>Bronze</td>
+			<td><a href="http://www.conplus.ch" target="_blank" class="o_extern">ConPlus Guntern + Partner</a></td>
+		</tr>
+		<tr>
+			<td>Bronze</td>
+			<td><a href="http://www.hs-furtwangen.de" target="_blank" class="o_extern">Hochschule Furtwangen, HFU</a></td>
+		</tr>
+	</tbody>
+	</table>
+</div>
+
+<p>
+	<br />
+	$r.translate("about.linktext")
+</p>
+<p class="text-right">
+	<br />Zürich, 15.08.2013
+</p>
+
+<div class="o_about_copyright">
+	<h3>
+		$r.translate("about.copyright")
+	</h3>
+	<pre class="small">
+$licenses
+	</pre>
+</div>
+
+<div class="o_about_translations">
+	<h3>
+		$r.translate("about.translate")
+	</h3>
+	<ul class="list-unstyled">
+	#set($langInfos = $r.getLanguages())
+	#foreach ($lang in $langInfos.enabledKeys) 
+		<li><i class="o_flag o_flag_${lang}"> </i> $langInfos.langNames.get("$lang") : $langInfos.langTranslators.get("$lang")</li>
+	#end
+	</ul>
+</div>
+
+<div class="o_button_group">
+	$r.render("close")
+</div>

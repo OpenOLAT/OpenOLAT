@@ -51,7 +51,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.WebappHelper;
+import org.olat.login.AboutController;
 import org.olat.social.SocialModule;
 import org.olat.social.shareLink.ShareLinkController;
 import org.olat.user.UserManager;
@@ -71,7 +71,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OlatFooterController extends BasicController implements LockableController { 
 	
-	private final Link impressumLink;
+	private final Link impressumLink, aboutLink;
 	private final VelocityContainer olatFootervc;
 	private ShareLinkController shareLinkCtr;
 	
@@ -123,15 +123,13 @@ public class OlatFooterController extends BasicController implements LockableCon
 			olatFootervc.contextPut("loggedIn", Boolean.FALSE);
 		}
 
-		olatFootervc.contextPut("appName", Settings.getApplicationName());
-		olatFootervc.contextPut("appVersion", Settings.getVersion());
-		
-		olatFootervc.contextPut("buildIdentifier", Settings.getBuildIdentifier());
-		olatFootervc.contextPut("revisionNumber", WebappHelper.getRevisionNumber());
-		olatFootervc.contextPut("changeSet", WebappHelper.getChangeSet());
-		olatFootervc.contextPut("olatversion", Settings.getFullVersionInfo() +" "+ Settings.getNodeInfo());
 		olatFootervc.contextPut("footerInfos", new FooterInformations(layoutModule));
 
+		// about link
+		aboutLink = AboutController.aboutLinkFactory(getLocale(), this, false, true);
+		aboutLink.setCustomDisplayText(Settings.getApplicationName() + "&nbsp;" + Settings.getVersion());		
+		olatFootervc.put("aboutLink", aboutLink);
+		
 		putInitialPanel(olatFootervc);
 	}
 	
@@ -158,6 +156,10 @@ public class OlatFooterController extends BasicController implements LockableCon
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(impressumLink == source) {
 			doOpenImpressum(ureq);
+		} else if (source == aboutLink) {
+			AboutController aboutCtr = new AboutController(ureq, getWindowControl());
+			listenTo(aboutCtr);
+			aboutCtr.activateAsModalDialog();
 		}
 	}
 	

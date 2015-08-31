@@ -773,24 +773,6 @@ public class VelocityRenderDecorator implements Closeable {
 		return Settings.isDebuging();
 	}
 	
-	/**
-	 * To inject licenses (the NOTICE.TXT) in the help
-	 * @return
-	 */
-	public String getLicences() {
-		String licenses = "Not found";
-		InputStream licensesStream = LoginAuthprovidersController.class.getResourceAsStream("../../../NOTICE.TXT");
-		if(licensesStream != null) {
-			try {
-				licenses = IOUtils.toString(licensesStream);
-			} catch (IOException e) {
-				log.error("", e);
-			} finally {
-				IOUtils.closeQuietly(licensesStream);
-			}
-		}
-		return licenses;
-	}
 	
 	public String getVersion() {
 		return Settings.getVersion();
