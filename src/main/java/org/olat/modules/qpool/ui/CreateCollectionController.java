@@ -51,7 +51,7 @@ public class CreateCollectionController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("org.olat.modules.qpool.ui", "new-collection.html", "help.hover.new-collection");
+		setFormContextHelp("Data Management#qb_lists");
 		setFormDescription("create.collection.description");
 		
 		nameEl = uifactory.addTextElement("collection.name", "collection.name", 128, "", formLayout);

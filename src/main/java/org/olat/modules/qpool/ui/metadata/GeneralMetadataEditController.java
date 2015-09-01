@@ -88,7 +88,6 @@ public class GeneralMetadataEditController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("general");
-		setFormContextHelp("org.olat.modules.qpool.ui.metadata", "general.html", "help.hover.general");
 		
 		String title = item.getTitle();
 		titleEl = uifactory.addTextElement("general.title", "general.title", 1000, title, formLayout);

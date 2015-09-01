@@ -614,7 +614,7 @@ public class QuestionListController extends AbstractItemListController implement
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				importTestCtrl.getInitialComponent(), true, translate("import.repository"));
-		cmc.setContextHelp(getTranslator(),"TODO");
+		cmc.setContextHelp(getTranslator(),"Data Management#qb_share");
 		cmc.activate();
 		listenTo(cmc);
 	}
@@ -791,7 +791,6 @@ public class QuestionListController extends AbstractItemListController implement
 	private void doConfirmDelete(UserRequest ureq, List<QuestionItemShort> items) {
 		confirmDeleteBox = activateYesNoDialog(ureq, null, translate("confirm.delete"), confirmDeleteBox);
 		confirmDeleteBox.setUserObject(items);
-		confirmDeleteBox.setContextHelp("org.olat.modules.qpool.ui", "delete-item.html", "help.hover.deleteitem");
 	}
 	
 	private void doDelete(List<QuestionItemShort> items) {
@@ -816,7 +815,7 @@ public class QuestionListController extends AbstractItemListController implement
 		String text = translate("confirm.unshare", new String[]{ getSource().getName() });
 		confirmRemoveBox = activateYesNoDialog(ureq, null, text, confirmRemoveBox);
 		confirmRemoveBox.setUserObject(items);
-		confirmRemoveBox.setContextHelp("org.olat.modules.qpool.ui", "remove-item.html", "help.hover.removeitem");
+		confirmRemoveBox.setContextHelp("Data Management#qb_remove");
 	}
 	
 	protected void doRemove(List<QuestionItemShort> items) {
@@ -859,7 +858,7 @@ public class QuestionListController extends AbstractItemListController implement
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				selectGroupCtrl.getInitialComponent(), true, translate("select.group"));
-		cmc.setContextHelp(getTranslator(), "TODO");
+		cmc.setContextHelp(getTranslator(), "Data Management#qb_share");
 		cmc.activate();
 		listenTo(cmc);
 	}
@@ -881,7 +880,6 @@ public class QuestionListController extends AbstractItemListController implement
 		String text = translate("copy.confirmation");
 		confirmCopyBox = activateYesNoDialog(ureq, title, text, confirmCopyBox);
 		confirmCopyBox.setUserObject(items);
-		confirmCopyBox.setContextHelp("org.olat.modules.qpool.ui", "copy-item.html", "help.hover.copyitem");
 	}
 	
 	protected void doCopy(UserRequest ureq, List<QuestionItemShort> items) {

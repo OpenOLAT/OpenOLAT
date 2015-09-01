@@ -74,7 +74,6 @@ public class QuestionMetadataEditController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("question");
-		setFormContextHelp("org.olat.modules.qpool.ui.metadata", "question.html", "help.hover.question");
 
 		KeyValues typeKeys = getQItemTypeKeyValues(getTranslator(), qpoolService);
 		typeEl = uifactory.addDropdownSingleselect("question.type", "question.type", formLayout, typeKeys.getKeys(), typeKeys.getValues(), null);

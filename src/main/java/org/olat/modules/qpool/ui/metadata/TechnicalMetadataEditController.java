@@ -67,7 +67,6 @@ public class TechnicalMetadataEditController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("technical");
-		setFormContextHelp("org.olat.modules.qpool.ui.metadata", "technical.html", "help.hover.technical");
 		
 		uifactory.addStaticTextElement("general.identifier", item.getIdentifier(), formLayout);
 		uifactory.addStaticTextElement("general.master.identifier", item.getMasterIdentifier(), formLayout);
