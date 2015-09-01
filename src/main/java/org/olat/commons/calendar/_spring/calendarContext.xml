@@ -34,9 +34,6 @@
 	  <property name="jobClass" value="org.olat.commons.calendar.ImportCalendarJob" />
 	</bean>
 	
-	<bean id="calendarNotificationManager" class="org.olat.commons.calendar.notification.CalendarNotificationManagerImpl"/>
-	<bean id="calendarUserDataDeleteManager" class="org.olat.commons.calendar.ICalFileCalendarUserDeleteManager"/>
-	
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="7207" />
 		<property name="navigationKey" value="calendaradmin" />

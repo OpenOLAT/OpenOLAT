@@ -25,6 +25,8 @@
 */
 package org.olat.commons.calendar;
 
+import org.olat.commons.calendar.manager.ImportToCalendarManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.quartz.JobExecutionContext;
 
@@ -41,7 +43,7 @@ public class ImportCalendarJob extends JobWithDB {
 	@Override
 	public void executeWithDB(JobExecutionContext context) {
 		try {
-			ImportCalendarManager.updateCalendarIn();
+			CoreSpringFactory.getImpl(ImportToCalendarManager.class).updateCalendarIn();
 		} catch (Exception e) {
 			log.error("", e);
 		}

@@ -88,6 +88,10 @@
 					<constructor-arg index="0" value="OLAT_10.3.3" />
 					<property name="alterDbStatements" value="alter_10_3_2_to_10_3_3.sql" />
 				</bean>
+				<bean id="database_upgrade_10_4_0" class="org.olat.upgrade.DatabaseUpgrade">
+					<constructor-arg index="0" value="OLAT_10.4.0" />
+					<property name="alterDbStatements" value="alter_10_3_4_to_10_4_0.sql" />
+				</bean>
 			</list>
 		</property>
 	</bean>

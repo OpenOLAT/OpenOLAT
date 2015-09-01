@@ -1,9 +1,14 @@
 <div class="o_cal_time">$date</div>
 <div class="o_cal_wv_event_tooltip_content">
 	$r.escapeHtml($subject)
-	#if($location)
+	#if($location && !${location.isEmpty()})
 	<div class="o_cal_location">
 		<b>$r.translate("cal.form.location"):</b> $r.escapeHtml($location)
+	</div>
+	#end
+	#if($description && !${description.isEmpty()})
+	<div class="o_cal_description">
+		<b>$r.translate("cal.form.description"):</b> $r.xssScan($description)
 	</div>
 	#end
 	<div class="o_cal_links">

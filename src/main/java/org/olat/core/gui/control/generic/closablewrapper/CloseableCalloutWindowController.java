@@ -98,8 +98,8 @@ public class CloseableCalloutWindowController extends BasicController {
 		if (ajax) {
 			final Panel guiMsgPlace = new Panel("guimessage_place");
 			calloutVC = new VelocityContainer("closeablewrapper", velocity_root + "/callout.html", null, this) {
-				public void validate(UserRequest ureq, ValidationResult vr) {
-					super.validate(ureq, vr);
+				public void validate(UserRequest uureq, ValidationResult vr) {
+					super.validate(uureq, vr);
 					// just before rendering, we need to tell the windowbackoffice that we are a favorite for accepting gui-messages.
 					// the windowbackoffice doesn't know about guimessages, it is only a container that keeps them for one render cycle
 					WindowBackOffice wbo = getWindowControl().getWindowBackOffice();

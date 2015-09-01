@@ -39,8 +39,8 @@ public class KalendarComparator implements Comparator<KalendarRenderWrapper> {
 	public int compare(KalendarRenderWrapper calendar0, KalendarRenderWrapper calendar1) {
 		// if of the same type, order by display name
 		if (calendar0.getKalendar().getType() == calendar1.getKalendar().getType())
-			return calendar0.getKalendarConfig().getDisplayName().compareTo(
-					calendar1.getKalendarConfig().getDisplayName());
+			return calendar0.getDisplayName().compareTo(
+					calendar1.getDisplayName());
 		// if of different type, order by type
 		if (calendar0.getKalendar().getType() == CalendarManager.TYPE_USER) return -1; // TYPE_USER is displayed first
 		if (calendar0.getKalendar().getType() == CalendarManager.TYPE_GROUP) return +1; // TYPE GROUP is displayed last

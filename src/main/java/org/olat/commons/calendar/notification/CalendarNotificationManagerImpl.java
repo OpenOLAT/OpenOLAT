@@ -20,20 +20,26 @@
 package org.olat.commons.calendar.notification;
 
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarNotificationManager;
 import org.olat.commons.calendar.ui.CalendarController;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupService;
+import org.olat.group.manager.BusinessGroupDAO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+@Service("calendarNotificationManager")
 public class CalendarNotificationManagerImpl implements CalendarNotificationManager {
+	
+	@Autowired
+	private BusinessGroupDAO businessGroupDao;
 	
 	@Override
 	public SubscriptionContext getSubscriptionContext(KalendarRenderWrapper kalendarRenderWrapper) {
@@ -72,10 +78,9 @@ public class CalendarNotificationManagerImpl implements CalendarNotificationMana
 	public BusinessGroup getBusinessGroup(KalendarRenderWrapper kalendarRenderWrapper) {
 		String caller = kalendarRenderWrapper.getKalendar().getType();
 		if (caller.equals(CalendarController.CALLER_COLLAB) || caller.equals(CalendarManager.TYPE_GROUP)) {
-			Long resId = kalendarRenderWrapper.getKalendarConfig().getResId();
-			if (resId == null) resId = Long.parseLong(kalendarRenderWrapper.getKalendar().getCalendarID());
+			Long resId = Long.parseLong(kalendarRenderWrapper.getKalendar().getCalendarID());
 			if (resId != null) {
-				BusinessGroup businessGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(resId);
+				BusinessGroup businessGroup = businessGroupDao.load(resId);
 				if (businessGroup != null) {
 					return businessGroup;
 				}

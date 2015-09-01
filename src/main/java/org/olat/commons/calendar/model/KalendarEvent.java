@@ -30,9 +30,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import net.fortuna.ical4j.model.Recur;
-
+import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarUtils;
+
+import net.fortuna.ical4j.model.Recur;
 
 public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 
@@ -70,8 +71,9 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	private String recurrenceRule;
 	private String recurrenceExc;
 	
-	private boolean managed;
 	private String externalId;
+	private String externalSource;
+	private CalendarManagedFlag[] managedFlags;
 
 	public KalendarEvent() {
 		// save no-args constructor for XStream
@@ -143,37 +145,45 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	public String getID() {
 		return id;
 	}
+	
 	public Date getBegin() {
 		return begin;
 	}
+	
 	public void setBegin(Date begin) {
 		this.begin = begin;
 	}
+	
 	public String getDescription() {
 		return description;
 	}
+	
 	public void setDescription(String description) {
 		this.description = description;
 	}
+	
 	public Date getEnd() {
 		return end;
 	}
+	
 	public void setEnd(Date end) {
 		this.end = end;
 	}
+	
 	public String getSubject() {
 		return subject;
 	}
+	
 	public void setSubject(String subject) {
 		this.subject = subject;
 	}
 
-	public boolean isManaged() {
-		return managed;
+	public CalendarManagedFlag[] getManagedFlags() {
+		return managedFlags;
 	}
 
-	public void setManaged(boolean managed) {
-		this.managed = managed;
+	public void setManagedFlags(CalendarManagedFlag[] managedFlags) {
+		this.managedFlags = managedFlags;
 	}
 
 	public String getExternalId() {
@@ -182,6 +192,14 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 
 	public void setExternalId(String externalId) {
 		this.externalId = externalId;
+	}
+
+	public String getExternalSource() {
+		return externalSource;
+	}
+
+	public void setExternalSource(String externalSource) {
+		this.externalSource = externalSource;
 	}
 
 	public int getClassification() {

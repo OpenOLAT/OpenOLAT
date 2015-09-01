@@ -37,10 +37,9 @@ import org.olat.core.gui.control.generic.clone.CloneLayoutControllerCreatorCallb
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
 import org.olat.course.nodes.CalCourseNode;
-import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 
 /**
@@ -53,9 +52,6 @@ import org.olat.modules.ModuleConfiguration;
  */
 public class CalRunController extends BasicController {
 
-	private final VelocityContainer mainVC;
-	
-	private CourseEnvironment courseEnv;
 	private CourseCalendarController calCtr;
 	private ModuleConfiguration config;
 	private CloneController cloneCtr;
@@ -65,17 +61,15 @@ public class CalRunController extends BasicController {
 	 * @param wControl
 	 * @param ureq
 	 * @param calCourseNode
-	 * @param cenv
+	 * @param courseEnv
 	 */
-	public CalRunController(WindowControl wControl, UserRequest ureq, CalCourseNode calCourseNode, CourseEnvironment cenv, NodeEvaluation ne) {
+	public CalRunController(WindowControl wControl, UserRequest ureq, CalCourseNode calCourseNode, UserCourseEnvironment courseEnv, NodeEvaluation ne) {
 		super(ureq, wControl);
-		this.courseEnv = cenv;
 		this.config = calCourseNode.getModuleConfiguration();
-		mainVC = createVelocityContainer("run");
+		VelocityContainer mainVC = createVelocityContainer("run");
 
-		ICourse course = CourseFactory.loadCourse(cenv.getCourseGroupManager().getCourseEntry());
-		CourseCalendars myCal = CourseCalendars.createCourseCalendarsWrapper(ureq, wControl, course, ne);
-		calCtr = new CourseCalendarController(ureq, wControl, myCal, course, ne);
+		CourseCalendars myCal = CourseCalendars.createCourseCalendarsWrapper(ureq, wControl, courseEnv, ne);
+		calCtr = new CourseCalendarController(ureq, wControl, myCal, courseEnv, ne);
 
 		boolean focused = false;
 		ContextEntry ce = wControl.getBusinessControl().popLauncherContextEntry();
@@ -110,7 +104,7 @@ public class CalRunController extends BasicController {
 						// wrapp in column layout, popup window needs a layout controller
 						Controller ctr = contentControllerCreator.createController(lureq, lwControl);
 						LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, ctr);
-						layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), courseEnv));
+						layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), courseEnv.getCourseEnvironment()));
 						layoutCtr.addDisposableChildController(ctr);
 						return layoutCtr;
 					}
@@ -123,24 +117,12 @@ public class CalRunController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//no events yet
 	}
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
-	public void event(UserRequest ureq, Controller source, Event event) {
-		//
-	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		if(calCtr != null){
 			calCtr.dispose();

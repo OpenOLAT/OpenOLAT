@@ -25,6 +25,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.model.KalendarEvent;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -41,8 +42,9 @@ public class EventVO {
 	private Date end;
 	private boolean allDayEvent;
 	
-	private boolean managed;
+	private String managedFlags;
 	private String externalId;
+	private String externalSource;
 	
 	public EventVO() {
 		//
@@ -57,8 +59,9 @@ public class EventVO {
 		end = event.getEnd();
 		allDayEvent = event.isAllDayEvent();
 		calendarId = event.getCalendar().getType() + "_" + event.getCalendar().getCalendarID();
-		managed = event.isManaged();
+		managedFlags = CalendarManagedFlag.toString(event.getManagedFlags());
 		externalId = event.getExternalId();
+		externalSource = event.getExternalSource();
 	}
 
 	public String getId() {
@@ -125,12 +128,12 @@ public class EventVO {
 		this.calendarId = calendarId;
 	}
 
-	public boolean isManaged() {
-		return managed;
+	public String getManagedFlags() {
+		return managedFlags;
 	}
 
-	public void setManaged(boolean managed) {
-		this.managed = managed;
+	public void setManagedFlags(String managedFlags) {
+		this.managedFlags = managedFlags;
 	}
 
 	public String getExternalId() {
@@ -139,5 +142,13 @@ public class EventVO {
 
 	public void setExternalId(String externalId) {
 		this.externalId = externalId;
+	}
+
+	public String getExternalSource() {
+		return externalSource;
+	}
+
+	public void setExternalSource(String externalSource) {
+		this.externalSource = externalSource;
 	}
 }

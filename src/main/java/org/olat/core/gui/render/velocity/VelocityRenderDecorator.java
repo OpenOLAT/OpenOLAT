@@ -28,7 +28,6 @@ package org.olat.core.gui.render.velocity;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -37,7 +36,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.contextHelp.ContextHelpModule;
@@ -52,8 +50,6 @@ import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
@@ -63,13 +59,11 @@ import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
-import org.olat.login.LoginAuthprovidersController;
 
 /**
  * @author Felix Jost
  */
 public class VelocityRenderDecorator implements Closeable {
-	private static final OLog log = Tracing.createLoggerFor(VelocityRenderDecorator.class);
 	
 	public static final String PARAM_CHELP_BUNDLE = "chelpbundle";
 	private VelocityContainer vc;

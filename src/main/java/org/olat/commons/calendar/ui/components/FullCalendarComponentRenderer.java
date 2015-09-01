@@ -50,9 +50,11 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 		FullCalendarComponent fcC = (FullCalendarComponent)source;
 		FullCalendarElement fcE = fcC.getCalendarElement();
 		Form rootForm = fcE.getRootForm();
-		String id = "o_c" + fcC.getDispatchID();
+		String id = "o_c".concat(fcC.getDispatchID());
 		String formId = fcE.getFormDispatchId();
-		String printId = "fc_p" + fcC.getDispatchID();
+		String printId = "fc_p".concat(fcC.getDispatchID());
+		String configId = "fc_x".concat(fcC.getDispatchID());
+		String aggregatedId = "fc_g".concat(fcC.getDispatchID());
 		
 		Calendar cal = Calendar.getInstance(fcC.getTranslator().getLocale());
 		int firstDay = cal.getFirstDayOfWeek() - 1;
@@ -69,55 +71,55 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 		
 		String amFormatted = DateFormat.getTimeInstance(DateFormat.SHORT, fcC.getTranslator().getLocale()).format(calRef.getTime());
 		boolean ampm = amFormatted.contains("AM") || amFormatted.contains("PM");
-		
+
 		sb.append("<script type='text/javascript'>\n")
 		  .append("/* <![CDATA[ */ \n")
-	    .append("jQuery(function() {\n")
-      .append("	jQuery('#").append(id).append("').fullCalendar( {\n")
-      .append("   header: {\n")
-      .append("     left: 'prev,print,next today',\n")
-      .append("     center: 'title',\n")
-      .append("     right: 'month,agendaWeek,agendaDay'\n")
-      .append("   },\n")
-      .append("   buttonText: {\n")
-      .append("     today: '").append(escapeJavaScript(translator.translate("cal.thisweek"))).append("',\n")
-      .append("     month: '").append(escapeJavaScript(translator.translate("cal.month"))).append("',\n")
-      .append("     day: '").append(escapeJavaScript(translator.translate("cal.day"))).append("',\n")
-      .append("     week: '").append(escapeJavaScript(translator.translate("cal.week"))).append("',\n")
-      .append("     print: '").append(escapeJavaScript(translator.translate("print"))).append("'\n")
-      .append("   },\n")
-      .append("   monthNames: ").append(getMonthLong(translator)).append(",\n")
-      .append("   monthNamesShort: ").append(getMonthShort(translator)).append(",\n")
-      .append("   dayNames: ").append(getDayLong(translator)).append(",\n")
-      .append("   dayNamesShort: ").append(getDayShort(translator)).append(",\n")
-      .append("   allDayText:'").append(translator.translate("cal.form.allday")).append("',\n")
-      .append("   axisFormat:'").append(ampm ? "h(:mm)tt" : "H.mm").append("',\n")
-      .append("   timeFormat:'").append(ampm ? "h(:mm)tt" : "H.mm").append("',\n")
-      .append("   titleFormat: {\n")
-      .append("     month: 'MMMM yyyy',\n")
-      .append("     week: ").append(firstMonth ? "\"MMM d[ yyyy]{ '&#8212;'[ MMM] d yyyy}\"" : "\"d. [ MMM] [ yyyy]{ '&#8212;' d. MMM yyyy}\"").append(",\n")
-      .append("     day: ").append(firstMonth ? "'dddd, MMM d, yyyy'" : "'dddd, d. MMM yyyy'").append("\n")
-      .append("   },\n")
-      .append("   columnFormat: {\n")
-      .append("     month: 'ddd',\n")
-      .append("     week: ").append(firstMonth ? "'ddd M/d'" : "'ddd d.M.'").append(",\n")
-      .append("     day: ").append(firstMonth ? "'dddd M/d'" : "'dddd d.M.'").append("\n")
-      .append("   },\n")
-      .append("   year:").append(cal.get(Calendar.YEAR)).append(",\n")
-      .append("   month:").append(cal.get(Calendar.MONTH)).append(",\n")
-      .append("   date:").append(cal.get(Calendar.DAY_OF_MONTH)).append(",\n")
-      .append("   firstDay:").append(firstDay).append(",\n")
-      .append("   defaultView:'").append(fcC.getViewName()).append("',\n")
-      .append("   weekNumbers: true,\n")
-      .append("   editable: true,\n")
-      .append("   selectable: true,\n")
-      .append("   selectHelper: true,\n")
-      .append("	  eventSources:[");
+		  .append("jQuery(function() {\n")
+		  .append("	jQuery('#").append(id).append("').fullCalendar( {\n")
+		  .append("   header: {\n")
+		  .append("     left: 'prev,print,next today',\n")
+		  .append("     center: 'title',\n")
+		  .append("     right: 'month,agendaWeek,agendaDay'\n")
+		  .append("   },\n")
+		  .append("   buttonText: {\n")
+		  .append("     today: '").append(escapeJavaScript(translator.translate("cal.thisweek"))).append("',\n")
+		  .append("     month: '").append(escapeJavaScript(translator.translate("cal.month"))).append("',\n")
+		  .append("     day: '").append(escapeJavaScript(translator.translate("cal.day"))).append("',\n")
+		  .append("     week: '").append(escapeJavaScript(translator.translate("cal.week"))).append("',\n")
+		  .append("     print: '").append(escapeJavaScript(translator.translate("print"))).append("'\n")
+		  .append("   },\n")
+		  .append("   monthNames: ").append(getMonthLong(translator)).append(",\n")
+		  .append("   monthNamesShort: ").append(getMonthShort(translator)).append(",\n")
+		  .append("   dayNames: ").append(getDayLong(translator)).append(",\n")
+		  .append("   dayNamesShort: ").append(getDayShort(translator)).append(",\n")
+		  .append("   allDayText:'").append(translator.translate("cal.form.allday")).append("',\n")
+		  .append("   axisFormat:'").append(ampm ? "h(:mm)tt" : "H.mm").append("',\n")
+		  .append("   timeFormat:'").append(ampm ? "h(:mm)tt" : "H.mm").append("',\n")
+		  .append("   titleFormat: {\n")
+		  .append("     month: 'MMMM yyyy',\n")
+		  .append("     week: ").append(firstMonth ? "\"MMM d[ yyyy]{ '&#8212;'[ MMM] d yyyy}\"" : "\"d. [ MMM] [ yyyy]{ '&#8212;' d. MMM yyyy}\"").append(",\n")
+		  .append("     day: ").append(firstMonth ? "'dddd, MMM d, yyyy'" : "'dddd, d. MMM yyyy'").append("\n")
+		  .append("   },\n")
+		  .append("   columnFormat: {\n")
+		  .append("     month: 'ddd',\n")
+		  .append("     week: ").append(firstMonth ? "'ddd M/d'" : "'ddd d.M.'").append(",\n")
+		  .append("     day: ").append(firstMonth ? "'dddd M/d'" : "'dddd d.M.'").append("\n")
+		  .append("   },\n")
+		  .append("   year:").append(cal.get(Calendar.YEAR)).append(",\n")
+		  .append("   month:").append(cal.get(Calendar.MONTH)).append(",\n")
+		  .append("   date:").append(cal.get(Calendar.DAY_OF_MONTH)).append(",\n")
+		  .append("   firstDay:").append(firstDay).append(",\n")
+		  .append("   defaultView:'").append(fcC.getViewName()).append("',\n")
+		  .append("   weekNumbers: true,\n")
+		  .append("   editable: true,\n")
+		  .append("   selectable: true,\n")
+		  .append("   selectHelper: true,\n")
+		  .append("	  eventSources:[");
 		int count = 0;
-		for(KalendarRenderWrapper calWrapper: fcC.getKalendarRenderWrappers()) {
-			if(calWrapper.getKalendarConfig().isVis()) {
+		for(KalendarRenderWrapper calWrapper: fcC.getCalendars()) {
+			if(calWrapper.isVisible()) {
 				String calId = calWrapper.getKalendar().getCalendarID();
-				String color = calWrapper.getKalendarConfig().getCss();
+				String color = calWrapper.getCssClass();
 				if(StringHelper.containsNonWhitespace(color) && color.startsWith("o_cal_")) {
 					color = color.substring(6, color.length());
 				}
@@ -128,38 +130,58 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 				  .append("}");
 			}
 		}
-    sb.append("   ],\n")
-      .append("   eventAfterRender: function(event, element, view) {\n")
-      .append("     element.each(function(index, el) {\n")
-      .append("       jQuery(el).attr('id', 'o_cev_' + view.name + '_' + event.id);\n")
-      .append("     });\n")
-      .append("   },\n")
-      .append("   viewDisplay: function(view) {\n")
-      .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
-      .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'evChangeView',view.name,'start',view.start.getTime());\n")
-      .append("   },\n")
-      .append("	  eventDrop: function(calEvent, dayDelta, minuteDelta, allDay, revertFunc, jsEvent, ui, view) {\n")
-      .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
-      .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'evMove',calEvent.id,'dayDelta',dayDelta,'minuteDelta',minuteDelta,'allDay',allDay);\n")
-      .append("	  },\n")
-      .append("   select: function(startDate, endDate, allDay, jsEvent, view) {\n")
-      .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
-      .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'evAdd','new','start',startDate.getTime(),'end',endDate.getTime(),'allDay',allDay);\n")
-      .append("   },\n")
-      .append("   eventClick: function(calEvent, jsEvent, view) {\n")
-      .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
-      .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'evSelect',calEvent.id,'evDomId','o_cev_' + view.name + '_' + calEvent.id);\n")
-      .append("   }\n")
-      .append(" });\n")
-      .append(" jQuery('.fc-header-left').append('<span class=\"fc-header-space\"></span><span id=\"").append(printId).append("\" class=\"fc-button fc-button-print fc-state-default fc-corner-left fc-corner-right\"><span>")
-                 .append(translator.translate("print")).append("</span></span>');\n")
-      .append(" jQuery('.fc-button-print').click(function () {\n")
-      .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
-      .append("   o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'print','print');\n")
-      .append(" });\n")
-      .append("});\n")
-      .append("/* ]]> */\n")
-      .append("</script>");
+		sb.append("   ],\n")
+		  .append("   eventAfterRender: function(event, element, view) {\n")
+		  .append("     element.each(function(index, el) {\n")
+		  .append("       jQuery(el).attr('id', 'o_cev_' + view.name + '_' + event.id);\n")
+		  .append("     });\n")
+		  .append("   },\n")
+		  .append("   viewDisplay: function(view) {\n")
+		  .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
+		  .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'evChangeView',view.name,'start',view.start.getTime());\n")
+		  .append("   },\n")
+		  .append("	  eventDrop: function(calEvent, dayDelta, minuteDelta, allDay, revertFunc, jsEvent, ui, view) {\n")
+		  .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
+		  .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'evMove',calEvent.id,'dayDelta',dayDelta,'minuteDelta',minuteDelta,'allDay',allDay);\n")
+		  .append("	  },\n")
+		  .append("   select: function(startDate, endDate, allDay, jsEvent, view) {\n")
+		  .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
+		  .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'evAdd','new','start',startDate.getTime(),'end',endDate.getTime(),'allDay',allDay);\n")
+		  .append("   },\n")
+		  .append("   eventClick: function(calEvent, jsEvent, view) {\n")
+		  .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
+		  .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'evSelect',calEvent.id,'evDomId','o_cev_' + view.name + '_' + calEvent.id);\n")
+		  .append("   }\n")
+		  .append(" });\n")
+		//print button
+		  .append(" jQuery('.fc-header-left').append('<span class=\"fc-header-space\"></span><span id=\"").append(printId).append("\" class=\"fc-button fc-button-print fc-state-default fc-corner-left fc-corner-right\">")
+		  .append(" <span title=\"").append(translator.translate("print")).append("\"><i class=\"o_icon o_icon_print\"> </i></span></span>');\n")      
+		  .append(" jQuery('.fc-button-print').click(function () {\n")
+		  .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
+		  .append("   o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'print','print');\n")
+		  .append(" });\n");
+		if(fcC.isConfigurationEnabled()) {
+			//config button
+			sb.append(" jQuery('.fc-header-left').append('<span class=\"fc-header-space\"></span><span id=\"").append(configId).append("\" class=\"fc-button fc-button-config fc-state-default fc-corner-left fc-corner-right\">")
+			  .append(" <span title=\"").append(translator.translate("cal.configuration.tooltip")).append("\"><i class=\"o_icon o_icon_customize\"> </i></span></span>');\n")      
+			  .append(" jQuery('.fc-button-config').click(function () {\n")
+			  .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
+			  .append("   o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'config','config');\n")
+			  .append(" });\n");
+		}
+		if(fcC.isAggregatedFeedEnabled()) {
+			//aggregated button
+			sb.append(" jQuery('.fc-header-left').append('<span class=\"fc-header-space\"></span><span id=\"").append(aggregatedId).append("\" class=\"fc-button fc-button-aggregate fc-state-default fc-corner-left fc-corner-right\">")
+			  .append("<span title=\"").append(translator.translate("cal.icalfeed.aggregated.tooltip")).append("\"><i class=\"o_icon o_icon_rss\"> </i></span></span>');\n")      
+			  .append(" jQuery('.fc-button-aggregate').click(function () {\n")
+			  .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
+			  .append("   o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'aggregate','aggregate');\n")
+			  .append(" });\n");
+		}
+      
+		sb.append("});\n")
+		  .append("/* ]]> */\n")
+		  .append("</script>");
 	}
 	
 	private String getDayShort(Translator translator) {

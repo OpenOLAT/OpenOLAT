@@ -79,7 +79,7 @@
 				<prop key="hibernate.connection.url">jdbc:postgresql://${db.host}:${db.host.port}/${db.name}</prop>
 				<prop key="hibernate.connection.username">${db.user}</prop>
 				<prop key="hibernate.connection.password">${db.pass}</prop>
-		        <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
+		        <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQL9Dialect</prop>
 	        </props>            
 		</constructor-arg>
 		<property name="addMoreProperties" ref="hikariHibernateProperties" />
@@ -90,7 +90,7 @@
 			<props>
 		     	<!-- Using datasource of hibernate -->
 				<prop key="hibernate.connection.datasource">${db.jndi}</prop>
-		        <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
+		        <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQL9Dialect</prop>
         	</props>            
 		</constructor-arg>
 		<property name="addMoreProperties" ref="hibernateProps" />

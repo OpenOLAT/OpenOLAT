@@ -65,7 +65,7 @@ public class ExternalLinksController extends FormBasicController {
 	
 	public static final String EXTERNAL_LINKS_PROVIDER = "external-links";
 	
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(CalendarManager.class);
+	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(ExternalLinksController.class);
 	
 	private FormLink newButton;
 	private final KalendarEvent kalendarEvent;

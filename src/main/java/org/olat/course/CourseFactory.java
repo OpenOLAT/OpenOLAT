@@ -43,8 +43,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.poi.util.IOUtils;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.commons.calendar.CalendarManager;
-import org.olat.commons.calendar.CalendarManagerFactory;
-import org.olat.commons.calendar.notification.CalendarNotificationManager;
+import org.olat.commons.calendar.CalendarNotificationManager;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -370,7 +369,7 @@ public class CourseFactory extends BasicManager {
 		CoursePropertyManager propertyManager = PersistingCoursePropertyManager.getInstance(res);
 		propertyManager.deleteAllCourseProperties();
 		// delete course calendar
-		CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
+		CalendarManager calManager = CoreSpringFactory.getImpl(CalendarManager.class);
 		calManager.deleteCourseCalendar(res);
 		// delete IM messages
 		CoreSpringFactory.getImpl(InstantMessagingService.class).deleteMessages(res);
@@ -396,7 +395,7 @@ public class CourseFactory extends BasicManager {
 	 */
 	private static void clearCalenderSubscriptions(OLATResourceable res) {
 		//set Publisher state to 1 (= ressource is deleted) for all calendars of the course
-		CalendarManager calMan = CalendarManagerFactory.getInstance().getCalendarManager();
+		CalendarManager calMan = CoreSpringFactory.getImpl(CalendarManager.class);
 		CalendarNotificationManager notificationManager = CoreSpringFactory.getImpl(CalendarNotificationManager.class);
 		NotificationsManager nfm = NotificationsManager.getInstance();
 		CourseGroupManager courseGroupManager = PersistingCourseGroupManager.getInstance(res);

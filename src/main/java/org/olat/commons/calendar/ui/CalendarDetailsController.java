@@ -27,13 +27,14 @@ import java.util.Locale;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.time.DateUtils;
+import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
-import org.olat.commons.calendar.ui.events.KalendarGUIEditEvent;
+import org.olat.commons.calendar.ui.events.CalendarGUIEditEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -57,7 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CalendarDetailsController extends BasicController {
 
 	private final KalendarEvent calEvent;
-	private final KalendarRenderWrapper calWrapper;
+	private final KalendarRenderWrapper calendar;
 	
 	private Link editButton;
 	
@@ -67,24 +68,33 @@ public class CalendarDetailsController extends BasicController {
 	private CalendarModule calendarModule;
 	
 	public CalendarDetailsController(UserRequest ureq, WindowControl wControl,
-			KalendarEvent event, KalendarRenderWrapper calWrapper) {
+			KalendarEvent event, KalendarRenderWrapper calendar) {
 		super(ureq, wControl, Util.createPackageTranslator(CalendarManager.class, ureq.getLocale()));
 		this.calEvent = event;
-		this.calWrapper = calWrapper;
+		this.calendar = calendar;
 		isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		VelocityContainer mainVC = createVelocityContainer("event_details");
-		
-		if(!isGuestOnly &&
-				!(calendarModule.isManagedCalendars() && event.isManaged())) {
+
+		if(!isGuestOnly
+				&& !(calendarModule.isManagedCalendars() && CalendarManagedFlag.isManaged(event, CalendarManagedFlag.all))
+				&& calendar.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE) {
 			editButton = LinkFactory.createButton("edit", mainVC, this);
 			mainVC.put("edit", editButton);
 		}
 		mainVC.contextPut("date", formatDate());
-		mainVC.contextPut("subject", event.getSubject());
-		if(StringHelper.containsNonWhitespace(event.getLocation())) {
-			mainVC.contextPut("location", event.getLocation());
+		
+		if(!calendar.isPrivateEventsVisible() && event.getClassification() == KalendarEvent.CLASS_X_FREEBUSY) {
+			mainVC.contextPut("subject", "");
+			mainVC.contextPut("description", "");
+			mainVC.contextPut("links", new ArrayList<LinkWrapper>(1));
+		} else {
+			mainVC.contextPut("subject", event.getSubject());
+			mainVC.contextPut("description", event.getDescription());
+			if(StringHelper.containsNonWhitespace(event.getLocation())) {
+				mainVC.contextPut("location", event.getLocation());
+			}
+			mainVC.contextPut("links", renderEventLinks());
 		}
-		mainVC.contextPut("links", renderEventLinks());
 		putInitialPanel(mainVC);
 	}
 	
@@ -110,7 +120,7 @@ public class CalendarDetailsController extends BasicController {
 	
 	
 	private List<LinkWrapper> renderEventLinks() {
-		List<LinkWrapper> linkWrappers = new ArrayList<LinkWrapper>();
+		List<LinkWrapper> linkWrappers = new ArrayList<>();
 		List<KalendarEventLink> kalendarEventLinks = calEvent.getKalendarEventLinks();
 		if (kalendarEventLinks != null && !kalendarEventLinks.isEmpty()) {
 			String rootUri = Settings.getServerContextPathURI();
@@ -155,7 +165,7 @@ public class CalendarDetailsController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == editButton) {
 			if(!isGuestOnly) {
-				fireEvent(ureq, new KalendarGUIEditEvent(calEvent, calWrapper));
+				fireEvent(ureq, new CalendarGUIEditEvent(calEvent, calendar));
 			}
 		}
 	}

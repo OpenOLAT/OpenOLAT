@@ -75,10 +75,12 @@ import org.junit.runners.Suite;
 	org.olat.user.EmailCheckPerformanceTest.class,//fail
 	org.olat.user.UserTest.class,
 	org.olat.user.UserPropertiesTest.class,
-	org.olat.commons.calendar.ICalFileCalendarManagerTest.class,
 	org.olat.commons.calendar.CalendarImportTest.class,
-	org.olat.commons.calendar.test.CalendarUtilsTest.class,
-	org.olat.commons.lifecycle.LifeCycleManagerTest.class,//fail christian fragen...
+	org.olat.commons.calendar.manager.ImportedCalendarDAOTest.class,
+	org.olat.commons.calendar.manager.ImportedToCalendarDAOTest.class,
+	org.olat.commons.calendar.manager.ICalFileCalendarManagerTest.class,
+	org.olat.commons.calendar.manager.CalendarUserConfigurationDAOTest.class,
+	org.olat.commons.lifecycle.LifeCycleManagerTest.class,
 	org.olat.commons.coordinate.cluster.jms.JMSTest.class,
 	org.olat.commons.coordinate.cluster.lock.LockTest.class,
 	org.olat.commons.coordinate.CoordinatorTest.class,

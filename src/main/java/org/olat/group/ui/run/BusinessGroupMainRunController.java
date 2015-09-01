@@ -681,7 +681,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ce.getOLATResourceable()));
 			bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, bwControl);
 
-			collabToolCtr = collabTools.createCalendarController(ureq, bwControl, this.businessGroup, isAdmin);
+			collabToolCtr = collabTools.createCalendarController(ureq, bwControl, businessGroup, isAdmin, true);
 			listenTo(collabToolCtr);
 			mainPanel.setContent(collabToolCtr.getInitialComponent());
 		} else if (ACTIVITY_MENUSELECT_INFORMATION.equals(cmd)) {

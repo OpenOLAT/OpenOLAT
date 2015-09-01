@@ -19,11 +19,15 @@
  */
 package org.olat.group.ui.homepage;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
-import org.olat.core.CoreSpringFactory;
+import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarModule;
+import org.olat.commons.calendar.ui.WeeklyCalendarController;
+import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -45,6 +49,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -58,10 +63,12 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 	public final static String COMMAND_MENU_GROUPINFO = "COMMAND_MENU_GROUPINFO";
 	public final static String COMMAND_MENU_GROUPMEMBERS = "COMMAND_MENU_GROUPMEMBERS";
 	public final static String COMMAND_MENU_GROUPCONTACT = "COMMAND_MENU_GROUPCONTACT";
+	public final static String COMMAND_MENU_GROUPCALENDAR = "COMMAND_MENU_GROUPCALENDAR";
 	
 	/** The three columns layout controller */
 	private LayoutMain3ColsController layoutController;
 	
+	private CollaborationTools tools;
 	/** The business group we're dealing with */
 	private BusinessGroup businessGroup;
 	
@@ -71,14 +78,19 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 	private final GroupInfoDisplayController groupInfoDisplayController;
 	private GroupMembersDisplayController groupMembersDisplayController;
 	private GroupContactController groupContactController;
+	private WeeklyCalendarController calendarController;
 	
-	private final BusinessGroupModule module;
+	@Autowired
+	private BusinessGroupModule module;
+	@Autowired
+	private CalendarModule calendarModule;
+	@Autowired
+	private CalendarManager calendarManager;
 	
 	public GroupInfoMainController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		// Initialize
 		super(ureq, wControl);
 		this.businessGroup = businessGroup;
-		module = CoreSpringFactory.getImpl(BusinessGroupModule.class);
 
 		menuTree = new MenuTree("menuTree");
 		menuTree.setRootVisible(false);
@@ -155,6 +167,8 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 					getMembersController(ureq);
 				} else if (command.equals(COMMAND_MENU_GROUPCONTACT)) {
 					getContactController(ureq);
+				} else if (command.equals(COMMAND_MENU_GROUPCALENDAR)) {
+					getCalendarController(ureq);
 				}
 			}
 		}
@@ -192,6 +206,24 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 		return groupContactController;
 	}
 	
+	private WeeklyCalendarController getCalendarController(UserRequest ureq) {
+		if(calendarController == null) {
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Calendar", 0l);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			
+			List<KalendarRenderWrapper> calendarWrappers = new ArrayList<>(2);
+			KalendarRenderWrapper groupCalendar = calendarManager.getGroupCalendar(businessGroup);
+			groupCalendar.setPrivateEventsVisible(false);
+			calendarWrappers.add(groupCalendar);
+			calendarController = new WeeklyCalendarController(ureq, bwControl, calendarWrappers, WeeklyCalendarController.CALLER_COLLAB, false);
+			listenTo(calendarController);
+		}
+		
+		layoutController.setCol3(calendarController.getInitialComponent());
+		addToHistory(ureq, calendarController);
+		return calendarController;
+	}
+	
 	private TreeModel buildTreeModel() {
 		// Builds the model for the navigation tree
 		GenericTreeModel treeModel = new GenericTreeModel();
@@ -207,6 +239,14 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 		childNode.setSelected(true);
 		rootNode.addChild(childNode);
 		rootNode.setDelegate(childNode);
+		
+		if(calendarModule.isEnableGroupCalendar() && isCalendarEnabled()) {
+			childNode = new GenericTreeNode();
+			childNode.setTitle(translate("main.menu.calendar"));
+			childNode.setUserObject(COMMAND_MENU_GROUPCALENDAR);
+			childNode.setCssClass("o_sel_groupcard_calendar");
+			rootNode.addChild(childNode);
+		}
 		
 		if(businessGroup.isOwnersVisiblePublic() || businessGroup.isParticipantsVisiblePublic() || businessGroup.isWaitingListVisiblePublic()) {
 			childNode = new GenericTreeNode();
@@ -227,13 +267,22 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 		return treeModel;
 	}
 	
+	private boolean isCalendarEnabled() {
+		if(tools == null) {
+			tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
+		}
+		return tools == null ? false : tools.isToolEnabled(CollaborationTools.TOOL_CALENDAR);
+	}
+	
 	private boolean isContactEnabled() {
 		String contactConfig = module.getContactBusinessCard();
 		if(BusinessGroupModule.CONTACT_BUSINESS_CARD_ALWAYS.equals(contactConfig)) {
 			return true;
 		}
 		if(BusinessGroupModule.CONTACT_BUSINESS_CARD_GROUP_CONFIG.equals(contactConfig)) {
-			CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
+			if(tools == null) {
+				tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
+			}
 			return tools == null ? false : tools.isToolEnabled(CollaborationTools.TOOL_CONTACT);
 		}
 		return false;

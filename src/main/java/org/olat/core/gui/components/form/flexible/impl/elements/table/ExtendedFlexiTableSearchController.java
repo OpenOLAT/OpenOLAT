@@ -33,7 +33,7 @@ import org.olat.core.gui.control.Controller;
 public interface ExtendedFlexiTableSearchController extends Controller {
 	
 	/**
-	 * Enable or disable the extened search controller. If disabled,
+	 * Enable or disable the extended search controller. If disabled,
 	 * the controller doesn't catch submit event, or do the validation
 	 */
 	public void setEnabled(boolean enable);

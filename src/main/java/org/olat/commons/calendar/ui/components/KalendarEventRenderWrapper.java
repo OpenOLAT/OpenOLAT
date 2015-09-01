@@ -119,7 +119,7 @@ public class KalendarEventRenderWrapper {
 	}
 
 	public String getCssClass() {
-		return calendarWrapper.getKalendarConfig().getCss();
+		return calendarWrapper.getCssClass();
 	}
 	
 }

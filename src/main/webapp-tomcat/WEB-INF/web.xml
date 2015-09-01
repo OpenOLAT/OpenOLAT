@@ -3,13 +3,14 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
             http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
-         version="3.1">
+         version="3.1"
+         metadata-complete="true">
 
 	<!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!   -->
 	<!-- IMPORTANT : DO NOT CHANGE SEQUENCE OF XML TYPES BECAUSE VALIDATION MAY FAIL  -->
 	<!-- Please check before checkin http://www.xmlvalidation.com/index.php           -->
 	<!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  -->
-
+	<absolute-ordering />
 	<display-name>OLAT Online Learning and Training</display-name>
 	<description>
      Online Learning and Training Application (OLAT) is a Learning Management Platform.

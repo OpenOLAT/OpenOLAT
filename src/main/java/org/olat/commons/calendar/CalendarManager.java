@@ -26,27 +26,31 @@
 package org.olat.commons.calendar;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
-import net.fortuna.ical4j.model.Calendar;
-
+import org.olat.basesecurity.IdentityRef;
+import org.olat.commons.calendar.model.CalendarKey;
+import org.olat.commons.calendar.model.CalendarUserConfiguration;
 import org.olat.commons.calendar.model.Kalendar;
-import org.olat.commons.calendar.model.KalendarConfig;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarRecurEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
-import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
+
+import net.fortuna.ical4j.model.Calendar;
 
 public interface CalendarManager {
 
 	public static final String TYPE_USER = "user";
 	public static final String TYPE_GROUP = "group";
 	public static final String TYPE_COURSE = "course";
+	public static final String TYPE_USER_AGGREGATED = "paggregated";
 	
 	public static final String ICAL_X_OLAT_LINK = "X-OLAT-LINK";
 	public static final String ICAL_X_OLAT_COMMENT = "X-OLAT-COMMENT";
@@ -55,6 +59,21 @@ public interface CalendarManager {
 	public static final String ICAL_X_OLAT_SOURCENODEID = "X-OLAT-SOURCENODEID";
 	public static final String ICAL_X_OLAT_MANAGED = "X-OLAT-MANAGED";
 	public static final String ICAL_X_OLAT_EXTERNAL_ID = "X-OLAT-EXTERNAL-ID";
+	public static final String ICAL_X_OLAT_EXTERNAL_SOURCE = "X-OLAT-EXTERNAL-SOURCE";
+
+	/** path prefix for personal iCal feed **/
+	public static final String ICAL_PREFIX_AGGREGATED = "/paggregated/";
+	/** path prefix for personal iCal feed **/
+	public static final String ICAL_PREFIX_PERSONAL = "/user/";
+	/** path prefix for course iCal feed **/
+	public static final String ICAL_PREFIX_COURSE = "/course/";
+	/** path prefix for group iCal feed **/
+	public static final String ICAL_PREFIX_GROUP = "/group/";
+	
+	/** Expected number of tokens in the course/group calendar link **/
+	public static final int ICAL_PATH_TOKEN_LENGTH = 4;
+	/** Expected number of tokens in the personal calendar link **/
+	public static final int ICAL_PERSONAL_PATH_TOKEN_LENGTH = 3;
 	
 	public static final int MAX_SUBJECT_DISPLAY_LENGTH = 30;
 
@@ -91,7 +110,7 @@ public interface CalendarManager {
 	public boolean deleteCalendar(String calendarType, String calendarID);
 	
 	/**
-	 * Get a calendar as iCalendar file.
+	 * Return the calendar file if it exists or null.
 	 * 
 	 * @param calendarType
 	 * @param calendarID
@@ -177,6 +196,8 @@ public interface CalendarManager {
 	 */
 	public Calendar readCalendar(String type, String calendarID);
 	
+	public Calendar readCalendar(File calendarFile);
+	
 	/**
 	 * Delete the calendar of the given course.
 	 * @param course
@@ -198,7 +219,7 @@ public interface CalendarManager {
 	 * @param ureq
 	 * @return
 	 */
-	public KalendarConfig findKalendarConfigForIdentity(Kalendar calendar, UserRequest ureq);
+	public CalendarUserConfiguration findCalendarConfigForIdentity(Kalendar calendar, IdentityRef identity);
 	
 	/**
 	 * Save the calendar configuration for a specific calendar for
@@ -208,7 +229,35 @@ public interface CalendarManager {
 	 * @param calendar
 	 * @param ureq
 	 */
-	public void saveKalendarConfigForIdentity(KalendarConfig kalendarConfig, Kalendar calendar, UserRequest ureq);
+	public void saveCalendarConfigForIdentity(KalendarRenderWrapper calendar, Identity identity);
+	
+	public CalendarUserConfiguration saveCalendarConfig(CalendarUserConfiguration configuration);
+	
+	public CalendarUserConfiguration createAggregatedCalendarConfig(Identity identity);
+	
+	public List<CalendarUserConfiguration> getCalendarUserConfigurationsList(IdentityRef identity, String... types);
+	
+
+	public CalendarUserConfiguration getCalendarUserConfiguration(Long key);
+
+	/**
+	 * Retrieve the settings for a specific user.
+	 * 
+	 * @param identity The user
+	 * @param types The types of calendars (optional)
+	 * @return
+	 */
+	public Map<CalendarKey,CalendarUserConfiguration> getCalendarUserConfigurationsMap(IdentityRef identity, String... types);
+	
+	/**
+	 * Retrieve the token if it exists.
+	 * 
+	 * @param calendarType
+	 * @param calendarID
+	 * @param userName
+	 * @return
+	 */
+	public String getCalendarToken(String calendarType, String calendarID, String userName);
 
 	/**
 	 * Add an event to given calendar and save calendar.
@@ -289,7 +338,17 @@ public interface CalendarManager {
 	 * @param calendarContent
 	 * @return
 	 */
-	public Kalendar buildKalendarFrom(String calendarContent, String calType,  String calId);
+	public Kalendar buildKalendarFrom(InputStream calendarContent, String calType,  String calId);
+	
+	/**
+	 * Synchronize the event of the calendar stream to the target calendar,
+	 * set the synchronized events as managed.
+	 * 
+	 * @param in
+	 * @param targetCalendar
+	 * @return
+	 */
+	public boolean synchronizeCalendarFrom(InputStream in, String source, Kalendar targetCalendar);
 
 	/**
 	 * Create Ores Helper object.
@@ -297,4 +356,10 @@ public interface CalendarManager {
 	 * @return OLATResourceable for given Kalendar
 	 */
 	public OLATResourceable getOresHelperFor(Kalendar cal);
+	
+	
+	
+	
+	
+	
 }

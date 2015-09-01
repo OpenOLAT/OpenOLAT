@@ -52,7 +52,6 @@ public class CalendarPrintMapper implements Mapper {
 	
 	private Date from, to;
 	private List<KalendarRenderWrapper> calendarWrappers;
-	private List<KalendarRenderWrapper> importedCalendarWrappers;
 	
 	public CalendarPrintMapper(String themeBaseUri, Translator translator) {
 		this.themeBaseUri = themeBaseUri;
@@ -83,14 +82,6 @@ public class CalendarPrintMapper implements Mapper {
 		this.calendarWrappers = calendarWrappers;
 	}
 
-	public List<KalendarRenderWrapper> getImportedCalendarWrappers() {
-		return importedCalendarWrappers;
-	}
-
-	public void setImportedCalendarWrappers(List<KalendarRenderWrapper> importedCalendarWrappers) {
-		this.importedCalendarWrappers = importedCalendarWrappers;
-	}
-
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
 		StringBuilder sb = new StringBuilder();
@@ -105,7 +96,6 @@ public class CalendarPrintMapper implements Mapper {
 		//collect all events
 		List<KalendarEventRenderWrapper> sortedEventsWithin = new ArrayList<KalendarEventRenderWrapper>();
 		collectEvents(sortedEventsWithin, calendarWrappers);
-		collectEvents(sortedEventsWithin, importedCalendarWrappers);
 		Collections.sort(sortedEventsWithin, KalendarEventDateComparator.getInstance());
 
 		//list of events
@@ -123,7 +113,7 @@ public class CalendarPrintMapper implements Mapper {
 	
 	private void collectEvents(List<KalendarEventRenderWrapper> eventList, List<KalendarRenderWrapper> wrappers) {
 		for (KalendarRenderWrapper calendarWrapper:wrappers) {
-			if (calendarWrapper.getKalendarConfig().isVis()) {
+			if (calendarWrapper.isVisible()) {
 				List<KalendarEvent> events = CalendarUtils.listEventsForPeriod(calendarWrapper.getKalendar(), from, to);
 				for (KalendarEvent event : events) {
 					//private filter???
@@ -266,21 +256,23 @@ public class CalendarPrintMapper implements Mapper {
 	private void renderCalendars(StringBuilder sb) {
 		sb.append("<div id='o_cal_config'>")
 		  .append("<fieldset><legend>").append(translator.translate("cal.list")).append("</legend>");
-		renderCalendar(sb, calendarWrappers);
+		renderCalendar(sb, calendarWrappers, false);
 		sb.append("</fieldset>");
 		//list of imported calendars
 		sb.append("<fieldset><legend>").append(translator.translate("cal.import.list")).append("</legend>");
-		renderCalendar(sb, importedCalendarWrappers);
+		renderCalendar(sb, calendarWrappers, true);
 		sb.append("</fieldset>")
 		  .append("</div>");
 	}
 	
-	private void renderCalendar(StringBuilder sb, List<KalendarRenderWrapper> calendarWrapperList) {
+	private void renderCalendar(StringBuilder sb, List<KalendarRenderWrapper> calendarWrapperList, boolean imported) {
 		for(KalendarRenderWrapper calendarWrapper:calendarWrapperList) {
-			String cssClass = calendarWrapper.getKalendarConfig().getCss();
-			sb.append("<div class='o_cal_config_row'><div class='o_cal_config_calendar ").append(cssClass).append("'>")
-			  .append(StringHelper.escapeHtml(calendarWrapper.getKalendarConfig().getDisplayName()))
-			  .append("</div></div>");
+			if(calendarWrapper.isImported() == imported) {
+			String cssClass = calendarWrapper.getCssClass();
+				sb.append("<div class='o_cal_config_row'><div class='o_cal_config_calendar ").append(cssClass).append("'>")
+				  .append(StringHelper.escapeHtml(calendarWrapper.getDisplayName()))
+				  .append("</div></div>");
+			}
 		}
 	}
 }

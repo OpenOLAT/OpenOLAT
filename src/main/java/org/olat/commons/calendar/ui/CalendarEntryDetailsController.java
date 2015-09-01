@@ -29,8 +29,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
-import org.olat.commons.calendar.CalendarManagerFactory;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
@@ -56,6 +57,8 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 public class CalendarEntryDetailsController extends BasicController {
@@ -75,11 +78,12 @@ public class CalendarEntryDetailsController extends BasicController {
 	private MediaLinksController mediaLinksController;
 	private Link deleteButton;
 
+	@Autowired
+	private CalendarManager calendarManager;
+
 	public CalendarEntryDetailsController(UserRequest ureq, KalendarEvent kalendarEvent, KalendarRenderWrapper calendarWrapper,
 			List<KalendarRenderWrapper> availableCalendars, boolean isNew, String caller, WindowControl wControl) {
-		super(ureq, wControl);
-		
-		setBasePackage(CalendarManager.class);
+		super(ureq, wControl, Util.createPackageTranslator(CalendarModule.class, ureq.getLocale()));
 		
 		this.availableCalendars = availableCalendars;
 		this.kalendarEvent = kalendarEvent;
@@ -102,10 +106,9 @@ public class CalendarEntryDetailsController extends BasicController {
 		eventVC.contextPut("isReadOnly", new Boolean(isReadOnly));
 		pane.addTab(translate("tab.event"), eventVC);
 		
-		//linkVC = new VelocityContainer("calEditLinks", VELOCITY_ROOT + "/calEditLinks.html", getTranslator(), this);
 		linkVC = createVelocityContainer ("calEditLinks");
 		linkVC.contextPut("caller", caller);
-		if (!isReadOnly) {
+		if (!isReadOnly && !CalendarManagedFlag.isManaged(kalendarEvent, CalendarManagedFlag.links)) {
 			//course node links
 			pane.addTab(translate("tab.links"), linkVC);
 			
@@ -131,6 +134,7 @@ public class CalendarEntryDetailsController extends BasicController {
 		mainPanel = putInitialPanel(mainVC);
 	}
 
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == pane) {
 			if (event instanceof TabbedPaneChangedEvent) {
@@ -172,7 +176,7 @@ public class CalendarEntryDetailsController extends BasicController {
 		if (source == deleteYesNoController) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
 				Kalendar cal = kalendarEvent.getCalendar();
-				CalendarManagerFactory.getInstance().getCalendarManager().removeEventFrom(cal,kalendarEvent);
+				calendarManager.removeEventFrom(cal,kalendarEvent);
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		} else if (source == copyEventToCalendarController) {
@@ -198,7 +202,7 @@ public class CalendarEntryDetailsController extends BasicController {
 						KalendarRenderWrapper calendarWrapper = iter.next();
 						if (!calendarWrapper.getKalendar().getCalendarID().equals(calendarID)) continue;
 						Kalendar cal = calendarWrapper.getKalendar();
-						boolean result = CalendarManagerFactory.getInstance().getCalendarManager().addEventTo(cal, kalendarEvent);
+						boolean result = calendarManager.addEventTo(cal, kalendarEvent);
 						if (result==false) {
 							// if one failed => done not successfully
 							doneSuccessfully = false;
@@ -207,7 +211,7 @@ public class CalendarEntryDetailsController extends BasicController {
 				} else {
 					// this is an existing event, so we get the previousely assigned calendar from the event
 					Kalendar cal = kalendarEvent.getCalendar();
-					doneSuccessfully =CalendarManagerFactory.getInstance().getCalendarManager().updateEventFrom(cal, kalendarEvent);
+					doneSuccessfully = calendarManager.updateEventFrom(cal, kalendarEvent);
 				}
 				// check if event is still available
 				if (!doneSuccessfully) {
@@ -252,7 +256,7 @@ public class CalendarEntryDetailsController extends BasicController {
 				links.add(new KalendarEventLink(provider, id, displayName, uri, iconCssClass));
 			
 				Kalendar cal = kalendarEvent.getCalendar();
-				doneSuccessfully = CalendarManagerFactory.getInstance().getCalendarManager().updateEventFrom(cal, kalendarEvent);
+				doneSuccessfully = calendarManager.updateEventFrom(cal, kalendarEvent);
 			}
 			
 			if (doneSuccessfully) {
@@ -265,7 +269,7 @@ public class CalendarEntryDetailsController extends BasicController {
 			//save externals links
 			Kalendar cal = kalendarEvent.getCalendar();
 			if (kalendarEvent.getCalendar() != null) {
-				boolean doneSuccessfully = CalendarManagerFactory.getInstance().getCalendarManager().updateEventFrom(cal, kalendarEvent);
+				boolean doneSuccessfully = calendarManager.updateEventFrom(cal, kalendarEvent);
 				if (doneSuccessfully) {
 					fireEvent(ureq, Event.DONE_EVENT);
 				} else {

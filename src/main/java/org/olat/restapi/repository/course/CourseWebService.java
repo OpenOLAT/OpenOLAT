@@ -61,6 +61,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -72,6 +73,8 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.cal.CourseCalendars;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.vitero.restapi.ViteroBookingWebService;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
@@ -150,7 +153,12 @@ public class CourseWebService {
 				&& (calendarModule.isEnableCourseToolCalendar() || calendarModule.isEnableCourseElementCalendar())
 				&& course.getCourseConfig().isCalendarEnabled()) {
 			UserRequest ureq = getUserRequest(request);
-			KalendarRenderWrapper wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, courseOres, null);
+			
+			IdentityEnvironment ienv = new IdentityEnvironment();
+			ienv.setIdentity(ureq.getIdentity());
+			ienv.setRoles(ureq.getUserSession().getRoles());
+			UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
+			KalendarRenderWrapper wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, userCourseEnv, null);
 			return new CalWebService(wrapper);
 		}
 		return null;

@@ -30,7 +30,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.olat.commons.calendar.CalendarManager;
-import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
@@ -44,6 +43,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.core.util.xml.XStreamHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class CopyEventToCalendarController extends FormBasicController {
 	
@@ -52,6 +52,9 @@ public class CopyEventToCalendarController extends FormBasicController {
 	private final KalendarEvent kalendarEvent;
 	private final Collection<KalendarRenderWrapper> calendars;
 	private List<MultipleSelectionElement> copyEls;
+	
+	@Autowired
+	private CalendarManager calendarManager;
 
 	public CopyEventToCalendarController(UserRequest ureq, WindowControl wControl,
 			KalendarEvent kalendarEvent, Collection<KalendarRenderWrapper> calendars) {
@@ -71,7 +74,7 @@ public class CopyEventToCalendarController extends FormBasicController {
 		copyEls = new ArrayList<>(calendars.size());
 		for (KalendarRenderWrapper calendarWrapper : calendars) {
 			String calId = calendarWrapper.getKalendar().getCalendarID();
-			String value = calendarWrapper.getKalendarConfig().getDisplayName();
+			String value = calendarWrapper.getDisplayName();
 			MultipleSelectionElement copyEl = uifactory
 					.addCheckboxesHorizontal("cal_" + calId, null, formLayout, copy, new String[]{ value });
 			copyEl.setUserObject(calendarWrapper);
@@ -92,7 +95,6 @@ public class CopyEventToCalendarController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
 		for (MultipleSelectionElement copyEl : copyEls) {
 			if(copyEl.isEnabled() && copyEl.isAtLeastSelected(1)) {
 				KalendarRenderWrapper calendarWrapper = (KalendarRenderWrapper)copyEl.getUserObject();

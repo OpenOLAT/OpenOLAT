@@ -120,7 +120,7 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		updateModuleConfigDefaults(false);
-		CalRunController calCtlr = new CalRunController(wControl, ureq, this, userCourseEnv.getCourseEnvironment(), ne);
+		CalRunController calCtlr = new CalRunController(wControl, ureq, this, userCourseEnv, ne);
 		Controller wrapperCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, calCtlr, this, "o_cal_icon");
 		return new NodeRunConstructionResult(wrapperCtrl);
 	}
