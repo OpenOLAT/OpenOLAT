@@ -136,7 +136,7 @@ public interface CalendarManager {
 	 * @param identity
 	 * @return
 	 */
-	public KalendarRenderWrapper getImportedCalendar(Identity identity, String calendarName);
+	public KalendarRenderWrapper getImportedCalendar(Identity identity, String calendarID);
 	
 	
 	/**

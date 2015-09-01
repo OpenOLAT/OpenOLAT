@@ -85,10 +85,10 @@ public class HomeCalendarManager implements PersonalCalendarManager {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private ImportCalendarManager importCalendarManager;
-	
-	
+
+	@Override
 	public List<CalendarFileInfos> getListOfCalendarsFiles(Identity identity) {
-		List<CalendarFileInfos> aggragtedFiles = new ArrayList<>();
+		List<CalendarFileInfos> aggregatedFiles = new ArrayList<>();
 
 		Map<CalendarKey,CalendarUserConfiguration> configMap = calendarManager.getCalendarUserConfigurationsMap(identity);
 		
@@ -99,7 +99,7 @@ public class HomeCalendarManager implements PersonalCalendarManager {
 				&& (personalCalendarConfig == null || personalCalendarConfig.isInAggregatedFeed())) {
 			File iCalFile = calendarManager.getCalendarICalFile(CalendarManager.TYPE_USER, identity.getName());
 			if(iCalFile != null) {
-				aggragtedFiles.add(new CalendarFileInfos(identity.getName(), CalendarManager.TYPE_USER, iCalFile));
+				aggregatedFiles.add(new CalendarFileInfos(identity.getName(), CalendarManager.TYPE_USER, iCalFile));
 			}
 		}
 
@@ -115,7 +115,7 @@ public class HomeCalendarManager implements PersonalCalendarManager {
 				if(calendarConfig == null || calendarConfig.isInAggregatedFeed()) {
 					File iCalFile = calendarManager.getCalendarICalFile(CalendarManager.TYPE_GROUP, calendarId);
 					if(iCalFile != null) {
-						aggragtedFiles.add(new CalendarFileInfos(calendarId, CalendarManager.TYPE_GROUP, iCalFile));
+						aggregatedFiles.add(new CalendarFileInfos(calendarId, CalendarManager.TYPE_GROUP, iCalFile));
 					}
 				}
 			}
@@ -131,15 +131,16 @@ public class HomeCalendarManager implements PersonalCalendarManager {
 				if(calendarConfig == null || calendarConfig.isInAggregatedFeed()) {
 					File iCalFile = calendarManager.getCalendarICalFile(CalendarManager.TYPE_COURSE, calendarId);
 					if(iCalFile != null) {
-						aggragtedFiles.add(new CalendarFileInfos(calendarId, CalendarManager.TYPE_COURSE, iCalFile));
+						aggregatedFiles.add(new CalendarFileInfos(calendarId, CalendarManager.TYPE_COURSE, iCalFile));
 					}
 				}
 			}
 		}
 		
-		return aggragtedFiles;
+		return aggregatedFiles;
 	}
 	
+	@Override
 	public List<KalendarRenderWrapper> getListOfCalendarWrappers(UserRequest ureq, WindowControl wControl) {
 		if(!calendarModule.isEnabled()) {
 			return new ArrayList<KalendarRenderWrapper>();
@@ -154,8 +155,11 @@ public class HomeCalendarManager implements PersonalCalendarManager {
 		appendGroupCalendars(identity, calendars, configMap);
 		appendCourseCalendars(ureq, wControl, calendars, configMap);
 		
-		//reload
+		//reload every hour
 		List<KalendarRenderWrapper> importedCalendars = importCalendarManager.getImportedCalendarsForIdentity(identity, true);
+		for(KalendarRenderWrapper importedCalendar:importedCalendars) {
+			importedCalendar.setPrivateEventsVisible(true);
+		}
 		
 		calendars.addAll(importedCalendars);
 		return calendars;

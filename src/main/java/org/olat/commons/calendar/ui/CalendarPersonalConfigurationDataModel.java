@@ -19,8 +19,12 @@
  */
 package org.olat.commons.calendar.ui;
 
+import java.util.List;
+
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 
 /**
  * 
@@ -28,7 +32,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CalendarPersonalConfigurationDataModel extends DefaultFlexiTableDataModel<CalendarPersonalConfigurationRow> {
+public class CalendarPersonalConfigurationDataModel extends DefaultFlexiTableDataModel<CalendarPersonalConfigurationRow>
+	implements SortableFlexiTableDataModel<CalendarPersonalConfigurationRow> {
 	
 	public CalendarPersonalConfigurationDataModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
@@ -40,16 +45,29 @@ public class CalendarPersonalConfigurationDataModel extends DefaultFlexiTableDat
 	}
 
 	@Override
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<CalendarPersonalConfigurationRow> configRows = new CalendarPersonalConfigurationTableSort(orderBy, this, null).sort();
+			super.setObjects(configRows);
+		}
+	}
+	
+	@Override
 	public Object getValueAt(int row, int col) {
 		CalendarPersonalConfigurationRow configRow = getObject(row);
+		return getValueAt(configRow, col);
+	}
+
+	@Override
+	public Object getValueAt(CalendarPersonalConfigurationRow row, int col) {
 		switch(ConfigCols.values()[col]) {
-			case type: return configRow.getWrapper();
-			case name: return configRow.getDisplayName();
-			case cssClass: return configRow.getColorLink();//.getCssClass();
-			case visible: return configRow.getVisibleLink();
-			case aggregated: return configRow.getAggregatedLink();
-			case feed: return configRow.getFeedLink();
-			case tools: return configRow.getToolsLink();
+			case type: return row.getWrapper();
+			case name: return row.getDisplayName();
+			case cssClass: return row.getColorLink();//.getCssClass();
+			case visible: return row.getVisibleLink();
+			case aggregated: return row.getAggregatedLink();
+			case feed: return row.getFeedLink();
+			case tools: return row.getToolsLink();
 		}
 		return null;
 	}

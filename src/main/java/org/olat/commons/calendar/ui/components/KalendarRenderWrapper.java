@@ -210,7 +210,11 @@ public class KalendarRenderWrapper {
 		String calendarType = kalendar.getType();
 		String calendarId = kalendar.getCalendarID();
 		if (calendarType.equals(ICalFileCalendarManager.TYPE_USER)) {
-			return Settings.getServerContextPathURI() + "/ical" + "/" + calendarType + "/" + identity.getName() + "/" + token + ".ics"; 		
+			if(isImported()) {
+				return Settings.getServerContextPathURI() + "/ical" + "/" + calendarType + "/" + identity.getName() + "/" + token + "/" + calendarId + ".ics";
+			} else {
+				return Settings.getServerContextPathURI() + "/ical" + "/" + calendarType + "/" + identity.getName() + "/" + token + ".ics";
+			}
 		} else {
 			return Settings.getServerContextPathURI() + "/ical" + "/" + calendarType + "/" + identity.getName() + "/" + token + "/" + calendarId + ".ics";
 		}

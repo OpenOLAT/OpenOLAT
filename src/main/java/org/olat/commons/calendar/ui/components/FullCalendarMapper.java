@@ -117,8 +117,8 @@ public class FullCalendarMapper implements Mapper {
 	
 	private void collectKalendarEvents(JSONArray ja, String calendarId, Date from, Date to) throws JSONException {
 		KalendarRenderWrapper cal =  fcC.getCalendar(calendarId);
-		boolean privateEventsVisible = cal.isPrivateEventsVisible();
 		if(cal != null) {
+			boolean privateEventsVisible = cal.isPrivateEventsVisible();
 			for(KalendarEvent event:cal.getKalendar().getEvents()) {
 				if(!privateEventsVisible && event.getClassification() == KalendarEvent.CLASS_PRIVATE) {
 					continue;

@@ -93,7 +93,9 @@ public class ImportCalendarManager {
 			}
 			
 			importedCalendarDao.createImportedCalendar(identity, calendarName, calendarID, type, url, new Date());
-			calendarWrapper = calendarManager.getImportedCalendar(identity, calendarName);
+			calendarWrapper = calendarManager.getImportedCalendar(identity, calendarID);
+			calendarWrapper.setDisplayName(calendarName);
+			calendarWrapper.setPrivateEventsVisible(true);
 		}
 		return calendarWrapper;
 	}
@@ -110,7 +112,9 @@ public class ImportCalendarManager {
 			}
 			
 			importedCalendarDao.createImportedCalendar(identity, calendarName, calendarID, type, null, new Date());
-			calendarWrapper = calendarManager.getImportedCalendar(identity, calendarName);
+			calendarWrapper = calendarManager.getImportedCalendar(identity, calendarID);
+			calendarWrapper.setDisplayName(calendarName);
+			calendarWrapper.setPrivateEventsVisible(true);
 		}
 		return calendarWrapper;
 	}

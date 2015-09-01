@@ -158,7 +158,11 @@ public class ICalServlet extends HttpServlet {
 			}
 			calendarID = pathInfoTokens[4];
 		} else if(CalendarManager.TYPE_USER.equals(calendarType)) {
-			calendarID = userName;
+			if(pathInfoTokens.length < 5) {
+				calendarID = userName;
+			} else {
+				calendarID = pathInfoTokens[4];
+			}
 		} else if(CalendarManager.TYPE_USER_AGGREGATED.equals(calendarType)) {
 			calendarID = userName;
 		} else {

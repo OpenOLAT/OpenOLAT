@@ -413,7 +413,6 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				calendarWrappers.remove(removeEvent.getCalendar());
 				calendarEl.setCalendars(calendarWrappers);
 			} else if(event instanceof CalendarGUISettingEvent) {
-				//CalendarGUISettingEvent settingEvent = (CalendarGUISettingEvent)event;
 				calendarEl.setCalendars(calendarWrappers);
 			}
 		}

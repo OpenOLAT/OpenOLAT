@@ -112,11 +112,15 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.type.i18nKey(), ConfigCols.type.ordinal(),
-				new CalendarTypeClassRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.cssClass.i18nKey(), ConfigCols.cssClass.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.name.i18nKey(), ConfigCols.name.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.visible.i18nKey(), ConfigCols.visible.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.aggregated.i18nKey(), ConfigCols.aggregated.ordinal()));
+				true, ConfigCols.type.name(), new CalendarTypeClassRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.cssClass.i18nKey(), ConfigCols.cssClass.ordinal(),
+				true, ConfigCols.cssClass.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.name.i18nKey(), ConfigCols.name.ordinal(),
+				true, ConfigCols.name.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.visible.i18nKey(), ConfigCols.visible.ordinal(),
+				true, ConfigCols.visible.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.aggregated.i18nKey(), ConfigCols.aggregated.ordinal(),
+				true, ConfigCols.aggregated.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.feed.i18nKey(), ConfigCols.feed.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.tools.i18nKey(), ConfigCols.tools.ordinal()));
 		
@@ -164,7 +168,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 	}
 	
 	private void enableDisableIcons(FormLink link, boolean enabled) {
-		link.setIconLeftCSS(enabled ? "o_icon o_icon-lg o_icon_calendar_enabled" : "o_icon o_icon-lg o_icon_calendar_disabled");
+		link.setIconLeftCSS(enabled ? "o_icon o_icon_calendar_enabled" : "o_icon o_icon_calendar_disabled");
 	}
 	
 	@Override
@@ -203,6 +207,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 			
 			if(event == Event.DONE_EVENT) {
 				doImportCalendar(calendar);
+				fireEvent(ureq, new CalendarGUIImportEvent(calendar));
 			}
 		} else if(calendarToolsCtrl == source) {
 			CalendarPersonalConfigurationRow row = calendarToolsCtrl.getRow();
