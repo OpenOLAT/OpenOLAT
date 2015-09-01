@@ -66,7 +66,6 @@ public class LifecycleMetadataEditController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("lifecycle");
-		setFormContextHelp("org.olat.modules.qpool.ui.metadata", "lifecycle.html", "help.hover.lifecycle");
 		
 		versionEl = uifactory.addTextElement("lifecycle.version", "lifecycle.version", 50, item.getItemVersion(), formLayout);
 		

@@ -60,7 +60,7 @@ public class ImportController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("org.olat.modules.qpool.ui", "import-file.html", "help.hover.importfile");
+		setFormContextHelp("Data Management#qb_import");
 
 		if(source.askEditable()) {
 			String[] values = new String[]{

@@ -131,6 +131,10 @@ public class DialogBoxController extends BasicController {
 		}
 	}
 	
+	public void setContextHelp(String pageName) {
+		setContextHelp(null, pageName, null);
+	}
+	
 	public void setContextHelp(String packageName, String pageName, String hoverTextKey) {
 		if (packageName == null) {
 			dialogBoxVC.contextRemove("off_chelp_package");

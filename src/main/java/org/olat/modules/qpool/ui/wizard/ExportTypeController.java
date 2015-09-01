@@ -89,7 +89,6 @@ public class ExportTypeController extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("export.type.desc");
-		setFormContextHelp("org.olat.modules.qpool.ui.wizard", "export-type.html", "help.hover.export-type");
 		
 		formatEl = uifactory.addDropdownSingleselect("export.type", "export.type", formLayout, formatKeys, formatValues, null);
 	}

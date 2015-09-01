@@ -94,7 +94,6 @@ public class RightsMetadataEditController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("rights");
-		setFormContextHelp("org.olat.modules.qpool.ui.metadata", "rights.html", "help.hover.rights");
 		
 		String authorListPage = velocity_root + "/author_list.html";
 		authorCont = FormLayoutContainer.createCustomFormLayout("owners", getTranslator(), authorListPage);

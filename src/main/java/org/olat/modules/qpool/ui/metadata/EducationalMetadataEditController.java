@@ -69,7 +69,6 @@ public class EducationalMetadataEditController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("educational");
-		setFormContextHelp("org.olat.modules.qpool.ui.metadata", "educational.html", "help.hover.educational");
 
 		List<QEducationalContext> levels = qpoolService.getAllEducationlContexts();
 		String[] contextKeys = new String[ levels.size() ];
