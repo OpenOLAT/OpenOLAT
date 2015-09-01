@@ -56,6 +56,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.nodes.GTACourseNode;
@@ -90,8 +91,9 @@ public class GTAAssignmentEditController extends FormBasicController {
 	private CloseableModalController cmc;
 	private NewTaskController newTaskCtrl;
 	private DialogBoxController confirmDeleteCtrl;
+	private HTMLEditorController newTaskEditorCtrl;
+	private EditHTMLTaskController editTaskEditorCtrl;
 	private EditTaskController addTaskCtrl, editTaskCtrl;
-	private HTMLEditorController newTaskEditorCtrl, editTaskEditorCtrl;
 	
 	private final TaskDefinitionList taskList;
 	private final File tasksFolder;
@@ -385,9 +387,9 @@ public class GTAAssignmentEditController extends FormBasicController {
 	
 	private void doFinishReplacementOfTask(String replacedFilename, TaskDefinition taskDef) {
 		RepositoryEntry re = courseEditorEnv.getCourseGroupManager().getCourseEntry();
-		TaskList taskList = gtaManager.getTaskList(re, gtaNode);
-		if(taskList != null) {
-			gtaManager.updateTaskName(taskList, replacedFilename, taskDef.getFilename());
+		TaskList list = gtaManager.getTaskList(re, gtaNode);
+		if(list != null) {
+			gtaManager.updateTaskName(list, replacedFilename, taskDef.getFilename());
 		}
 	}
 	
@@ -422,15 +424,17 @@ public class GTAAssignmentEditController extends FormBasicController {
 	}
 	
 	private void doEditTaskEditor(UserRequest ureq, TaskDefinition taskDef) {
-		String documentName = taskDef.getFilename();
-
-		editTaskEditorCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(),
-				tasksContainer, documentName, "media", true, true);
-		listenTo(editTaskEditorCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), "close", editTaskEditorCtrl.getInitialComponent());
-		listenTo(cmc);
-		cmc.activate();
+		VFSItem htmlDocument = tasksContainer.resolve(taskDef.getFilename());
+		if(htmlDocument == null || !(htmlDocument instanceof VFSLeaf)) {
+			showError("error.missing.file");
+		} else {
+			editTaskEditorCtrl = new EditHTMLTaskController(ureq, getWindowControl(), taskDef, tasksContainer);
+			listenTo(editTaskEditorCtrl);
+			
+			cmc = new CloseableModalController(getWindowControl(), "close", editTaskEditorCtrl.getInitialComponent());
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, TaskDefinition row) {
