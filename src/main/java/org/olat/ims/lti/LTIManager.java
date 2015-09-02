@@ -50,5 +50,11 @@ public interface LTIManager {
 
 	public List<LTIOutcome> loadOutcomes(Identity identity, OLATResource resource, String resSubPath);
 	
+	/**
+	 * Remove the outcomes of a resource, typically before deleting a course.
+	 * @param resource
+	 */
+	public void deleteOutcomes(OLATResource resource);
+	
 
 }

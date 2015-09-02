@@ -27,6 +27,7 @@ package org.olat.course.nodes;
 
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -49,6 +50,7 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti.ui.LTIResultDetailsController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
@@ -61,6 +63,7 @@ import org.olat.resource.OLATResource;
 public class BasicLTICourseNode extends AbstractAccessableCourseNode implements AssessableCourseNode {
 
 	private static final long serialVersionUID = 2210572148308757127L;
+	private static final String translatorPackage = Util.getPackageName(LTIEditController.class);
 	private static final String TYPE = "lti";
 
 	public static final String CONFIG_KEY_AUTHORROLE = "authorRole";
@@ -144,8 +147,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 		if (!isValid) {
 			// FIXME: refine statusdescriptions
 			String[] params = new String[] { this.getShortTitle() };
-			String translPackage = Util.getPackageName(LTIConfigForm.class);
-			sd = new StatusDescription(StatusDescription.ERROR, NLS_ERROR_HOSTMISSING_SHORT, NLS_ERROR_HOSTMISSING_LONG, params, translPackage);
+			sd = new StatusDescription(StatusDescription.ERROR, NLS_ERROR_HOSTMISSING_SHORT, NLS_ERROR_HOSTMISSING_LONG, params, translatorPackage);
 			sd.setDescriptionForUnit(getIdent());
 			// set which pane is affected by error
 			sd.setActivateableViewIdentifier(LTIEditController.PANE_TAB_LTCONFIG);
@@ -161,8 +163,8 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 		oneClickStatusCache = null;
 		// only here we know which translator to take for translating condition
 		// error messages
-		String translatorStr = Util.getPackageName(LTIEditController.class);
-		List<StatusDescription> sds =  isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		
+		List<StatusDescription> sds =  isConfigValidWithTranslator(cev, translatorPackage, getConditionExpressions());
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}
@@ -181,6 +183,15 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return false;
+	}
+	
+	/**
+	 * @see org.olat.course.nodes.CourseNode#cleanupOnDelete(org.olat.course.ICourse)
+	 */
+	@Override
+	public void cleanupOnDelete(ICourse course) {
+		OLATResource resource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+		CoreSpringFactory.getImpl(LTIManager.class).deleteOutcomes(resource);
 	}
 
 	/**
