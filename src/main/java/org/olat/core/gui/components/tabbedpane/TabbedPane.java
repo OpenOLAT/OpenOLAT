@@ -260,10 +260,13 @@ public class TabbedPane extends Container implements Activateable2 {
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
-
-		int pos = entries.get(0).getOLATResourceable().getResourceableId().intValue();
-		if(pos != selectedPane) {
-			dispatchRequest(ureq, pos);
+		
+		OLATResourceable ores = entries.get(0).getOLATResourceable();
+		if("tab".equals(ores.getResourceableTypeName())) {
+			int pos = ores.getResourceableId().intValue();
+			if(pos != selectedPane && pos >= 0 && pos < getTabCount()) {
+				dispatchRequest(ureq, pos);
+			}
 		}
 	}
 }
