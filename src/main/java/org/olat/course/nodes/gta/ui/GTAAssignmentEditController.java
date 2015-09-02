@@ -261,6 +261,10 @@ public class GTAAssignmentEditController extends FormBasicController {
 			cmc.deactivate();
 			cleanUp();
 		} else if(editTaskEditorCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				updateModel();
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
 			cmc.deactivate();
 			cleanUp();
 		} else if(confirmDeleteCtrl == source) {

@@ -19,22 +19,18 @@
  */
 package org.olat.course.nodes.gta.ui;
 
-import java.io.InputStream;
-
-import org.apache.commons.io.IOUtils;
+import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 
 /**
@@ -46,7 +42,7 @@ import org.olat.course.nodes.gta.model.TaskDefinition;
 public class EditHTMLTaskController extends FormBasicController {
 	
 	private TextElement titleEl, descriptionEl;
-	private RichTextElement fileEl;
+	private HTMLEditorController contentEditor;
 	
 	private final TaskDefinition task;
 	private final VFSContainer taskContainer;
@@ -82,17 +78,11 @@ public class EditHTMLTaskController extends FormBasicController {
 		String description = task.getDescription() == null ? "" : task.getDescription();
 		descriptionEl = uifactory.addTextAreaElement("descr", "task.description", 2048, 10, -1, true, description, formLayout);
 
-		fileEl = uifactory.addRichTextElementForFileData("file", "task.file", "", 20, 60, taskContainer, "media", null,
-				formLayout, ureq.getUserSession(), getWindowControl());
-		fileEl.setMandatory(true);
-		
-		VFSLeaf file = (VFSLeaf)taskContainer.resolve(task.getFilename());
-		try(InputStream in =file.getInputStream()) {
-			String content = IOUtils.toString(in);
-			fileEl.setValue(content);
-		} catch(Exception e) {
-			logError("", e);
-		}
+		contentEditor = new HTMLEditorController(ureq, getWindowControl(), taskContainer, task.getFilename(), null, "media", true, false, false, mainForm);
+		listenTo(contentEditor);
+		FormItem editorItem = contentEditor.getInitialFormItem();
+		editorItem.setLabel("task.file", null);
+		formLayout.add(editorItem);
 
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonCont.setRootForm(mainForm);
@@ -116,25 +106,16 @@ public class EditHTMLTaskController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		fileEl.clearError();
-		if(!StringHelper.containsNonWhitespace(fileEl.getValue())) {
-			fileEl.setErrorKey("form.mandatory.hover", null);
-			allOk &= false;
-		}
-		
 		return allOk & super.validateFormLogic(ureq);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		task.setTitle(titleEl.getValue());
-		task.setDescription(descriptionEl.getValue());
-
-		String fileContent = fileEl.getValue();
-		VFSLeaf fileLeaf = (VFSLeaf)taskContainer.resolve(task.getFilename());
-		FileUtils.save(fileLeaf.getOutputStream(false), fileContent.toString(), "UTF-8");
-
-		fireEvent(ureq, Event.DONE_EVENT);
+		if(contentEditor.doSaveData()) {
+			task.setTitle(titleEl.getValue());
+			task.setDescription(descriptionEl.getValue());
+			fireEvent(ureq, Event.DONE_EVENT);
+		}
 	}
 
 	@Override
