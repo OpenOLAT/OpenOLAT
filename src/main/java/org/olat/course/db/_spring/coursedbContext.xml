@@ -1,31 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans 
-                        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context.xsd">
 	
-	<bean id="courseDBManager" class="org.olat.course.db.impl.CourseDBManagerImpl">
-		<property name="persistedProperties">
-	  	<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy" 
-	  		depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
-	    	<constructor-arg index="0" ref="coordinatorManager"/>
-	    	<constructor-arg index="1" ref="courseDBManager" />
-	  	</bean>
-		</property>
-		<property name="dbInstance" ref="database"/>
-		<property name="repositoryManager" ref="repositoryManager"/>
-	</bean>
-
-	<!-- default configuration -->
-	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetObject" ref="courseDBManager" />
-		<property name="targetMethod" value="init" />
-		<property name="arguments">
-			<value>
-				enabled=${course.db.enabled}
-			</value>
-		</property>
-	</bean>
+	<context:component-scan base-package="org.olat.course.db.impl" />
 
 	<bean id="courseDbWebService" class="org.olat.course.db.restapi.CourseDbWebService" />
 

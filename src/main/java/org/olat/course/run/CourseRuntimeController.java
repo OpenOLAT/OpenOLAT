@@ -190,6 +190,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private AssessmentModule assessmentModule;
+	@Autowired
+	private CourseDBManager courseDBManager;
 	
 	public CourseRuntimeController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator,
@@ -433,7 +435,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				areaLink.setElementCssClass("o_sel_course_areas");
 				tools.addComponent(areaLink);
 			}
-			if (CourseDBManager.getInstance().isEnabled() && (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_DB))) {
+			if (courseDBManager.isEnabled() && (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_DB))) {
 				dbLink = LinkFactory.createToolLink("customDb",translate("command.opendb"), this, "o_icon_coursedb");
 				tools.addComponent(dbLink);
 			}

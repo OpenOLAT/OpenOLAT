@@ -33,7 +33,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.WorkbookUtil;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -62,6 +61,7 @@ import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.properties.Property;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -75,9 +75,9 @@ import org.olat.user.UserManager;
 public class CustomDBController extends FormBasicController {
 
 	private FormLink addDatabase;
-	private List<FormLink> resetDbs = new ArrayList<FormLink>();
-	private List<FormLink> deleteDbs = new ArrayList<FormLink>();
-	private List<FormLink> exportDbs = new ArrayList<FormLink>();
+	private List<FormLink> resetDbs = new ArrayList<>();
+	private List<FormLink> deleteDbs = new ArrayList<>();
+	private List<FormLink> exportDbs = new ArrayList<>();
 	private FormLayoutContainer dbListLayout;
 	
 	private CustomDBAddController addController;
@@ -85,18 +85,19 @@ public class CustomDBController extends FormBasicController {
 	
 	private final Long courseKey;
 	
-	private final CourseDBManager courseDbManager;
+	@Autowired
+	private CourseDBManager courseDbManager;
 	
 	public CustomDBController(UserRequest ureq, WindowControl wControl, Long courseKey) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.courseKey = courseKey;
-		courseDbManager = CoreSpringFactory.getImpl(CourseDBManager.class);
 		initForm(ureq);
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("customDb.custom_db");
+		setFormTitleIconCss("o_icon o_icon_coursedb");
 
 		dbListLayout = FormLayoutContainer.createDefaultFormLayout("dbListLayout", getTranslator());
 		formLayout.add(dbListLayout);
@@ -232,15 +233,13 @@ public class CustomDBController extends FormBasicController {
 	}
 	
 	private void resetDb(String category) {
-		CourseDBManager dbManager = CourseDBManager.getInstance();
 		ICourse course = CourseFactory.loadCourse(courseKey);
-		dbManager.reset(course, category);
+		courseDbManager.reset(course, category);
 	}
 	
 	private void deleteDb(String category) {
-		CourseDBManager dbManager = CourseDBManager.getInstance();
 		ICourse course = CourseFactory.loadCourse(courseKey);
-		dbManager.reset(course, category);
+		courseDbManager.reset(course, category);
 		deleteCustomDb(course, category);
 		updateUI();
 	}
@@ -261,7 +260,7 @@ public class CustomDBController extends FormBasicController {
 	
 	private byte[] getDbsContent(String courseTitle, String category) {
 		ICourse course = CourseFactory.loadCourse(courseKey);
-		List<CourseDBEntry> content = CourseDBManager.getInstance().getValues(course, null, category, null);
+		List<CourseDBEntry> content = courseDbManager.getValues(course, null, category, null);
 
 		Workbook wb = new HSSFWorkbook();
 		CellStyle headerCellStyle = getHeaderCellStyle(wb);

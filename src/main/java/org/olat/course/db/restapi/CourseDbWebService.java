@@ -38,6 +38,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Roles;
 import org.olat.course.CourseFactory;
@@ -91,7 +92,8 @@ public class CourseDbWebService {
 	public Response getValues(@PathParam("courseId") Long courseId, @PathParam("category") String category, @Context HttpServletRequest request) {
 		ICourse course = loadCourse(courseId);
 		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-		List<CourseDBEntry> entries = CourseDBManager.getInstance().getValues(course, ureq.getIdentity(), category, null);
+		List<CourseDBEntry> entries = CoreSpringFactory.getImpl(CourseDBManager.class)
+				.getValues(course, ureq.getIdentity(), category, null);
 
 		KeyValuePair[] pairs = new KeyValuePair[entries.size()];
 		int count=0;
@@ -161,7 +163,8 @@ public class CourseDbWebService {
 	public Response getValue(@PathParam("courseId") Long courseId, @PathParam("category") String category, @PathParam("name") String name, @Context HttpServletRequest request) {
 		ICourse course = loadCourse(courseId);
 		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-		CourseDBEntry entry = CourseDBManager.getInstance().getValue(course, ureq.getIdentity(), category, name);
+		CourseDBEntry entry = CoreSpringFactory.getImpl(CourseDBManager.class)
+				.getValue(course, ureq.getIdentity(), category, name);
 		if(entry == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -190,7 +193,8 @@ public class CourseDbWebService {
 			@Context HttpServletRequest request) {
 		ICourse course = loadCourse(courseId);
 		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-		CourseDBEntry entry = CourseDBManager.getInstance().getValue(course, ureq.getIdentity(), category, name);
+		CourseDBEntry entry = CoreSpringFactory.getImpl(CourseDBManager.class)
+				.getValue(course, ureq.getIdentity(), category, name);
 		if(entry == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -253,7 +257,8 @@ public class CourseDbWebService {
 		if(roles.isAuthor() || roles.isOLATAdmin()) {
 			ICourse course = loadCourse(courseId);
 			UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			boolean ok = CourseDBManager.getInstance().deleteValue(course, ureq.getIdentity(), category, name);
+			boolean ok = CoreSpringFactory.getImpl(CourseDBManager.class)
+					.deleteValue(course, ureq.getIdentity(), category, name);
 			if(ok) {
 				return Response.ok().build();
 			}
@@ -287,7 +292,8 @@ public class CourseDbWebService {
 	private Response internPutValue(Long courseId, String category, String name, Object value, HttpServletRequest request) {
 		ICourse course = loadCourse(courseId);
 		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-		CourseDBEntry entry = CourseDBManager.getInstance().setValue(course, ureq.getIdentity(), category, name, value);
+		CourseDBEntry entry = CoreSpringFactory.getImpl(CourseDBManager.class)
+				.setValue(course, ureq.getIdentity(), category, name, value);
 		if(entry == null) {
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 		}
@@ -295,7 +301,7 @@ public class CourseDbWebService {
 	}
 	
 	private ICourse loadCourse(Long potentialCourseId) {
-		Long courseId = CourseDBManager.getInstance().getCourseId(potentialCourseId);
+		Long courseId = CoreSpringFactory.getImpl(CourseDBManager.class).getCourseId(potentialCourseId);
 		ICourse course = CourseFactory.loadCourse(courseId);
 		return course;
 	}

@@ -20,6 +20,7 @@
 
 package org.olat.course.db.interpreter;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -82,24 +83,24 @@ public class GetUserCourseDBFunction extends AbstractFunction {
 			return defaultValue();
 		}
 		
-		CourseDBManager courseDbManager = CourseDBManager.getInstance();
+		CourseDBManager courseDbManager = CoreSpringFactory.getImpl(CourseDBManager.class);
 
 		Identity ident = getUserCourseEnv().getIdentityEnvironment().getIdentity();
 		
 		String category = null;
-		String name = null;
+		String key = null;
 		if(inStack.length == 1) {
 			category = null;
-			name = (String) inStack[1];
+			key = (String) inStack[1];
 		} else if (inStack.length == 2) {
 			category = (String) inStack[0];
-			name = (String) inStack[1];
+			key = (String) inStack[1];
 		}
 		
 		Long courseId = getUserCourseEnv().getCourseEnvironment().getCourseResourceableId();
 		Object value;
 		try {
-			CourseDBEntry entry = courseDbManager.getValue(courseId, ident, category, name);
+			CourseDBEntry entry = courseDbManager.getValue(courseId, ident, category, key);
 			if(entry == null) {
 				return defaultValue();
 			}
