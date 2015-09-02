@@ -102,7 +102,6 @@ public class InfoMsgForm extends FormBasicController {
 		richTextConfig.setExtendedValidElements("script[src,type,defer]");
 		// add style buttons to make alert style available
 		richTextConfig.setContentCSSFromTheme(getWindowControl().getWindowBackOffice().getWindow().getGuiTheme());
-		richTextConfig.enableStyleSelection();
 		String path = Settings.getServerContextPath() + "/raw/static/";
 		richTextConfig.setLinkBrowserAbsolutFilePath(path);
 		

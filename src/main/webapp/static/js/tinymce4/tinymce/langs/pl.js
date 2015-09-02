@@ -125,7 +125,7 @@ tinymce.addI18n('pl',{
 "Target": "Cel",
 "The URL you entered seems to be an email address. Do you want to add the required mailto: prefix?": "URL, kt\u00f3ry wprowadzi\u0142e\u015b wygl\u0105da na adres e-mail. Czy chcesz doda\u0107 mailto: jako prefiks?",
 "Insert\/edit link": "Wstaw\/edytuj link",
-"Insert\/edit video": "Wstaw\/edytuj wideo",
+"Insert\/edit media element": "Wstaw\/edytuj wideo",
 "Poster": "Plakat",
 "Alternative source": "Alternatywne \u017ar\u00f3d\u0142o",
 "Paste your embed code below:": "Wklej tutaj kod do osadzenia:",

@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '2.3.0'
+				version : '2.4.0'
 			};
 		},
 
@@ -219,6 +219,7 @@
 				    {text: translator().translate('olatmovieviewer.video'), value: 'video'},
 				    {text: translator().translate('olatmovieviewer.sound'), value: 'sound'},
 				    {text: translator().translate('olatmovieviewer.youtube'), value: 'youtube'},
+				    {text: translator().translate('olatmovieviewer.vimeo'), value: 'vimeo'},
 				    {text: translator().translate('olatmovieviewer.http'), value: 'http'},
 				    {text: translator().translate('olatmovieviewer.rtmp'), value: 'rtmp'}
 				];
@@ -373,7 +374,7 @@
 
 			ed.addButton('olatmovieviewer', {
 				title : translator().translate('olatmovieviewer.desc'),
-				image : url + '/images/movieviewer.gif',
+				icon : 'movie',
 				onclick: showDialog,
 				onPostRender: function() {
 			        var ctrl = this;
@@ -390,7 +391,7 @@
 			
 			ed.addMenuItem('olatmovieviewer', {
 				text : translator().translate('olatmovieviewer.desc'),
-				image : url + '/images/movieviewer.gif',
+				icon : 'movie',
 				onclick: showDialog,
 			});
 
