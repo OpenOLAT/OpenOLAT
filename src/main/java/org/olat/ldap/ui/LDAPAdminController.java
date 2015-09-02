@@ -197,19 +197,19 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 					 * wizard finish callback called after "finish" is called
 					 */
 					StepRunnerCallback finishCallback = new StepRunnerCallback() {
-						public Step execute(UserRequest ureq, WindowControl control, StepsRunContext runContext) {
+						public Step execute(UserRequest uureq, WindowControl control, StepsRunContext runContext) {
 							hasIdentitiesToDeleteAfterRun = ((Boolean) runContext.get("hasIdentitiesToDelete")).booleanValue();
 							if (hasIdentitiesToDeleteAfterRun) {
-								List<Identity> identitiesToDelete = (List<Identity>) runContext.get("identitiesToDelete");
-								amountUsersToDelete = identitiesToDelete.size();
+								List<Identity> idToDelete = (List<Identity>) runContext.get("identitiesToDelete");
+								amountUsersToDelete = idToDelete.size();
 								// Delete all identities now and tell everybody that
 								// we are finished
-								ldapLoginManager.deletIdentities(identitiesToDelete);
+								ldapLoginManager.deletIdentities(idToDelete);
 								return StepsMainRunController.DONE_MODIFIED;
 							} else {
 								return StepsMainRunController.DONE_UNCHANGED;
 							}
-							// otherwhise return without deleting anything
+							// otherwise return without deleting anything
 						}
 
 					};
