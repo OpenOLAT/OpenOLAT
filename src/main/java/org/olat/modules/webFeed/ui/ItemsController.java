@@ -616,7 +616,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 							naviCtr.add(currentItem);
 							// ... and also to the helper
 							helper.addItem(currentItem);
-							if (feed.getItems().size() == 1) {
+							if (feed.getItems() != null && feed.getItems().size() == 1) {
 								// First item added, show feed url (for subscription)
 								fireEvent(ureq, ItemsController.FEED_INFO_IS_DIRTY_EVENT);
 								// Set the base URI of the feed for the current user. All users
