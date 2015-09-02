@@ -109,26 +109,34 @@ public class FIBItemController extends BasicController implements ControllerEven
 			int posid = 0;
 			if (sPosid != null) posid = Integer.parseInt(sPosid);
 			if (cmd.equals("up")) {
-				if (posid > 0) {
-					List<Response> elements = item.getQuestion().getResponses();
+				List<Response> elements = item.getQuestion().getResponses();
+				if (posid > 0 && posid < item.getQuestion().getResponses().size()) {
 					Response obj = elements.remove(posid);
 					elements.add(posid - 1, obj);
+				} else {
+					logError("posid doesn't match responses length: " + posid + "/" + elements.size(), null);
 				}
 			} else if (cmd.equals("down")) {
 				List<Response> elements = item.getQuestion().getResponses();
-				if (posid < elements.size() - 1) {
+				if (posid >= 0 && posid < elements.size() - 1) {
 					Response obj = elements.remove(posid);
 					elements.add(posid + 1, obj);
+				} else {
+					logError("posid doesn't match responses length: " + posid + "/" + elements.size(), null);
 				}
 			} else if (cmd.equals("editq")) {
 				editQuestion = item.getQuestion().getQuestion();
 				displayMaterialFormController(ureq, editQuestion, restrictedEdit);
 
 			} else if (cmd.equals("editr")) {
-				editResponse = item.getQuestion().getResponses().get(posid);
-				Material responseMat = item.getQuestion().getResponses().get(posid).getContent();
-				displayMaterialFormController(ureq, responseMat, restrictedEdit);
-				
+				List<Response> elements = item.getQuestion().getResponses();
+				if (posid >= 0 && posid < elements.size()) {
+					editResponse = elements.get(posid);
+					Material responseMat = elements.get(posid).getContent();
+					displayMaterialFormController(ureq, responseMat, restrictedEdit);
+				} else {
+					logError("posid doesn't match responses length: " + posid + "/" + elements.size(), null);
+				}
 			} else if (cmd.equals("addtext")) {
 				FIBQuestion fib = (FIBQuestion) item.getQuestion();
 				FIBResponse response = new FIBResponse();
