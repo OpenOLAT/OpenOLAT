@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
@@ -45,6 +46,8 @@ import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.i18n.I18nModule;
+import org.olat.core.util.i18n.devtools.TranslationDevManager;
 
 /**
  * Description:<br>
@@ -67,6 +70,18 @@ public class GUIDemoMainController extends GenericMainController {
 		addChildNodeToAppend(gtn);
 		
 		init(ureq);
+		
+		
+		TranslationDevManager dev = TranslationDevManager.getInstance();
+		
+		String[] source = new String[]{"de"};
+		Set target = I18nModule.getAvailableLanguageKeys();
+//		Set target = new HashSet<String>();
+//		target.add("en");
+		
+		dev.removeDeletedKeys(true,source,target);
+		
+
 	}
 	
 
