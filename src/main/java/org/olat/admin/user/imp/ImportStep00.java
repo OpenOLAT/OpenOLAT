@@ -26,6 +26,7 @@ package org.olat.admin.user.imp;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -369,8 +370,14 @@ class ImportStep00 extends BasicStep {
 				// check that no user with same (institutional) e-mail is already in OLAT
 				if ( (thisKey.equals(UserConstants.INSTITUTIONALEMAIL) || thisKey.equals(UserConstants.EMAIL)) && !thisValue.isEmpty() ) {
 					// check that no user with same email is already in OLAT
-					Identity identity = UserManager.getInstance().findIdentityByEmail(thisValue);
-					if (identity != null && !ud.equals(identity)) {
+					List<Identity> identities = UserManager.getInstance().findIdentitiesByEmail(Collections.singletonList(thisValue));
+					if(identities.size() > 1) {
+						textAreaElement.setErrorKey("error.email.douplicate", new String[] { String.valueOf(i + 1), thisValue });
+						importDataError = true;
+						break;
+					}
+					
+					if (identities.size() == 1 && !ud.equals(identities.get(0))) {
 						textAreaElement.setErrorKey("error.email.exists", new String[] { String.valueOf(i + 1), thisValue });
 						importDataError = true;
 						break;
