@@ -34,7 +34,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkResourceStat;
 import org.olat.core.commons.services.mark.MarkingService;
@@ -75,6 +74,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -476,7 +476,7 @@ public class FilterForUserController extends BasicController {
 		map.put("modified", dateFormat.format(m.getLastModified()));
 		// message attachments
 		ForumManager fm = ForumManager.getInstance();
-		OlatRootFolderImpl msgContainer = fm.getMessageContainer(forum.getKey(), m.getKey());
+		VFSContainer msgContainer = fm.getMessageContainer(forum.getKey(), m.getKey());
 		map.put("messageContainer", msgContainer);
 		List<VFSItem> attachments = new ArrayList<VFSItem>(msgContainer.getItems(new VFSItemExcludePrefixFilter(MessageEditController.ATTACHMENT_EXCLUDE_PREFIXES)));
 //		List attachments = msgContainer.getItems();
