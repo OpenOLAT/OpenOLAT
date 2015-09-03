@@ -40,6 +40,7 @@ import java.util.regex.Pattern;
 
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarModule;
+import org.olat.commons.calendar.model.CalendarFileInfos;
 import org.olat.commons.calendar.model.CalendarUserConfiguration;
 import org.olat.commons.calendar.model.ImportedCalendar;
 import org.olat.commons.calendar.model.Kalendar;
@@ -173,7 +174,38 @@ public class ImportCalendarManager {
 			Collections.sort(calendars, KalendarComparator.getInstance());
 		}
 		return calendars;
-	}  
+	}
+	
+	public List<CalendarFileInfos> getImportedCalendarInfosForIdentity(Identity identity, boolean reload) {
+		// initialize the calendars list
+
+		List<CalendarFileInfos> calendars = new ArrayList<CalendarFileInfos>();
+		if(calendarModule.isEnabled() && calendarModule.isEnablePersonalCalendar()) {
+			long timestamp = System.currentTimeMillis();
+
+			List<ImportedCalendar> importedCalendars = importedCalendarDao.getImportedCalendars(identity);
+			for (ImportedCalendar importedCalendar: importedCalendars) {
+				String calendarId = importedCalendar.getCalendarId();
+				String url = importedCalendar.getUrl();
+
+				if(reload) {
+					Date lastUpdate = importedCalendar.getLastUpdate();
+					if (url != null && (timestamp - lastUpdate.getTime() > 3600000)) {
+						log.info("Calendar reload started from url=" + url);
+						reloadCalendarFromUrl(url, CalendarManager.TYPE_USER, calendarId);
+						importedCalendar.setLastUpdate(new Date());
+						importedCalendar = importedCalendarDao.update(importedCalendar);
+						log.info("Calendar reloaded from url=" + url);
+					}
+				}
+
+				File calendarFile = calendarManager.getCalendarFile(CalendarManager.TYPE_USER, calendarId);
+				CalendarFileInfos calendarInfos = new CalendarFileInfos(calendarId, CalendarManager.TYPE_USER, calendarFile);
+				calendars.add(calendarInfos);
+			}
+		}
+		return calendars;
+	}
 
 	/**
 	 * Reload calendar from url and store calendar file locally.

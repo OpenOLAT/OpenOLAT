@@ -222,8 +222,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	// o_clusterOK by:cg This must not be synchronized because the caller already synchronized 
 	private Kalendar loadCalendarFromFile(String type, String calendarID) {
 		Calendar calendar = readCalendar(type, calendarID);
-		Kalendar kalendar = createKalendar(type, calendarID, calendar);
-		return kalendar;
+		return createKalendar(type, calendarID, calendar);
 	}
 
 	protected Kalendar createKalendar(String type, String calendarID, Calendar calendar) {

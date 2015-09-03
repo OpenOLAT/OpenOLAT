@@ -101,6 +101,10 @@ public class HomeCalendarManager implements PersonalCalendarManager {
 			if(iCalFile != null) {
 				aggregatedFiles.add(new CalendarFileInfos(identity.getName(), CalendarManager.TYPE_USER, iCalFile));
 			}
+			
+			//reload every hour
+			List<CalendarFileInfos> importedCalendars = importCalendarManager.getImportedCalendarInfosForIdentity(identity, true);
+			aggregatedFiles.addAll(importedCalendars);
 		}
 
 		//group calendars
