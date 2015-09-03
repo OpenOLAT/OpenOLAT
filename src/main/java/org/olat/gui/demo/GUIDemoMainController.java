@@ -70,18 +70,6 @@ public class GUIDemoMainController extends GenericMainController {
 		addChildNodeToAppend(gtn);
 		
 		init(ureq);
-		
-		
-		TranslationDevManager dev = TranslationDevManager.getInstance();
-		
-		String[] source = new String[]{"de"};
-		Set target = I18nModule.getAvailableLanguageKeys();
-//		Set target = new HashSet<String>();
-//		target.add("en");
-		
-		dev.removeDeletedKeys(true,source,target);
-		
-
 	}
 	
 
