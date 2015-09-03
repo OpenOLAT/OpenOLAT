@@ -157,7 +157,7 @@ public class ForumRTFFormatter extends ForumFormatter {
 		}
 		sb.append(" \\par}");
 		// attachment(s)
-		OlatRootFolderImpl msgContainer = fm.getMessageContainer(getForumKey(), mn.getKey());
+		VFSContainer msgContainer = fm.getMessageContainer(getForumKey(), mn.getKey());
 		List<VFSItem> attachments = msgContainer.getItems();
 		if (attachments != null && attachments.size() > 0){
 			VFSItem item = container.resolve("attachments");

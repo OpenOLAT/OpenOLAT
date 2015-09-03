@@ -440,8 +440,6 @@ public class QTIHelper {
 			// we use a putSilent here (no invalidation notifications to other cluster nodes), since
 			// we did not generate new data, but simply asked to reload it. 
 			ehCachLoadedQTIDocs.put(key, new Object[] { lmf, doc });
-			log.audit("load, parse and cache Document for [[" + key + "]]");
-
 			if (isDebugEnabled) {
 				log.debug("[" + debugEnabledTime + "] Document loaded, parsed and put into cache!");
 				log.debug("[" + debugEnabledTime + "] Document approx Mem usage " + ObjectCloner.getObjectSize(doc));

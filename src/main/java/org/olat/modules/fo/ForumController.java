@@ -1229,7 +1229,7 @@ public class ForumController extends BasicController implements GenericEventList
 		map.put("lastname", Formatter.truncate(creator.getUser().getProperty(UserConstants.LASTNAME, ureq.getLocale()),18));
 		map.put("modified", f.formatDateAndTime(m.getLastModified()));
 		// message attachments
-		OlatRootFolderImpl msgContainer = fm.getMessageContainer(forum.getKey(), m.getKey());
+		VFSContainer msgContainer = fm.getMessageContainer(forum.getKey(), m.getKey());
 		map.put("messageContainer", msgContainer);
 		final List<VFSItem> attachments = new ArrayList<VFSItem>(msgContainer.getItems(new VFSItemExcludePrefixFilter(MessageEditController.ATTACHMENT_EXCLUDE_PREFIXES)));				
 		map.put("attachments", attachments);
