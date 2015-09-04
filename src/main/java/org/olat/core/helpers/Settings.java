@@ -102,7 +102,7 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 	// fxdiff: only set build id from build date if none is provided in olat.local.properties!
 	private static void setBuildIdFromBuildDate() {
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
-		buildIdentifier = formatter.format(buildDate);
+		buildIdentifier = formatter.format(getBuildDate());
 	}
 	
 	// fxdiff: only set build date 

@@ -23,6 +23,7 @@ import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.core.helpers.SettingsTest;
 
 /**
  * 
@@ -51,5 +52,54 @@ public class ConfluenceLinkSPITest {
 		String url4 = linkSPI.generateSpace("11a", Locale.ENGLISH);
 		Assert.assertNotNull(url4);
 		Assert.assertTrue(url4.startsWith("/OO110EN/"));
+	}
+	
+	@Test
+	public void getUrl() {
+		// init settings to set version, required by ConfluenceLinkSPI
+		SettingsTest.createHttpDefaultPortSettings();
+		
+		ConfluenceLinkSPI linkSPI = new ConfluenceLinkSPI();
+		//Data%20Management#DataManagement-qb_import
+		// Standard Case in English
+		String url1 = linkSPI.getURL(Locale.ENGLISH, "Data Management");
+		Assert.assertNotNull(url1);
+		Assert.assertTrue(url1.endsWith("Data%20Management"));
+		
+		// Special handing for anchors in confluence
+		String url2 = linkSPI.getURL(Locale.ENGLISH, "Data Management#qb_import");
+		Assert.assertNotNull(url2);
+		Assert.assertTrue(url2.endsWith("Data%20Management#DataManagement-qb_import"));
+	}
+	
+	@Test
+	public void getTranslatedUrl() {
+		// init settings to set version, required by ConfluenceLinkSPI
+		SettingsTest.createHttpDefaultPortSettings();
+		
+		ConfluenceLinkSPI linkSPI = new ConfluenceLinkSPI();
+		// Standard Case in German - same as in english
+		String url1 = linkSPI.getURL(Locale.GERMAN, "Data Management");
+		Assert.assertNotNull(url1);
+		Assert.assertTrue(url1.endsWith("Data%20Management"));
+		
+		// Special handing for anchors in confluence
+		// Here some magic is needed since the CustomWare Redirection Plugin
+		// plugin we use in Confluence can not redirec links with anchors. The
+		// anchor is deleted.
+		// We have to translate this here
+		// First time it won't return the translated link as it does the translation asynchronously in a separate thread to not block the UI
+		String url2 = linkSPI.getURL(Locale.GERMAN, "Data Management#qb_import");
+		Assert.assertNotNull(url2);
+		Assert.assertTrue(url2.endsWith("Data%20Management#DataManagement-qb_import"));
+		// Wait 5secs and try it again, should be translated now
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		url2 = linkSPI.getURL(Locale.GERMAN, "Data Management#qb_import");
+		Assert.assertNotNull(url2);
+		Assert.assertTrue(url2.endsWith("Handhabung%20der%20Daten#HandhabungderDaten-qb_import"));
 	}
 }
