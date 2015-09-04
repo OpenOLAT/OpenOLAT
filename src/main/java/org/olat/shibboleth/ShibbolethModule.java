@@ -66,6 +66,7 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 	private static final String CONF_OLATUSERMAPPING_INSTITUTIONALEMAIL = "InstitutionalEMail";
 	private static final String CONF_OLATUSERMAPPING_INSTITUTIONALUSERIDENTIFIER = "InstitutionalUserIdentifier";
 	private static final String CONF_OLATUSERMAPPING_PREFERED_LANGUAGE = "PreferedLanguage";
+	private static final String CONF_OLATUSERMAPPING_ORGUNIT = "OrgUnit";
 	
 	@Value("${shibboleth.enable}")
 	private boolean enableShibbolethLogins = false;
@@ -242,6 +243,13 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 	 */
 	public String getInstitutionalUserIdentifier() {
 		return userMapping.get(CONF_OLATUSERMAPPING_INSTITUTIONALUSERIDENTIFIER);
+	}
+	
+	/**
+	 * @return OrgUnit User Identifyer value from shibboleth attributes or NULL if not defined.
+	 */
+	public String getOrgUnit() {
+		return userMapping.get(CONF_OLATUSERMAPPING_ORGUNIT);
 	}
 	
 	/**
