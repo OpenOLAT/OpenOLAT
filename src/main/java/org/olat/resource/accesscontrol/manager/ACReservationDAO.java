@@ -135,5 +135,12 @@ public class ACReservationDAO {
 		ResourceReservation reloaded = em.getReference(ResourceReservationImpl.class, reservation.getKey());
 		em.remove(reloaded);
 	}
+	
+	public void deleteReservations(OLATResource resource) {
+		String sb = "delete from resourcereservation as reservation where reservation.resource.key=:resourceKey";
+		dbInstance.getCurrentEntityManager().createQuery(sb)
+			.setParameter("resourceKey", resource.getKey())
+			.executeUpdate();
+	}
 
 }

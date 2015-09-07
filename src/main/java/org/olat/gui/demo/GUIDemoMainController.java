@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
@@ -46,8 +45,6 @@ import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.util.i18n.I18nModule;
-import org.olat.core.util.i18n.devtools.TranslationDevManager;
 
 /**
  * Description:<br>
@@ -109,7 +106,7 @@ public class GUIDemoMainController extends GenericMainController {
 			
 			// for demo only, normally use in parent controller
 			c.addControllerListener(new ControllerEventListener() {
-				public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
+				public void dispatchEvent(UserRequest uureq, Controller source, Event event) {
 					EntriesChosenEvent ece = (EntriesChosenEvent) event;
 					String sel = ece.getEntries().toString();
 					getWindowControl().setInfo("selected entrie(s):"+sel);

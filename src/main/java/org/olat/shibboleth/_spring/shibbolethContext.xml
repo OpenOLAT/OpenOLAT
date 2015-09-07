@@ -53,6 +53,7 @@
 				<entry key="InstitutionalName" value="Shib-SwissEP-HomeOrganization" />
 				<entry key="InstitutionalEMail" value="Shib-InetOrgPerson-mail" />
 				<entry key="InstitutionalUserIdentifier" value="Shib-InetOrgPerson-employeeNumber" />
+				<!-- <entry key="OrgUnit" value="" /> -->
 				<!-- <entry key="PreferedLanguage" value="" /> -->
 	        </map>
 	    </constructor-arg>
