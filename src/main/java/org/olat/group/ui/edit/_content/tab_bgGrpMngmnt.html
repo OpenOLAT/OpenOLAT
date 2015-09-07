@@ -1,18 +1,16 @@
 <fieldset>
   	<legend>
-  		$r.contextHelpWithWrapper("org.olat.group.ui.edit","grp-member.html","help.hover.bgGrpMngmnt")
+  		$r.contextHelpWithWrapper("Group Administration#_gruppensystem_members")
   		$r.translate("fieldset.legend.displaymembers")</legend>
   	$r.render("displayMembers")
 </fieldset>
 <fieldset>
   	<legend>
-  		$r.contextHelpWithWrapper("org.olat.group.ui.edit","grp-leaving.html","help.hover.allowLeaving")
   		$r.translate("fieldset.legend.allow.leaving")</legend>
   	$r.render("configMembers")
 </fieldset>
 <fieldset>
 	<legend>
-		$r.contextHelpWithWrapper("org.olat.group.ui.edit","grp-memberOwner.html","help.hover.bgGrpMngmntOwner")
 		$r.translate("group.edit.tab.members")</legend>
 	<div class="o_button_group o_button_group_right">
 		#if($r.available("addMembers") && $r.available("importMembers"))<div class="btn-group">#end
