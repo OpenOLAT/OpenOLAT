@@ -98,7 +98,7 @@ public class RichTextConfiguration implements Disposable {
 	private static final String TABFOCUS_SETTINGS_PREV_NEXT = ":prev,:next";
 	// Valid elements
 	private static final String EXTENDED_VALID_ELEMENTS = "extended_valid_elements";
-	private static final String EXTENDED_VALID_ELEMENTS_VALUE_FULL = "script,form[*],input[*],a[*],p[*],#comment[*],img[*],iframe[*],map[*],area[*]";
+	private static final String EXTENDED_VALID_ELEMENTS_VALUE_FULL = "script[src|type|defer],form[*],input[*],a[*],p[*],#comment[*],img[*],iframe[*],map[*],area[*]";
 	private static final String INVALID_ELEMENTS = "invalid_elements";
 	private static final String INVALID_ELEMENTS_FORM_MINIMALISTIC_VALUE_UNSAVE = "iframe,script,@[on*],object,embed";
 	private static final String INVALID_ELEMENTS_FORM_SIMPLE_VALUE_UNSAVE = "iframe,script,@[on*],object,embed";

@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '2.4.0'
+				version : '2.3.1'
 			};
 		},
 
@@ -341,7 +341,7 @@
 				return pl;
 			};
 			
-			//The video player code. Only one player per page supported.
+			//The video player code.
 			function getPlayerHtmlNode(editor,p) {
 				var h = '', n, l = '';
 				// player configuration
