@@ -359,15 +359,17 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 			if(tz != null) {
 				dtBegin.setTimeZone(tz);
 			}
-			DateTime dtEnd = null;
+
 			Date kEventEnd = kEvent.getEnd();
-			if(kEventEnd != null) {
-				dtEnd = new DateTime(kEventEnd);
+			if(kEventEnd == null) {
+				vEvent = new VEvent(dtBegin, kEvent.getSubject());
+			} else {
+				DateTime dtEnd = new DateTime(kEventEnd);
 				if(tz != null) {
 					dtEnd.setTimeZone(tz);
 				}
+				vEvent = new VEvent(dtBegin, dtEnd, kEvent.getSubject());
 			}
-			vEvent = new VEvent(dtBegin, dtEnd, kEvent.getSubject());
 		} else {
 			// AllDay VEvent
 			net.fortuna.ical4j.model.Date dtBegin = CalendarUtils.createDate(kEvent.getBegin());
