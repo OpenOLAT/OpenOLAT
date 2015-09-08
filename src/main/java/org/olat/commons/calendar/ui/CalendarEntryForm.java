@@ -218,9 +218,7 @@ public class CalendarEntryForm extends FormBasicController {
 		if (end.getDate() == null) {
 			end.setErrorKey("cal.form.error.date", null);
 			allOk &= false;
-		}
-		
-		if (end.getDate().before(begin.getDate())) {
+		} else if (end.getDate().before(begin.getDate())) {
 			end.setErrorKey("cal.form.error.endbeforebegin", null);
 			allOk &= false;
 		}
