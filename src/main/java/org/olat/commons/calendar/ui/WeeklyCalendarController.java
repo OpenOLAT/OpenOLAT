@@ -490,7 +490,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		configurationCtrl = new CalendarPersonalConfigurationController(ureq, getWindowControl(), allCalendars, allowImport);
 		listenTo(configurationCtrl);
 		
-		String title = "";
+		String title = translate("cal.configuration.list");
 		cmc = new CloseableModalController(getWindowControl(), "c", configurationCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
