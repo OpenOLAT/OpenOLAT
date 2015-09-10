@@ -192,8 +192,8 @@ public class QTIExportManager extends BasicManager{
 	private String writeContentToFile(String shortTitle, File exportDirectory, String charset, QTIExportFormatter qef, String fileNameSuffix) {
 		// defining target filename
 		String targetFileName = getFilename(shortTitle, qef, fileNameSuffix);
-		ExportUtil.writeContentToFile(targetFileName, qef.getReport(), exportDirectory, charset);
-		return targetFileName;
+		File savedFile = ExportUtil.writeContentToFile(targetFileName, qef.getReport(), exportDirectory, charset);
+		return savedFile.getName();
 	}
 	
 	private String getFilename(String shortTitle, QTIExportFormatter qef, String fileNameSuffix) {
