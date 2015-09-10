@@ -187,7 +187,6 @@ public class CertificatesOptionsController extends FormBasicController {
 		}
 
 		previewTemplateLink = LinkFactory.createButton("preview", templateCont.getFormItemComponent(), this);
-		previewTemplateLink.setEnabled(hasTemplate);
 		previewTemplateLink.setTarget("preview");
 		
 		boolean reCertificationEnabled = courseConfig.isRecertificationEnabled();

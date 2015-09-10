@@ -101,13 +101,13 @@ public class CertificateChooserController extends UploadCertificateController {
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		
 		String[] orientationValues = new String[]{
-			translate("portrait"), translate("orientation")
+			translate("portrait"), translate("landscape")
 		};
 		orientationEl = uifactory.addRadiosVertical("orientation", formLayout, orientationKeys, orientationValues);
 		orientationEl.select(orientationKeys[0], true);
 		orientationEl.setVisible(false);
 		
-		formatEl = uifactory.addRadiosVertical("orientation", formLayout, formatKeys, formatKeys);
+		formatEl = uifactory.addRadiosVertical("format", formLayout, formatKeys, formatKeys);
 		formatEl.select(formatKeys[0], true);
 		formatEl.setVisible(false);
 		
