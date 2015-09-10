@@ -52,12 +52,11 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.VetoableCloseController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.dtabs.DTab;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -146,6 +145,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private static final String CMD_START_GROUP_PREFIX = "cmd.group.start.ident.";
 	
 	private Delayed delayedClose;
+	private CloseableModalController cmc;
+
 	//tools
 	private Link folderLink,
 		assessmentLink, archiverLink,
@@ -161,7 +162,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private Dropdown myCourse, glossary;
 	
 	private CourseAreasController areasCtrl;
-	private DialogBoxController leaveDialogBox;
+	private ConfirmLeaveController leaveDialogBox;
 	private ArchiverMainController archiverCtrl;
 	private CustomDBMainController databasesCtrl;
 	private FolderRunController courseFolderCtrl;
@@ -772,8 +773,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				toolControllerDone(ureq);
 			}
 		} else if(source == leaveDialogBox) {
-			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+			if (event.equals(Event.DONE_EVENT)) {
 				doLeave(ureq);
+			}else{
+				cmc.deactivate();
 			}
 		}
 		
@@ -826,6 +829,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		removeAsListenerAndDispose(statsToolCtr);
 		removeAsListenerAndDispose(membersCtrl);
 		removeAsListenerAndDispose(areasCtrl);
+		removeAsListenerAndDispose(leaveDialogBox);
 		assessmentToolCtr = null;
 		courseFolderCtrl = null;
 		courseLayoutCtrl = null;
@@ -1008,10 +1012,13 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 	
 	private void doConfirmLeave(UserRequest ureq) {
-		String reName = StringHelper.escapeHtml(getRepositoryEntry().getDisplayname());
 		String title = translate("sign.out");
-		String text = translate("sign.out.dialog.text", reName);
-		leaveDialogBox = activateYesNoDialog(ureq, title, text, leaveDialogBox);
+
+		leaveDialogBox = new ConfirmLeaveController(ureq, getWindowControl(), this.getRepositoryEntry());
+		listenTo(leaveDialogBox);
+		cmc = new CloseableModalController(getWindowControl(), "close", leaveDialogBox.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doLeave(UserRequest ureq) {
@@ -1425,7 +1432,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						// use a one-column main layout
 						LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, glossaryController);
 						// dispose glossary on layout dispose
-						layoutCtr.addDisposableChildController(glossaryController); 
+						layoutCtr.addDisposableChildController(glossaryController);
 						return layoutCtr;
 					}
 				}
