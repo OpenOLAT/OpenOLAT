@@ -65,6 +65,7 @@ public class CalendarPrintController extends FormBasicController {
 		Date end = cal.getTime();
 		
 		setFormDescription("cal.print.desc");
+		formLayout.setElementCssClass("o_sel_calendar_print_chooser");
 
 		fromEl = uifactory.addDateChooser("cal.from", start, formLayout);
 		toEl = uifactory.addDateChooser("cal.to", end, formLayout);
