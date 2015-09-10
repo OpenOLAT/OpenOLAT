@@ -26,9 +26,6 @@
 package org.olat.repository.handlers;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
 
@@ -51,9 +48,6 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
@@ -97,8 +91,6 @@ import org.olat.resource.references.ReferenceManager;
  * @author guido
  */
 public class WikiHandler implements RepositoryHandler {
-	
-	private static final OLog log = Tracing.createLoggerFor(WikiHandler.class);
 
 	@Override
 	public boolean isCreate() {
@@ -294,25 +286,6 @@ public class WikiHandler implements RepositoryHandler {
 			return false;
 		}
 		return true;
-	}
-
-	@Override
-	public String archive(Identity archiveOnBehalfOf, String archivFilePath, RepositoryEntry repoEntry) {
-		VFSContainer rootContainer = FileResourceManager.getInstance().getFileResourceRootImpl(repoEntry.getOlatResource());
-		VFSLeaf wikiZip = WikiToZipUtils.getWikiAsZip(rootContainer);
-		String exportFileName = "del_wiki_" + repoEntry.getOlatResource().getResourceableId() + ".zip";
-		String fullFilePath = archivFilePath + File.separator + exportFileName;
-		
-		File fExportZIP = new File(fullFilePath);
-
-		try (InputStream fis = wikiZip.getInputStream()) {
-			FileUtils.bcopy(fis, fExportZIP, "archive wiki");
-		} catch (FileNotFoundException e) {
-			log.warn("Can not archive wiki repoEntry=" + repoEntry);
-		} catch (IOException ioe) {
-			log.warn("Can not archive wiki repoEntry=" + repoEntry);
-		}
-		return exportFileName;
 	}
 
 	@Override

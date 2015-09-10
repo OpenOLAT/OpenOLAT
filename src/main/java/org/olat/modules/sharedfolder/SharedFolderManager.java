@@ -155,14 +155,4 @@ public class SharedFolderManager {
 			return false;
 		}
 	}
-
-	public String archive(String archivFilePath, RepositoryEntry repoEntry) {
-		String exportFileName = "del_sharedfolder_" + repoEntry.getOlatResource().getResourceableId() + ".zip";
-		String fullFilePath = archivFilePath + File.separator + exportFileName;
-		File fExportZIP = new File(fullFilePath);
-		VFSContainer sharedFolder = SharedFolderManager.getInstance().getSharedFolder(repoEntry.getOlatResource());
-		ZipUtil.zip(sharedFolder.getItems(), new LocalFileImpl(fExportZIP), true);
-		return fullFilePath;
-	}
-	
 }

@@ -246,11 +246,6 @@ public class GlossaryHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public String archive(Identity archiveOnBehalfOf, String archivFilePath, RepositoryEntry repoEntry) {
-		return GlossaryManager.getInstance().archive(archivFilePath, repoEntry);
-	}
-
-	@Override
 	public LockResult acquireLock(OLATResourceable ores, Identity identity) {
     //nothing to do
 		return null;

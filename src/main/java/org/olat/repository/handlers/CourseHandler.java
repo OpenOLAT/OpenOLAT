@@ -58,7 +58,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.PathUtils;
@@ -68,7 +67,6 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
-import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.nodes.INode;
@@ -594,29 +592,6 @@ public class CourseHandler implements RepositoryHandler {
 			log.error("The course is corrupted, cannot archive it: " + entry, e);
 		}
 		return true;
-	}
-	
-	/**
-	 * Archive the hole course with runtime-data and course-structure-data.
-	 * @see org.olat.repository.handlers.RepositoryHandler#archive(java.lang.String, org.olat.repository.RepositoryEntry)
-	 */
-	@Override
-	public String archive(Identity archiveOnBehalfOf, String archivFilePath, RepositoryEntry entry) {
-		ICourse course = CourseFactory.loadCourse(entry);
-		// Archive course runtime data (like delete course, archive e.g. logfiles, node-data)
-		File tmpExportDir = new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID());
-		tmpExportDir.mkdirs();
-		CourseFactory.archiveCourse(archiveOnBehalfOf, course, WebappHelper.getDefaultCharset(), I18nModule.getDefaultLocale(), tmpExportDir , true);
-		// Archive course run structure (like course export)
-		String courseExportFileName = "course_export.zip";
-		File courseExportZIP = new File(tmpExportDir, courseExportFileName);
-		CourseFactory.exportCourseToZIP(entry.getOlatResource(), courseExportZIP, true, false);
-		// Zip runtime data and course run structure data into one zip-file
-		String completeArchiveFileName = "del_course_" + entry.getOlatResource().getResourceableId() + ".zip";
-		String completeArchivePath = archivFilePath + File.separator + completeArchiveFileName;
-		ZipUtil.zipAll(tmpExportDir, new File(completeArchivePath), false);
-		FileUtils.deleteDirsAndFiles(tmpExportDir, true, true);
-		return completeArchiveFileName;
 	}
 
 	@Override

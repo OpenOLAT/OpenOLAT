@@ -191,9 +191,6 @@ public interface RepositoryHandler {
 	 */
 	public boolean readyToDelete(RepositoryEntry entry, Identity identity, Roles roles, Locale locale, ErrorList errors);
 	
-
-	public String archive(Identity archiveOnBehalfOf, String archivFilePath, RepositoryEntry repoEntry);
-	
 	/**
 	 * Acquires lock for the input ores and identity.
 	 * @param ores
