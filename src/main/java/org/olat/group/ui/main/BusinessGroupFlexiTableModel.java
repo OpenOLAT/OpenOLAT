@@ -297,13 +297,17 @@ public class BusinessGroupFlexiTableModel extends DefaultFlexiTableDataModel<BGT
 	public void removeBusinessGroup(Long bgKey) {
 		if(bgKey == null) return;
 		
+		boolean removed = false;
 		List<BGTableItem> items = getObjects();
 		for(int i=items.size(); i-->0; ) {
 			BGTableItem wrapped = items.get(i);
 			if(bgKey.equals(wrapped.getBusinessGroupKey())) {
 				items.remove(i);
-				return;
+				removed = true;
 			}
+		}
+		if(removed) {
+			setObjects(items);
 		}
 	}
 	

@@ -368,27 +368,29 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			String cmd = event.getCommand();
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
-				BGTableItem item = groupTableModel.getObject(se.getIndex());
-				Long businessGroupKey = item.getBusinessGroupKey();
-				BusinessGroup businessGroup = businessGroupService.loadBusinessGroup(businessGroupKey);
-				//prevent rs after a group is deleted by someone else
-				if(businessGroup == null) {
-					groupTableModel.removeBusinessGroup(businessGroupKey);
-					tableEl.reset();
-				} else if(TABLE_ACTION_LAUNCH.equals(cmd)) {
-					doLaunch(ureq, businessGroup);
-				} else if(TABLE_ACTION_DELETE.equals(cmd)) {
-					confirmDelete(ureq, Collections.singletonList(item));
-				} else if(TABLE_ACTION_LAUNCH.equals(cmd)) {
-					doLaunch(ureq, businessGroup);
-				} else if(TABLE_ACTION_EDIT.equals(cmd)) {
-					doEdit(ureq, businessGroup);
-				} else if(TABLE_ACTION_LEAVE.equals(cmd)) {
-					doConfirmLeaving(ureq, businessGroup);
-				} else if (TABLE_ACTION_ACCESS.equals(cmd)) {
-					doAccess(ureq, businessGroup);
-				} else if (TABLE_ACTION_SELECT.equals(cmd)) {
-					doSelect(ureq, businessGroup);
+				if(se.getIndex() >= 0 && se.getIndex() < groupTableModel.getRowCount()) {
+					BGTableItem item = groupTableModel.getObject(se.getIndex());
+					Long businessGroupKey = item.getBusinessGroupKey();
+					BusinessGroup businessGroup = businessGroupService.loadBusinessGroup(businessGroupKey);
+					//prevent rs after a group is deleted by someone else
+					if(businessGroup == null) {
+						groupTableModel.removeBusinessGroup(businessGroupKey);
+						tableEl.reset();
+					} else if(TABLE_ACTION_LAUNCH.equals(cmd)) {
+						doLaunch(ureq, businessGroup);
+					} else if(TABLE_ACTION_DELETE.equals(cmd)) {
+						confirmDelete(ureq, Collections.singletonList(item));
+					} else if(TABLE_ACTION_LAUNCH.equals(cmd)) {
+						doLaunch(ureq, businessGroup);
+					} else if(TABLE_ACTION_EDIT.equals(cmd)) {
+						doEdit(ureq, businessGroup);
+					} else if(TABLE_ACTION_LEAVE.equals(cmd)) {
+						doConfirmLeaving(ureq, businessGroup);
+					} else if (TABLE_ACTION_ACCESS.equals(cmd)) {
+						doAccess(ureq, businessGroup);
+					} else if (TABLE_ACTION_SELECT.equals(cmd)) {
+						doSelect(ureq, businessGroup);
+					}
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				doSearch((FlexiTableSearchEvent)event);
