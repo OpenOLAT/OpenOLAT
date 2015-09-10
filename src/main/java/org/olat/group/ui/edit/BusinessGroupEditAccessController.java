@@ -74,7 +74,7 @@ public class BusinessGroupEditAccessController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("accesscontrol.title");
 		setFormDescription("accesscontrol_group.desc");
-		setFormContextHelp(AccessConfigurationController.class.getPackage().getName(), "accesscontrol_group.html", "chelp.accesscontrol_group.hover");
+		setFormContextHelp("Group Administration#gruppensystem_buchung_ag");
 
 		if(configController != null) {
 			formLayout.add(configController.getInitialFormItem());

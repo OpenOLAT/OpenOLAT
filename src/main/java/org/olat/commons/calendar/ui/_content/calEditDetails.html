@@ -1,12 +1,12 @@
 <fieldset>
 	<legend>#if ($caller == "home")
-		$r.contextHelpWithWrapper("org.olat.commons.calendar","personal-calendar-details.html","help.hover.personalcal.date")
+		$r.contextHelpWithWrapper("Calendar")
 	#elseif ($caller == "course")
 		$r.contextHelpWithWrapper("org.olat.commons.calendar","course-calendar-details.html","help.hover.coursecal.date")
 	#elseif ($caller == "collab")
 		$r.contextHelpWithWrapper("org.olat.commons.calendar","group-calendar-details.html","help.hover.cal")
 	#elseif ($caller == "profile")
-		$r.contextHelpWithWrapper("org.olat.commons.calendar","personal-calendar-details.html","help.hover.cal")
+		$r.contextHelpWithWrapper("Calendar")
 	#end
 	$r.translate("cal.form.title")</legend>
 	
