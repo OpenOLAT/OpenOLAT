@@ -19,7 +19,6 @@
  */
 package org.olat.selenium.page.repository;
 
-import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -27,6 +26,7 @@ import java.util.Locale;
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
+import org.olat.core.util.Formatter;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -67,12 +67,11 @@ public class RepositoryEditDescriptionPage {
 		OOGraphene.waitBusy(browser);
 		
 		By validFromBy = By.cssSelector(".o_sel_repo_lifecycle_validfrom .o_date_picker input[type='text']");
-		DateFormat shortDateFormat = DateFormat.getDateInstance(DateFormat.SHORT, locale);
-		String validFromStr = shortDateFormat.format(validFrom);
+		String validFromStr = Formatter.getInstance(locale).formatDate(validFrom);
 		browser.findElement(validFromBy).sendKeys(validFromStr);
 		
 		By validToBy = By.cssSelector(".o_sel_repo_lifecycle_validto .o_date_picker input[type='text']");
-		String validToStr = shortDateFormat.format(validTo);
+		String validToStr = Formatter.getInstance(locale).formatDate(validTo);
 		browser.findElement(validToBy).sendKeys(validToStr);
 		
 		return this;
