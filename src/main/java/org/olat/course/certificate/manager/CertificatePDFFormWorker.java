@@ -161,10 +161,15 @@ public class CertificatePDFFormWorker {
 			Date from = entry.getLifecycle().getValidFrom();
 			String formattedFrom = format.formatDate(from);
 			fillField("from", formattedFrom, acroForm);
+			String formattedFromLong = format.formatDateLong(from);
+			fillField("fromLong", formattedFromLong, acroForm);
+
 
 			Date to = entry.getLifecycle().getValidTo();
 			String formattedTo = format.formatDate(to);
 			fillField("to", formattedTo, acroForm);
+			String formattedToLong = format.formatDateLong(to);
+			fillField("toLong", formattedToLong, acroForm);
 		}
 	}
 	
@@ -176,14 +181,16 @@ public class CertificatePDFFormWorker {
 		} else {
 			String formattedDateCertification= format.formatDate(dateCertification);
 			fillField("dateCertification", formattedDateCertification, acroForm);
-		}
+			String formattedDateCertificationLong= format.formatDateLong(dateCertification);
+			fillField("dateCertificationLong", formattedDateCertificationLong, acroForm);		}
 		
 		if(dateFirstCertification == null) {
 			fillField("dateFirstCertification", "", acroForm);
 		} else {
 			String formattedDateFirstCertification = format.formatDate(dateFirstCertification);
 			fillField("dateFirstCertification", formattedDateFirstCertification, acroForm);
-		}
+			String formattedDateFirstCertificationLong = format.formatDate(dateFirstCertification);
+			fillField("dateFirstCertificationLong", formattedDateFirstCertificationLong, acroForm);		}
 	}
 	
 	private void fillAssessmentInfos(PDAcroForm acroForm) throws IOException {

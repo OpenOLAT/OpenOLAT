@@ -176,10 +176,14 @@ public class CertificatePhantomWorker {
 			Date from = entry.getLifecycle().getValidFrom();
 			String formattedFrom = format.formatDate(from);
 			context.put("from", formattedFrom);
+			String formattedFromLong = format.formatDateLong(from);
+			context.put("fromLong", formattedFromLong);
 
 			Date to = entry.getLifecycle().getValidTo();
 			String formattedTo = format.formatDate(to);
 			context.put("to", formattedTo);
+			String formattedToLong = format.formatDateLong(to);
+			context.put("toLong", formattedToLong);
 		}
 	}
 	
@@ -191,6 +195,8 @@ public class CertificatePhantomWorker {
 		} else {
 			String formattedDateCertification= format.formatDate(dateCertification);
 			context.put("dateCertification", formattedDateCertification);
+			String formattedDateCertificationLong= format.formatDateLong(dateCertification);
+			context.put("dateCertificationLong", formattedDateCertificationLong);
 		}
 		
 		if(dateFirstCertification == null) {
@@ -198,6 +204,8 @@ public class CertificatePhantomWorker {
 		} else {
 			String formattedDateFirstCertification = format.formatDate(dateFirstCertification);
 			context.put("dateFirstCertification", formattedDateFirstCertification);
+			String formattedDateFirstCertificationLong = format.formatDate(dateFirstCertification);
+			context.put("dateFirstCertificationLong", formattedDateFirstCertificationLong);
 		}
 	}
 	
