@@ -562,7 +562,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertEquals(savedVo.getLogin(), savedIdent.getName());
 		assertEquals("Female", savedIdent.getUser().getProperty("gender", Locale.ENGLISH));
 		assertEquals("39847592", savedIdent.getUser().getProperty("telPrivate", Locale.ENGLISH));
-		assertEquals("12/12/09", savedIdent.getUser().getProperty("birthDay", Locale.ENGLISH));
+		assertEquals("12/12/2009", savedIdent.getUser().getProperty("birthDay", Locale.ENGLISH));
 		conn.shutdown();
 	}
 	
@@ -602,7 +602,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertEquals(savedVo.getLogin(), savedIdent.getName());
 		assertEquals("Female", savedIdent.getUser().getProperty("gender", Locale.ENGLISH));
 		assertEquals("39847592", savedIdent.getUser().getProperty("telPrivate", Locale.ENGLISH));
-		assertEquals("12/12/09", savedIdent.getUser().getProperty("birthDay", Locale.ENGLISH));
+		assertEquals("12/12/2009", savedIdent.getUser().getProperty("birthDay", Locale.ENGLISH));
 		conn.shutdown();
 	}
 	
