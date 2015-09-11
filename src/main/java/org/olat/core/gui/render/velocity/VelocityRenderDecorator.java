@@ -704,16 +704,62 @@ public class VelocityRenderDecorator implements Closeable {
 		return !vc.getContext().containsKey(key);
 	}
 	
+	/**
+	 * Formats the given date in a short format, e.g. 05.12.2015 or 12/05/2015
+	 * 
+	 * @param date the date
+	 * @return a String with the formatted date
+	 */
 	public String formatDate(Date date){
 		Formatter f = Formatter.getInstance(renderer.getTranslator().getLocale());
 		return f.formatDate(date);
 	}
 	
+	/**
+	 * Formats the given date in a medium sized format, e.g. 12. Dezember 2015 or December 12, 2015
+	 * 
+	 * @param date the date
+	 * @return a String with the formatted date
+	 */
+	public String formatDateLong(Date date){
+		Formatter f = Formatter.getInstance(renderer.getTranslator().getLocale());
+		return f.formatDateLong(date);
+	}
+	
+	/**
+	 * Formats the given date in a medium size with date and time, e.g. 05.12.2015 14:35
+	 * 
+	 * @param date the date
+	 * @return a String with the formatted date and time
+	 */
 	public String formatDateAndTime(Date date){
 		Formatter f = Formatter.getInstance(renderer.getTranslator().getLocale());
 		return f.formatDateAndTime(date);
 	}
 
+	/**
+	 * Formats the given date in a long size with date and time, e.g. Tuesday,
+	 * 10. September 2015, 3:48 PM
+	 * 
+	 * @param date
+	 *            the date
+	 * @return a String with the formatted date and time
+	 */
+	public String formatDateAndTimeLong(Date date) {
+		Formatter f = Formatter.getInstance(renderer.getTranslator().getLocale());
+		return f.formatDateAndTimeLong(date);	}
+
+	/**
+	 * formats the given time period so it is friendly to read
+	 * 
+	 * @param d the date
+	 * @return a String with the formatted time
+	 */
+	public String formatTime(Date date) {
+		Formatter f = Formatter.getInstance(renderer.getTranslator().getLocale());
+		return f.formatTime(date);
+	}
+	
 	public String formatBytes(long bytes) {
 		return Formatter.formatBytes(bytes);
 	}
