@@ -149,8 +149,6 @@ public class LDAPLoginModule extends AbstractSpringModule {
 	private Scheduler scheduler;
 	@Autowired
 	private BaseSecurity securityManager;
-	@Autowired
-	private LDAPLoginManager ldapManager;
 	
 	@Autowired
 	public LDAPLoginModule(CoordinatorManager coordinatorManager) {
@@ -240,22 +238,6 @@ public class LDAPLoginModule extends AbstractSpringModule {
 				log.warn("Server Certificate will expire in less than 30 days.");
 			}
 		}
-		
-		// Check ldap connection
-		if (ldapManager.bindSystem() == null) {
-			// don't disable ldap, maybe just a temporary problem, but still report
-			// problem in logfile
-			log.error("LDAP connection test failed during module initialization, edit config or contact network administrator");
-		} else {
-			log.info("LDAP login is enabled");
-		}
-		
-		// Sync LDAP Users on Startup
-		if (isLdapSyncOnStartup()) {
-			initStartSyncJob();
-		} else {
-			log.info("LDAP start sync is disabled");
-		}
 
 		// Start LDAP cron sync job
 		if (isLdapSyncCronSync()) {
@@ -271,19 +253,6 @@ public class LDAPLoginModule extends AbstractSpringModule {
 	@Override
 	protected void initFromChangedProperties() {
 		//
-	}
-
-	/**
-	 * Internal helper to sync users right away
-	 * @param ldapManager
-	 */
-	private void initStartSyncJob() {
-		LDAPError errors = new LDAPError();
-		if (ldapManager.doBatchSync(errors, true)) {
-			log.info("LDAP start sync: users synced");
-		} else {
-			log.warn("LDAP start sync error: " + errors.get());
-		}
 	}
 
 	/**

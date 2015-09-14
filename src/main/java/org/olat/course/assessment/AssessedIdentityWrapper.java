@@ -76,7 +76,6 @@ public class AssessedIdentityWrapper {
     public Identity getIdentity() {
         return userCourseEnvironment.getIdentityEnvironment().getIdentity();
     }
- 
     
     /**
      * @return the users details for the current node
@@ -95,7 +94,7 @@ public class AssessedIdentityWrapper {
     	return initialLaunchDate;
     }
 
-		public Date getLastModified() {
-			return lastModified;
-		}
+	public Date getLastModified() {
+		return lastModified;
+	}
 }

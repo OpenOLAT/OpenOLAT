@@ -247,21 +247,21 @@ public abstract class GTAAbstractController extends BasicController {
 	}
 	
 	protected Task stepAssignment(@SuppressWarnings("unused") UserRequest ureq, Task assignedTask) {
-		DueDate assignmentDueDate = getAssignementDueDate(assignedTask);
-		if(assignmentDueDate != null) {
-			if(assignmentDueDate.getDueDate() != null) {
-				Date dueDate = assignmentDueDate.getDueDate();
-				String date = Formatter.getInstance(getLocale()).formatDateAndTime(dueDate);
-				mainVC.contextPut("assignmentDueDate", date);
+		DueDate dueDate = getAssignementDueDate(assignedTask);
+		if(dueDate != null) {
+			if(dueDate.getDueDate() != null) {
+				Date date = dueDate.getDueDate();
+				String dateAsString = Formatter.getInstance(getLocale()).formatDateAndTime(date);
+				mainVC.contextPut("assignmentDueDate", dateAsString);
 				mainVC.contextRemove("assignmentDueDateMsg");
 				
 				if(assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.assignment
-						&& dueDate.compareTo(new Date()) < 0) {
+						&& date.compareTo(new Date()) < 0) {
 					//push to the next step
 					assignedTask = gtaManager.nextStep(assignedTask, gtaNode);
 				}
-			} else if(assignmentDueDate.getMessage() != null) {
-				mainVC.contextPut("assignmentDueDateMsg", assignmentDueDate.getMessage());
+			} else if(dueDate.getMessage() != null) {
+				mainVC.contextPut("assignmentDueDateMsg", dueDate.getMessage());
 				mainVC.contextRemove("assignmentDueDate");
 			}
 		}
@@ -338,21 +338,21 @@ public abstract class GTAAbstractController extends BasicController {
 	}
 	
 	protected Task stepSubmit(@SuppressWarnings("unused")UserRequest ureq, Task assignedTask) {
-		DueDate submissionDueDate = getSubmissionDueDate(assignedTask);
-		if(submissionDueDate != null) {
-			if(submissionDueDate.getDueDate() != null) {
-				Date dueDate = submissionDueDate.getDueDate();
-				String date = Formatter.getInstance(getLocale()).formatDateAndTime(dueDate);
-				mainVC.contextPut("submitDueDate", date);
+		DueDate dueDate = getSubmissionDueDate(assignedTask);
+		if(dueDate != null) {
+			if(dueDate.getDueDate() != null) {
+				Date date = dueDate.getDueDate();
+				String dateAsString = Formatter.getInstance(getLocale()).formatDateAndTime(date);
+				mainVC.contextPut("submitDueDate", dateAsString);
 				mainVC.contextRemove("submitDueDateMsg");
 				
 				if(assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.submit
-						&& dueDate.compareTo(new Date()) < 0) {
+						&& date.compareTo(new Date()) < 0) {
 					//push to the next step
 					assignedTask = gtaManager.nextStep(assignedTask, gtaNode);
 				}
-			} else if(submissionDueDate.getMessage() != null) {
-				mainVC.contextPut("submitDueDateMsg", submissionDueDate.getMessage());
+			} else if(dueDate.getMessage() != null) {
+				mainVC.contextPut("submitDueDateMsg", dueDate.getMessage());
 				mainVC.contextRemove("submitDueDate");
 			}
 		}

@@ -77,9 +77,6 @@ public class DevelopmentController extends BasicController {
 	
 	private Link web10Link;
 	private Link web20Link;
-	private Link web20hlLink;
-	
-	private Link showJson;
 	private Link showComponentTree;
 	
 	private List<Link> modes = new ArrayList<Link>();
@@ -115,22 +112,27 @@ public class DevelopmentController extends BasicController {
 		// a special case here: these link must work in regular mode (normal uri with full screen refresh (as 
 		// opposed to partial page refresh )in order to switch modes correctly.
 		// (grouping only needed for coloring)
-		modes.add(web10Link = LinkFactory.deAjaxify(LinkFactory.createLink("web10", myContent, this)));
-		modes.add(web20Link = LinkFactory.deAjaxify(LinkFactory.createLink("web20", myContent, this)));
-		modes.add(web20hlLink = LinkFactory.deAjaxify(LinkFactory.createLink("web20hl", myContent, this)));
-		modes.add(debugLink = LinkFactory.deAjaxify(LinkFactory.createLink("debug", myContent, this)));		
-		modes.add(showJson = LinkFactory.deAjaxify(LinkFactory.createLink("showJson", myContent, this)));
+		web10Link = LinkFactory.createLink("web10", myContent, this);
+		web10Link.setAjaxEnabled(false);
+		web20Link =LinkFactory.createLink("web20", myContent, this);
+		web20Link.setAjaxEnabled(false);
+		debugLink = LinkFactory.createLink("debug", myContent, this);
+		debugLink.setAjaxEnabled(false);
+		
+		modes.add(web10Link);
+		modes.add(web20Link);
+		modes.add(debugLink);
 		if (winMgrImpl.isAjaxEnabled()) {
-			chosenMode = web20Link;			
-		} else {			
-			chosenMode = web10Link;			
+			chosenMode = web20Link;
+		} else {
+			chosenMode = web10Link;
 		}
 		updateUI();
 		
 		// commands
-		showComponentTree = LinkFactory.deAjaxify(LinkFactory.createButton("showComponentTree", myContent, this));
+		showComponentTree = LinkFactory.createButton("showComponentTree", myContent, this);
+		showComponentTree.setAjaxEnabled(false);
 		myContent.contextPut("compdump", "");
-		//boolean iframepost = wboImpl.getGlobalSettings().getAjaxFlags().isIframePostEnabled();
 		myContent.contextPut("sys", this);
 		
 		toggleAutorefresh = LinkFactory.createButtonSmall("toggleAutorefresh", myContent, this);
@@ -143,14 +145,14 @@ public class DevelopmentController extends BasicController {
 		myContent.put("bandwidth",bandwithController.getInitialComponent());
 
 		mainpanel = new Panel("developermainpanel");
-		Component protectedMainPanel = DebugHelper.createDebugProtectedWrapper(mainpanel);
 		
 		devToolLink = LinkFactory.createCustomLink("devTool", "devTool", "", Link.NONTRANSLATED, myContent, this);
 		devToolLink.setIconLeftCSS("o_icon o_icon_dev o_icon-fw");
 		devToolLink.setCustomEnabledLinkCSS("o_dev hidden-print");
 		devToolLink.setTitle(translate("devTool"));
+
+		Component protectedMainPanel = DebugHelper.createDebugProtectedWrapper(mainpanel);
 		spacesaverController = new ExpColController(ureq, getWindowControl(), false, protectedMainPanel, devToolLink);
-		
 		mainComp = DebugHelper.createDebugProtectedWrapper(spacesaverController.getInitialComponent());
 		putInitialPanel(mainComp);
 	}
@@ -192,8 +194,6 @@ public class DevelopmentController extends BasicController {
 			// choose regular mode
 			winMgrImpl.setShowDebugInfo(false);
 			winMgrImpl.setAjaxEnabled(false);
-			winMgrImpl.setHighLightingEnabled(false);
-			winMgrImpl.setShowJSON(false);
 			winMgrImpl.setIdDivsForced(false);
 			chosenMode = web10Link;
 			updateUI();
@@ -201,27 +201,13 @@ public class DevelopmentController extends BasicController {
 			// enable ajax / generic-dom-replacement GDR mode
 			winMgrImpl.setShowDebugInfo(false);
 			winMgrImpl.setAjaxEnabled(true);
-			winMgrImpl.setHighLightingEnabled(false);
-			winMgrImpl.setShowJSON(false);
 			winMgrImpl.setIdDivsForced(false);
 			chosenMode = web20Link;
-			updateUI();
-		} else if (source == web20hlLink) {
-			// ajax mode with highlighting
-			winMgrImpl.setShowDebugInfo(false);
-			winMgrImpl.setAjaxEnabled(true);
-			winMgrImpl.setHighLightingEnabled(true);
-			winMgrImpl.setShowJSON(false);
-			//brasato:: setIdDivsForced is removed!! check if it works
-			winMgrImpl.setIdDivsForced(false);
-			chosenMode = web20hlLink;
 			updateUI();
 		} else if (source == debugLink) {
 			// debug mode requires web 1.0 mode at the moment
 			winMgrImpl.setShowDebugInfo(true);
 			winMgrImpl.setAjaxEnabled(false);
-			winMgrImpl.setHighLightingEnabled(false);
-			winMgrImpl.setShowJSON(false);
 			winMgrImpl.setIdDivsForced(false);
 			chosenMode = debugLink;
 			updateUI();
@@ -235,14 +221,6 @@ public class DevelopmentController extends BasicController {
 				updateComponentTree();				
 			}
 			treeShown = !treeShown;
-		} else if (source == showJson) {
-			winMgrImpl.setShowDebugInfo(false);
-			winMgrImpl.setAjaxEnabled(true);
-			winMgrImpl.setHighLightingEnabled(true);
-			winMgrImpl.setShowJSON(true);
-			winMgrImpl.setIdDivsForced(false);
-			chosenMode = showJson;
-			updateUI();
 		} else if (source == toggleAutorefresh) {
 			autorefresh = !autorefresh;
 			if (autorefresh) {

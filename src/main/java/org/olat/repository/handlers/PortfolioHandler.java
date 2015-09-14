@@ -159,13 +159,6 @@ public class PortfolioHandler implements RepositoryHandler {
 	public EditionSupport supportsEdit(OLATResourceable resource) {
 		return EditionSupport.embedded;
 	}
-
-	@Override
-	public String archive(Identity archiveOnBehalfOf, String archivFilePath, RepositoryEntry repoEntry) {
-		// Apperantly, this method is used for backing up any user related content
-		// (comments etc.) on deletion. Up to now, this doesn't exist in blogs.
-		return null;
-	}
 	
 	@Override
 	public VFSContainer getMediaContainer(RepositoryEntry repoEntry) {

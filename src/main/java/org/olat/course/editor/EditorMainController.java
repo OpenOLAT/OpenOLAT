@@ -1180,6 +1180,9 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	}
 	
 	public boolean hasPublishableChanges(ICourse course) {
+		if(cetm == null || course == null) {
+			return false;
+		}
 		PublishProcess publishProcess = PublishProcess.getInstance(course, cetm, getLocale());
 		PublishTreeModel publishTreeModel = publishProcess.getPublishTreeModel();
 		return publishTreeModel.hasPublishableChanges();

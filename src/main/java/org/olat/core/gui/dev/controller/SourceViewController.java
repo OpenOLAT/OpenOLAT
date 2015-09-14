@@ -61,13 +61,13 @@ public class SourceViewController extends BasicController {
 	private static final String TEXT_HTML_CHARSET_UTF_8 = "text/html; charset=utf-8";
 	private VelocityContainer content;
 	private Link viewJSource, viewVeloctiySource;
-	private Class clazz;
+	private Class<?> clazz;
 	private VelocityContainer vc, sourceview;
 	private CloseableModalController view;
 	private final static String HTML_START = "<html><body>";
 	private final static String HTML_STOP = "</body></html>";
 
-	public SourceViewController(UserRequest ureq, WindowControl control, Class clazz, VelocityContainer vc) {
+	public SourceViewController(UserRequest ureq, WindowControl control, Class<?> clazz, VelocityContainer vc) {
 		super(ureq, control);
 		this.clazz = clazz;
 		this.vc = vc;

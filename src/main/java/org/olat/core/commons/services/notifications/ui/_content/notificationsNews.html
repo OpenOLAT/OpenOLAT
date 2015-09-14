@@ -38,7 +38,7 @@
 		#else
 			#set($subscrItem = $subsFormatter.getSubscriptionItem($sub))
 			#if($subscrItem) 
-			<a href="$subscrItem.getLink()" onkeypress="return o2cl();" onclick="return o2cl();">
+			<a href="$subscrItem.getLink()">
 				$r.translate("resource.open", $subsFormatter.getType($sub))
 				<i class="o_icon o_icon_start"></i>
 			</a>

@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '2.3.0'
+				version : '2.3.1'
 			};
 		},
 
@@ -219,6 +219,7 @@
 				    {text: translator().translate('olatmovieviewer.video'), value: 'video'},
 				    {text: translator().translate('olatmovieviewer.sound'), value: 'sound'},
 				    {text: translator().translate('olatmovieviewer.youtube'), value: 'youtube'},
+				    {text: translator().translate('olatmovieviewer.vimeo'), value: 'vimeo'},
 				    {text: translator().translate('olatmovieviewer.http'), value: 'http'},
 				    {text: translator().translate('olatmovieviewer.rtmp'), value: 'rtmp'}
 				];
@@ -277,9 +278,9 @@
 									align: 'center',
 									spacing: 5,
 									items: [
-										{name: 'width', type: 'textbox', maxLength: 3, size: 3, onchange: generatePreview},
+										{name: 'width', type: 'textbox', maxLength: 4, size: 4, onchange: generatePreview},
 										{type: 'label', text: 'x'},
-										{name: 'height', type: 'textbox', maxLength: 3, size: 3, onchange: generatePreview}
+										{name: 'height', type: 'textbox', maxLength: 4, size: 4, onchange: generatePreview}
 									]
 								},
 					    	    { name: 'preview', type: 'panel', label: '', minHeight: 320,
@@ -340,7 +341,7 @@
 				return pl;
 			};
 			
-			//The video player code. Only one player per page supported.
+			//The video player code.
 			function getPlayerHtmlNode(editor,p) {
 				var h = '', n, l = '';
 				// player configuration
@@ -373,7 +374,7 @@
 
 			ed.addButton('olatmovieviewer', {
 				title : translator().translate('olatmovieviewer.desc'),
-				image : url + '/images/movieviewer.gif',
+				icon : 'movie',
 				onclick: showDialog,
 				onPostRender: function() {
 			        var ctrl = this;
@@ -390,7 +391,7 @@
 			
 			ed.addMenuItem('olatmovieviewer', {
 				text : translator().translate('olatmovieviewer.desc'),
-				image : url + '/images/movieviewer.gif',
+				icon : 'movie',
 				onclick: showDialog,
 			});
 

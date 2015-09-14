@@ -40,6 +40,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.wizard.Step;
@@ -49,6 +50,8 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
@@ -56,6 +59,7 @@ import org.olat.group.ui.main.SelectBusinessGroupController;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.qpool.QTIQPoolServiceProvider;
+import org.olat.ims.qti.questionimport.ImportOptions;
 import org.olat.ims.qti.questionimport.ItemAndMetadata;
 import org.olat.ims.qti.questionimport.ItemsPackage;
 import org.olat.ims.qti.questionimport.QImport_1_InputStep;
@@ -96,7 +100,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial date: 22.01.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class QuestionListController extends AbstractItemListController implements BreadcrumbPanelAware {
+public class QuestionListController extends AbstractItemListController implements BreadcrumbPanelAware, Activateable2 {
 
 	private FormLink list, exportItem, shareItem, removeItem, newItem, copyItem, deleteItem, authorItem, importItem, bulkChange;
 
@@ -178,6 +182,23 @@ public class QuestionListController extends AbstractItemListController implement
 		this.stackPanel = stackPanel;
 		if(stackPanel != null) {
 			stackPanel.addListener(this);
+		}
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry entry = entries.get(0);
+		String type = entry.getOLATResourceable().getResourceableTypeName();
+		if("QuestionItem".equals(type)) {
+			Long itemKey = entry.getOLATResourceable().getResourceableId();
+			ItemRow row = getModel().getObjectByKey(itemKey);
+			if(row == null) {
+				//TODO xhr
+			} else {
+				doSelect(ureq, row);
+			}
 		}
 	}
 
@@ -613,7 +634,7 @@ public class QuestionListController extends AbstractItemListController implement
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				importTestCtrl.getInitialComponent(), true, translate("import.repository"));
-		cmc.setContextHelp(ureq, "org.olat.modules.qpool.ui", "import-repo.html", "help.hover.importrepo");
+		cmc.setContextHelp(getTranslator(),"Data Management#qb_share");
 		cmc.activate();
 		listenTo(cmc);
 	}
@@ -626,7 +647,10 @@ public class QuestionListController extends AbstractItemListController implement
 		if(getSource().askEditable()) {
 			additionalStep = new EditableStep(ureq);
 		}
-		Step start = new QImport_1_InputStep(ureq, importPackage, additionalStep);
+		
+		final ImportOptions options = new ImportOptions();
+		options.setShuffle(true);
+		Step start = new QImport_1_InputStep(ureq, importPackage, options, additionalStep);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
@@ -787,7 +811,6 @@ public class QuestionListController extends AbstractItemListController implement
 	private void doConfirmDelete(UserRequest ureq, List<QuestionItemShort> items) {
 		confirmDeleteBox = activateYesNoDialog(ureq, null, translate("confirm.delete"), confirmDeleteBox);
 		confirmDeleteBox.setUserObject(items);
-		confirmDeleteBox.setContextHelp("org.olat.modules.qpool.ui", "delete-item.html", "help.hover.deleteitem");
 	}
 	
 	private void doDelete(List<QuestionItemShort> items) {
@@ -812,7 +835,7 @@ public class QuestionListController extends AbstractItemListController implement
 		String text = translate("confirm.unshare", new String[]{ getSource().getName() });
 		confirmRemoveBox = activateYesNoDialog(ureq, null, text, confirmRemoveBox);
 		confirmRemoveBox.setUserObject(items);
-		confirmRemoveBox.setContextHelp("org.olat.modules.qpool.ui", "remove-item.html", "help.hover.removeitem");
+		confirmRemoveBox.setContextHelp("Data Management#qb_remove");
 	}
 	
 	protected void doRemove(List<QuestionItemShort> items) {
@@ -855,7 +878,7 @@ public class QuestionListController extends AbstractItemListController implement
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				selectGroupCtrl.getInitialComponent(), true, translate("select.group"));
-		cmc.setContextHelp(ureq, "org.olat.modules.qpool.ui", "share-group.html", "help.hover.sharegroup");
+		cmc.setContextHelp(getTranslator(), "Data Management#qb_share");
 		cmc.activate();
 		listenTo(cmc);
 	}
@@ -877,7 +900,6 @@ public class QuestionListController extends AbstractItemListController implement
 		String text = translate("copy.confirmation");
 		confirmCopyBox = activateYesNoDialog(ureq, title, text, confirmCopyBox);
 		confirmCopyBox.setUserObject(items);
-		confirmCopyBox.setContextHelp("org.olat.modules.qpool.ui", "copy-item.html", "help.hover.copyitem");
 	}
 	
 	protected void doCopy(UserRequest ureq, List<QuestionItemShort> items) {
@@ -908,7 +930,8 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(currentDetailsCtrl);
 		removeAsListenerAndDispose(currentMainDetailsCtrl);
 		
-		currentDetailsCtrl = new QuestionItemDetailsController(ureq, getWindowControl(), item, editable, getSource().isDeleteEnabled());
+		WindowControl bwControl = addToHistory(ureq, item, null);
+		currentDetailsCtrl = new QuestionItemDetailsController(ureq, bwControl, item, editable, getSource().isDeleteEnabled());
 		currentDetailsCtrl.setBreadcrumbPanel(stackPanel);
 		listenTo(currentDetailsCtrl);
 		currentMainDetailsCtrl = new LayoutMain3ColsController(ureq, getWindowControl(), currentDetailsCtrl);

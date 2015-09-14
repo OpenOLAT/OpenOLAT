@@ -61,18 +61,6 @@
 		<property name="legacyContext" value="${server.legacy.context}" />		
 		<!-- true enable debug mode, not for production mode but for productive hours ;) -->
 		<property name="debug" value="${olat.debug}" />
-		<!-- if readOnlyDebug, then no file changes can be made in the debug mode -->
-		<property name="readOnlyDebug" value="false" />
-		<!-- 
-			For Performance and/or Functional Tests. 
-			if allowLoadtestMode is set to true, it is possible to switch a session to  loadtest mode
-			using the url parameter ?loadtest  and ?noloadtest even without logging in.
-			Thus the same urls can be reused over and over again, which is needed for tools like JMeter or such.
-			- Not to be used for productive mode! (no double post checks, asynchronous inline rendering does not work etc.)-	 
-		-->
-		<property name="allowLoadtestMode" value="${allow.loadtest.mode}" />
-		<!-- true when ajax should be enabled system-wide (but for non-supported browsers the system will automatically fallback to web 1.0 mode) -->	
-		<property name="ajaxGloballyOn" value="true" />
 		<!-- List of user agents that should be served using the web 1.0 mode (no ajax DOM replacement).
 		 	A user agent that matches against one of the regular expressions below will be blocked.					
 		-->

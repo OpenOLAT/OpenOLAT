@@ -45,12 +45,13 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.id.OLATResourceable;
+import org.olat.login.AboutController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class OlatDmzTopNavController extends BasicController implements LockableController {
 	
 	private static final Boolean contextHelpEnabled = Boolean.valueOf(ContextHelpModule.isContextHelpEnabled());
-	private Link impressumLink;
+	private Link impressumLink, aboutLink;
 	private LanguageChooserController languageChooserC;
 
 	@Autowired
@@ -78,6 +79,9 @@ public class OlatDmzTopNavController extends BasicController implements Lockable
 			Component helpLink = provider.getHelpPageLink(ureq, translate("help.manual"), translate("help.manual"), "o_icon o_icon-wf o_icon_manual", null, "Login page");
 			vc.put("topnav.help", helpLink);
 		}
+		// about link
+		aboutLink = AboutController.aboutLinkFactory(getLocale(), this, true, false);
+		vc.put("topnav.about", aboutLink);
 
 		//choosing language 
 		languageChooserC = new LanguageChooserController(getWindowControl(), ureq, "_top_nav_dmz_lang_chooser");
@@ -109,6 +113,10 @@ public class OlatDmzTopNavController extends BasicController implements Lockable
 			};
 			PopupBrowserWindow popupBrowserWindow = Windows.getWindows(ureq).getWindowManager().createNewUnauthenticatedPopupWindowFor(ureq, impressumControllerCreator);
 			popupBrowserWindow.open(ureq);
+		} else if (source == aboutLink) {
+			AboutController aboutCtr = new AboutController(ureq, getWindowControl());
+			listenTo(aboutCtr);
+			aboutCtr.activateAsModalDialog();
 		}
 	}
 

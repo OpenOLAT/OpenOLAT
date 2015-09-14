@@ -1155,6 +1155,46 @@ create table o_cer_certificate (
    primary key (id)
 );
 
+-- calendar
+create table o_cal_use_config (
+   id int8 not null,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   c_calendar_id varchar(128) not null,
+   c_calendar_type varchar(16) not null,
+   c_token varchar(36),
+   c_cssclass varchar(36),
+   c_visible bool default true,
+   c_aggregated_feed bool default true,
+   fk_identity int8 not null,
+   primary key (id),
+   unique (c_calendar_id, c_calendar_type, fk_identity)
+);
+
+create table o_cal_import (
+   id int8 not null,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   c_calendar_id varchar(128) not null,
+   c_calendar_type varchar(16) not null,
+   c_displayname varchar(256),
+   c_lastupdate timestamp not null,
+   c_url varchar(1024),
+   fk_identity int8,
+   primary key (id)
+);
+
+create table o_cal_import_to (
+   id int8 not null,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   c_to_calendar_id varchar(128) not null,
+   c_to_calendar_type varchar(16) not null,
+   c_lastupdate timestamp not null,
+   c_url varchar(1024),
+   primary key (id)
+);
+
 -- instant messaging
 create table o_im_message (
    id int8 not null,
@@ -2106,6 +2146,20 @@ create index idx_as_entry_to_refentry_idx on o_as_entry (fk_reference_entry);
 
 create index idx_as_entry_to_id_idx on o_as_entry (a_assessment_id);
 
+-- calendar
+alter table o_cal_use_config add constraint cal_u_conf_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_cal_u_conf_to_ident_idx on o_cal_use_config (fk_identity);
+create index idx_cal_u_conf_cal_id_idx on o_cal_use_config (c_calendar_id);
+create index idx_cal_u_conf_cal_type_idx on o_cal_use_config (c_calendar_type);
+
+alter table o_cal_import add constraint cal_imp_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_cal_imp_to_ident_idx on o_cal_import (fk_identity);
+create index idx_cal_imp_cal_id_idx on o_cal_import (c_calendar_id);
+create index idx_cal_imp_cal_type_idx on o_cal_import (c_calendar_type);
+
+create index idx_cal_imp_to_cal_id_idx on o_cal_import_to (c_to_calendar_id);
+create index idx_cal_imp_to_cal_type_idx on o_cal_import_to (c_to_calendar_type);
+
 -- mapper
 create index o_mapper_uuid_idx on o_mapper (mapper_uuid);
 
@@ -2118,7 +2172,6 @@ alter table o_qti_assessment_session add constraint qti_sess_to_identity_idx for
 create index idx_qti_sess_to_identity_idx on o_qti_assessment_session (fk_identity);
 alter table o_qti_assessment_session add constraint qti_sess_to_as_entry_idx foreign key (fk_assessment_entry) references o_as_entry (id);
 create index idx_qti_sess_to_as_entry_idx on o_qti_assessment_session (fk_assessment_entry);
-
 
 -- question pool
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);

@@ -9,7 +9,6 @@
 		#end
 	</div>
 	<div class="modal-body $!cssClass">	
-		#if($off_chelp_package) $r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") #end
 		#if($off_chelp_url) $r.contextHelpWithWrapper("$off_chelp_url") #end	
 		$r.render("guimessage")
 		$r.render("modalContent")

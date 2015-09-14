@@ -29,7 +29,6 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -100,25 +99,17 @@ public class RatingRenderer extends DefaultComponentRenderer {
 			if (rating.isAllowUserInput() && rating.isEnabled()) {
 				if(rating.getForm() == null) {
 					// Add link
-					sb.append(" href=\"");
-					ubu.buildURI(sb, new String[] { VelocityContainer.COMMAND_ID }, new String[] { (i+1) +"" },
-							ajaxModeEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-					sb.append("\"");
-					// add link target
-					if (ajaxModeEnabled) {
-						ubu.appendTarget(sb);
-					}				
-					// add check for olat busy
-					sb.append(" onclick=\"return o2cl()\"  onkeypress=\"return o2cl()\"");
+					sb.append(" ");
+					ubu.buildHrefAndOnclick(sb, ajaxModeEnabled,
+							new NameValuePair(VelocityContainer.COMMAND_ID, Integer.toString(i+1)));
 				} else {
 					Form theForm = rating.getForm();
 					String elementId = FormBaseComponentIdProvider.DISPPREFIX + rating.getDispatchID();
 					sb.append(" href=\"javascript:")
-					  .append(FormJSHelper.getXHRFnCallFor(theForm, elementId, 1,
+					  .append(FormJSHelper.getXHRFnCallFor(theForm, elementId, 1, true, false,
 							  new NameValuePair(VelocityContainer.COMMAND_ID, Integer.toString(i+1))))
-					  .append("\"  onclick=\"return o2cl();\" ");
+					  .append("\" ");
 				}
-
 			} else {
 				// Disabled link
 				sb.append(" href='javascript:;' onclick='return false;'");

@@ -147,6 +147,9 @@ public abstract class AbstractDueDateTaskRuleSPI implements IdentitiesProviderRu
 					identities = getPeopleToRemindRelativeTo(entry, gtaNode, dueDates, rule);
 					break;
 				}
+				default: {
+					//
+				}
 			}	
 		}
 		return identities;

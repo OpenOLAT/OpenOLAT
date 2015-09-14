@@ -32,7 +32,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.commons.calendar.CalendarManager;
-import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
@@ -75,10 +74,9 @@ import de.bps.course.nodes.DENCourseNode;
 public class DENManager {
 	
 	private final static DENManager denManager = new DENManager();
-	private CalendarManager calManager;
-	
+
 	private DENManager() {
-		calManager = CalendarManagerFactory.getInstance().getCalendarManager();
+		//
 	}
 	
 	/**
@@ -114,6 +112,7 @@ public class DENManager {
 			final boolean allowOverfill) {
 		final DENStatus status = new DENStatus();
 		ICourse course = CourseFactory.loadCourse(ores);
+		CalendarManager calManager = CoreSpringFactory.getImpl(CalendarManager.class);
 		final Kalendar cal = calManager.getCourseCalendar(course).getKalendar();
 		OLATResourceable calRes = calManager.getOresHelperFor(cal);
 		// reload calendar events
@@ -190,6 +189,7 @@ public class DENManager {
 	public DENStatus cancelEnroll(Identity identity, KalendarEvent event, OLATResourceable ores) {
 		DENStatus status = new DENStatus();
 		ICourse course = CourseFactory.loadCourse(ores);
+		CalendarManager calManager = CoreSpringFactory.getImpl(CalendarManager.class);
 		Kalendar cal = calManager.getCourseCalendar(course).getKalendar();
 		//check if identity is enrolled
 		if( !isEnrolledInDate(identity, event) ) {
@@ -248,6 +248,7 @@ public class DENManager {
 	 */
 	public void persistDENSettings(List<KalendarEvent> lstEvents, OLATResourceable ores, DENCourseNode denNode) {
 		ICourse course = CourseFactory.loadCourse(ores);
+		CalendarManager calManager = CoreSpringFactory.getImpl(CalendarManager.class);
 		Kalendar cal = calManager.getCourseCalendar(course).getKalendar();
 		String sourceNode = denNode.getIdent();
 		//remove deleted events
@@ -332,6 +333,7 @@ public class DENManager {
 	protected List<KalendarEvent> getDENEvents(Long courseId, String sourceNodeId) {
 		List<KalendarEvent> denEvents = new ArrayList<KalendarEvent>();
 		ICourse course = CourseFactory.loadCourse(courseId);
+		CalendarManager calManager = CoreSpringFactory.getImpl(CalendarManager.class);
 		Kalendar cal = calManager.getCourseCalendar(course).getKalendar();
 		Collection<KalendarEvent> colEvents = cal.getEvents();
 		for( KalendarEvent event : colEvents) {
@@ -487,6 +489,7 @@ public class DENManager {
 		String[] participants = newEvent.getParticipants();
 		if(participants == null) return;//no users to update, cancel
 		BaseSecurity manager = BaseSecurityManager.getInstance();
+		CalendarManager calManager = CoreSpringFactory.getImpl(CalendarManager.class);
 		for( String participant : participants ) {
 			Identity identity = manager.findIdentityByName(participant);
 			if(identity != null) {
@@ -513,6 +516,7 @@ public class DENManager {
 		String[] participants = oldEvent.getParticipants();
 		if(participants == null) return;//no users to update, cancel
 		BaseSecurity manager = BaseSecurityManager.getInstance();
+		CalendarManager calManager = CoreSpringFactory.getImpl(CalendarManager.class);
 		for( String participant : participants ) {
 			Identity identity = manager.findIdentityByName(participant);
 			if(identity != null) {
@@ -806,7 +810,7 @@ public class DENManager {
 		
 		MailTemplate mailTempl = new MailTemplate(subject, body, null) {
 			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
+			public void putVariablesInMailContext(VelocityContext context, Identity ident) {
 				//
 			}
 		};
@@ -835,7 +839,7 @@ public class DENManager {
 		String body = trans.translate("mail.participants.remove.body", bodyArgs);
 		MailTemplate mailTempl = new MailTemplate(subject, body, null) {
 			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
+			public void putVariablesInMailContext(VelocityContext context, Identity ident) {
 				//
 			}
 		};

@@ -140,12 +140,16 @@ public class GuiDemoFlexiForm extends FormBasicController {
 		firstName.setNotEmptyCheck("guidemo.flexi.form.mustbefilled");
 		firstName.setMandatory(true);
 		firstName.setEnabled(inputMode);
+		firstName.setPlaceholderText("Hans");
+		firstName.setHelpText("If you have a middle name, add it to the first name input field");
+		firstName.setHelpUrlForManualPage("Configuration#Profile");
 
 		lastName = uifactory.addTextElement("lastname", "guidemo.flexi.form.lastname", 256, personData.getLastName(), formLayout);
 		lastName.setDisplaySize(defaultDisplaySize);
 		lastName.setNotEmptyCheck("guidemo.flexi.form.mustbefilled");
-		lastName.setMandatory(true);
 		lastName.setEnabled(inputMode);
+		lastName.setPlaceholderText("Muster");
+		lastName.setHelpUrl("https://en.wikipedia.org/wiki/Family_name");
 
 		fileElement = uifactory.addFileElement("file", formLayout);
 		fileElement.setLabel("guidemo.flexi.form.file", null);
@@ -161,6 +165,7 @@ public class GuiDemoFlexiForm extends FormBasicController {
 		institution.setNotEmptyCheck("guidemo.flexi.form.mustbefilled");
 		institution.setMandatory(true);
 		institution.setEnabled(inputMode);
+		institution.setHelpTextKey("guidemo.flexi.form.institution.help", null);
 
 		if (inputMode) {
 			// submit only if in input mode

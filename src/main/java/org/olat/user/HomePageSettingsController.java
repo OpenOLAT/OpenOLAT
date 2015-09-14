@@ -95,7 +95,7 @@ public class HomePageSettingsController extends FormBasicController {
 				groupContainer.setFormTitle(translate("form.group." + group));
 				formLayout.add(groupContainer);
 				if(currentGroup == null) {
-					groupContainer.setFormContextHelp("org.olat.user","home-vcard.html","help.hover.vcard");
+					groupContainer.setFormContextHelp("Configuration");
 				}
 				currentGroup = group;
 			}

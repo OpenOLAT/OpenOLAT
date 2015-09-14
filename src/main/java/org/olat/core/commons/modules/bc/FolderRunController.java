@@ -400,7 +400,9 @@ public class FolderRunController extends BasicController implements Activateable
 			// we catch events from both folderComponent and folderContainer
 			// and process them through the generic folder command implementations
 			String cmd = event.getCommand();
-			if (cmd.equals(FORM_ACTION)) cmd = getFormAction(ureq);
+			if (cmd.equals(FORM_ACTION)) {
+				cmd = getFormAction(ureq);
+			}
 			
 			folderCommand = FolderCommandFactory.getInstance().getCommand(cmd, ureq, getWindowControl());
 			if (folderCommand != null) {
@@ -481,6 +483,11 @@ public class FolderRunController extends BasicController implements Activateable
 			String key = params.nextElement();
 			if (key.startsWith(ACTION_PRE)) {
 				return key.substring(ACTION_PRE.length());
+			} else if("multi_action_identifier".equals(key)) {
+				String actionKey = ureq.getParameter("multi_action_identifier");
+				if (actionKey.startsWith(ACTION_PRE)) {
+					return actionKey.substring(ACTION_PRE.length());
+				}
 			}
 		}
 		return null;

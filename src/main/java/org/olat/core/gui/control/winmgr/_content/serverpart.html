@@ -20,10 +20,8 @@ o_info.mainwinref = this.window;
 o_info.wins = {};
 o_info.poller = null;
 
-var growthrate = 10; //
-var pollminutes = 60; //
-var showjson = $showJSON;
-
+var growthrate = 10;
+var pollminutes = 60;
 var pollcount = 0;
 var pollError = 0;
 var pollgrowth = 0;
@@ -47,9 +45,14 @@ function tick () {
 						timestampLastPoll = now;
 						pollcount++;
 						pollgrowth = Math.ceil((this.period+pollgrowth)*(100+growthrate)/100) - this.period;
-						o_info.ajaxpp = jQuery.ajax({method:'POST', url:'$mapuri/', success:onPollSuccess, error:onPollFailure});
-						//var idl = (now - o_info.lastClickTime)/1000;
-						//log("sent poll request. idle="+idl+"s gr="+growthrate+" g="+pollgrowth+" c="+pollcount+" eff="+Math.floor(idl/pollcount*1000));
+						o_info.ajaxpp = jQuery.ajax({
+							method:'POST',
+							url:'$mapuri/',
+							cache: false,
+							success:onPollSuccess,
+							error:onPollFailure
+						});
+
 					}
 				} else {
 					stopped = true;
@@ -88,9 +91,9 @@ function tick () {
 jQuery(document).ready(initPolling);
 
 #if ($isAdmin)
-##check whether polling started or not. Wrap in ext makes it more stable
+##check whether polling started or not. Wrap it makes it more stable
 jQuery(function() { 
-		setTimeout( function(){ if (!o_info.ajaxpp) {
+	setTimeout( function(){ if (!o_info.ajaxpp) {
 			showMessageBox('error', 'error', 'Some core functionality could not be started. Please log out of OLAT and login again.');
 			if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','Could not initialize polling!', "serverpart.html");
 		}},60000);
@@ -112,22 +115,7 @@ function onPollSuccess(content, s, response) {
 function onPollFailure() {
   pollError++;
 }
-
 /* ]]> */
 </script>
 $r.render("pollperiodPanel")
-
-#if ($showJSON)
-## COMMENTED out for browser-history reasons
-JSON <iframe src="javascript:false;document.write('');"  name="$iframeName" class="o_debug_json" ></iframe>
-#else
-## for safari: we cannot use display:none which would be the obvious choice here
-<div id="oaawrp" style="visibility:hidden;width:0px;height:0px">
-## don't use the document.write approach, triggers an 'page contains insecure elements' warning (OLAT-4548). Load empty.html instead
-<iframe src='$r.staticLink("empty.html")' name="$iframeName" id="$iframeName" width="1" height="1" onload="clearAfterAjaxIframeCall()"></iframe>
-## try javascript:void(0)
-</div>
-#end	
-## below we need to provide an action attribute to make it html 4.01 transitional
-	<form id="o_oaap" method="post" action="#" onsubmit="return false" target="oaa0"><input type="hidden" name="v"></form>
 </div>

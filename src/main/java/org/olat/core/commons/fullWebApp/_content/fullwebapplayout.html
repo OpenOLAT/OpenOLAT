@@ -110,12 +110,16 @@ function o_start(){
 	
 	UpConversionAjaxController.setUpConversionServiceUrl('$r.contextPath()/restapi/math/verifyAsciiMath');
     UpConversionAjaxController.setDelay(300);
-    
-	## references to objects for later access or cleanup
-	o_info.objectMap = new Hashtable();
+
 	## Initialize js translator factory with the js translator mapper path
 	jQuery(document).ooTranslator().initialize("$jsTranslationMapperPath");
 	o_info.oo_translator = jQuery(document).ooTranslator();
+	## History and back button support
+	jQuery(window).on("popstate", function(e) {
+		if(e.originalEvent.state && e.originalEvent.state.businessPath) {
+			window.location.href = e.originalEvent.state.businessPath;
+		}
+	});
 /* ]]> */
 </script>
 

@@ -36,6 +36,7 @@ import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.commons.calendar.CalendarUtils;
+import org.olat.commons.calendar.PersonalCalendarManager;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.gui.UserRequest;
@@ -58,7 +59,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.home.HomeCalendarManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -80,7 +80,7 @@ public class CalendarPortletRunController extends BasicController {
 	private Link showAllLink;
 	
 	@Autowired
-	private HomeCalendarManager homeCalendarManager;
+	private PersonalCalendarManager personalCalendarManager;
 
 	/**
 	 * Constructor
@@ -131,8 +131,7 @@ public class CalendarPortletRunController extends BasicController {
 		cal.set(Calendar.DAY_OF_YEAR, cal.get(Calendar.DAY_OF_YEAR) + 7);
 		Date endDate = cal.getTime();
 		List<KalendarEvent> events = new ArrayList<>();
-		List<KalendarRenderWrapper> calendars = homeCalendarManager.getListOfCalendarWrappers(ureq, wControl);
-		calendars.addAll( homeCalendarManager.getListOfImportedCalendarWrappers(ureq) );
+		List<KalendarRenderWrapper> calendars = personalCalendarManager.getListOfCalendarWrappers(ureq, wControl);
 		for (Iterator<KalendarRenderWrapper> iter = calendars.iterator(); iter.hasNext();) {
 			KalendarRenderWrapper calendarWrapper = iter.next();
 			boolean readOnly = (calendarWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY) && !calendarWrapper.isImported();

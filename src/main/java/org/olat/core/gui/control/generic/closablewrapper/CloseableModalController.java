@@ -40,6 +40,7 @@ import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.util.ZIndexWrapper;
 import org.olat.core.gui.render.ValidationResult;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
@@ -131,15 +132,11 @@ public class CloseableModalController extends DefaultController {
 		myContent.contextPut("windowCssClass", cssClass);
 	}
 	
-	public void setContextHelp(UserRequest ureq, String packageName, String pageName, String hoverTextKey) {
-		if (packageName == null) {
-			myContent.contextRemove("off_chelp_package");
-		} else {
-			myContent.contextPut("off_chelp_package", packageName);
-			myContent.contextPut("off_chelp_page", pageName);
-			myContent.contextPut("off_chelp_hover", hoverTextKey);
-			myContent.setTranslator(Util.createPackageTranslator(packageName, ureq.getLocale(), null));
-		}
+	public void setContextHelp(Translator trans, String pageName) {
+		myContent.contextPut("off_chelp_url", pageName);
+		// unfortunately the closable modal controller is instantiated without
+		// ureq or locale, thus does not have a translator
+		myContent.setTranslator(trans);
 	}
 
 	/**

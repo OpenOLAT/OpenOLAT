@@ -29,7 +29,6 @@ package org.olat.core.gui.components.table;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.AssertException;
 
 class MultiSelectColumnDescriptor implements ColumnDescriptor {
 
@@ -135,10 +134,6 @@ class MultiSelectColumnDescriptor implements ColumnDescriptor {
 		return null;
 	}
 
-	public HrefGenerator getHrefGenerator() {
-		return null;
-	}
-
 	public String getPopUpWindowAttributes() {
 		return null;
 	}
@@ -157,10 +152,6 @@ class MultiSelectColumnDescriptor implements ColumnDescriptor {
 
 	public void otherColumnDescriptorSorted() {
 		// nothing to do here
-	}
-
-	public void setHrefGenerator(final HrefGenerator h) {
-		throw new AssertException("Not allowed to set HrefGenerator on MultiSelectColumn.");
 	}
 
 	public void setTable(final Table table) {

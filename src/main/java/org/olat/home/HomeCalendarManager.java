@@ -19,6 +19,7 @@
  */
 package org.olat.home;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -31,15 +32,18 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.collaboration.CollaborationManager;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.commons.calendar.CalendarManager;
-import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.CalendarModule;
-import org.olat.commons.calendar.ImportCalendarManager;
-import org.olat.commons.calendar.model.KalendarConfig;
+import org.olat.commons.calendar.PersonalCalendarManager;
+import org.olat.commons.calendar.manager.ImportCalendarManager;
+import org.olat.commons.calendar.model.CalendarFileInfos;
+import org.olat.commons.calendar.model.CalendarKey;
+import org.olat.commons.calendar.model.CalendarUserConfiguration;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
@@ -67,7 +71,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class HomeCalendarManager {
+public class HomeCalendarManager implements PersonalCalendarManager {
 	
 	private static final OLog log = Tracing.createLoggerFor(HomeCalendarManager.class);
 	
@@ -76,55 +80,130 @@ public class HomeCalendarManager {
 	@Autowired
 	private CalendarModule calendarModule;
 	@Autowired
+	private CalendarManager calendarManager;
+	@Autowired
 	private BusinessGroupService businessGroupService;
-	
-	public List<KalendarRenderWrapper> getListOfCalendarWrappers(UserRequest ureq, WindowControl wControl) {
+	@Autowired
+	private ImportCalendarManager importCalendarManager;
+
+	@Override
+	public List<CalendarFileInfos> getListOfCalendarsFiles(Identity identity) {
+		List<CalendarFileInfos> aggregatedFiles = new ArrayList<>();
+
+		Map<CalendarKey,CalendarUserConfiguration> configMap = calendarManager.getCalendarUserConfigurationsMap(identity);
 		
+		//personal calendar
+		CalendarKey personalCalendarKey = new CalendarKey(CalendarManager.TYPE_USER, identity.getName());
+		CalendarUserConfiguration personalCalendarConfig = configMap.get(personalCalendarKey);
+		if(calendarModule.isEnablePersonalCalendar()
+				&& (personalCalendarConfig == null || personalCalendarConfig.isInAggregatedFeed())) {
+			File iCalFile = calendarManager.getCalendarICalFile(CalendarManager.TYPE_USER, identity.getName());
+			if(iCalFile != null) {
+				aggregatedFiles.add(new CalendarFileInfos(identity.getName(), CalendarManager.TYPE_USER, iCalFile));
+			}
+			
+			//reload every hour
+			List<CalendarFileInfos> importedCalendars = importCalendarManager.getImportedCalendarInfosForIdentity(identity, true);
+			aggregatedFiles.addAll(importedCalendars);
+		}
+
+		//group calendars
+		if(calendarModule.isEnableGroupCalendar()) {
+			SearchBusinessGroupParams groupParams = new SearchBusinessGroupParams(identity, true, true);
+			groupParams.addTools(CollaborationTools.TOOL_CALENDAR);
+			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(groupParams, null, 0, -1);
+			for(BusinessGroup group:groups) {
+				String calendarId = group.getKey().toString();
+				CalendarKey key = new CalendarKey(CalendarManager.TYPE_GROUP, calendarId);
+				CalendarUserConfiguration calendarConfig = configMap.get(key);
+				if(calendarConfig == null || calendarConfig.isInAggregatedFeed()) {
+					File iCalFile = calendarManager.getCalendarICalFile(CalendarManager.TYPE_GROUP, calendarId);
+					if(iCalFile != null) {
+						aggregatedFiles.add(new CalendarFileInfos(calendarId, CalendarManager.TYPE_GROUP, iCalFile));
+					}
+				}
+			}
+		}
+		
+		if(calendarModule.isEnableCourseElementCalendar() || calendarModule.isEnableCourseToolCalendar()) {
+			List<Object[]> resources =  getCourses(identity);
+			for(Object[] resource:resources) {
+				RepositoryEntry courseEntry = (RepositoryEntry)resource[0];
+				String calendarId = courseEntry.getKey().toString();
+				CalendarKey key = new CalendarKey(CalendarManager.TYPE_COURSE, calendarId);
+				CalendarUserConfiguration calendarConfig = configMap.get(key);
+				if(calendarConfig == null || calendarConfig.isInAggregatedFeed()) {
+					File iCalFile = calendarManager.getCalendarICalFile(CalendarManager.TYPE_COURSE, calendarId);
+					if(iCalFile != null) {
+						aggregatedFiles.add(new CalendarFileInfos(calendarId, CalendarManager.TYPE_COURSE, iCalFile));
+					}
+				}
+			}
+		}
+		
+		return aggregatedFiles;
+	}
+	
+	@Override
+	public List<KalendarRenderWrapper> getListOfCalendarWrappers(UserRequest ureq, WindowControl wControl) {
 		if(!calendarModule.isEnabled()) {
 			return new ArrayList<KalendarRenderWrapper>();
 		}
 		
+		Identity identity = ureq.getIdentity();
+		
 		List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
-		appendPersonalCalendar(ureq, calendars);
-		appendGroupCalendars(ureq, calendars);
-		appendCourseCalendars(ureq, wControl, calendars);
+		Map<CalendarKey,CalendarUserConfiguration> configMap = calendarManager
+				.getCalendarUserConfigurationsMap(ureq.getIdentity());
+		appendPersonalCalendar(identity, calendars, configMap);
+		appendGroupCalendars(identity, calendars, configMap);
+		appendCourseCalendars(ureq, wControl, calendars, configMap);
+		
+		//reload every hour
+		List<KalendarRenderWrapper> importedCalendars = importCalendarManager.getImportedCalendarsForIdentity(identity, true);
+		for(KalendarRenderWrapper importedCalendar:importedCalendars) {
+			importedCalendar.setPrivateEventsVisible(true);
+		}
+		
+		calendars.addAll(importedCalendars);
 		return calendars;
 	}
 	
-	private void appendPersonalCalendar(UserRequest ureq, List<KalendarRenderWrapper> calendars) {
+	private void appendPersonalCalendar(Identity identity, List<KalendarRenderWrapper> calendars,
+			Map<CalendarKey,CalendarUserConfiguration> configMap) {
 		// get the personal calendar
-		CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
 		if(calendarModule.isEnablePersonalCalendar()) {
-			KalendarRenderWrapper calendarWrapper = calendarManager.getPersonalCalendar(ureq.getIdentity());
+			KalendarRenderWrapper calendarWrapper = calendarManager.getPersonalCalendar(identity);
 			calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
-			KalendarConfig personalKalendarConfig = calendarManager.findKalendarConfigForIdentity(calendarWrapper.getKalendar(), ureq);
-			if (personalKalendarConfig != null) {
-				calendarWrapper.getKalendarConfig().setCss(personalKalendarConfig.getCss());
-				calendarWrapper.getKalendarConfig().setVis(personalKalendarConfig.isVis());
+			calendarWrapper.setPrivateEventsVisible(true);
+			CalendarUserConfiguration config = configMap.get(calendarWrapper.getCalendarKey());
+			if (config != null) {
+				calendarWrapper.setConfiguration(config);
 			}
 			calendars.add(calendarWrapper);
 		}
 	}
 	
-	private void appendGroupCalendars(UserRequest ureq, List<KalendarRenderWrapper> calendars) {
+	private void appendGroupCalendars(Identity identity, List<KalendarRenderWrapper> calendars,
+			Map<CalendarKey,CalendarUserConfiguration> configMap) {
 		// get group calendars
 		if(calendarModule.isEnableGroupCalendar()) {
-			SearchBusinessGroupParams groupParams = new SearchBusinessGroupParams(ureq.getIdentity(), true, false);
+			SearchBusinessGroupParams groupParams = new SearchBusinessGroupParams(identity, true, false);
 			groupParams.addTools(CollaborationTools.TOOL_CALENDAR);
 			List<BusinessGroup> ownerGroups = businessGroupService.findBusinessGroups(groupParams, null, 0, -1);
-			addCalendars(ureq, ownerGroups, true, calendars);
+			addCalendars(ownerGroups, true, calendars, configMap);
 			
-			SearchBusinessGroupParams groupParams2 = new SearchBusinessGroupParams(ureq.getIdentity(), false, true);
+			SearchBusinessGroupParams groupParams2 = new SearchBusinessGroupParams(identity, false, true);
 			groupParams2.addTools(CollaborationTools.TOOL_CALENDAR);
 			List<BusinessGroup> attendedGroups = businessGroupService.findBusinessGroups(groupParams2, null, 0, -1);
 			attendedGroups.removeAll(ownerGroups);
-			addCalendars(ureq, attendedGroups, false, calendars);
+			addCalendars(attendedGroups, false, calendars, configMap);
 		}
 	}
 
-	private void appendCourseCalendars(UserRequest ureq, WindowControl wControl, List<KalendarRenderWrapper> calendars) {
+	private void appendCourseCalendars(UserRequest ureq, WindowControl wControl, List<KalendarRenderWrapper> calendars,
+			Map<CalendarKey,CalendarUserConfiguration> configMap) {
 		if(calendarModule.isEnableCourseElementCalendar() || calendarModule.isEnableCourseToolCalendar()) {
-			CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
 			
 			// add course calendars
 			List<Object[]> resources = getCourses(ureq.getIdentity());
@@ -155,18 +234,15 @@ public class HomeCalendarManager {
 							courseCalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
 						}
 						
-						KalendarConfig courseKalendarConfig = calendarManager.findKalendarConfigForIdentity(courseCalendarWrapper.getKalendar(), ureq);
-						if (courseKalendarConfig != null) {
-							courseCalendarWrapper.getKalendarConfig().setCss(courseKalendarConfig.getCss());
-							courseCalendarWrapper.getKalendarConfig().setVis(courseKalendarConfig.isVis());
+						CalendarUserConfiguration config = configMap.get(courseCalendarWrapper.getCalendarKey());
+						if (config != null) {
+							courseCalendarWrapper.setConfiguration(config);
 						}
 						courseCalendarWrapper.setLinkProvider(new CourseLinkProviderController(course, Collections.singletonList(course), ureq, wControl));
 						calendars.add(courseCalendarWrapper);
 					}
 				} catch (CorruptedCourseException e) {
 					OLATResource olatResource = courseEntry.getOlatResource();
-					
-					
 					log.error("Corrupted course: " + olatResource.getResourceableTypeName() + " :: " + courseResourceableID, null);
 				}
 			}
@@ -232,11 +308,13 @@ public class HomeCalendarManager {
 	 * @param isOwner
 	 * @param calendars
 	 */
-	private void addCalendars(UserRequest ureq, List<BusinessGroup> groups, boolean isOwner, List<KalendarRenderWrapper> calendars) {
-		CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
+	private void addCalendars(List<BusinessGroup> groups, boolean isOwner,
+			List<KalendarRenderWrapper> calendars, Map<CalendarKey,CalendarUserConfiguration> configMap) {
+		
 		Map<Long,Long> groupKeyToAccess = CoreSpringFactory.getImpl(CollaborationManager.class).lookupCalendarAccess(groups);
 		for (BusinessGroup bGroup:groups) {
 			KalendarRenderWrapper groupCalendarWrapper = calendarManager.getGroupCalendar(bGroup);
+			groupCalendarWrapper.setPrivateEventsVisible(true);
 			// set calendar access
 			int iCalAccess = CollaborationTools.CALENDAR_ACCESS_OWNERS;
 			Long lCalAccess = groupKeyToAccess.get(bGroup.getKey());
@@ -248,18 +326,12 @@ public class HomeCalendarManager {
 			} else {
 				groupCalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
 			}
-			KalendarConfig groupKalendarConfig = calendarManager.findKalendarConfigForIdentity(groupCalendarWrapper.getKalendar(), ureq);
-			if (groupKalendarConfig != null) {
-				groupCalendarWrapper.getKalendarConfig().setCss(groupKalendarConfig.getCss());
-				groupCalendarWrapper.getKalendarConfig().setVis(groupKalendarConfig.isVis());
+			CalendarUserConfiguration config = configMap.get(groupCalendarWrapper.getCalendarKey());
+			if (config != null) {
+				groupCalendarWrapper.setConfiguration(config);
 			}
 			calendars.add(groupCalendarWrapper);
 		}
-	}
-	
-	public List<KalendarRenderWrapper> getListOfImportedCalendarWrappers(UserRequest ureq) {
-		ImportCalendarManager.reloadUrlImportedCalendars(ureq);
-		return ImportCalendarManager.getImportedCalendarsForIdentity(ureq);
 	}
 	
 	private static class CalCourseNodeVisitor implements Visitor {
@@ -276,5 +348,4 @@ public class HomeCalendarManager {
 			}
 		}
 	}
-
 }

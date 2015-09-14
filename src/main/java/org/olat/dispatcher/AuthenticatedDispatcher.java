@@ -26,6 +26,8 @@
 package org.olat.dispatcher;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
@@ -44,13 +46,17 @@ import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.form.flexible.impl.InvalidRequestParameterException;
 import org.olat.core.gui.control.ChiefController;
+import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.exception.MsgFactory;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.SessionInfo;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.URIHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.i18n.I18nManager;
@@ -97,6 +103,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 		if ( log.isDebug() ) {
 			startExecute = System.currentTimeMillis();
 		}
+		
 		UserSession usess = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(request);
 		UserRequest ureq = null;
 		try{
@@ -128,7 +135,15 @@ public class AuthenticatedDispatcher implements Dispatcher {
 			}
 			String guestAccess = ureq.getParameter(GUEST);
 			if (guestAccess == null || !CoreSpringFactory.getImpl(LoginModule.class).isGuestLoginEnabled()) {
-				DispatcherModule.redirectToDefaultDispatcher(response);
+				if(ServletUtil.acceptJson(request)) {
+					try {//TODO xhr
+						response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+					} catch (IOException e) {
+						log.error("", e);
+					}
+				} else {
+					DispatcherModule.redirectToDefaultDispatcher(response);
+				}
 				return;
 			} else if (guestAccess.equals(TRUE)) {
 				// try to log in as anonymous
@@ -200,7 +215,22 @@ public class AuthenticatedDispatcher implements Dispatcher {
 					// valid uri for dispatching (has timestamp, componentid and windowid)
 					processValidDispatchURI(ureq, usess, request, response);
 				} else {
-					log.error("Invalid URI in AuthenticatedDispatcher: " + request.getRequestURI());
+					
+					final String origUri = request.getRequestURI();
+					String restPart = origUri.substring(uriPrefix.length());
+					try {
+						restPart = URLDecoder.decode(restPart, "UTF8");
+					} catch (UnsupportedEncodingException e) {
+						log.error("Unsupported encoding", e);
+					}
+					
+					String[] split = restPart.split("/");
+					if (split.length > 0 && split.length % 2 == 0) {
+						businessPath = BusinessControlFactory.getInstance().formatFromURI(restPart);
+						processBusinessPath(businessPath, ureq, usess);
+					} else {
+						log.error("Invalid URI in AuthenticatedDispatcher: " + request.getRequestURI());
+					}
 				}
 			}
 		} catch (InvalidRequestParameterException e) {
@@ -252,20 +282,29 @@ public class AuthenticatedDispatcher implements Dispatcher {
 	}
 	
 	private void processBusinessPath(String businessPath, UserRequest ureq, UserSession usess) {
-		BusinessControl bc = BusinessControlFactory.getInstance().createFromString(businessPath);
-		ChiefController cc = Windows.getWindows(usess).getChiefController();
-		WindowControl wControl = cc.getWindowControl();
+		WindowBackOffice windowBackOffice = Windows.getWindows(usess).getChiefController().getWindow().getWindowBackOffice();
 
 		String wSettings = (String) usess.removeEntryFromNonClearedStore(WINDOW_SETTINGS);
 		if(wSettings != null) {
 			WindowSettings settings = WindowSettings.parse(wSettings);
-			wControl.getWindowBackOffice().setWindowSettings(settings);
+			windowBackOffice.setWindowSettings(settings);
+		}
+		
+		BusinessControl bc = null;
+		String historyPointId = ureq.getHttpReq().getParameter("historyPointId");
+		if(StringHelper.containsNonWhitespace(historyPointId)) {
+			HistoryPoint point = ureq.getUserSession().getHistoryPoint(historyPointId);
+			bc = BusinessControlFactory.getInstance().createFromContextEntries(point.getEntries());
+		}
+		if(bc == null) {
+			bc = BusinessControlFactory.getInstance().createFromString(businessPath);
 		}
 
+		WindowControl wControl = windowBackOffice.getChiefController().getWindowControl();
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, wControl);
 		NewControllerFactory.getInstance().launch(ureq, bwControl);	
 		// render the window
-		Window w = cc.getWindow();
+		Window w = windowBackOffice.getWindow();
 		w.dispatchRequest(ureq, true); // renderOnly
 	}
 }

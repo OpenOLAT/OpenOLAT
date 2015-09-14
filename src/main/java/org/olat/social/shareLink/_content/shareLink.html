@@ -83,7 +83,7 @@
 	#end
 	## always show the 'set as landing page' button
 	#if ($isUser)
-	<a id="o_landingpage" href="$r.commandURIbg("setLandingPage")" $r.bgTarget() title="$r.translateInAttribute("landingpage.set.current")">
+	<a id="o_landingpage" $r.hrefAndOnclick("setLandingPage", false, false) title="$r.translateInAttribute("landingpage.set.current")">
 		<i class="o_icon o_icon_landingpage o_icon-lg"></i>
 	</a>
 	#end

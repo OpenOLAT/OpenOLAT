@@ -60,7 +60,6 @@ public class LifecycleMetadataController extends FormBasicController  {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("lifecycle");
-		setFormContextHelp("org.olat.modules.qpool.ui.metadata", "lifecycle.html", "help.hover.lifecycle");
 		if(edit) {
 			editLink = uifactory.addFormLink("edit", "edit", null, formLayout, Link.BUTTON_XSMALL);
 			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");

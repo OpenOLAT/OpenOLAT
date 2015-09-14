@@ -27,51 +27,45 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.ICourse;
 import org.olat.course.db.CourseDBEntry;
 import org.olat.course.db.CourseDBManager;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * 
  * Description:<br>
- * TODO: srosse Class Description for CourseDBManagerImpl
+ * Manage the key value pairs for the course DB.
  * 
  * <P>
  * Initial Date:  7 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-public class CourseDBManagerImpl extends CourseDBManager implements GenericEventListener {
+@Service("courseDBManager")
+public class CourseDBManagerImpl extends AbstractSpringModule implements CourseDBManager, GenericEventListener {
 	
 	private static final String ENABLED = "enabled";
+	
+	@Value("${course.db.enabled:true}")
 	private boolean enabled;
 	
+	@Autowired
 	private DB dbInstance;
+	@Autowired
 	private RepositoryManager repositoryManager;
 	
-	public CourseDBManagerImpl() {
-		//
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param dbInstance
-	 */
-	public void setDbInstance(DB dbInstance) {
-		this.dbInstance = dbInstance;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param repositoryManager
-	 */
-	public void setRepositoryManager(RepositoryManager repositoryManager) {
-		this.repositoryManager = repositoryManager;
+	@Autowired
+	public CourseDBManagerImpl(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
 	}
 
 	@Override
@@ -84,18 +78,8 @@ public class CourseDBManagerImpl extends CourseDBManager implements GenericEvent
 	}
 
 	@Override
-	protected void initDefaultProperties() {
-		enabled = getBooleanConfigParameter("enabled", false);
-	}
-
-	@Override
 	protected void initFromChangedProperties() {
 		init();
-	}
-	
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
 	}
 
 	@Override

@@ -31,11 +31,17 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+
+import org.olat.commons.calendar.model.Kalendar;
+import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.model.KalendarRecurEvent;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 
 import net.fortuna.ical4j.model.DateList;
 import net.fortuna.ical4j.model.DateTime;
@@ -45,13 +51,6 @@ import net.fortuna.ical4j.model.WeekDayList;
 import net.fortuna.ical4j.model.parameter.Value;
 import net.fortuna.ical4j.model.property.ExDate;
 import net.fortuna.ical4j.model.property.RRule;
-
-import org.olat.commons.calendar.model.Kalendar;
-import org.olat.commons.calendar.model.KalendarEvent;
-import org.olat.commons.calendar.model.KalendarRecurEvent;
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 
 public class CalendarUtils {
 	private static final OLog log = Tracing.createLoggerFor(CalendarUtils.class);
@@ -82,18 +81,6 @@ public class CalendarUtils {
 		return cal;
 	}	
 	
-	public static Calendar getStartOfWeekCalendar(int year, int weekOfYear, Locale locale) {
-		Calendar cal = createCalendarInstance(locale);
-		cal.clear();
-		cal.set(Calendar.YEAR, year);
-		cal.set(Calendar.WEEK_OF_YEAR, weekOfYear);
-		cal.set(Calendar.HOUR_OF_DAY, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		return cal;
-	}
-	
 	public static Calendar getStartOfDayCalendar(Locale locale) {
 		Calendar cal = createCalendarInstance(locale);
 		cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -102,65 +89,8 @@ public class CalendarUtils {
 		cal.set(Calendar.MILLISECOND, 0);
 		return cal;
 	}
-
-	/**
-	 * Find all events in this calendar with the given subject.
-	 * 
-	 * @param calendar
-	 * @param subject
-	 * @return
-	 */
-	public static List<KalendarEvent> findEvents(Kalendar calendar, String subject, String location, Date beginPeriod, Date endPeriod, boolean publicOnly) {
-		List<KalendarEvent> results = new ArrayList<KalendarEvent>();
-		Collection<KalendarEvent> events = calendar.getEvents();
-		String regExSubject = subject.replace("*", ".*");
-		String regExLocation  = location.replace("*", ".*");
-		regExSubject = ".*" + regExSubject + ".*";
-		regExLocation = ".*" + regExLocation + ".*";
-		for (Iterator<KalendarEvent> iter = events.iterator(); iter.hasNext();) {
-			KalendarEvent event = iter.next();
-			if (publicOnly && event.getClassification() != KalendarEvent.CLASS_PUBLIC) continue;
-			if (beginPeriod != null && event.getBegin().before(beginPeriod)) continue;
-			if (endPeriod != null && event.getEnd().after(endPeriod)) continue;
-			String eventSubject =  event.getSubject().toLowerCase();
-			eventSubject = eventSubject.replace("\n", " ");
-			eventSubject = eventSubject.replace("\r", " ");
-			if ( (subject != null) && !subject.trim().isEmpty() && !eventSubject.matches(regExSubject.toLowerCase())) {
-				log.debug("Does not add event because subject did not match eventSubject=" + eventSubject + "  regExSubject=" + regExSubject);
-				continue;
-			}
-			if ( (location != null) && !location.trim().isEmpty() && (event.getLocation() != null) ) {
-				String eventLocation =  event.getLocation().toLowerCase();
-				eventLocation = eventLocation.replace("\n", " ");
-				eventLocation = eventLocation.replace("\r", " ");
-				if ( !eventLocation.matches(regExLocation.toLowerCase()) ) {
-					log.debug("Does not add event because subject did not match eventLocation=" + eventLocation + "  regExLocation=" + regExLocation);
-					continue;
-				}
-			}
-			log.debug("add to results event.Location=" + event.getLocation() + " ,Subject=" + event.getSubject());
-			results.add(event);
-			CalendarManager cm = CalendarManagerFactory.getInstance().getCalendarManager();
-			Date periodStart = beginPeriod == null ? event.getBegin() : beginPeriod;
-			long year = 60 * 60 * 24 * 365 * 1000;
-			Date periodEnd = endPeriod == null ? new Date(periodStart.getTime() + year) : endPeriod;
-			List<KalendarRecurEvent> lstEvnt = cm.getRecurringDatesInPeriod(periodStart, periodEnd, event);
-			for ( KalendarRecurEvent recurEvent : lstEvnt ) {
-				if (publicOnly && event.getClassification() != KalendarEvent.CLASS_PUBLIC) continue;
-				if (beginPeriod != null && event.getBegin().before(beginPeriod)) continue;
-				if (endPeriod != null && event.getEnd().after(endPeriod)) continue;
-				if (subject != null && !event.getSubject().matches(regExSubject)) continue;
-				if (location != null && !event.getLocation().matches(regExLocation)) continue;
-				if ((subject != null) && !subject.trim().isEmpty() && !event.getSubject().toLowerCase().matches(regExSubject.toLowerCase())) continue;
-				if ((location != null) && !location.trim().isEmpty() && !event.getLocation().toLowerCase().matches(regExLocation.toLowerCase())) continue;
-				results.add(recurEvent);
-			}
-		}
-		Collections.sort(results);
-		return results;
-	}
 	
-	protected static DateList getRecurringsInPeriod(Date periodStart, Date periodEnd, KalendarEvent kEvent) {
+	public static DateList getRecurringsInPeriod(Date periodStart, Date periodEnd, KalendarEvent kEvent) {
 		DateList recurDates = null;
 			String recurrenceRule = kEvent.getRecurrenceRule();
 			if(recurrenceRule != null && !recurrenceRule.equals("")) {
@@ -257,10 +187,10 @@ public class CalendarUtils {
 	
 	public static List<KalendarEvent> listEventsForPeriod(Kalendar calendar, Date periodStart, Date periodEnd) {
 		List<KalendarEvent> periodEvents = new ArrayList<KalendarEvent>();
+		CalendarManager cm = CoreSpringFactory.getImpl(CalendarManager.class);
 		Collection<KalendarEvent> events = calendar.getEvents();
 		for (Iterator<KalendarEvent> iter = events.iterator(); iter.hasNext();) {
 			KalendarEvent event = iter.next();
-			CalendarManager cm = CalendarManagerFactory.getInstance().getCalendarManager();
 			List<KalendarRecurEvent> lstEvnt = cm.getRecurringDatesInPeriod(periodStart, periodEnd, event);
 			for ( KalendarRecurEvent recurEvent : lstEvnt ) {
 				periodEvents.add(recurEvent);
@@ -436,7 +366,5 @@ public class CalendarUtils {
 		cal.set(Calendar.SECOND, 0);  
 		cal.set(Calendar.MILLISECOND, 0);  
 		return cal.getTime();
-		
-		
 	}
 }

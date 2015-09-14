@@ -63,9 +63,6 @@ import org.springframework.core.io.Resource;
 public class Settings implements Initializable, Destroyable, GenericEventListener {
 
 	private static boolean debug = false;
-	private static boolean allowLoadtestMode = false;
-	private static boolean readOnlyDebug = false;
-	private static boolean ajaxGloballyOnBoolean = false;
 	private static String guiThemeIdentifyer = "light";
 	private static String htmlEditorContentCssClassPrefixes;
 	private static List<Pattern> ajaxBlacklistPatterns = new ArrayList<Pattern>();
@@ -102,7 +99,7 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 	// fxdiff: only set build id from build date if none is provided in olat.local.properties!
 	private static void setBuildIdFromBuildDate() {
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
-		buildIdentifier = formatter.format(buildDate);
+		buildIdentifier = formatter.format(getBuildDate());
 	}
 	
 	// fxdiff: only set build date 
@@ -163,55 +160,6 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 	 */
 	public static boolean isDebuging() {
 		return debug;
-	}
-
-	/**
-	 * @return if ajax mode is system-wide enabled or not
-	 */
-	public static boolean isAjaxGloballyOn() {
-		return ajaxGloballyOnBoolean;
-	}
-
-
-	public static boolean isAllowLoadtestMode() {
-		return allowLoadtestMode;
-	}
-	
-	/**
-	 * [spring]
-	 * @param allowLoadtestMode
-	 */
-	public void setAllowLoadtestMode(boolean allowLoadtestMode) {
-		Settings.allowLoadtestMode = allowLoadtestMode;
-	}
-	
-	public static boolean isReadOnlyDebug() {
-		return readOnlyDebug;
-	}
-
-	/**
-	 * [spring]
-	 * @param readOnlyDebug
-	 */
-	public void setReadOnlyDebug(boolean readOnlyDebug) {
-		Settings.readOnlyDebug = readOnlyDebug;
-	}
-	
-	/**
-	 * affects only new usersessions
-	 * [spring]
-	 * @param 
-	 */
-	public void setAjaxGloballyOn(boolean ajaxGloballyOn) {
-		Settings.ajaxGloballyOnBoolean = ajaxGloballyOn;
-	}
-	
-	/**
-	 * for direct static access from code
-	 * @param ajaxGloballyOn
-	 */
-	public static void setAjaxGloballyEnabled(boolean ajaxGloballyOn) {
-		Settings.ajaxGloballyOnBoolean = ajaxGloballyOn;
 	}
 
 	/**

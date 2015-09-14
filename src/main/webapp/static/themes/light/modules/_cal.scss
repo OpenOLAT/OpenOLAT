@@ -27,6 +27,10 @@
 .o_cal_grey .o_cal_wv_event_header {background: #5D5D5D;}
 .o_cal_grey a { color: #FFF ! important; }
 
+.o_sel_calendar_print_chooser {
+	padding-right:4em;
+}
+
 .o_cal_config_enabled, .o_cal_config_disabled {
 	position: relative;
 	float: left; display: inline;
@@ -40,6 +44,13 @@
 	overflow: hidden;
 	float: left;
 	display: inline;
+}
+
+.o_cal_config_color {
+	display: block;
+	width: 16px;
+	height: 16px;
+	border-radius:8px;
 }
 
 .o_cal_colorchooser_selected:before {

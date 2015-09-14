@@ -8,11 +8,10 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context.xsd">
   
-	<context:component-scan base-package="org.olat.core.dispatcher.mapper,org.olat.core.commons.controllers.impressum,org.olat.core.gui.render.velocity" />
+	<context:component-scan base-package="org.olat.core.dispatcher.mapper,org.olat.core.id.context,org.olat.core.commons.controllers.impressum,org.olat.core.gui.render.velocity" />
 
 	<bean id="coreSpringFactory" class="org.olat.core.CoreSpringFactory" />
 	
-	<import resource="classpath:/org/olat/core/id/context/_spring/historyCorecontext.xml"/>
 	<import resource="classpath:/org/olat/core/util/vfs/version/_spring/versioningCorecontext.xml"/>
 	<import resource="classpath:/org/olat/core/util/i18n/_spring/i18nCorecontext.xml"/>
 	<import resource="classpath:/org/olat/core/util/_spring/utilCorecontext.xml"/>

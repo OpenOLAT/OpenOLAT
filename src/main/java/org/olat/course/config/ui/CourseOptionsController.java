@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarModule;
-import org.olat.commons.calendar.ui.events.KalendarModifiedEvent;
+import org.olat.commons.calendar.ui.events.CalendarGUIModifiedEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -362,7 +362,7 @@ public class CourseOptionsController extends FormBasicController {
 
 			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
 	        CoordinatorManager.getInstance().getCoordinator().getEventBus()
-	        	.fireEventToListenersOf(new KalendarModifiedEvent(), OresHelper.lookupType(CalendarManager.class));
+	        	.fireEventToListenersOf(new CalendarGUIModifiedEvent(), OresHelper.lookupType(CalendarManager.class));
 	        CoordinatorManager.getInstance().getCoordinator().getEventBus()
 	        	.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.calendar, course.getResourceableId()), course);
 		}

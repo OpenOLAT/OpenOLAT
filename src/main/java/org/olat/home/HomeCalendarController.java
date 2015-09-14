@@ -30,7 +30,7 @@ import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.ui.CalendarController;
 import org.olat.commons.calendar.ui.WeeklyCalendarController;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
-import org.olat.commons.calendar.ui.events.KalendarModifiedEvent;
+import org.olat.commons.calendar.ui.events.CalendarGUIModifiedEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -62,8 +62,8 @@ public class HomeCalendarController extends BasicController implements Activatea
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), OresHelper.lookupType(CalendarManager.class));
 		
 		List<KalendarRenderWrapper> calendars = homeCalendarManager.getListOfCalendarWrappers(ureq, windowControl);
-		List<KalendarRenderWrapper> importedCalendars = homeCalendarManager.getListOfImportedCalendarWrappers(ureq);
-		calendarController = new WeeklyCalendarController(ureq, windowControl, calendars, importedCalendars, WeeklyCalendarController.CALLER_HOME, false);
+		calendarController = new WeeklyCalendarController(ureq, windowControl, calendars,
+				WeeklyCalendarController.CALLER_HOME, true);
 		listenTo(calendarController);
 
 		putInitialPanel(calendarController.getInitialComponent());
@@ -83,10 +83,9 @@ public class HomeCalendarController extends BasicController implements Activatea
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (event instanceof KalendarModifiedEvent) {
+		if (event instanceof CalendarGUIModifiedEvent) {
 			List<KalendarRenderWrapper> calendars = homeCalendarManager.getListOfCalendarWrappers(ureq, getWindowControl());
-			List<KalendarRenderWrapper> importedCalendars = homeCalendarManager.getListOfImportedCalendarWrappers(ureq);
-			calendarController.setCalendars(calendars, importedCalendars);
+			calendarController.setCalendars(calendars);
 		}
 		super.event(ureq, source, event);
 	}
@@ -100,7 +99,7 @@ public class HomeCalendarController extends BasicController implements Activatea
 
 	@Override
 	public void event(Event event) {
-		if (event instanceof KalendarModifiedEvent) {
+		if (event instanceof CalendarGUIModifiedEvent) {
 			if (calendarController != null) {
 				// could theoretically be disposed 
 				calendarController.setDirty();

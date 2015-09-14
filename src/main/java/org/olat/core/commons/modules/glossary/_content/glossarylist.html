@@ -50,20 +50,12 @@
 					<div class="o_meta">
 					#if($glossaryItem.hasAuthor())
 						<span class="o_author">$r.translate("glossary.item.published.by")
-						#if($glossaryItem.authorCmd)
-							<a href="$r.commandURI($glossaryItem.authorCmd)" target="o_glossary_profil" onclick="return o2cl()">$r.escapeHtml($glossaryItem.authorName)</a>
-						#else
-							<a href="$glossaryItem.authorLink" class="">$r.escapeHtml($glossaryItem.authorName)</a>#end
-							${glossaryItem.creationDate}
-							#if($glossaryItem.hasModifier()), #end</span>
+						<a $r.hrefAndOnclick($glossaryItem.authorCmd,true,true)>$r.escapeHtml($glossaryItem.authorName)</a>
+						${glossaryItem.creationDate} #if($glossaryItem.hasModifier()), #end</span>
 					#end
 					#if($glossaryItem.hasModifier())
 						<span class="o_modifier">$r.translate("glossary.item.modified.by.on")
-						#if($glossaryItem.modifierCmd)
-							<a href="$r.commandURI($glossaryItem.modifierCmd)" target="o_glossary_profil" onclick="return o2cl()" >$r.escapeHtml($glossaryItem.modifierName)</a>
-						#else
-							<a href="$glossaryItem.modifierLink" class="">$r.escapeHtml($glossaryItem.modifierName)</a>
-						#end
+						<a $r.hrefAndOnclick($glossaryItem.modifierCmd,true,true)>$r.escapeHtml($glossaryItem.modifierName)</a>
 						$glossaryItem.lastModificationDate</span>
 					#end
 					</div>

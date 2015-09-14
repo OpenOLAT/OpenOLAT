@@ -108,14 +108,18 @@ public class SortableFlexiTableModelDelegate<T> {
 		return collator == null ? a.compareTo(b) : collator.compare(a, b);
 	}
 
-	protected int compareBooleans(final Boolean a, final Boolean b) {
+	protected final int compareBooleans(final Boolean a, final Boolean b) {
 		if (a == null || b == null) {
 			return compareNullObjects(a, b);
 		}
 		
 		boolean ba = a.booleanValue();
 		boolean bb = b.booleanValue();
-		return ba? (bb? 0: -1):(bb? 1: 0);
+		return compareBooleans(ba, bb);
+	}
+	
+	protected final int compareBooleans(final boolean a, final boolean b) {
+		return a? (b? 0: -1):(b? 1: 0);
 	}
 	
 	protected int compareDateAndTimestamps(Date a, Date b) {

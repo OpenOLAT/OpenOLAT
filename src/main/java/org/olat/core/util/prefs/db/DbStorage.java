@@ -55,7 +55,10 @@ public class DbStorage implements PreferencesStorage {
 
 	static final String USER_PROPERTY_KEY = "v2guipreferences";
 	
-	private XStream xstream = XStreamHelper.createXStreamInstance();
+	private static final XStream xstream = XStreamHelper.createXStreamInstance();
+	static {
+		xstream.ignoreUnknownElements();
+	}
 
 	@Override
 	public Preferences getPreferencesFor(Identity identity, boolean useTransientPreferences) {

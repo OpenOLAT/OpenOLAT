@@ -45,7 +45,6 @@ import org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.ChiefController;
@@ -139,7 +138,7 @@ public class AuthHelper {
 	
 		// redirect to AuthenticatedDispatcher
 		// IMPORTANT: windowID has changed due to re-registering current window -> do not use ureq.getWindowID() to build new URLBuilder.
-		URLBuilder ubu = new URLBuilder(WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED, currentWindow.getInstanceId(), "1", null);	
+		URLBuilder ubu = new URLBuilder(WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED, currentWindow.getInstanceId(), "1");	
 		StringOutput sout = new StringOutput(30);
 		ubu.buildURI(sout, null, null);
 		ureq.getDispatchResult().setResultingMediaResource(new RedirectMediaResource(sout.toString()));
@@ -333,7 +332,7 @@ public class AuthHelper {
 		//confirm signedOn
 		sessionManager.signOn(usess);
 		// set users web delivery mode
-		setAjaxModeFor(ureq);
+		Windows.getWindows(ureq).getWindowManager().setAjaxWanted(ureq);
 		// update web delivery mode in session info
 		usess.getSessionInfo().setWebModeFromUreq(ureq);
 		return LOGIN_OK;
@@ -395,29 +394,12 @@ public class AuthHelper {
 		if(cookie!=null) {
 			//A zero value causes the cookie to be deleted.
 			cookie.setMaxAge(0);
-			//cookie.setMaxAge(-1); //TODO: LD: check this out as well
 			cookie.setPath("/");
 			ureq.getHttpResp().addCookie(cookie);					
 			if(log.isDebug()) {
 				log.info("AuthHelper - shibsession cookie deleted");
 			}					
 		}
-	}
-
-	/**
-	 * Set AJAX / Web 2.0 based on User GUI-Preferences and configuration.
-	 * If the "ajax feature" checkbox in the user settings is enabled, turn on ajax (do not care about which browser)
-	 * @param ureq
-	 */
-	private static void setAjaxModeFor(UserRequest ureq) {
-		Boolean ajaxOn = (Boolean) ureq.getUserSession().getGuiPreferences().get(WindowManager.class, "ajax-beta-on");
-		//if user does not have an gui preference it will be only enabled if globally on and browser is capable
-		if (ajaxOn != null) {
-			Windows.getWindows(ureq).getWindowManager().setAjaxEnabled(ajaxOn.booleanValue());
-		} else {			
-			// enable ajax if olat configured and browser matching
-			Windows.getWindows(ureq).getWindowManager().setAjaxWanted(ureq, true);
-		}		
 	}
 
 	/**

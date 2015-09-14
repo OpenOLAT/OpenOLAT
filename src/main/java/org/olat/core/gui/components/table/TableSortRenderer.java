@@ -22,6 +22,7 @@ package org.olat.core.gui.components.table;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -52,16 +53,17 @@ class TableSortRenderer extends DefaultComponentRenderer {
 
 		int cols = table.getColumnCount();
 		boolean asc = table.isSortAscending();
-		String formName = "tb_ms_" + table.hashCode();
 		ColumnDescriptor sortedCD = table.getCurrentlySortedColumnDescriptor();
 		
 		for (int i = 0; i < cols; i++) {
 			ColumnDescriptor cd = table.getColumnDescriptor(i);
 			// header either a link or not
 			if (cd.isSortingAllowed()) {
-				sb.append("<li>")
-				  .append("<a class=\"").append("\" href=\"JavaScript:tableFormInjectCommandAndSubmit('")
-				  .append(formName).append("','").append(Table.COMMAND_SORTBYCOLUMN).append("','").append(i).append("');\" title=\"")
+				sb.append("<li><a ");
+				ubu.buildHrefAndOnclick(sb, false,
+						new NameValuePair(Table.FORM_CMD, Table.COMMAND_SORTBYCOLUMN),
+						new NameValuePair(Table.FORM_PARAM, i))
+				  .append(" title=\"")
 				  .append(StringEscapeUtils.escapeHtml(translator.translate("row.sort"))).append("\">");
 				
 				if(sortedCD == cd) {

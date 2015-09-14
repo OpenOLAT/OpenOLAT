@@ -106,7 +106,7 @@ public class GUIDemoMainController extends GenericMainController {
 			
 			// for demo only, normally use in parent controller
 			c.addControllerListener(new ControllerEventListener() {
-				public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
+				public void dispatchEvent(UserRequest uureq, Controller source, Event event) {
 					EntriesChosenEvent ece = (EntriesChosenEvent) event;
 					String sel = ece.getEntries().toString();
 					getWindowControl().setInfo("selected entrie(s):"+sel);

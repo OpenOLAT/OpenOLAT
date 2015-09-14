@@ -24,7 +24,7 @@ import java.util.Date;
 
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarUtils;
-import org.olat.commons.calendar.ui.events.KalendarGUIPrintEvent;
+import org.olat.commons.calendar.ui.events.CalendarGUIPrintEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -65,6 +65,7 @@ public class CalendarPrintController extends FormBasicController {
 		Date end = cal.getTime();
 		
 		setFormDescription("cal.print.desc");
+		formLayout.setElementCssClass("o_sel_calendar_print_chooser");
 
 		fromEl = uifactory.addDateChooser("cal.from", start, formLayout);
 		toEl = uifactory.addDateChooser("cal.to", end, formLayout);
@@ -81,7 +82,7 @@ public class CalendarPrintController extends FormBasicController {
 		if(source == printButton) {
 			Date from = fromEl.getDate();
 			Date to = toEl.getDate();
-			fireEvent(ureq, new KalendarGUIPrintEvent(from, to));
+			fireEvent(ureq, new CalendarGUIPrintEvent(from, to));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

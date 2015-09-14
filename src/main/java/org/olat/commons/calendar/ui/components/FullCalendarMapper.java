@@ -116,18 +116,24 @@ public class FullCalendarMapper implements Mapper {
 	}
 	
 	private void collectKalendarEvents(JSONArray ja, String calendarId, Date from, Date to) throws JSONException {
-		KalendarRenderWrapper cal =  fcC.getKalendarRenderWrapper(calendarId);
+		KalendarRenderWrapper cal =  fcC.getCalendar(calendarId);
 		if(cal != null) {
+			boolean privateEventsVisible = cal.isPrivateEventsVisible();
 			for(KalendarEvent event:cal.getKalendar().getEvents()) {
+				if(!privateEventsVisible && event.getClassification() == KalendarEvent.CLASS_PRIVATE) {
+					continue;
+				}
+				
+				boolean timeOnly = !privateEventsVisible && event.getClassification() == KalendarEvent.CLASS_X_FREEBUSY;
 				if(isInRange(from, to, event)) {
-					JSONObject jsonEvent = getJSONEvent(event, cal);
+					JSONObject jsonEvent = getJSONEvent(event, cal, timeOnly);
 					ja.put(jsonEvent);
 				}
 				if (StringHelper.containsNonWhitespace(event.getRecurrenceRule())) {
 					TimeZone tz = CoreSpringFactory.getImpl(CalendarModule.class).getDefaultTimeZone();
 					List<KalendarRecurEvent> kalList = CalendarUtils.getRecurringDatesInPeriod (from, to, event, tz);
 					for (KalendarRecurEvent recurEvent:kalList) {
-						JSONObject jsonEvent = getJSONEvent(recurEvent, cal);
+						JSONObject jsonEvent = getJSONEvent(recurEvent, cal, timeOnly);
 						ja.put(jsonEvent);
 					}
 				}
@@ -160,13 +166,18 @@ public class FullCalendarMapper implements Mapper {
 		return false;
 	}
 	
-	private JSONObject getJSONEvent(KalendarEvent event, KalendarRenderWrapper cal) throws JSONException {
+	private JSONObject getJSONEvent(KalendarEvent event, KalendarRenderWrapper cal, boolean timeOnly)
+	throws JSONException {
 		JSONObject jsonEvent = new JSONObject();
 		jsonEvent.put("id", FullCalendarComponent.normalizeId(event.getID()));
-		jsonEvent.put("title", event.getSubject());
+		if(timeOnly) {
+			jsonEvent.put("title", "");
+		} else {
+			jsonEvent.put("title", event.getSubject());
+		}
 		jsonEvent.put("allDay", new Boolean(event.isAllDayEvent()));
-		if(StringHelper.containsNonWhitespace(cal.getKalendarConfig().getCss())) {
-			jsonEvent.put("className", cal.getKalendarConfig().getCss());
+		if(StringHelper.containsNonWhitespace(cal.getCssClass())) {
+			jsonEvent.put("className", cal.getCssClass());
 		}
 		jsonEvent.put("editable", new Boolean(cal.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE));
 		if(event.getBegin() != null) {

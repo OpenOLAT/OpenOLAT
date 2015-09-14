@@ -161,16 +161,10 @@ class SpecialPrefsForm extends FormBasicController {
 
 	private Identity tobeChangedIdentity;
 	private Preferences prefs;
-	private MultipleSelectionElement prefsElement;
+	
 	private SingleSelection resumeElement;
-	private SingleSelection backElement;
 	private TextElement landingPageEl;
-	private String[] keys, values;
-	private boolean useAjaxCheckbox = false;
 	private String[] resumeKeys, resumeValues;
-	/** The keys for yes/no back. */
-	private String[] yesNoKeys;
-	private String[] yesNoValues;
 
 	@Autowired
 	private HistoryModule historyModule;
@@ -187,15 +181,6 @@ class SpecialPrefsForm extends FormBasicController {
 		} else {
 			prefs = PreferencesFactory.getInstance().getPreferencesFor(tobeChangedIdentity, false);			
 		}
-		// The ajax configuration is only for user manager (technical stuff)
-		useAjaxCheckbox = ureq.getUserSession().getRoles().isUserManager();
-		// initialize checkbox keys depending on useAjaxCheckbox flag
-		if (useAjaxCheckbox) {
-			keys = new String[]{"ajax"}; 
-			values = new String[] {
-					translate("ajaxon.label"),
-			};			
-		}
 		
 		resumeKeys = new String[]{"none", "auto", "ondemand"}; 
 		resumeValues = new String[] {
@@ -203,8 +188,7 @@ class SpecialPrefsForm extends FormBasicController {
 				translate("resume.auto"),
 				translate("resume.ondemand"),
 		};
-		yesNoKeys = new String[]{"yes", "no"}; 
-		yesNoValues = new String[] { translate("back.on"), translate("back.off") };
+
 		initForm(ureq);
 	}
 
@@ -215,20 +199,12 @@ class SpecialPrefsForm extends FormBasicController {
 			if (sessionManager.isSignedOnIdentity(tobeChangedIdentity.getKey())) {
 				String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(tobeChangedIdentity);
 				showError("error.user.logged.in",fullName);
-				prefsElement.reset();
 				return;
 			}
-		}
-
-		if (useAjaxCheckbox) {
-			prefs.put(WindowManager.class, "ajax-beta-on", prefsElement.getSelectedKeys().contains("ajax"));
 		}
 		
 		if(resumeElement != null) {
 			prefs.put(WindowManager.class, "resume-prefs", resumeElement.getSelectedKey());
-		}
-		if(backElement != null) {
-			prefs.put(WindowManager.class, "back-enabled", backElement.isSelected(0));
 		}
 		String landingPage = landingPageEl.isVisible() ? landingPageEl.getValue() : "";
 		prefs.put(WindowManager.class, "landing-page", landingPage);
@@ -259,12 +235,7 @@ class SpecialPrefsForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("title.prefs.special");
-		setFormContextHelp(this.getClass().getPackage().getName(), "home-prefs-special.html", "help.hover.home.prefs.special");
-		
-		if(keys != null) {
-			prefsElement = uifactory.addCheckboxesHorizontal("prefs", "title.prefs.accessibility", formLayout, keys, values);
-			prefsElement.setElementCssClass("o_sel_home_settings_accessibility");
-		}
+		setFormContextHelp("Configuration#_specifics");
 
 		if(historyModule.isResumeEnabled()) {
 			resumeElement = uifactory.addRadiosVertical("resume", "resume.label", formLayout, resumeKeys, resumeValues);
@@ -274,10 +245,6 @@ class SpecialPrefsForm extends FormBasicController {
 		
 		landingPageEl = uifactory.addTextElement("landingpages", "landing.pages", 256, "", formLayout);
 		
-		if(historyModule.isBackEnabled()) {
-			backElement = uifactory.addRadiosVertical("back-enabling", "back.label", formLayout, yesNoKeys, yesNoValues);
-			backElement.setElementCssClass("o_sel_home_settings_back_enabling");
-		}
 		update();
 		
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
@@ -288,10 +255,6 @@ class SpecialPrefsForm extends FormBasicController {
 	}
 
 	private void update() {
-		Boolean ajax  = (Boolean) prefs.get(WindowManager.class, "ajax-beta-on");
-		if (useAjaxCheckbox) {
-			prefsElement.select("ajax", ajax == null ? true: ajax.booleanValue());
-		}
 		boolean landingPageVisible = true;
 		if(resumeElement != null) {
 			String resumePrefs = (String)prefs.get(WindowManager.class, "resume-prefs");
@@ -309,18 +272,6 @@ class SpecialPrefsForm extends FormBasicController {
 			if(resumeElement.isOneSelected()) {
 				landingPageVisible = !resumeElement.getSelectedKey().equals("auto");
 			}
-		}
-		if(backElement != null) {
-			Boolean be = (Boolean)prefs.get(WindowManager.class, "back-enabled");
-			String selected;
-			if (be != null) {
-				selected = (be.booleanValue() ?  "yes" : "no");
-			}
-			else {
-				selected = (historyModule.isBackDefaultSetting() ?  "yes" : "no");
-			}
-
-			backElement.select(selected, true);
 		}
 
 		String landingPage = (String)prefs.get(WindowManager.class, "landing-page");

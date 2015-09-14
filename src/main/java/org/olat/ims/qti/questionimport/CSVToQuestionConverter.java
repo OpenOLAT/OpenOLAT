@@ -55,9 +55,11 @@ public class CSVToQuestionConverter {
 	private ItemAndMetadata currentItem;
 	private final List<ItemAndMetadata> items = new ArrayList<>();
 	private Translator translator;
+	private ImportOptions options;
 	
-	public CSVToQuestionConverter(Translator translator) {
+	public CSVToQuestionConverter(Translator translator, ImportOptions options) {
 		this.translator = translator;
+		this.options = options;
 	}
 	
 	public List<ItemAndMetadata> getItems() {
@@ -283,13 +285,13 @@ public class CSVToQuestionConverter {
 				case "mc": {
 					currentItem = new ItemAndMetadata(QTIEditHelper.createMCItem(translator));
 					((ChoiceQuestion)currentItem.getItem().getQuestion()).getResponses().clear();
-					((ChoiceQuestion)currentItem.getItem().getQuestion()).setShuffle(true);
+					((ChoiceQuestion)currentItem.getItem().getQuestion()).setShuffle(options.isShuffle());
 					break;
 				}
 				case "sc": {
 					currentItem = new ItemAndMetadata(QTIEditHelper.createSCItem(translator));
 					((ChoiceQuestion)currentItem.getItem().getQuestion()).getResponses().clear();
-					((ChoiceQuestion)currentItem.getItem().getQuestion()).setShuffle(true);
+					((ChoiceQuestion)currentItem.getItem().getQuestion()).setShuffle(options.isShuffle());
 					break;
 				}
 				default: {

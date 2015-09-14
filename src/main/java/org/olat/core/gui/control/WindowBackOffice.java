@@ -55,7 +55,9 @@ public interface WindowBackOffice extends Disposable{
 	/**
 	 * @return the window associated
 	 */
-	Window getWindow();
+	public Window getWindow();
+	
+	public ChiefController getChiefController();
 
 	/**
 	 * @param ureq

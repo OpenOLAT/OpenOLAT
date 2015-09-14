@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.olat.NewControllerFactory;
 import org.olat.admin.landingpages.LandingPagesModule;
 import org.olat.admin.layout.LayoutModule;
 import org.olat.admin.layout.LogoInformations;
@@ -85,9 +86,9 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.HistoryModule;
 import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.id.context.HistoryPointImpl;
 import org.olat.core.id.context.StateEntry;
@@ -121,7 +122,7 @@ import org.olat.login.AfterLoginInterceptionController;
  * 
  * @author patrickb, Felix Jost, Florian Gnägi
  */
-public class BaseFullWebappController extends BasicController implements ChiefController, GenericEventListener {
+public class BaseFullWebappController extends BasicController implements DTabs, ChiefController, GenericEventListener {
 	private static final String PRESENTED_AFTER_LOGIN_WORKFLOW = "presentedAfterLoginWorkflow";
 	
 	//Base chief
@@ -178,7 +179,6 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	private AssessmentModeGuardController assessmentGuardCtrl;
 	
 	private StackedPanel initialPanel;
-	private DTabs myDTabsImpl;
 	private WindowSettings wSettings;
 	
 	private final boolean isAdmin;
@@ -209,13 +209,9 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		// define the new windowcontrol
 		WindowControl myWControl = new BaseFullWebappWindowControl(this, wbo);
 		overrideWindowControl(myWControl);
-		
-		// detach DTabs implementation from the controller - DTabs may be fetched from the window and locked on (synchronized access).
-		// if this is controller the controller is locked instead of only the DTabs part.
-		myDTabsImpl = new BaseFullWebappDTabs(this);
-		
+
 		Window myWindow = myWControl.getWindowBackOffice().getWindow();
-		myWindow.setDTabs(myDTabsImpl);
+		myWindow.setDTabs(this);
 		//REVIEW:PB remove if back support is desired
 		myWindow.addListener(this);//to be able to report BACK / FORWARD / RELOAD
 		
@@ -597,29 +593,12 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			if (event == Window.OLDTIMESTAMPCALL) {
 				getLogger().info("RELOAD");
 				
-				if(isBackEnabled(ureq)) {
-					HistoryPoint point = ureq.getUserSession().popLastHistoryEntry();
-					if(point != null) {
-						back(ureq, point);
-					}
+				HistoryPoint point = ureq.getUserSession().popLastHistoryEntry();
+				if(point != null) {
+					back(ureq, point);
 				}
 			}
 		}
-	}
-	
-	private boolean isBackEnabled(UserRequest ureq) {
-		HistoryModule historyModule = (HistoryModule)CoreSpringFactory.getBean("historyModule");
-		if(historyModule.isBackEnabled()) {
-			Preferences prefs =  ureq.getUserSession().getGuiPreferences();
-			Boolean be = (Boolean)prefs.get(WindowManager.class, "back-enabled");
-			if (be != null) {
-				return be.booleanValue();
-			}
-			else {
-				return historyModule.isBackDefaultSetting();
-			}
-		}
-		return false;
 	}
 	
 	protected void back(UserRequest ureq, HistoryPoint cstate) {
@@ -711,11 +690,9 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			dtabToBusinessPath = null;	
 		}
 		//clear the DTabs Service
-		Window myWindow = getWindowControl().getWindowBackOffice().getWindow();
-		myDTabsImpl = null;
-		myWindow.setDTabs(null);
-
-		getWindowControl().getWindowBackOffice().removeCycleListener(this);
+		WindowBackOffice wbackOffice = getWindowControl().getWindowBackOffice();
+		wbackOffice.getWindow().setDTabs(null);
+		wbackOffice.removeCycleListener(this);
 		
 		if (jsServerC != null) {
 			jsServerC.dispose();
@@ -1047,6 +1024,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	/**
 	 * @see org.olat.core.gui.control.generic.dtabs.DTabs#getDTab(org.olat.core.id.OLATResourceable
 	 */
+	@Override
 	public DTab getDTab(OLATResourceable ores) {
 		synchronized (dtabs) {
 			for (Iterator<DTab> it_dts = dtabs.iterator(); it_dts.hasNext();) {
@@ -1062,11 +1040,8 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.dtabs.DTabs#createDTab(org.olat.core.id.OLATResourceable
-	 *      java.lang.String)
-	 */
-	public DTab createDTab(OLATResourceable ores, OLATResourceable repoOres, String title) {
+	@Override
+	public DTab createDTab(OLATResourceable ores, OLATResourceable repoOres, Controller rootController, String title) {
 		final DTabImpl dt;
 		if (dtabs.size() >= maxTabs) {
 			getWindowControl().setError(translate("warn.tabsfull"));
@@ -1076,14 +1051,12 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 				|| !lockResource.getResourceableTypeName().equals(ores.getResourceableTypeName()))) {
 			dt = null;
 		} else {
-			dt = new DTabImpl(ores, repoOres, title, getWindowControl());
+			dt = new DTabImpl(ores, repoOres, title, rootController, getWindowControl());
 		}
 		return dt;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.dtabs.DTabs#addDTab(org.olat.core.gui.control.generic.dtabs.DTab)
-	 */
+	@Override
 	public boolean addDTab(UserRequest ureq, DTab dt) {
 		if(isDisposed()) {
 			return false;
@@ -1123,18 +1096,14 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		}
 		return true;
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.generic.dtabs.DTabs#activate(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.generic.dtabs.DTab, java.lang.String)
-	 */
-	public void activate(final UserRequest ureq, DTab dTab, final String viewIdentifier, final List<ContextEntry> entries) {
+	
+	@Override
+	public void activate(UserRequest ureq, DTab dTab, List<ContextEntry> entries) {
 		//update window settings if needed
 		setWindowSettings(getWindowControl().getWindowBackOffice().getWindowSettings());
 
 		// init view (e.g. kurs in run mode, repo-detail-edit...)
 		// jump here via external link or just open a new tab from e.g. repository
-		//fxdiff FXOLAT-113: business path in DMZ
 		if(dTab == null && contentCtrl instanceof Activateable2) {
 			((Activateable2)contentCtrl).activate(ureq, entries, null);
 			return;
@@ -1142,9 +1111,11 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 
 		DTabImpl dtabi = (DTabImpl) dTab;
 		Controller c = dtabi.getController();
-		if (c == null) throw new AssertException("no controller set yet! " + dTab + ", view: " + viewIdentifier);
+		if (c == null) {
+			throw new AssertException("no controller set yet! " + dTab);
+		}
 		doActivateDTab(dtabi);
-		//fxdiff BAKS-7 Resume function
+
 		if(entries != null && !entries.isEmpty() && c instanceof Activateable2) {
 			final Activateable2 activateable = ((Activateable2) c);
 			activateable.activate(ureq, entries, null);
@@ -1163,6 +1134,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		// this is the starting point.
 	}
 
+	@Override
 	public void activateStatic(UserRequest ureq, String className, List<ContextEntry> entries) {
 		if(className != null && className.endsWith("HomeSite")) {
 			activateSite(userTools, ureq, entries, false);
@@ -1174,6 +1146,35 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 					activateSite(site, ureq, entries, false);
 					return;
 				}
+			}
+		}
+	}
+	
+	@Override
+	public void closeDTab(UserRequest ureq, OLATResourceable ores, HistoryPoint launchedFromPoint) {
+
+		// Now try to go back to place that is attached to (optional) root back business path
+		if (launchedFromPoint != null && StringHelper.containsNonWhitespace(launchedFromPoint.getBusinessPath())
+				&& launchedFromPoint.getEntries() != null && launchedFromPoint.getEntries().size() > 0) {
+			BusinessControl bc = BusinessControlFactory.getInstance().createFromPoint(launchedFromPoint);
+			if(bc.hasContextEntry()) {
+				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+				try {
+					//make the resume secure. If something fail, don't generate a red screen
+					NewControllerFactory.getInstance().launch(ureq, bwControl);
+				} catch (Exception e) {
+					logError("Error while resuming with root level back business path::" + launchedFromPoint.getBusinessPath(), e);
+				}
+			}
+		}
+		
+		// Navigate beyond the stack, our own layout has been popped - close this tab
+		DTabs tabs = getWindowControl().getWindowBackOffice().getWindow().getDTabs();
+		if (tabs != null) {
+			
+			DTab tab = tabs.getDTab(ores);
+			if (tab != null) {
+				tabs.removeDTab(ureq, tab);						
 			}
 		}
 	}
@@ -1446,6 +1447,21 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		return canClose;
 	}
 	
+	@Override
+	public String getWindowTitle() {
+		String title = translate("page.appname");
+		if(siteAndTabs.size() > 0) {
+			TabState state = siteAndTabs.get(siteAndTabs.size() - 1);
+			if(state != null) {
+				String tabTitle = state.getTitle();
+				if(StringHelper.containsNonWhitespace(tabTitle)) {
+				title += " - " + tabTitle;
+				}
+			}
+		}
+		return title;
+	}
+	
 	private void setCurrent(SiteInstance site, DTab tab) {
 		curSite = site;
 		curDTab = tab;
@@ -1531,6 +1547,15 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 
 		public SiteInstance getSite() {
 			return site;
+		}
+		
+		public String getTitle() {
+			if(site != null && site.getNavElement() != null) {
+				return site.getNavElement().getTitle();
+			} else if(dtab != null) {
+				return dtab.getTitle();
+			}
+			return null;
 		}
 	}
 	

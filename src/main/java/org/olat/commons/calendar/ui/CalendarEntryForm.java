@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
@@ -53,6 +54,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 
 
 public class CalendarEntryForm extends FormBasicController {
@@ -66,16 +68,16 @@ public class CalendarEntryForm extends FormBasicController {
 	private KalendarRenderWrapper choosenWrapper;
 	private StaticTextElement calendarName;
 	private SingleSelection chooseCalendar;
-	private TextElement subject, location;
+	private TextElement subjectEl, descriptionEl, locationEl;
 	private SelectionElement allDayEvent;
 	private DateChooser begin, end;
 	private SingleSelection classification;
-	private boolean readOnly, isNew;
 	private SingleSelection chooseRecurrence;
 	private DateChooser recurrenceEnd;
 	private List<KalendarRenderWrapper> writeableCalendars;
 	private FormLink multi;
 	private boolean isMulti;
+	private final boolean readOnly, isNew;
 	
 	private String[] calendarKeys, calendarValues;
 	private String[] keysRecurrence, valuesRecurrence;
@@ -94,8 +96,7 @@ public class CalendarEntryForm extends FormBasicController {
 	public CalendarEntryForm(UserRequest ureq, WindowControl wControl, KalendarEvent event, KalendarRenderWrapper choosenWrapper,
 			Collection<KalendarRenderWrapper> availableCalendars, boolean isNew) {
 		super(ureq, wControl);
-		
-		setBasePackage(CalendarManager.class);
+		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
 		
 		this.event = event;
 		this.choosenWrapper = choosenWrapper;
@@ -117,7 +118,7 @@ public class CalendarEntryForm extends FormBasicController {
 		for (int i = 0; i < writeableCalendars.size(); i++) {
 			KalendarRenderWrapper cw = writeableCalendars.get(i);
 			calendarKeys[i] = cw.getKalendar().getCalendarID();
-			calendarValues[i] = cw.getKalendarConfig().getDisplayName();
+			calendarValues[i] = cw.getDisplayName();
 		}
 			
 //		String currentRecur = CalendarUtils.getRecurrence(event.getRecurrenceRule());
@@ -155,15 +156,15 @@ public class CalendarEntryForm extends FormBasicController {
 	protected void setEntry(KalendarEvent kalendarEvent) {
 		// subject
 		if (readOnly && kalendarEvent.getClassification() == KalendarEvent.CLASS_X_FREEBUSY) {
-			subject.setValue(getTranslator().translate("cal.form.subject.hidden"));
+			subjectEl.setValue(getTranslator().translate("cal.form.subject.hidden"));
 		} else {
-			subject.setValue(kalendarEvent.getSubject());
+			subjectEl.setValue(kalendarEvent.getSubject());
 		}
 		// location
 		if (readOnly && kalendarEvent.getClassification() == KalendarEvent.CLASS_X_FREEBUSY) {
-			location.setValue(getTranslator().translate("cal.form.location.hidden"));
+			locationEl.setValue(getTranslator().translate("cal.form.location.hidden"));
 		} else {
-			location.setValue(kalendarEvent.getLocation());
+			locationEl.setValue(kalendarEvent.getLocation());
 		}
 		begin.setDate(kalendarEvent.getBegin());
 		end.setDate(kalendarEvent.getEnd());
@@ -205,35 +206,36 @@ public class CalendarEntryForm extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic (UserRequest ureq) {
+		boolean allOk = true;
 		
+		begin.clearError();
 		if (begin.getDate() == null) {
 			begin.setErrorKey("cal.form.error.date", null);
-			return false;
+			allOk &= false;
 		}
 		
+		end.clearError();
 		if (end.getDate() == null) {
 			end.setErrorKey("cal.form.error.date", null);
-			return false;
-		}
-		
-		if (end.getDate().before(begin.getDate())) {
+			allOk &= false;
+		} else if (end.getDate().before(begin.getDate())) {
 			end.setErrorKey("cal.form.error.endbeforebegin", null);
-			return false;
+			allOk &= false;
 		}
 		
 		boolean hasEnd = !chooseRecurrence.getSelectedKey().equals(RECURRENCE_NONE);
-		
+		recurrenceEnd.clearError();
 		if (hasEnd && recurrenceEnd.getDate() == null) {
 			recurrenceEnd.setErrorKey("cal.form.error.date", null);
-			return false;
+			allOk &= false;
 		}
 		
 		if (hasEnd && recurrenceEnd.getDate().before(begin.getDate())) {
 			recurrenceEnd.setErrorKey("cal.form.error.endbeforebegin", null);
-			return false;
+			allOk &= false;
 		}
 		
-		return true;
+		return allOk & super.validateFormLogic(ureq);
 	}
 
 	/**
@@ -242,10 +244,11 @@ public class CalendarEntryForm extends FormBasicController {
 	 */
 	public KalendarEvent getUpdatedKalendarEvent() {
 		// subject
-		event.setSubject(subject.getValue());
-
+		event.setSubject(subjectEl.getValue());
+		// description
+		event.setDescription(descriptionEl.getValue());
 		// location
-		event.setLocation(location.getValue());
+		event.setLocation(locationEl.getValue());
 
 		// date / time
 		event.setBegin(begin.getDate());
@@ -301,50 +304,79 @@ public class CalendarEntryForm extends FormBasicController {
 			chooseCalendar.select(choosenWrapper.getKalendar().getCalendarID(), true);
 		}
 		chooseCalendar.setVisible(isNew);
+		if(event.getManagedFlags() != null && event.getManagedFlags().length > 0) {
+			chooseCalendar.setEnabled(false);
+		}
 		
-		String calName = choosenWrapper == null ? "" : StringHelper.escapeHtml(choosenWrapper.getKalendarConfig().getDisplayName());
+		String calName = choosenWrapper == null ? "" : StringHelper.escapeHtml(choosenWrapper.getDisplayName());
 		calendarName = uifactory.addStaticTextElement("calendarname", "cal.form.calendarname", calName, formLayout);
 		calendarName.setVisible(!isNew);
 		
 		boolean fb = readOnly && event.getClassification() == KalendarEvent.CLASS_X_FREEBUSY;
+		String subject = fb ? translate("cal.form.subject.hidden") : event.getSubject();
+		if(subject != null && subject.length() > 64) {
+			subjectEl = uifactory.addTextAreaElement("subject", "cal.form.subject", -1, 3, 40, true, subject, formLayout);
+		} else {
+			subjectEl = uifactory.addTextElement("subject", "cal.form.subject", 255, subject, formLayout);
+		}
+		subjectEl.setMandatory(true);
+		subjectEl.setNotEmptyCheck("cal.form.error.mandatory");
+		subjectEl.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.subject));
 		
-		subject = uifactory.addTextAreaElement("subject", "cal.form.subject", -1, 3, 40, true, fb?translate("cal.form.subject.hidden"):event.getSubject(), formLayout);
-		subject.setMandatory(true);
-		subject.setNotEmptyCheck("cal.form.error.mandatory");
+		String description = event.getDescription();
+		descriptionEl = uifactory.addTextAreaElement("description", "cal.form.description", -1, 3, 40, true, description, formLayout);
+		descriptionEl.setMandatory(true);
+		descriptionEl.setNotEmptyCheck("cal.form.error.mandatory");
+		descriptionEl.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.subject));
 		
-		location = uifactory.addTextAreaElement("location", "cal.form.location", -1, 3, 40, true, fb?translate("cal.form.location.hidden"):event.getLocation(), formLayout);
+		String location = fb ? translate("cal.form.location.hidden") : event.getLocation();
+		if(location != null && location.length() > 64) {
+			locationEl = uifactory.addTextAreaElement("location", "cal.form.location", -1, 3, 40, true, location, formLayout);
+		} else {
+			locationEl = uifactory.addTextElement("location", "cal.form.location", 255, location, formLayout);
+		}
+		locationEl.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.location));
 		
+		boolean managedDates = CalendarManagedFlag.isManaged(event, CalendarManagedFlag.dates);
 		allDayEvent = uifactory.addCheckboxesHorizontal("allday", "cal.form.allday", formLayout, new String[]{"xx"}, new String[]{null});
 		allDayEvent.select("xx", event.isAllDayEvent());
 		allDayEvent.addActionListener(FormEvent.ONCHANGE);
+		allDayEvent.setEnabled(!managedDates);
 		
 		begin = uifactory.addDateChooser("begin", "cal.form.begin", null, formLayout);
 		begin.setDisplaySize(21);
 		begin.setDateChooserTimeEnabled(!event.isAllDayEvent());
 		begin.setMandatory(true);
 		begin.setDate(event.getBegin());
+		begin.setEnabled(!managedDates);
 		
 		end = uifactory.addDateChooser("end", "cal.form.end", null, formLayout);
 		end.setDisplaySize(21);
 		end.setDateChooserTimeEnabled(!event.isAllDayEvent());
 		end.setMandatory(true);
 		end.setDate(event.getEnd());
+		end.setEnabled(!managedDates);
 		
 		chooseRecurrence = uifactory.addDropdownSingleselect("cal.form.recurrence", formLayout, keysRecurrence, valuesRecurrence, null);
 		String currentRecur = CalendarUtils.getRecurrence(event.getRecurrenceRule());
 		boolean rk = currentRecur != null && !currentRecur.equals("");
 		chooseRecurrence.select(rk ? currentRecur:RECURRENCE_NONE, true);
 		chooseRecurrence.addActionListener(FormEvent.ONCHANGE);
+		chooseRecurrence.setEnabled(!managedDates);
 		
 		recurrenceEnd = uifactory.addDateChooser("recurrence", "cal.form.recurrence.end", null, formLayout);
 		recurrenceEnd.setDisplaySize(21);
 		recurrenceEnd.setDateChooserTimeEnabled(false);
 		recurrenceEnd.setMandatory(true);
 		Date recurEnd = CalendarUtils.getRecurrenceEndDate(event.getRecurrenceRule());
-		if(recurEnd != null) recurrenceEnd.setDate(recurEnd);
+		if(recurEnd != null) {
+			recurrenceEnd.setDate(recurEnd);
+		}
+		recurrenceEnd.setEnabled(!managedDates);
 		recurrenceEnd.setVisible(!chooseRecurrence.getSelectedKey().equals(RECURRENCE_NONE));
 		
 		classification = uifactory.addRadiosVertical("classification", "cal.form.class", formLayout, classKeys, classValues);
+		classification.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.classification));
 		switch (event.getClassification()) {
 			case KalendarEvent.CLASS_PRIVATE: classification.select("0", true); break;
 			case KalendarEvent.CLASS_X_FREEBUSY: classification.select("1", true); break;

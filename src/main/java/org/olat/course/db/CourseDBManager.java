@@ -22,8 +22,6 @@ package org.olat.course.db;
 
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.id.Identity;
 import org.olat.course.ICourse;
@@ -37,27 +35,24 @@ import org.olat.course.ICourse;
  * Initial Date:  7 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-public abstract class CourseDBManager extends AbstractOLATModule implements ConfigOnOff {
+public interface CourseDBManager extends ConfigOnOff {
 
-	public static CourseDBManager getInstance() {
-		return (CourseDBManager)CoreSpringFactory.getBean("courseDBManager");
-	}
+
+	public boolean isEnabled();
 	
-	public abstract boolean isEnabled();
+	public Long getCourseId(Long key);
 	
-	public abstract Long getCourseId(Long key);
+	public List<String> getUsedCategories(ICourse course);
 	
-	public abstract List<String> getUsedCategories(ICourse course);
+	public void reset(ICourse course, String category);
 	
-	public abstract void reset(ICourse course, String category);
+	public CourseDBEntry getValue(ICourse course, Identity identity, String category, String name);
 	
-	public abstract CourseDBEntry getValue(ICourse course, Identity identity, String category, String name);
+	public CourseDBEntry getValue(Long courseResourceId, Identity identity, String category, String name);
 	
-	public abstract CourseDBEntry getValue(Long courseResourceId, Identity identity, String category, String name);
+	public boolean deleteValue(ICourse course, Identity identity, String category, String name);
 	
-	public abstract boolean deleteValue(ICourse course, Identity identity, String category, String name);
+	public CourseDBEntry setValue(ICourse course, Identity identity, String category, String name, Object value);
 	
-	public abstract CourseDBEntry setValue(ICourse course, Identity identity, String category, String name, Object value);
-	
-	public abstract List<CourseDBEntry> getValues(ICourse course, Identity identity, String category, String name);
+	public List<CourseDBEntry> getValues(ICourse course, Identity identity, String category, String name);
 }

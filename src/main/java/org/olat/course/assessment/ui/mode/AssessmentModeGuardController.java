@@ -26,7 +26,6 @@ import java.util.Locale;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.countdown.CountDownComponent;
 import org.olat.core.gui.components.link.Link;
@@ -382,7 +381,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		ureq.getUserSession().setAssessmentModes(null);
 		OLATResourceable resource = mode.getResource();
 		ureq.getUserSession().setLockResource(resource, mode);
-		Windows.getWindows(ureq).getChiefController().lockResource(resource);
+		getWindowControl().getWindowBackOffice().getChiefController().lockResource(resource);
 		fireEvent(ureq, new ChooseAssessmentModeEvent(mode));
 		
 		String businessPath = "[RepositoryEntry:" + mode.getRepositoryEntryKey() + "]";

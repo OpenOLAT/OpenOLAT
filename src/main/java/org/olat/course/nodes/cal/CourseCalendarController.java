@@ -25,7 +25,7 @@ import java.util.List;
 
 import org.olat.commons.calendar.ui.WeeklyCalendarController;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
-import org.olat.commons.calendar.ui.events.KalendarModifiedEvent;
+import org.olat.commons.calendar.ui.events.CalendarGUIModifiedEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -33,9 +33,9 @@ import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.clone.CloneableController;
-import org.olat.core.id.OLATResourceable;
 import org.olat.course.run.calendar.CourseCalendarSubscription;
 import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
  * 
@@ -47,23 +47,24 @@ import org.olat.course.run.userview.NodeEvaluation;
  */
 public class CourseCalendarController extends DefaultController implements CloneableController {
 
-	private WeeklyCalendarController calendarController;
+	private final WeeklyCalendarController calendarController;
 	private KalendarRenderWrapper courseKalendarWrapper;
 	private CourseCalendarSubscription calendarSubscription;
 
 	private NodeEvaluation nodeEvaluation;
 	
-	private OLATResourceable ores;
+	private UserCourseEnvironment courseEnv;
 	private List<KalendarRenderWrapper> calendars;
 
 	public CourseCalendarController(UserRequest ureq, WindowControl wControl, CourseCalendars myCal,
-			OLATResourceable course, NodeEvaluation ne) {
+			UserCourseEnvironment courseEnv, NodeEvaluation ne) {
 		super(wControl);
-		this.ores = course;
+		this.courseEnv = courseEnv;
 		this.nodeEvaluation = ne;
 		calendars = myCal.getCalendars();
 		courseKalendarWrapper = myCal.getCourseKalendarWrapper();
-		calendarController = new WeeklyCalendarController(ureq, wControl, calendars, WeeklyCalendarController.CALLER_COURSE, true);
+		calendarController = new WeeklyCalendarController(ureq, wControl, calendars,
+				WeeklyCalendarController.CALLER_COURSE, false);
 		setInitialComponent(calendarController.getInitialComponent());
 	}
 
@@ -75,9 +76,7 @@ public class CourseCalendarController extends DefaultController implements Clone
 		return courseKalendarWrapper;
 	}
 
-	public OLATResourceable getOres() {
-		return ores;
-	}
+
 
 	public void setFocus(Date date) {
 		calendarController.setFocus(date);
@@ -94,8 +93,8 @@ public class CourseCalendarController extends DefaultController implements Clone
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (event instanceof KalendarModifiedEvent) {
-			CourseCalendars myCal = CourseCalendars.createCourseCalendarsWrapper(ureq, getWindowControl(), ores, nodeEvaluation);
+		if (event instanceof CalendarGUIModifiedEvent) {
+			CourseCalendars myCal = CourseCalendars.createCourseCalendarsWrapper(ureq, getWindowControl(), courseEnv, nodeEvaluation);
 			calendars = myCal.getCalendars();
 			courseKalendarWrapper = myCal.getCourseKalendarWrapper();
 			calendarController.setCalendars(calendars);
@@ -112,7 +111,7 @@ public class CourseCalendarController extends DefaultController implements Clone
 		CourseCalendars myCal = new CourseCalendars(courseKalendarWrapper, calendars);
 
 		Date focus = calendarController.getFocus();
-		CourseCalendarController ctrl = new CourseCalendarController(ureq, wControl, myCal, ores, nodeEvaluation);
+		CourseCalendarController ctrl = new CourseCalendarController(ureq, wControl, myCal, courseEnv, nodeEvaluation);
 		ctrl.calendarController.setFocus(focus);
 		return ctrl;
 	}

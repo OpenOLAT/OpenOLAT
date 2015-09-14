@@ -61,7 +61,6 @@ public class EducationalMetadataController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("educational");
-		setFormContextHelp("org.olat.modules.qpool.ui.metadata", "educational.html", "help.hover.educational");
 		if(edit) {
 			editLink = uifactory.addFormLink("edit", "edit", null, formLayout, Link.BUTTON_XSMALL);
 			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");

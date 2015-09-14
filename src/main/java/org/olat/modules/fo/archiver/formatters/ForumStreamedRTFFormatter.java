@@ -38,7 +38,6 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
@@ -48,6 +47,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.nodes.INode;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.MessageNode;
@@ -143,7 +143,7 @@ public class ForumStreamedRTFFormatter extends ForumFormatter {
 		}
 		sb.append(" \\par}");
 		// attachment(s)
-		OlatRootFolderImpl msgContainer = fm.getMessageContainer(getForumKey(), mn.getKey());
+		VFSContainer msgContainer = fm.getMessageContainer(getForumKey(), mn.getKey());
 		List<VFSItem> attachments = msgContainer.getItems();
 		if (attachments != null && attachments.size() > 0){
 			sb.append("{\\pard \\f0\\fs15 Attachment(s): ");

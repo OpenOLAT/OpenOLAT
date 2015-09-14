@@ -198,7 +198,7 @@ function olatonunload(){
 			iframeDoc.location.replace("about:blank");
 			iframeDoc = null;
 			//delay(200);
-			//if((new Date().getTime() - lastRequest) > 60000) alert("Current SCO will be finised befor initializing next SCO or terminating! Press OK to proceed.");
+			//if((new Date().getTime() - lastRequest) > 60000) alert("Current SCO will be finished before initializing next SCO or terminating! Press OK to proceed.");
 			
 			var delayReq = new XMLHttpRequest();
 			//"false" waits until the result arrived;

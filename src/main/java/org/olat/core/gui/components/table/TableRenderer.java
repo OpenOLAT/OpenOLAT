@@ -31,6 +31,7 @@ import java.util.List;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -48,15 +49,8 @@ import org.olat.core.logging.Tracing;
  */
 public class TableRenderer extends DefaultComponentRenderer {
 
-	private static final String CLOSE_HTML_BRACE = "\">";
-	private static final String CLOSE_DIV = "</div>";
-	private static final String A_CLASS = "<a class=\"";
-	private static final String HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT = "\" href=\"JavaScript:tableFormInjectCommandAndSubmit('";
-	private static final String CLOSE_HREF = "</a>";
-	private static final String CLOSE_AND_O2CLICK = "');\" onclick=\"return o2cl();\">";
-	private static final String SINGLE_COMMA_SINGLE = "', '";
-	private static final String A_HREF = "<a href=\"";
 	protected static final String TABLE_MULTISELECT_GROUP = "tb_ms";
+	
 	private static final OLog log = Tracing.createLoggerFor(TableRenderer.class);
 
 	/**
@@ -105,18 +99,16 @@ public class TableRenderer extends DefaultComponentRenderer {
 		target.append("<div class=\"o_table_wrapper\" id=\"o_table_wrapper_").append(table.hashCode()).append("\">")
 		      .append("<table id=\"o_table").append(table.hashCode()).append("\" class=\"o_table table table-striped table-condensed table-hover")
 		      .append(" table-bordered", table.isDisplayTableGrid())
-		      .append(CLOSE_HTML_BRACE);		
-		appendHeaderLinks(target, translator, table, formName, cols);
+		      .append("\">");		
+		appendHeaderLinks(target, translator, table, cols, iframePostEnabled, ubu);
 		appendDataRows(renderer, target, ubu, table, iframePostEnabled, cols, selRowUnSelectable, selRowId, startRowId, endRowId);
 		target.append("</table><div class='o_table_footer'>");
-		appendSelectDeselectAllButtons(target, translator, table, formName, rows, resultsPerPage);
-		appendTablePageing(target, translator, table, formName, rows, resultsPerPage, currentPageId, usePageing);
-		appendMultiselectFormActions(target, translator, table);
-		target.append("</div></div>");
+		appendSelectDeselectAllButtons(target, translator, table, formName, rows, resultsPerPage, iframePostEnabled, ubu);
+		appendTablePageing(target, translator, table, rows, resultsPerPage, currentPageId, usePageing, iframePostEnabled, ubu);
+		appendMultiselectFormActions(target, formName, translator, table);
+		target.append("</div></div>")
 		// lastly close multiselect
-	    target.append("</form>");
-
-
+	         .append("</form>");
 		appendViewportResizeJsFix(target, source, rows, usePageing);
 		
 		if (log.isDebug()) {
@@ -132,13 +124,13 @@ public class TableRenderer extends DefaultComponentRenderer {
 		// entries after the 1023 entry or even the entire table unreadable.
 		// Comment CDATA section to make it work with prototype's stripScripts method !
 		if (!usePageing && rows > 1000) {
-			target.append("<script type=\"text/javascript\">/* <![CDATA[ */\n ");
-			target.append("jQuery(function() { jQuery('#o_table_wrapper").append(source.hashCode()).append("').height(o_viewportHeight()/3*2);});");
-			target.append("/* ]]> */\n</script>");
+			target.append("<script type=\"text/javascript\">/* <![CDATA[ */\n ")
+			      .append("jQuery(function() { jQuery('#o_table_wrapper").append(source.hashCode()).append("').height(o_viewportHeight()/3*2);});")
+			      .append("/* ]]> */\n</script>");
 		}
 	}
 
-	private void appendMultiselectFormActions(final StringOutput target, final Translator translator, final Table table) {
+	private void appendMultiselectFormActions(StringOutput target, String formName, Translator translator, Table table) {
 		// add multiselect form actions
 		List<TableMultiSelect> multiSelectActions = table.getMultiSelectActions();
 		if (table.isMultiSelect() && multiSelectActions.isEmpty()) {
@@ -157,70 +149,71 @@ public class TableRenderer extends DefaultComponentRenderer {
 				value = action.getLabel();
 			}
 
-			target.append("<input type=\"submit\" name=\"").append(multiSelectActionIdentifer)
-			      .append("\" value=\"").append(value).append("\" class=\"btn btn-default\" />");
+			target.append("<button type=\"button\" name=\"").append(multiSelectActionIdentifer)
+			      .append("\" class=\"btn btn-default\" onclick=\"o_TableMultiActionEvent('").append(formName).append("','").append(multiSelectActionIdentifer).append("');\"><span>").append(value).append("</span></button> ");
 		}
-		target.append(CLOSE_DIV);
+		target.append("</div>");
 		// add hidden action command placeholders to the form. these will be manipulated when
 		// the user clicks on a regular link within the table to e.g. re-sort the columns.
 		target.append("<input type=\"hidden\" name=\"cmd\" value=\"\" />")
 		      .append("<input type=\"hidden\" name=\"param\" value=\"\" />");
 	}
 
-	private void appendTablePageing(final StringOutput target, final Translator translator, final Table table, final String formName, final int rows, int resultsPerPage, final Integer currentPageId,
-			final boolean usePageing) {
+	private void appendTablePageing(StringOutput target, Translator translator, Table table, int rows,
+			int resultsPerPage, Integer currentPageId,  boolean usePageing, boolean ajaxEnabled, URLBuilder ubu) {
 		if (usePageing && (rows > resultsPerPage)) {
 			int pageid = currentPageId.intValue();
 			// paging bug OLAT-935 part missing second page, or missing last page due rounding issues.
 			int maxpageid = (int) Math.ceil(((double) rows / (double) resultsPerPage));
 			target.append("<div class='o_table_pagination'><ul class='pagination'>");
 
-			appendTablePageingBackLink(target, formName, pageid);
-			addPageNumberLinks(target, formName, pageid, maxpageid);
-			appendTablePageingNextLink(target, formName, rows, resultsPerPage, pageid);
-			appendTablePageingShowallLink(target, translator, table, formName);
-
+			appendTablePageingBackLink(target, pageid, ajaxEnabled, ubu);
+			addPageNumberLinks(target, pageid, maxpageid, ajaxEnabled, ubu);
+			appendTablePageingNextLink(target, rows, resultsPerPage, pageid, ajaxEnabled,  ubu);
+			appendTablePageingShowallLink(target, translator, table, ajaxEnabled, ubu);
+			
 			target.append("</ul></div>");
-
 		}
 	}
 
-	private void appendTablePageingShowallLink(final StringOutput target, final Translator translator, final Table table, final String formName) {
+	private void appendTablePageingShowallLink(StringOutput sb, Translator translator, Table table, boolean ajaxEnabled, URLBuilder ubu) {
 		if (table.isShowAllLinkEnabled()) {
-			target.append("<li>");
-			target.append(A_CLASS).append(HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT);
-			target.append(formName).append(SINGLE_COMMA_SINGLE).append(Table.COMMAND_PAGEACTION).append(SINGLE_COMMA_SINGLE).append(Table.COMMAND_PAGEACTION_SHOWALL).append(CLOSE_AND_O2CLICK);
-			target.append(translator.translate("table.showall")).append("</a></li>");
+			sb.append("<li><a ");
+			ubu.buildHrefAndOnclick(sb, ajaxEnabled,
+					new NameValuePair(Table.FORM_CMD,Table.COMMAND_PAGEACTION),
+					new NameValuePair(Table.FORM_PARAM, Table.COMMAND_PAGEACTION_SHOWALL))
+			   .append(">").append(translator.translate("table.showall")).append("</a></li>");
 		}
 	}
 
-	private void appendTablePageingNextLink(StringOutput target, String formName, int rows, int resultsPerPage, int pageid) {
+	private void appendTablePageingNextLink(StringOutput target, int rows, int resultsPerPage, int pageid, boolean ajaxEnabled, URLBuilder ubu) {
 		boolean enabled = ((pageid * resultsPerPage) < rows);
-		target.append("<li").append(" class='disabled'", !enabled).append("><a href=\"");
+		target.append("<li").append(" class='disabled'", !enabled).append("><a ");
 		if(enabled) {
-			target.append("JavaScript:tableFormInjectCommandAndSubmit('")
-			      .append(formName).append(SINGLE_COMMA_SINGLE).append(Table.COMMAND_PAGEACTION).append(SINGLE_COMMA_SINGLE)
-			      .append(Table.COMMAND_PAGEACTION_FORWARD).append(CLOSE_AND_O2CLICK);
+			ubu.buildHrefAndOnclick(target, ajaxEnabled, 
+					new NameValuePair(Table.FORM_CMD,Table.COMMAND_PAGEACTION),
+					new NameValuePair(Table.FORM_PARAM, Table.COMMAND_PAGEACTION_FORWARD));
 		} else {
-			target.append("#\">");
+			target.append("href=\"javascript:;\"");
 		}		
-		target.append("&raquo;").append("</a></li>");
+		target.append(">&raquo;").append("</a></li>");
 	}
 
-	private void appendTablePageingBackLink(StringOutput target, String formName, int pageid) {
+	private void appendTablePageingBackLink(StringOutput target, int pageid, boolean ajaxEnabled, URLBuilder ubu) {
 		boolean enabled = pageid > 1;
-		target.append("<li").append(" class='disabled'", !enabled).append("><a href=\"");
+		target.append("<li").append(" class='disabled'", !enabled).append("><a ");
 		if(enabled) {
-			target.append("JavaScript:tableFormInjectCommandAndSubmit('")
-			      .append(formName).append(SINGLE_COMMA_SINGLE).append(Table.COMMAND_PAGEACTION).append(SINGLE_COMMA_SINGLE)
-			      .append(Table.COMMAND_PAGEACTION_BACKWARD).append(CLOSE_AND_O2CLICK);
+			ubu.buildHrefAndOnclick(target, ajaxEnabled, 
+					new NameValuePair(Table.FORM_CMD,Table.COMMAND_PAGEACTION),
+					new NameValuePair(Table.FORM_PARAM, Table.COMMAND_PAGEACTION_BACKWARD));
 		} else {
-			target.append("#\">");
+			target.append("href=\"javascript:;\"");
 		}
-		target.append("&laquo;").append(CLOSE_HREF);
+		target.append(">&laquo;").append("</a>");
 	}
 
-	private void appendSelectDeselectAllButtons(final StringOutput target, final Translator translator, Table table, String formName, int rows, int resultsPerPage) {
+	private void appendSelectDeselectAllButtons(StringOutput target, Translator translator, Table table, String formName, int rows, int resultsPerPage,
+			boolean ajaxEnabled, URLBuilder ubu) {
 		if (table.isMultiSelect()) {
 			target.append("<div class='o_table_checkall input-sm'>")
 			  .append("<label class='checkbox-inline'>")
@@ -236,11 +229,15 @@ public class TableRenderer extends DefaultComponentRenderer {
 		}
 
 		if (table.isShowAllSelected() && (rows > resultsPerPage)) {
-			target.append("<div class='o_table_pagination'><ul class='pagination'><li>");
-			target.append(A_CLASS).append("btn btn-sm btn-default").append(HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT);			
-			target.append(formName).append(SINGLE_COMMA_SINGLE).append(Table.COMMAND_PAGEACTION).append(SINGLE_COMMA_SINGLE).append(Table.COMMAND_SHOW_PAGES).append(CLOSE_AND_O2CLICK);
-			target.append(translator.translate("table.showpages")).append("</a>");
-			target.append("</li><ul></div>");
+			target.append("<div class='o_table_pagination'><ul class='pagination'><li>")
+			      .append("<a class=\"").append("btn btn-sm btn-default").append("\" ");	
+			
+			ubu.buildHrefAndOnclick(target, ajaxEnabled,
+					new NameValuePair(Table.FORM_CMD, Table.COMMAND_PAGEACTION),
+					new NameValuePair(Table.FORM_PARAM, Table.COMMAND_SHOW_PAGES))
+				.append(">")
+			    .append(translator.translate("table.showpages")).append("</a>")
+			    .append("</li><ul></div>");
 		}
 	}
 
@@ -266,7 +263,7 @@ public class TableRenderer extends DefaultComponentRenderer {
 				}
 			}
 
-			target.append("<tr class=\"").append(cssClass).append(CLOSE_HTML_BRACE);
+			target.append("<tr class=\"").append(cssClass).append("\">");
 			appendSingleDataRow(renderer, target, ubu, table, iframePostEnabled, cols, i, currentPosInModel, isMark);
 			target.append("</tr>");
 		}
@@ -290,7 +287,7 @@ public class TableRenderer extends DefaultComponentRenderer {
 			if (isMark) {
 				target.append(" o_table_marked");
 			}
-			target.append(CLOSE_HTML_BRACE);
+			target.append("\">");
 			String action = cd.getAction(i);
 			if (action != null) {
 				StringOutput so = new StringOutput(100);
@@ -303,26 +300,16 @@ public class TableRenderer extends DefaultComponentRenderer {
 		}
 	}
 
-	private void appendSingleDataRowActionColumn(final StringOutput target, final URLBuilder ubu, final boolean iframePostEnabled, final int i, final int currentPosInModel, final int j,
-			final ColumnDescriptor cd, final String action, final String renderval) {
+	private void appendSingleDataRowActionColumn(StringOutput target, URLBuilder ubu, boolean ajaxEnabled, int i, int currentPosInModel, int j,
+			ColumnDescriptor cd, String action, String renderval) {
 		// If we have actions on the table rows, we just submit traditional style (not via form.submit())
 		// Note that changes in the state of multiselects will not be reflected in the model.
-		HrefGenerator hrefG = cd.getHrefGenerator();
-
-		if (hrefG != null) {
-			target.append(A_HREF);
-			StringOutput link = new StringOutput();
-			ubu.buildURI(link, new String[] { Table.COMMANDLINK_ROWACTION_CLICKED, Table.COMMANDLINK_ROWACTION_ID }, new String[] { String.valueOf(currentPosInModel), action }); // url
-			target.append(hrefG.generate(currentPosInModel, link.toString()));
-			target.append(CLOSE_HTML_BRACE);
-
-		} else if (cd.isPopUpWindowAction()) {
+		target.append("<a ");
+		if (cd.isPopUpWindowAction()) {
 			// render as popup window
-			target.append(A_HREF);
-			target.append("javascript:{var win=window.open('");
+			target.append("href=\"javascript:{var win=window.open('");
 			ubu.buildURI(target, new String[] { Table.COMMANDLINK_ROWACTION_CLICKED, Table.COMMANDLINK_ROWACTION_ID }, new String[] { String.valueOf(currentPosInModel), action }); // url
-			target.append("','tw_").append(i + "_" + j); // javascript window
-															// name
+			target.append("','tw_").append(i + "_" + j); // javascript window name
 			target.append("','");
 			String popUpAttributes = cd.getPopUpWindowAttributes();
 			if (popUpAttributes != null) {
@@ -331,21 +318,14 @@ public class TableRenderer extends DefaultComponentRenderer {
 			target.append("');win.focus();}\">");
 		} else {
 			// render in same window
-			target.append(A_HREF);
-			ubu.buildURI(target, new String[] { Table.COMMANDLINK_ROWACTION_CLICKED, Table.COMMANDLINK_ROWACTION_ID }, new String[] { String.valueOf(currentPosInModel), action },
-					iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-			target.append("\"  onclick=\"return o2cl()\"");
-			if (iframePostEnabled) {
-				ubu.appendTarget(target);
-			}
-			target.append(">");
-
+			ubu.buildHrefAndOnclick(target, ajaxEnabled,
+					new NameValuePair(Table.COMMANDLINK_ROWACTION_CLICKED, currentPosInModel),
+					new NameValuePair(Table.COMMANDLINK_ROWACTION_ID, action)).append(">");
 		}
-		target.append(renderval);
-		target.append(CLOSE_HREF);
+		target.append(renderval).append("</a>");
 	}
 
-	private void appendHeaderLinks(final StringOutput target, final Translator translator, Table table, String formName, int cols) {
+	private void appendHeaderLinks(final StringOutput target, final Translator translator, Table table, int cols, boolean ajaxEnabled, URLBuilder ubu) {
 		if (!table.isDisplayTableHeader()) return;
 		target.append("<thead><tr>");
 		for (int i = 0; i < cols; i++) {
@@ -360,10 +340,12 @@ public class TableRenderer extends DefaultComponentRenderer {
 			target.append("<th>");
 			// header either a link or not
 			if (table.isSortingEnabled() && cd.isSortingAllowed()) {
-				target.append("<a class='o_orderby' href=\"javascript:tableFormInjectCommandAndSubmit('")
-				      .append(formName).append("','").append(Table.COMMAND_SORTBYCOLUMN).append("','").append(i).append("');\">")
+				target.append("<a class='o_orderby' ");
+				ubu.buildHrefAndOnclick(target, ajaxEnabled,
+						new NameValuePair(Table.FORM_CMD, Table.COMMAND_SORTBYCOLUMN),
+						new NameValuePair(Table.FORM_PARAM, i)).append(">")
 				      .append(header)
-				      .append(CLOSE_HREF);
+				      .append("</a>");
 			} else {
 				target.append(header);
 			}
@@ -378,13 +360,13 @@ public class TableRenderer extends DefaultComponentRenderer {
 		target.append(formName);
 		target.append("\" action=\"");
 		ubu.buildURI(target, null, null, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-		target.append("\" id=\"");
-		target.append(formName);
-		target.append("\"");
+		target.append("\" id=\"").append(formName).append("\"");
 		if (iframePostEnabled) {
-			ubu.appendTarget(target);
+			target.append(" onsubmit=\"o_XHRSubmit('").append(formName).append("');\">");
+		} else {
+			target.append(" onsubmit=\"o_beforeserver();\">");
 		}
-		target.append(" onsubmit=\"o_beforeserver();\">");
+		target.append("<input id=\"o_mai_").append(formName).append("\" type=\"hidden\" name=\"multi_action_identifier\" value=\"\"").append(" />");
 		return formName;
 	}
 
@@ -394,48 +376,48 @@ public class TableRenderer extends DefaultComponentRenderer {
 	 * @param pageid
 	 * @param maxpageid
 	 */
-	private void addPageNumberLinks(StringOutput target, String formName, int pageid, int maxpageid) {
+	private void addPageNumberLinks(StringOutput target, int pageid, int maxpageid, boolean ajaxEnabled, URLBuilder ubu) {
 		if (maxpageid < 12) {
-			addPageNumberLinksForSimpleCase(target, formName, pageid, maxpageid);
-			return;
-		}
-
-		int powerOf10 = String.valueOf(maxpageid).length() - 1;
-		int maxStepSize = (int) Math.pow(10, powerOf10);
-		int stepSize = (int) Math.pow(10, String.valueOf(pageid).length() - 1);
-		boolean isStep = false;
-		int useEveryStep = 3;
-		int stepCnt = 0;
-		boolean isNear = false;
-		int nearleft = 5;
-		int nearright = 5;
-		if (pageid < nearleft) {
-			nearleft = pageid;
-			nearright += (nearright - nearleft);
-		} else if (pageid > (maxpageid - nearright)) {
-			nearright = maxpageid - pageid;
-			nearleft += (nearleft - nearright);
-		}
-		for (int i = 1; i <= maxpageid; i++) {
-			// adapt stepsize if needed
-			stepSize = adaptStepsizeIfNeeded(pageid, maxStepSize, stepSize, i);
-
-			isStep = ((i % stepSize) == 0);
-			if (isStep) {
-				stepCnt++;
-				isStep = isStep && (stepCnt % useEveryStep == 0);
+			addPageNumberLinksForSimpleCase(target, pageid, maxpageid, ajaxEnabled, ubu);
+		} else {
+			int powerOf10 = String.valueOf(maxpageid).length() - 1;
+			int maxStepSize = (int) Math.pow(10, powerOf10);
+			int stepSize = (int) Math.pow(10, String.valueOf(pageid).length() - 1);
+			boolean isStep = false;
+			int useEveryStep = 3;
+			int stepCnt = 0;
+			boolean isNear = false;
+			int nearleft = 5;
+			int nearright = 5;
+			if (pageid < nearleft) {
+				nearleft = pageid;
+				nearright += (nearright - nearleft);
+			} else if (pageid > (maxpageid - nearright)) {
+				nearright = maxpageid - pageid;
+				nearleft += (nearleft - nearright);
 			}
-			isNear = (i > (pageid - nearleft) && i < (pageid + nearright));
-			if (i == 1 || i == maxpageid || isStep || isNear) {
-				appendPagenNumberLink(target, formName, pageid, i);
+			for (int i = 1; i <= maxpageid; i++) {
+				// adapt stepsize if needed
+				stepSize = adaptStepsizeIfNeeded(pageid, maxStepSize, stepSize, i);
+	
+				isStep = ((i % stepSize) == 0);
+				if (isStep) {
+					stepCnt++;
+					isStep = isStep && (stepCnt % useEveryStep == 0);
+				}
+				isNear = (i > (pageid - nearleft) && i < (pageid + nearright));
+				if (i == 1 || i == maxpageid || isStep || isNear) {
+					appendPagenNumberLink(target, pageid, i, ajaxEnabled, ubu);
+				}
 			}
 		}
 	}
 
-	private void appendPagenNumberLink(StringOutput target, String formName, int pageid, int i) {
-		target.append("<li").append(" class='active'", pageid == i).append("><a ")
-		      .append(" href=\"JavaScript:tableFormInjectCommandAndSubmit('")
-		      .append(formName).append(SINGLE_COMMA_SINGLE + Table.COMMAND_PAGEACTION + SINGLE_COMMA_SINGLE).append(i).append("');\">")
+	private void appendPagenNumberLink(StringOutput target, int pageid, int i, boolean ajaxEnabled, URLBuilder ubu) {
+		target.append("<li").append(" class='active'", pageid == i).append("><a ");
+		ubu.buildHrefAndOnclick(target, ajaxEnabled,
+				new NameValuePair(Table.FORM_CMD, Table.COMMAND_PAGEACTION),
+				new NameValuePair(Table.FORM_PARAM, i)).append(">")
 		      .append(i).append("</a></li>");
 	}
 
@@ -449,9 +431,9 @@ public class TableRenderer extends DefaultComponentRenderer {
 		return newStepSize;
 	}
 
-	private void addPageNumberLinksForSimpleCase(final StringOutput target, String formName, int pageid, int maxpageid) {
+	private void addPageNumberLinksForSimpleCase(final StringOutput target, int pageid, int maxpageid, boolean ajaxEnabled, URLBuilder ubu) {
 		for (int i = 1; i <= maxpageid; i++) {
-			appendPagenNumberLink(target, formName, pageid, i);
+			appendPagenNumberLink(target, pageid, i, ajaxEnabled, ubu);
 		}
 	}
 }

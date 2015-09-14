@@ -31,7 +31,7 @@
 					#set($imgId = "image_${id}")
 					#set($catId = "kcat_${id}")
 					<div class="o_sublevel" >
-						<div class="o_visual" ><a href='$r.commandURIbg("img_select","node","${r.get($catId)}")' onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget()>
+						<div class="o_visual" ><a $r.hrefAndOnclick("img_select",false,false,"node","$r.get($catId)")>
 							<div class="o_visual_not_available" #if($r.get($imgId)) style="background-image:url('$mapperThumbnailUrl/${r.get($imgId)}');" #end></div>
 						</a></div>
 						<div class="o_meta">
@@ -52,7 +52,7 @@
 					#set($imgId = "image_${id}")
 					#set($catId = "kcat_${id}")
 					<div class="o_sublevel">
-						<div class="o_visual"><a href='$r.commandURIbg("img_select","node","${r.get($catId)}")' onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget()>
+						<div class="o_visual"><a $r.hrefAndOnclick("img_select",false,false,"node","$r.get($catId)")>
 							<div class="o_visual_not_available" #if($r.get($imgId)) style="background-image:url('$mapperThumbnailUrl/${r.get($imgId)}');" #end></div>
 						</a></div>
 						<div class="o_meta">

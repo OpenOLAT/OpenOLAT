@@ -45,10 +45,11 @@ public class FullCalendarComponent extends AbstractComponent {
 	
 	private static final FullCalendarComponentRenderer RENDERER = new FullCalendarComponentRenderer();
 
-	private List<KalendarRenderWrapper> calWrappers = new ArrayList<KalendarRenderWrapper>();
+	private List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
 	private Date currentDate;
 	private String viewName = "month";
-	private boolean eventAlwaysVisible;
+	private boolean configurationEnabled;
+	private boolean aggregatedFeedEnabled;
 	
 	private final MapperKey mapperKey;
 	private final FullCalendarElement calendarEl;
@@ -61,12 +62,11 @@ public class FullCalendarComponent extends AbstractComponent {
 	 * @param translator
 	 * @param eventAlwaysVisible  When true, the 'isVis()' check is disabled and events will be displayed always.
 	 */
-	public FullCalendarComponent(UserRequest ureq, FullCalendarElement calendarEl, String name,
-			Collection<KalendarRenderWrapper> calendarWrappers, Translator translator, Boolean eventAlwaysVisible) {
+	FullCalendarComponent(UserRequest ureq, FullCalendarElement calendarEl, String name,
+			Collection<KalendarRenderWrapper> calendarWrappers, Translator translator) {
 		super(name, translator);
-		this.eventAlwaysVisible = eventAlwaysVisible;
 		setCurrentDate(new Date());
-		calWrappers = new ArrayList<KalendarRenderWrapper>(calendarWrappers);
+		calendars = new ArrayList<KalendarRenderWrapper>(calendarWrappers);
 		this.calendarEl = calendarEl;
 		
 		MapperService mapper = CoreSpringFactory.getImpl(MapperService.class);
@@ -97,6 +97,22 @@ public class FullCalendarComponent extends AbstractComponent {
 		this.currentDate = currentDate;
 	}
 
+	public boolean isConfigurationEnabled() {
+		return configurationEnabled;
+	}
+
+	public void setConfigurationEnabled(boolean configurationEnabled) {
+		this.configurationEnabled = configurationEnabled;
+	}
+
+	public boolean isAggregatedFeedEnabled() {
+		return aggregatedFeedEnabled;
+	}
+
+	public void setAggregatedFeedEnabled(boolean aggregatedFeedEnabled) {
+		this.aggregatedFeedEnabled = aggregatedFeedEnabled;
+	}
+
 	/**
 	 * @see org.olat.core.gui.components.Component#doDispatchRequest(org.olat.core.gui.UserRequest)
 	 */
@@ -122,17 +138,9 @@ public class FullCalendarComponent extends AbstractComponent {
 		vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/fullcalendar/fullcalendar.min.js");
 		vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.11.4.custom.dnd.min.js");
 	}
-
-	/**
-	 * Returns true when events should be visible always (renderer does not check isVis() )
-	 * @return
-	 */
-	public boolean isEventAlwaysVisible() {
-		return eventAlwaysVisible;
-	}
 	
-	public KalendarEvent getKalendarEvent(String id) {
-		for(KalendarRenderWrapper cal:calWrappers) {
+	public KalendarEvent getCalendarEvent(String id) {
+		for(KalendarRenderWrapper cal:calendars) {
 			for(KalendarEvent event:cal.getKalendar().getEvents()) {
 				if(id.equals(normalizeId(event.getID()))) {
 					return event;
@@ -142,8 +150,8 @@ public class FullCalendarComponent extends AbstractComponent {
 		return null;
 	}
 	
-	public KalendarRenderWrapper getKalendarRenderWrapperOf(String id) {
-		for(KalendarRenderWrapper cal:calWrappers) {
+	public KalendarRenderWrapper getCalendarByNormalizedId(String id) {
+		for(KalendarRenderWrapper cal:calendars) {
 			for(KalendarEvent event:cal.getKalendar().getEvents()) {
 				if(id.equals(normalizeId(event.getID()))) {
 					return cal;
@@ -153,10 +161,10 @@ public class FullCalendarComponent extends AbstractComponent {
 		return null;
 	}
 	
-	public List<KalendarEvent> getKalendarRenderWrapper(Date from, Date to) {
+	public List<KalendarEvent> getCalendarRenderWrapper(Date from, Date to) {
 		List<KalendarEvent> events = new ArrayList<KalendarEvent>();
 		
-		for(KalendarRenderWrapper cal:calWrappers) {
+		for(KalendarRenderWrapper cal:calendars) {
 			for(KalendarEvent event:cal.getKalendar().getEvents()) {
 				Date end = event.getEnd();
 				Date begin = event.getBegin();
@@ -169,10 +177,10 @@ public class FullCalendarComponent extends AbstractComponent {
 		return events;
 	}
 
-	public KalendarRenderWrapper getKalendarRenderWrapper(String calendarID) {
+	public KalendarRenderWrapper getCalendar(String calendarID) {
 		if(calendarID == null) return null;
 		
-		for(KalendarRenderWrapper cal:calWrappers) {
+		for(KalendarRenderWrapper cal:calendars) {
 			if(calendarID.equals(cal.getKalendar().getCalendarID())) {
 				return cal;
 			}
@@ -180,12 +188,18 @@ public class FullCalendarComponent extends AbstractComponent {
 		return null;
 	}
 	
-	public List<KalendarRenderWrapper> getKalendarRenderWrappers() {
-		return calWrappers;
+	public List<KalendarRenderWrapper> getCalendars() {
+		return calendars;
 	}
 
-	public void setKalendars(List<KalendarRenderWrapper> calendarWrappers) {
-		this.calWrappers = new ArrayList<KalendarRenderWrapper>(calendarWrappers);
+	public void setCalendars(List<KalendarRenderWrapper> calendarWrappers) {
+		calendars = new ArrayList<KalendarRenderWrapper>(calendarWrappers);
+		setDirty(true);
+	}
+	
+	public void addCalendar(KalendarRenderWrapper calendarWrapper) {
+		calendars.add(calendarWrapper);
+		setDirty(true);
 	}
 	
 	protected static final String normalizeId(String id) {

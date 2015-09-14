@@ -152,69 +152,60 @@ public class OverviewAuthoringController extends BasicController implements Acti
 			}
 		}
 	}
-	
-	private void cleanUp() {
-		removeAsListenerAndDispose(markedCtrl);
-		removeAsListenerAndDispose(myEntriesCtrl);
-		removeAsListenerAndDispose(searchEntriesCtrl);
-		markedCtrl = null;
-		myEntriesCtrl = null;
-		searchEntriesCtrl = null;
-	}
 
 	private AuthorListController doOpenMark(UserRequest ureq) {
-		cleanUp();
+		if(markedCtrl == null) {
+			SearchAuthorRepositoryEntryViewParams searchParams
+				= new SearchAuthorRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
+			searchParams.setMarked(Boolean.TRUE);
+			searchParams.setOwnedResourcesOnly(false);
+	
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Favorits", 0l);
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			markedCtrl = new AuthorListController(ureq, bwControl, "search.mark", searchParams, false);
+			listenTo(markedCtrl);
+		}
 		
-		SearchAuthorRepositoryEntryViewParams searchParams
-			= new SearchAuthorRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
-		searchParams.setMarked(Boolean.TRUE);
-		searchParams.setOwnedResourcesOnly(false);
-
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Favorits", 0l);
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		markedCtrl = new AuthorListController(ureq, bwControl, "search.mark", searchParams, false);
-		listenTo(markedCtrl);
 		currentCtrl = markedCtrl;
-		
 		addToHistory(ureq, markedCtrl);
 		mainVC.put("segmentCmp", markedCtrl.getStackPanel());
 		return markedCtrl;
 	}
 	
 	private AuthorListController doOpenMyEntries(UserRequest ureq) {
-		cleanUp();
-
-		SearchAuthorRepositoryEntryViewParams searchParams
-			= new SearchAuthorRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
-		searchParams.setOwnedResourcesOnly(true);
-
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("My", 0l);
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		myEntriesCtrl = new AuthorListController(ureq, bwControl, "search.my", searchParams, false);
-		listenTo(myEntriesCtrl);
+		if(myEntriesCtrl == null) {
+			SearchAuthorRepositoryEntryViewParams searchParams
+				= new SearchAuthorRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
+			searchParams.setOwnedResourcesOnly(true);
+	
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("My", 0l);
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			myEntriesCtrl = new AuthorListController(ureq, bwControl, "search.my", searchParams, false);
+			listenTo(myEntriesCtrl);
+		}
+		
 		currentCtrl = myEntriesCtrl;
-
 		addToHistory(ureq, myEntriesCtrl);
 		mainVC.put("segmentCmp", myEntriesCtrl.getStackPanel());
 		return myEntriesCtrl;
 	}
 	
 	private AuthorListController doSearchEntries(UserRequest ureq) {
-		cleanUp();
-
-		SearchAuthorRepositoryEntryViewParams searchParams
-			= new SearchAuthorRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
-		searchParams.setOwnedResourcesOnly(false);
-
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Search", 0l);
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		searchEntriesCtrl = new AuthorListController(ureq, bwControl, "search.generic", searchParams, true);
-		listenTo(searchEntriesCtrl);
-		currentCtrl = searchEntriesCtrl;
+		if(searchEntriesCtrl == null) {
+			SearchAuthorRepositoryEntryViewParams searchParams
+				= new SearchAuthorRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
+			searchParams.setOwnedResourcesOnly(false);
+	
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Search", 0l);
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			searchEntriesCtrl = new AuthorListController(ureq, bwControl, "search.generic", searchParams, true);
+			listenTo(searchEntriesCtrl);
+		}
 		
+		currentCtrl = searchEntriesCtrl;
 		addToHistory(ureq, searchEntriesCtrl);
 		mainVC.put("segmentCmp", searchEntriesCtrl.getStackPanel());
 		return searchEntriesCtrl;

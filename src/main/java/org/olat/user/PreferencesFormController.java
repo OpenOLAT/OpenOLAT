@@ -139,7 +139,7 @@ public class PreferencesFormController extends FormBasicController {
 	 */
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("title.prefs");
-		setFormContextHelp(this.getClass().getPackage().getName(), "home-prefs.html", "help.hover.prefs");
+		setFormContextHelp("Configuration#_einstellungen");
 		
 		// load preferences
 		Preferences prefs = tobeChangedIdentity.getUser().getPreferences();

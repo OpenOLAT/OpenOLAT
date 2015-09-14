@@ -72,19 +72,19 @@ public class ItemNodeTabbedFormController extends TabbableDefaultController {
 		int questionType = item.getQuestion().getType();
 		switch (questionType) {
 			case Question.TYPE_SC:
-				itemCtrl = new ChoiceItemController(ureq, getWindowControl(), item, qtiPackage, getTranslator(),  restrictedEdit);
+				itemCtrl = new ChoiceItemController(ureq, getWindowControl(), item, qtiPackage, getTranslator(), restrictedEdit);
 				break;
 			case Question.TYPE_MC:
-				itemCtrl = new ChoiceItemController(ureq, getWindowControl(), item, qtiPackage, getTranslator(),  restrictedEdit);
+				itemCtrl = new ChoiceItemController(ureq, getWindowControl(), item, qtiPackage, getTranslator(), restrictedEdit);
 				break;
 			case Question.TYPE_KPRIM:
-				itemCtrl = new ChoiceItemController(ureq, getWindowControl(), item, qtiPackage, getTranslator(),  restrictedEdit);
+				itemCtrl = new ChoiceItemController(ureq, getWindowControl(), item, qtiPackage, getTranslator(), restrictedEdit);
 				break;
 			case Question.TYPE_FIB:
 				itemCtrl = new FIBItemController(ureq, getWindowControl(), item, qtiPackage, getTranslator(), restrictedEdit);
 				break;
 			case Question.TYPE_ESSAY:
-				itemCtrl = new EssayItemController(item, qtiPackage, getTranslator(), getWindowControl(), restrictedEdit);
+				itemCtrl = new EssayItemController(ureq, getWindowControl(), item, qtiPackage, getTranslator(), restrictedEdit);
 				break;
 		}
 	}

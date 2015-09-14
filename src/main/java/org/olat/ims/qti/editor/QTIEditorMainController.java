@@ -119,6 +119,7 @@ import org.olat.ims.qti.export.QTIWordExport;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.QTIEditorResolver;
 import org.olat.ims.qti.qpool.QTIQPoolServiceProvider;
+import org.olat.ims.qti.questionimport.ImportOptions;
 import org.olat.ims.qti.questionimport.ItemAndMetadata;
 import org.olat.ims.qti.questionimport.ItemsPackage;
 import org.olat.ims.qti.questionimport.QImport_1_InputStep;
@@ -1082,7 +1083,9 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		removeAsListenerAndDispose(importTableWizard);
 
 		final ItemsPackage importPackage = new ItemsPackage();
-		Step start = new QImport_1_InputStep(ureq, importPackage, null);
+		final ImportOptions options = new ImportOptions();
+		options.setShuffle(!qtiPackage.getQTIDocument().isSurvey());
+		Step start = new QImport_1_InputStep(ureq, importPackage, options, null);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {

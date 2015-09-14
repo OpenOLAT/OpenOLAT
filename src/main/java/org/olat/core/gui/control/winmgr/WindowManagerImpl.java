@@ -60,8 +60,6 @@ public class WindowManagerImpl extends BasicManager implements WindowManager {
 
 	private int fontSize = 100; // default width
 
-	private int wboId = 0;
-
 	private PopupBrowserWindowControllerCreator pbwcc;
 	
 	public WindowManagerImpl() {
@@ -91,11 +89,8 @@ public class WindowManagerImpl extends BasicManager implements WindowManager {
 	}
 	
 	@Override
-	public void setAjaxWanted(UserRequest ureq, boolean enabled) {
-		boolean globalOk = Settings.isAjaxGloballyOn();
-		boolean browserOk = !Settings.isBrowserAjaxBlacklisted(ureq);
-		boolean all = globalOk && browserOk && enabled;
-		setAjaxEnabled(all);
+	public void setAjaxWanted(UserRequest ureq) {
+		setAjaxEnabled(!Settings.isBrowserAjaxBlacklisted(ureq));
 	}
 
 	/**
@@ -120,22 +115,6 @@ public class WindowManagerImpl extends BasicManager implements WindowManager {
 			wboImpl.setAjaxEnabled(enabled);
 		}			
 	}
-
-	@Override
-	public void setHighLightingEnabled(boolean enabled) {
-		for (WindowBackOfficeImpl wboImpl : wbos) {
-			wboImpl.setHighLightingEnabled(enabled);
-		}			
-	}
-
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.WindowManager#setShowJSON(boolean)
-	 */
-	public void setShowJSON(boolean enabled) {
-		for (WindowBackOfficeImpl wboImpl : wbos) {
-			wboImpl.setShowJSON(enabled);
-		}					
-	}
 	
 	public void setShowDebugInfo(boolean showDebugInfo) {
 		this.showDebugInfo = showDebugInfo;
@@ -158,7 +137,7 @@ public class WindowManagerImpl extends BasicManager implements WindowManager {
 	 */
 	@Override
 	public WindowBackOffice createWindowBackOffice(String windowName, ChiefController owner, WindowSettings settings) {
-		WindowBackOfficeImpl wbo = new WindowBackOfficeImpl(this, windowName, owner, wboId++, settings);
+		WindowBackOfficeImpl wbo = new WindowBackOfficeImpl(this, windowName, owner, settings);
 		wbos.add(wbo);
 		return wbo;
 	}

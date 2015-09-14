@@ -10,7 +10,7 @@ jQuery(function() {
 	jQuery('#callout_layer_$r.getCId()').each(function(index, el) {
 		jQuery(el).parents('div.popover').next('div.o_callout_overlay').each(function(index2, el2) {
 			jQuery(el2).click(function() {
-				if (o2cl()) { $r.javaScriptBgCommand('close'); }
+				$r.javaScriptCommand('close');
 			});
 		});
 	});

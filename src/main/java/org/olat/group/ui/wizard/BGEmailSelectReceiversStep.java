@@ -52,7 +52,7 @@ public class BGEmailSelectReceiversStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		form.setMultipartEnabled(true, Integer.MAX_VALUE);
+		form.setMultipartEnabled(true);
 		BGEmailSelectReceiversStepController selectForm
 			= new BGEmailSelectReceiversStepController(ureq, windowControl, form, stepsRunContext);
 		return selectForm;

@@ -19,10 +19,12 @@
  */
 package org.olat.core.id.context;
 
-import org.olat.core.configuration.AbstractOLATModule;
-import org.olat.core.configuration.ConfigOnOff;
-import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -32,45 +34,24 @@ import org.olat.core.util.StringHelper;
  * Initial Date:  26 jan. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, www.frentix.com
  */
-public class HistoryModule extends AbstractOLATModule implements ConfigOnOff {
+@Service("historyModule")
+public class HistoryModule extends AbstractSpringModule {
 
-	private static final String BACK_ENABLED_PROP = "back.enabled";
-	private static final String BACK_ENABLED_DEFAULT_PROP = "back.enabled.default";
-	private static final String MOD_ENABLED_PROP = "history.enabled";
 	private static final String RESUME_ENABLED_PROP = "resume.enabled";
 	private static final String RESUME_ENABLED_DEFAULT_PROP = "resume.enabled.default";
 
-	private boolean enabled;
-	private boolean backEnabled;
-	private boolean backDefaultSetting;
+	@Value("${history.resume.enabled:true}")
 	private boolean resumeEnabled;
+	@Value("${history.resume.enabled.default:ondemand}")
 	private String resumeDefaultSetting;
 	
-	/**
-	 * [used by Spring]
-	 */
-	private HistoryModule() {
-		//
+	@Autowired
+	public HistoryModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
 	}
 
 	@Override
 	public void init() {
-		//back enabled/disabled
-		String enabledObj = getStringPropertyValue(MOD_ENABLED_PROP, true);
-		if(StringHelper.containsNonWhitespace(enabledObj)) {
-			enabled = "true".equals(enabledObj);
-		}
-		
-		String backObj = getStringPropertyValue(BACK_ENABLED_PROP, true);
-		if(StringHelper.containsNonWhitespace(backObj)) {
-			backEnabled = "true".equals(backObj);
-		}
-		
-		String backDefSettings = getStringPropertyValue(BACK_ENABLED_DEFAULT_PROP, true);
-		if(StringHelper.containsNonWhitespace(backDefSettings)) {
-			backDefaultSetting = "true".equals(backDefSettings);
-		}
-
 		String resumeObj = getStringPropertyValue(RESUME_ENABLED_PROP, true);
 		if(StringHelper.containsNonWhitespace(resumeObj)) {
 			resumeEnabled = "true".equals(resumeObj);
@@ -80,44 +61,15 @@ public class HistoryModule extends AbstractOLATModule implements ConfigOnOff {
 		if(StringHelper.containsNonWhitespace(resumeDefSettings)) {
 			resumeDefaultSetting = resumeDefSettings;
 		}
-		
-		logInfo("Back/resume module is enabled: " + Boolean.toString(enabled));
-	}
-
-	@Override
-	protected void initDefaultProperties() {
-		enabled = getBooleanConfigParameter(MOD_ENABLED_PROP, true);
-		backEnabled = getBooleanConfigParameter(BACK_ENABLED_PROP, true);
-		backDefaultSetting = getBooleanConfigParameter(BACK_ENABLED_DEFAULT_PROP, true);
-		resumeEnabled = getBooleanConfigParameter(RESUME_ENABLED_PROP, true);
-		resumeDefaultSetting = getStringConfigParameter(RESUME_ENABLED_DEFAULT_PROP, "ondemand", true);
 	}
 
 	@Override
 	protected void initFromChangedProperties() {
 		init();
 	}
-	
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
-	}
-
-	@Override
-	public boolean isEnabled() {
-		return enabled;
-	}
-	
-	public boolean isBackEnabled() {
-		return enabled && backEnabled;
-	}
-
-	public boolean isBackDefaultSetting() {
-		return backDefaultSetting;
-	}
 
 	public boolean isResumeEnabled() {
-		return enabled && resumeEnabled;
+		return resumeEnabled;
 	}
 	
 	public String getResumeDefaultSetting() {
@@ -126,11 +78,5 @@ public class HistoryModule extends AbstractOLATModule implements ConfigOnOff {
 
 	public void setResumeDefaultSetting(String resumeDefaultSetting) {
 		this.resumeDefaultSetting = resumeDefaultSetting;
-	}
-
-	public void setEnabled(boolean enabled) {
-		if(this.enabled != enabled) {
-			setStringProperty(BACK_ENABLED_PROP, Boolean.toString(enabled), true);
-		}
 	}
 }

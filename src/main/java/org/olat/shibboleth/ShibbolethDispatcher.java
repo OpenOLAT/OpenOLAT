@@ -50,6 +50,9 @@ import org.olat.core.gui.exception.MsgFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
+import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLATSecurityException;
@@ -63,6 +66,7 @@ import org.olat.core.util.i18n.I18nModule;
 import org.olat.restapi.security.RestSecurityBean;
 import org.olat.shibboleth.util.ShibbolethAttribute;
 import org.olat.shibboleth.util.ShibbolethHelper;
+import org.olat.user.UserManager;
 
 /**
  * Initial Date:  17.07.2004
@@ -203,6 +207,28 @@ public class ShibbolethDispatcher implements Dispatcher{
 		userDeletionManager.setIdentityAsActiv(ureq.getIdentity());
 		ureq.getUserSession().getIdentityEnvironment().addAttributes(
 				shibbolethModule.getAttributeTranslator().translateAttributesMap(attributesMap));
+
+		// update user attributes
+		Identity authenticationedIdentity = ureq.getIdentity();
+		User user = authenticationedIdentity.getUser();
+		String s = attributesMap.get(shibbolethModule.getFirstName());
+		if (s != null) user.setProperty(UserConstants.FIRSTNAME, s);
+		s = attributesMap.get(shibbolethModule.getLastName());
+		if (s != null) user.setProperty(UserConstants.LASTNAME, s);
+		s = attributesMap.get(shibbolethModule.getInstitutionalName());
+		if (s != null) user.setProperty(UserConstants.INSTITUTIONALNAME, s);		
+		s = ShibbolethHelper.getFirstValueOf(shibbolethModule.getInstitutionalEMail(), attributesMap);
+		if (s != null) user.setProperty(UserConstants.INSTITUTIONALEMAIL, s);
+		s = attributesMap.get(shibbolethModule.getInstitutionalUserIdentifier());
+		if (s != null) user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, s);
+		// Optional organization unit property
+		String orgUnitIdent = shibbolethModule.getOrgUnit();
+		if(orgUnitIdent != null) {
+			s = ShibbolethHelper.getFirstValueOf(orgUnitIdent, attributesMap);
+			if (s != null) user.setProperty(UserConstants.ORGUNIT, s);
+		}
+		UserManager.getInstance().updateUser(user);
+
 		
 		if(mobile) {
 			String token = restSecurityBean.generateToken(ureq.getIdentity(), ureq.getHttpReq().getSession(true));
@@ -326,6 +352,14 @@ public class ShibbolethDispatcher implements Dispatcher{
 				if(val.equalsIgnoreCase(allowedValue)) {
 					return true;
 				}	
+				// Could be multi-field attribute. Check for semi-colon delimited encodings
+				String[] multiValues = val.split(";");
+				for (String singleValue : multiValues) {
+					singleValue = singleValue.trim();
+					if(singleValue.equalsIgnoreCase(allowedValue)) {
+						return true;
+					}	
+				}
 			}	
 		}
 		return false;

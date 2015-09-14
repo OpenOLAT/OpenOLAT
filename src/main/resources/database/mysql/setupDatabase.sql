@@ -1154,6 +1154,46 @@ create table o_cer_certificate (
    primary key (id)
 );
 
+-- calendar
+create table o_cal_use_config (
+   id bigint not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   c_calendar_id varchar(128) not null,
+   c_calendar_type varchar(16) not null,
+   c_token varchar(36),
+   c_cssclass varchar(36),
+   c_visible bit not null default 1,
+   c_aggregated_feed bit not null default 1,
+   fk_identity bigint not null,
+   primary key (id),
+   unique (c_calendar_id, c_calendar_type, fk_identity)
+);
+
+create table o_cal_import (
+   id bigint not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   c_calendar_id varchar(128) not null,
+   c_calendar_type varchar(16) not null,
+   c_displayname varchar(256),
+   c_lastupdate datetime not null,
+   c_url varchar(1024),
+   fk_identity bigint,
+   primary key (id)
+);
+
+create table o_cal_import_to (
+   id bigint not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   c_to_calendar_id varchar(128) not null,
+   c_to_calendar_type varchar(16) not null,
+   c_lastupdate datetime not null,
+   c_url varchar(1024),
+   primary key (id)
+);
+
 -- instant messaging
 create table if not exists o_im_message (
    id bigint not null,
@@ -1776,6 +1816,9 @@ alter table o_as_user_course_infos ENGINE = InnoDB;
 alter table o_as_mode_course ENGINE = InnoDB;
 alter table o_as_entry ENGINE = InnoDB;
 alter table o_as_mode_course_to_area ENGINE = InnoDB;
+alter table o_cal_use_config ENGINE = InnoDB;
+alter table o_cal_import ENGINE = InnoDB;
+alter table o_cal_import_to ENGINE = InnoDB;
 alter table o_mapper ENGINE = InnoDB;
 alter table o_qti_assessment_session ENGINE = InnoDB;
 alter table o_qp_pool ENGINE = InnoDB;
@@ -2103,6 +2146,18 @@ alter table o_as_entry add constraint as_entry_to_entry_idx foreign key (fk_entr
 alter table o_as_entry add constraint as_entry_to_refentry_idx foreign key (fk_reference_entry) references o_repositoryentry (repositoryentry_id);
 
 create index idx_as_entry_to_id_idx on o_as_entry (a_assessment_id);
+
+-- calendar
+alter table o_cal_use_config add constraint cal_u_conf_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_cal_u_conf_cal_id_idx on o_cal_use_config (c_calendar_id);
+create index idx_cal_u_conf_cal_type_idx on o_cal_use_config (c_calendar_type);
+
+alter table o_cal_import add constraint cal_imp_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_cal_imp_cal_id_idx on o_cal_import (c_calendar_id);
+create index idx_cal_imp_cal_type_idx on o_cal_import (c_calendar_type);
+
+create index idx_cal_imp_to_cal_id_idx on o_cal_import_to (c_to_calendar_id);
+create index idx_cal_imp_to_cal_type_idx on o_cal_import_to (c_to_calendar_type);
 
 -- mapper
 create index o_mapper_uuid_idx on o_mapper (mapper_uuid);

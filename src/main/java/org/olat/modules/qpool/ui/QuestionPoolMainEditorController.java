@@ -249,7 +249,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		} else if(copyToMyCtrl == source) {
 			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				QuestionItemShort item = (QuestionItemShort)copyToMyCtrl.getUserObject();
-				doCopyToMy(ureq, item);
+				doCopyToMy(item);
 			}
 		} else if(cmc == source) {
 			cleanUp();
@@ -332,11 +332,11 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		copyToMyCtrl.setUserObject(item);
 	}
 	
-	private void doCopyToMy(UserRequest ureq, QuestionItemShort item) {
+	private void doCopyToMy(QuestionItemShort item) {
 		List<QuestionItem> copiedItems = qpoolService.copyItems(getIdentity(), singletonList(item));
 		showInfo("item.copied", Integer.toString(copiedItems.size()));
 		if(myQuestionsCtrl != null) {
-			myQuestionsCtrl.updateSource(ureq);
+			myQuestionsCtrl.updateSource();
 		}
 	}
 	
@@ -428,7 +428,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			myQuestionsCtrl.setBreadcrumbPanel(stackPanel);
 			listenTo(myQuestionsCtrl);
 		} else {
-			myQuestionsCtrl.updateSource(ureq, source);
+			myQuestionsCtrl.updateSource(source);
 		}
 		currentCtrl = myQuestionsCtrl;
 		setContent(ureq, myQuestionsCtrl, entries, state);
@@ -442,7 +442,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			markedQuestionsCtrl.setBreadcrumbPanel(stackPanel);
 			listenTo(markedQuestionsCtrl);
 		} else {
-			markedQuestionsCtrl.updateSource(ureq, source);
+			markedQuestionsCtrl.updateSource(source);
 		}
 		currentCtrl = markedQuestionsCtrl;
 		setContent(ureq, markedQuestionsCtrl, entries, state);
@@ -461,7 +461,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			listenTo(selectedPoolCtrl);
 			cNode.setController(selectedPoolCtrl);
 		} else {
-			selectedPoolCtrl.updateSource(ureq, source);
+			selectedPoolCtrl.updateSource(source);
 		}
 		currentCtrl = selectedPoolCtrl;
 		setContent(ureq, selectedPoolCtrl, entries, state);
@@ -491,7 +491,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			listenTo(sharedItemsCtrl);
 			cNode.setController(sharedItemsCtrl);
 		} else {
-			sharedItemsCtrl.updateSource(ureq, source);
+			sharedItemsCtrl.updateSource(source);
 		}
 		currentCtrl = sharedItemsCtrl;
 		setContent(ureq, sharedItemsCtrl, entries, state);
@@ -515,7 +515,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 			listenTo(collItemsCtrl);
 			cNode.setController(collItemsCtrl);
 		} else {
-			collItemsCtrl.updateSource(ureq, source);
+			collItemsCtrl.updateSource(source);
 		}
 		collItemsCtrl.activate(ureq, entries, state);
 		currentCtrl = collItemsCtrl;

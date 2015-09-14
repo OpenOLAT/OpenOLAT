@@ -39,36 +39,51 @@ import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
- * TODO: patrickb Class Description for SimpleLabelTextComponent
+ * The label form component displays a label for the given form item. For DOM
+ * reasons the label does also include information about mandatory items and
+ * includes the item help text or links if available.
  * <P>
  * Initial Date: 06.12.2006 <br>
  * 
- * @author patrickb
+ * @author patrickb, gnaegi
  */
 public class SimpleLabelText extends FormBaseComponentImpl {
 	private static final ComponentRenderer RENDERER = new LabelComponentRenderer();
 	
 	private final String text;
-	private boolean componentIsMandatory;
 	private final FormItem item;
 
-	public SimpleLabelText(FormItem item, String name, String text, boolean mandatory) {
+	public SimpleLabelText(FormItem item, String name, String text) {
 		super(name);
 		this.text = text;
 		this.item = item;
-		this.componentIsMandatory = mandatory;
 		// to minimize DOM tree we provide our own DOM ID (o_c12245)
 		this.setDomReplacementWrapperRequired(false);
 	}
 
+	/**
+	 * return true: the component is mandatory; false: the component is optional
+	 */
 	public boolean isComponentIsMandatory() {
-		return componentIsMandatory;
+		return item.isMandatory();
 	}
 
-	public void setComponentIsMandatory(boolean componentIsMandatory) {
-		this.componentIsMandatory = componentIsMandatory;
+	/**
+	 * return the context help text for this component or NULL if not available
+	 */
+	public String getComponentHelpText() {
+		return item.getHelpText();
+	}
+	
+	/**
+	 * return the context help url for this component or NULL if not available
+	 */
+	public String getComponentHelpUrl() {
+		return item.getHelpUrl();
 	}
 
+	
+	
 	/**
 	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
 	 */
@@ -100,12 +115,41 @@ public class SimpleLabelText extends FormBaseComponentImpl {
 				}
 			}
 			sb.append(">");
+			if (stc.isComponentIsMandatory()) {
+				String hover = stc.getTranslator().translate("form.mandatory.hover");
+				sb.append("<i class='o_icon o_icon_mandatory' title='").append(hover).append("'></i> ");
+			}
 			if (StringHelper.containsNonWhitespace(stc.text)) {
 				sb.append(stc.text);
 			}
-			if (stc.componentIsMandatory) {
-				String hover = stc.getTranslator().translate("form.mandatory.hover");
-				sb.append("<i class='o_icon o_icon_mandatory' title='").append(hover).append("'></i>");
+			// component help is optional, can be text or link or both
+			if (stc.getComponentHelpText() != null || stc.getComponentHelpUrl() != null) {
+				String helpIconId = "o_fh" + source.getDispatchID();
+				// Wrap tooltip with link to external url if available
+				String helpUrl = stc.getComponentHelpUrl();
+				if (helpUrl != null) {
+					sb.append("<a href=\"").append(helpUrl).append("\" target='_blank'>"); 
+				}
+				// tooltip is bound to this icon
+				sb.append("<i class='o_form_chelp o_icon o_icon-fw o_icon_help help-block' id='").append(helpIconId).append("'></i>");
+				if (helpUrl != null) {
+					sb.append("</a>");
+				}			
+				// Attach bootstrap tooltip handler to help icon
+				sb.append("<script>jQuery(function () {jQuery('#").append(helpIconId).append("').tooltip({placement:\"top\",container: \"body\",html:true,title:\"");
+				String text = stc.getComponentHelpText();
+				if (text != null) {
+					sb.append(StringHelper.escapeJavaScript(text));
+				}
+				String url = stc.getComponentHelpUrl();
+				if (url != null) {
+					if (text != null) {
+						// append spacer between custom and generic link text
+						sb.append("<br />");
+					}
+					sb.append(translator.translate("form.fhelp.link", new String[]{"<i class='o_icon o_icon-fw o_icon_help'></i>"}));					
+				}
+				sb.append("\"});})</script>");		
 			}
 			sb.append("</label>");
 		}

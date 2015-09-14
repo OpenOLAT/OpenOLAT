@@ -228,7 +228,7 @@ public class MessageEditController extends FormBasicController {
 		List<VFSItem> attachments = new ArrayList<VFSItem>();
 		// add already existing attachments:
 		if (message.getKey() != null) {
-			OlatRootFolderImpl msgContainer = fm.getMessageContainer(message.getForum().getKey(), message.getKey());
+			VFSContainer msgContainer = fm.getMessageContainer(message.getForum().getKey(), message.getKey());
 			attachments.addAll(msgContainer.getItems(exclFilter));
 		}
 		// add files from TempFolder
@@ -328,7 +328,7 @@ public class MessageEditController extends FormBasicController {
 						fileExists = true;
 					}
 					if (message.getKey() != null) {
-						OlatRootFolderImpl msgContainer = fm.getMessageContainer(message.getForum().getKey(), message.getKey());
+						VFSContainer msgContainer = fm.getMessageContainer(message.getForum().getKey(), message.getKey());
 						if (msgContainer.resolve(fileName) != null) {
 							fileExists = true;
 						}
@@ -459,7 +459,7 @@ public class MessageEditController extends FormBasicController {
 	 */
 	public void persistTempUploadedFiles(Message tmpMessage) {
 		if (tmpMessage == null) throw new AssertException("Message may not be null to persist temp files");
-		OlatRootFolderImpl msgContainer = fm.getMessageContainer(message.getForum().getKey(), message.getKey());
+		VFSContainer msgContainer = fm.getMessageContainer(message.getForum().getKey(), message.getKey());
 		if (msgContainer != null) {
 			List<VFSItem> tmpFList = getTempFolderFileList();
 			for (VFSItem file : tmpFList) {
@@ -472,11 +472,7 @@ public class MessageEditController extends FormBasicController {
 					);
 				} catch (IOException e) {
 					removeTempUploadedFiles();
-					throw new RuntimeException (
-							"I/O error saving uploaded file:"
-							+msgContainer.getBasefile().getAbsolutePath()
-							+File.separator +leaf.getName()
-					);
+					throw new RuntimeException ("I/O error saving uploaded file:" + msgContainer + "/" + leaf.getName());
 				}
 			}
 		}

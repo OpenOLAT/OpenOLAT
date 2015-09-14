@@ -64,12 +64,12 @@ public class ChoiceRenderer extends DefaultComponentRenderer {
 		ubu.buildURI(target, null, null, iframePostEnabled? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 		target.append("\"");
 		if (iframePostEnabled) {
-			ubu.appendTarget(target);
+			target.append(" onsubmit=\"o_XHRSubmit('").append(id).append("')\"");
 		}
 		if (choice.getElementCssClass() != null) {
 			target.append(" class=\"").append(choice.getElementCssClass()).append("\"");
 		}
-		target.append(">");
+		target.append("><input type=\"hidden\" name=\"multi_action_identifier\" value=\"\" />");
 
 		target.append("<table class=\"o_choice\">");
 		int rows = model.getRowCount();
@@ -108,24 +108,24 @@ public class ChoiceRenderer extends DefaultComponentRenderer {
 		//buttons
 		target.append("<tr><td colspan='2'><div class='btn-group btn-group-xs o_block_top'>");
 		// Submit button
-		target.append("<input type='submit' name='olat_fosm' value=\"")
-		      .append(StringEscapeUtils.escapeHtml(translator.translate(choice.getSubmitKey())))
-		      .append("\" class='btn btn-primary' />");
+		target.append("<button type='button' class='btn btn-primary'")
+	          .append(" onclick=\"o_TableMultiActionEvent('").append(id).append("','olat_fosm');\"><span>")
+	          .append(StringEscapeUtils.escapeHtml(translator.translate(choice.getSubmitKey()))).append("</span></button>");
 
 		//Reset button
 		String resetKey = choice.getResetKey();
 		if (resetKey != null) {
-			target.append("<input type='submit' name='").append(Choice.RESET_IDENTIFICATION)
-			      .append("' value=\"").append(StringEscapeUtils.escapeHtml(translator.translate(resetKey)))
-			      .append("\" class='btn btn-default' />");
+			target.append("<button type='button' class='btn btn-default'")
+			      .append(" onclick=\"o_TableMultiActionEvent('").append(id).append("','").append(Choice.RESET_IDENTIFICATION).append("');\"><span>")
+			      .append(StringEscapeUtils.escapeHtml(translator.translate(resetKey))).append("</span></button>");
 		}
 		
 		// Cancel button
 		String cancelKey = choice.getCancelKey();
 		if (cancelKey != null) {
-			target.append("<input type='submit' name='").append(Choice.CANCEL_IDENTIFICATION)
-			      .append("' value=\"").append(StringEscapeUtils.escapeHtml(translator.translate(cancelKey)))
-			      .append("\" class='btn btn-default' />");
+			target.append("<button type='button' class='btn btn-default'")
+		          .append(" onclick=\"o_TableMultiActionEvent('").append(id).append("','").append(Choice.CANCEL_IDENTIFICATION).append("');\"><span>")
+		          .append(StringEscapeUtils.escapeHtml(translator.translate(cancelKey))).append("</span></button>");
 		}
 		target.append("</div></td></tr></table></form>");
 	}

@@ -41,6 +41,6 @@ public class NothingChangedMediaResource extends DefaultMediaResource {
 	 */
 	@Override
 	public void prepare(HttpServletResponse hres) {
-		hres.setStatus(HttpServletResponse.SC_OK);
+		hres.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 	}
 }

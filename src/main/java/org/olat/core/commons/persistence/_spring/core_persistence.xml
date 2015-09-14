@@ -92,6 +92,9 @@
 		<class>org.olat.basesecurity.model.GroupMembershipImpl</class>
 		<class>org.olat.basesecurity.model.UserProperty</class>
 		<class>org.olat.core.dispatcher.mapper.model.PersistedMapper</class>
+		<class>org.olat.commons.calendar.model.ImportedCalendar</class>
+		<class>org.olat.commons.calendar.model.ImportedToCalendar</class>
+		<class>org.olat.commons.calendar.model.CalendarUserConfiguration</class>
 		<class>org.olat.core.commons.services.notifications.model.SubscriberImpl</class>
 		<class>org.olat.core.commons.services.notifications.model.PublisherImpl</class>
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTask</class>

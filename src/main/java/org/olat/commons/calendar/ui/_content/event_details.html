@@ -1,15 +1,20 @@
 <div class="o_cal_time">$date</div>
 <div class="o_cal_wv_event_tooltip_content">
 	$r.escapeHtml($subject)
-	#if($location)
+	#if($location && !${location.isEmpty()})
 	<div class="o_cal_location">
 		<b>$r.translate("cal.form.location"):</b> $r.escapeHtml($location)
+	</div>
+	#end
+	#if($description && !${description.isEmpty()})
+	<div class="o_cal_description">
+		<b>$r.translate("cal.form.description"):</b> $r.xssScan($description)
 	</div>
 	#end
 	<div class="o_cal_links">
 	#foreach($link in $links)
 		#if($link.intern)
-			<a href="javascript:top.o_openUriInMainWindow('$link.uri')" title="$link.title" onclick="return o2cl();"><i class="o_icon $link.cssClass"> </i> $r.escapeHtml($link.displayName)</a>
+			<a href="javascript:top.o_openUriInMainWindow('$link.uri')" title="$link.title"><i class="o_icon $link.cssClass"> </i> $r.escapeHtml($link.displayName)</a>
 		#else
 			<a href="$link.uri" title="$link.title" class="$link.cssClass" target="_blank">$r.escapeHtml($link.displayName)</a>
 		#end

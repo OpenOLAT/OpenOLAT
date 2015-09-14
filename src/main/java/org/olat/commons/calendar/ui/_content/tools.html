@@ -1,0 +1,13 @@
+<ul class="o_dropdown list-unstyled">
+#if($r.available("cal.import.type.file") && $r.available("cal.import.type.file"))
+	<li>$r.render("cal.import.type.file")</li>
+	<li>$r.render("cal.synchronize.type.url")</li>
+	<li class="divider"></li>
+#end
+#if($r.available("cal.icalfeed.subscribe.remove"))
+	<li>$r.render("cal.icalfeed.subscribe.remove")</li>
+#end
+#if($r.available("cal.delete.imported.calendar"))
+	<li>$r.render("cal.delete.imported.calendar")</li>
+#end
+</ul>

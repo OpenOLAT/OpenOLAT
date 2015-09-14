@@ -39,8 +39,6 @@ import org.olat.core.gui.components.table.TableGuiConfiguration;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
 import org.olat.course.nodes.CalCourseNode;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -80,8 +78,7 @@ public class CourseCalendarPeekViewController extends BasicController {
 	}
 
 	private void init(UserRequest ureq, CalCourseNode courseNode, UserCourseEnvironment courseEnv, NodeEvaluation ne) {
-		ICourse course = CourseFactory.loadCourse(courseEnv.getCourseEnvironment().getCourseResourceableId());
-		CourseCalendars myCal = CourseCalendars.createCourseCalendarsWrapper(ureq, getWindowControl(), course, ne);
+		CourseCalendars myCal = CourseCalendars.createCourseCalendarsWrapper(ureq, getWindowControl(), courseEnv, ne);
 
 		Date refDate;
 		ModuleConfiguration config = courseNode.getModuleConfiguration();

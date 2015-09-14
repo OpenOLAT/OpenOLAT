@@ -63,13 +63,6 @@ public interface CalendarController extends Controller {
 	public void setCalendars(List<KalendarRenderWrapper> calendars);
 	
 	/**
-	 * Sets the list of KalendarRenderWrappers for this calendar controller.
-	 * 
-	 * @param calendars
-	 */
-	public void setCalendars(List<KalendarRenderWrapper> calendars, List<KalendarRenderWrapper> importedCalendars);
-	
-	/**
 	 * Sets the calendar dirty. The calendar controller should
 	 * issue an KalendarModfied event upon next user click.
 	 */

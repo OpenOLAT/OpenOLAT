@@ -65,6 +65,4 @@ public abstract class GlossaryManager extends BasicManager {
 	
 	public abstract void deleteGlossary(OLATResourceable res);
 	
-	public abstract String archive(String archivFilePath, RepositoryEntry repoEntry);
-	
 }

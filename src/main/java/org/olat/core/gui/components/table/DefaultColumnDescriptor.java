@@ -53,7 +53,6 @@ public class DefaultColumnDescriptor implements ColumnDescriptor {
 	private int alignment;
 	private boolean popUpWindowAction;
 	private String popUpWindowAttributes;
-	private HrefGenerator hrefGenerator;
 	//protected to allow overriding of compare method
 	protected Locale locale;
 	protected Collator collator; 
@@ -336,19 +335,4 @@ public class DefaultColumnDescriptor implements ColumnDescriptor {
 		this.popUpWindowAction = popUpWindowAction;
 		this.popUpWindowAttributes = popUpWindowAttributes;
 	}
-
-	/**
-	 * @return Returns the hrefGenerator.
-	 */
-	public HrefGenerator getHrefGenerator() {
-		return hrefGenerator;
-	}
-
-	/**
-	 * @param hrefGenerator The hrefGenerator to set.
-	 */
-	public void setHrefGenerator(final HrefGenerator hrefGenerator) {
-		this.hrefGenerator = hrefGenerator;
-	}
-
 }

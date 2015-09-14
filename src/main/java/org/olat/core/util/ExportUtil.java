@@ -31,8 +31,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.olat.core.logging.AssertException;
-
 /**
  * Initial Date:  Jul 20, 2004
  *     
@@ -54,7 +52,10 @@ public class ExportUtil {
 
 	public static File writeContentToFile(String fileName, String content, File exportDirectory, String enc) {
 		File f = new File(exportDirectory, fileName);
-		if (f.exists()) { throw new AssertException("File " + fileName + " already exists!"); }
+		if (f.exists()) {
+			String newFileName = FileUtils.rename(f);
+			f = new File(exportDirectory, newFileName);
+		}
 		FileUtils.save(f, content, enc);
 		return f;
 	}

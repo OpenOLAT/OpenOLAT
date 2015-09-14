@@ -111,6 +111,14 @@ public class LTIManagerImpl implements LTIManager {
 		}
 		return outcomes.getResultList();
 	}
+	
+	@Override
+	public void deleteOutcomes(OLATResource resource) {
+		String q = "delete from ltioutcome as outcome where outcome.resource=:resource";
+		dbInstance.getCurrentEntityManager().createQuery(q)
+			.setParameter("resource", resource)
+			.executeUpdate();
+	}
 
 	@Override
 	public Map<String,String> sign(Map<String,String> props, String url, String oauthKey, String oauthSecret) {

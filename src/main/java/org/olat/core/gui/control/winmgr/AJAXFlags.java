@@ -61,15 +61,4 @@ public class AJAXFlags {
 	public boolean isIframePostEnabled() {
 		return impl.isAjaxEnabled();
 	}
-
-	/**
-	 * @return
-	 */
-	/*public boolean isDragAndDropEnabled() {
-		// drag and drop support makes sense only when dom replacement works also: dom-repl(=iframe-post) -> dnd; 
-		// so we are not considering non-dom browsers which could dnd, which seems fine if looking at the current browser's compabilities
-		return impl.isAjaxEnabled();
-	}*/
-
-
 }

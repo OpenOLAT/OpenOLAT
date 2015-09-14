@@ -72,8 +72,8 @@ public class FolderPage {
 	}
 	
 	public FolderPage assertOnDirectory(String name) {
-		String escapedName = name.replace(" ", "%20");
-		By directoryBy = By.xpath("//table[contains(@class,'o_bc_table')]//a[contains(@href,'" + escapedName + "')]");
+		String escapedName = name;//TODO xhr .replace(" ", "%20");
+		By directoryBy = By.xpath("//table[contains(@class,'o_bc_table')]//a[contains(@onclick,'" + escapedName + "')]");
 		List<WebElement> directoryEls = browser.findElements(directoryBy);
 		Assert.assertFalse(directoryEls.isEmpty());
 		return this;

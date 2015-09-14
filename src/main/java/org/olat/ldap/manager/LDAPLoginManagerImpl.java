@@ -65,6 +65,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.FrameworkStartedEvent;
+import org.olat.core.util.event.FrameworkStartupEventChannel;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.group.BusinessGroup;
@@ -130,6 +132,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		this.coordinator = coordinatorManager.getCoordinator();
 		this.taskExecutorManager = taskExecutorManager;
 		coordinator.getEventBus().registerFor(this, null, ldapSyncLockOres);
+		FrameworkStartupEventChannel.registerForStartupEvent(this);
 	}
 
 	@Override
@@ -144,6 +147,36 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 				doHandleBatchSync(false);
 			} else if(LDAPEvent.DO_FULL_SYNCHING.equals(event.getCommand())) {
 				doHandleBatchSync(true);
+			}
+		} else if(event instanceof FrameworkStartedEvent) {
+			try {
+				init();
+			} catch (Exception e) {
+				log.error("", e);
+			}
+		}
+	}
+	
+	private void init() {
+		if(ldapLoginModule.isLDAPEnabled()) {
+			if (bindSystem() == null) {
+				// don't disable ldap, maybe just a temporary problem, but still report
+				// problem in logfile
+				log.error("LDAP connection test failed during module initialization, edit config or contact network administrator");
+			} else {
+				log.info("LDAP login is enabled");
+			}
+			
+			// Start LDAP cron sync job
+			if (ldapLoginModule.isLdapSyncCronSync()) {
+				LDAPError errors = new LDAPError();
+				if (doBatchSync(errors, true)) {
+					log.info("LDAP start sync: users synced");
+				} else {
+					log.warn("LDAP start sync error: " + errors.get());
+				}
+			} else {
+				log.info("LDAP cron sync is disabled");
 			}
 		}
 	}

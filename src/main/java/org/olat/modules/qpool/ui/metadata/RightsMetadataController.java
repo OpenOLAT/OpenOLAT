@@ -76,7 +76,6 @@ public class RightsMetadataController extends FormBasicController  {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("rights");
-		setFormContextHelp("org.olat.modules.qpool.ui.metadata", "rights.html", "help.hover.rights");
 		if(edit) {
 			editLink = uifactory.addFormLink("edit", "edit", null, formLayout, Link.BUTTON_XSMALL);
 			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");

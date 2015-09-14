@@ -32,6 +32,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Container;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormDecorator;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.ValidationStatus;
@@ -338,6 +339,49 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	 */
 	public void setExampleKey(String exampleKey, String[] params);
 
+	/**
+	 * Set an optional context help i18n key for this form item
+	 * @param helpKey i18n key to be translated with current translator
+	 * @param params parameters for i18n key or NULL if no parameters are used
+	 */
+	public void setHelpTextKey(String helpKey, String[] params);
+	
+	/**
+	 * Set an option context help text for this form item. The help text must be
+	 * already translated. Calling this method will override any help text i18n keys.
+	 * 
+	 * @param helpText The context help text or NULL to use no context help
+	 */
+	public void setHelpText(String helpText);
+	
+	/**
+	 * Get the translated context help text string for this form item
+	 * @return The help text or NULL if no help text is available
+	 */
+	public String getHelpText();
+
+	/**
+	 * Set an optional context help URL to link to external help resources
+	 * @param helpUrl An absolute URL with protocol handler etc. 
+	 */
+	public void setHelpUrl(String helpUrl);
+
+	/**
+	 * Set an optional context reference from the official manual. This
+	 * generates a link to the confluence server. The HelpLinkSPI is used to
+	 * generate the actual help URL from this alias name.
+	 * 
+	 * @param manualAliasName
+	 *            The help page alias.
+	 */
+	public void setHelpUrlForManualPage(String manualAliasName);
+	
+	/**
+	 * @return The link to an external help for this form item or NULL if no
+	 *         help link is available.
+	 */
+	public String getHelpUrl();
+	
 	/**
 	 * 
 	 * @param translator

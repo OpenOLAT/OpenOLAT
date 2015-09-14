@@ -86,7 +86,7 @@ public class IMPreferenceController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("title.roster");
-		setFormContextHelp("org.olat.user","home-imsettings-roster.html","help.hover.imsettings-roster");
+		setFormContextHelp("Chat#_settings");
 		
 		ImPreferences imPrefs = imService.getImPreferences(changeableIdentity);
 		

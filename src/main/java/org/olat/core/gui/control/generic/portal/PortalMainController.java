@@ -60,13 +60,7 @@ public class PortalMainController extends BasicController {
 		portalEditButton = LinkFactory.createButtonSmall("command.portal.edit", welcome, this);
 		portalEditButton.setIconLeftCSS("o_icon o_icon_edit");
 		portalEditButton.setElementCssClass("pull-right");
-		
-		if(CoreSpringFactory.containsBean("baksModule")){
-			welcome.contextPut("isbaks", true);
-		}else{
-			welcome.contextPut("isbaks", false);
-		}
-		
+
 		// rss link
 		String rssLink = RSSUtil.getPersonalRssLink(ureq);
 		welcome.contextPut("rssLink", rssLink);

@@ -360,6 +360,13 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 						user.setProperty(UserConstants.INSTITUTIONALEMAIL, institutionalEmail);
 					}
 					user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, shibbolethAttributesMap.get(shibbolethModule.getInstitutionalUserIdentifier()));
+					// Optional organization unit property
+					String orgUnitIdent = shibbolethModule.getOrgUnit();
+					if(orgUnitIdent != null) {
+						String s = ShibbolethHelper.getFirstValueOf(orgUnitIdent, shibbolethAttributesMap);
+						if (s != null) user.setProperty(UserConstants.ORGUNIT, s);
+					}
+
 					identity = secMgr.createAndPersistIdentityAndUser(choosenLogin, null, user, ShibbolethDispatcher.PROVIDER_SHIB, shibbolethUniqueID);
 					SecurityGroup olatUserGroup = secMgr.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
 					secMgr.addIdentityToSecurityGroup(identity, olatUserGroup);
@@ -386,6 +393,13 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 					if (s != null) user.setProperty(UserConstants.INSTITUTIONALEMAIL, s);
 					s = shibbolethAttributesMap.get(shibbolethModule.getInstitutionalUserIdentifier());
 					if (s != null) user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, s);
+					// Optional organization unit property
+					String orgUnitIdent = shibbolethModule.getOrgUnit();
+					if(orgUnitIdent != null) {
+						s = ShibbolethHelper.getFirstValueOf(orgUnitIdent, shibbolethAttributesMap);
+						if (s != null) user.setProperty(UserConstants.ORGUNIT, s);
+					}
+						
 					UserManager.getInstance().updateUser(user);
 					doLogin(authenticationedIdentity, ureq);
 					return;

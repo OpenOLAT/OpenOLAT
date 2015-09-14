@@ -24,10 +24,11 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.commons.calendar.model.KalendarEvent;
-import org.olat.commons.calendar.ui.events.KalendarGUIAddEvent;
-import org.olat.commons.calendar.ui.events.KalendarGUIMoveEvent;
-import org.olat.commons.calendar.ui.events.KalendarGUIPrintEvent;
-import org.olat.commons.calendar.ui.events.KalendarGUISelectEvent;
+import org.olat.commons.calendar.ui.events.CalendarGUIAddEvent;
+import org.olat.commons.calendar.ui.events.CalendarGUIFormEvent;
+import org.olat.commons.calendar.ui.events.CalendarGUIMoveEvent;
+import org.olat.commons.calendar.ui.events.CalendarGUIPrintEvent;
+import org.olat.commons.calendar.ui.events.CalendarGUISelectEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.translator.Translator;
@@ -43,21 +44,17 @@ import org.olat.core.util.ValidationStatus;
  */
 public class FullCalendarElement extends FormItemImpl {
 
-	private FullCalendarComponent component;
+	private final FullCalendarComponent component;
 
-	public FullCalendarElement(UserRequest ureq, String name, List<KalendarRenderWrapper> calendarWrappers,
-			Translator translator, Boolean eventAlwaysVisible) {
+	public FullCalendarElement(UserRequest ureq, String name,
+			List<KalendarRenderWrapper> calendarWrappers, Translator translator) {
 		super(name);
 		
-		component = new FullCalendarComponent(ureq, this, name, calendarWrappers, translator, eventAlwaysVisible);
+		component = new FullCalendarComponent(ureq, this, name, calendarWrappers, translator);
 	}
 	
 	public String getMapperUrl() {
 		return component.getMapperUrl();
-	}
-
-	public boolean isEventAlwaysVisible() {
-		return component.isEventAlwaysVisible();
 	}
 	
 	public Date getFocusDate() {
@@ -68,12 +65,32 @@ public class FullCalendarElement extends FormItemImpl {
 		component.setCurrentDate(date);
 	}
 	
-	public KalendarRenderWrapper getKalendarRenderWrapper(String calendarID) {
-		return component.getKalendarRenderWrapper(calendarID);
+	public boolean isConfigurationEnabled() {
+		return component.isConfigurationEnabled();
 	}
 
-	public void setKalendars(List<KalendarRenderWrapper> calendarWrappers) {
-		component.setKalendars(calendarWrappers);
+	public void setConfigurationEnabled(boolean configurationEnabled) {
+		component.setConfigurationEnabled(configurationEnabled);
+	}
+	
+	public boolean isAggregatedFeedEnabled() {
+		return component.isAggregatedFeedEnabled();
+	}
+
+	public void setAggregatedFeedEnabled(boolean aggregatedFeedEnabled) {
+		component.setAggregatedFeedEnabled(aggregatedFeedEnabled);
+	}
+	
+	public KalendarRenderWrapper getCalendar(String calendarID) {
+		return component.getCalendar(calendarID);
+	}
+
+	public void setCalendars(List<KalendarRenderWrapper> calendarWrappers) {
+		component.setCalendars(calendarWrappers);
+	}
+	
+	public void addCalendar(KalendarRenderWrapper calendarWrapper) {
+		component.addCalendar(calendarWrapper);
 	}
 	
 	/**
@@ -86,13 +103,21 @@ public class FullCalendarElement extends FormItemImpl {
 		String movedEventId = getRootForm().getRequestParameter("evMove");
 		String changeViewName = getRootForm().getRequestParameter("evChangeView");
 		String print = getRootForm().getRequestParameter("print");
+		String config = getRootForm().getRequestParameter("config");
+		String aggregate = getRootForm().getRequestParameter("aggregate");
 		
 		String dispatchuri = getRootForm().getRequestParameter("dispatchuri");
 		if("undefined".equals(dispatchuri)) {
 			//to nothing
 		} else if(StringHelper.containsNonWhitespace(print)) {
 			String targetDomId = "fc_p" + component.getDispatchID();
-			getRootForm().fireFormEvent(ureq, new KalendarGUIPrintEvent(targetDomId));
+			getRootForm().fireFormEvent(ureq, new CalendarGUIPrintEvent(this, targetDomId));
+		} else if(StringHelper.containsNonWhitespace(config)) {
+			String targetDomId = "fc_x" + component.getDispatchID();
+			getRootForm().fireFormEvent(ureq, new CalendarGUIFormEvent(CalendarGUIFormEvent.CONFIGURE, this, targetDomId));
+		} else if(StringHelper.containsNonWhitespace(aggregate)) {
+			String targetDomId = "fc_g" + component.getDispatchID();
+			getRootForm().fireFormEvent(ureq, new CalendarGUIFormEvent(CalendarGUIFormEvent.AGGREGATED_FEED, this,  targetDomId));
 		} else if(StringHelper.containsNonWhitespace(selectedEventId)) {
 			String targetDomId = getRootForm().getRequestParameter("evDomId");
 			doSelect(ureq, selectedEventId, targetDomId);
@@ -144,9 +169,9 @@ public class FullCalendarElement extends FormItemImpl {
 			allDay = Boolean.FALSE;
 		}
 		
-		KalendarEvent event = component.getKalendarEvent(eventId);
-		KalendarRenderWrapper calWrapper = component.getKalendarRenderWrapperOf(eventId);
-		getRootForm().fireFormEvent(ureq, new KalendarGUIMoveEvent(this, event, calWrapper, day, minute, allDay));
+		KalendarEvent event = component.getCalendarEvent(eventId);
+		KalendarRenderWrapper calWrapper = component.getCalendarByNormalizedId(eventId);
+		getRootForm().fireFormEvent(ureq, new CalendarGUIMoveEvent(this, event, calWrapper, day, minute, allDay));
 	}
 	
 	protected void doAdd(UserRequest ureq, String start, String end, String allDay) {
@@ -159,13 +184,13 @@ public class FullCalendarElement extends FormItemImpl {
 			endTime = Long.parseLong(end);
 		}
 		boolean allDayEvent = "true".equalsIgnoreCase(allDay);
-		getRootForm().fireFormEvent(ureq, new KalendarGUIAddEvent(this, null, new Date(startTime), new Date(endTime), allDayEvent));
+		getRootForm().fireFormEvent(ureq, new CalendarGUIAddEvent(this, null, new Date(startTime), new Date(endTime), allDayEvent));
 	}
 	
 	protected void doSelect(UserRequest ureq, String eventId, String targetDomId) {
-		KalendarEvent event = component.getKalendarEvent(eventId);
-		KalendarRenderWrapper calWrapper = component.getKalendarRenderWrapperOf(eventId);
-		getRootForm().fireFormEvent(ureq, new KalendarGUISelectEvent(this, event, calWrapper, targetDomId));
+		KalendarEvent event = component.getCalendarEvent(eventId);
+		KalendarRenderWrapper calWrapper = component.getCalendarByNormalizedId(eventId);
+		getRootForm().fireFormEvent(ureq, new CalendarGUISelectEvent(this, event, calWrapper, targetDomId));
 	}
 
 	@Override

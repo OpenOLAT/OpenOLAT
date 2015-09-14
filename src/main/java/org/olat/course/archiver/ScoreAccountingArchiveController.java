@@ -111,7 +111,7 @@ public class ScoreAccountingArchiveController extends BasicController {
 		File downloadFile = ExportUtil.writeContentToFile(fileName, result, exportDirectory, charset);
 
 		vcFeedback = createVelocityContainer("feedback");
-		vcFeedback.contextPut("body", translate("course.res.feedback", new String[] { fileName }));
+		vcFeedback.contextPut("body", translate("course.res.feedback", new String[] { downloadFile.getName() }));
 		downloadButton = LinkFactory.createButtonSmall("cmd.download", vcFeedback, this);
 		downloadButton.setUserObject(downloadFile);
 		myPanel.setContent(vcFeedback);

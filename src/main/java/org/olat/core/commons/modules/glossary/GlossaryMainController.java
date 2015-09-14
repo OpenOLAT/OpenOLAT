@@ -28,7 +28,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
+import org.olat.NewControllerFactory;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -42,6 +43,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -56,7 +58,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.user.UserInfoMainController;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -79,15 +83,24 @@ public class GlossaryMainController extends BasicController implements Activatea
 	private GlossaryItem currentDeleteItem;
 	private String filterIndex = "";
 	private VFSContainer glossaryFolder;
+
+	
+	private UserInfoMainController uimc;
+	private CloseableModalController cmcUserInfo;
 	private CloseableModalController cmc;
+	
 	private OLATResourceable resourceable;
+	
 	private static final String CMD_EDIT = "cmd.edit.";
 	private static final String CMD_DELETE = "cmd.delete.";
 	private static final String CMD_AUTHOR = "cmd.author.";
 	private static final String CMD_MODIFIER = "cmd.modifier.";
 	private static final String REGISTER_LINK = "register.link.";
 	private final Formatter formatter;
-	private final UserManager userManager;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
 
 	public GlossaryMainController(WindowControl control, UserRequest ureq, VFSContainer glossaryFolder, OLATResourceable res,
 			GlossarySecurityCallback glossarySecCallback, boolean eventProfil) {
@@ -100,7 +113,6 @@ public class GlossaryMainController extends BasicController implements Activatea
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_OPEN, getClass());
 		glistVC = createVelocityContainer("glossarylist");
 
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		formatter = Formatter.getInstance(getLocale());
 
 		glossaryItemList = GlossaryItemManager.getInstance().getGlossaryItemListByVFSItem(glossaryFolder);
@@ -229,15 +241,35 @@ public class GlossaryMainController extends BasicController implements Activatea
 	}
 	
 	private void openProfil(UserRequest ureq, String pos, boolean author) {
+		Long identityKey = null;
 		int id = Integer.parseInt(pos);
-		
 		@SuppressWarnings("unchecked")
 		List<GlossaryItemWrapper> wrappers = (List<GlossaryItemWrapper>)glistVC.getContext().get("editAndDelButtonList");
 		for(GlossaryItemWrapper wrapper:wrappers) {
 			if(id == wrapper.getId()) {
 				Revision revision = author ? wrapper.getAuthorRevision() : wrapper.getModifierRevision();
-				Long identityKey = revision.getAuthor().extractKey();
-				fireEvent(ureq, new OpenAuthorProfilEvent(identityKey));
+				identityKey = revision.getAuthor().extractKey();
+				break;
+			}
+		}
+		
+		if(identityKey != null) {
+			if(eventProfil) {
+				removeAsListenerAndDispose(cmc);
+				removeAsListenerAndDispose(uimc);
+
+				Identity selectedIdentity = securityManager.loadIdentityByKey(identityKey);
+				if(selectedIdentity != null) {
+					uimc = new UserInfoMainController(ureq, getWindowControl(), selectedIdentity, false, false);
+					listenTo(uimc);
+					
+					cmcUserInfo = new CloseableModalController(getWindowControl(), "c", uimc.getInitialComponent());
+					listenTo(cmcUserInfo);
+					cmcUserInfo.activate();
+				}
+			} else {
+				String businessPath = "[Identity:" + identityKey + "]";
+				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 			}
 		}
 	}
@@ -250,7 +282,12 @@ public class GlossaryMainController extends BasicController implements Activatea
 			GlossaryItemManager.getInstance().saveGlossaryItemList(glossaryFolder, glossaryItemList);
 			glossaryItemList = GlossaryItemManager.getInstance().getGlossaryItemListByVFSItem(glossaryFolder);
 			updateRegisterAndGlossaryItems();
-		}	else if (source == deleteDialogCtr) {
+		} else if(source == cmcUserInfo) {
+			removeAsListenerAndDispose(cmcUserInfo);
+			removeAsListenerAndDispose(uimc);
+			cmcUserInfo = null;
+			uimc = null;
+		} else if (source == deleteDialogCtr) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
 				glossaryItemList.remove(currentDeleteItem);
 				GlossaryItemManager.getInstance().saveGlossaryItemList(glossaryFolder, glossaryItemList);
@@ -372,7 +409,7 @@ public class GlossaryMainController extends BasicController implements Activatea
 		}
 		
 		public String getAuthorCmd() {
-			return eventProfil ? CMD_AUTHOR + id : null; 
+			return CMD_AUTHOR + id; 
 		}
 		
 		public String getAuthorLink() {
@@ -391,7 +428,7 @@ public class GlossaryMainController extends BasicController implements Activatea
 		}
 		
 		public String getModifierCmd() {
-			return eventProfil ? CMD_MODIFIER + id : null; 
+			return CMD_MODIFIER + id; 
 		}
 		
 		public String getModifierLink() {

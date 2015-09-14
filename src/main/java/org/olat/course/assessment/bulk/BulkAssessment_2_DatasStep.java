@@ -80,7 +80,7 @@ public class BulkAssessment_2_DatasStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext context, Form form) {
-		form.setMultipartEnabled(true, Integer.MAX_VALUE);
+		form.setMultipartEnabled(true);
 		if(courseNode != null) {
 			context.put("courseNode", courseNode);
 		}

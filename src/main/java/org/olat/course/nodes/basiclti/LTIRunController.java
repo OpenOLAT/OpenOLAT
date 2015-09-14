@@ -34,7 +34,6 @@ import org.imsglobal.basiclti.BasicLTIUtil;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -323,9 +322,6 @@ public class LTIRunController extends BasicController {
 			mainPanel.setContent(startPage);
 		} else if(display == LTIDisplayOptions.window) {
 			mainPanel.setContent(startPage);
-		} else if(display == LTIDisplayOptions.fullscreen && Windows.getWindows(ureq).getChiefController() == null) {
-			// directly opening the LTI after resume is not supported
-			mainPanel.setContent(startPage);
 		} else {
 			openBasicLTIContent(ureq);
 		}
@@ -335,7 +331,7 @@ public class LTIRunController extends BasicController {
 		// container is "run", "runFullscreen" or "runPopup" depending in configuration
 		doBasicLTI(ureq, run);
 		if (display == LTIDisplayOptions.fullscreen) {
-			ChiefController cc = Windows.getWindows(ureq).getChiefController();
+			ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
 			if (cc != null) {
 				thebaseChief = cc;
 				thebaseChief.getScreenMode().setMode(Mode.full);

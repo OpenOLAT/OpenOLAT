@@ -67,7 +67,7 @@ public class MediaLinksController extends FormBasicController {
 	
 	public final String provider;
 	
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(CalendarManager.class);
+	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(MediaLinksController.class);
 	
 	private FormLink newButton;
 	private final KalendarEvent kalendarEvent;

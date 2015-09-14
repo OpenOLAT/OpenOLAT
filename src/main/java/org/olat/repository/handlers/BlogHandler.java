@@ -131,13 +131,6 @@ public class BlogHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public String archive(Identity archiveOnBehalfOf, String archivFilePath, RepositoryEntry repoEntry) {
-		// Apperantly, this method is used for backing up any user related content
-		// (comments etc.) on deletion. Up to now, this doesn't exist in blogs.
-		return null;
-	}
-
-	@Override
 	public boolean cleanupOnDelete(OLATResourceable res) {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new OLATResourceableJustBeforeDeletedEvent(res), res);
 		// For now, notifications are not implemented since a blog feed is meant

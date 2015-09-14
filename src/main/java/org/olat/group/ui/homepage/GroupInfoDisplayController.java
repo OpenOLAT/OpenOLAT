@@ -21,7 +21,6 @@ package org.olat.group.ui.homepage;
 
 
 import org.olat.basesecurity.GroupRoles;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -31,6 +30,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -42,13 +42,15 @@ public class GroupInfoDisplayController extends BasicController {
 	
 	private final VelocityContainer content;
 	
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	
 	public GroupInfoDisplayController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		super(ureq, wControl);
 		content = createVelocityContainer("groupinfodisplay");
 		content.contextPut("description", businessGroup.getDescription());
 		content.contextPut("name", StringHelper.escapeHtml(businessGroup.getName()));
-		
-		BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+
 		int numOfMembers = businessGroupService.countMembers(businessGroup, GroupRoles.participant.name(), GroupRoles.coach.name());
 		content.contextPut("numMembers", numOfMembers);
 

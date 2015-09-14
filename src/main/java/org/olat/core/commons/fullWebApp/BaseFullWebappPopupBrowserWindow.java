@@ -58,6 +58,7 @@ public class BaseFullWebappPopupBrowserWindow extends BaseFullWebappController i
 	 * org.olat.core.gui.control.generic.popup.PopupBrowserWindow#open(org.olat
 	 * .core.gui.UserRequest)
 	 */
+	@Override
 	public void open(UserRequest ureq) {
 		ureq.getDispatchResult().setResultingWindow(getWindowControl().getWindowBackOffice().getWindow());
 	}
@@ -65,6 +66,7 @@ public class BaseFullWebappPopupBrowserWindow extends BaseFullWebappController i
 	/**
 	 * @see org.olat.core.gui.control.generic.popup.PopupBrowserWindow#getPopupWindowControl()
 	 */
+	@Override
 	public WindowControl getPopupWindowControl() {
 		return getWindowControl();
 	}

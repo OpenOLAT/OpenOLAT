@@ -313,7 +313,7 @@ public class RESTDispatcher implements Dispatcher {
 		ChiefController cc = Windows.getWindows(usess).getChiefController();
 		Window w = cc.getWindow();
 
-		URLBuilder ubu = new URLBuilder(WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED, w.getInstanceId(), String.valueOf(w.getTimestamp()), null);
+		URLBuilder ubu = new URLBuilder(WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED, w.getInstanceId(), String.valueOf(w.getTimestamp()));
 		StringOutput sout = new StringOutput(30);
 		ubu.buildURI(sout, null, null);
 		

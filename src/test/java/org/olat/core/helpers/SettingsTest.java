@@ -140,27 +140,27 @@ public class SettingsTest {
 		assertEquals("other :port appended.",expectedValue, serverUriScheme);
 	}
 	
-	private Settings createHttpDefaultPortSettings(){
+	public static Settings createHttpDefaultPortSettings(){
 		Settings settings = createCommonSettingsForPortTests(0, SettingsTest.httpDefaultPort);
 		return settings;
 	}
 	
-	private Settings createHttpOtherPortSettings(){
+	public static Settings createHttpOtherPortSettings(){
 		Settings settings = createCommonSettingsForPortTests(0, SettingsTest.httpOtherPort);
 		return settings;
 	}
 	
-	private Settings createHttpsDefaultPortSettings(){
+	public static Settings createHttpsDefaultPortSettings(){
 		Settings settings = createCommonSettingsForPortTests(SettingsTest.httpsDefaultPort, 0);
 		return settings;
 	}
 	
-	private Settings createHttpsOtherPortSettings(){
+	public static Settings createHttpsOtherPortSettings(){
 		Settings settings = createCommonSettingsForPortTests(SettingsTest.httpsOtherPort, 0);
 		return settings;
 	}
 	
-	private Settings createCommonSettingsForPortTests(int securePort, int insecurePort){
+	public static Settings createCommonSettingsForPortTests(int securePort, int insecurePort){
 		Settings settings = new Settings();
 		PersistedProperties persistedPropertiesHttp = new PersistedProperties(new DummyListener());
 		Properties defaultPropertiesHttp = new Properties();
@@ -170,6 +170,12 @@ public class SettingsTest {
 		settings.setServerSecurePort(securePort);
 		settings.setServerInsecurePort(insecurePort);
 		settings.setServerDomainName(SettingsTest.serverFqnd);//${server.domainname}
+		if (settings.getVersion() == null) {
+			// used by ConfluenceLinkSPITest
+			settings.setVersion("10.4");			
+		}
+		// used by ConfluenceLinkSPITest
+		settings.setApplicationName("OpenOLAT-jUnit-runner");
 		WebappHelper.setServletContextPath(SettingsTest.contextPath);
 		return settings;
 	}

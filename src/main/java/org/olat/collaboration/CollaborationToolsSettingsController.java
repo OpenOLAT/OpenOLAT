@@ -30,7 +30,7 @@ import java.util.List;
 
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarModule;
-import org.olat.commons.calendar.ui.events.KalendarModifiedEvent;
+import org.olat.commons.calendar.ui.events.CalendarGUIModifiedEvent;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -220,7 +220,7 @@ public class CollaborationToolsSettingsController extends BasicController {
 
 					// notify calendar components to refresh their calendars
 					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(
-							new KalendarModifiedEvent(), OresHelper.lookupType(CalendarManager.class)
+							new CalendarGUIModifiedEvent(), OresHelper.lookupType(CalendarManager.class)
 					);
 				}
 				lastCalendarEnabledState = newCalendarEnabledState;
@@ -256,7 +256,7 @@ public class CollaborationToolsSettingsController extends BasicController {
 			collabTools.saveCalendarAccess(new Long(calendarForm.getCalendarAccess()));
 			// notify calendar components to refresh their calendars
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(
-					new KalendarModifiedEvent(), OresHelper.lookupType(CalendarManager.class)
+					new CalendarGUIModifiedEvent(), OresHelper.lookupType(CalendarManager.class)
 			);
 		//fxdiff VCRP-8: collaboration tools folder access control
 		} else if (source == folderForm) {

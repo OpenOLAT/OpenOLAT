@@ -34,6 +34,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
+import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.RenderResult;
@@ -49,8 +50,8 @@ import org.olat.core.util.StringHelper;
  *
  */
 public class LinkRenderer extends DefaultComponentRenderer {
-	private static Pattern singleQuote = Pattern.compile("\'");
-	private static Pattern doubleQutoe = Pattern.compile("\"");
+	private static final Pattern singleQuote = Pattern.compile("\'");
+	private static final Pattern doubleQutoe = Pattern.compile("\"");
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
@@ -114,13 +115,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 		if (link.isEnabled()) {
 			// only set a target on an enabled link, target in span makes no sense
 			if (link.getTarget() != null){
-				cssSb.append(" target=\""+ link.getTarget() +"\"");
-			} else if (iframePostEnabled && link.isEnabled() && !flexiformlink) {
-				//flexi form link is excluded because the form post goes to the
-				//iframe
-				StringOutput so = new StringOutput();
-				ubu.appendTarget(so);
-				cssSb.append(so.toString());
+				cssSb.append(" target=\"").append(link.getTarget()).append("\"");
 			}
 		}
 
@@ -134,10 +129,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 		extJsSb.append(" <script type=\"text/javascript\">\n/* <![CDATA[ */\n");
 		// Execute code within an anonymous function (closure) to not leak
 		// variables to global scope (OLAT-5755)
-		extJsSb.append("(function(){");
-		extJsSb.append("var ");
-		extJsSb.append(elementId);
-		extJsSb.append(" = jQuery('#").append(elementId).append("');");
+		extJsSb.append("(function(){ var ").append(elementId).append(" = jQuery('#").append(elementId).append("');");
 
 		boolean hasExtJsSb = false;
 		boolean inForm = isInForm(args);
@@ -146,19 +138,20 @@ public class LinkRenderer extends DefaultComponentRenderer {
 		String title = link.getTitle();
 		String customDisplayText = link.getCustomDisplayText();
 		
-
 		// a form link can not have tooltips at the moment
 		// tooltip sets its own id into the <a> tag.
 		if (link.isEnabled()) {
-			sb.append("<p class='form-control-static'>", inForm).append("<a ");
-			// add layouting
-			sb.append(cssSb);
+			sb.append("<p class='form-control-static'>", inForm)
+			  .append("<a ")
+			  // add layouting
+			  .append(cssSb);
 			
 			//REVIEW:pb elementId is not null if it is a form link
 			//the javascript handler and the link.registerForMousePositionEvent
 			//need also access to a created and id set. -> avoid "o_c"+link.getDispatchID()
-			// FIXME:pb:a refactor for 5.3
-			if (elementId != null) sb.append(" id=\"").append(elementId).append("\" ");
+			if (elementId != null) {
+				sb.append(" id=\"").append(elementId).append("\" ");
+			}
 
 			String accessKey = link.getAccessKey();
 			if (accessKey != null) {
@@ -168,22 +161,19 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				//no target if flexi form link! because target is set on 
 				//post action of form
 				Form theForm = (Form)link.getInternalAttachedObject();
-				sb.append("href=\"javascript:");
-				sb.append(FormJSHelper.getJSFnCallFor(theForm, elementId, 1));
-				sb.append("\" ");
+				sb.append("href=\"javascript:")
+				  .append(FormJSHelper.getJSFnCallFor(theForm, elementId, 1))
+				  .append("\" ");
 			} else if(link.isPopup()) {
 				StringOutput href = new StringOutput();
 				LinkPopupSettings popup = link.getPopup();
-				ubu.buildURI(href, new String[] { VelocityContainer.COMMAND_ID }, new String[] { command },
-						link.getModURI(), AJAXFlags.MODE_NORMAL);
-				sb.append("href=\"#\" onclick=\"o_openPopUp('").append(href).append("','")
+				ubu.buildURI(href, new String[] { VelocityContainer.COMMAND_ID }, new String[] { command }, null, AJAXFlags.MODE_NORMAL);
+				sb.append("href=\"javascript:;\" onclick=\"o_openPopUp('").append(href).append("','")
 				  .append(popup.getTarget()).append("',").append(popup.getWidth())
 				  .append(",").append(popup.getHeight()).append("); return false;\" ");
 			} else {
-				sb.append("href=\"");
-				ubu.buildURI(sb, new String[] { VelocityContainer.COMMAND_ID }, new String[] { command },
-						link.getModURI(), iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-				sb.append("\"");
+				ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, link.isSuppressDirtyFormWarning(), true,
+						new NameValuePair(VelocityContainer.COMMAND_ID, command));
 			}
 			
 			//tooltips
@@ -204,23 +194,10 @@ public class LinkRenderer extends DefaultComponentRenderer {
 					} else {
 						text = translator.translate(title);
 					}
-					//text = StringEscapeUtils.escapeJavaScript(text);
 					sb.append(" title=\"").append(StringEscapeUtils.escapeHtml(text)).append("\"");
-					//extJsSb.append(elementId).append(".tooltip({ html:true, container:'body', title:function(){ return \"").append(text).append("\";}});");
-					//hasExtJsSb = true;
 				}
 			}
-
-			if (/* !link.isEnabledForLongTransaction && */!flexiformlink && (!link.isPopup()  || link.getTarget() != null)) {
-				// clash with onclick ... FIXME:pb/as find better solution to solve this
-				// problem.
-				String clickCmd = (link.isSuppressDirtyFormWarning() ? "o2c=0;return o2cl();" : "return o2cl();");
-				// only catch click event - modern browser fire click event even
-				// when event was triggered by keyboard
-				sb.append(" onclick=\"").append(clickCmd).append("\">");
-			} else {
-				sb.append(">");
-			}
+			sb.append(">");
 			
 			// CSS icon
 			if (link.getIconLeftCSS() != null) {
@@ -322,27 +299,18 @@ public class LinkRenderer extends DefaultComponentRenderer {
 
 			sb.append("</a>");
 		}
-		if(link.getStartsDownload() || link.getTarget() != null){
-			//if the link starts a download -> the o_afterserver is not called in
-			//non-ajax mode if a download is started.
-			//on click execute the "same" javascript as in o_ainvoke(r,true) for
-			//case 3:
-			hasExtJsSb = true;
-			extJsSb.append("if (").append(elementId).append(") ")
-		    .append(elementId).append(".click(function() {setTimeout(removeBusyAfterDownload,1200)});");
-		}
-		
+
 		//disabled or not, all tags should be closed here
 		//now append all gathered javascript stuff if any
 		if(hasExtJsSb){
 			// Execute anonymous function (closure) now (OLAT-5755)
-			extJsSb.append("})();");
-			extJsSb.append("\n/* ]]> */\n</script>");
+			extJsSb.append("})();")
+			       .append("\n/* ]]> */\n</script>");
 			sb.append(extJsSb);
 		}
 	}
 	
-	private boolean isInForm(String[] args) {
+	private final boolean isInForm(String[] args) {
 		boolean embedded = false;
 		if(args != null && args.length > 0) {
 			for(String arg:args) {

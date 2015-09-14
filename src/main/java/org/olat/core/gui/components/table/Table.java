@@ -55,6 +55,7 @@ import org.olat.core.util.filter.FilterFactory;
  * @author Felix Jost
  */
 public class Table extends AbstractComponent {
+	
 	private static final int NO_ROW_SELECTED = -1;
 	private static final int DEFAULT_RESULTS_PER_PAGE = 20;
 	private static final int INITIAL_COLUMNSIZE = 5;
@@ -74,14 +75,14 @@ public class Table extends AbstractComponent {
 	/**
 	 * Comment for <code>COMMAND_ROWACTION_CLICKED_ROWID</code>
 	 */
-	protected static final String COMMANDLINK_ROWACTION_ID = "p";
+	public static final String COMMANDLINK_ROWACTION_ID = "p";
 	
 	// The following commands will be submitted via hidden form parameters.
 	// The commands are internal to the table and affect functionality such as sorting and pageing.
 	
 	// The two ids formCmd and formParam are the hidden fields used by the form to submit the relevant actions.
-	private static final String FORM_CMD = "cmd";
-	private static final String FORM_PARAM = "param";
+	protected static final String FORM_CMD = "cmd";
+	protected static final String FORM_PARAM = "param";
 	
 	/**
 	 * Comment for <code>COMMAND_SORTBYCOLUMN</code>
@@ -311,123 +312,101 @@ public class Table extends AbstractComponent {
 	/**
 	 * @see org.olat.core.gui.components.Component#dispatchRequest(org.olat.core.gui.UserRequest)
 	 */
+	@Override
 	protected void doDispatchRequest(final UserRequest ureq) {
 		String formCmd = ureq.getParameter(FORM_CMD);
 		String formParam = ureq.getParameter(FORM_PARAM);
 		String rowAction = ureq.getParameter(COMMANDLINK_ROWACTION_CLICKED);
+		String multiAction = ureq.getParameter("multi_action_identifier");
 
-		// translate from ureq param, replay can then reuse code
-		int cmd = -1;
-		String value1 = formParam;
-		String value2 = null;
-		
 		if (formCmd != null && formCmd.length() > 0) {
 			// this is an internal command submitted by a form-submit()
 			// first update the multiselect state
 			updateMultiSelectState(ureq);
 			// then fetch the internal command to be processed
 			if (formCmd.equals(COMMAND_SORTBYCOLUMN)) {
-				cmd = TableReplayableEvent.SORT;
+				doSort(ureq, formParam);
 			} else if (formCmd.equals(COMMAND_PAGEACTION)) {
-				cmd = TableReplayableEvent.PAGE_ACTION;
+				doAction(ureq, formParam);
 			}
 		} else if (rowAction != null) {
 			// this is a row action clicked by the user. no form is submitted, so we don't evaluate any columns.
-			cmd = TableReplayableEvent.ROW_ACTION;
-			value1 = rowAction;
-			value2 = ureq.getParameter(COMMANDLINK_ROWACTION_ID);
+
+			String actionId = ureq.getParameter(COMMANDLINK_ROWACTION_ID);
 			// sanity check
-			int rowid = Integer.parseInt(value1);
+			int rowid = Integer.parseInt(rowAction);
 			int actualrows = getTableDataModel().getRowCount();
 			if (rowid < 0 || rowid >= actualrows){
 				setDirty(true);
 				return;
 			}
-		} else {
+			
+			selectedRowId = rowid;
+			//setDirty(true); commented as timestamp was consumed in AJAX mode: see OLAT-2007
+			// create and add replay event
+			fireEvent(ureq, new TableEvent(COMMANDLINK_ROWACTION_CLICKED, selectedRowId, actionId));
+		} else if(StringHelper.containsNonWhitespace(multiAction)) {
 			// check for multiselect actions
 			for (TableMultiSelect action: multiSelectActions) {
 				String actionIdentifier = action.getAction();
-				if (ureq.getParameter(actionIdentifier) != null) {
+				if (multiAction.equals(actionIdentifier)) {
 					// get the multiselect command
-					cmd = TableReplayableEvent.MULTISELECT_ACTION;
-					value1 = actionIdentifier;
 					// update multiselect state
 					updateMultiSelectState(ureq);
+					
+					setDirty(true);
+					fireEvent(ureq, new TableMultiSelectEvent(COMMAND_MULTISELECT, actionIdentifier, getMultiSelectSelectedRows()));
 					break;
 				}
 			}
 		}
-		dispatchRequest(ureq, cmd, value1, value2);
 	}
-
-	/**
-	 * @param ureq
-	 * @param theCmd
-	 * @param theValue
-	 */
-	private void dispatchRequest(final UserRequest ureq, final int cmd, final String value1, final String value2) {
-		if (cmd == TableReplayableEvent.SORT) {
-			// if sorting command, resort
-			int oldSortColumn = sortColumn;
-			sortColumn = Integer.parseInt(value1);
-			if (oldSortColumn == sortColumn) { // click the same column again, change
-				// sort order
-				sortAscending = !sortAscending;
-			} else { // new column, always sort ascending first
-				sortAscending = true;
-			}
-
-			setDirty(true);
-			resort();
-
-			fireEvent(ureq, new TableEvent(COMMAND_SORTBYCOLUMN, -1, COMMAND_SORTBYCOLUMN));
-		} else if (cmd == TableReplayableEvent.PAGE_ACTION) {
-
-			if (value1.equals(COMMAND_PAGEACTION_SHOWALL)) {
-				//updatePageing(null);	(see OLAT-1340)			
-				setShowAllSelected(true);
-				fireEvent(ureq, new Event(COMMAND_PAGEACTION_SHOWALL));
-				setDirty(true);
-			} else if (value1.equals(COMMAND_PAGEACTION_FORWARD)) {
-				if (currentPageId != null) {
-					updatePageing(Integer.valueOf(currentPageId.intValue() + 1));
-					setDirty(true);
-				}
-			} else if (value1.equals(COMMAND_PAGEACTION_BACKWARD)) {
-				if (currentPageId != null) {
-					updatePageing(Integer.valueOf(currentPageId.intValue() - 1));
-					setDirty(true);
-				}				
-			} else if (value1.equals(COMMAND_SHOW_PAGES)) {
-				setShowAllSelected(false);
-				fireEvent(ureq, new Event(COMMAND_SHOW_PAGES));
-				if (currentPageId != null) {
-					updatePageing(Integer.valueOf(currentPageId.intValue()));					
-				}else {
-					updatePageing(Integer.valueOf(1));
-				}
-				setDirty(true);				
-			} else {
-				updatePageing(Integer.valueOf(value1));
-				setDirty(true);
-			}
-
-		} else if (cmd == TableReplayableEvent.ROW_ACTION) {
-			selectedRowId = Integer.parseInt(value1);
-			String actionId = value2;
-
-
-			//setDirty(true); commented as timestamp was consumed in AJAX mode: see OLAT-2007
-			// create and add replay event
-			fireEvent(ureq, new TableEvent(COMMANDLINK_ROWACTION_CLICKED, selectedRowId, actionId));
-			return;
-		} else if (cmd == TableReplayableEvent.MULTISELECT_ACTION) {
-			
-			setDirty(true);
-			fireEvent(ureq, new TableMultiSelectEvent(COMMAND_MULTISELECT, value1, getMultiSelectSelectedRows()));
+	
+	private void doSort(UserRequest ureq, String value) {
+		// if sorting command, resort
+		int oldSortColumn = sortColumn;
+		sortColumn = Integer.parseInt(value);
+		if (oldSortColumn == sortColumn) { // click the same column again, change
+			// sort order
+			sortAscending = !sortAscending;
+		} else { // new column, always sort ascending first
+			sortAscending = true;
 		}
 
-		
+		setDirty(true);
+		resort();
+		fireEvent(ureq, new TableEvent(COMMAND_SORTBYCOLUMN, -1, COMMAND_SORTBYCOLUMN));
+	}
+	
+	private void doAction(UserRequest ureq, String value) {
+		if (value.equals(COMMAND_PAGEACTION_SHOWALL)) {
+			//updatePageing(null);	(see OLAT-1340)			
+			setShowAllSelected(true);
+			fireEvent(ureq, new Event(COMMAND_PAGEACTION_SHOWALL));
+			setDirty(true);
+		} else if (value.equals(COMMAND_PAGEACTION_FORWARD)) {
+			if (currentPageId != null) {
+				updatePageing(Integer.valueOf(currentPageId.intValue() + 1));
+				setDirty(true);
+			}
+		} else if (value.equals(COMMAND_PAGEACTION_BACKWARD)) {
+			if (currentPageId != null) {
+				updatePageing(Integer.valueOf(currentPageId.intValue() - 1));
+				setDirty(true);
+			}				
+		} else if (value.equals(COMMAND_SHOW_PAGES)) {
+			setShowAllSelected(false);
+			fireEvent(ureq, new Event(COMMAND_SHOW_PAGES));
+			if (currentPageId != null) {
+				updatePageing(Integer.valueOf(currentPageId.intValue()));					
+			}else {
+				updatePageing(Integer.valueOf(1));
+			}
+			setDirty(true);				
+		} else {
+			updatePageing(Integer.valueOf(value));
+			setDirty(true);
+		}
 	}
 
 	/**

@@ -25,7 +25,6 @@
 
 package org.olat.modules.fo;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -48,7 +47,8 @@ import org.olat.core.commons.services.text.TextService;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
@@ -61,7 +61,8 @@ import org.springframework.stereotype.Service;
  * @author Felix Jost
  */
 @Service
-public class ForumManager extends BasicManager {
+public class ForumManager {
+	private static final OLog log = Tracing.createLoggerFor(ForumManager.class);
 	
 	private static ForumManager INSTANCE;
 	@Autowired
@@ -104,7 +105,7 @@ public class ForumManager extends BasicManager {
 	
 	public List<Message> getThread(Long msgid, int firstResult, int maxResults, Message.OrderBy orderBy, boolean asc) {
 		long rstart = 0;
-		if (isLogDebugEnabled()){
+		if (log.isDebug()){
 			rstart = System.currentTimeMillis();
 		}
 		
@@ -124,9 +125,9 @@ public class ForumManager extends BasicManager {
 		}
 		
 		List<Message> messages = dbQuery.list();
-		if (isLogDebugEnabled()){
+		if (log.isDebug()){
 			long rstop = System.currentTimeMillis();
-			logDebug("time to fetch thread with topmsg_id " + msgid + " :" + (rstop - rstart), null);
+			log.debug("time to fetch thread with topmsg_id " + msgid + " :" + (rstop - rstart), null);
 		}
 		return messages;
 	}
@@ -201,7 +202,7 @@ public class ForumManager extends BasicManager {
 	 */
 	private List<Message> getMessagesByForumID(Long forum_id, int firstResult, int maxResults, boolean onlyThreads, Message.OrderBy orderBy, boolean asc) {
 		long rstart = 0;
-		if(isLogDebugEnabled()){
+		if(log.isDebug()){
 			rstart = System.currentTimeMillis();
 		}
 		
@@ -224,9 +225,9 @@ public class ForumManager extends BasicManager {
 		}
 		
 		List<Message> messages = dbQuery.list();
-		if(isLogDebugEnabled()){
+		if(log.isDebug()){
 			long rstop = System.currentTimeMillis();
-			logDebug("time to fetch forum with forum_id " + forum_id + " :" + (rstop - rstart), null);
+			log.debug("time to fetch forum with forum_id " + forum_id + " :" + (rstop - rstart), null);
 		}
 		return messages;
 	}
@@ -483,8 +484,8 @@ public class ForumManager extends BasicManager {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Forum.class, forumKey);
 		markingService.getMarkManager().deleteMarks(ores, m.getKey().toString());
 		
-		if(isLogDebugEnabled()){
-			logDebug("Deleting message ", m.getKey().toString());
+		if(log.isDebug()){
+			log.debug("Deleting message ", m.getKey().toString());
 		}
 	}
 
@@ -530,25 +531,22 @@ public class ForumManager extends BasicManager {
 	 * @param messageKey
 	 * @return the valid container for the attachments to place into
 	 */
-	public OlatRootFolderImpl getMessageContainer(Long forumKey, Long messageKey) {
-		String fKey = forumKey.toString();
-		String mKey = messageKey.toString();
-		StringBuilder sb = new StringBuilder();
-		sb.append("/forum/");
-		sb.append(fKey);
-		sb.append("/");
-		sb.append(mKey);
-		String pathToMsgDir = sb.toString();
-		OlatRootFolderImpl messageContainer = new OlatRootFolderImpl(pathToMsgDir, null);
-		File baseFile = messageContainer.getBasefile();
-		baseFile.mkdirs();
-		return messageContainer;
+	public VFSContainer getMessageContainer(Long forumKey, Long messageKey) {
+		VFSContainer forumContainer = getForumContainer(forumKey);
+		VFSItem messageContainer = forumContainer.resolve(messageKey.toString());
+		if(messageContainer == null) {
+			return forumContainer.createChildContainer(messageKey.toString());
+		} else if(messageContainer instanceof VFSContainer) {
+			return (VFSContainer)messageContainer;
+		}
+		log.error("The following message container is not a directory: " + messageContainer);
+		return null;
 	}
 	
 	private void moveMessageContainer(Long fromForumKey, Long fromMessageKey, Long toForumKey, Long toMessageKey) {
 		// copy message container
-		OlatRootFolderImpl toMessageContainer = getMessageContainer(toForumKey, toMessageKey);
-		OlatRootFolderImpl fromMessageContainer = getMessageContainer(fromForumKey, fromMessageKey);
+		VFSContainer toMessageContainer = getMessageContainer(toForumKey, toMessageKey);
+		VFSContainer fromMessageContainer = getMessageContainer(fromForumKey, fromMessageKey);
 		for (VFSItem vfsItem : fromMessageContainer.getItems()) {
 			toMessageContainer.copyFrom(vfsItem);
 		}
@@ -564,16 +562,16 @@ public class ForumManager extends BasicManager {
 		fContainer.delete();
 	}
 
-	private OlatRootFolderImpl getForumContainer(Long forumKey) {
-		String fKey = forumKey.toString();
-		StringBuilder sb = new StringBuilder();
-		sb.append("/forum/");
-		sb.append(fKey);
-		String pathToForumDir = sb.toString();
-		OlatRootFolderImpl fContainer = new OlatRootFolderImpl(pathToForumDir, null);
-		File baseFile = fContainer.getBasefile();
-		baseFile.mkdirs();
-		return fContainer;
+	private VFSContainer getForumContainer(Long forumKey) {
+		OlatRootFolderImpl fContainer = new OlatRootFolderImpl("/forum", null);
+		VFSItem forumContainer = fContainer.resolve(forumKey.toString());
+		if(forumContainer == null) {
+			return fContainer.createChildContainer(forumKey.toString());
+		} else if(forumContainer instanceof VFSContainer) {
+			return (VFSContainer)forumContainer;
+		}
+		log.error("The following forum container is not a directory: " + forumContainer);
+		return null;
 	}
 	
 	/**

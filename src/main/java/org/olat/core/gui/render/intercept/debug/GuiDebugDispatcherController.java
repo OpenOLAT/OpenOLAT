@@ -28,7 +28,6 @@
 */
 package org.olat.core.gui.render.intercept.debug;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +38,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.delegating.DelegatingComponent;
 import org.olat.core.gui.components.panel.StackedPanel;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -55,10 +53,6 @@ import org.olat.core.gui.render.intercept.DebugHelper;
 import org.olat.core.gui.render.intercept.InterceptHandler;
 import org.olat.core.gui.render.intercept.InterceptHandlerInstance;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.helpers.Settings;
-import org.olat.core.util.WebappHelper;
-import org.olat.core.util.vfs.LocalFileImpl;
-import org.olat.core.util.vfs.VFSLeaf;
 
 /**
  * Description:<br>
@@ -83,7 +77,7 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 		super(ureq, wControl);
 
 		dc = new DelegatingComponent("deleg", new ComponentRenderer() {
-
+			@Override
 			public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 					RenderResult renderResult, String[] args) {
 				// save urlbuilder for later use (valid only for one request scope thus
@@ -91,22 +85,18 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 				debugURLBuilder = ubu;
 			}
 
+			@Override
 			public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 					RenderingState rstate) {
 			// void
 			}
 
+			@Override
 			public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
 			// void
 			}
 		}); 
-		/*{
-			@Override
-			/*public boolean isDirty() {
-				return true;
-			}
-		};
-		*/
+		
 		dc.addListener(this);
 		dc.setDomReplaceable(false);
 		mainP = putInitialPanel(dc);
@@ -118,12 +108,9 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 	 *      org.olat.core.gui.components.Component,
 	 *      org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == dc) {
-			String cid = ureq.getParameter("cid");
-			Component infoComponent = idToComponent.get(cid);
-
-			
 			String com = ureq.getParameter("com");
 			// ------- open java IDE -------
 			if (com.equals("ojava")) {
@@ -135,23 +122,11 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 				} catch (IOException e) {
 					getWindowControl().setError("Could not render java source code. Make sure you have set the source path (olat and olatcore) in the config (olat.properties) and have the source files there available");
 				}
-			} else	if (com.equals("vc")) {
-				// ------- open velocity container for editing -------
-				VelocityContainer vc = (VelocityContainer) infoComponent;
-				String velocityTemplatePath  = WebappHelper.getSourcePath()+"/"+vc.getPage();
-				VFSLeaf vcContentFile = new LocalFileImpl(new File(velocityTemplatePath));
-				boolean readOnly = Settings.isReadOnlyDebug();
-				vcEditorController = new PlainTextEditorController(ureq, getWindowControl(), vcContentFile, "utf-8", true, true, null);
-				vcEditorController.setReadOnly(readOnly);
-				vcEditorController.addControllerListener(this);
-				VelocityContainer vcWrap = createVelocityContainer("vcWrapper");
-				if (readOnly) vcWrap.contextPut("readOnly", Boolean.TRUE);
-				vcWrap.put("editor", vcEditorController.getInitialComponent());
-				getWindowControl().pushAsModalDialog(DebugHelper.createDebugProtectedWrapper(vcWrap));
-			} 
+			}
 		}
 	}
 
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == vcEditorController) {
 			// saving was already done by editor, just pop
@@ -162,8 +137,9 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
-	//
+		//
 	}
 
 	/*
@@ -171,9 +147,11 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 	 * 
 	 * @see org.olat.core.gui.render.debug.DebugHandler#createDebugComponentRenderer(org.olat.core.gui.components.ComponentRenderer)
 	 */
+	@Override
 	public ComponentRenderer createInterceptComponentRenderer(final ComponentRenderer originalRenderer) {
 		return new ComponentRenderer() {
 
+			@Override
 			public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 					RenderResult renderResult, String[] args) {
 				if (debugURLBuilder != null && !DebugHelper.isProtected(source)) {
@@ -195,15 +173,6 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 					sb.append("Info: <b>").append(source.getComponentName()).append("</b> ("+cnameShort+") id:");
 					sb.append(String.valueOf(source.getDispatchID())).append("&nbsp; level:").append(lev);
 
-					// offer velocity editor if appropriate.
-					// todo: let component provide component-specific editors
-					if (source instanceof VelocityContainer) {
-						VelocityContainer vcc = (VelocityContainer) source;
-						sb.append("<br />velocity: <a href=\"");
-						debugURLBuilder.buildURI(sb, new String[] { "cid", "com" }, new String[] { String.valueOf(did), "vc" });
-						sb.append("\">").append("page:").append(vcc.getPage()+"</a>");						
-					}
-					
 					Controller listC = Util.getListeningControllerFor(source);
 					if (listC != null) {
 						sb.append("<br /><b>controller:</b> <a  target=\"_blank\" href=\"");
@@ -256,11 +225,13 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 				}
 			}
 
+			@Override
 			public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 					RenderingState rstate) {
 				originalRenderer.renderHeaderIncludes(renderer, sb, source, ubu, translator, rstate);
 			}
 
+			@Override
 			public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
 				originalRenderer.renderBodyOnLoadJSFunctionCall(renderer, sb, source, rstate);
 			}
@@ -273,6 +244,7 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 	 * 
 	 * @see org.olat.core.gui.render.debug.DebugHandler#createDebugHandlerRenderInstance()
 	 */
+	@Override
 	public InterceptHandlerInstance createInterceptHandlerInstance() {
 		// clear all previous data and return this.
 		// otherwise this map would collect all components from all clicks, but we
@@ -281,7 +253,6 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 		idToComponent.clear();
 		return this;
 	}
-
 
 	/**
 	 * @param showDebugInfo
@@ -293,5 +264,4 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 			mainP.setContent(null);
 		}
 	}
-
 }

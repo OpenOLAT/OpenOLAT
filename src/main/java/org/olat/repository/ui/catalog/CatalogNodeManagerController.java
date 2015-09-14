@@ -137,6 +137,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 
 	private LockResult catModificationLock;
 	private final MapperKey mapperThumbnailKey;
+	private final WindowControl rootwControl;
 
 	private final boolean isGuest;
 	private final boolean isAuthor;
@@ -164,13 +165,14 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	@Autowired
 	private RepositoryManager repositoryManager;
 	
-	public CatalogNodeManagerController(UserRequest ureq, WindowControl wControl,
+	public CatalogNodeManagerController(UserRequest ureq, WindowControl wControl, WindowControl rootwControl,
 			CatalogEntry catalogEntry, TooledStackedPanel stackPanel, boolean localTreeAdmin) {
 		super(ureq, wControl, "node");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(), getTranslator()));
 		
 		this.toolbarPanel = stackPanel;
 		this.catalogEntry = catalogEntry;
+		this.rootwControl = rootwControl;
 		mapperThumbnailKey = mapperService.register(null, "catalogentryImage", new CatalogEntryImageMapper());
 		
 		isAuthor = ureq.getUserSession().getRoles().isAuthor();
@@ -406,7 +408,12 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		
 		ContextEntry entry = entries.get(0);
 		String type = entry.getOLATResourceable().getResourceableTypeName();
-		if("Node".equalsIgnoreCase(type)) {
+		if("CatalogEntry".equalsIgnoreCase(type)) {
+			Long entryKey = entry.getOLATResourceable().getResourceableId();
+			if(entryKey != null && entryKey.longValue() > 0) {
+				activateRoot(ureq, entryKey); 
+			}
+		} else if("Node".equalsIgnoreCase(type)) {
 			//the "Node" is only for internal usage
 			StateEntry stateEntry = entry.getTransientState();
 			if(stateEntry instanceof CatalogStateEntry) {
@@ -417,6 +424,25 @@ public class CatalogNodeManagerController extends FormBasicController implements
 				}
 			}
 		}
+	}
+	
+	/**
+	 * Build an internal business path made of "Node" with the category
+	 * as state entry to prevent loading several times the same entries.
+	 * 
+	 * @param ureq
+	 * @param entryKey
+	 */
+	private void activateRoot(UserRequest ureq, Long entryKey) {
+		List<ContextEntry> parentLine = new ArrayList<>();
+		for(CatalogEntry node = catalogManager.getCatalogEntryByKey(entryKey); node.getParent() != null; node=node.getParent()) {
+			OLATResourceable nodeRes = OresHelper.createOLATResourceableInstance("Node", node.getKey());
+			ContextEntry ctxEntry = BusinessControlFactory.getInstance().createContextEntry(nodeRes);
+			ctxEntry.setTransientState(new CatalogStateEntry(node));
+			parentLine.add(ctxEntry);
+		}
+		Collections.reverse(parentLine);
+		activate(ureq, parentLine, null);
 	}
 
 	@Override
@@ -602,9 +628,9 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("CatalogEntry", entry.getKey());
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, rootwControl);
 			
-			childNodeCtrl = new CatalogNodeManagerController(ureq, bwControl, entry, toolbarPanel, isLocalTreeAdmin);
+			childNodeCtrl = new CatalogNodeManagerController(ureq, bwControl, rootwControl, entry, toolbarPanel, isLocalTreeAdmin);
 			listenTo(childNodeCtrl);
 			toolbarPanel.pushController(entry.getName(), childNodeCtrl);
 			childNodeCtrl.initToolbar();

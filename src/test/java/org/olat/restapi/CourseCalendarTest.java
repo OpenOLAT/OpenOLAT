@@ -55,10 +55,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.commons.calendar.CalendarManager;
-import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.restapi.EventVO;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
@@ -86,6 +86,8 @@ public class CourseCalendarTest extends OlatJerseyTestCase {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private CalendarManager calendarManager;
 	
 	/**
 	 * SetUp is called before each test.
@@ -104,8 +106,8 @@ public class CourseCalendarTest extends OlatJerseyTestCase {
 			ICourse course = CourseFactory.loadCourse(course1.getResourceableId());
 			Assert.assertTrue(course.getCourseConfig().isCalendarEnabled());
 			
-			CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
-			KalendarRenderWrapper calendarWrapper = calendarManager.getCourseCalendar(course);
+			CalendarManager calManager = CoreSpringFactory.getImpl(CalendarManager.class);
+			KalendarRenderWrapper calendarWrapper = calManager.getCourseCalendar(course);
 			
 			Calendar cal = Calendar.getInstance();
 			for(int i=0; i<2; i++) {
@@ -113,7 +115,7 @@ public class CourseCalendarTest extends OlatJerseyTestCase {
 				cal.add(Calendar.HOUR_OF_DAY, 1);
 				Date end = cal.getTime();
 				KalendarEvent event = new KalendarEvent(UUID.randomUUID().toString(), "Unit test " + i, begin, end);
-				calendarManager.addEventTo(calendarWrapper.getKalendar(), event);
+				calManager.addEventTo(calendarWrapper.getKalendar(), event);
 				cal.add(Calendar.DATE, 1);
 			}
 			
@@ -163,7 +165,6 @@ public class CourseCalendarTest extends OlatJerseyTestCase {
 		EntityUtils.consume(putEventResponse.getEntity());
 		
 		//check if the event is saved
-		CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
 		KalendarRenderWrapper calendarWrapper = calendarManager.getCourseCalendar(course1);
 		Collection<KalendarEvent> savedEvents = calendarWrapper.getKalendar().getEvents();
 		
@@ -184,7 +185,6 @@ public class CourseCalendarTest extends OlatJerseyTestCase {
 		assertTrue(conn.login(auth1.getName(), "A6B7C8"));
 		
 		//create an event if the event is saved
-		CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
 		KalendarRenderWrapper calendarWrapper = calendarManager.getCourseCalendar(course1);
 		
 		Calendar cal = Calendar.getInstance();

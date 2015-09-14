@@ -167,6 +167,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		add(formComp.getName(), formComp);
 	}
 
+	@Override
 	public void add(String name, FormItem formComp) {
 		if(!hasRootForm){
 			throw new AssertionError("first ensure that the layout container knows about its rootform!!");
@@ -198,11 +199,11 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 
 		// Check for multipart data, add upload limit to form
 		if (formComp instanceof FormMultipartItem) {
-			FormMultipartItem mpItem = (FormMultipartItem) formComp;
-			getRootForm().setMultipartEnabled(true, mpItem.getMaxUploadSizeKB());
+			getRootForm().setMultipartEnabled(true);
 		}
-		
 	}
+	
+	@Override
 	public void add(String name, Collection<FormItem> foItems){
 		
 		//remove if already in
@@ -297,8 +298,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 
 		// Check for multipart data, add upload limit to form
 		if (with instanceof FormMultipartItem) {
-			FormMultipartItem mpItem = (FormMultipartItem) with;
-			getRootForm().setMultipartEnabled(true, mpItem.getMaxUploadSizeKB());
+			getRootForm().setMultipartEnabled(true);
 		}
 	}
 	

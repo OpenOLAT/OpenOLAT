@@ -52,7 +52,7 @@ public class AdministrationPage {
 	}
 	
 	public AdministrationPage selectSystemInfo() {
-		By systemLinkby = By.xpath("//div[contains(@class,'o_tree')]//a[contains(@href,'systemParent/')]");
+		By systemLinkby = By.xpath("//div[contains(@class,'o_tree')]//a[contains(@onclick,'systemParent')]");
 		browser.findElement(systemLinkby).click();
 		OOGraphene.waitBusy(browser);
 		return this;

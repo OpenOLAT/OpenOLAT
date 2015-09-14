@@ -30,7 +30,6 @@ import java.util.Set;
 import org.apache.commons.lang.ArrayUtils;
 import org.olat.admin.SystemAdminMainController;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -223,7 +222,7 @@ public class LayoutAdminController extends FormBasicController {
 				layoutModule.setLogoFilename(newLogo.getName());
 				logoUpload.setInitialFile(newLogo);
 				deleteLogo.setVisible(true);
-				Windows.getWindows(ureq).getChiefController().wishReload(ureq, true);
+				getWindowControl().getWindowBackOffice().getChiefController().wishReload(ureq, true);
 				
 			}
 		} else if(logoLinkTypeEl == source) {
@@ -234,7 +233,7 @@ public class LayoutAdminController extends FormBasicController {
 			logoUpload.reset();
 			deleteLogo.setVisible(false);
 			logoUpload.setInitialFile(null);
-			Windows.getWindows(ureq).getChiefController().wishReload(ureq, true);
+			getWindowControl().getWindowBackOffice().getChiefController().wishReload(ureq, true);
 			
 		} else if(themeSelection == source) {
 			// set new theme in Settings

@@ -70,13 +70,12 @@ public interface DTab extends Disposable, CustomCSSProvider {
 	/**
 	 * @return the olat resourceable
 	 */
-	//fxdiff BAKS-7 Resume function
 	public OLATResourceable getInitialOLATResourceable();
 
-	
-	public Controller getController();
 	/**
-	 * @param launchController
+	 * 
+	 * @return The root controller
 	 */
-	public void setController(Controller launchController);
+	public Controller getController();
+
 }

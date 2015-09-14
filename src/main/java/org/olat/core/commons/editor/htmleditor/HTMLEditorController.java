@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
@@ -110,7 +111,8 @@ public class HTMLEditorController extends FormBasicController {
 	private boolean editable = true;
 	private boolean newFile = true;
 	private boolean editorCheckEnabled = true; // default
-	private boolean versions = true;
+	private boolean versionsEnabled = true;
+	private boolean buttonsEnabled = true;
 	private String fileToLargeError = null;
 	private Object userObject;
 
@@ -135,27 +137,44 @@ public class HTMLEditorController extends FormBasicController {
 	 *            authoring tools
 	 * @return Controller with internal-link selector
 	 */
-	protected HTMLEditorController(UserRequest ureq, WindowControl wControl, VFSContainer baseContainer, String relFilePath,
+	public HTMLEditorController(UserRequest ureq, WindowControl wControl, VFSContainer baseContainer, String relFilePath,
 			CustomLinkTreeModel customLinkTreeModel, String mediaPath, boolean editorCheckEnabled, boolean versions) {
 		super(ureq, wControl, "htmleditor");
+		initEditorForm(baseContainer, relFilePath, customLinkTreeModel, mediaPath, editorCheckEnabled, versions, true);
+		initForm(ureq);
+	}
+	
+	
+	public HTMLEditorController(UserRequest ureq, WindowControl wControl, VFSContainer baseContainer, String relFilePath,
+			CustomLinkTreeModel customLinkTreeModel, String mediaPath, boolean editorCheckEnabled, boolean versions, boolean withButtons, Form rootForm) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "htmleditor", rootForm);
 		// set some basic variables
-		this.baseContainer = baseContainer;
+		initEditorForm(baseContainer, relFilePath, customLinkTreeModel, mediaPath, editorCheckEnabled, versions, withButtons);
+		initForm(ureq);
+	}
+	
+	private void initEditorForm(VFSContainer bContainer, String relFilePath,
+			CustomLinkTreeModel linkTreeModel, String mPath,
+			boolean editorCheck, boolean versions, boolean withButtons) {
+		
+		this.baseContainer = bContainer;
 		this.fileRelPath = relFilePath;
-		this.mediaPath = mediaPath;
-		this.versions = versions;
-		this.customLinkTreeModel = customLinkTreeModel;
-		this.editorCheckEnabled = editorCheckEnabled;
+		this.mediaPath = mPath;
+		this.versionsEnabled = versions;
+		this.buttonsEnabled = withButtons;
+		this.customLinkTreeModel = linkTreeModel;
+		this.editorCheckEnabled = editorCheck;
 		// make sure the filename doesn't start with a slash
 		this.fileName = ((relFilePath.charAt(0) == '/') ? relFilePath.substring(1) : relFilePath);
-		this.fileLeaf = (VFSLeaf) baseContainer.resolve(fileName);
-		if (fileLeaf == null) throw new AssertException("file::" + getFileDebuggingPath(baseContainer, relFilePath) + " does not exist!");
+		this.fileLeaf = (VFSLeaf) bContainer.resolve(fileName);
+		if (fileLeaf == null) throw new AssertException("file::" + getFileDebuggingPath(bContainer, relFilePath) + " does not exist!");
 		long size = fileLeaf.getSize();
 		if ( size > FolderConfig.getMaxEditSizeLimit()) {
 			// limit to reasonable size, see OO-57
 			fileToLargeError = translate("plaintext.error.tolarge", new String[]{(size / 1000) + "", (FolderConfig.getMaxEditSizeLimit()/1000)+""});
 			this.body = "";
 			this.editable = false;
-			initForm(ureq);
+			
 			return;
 		}		
 		
@@ -167,8 +186,8 @@ public class HTMLEditorController extends FormBasicController {
 			// OLAT-5066: the use of "fileName" gives users the (false) impression that the file they wish to access
 			// is already locked by someone else. Since the lock token must be smaller than 50 characters we us an 
 			// MD5 hash of the absolute file path which will always be 32 characters long and virtually unique.
-			String lockToken = Encoder.md5hash(getFileDebuggingPath(baseContainer, relFilePath));
-			lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockResourceable, ureq.getIdentity(), lockToken);
+			String lockToken = Encoder.md5hash(getFileDebuggingPath(bContainer, relFilePath));
+			lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockResourceable, getIdentity(), lockToken);
 			VelocityContainer vc = (VelocityContainer) flc.getComponent();
 			if (!lock.isSuccess()) {
 				vc.contextPut("locked", Boolean.TRUE);
@@ -182,8 +201,6 @@ public class HTMLEditorController extends FormBasicController {
 		}
 		// Parse the content of the page
 		this.body = parsePage(fileLeaf);
-		// load form now
-		initForm(ureq);
 	}
 	
 	public Object getUserObject() {
@@ -268,9 +285,11 @@ public class HTMLEditorController extends FormBasicController {
 			}
 
 			// The buttons
-			save = uifactory.addFormLink("savebuttontext", formLayout, Link.BUTTON);
-			cancel = uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
-			saveClose = uifactory.addFormLink("saveandclosebuttontext", formLayout, Link.BUTTON);
+			if(buttonsEnabled) {
+				save = uifactory.addFormLink("savebuttontext", formLayout, Link.BUTTON);
+				cancel = uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
+				saveClose = uifactory.addFormLink("saveandclosebuttontext", formLayout, Link.BUTTON);
+			}
 			
 			// Add some file metadata		
 			VelocityContainer vc = (VelocityContainer) formLayout.getComponent();
@@ -396,7 +415,7 @@ public class HTMLEditorController extends FormBasicController {
 	 * 
 	 * @param ureq
 	 */
-	private boolean doSaveData() {
+	public boolean doSaveData() {
 		// No XSS checks, are done in the HTML editor - users can upload illegal
 		// stuff, JS needs to be enabled for users
 		String content = htmlElement.getRawValue();
@@ -430,7 +449,7 @@ public class HTMLEditorController extends FormBasicController {
 		}
 		
 		// save the file
-		if(versions && fileLeaf instanceof Versionable && ((Versionable)fileLeaf).getVersions().isVersioned()) {
+		if(versionsEnabled && fileLeaf instanceof Versionable && ((Versionable)fileLeaf).getVersions().isVersioned()) {
 			InputStream inStream = FileUtils.getInputStream(fileContent.toString(), charSet);
 			((Versionable)fileLeaf).getVersions().addVersion(getIdentity(), "", inStream);
 		} else {

@@ -26,7 +26,10 @@
 package org.olat.core.gui.components.form.flexible.impl;
 
 import java.util.List;
+import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
@@ -58,6 +61,10 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 	private Panel errorPanel;
 	private String[] exampleParams;
 	private String exampleKey;
+	private String[] helpParams;
+	private String helpKey;
+	private String helpText;
+	private String helpUrl;
 	private Component exampleC;
 	private Panel examplePanel;
 	private String[] labelParams;
@@ -212,7 +219,7 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 			}
 		}
 		if(labelKey != null) {
-			labelC = new SimpleLabelText(this, labelKey, labelTrsl, componentIsMandatory);
+			labelC = new SimpleLabelText(this, labelKey, labelTrsl);
 			labelC.setTranslator(translator);
 			labelPanel.setContent(labelC);
 		}
@@ -223,6 +230,9 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 		if(exampleKey != null) {
 			exampleC = new SimpleExampleText(exampleKey, translate(exampleKey, exampleParams));
 			examplePanel.setContent(exampleC);
+		}
+		if(helpKey != null) {
+			helpText = translate(helpKey, helpParams);
 		}
 	}
 
@@ -249,7 +259,7 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 		labelParams = params;
 		// set label may be called before the translator is available
 		if (getTranslator() != null && labelKey != null) {
-			labelC = new SimpleLabelText(this, label, getLabelText(), componentIsMandatory);
+			labelC = new SimpleLabelText(this, label, getLabelText());
 			labelC.setTranslator(getTranslator());
 			labelPanel.setContent(labelC);
 		} else if(label == null) {
@@ -272,9 +282,6 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 
 	public void setMandatory(boolean isMandatory) {
 		componentIsMandatory = isMandatory;
-		if(labelC instanceof SimpleLabelText) {
-			((SimpleLabelText)labelC).setComponentIsMandatory(isMandatory);
-		}
 	}
 
 	/**
@@ -289,6 +296,21 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 	 */
 	public String getExampleText() {
 		return translate(exampleKey, exampleParams);
+	}
+	
+	/**
+	 * @see org.olat.core.gui.components.form.flexible.FormComponent#getHelpText()
+	 */
+	public String getHelpText() {
+		// always translated
+		return helpText;		
+	}
+	
+	/**
+	 * @see org.olat.core.gui.components.form.flexible.FormComponent#getHelpUrl()
+	 */
+	public String getHelpUrl() {
+		return helpUrl;
 	}
 
 	/**
@@ -306,6 +328,43 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 			exampleC = null;
 			examplePanel.setContent(exampleC);
 		}
+	}
+	
+	/**
+	 * @see org.olat.core.gui.components.form.flexible.FormComponent#setHelpTextKey(java.lang.String,
+	 *      java.lang.String[])
+	 */
+	public void setHelpTextKey(String helpKey, String[] params) {
+		this.helpKey = helpKey;
+		this.helpParams = params;
+		if (getTranslator() != null) {
+			this.helpText = translate(helpKey, helpParams);
+		}
+	}
+	
+	/**
+	 * @see org.olat.core.gui.components.form.flexible.FormComponent#setHelpText(java.lang.String)
+	 */
+	public void setHelpText(String helpText) {
+		this.helpKey = null;
+		this.helpParams = null;
+		this.helpText = helpText;
+	}
+
+	/**
+	 * @see org.olat.core.gui.components.form.flexible.FormComponent#setHelpUrl(java.lang.String)
+	 */
+	public void setHelpUrl(String helpUrl) {
+		this.helpUrl = helpUrl;
+	}
+	
+	/**
+	 * @see org.olat.core.gui.components.form.flexible.FormComponent#setHelpUrlForManualPage(java.lang.String)
+	 */
+	public void setHelpUrlForManualPage(String manualAliasName) {
+		HelpModule helpModule = CoreSpringFactory.getImpl(HelpModule.class);
+		Locale locale = getTranslator().getLocale();
+		this.helpUrl = helpModule.getHelpProvider().getURL(locale, manualAliasName);
 	}
 
 	/**

@@ -53,7 +53,7 @@ public class BGEmailCompositionStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		form.setMultipartEnabled(true, Integer.MAX_VALUE);
+		form.setMultipartEnabled(true);
 		
 		BGEmailCompositionStepController selectForm
 			= new BGEmailCompositionStepController(ureq, windowControl, form, stepsRunContext, groups);

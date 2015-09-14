@@ -20,11 +20,9 @@
 package de.bps.olat.modules.cl;
 
 import org.olat.core.gui.components.table.ColumnDescriptor;
-import org.olat.core.gui.components.table.HrefGenerator;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.logging.AssertException;
 
 /**
  * Description:<br>
@@ -96,11 +94,6 @@ public class ChecklistMultiSelectColumnDescriptor implements ColumnDescriptor {
 		return null;
 	}
 
-	public HrefGenerator getHrefGenerator() {
-		// no HrefGenerator
-		return null;
-	}
-
 	public String getPopUpWindowAttributes() {
 		// no PopuWindow
 		return null;
@@ -120,10 +113,6 @@ public class ChecklistMultiSelectColumnDescriptor implements ColumnDescriptor {
 
 	public void otherColumnDescriptorSorted() {
 		// nothing to do here
-	}
-
-	public void setHrefGenerator(HrefGenerator h) {
-		throw new AssertException("Not allowed to set HrefGenerator on MultiSelectColumn.");
 	}
 
 	public void setTable(Table table) {

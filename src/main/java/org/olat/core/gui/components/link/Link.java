@@ -89,7 +89,6 @@ public class Link extends AbstractComponent {
 	private String iconLeftCSS;
 	private String iconRightCSS;
 	private String target;
-	private String modURI;
 	private Object internalAttachedObj;
 	private Object userObject;
 	private String accessKey;
@@ -104,7 +103,7 @@ public class Link extends AbstractComponent {
 
 	private boolean hasTooltip;
 	private boolean suppressDirtyFormWarning = false;
-	private boolean isDownloadLink = false;
+
 	private Badge badge;
 	private LinkPopupSettings popup;
 
@@ -315,17 +314,10 @@ public class Link extends AbstractComponent {
 	 * @see org.olat.core.gui.components.Component#setEnabled(boolean)
 	 * @param true or false
 	 */
+	@Override
 	public void setEnabled(boolean b){
 		super.setEnabled(b);
 		setDirty(true);
-	}
-
-	public String getModURI() {
-		return modURI;
-	}
-
-	public void setModURI(String modURI) {
-		this.modURI = modURI;
 	}
 
 	protected String getTextReasonForDisabling() {
@@ -582,16 +574,6 @@ public class Link extends AbstractComponent {
 		setTitle(tooltipI18nKey);
 		this.hasTooltip = true;
 		setDirty(true);
-	}
-
-	/**
-	 * 
-	 */
-	void setStartsDownload() {
-		isDownloadLink  = true;
-	}
-	boolean getStartsDownload(){
-		return isDownloadLink;
 	}
 
 	/**

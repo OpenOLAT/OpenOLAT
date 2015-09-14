@@ -30,13 +30,12 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
-import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
-import org.olat.core.util.Util;
 import org.olat.ims.qti.editor.beecom.objects.EssayQuestion;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.objects.Material;
@@ -46,15 +45,10 @@ import org.olat.ims.qti.editor.beecom.objects.Material;
  * 
  * @author mike
  */
-public class EssayItemController extends DefaultController implements ControllerEventListener {
-	/*
-	 * Logging, Velocity
-	 */
-	private static final String PACKAGE = Util.getPackageName(EssayItemController.class);
-	private static final String VC_ROOT = Util.getPackageVelocityRoot(PACKAGE);
+public class EssayItemController extends BasicController implements ControllerEventListener {
 
-	private VelocityContainer main;
-	private Translator trnsltr;
+	private final VelocityContainer main;
+	private final Translator trnsltr;
 
 	private Item item;
 	private EssayQuestion essayQuestion;
@@ -69,14 +63,15 @@ public class EssayItemController extends DefaultController implements Controller
 	 * @param trnsltr
 	 * @param wControl
 	 */
-	public EssayItemController(Item item, QTIEditorPackage qtiPackage, Translator trnsltr, WindowControl wControl, boolean restrictedEdit) {
-		super(wControl);
+	public EssayItemController(UserRequest ureq, WindowControl wControl, Item item, QTIEditorPackage qtiPackage, Translator trnsltr,  boolean restrictedEdit) {
+		super(ureq, wControl);
+		setTranslator(trnsltr);
 
 		this.restrictedEdit = restrictedEdit;
 		this.item = item;
 		this.qtiPackage = qtiPackage;
 		this.trnsltr = trnsltr;
-		main = new VelocityContainer("essayitem", VC_ROOT + "/tab_essayItem.html", trnsltr, this);
+		main = createVelocityContainer("tab_essayItem.html");
 		essayQuestion = (EssayQuestion) item.getQuestion();
 		main.contextPut("question", essayQuestion);
 		main.contextPut("response", essayQuestion.getEssayResponse());
@@ -87,14 +82,14 @@ public class EssayItemController extends DefaultController implements Controller
 		main.contextPut("mediaBaseURL", mediaBaseUrl);
 		main.contextPut("isRestrictedEdit", restrictedEdit ? Boolean.TRUE : Boolean.FALSE);
 		main.contextPut("isSurveyMode", qtiPackage.getQTIDocument().isSurvey() ? "true" : "false");
-		
-		setInitialComponent(main);
+		putInitialPanel(main);
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == main) {
 			String cmd = event.getCommand();
@@ -102,6 +97,8 @@ public class EssayItemController extends DefaultController implements Controller
 				displayMaterialFormController(ureq, item.getQuestion().getQuestion(), restrictedEdit);
 
 			} else if (cmd.equals("sessay")) { // submit essay
+				main.setDirty(true);
+				
 				// fetch columns
 				String sColumns = ureq.getParameter("columns_q");
 				int iColumns;
@@ -162,6 +159,7 @@ public class EssayItemController extends DefaultController implements Controller
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller controller, Event event) {
 		if (controller == matFormCtr) {
 			if (event instanceof QTIObjectBeforeChangeEvent) {
@@ -213,10 +211,9 @@ public class EssayItemController extends DefaultController implements Controller
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
-		main = null;
 		item = null;
-		trnsltr = null;
 		if (dialogCtr != null) {
 			dialogCtr.dispose();
 			dialogCtr = null;
@@ -226,5 +223,4 @@ public class EssayItemController extends DefaultController implements Controller
 			matFormCtr = null;
 		}
 	}
-
 }

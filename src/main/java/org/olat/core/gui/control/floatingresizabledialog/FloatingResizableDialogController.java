@@ -25,8 +25,9 @@
 */ 
 package org.olat.core.gui.control.floatingresizabledialog;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.UserRequest;
@@ -157,10 +158,6 @@ public class FloatingResizableDialogController extends BasicController {
 		putInitialPanel(wrapper);
 	}
 	
-	private static final Pattern allGeometry = Pattern.compile("^(\\d+),(\\d+):(\\d+),(\\d+)$");
-	private static final Pattern posGeometry = Pattern.compile("^(\\d+),(\\d+)$");
-	private static final Pattern parseGeometry = Pattern.compile("(\\d+)");
-	
 	public void setElementCSSClass(String cssClass) {
 		if(StringHelper.containsNonWhitespace(cssClass)) {
 			wrapper.contextPut("cssClass", cssClass);
@@ -175,33 +172,33 @@ public class FloatingResizableDialogController extends BasicController {
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (event.getCommand().equals("geometry")) {
-			String p = ureq.getHttpReq().getParameter("p");	
-			if (p != null) {	
-				if(allGeometry.matcher(p).matches()) {
-					Matcher m = parseGeometry.matcher(p);
-					
-					if (m.find()) offsetX = Integer.parseInt(m.group());
-					if (m.find()) offsetY = Integer.parseInt(m.group());
-					if (m.find()) width   = Integer.parseInt(m.group());
-					if (m.find()) height  = Integer.parseInt(m.group());
-					
-					boolean dirt = wrapper.isDirty();
-					wrapper.contextPut("width"  , width);
-					wrapper.contextPut("height" , height);
-					wrapper.contextPut("offsetX", offsetX);
-					wrapper.contextPut("offsetY", offsetY);
-					wrapper.setDirty(dirt);
-				} else if(posGeometry.matcher(p).matches()) {
-					Matcher m = parseGeometry.matcher(p);
-					
-					if (m.find()) offsetX = Integer.parseInt(m.group());
-					if (m.find()) offsetY = Integer.parseInt(m.group());
-					
-					boolean dirt = wrapper.isDirty();
-					wrapper.contextPut("offsetX", offsetX);
-					wrapper.contextPut("offsetY", offsetY);
-					wrapper.setDirty(dirt);
+			String p = ureq.getParameter("p");	
+			if (p != null) {
+				try {
+					p = URLDecoder.decode(p, "UTF-8");
+				} catch (UnsupportedEncodingException e) {
+					logError("", e);
 				}
+				
+				boolean dirt = wrapper.isDirty();
+				StringTokenizer tokens = new StringTokenizer(p, ",:");
+				if(tokens.hasMoreTokens()) {
+					offsetX = (int)Double.parseDouble(tokens.nextToken());
+					wrapper.contextPut("offsetX", offsetX);
+				}
+				if(tokens.hasMoreTokens()) {
+					offsetY = (int)Double.parseDouble(tokens.nextToken());
+					wrapper.contextPut("offsetY", offsetY);
+				}
+				if(tokens.hasMoreTokens()) {
+					width = (int)Double.parseDouble(tokens.nextToken());
+					wrapper.contextPut("width"  , width);
+				}
+				if(tokens.hasMoreTokens()) {
+					height = (int)Double.parseDouble(tokens.nextToken());
+					wrapper.contextPut("height" , height);
+				}	
+				wrapper.setDirty(dirt);
 			}		
 		} else if (source == wrapper) {
 			if (event.getCommand().equals("close")) {

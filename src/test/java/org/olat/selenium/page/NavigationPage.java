@@ -59,7 +59,7 @@ public class NavigationPage {
 	private By catalogAdministrationBy = By.cssSelector("li.o_site_catalog_admin > a");
 	private	By groupsBy = By.cssSelector("li.o_site_groups > a");
 	
-	public static final By myCoursesAssertBy = By.xpath("//div[contains(@class,'o_segments')]//a[contains(@href,'search.mycourses.student')]");
+	public static final By myCoursesAssertBy = By.xpath("//div[contains(@class,'o_segments')]//a[contains(@onclick,'search.mycourses.student')]");
 	public static final By portalAssertBy = By.className("o_portal");
 	
 	public NavigationPage() {

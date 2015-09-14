@@ -28,6 +28,7 @@ package org.olat.core.gui.components.form.flexible.impl;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.gui.render.StringOutput;
@@ -83,24 +84,35 @@ public class FormJSHelper {
 		return content;
 	}
 	
-	public static String getXHRFnCallFor(Form form, String id, int actionIndex, NameValuePair... pairs) {
-		StringBuilder sb = new StringBuilder(128);
+	/**
+	 * Build a flexi form event
+	 * @param form
+	 * @param id
+	 * @param actionIndex
+	 * @param dirtyCheck
+	 * @param pushState
+	 * @param pairs
+	 * @return
+	 */
+	public static String getXHRFnCallFor(Form form, String id, int actionIndex, boolean dirtyCheck, boolean pushState, NameValuePair... pairs) {
+		StringOutput sb = new StringOutput(128);
 		sb.append("o_ffXHREvent('")
 		  .append(form.getFormName()).append("','")
 		  .append(form.getDispatchFieldId()).append("','")
 		  .append(id).append("','")
 		  .append(form.getEventFieldId()).append("','")
 		  .append(FormEvent.ON_DOTDOTDOT[actionIndex])
-		  .append("'");
+		  .append("',").append(dirtyCheck)
+		  .append(",").append(pushState).append("");
+
 		if(pairs != null && pairs.length > 0) {
 			for(NameValuePair pair:pairs) {
-				sb.append(",'")
-			    .append(pair.getName()).append("','")
-			    .append(pair.getValue()).append("'");
+				sb.append(",'").append(pair.getName()).append("','").append(pair.getValue()).append("'");
 			}
 		}
 
 		sb.append(")");
+		IOUtils.closeQuietly(sb);
 		return sb.toString();
 	}
 	
@@ -177,10 +189,6 @@ public class FormJSHelper {
 		return "})();\n /* ]]> */ \n</script>";
 	}
 	
-	public static String getExtJSVarDeclaration(String id){
-		return "var "+id+" = jQuery('#"+id+"'); ";
-	}
-	
 	// Execute code within an anonymous function (closure) to not leak
 	// variables to global scope (OLAT-5755)
 	public static StringOutput appendFlexiFormDirty(StringOutput sb, Form form, String id) {
@@ -195,11 +203,6 @@ public class FormJSHelper {
 		  .append("(function() { jQuery('#").append(formDispatchId).append("').on('change mouseup', {formId:\"").append(form.getDispatchFieldId()).append("\"}, setFlexiFormDirtyByListener);")
 		  .append("})();\n /* ]]> */ \n</script>");
 		return sb;
-	}
-
-	public static String getFocusFor(String id){
-		// deactivated due OLAT-3094 and OLAT-3040
-		return id +".focus();";
 	}
 	
 	public static String getSetFlexiFormDirtyFnCallOnly(Form form){
@@ -221,11 +224,11 @@ public class FormJSHelper {
 		/*
 		 * yesFn emulates a click on the input field, which in turn "submits" to the inlineElement to extract the value
 		 */
-		sb.append(FormJSHelper.getExtJSVarDeclaration(id));
-		sb.append(id).append(".focus(1);");//defer focus,based on EXT
-		sb.append("var o_ff_inline_yesFn = function(e){");
-		sb.append(FormJSHelper.getJSFnCallFor(rootForm, id, FormEvent.ONCLICK)).append(";};");
-		sb.append("jQuery('#").append(id).append("').on('blur',o_ff_inline_yesFn);");		
+		sb.append("var ").append(id).append("=jQuery('#").append(id).append("');")
+		  .append(id).append(".focus(1);")//defer focus
+		  .append("var o_ff_inline_yesFn = function(e){")
+		  .append(FormJSHelper.getJSFnCallFor(rootForm, id, FormEvent.ONCLICK)).append(";};")
+		  .append("jQuery('#").append(id).append("').on('blur',o_ff_inline_yesFn);");		
 
 		/*
 		 * noFn replaces the old value in the input field, and then "submits" to the inlineElement via yesFn
@@ -239,28 +242,22 @@ public class FormJSHelper {
 	      .append(" }")
 	      .append("});");
 	}
-
+	
 	/**
 	 * submits a form when the enter key is pressed.
-	 * TextAreas are handeled special and do not propagate the enter event to the outer world
+	 * TextAreas are handled special and do not propagate the enter event to the outer world
 	 * @param formName
 	 * @return
 	 */
 	public static String submitOnKeypressEnter(String formName) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(getJSStart())
-		  .append("var myExtForm = jQuery('#").append(formName).append("');")
-		  .append("if(myExtForm) {")
-		  .append(" myExtForm.on('keypress', function(event) {if (13 == event.keyCode) {if (this.onsubmit()) {this.submit();}}}, myExtForm.dom);")
-		  .append("} else {")
-		  .append(" jQuery('#").append(formName).append("').each(function(formEl) {")
-		  .append("  jQuery(formEl).on('keypress', function(event) {")
-		  .append("   if (13 == event.keyCode) {")
-		  .append("    if (this.onsubmit && this.onsubmit()) { this.submit(); }")
-		  .append("   }")
-		  .append("  }, formEl)")
-		  .append(" });")
-		  .append("}")
+		  .append("jQuery('#").append(formName).append("').keypress(function(event) {\n")
+		  .append(" if (13 == event.keyCode) {\n")
+		  .append("  event.preventDefault();\n")
+		  .append("  if (this.onsubmit()) { this.submit(); }\n")
+		  .append(" }\n")
+		  .append("});\n")
 		  .append(getJSEnd());
 		return sb.toString();
 	}

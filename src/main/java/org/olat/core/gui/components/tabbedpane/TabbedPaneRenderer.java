@@ -29,7 +29,7 @@ package org.olat.core.gui.components.tabbedpane;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.control.winmgr.AJAXFlags;
+import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.RenderingState;
@@ -69,14 +69,9 @@ public class TabbedPaneRenderer implements ComponentRenderer {
 			sb.append("<li");
 			if (i != selPane && cnt > 1) {
 				if (tb.isEnabled(i)) {
-					sb.append("><a href='");
-					ubu.buildURI(sb, new String[]{ TabbedPane.PARAM_PANE_ID }, new String[]{ String.valueOf(i) }, iframePostEnabled? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-					sb.append("' onclick='return o2cl()'");
-					if (iframePostEnabled) {
-						ubu.appendTarget(sb);
-					}
-					sb.append(">").append(tabName).append("</a></li>");
-										
+					sb.append("><a ");
+					ubu.buildHrefAndOnclick(sb, iframePostEnabled, new NameValuePair(TabbedPane.PARAM_PANE_ID, String.valueOf(i)));
+					sb.append(">").append(tabName).append("</a></li>");				
 				} else {
 					// disabled panels can not be clicked, but for layout reason needs still a a href
 					sb.append(" class='disabled'><a href='javascript:;' title='").append(StringEscapeUtils.escapeHtml(translator.translate("disabled"))).append("'>").append(tabName).append("</a></li>");

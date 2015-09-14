@@ -3,10 +3,9 @@
 function newUriEvent(uri){
 	// don't forward event when another request is beeing processed or when page not
 	// yet fully loaded (e.g. in case of a full page refresh when loading TinyMCE)
-	if (!o_info.linkbusy && o_info.initialPageLoadFinished) { 
-		o_beforeserver();
-		${r.javaScriptBgCommand("newUriEvent")} + uri;
-	}	
+	if (!o_info.linkbusy && o_info.initialPageLoadFinished) {
+		${r.openJavaScriptCommand("newUriEvent")},'uri',uri);
+	}
 }
-/* ]]> */ 
+/* ]]> */
 </script>

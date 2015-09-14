@@ -252,14 +252,4 @@ public class GlossaryManagerImpl extends GlossaryManager {
 		// now remove the resource itself
 		FileResourceManager.getInstance().deleteFileResource(res);
 	}
-
-	@Override
-	public String archive(String archivFilePath, RepositoryEntry repoEntry) {
-		String exportFileName = "del_glossar_" + repoEntry.getOlatResource().getResourceableId() + ".zip";
-		String fullFilePath = archivFilePath + File.separator + exportFileName;
-		File fExportZIP = new File(fullFilePath);
-		VFSContainer glossaryRoot = getGlossaryRootFolder(repoEntry.getOlatResource());
-		ZipUtil.zip(glossaryRoot.getItems(), new LocalFileImpl(fExportZIP), true);
-		return fullFilePath;
-	}
 }

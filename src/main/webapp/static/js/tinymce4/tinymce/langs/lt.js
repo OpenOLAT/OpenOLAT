@@ -106,7 +106,7 @@ tinymce.addI18n('lt',{
 "Target": "Tikslin\u0117 nuoroda",
 "The URL you entered seems to be an email address. Do you want to add the required mailto: prefix?": "Atrodo, kad \u012fvesta nuoroda yra elektroninio pa\u0161to adresas. Ar prad\u017eioje norite \u012fvesti reikalaujam\u0105 \u201emailto:\u201c?",
 "Insert\/edit link": "\u012eterpti\/taisyti nuorod\u0105",
-"Insert\/edit video": "\u012eterpti\/tvarkyti video",
+"Insert\/edit media element": "\u012eterpti\/tvarkyti video",
 "Poster": "Plakatas",
 "Alternative source": "Alternatyvus \u0161altinis",
 "Paste your embed code below:": "\u012eterpkite kod\u0105 \u017eemiau:",

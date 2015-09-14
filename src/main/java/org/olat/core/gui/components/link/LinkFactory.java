@@ -267,19 +267,4 @@ public class LinkFactory {
 	public static Link createButtonXSmall(String name, VelocityContainer vc, ComponentEventListener listener){
 		return new Link(name, name, name, Link.BUTTON_XSMALL, vc, listener);
 	}
-
-	/**
-	 * @param link the Link to be deajaxified
-	 * @return the given Link changed so that it renders its url always in standard mode even if ajax-mode is on
-	 */
-	public static Link deAjaxify(Link link) {
-		link.setAjaxEnabled(false);
-		return link;
-	}
-	
-	public static Link markDownloadLink(Link link){
-		link.setStartsDownload();
-		return link;
-	}
-
 }

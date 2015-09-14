@@ -141,6 +141,8 @@ var BPlayer = {
 			}
 		} else if(config.provider == 'youtube') {
 			mimeType = "video/youtube";
+		} else if(config.provider == 'vimeo') {
+			mimeType = "video/vimeo";
 		} else if(config.provider == 'rtmp') {
 			meConfig.flashStreamer = config.streamer;
 			mimeType = "video/rtmp";

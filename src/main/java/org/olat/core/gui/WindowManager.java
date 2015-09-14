@@ -42,16 +42,12 @@ import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 public interface WindowManager extends Disposable {
 	
 	/**
-	 * call this method after having e.g. logged on, and when you would like to switch to ajax mode.<br>
-	 * ajax will be enable if all of the following criterion meet:
-	 * a) it is globally enabled in olat.properties
-	 * b) the browser of the user supports it
-	 * c) the given argument "enabled" is true
+	 * Call this method after having e.g. logged on, and when you would like to switch to ajax mode.<br>
+	 * ajax will be enable if the browser of the user supports it.
 	 * 
 	 * @param ureq
-	 * @param enabled if true, ajax should be enabled if possible
 	 */
-	public void setAjaxWanted(UserRequest ureq, boolean enabled);
+	public void setAjaxWanted(UserRequest ureq);
 	
 	public GlobalSettings getGlobalSettings();
 	
@@ -62,10 +58,6 @@ public interface WindowManager extends Disposable {
 	 * @return
 	 */
 	public WindowBackOffice createWindowBackOffice(String windowName, ChiefController owner, WindowSettings settings);
-	
-	public void setAjaxEnabled(boolean enabled);
-	
-	public void setHighLightingEnabled(boolean enabled);
 
 	/**
 	 * @param fontSize relative to default font size
@@ -78,6 +70,8 @@ public interface WindowManager extends Disposable {
 	 * @return
 	 */
 	public boolean isAjaxEnabled();
+	
+	public void setAjaxEnabled(boolean enabled);
 
 	/**
 	 * a new browser window with content (controller) provided through the

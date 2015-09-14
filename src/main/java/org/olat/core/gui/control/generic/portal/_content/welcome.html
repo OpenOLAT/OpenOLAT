@@ -3,18 +3,15 @@
 		<a class="o_link" href="$rssLink" title="$r.translate("welcome.rss")" target="_blank">
 			<i class="o_icon o_icon-fw o_icon_rss"> </i>
 		</a>
-		$r.contextHelp("org.olat.home","home-rss.html","help.hover.rss")
+		$r.contextHelp("Personal Menu#_rss")
 	</div>
 
 	<h1>$r.translate("welcome.header")</h1>
 	#set ($intro = $r.translate("welcome.intro"))
 	#if ($intro != "")
-	<div class="o_block_large">
-		$intro
-	</div>
+	<div class="o_block_large">$intro</div>
 	#end
 </div>
-
 <div class="o_home_portaleditlink clearfix">
 #if ($portalEditMode)
 	<div class="o_block_large_bottom">
@@ -24,80 +21,4 @@
 	$r.render("command.portal.edit")
 #end
 </div>
-
-#if($isbaks)
-<div id="baks_home_launcher">
-	<img src="$r.staticLink("themes/baks/images/portal_launcher_bg.png")" onclick="gotoSite(event);"/>
-	<div id="baks_goto_repository" class="baks_goto_wrapper" onclick="gotoSite(event);"><a href="#" onclick="gotoSite(event);">Meine Veranstaltungen</a></div>
-	<div id="baks_goto_members" class="baks_goto_wrapper" onclick="gotoSite(event);"><a href="#" onclick="gotoSite(event);">Mitglieder</a></div>
-	<div id="baks_goto_library" class="baks_goto_wrapper" onclick="gotoSite(event);"><a href="#" onclick="gotoSite(event);">Bibliothek</a></div>
-	<div id="baks_goto_friends" class="baks_goto_wrapper" onclick="gotoSite(event);"><a href="#" onclick="gotoSite(event);">Freundeskreis</a></div>
-	<div id="baks_goto_network" class="baks_goto_wrapper" onclick="gotoSite(event);"><a href="#" onclick="gotoSite(event);">Netzwerk</a></div>
-</div>
-
-<script type="text/javascript">
-/* <![CDATA[ */ 
-function gotoSite(event) {
-	var el = $("baks_home_launcher");
-	var dim = Element.getDimensions(el);
-	var pos = Element.positionedOffset(el);
-	var offsetLeft = pos.left;
-	var offsetTop = pos.top;
-
-	var i=0;
-	for(var offsetParent = Element.getOffsetParent(el); offsetParent.id != 'o_body'; offsetParent = Element.getOffsetParent(offsetParent)) {
-		var posn = Element.positionedOffset(offsetParent);
-		if(offsetParent.id != "o_main_center" && offsetParent.id != "o_page") {//ie give it an offset which is the same as _content
-			offsetLeft += posn.left;
-			offsetTop += posn.top;
-		}
-		if(i++==10) { break; }//security
-	}
-	
-	//inner square is difficult
-	var centerX = dim.width / 2;
-	var centerY = dim.height / 2;
-	//shift 0,0 coordinate to center
-	var px = Event.pointerX(event) - offsetLeft - centerX;
-	var py = centerY - (Event.pointerY(event) - offsetTop);
-	//calculate the x position on the line x = -y + centerY;
-	var theoy = (centerY - 5) - Math.abs(px);
-	if(Math.abs(py) < theoy) {
-		launchSite('site_demo_icon');
-	}
-	else if(px > 0 && py < 0) {
-		launchSite('baks_friends');
-	}
-	else if(px > 0 && py > 0) {
-		launchSite('fx_members');
-	}
-	else if(px < 0 && py > 0) {
-		launchSite('o_site_repository');
-	}
-	else {
-		launchSite('f_site_library');
-	}
-}
-
-function launchSite(site) {
-	var siteLinks = $$('li.' + site + ' a');
-	if (siteLinks && siteLinks.length > 0) {
-		var siteLink = siteLinks[0];
-		if (o2cl()) {
-			var target = siteLink.target;
-			if (target == 'oaa0') {
-				$('oaa0').src=siteLink.href;
-			} else {
-				document.location.href=siteLink.href;
-			}
-		}
-	} else {
-		alert("Diese Funktion ist noch nicht vorhanden");
-	}
-}
-/* ]]> */
-</script>
-
-#end ##end of baks-check
-
 $r.render("myPortal")

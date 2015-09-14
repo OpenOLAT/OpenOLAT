@@ -19,8 +19,11 @@
  */
 package org.olat.commons.calendar.restapi;
 
+import static org.olat.commons.calendar.restapi.CalendarWSHelper.hasReadAccess;
+import static org.olat.commons.calendar.restapi.CalendarWSHelper.hasWriteAccess;
+import static org.olat.commons.calendar.restapi.CalendarWSHelper.processEvents;
+import static org.olat.commons.calendar.restapi.CalendarWSHelper.transfer;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
-import static org.olat.commons.calendar.restapi.CalendarWSHelper.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,9 +48,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.commons.calendar.CalendarManager;
-import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.util.StringHelper;
 
@@ -106,7 +109,7 @@ public class CalWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
+		CalendarManager calendarManager = CoreSpringFactory.getImpl(CalendarManager.class);
 		if(eventId == null) {
 			return Response.ok().status(Status.NOT_FOUND).build();
 		} else {
@@ -150,7 +153,7 @@ public class CalWebService {
 		}
 		
 		KalendarEvent kalEvent;
-		CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
+		CalendarManager calendarManager = CoreSpringFactory.getImpl(CalendarManager.class);
 		if(!StringHelper.containsNonWhitespace(event.getId())) {
 			String id = UUID.randomUUID().toString();
 			kalEvent = new KalendarEvent(id, event.getSubject(), event.getBegin(), event.getEnd());
