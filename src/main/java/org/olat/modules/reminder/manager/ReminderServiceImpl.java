@@ -289,8 +289,10 @@ public class ReminderServiceImpl implements ReminderService {
 			vContext.put(UserConstants.LASTNAME, user.getProperty(UserConstants.LASTNAME, null));
 			String fullName = userManager.getUserDisplayName(recipient);
 			vContext.put("fullname", fullName);
-			vContext.put("fullName", fullName);
-			vContext.put("login", user.getProperty(UserConstants.EMAIL, null));
+			vContext.put("fullName", fullName); 
+			vContext.put("mail", user.getProperty(UserConstants.EMAIL, null));
+			vContext.put("email", user.getProperty(UserConstants.EMAIL, null));
+			vContext.put("username", recipient.getName());
 			// Put variables from greater context
 			if(entry != null) {
 				vContext.put("courseurl", url);
