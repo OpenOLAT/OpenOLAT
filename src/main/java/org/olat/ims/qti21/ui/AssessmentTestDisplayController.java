@@ -819,7 +819,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			mainForm.setStandaloneRendering(true);
-			mainForm.setMultipartEnabled(true, Integer.MAX_VALUE);
+			mainForm.setMultipartEnabled(true);
 			
 			qtiEl = new AssessmentTestFormItem("qtirun");
 			formLayout.add("qtirun", qtiEl);

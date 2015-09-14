@@ -1304,7 +1304,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			// 1) course admins and users with tool right: full access
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
-				removeCustomCSS(ureq);
+				removeCustomCSS();
 				AssessmentOverviewController ctrl = new AssessmentOverviewController(ureq, swControl, toolbarPanel,
 						getRepositoryEntry(), new FullAccessAssessmentCallback(reSecurity.isEntryAdmin()));
 				ctrl.activate(ureq, null, null);
@@ -1316,7 +1316,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			}
 			// 2) users with coach right: limited access to coached groups
 			if (reSecurity.isCourseCoach() || reSecurity.isGroupCoach()) {
-				removeCustomCSS(ureq);
+				removeCustomCSS();
 				AssessmentOverviewController ctrl = new AssessmentOverviewController(ureq, swControl, toolbarPanel,
 						getRepositoryEntry(), new CoachingGroupAccessAssessmentCallback());
 				ctrl.activate(ureq, null, null);
