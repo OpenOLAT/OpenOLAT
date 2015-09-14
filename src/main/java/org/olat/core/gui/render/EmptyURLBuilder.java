@@ -30,17 +30,7 @@ import org.olat.core.gui.components.Component;
 public class EmptyURLBuilder extends URLBuilder {
 
 	public EmptyURLBuilder() {
-		super(null, null, null, null);
-	}
-
-	@Override
-	public void appendTarget(StringOutput sb) {
-		// nothing to do
-	}
-
-	@Override
-	public void buildJavaScriptBgCommand(StringOutput buf, String[] keys, String[] values, int mode) {
-		// nothing to do
+		super(null, null, null);
 	}
 
 	@Override
@@ -50,11 +40,6 @@ public class EmptyURLBuilder extends URLBuilder {
 
 	@Override
 	public void buildURI(StringOutput buf, String[] keys, String[] values, String modURI, int mode) {
-		// nothing to do
-	}
-
-	@Override
-	public void buildURI(StringOutput buf, String[] keys, String[] values, String modURI) {
 		// nothing to do
 	}
 

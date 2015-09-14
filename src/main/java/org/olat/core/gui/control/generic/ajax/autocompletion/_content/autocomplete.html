@@ -2,7 +2,7 @@
 	#if($flexi)
 		<div id='$r.getId("aj_ac_f")'>
 	#else
-		<form id='$r.getId("aj_ac_f")' action="$r.formURIbg('select')" method="post" $r.bgTarget()>
+		<form id='$r.getId("aj_ac_f")' action="$r.formURI('select')" method="post" onsubmit="o_XHRSubmit('$r.getId("aj_ac_f")');">
 	#end
     #if ($autocompleter_label)
 		$autocompleter_label 
@@ -50,7 +50,7 @@ jQuery(function(){
 		displayKey: 'fullName',
 		source: fullNameTypeahead.ttAdapter()
 	}).on('typeahead:selected', function (e, object) { 
-		$r.javaScriptBgCommand("select") + '?key=' + object.value;
+		$r.openJavaScriptCommand("select"),'key',object.value);
 	});
 });
 /* ]]> */

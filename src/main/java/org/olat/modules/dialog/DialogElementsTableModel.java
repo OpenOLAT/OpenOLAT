@@ -31,10 +31,13 @@ import java.util.Locale;
 
 import org.olat.core.gui.components.table.BaseTableDataModelWithoutFilter;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
-import org.olat.core.gui.components.table.HrefGenerator;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
+import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableDataModel;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.course.nodes.dialog.DialogConfigForm;
 import org.olat.course.nodes.dialog.DialogNodeForumCallback;
@@ -114,17 +117,7 @@ public class DialogElementsTableModel extends BaseTableDataModelWithoutFilter<Di
 	public void addColumnDescriptors(TableController tableCtr) {
 		Locale loc = translator.getLocale();
 		if (callback != null) {
-			DefaultColumnDescriptor coldesc = new DefaultColumnDescriptor("table.header.filename", 0, DialogElementsController.ACTION_SHOW_FILE,
-					loc);
-			coldesc.setHrefGenerator(new HrefGenerator() {
-				public String generate(int row, String href) {
-					DialogElement entry = getEntryAt(row);
-					return "javascript:o_openPopUp('" + href + entry.getFilename() + "','fileview','600','700','no')";
-				}
-			});
-//			coldesc.setIsPopUpWindowAction(true,
-//			DefaultColumnDescriptor.DEFAULT_POPUP_ATTRIBUTES);
-			tableCtr.addColumnDescriptor(coldesc);
+			tableCtr.addColumnDescriptor(new FileDownloadColumnDescriptor("table.header.filename", 0, loc));
 		} else {
 			tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.filename", 0, null, loc));
 		}
@@ -157,5 +150,26 @@ public class DialogElementsTableModel extends BaseTableDataModelWithoutFilter<Di
 	public void setEntries(List<DialogElement> entries) {
 		this.entries = entries;
 	}
+	
+	private static class FileDownloadColumnDescriptor extends DefaultColumnDescriptor {
+		
+		public FileDownloadColumnDescriptor(String headerKey, int dataColumn, Locale locale) {
+			super(headerKey, dataColumn, null, locale);
+		}
 
+		@Override
+		public void renderValue(StringOutput sb, int row, Renderer renderer) {
+			URLBuilder ubu = renderer.getUrlBuilder();
+			ubu = ubu.createCopyFor(getTable());
+			
+			int sortedRow = table.getSortedRow(row);
+			Object entry = getTable().getTableDataModel().getValueAt(sortedRow, getDataColumn());
+
+			StringOutput link = new StringOutput();
+			ubu.buildURI(link, new String[] { Table.COMMANDLINK_ROWACTION_CLICKED, Table.COMMANDLINK_ROWACTION_ID }, new String[] { String.valueOf(row), DialogElementsController.ACTION_SHOW_FILE }); // url
+			sb.append("<a href=\"javascript:o_openPopUp('").append(link).append(entry.toString()).append("','fileview','600','700','no')\">")
+			  .append(entry.toString())
+			  .append("</a>");
+		}
+	}
 }

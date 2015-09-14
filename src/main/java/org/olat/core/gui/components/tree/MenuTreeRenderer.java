@@ -45,6 +45,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
+import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.tree.InsertionPoint.Position;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.RenderResult;
@@ -256,55 +257,29 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 			  .append("<span class=\"o_tree_leaf o_tree_oc_l").append(level).append("\">&nbsp;</span>")
 			  .append("<span class='o_tree_link o_tree_l").append(level).append(" o_insertion_point'><a href=\"");
 			
-			// Build menu item URI
-			boolean iframePostEnabled = flags.isIframePostEnabled();
-			if (iframePostEnabled) {
-				ubu.buildURI(sb, new String[] { COMMAND_ID, NODE_IDENT }, new String[] { COMMAND_TREENODE_INSERT_REMOVE, node.getIdent() }, AJAXFlags.MODE_TOBGIFRAME);
-			} else {
-				ubu.buildURI(sb, new String[] { COMMAND_ID, NODE_IDENT }, new String[] { COMMAND_TREENODE_INSERT_REMOVE, node.getIdent() });
-			}
-			sb.append("\"");
-			if(iframePostEnabled) {
-				ubu.appendTarget(sb);
-			}
-			
+			ubu.buildHrefAndOnclick(sb, null, flags.isIframePostEnabled(), false, false,
+					new NameValuePair(COMMAND_ID, COMMAND_TREENODE_INSERT_REMOVE),
+					new NameValuePair(NODE_IDENT, node.getIdent()));
+
 			Translator pointTranslator = Util.createPackageTranslator(MenuTreeRenderer.class, tree.getTranslator().getLocale());
 			String pointTranslation = pointTranslator.translate("insertion.point");
-			sb.append("'><span>").append(pointTranslation).append(" <i class='o_icon o_icon_remove'> </i></span>")
+			sb.append("><span>").append(pointTranslation).append(" <i class='o_icon o_icon_remove'> </i></span>")
 			  .append("</a></span></div></li>");
 		}	
 	}
 	
 	private void renderOpenClose(TreeNode curRoot, StringOutput target, int level, boolean renderChildren, URLBuilder ubu, AJAXFlags flags, MenuTree tree) {
 		int chdCnt = curRoot.getChildCount();
-		boolean iframePostEnabled = flags.isIframePostEnabled();
 		// expand icon
 		// add ajax support and real open/close function
 		if (((tree.isRootVisible() && level != 0) || !tree.isRootVisible()) && chdCnt > 0) { // root has not open/close icon,  append open / close icon only if there is children
-			target.append("<a onclick='return ");
-			if(tree.getMenuTreeItem() == null) {
-				target.append("o2cl_secure()");
-			} else {
-				// open/close disturb the dirty check in the flexi form version
-				// of the menu tree. It's ok because open close in flexi cannot
-				// discard a form.
-				target.append("o2cl_noDirtyCheck()");
-			}
-			
-			target.append(";' href=\"");
-			
-			// Build menu item URI
-			String cmd = renderChildren ? MenuTree.TREENODE_CLOSE : MenuTree.TREENODE_OPEN;
-			if (iframePostEnabled) {
-				ubu.buildURI(target, new String[] { COMMAND_ID, NODE_IDENT, COMMAND_TREENODE }, new String[] { COMMAND_TREENODE_CLICKED, curRoot.getIdent(), cmd }, AJAXFlags.MODE_TOBGIFRAME);
-			} else {
-				ubu.buildURI(target, new String[] { COMMAND_ID, NODE_IDENT, cmd }, new String[] { COMMAND_TREENODE_CLICKED, curRoot.getIdent(), cmd });
-			}
-			
-			target.append("\"");
-			if(iframePostEnabled) {
-				ubu.appendTarget(target);
-			}
+			target.append("<a ");
+
+			ubu.buildHrefAndOnclick(target, null, flags.isIframePostEnabled(), tree.getMenuTreeItem() != null, true,
+					new NameValuePair(COMMAND_ID, COMMAND_TREENODE_CLICKED),
+					new NameValuePair(NODE_IDENT, curRoot.getIdent()),
+					new NameValuePair(COMMAND_TREENODE, renderChildren ? MenuTree.TREENODE_CLOSE : MenuTree.TREENODE_OPEN));
+
 			String openCloseCss = renderChildren ? "close" : "open";
 			target.append(" class='o_tree_oc_l").append(level).append("'><i class='o_icon o_icon_").append(openCloseCss).append("_tree'></i></a>");
 		} else if (level != 0 && chdCnt == 0) {
@@ -353,22 +328,13 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		if(tree.isMultiSelect() && tree.getMenuTreeItem() != null) {
 			renderCheckbox(target, curRoot, tree);
 		}
-		
-		// add css class to identify level, FireFox script
-		if(tree.getMenuTreeItem() != null && tree.getMenuTreeItem().isNoDirtyCheckOnClick()) {
-			target.append("<a onclick='return o2cl_noDirtyCheck();' href=\"");		
-		} else {
-			target.append("<a onclick='return o2cl_secure();' href=\"");		
-		}			
-		
-		// Build menu item URI
-		if (iframePostEnabled) {
-			ubu.buildURI(target, new String[] { COMMAND_ID, NODE_IDENT }, new String[] { COMMAND_TREENODE_CLICKED, curRoot.getIdent() }, AJAXFlags.MODE_TOBGIFRAME);
-		} else {
-			ubu.buildURI(target, new String[] { COMMAND_ID, NODE_IDENT }, new String[] { COMMAND_TREENODE_CLICKED, curRoot.getIdent() });
-		}
 
-		target.append("\"");	
+		// Build menu item URI
+		target.append("<a ");	
+		boolean dirtyCheck = tree.getMenuTreeItem() == null || !tree.getMenuTreeItem().isNoDirtyCheckOnClick();
+		ubu.buildHrefAndOnclick(target, null, iframePostEnabled, dirtyCheck, true,
+				new NameValuePair(COMMAND_ID, COMMAND_TREENODE_CLICKED),
+				new NameValuePair(NODE_IDENT, curRoot.getIdent()));
 		
 		// Add menu item title as alt hoover text
 		String alt = curRoot.getAltText();
@@ -376,10 +342,6 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 			target.append(" title=\"")
 			      .append(StringEscapeUtils.escapeHtml(alt).toString())
 			      .append("\"");
-		}
-
-		if (iframePostEnabled) {
-			ubu.appendTarget(target);
 		}
 		target.append(">");
 
@@ -447,17 +409,10 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 	}
 	
 	private void renderInsertCalloutButton(String cmd, String cssClass,  StringOutput sb, TreeNode node, URLBuilder ubu, AJAXFlags flags) {
-		boolean iframePostEnabled = flags.isIframePostEnabled();
-		sb.append("<a class='btn btn-default small' onclick='return o2cl_secure();' href=\"");
-		if (iframePostEnabled) {
-			ubu.buildURI(sb, new String[] { COMMAND_ID, NODE_IDENT }, new String[] { cmd, node.getIdent() }, AJAXFlags.MODE_TOBGIFRAME);
-		} else {
-			ubu.buildURI(sb, new String[] { COMMAND_ID, NODE_IDENT }, new String[] { cmd, node.getIdent() });
-		}
-		sb.append("\"");
-		if (iframePostEnabled) {
-			ubu.appendTarget(sb);
-		}
+		sb.append("<a class='btn btn-default small' ");
+		ubu.buildHrefAndOnclick(sb, flags.isIframePostEnabled(),
+				new NameValuePair(COMMAND_ID, cmd),
+				new NameValuePair(NODE_IDENT, node.getIdent()));
 		sb.append("><i class='o_icon ").append(cssClass).append("'> </i></a>");
 	}
 	

@@ -14,7 +14,7 @@
 	<div class="o_cal_links">
 	#foreach($link in $links)
 		#if($link.intern)
-			<a href="javascript:top.o_openUriInMainWindow('$link.uri')" title="$link.title" onclick="return o2cl();"><i class="o_icon $link.cssClass"> </i> $r.escapeHtml($link.displayName)</a>
+			<a href="javascript:top.o_openUriInMainWindow('$link.uri')" title="$link.title"><i class="o_icon $link.cssClass"> </i> $r.escapeHtml($link.displayName)</a>
 		#else
 			<a href="$link.uri" title="$link.title" class="$link.cssClass" target="_blank">$r.escapeHtml($link.displayName)</a>
 		#end

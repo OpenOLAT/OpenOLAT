@@ -294,7 +294,9 @@ public class SessionInfo implements Serializable {
 		String deliveryMode = "web 1.0"; // default, e.g. when connecting with webdav
 		if (ureq != null) {
 			// calculate ajax delivery mode
-			if (Windows.getWindows(ureq).getWindowManager().isAjaxEnabled()) deliveryMode = "web 2.0";
+			if (Windows.getWindows(ureq).getWindowManager().isAjaxEnabled()) {
+				deliveryMode = "web 2.0";
+			}
 		}
 		this.webMode = deliveryMode;
 	}

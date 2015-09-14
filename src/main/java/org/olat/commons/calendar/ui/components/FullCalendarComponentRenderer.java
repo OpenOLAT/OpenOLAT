@@ -138,19 +138,19 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 		  .append("   },\n")
 		  .append("   viewDisplay: function(view) {\n")
 		  .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
-		  .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'evChangeView',view.name,'start',view.start.getTime());\n")
+		  .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, true, false,'evChangeView',view.name,'start',view.start.getTime());\n")
 		  .append("   },\n")
 		  .append("	  eventDrop: function(calEvent, dayDelta, minuteDelta, allDay, revertFunc, jsEvent, ui, view) {\n")
 		  .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
-		  .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'evMove',calEvent.id,'dayDelta',dayDelta,'minuteDelta',minuteDelta,'allDay',allDay);\n")
+		  .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, true, false, 'evMove',calEvent.id,'dayDelta',dayDelta,'minuteDelta',minuteDelta,'allDay',allDay);\n")
 		  .append("	  },\n")
 		  .append("   select: function(startDate, endDate, allDay, jsEvent, view) {\n")
 		  .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
-		  .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'evAdd','new','start',startDate.getTime(),'end',endDate.getTime(),'allDay',allDay);\n")
+		  .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, true, false, 'evAdd','new','start',startDate.getTime(),'end',endDate.getTime(),'allDay',allDay);\n")
 		  .append("   },\n")
 		  .append("   eventClick: function(calEvent, jsEvent, view) {\n")
 		  .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
-		  .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'evSelect',calEvent.id,'evDomId','o_cev_' + view.name + '_' + calEvent.id);\n")
+		  .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, true, false, 'evSelect',calEvent.id,'evDomId','o_cev_' + view.name + '_' + calEvent.id);\n")
 		  .append("   }\n")
 		  .append(" });\n")
 		//print button
@@ -158,7 +158,7 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 		  .append(" <span title=\"").append(translator.translate("print")).append("\"><i class=\"o_icon o_icon_print\"> </i></span></span>');\n")      
 		  .append(" jQuery('.fc-button-print').click(function () {\n")
 		  .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
-		  .append("   o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'print','print');\n")
+		  .append("   o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, false, false, 'print','print');\n")
 		  .append(" });\n");
 		if(fcC.isConfigurationEnabled()) {
 			//config button
@@ -166,7 +166,7 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 			  .append(" <span title=\"").append(translator.translate("cal.configuration.tooltip")).append("\"><i class=\"o_icon o_icon_customize\"> </i></span></span>');\n")      
 			  .append(" jQuery('.fc-button-config').click(function () {\n")
 			  .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
-			  .append("   o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'config','config');\n")
+			  .append("   o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, false, false, 'config', 'config');\n")
 			  .append(" });\n");
 		}
 		if(fcC.isAggregatedFeedEnabled()) {
@@ -175,7 +175,7 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 			  .append("<span title=\"").append(translator.translate("cal.icalfeed.aggregated.tooltip")).append("\"><i class=\"o_icon o_icon_rss\"> </i></span></span>');\n")      
 			  .append(" jQuery('.fc-button-aggregate').click(function () {\n")
 			  .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
-			  .append("   o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt,'aggregate','aggregate');\n")
+			  .append("   o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, false, false, 'aggregate','aggregate');\n")
 			  .append(" });\n");
 		}
       

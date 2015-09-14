@@ -84,7 +84,7 @@ public class EPUIFactory {
 		return new EPMapViewController(ureq, wControl, map, false, true, secCallback);
 	}
 	
-	public static Controller createMapViewController(UserRequest ureq, WindowControl wControl,
+	public static EPMapViewController createMapViewController(UserRequest ureq, WindowControl wControl,
 			PortfolioStructureMap map, EPSecurityCallback secCallback) {
 		EPMapViewController mapViewController = 
 			new EPMapViewController(ureq, wControl, map, false, false, secCallback);

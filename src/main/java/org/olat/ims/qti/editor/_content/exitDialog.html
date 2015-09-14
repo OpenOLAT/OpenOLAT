@@ -1,6 +1,6 @@
 <div class="modal-body">$r.translate("exit.message")</div>
 <div class="modal-footer">
-	<a href="$r.commandURIbg("exit.save")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() title="$r.translateInAttribute("exit.save.tooltip")" class="btn btn-primary"><span>$r.translate("exit.save")</span></a>
-	<a href="$r.commandURIbg("exit.discard")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() title="$r.translateInAttribute("exit.discard.tooltip")" class="btn btn-default"><span>$r.translate("exit.discard")</span></a>
-	<a href="$r.commandURIbg("exit.cancel")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() title="$r.translateInAttribute("exit.cancel.tooltip")" class="btn btn-default"><span>$r.translate("exit.cancel")</span></a>
+	<a $r.hrefAndOnclick("exit.save",false,false) title="$r.translateInAttribute("exit.save.tooltip")" class="btn btn-primary"><span>$r.translate("exit.save")</span></a>
+	<a $r.hrefAndOnclick("exit.discard",false,false) title="$r.translateInAttribute("exit.discard.tooltip")" class="btn btn-default"><span>$r.translate("exit.discard")</span></a>
+	<a $r.hrefAndOnclick("exit.cancel",false,false) title="$r.translateInAttribute("exit.cancel.tooltip")" class="btn btn-default"><span>$r.translate("exit.cancel")</span></a>
 </div>

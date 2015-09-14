@@ -30,7 +30,6 @@ import org.olat.core.commons.controllers.impressum.ImpressumModule.Position;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -201,13 +200,13 @@ public class ImpressumAdminController extends FormBasicController {
 			impressumCont.setVisible(enabled);
 			
 			getWindowControl().getWindowBackOffice().getWindow().setDirty(true);
-			Windows.getWindows(ureq).getChiefController().wishReload(ureq, true);
+			getWindowControl().getWindowBackOffice().getChiefController().wishReload(ureq, true);
 		} else if(positionEl == source) {
 			if(positionEl.isOneSelected()) {
 				String key = positionEl.getSelectedKey();
 				impressumModule.setPosition(key);
 				getWindowControl().getWindowBackOffice().getWindow().setDirty(true);
-				Windows.getWindows(ureq).getChiefController().wishReload(ureq, true);
+				getWindowControl().getWindowBackOffice().getChiefController().wishReload(ureq, true);
 			}
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;

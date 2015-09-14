@@ -20,7 +20,6 @@
 package org.olat.core.commons.fullWebApp;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -28,8 +27,8 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.ScreenMode.Mode;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.layout.MainLayout3ColumnsController;
 
@@ -118,8 +117,8 @@ public class LayoutMain3ColsBackController extends MainLayoutBasicController imp
 		return fullScreen;
 	}
 
-	public void setAsFullscreen(UserRequest ureq) {
-		ChiefController cc = Windows.getWindows(ureq).getChiefController();
+	public void setAsFullscreen() {
+		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
 		if (cc != null) {
 			thebaseChief = cc;
 			thebaseChief.getScreenMode().setMode(Mode.full);

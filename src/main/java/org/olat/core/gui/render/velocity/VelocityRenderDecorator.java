@@ -41,6 +41,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.contextHelp.ContextHelpModule;
 import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.Renderer;
@@ -135,21 +136,8 @@ public class VelocityRenderDecorator implements Closeable {
 		renderer.getUrlBuilder().buildURI(sb, new String[] { VelocityContainer.COMMAND_ID }, new String[] { command }, isIframePostEnabled? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 		return sb;
 	}
-
-	/**
-	 * renderer a target="oaa" if ajax-mode is on, otherwise returns an empty string
-	 * @return
-	 */
-	public StringOutput bgTarget() {
-		StringOutput sb = new StringOutput(16);
-		if (isIframePostEnabled) {
-			renderer.getUrlBuilder().appendTarget(sb);
-		}
-		return sb;
-	}
 	
 	/**
-	 * FIXME:fj:b search occurences for $r.commandURI and try to replace them with $r.link(...) or such
 	 * @param command
 	 * @return
 	 */
@@ -158,36 +146,76 @@ public class VelocityRenderDecorator implements Closeable {
 		renderer.getUrlBuilder().buildURI(sb, new String[] { VelocityContainer.COMMAND_ID }, new String[] { command });
 		return sb;
 	}
-
-	/**
-	 * Creates a java script fragment to execute a background request. In ajax
-	 * mode the request uses the ajax asynchronous methods, in legacy mode it
-	 * uses a standard document.location.request
-	 * 
-	 * @param command
-	 * @param paramKey
-	 * @param paramValue
-	 * @return
-	 */
-	public StringOutput javaScriptBgCommand(String command, String paramKey, String paramValue) {
-		StringOutput sb = new StringOutput(100);
-		renderer.getUrlBuilder().buildJavaScriptBgCommand(sb, new String[] { VelocityContainer.COMMAND_ID, paramKey }, new String[] { command, paramValue }, isIframePostEnabled? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-		return sb;
+	
+	public String hrefAndOnclick(String command, boolean dirtyCheck, boolean pushState) {
+		renderer.getUrlBuilder().buildHrefAndOnclick(target, null, isIframePostEnabled, dirtyCheck, pushState,
+				new NameValuePair(VelocityContainer.COMMAND_ID, command));
+		return "";
+	}
+	
+	public String hrefAndOnclick(String command, boolean dirtyCheck, boolean pushState, String key, String value) {
+		renderer.getUrlBuilder().buildHrefAndOnclick(target, null, isIframePostEnabled, dirtyCheck, pushState,
+				new NameValuePair(VelocityContainer.COMMAND_ID, command),
+				new NameValuePair(key, value));
+		return "";
+	}
+	
+	public String hrefAndOnclick(String command, boolean dirtyCheck, boolean pushState, String key1, String value1, String key2, String value2) {
+		renderer.getUrlBuilder().buildHrefAndOnclick(target, null, isIframePostEnabled, dirtyCheck, pushState,
+				new NameValuePair(VelocityContainer.COMMAND_ID, command),
+				new NameValuePair(key1, value1),
+				new NameValuePair(key2, value2));
+		return "";
 	}
 
 	/**
-	 * Creates a java script fragment to execute a background request. In ajax
-	 * mode the request uses the ajax asynchronous methods, in legacy mode it
-	 * uses a standard document.location.request
+	 * Creates a java script fragment to execute a ajax background request.
 	 * 
 	 * @param command
 	 * @return
 	 */
-	public StringOutput javaScriptBgCommand(String command) {
-		StringOutput sb = new StringOutput(100);
-		renderer.getUrlBuilder().buildJavaScriptBgCommand(sb, new String[] { VelocityContainer.COMMAND_ID }, new String[] { command}, isIframePostEnabled? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-		return sb;
-	}	
+	public String javaScriptCommand(String command) {
+		renderer.getUrlBuilder().buildXHREvent(target, null, false, false,
+				new NameValuePair(VelocityContainer.COMMAND_ID, command));
+		return "";
+	}
+	
+	/**
+	 * Creates the start of a java script fragment to execute a background request. It's
+	 * up to you to close the javascript call.
+	 * 
+	 * @param command
+	 * @return
+	 */
+	public String openJavaScriptCommand(String command) {
+		renderer.getUrlBuilder().openXHREvent(target, null, false, false,
+				new NameValuePair(VelocityContainer.COMMAND_ID, command));
+		return "";
+	}
+	
+	/**
+	 * 
+	 * @param command
+	 * @return
+	 */
+	public String backgroundCommand(String command) {
+		renderer.getUrlBuilder().getXHRNoResponseEvent(target, null,
+				new NameValuePair(VelocityContainer.COMMAND_ID, command));
+		return "";
+	}
+	
+	public String backgroundCommand(String command, String key, String value) {
+		renderer.getUrlBuilder().getXHRNoResponseEvent(target, null,
+				new NameValuePair(VelocityContainer.COMMAND_ID, command),
+				new NameValuePair(key, value));
+		return "";
+	}
+	
+	public String openBackgroundCommand(String command) {
+		renderer.getUrlBuilder().openXHRNoResponseEvent(target, null,
+				new NameValuePair(VelocityContainer.COMMAND_ID, command));
+		return "";
+	}
 	
 	/**
 	 * Use it to create the action for a handmade form in a velocity template,
@@ -429,19 +457,18 @@ public class VelocityRenderDecorator implements Closeable {
 	public StringOutput contextHelpRelativeLink(String bundleName, String pageName, String linkText) {
 		StringOutput sb = new StringOutput(100);
 		if (ContextHelpModule.isContextHelpEnabled()) {
-			sb.append("<a href=\"");
+			sb.append("<a ");
+			NameValuePair[] commands;
 			if (bundleName == null) {
-				renderer.getUrlBuilder().buildURI(sb, new String[] { VelocityContainer.COMMAND_ID }, new String[] { pageName }, isIframePostEnabled? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);				
+				commands = new NameValuePair[]{ new NameValuePair(VelocityContainer.COMMAND_ID, pageName) }; 
 			} else {
-				renderer.getUrlBuilder().buildURI(sb, new String[] { VelocityContainer.COMMAND_ID, PARAM_CHELP_BUNDLE }, new String[] { pageName, bundleName }, isIframePostEnabled? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);				
+				commands = new NameValuePair[]{
+						new NameValuePair(VelocityContainer.COMMAND_ID, pageName),
+						new NameValuePair(PARAM_CHELP_BUNDLE, bundleName)
+				};
 			}
-			sb.append("\" ");
-			if(isIframePostEnabled) {
-				renderer.getUrlBuilder().appendTarget(sb);
-			}
-			sb.append(">");
-			sb.append(linkText);
-			sb.append("</a>");
+			renderer.getUrlBuilder().buildHrefAndOnclick(sb, isIframePostEnabled, commands);
+			sb.append(">").append(linkText).append("</a>");
 		}
 		return sb;
 	}	

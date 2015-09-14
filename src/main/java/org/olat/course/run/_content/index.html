@@ -4,10 +4,9 @@ o_info.course_id="$courserepokey";
 ## o_activateCourseNode is called from functions.js gotonode() method and implements 
 ## the activation of the given node id in the course run structure
 function o_activateCourseNode(nodeid) {
-	if (!o_info.linkbusy) { 
-		o_beforeserver();
+	if (!o_info.linkbusy) {
 		window.focus();
-		${r.javaScriptBgCommand("activateCourseNode")} + nodeid;
+		${r.openJavaScriptCommand("activateCourseNode")},"nodeid",nodeid);
 		## Go to top of page (OLAT-5675)
 		o_scrollToElement('#o_top');
 	}

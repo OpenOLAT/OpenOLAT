@@ -37,16 +37,14 @@
 			dialogClass: 'o_modal-ui',
 			stack: true,
 			close: function() {
-				o_beforeserver();
 				jQuery(this).dialog('destroy').remove();
-				$r.javaScriptBgCommand("close")
+				$r.javaScriptCommand("close")
 			},
 			resize: function(event, ui) {
 				#if ($ajaxFlags.isIframePostEnabled())
 					if (!o_info.linkbusy) {
 						window.suppressOlatOnUnloadOnce = true;
-						o_beforeserver();
-						$r.javaScriptBgCommand("geometry") + '?p='+ encodeURIComponent(ui.position.left + ',' + ui.position.top + ':' + ui.size.width + ',' + ui.size.height);
+						$r.openBackgroundCommand("geometry"),"p",encodeURIComponent(ui.position.left + ',' + ui.position.top + ':' + ui.size.width + ',' + ui.size.height))
 					}
 				#end
 				try {
@@ -57,8 +55,7 @@
 				#if ($ajaxFlags.isIframePostEnabled())
 					if (!o_info.linkbusy) {
 						window.suppressOlatOnUnloadOnce = true;
-						o_beforeserver();
-						$r.javaScriptBgCommand("geometry") + '?p='+ encodeURIComponent(ui.position.left + ',' + ui.position.top);
+						$r.openBackgroundCommand("geometry"),"p",encodeURIComponent(ui.position.left + ',' + ui.position.top))
 					}
 				#end	
 				try {

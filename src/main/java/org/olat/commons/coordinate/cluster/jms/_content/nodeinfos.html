@@ -17,7 +17,7 @@
 #if ($thisNodeId==$stat.nodeId)
 			<td>$r.translate("you.are.on.this.node")</td>
 #else
-			<td class="text-left"><a href="$r.commandURIbg("switchToNode")?nodeId=$stat.nodeId" $r.bgTarget()>$r.translate("switch.to.node")</a></td>
+			<td class="text-left"><a $r.hrefAndOnclick("switchToNode",false,false,"nodeId",$stat.nodeId)>$r.translate("switch.to.node")</a></td>
 #end
 		</tr>
 	</table>

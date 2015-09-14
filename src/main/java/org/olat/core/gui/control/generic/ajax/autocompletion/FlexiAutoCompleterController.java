@@ -42,7 +42,6 @@ import org.olat.core.gui.components.htmlheader.jscss.CustomJSFormItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.winmgr.JSCommand;
 
 /**
  * 
@@ -73,9 +72,6 @@ public class FlexiAutoCompleterController extends FormBasicController {
 	private ListProvider gprovider;
 	private boolean allowNewValues;
 	private boolean formElement;
-	
-	private String datastoreName;
-	private String comboboxName;
 
 	/**
 	 * Constructor to create an auto completer controller
@@ -159,10 +155,6 @@ public class FlexiAutoCompleterController extends FormBasicController {
 		layoutCont.contextPut("inputWidth", Integer.valueOf(inputWidth));
 		layoutCont.contextPut("minChars", Integer.valueOf(minChars));
 		layoutCont.contextPut("flexi", Boolean.TRUE);
-		// Create name for addressing the javascript components
-		datastoreName = "o_s" + JSNAME_DATASTORE + layoutCont.getComponent().getDispatchID();
-		comboboxName = "o_s" + JSNAME_COMBOBOX + layoutCont.getComponent().getDispatchID();
-		
 		layoutCont.getComponent().addListener(this);
 
 		// Create a mapper for the server responses for a given input
@@ -265,26 +257,8 @@ public class FlexiAutoCompleterController extends FormBasicController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose()
 	 */
+	@Override
 	protected void doDispose() {
-		// Cleanup javascript objects on browser side by triggering dispose
-		// function
-		StringBuilder sb = new StringBuilder(128);
-		// first datastore
-		sb.append("if (o_info.objectMap.containsKey('")
-				.append(datastoreName)
-				.append("')) {var oldStore = o_info.objectMap.removeKey('")
-				.append(datastoreName)
-				.append("');if (oldStore) {oldStore.destroy();} oldStore = null;}");
-		// second combobox
-		sb.append("if (o_info.objectMap.containsKey('")
-				.append(comboboxName)
-				.append("')) { var oldCombo = o_info.objectMap.removeKey('")
-				.append(comboboxName)
-				.append("'); if (oldCombo) {	oldCombo.destroy(); } oldCombo = null;}");
 		//
-		JSCommand jsCommand = new JSCommand(sb.toString());
-		getWindowControl().getWindowBackOffice().sendCommandTo(jsCommand);
-		
-		// Mapper autodisposed by basic controller
 	}
 }

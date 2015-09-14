@@ -25,7 +25,6 @@
 
 package org.olat.course.nodes.ta;
 
-import org.olat.commons.file.filechooser.FileChooserController;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
@@ -34,7 +33,6 @@ import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionCon
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -51,7 +49,6 @@ import org.olat.course.run.environment.CourseEnvironment;
 public class SolutionController extends BasicController {
 	
 	private VelocityContainer myContent;
-	private FileChooserController fileChooserController;
 	private FolderRunController solutionFolderRunController;
 	private SubscriptionContext subsContext;
 	private ContextualSubscriptionController contextualSubscriptionCtr;
@@ -109,22 +106,13 @@ public class SolutionController extends BasicController {
 	public void event(UserRequest ureq, Component source, Event event) {
 
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
-	public void event(UserRequest ureq, Controller source, Event event) {
-
-	}
 		
 	/**
 	 * 
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
-		if (fileChooserController != null) {
-			fileChooserController.dispose();
-			fileChooserController = null;
-		}
+		//
 	}
 }

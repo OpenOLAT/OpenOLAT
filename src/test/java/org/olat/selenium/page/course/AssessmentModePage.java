@@ -123,7 +123,7 @@ public class AssessmentModePage {
 				List<WebElement> linksEl = row.findElements(linkBy);
 				for(WebElement linkEl:linksEl) {
 					String href = linkEl.getAttribute("href");
-					if(href != null && href.contains("','start','")) {
+					if(href != null && href.contains(",'start',")) {
 						startEl = linkEl;
 					}
 				}
@@ -173,7 +173,7 @@ public class AssessmentModePage {
 				List<WebElement> linksEl = row.findElements(linkBy);
 				for(WebElement linkEl:linksEl) {
 					String href = linkEl.getAttribute("href");
-					if(href != null && href.contains("','stop','")) {
+					if(href != null && href.contains(",'stop',")) {
 						startEl = linkEl;
 					}
 				}

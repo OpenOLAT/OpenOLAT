@@ -40,6 +40,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.wizard.Step;
@@ -49,6 +50,8 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
@@ -97,7 +100,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial date: 22.01.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class QuestionListController extends AbstractItemListController implements BreadcrumbPanelAware {
+public class QuestionListController extends AbstractItemListController implements BreadcrumbPanelAware, Activateable2 {
 
 	private FormLink list, exportItem, shareItem, removeItem, newItem, copyItem, deleteItem, authorItem, importItem, bulkChange;
 
@@ -179,6 +182,23 @@ public class QuestionListController extends AbstractItemListController implement
 		this.stackPanel = stackPanel;
 		if(stackPanel != null) {
 			stackPanel.addListener(this);
+		}
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry entry = entries.get(0);
+		String type = entry.getOLATResourceable().getResourceableTypeName();
+		if("QuestionItem".equals(type)) {
+			Long itemKey = entry.getOLATResourceable().getResourceableId();
+			ItemRow row = getModel().getObjectByKey(itemKey);
+			if(row == null) {
+				//TODO xhr
+			} else {
+				doSelect(ureq, row);
+			}
 		}
 	}
 
@@ -910,7 +930,8 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(currentDetailsCtrl);
 		removeAsListenerAndDispose(currentMainDetailsCtrl);
 		
-		currentDetailsCtrl = new QuestionItemDetailsController(ureq, getWindowControl(), item, editable, getSource().isDeleteEnabled());
+		WindowControl bwControl = addToHistory(ureq, item, null);
+		currentDetailsCtrl = new QuestionItemDetailsController(ureq, bwControl, item, editable, getSource().isDeleteEnabled());
 		currentDetailsCtrl.setBreadcrumbPanel(stackPanel);
 		listenTo(currentDetailsCtrl);
 		currentMainDetailsCtrl = new LayoutMain3ColsController(ureq, getWindowControl(), currentDetailsCtrl);

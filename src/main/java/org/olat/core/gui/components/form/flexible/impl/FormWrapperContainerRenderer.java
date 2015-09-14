@@ -102,18 +102,19 @@ class FormWrapperContainerRenderer implements ComponentRenderer {
 					: AJAXFlags.MODE_NORMAL);
 			sb.append("\" ");
 			//check if ready to accept a new request
-			sb.append(" onsubmit=\"if(o_info.linkbusy) return false; else o_beforeserver(); return true;\" ");
-			if (iframePostEnabled) {
-				ubu.appendTarget(sb);
+			if(iframePostEnabled) {
+				sb.append(" onsubmit=\"o_XHRSubmit('").append(formC.getFormName()).append("');\" ");
+			} else {
+				sb.append(" onsubmit=\"if(o_info.linkbusy) return false; else o_beforeserver(); return true;\" ");
 			}
 			sb.append(">");
 			// hidden input field for dispatch uri
-			sb.append("<input type=\"hidden\" id=\"");
-			sb.append(formC.getDispatchFieldId());
-			sb.append("\" name=\"dispatchuri\" value=\"").append(Form.FORM_UNDEFINED).append("\" />");
-			sb.append("<input type=\"hidden\" id=\"");
-			sb.append(formC.getEventFieldId());
-			sb.append("\" name=\"dispatchevent\" value=\"").append(Form.FORM_UNDEFINED).append("\" />");
+			sb.append("<input type=\"hidden\" id=\"")
+			  .append(formC.getDispatchFieldId())
+			  .append("\" name=\"dispatchuri\" value=\"").append(Form.FORM_UNDEFINED).append("\" />")
+			  .append("<input type=\"hidden\" id=\"")
+			  .append(formC.getEventFieldId())
+			  .append("\" name=\"dispatchevent\" value=\"").append(Form.FORM_UNDEFINED).append("\" />");
 			/*
 			 * FORM CONTAINER
 			 */

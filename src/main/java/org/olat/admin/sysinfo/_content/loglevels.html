@@ -13,14 +13,14 @@
 					## could not make it work with (\\.) - workaround to use a-zA-Z0-9_- maybe more??
 					## sorry for the pure uglyness below... quick hack to bring everything on one line without whitespace
 					#set ($package="")
-					#foreach( $part in $logger.name.split("[^a-zA-Z0-9_-]"))#if ($package != "")#set ($package="${package}.${part}").#else#set ($package=$part)#end<a href="$r.commandURIbg("viewlog")?p=${package}" $r.bgTarget() style="display:inline">$part</a>#end
+					#foreach( $part in $logger.name.split("[^a-zA-Z0-9_-]"))#if ($package != "")#set ($package="${package}.${part}").#else#set ($package=$part)#end<a $r.hrefAndOnclick("viewlog",false,false,"p",${package}) style="display:inline">$part</a>#end
 					</div>
 				</td>
 				<td>$logger.getEffectiveLevel()</td>
-				<td><a href="$r.commandURIbg("setlevel")?logger=$logger.name&level=error" $r.bgTarget()>Error</a></td>
-				<td><a href="$r.commandURIbg("setlevel")?logger=$logger.name&level=warn" $r.bgTarget()>Warn</a></td>
-				<td><a href="$r.commandURIbg("setlevel")?logger=$logger.name&level=info" $r.bgTarget()>Info</a></td>
-				<td><a href="$r.commandURIbg("setlevel")?logger=$logger.name&level=debug" $r.bgTarget()>Debug</a></td>
+				<td><a $r.hrefAndOnclick("setlevel",false,false,"logger",$logger.name,"level","error")>Error</a></td>
+				<td><a $r.hrefAndOnclick("setlevel",false,false,"logger",$logger.name,"level","warn")>Warn</a></td>
+				<td><a $r.hrefAndOnclick("setlevel",false,false,"logger",$logger.name,"level","info")>Info</a></td>
+				<td><a $r.hrefAndOnclick("setlevel",false,false,"logger",$logger.name,"level","debug")>Debug</a></td>
 			</tr>
 		#end
 		</tbody>

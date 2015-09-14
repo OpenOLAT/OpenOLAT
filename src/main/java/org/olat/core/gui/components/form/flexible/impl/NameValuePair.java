@@ -27,28 +27,27 @@ package org.olat.core.gui.components.form.flexible.impl;
  */
 public class NameValuePair {
 	
-	private String name;
-	private String value;
+	private final String name;
+	private final String value;
 	
 	public NameValuePair(String name, String value) {
 		this.name = name;
 		this.value = value;
+	}
+	
+	public NameValuePair(String name, int value) {
+		this(name, Integer.toString(value));
+	}
+	
+	public NameValuePair(String name, long value) {
+		this(name, Long.toString(value));
 	}
 
 	public String getName() {
 		return name;
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
-
 	public String getValue() {
 		return value;
 	}
-
-	public void setValue(String value) {
-		this.value = value;
-	}
 }
-

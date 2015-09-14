@@ -214,8 +214,7 @@ public class Windows implements Disposable, Serializable {
 		return contextHelpChiefController;
 	}
 
-	public void setContextHelpChiefController(
-			ChiefController contextHelpChiefController) {
+	public void setContextHelpChiefController(ChiefController contextHelpChiefController) {
 		this.contextHelpChiefController = contextHelpChiefController;
 	}
 

@@ -82,9 +82,11 @@ public class Choice extends AbstractComponent {
 	protected void doDispatchRequest(UserRequest ureq) {
 		// since we are a >form<, this must be a submit or a cancel
 		// check for cancel first
-		if (ureq.getParameter(CANCEL_IDENTIFICATION) != null) {
+		
+		String action = ureq.getParameter("multi_action_identifier");
+		if (CANCEL_IDENTIFICATION.equals(action)) {
 			fireEvent(ureq, EVNT_FORM_CANCELLED);
-		} else if (ureq.getParameter(RESET_IDENTIFICATION) != null) {
+		} else if (RESET_IDENTIFICATION.equals(action)) {
 			fireEvent(ureq, EVNT_FORM_RESETED);
 		} else {
 			selectedRows.clear();

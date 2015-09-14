@@ -79,6 +79,17 @@ public class ServletUtil {
 		}
 	}
 	
+	public static boolean acceptJson(HttpServletRequest request) {
+		boolean acceptJson = false;
+		for(Enumeration<String> headers=request.getHeaders("Accept"); headers.hasMoreElements(); ) {
+			String accept = headers.nextElement();
+			if(accept.contains("application/json")) {
+				acceptJson = true;
+			}
+		}
+		return acceptJson;
+	}
+	
 	/**
 	 * @param httpReq
 	 * @param httpResp

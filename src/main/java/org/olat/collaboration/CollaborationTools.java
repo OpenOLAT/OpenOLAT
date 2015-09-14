@@ -104,6 +104,7 @@ import org.olat.portfolio.EPUIFactory;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.portfolio.ui.structel.EPCreateMapController;
+import org.olat.portfolio.ui.structel.EPMapViewController;
 import org.olat.properties.NarrowedPropertyManager;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
@@ -483,7 +484,7 @@ public class CollaborationTools implements Serializable {
 	 * @param wControl
 	 * @return
 	 */
-	public Controller createPortfolioController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group) {
+	public EPMapViewController createPortfolioController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group) {
 		final EPFrontendManager ePFMgr = (EPFrontendManager)CoreSpringFactory.getBean("epFrontendManager");
 		final NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(ores);
 	//TODO gsync

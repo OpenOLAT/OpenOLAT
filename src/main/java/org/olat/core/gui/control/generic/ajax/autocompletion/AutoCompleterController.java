@@ -39,7 +39,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 
 /**
@@ -62,8 +61,6 @@ import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 public class AutoCompleterController extends BasicController {
 	private static final String COMMAND_SELECT = "select";
 	private static final String JSNAME_INPUTFIELD = "o_autocomplete_input";
-	private static final String JSNAME_DATASTORE = "autocompleterDatastore";
-	private static final String JSNAME_COMBOBOX = "autocompleterCombobox";
 
 	static final String AUTOCOMPLETER_NO_RESULT = "AUTOCOMPLETER_NO_RESULT";
 
@@ -72,9 +69,6 @@ public class AutoCompleterController extends BasicController {
 	private final ListProvider gprovider;
 	private final String noResults;
 	private boolean emptyAsReset;
-	
-	private String datastoreName;
-	private String comboboxName;
 
 	/**
 	 * Constructor to create an auto completer controller
@@ -119,10 +113,6 @@ public class AutoCompleterController extends BasicController {
 		myContent.contextPut("showDisplayKey", Boolean.valueOf(showDisplayKey));
 		myContent.contextPut("inputWidth", Integer.valueOf(inputWidth));
 		myContent.contextPut("minChars", Integer.valueOf(minChars));
-		// Create name for addressing the javascript components
-		datastoreName = "o_s" + JSNAME_DATASTORE + myContent.getDispatchID();
-		comboboxName = "o_s" + JSNAME_COMBOBOX + myContent.getDispatchID();
-
 		// Create a mapper for the server responses for a given input
 		mapper = new AutoCompleterMapper(noResults, showDisplayKey, gprovider);
 			
@@ -204,25 +194,6 @@ public class AutoCompleterController extends BasicController {
 
 	@Override
 	protected void doDispose() {
-		// Cleanup javascript objects on browser side by triggering dispose
-		// function
-		StringBuffer sb = new StringBuffer();
-		// first datastore
-		sb.append("if (o_info.objectMap.containsKey('")
-				.append(datastoreName)
-				.append("')) {var oldStore = o_info.objectMap.removeKey('")
-				.append(datastoreName)
-				.append("');if (oldStore) {oldStore.destroy();} oldStore = null;}");
-		// second combobox
-		sb.append("if (o_info.objectMap.containsKey('")
-				.append(comboboxName)
-				.append("')) { var oldCombo = o_info.objectMap.removeKey('")
-				.append(comboboxName)
-				.append("'); if (oldCombo) {	oldCombo.destroy(); } oldCombo = null;}");
 		//
-		JSCommand jsCommand = new JSCommand(sb.toString());
-		getWindowControl().getWindowBackOffice().sendCommandTo(jsCommand);
-		
-		// Mapper autodisposed by basic controller
 	}
 }

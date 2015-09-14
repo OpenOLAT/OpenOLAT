@@ -143,7 +143,7 @@ public class FormDecorator {
 	public String ffXHREvent(String key, String value) {
 		Form theForm = container.getRootForm();
 		String elementId = "o_fi" + container.getComponent().getDispatchID();
-		return FormJSHelper.getXHRFnCallFor(theForm, elementId, 1, new NameValuePair(key, value));
+		return FormJSHelper.getXHRFnCallFor(theForm, elementId, 1, true, true, new NameValuePair(key, value));
 	}
 	
 	public String getContainerCssClass() {

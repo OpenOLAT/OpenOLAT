@@ -151,6 +151,7 @@ public class OpenOLATServlet extends HttpServlet {
 			sessionStatsManager.incrementRequest();
 			sessionStatsManager.incrementConcurrentCounter();
 		}
+
 		try{
 			
 			final String method = req.getMethod();

@@ -112,6 +112,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		nonClearedStore = new HashMap<String,Object>();
 		singleUserSystemBus = CoordinatorManager.getInstance().getCoordinator().createSingleUserInstance();
 		savedSession = true;
+		authenticated = false;//reset authentication
 		return this;
 	}
 
@@ -365,6 +366,18 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 			return null;
 		}
 		return history.lastElement();
+	}
+	
+	public HistoryPoint getHistoryPoint(String id) {
+		if(history.isEmpty()) {
+			return null;
+		}
+		for(HistoryPoint point:history) {
+			if(id.equals(point.getUuid())) {
+				return point;
+			}
+		}
+		return null;
 	}
 	
 	public HistoryPoint popLastHistoryEntry() {

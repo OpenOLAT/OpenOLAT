@@ -125,23 +125,6 @@ public class TreeHelper {
 		return cur;
 	}
 	
-	public static String buildTreePath(TreeNode node) {
-		// if in load performance mode -> generate the treeposition and include it as param, 
-		// since the nodeid itself is random and thus not replayable
-		StringBuilder conPath = new StringBuilder();
-		// we need at least one char in the var, even if we click the root node
-		conPath.append('_');
-		TreeNode cur = node;
-		TreeNode par = (TreeNode) cur.getParent();
-		while (par != null) {
-			int cpos = cur.getPosition();
-			conPath.append(cpos).append('_');
-			cur = par;
-			par = (TreeNode) cur.getParent();
-		}
-		return conPath.toString();
-	}
-	
 	public static List<TreeNode> getTreePath(TreeNode node) {
 		List<TreeNode> conPath = new ArrayList<TreeNode>();
 		for (TreeNode cur = node; cur != null; cur = (TreeNode) cur.getParent()) {

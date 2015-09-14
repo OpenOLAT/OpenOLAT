@@ -35,6 +35,7 @@ import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
+import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -112,81 +113,42 @@ public class ListRenderer {
 		List<VFSItem> children = fc.getCurrentContainerChildren();
 		// folder empty?
 		if (children.size() == 0) {
-			sb.append("<div class=\"o_bc_empty\"><i class='o_icon o_icon_warn'></i> ");
-			sb.append(translator.translate("NoFiles"));
-			sb.append("</div>");
+			sb.append("<div class=\"o_bc_empty\"><i class='o_icon o_icon_warn'></i> ")
+			  .append(translator.translate("NoFiles"))
+			  .append("</div>");
 			return;
 		}
 
 		boolean canVersion = FolderConfig.versionsEnabled(fc.getCurrentContainer());
 		
-		sb.append("<table class=\"table table-condensed table-striped table-hover o_bc_table\">");
-		// header
-		sb.append("<thead><tr><th>");
-
-		sb.append("<a href=\"");																																							// file name column 
-		ubu.buildURI(sb, new String[] { PARAM_SORTID }, new String[] { FolderComponent.SORT_NAME }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-		sb.append("\"");
-		if (iframePostEnabled) { // add ajax iframe target
-			StringOutput so = new StringOutput();
-			ubu.appendTarget(so);
-			sb.append(so.toString());
-		}
-		sb.append(">").append(translator.translate("header.Name")).append("</a>");
-		sb.append("</th><th>");
-		
-		sb.append("<a href=\"");																																							// file size column
-		ubu.buildURI(sb, new String[] { PARAM_SORTID }, new String[] { FolderComponent.SORT_SIZE }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-		sb.append("\"");
-		if (iframePostEnabled) { // add ajax iframe target
-			StringOutput so = new StringOutput();
-			ubu.appendTarget(so);
-			sb.append(so.toString());
-		}
-		sb.append(">").append(translator.translate("header.Size")).append("</a>");		
-		sb.append("</th><th>");
-
-		sb.append("<a href=\"");																																							// file type column
-		ubu.buildURI(sb, new String[] { PARAM_SORTID }, new String[] { FolderComponent.SORT_DATE }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-		sb.append("\"");
-		if (iframePostEnabled) { // add ajax iframe target
-			StringOutput so = new StringOutput();
-			ubu.appendTarget(so);
-			sb.append(so.toString());
-		}
-		sb.append(">").append(translator.translate("header.Modified")).append("</a>");
+		sb.append("<table class=\"table table-condensed table-striped table-hover o_bc_table\">")
+		  .append("<thead><tr><th><a ");
+		ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_NAME))
+		   .append(">").append(translator.translate("header.Name")).append("</a>")
+		   .append("</th><th><a ");
+		ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_SIZE))
+		   .append(">").append(translator.translate("header.Size")).append("</a>")
+		   .append("</th><th><a ");	
+		ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_DATE))
+		   .append(">").append(translator.translate("header.Modified")).append("</a>");
 
 		if(canVersion) {
-			sb.append("</th><th>")
-				.append("<a href=\"");																																							// file size column
-			ubu.buildURI(sb, new String[] { PARAM_SORTID }, new String[] { FolderComponent.SORT_REV }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-			sb.append("\"");
-			if (iframePostEnabled) { // add ajax iframe target
-				StringOutput so = new StringOutput();
-				ubu.appendTarget(so);
-				sb.append(so.toString());
-			}
-			sb.append("><i class=\"o_icon o_icon_version  o_icon-lg\"></i></a>");
+			sb.append("</th><th><a ");		
+			ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_REV))																																					// file size column
+			   .append("><i class=\"o_icon o_icon_version  o_icon-lg\"></i></a>");
 		}
 
-		sb.append("</th><th>");		
-		sb.append("<a href=\"");																																							// file lock
-		ubu.buildURI(sb, new String[] { PARAM_SORTID }, new String[] { FolderComponent.SORT_LOCK }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-		sb.append("\"");
-		if (iframePostEnabled) { // add ajax iframe target
-			StringOutput so = new StringOutput();
-			ubu.appendTarget(so);
-			sb.append(so.toString());
-		}
-		sb.append("><i class=\"o_icon o_icon_locked  o_icon-lg\"></i></a>");
-		
+		sb.append("</th><th><a ");
+		ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_LOCK))
+		   .append("><i class=\"o_icon o_icon_locked  o_icon-lg\"></i></a>")
 		// meta data column
-		sb.append("</th><th><i class=\"o_icon o_icon_edit_metadata o_icon-lg\"></i></th></tr></thead>");
+		  .append("</th><th><i class=\"o_icon o_icon_edit_metadata o_icon-lg\"></i></th></tr></thead>");
 				
 		// render directory contents
 		String currentContainerPath = fc.getCurrentContainerPath();
-		if (currentContainerPath.length() > 0 && currentContainerPath.charAt(0) == '/')
+		if (currentContainerPath.length() > 0 && currentContainerPath.charAt(0) == '/') {
 			currentContainerPath = currentContainerPath.substring(1);
+		}
 
 		sb.append("<tbody>");
 		
@@ -267,20 +229,14 @@ public class ListRenderer {
 			sb.append(StringHelper.escapeHtml(name));
 			log.error("XSS Scan found something suspicious in: " + child);
 		} else {
-			sb.append("<a id='o_sel_doc_").append(pos).append("' href=\"");
+			sb.append("<a id='o_sel_doc_").append(pos).append("'");
 		
 			if (isContainer) { // for directories... normal module URIs
-				ubu.buildURI(sb, null, null, pathAndName, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-				sb.append("\"");
-				if (iframePostEnabled) { // add ajax iframe target
-					StringOutput so = new StringOutput();
-					ubu.appendTarget(so);
-					sb.append(so.toString());
-				}
+				ubu.buildHrefAndOnclick(sb, pathAndName, iframePostEnabled, false, false);
 			} else { // for files, add PARAM_SERV command
+				sb.append(" href=\"");
 				ubu.buildURI(sb, new String[] { PARAM_SERV }, new String[] { "x" }, pathAndName, AJAXFlags.MODE_NORMAL);
-				sb.append("\" target=\"_blank\"");
-				sb.append(" download=\"").append(name).append("\"");
+				sb.append("\" target=\"_blank\" download=\"").append(name).append("\"");
 			}
 			sb.append(">");
 
@@ -435,17 +391,10 @@ public class ListRenderer {
 
 			if (actionCount == 1 && canMetaData) {
 				// when only one action is available, don't render menu
-				sb.append("<a href='");
-				ubu.buildURI(sb, new String[] { PARAM_EDTID }, new String[] { Integer.toString(pos) }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME
-						: AJAXFlags.MODE_NORMAL);
-				sb.append("'");
-				if (iframePostEnabled) { // add ajax iframe target
-					StringOutput so = new StringOutput();
-					ubu.appendTarget(so);
-					sb.append(so.toString());
-				}
-				sb.append(" title=\"").append(StringHelper.escapeHtml(translator.translate("mf.edit")))
-					.append("\"><i class=\"o_icon o_icon-fw o_icon_edit_metadata\"></i></a>");
+				sb.append("<a ");
+				ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_EDTID, pos))
+				   .append(" title=\"").append(StringHelper.escapeHtml(translator.translate("mf.edit")))
+				   .append("\"><i class=\"o_icon o_icon-fw o_icon_edit_metadata\"></i></a>");
 
 			} else if (actionCount > 1) {
 				// add actions to menu if multiple actions available
@@ -455,44 +404,23 @@ public class ListRenderer {
 				// meta edit action (rename etc)
 				if (canMetaData) {
 					// Metadata edit link... also handles rename for non-OlatRelPathImpls
-					sb.append("<li><a href='");
-					ubu.buildURI(sb, new String[] { PARAM_EDTID }, new String[] { Integer.toString(pos) }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME
-							: AJAXFlags.MODE_NORMAL);
-					sb.append("'");
-					if (iframePostEnabled) { // add ajax iframe target
-						StringOutput so = new StringOutput();
-						ubu.appendTarget(so);
-						sb.append(so.toString());
-					}
-					sb.append("><i class=\"o_icon o_icon-fw o_icon_edit_metadata\"></i> ").append(StringHelper.escapeHtml(translator.translate("mf.edit"))).append("</a></li>");
+					sb.append("<li><a ");
+					ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_EDTID, pos))
+					   .append("><i class=\"o_icon o_icon-fw o_icon_edit_metadata\"></i> ").append(StringHelper.escapeHtml(translator.translate("mf.edit"))).append("</a></li>");
 				}
 				// content edit action
 				if (isEditable) {
-					sb.append("<li><a href=\"");
-					ubu.buildURI(sb, new String[] { PARAM_CONTENTEDITID }, new String[] { Integer.toString(pos) }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME
-							: AJAXFlags.MODE_NORMAL);
-					sb.append("\"");
-					if (iframePostEnabled) { // add ajax iframe target
-						StringOutput so = new StringOutput();
-						ubu.appendTarget(so);
-						sb.append(so.toString());
-					}
-					sb.append("><i class=\"o_icon o_icon-fw o_icon_edit_file\"></i> ").append(StringHelper.escapeHtml(translator.translate("editor"))).append("</a></li>");
+					sb.append("<li><a ");
+					ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_CONTENTEDITID, pos))
+					   .append("><i class=\"o_icon o_icon-fw o_icon_edit_file\"></i> ").append(StringHelper.escapeHtml(translator.translate("editor"))).append("</a></li>");
 				}
 			
 				// versions action
 				if (canVersion) {
 					// Versions link
-					sb.append("<li><a href=\"");
-					ubu.buildURI(sb, new String[] { PARAM_VERID }, new String[] { Integer.toString(pos) }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME
-							: AJAXFlags.MODE_NORMAL);
-					sb.append("\"");
-					if (iframePostEnabled) { // add ajax iframe target
-						StringOutput so = new StringOutput();
-						ubu.appendTarget(so);
-						sb.append(so.toString());
-					}
-					sb.append("><i class=\"o_icon o_icon-fw o_icon_version\"></i> ").append(StringHelper.escapeHtml(translator.translate("versions"))).append("</a></li>");
+					sb.append("<li><a ");
+					ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_VERID, pos))
+					   .append("><i class=\"o_icon o_icon-fw o_icon_version\"></i> ").append(StringHelper.escapeHtml(translator.translate("versions"))).append("</a></li>");
 				}
 	
 				// eportfolio collect action
@@ -501,16 +429,9 @@ public class ListRenderer {
 					if (metaInfo != null) {
 						Identity author = metaInfo.getAuthorIdentity();
 						if (author != null && fc.getIdentityEnvironnement().getIdentity().getKey().equals(author.getKey())) {
-							sb.append("<li><a href=\"");
-							ubu.buildURI(sb, new String[] { PARAM_EPORT }, new String[] { Integer.toString(pos) }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME
-									: AJAXFlags.MODE_NORMAL);
-							sb.append("\"");
-							if (iframePostEnabled) { // add ajax iframe target
-								StringOutput so = new StringOutput();
-								ubu.appendTarget(so);
-								sb.append(so.toString());
-							}
-							sb.append("><i class=\"o_icon o_icon-fw o_icon_eportfolio_add\"></i> ").append(StringHelper.escapeHtml(translator.translate("eportfolio"))).append("</a></li>");
+							sb.append("<li><a ");
+							ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_EPORT, pos))
+							   .append("><i class=\"o_icon o_icon-fw o_icon_eportfolio_add\"></i> ").append(StringHelper.escapeHtml(translator.translate("eportfolio"))).append("</a></li>");
 						}
 					}
 				}

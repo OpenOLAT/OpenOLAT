@@ -82,7 +82,7 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer {
 			String id = source.getFormDispatchId();
 			Form rootForm = ftE.getRootForm();
 			NameValuePair pair = new NameValuePair(cellAction, Integer.toString(row));
-			String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, pair);
+			String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, true, true, pair);
 			target.append("<a href=\"javascript:").append(jsCode).append("\"");
 			if(StringHelper.containsNonWhitespace(linkTitle)) {
 				target.append(" title=\"").append(StringEscapeUtils.escapeHtml(linkTitle)).append("\"");
@@ -90,7 +90,7 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer {
 			if(StringHelper.containsNonWhitespace(linkCSS)) {
 				target.append(" class=\"").append(linkCSS).append("\"");
 			}
-			target.append(" onclick=\"return o2cl();\">");
+			target.append(">");
 			if(StringHelper.containsNonWhitespace(iconCSS)) {
 				target.append("<i class=\"o_icon ").append(iconCSS).append("\">&nbsp;</i>");
 			}

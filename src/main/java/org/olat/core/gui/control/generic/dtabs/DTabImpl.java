@@ -46,24 +46,26 @@ import org.olat.repository.ui.RepositoyUIFactory;
  */
 public class DTabImpl implements Disposable, DTab {
 	
-	private OLATResourceable ores;
-	private OLATResourceable initialOres;
-	private Controller controller;
+	private final OLATResourceable ores;
+	private final OLATResourceable initialOres;
+	private final Controller controller;
 	private GuiStack guiStackHandle;
-	private String title;
+	private final String title;
 	private String description;
 	private final WindowControl wControl;
-	private NavElement navElement;
+	private final NavElement navElement;
 
 	/**
 	 * @param ores
 	 * @param title
 	 * @param wControl
 	 */
-	public DTabImpl(OLATResourceable ores, OLATResourceable initialOres, String title, WindowControl wOrigControl) {
+	public DTabImpl(OLATResourceable ores, OLATResourceable initialOres, String title, Controller controller, WindowControl wOrigControl) {
 		this.ores = ores;
-		this.initialOres = initialOres;
 		this.title = title;
+		this.controller = controller;
+		this.initialOres = initialOres;
+		
 		//Root the JumpInPath - typically all resources are opened in tabs
 		StackedBusinessControl businessControl = new StackedBusinessControl(null, wOrigControl.getBusinessControl());
 		wControl = BusinessControlFactory.getInstance().createBusinessWindowControl(businessControl, wOrigControl);
@@ -76,6 +78,7 @@ public class DTabImpl implements Disposable, DTab {
 	 * [used by velocity]
 	 * @return the navigation element for this dtab
 	 */
+	@Override
 	public NavElement getNavElement() {
 		return navElement;
 	}
@@ -83,6 +86,7 @@ public class DTabImpl implements Disposable, DTab {
 	/**
 	 * @return the controller
 	 */
+	@Override
 	public Controller getController() {
 		return controller;
 	}
@@ -90,6 +94,7 @@ public class DTabImpl implements Disposable, DTab {
 	/**
 	 * @return the gui stack handle
 	 */
+	@Override
 	public GuiStack getGuiStackHandle() {
 		if (guiStackHandle == null) {
 			guiStackHandle = wControl.getWindowBackOffice().createGuiStack(controller.getInitialComponent());
@@ -100,6 +105,7 @@ public class DTabImpl implements Disposable, DTab {
 	/**
 	 * @return the title
 	 */
+	@Override
 	public String getTitle() {
 		return title;
 	}
@@ -114,12 +120,12 @@ public class DTabImpl implements Disposable, DTab {
 	/**
 	 * @return the olat resourceable
 	 */
+	@Override
 	public OLATResourceable getOLATResourceable() {
 		return ores;
 	}
 
 	@Override
-	//fxdiff BAKS-7 Resume function
 	public OLATResourceable getInitialOLATResourceable() {
 		return initialOres;
 	}
@@ -127,8 +133,9 @@ public class DTabImpl implements Disposable, DTab {
 	/**
 	 * @see org.olat.core.gui.control.Disposable#dispose(boolean)
 	 */
+	@Override
 	public void dispose() {
-		if(controller != null){//OLAT-3500
+		if(controller != null) {
 			controller.dispose();
 		}
 	}
@@ -136,22 +143,15 @@ public class DTabImpl implements Disposable, DTab {
 	/**
 	 * @see org.olat.core.gui.control.generic.dtabs.DTab#getWindowControl()
 	 */
+	@Override
 	public WindowControl getWindowControl() {
-		//TODO: wrap it in own windowcontrol for docking/undocking feature
 		return wControl;
-	}
-
-	/**
-	 * @see org.olat.core.gui.control.generic.dtabs.DTab#setController(org.olat.core.gui.control.Controller)
-	 */
-	public void setController(Controller launchController) {
-		this.controller = launchController;
-		
 	}
 	
 	/**
 	 * @see java.lang.Object#toString()
 	 */
+	@Override
 	public String toString() {
 		return "ores: "+ores.getResourceableTypeName()+","+ores.getResourceableId()+", title: "+title;
 	}
@@ -159,6 +159,7 @@ public class DTabImpl implements Disposable, DTab {
 	/**
 	 * @see org.olat.core.gui.components.htmlheader.jscss.CustomCSSProvider#getCustomCSS()
 	 */
+	@Override
 	public CustomCSS getCustomCSS() {
 		// delegate to content controller if of type main layout controller
 		if (controller != null && controller instanceof MainLayoutController) {
@@ -167,5 +168,4 @@ public class DTabImpl implements Disposable, DTab {
 			}
 		return null;
 	}
-
 }

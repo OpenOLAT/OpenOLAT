@@ -295,15 +295,14 @@ function mark (it, title, title_marked) {
 	m=!m;
 	
 	if (!o_info.linkbusy) {	
-		o_beforeserver();
-		$r.javaScriptBgCommand("mark")+'?id='+it.id+'&p='+m;
+		console.log(it.id);
+		$r.openJavaScriptCommand("mark"),'id',it.id,'p',m);
 	}
 }
 
 function memo (id, s) {
 	if (!o_info.linkbusy) {	
-		o_beforeserver();
-		$r.javaScriptBgCommand("memo")+'?id='+id+'&p='+encodeURIComponent(s);
+		$r.openJavaScriptCommand("memo"),'id',id,'p',encodeURIComponent(s));
 	}
 }
 

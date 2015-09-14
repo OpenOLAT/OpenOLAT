@@ -81,42 +81,37 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 	private static final OLog log = Tracing.createLoggerFor(WindowBackOfficeImpl.class);
 
 	private final WindowManagerImpl winmgrImpl;
-	private Window window;
+	private final Window window;
 	private WindowSettings settings;
-	private ChiefController windowOwner;
+	private final ChiefController windowOwner;
 	
 	private InterceptHandler linkedInterceptHandler;
-	// not private to avoid synthetic accessor
-	InterceptHandler debug_interceptHandler = null;
-	InterceptHandler inlineTranslation_interceptHandler = null;
+	private InterceptHandler debug_interceptHandler;
+	private InterceptHandler inlineTranslation_interceptHandler;
+	
 	private AjaxController ajaxC;
 	private GuiDebugDispatcherController guidebugC;
 	private InlineTranslationInterceptHandlerController inlineTranslationC;
-		
-	private String iframeName;
 	
 	private List<ZIndexWrapper> guiMessages = new ArrayList<ZIndexWrapper>(); // request-transient render-related data
 	
 	private transient List<GenericEventListener> cycleListeners = new CopyOnWriteArrayList<GenericEventListener>();
 	
-	/**
-	 * 
-	 */
-	WindowBackOfficeImpl(final WindowManagerImpl winmgrImpl, String windowName, ChiefController windowOwner, int wboId, WindowSettings settings) {
+	WindowBackOfficeImpl(final WindowManagerImpl winmgrImpl, String windowName, ChiefController windowOwner, WindowSettings settings) {
 		this.winmgrImpl = winmgrImpl;
 		this.windowOwner = windowOwner;
-		this.iframeName = "oaa"+wboId;
 		window = new Window(windowName, this);
 		this.settings = settings;
 
-		// TODO make simpler, we do only need to support one intercept handler at a time!
 		linkedInterceptHandler = new InterceptHandler() {
+			@Override
 			public InterceptHandlerInstance createInterceptHandlerInstance() {
 				InterceptHandler debugH = debug_interceptHandler;
 				InterceptHandler inlineTranslationH = inlineTranslation_interceptHandler;
 				final InterceptHandlerInstance debugI = debugH == null? null: debugH.createInterceptHandlerInstance(); 
 				final InterceptHandlerInstance inlineTranslationI = (inlineTranslationH == null ? null : inlineTranslationH.createInterceptHandlerInstance());
 				return new InterceptHandlerInstance() {
+					@Override
 					public ComponentRenderer createInterceptComponentRenderer(ComponentRenderer originalRenderer) {
 						ComponentRenderer toUse = originalRenderer;
 
@@ -134,21 +129,28 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 	/* (non-Javadoc)
 	 * @see org.olat.core.gui.control.WindowBackOffice#getWindow()
 	 */
+	@Override
 	public Window getWindow() {
 		return window;
+	}
+
+	@Override
+	public ChiefController getChiefController() {
+		return windowOwner;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.olat.core.gui.control.WindowBackOffice#createDevelopmentController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
+	@Override
 	public Controller createDevelopmentController(UserRequest ureq, WindowControl windowControl) {
-		DevelopmentController dc = new DevelopmentController(ureq, windowControl,this);
-		return dc;
+		return new DevelopmentController(ureq, windowControl,this);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.olat.core.gui.control.WindowBackOffice#getGlobalSettings()
 	 */
+	@Override
 	public GlobalSettings getGlobalSettings() {
 		return winmgrImpl.getGlobalSettings();
 	}
@@ -181,7 +183,7 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 		if (ajaxC != null) ajaxC.sendCommandTo(new WindowCommand(this,wco));
 	}
 	
-	public void pushCommands(HttpServletRequest request, HttpServletResponse response) {
+	public void pushCommands(UserRequest ureq, HttpServletRequest request, HttpServletResponse response) {
 		Writer w = null;
 		try {
 			boolean acceptJson = false;
@@ -198,11 +200,11 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 			if(acceptJson) {
 				ServletUtil.setJSONResourceHeaders(response);
 				w = response.getWriter();
-				ajaxC.pushJSONAndClear(w);
+				ajaxC.pushJSONAndClear(ureq, w);
 			} else {
 				ServletUtil.setStringResourceHeaders(response);
 				w = response.getWriter();
-				ajaxC.pushResource(w, true);
+				ajaxC.pushResource(ureq, w, true);
 			}
 		} catch (IOException e) {
 			log.error("Error pushing commans to the AJAX canal.", e);
@@ -254,7 +256,7 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 
 	public Controller createAJAXController(UserRequest ureq) {
 		boolean ajaxEnabled = winmgrImpl.isAjaxEnabled();
-		ajaxC = new AjaxController(ureq, this, ajaxEnabled, iframeName);
+		ajaxC = new AjaxController(ureq, this, ajaxEnabled);
 		return ajaxC;
 	}
 
@@ -269,9 +271,7 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 		return winmgrImpl;
 	}
 
-	/**
-	 * 
-	 */
+	@Override
 	public void dispose() {
 		windowOwner.dispose();
 	}
@@ -281,20 +281,6 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 	 */
 	public void setAjaxEnabled(boolean enabled) {
 		if (ajaxC != null) ajaxC.setAjaxEnabled(enabled);
-	}
-
-	/**
-	 * @param enabled
-	 */
-	public void setHighLightingEnabled(boolean enabled) {
-		if (ajaxC != null) ajaxC.setHighLightingEnabled(enabled);
-	}
-
-	/**
-	 * @param enabled
-	 */
-	public void setShowJSON(boolean enabled) {
-		if (ajaxC != null) ajaxC.setShowJSON(enabled);
 	}
 
 	/**
@@ -316,16 +302,9 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 	/* (non-Javadoc)
 	 * @see org.olat.core.gui.control.WindowBackOffice#getWindowManager()
 	 */
+	@Override
 	public WindowManager getWindowManager() {
 		return winmgrImpl;
-	}
-
-	
-	/**
-	 * @return
-	 */
-	public String getIframeTargetName() {
-		return iframeName;
 	}
 
 	/* (non-Javadoc)

@@ -21,7 +21,7 @@
 		$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-meta-surv.html","help.hover.survey")
 	#end
 	</legend>
-	<form class="clearfix" action="$r.formURIbg('sao')" id="ofo_assessform" name="assessform" $r.bgTarget() method="post">
+	<form id="ofo_assessform" action="$r.formURIbg("sao")" method="post" onsubmit="o_XHRSubmit('ofo_assessform');">
 	<div class="form-group">
 		<label class="control-label col-sm-3">$r.translate("form.metadata.title")</label>
 		<div class="col-sm-9">
@@ -136,8 +136,8 @@
 				&nbsp;
 				<input type="radio" name="duration" value="No" $nochecked onclick="shadeFormElement('sec');shadeFormElement('min');return setFormDirty('ofo_assessform')" onkeypress="shadeFormElement('sec');shadeFormElement('min');return setFormDirty('ofo_assessform')" onchange="return setFormDirty('ofo_assessform')" />$r.translate("no")
 				&nbsp;
-				<input id="min" type="text" name="duration_min" value="$minval"  size="3" onchange="return setFormDirty('ofo_assessform')"  onclick="return setFormDirty('ofo_assessform')" $!readonly class="$css"/>:
-				<input id="sec" type="text" name="duration_sec" value="$secval"  size="3" maxlength="2" onchange="return setFormDirty('ofo_assessform')"  onclick="return setFormDirty('ofo_assessform')" $!readonly class="$css"/>			
+				<input id="min" type="text" name="duration_min" value="$minval"  size="3" onchange="return setFormDirty('ofo_assessform')"  onclick="return setFormDirty('ofo_assessform')" $!readonly class="$css" />:
+				<input id="sec" type="text" name="duration_sec" value="$secval"  size="3" maxlength="2" onchange="return setFormDirty('ofo_assessform')"  onclick="return setFormDirty('ofo_assessform')" $!readonly class="$css" />			
 				&nbsp;<i>($r.translate("form.metadata.minutes"):$r.translate("form.metadata.seconds"))</i>
 			</div>	
 		</div>
@@ -302,12 +302,12 @@
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("form.metadata.cutvalue")</label>
 			<div class="col-sm-9">
-				<input type="text" class="form-control" name="cutvalue" value="$!cutvalue" size="4" onchange="return setFormDirty('ofo_assessform')" onclick="return setFormDirty('ofo_assessform')"/>
+				<input type="text" class="form-control" name="cutvalue" value="$!cutvalue" size="4" onchange="return setFormDirty('ofo_assessform')" onclick="return setFormDirty('ofo_assessform')" />
 			</div>
 		</div>
 	#end
 #end
 	<div class="col-sm-offset-3 col-sm-9 "><div class="btn-group">
-		<input type="submit" value="$r.translateInAttribute("submit")" class="btn btn-primary" name="olat_fosm" />
+		<button type="button" class="btn btn-primary" name="olat_fosm" onclick="o_IQEvent('ofo_assessform')"><span>$r.translateInAttribute("submit")</span></button>
 	</div></div>
 </form></fieldset>

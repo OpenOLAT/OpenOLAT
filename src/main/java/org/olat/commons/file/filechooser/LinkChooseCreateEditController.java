@@ -49,22 +49,6 @@ public class LinkChooseCreateEditController extends FileChooseCreateEditControll
 		super(ureq, wControl, chosenFile, allowRelativeLinks, rootContainer, target, fieldSetLegend);
 		this.customLinkTreeModel = customLinkTreeModel;
 	}
-	
-	/**
-	 * 
-	 */	
-	public LinkChooseCreateEditController(UserRequest ureq, WindowControl wControl, String chosenFile, Boolean allowRelativeLinks, VFSContainer rootContainer, CustomLinkTreeModel customLinkTreeModel) {
-		super(ureq, wControl, chosenFile, allowRelativeLinks, rootContainer);
-		this.customLinkTreeModel = customLinkTreeModel;
-	}	
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	protected void doDispose() {
-		super.doDispose();
-	}
-
 
 	/**
 	 * Creates a Controller with internal-link support. 
@@ -73,7 +57,6 @@ public class LinkChooseCreateEditController extends FileChooseCreateEditControll
 	protected Controller createWysiwygController(UserRequest ureq, WindowControl windowControl, VFSContainer rootContainer, String chosenFile) {
 	  return WysiwygFactory.createWysiwygControllerWithInternalLink(ureq, windowControl, rootContainer, chosenFile, true, customLinkTreeModel);
 	}
-
 }
 
 

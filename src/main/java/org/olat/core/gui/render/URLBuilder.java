@@ -32,9 +32,10 @@ import java.util.regex.Pattern;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
-import org.olat.core.gui.control.winmgr.WindowBackOfficeImpl;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -46,15 +47,10 @@ public class URLBuilder {
 	private static final Pattern p2 = Pattern.compile("%2F");
 
 	private final String uriPrefix;
-
 	private final String windowID;
 	private final String timestampID;
 	private String componentID;
 	private String componentTimestamp;
-	
-	private final String iframeTargetName;
-
-	private final WindowBackOfficeImpl wboImpl;
 
 	/**
 	 * @param uriPrefix
@@ -62,20 +58,17 @@ public class URLBuilder {
 	 * @param timestampID
 	 * @param businessControlPath may be null
 	 */
-	public URLBuilder(String uriPrefix, String windowID, String timestampID, WindowBackOfficeImpl wboImpl) {
+	public URLBuilder(String uriPrefix, String windowID, String timestampID) {
 		this.uriPrefix = uriPrefix; // e.g. /olat/auth
 		this.windowID = windowID;
 		this.timestampID = timestampID;
-		this.wboImpl = wboImpl;
-		// brasato:: add helper method  a la window.createredirecturi so we need not check on null below - see call hierarchy of this constructor
-		this.iframeTargetName = wboImpl == null? null: wboImpl.getIframeTargetName();
 	}
 
 	/**
 	 * @return
 	 */
 	public URLBuilder createCopyFor(Component source) {
-		URLBuilder n = new URLBuilder(uriPrefix, windowID, timestampID, wboImpl);
+		URLBuilder n = new URLBuilder(uriPrefix, windowID, timestampID);
 		// adjust the component id of the urlbuilder for the new component
 		n.componentID = source.getDispatchID();
 		// for ajax-mode needed: (but we set it anyway)
@@ -83,61 +76,6 @@ public class URLBuilder {
 		// the window-based timestamp checking is still needed for link which are not in ajax-mode and for the asynmediaresponsible
 		n.componentTimestamp = source.getTimestamp();
 		return n;
-	}
-	
-	/**
-	 * appends the "target" attribute that is needed for ajax-links. the caller has to make sure that this.isAjaxOn() is true.
-	 * @param sb
-	 */
-	public void appendTarget(StringOutput sb) {
-		sb.append(" target=\"").append(iframeTargetName).append("\"");
-	}
-
-	/**
-	 * builds a java script command that executes in background iframe or as document.location.replace depending on the AJAX mode
-	 * @param buf the buffer to write to
-	 * @param keys the keys
-	 * @param values the values.
-	 * @param mode
-	 */
-	public void buildJavaScriptBgCommand(StringOutput buf, String[] keys, String[] values, int mode) {
-		if (mode == AJAXFlags.MODE_TOBGIFRAME) {
-			buf.append("frames['");
-			buf.append(iframeTargetName);
-			buf.append("'].");
-		}
-		buf.append("location.href = \"");			
-		// add URI
-		buildURI(buf, keys, values, mode);
-		buf.append("\"");
-		// DON'T append anything after this. The JS code might append some URL
-		// parameter to this command!
-	}
-	
-	/**
-	 * builds a java script command that executes in background iframe or as document.location.replace depending on the AJAX mode.
-	 * This version also includes safety checks for not breaking other running ajax requests
-	 * TODO: may only offer one method but check for usage of o_beforeserver first!
-	 * @param buf the buffer to write to
-	 * @param keys the keys
-	 * @param values the values.
-	 * @param mode
-	 * @param singe or double quote as string termination
-	 */
-	public void buildJavaScriptBgCommand(StringOutput buf, String[] keys, String[] values, int mode, boolean useSingleQuotes) {
-		String quote = "\"";
-		if (useSingleQuotes) quote = "'";
-		if (mode == AJAXFlags.MODE_TOBGIFRAME) {
-			buf.append("if(!o_info.linkbusy){o_beforeserver();frames['");
-			buf.append(iframeTargetName);
-			buf.append("'].");
-		}
-		
-		buf.append("location.href=").append(quote);			
-		// add URI
-		buildURI(buf, keys, values, mode);
-		if (mode == AJAXFlags.MODE_TOBGIFRAME) buf.append(quote).append(";}");
-		else buf.append(quote);
 	}
 	
 	/**
@@ -155,7 +93,7 @@ public class URLBuilder {
 	 * @param mode indicates what kind of link it is (0 normal, 1 into background-iframe, ...)
 	 */
 	public void buildURI(StringOutput buf, String[] keys, String[] values, String modURI, int mode) {
-		StringBuilder result = new StringBuilder(100);
+		StringOutput result = new StringOutput(100);
 		result.append(uriPrefix);
 		encodeParams(result, mode);
 		
@@ -168,14 +106,11 @@ public class URLBuilder {
 			}
 		}
 		
-		result.append('/');
-		if (modURI != null) result.append(modURI);
-		//FIXME:fj:a urlEncodeUTF8 is slow; improve the regexp, also convert only the modURI to utf-8?
+		result.append("/");
+		if (modURI != null) {
+			result.append(modURI);
+		}
 		buf.append(encodeUrl(result.toString()));
-	}
-	
-	public void buildURI(StringOutput buf, String[] keys, String[] values, String modURI) {
-		buildURI(buf, keys, values, modURI, 0);
 	}
 
 	/**
@@ -197,13 +132,88 @@ public class URLBuilder {
 	public void buildURI(StringOutput buf, String[] keys, String[] values, int mode) {
 		buildURI(buf, keys, values, null, mode);
 	}
+	
+	public void buildURI(StringOutput buf, int mode, NameValuePair... pairs) {
+		final String[] keys;
+		final String[] values;
+		if(pairs == null || pairs.length == 0) {
+			keys = values = new String[0];
+		} else {
+			keys = new String[pairs.length];
+			values = new String[pairs.length];
+			for(int i=pairs.length; i-->0; ) {
+				keys[i] = pairs[i].getName();
+				values[i] = pairs[i].getValue();
+			}
+		}
+
+		buildURI(buf, keys, values, null, mode);
+	}
+	
+	public StringOutput buildHrefAndOnclick(StringOutput sb, boolean ajaxEnabled, NameValuePair... commands) {
+		return buildHrefAndOnclick(sb, null, ajaxEnabled, true, true, commands);
+	}
+	
+	public StringOutput buildHrefAndOnclick(StringOutput sb, String urlEnding, boolean ajaxEnabled, boolean dirtyCheck, boolean pushState, NameValuePair... commands) {
+		sb.append(" href=\"");
+		buildURI(sb, ajaxEnabled? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL, commands);
+		sb.append("\" onclick=\"");
+		if(ajaxEnabled) {
+			buildXHREvent(sb, urlEnding, dirtyCheck, pushState, commands).append(" return false;");
+		} else {
+			sb.append("return o2cl();");
+		}
+		sb.append("\" ");
+		return sb;
+	}
+	
+	public StringOutput buildXHREvent(StringOutput sb, String urlEnding, boolean dirtyCheck, boolean pushState, NameValuePair... commands) {
+		return openXHREvent(sb, urlEnding, dirtyCheck, pushState, commands).append(");");
+	}
+	
+	public StringOutput openXHREvent(StringOutput sb, String urlEnding, boolean dirtyCheck, boolean pushState, NameValuePair... commands) {
+		sb.append("o_XHREvent('").append(uriPrefix);
+		encodeParams(sb, AJAXFlags.MODE_TOBGIFRAME);
+		sb.append("/");
+		if(StringHelper.containsNonWhitespace(urlEnding)) {
+			sb.append(urlEnding);
+		}
+		sb.append("',").append(dirtyCheck).append(",").append(pushState);
+		commandParameters(sb, commands);
+		return sb;
+	}
+
+	public StringOutput getXHRNoResponseEvent(StringOutput sb, String urlEnding, NameValuePair... commands) {
+		return openXHRNoResponseEvent(sb, urlEnding, commands).append(");");
+	}
+	
+	public StringOutput openXHRNoResponseEvent(StringOutput sb, String urlEnding, NameValuePair... commands) {
+		sb.append("o_XHRNFEvent('").append(uriPrefix);
+		encodeParams(sb, AJAXFlags.MODE_TOBGIFRAME);
+		sb.append("/");
+		if(StringHelper.containsNonWhitespace(urlEnding)) {
+			sb.append(urlEnding);
+		}
+		sb.append("'");
+		commandParameters(sb, commands);
+		return sb;
+	}
+	
+	private final void commandParameters(StringOutput sb, NameValuePair... commands) {
+		if(commands != null && commands.length > 0 && commands[0] != null) {
+			for(NameValuePair command:commands) {
+				sb.append(",'")
+			      .append(command.getName()).append("','").append(command.getValue()).append("'");
+			}
+		}
+	}
 
 	/**
 	 * encodes the internal params (timestamp, window id, and component id)
 	 * 
 	 * @return
 	 */
-	private StringBuilder encodeParams(StringBuilder result, int mode) {
+	private StringOutput encodeParams(StringOutput result, int mode) {
 		// encode framework parameters
 		result.append(windowID == null ? "0" : windowID);
 		result.append(UserRequest.PARAM_DELIM);

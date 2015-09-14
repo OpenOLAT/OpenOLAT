@@ -98,11 +98,9 @@ public class FileChooseCreateEditController extends BasicController{
 	private static final String VC_CHANGE 					= "fileHasChanged";
 	private static final String VC_CHOSENFILE 			= "chosenFile";
 	private static final String VC_FIELDSETLEGEND 	= "fieldSetLegend";
-	private static final String VC_DEFAULT 					= "default";
 	
 	// NLS support
 	
-	private static final String NLS_FIELDSET_CHOSECREATEEDITFILE 	= "fieldset.chosecreateeditfile";
 	private static final String NLS_UNZIP_ALREADYEXISTS 					= "unzip.alreadyexists";
 	private static final String NLS_FOLDER_DISPLAYNAME 						= "folder.displayname";
 	private static final String NLS_ERROR_CHOOSEFILEFIRST 				= "error.choosefilefirst";
@@ -160,24 +158,10 @@ public class FileChooseCreateEditController extends BasicController{
 	 * @param target
 	 * @param fieldSetLegend
 	 */
-	public FileChooseCreateEditController(UserRequest ureq, WindowControl wControl, String chosenFile, Boolean allowRelativeLinks, VFSContainer rootContainer, String target, String fieldSetLegend ) {
+	FileChooseCreateEditController(UserRequest ureq, WindowControl wControl, String chosenFile, Boolean allowRelativeLinks, VFSContainer rootContainer, String target, String fieldSetLegend ) {
 		// use folder module fallback translator
 		super(ureq,wControl, Util.createPackageTranslator(FolderModule.class, ureq.getLocale()));
 		init(chosenFile, allowRelativeLinks, rootContainer, target, fieldSetLegend, ureq, wControl);
-	}
-	
-	/**
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param chosenFile
-	 * @param allowRelativeLinks
-	 * @param rootContainer
-	 */	
-	public FileChooseCreateEditController(UserRequest ureq, WindowControl wControl, String chosenFile, Boolean allowRelativeLinks, VFSContainer rootContainer ) {
-		super(ureq,wControl, Util.createPackageTranslator(FolderModule.class, ureq.getLocale()));
-		String fieldSetLegend = getTranslator().translate(NLS_FIELDSET_CHOSECREATEEDITFILE);
-		init(chosenFile, allowRelativeLinks, rootContainer, VC_DEFAULT, fieldSetLegend, ureq, wControl);
 	}	
 
 	private void init(String file, Boolean allowRelLinks, VFSContainer rContainer, String target, String fieldSetLegend, UserRequest ureq, WindowControl wControl )	{		

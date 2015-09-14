@@ -27,6 +27,8 @@ package org.olat.course.nodes.ta;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
@@ -37,7 +39,6 @@ import java.util.List;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.context.Context;
 import org.olat.admin.quota.QuotaConstants;
-import org.olat.commons.file.filechooser.FileChooserController;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
@@ -195,7 +196,7 @@ public class DropboxController extends BasicController {
 		if (source == ulButton) {
 			
 			removeAsListenerAndDispose(fileChooserController);
-			fileChooserController = new FileChooserController(ureq, getWindowControl(), getUploadLimit(ureq) , true);
+			fileChooserController = new FileChooserController(ureq, getWindowControl(), getUploadLimit());
 			listenTo(fileChooserController);
 			
 			removeAsListenerAndDispose(cmc);
@@ -212,49 +213,50 @@ public class DropboxController extends BasicController {
 	 * @param ureq
 	 * @return max upload limit in KB
 	 */
-	private int getUploadLimit(UserRequest ureq) {
-		String dropboxPath = getRelativeDropBoxFilePath(ureq.getIdentity());
+	private int getUploadLimit() {
+		String dropboxPath = getRelativeDropBoxFilePath(getIdentity());
 		Quota dropboxQuota = QuotaManager.getInstance().getCustomQuota(dropboxPath);
 		if (dropboxQuota == null) {
 			dropboxQuota = QuotaManager.getInstance().getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES);
 		}
-		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl( getRelativeDropBoxFilePath(ureq.getIdentity()), null);
-		VFSContainer dropboxContainer = new OlatNamedContainerImpl(ureq.getIdentity().getName(), rootFolder);
+		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl( getRelativeDropBoxFilePath(getIdentity()), null);
+		VFSContainer dropboxContainer = new OlatNamedContainerImpl(getIdentity().getName(), rootFolder);
 		FullAccessWithQuotaCallback secCallback = new FullAccessWithQuotaCallback(dropboxQuota);
 		rootFolder.setLocalSecurityCallback(secCallback);
-		int ulLimit = QuotaManager.getInstance().getUploadLimitKB(dropboxQuota.getQuotaKB(),dropboxQuota.getUlLimitKB(),dropboxContainer);
-		return ulLimit;
+		return QuotaManager.getInstance().getUploadLimitKB(dropboxQuota.getQuotaKB(),dropboxQuota.getUlLimitKB(),dropboxContainer);
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == fileChooserController) {
 			cmc.deactivate();
 			if (event.equals(Event.DONE_EVENT)) {
-				VFSLeaf fIn;
 				boolean success = false;
+				File fIn = fileChooserController.getUploadFile();
 				VFSContainer fDropbox = getDropBox(ureq.getIdentity());
-				if (fileChooserController.isFileFromFolder()) {
-					fIn = fileChooserController.getFileSelection();
-				} else {
-					fIn = fileChooserController.getUploadedVFSFile();
-				}
-				
+				String filename = fileChooserController.getUploadFileName();
+
 				VFSLeaf fOut;
-				if (fDropbox.resolve(fIn.getName()) != null) {
+				if (fDropbox.resolve(filename) != null) {
 					//FIXME ms: check if dropbox quota is exceeded -> clarify with customers 
-					fOut = fDropbox.createChildLeaf(getNewUniqueName(fIn.getName()));
+					fOut = fDropbox.createChildLeaf(getNewUniqueName(filename));
 				} else {
-					fOut = fDropbox.createChildLeaf(fIn.getName());
+					fOut = fDropbox.createChildLeaf(filename);
 				}
 				
-				InputStream in = fIn.getInputStream();
-				OutputStream out = new BufferedOutputStream(fOut.getOutputStream(false));
-				success = FileUtils.copy(in, out);
-				FileUtils.closeSafely(in);
-				FileUtils.closeSafely(out);
+				try {
+					InputStream in = new FileInputStream(fIn);
+					OutputStream out = new BufferedOutputStream(fOut.getOutputStream(false));
+					success = FileUtils.copy(in, out);
+					FileUtils.closeSafely(in);
+					FileUtils.closeSafely(out);
+				} catch (FileNotFoundException e) {
+					logError("", e);
+					return;
+				}
 				
 				if(fOut instanceof MetaTagged) {
 					MetaInfo info = ((MetaTagged)fOut).getMetaInfo();
@@ -268,7 +270,7 @@ public class DropboxController extends BasicController {
 					int numFiles = fDropbox.getItems().size();
 					myContent.contextPut("numfiles", new String[] {Integer.toString(numFiles)});
 					// assemble confirmation
-					String confirmation = getConfirmation(ureq, fIn.getName());
+					String confirmation = getConfirmation(ureq, fOut.getName());
 					// send email if necessary
 					Boolean sendEmail = (Boolean)config.get(TACourseNode.CONF_DROPBOX_ENABLEMAIL);
 					if (sendEmail == null) sendEmail = Boolean.FALSE;
@@ -318,7 +320,6 @@ public class DropboxController extends BasicController {
 					if(!sendMailError) {
 						getWindowControl().setInfo(confirmation.replace("\n", "&#10;").replace("\r", "&#10;").replace("\u2028", "&#10;"));
 					}
-					return;
 				} else {
 					showInfo("dropbox.upload.failed");
 				}

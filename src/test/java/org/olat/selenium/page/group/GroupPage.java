@@ -65,7 +65,7 @@ public class GroupPage {
 	}
 	
 	public GroupPage openAdministration() {
-		By adminBy = By.xpath("//div[contains(@class,'o_tree')]//a[contains(@href,'MENU_ADMINISTRATION')]");
+		By adminBy = By.xpath("//div[contains(@class,'o_tree')]//a[contains(@onclick,'MENU_ADMINISTRATION')]");
 		WebElement adminLink = browser.findElement(adminBy);
 		adminLink.click();
 		OOGraphene.waitBusy(browser);

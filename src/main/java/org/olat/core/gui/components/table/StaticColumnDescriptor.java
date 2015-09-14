@@ -45,7 +45,6 @@ public class StaticColumnDescriptor implements ColumnDescriptor {
 	private String cellValue;
 	private boolean popUpWindowAction;
 	private String popUpWindowAttributes;
-	private HrefGenerator hrefGenerator;
 	private boolean translateHeaderKey = true;
 
 	/**
@@ -188,18 +187,9 @@ public class StaticColumnDescriptor implements ColumnDescriptor {
 		this.popUpWindowAttributes = popUpWindowAttributes;
 	}
 
-	public void setHrefGenerator(final HrefGenerator h) {
-		this.hrefGenerator = h;
-	}
-
-	public HrefGenerator getHrefGenerator() {
-		return hrefGenerator;
-	}
-
 	public String toString(final int rowid) {
 		StringOutput sb = new StringOutput();
 		renderValue(sb,rowid,null);
 		return sb.toString();
 	}
-
 }

@@ -55,7 +55,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -290,8 +289,8 @@ public class TaskController extends BasicController {
 			myContent.contextPut(VC_TASKTEXT, taskText);
 		}
 
-		String taskFilename = getTaskFilename(assignedTask);
-		taskLaunchButton.setModURI(taskFilename);
+		//String taskFilename = getTaskFilename(assignedTask);
+		//taskLaunchButton.setModURI(taskFilename);
 		myContent.put("task.launch", taskLaunchButton);
 		myContent.contextPut(VC_ASSIGNEDTASK, assignedTask);
 		myContent.contextPut(VC_ASSIGNEDTASK_NEWWINDOW,Boolean.TRUE);
@@ -299,7 +298,7 @@ public class TaskController extends BasicController {
 		panel.setContent(myContent);
 	}
 	
-	private String getTaskFilename(String task) {
+	/*private String getTaskFilename(String task) {
 		if(!StringHelper.containsNonWhitespace(task)) {
 			return null;
 		}
@@ -310,7 +309,7 @@ public class TaskController extends BasicController {
 		
 		String filename = assignedTask.substring(0, assignedTask.length() - extension.length());
 		return StringHelper.transformDisplayNameToFileSystemName(filename) + "." + extension;
-	}
+	}*/
 
 	/**
 	 * Auto-assign a task to an identity and mark it as sampled if necessary.

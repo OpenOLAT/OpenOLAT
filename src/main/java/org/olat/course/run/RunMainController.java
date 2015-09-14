@@ -458,7 +458,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		} else if (source == coursemain) {
 			if (event.getCommand().equals("activateCourseNode")) {
 				// Events from the JS function o_activateCourseNode() - activate the given node id
-				String nodeid = ureq.getModuleURI();
+				String nodeid = ureq.getParameter("nodeid");
 				if (nodeid != null) {
 					CourseNode identNode = course.getRunStructure().getNode(nodeid);
 					boolean success = updateTreeAndContent(ureq, identNode, null);

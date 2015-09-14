@@ -33,6 +33,7 @@ import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.bc.commands.FolderCommandFactory;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.RenderResult;
@@ -110,15 +111,15 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 		String formName = "folder" + CodeHelper.getRAMUniqueID();
 		target.append("<form  method=\"post\" id=\"").append(formName).append("\" action=\"");
 		ubu.buildURI(target, new String[] { VelocityContainer.COMMAND_ID }, new String[] {FolderRunController.FORM_ACTION }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-		target.append("\" onsubmit=\"if ( b_briefcase_isChecked('").append(formName)
-			.append("', '").append(Formatter.escapeSingleAndDoubleQuotes(StringHelper.escapeHtml(translator.translate("alert")).toString())) 
-			.append("')) { if(o_info.linkbusy) return false; else o_beforeserver(); return true; } else {return false; }\"");
+		target.append("\" ");
 		if (iframePostEnabled) { // add ajax iframe target
-			StringOutput so = new StringOutput();
-			ubu.appendTarget(so);
-			target.append(so.toString());
+			target.append("\" onsubmit=\"o_XHRSubmit('").append(formName).append("');\">");
+			target.append("<input id=\"o_mai_").append(formName).append("\" type=\"hidden\" name=\"multi_action_identifier\" value=\"\"").append(" />");
+		} else {
+			target.append("\" onsubmit=\"if ( b_briefcase_isChecked('").append(formName)
+			  .append("', '").append(Formatter.escapeSingleAndDoubleQuotes(StringHelper.escapeHtml(translator.translate("alert")).toString())) 
+			  .append("')) { if(o_info.linkbusy) return false; else o_beforeserver(); return true; } else {return false; }\">");
 		}
-		target.append(">");
 
 		target.append("<div class=\"o_bc_createactions clearfix\"><ul class='nav navbar-nav navbar-right'>");
 		if (canWrite) {
@@ -126,76 +127,46 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 
 			if(canVersion) {
 			// deleted files
-				target.append("<li><a class=\"o_bc_deletedfiles\" href=\"");
-				ubu.buildURI(target, new String[] { VelocityContainer.COMMAND_ID }, new String[] { "dfiles"  }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-				target.append("\"");
-				if (iframePostEnabled) { // add ajax iframe target
-					StringOutput so = new StringOutput();
-					ubu.appendTarget(so);
-					target.append(so.toString());
-				}
-				target.append("><i class='o_icon o_icon_recycle o_icon-fw'></i> ");
-				target.append(translator.translate("dfiles"));
-				target.append("</a></li>");
+				target.append("<li><a class=\"o_bc_deletedfiles\"");
+				ubu.buildHrefAndOnclick(target, null, iframePostEnabled, false, false, new NameValuePair(VelocityContainer.COMMAND_ID, "dfiles"))
+				   .append("><i class='o_icon o_icon_recycle o_icon-fw'></i> ")
+				   .append(translator.translate("dfiles"))
+				   .append("</a></li>");
 			}
 			
 			if(canWrite) {
 				if(fc.getExternContainerForCopy() != null && (fc.getExternContainerForCopy().getLocalSecurityCallback() == null ||
 						fc.getExternContainerForCopy().getLocalSecurityCallback().canCopy())) {
 					//option copy file
-					target.append("<li><a class=\"o_bc_copy\" href=\"");
-					ubu.buildURI(target, new String[] { VelocityContainer.COMMAND_ID }, new String[] { "copyfile"  }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-					target.append("\"");
-					if (iframePostEnabled) { // add ajax iframe target
-						StringOutput so = new StringOutput();
-						ubu.appendTarget(so);
-						target.append(so.toString());
-					}
-					target.append("><i class='o_icon o_icon_copy o_icon-fw'></i> ");
-					target.append(translator.translate("copyfile"));
-					target.append("</a></li>");
+					target.append("<li><a class=\"o_bc_copy\" ");
+					ubu.buildHrefAndOnclick(target, null, iframePostEnabled, false, false, new NameValuePair(VelocityContainer.COMMAND_ID, "copyfile" ))
+					   .append("><i class='o_icon o_icon_copy o_icon-fw'></i> ")
+					   .append(translator.translate("copyfile"))
+					   .append("</a></li>");
 				}
 				
 				// option upload	
-				target.append("<li><a class='o_bc_upload' href=\"");
-				ubu.buildURI(target, new String[] { VelocityContainer.COMMAND_ID }, new String[] { "ul"  }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-				target.append("\"");
-				if (iframePostEnabled) { // add ajax iframe target
-					StringOutput so = new StringOutput();
-					ubu.appendTarget(so);
-					target.append(so.toString());
-				}
-				target.append("><i class='o_icon o_icon_upload o_icon-fw'></i> ");
-				target.append(translator.translate("ul"));			
-				target.append("</a></li>");
+				target.append("<li><a class='o_bc_upload' ");
+				ubu.buildHrefAndOnclick(target, null, iframePostEnabled, false, false, new NameValuePair(VelocityContainer.COMMAND_ID, "ul" ))
+				   .append("><i class='o_icon o_icon_upload o_icon-fw'></i> ")
+				   .append(translator.translate("ul"))
+				   .append("</a></li>");
 	
 				if(canCreateFolder) {
 					// option new folder
-					target.append("<li><a class=\"b_bc_newfolder\" href=\"");
-					ubu.buildURI(target, new String[] { VelocityContainer.COMMAND_ID }, new String[] { "cf"  }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-					target.append("\"");
-					if (iframePostEnabled) { // add ajax iframe target
-						StringOutput so = new StringOutput();
-						ubu.appendTarget(so);
-						target.append(so.toString());
-					}
-					target.append("><i class='o_icon o_icon_new_folder o_icon-fw'></i> ");
-					target.append(translator.translate("cf"));
-					target.append("</a></li>");
+					target.append("<li><a class=\"b_bc_newfolder\" ");
+					ubu.buildHrefAndOnclick(target, null, iframePostEnabled, false, false, new NameValuePair(VelocityContainer.COMMAND_ID, "cf" ))
+					   .append("><i class='o_icon o_icon_new_folder o_icon-fw'></i> ")
+					   .append(translator.translate("cf"))
+					   .append("</a></li>");
 				}
 	
 				// option new file
-				target.append("<li><a class=\"b_bc_newfile\" href=\"");
-				ubu.buildURI(target, new String[] { VelocityContainer.COMMAND_ID }, new String[] { "cfile"  }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-				target.append("\"");
-				if (iframePostEnabled) { // add ajax iframe target
-					StringOutput so = new StringOutput();
-					ubu.appendTarget(so);
-					target.append(so.toString());
-				}
-				target.append("><i class='o_icon o_icon_new_document o_icon-fw'></i> ");
-				target.append(translator.translate("cfile"));
-				target.append("</a></li>");
+				target.append("<li><a class=\"b_bc_newfile\" ");
+				ubu.buildHrefAndOnclick(target, null, iframePostEnabled, false, false, new NameValuePair(VelocityContainer.COMMAND_ID, "cfile" ))
+				   .append("><i class='o_icon o_icon_new_document o_icon-fw'></i> ")
+				   .append(translator.translate("cfile"))
+				   .append("</a></li>");
 			}
 		}
 		
@@ -222,51 +193,39 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 			      .append("<div class='o_table_buttons'>");
 			
 			if(canMail) {
-				target.append("<input type=\"submit\" class='btn btn-default' name=\"");
-				target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_MAIL);
-				target.append("\" value=\"");
-				target.append(StringHelper.escapeHtml(translator.translate("send")));
-				target.append("\" />");
+				target.append("<button type=\"button\" class='btn btn-default' onclick=\"o_TableMultiActionEvent('").append(formName).append("','")
+				      .append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_MAIL)
+				      .append("');\"><span>").append(StringHelper.escapeHtml(translator.translate("send"))).append("</span></button>");
 			}
 			
-			target.append("<input type=\"submit\" class='btn btn-default' name=\"")
+			target.append(" <button type=\"button\" class='btn btn-default' onclick=\"o_TableMultiActionEvent('").append(formName).append("','")
 			      .append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_DOWNLOAD_ZIP)
-			      .append("\" value=\"")
-			      .append(StringHelper.escapeHtml(translator.translate("download")))
-			      .append("\" />");
+			      .append("');\"><span>").append(StringHelper.escapeHtml(translator.translate("download"))).append("</span></button>");
 			
 			if (canDelete) {
 				// delete
-				target.append("<input type=\"submit\" class='btn btn-default' name=\"");
-				target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_DEL);
-				target.append("\" value=\"");
-				target.append(StringHelper.escapeHtml(translator.translate("del")));
-				target.append("\" />");
+				target.append(" <button type=\"button\" class='btn btn-default' onclick=\"o_TableMultiActionEvent('").append(formName).append("','")
+				      .append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_DEL)
+				      .append("');\"><span>").append(StringHelper.escapeHtml(translator.translate("del"))).append("</span></button>");
 			}
 
 			if (canWrite) {
 				// move
-				target.append("<input type=\"submit\" class='btn btn-default' name=\"");
-				target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_MOVE);
-				target.append("\" value=\"");
-				target.append(StringHelper.escapeHtml(translator.translate("move")));
+				target.append(" <button type=\"button\" class='btn btn-default' onclick=\"o_TableMultiActionEvent('").append(formName).append("','")
+				      .append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_MOVE)
+			          .append("');\"><span>").append(StringHelper.escapeHtml(translator.translate("move"))).append("</span></button>");
 				// copy
-				target.append("\" /><input type=\"submit\" class='btn btn-default' name=\"");
-				target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_COPY);
-				target.append("\" value=\"");
-				target.append(StringHelper.escapeHtml(translator.translate("copy")));
-				target.append("\" />");
+				target.append(" <button type=\"button\" class='btn btn-default' onclick=\"o_TableMultiActionEvent('").append(formName).append("','")
+				      .append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_COPY)
+			         .append("');\"><span>").append(StringHelper.escapeHtml(translator.translate("copy"))).append("</span></button>");
 				// zip
-				target.append("<input type=\"submit\" class='btn btn-default' name=\"");
-				target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_ZIP);
-				target.append("\" value=\"");
-				target.append(StringHelper.escapeHtml(translator.translate("zip")));
+				target.append(" <button type=\"button\" class='btn btn-default' onclick=\"o_TableMultiActionEvent('").append(formName).append("','")
+				      .append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_ZIP)
+			          .append("');\"><span>").append(StringHelper.escapeHtml(translator.translate("zip"))).append("</span></button>");
 				//unzip
-				target.append("\" /><input type=\"submit\" class='btn btn-default' name=\"");
-				target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_UNZIP);
-				target.append("\" value=\"");
-				target.append(StringHelper.escapeHtml(translator.translate("unzip")));
-				target.append("\" />");				
+				target.append(" <button type=\"button\" class='btn btn-default' onclick=\"o_TableMultiActionEvent('").append(formName).append("','")
+				      .append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_UNZIP)
+			         .append("');\"><span>").append(StringHelper.escapeHtml(translator.translate("unzip"))).append("</span></button>");		
 			}
 			target.append("</div></div>");
 		}

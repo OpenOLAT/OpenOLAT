@@ -52,7 +52,7 @@ public class BulkAssessment_1_SelectCourseNodeStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext context, Form form) {
-		form.setMultipartEnabled(true, Integer.MAX_VALUE);
+		form.setMultipartEnabled(true);
 		SelectCourseNodeStepForm ctrl = new SelectCourseNodeStepForm(ureq, wControl, courseOres, context, form);
 		return ctrl;
 	}

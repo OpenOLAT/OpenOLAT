@@ -193,11 +193,6 @@ public class NewControllerFactory extends LogDelegator {
 			window = wControl.getWindowBackOffice().getWindow();
 		}
 		DTabs dts = window.getDTabs();
-		DTab dt = dts.getDTab(ores);
-		if (dt != null) {
-			// tab already open => close it
-			dts.removeDTab(ureq, dt);// disposes also dt and controllers
-		}
 
 		String firstType = mainCe.getOLATResourceable().getResourceableTypeName();
 		// String firstTypeId = ClassToId.getInstance().lookup() BusinessGroup
@@ -224,19 +219,16 @@ public class NewControllerFactory extends LogDelegator {
 		TabContext context = typeHandler.getTabContext(ureq, ores, mainCe, entries);
 		String siteClassName = typeHandler.getSiteClassName(ces, ureq);	
 		// open in existing site
+		
+		boolean launched = false;
 		if (siteClassName != null) {
 			dts.activateStatic(ureq, siteClassName, context.getContext());
-			return true;
+			launched = true;
 		} else {
-			// or create new tab
-			//String tabName = typeHandler.getTabName(mainCe, ureq);
-			// create and add Tab
-			dt = dts.createDTab(context.getTabResource(), re, context.getName());
+			// get current tab or create new tab
+			DTab dt = dts.getDTab(ores);
 			if (dt == null) {
-				// user error message is generated in BaseFullWebappController, nothing to do here
-				return false;
-			} else {
-				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, dt.getWindowControl());
+				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, dts.getWindowControl());
 				usess.addToHistory(ureq, bc);
 
 				Controller launchC = typeHandler.createController(ces, ureq, bwControl);
@@ -245,14 +237,23 @@ public class NewControllerFactory extends LogDelegator {
 							+ bc.getAsString() + " for type " + typeHandler.getClass().getName() + " in advance with validateContextEntryAndShowError().");
 				}
 
-				dt.setController(launchC);
-				if(dts.addDTab(ureq, dt)) {
-					dts.activate(ureq, dt, context.getContext()); // null: do not activate to a certain view
-					return true;
+				dt = dts.createDTab(context.getTabResource(), re, launchC, context.getName());
+				if (dt == null) {
+					// user error message is generated in BaseFullWebappController, nothing to do here
+					launched = false;
 				} else {
-					return false;
+					if(dts.addDTab(ureq, dt)) {
+						dts.activate(ureq, dt, context.getContext());
+						launched = true;
+					} else {
+						launched = false;
+					}
 				}
+			} else {
+				dts.activate(ureq, dt, context.getContext());
+				launched = true;
 			}
 		}
+		return launched;
 	}
 }

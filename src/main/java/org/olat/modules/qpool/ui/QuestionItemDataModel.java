@@ -19,6 +19,8 @@
  */
 package org.olat.modules.qpool.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
@@ -39,6 +41,16 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 	public QuestionItemDataModel(FlexiTableColumnModel columnModel, FlexiTableDataSourceDelegate<ItemRow> source, Translator translator) {
 		super(source, columnModel);
 		this.translator = translator;
+	}
+	
+	public ItemRow getObjectByKey(Long key) {
+		List<ItemRow> rows = getObjects();
+		for(ItemRow row:rows) {
+			if(row != null && row.getKey().equals(key)) {
+				return row;
+			}
+		}
+		return null;
 	}
 	
 	@Override

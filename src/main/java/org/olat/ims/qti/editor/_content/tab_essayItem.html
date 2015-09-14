@@ -11,7 +11,7 @@
 			<tr>
 				<td>$r.formatLatexFormulas($question.getQuestion().renderAsHtml($mediaBaseURL))</td>
 				<td align="center">
-					<a title="$r.translateInAttribute("mat.edit.question")" href="$r.commandURIbg('editq')" $r.bgTarget()><img alt="$r.translateInAttribute("mat.edit.question")" src="$r.staticLink("images/qti/page_edit.png")"></a>
+					<a $r.hrefAndOnclick("editq",true,true) title="$r.translateInAttribute("mat.edit.question")"><i class="o_icon o_icon-lg o_icon_edit"> </i></a>
 				</td>
 			</tr>
 		</tbody>
@@ -21,7 +21,7 @@
 	<legend>$r.translate("fieldset.legend.answers")
 	$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-answer-surv-4.html","help.hover.qti-answer-4")
 	</legend>
-	<form action="$r.formURIbg("sessay")" id="ofo_tab_essavitem" $r.bgTarget() method="post">
+	<form action="$r.formURIbg("sessay")" id="ofo_tab_essavitem" name="ofo_tab_essavitem" method="post" onsubmit="o_XHRSubmit('ofo_tab_essavitem');">
 		<div class="row"><div class="col-sm-offset-3 col-sm-9">
 				<div class="o_desc">$r.translate("essay.dimension.header")</div>
 		</div></div>
@@ -45,13 +45,13 @@
 				#if($isRestrictedEdit)
 					<p class="form-control-static">$question.getMaxValue()</p>
 				#else
-					<input type="text" name="single_score" value="$question.getMaxValue()" class="form-control" size="4" onchange="return setFormDirty('ofo_tab_scitem')" onclick="return setFormDirty('ofo_tab_scitem')"/>
+					<input type="text" name="single_score" value="$question.getMaxValue()" class="form-control" size="4" onchange="return setFormDirty('ofo_tab_essavitem')" onclick="return setFormDirty('ofo_tab_essavitem')"/>
 				#end
 			</div>
 		</div>
 #end		
 		<div class="col-sm-offset-3 col-sm-9 "><div class="btn-group">
-			<input type="submit" value="$r.translateInAttribute("submit")" class="btn btn-primary" name="olat_fosm" />
+			<button type="button" class="btn btn-primary" name="olat_fosm" onclick="o_IQEvent('ofo_tab_essavitem')"><span>$r.translateInAttribute("submit")</span></button>
 		</div></div>
 	</form>
 </fieldset>

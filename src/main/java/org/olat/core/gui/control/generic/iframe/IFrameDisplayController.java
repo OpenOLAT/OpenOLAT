@@ -359,6 +359,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 				// This event gets triggered from the iframe content by calling a js function outside 
 				// Get new uri from JS method and fire to parents
 				String newUri = ureq.getModuleURI();
+				newUri = ureq.getHttpReq().getParameter("uri");
 				int baseUriPos = newUri.indexOf(baseURI);
 				if (baseUriPos != -1) {
 					int newUriPos =  baseUriPos + baseURI.length();

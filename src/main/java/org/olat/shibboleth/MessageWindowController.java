@@ -98,6 +98,11 @@ public class MessageWindowController extends DefaultChiefController {
 	}
 	
 	@Override
+	public String getWindowTitle() {
+		return null;
+	}
+	
+	@Override
 	public boolean hasStaticSite(Class<? extends SiteInstance> type) {
 		return false;
 	}

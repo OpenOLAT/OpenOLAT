@@ -29,6 +29,8 @@ package org.olat.core.gui.control.generic.dtabs;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryPoint;
@@ -40,6 +42,8 @@ import org.olat.core.id.context.HistoryPoint;
  * @author Felix Jost
  */
 public interface DTabs {
+	
+	public WindowControl getWindowControl();
 
 	/**
 	 * @param ores
@@ -51,9 +55,10 @@ public interface DTabs {
 	 * @param ores
 	 * @param repoOres
 	 * @param title
+	 * 
 	 * @return the tab or null if the headerbar is full. if null, the implementation of the DTabs should issue a warning to the current windowcontrol
 	 */
-	public DTab createDTab(OLATResourceable ores, OLATResourceable repoOres, String title);
+	public DTab createDTab(OLATResourceable ores, OLATResourceable repoOres, Controller rootController, String title);
 
 	/**
 	 * @param ureq

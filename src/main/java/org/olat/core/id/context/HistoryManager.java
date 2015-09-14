@@ -26,13 +26,15 @@ import java.io.IOException;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.id.Identity;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.resource.Resourceable;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.ConversionException;
@@ -45,7 +47,10 @@ import com.thoughtworks.xstream.converters.ConversionException;
  * Initial Date:  26 jan. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, www.frentix.com
  */
-public class HistoryManager extends BasicManager {
+@Service("historyManager")
+public class HistoryManager {
+	
+	private static final OLog log = Tracing.createLoggerFor(HistoryManager.class);
 	
 	private static HistoryManager THIS;
 	private static XStream historyReadStream = XStreamHelper.createXStreamInstance();
@@ -97,7 +102,7 @@ public class HistoryManager extends BasicManager {
 			historyWriteStream.toXML(historyPoint, out);
 			FileUtils.closeSafely(out);
 		} catch (Exception e) {
-			logError("UserSession:::logging off write resume: ", e);
+			log.error("UserSession:::logging off write resume: ", e);
 		}
 	}
 	
@@ -107,10 +112,10 @@ public class HistoryManager extends BasicManager {
 			File resumeXml = new File(pathHomePage, "resume.xml");
 			return readHistory(resumeXml);
 		} catch(ConversionException e) {
-			logWarn("Cannot read resume file: ", e);
+			log.warn("Cannot read resume file: ", e);
 			return null;
 		} catch (Exception e) {
-			logError("Cannot read resume file: ", e);
+			log.error("Cannot read resume file: ", e);
 			return null;
 		}
 	}
@@ -123,7 +128,7 @@ public class HistoryManager extends BasicManager {
 				resumeXml.delete();
 			}
 		} catch (Exception e) {
-			logError("Can not delete history file", e);
+			log.error("Can not delete history file", e);
 		}
 	}
 	

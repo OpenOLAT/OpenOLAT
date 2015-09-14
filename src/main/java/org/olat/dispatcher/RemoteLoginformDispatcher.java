@@ -205,10 +205,9 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 	}
 	
 	private String getRedirectToURL(UserSession usess) {
-		ChiefController cc =  Windows.getWindows(usess).getChiefController();
-		Window w = cc.getWindow();
+		Window w = Windows.getWindows(usess).getChiefController().getWindow();
 		
-		URLBuilder ubu = new URLBuilder("", w.getInstanceId(), String.valueOf(w.getTimestamp()), null);
+		URLBuilder ubu = new URLBuilder("", w.getInstanceId(), String.valueOf(w.getTimestamp()));
 		StringOutput sout = new StringOutput(30);
 		ubu.buildURI(sout, null, null);
 		

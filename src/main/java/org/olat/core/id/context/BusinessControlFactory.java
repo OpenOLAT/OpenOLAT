@@ -422,7 +422,22 @@ public class BusinessControlFactory {
 		StringBuilder retVal = new StringBuilder();
 		retVal.append(Settings.getServerContextPathURI())
 			.append("/url/");
+		
+		return appendToURIString(retVal, ceList, normalize);
+	}
 
+	public String getAsAuthURIString(List<ContextEntry> ceList, boolean normalize) {
+		StringBuilder retVal = new StringBuilder();
+		retVal.append(Settings.getServerContextPathURI())
+			.append("/auth/");
+		
+		if(ceList == null || ceList.isEmpty()) {
+			return retVal.toString();
+		}
+		return appendToURIString(retVal, ceList, normalize);
+	}
+	
+	private String appendToURIString(StringBuilder retVal, List<ContextEntry> ceList, boolean normalize) {
 		String lastEntryString = null;
 		for (ContextEntry contextEntry : ceList) {
 			String ceStr = contextEntry != null ? contextEntry.toString() : "NULL_ENTRY";

@@ -26,11 +26,13 @@
 
 package org.olat.core.commons.modules.bc.components;
 
+import java.io.IOException;
 import java.util.StringTokenizer;
 
-import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -39,6 +41,8 @@ import org.olat.core.util.StringHelper;
  * @author Mike Stock
  */
 public class CrumbRenderer {
+	
+	private static final OLog log = Tracing.createLoggerFor(CrumbRenderer.class);
 	
 	/**
 	 * Return a path-like html fragment for the given briefcase path.
@@ -49,39 +53,34 @@ public class CrumbRenderer {
 	 * @return	HTML fragment of briefcase path
 	 */
 	public final void render(FolderComponent fc, StringOutput sb, URLBuilder ubu, boolean iframePostEnabled) {
-		StringOutput pathLink = new StringOutput();
-		ubu.buildURI(pathLink, null, null, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-
-		StringOutput so = new StringOutput();
-		ubu.appendTarget(so);
-		
-		// append toplevel node
-		sb.append("<ol class='breadcrumb'>")
-		  .append("<li><a href='").append(pathLink).append("'");
-		if (iframePostEnabled) { // add ajax iframe target
-			sb.append(so.toString());
-		}
-		sb.append(">")
-		  .append(StringHelper.escapeHtml(fc.getRootContainer().getName())).append("</a></li>");
-		
-		String path = fc.getCurrentContainerPath();
-		StringTokenizer st = new StringTokenizer(path, "/", false);
-		while (st.hasMoreElements()) {
-			String token = st.nextToken();
-			if(pathLink.length() > 0) {
-				pathLink.append("/");
-			}
-			pathLink.append(ubu.encodeUrl(token));
-			if (st.hasMoreElements()) {
-				sb.append("<li><a href='").append(pathLink).append("'");
-				if (iframePostEnabled) { // add ajax iframe target
-					sb.append(so.toString());
+		try {
+			StringOutput pathLink = new StringOutput();
+			
+			// append toplevel node
+			sb.append("<ol class='breadcrumb'><li><a ");
+			ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false)
+			   .append(">").append(StringHelper.escapeHtml(fc.getRootContainer().getName())).append("</a></li>");
+			
+			String path = fc.getCurrentContainerPath();
+			StringTokenizer st = new StringTokenizer(path, "/", false);
+			while (st.hasMoreElements()) {
+				String token = st.nextToken();
+				if(pathLink.length() > 0) {
+					pathLink.append("/");
 				}
-				sb.append(">").append(StringHelper.escapeHtml(token)).append("</a></li>");
-			} else {
-				sb.append("<li class='active'>").append(StringHelper.escapeHtml(token)).append("</li>");
+				pathLink.append(ubu.encodeUrl(token));
+				if (st.hasMoreElements()) {
+					sb.append("<li><a ");
+					ubu.buildHrefAndOnclick(sb, pathLink.toString(), iframePostEnabled, false, false)
+					   .append(">").append(StringHelper.escapeHtml(token)).append("</a></li>");
+				} else {
+					sb.append("<li class='active'>").append(StringHelper.escapeHtml(token)).append("</li>");
+				}
 			}
+			sb.append("</ol>");
+			pathLink.close();
+		} catch (IOException e) {
+			log.error("", e);
 		}
-		sb.append("</ol>");
 	}
 }

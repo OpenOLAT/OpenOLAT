@@ -48,6 +48,7 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.id.context.StateEntry;
@@ -435,7 +436,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				doCatalog(ureq);
 			} else if("Infos".equalsIgnoreCase(type)) {
 				doDetails(ureq);	
-			} else if("EditDescription".equalsIgnoreCase(type)) {
+			} else if("EditDescription".equalsIgnoreCase(type) || "Settings".equalsIgnoreCase(type)) {
 				doEditSettings(ureq);
 			} else if("MembersMgmt".equalsIgnoreCase(type)) {
 				doMembers(ureq);
@@ -459,6 +460,12 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			}
 		}
 		return entries;
+	}
+	
+	protected WindowControl getSubWindowControl(String name) {
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(name, 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		return BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 	}
 
 	@Override
@@ -624,7 +631,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	 * @param ureq
 	 */
 	protected void doAccess(UserRequest ureq) {
-		AuthoringEditAccessController ctrl = new AuthoringEditAccessController(ureq, getWindowControl(), re);
+		WindowControl bwControl = getSubWindowControl("Access");
+		AuthoringEditAccessController ctrl = new AuthoringEditAccessController(ureq, addToHistory(ureq, bwControl), re);
 		listenTo(ctrl);
 		accessCtrl = pushController(ureq, translate("tab.accesscontrol"), ctrl);
 		setActiveTool(accessLink);
@@ -650,7 +658,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	protected void doDetails(UserRequest ureq) {
-		RepositoryEntryDetailsController ctrl = new RepositoryEntryDetailsController(ureq, getWindowControl(), re);
+		WindowControl bwControl = getSubWindowControl("Infos");
+		RepositoryEntryDetailsController ctrl = new RepositoryEntryDetailsController(ureq, addToHistory(ureq, bwControl), re);
 		listenTo(ctrl);
 		detailsCtrl = pushController(ureq, translate("details.header"), ctrl);
 		currentToolCtr = detailsCtrl;
@@ -663,7 +672,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected void doEditSettings(UserRequest ureq) {
 		if(!reSecurity.isEntryAdmin()) return;
 		
-		RepositoryEditDescriptionController ctrl = new RepositoryEditDescriptionController(ureq, getWindowControl(), re);
+		WindowControl bwControl = getSubWindowControl("Settings");
+		RepositoryEditDescriptionController ctrl
+			= new RepositoryEditDescriptionController(ureq, addToHistory(ureq, bwControl), re);
 		listenTo(ctrl);
 		descriptionCtrl = pushController(ureq, translate("settings.editor"), ctrl);
 		currentToolCtr = descriptionCtrl;
@@ -678,7 +689,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		if(!reSecurity.isEntryAdmin()) return;
 		
 		popToRoot(ureq).cleanUp();
-		catalogCtlr = new CatalogSettingsController(ureq, getWindowControl(), toolbarPanel, re);
+
+		WindowControl bwControl = getSubWindowControl("Catalog");
+		catalogCtlr = new CatalogSettingsController(ureq, addToHistory(ureq, bwControl), toolbarPanel, re);
 		listenTo(catalogCtlr);
 		catalogCtlr.initToolbar();
 		currentToolCtr = catalogCtlr;
@@ -688,7 +701,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected Activateable2 doMembers(UserRequest ureq) {
 		if(!reSecurity.isEntryAdmin()) return null;
 
-		RepositoryMembersController ctrl = new RepositoryMembersController(ureq, getWindowControl(), toolbarPanel ,re);
+		WindowControl bwControl = getSubWindowControl("MembersMgmt");
+		RepositoryMembersController ctrl = new RepositoryMembersController(ureq, addToHistory(ureq, bwControl), toolbarPanel ,re);
 		listenTo(ctrl);
 		membersEditController = pushController(ureq, translate("details.members"), ctrl);
 		currentToolCtr = membersEditController;
@@ -699,7 +713,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected void doOrders(UserRequest ureq) {
 		if(!reSecurity.isEntryAdmin()) return;
 
-		OrdersAdminController ctrl = new OrdersAdminController(ureq, getWindowControl(), re.getOlatResource());
+		WindowControl bwControl = getSubWindowControl("Booking");
+		OrdersAdminController ctrl = new OrdersAdminController(ureq, addToHistory(ureq, bwControl), re.getOlatResource());
 		listenTo(ctrl);
 		ordersCtlr = pushController(ureq, translate("details.orders"), ctrl);
 		currentToolCtr = ordersCtlr;

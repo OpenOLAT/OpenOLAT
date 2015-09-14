@@ -175,7 +175,8 @@ public abstract class AbstractTaskNotificationHandler extends LogDelegator {
 		}
 	}
 
-	public static ContextualSubscriptionController createContextualSubscriptionController(UserRequest ureq, WindowControl wControl, String folderPath, SubscriptionContext subsContext, Class callerClass) {
+	public static ContextualSubscriptionController createContextualSubscriptionController(UserRequest ureq, WindowControl wControl, String folderPath,
+			SubscriptionContext subsContext, Class<?> callerClass) {
 		String businessPath = wControl.getBusinessControl().getAsString();
 		PublisherData pdata = new PublisherData(OresHelper.calculateTypeName(callerClass), folderPath, businessPath);
 		ContextualSubscriptionController contextualSubscriptionCtr = new ContextualSubscriptionController(ureq, wControl, subsContext, pdata);

@@ -7,7 +7,7 @@
 	#end
 	</legend>
 	
-	<form action="$r.formURIbg("sfib")" id="ofo_tab_fibitem" $r.bgTarget() method="post">
+	<form action="$r.formURIbg("sfib")" id="ofo_tab_fibitem" name="ofo_tab_fibitem" method="post" onsubmit="o_XHRSubmit('ofo_tab_fibitem');">
 		#if ($question && $question.getResponses().size() > 0)
 		<table class="table table-bordered">
 		<thead>
@@ -32,9 +32,9 @@
 			<tr>
 				<td>
 				#if(!$isRestrictedEdit)
-					<a href="$r.commandURI("up", "posid", "$count")"  onclick="return o2cl()"  onkeypress="return o2cl()" title="$r.translateInAttribute("mat.move_up")"><img src="$r.staticLink("images/qti/move_up.png")" alt="$r.translateInAttribute("mat.move_up")" border="0"></a>
+					<a $r.hrefAndOnclick("up",true,true,"posid","$count") title="$r.translateInAttribute("mat.move_up")"><i class="o_icon o_icon-lg o_icon_move_up"> </i></a>
 					<br />
-					<a href="$r.commandURI("down", "posid", "$count")"  onclick="return o2cl()"  onkeypress="return o2cl()" title="$r.translateInAttribute("mat.move_down")"><img src="$r.staticLink("images/qti/move_down.png")" alt="$r.translateInAttribute("mat.move_down")" border="0"></a>
+					<a $r.hrefAndOnclick("down",true,true,"posid","$count") title="$r.translateInAttribute("mat.move_down")"><i class="o_icon o_icon-lg o_icon_move_down"> </i></a>
 				#end
 				</td>
 				#if($content.getType().equals("CONTENT"))
@@ -97,15 +97,13 @@
 
 				<td valign="middle" align="center">
 				#if($content.getType().equals("CONTENT"))
-					<a href="$r.commandURI("editr", "posid", "$count")" onclick="return o2cl()"  onkeypress="return o2cl()" title="$r.translateInAttribute("mat.edit.response")">
-						<img src="$r.staticLink("images/qti/page_edit.png")" alt="$r.translateInAttribute("mat.edit.response")" border="0"></a>
+					<a $r.hrefAndOnclick("editr",true,true,"posid","$count") title="$r.translateInAttribute("mat.edit.response")"><i class="o_icon o_icon-lg o_icon_edit"> </i></a>
 				#else
 					<img src="$r.staticLink("images/qti/empty.gif")" alt "" border="0" width="16">
 				#end
 					&nbsp;
 				#if(!$isRestrictedEdit && ($question.getResponses().size() > 1) )
-					<a href="$r.commandURI("del", "posid", "$count")" onclick="return o2cl()"  onkeypress="return o2cl()" title="$r.translateInAttribute("mat.edit.delete")">
-						<img src="$r.staticLink("images/qti/delete.png")" alt="$r.translateInAttribute("mat.edit.delete")" border="0"></a>
+					<a $r.hrefAndOnclick("del",true,true,"posid","$count") title="$r.translateInAttribute("mat.edit.delete")"><i class="o_icon o_icon-lg o_icon_delete_item"> </i></a>
 				#end
 				</td>
 			</tr>
@@ -117,9 +115,9 @@
 		<p>
 		<br />
 		#if(!$isRestrictedEdit)
-		<a href="$r.commandURIbg("addtext")" $r.bgTarget() onclick="return o2cl()" onkeypress="return o2cl()" class="btn btn-default"><span>$r.translate("add_text")</span></a>
+		<a $r.hrefAndOnclick("addtext",true,true) class="btn btn-default"><span>$r.translate("add_text")</span></a>
 		&nbsp;
-		<a href="$r.commandURIbg("addblank")" $r.bgTarget() onclick="return o2cl()" onkeypress="return o2cl()" class="btn btn-default"><span>$r.translate("add_blank")</span></a>
+		<a $r.hrefAndOnclick("addblank",true,true) class="btn btn-default"><span>$r.translate("add_blank")</span></a>
 		<br />&nbsp;
 		#end
 		</p>
@@ -191,6 +189,6 @@
 		</div>
 #end
 	<div class="col-sm-offset-3 col-sm-9 "><div class="btn-group">
-		<input type="submit" value="$r.translateInAttribute("submit")" class="btn btn-primary" name="olat_fosm"/>
+		<button type="button" class="btn btn-primary" name="olat_fosm" onclick="o_IQEvent('ofo_tab_fibitem')"><span>$r.translateInAttribute("submit")</span></button>
 	</div>
 </form></fieldset>

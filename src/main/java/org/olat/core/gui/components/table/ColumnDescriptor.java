@@ -142,11 +142,4 @@ public interface ColumnDescriptor {
 	 */
 	String getPopUpWindowAttributes();
 
-	/**
-	 * @param h
-	 */
-	void setHrefGenerator(HrefGenerator h);
-
-	HrefGenerator getHrefGenerator();
-
 }
