@@ -21,11 +21,15 @@ package org.olat.course.nodes.members;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.course.editor.NodeEditController;
+import org.olat.modules.ModuleConfiguration;
 
 /**
  * 
@@ -35,14 +39,26 @@ import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultCon
  * <P>
  * Initial Date:  11 mars 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @autohr dfurrer, dirk.furrer@frentix.com, http://www.frentix.com
  */
 public class MembersCourseNodeEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
-	private static final String[] paneKeys = {};
-	
+	public static final String PANE_TAB_MEMBERSCONFIG = "pane.tab.membersconfig";
+	//Config keys
+	public static final String CONFIG_KEY_SHOWOWNER = "showOwner";
+	public static final String CONFIG_KEY_SHOWCOACHES = "showCoaches";
+	public static final String CONFIG_KEY_SHOWPARTICIPANTS	 = "showParticpants";
+
+	private static final String[] paneKeys = {PANE_TAB_MEMBERSCONFIG};
+
 	private TabbedPane myTabbedPane;
 
-	public MembersCourseNodeEditController(UserRequest ureq, WindowControl wControl) {
+	private FormBasicController membersConfigForm;
+
+	public MembersCourseNodeEditController(ModuleConfiguration config, UserRequest ureq, WindowControl wControl) {
 		super(ureq,wControl);
+
+		membersConfigForm = new MembersConfigForm(ureq, getWindowControl(), config);
+		listenTo(membersConfigForm);
 	}
 	
 	@Override
@@ -63,6 +79,14 @@ public class MembersCourseNodeEditController extends ActivateableTabbableDefault
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
+		tabbedPane.addTab(translate(PANE_TAB_MEMBERSCONFIG), membersConfigForm.getInitialComponent());
+	}
+
+	@Override
+	public void event(UserRequest urequest, Controller source, Event event) {
+		if(source == membersConfigForm){
+			fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+		}
 	}
 
 	@Override
