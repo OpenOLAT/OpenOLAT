@@ -19,6 +19,8 @@
  */
 package org.olat.modules.webFeed.ui;
 
+import java.util.List;
+
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -29,6 +31,8 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.repository.RepositoryEntry;
@@ -70,6 +74,18 @@ public class FeedRuntimeController extends RepositoryEntryRuntimeController {
 	}
 	
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		entries = removeRepositoryEntry(entries);
+		if(entries != null && entries.size() > 0) {
+			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			if("Quota".equalsIgnoreCase(type)) {
+				doQuota(ureq);
+			}
+		}
+		super.activate(ureq, entries, state);
+	}
+	
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(quotaLink == source) {
 			doQuota(ureq);
@@ -82,7 +98,8 @@ public class FeedRuntimeController extends RepositoryEntryRuntimeController {
 		if (quotaManager.hasQuotaEditRights(ureq.getIdentity())) {
 			RepositoryEntry entry = getRepositoryEntry();
 			OlatRootFolderImpl feedRoot = FileResourceManager.getInstance().getFileResourceRootImpl(entry.getOlatResource());
-			Controller quotaCtrl = quotaManager.getQuotaEditorInstance(ureq, getWindowControl(), feedRoot.getRelPath(), false);
+			WindowControl bwControl = getSubWindowControl("Quota");
+			Controller quotaCtrl = quotaManager.getQuotaEditorInstance(ureq, addToHistory(ureq, bwControl), feedRoot.getRelPath(), false);
 			pushController(ureq, translate("tab.quota.edit"), quotaCtrl);
 			setActiveTool(quotaLink);
 		}

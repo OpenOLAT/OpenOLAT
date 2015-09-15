@@ -131,12 +131,12 @@ public class AjaxController extends DefaultController {
 				statsManager.incrementAuthenticatedPollerClick();
 
 				String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
-				UserRequest ureq = new UserRequestImpl(uriPrefix, request, null);
+				UserRequest uureq = new UserRequestImpl(uriPrefix, request, null);
 				boolean reload = false;
-				Windows ws = Windows.getWindows(ureq);
+				Windows ws = Windows.getWindows(uureq);
 				if(ws != null && wboImpl.getChiefController() != null) {
 					ChiefController cc = wboImpl.getChiefController();
-					reload = cc.wishAsyncReload(ureq, false);
+					reload = cc.wishAsyncReload(uureq, false);
 				}
 				
 				MediaResource resource;
@@ -151,7 +151,7 @@ public class AjaxController extends DefaultController {
 						synchronized (windowcommands) { //o_clusterOK by:fj
 							windowcommands.add(new WindowCommand(wboImpl, updateDirtyCom));
 							if(reload) {
-								String timestampID = ureq.getTimestampID();
+								String timestampID = uureq.getTimestampID();
 								String reRenderUri = window.buildURIFor(window, timestampID, null);
 								Command rmrcom = CommandFactory.createParentRedirectTo(reRenderUri);
 								windowcommands.add(new WindowCommand(wboImpl, rmrcom));
@@ -162,7 +162,7 @@ public class AjaxController extends DefaultController {
 						resource = new NothingChangedMediaResource();
 					}
 				} catch (CannotReplaceDOMFragmentException e) {
-					String timestampID = ureq.getTimestampID();
+					String timestampID = uureq.getTimestampID();
 					String reRenderUri = window.buildURIFor(window, timestampID, null);
 					Command rmrcom = CommandFactory.createParentRedirectTo(reRenderUri);
 					windowcommands.add(new WindowCommand(wboImpl, rmrcom));

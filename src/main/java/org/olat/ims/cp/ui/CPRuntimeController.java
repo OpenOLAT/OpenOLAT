@@ -19,6 +19,8 @@
  */
 package org.olat.ims.cp.ui;
 
+import java.util.List;
+
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -33,6 +35,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptionsConfigurationController;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.cp.CPManager;
@@ -83,6 +87,22 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 	}
 	
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		entries = removeRepositoryEntry(entries);
+		if(entries != null && entries.size() > 0) {
+			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			if("Quota".equalsIgnoreCase(type)) {
+				doQuota(ureq);
+			} else if("Layout".equalsIgnoreCase(type)) {
+				if (reSecurity.isEntryAdmin()) {
+					doLayout(ureq);
+				}
+			}
+		}
+		super.activate(ureq, entries, state);
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(quotaLink == source) {
 			doQuota(ureq);
@@ -108,7 +128,8 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 			RepositoryEntry entry = getRepositoryEntry();
 			OLATResource resource = entry.getOlatResource();
 			OlatRootFolderImpl cpRoot = FileResourceManager.getInstance().unzipContainerResource(resource);
-			Controller quotaCtrl = quotaManager.getQuotaEditorInstance(ureq, getWindowControl(), cpRoot.getRelPath(), false);
+			WindowControl bwControl = getSubWindowControl("Quota");
+			Controller quotaCtrl = quotaManager.getQuotaEditorInstance(ureq, addToHistory(ureq, bwControl), cpRoot.getRelPath(), false);
 			pushController(ureq, translate("tab.quota.edit"), quotaCtrl);
 			setActiveTool(quotaLink);
 		}
@@ -119,8 +140,9 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 		final OLATResource resource = entry.getOlatResource();
 		CPPackageConfig cpConfig = cpManager.getCPPackageConfig(resource);
 		DeliveryOptions config = cpConfig == null ? null : cpConfig.getDeliveryOptions();
-		final DeliveryOptionsConfigurationController deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), config);
-		
+		WindowControl bwControl = getSubWindowControl("Layout");
+		final DeliveryOptionsConfigurationController deliveryOptionsCtrl
+			= new DeliveryOptionsConfigurationController(ureq, addToHistory(ureq, bwControl), config);
 		deliveryOptionsCtrl.addControllerListener(new ControllerEventListener() {
 
 			@Override

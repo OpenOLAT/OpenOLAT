@@ -283,6 +283,7 @@ public class CPDisplayController extends BasicController implements Activateable
 	 *      org.olat.core.gui.components.Component,
 	 *      org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == cpTree) {
 			// FIXME:fj: cleanup between MenuTree.COMMAND_TREENODE_CLICKED and
@@ -316,35 +317,35 @@ public class CPDisplayController extends BasicController implements Activateable
 		}
 	}
 	
-		@Override
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-			if (source == cpContentCtr) { // a .html click within the contentpackage
-				if (event instanceof NewInlineUriEvent) {
-					NewInlineUriEvent nue = (NewInlineUriEvent) event;
-					// adjust the tree selection to the current choice if found
-					selectTreeNode(ureq, nue.getNewUri());
-				} else if (event instanceof NewIframeUriEvent) {
-					NewIframeUriEvent nue =  (NewIframeUriEvent) event;
-					selectTreeNode(ureq, nue.getNewUri());
-				}// else ignore (e.g. misplaced olatcmd event (inner olat link found in a
-					// contentpackaging file)
-			} else if (source == printPopup) {
-				removeAsListenerAndDispose(printPopup);
-				removeAsListenerAndDispose(printController);
-				printController = null;
-				printPopup = null;
-			} else if (source == printController) {
-				if(Event.DONE_EVENT == event) {
-					List<String> nodeToPrint = printController.getSelectedNodeIdentifiers();
-					printPages(nodeToPrint);
-				}
-				
-				printPopup.deactivate();
-				removeAsListenerAndDispose(printPopup);
-				removeAsListenerAndDispose(printController);
-				printController = null;
-				printPopup = null;
+		if (source == cpContentCtr) { // a .html click within the contentpackage
+			if (event instanceof NewInlineUriEvent) {
+				NewInlineUriEvent nue = (NewInlineUriEvent) event;
+				// adjust the tree selection to the current choice if found
+				selectTreeNode(ureq, nue.getNewUri());
+			} else if (event instanceof NewIframeUriEvent) {
+				NewIframeUriEvent nue =  (NewIframeUriEvent) event;
+				selectTreeNode(ureq, nue.getNewUri());
+			}// else ignore (e.g. misplaced olatcmd event (inner olat link found in a
+				// contentpackaging file)
+		} else if (source == printPopup) {
+			removeAsListenerAndDispose(printPopup);
+			removeAsListenerAndDispose(printController);
+			printController = null;
+			printPopup = null;
+		} else if (source == printController) {
+			if(Event.DONE_EVENT == event) {
+				List<String> nodeToPrint = printController.getSelectedNodeIdentifiers();
+				printPages(nodeToPrint);
 			}
+			
+			printPopup.deactivate();
+			removeAsListenerAndDispose(printPopup);
+			removeAsListenerAndDispose(printController);
+			printController = null;
+			printPopup = null;
+		}
 	}
 	
 	@Override
@@ -485,6 +486,7 @@ public class CPDisplayController extends BasicController implements Activateable
 	 * 
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CLOSE, getClass());
 		cpTree = null;
@@ -500,15 +502,6 @@ public class CPDisplayController extends BasicController implements Activateable
 	 */
 	public CPManifestTreeModel getTreeModel() {
 		return ctm;
-	}
-
-	/**
-	 * @param ureq
-	 * @param te
-	 * @deprecated @TODO To be deleted - does logging and would have to go via an event() method
-	 */
-	public void externalNodeClicked(UserRequest ureq, TreeEvent te) {
-		switchToPage(ureq, te);
 	}
 
 	/**

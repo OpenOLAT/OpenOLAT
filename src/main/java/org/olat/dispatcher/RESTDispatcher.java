@@ -210,18 +210,17 @@ public class RESTDispatcher implements Dispatcher {
 		
 		boolean auth = usess.isAuthenticated();
 		if (auth) {
-			//fxdiff FXOLAT-113: business path in DMZ
-			setBusinessPathInUserSession(usess, businessPath, ureq.getParameter(WINDOW_SETTINGS));
-			
-			//fxdiff
 			if (Windows.getWindows(usess).getChiefController() == null) {
 				// Session is already available, but no main window (Head-less REST
 				// session). Only create the base chief controller and the window
+				setBusinessPathInUserSession(usess, businessPath, ureq.getParameter(WINDOW_SETTINGS));
+
 				AuthHelper.createAuthHome(ureq);
 				String url = getRedirectToURL(usess) + ";jsessionid=" + usess.getSessionInfo().getSession().getId();
 				DispatcherModule.redirectTo(response, url);
 			} else {
-				String url = getRedirectToURL(usess);
+				//redirect to the authenticated dispatcher which support REST url
+				String url = WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED + restPart;
 				DispatcherModule.redirectTo(response, url);
 			}
 		} else {

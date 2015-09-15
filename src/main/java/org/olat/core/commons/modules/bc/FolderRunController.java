@@ -297,6 +297,7 @@ public class FolderRunController extends BasicController implements Activateable
 		}
 	}
 
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == folderCommandController) {			
 			if (event == FolderCommand.FOLDERCOMMAND_FINISHED) {
@@ -395,6 +396,7 @@ public class FolderRunController extends BasicController implements Activateable
 	 *      null; .UserRequest, org.olat.core.gui.components.Component,
 	 *      org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == folderComponent || source == folderContainer || source == editQuotaButton) {
 			// we catch events from both folderComponent and folderContainer
@@ -497,12 +499,12 @@ public class FolderRunController extends BasicController implements Activateable
 	 * 
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {		
-    //folderCommandController is registerd with listenTo and gets disposed in BasicController
+		//
 	}
 
 	@Override
-	//fxdiff BAKS-7 Resume function
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		

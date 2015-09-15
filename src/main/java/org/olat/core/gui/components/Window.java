@@ -542,7 +542,7 @@ public class Window extends AbstractComponent {
 							String newWinUri = buildRenderOnlyURIFor(errWindow);
 							Command rmrcom = CommandFactory.createParentRedirectTo(newWinUri);
 							wbackofficeImpl.sendCommandTo(rmrcom);
-							MediaResource jsonmr = wbackofficeImpl.extractCommands(true);
+							MediaResource jsonmr = wbackofficeImpl.extractCommands(request);
 							ServletUtil.serveResource(request, response, jsonmr);
 						} catch (Throwable anotherTh) {
 							log.error("Exception while handling exception!!!!", anotherTh);

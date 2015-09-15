@@ -25,46 +25,37 @@
 */
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for FormSubmitRenderer
  * <P>
  * Initial Date: 08.12.2006 <br>
  * 
  * @author patrickb
  */
-class FormButtonRenderer implements ComponentRenderer {
+class FormButtonRenderer extends DefaultComponentRenderer {
 
+	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
-		//
+
 		FormButtonComponent fsC = (FormButtonComponent) source;
 		FormButton fs = fsC.getFormButton();
-		fs.getRootForm().getDispatchFieldId();
-		//
 		String id = fsC.getFormDispatchId();
 		//may be no id needed.. problems if the same submit button is 
 		//rendered twice, e.g. usability
-		sb.append("<button type=\"button\" id=\"");
-		sb.append(id);
+		sb.append("<button type=\"button\" id=\"").append(id)
 		//name must stay id, this is used to fetch all submit buttons by name
-		sb.append("\" name=\"");
-		sb.append(id);
-		sb.append("\" value=\"");
-		sb.append(StringEscapeUtils.escapeHtml(fs.getTranslated()));
-		sb.append("\" ");
+		  .append("\" name=\"").append(id)
+		  .append("\" value=\"").append(StringHelper.escapeHtml(fs.getTranslated())).append("\" ");
 		if(!source.isEnabled()){
 			sb.append(" disabled=\"disabled\" ");
 		}
@@ -76,15 +67,14 @@ class FormButtonRenderer implements ComponentRenderer {
 			sb.append(" btn-default");						
 		}
 		if(!source.isEnabled()){
-			sb.append(" o_disabled ");
+			sb.append(" o_disabled");
 		}
 		if(StringHelper.containsNonWhitespace(fs.getElementCssClass())) {
 			sb.append(" ").append(fs.getElementCssClass());
 		}
 		
-		sb.append("\"><span>");
-		sb.append(fs.getTranslated());
-		sb.append("</span></button>");
+		sb.append("\"><span>").append(fs.getTranslated()).append("</span></button>");
+		
 		if(source.isEnabled() && fsC.getIsSubmitAndValidate()){
 			//it is a submitting and validating button (e.g. FormSubmit)
 			sb.append("<script type=\"text/javascript\">\n /* <![CDATA[ */ \n");
@@ -96,14 +86,5 @@ class FormButtonRenderer implements ComponentRenderer {
 			}
 			sb.append("\n/* ]]> */ \n</script>");
 		}
-	}
-
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-		//
-	}
-
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
-			RenderingState rstate) {
-		//
 	}
 }

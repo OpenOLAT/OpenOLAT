@@ -58,7 +58,7 @@ public class CrumbRenderer {
 			
 			// append toplevel node
 			sb.append("<ol class='breadcrumb'><li><a ");
-			ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false)
+			ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, true)
 			   .append(">").append(StringHelper.escapeHtml(fc.getRootContainer().getName())).append("</a></li>");
 			
 			String path = fc.getCurrentContainerPath();
@@ -71,7 +71,7 @@ public class CrumbRenderer {
 				pathLink.append(ubu.encodeUrl(token));
 				if (st.hasMoreElements()) {
 					sb.append("<li><a ");
-					ubu.buildHrefAndOnclick(sb, pathLink.toString(), iframePostEnabled, false, false)
+					ubu.buildHrefAndOnclick(sb, pathLink.toString(), iframePostEnabled, false, true)
 					   .append(">").append(StringHelper.escapeHtml(token)).append("</a></li>");
 				} else {
 					sb.append("<li class='active'>").append(StringHelper.escapeHtml(token)).append("</li>");
