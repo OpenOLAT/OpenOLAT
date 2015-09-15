@@ -106,10 +106,10 @@ public class ResumeController extends FormBasicController implements SupportsAft
 			//do nothing
 		} else if(!historyModule.isResumeEnabled()) {
 			String bc = getLandingBC(ureq);
-			launch(ureq, bc);
+			redirect(ureq, bc);
 		} else if(usess.getRoles().isGuestOnly()) {
 			String bc = getLandingBC(ureq);
-			launch(ureq, bc);
+			redirect(ureq, bc);
 		} else {
 			Preferences prefs =  usess.getGuiPreferences();
 			String resumePrefs = (String)prefs.get(WindowManager.class, "resume-prefs");
@@ -119,16 +119,16 @@ public class ResumeController extends FormBasicController implements SupportsAft
 
 			if("none".equals(resumePrefs)) {
 				String bc = getLandingBC(ureq);
-				launch(ureq, bc);
+				redirect(ureq, bc);
 			} else if ("auto".equals(resumePrefs)) {
 				HistoryPoint historyEntry = HistoryManager.getInstance().readHistoryPoint(ureq.getIdentity());
 				if(historyEntry != null && StringHelper.containsNonWhitespace(historyEntry.getBusinessPath())) {
 					List<ContextEntry> cloneCes = BusinessControlFactory.getInstance().cloneContextEntries(historyEntry.getEntries());
-					BusinessControl bc = BusinessControlFactory.getInstance().createFromContextEntries(cloneCes);
-					launch(ureq, bc);
+					String bc = BusinessControlFactory.getInstance().getAsRestPart(cloneCes, true);
+					redirect(ureq, bc);
 				} else {
 					String bc = getLandingBC(ureq);
-					launch(ureq, bc);
+					redirect(ureq, bc);
 				}
 			} else if ("ondemand".equals(resumePrefs)) {
 				HistoryPoint historyEntry = historyManager.readHistoryPoint(ureq.getIdentity());
@@ -143,7 +143,7 @@ public class ResumeController extends FormBasicController implements SupportsAft
 					}
 				} else {
 					String bc = getLandingBC(ureq);
-					launch(ureq, bc);
+					redirect(ureq, bc);
 				}
 			}
 		}
@@ -218,22 +218,21 @@ public class ResumeController extends FormBasicController implements SupportsAft
 		return lpModule.getRules().match(ureq.getUserSession());
 	}
 	
-	private void launch(UserRequest ureq, BusinessControl bc) {
-		if(bc == null) return;
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
-		try {
-			//make the resume secure. If something fail, don't generate a red screen
-			NewControllerFactory.getInstance().launch(ureq, bwControl);
-		} catch (Exception e) {
-			logError("Error while resuming", e);
-		}
-	}
-	
 	private void launch(UserRequest ureq, String businessPath) {
 		if(StringHelper.containsNonWhitespace(businessPath)) {
 			try {
 				//make the resume secure. If something fail, don't generate a red screen
 				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			} catch (Exception e) {
+				logError("Error while resuming", e);
+			}
+		}
+	}
+	
+	private void redirect(UserRequest ureq, String businessPath) {
+		if(StringHelper.containsNonWhitespace(businessPath)) {
+			try {
+				ureq.getUserSession().putEntry("redirect-bc", businessPath);
 			} catch (Exception e) {
 				logError("Error while resuming", e);
 			}

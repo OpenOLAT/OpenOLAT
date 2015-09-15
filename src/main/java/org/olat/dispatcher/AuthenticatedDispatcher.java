@@ -281,7 +281,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 		}
 	}
 	
-	private void processBusinessPath(String businessPath, UserRequest ureq, UserSession usess) {
+	private boolean processBusinessPath(String businessPath, UserRequest ureq, UserSession usess) {
 		WindowBackOffice windowBackOffice = Windows.getWindows(usess).getChiefController().getWindow().getWindowBackOffice();
 
 		String wSettings = (String) usess.removeEntryFromNonClearedStore(WINDOW_SETTINGS);
@@ -290,21 +290,27 @@ public class AuthenticatedDispatcher implements Dispatcher {
 			windowBackOffice.setWindowSettings(settings);
 		}
 		
-		BusinessControl bc = null;
-		String historyPointId = ureq.getHttpReq().getParameter("historyPointId");
-		if(StringHelper.containsNonWhitespace(historyPointId)) {
-			HistoryPoint point = ureq.getUserSession().getHistoryPoint(historyPointId);
-			bc = BusinessControlFactory.getInstance().createFromContextEntries(point.getEntries());
-		}
-		if(bc == null) {
-			bc = BusinessControlFactory.getInstance().createFromString(businessPath);
-		}
+		try {
+			BusinessControl bc = null;
+			String historyPointId = ureq.getHttpReq().getParameter("historyPointId");
+			if(StringHelper.containsNonWhitespace(historyPointId)) {
+				HistoryPoint point = ureq.getUserSession().getHistoryPoint(historyPointId);
+				bc = BusinessControlFactory.getInstance().createFromContextEntries(point.getEntries());
+			}
+			if(bc == null) {
+				bc = BusinessControlFactory.getInstance().createFromString(businessPath);
+			}
 
-		WindowControl wControl = windowBackOffice.getChiefController().getWindowControl();
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, wControl);
-		NewControllerFactory.getInstance().launch(ureq, bwControl);	
-		// render the window
-		Window w = windowBackOffice.getWindow();
-		w.dispatchRequest(ureq, true); // renderOnly
+			WindowControl wControl = windowBackOffice.getChiefController().getWindowControl();
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, wControl);
+			NewControllerFactory.getInstance().launch(ureq, bwControl);	
+			// render the window
+			Window w = windowBackOffice.getWindow();
+			w.dispatchRequest(ureq, true); // renderOnly
+			return true;
+		} catch (Exception e) {
+			log.error("", e);
+			return false;
+		}
 	}
 }

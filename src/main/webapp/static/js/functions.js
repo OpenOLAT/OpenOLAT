@@ -1209,10 +1209,7 @@ function o_XHRSubmit(formNam) {
 					}
 				}
 			},
-			error: function(jqXHR, textStatus, errorThrown) {
-				o_afterserver();
-				if(window.console) console.log('Error status', textStatus);
-			}
+			error: o_onXHRError
 		});
 		return false;
 	}
@@ -1221,14 +1218,14 @@ function o_XHRSubmit(formNam) {
 function o_XHRSubmitMultipart(formNam) {
 	var form = jQuery('#' + formNam);
 	var iframeName = "openolat-submit-" + ("" + Math.random()).substr(2);
-	var iframe = createIFrame(iframeName);
+	var iframe = o_createIFrame(iframeName);
 	document.body.appendChild(iframe);
 	form.attr('target', iframe.name);
 	form.submit();
 	form.attr('target','');
 }
 
-createIFrame = function (iframeName) {
+function o_createIFrame(iframeName) {
 	var $iframe = jQuery('<iframe name="'+iframeName+'" id="'+iframeName+'" src="about:blank" style="position: absolute; top: -9999px; left: -9999px;" onload="clearAfterAjaxIframeCall();">');
 	return $iframe[0];
 }
@@ -1273,10 +1270,7 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 				}
 			}
 		},
-		error: function(jqXHR, textStatus, errorThrown) {
-			o_afterserver();
-			if(window.console) console.log('Error status', textStatus);
-		}
+		error: o_onXHRError
 	})
 }
 
@@ -1318,14 +1312,7 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 				if(window.console) console.log(e);
 			}
 		},
-		error: function(jqXHR, textStatus, errorThrown) {
-			o_afterserver();
-			if(401 == jqXHR.status) {
-				window.location.reload(true);
-			} else if(window.console) {
-				console.log('Error status', textStatus, errorThrown, jqXHR.responseText);
-			}
-		}
+		error: o_onXHRError
 	})
 	
 	return false;
@@ -1357,6 +1344,16 @@ function o_XHRNFEvent(targetUrl) {
 			if(window.console) console.log('Error status', textStatus);
 		}
 	})
+}
+
+function o_onXHRError(jqXHR, textStatus, errorThrown) {
+	o_afterserver();
+	if(401 == jqXHR.status) {
+		var msg = o_info.oo_noresponse.replace("reload.html", window.document.location.href);
+		showMessageBox('error', o_info.oo_noresponse_title, msg, undefined);
+	} else if(window.console) {
+		console.log('Error status', textStatus, errorThrown, jqXHR.responseText);
+	}
 }
 
 function o_pushState(historyPointId, title, url) {
