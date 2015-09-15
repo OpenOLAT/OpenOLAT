@@ -54,13 +54,14 @@ import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.DisplayPortraitManager;
+import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 
 /**
@@ -91,11 +92,15 @@ public class MembersCourseNodeRunController extends FormBasicController {
 	private List<FormLink> ownerLinks;
 	private List<FormLink> coachesLinks;
 	private List<FormLink> participantsLinks;
-	
+
+	private final boolean showOwners;
+	private final boolean showCoaches;
+	private final boolean showParticipants;
+
 	private ContactFormController emailController;
 	private CloseableModalController cmc;
-	
-	public MembersCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv) {
+
+	public MembersCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, ModuleConfiguration config) {
 		super(ureq, wControl, "members");
 
 		this.userCourseEnv = userCourseEnv;
@@ -107,6 +112,9 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		portraitManager = DisplayPortraitManager.getInstance();
 
+		showOwners = config.getBooleanSafe(MembersCourseNodeEditController.CONFIG_KEY_SHOWOWNER);
+		showCoaches = config.getBooleanSafe(MembersCourseNodeEditController.CONFIG_KEY_SHOWCOACHES);
+		showParticipants = config.getBooleanSafe(MembersCourseNodeEditController.CONFIG_KEY_SHOWPARTICIPANTS);
 		initForm(ureq);
 	}
 
@@ -144,8 +152,11 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			layoutCont.contextPut("showOwners", showOwners);
 			layoutCont.contextPut("hasOwners", new Boolean(!ownerLinks.isEmpty()));
+			layoutCont.contextPut("showCoaches", showCoaches);
 			layoutCont.contextPut("hasCoaches", new Boolean(!coachesLinks.isEmpty()));
+			layoutCont.contextPut("showParticipants", showParticipants);
 			layoutCont.contextPut("hasParticipants", new Boolean(!participantsLinks.isEmpty()));
 		}
 	}

@@ -40,6 +40,7 @@ import org.olat.course.nodes.members.MembersCourseNodeRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 
 
@@ -51,6 +52,7 @@ import org.olat.repository.RepositoryEntry;
  * <P>
  * Initial Date:  11 mars 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @autohr dfurrer, dirk.furrer@frentix.com, http://www.frentix.com
  */
 public class MembersCourseNode extends AbstractAccessableCourseNode {
 	
@@ -89,7 +91,8 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
-		MembersCourseNodeEditController childTabCntrllr = new MembersCourseNodeEditController(ureq, wControl);
+		updateModuleConfigDefaults(false);
+		MembersCourseNodeEditController childTabCntrllr = new MembersCourseNodeEditController(this.getModuleConfiguration(), ureq, wControl);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
 	}
@@ -97,6 +100,7 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
+		updateModuleConfigDefaults(false);
 
 		Controller controller;
 		Roles roles = ureq.getUserSession().getRoles();
@@ -106,9 +110,27 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 			String message = trans.translate("guestnoaccess.message");
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
-			controller = new MembersCourseNodeRunController(ureq, wControl, userCourseEnv);
+			controller = new MembersCourseNodeRunController(ureq, wControl, userCourseEnv, this.getModuleConfiguration());
 		}
 		Controller titledCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_cmembers_icon");
 		return new NodeRunConstructionResult(titledCtrl);
+	}
+
+	@Override
+	public void updateModuleConfigDefaults(boolean isNewNode) {
+		ModuleConfiguration config = getModuleConfiguration();
+		int version = config.getConfigurationVersion();
+		if(isNewNode){
+			config.setBooleanEntry(MembersCourseNodeEditController.CONFIG_KEY_SHOWOWNER, false);
+			config.setBooleanEntry(MembersCourseNodeEditController.CONFIG_KEY_SHOWCOACHES, true);
+			config.setBooleanEntry(MembersCourseNodeEditController.CONFIG_KEY_SHOWPARTICIPANTS, true);
+			config.setConfigurationVersion(2);
+		}else if(version < 2){
+			//update old config versions
+			config.setBooleanEntry(MembersCourseNodeEditController.CONFIG_KEY_SHOWOWNER, true);
+			config.setBooleanEntry(MembersCourseNodeEditController.CONFIG_KEY_SHOWCOACHES, true);
+			config.setBooleanEntry(MembersCourseNodeEditController.CONFIG_KEY_SHOWPARTICIPANTS, true);
+			config.setConfigurationVersion(2);
+		}
 	}
 }
