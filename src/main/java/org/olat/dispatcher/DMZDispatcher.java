@@ -46,7 +46,6 @@ import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.form.flexible.impl.InvalidRequestParameterException;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.ChiefControllerCreator;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.exception.MsgFactory;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -259,12 +258,11 @@ public class DMZDispatcher implements Dispatcher {
 					window = occ.getWindow();
 					window.setUriPrefix(uriPrefix);
 					ws.registerWindow(window);
-					//fxdiff FXOLAT-113: business path in DMZ
+					
 					String businessPath = (String) usess.removeEntryFromNonClearedStore(DMZDISPATCHER_BUSINESSPATH);
 					if (businessPath != null) {
 						List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(businessPath);
-						DTabs dts = window.getDTabs();
-						dts.activate(ureq, null, ces);
+						window.getDTabs().activate(ureq, null, ces);
 					}
 					//apply the settings forward
 					usess.putEntryInNonClearedStore(WINDOW_SETTINGS, wSettings);

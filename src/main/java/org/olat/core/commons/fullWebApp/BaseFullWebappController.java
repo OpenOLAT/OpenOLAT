@@ -98,6 +98,7 @@ import org.olat.core.logging.JavaScriptTracingController;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -194,12 +195,13 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		guiMessage = new GUIMessage();
 		guimsgPanel = new OncePanel("guimsgPanel");
 		
+		UserSession usess = ureq.getUserSession();
 		WindowManager winman = Windows.getWindows(ureq).getWindowManager();
-		String windowSettings = (String)ureq.getUserSession().removeEntryFromNonClearedStore(Dispatcher.WINDOW_SETTINGS);
+		String windowSettings = (String)usess.removeEntryFromNonClearedStore(Dispatcher.WINDOW_SETTINGS);
 		WindowSettings settings = WindowSettings.parse(windowSettings);
 		wbo = winman.createWindowBackOffice("basechiefwindow", this, settings);
 		
-		IdentityEnvironment identityEnv = ureq.getUserSession().getIdentityEnvironment();
+		IdentityEnvironment identityEnv = usess.getIdentityEnvironment();
 		if(identityEnv != null && identityEnv.getRoles() != null) {	
 			isAdmin = identityEnv.getRoles().isOLATAdmin();
 		} else {
@@ -229,17 +231,17 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		// ------ all the frame preparation is finished ----
 		initializeBase(ureq, winman, initialPanel);
 		
-		if(ureq.getUserSession().isAuthenticated() && !isAdmin && ureq.getUserSession().getAssessmentModes() != null && ureq.getUserSession().getAssessmentModes().size() > 0) {
+		if(ureq.getUserSession().isAuthenticated() && !isAdmin && usess.getAssessmentModes() != null && usess.getAssessmentModes().size() > 0) {
     		assessmentGuardCtrl = new AssessmentModeGuardController(ureq, getWindowControl(),
-    				ureq.getUserSession().getAssessmentModes(), false);
+    				usess.getAssessmentModes(), false);
     		listenTo(assessmentGuardCtrl);
     		assessmentGuardCtrl.getInitialComponent();
     		lockStatus = LockStatus.popup;
     	} else {
     		// present an overlay with configured afterlogin-controllers or nothing if none configured.
     		// presented only once per session.
-    		Boolean alreadySeen = ((Boolean)ureq.getUserSession().getEntry(PRESENTED_AFTER_LOGIN_WORKFLOW));
-    		if (ureq.getUserSession().isAuthenticated() && alreadySeen == null) {
+    		Boolean alreadySeen = ((Boolean)usess.getEntry(PRESENTED_AFTER_LOGIN_WORKFLOW));
+    		if (usess.isAuthenticated() && alreadySeen == null) {
     			aftLHookCtr = new AfterLoginInterceptionController(ureq, getWindowControl());
     			listenTo(aftLHookCtr);
     			aftLHookCtr.getInitialComponent();
@@ -248,7 +250,10 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
     	}
 		
     	if(assessmentGuardCtrl == null && (aftLHookCtr == null || aftLHookCtr.isDisposed())) {
-    		initializeDefaultSite(ureq);
+    		String bc = initializeDefaultSite(ureq);
+    		if(StringHelper.containsNonWhitespace(bc) && usess.getEntry("redirect-bc") == null) {
+    			usess.putEntry("redirect-bc", bc);
+    		}
     	}
 		
 		Object fullScreen = Windows.getWindows(ureq).getFullScreen();
@@ -262,12 +267,12 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		// register for locale change events -> 
 		//move to a i18nModule? languageManger? languageChooserController?
 		OLATResourceable wrappedLocale = OresHelper.createOLATResourceableType(Locale.class);
-		ureq.getUserSession().getSingleUserEventCenter().registerFor(this, getIdentity(), wrappedLocale);
+		usess.getSingleUserEventCenter().registerFor(this, getIdentity(), wrappedLocale);
 		//register for assessment mode
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.registerFor(this, getIdentity(), AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 		// register for global sticky message changed events
-		GlobalStickyMessage.registerForGlobalStickyMessage(this, ureq.getIdentity());	
+		GlobalStickyMessage.registerForGlobalStickyMessage(this, getIdentity());	
 	}
 	
 	private void initializeBase(UserRequest ureq, WindowManager winman, ComponentCollection mainPanel) {
@@ -492,15 +497,21 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		stickyMessageCmp.setText(GlobalStickyMessage.getGlobalStickyMessage());
 	}
 
-	private void initializeDefaultSite(UserRequest ureq) {
+	/**
+	 * @param ureq
+	 * @return The current business path if a site is initialized or null
+	 */
+	private String initializeDefaultSite(UserRequest ureq) {
+		String businessPath = null;
 		if (sites != null && sites.size() > 0
 				&& curSite == null && curDTab == null
 				&& contentCtrl == null && lockResource == null) {
 			SiteInstance s = sites.get(0);
 			//activate site only if no content was set -> allow content before activation of default site.
 			activateSite(s, ureq, null, false);
-			updateBusinessPath(ureq, s);
+			businessPath = updateBusinessPath(ureq, s);
 		}
+		return businessPath;
 	}
 	
 	protected GUIMessage getGUIMessage() {
@@ -1486,8 +1497,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		}
 	}
 	
-	private void updateBusinessPath(UserRequest ureq, SiteInstance site) {
-		if(site == null) return;
+	private String updateBusinessPath(UserRequest ureq, SiteInstance site) {
+		if(site == null) return null;
 
 		try {
 			String businessPath = siteToBornSite.get(site).getController().getWindowControlForDebug().getBusinessControl().getAsString();
@@ -1499,13 +1510,17 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 					//if a controller has not set its business path, don't pollute the mapping
 					List<ContextEntry> entries = siteToBornSite.get(site).getController().getWindowControlForDebug().getBusinessControl().getEntries();
 					siteToBusinessPath.put(site, new HistoryPointImpl(ureq.getUuid(), businessPath, entries));
-					return;
+					return BusinessControlFactory.getInstance().getAsRestPart(entries, true);
 				}
+				List<ContextEntry> entries = siteToBornSite.get(site).getController().getWindowControlForDebug().getBusinessControl().getEntries();
+				businessPath = BusinessControlFactory.getInstance().getAsRestPart(entries, true);
 			}
 			
 			siteToBusinessPath.put(site, point);
+			return businessPath;
 		} catch (Exception e) {
 			logError("", e);
+			return null;
 		}
 	}
 	

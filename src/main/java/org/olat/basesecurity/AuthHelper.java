@@ -190,7 +190,6 @@ public class AuthHelper {
 		BaseFullWebappControllerParts guestSitesAndNav = new GuestBFWCParts();
 		ChiefController cc = new BaseFullWebappController(ureq, guestSitesAndNav);
 		Windows.getWindows(ureq.getUserSession()).setChiefController(cc);
-		log.debug("set session-attribute 'AUTHCHIEFCONTROLLER'");
 		return cc;
 	}
 
@@ -207,7 +206,6 @@ public class AuthHelper {
 		BaseFullWebappControllerParts authSitesAndNav = new AuthBFWCParts();
 		ChiefController cc = new BaseFullWebappController(ureq, authSitesAndNav);
 		Windows.getWindows(ureq.getUserSession()).setChiefController(cc);
-		log.debug("set session-attribute 'AUTHCHIEFCONTROLLER'");
 		return cc;
 	}
 
