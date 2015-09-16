@@ -28,6 +28,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
@@ -57,6 +59,8 @@ import com.thoughtworks.xstream.XStream;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class BlogArtefactHandler extends EPAbstractHandler<BlogArtefact> {
+	
+	private static final OLog log = Tracing.createLoggerFor(BlogArtefactHandler.class);
 
 	@Override
 	public String getType() {

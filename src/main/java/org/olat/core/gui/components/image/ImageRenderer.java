@@ -155,7 +155,6 @@ public class ImageRenderer extends DefaultComponentRenderer {
 			  .append("  jQuery('#").append(imgId).append("').cropper({\n")
 			  .append("    aspectRatio:1,\n")
 			  .append("    done: function(crop) {\n")
-			  .append("      console.log(crop);\n")
 			  .append("      jQuery('input#").append(imgId).append("_x').val(crop.x1);\n")
 			  .append("    	 jQuery('input#").append(imgId).append("_y').val(crop.y1);\n")
 			  .append("    	 jQuery('input#").append(imgId).append("_w').val(crop.width);\n")

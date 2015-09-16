@@ -29,6 +29,8 @@ import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -54,6 +56,8 @@ import org.olat.search.service.document.file.FileDocumentFactory;
  * @author srosse, stephane.rosse@frentix.com, www.frentix.com
  */
 public class FileArtefactHandler extends EPAbstractHandler<FileArtefact> {
+	
+	private static final OLog log = Tracing.createLoggerFor(FileArtefactHandler.class);
 
 	/**
 	 * @see org.olat.portfolio.EPAbstractHandler#setEnabled(boolean)

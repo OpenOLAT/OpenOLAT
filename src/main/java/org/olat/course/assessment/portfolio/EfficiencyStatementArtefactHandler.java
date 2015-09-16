@@ -25,6 +25,8 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.assessment.EfficiencyStatement;
@@ -47,6 +49,8 @@ import com.thoughtworks.xstream.XStream;
  */
 public class EfficiencyStatementArtefactHandler extends EPAbstractHandler<EfficiencyStatementArtefact> {
 
+	private static final OLog log = Tracing.createLoggerFor(EfficiencyStatementArtefactHandler.class);
+	
 	private final XStream myXStream = XStreamHelper.createXStreamInstance();
 	
 	@Override
@@ -80,9 +84,16 @@ public class EfficiencyStatementArtefactHandler extends EPAbstractHandler<Effici
 
 	@Override
 	public Controller createDetailsController(UserRequest ureq, WindowControl wControl, AbstractArtefact artefact, boolean readOnlyMode) {
-		EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
+		EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 		String statementXml = ePFMgr.getArtefactFullTextContent(artefact);
-		EfficiencyStatement statement = (EfficiencyStatement)myXStream.fromXML(statementXml); 
+		EfficiencyStatement statement = null;
+		if(StringHelper.containsNonWhitespace(statementXml)) {
+			try {
+				statement = (EfficiencyStatement)myXStream.fromXML(statementXml);
+			} catch (Exception e) {
+				log.error("Cannot load efficiency statement from artefact", e);
+			}
+		}
 		CertificateAndEfficiencyStatementController efficiencyCtrl = new CertificateAndEfficiencyStatementController(wControl, ureq, statement);
 		return new LayoutMain3ColsController(ureq, wControl, efficiencyCtrl);
 	}

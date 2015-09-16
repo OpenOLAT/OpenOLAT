@@ -1070,6 +1070,10 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 		return structureManager.isMapOwner(identity, ores);
 	}
 	
+	public boolean isMapOwner(Identity identity, Long mapKey) {
+		return structureManager.isMapOwner(identity, mapKey);
+	}
+	
 	/**
 	 * Check if the identity is owner of the portfolio resource or
 	 * in a valid policy.

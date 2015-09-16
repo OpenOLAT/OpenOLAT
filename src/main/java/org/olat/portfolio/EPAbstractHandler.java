@@ -27,8 +27,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
@@ -49,8 +47,6 @@ import org.olat.search.service.SearchResourceContext;
 public abstract class EPAbstractHandler<U extends AbstractArtefact> implements EPArtefactHandler<U> {
 
 	private boolean enabled = true;
-	
-	protected static final OLog log = Tracing.createLoggerFor(EPAbstractHandler.class);
 	
 	public EPAbstractHandler() {
 		//

@@ -30,7 +30,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
-import org.olat.portfolio.ui.EPArtefactPoolRunController;
 import org.olat.portfolio.ui.PortfolioAdminController;
 import org.olat.portfolio.ui.artefacts.collect.ArtefactWizzardStepsController;
 import org.olat.portfolio.ui.artefacts.view.EPArtefactViewController;
@@ -51,17 +50,6 @@ import org.olat.portfolio.ui.structel.edit.EPStructureDetailsController;
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
 public class EPUIFactory {
-
-	/**
-	 * get the artefact pool controller
-	 * used directly over extension-config, therefore needs to be static
-	 * @param ureq
-	 * @param wControl
-	 * @return
-	 */
-	public static Controller createPortfolioPoolController(UserRequest ureq, WindowControl wControl) {
-		return new EPArtefactPoolRunController(ureq, wControl);
-	}
 
 	/**
 	 * get a controller for admin-setup of e Portfolio

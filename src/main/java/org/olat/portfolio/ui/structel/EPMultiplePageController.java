@@ -158,7 +158,8 @@ public class EPMultiplePageController extends BasicController implements Activat
 			setAndInitNormalPage(ureq, pageNum, withComments);
 		}
 
-		setCurrentPageAfterInit(pageNum);
+		vC.put("pageCtrl", currentActivePageCtrl.getInitialComponent());
+		vC.contextPut("actualPage", pageNum + 1);
 	}
 
 	/**
@@ -166,19 +167,9 @@ public class EPMultiplePageController extends BasicController implements Activat
 	 * changelog
 	 */
 	private void disposeNormalPageController() {
-		if (currentActivePageCtrl == null)
-			return;
-		if (currentActivePageCtrl instanceof EPPageViewController)
+		if (currentActivePageCtrl instanceof EPPageViewController) {
 			removeAsListenerAndDispose(currentActivePageCtrl);
-	}
-
-	/**
-	 * 
-	 * @param pageNum
-	 */
-	private void setCurrentPageAfterInit(int pageNum) {
-		vC.put("pageCtrl", currentActivePageCtrl.getInitialComponent());
-		vC.contextPut("actualPage", pageNum + 1);
+		}
 	}
 
 	/**
@@ -237,14 +228,17 @@ public class EPMultiplePageController extends BasicController implements Activat
 	 * @param withComments
 	 */
 	private void setAndInitNormalPage(UserRequest ureq, int pageNumberToInit, boolean withComments) {
-		EPPage page = (EPPage) pageList.get(pageNumberToInit);
-		PortfolioStructure map = ePFMgr.loadStructureParent(page);
-		WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(EPPage.class, page.getKey()), null);
-		currentActivePageCtrl = new EPPageViewController(ureq, bwControl, map, page, withComments, secCallback);
-		listenTo(currentActivePageCtrl);
-		// enable toc and changelog links
-		disableLink_TOC(false);
-		disableLINK_LC(false);
+		PortfolioStructure structureElement = pageList.get(pageNumberToInit);
+		if(structureElement instanceof EPPage) {
+			EPPage page = (EPPage)structureElement;
+			PortfolioStructure map = ePFMgr.loadStructureParent(page);
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(EPPage.class, page.getKey()), null);
+			currentActivePageCtrl = new EPPageViewController(ureq, bwControl, map, page, withComments, secCallback);
+			listenTo(currentActivePageCtrl);
+			// enable toc and changelog links
+			disableLink_TOC(false);
+			disableLINK_LC(false);
+		}
 	}
 
 	private void disableLink_TOC(boolean disable) {

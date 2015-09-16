@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -60,6 +59,7 @@ import org.olat.portfolio.ui.EPMapRunViewOption;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -83,20 +83,22 @@ public class EPMultipleMapController extends BasicController implements Activate
 	
 	private static final int ITEMS_PER_PAGE = 9;
 	
-	private VelocityContainer vC;
-	private EPFrontendManager ePFMgr;
+	private final VelocityContainer vC;
 	private DialogBoxController delMapCtrl;
 	private DialogBoxController copyMapCtrl;
 	private EPMapViewController mapViewCtrl;
 	private EPShareListController shareListController;
 	private CloseableModalController shareBox;
-	private StackedPanel myPanel;
+	private final StackedPanel myPanel;
 	
 	private final EPMapRunViewOption option;
 	private final Identity mapOwner;
 	private List<PortfolioStructureMap> userMaps;
 	private boolean restrictShareView = true;
 	private long start;
+	@Autowired
+	private EPFrontendManager ePFMgr;
+	@Autowired
 	private PortfolioModule portfolioModule;
 	
 //	components for paging
@@ -111,15 +113,11 @@ public class EPMultipleMapController extends BasicController implements Activate
 
 		this.option = option;
 		this.mapOwner = mapOwner;
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
-		portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
 		vC = createVelocityContainer("multiMaps");		
 		initOrUpdateMaps(ureq);
 
 		myPanel = putInitialPanel(vC);
 	}
-
-	
 	
 	/**
 	 * returns a List of PortfolioStructures to display, depending on options (all OLAT-wide shared maps, only shared to me, paging)

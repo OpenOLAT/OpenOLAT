@@ -10,13 +10,13 @@ function resize_${panelName}() {
 function tweak_${panelName}() {
 	try {
 		resize_${panelName}();
-	} catch (e) { if(console) console.log(e) }
+	} catch (e) { if(window.console) console.log(e) }
 }
 function focus_${panelName}() {
 	try {
 		resize_${panelName}();
 		setTimeout(function(){ jQuery('#o_fioinput_${panelName}').focus(); }, 100);
-	} catch (e) { if(console) console.log(e) }
+	} catch (e) { if(window.console) console.log(e) }
 }
 /* ]]> */
 </script>

@@ -294,8 +294,7 @@ function mark (it, title, title_marked) {
 	
 	m=!m;
 	
-	if (!o_info.linkbusy) {	
-		console.log(it.id);
+	if (!o_info.linkbusy) {
 		$r.openJavaScriptCommand("mark"),'id',it.id,'p',m);
 	}
 }

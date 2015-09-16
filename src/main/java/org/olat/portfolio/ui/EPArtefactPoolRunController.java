@@ -37,6 +37,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.EPSecurityCallbackImpl;
 import org.olat.portfolio.PortfolioModule;
@@ -178,6 +179,7 @@ public class EPArtefactPoolRunController extends BasicController implements Acti
 		initMultiArtefactCtrl(ureq, artefacts);
 		initFilterPanel(ureq, Filter.read_only);
 		setSegmentContent(artCtrl);
+		addToHistory(ureq, OresHelper.createOLATResourceableType("All"), null);
 	}
 
 	
@@ -207,6 +209,7 @@ public class EPArtefactPoolRunController extends BasicController implements Acti
 		initMultiArtefactCtrl(ureq, filteredArtefacts);
 		initFilterPanel(ureq, Filter.extended);
 		setSegmentContent(artCtrl);
+		addToHistory(ureq, OresHelper.createOLATResourceableType("Search"), null);
 	}
 
 	private void initTPBrowseView(UserRequest ureq) {
@@ -214,6 +217,7 @@ public class EPArtefactPoolRunController extends BasicController implements Acti
 		initMultiArtefactCtrl(ureq, artefacts);
 		initFilterPanel(ureq, Filter.tags);
 		setSegmentContent(artCtrl);
+		addToHistory(ureq, OresHelper.createOLATResourceableType("Browse"), null);
 	}
 	
 	private void initViewModeController(UserRequest ureq){
@@ -254,6 +258,23 @@ public class EPArtefactPoolRunController extends BasicController implements Acti
 				}
 			}	
 		}		
+	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("All".equalsIgnoreCase(type)) {
+			initTPAllView(ureq);
+			segmentView.select(artefactsLink);
+		} else if("Browse".equalsIgnoreCase(type)) {
+			initTPBrowseView(ureq);
+			segmentView.select(browseLink);
+		} else if("Search".equalsIgnoreCase(type)) {
+			initTPFilterView(ureq);
+			segmentView.select(searchLink);
+		}
 	}
 
 	/**
@@ -311,15 +332,6 @@ public class EPArtefactPoolRunController extends BasicController implements Acti
 			previousArtefactsList.remove(epDelEv.getArtefact());
 			initMultiArtefactCtrl(ureq, previousArtefactsList);
 			setSegmentContent(artCtrl);
-		}
-	}
-	
-	@Override
-	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) return;
-		
-		if(artCtrl != null) {
-			artCtrl.activate(ureq, entries, state);
 		}
 	}
 
