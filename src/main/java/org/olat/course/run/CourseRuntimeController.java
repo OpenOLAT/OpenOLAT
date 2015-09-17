@@ -1147,8 +1147,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			ICourse course = CourseFactory.loadCourse(getOlatResourceable());
 			VFSContainer namedCourseFolder = new NamedContainerImpl(translate("command.coursefolder"), course.getCourseFolderContainer());
 			CustomLinkTreeModel customLinkTreeModel = new CourseInternalLinkTreeModel(course.getEditorTreeModel());
-			
-			FolderRunController ctrl = new FolderRunController(namedCourseFolder, true, true, true, ureq, getWindowControl(), null, customLinkTreeModel);
+
+			FolderRunController ctrl = new FolderRunController(namedCourseFolder, true, true, true, true, ureq, getWindowControl(), null, customLinkTreeModel, null);
 			ctrl.addLoggingResourceable(LoggingResourceable.wrap(course));
 			courseFolderCtrl = pushController(ureq, translate("command.coursefolder"), ctrl);
 			setActiveTool(folderLink);
