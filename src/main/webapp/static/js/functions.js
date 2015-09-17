@@ -1255,7 +1255,7 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 	
 	var targetUrl = jQuery('#' + formNam).attr("action");
 	jQuery.ajax(targetUrl,{
-		type:'GET',
+		type:'POST',
 		data: data,
 		cache: false,
 		dataType: 'json',
