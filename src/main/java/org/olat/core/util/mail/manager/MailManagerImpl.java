@@ -1448,6 +1448,7 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 		String mailhostTimeout = WebappHelper.getMailConfig("mailTimeout");
 		boolean sslEnabled = Boolean.parseBoolean(WebappHelper.getMailConfig("sslEnabled"));
 		boolean sslCheckCertificate = Boolean.parseBoolean(WebappHelper.getMailConfig("sslCheckCertificate"));
+		boolean startTls = Boolean.parseBoolean(WebappHelper.getMailConfig("smtpStarttls"));
 		
 		Authenticator smtpAuth;
 		if (WebappHelper.isMailHostAuthenticationEnabled()) {
@@ -1465,6 +1466,10 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 		p.put("mail.smtp.connectiontimeout", mailhostTimeout);
 		p.put("mail.smtp.ssl.enable", sslEnabled);
 		p.put("mail.smtp.ssl.checkserveridentity", sslCheckCertificate);
+		if(startTls) {
+			p.put("mail.smtp.starttls.enable", "true");
+		}
+		
 		Session mailSession;
 		if (smtpAuth == null) {
 			mailSession = javax.mail.Session.getInstance(p);

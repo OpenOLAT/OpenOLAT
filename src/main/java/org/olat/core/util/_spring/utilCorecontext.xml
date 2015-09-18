@@ -24,11 +24,12 @@
 		<property name="mailConfig">
 			<map>
 				<entry key="mailhost" value="${smtp.host}"/>
-				<entry key="mailTimeout" value="8000"/> <!-- timeout in milliseconds -->
+				<entry key="mailTimeout" value="${smtp.timeout}"/> <!-- timeout in milliseconds -->
 				<entry key="smtpUser" value="${smtp.user}"/>
 				<entry key="smtpPwd" value="${smtp.pwd}"/>
 				<entry key="sslEnabled" value="${smtp.sslEnabled}"/>
 				<entry key="sslCheckCertificate" value="${smtp.sslCheckCertificate}"/>
+				<entry key="smtpStarttls" value="${smtp.starttls}"/>
 				<entry key="mailFrom" value="${fromemail}"/>
 				<entry key="mailFromName" value="${fromname}"/>
 				<entry key="mailReplyTo" value="${adminemail}"/>
