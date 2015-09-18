@@ -69,9 +69,13 @@ public class MediaTypeVariants {
 	public static boolean isPaged(HttpServletRequest httpRequest, Request request) {
 		String accept = httpRequest.getHeader("Accept");
 		if(StringHelper.containsNonWhitespace(accept)) {
-			MediaType requestMediaType = MediaType.valueOf(accept);
-			if(APPLICATION_JSON_PAGED.equals(requestMediaType) || APPLICATION_XML_PAGED.equals(requestMediaType)) {
-				return true;
+			try {
+				MediaType requestMediaType = MediaType.valueOf(accept);
+				if(APPLICATION_JSON_PAGED.equals(requestMediaType) || APPLICATION_XML_PAGED.equals(requestMediaType)) {
+					return true;
+				}
+			} catch (IllegalArgumentException e) {
+				// can fail
 			}
 		}
 		Variant variant = request.selectVariant(variants);
