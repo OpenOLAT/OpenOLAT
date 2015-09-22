@@ -40,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.velocity.VelocityContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
@@ -156,6 +157,26 @@ public class CertificatePhantomWorker {
 		
 		String fullName = userManager.getUserDisplayName(identity);
 		context.put("fullName", fullName);
+		
+		String firstName = user.getProperty(UserConstants.FIRSTNAME, null);
+		String lastName = user.getProperty(UserConstants.LASTNAME, null);
+		
+		StringBuilder firstNameLastName = new StringBuilder();
+		StringBuilder lastNameFirstName = new StringBuilder();
+		if(StringHelper.containsNonWhitespace(firstName)) {
+			firstNameLastName.append(firstName);
+		}
+		if(StringHelper.containsNonWhitespace(lastName)) {
+			if(firstNameLastName.length() > 0) firstNameLastName.append(" ");
+			firstNameLastName.append(lastName);
+			lastNameFirstName.append(lastName);
+		}
+		if(StringHelper.containsNonWhitespace(firstName)) {
+			if(lastNameFirstName.length() > 0) lastNameFirstName.append(" ");
+			lastNameFirstName.append(firstName);
+		}
+		context.put("firstNameLastName", firstNameLastName.toString());
+		context.put("lastNameFirstName", lastNameFirstName.toString());
 	}
 	
 	private void fillRepositoryEntry(VelocityContext context) {
