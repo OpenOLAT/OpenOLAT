@@ -774,7 +774,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				String userMsg = chngMsgFrom.getUserMsg();
 				changeLog = changeEmail.getBodyText();
 				if (StringHelper.containsNonWhitespace(userMsg)) {
-					changeEmail.setBodyText(userMsg + "\n" + changeLog);
+					changeEmail.setBodyText("<p>" + userMsg + "</p>\n<pre>" + changeLog + "</pre>");
 				}// else nothing was added!
 				changeEmail.setSubject("Change log for " + startedWithTitle);
 				cfc = new ContactFormController(ureq, getWindowControl(), true, false, false, changeEmail);
