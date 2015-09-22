@@ -24,6 +24,7 @@
 		<property name="mailConfig">
 			<map>
 				<entry key="mailhost" value="${smtp.host}"/>
+				<entry key="mailport" value="${smtp.port}"/>
 				<entry key="mailTimeout" value="${smtp.timeout}"/> <!-- timeout in milliseconds -->
 				<entry key="smtpUser" value="${smtp.user}"/>
 				<entry key="smtpPwd" value="${smtp.pwd}"/>
