@@ -137,7 +137,17 @@ public interface CertificatesManager {
 	
 	public List<Certificate> getCertificates(IdentityRef identity, OLATResource resource);
 	
-	public boolean isRecertificationAllowed(Identity identity, RepositoryEntry entry);
+	/**
+	 * Check if recertification is allowed and if it is the case, check the
+	 * recertification period. If not allowed, check if a certificate was
+	 * already emitted.
+	 * 
+	 * @param identity
+	 * @param entry
+	 * @return
+	 */
+	
+	public boolean isCertificationAllowed(Identity identity, RepositoryEntry entry);
 	
 	public File previewCertificate(CertificateTemplate template, RepositoryEntry entry, Locale locale);
 
