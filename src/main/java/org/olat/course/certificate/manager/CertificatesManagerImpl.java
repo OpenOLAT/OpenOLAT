@@ -512,7 +512,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 
 	@Override
-	public boolean isRecertificationAllowed(Identity identity, RepositoryEntry entry) {
+	public boolean isCertificationAllowed(Identity identity, RepositoryEntry entry) {
 		boolean allowed = false;
 		try {
 			ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
@@ -538,7 +538,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 					allowed = nextCertification.before(now);
 				}
 			} else {
-				allowed = true;
+				allowed = !hasCertificate(identity, entry.getOlatResource().getKey());
 			}
 		} catch (CorruptedCourseException e) {
 			log.error("", e);
