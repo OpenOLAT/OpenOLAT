@@ -86,7 +86,8 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 	            }
 
 	            /* Render event */
-	            renderItemEvent(renderer, sb, cmp, latestEvent, itemSessionState, ubu, translator);
+	            AssessmentRenderer renderHints = new AssessmentRenderer(renderer);
+	            renderItemEvent(renderHints, sb, cmp, latestEvent, itemSessionState, ubu, translator);
 	        }
 		}
 		sb.append("</div>");
@@ -100,7 +101,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		sb.append("<h1>Terminated <small>say the renderer</small></h1>");
     }
 	
-    private void renderItemEvent(Renderer renderer, StringOutput sb, AssessmentItemComponent component,
+    private void renderItemEvent(AssessmentRenderer renderer, StringOutput sb, AssessmentItemComponent component,
     		CandidateEvent candidateEvent, ItemSessionState itemSessionState, URLBuilder ubu, Translator translator) {
         
     	final CandidateItemEventType itemEventType = candidateEvent.getItemEventType();
@@ -117,26 +118,26 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
         /* Detect "modal" events. These will cause a particular rendering state to be
          * displayed, which candidate will then leave.
          */
-        RenderingRequest renderingRequest = new RenderingRequest();
+
         if (itemEventType==CandidateItemEventType.SOLUTION) {
-        	renderingRequest.setSolutionMode(true);
+        	renderer.setSolutionMode(true);
         }
 
         /* Now set candidate action permissions depending on state of session */
         if (itemEventType==CandidateItemEventType.SOLUTION || itemSessionState.isEnded()) {
             /* Item session is ended (closed) */
-            renderingRequest.setEndAllowed(false);
-            renderingRequest.setHardResetAllowed(false /* itemDeliverySettings.isAllowHardResetWhenEnded() */);
-            renderingRequest.setSoftResetAllowed(false /* itemDeliverySettings.isAllowSoftResetWhenEnded() */);
-            renderingRequest.setSolutionAllowed(true /* itemDeliverySettings.isAllowSolutionWhenEnded() */);
-            renderingRequest.setCandidateCommentAllowed(false);
+        	renderer.setEndAllowed(false);
+        	renderer.setHardResetAllowed(false /* itemDeliverySettings.isAllowHardResetWhenEnded() */);
+        	renderer.setSoftResetAllowed(false /* itemDeliverySettings.isAllowSoftResetWhenEnded() */);
+        	renderer.setSolutionAllowed(true /* itemDeliverySettings.isAllowSolutionWhenEnded() */);
+        	renderer.setCandidateCommentAllowed(false);
         } else if (itemSessionState.isOpen()) {
             /* Item session is open (interacting) */
-            renderingRequest.setEndAllowed(true /* itemDeliverySettings.isAllowEnd() */);
-            renderingRequest.setHardResetAllowed(false /* itemDeliverySettings.isAllowHardResetWhenOpen() */);
-            renderingRequest.setSoftResetAllowed(false /* itemDeliverySettings.isAllowSoftResetWhenOpen() */);
-            renderingRequest.setSolutionAllowed(true /* itemDeliverySettings.isAllowSolutionWhenOpen() */);
-            renderingRequest.setCandidateCommentAllowed(false /* itemDeliverySettings.isAllowCandidateComment() */);
+        	renderer.setEndAllowed(true /* itemDeliverySettings.isAllowEnd() */);
+        	renderer.setHardResetAllowed(false /* itemDeliverySettings.isAllowHardResetWhenOpen() */);
+        	renderer.setSoftResetAllowed(false /* itemDeliverySettings.isAllowSoftResetWhenOpen() */);
+        	renderer.setSolutionAllowed(true /* itemDeliverySettings.isAllowSolutionWhenOpen() */);
+        	renderer.setCandidateCommentAllowed(false /* itemDeliverySettings.isAllowCandidateComment() */);
         } else {
             throw new OLATRuntimeException("Item has not been entered yet. We do not currently support rendering of this state.", null);
         }
@@ -145,7 +146,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
        // candidateAuditLogger.logItemRendering(candidateEvent);
         //final List<CandidateEventNotification> notifications = candidateEvent.getNotifications();
         try {
-        	renderTestItemBody(renderer, sb, component, itemSessionState, ubu, translator, renderingRequest);
+        	renderTestItemBody(renderer, sb, component, itemSessionState, ubu, translator);
         } catch (final RuntimeException e) {
             /* Rendering is complex and may trigger an unexpected Exception (due to a bug in the XSLT).
              * In this case, the best we can do for the candidate is to 'explode' the session.
@@ -156,14 +157,14 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
         }
     }
     
-	private void renderTestItemBody(Renderer renderer, StringOutput sb, AssessmentItemComponent component, ItemSessionState itemSessionState,
-			URLBuilder ubu, Translator translator, RenderingRequest options) {
+	private void renderTestItemBody(AssessmentRenderer renderer, StringOutput sb, AssessmentItemComponent component, ItemSessionState itemSessionState,
+			URLBuilder ubu, Translator translator) {
 		
 		final AssessmentItem assessmentItem = component.getAssessmentItem();
 
 		//title + status
 		sb.append("<h1 class='itemTitle'>");
-		renderItemStatus(sb, itemSessionState, options);
+		renderItemStatus(renderer, sb, itemSessionState);
 		sb.append(assessmentItem.getTitle()).append("</h1>");
 		sb.append("<div id='itemBody'>");
 		
@@ -176,7 +177,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		//comment
 		
 		//submit button
-		if(component.isItemSessionOpen(itemSessionState, options.isSolutionMode())) {
+		if(component.isItemSessionOpen(itemSessionState, renderer.isSolutionMode())) {
 			sb.append("<button type='button' name='cid' value='response' class='btn btn-primary' ");
 			sb.append(FormJSHelper.getRawJSFor(component.getQtiItem().getRootForm(), component.getQtiItem().getFormDispatchId(), FormEvent.ONCLICK));
 			sb.append("><span>Submit</span></button>");
@@ -190,8 +191,8 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		}
 	}
     
-	private void renderItemStatus(StringOutput sb, ItemSessionState itemSessionState, RenderingRequest options) {
-		if(options.isSolutionMode()) {
+	private void renderItemStatus(AssessmentRenderer renderer, StringOutput sb, ItemSessionState itemSessionState) {
+		if(renderer.isSolutionMode()) {
 			sb.append("<span class='itemStatus review'>Model Solution</span>");
 		} else {
 			super.renderItemStatus(sb, itemSessionState);
@@ -199,7 +200,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 	}
 	
 	@Override
-	protected void renderPrintedVariable(StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem, ItemSessionState itemSessionState,
+	protected void renderPrintedVariable(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem, ItemSessionState itemSessionState,
 			PrintedVariable printedVar) {
 
 		Identifier identifier = printedVar.getIdentifier();
@@ -209,74 +210,13 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		sb.append("<span class='printedVariable'>");
 		if(outcomeValue != null) {
 			OutcomeDeclaration outcomeDeclaration = assessmentItem.getOutcomeDeclaration(identifier);
-			renderPrintedVariable(sb, printedVar, outcomeDeclaration, outcomeValue);
+			renderPrintedVariable(renderer, sb, printedVar, outcomeDeclaration, outcomeValue);
 		} else if(templateValue != null) {
 			TemplateDeclaration templateDeclaration = assessmentItem.getTemplateDeclaration(identifier);
-			renderPrintedVariable(sb, printedVar, templateDeclaration, templateValue);
+			renderPrintedVariable(renderer, sb, printedVar, templateDeclaration, templateValue);
 		} else {
 			sb.append("(variable ").append(identifier.toString()).append(" was not found)");
 		}
 		sb.append("</span>");
 	}
-    
-    public static final class RenderingRequest {
-    	private boolean solutionMode;
-    	private boolean endAllowed;
-    	private boolean hardResetAllowed;
-    	private boolean softResetAllowed;
-    	private boolean solutionAllowed;
-    	private boolean candidateCommentAllowed;
-    	
-    	public RenderingRequest() {
-    		//
-    	}
-
-		public boolean isSolutionMode() {
-			return solutionMode;
-		}
-
-		public void setSolutionMode(boolean solutionMode) {
-			this.solutionMode = solutionMode;
-		}
-
-		public boolean isEndAllowed() {
-			return endAllowed;
-		}
-
-		public void setEndAllowed(boolean endAllowed) {
-			this.endAllowed = endAllowed;
-		}
-
-		public boolean isHardResetAllowed() {
-			return hardResetAllowed;
-		}
-
-		public void setHardResetAllowed(boolean hardResetAllowed) {
-			this.hardResetAllowed = hardResetAllowed;
-		}
-
-		public boolean isSoftResetAllowed() {
-			return softResetAllowed;
-		}
-
-		public void setSoftResetAllowed(boolean softResetAllowed) {
-			this.softResetAllowed = softResetAllowed;
-		}
-
-		public boolean isSolutionAllowed() {
-			return solutionAllowed;
-		}
-
-		public void setSolutionAllowed(boolean solutionAllowed) {
-			this.solutionAllowed = solutionAllowed;
-		}
-
-		public boolean isCandidateCommentAllowed() {
-			return candidateCommentAllowed;
-		}
-
-		public void setCandidateCommentAllowed(boolean candidateCommentAllowed) {
-			this.candidateCommentAllowed = candidateCommentAllowed;
-		}
-    }
 }

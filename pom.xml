@@ -1842,16 +1842,6 @@
 					<groupId>ch.qos.logback</groupId>
 					<artifactId>logback-classic</artifactId>
 				</exclusion>
-				<!-- 
-				<exclusion>
-					<groupId>net.sf.saxon</groupId>
-					<artifactId>saxon9</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>net.sf.saxon</groupId>
-					<artifactId>saxon9-dom</artifactId>
-				</exclusion>
-				-->
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -1863,16 +1853,6 @@
 					<groupId>ch.qos.logback</groupId>
 					<artifactId>logback-classic</artifactId>
 				</exclusion>
-				<!--
-				<exclusion>
-					<groupId>net.sf.saxon</groupId>
-					<artifactId>saxon9</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>net.sf.saxon</groupId>
-					<artifactId>saxon9-dom</artifactId>
-				</exclusion>
-				-->
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -1884,16 +1864,6 @@
 					<groupId>ch.qos.logback</groupId>
 					<artifactId>logback-classic</artifactId>
 				</exclusion>
-				<!-- 
-				<exclusion>
-					<groupId>net.sf.saxon</groupId>
-					<artifactId>saxon9</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>net.sf.saxon</groupId>
-					<artifactId>saxon9-dom</artifactId>
-				</exclusion>
-				-->
 			</exclusions>
 		</dependency>
 		<dependency>

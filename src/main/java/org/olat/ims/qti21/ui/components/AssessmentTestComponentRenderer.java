@@ -52,8 +52,6 @@ import org.olat.ims.qti21.model.CandidateTestEventType;
 import org.olat.ims.qti21.model.jpa.CandidateEvent;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
 import org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event;
-import org.olat.ims.qti21.ui.rendering.TestRenderingMode;
-import org.olat.ims.qti21.ui.rendering.TestRenderingRequest;
 import org.w3c.dom.Element;
 
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
@@ -139,7 +137,8 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 				}
 				
 				/* Render event */
-				renderTestEvent(testSessionController, renderer, sb, cmp, ubu, translator);
+				AssessmentRenderer renderHints = new AssessmentRenderer(renderer);
+				renderTestEvent(testSessionController, renderHints, sb, cmp, ubu, translator);
 			}
 		}
 	}
@@ -152,46 +151,27 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		sb.append("<h1>Terminated <small>say the renderer</small></h1>");
     }
     
-	private void renderTestEvent(TestSessionController testSessionController, Renderer renderer, StringOutput target,
+	private void renderTestEvent(TestSessionController testSessionController, AssessmentRenderer renderer, StringOutput target,
 			AssessmentTestComponent component, URLBuilder ubu, Translator translator) {
 
 		CandidateSessionContext candidateSessionContext = component.getCandidateSessionContext();
 		CandidateEvent candidateEvent = candidateSessionContext.getLastEvent();
 		CandidateTestEventType testEventType = candidateEvent.getTestEventType();
 
-        /* Create and partially configure rendering request */
-        final TestRenderingRequest renderingRequest = new TestRenderingRequest();
-        //initRenderingRequest(renderingRequest, renderingOptions, component);
-        renderingRequest.setTestSessionController(testSessionController);
-
         /* If session has terminated, render appropriate state and exit */
         final TestSessionState testSessionState = testSessionController.getTestSessionState();
         if (candidateSessionContext.isTerminated() || testSessionState.isExited()) {
         	renderTerminated(target);
-            return;
-        }
-        
-        /* Check for "modal" events first. These cause a particular rendering state to be
-         * displayed, which candidate will then leave.
-         */
-        if (testEventType == CandidateTestEventType.REVIEW_ITEM) {
-            // Extract item to review 
-            renderingRequest.setTestRenderingMode(TestRenderingMode.ITEM_REVIEW);
-            renderingRequest.setModalItemKey(extractTargetItemKey(candidateEvent));
-        } else if (testEventType == CandidateTestEventType.SOLUTION_ITEM) {
-            // Extract item to show solution 
-            renderingRequest.setTestRenderingMode(TestRenderingMode.ITEM_SOLUTION);
-            renderingRequest.setModalItemKey(extractTargetItemKey(candidateEvent));
-        }
-
-        /* Pass to rendering layer */
-        final TestRenderingMode testRenderingMode = renderingRequest.getTestRenderingMode();
-        if (testRenderingMode == TestRenderingMode.ITEM_REVIEW) {
+        } else if (testEventType == CandidateTestEventType.REVIEW_ITEM) {
+        	renderer.setReviewMode(true);
+        	TestPlanNodeKey itemKey = extractTargetItemKey(candidateEvent);
         	RenderingRequest options = RenderingRequest.getItemReview();
-        	renderTestItem(renderer, target, component, renderingRequest.getModalItemKey(), ubu, translator, options);
-        }  else if (testRenderingMode == TestRenderingMode.ITEM_SOLUTION) {
+        	renderTestItem(renderer, target, component, itemKey, ubu, translator, options);
+        }  else if (testEventType == CandidateTestEventType.SOLUTION_ITEM) {
+            renderer.setSolutionMode(true);
+        	TestPlanNodeKey itemKey = extractTargetItemKey(candidateEvent);
         	RenderingRequest options = RenderingRequest.getItemSolution();
-        	renderTestItem(renderer, target, component, renderingRequest.getModalItemKey(), ubu, translator, options);
+        	renderTestItem(renderer, target, component, itemKey, ubu, translator, options);
         } else {
             /* Render current state */
             final TestPlanNodeKey currentTestPartKey = testSessionState.getCurrentTestPartKey();
@@ -230,7 +210,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		  .append(";\" class='btn btn-default'").append("><span>").append(title).append("</span></button>");
 	}
 	
-	private void renderTestItem(Renderer renderer, StringOutput sb, AssessmentTestComponent component,
+	private void renderTestItem(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component,
 			TestPlanNodeKey itemRefKey, URLBuilder ubu, Translator translator, RenderingRequest options) {
 		final TestSessionController testSessionController = component.getTestSessionController();
 		final TestSessionState testSessionState = testSessionController.getTestSessionState();
@@ -292,7 +272,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		sb.append("</div>");// end assessmentItem
 	}
 	
-	private void renderTestItemBody(Renderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode itemNode,
+	private void renderTestItemBody(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode itemNode,
 			URLBuilder ubu, Translator translator, RenderingRequest options) {
 		final ItemSessionState itemSessionState = component.getItemSessionState(itemNode.getKey());
 		
@@ -347,7 +327,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	}
 	
 	@Override
-	protected void renderPrintedVariable(StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem,
+	protected void renderPrintedVariable(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem,
 			ItemSessionState itemSessionState, PrintedVariable printedVar) {
 		//TODO qti need tesSessionState too
 		//AssessmentTestComponent testCmp = (AssessmentTestComponent)component;
@@ -361,17 +341,17 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		sb.append("<span class='printedVariable'>");
 		if(outcomeValue != null) {
 			OutcomeDeclaration outcomeDeclaration = assessmentItem.getOutcomeDeclaration(identifier);
-			renderPrintedVariable(sb, printedVar, outcomeDeclaration, outcomeValue);
+			renderPrintedVariable(renderer, sb, printedVar, outcomeDeclaration, outcomeValue);
 		} else if(templateValue != null) {
 			TemplateDeclaration templateDeclaration = assessmentItem.getTemplateDeclaration(identifier);
-			renderPrintedVariable(sb, printedVar, templateDeclaration, templateValue);
+			renderPrintedVariable(renderer, sb, printedVar, templateDeclaration, templateValue);
 		} else {
 			sb.append("(variable ").append(identifier.toString()).append(" was not found)");
 		}
 		sb.append("</span>");
 	}
 	
-	private void renderTestPartFeedback(Renderer renderer, StringOutput sb, AssessmentTestComponent component,
+	private void renderTestPartFeedback(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component,
 			URLBuilder ubu, Translator translator) {
         sb.append("<div class='qtiworks assessmentTest testFeedback'>")
 		  .append("<h1>");
@@ -407,7 +387,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		sb.append("</div>");
 	}
 	
-	private void renderReview(Renderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode node,
+	private void renderReview(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode node,
 			URLBuilder ubu, Translator translator) {
 		
 		switch(node.getTestNodeType()) {
@@ -418,7 +398,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		}
 	}
 	
-	private void renderReviewTestPart(Renderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode node,
+	private void renderReviewTestPart(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode node,
 			URLBuilder ubu, Translator translator) {
 		//".//qw:node[@type='ASSESSMENT_ITEM_REF' and (@allowReview='true' or @showFeedback='true')]" as="element(qw:node)*"/>
 		boolean hasReviewableItems = node.searchDescendants(TestNodeType.ASSESSMENT_ITEM_REF)
@@ -437,7 +417,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		}
 	}
 	
-	private void renderReviewAssessmentSection(Renderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode sectionNode, 
+	private void renderReviewAssessmentSection(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode sectionNode, 
 			URLBuilder ubu, Translator translator) {
 		
 		AssessmentSectionSessionState assessmentSessionSessionState = component.getTestSessionController()
@@ -521,7 +501,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		}
 	}
 	
-	private void renderNavigation(Renderer renderer, StringOutput sb, AssessmentTestComponent component, URLBuilder ubu, Translator translator) {
+	private void renderNavigation(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, URLBuilder ubu, Translator translator) {
 		sb.append("<div class='qtiworks assessmentTest testPartNavigation'>");
 		
 		//title
@@ -561,7 +541,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		sb.append("</div>");
 	}
 	
-	private void renderNavigation(Renderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode node,
+	private void renderNavigation(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode node,
 			URLBuilder ubu, Translator translator) {
 		switch(node.getTestNodeType()) {
 			case ASSESSMENT_SECTION: renderNavigationAssessmentSection(renderer, sb, component, node, ubu, translator); break;
@@ -570,7 +550,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		}
 	}
 	
-	private void renderNavigationAssessmentSection(Renderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode sectionNode,
+	private void renderNavigationAssessmentSection(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode sectionNode,
 			URLBuilder ubu, Translator translator) {
 		sb.append("<li class='assessmentSection'>")
 		  .append("<header><h2>").append(sectionNode.getSectionPartTitle()).append("</h2>");
@@ -582,7 +562,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		sb.append("</ul></li>");
 	}
 	
-	private void renderAssessmentSectionRubrickBlock(Renderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode sectionNode,
+	private void renderAssessmentSectionRubrickBlock(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode sectionNode,
 			URLBuilder ubu, Translator translator) {
 		AssessmentSection selectedSection = component.getAssessmentSection(sectionNode.getIdentifier());
 		if(selectedSection != null && selectedSection.getRubricBlocks().size() > 0) {

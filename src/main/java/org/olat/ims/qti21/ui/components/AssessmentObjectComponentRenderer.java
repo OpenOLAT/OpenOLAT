@@ -169,7 +169,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		}
 	}
 	
-	protected void renderTestItemModalFeedback(Renderer renderer, StringOutput sb, AssessmentObjectComponent component,
+	protected void renderTestItemModalFeedback(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
 			AssessmentItem assessmentItem, ItemSessionState itemSessionState, URLBuilder ubu, Translator translator) {
 		List<ModalFeedback> modalFeedbacks = new ArrayList<>();
 		for(ModalFeedback modalFeedback:assessmentItem.getModalFeedbacks()) {
@@ -198,7 +198,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		}
 	}
 	
-	public void renderFlow(Renderer renderer, StringOutput sb, AssessmentObjectComponent component,
+	public void renderFlow(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
 			AssessmentItem assessmentItem, ItemSessionState itemSessionState, Flow flow, URLBuilder ubu, Translator translator) {
 		
 		if(flow instanceof Block) {
@@ -210,10 +210,10 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		}
 	}
 	
-	public void renderTextOrVariable(StringOutput sb, AssessmentObjectComponent component,
+	public void renderTextOrVariable(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
 			AssessmentItem assessmentItem, ItemSessionState itemSessionState, TextOrVariable textOrVariable) {
 		if(textOrVariable instanceof PrintedVariable) {
-			renderPrintedVariable(sb, component, assessmentItem, itemSessionState, (PrintedVariable)textOrVariable);
+			renderPrintedVariable(renderer, sb, component, assessmentItem, itemSessionState, (PrintedVariable)textOrVariable);
 		} else if(textOrVariable instanceof TextRun) {
 			sb.append(((TextRun)textOrVariable).getTextContent());
 		} else {
@@ -221,7 +221,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		}
 	}
 	
-	public void renderBlock(Renderer renderer, StringOutput sb, AssessmentObjectComponent component,
+	public void renderBlock(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
 			AssessmentItem assessmentItem, ItemSessionState itemSessionState, Block block, URLBuilder ubu, Translator translator) {
 		
 		switch(block.getQtiClassName()) {
@@ -270,7 +270,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			}
 			case RubricBlock.QTI_CLASS_NAME: break; //never rendered automatically
 			case Math.QTI_CLASS_NAME: {
-				renderMath(sb, component, itemSessionState, (Math)block);
+				renderMath(renderer, sb, component, itemSessionState, (Math)block);
 				break;
 			}
 			case Div.QTI_CLASS_NAME:
@@ -296,7 +296,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		}
 	}
 	
-	public void renderInline(Renderer renderer, StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem,
+	public void renderInline(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem,
 			ItemSessionState itemSessionState, Inline inline, URLBuilder ubu, Translator translator) {
 		
 		switch(inline.getQtiClassName()) {
@@ -315,7 +315,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				break;
 			}
 			case PrintedVariable.QTI_CLASS_NAME: {
-				renderPrintedVariable(sb, component, assessmentItem, itemSessionState, (PrintedVariable)inline);
+				renderPrintedVariable(renderer, sb, component, assessmentItem, itemSessionState, (PrintedVariable)inline);
 				break;
 			}
 			case TemplateInline.QTI_CLASS_NAME: break; //not part of the item body
@@ -334,7 +334,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				break;
 			}
 			case Math.QTI_CLASS_NAME: {
-				renderMath(sb, component, itemSessionState, (Math)inline);
+				renderMath(renderer, sb, component, itemSessionState, (Math)inline);
 				break;
 			}
 			case Img.QTI_CLASS_NAME: {
@@ -393,7 +393,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		sb.append("</").append(node.getQtiClassName()).append(">");
 	}
 	
-	private void renderPositionObjectStage(Renderer renderer, StringOutput sb, PositionObjectStage positionObjectStage,
+	private void renderPositionObjectStage(AssessmentRenderer renderer, StringOutput sb, PositionObjectStage positionObjectStage,
 			AssessmentItem assessmentItem, ItemSessionState itemSessionState, AssessmentObjectComponent component,
 			URLBuilder ubu, Translator translator) {
 		Context ctx = new VelocityContext();
@@ -414,7 +414,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	 * @param ubu
 	 * @param translator
 	 */
-	private void renderCustomInteraction(Renderer renderer, StringOutput sb, CustomInteraction<?> interaction,
+	private void renderCustomInteraction(AssessmentRenderer renderer, StringOutput sb, CustomInteraction<?> interaction,
 			AssessmentItem assessmentItem, ItemSessionState itemSessionState, AssessmentObjectComponent component,
 			URLBuilder ubu, Translator translator) {
 		Context ctx = new VelocityContext();
@@ -440,7 +440,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	 * @param ubu
 	 * @param translator
 	 */
-	private void renderInteraction(Renderer renderer, StringOutput sb, FlowInteraction interaction,
+	private void renderInteraction(AssessmentRenderer renderer, StringOutput sb, FlowInteraction interaction,
 			AssessmentItem assessmentItem, ItemSessionState itemSessionState, AssessmentObjectComponent component,
 			URLBuilder ubu, Translator translator) {
 		Context ctx = new VelocityContext();
@@ -449,20 +449,19 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		renderVelocity(renderer, sb, interaction, ctx, page, assessmentItem, itemSessionState, component, ubu, translator);
 	}
 		
-	private void renderVelocity(Renderer renderer, StringOutput sb, QtiNode interaction, Context ctx, String page,
+	private void renderVelocity(AssessmentRenderer renderer, StringOutput sb, QtiNode interaction, Context ctx, String page,
 			AssessmentItem assessmentItem, ItemSessionState itemSessionState, AssessmentObjectComponent component,
 			URLBuilder ubu, Translator translator) {
 
 		ctx.put("localName", interaction.getQtiClassName());
 		ctx.put("assessmentItem", assessmentItem);
 		ctx.put("itemSessionState", itemSessionState);
-		ctx.put("isItemSessionOpen", component.isItemSessionOpen(itemSessionState, false));//TODO qti $solutionMode
-		ctx.put("isItemSessionEnded", component.isItemSessionEnded(itemSessionState, false));//TODO qti $solutionMode
+		ctx.put("isItemSessionOpen", component.isItemSessionOpen(itemSessionState, renderer.isSolutionMode()));
+		ctx.put("isItemSessionEnded", component.isItemSessionEnded(itemSessionState, renderer.isSolutionMode()));
 
-		log.audit("Render: " + page);
-		
 		Renderer fr = Renderer.getInstance(component, translator, ubu, new RenderResult(), renderer.getGlobalSettings());
-		AssessmentObjectVelocityRenderDecorator vrdec = new AssessmentObjectVelocityRenderDecorator(fr, sb, component, assessmentItem, itemSessionState, ubu, translator);			
+		AssessmentRenderer fHints = renderer.newHints(fr);
+		AssessmentObjectVelocityRenderDecorator vrdec = new AssessmentObjectVelocityRenderDecorator(fHints, sb, component, assessmentItem, itemSessionState, ubu, translator);			
 		ctx.put("r", vrdec);
 		VelocityHelper vh = VelocityHelper.getInstance();
 		vh.mergeContent(page, ctx, sb, null);
@@ -529,7 +528,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	    </xsl:if>
 	  </xsl:template>
 	 */
-	private void renderHottext(Renderer renderer, StringOutput sb, AssessmentItem assessmentItem, ItemSessionState itemSessionState, Hottext hottext,
+	private void renderHottext(AssessmentRenderer renderer, StringOutput sb, AssessmentItem assessmentItem, ItemSessionState itemSessionState, Hottext hottext,
 			AssessmentObjectComponent component, URLBuilder ubu, Translator translator) {
 		if(!isVisible(hottext, itemSessionState)) return;
 		
@@ -550,10 +549,10 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			}
 			sb.append("' name='qtiworks_response_").append(interaction.getResponseIdentifier().toString()).append("'")
 			  .append(" value='").append(hottext.getIdentifier().toString()).append("'");
-			if(component.isItemSessionEnded(itemSessionState, false)) {//TODO qti solutionMode
+			if(component.isItemSessionEnded(itemSessionState, renderer.isSolutionMode())) {
 				sb.append(" disabled");
 			}
-			Value responseValue = getResponseValue(assessmentItem, itemSessionState, interaction.getResponseIdentifier(), false);//TODO qti solutionMode
+			Value responseValue = getResponseValue(assessmentItem, itemSessionState, interaction.getResponseIdentifier(), renderer.isSolutionMode());
 			if(valueContains(responseValue, hottext.getIdentifier())) {
 				sb.append(" checked");
 			}
@@ -564,7 +563,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		}
 	}
 	
-	protected void renderExtendedTextBox(StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem,
+	protected void renderExtendedTextBox(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem,
 			ItemSessionState itemSessionState, ExtendedTextInteraction interaction) {
 		
 		ResponseData responseInput = getResponseInput(itemSessionState, interaction.getResponseIdentifier());
@@ -572,26 +571,26 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		Cardinality cardinality = responseDeclaration.getCardinality();
 		if(cardinality.isRecord() || cardinality.isSingle()) {
 			String responseInputString = extractSingleCardinalityResponseInput(responseInput);
-			renderExtendedTextBox(sb, component, assessmentItem, itemSessionState, interaction, responseInputString, false);
+			renderExtendedTextBox(renderer, sb, component, assessmentItem, itemSessionState, interaction, responseInputString, false);
 		} else {
 			if(interaction.getMaxStrings() != null) {
 				int maxStrings = interaction.getMaxStrings().intValue();
 				for(int i=0; i<maxStrings; i++) {
 					String responseInputString = extractResponseInputAt(responseInput, i);
-					renderExtendedTextBox(sb, component, assessmentItem, itemSessionState, interaction, responseInputString, false);
+					renderExtendedTextBox(renderer, sb, component, assessmentItem, itemSessionState, interaction, responseInputString, false);
 				}	
 			} else {
 				// <xsl:with-param name="stringsCount" select="if (exists($responseValue)) then max(($minStrings, qw:get-cardinality-size($responseValue))) else $minStrings"/>
 				int stringCounts = interaction.getMinStrings();
 				Value responseValue = AssessmentRenderFunctions
-						.getResponseValue(assessmentItem, itemSessionState, interaction.getResponseIdentifier(), false);//TODO qti solutionMode
+						.getResponseValue(assessmentItem, itemSessionState, interaction.getResponseIdentifier(), renderer.isSolutionMode());
 				if(exists(responseValue)) {
 					stringCounts = java.lang.Math.max(interaction.getMinStrings(), getCardinalitySize(responseValue));	
 				}
 				
 				for(int i=0; i<stringCounts; i++) {
 					String responseInputString = extractResponseInputAt(responseInput, i);
-					renderExtendedTextBox(sb, component, assessmentItem, itemSessionState, interaction,
+					renderExtendedTextBox(renderer, sb, component, assessmentItem, itemSessionState, interaction,
 							responseInputString, i == (stringCounts - 1));
 				}
 			}
@@ -646,11 +645,11 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	    </textarea>
 	  </xsl:template>
 	*/
-	protected void renderExtendedTextBox(StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem,
+	protected void renderExtendedTextBox(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem,
 			ItemSessionState itemSessionState, ExtendedTextInteraction interaction, String responseInputString, boolean allowCreate) {
 		
 		sb.append("<textarea name='qtiworks_response_").append(interaction.getResponseIdentifier().toString()).append("'");
-		if(component.isItemSessionEnded(itemSessionState, false)) {//TODO qti solutionMode
+		if(component.isItemSessionEnded(itemSessionState, renderer.isSolutionMode())) {
 			sb.append(" disabled");
 		}
 		if(isBadResponse(itemSessionState, interaction.getResponseIdentifier())
@@ -682,7 +681,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		sb.append("</textarea>");
 	}
 	
-	protected abstract void renderPrintedVariable(StringOutput sb,
+	protected abstract void renderPrintedVariable(AssessmentRenderer renderer, StringOutput sb,
 			AssessmentObjectComponent component, AssessmentItem assessmentItem, ItemSessionState itemSessionState,
 			PrintedVariable printedVar);
 	
@@ -697,7 +696,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	 * used in MathAssess, outputting an inline Presentation MathML element, as documented
 	 * in the MathAssses spec.
 	 */
-	protected void renderPrintedVariable(StringOutput sb, PrintedVariable source, VariableDeclaration valueDeclaration, Value valueHolder) {
+	protected void renderPrintedVariable(AssessmentRenderer renderer, StringOutput sb, PrintedVariable source, VariableDeclaration valueDeclaration, Value valueHolder) {
 		if(isNullValue(valueHolder)) {
 			//(Spec says to output nothing in this case)
 		} else if(isSingleCardinalityValue(valueHolder)) {
@@ -709,10 +708,9 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			}
 		// math content is a record with special markers
 		} else if (isMathsContentValue(valueHolder)) {
-			//<!-- MathAssess math variable -->
 			//<xsl:copy-of select="qw:extract-maths-content-pmathml($valueHolder)"/>
-			//TODO qti renderMathmlAsString(sb, extractMathsContentPmathml(valueHolder));
-			sb.append(extractMathsContentPmathml(valueHolder));
+			String mathMlContent = extractMathsContentPmathml(valueHolder);
+			sb.append(mathMlContent);
 		} else if(isMultipleCardinalityValue(valueHolder)) {
 			String delimiter = source.getDelimiter();
 			if(!StringHelper.containsNonWhitespace(delimiter)) {
@@ -758,7 +756,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		}
 	}
 	
-	protected void renderMath(StringOutput sb, AssessmentObjectComponent component, ItemSessionState itemSessionState, Math math) {
+	protected void renderMath(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, ItemSessionState itemSessionState, Math math) {
 		StringOutput mathOutput = StringOutputPool.allocStringBuilder(2048);
 		math.getContent().forEach((foreignElement) -> renderMath(mathOutput, component, itemSessionState, foreignElement));
 		String enrichedMathML = StringOutputPool.freePop(mathOutput);
@@ -767,7 +765,6 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	}
 	
 	protected void renderMath(StringOutput out, AssessmentObjectComponent component, ItemSessionState itemSessionState, QtiNode mathElement) {
-		//List<ForeignElement> content = math.hasChildNodes();
 		if(mathElement instanceof ForeignElement) {
 			ForeignElement fElement = (ForeignElement)mathElement;
 			if(fElement.getQtiClassName().equals("annotation")) {
@@ -795,48 +792,31 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		}
 	}
 	
-	protected void renderMathmlAsString(StringOutput sb, String mathmlAsString) {
-		if(!StringHelper.containsNonWhitespace(mathmlAsString)) return;
-
-		XsltStylesheetManager stylesheetManager = new XsltStylesheetManager(new ClassPathResourceLocator(), new SimpleXsltStylesheetCache());
-    	URI ctopXsltUri = URI.create("classpath:/org/olat/ims/qti21/ui/components/_content/ctop.xsl");
-    	final TransformerHandler mathmlTransformerHandler = stylesheetManager.getCompiledStylesheetHandler(ctopXsltUri, null);
-
-        try {
-        	StringOutput out = new StringOutput(255);
-            mathmlTransformerHandler.setResult(new StreamResult(out));
-            final XMLReader xmlReader = XmlUtilities.createNsAwareSaxReader(false);
-            xmlReader.setContentHandler(mathmlTransformerHandler);
-        	
-            Reader mathStream = new StringReader(mathmlAsString);
-            InputSource assessmentSaxSource = new InputSource(mathStream);
-            xmlReader.parse(assessmentSaxSource);
-            sb.append(out);
-        } catch (final Exception e) {
-            log.error("Rendering XSLT pipeline failed for request {}", e);
-            throw new QtiWorksRenderingException("Unexpected Exception running rendering XML pipeline", e);
-        }
-	}
+	protected void transformMathmlAsString(AssessmentRenderer renderer, StringOutput sb, String mathmlAsString) {
+		if(!StringHelper.containsNonWhitespace(mathmlAsString)) {
+			return;
+		}
+		if(renderer.isMathXsltDisabled()) {
+			sb.append(mathmlAsString);
+		} else {
+			XsltStylesheetManager stylesheetManager = new XsltStylesheetManager(new ClassPathResourceLocator(), new SimpleXsltStylesheetCache());
+	    	URI ctopXsltUri = URI.create("classpath:/org/olat/ims/qti21/ui/components/_content/ctop.xsl");
+	    	final TransformerHandler mathmlTransformerHandler = stylesheetManager.getCompiledStylesheetHandler(ctopXsltUri, null);
 	
-	public static class RenderHints {
-		
-		private FlowInteraction currentInteraction;
-		private boolean disableMathXslt;
-		
-		public FlowInteraction getCurrentInteraction() {
-			return currentInteraction;
-		}
-		
-		public void setCurrentInteraction(FlowInteraction currentInteraction) {
-			this.currentInteraction = currentInteraction;
-		}
-		
-		public boolean isDisableMathXslt() {
-			return disableMathXslt;
-		}
-		
-		public void setDisableMathXslt(boolean disableMathXslt) {
-			this.disableMathXslt = disableMathXslt;
+	        try {
+	        	StringOutput out = new StringOutput(255);
+	            mathmlTransformerHandler.setResult(new StreamResult(out));
+	            final XMLReader xmlReader = XmlUtilities.createNsAwareSaxReader(false);
+	            xmlReader.setContentHandler(mathmlTransformerHandler);
+	        	
+	            Reader mathStream = new StringReader(mathmlAsString);
+	            InputSource assessmentSaxSource = new InputSource(mathStream);
+	            xmlReader.parse(assessmentSaxSource);
+	            sb.append(out);
+	        } catch (final Exception e) {
+	            log.error("Rendering XSLT pipeline failed for request {}", e);
+	            throw new QtiWorksRenderingException("Unexpected Exception running rendering XML pipeline", e);
+	        }
 		}
 	}
 }

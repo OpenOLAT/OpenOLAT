@@ -16,7 +16,7 @@ href="http://www.w3.org/Consortium/Legal/copyright-software-19980720"
 2008-2009     Updates for MathML3
 -->
 
-<xsl:output method="xml" />
+<xsl:output method="xml" omit-xml-declaration="yes"/>
 
 <xsl:template match="/">
   <xsl:apply-templates mode="c2p"/>

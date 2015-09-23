@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
@@ -86,7 +85,7 @@ import uk.ac.ed.ph.jqtiplus.value.Value;
 public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecorator {
 
 	private final URLBuilder ubu;
-	private final Renderer renderer;
+	private final AssessmentRenderer renderer;
 	private final StringOutput target;
 	private final Translator translator;
 	
@@ -98,9 +97,9 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	private final AssessmentObjectComponent avc;
 	
 	
-	public AssessmentObjectVelocityRenderDecorator(Renderer renderer, StringOutput target, AssessmentObjectComponent vc,
+	public AssessmentObjectVelocityRenderDecorator(AssessmentRenderer renderer, StringOutput target, AssessmentObjectComponent vc,
 			AssessmentItem assessmentItem, ItemSessionState itemSessionState, URLBuilder ubu, Translator translator) {
-		super(renderer, vc, target);
+		super(renderer.getRenderer(), vc, target);
 		this.avc = vc;
 		this.ubu = ubu;
 		this.target = target;
@@ -111,11 +110,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	}
 
 	public boolean isSolutionMode() {
-		return solutionMode;
-	}
-
-	public void setSolutionMode(boolean solutionMode) {
-		this.solutionMode = solutionMode;
+		return renderer.isSolutionMode();
 	}
 	
 	public boolean isItemSessionOpen() {
@@ -546,7 +541,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	public String renderTextOrVariables(List<TextOrVariable> textOrVariables) {
 		if(textOrVariables != null && textOrVariables.size() > 0) {
 			textOrVariables.forEach((textOrVariable)
-					-> avc.getHTMLRendererSingleton().renderTextOrVariable(target, avc, assessmentItem, itemSessionState, textOrVariable));
+					-> avc.getHTMLRendererSingleton().renderTextOrVariable(renderer, target, avc, assessmentItem, itemSessionState, textOrVariable));
 		}
 		return "";
 	}
@@ -558,19 +553,11 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		return "";
 	}
 	
-	public String renderGapText(Object gapChoice) {
-		if(gapChoice != null) {
-			//avc.getHTMLRendererSingleton().renderFlow(renderer, target, avc, assessmentItem, itemSessionState, gapChoice, ubu, translator);
-		}
-		return "";
-	}
-	
 	public String renderExtendedTextBox(ExtendedTextInteraction interaction) {
 		avc.getHTMLRendererSingleton()
-			.renderExtendedTextBox(target, avc, assessmentItem, itemSessionState, interaction);
+			.renderExtendedTextBox(renderer, target, avc, assessmentItem, itemSessionState, interaction);
 		return "";
 	}
-		
 	
 	public String escapeForJavascriptString(String text) {
 		return escapeJavaScript(text);
@@ -591,8 +578,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	public String toString(Value value, String delimiter, String mappingIndicator) {
 		StringOutput out = new StringOutput(32);
 		renderValue(out, value, delimiter, mappingIndicator);
-		String outString = out.toString();
-		return outString;
+		return out.toString();
 	}
 	
 	public String toJavascriptArguments(List<? extends Choice> choices) {
