@@ -416,14 +416,6 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	public ScormCPManifestTreeModel getTreeModel() {
 		return treeModel;
 	}
-
-	/**
-	 * @param te
-	 * @deprecated @TODO To be deleted - does logging and would have to go via an event() method
-	 */
-	public void externalNodeClicked(TreeEvent te) {
-		switchToPage(te);
-	}
 	
 	private void updateNextPreviousButtons(String nextScoId) {
 		Integer nextInt = scormAdapter.getNextSco(nextScoId);

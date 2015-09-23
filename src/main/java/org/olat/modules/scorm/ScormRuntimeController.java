@@ -19,6 +19,8 @@
  */
 package org.olat.modules.scorm;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -31,6 +33,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptionsConfigurationController;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
@@ -66,6 +70,20 @@ public class ScormRuntimeController extends RepositoryEntryRuntimeController {
 	}
 	
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		entries = removeRepositoryEntry(entries);
+		if(entries != null && entries.size() > 0) {
+			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			if("Layout".equalsIgnoreCase(type)) {
+				if (reSecurity.isEntryAdmin()) {
+					doLayout(ureq);
+				}
+			}
+		}
+		super.activate(ureq, entries, state);
+	}
+	
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(deliveryOptionsLink == source) {
 			doLayout(ureq);
@@ -79,7 +97,9 @@ public class ScormRuntimeController extends RepositoryEntryRuntimeController {
 		ScormPackageConfig scormConfig = ScormMainManager.getInstance().getScormPackageConfig(entry.getOlatResource());
 		DeliveryOptions config = scormConfig == null ? null : scormConfig.getDeliveryOptions();
 		final OLATResource resource = entry.getOlatResource();
-		final DeliveryOptionsConfigurationController deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), config);
+		WindowControl bwControl = getSubWindowControl("Layout");
+		final DeliveryOptionsConfigurationController deliveryOptionsCtrl
+			= new DeliveryOptionsConfigurationController(ureq, addToHistory(ureq, bwControl), config);
 	
 		deliveryOptionsCtrl.addControllerListener(new ControllerEventListener() {
 			@Override

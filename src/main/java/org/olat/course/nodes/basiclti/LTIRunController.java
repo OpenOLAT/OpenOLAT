@@ -399,7 +399,7 @@ public class LTIRunController extends BasicController {
 		container.contextPut("sourcedId", sourcedId);
 		OLATResource courseResource = courseEnv.getCourseGroupManager().getCourseResource();
 		
-		Mapper talkbackMapper = new TalkBackMapper();
+		Mapper talkbackMapper = new TalkBackMapper(getLocale(), getWindowControl().getWindowBackOffice().getWindow().getGuiTheme().getBaseURI());
 		String backMapperUrl = registerCacheableMapper(ureq, sourcedId + "_talkback", talkbackMapper);
 		String backMapperUri = serverUri + backMapperUrl + "/";
 

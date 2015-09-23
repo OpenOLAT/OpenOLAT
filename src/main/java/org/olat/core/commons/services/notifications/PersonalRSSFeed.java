@@ -26,6 +26,7 @@ import java.util.Locale;
 
 import org.olat.commons.rss.RSSUtil;
 import org.olat.commons.servlets.RSSServlet;
+import org.olat.core.commons.services.notifications.ui.NotificationSubscriptionController;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
@@ -70,7 +71,7 @@ public class PersonalRSSFeed extends SyndFeedImpl {
 
 		User user = identity.getUser();
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(user.getPreferences().getLanguage());
-		Translator translator = Util.createPackageTranslator(PersonalRSSFeed.class, locale);
+		Translator translator = Util.createPackageTranslator(NotificationSubscriptionController.class, locale);
 		NotificationsManager man = NotificationsManager.getInstance();
 		String fullName = UserManager.getInstance().getUserDisplayName(identity);
 		

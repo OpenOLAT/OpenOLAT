@@ -131,12 +131,12 @@ public class AjaxController extends DefaultController {
 				statsManager.incrementAuthenticatedPollerClick();
 
 				String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
-				UserRequest ureq = new UserRequestImpl(uriPrefix, request, null);
+				UserRequest uureq = new UserRequestImpl(uriPrefix, request, null);
 				boolean reload = false;
-				Windows ws = Windows.getWindows(ureq);
+				Windows ws = Windows.getWindows(uureq);
 				if(ws != null && wboImpl.getChiefController() != null) {
 					ChiefController cc = wboImpl.getChiefController();
-					reload = cc.wishAsyncReload(ureq, false);
+					reload = cc.wishAsyncReload(uureq, false);
 				}
 				
 				MediaResource resource;
@@ -151,7 +151,7 @@ public class AjaxController extends DefaultController {
 						synchronized (windowcommands) { //o_clusterOK by:fj
 							windowcommands.add(new WindowCommand(wboImpl, updateDirtyCom));
 							if(reload) {
-								String timestampID = ureq.getTimestampID();
+								String timestampID = uureq.getTimestampID();
 								String reRenderUri = window.buildURIFor(window, timestampID, null);
 								Command rmrcom = CommandFactory.createParentRedirectTo(reRenderUri);
 								windowcommands.add(new WindowCommand(wboImpl, rmrcom));
@@ -162,7 +162,7 @@ public class AjaxController extends DefaultController {
 						resource = new NothingChangedMediaResource();
 					}
 				} catch (CannotReplaceDOMFragmentException e) {
-					String timestampID = ureq.getTimestampID();
+					String timestampID = uureq.getTimestampID();
 					String reRenderUri = window.buildURIFor(window, timestampID, null);
 					Command rmrcom = CommandFactory.createParentRedirectTo(reRenderUri);
 					windowcommands.add(new WindowCommand(wboImpl, rmrcom));
@@ -261,8 +261,6 @@ public class AjaxController extends DefaultController {
 				.append("this.document.location=\"")
 				.append(StaticMediaDispatcher.createStaticURIFor("msg/json/en/info.html"))
 				.append("\";")
-					//.append("window.open(self.location+\"?o_win_jsontop=1\"); this.close();")
-					//.append("this.document.location=self.location+\"?o_win_jsontop=1\";")
 				.append("}}\n/* ]]> */\n</script></head><body onLoad=\"invoke()\"></body></html>");
 		} else {
 			pushJSONAndClear(ureq, sb);
@@ -282,38 +280,28 @@ public class AjaxController extends DefaultController {
 					pushJSON(wc, writer);
 				}
 			}
-			String historyPointId = getHistoryPointID(ureq);
-			String businessPath = getCurrentBusinessPath(ureq);
-			String documentTitle = getCurrentDocumentTitle();
-			writer.append("],\"cmdcnt\":").append(Integer.toString(sum)).append(",")
-				.append("\"businessPath\":\"").append(businessPath).append("\",")
-				.append("\"historyPointId\":\"").append(historyPointId).append("\",")
-				.append("\"documentTitle\":\"").append(documentTitle).append("\"")
-			    .append("}");
+			writer.append("],\"cmdcnt\":").append(Integer.toString(sum));
+			appendBusinessPathInfos(ureq, writer);
+			writer.append("}");
 			windowcommands.clear();
 		}
 	}
 	
-	private String getCurrentDocumentTitle() {
+	private void appendBusinessPathInfos(UserRequest ureq, Writer writer) throws IOException {
 		ChiefController ctrl = wboImpl.getChiefController();
-		return ctrl == null ? null : ctrl.getWindowTitle();
-	}
-	
-	private String getCurrentBusinessPath(UserRequest ureq) {
+		String documentTitle = ctrl == null ? "" : ctrl.getWindowTitle();
+		writer.append(",\"documentTitle\":\"").append(documentTitle).append("\"");
+		
+		StringBuilder bc = new StringBuilder(128);
 		HistoryPoint p = ureq.getUserSession().getLastHistoryPoint();
 		if(p != null && StringHelper.containsNonWhitespace(p.getBusinessPath())) {
 			List<ContextEntry> ces = p.getEntries();
-			return BusinessControlFactory.getInstance().getAsAuthURIString(ces, true);
+			String uriPrefix = wboImpl.getWindow().getUriPrefix();
+			bc.append(uriPrefix)
+			  .append(BusinessControlFactory.getInstance().getAsRestPart(ces, true));
+			writer.append(",\"businessPath\":\"").append(bc).append("\"");
+		    writer.append(",\"historyPointId\":\"").append(p.getUuid()).append("\"");
 		}
-		return "";
-	}
-	
-	private String getHistoryPointID(UserRequest ureq) {
-		HistoryPoint p = ureq.getUserSession().getLastHistoryPoint();
-		if(p != null && StringHelper.containsNonWhitespace(p.getBusinessPath())) {
-			return p.getUuid();
-		}
-		return "";
 	}
 	
 	private void pushJSON(WindowCommand wc, Writer writer) throws IOException {

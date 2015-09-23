@@ -37,36 +37,36 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 
 /**
- * 
+ *
  * Initial date: 18.11.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 public class ScheduleStepForm extends StepFormBasicController {
-	
+
 	private static final String[] typeKeys = new String[]{ "immediately", "delayed"};
 
 	private DateChooser scheduleDateChooser;
 	private SingleSelection scheduleTypeEl;
-	
+
 	public ScheduleStepForm(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT, null);
-		
+
 		initForm(ureq);
 	}
-	
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("schedule.title");
 		setFormDescription("schedule.description");
-		setFormContextHelp("org.olat.course.assessment.bulk", "bulkassessment_schedule.html","help.hover.bulkassessment_schedule");
-		
+		setFormContextHelp("Using Course Tools#bulkassessment_schedule");
+
 		String[] typeValues = new String[]{
 				translate("schedule.immediately"), translate("schedule.delayed")
 		};
 		scheduleTypeEl = uifactory.addRadiosVertical("schedule.type", formLayout, typeKeys, typeValues);
 		scheduleTypeEl.addActionListener(FormEvent.ONCHANGE);
-		
+
 		boolean delayed;
 		Date scheduleDate;
 		Task task = (Task)getFromRunContext("task");
@@ -82,24 +82,24 @@ public class ScheduleStepForm extends StepFormBasicController {
 			scheduleDate = cal.getTime();
 			delayed = false;
 		}
-		
+
 		scheduleDateChooser = uifactory.addDateChooser("scheduleDateChooser", "schedule.date", scheduleDate, formLayout);
 		scheduleDateChooser.setValidDateCheck("schedule.error.past");
 		scheduleDateChooser.setDateChooserTimeEnabled(true);
-		
+
 		scheduleTypeEl.select(delayed ? typeKeys[1]: typeKeys[0], true);
 		scheduleDateChooser.setVisible(delayed);
 	}
-	
+
 	@Override
 	protected void doDispose() {
 		//
 	}
-	
+
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
-		
+
 		scheduleTypeEl.clearError();
 		if(!scheduleTypeEl.isOneSelected()) {
 			scheduleTypeEl.setErrorKey("form.legende.mandatory", null);
@@ -115,7 +115,7 @@ public class ScheduleStepForm extends StepFormBasicController {
 				allOk = false;
 			}
 		}
-		
+
 		return allOk & super.validateFormLogic(ureq);
 	}
 

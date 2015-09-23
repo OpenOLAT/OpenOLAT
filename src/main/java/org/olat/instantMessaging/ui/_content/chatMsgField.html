@@ -43,9 +43,9 @@
 	#end
 </div>
 #if($focus)
-	<script type="text/javascript">jQuery(function(){try{focus_${panelName}();}catch(e){ if(console) console.log(e) }});</script>
+	<script type="text/javascript">jQuery(function(){try{focus_${panelName}();}catch(e){ if(window.console) console.log(e) }});</script>
 #else
-	<script type="text/javascript">jQuery(function(){try{tweak_${panelName}();}catch(e){ if(console) console.log(e) }});</script>
+	<script type="text/javascript">jQuery(function(){try{tweak_${panelName}();}catch(e){ if(window.console) console.log(e) }});</script>
 #end
 <script type="text/javascript">
 /* <![CDATA[ */
@@ -53,7 +53,7 @@
 	setTimeout(function() {
 		try{
 			resize_${panelName}();
-		} catch(e) { console.log(e) }
+		} catch(e) { if(window.console) console.log(e) }
 	}, 100);
 /* ]]> */ 
 </script>

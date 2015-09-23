@@ -19,6 +19,7 @@
  */
 package org.olat.user.propertyhandlers;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -176,21 +177,23 @@ public class EmailProperty extends Generic127CharTextPropertyHandler {
 	
 	
 	private boolean isAddressAvailable(String emailAddress, String currentUsername) {
-		
 		// Check if mail address already used
 		// within the system by a user other than ourselves
-		
-		Identity identityOfEmail = UserManager.getInstance().findIdentityByEmail(emailAddress);
+		List<Identity> identityOfEmails = UserManager.getInstance().findIdentitiesByEmail(Collections.singletonList(emailAddress));
 		if (currentUsername != null) {
-			if ((identityOfEmail != null) && (!identityOfEmail.getName().equals(currentUsername))) {
+			if(identityOfEmails.size() == 0) {
+				//ok -> checkForScheduledAdressChange
+			} else if(identityOfEmails.size() == 1) {
+				Identity identityOfEmail = identityOfEmails.get(0);
+				if (identityOfEmail != null && !identityOfEmail.getName().equals(currentUsername)) {
+					return false;
+				}
+			} else {
 				return false;
 			}
-		} else {
-			if (identityOfEmail != null) {
-				return false;
-			}
+		} else if (identityOfEmails.size() > 0) {
+			return false;
 		}
-		
 		return checkForScheduledAdressChange(emailAddress);
 	}
 	

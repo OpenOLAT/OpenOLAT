@@ -28,14 +28,12 @@ package org.olat.core.gui.control.winmgr;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.IOUtils;
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
@@ -184,32 +182,23 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 	}
 	
 	public void pushCommands(UserRequest ureq, HttpServletRequest request, HttpServletResponse response) {
-		Writer w = null;
+
 		try {
-			boolean acceptJson = false;
-			for(Enumeration<String> headers=request.getHeaders("Accept"); headers.hasMoreElements(); ) {
-				String accept = headers.nextElement();
-				if(accept.contains("application/json")) {
-					acceptJson = true;
-				}
-			}
-			
+			boolean acceptJson = ServletUtil.acceptJson(request);
 			//first set the headers with the content-type
 			//and after get the writer with the encoding
 			//fixed by the content-type
 			if(acceptJson) {
 				ServletUtil.setJSONResourceHeaders(response);
-				w = response.getWriter();
+				Writer w = response.getWriter();
 				ajaxC.pushJSONAndClear(ureq, w);
 			} else {
 				ServletUtil.setStringResourceHeaders(response);
-				w = response.getWriter();
+				Writer w = response.getWriter();
 				ajaxC.pushResource(ureq, w, true);
 			}
 		} catch (IOException e) {
 			log.error("Error pushing commans to the AJAX canal.", e);
-		} finally {
-			IOUtils.closeQuietly(w);
 		}
 	}
 
@@ -217,8 +206,9 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 	 * @param wrapHTML
 	 * @return
 	 */
-	public MediaResource extractCommands(boolean wrapHTML) {
-		return ajaxC.extractMediaResource(wrapHTML);
+	public MediaResource extractCommands(HttpServletRequest request) {
+		boolean acceptJson = ServletUtil.acceptJson(request);
+		return ajaxC.extractMediaResource(!acceptJson);
 	}
 
 	/**

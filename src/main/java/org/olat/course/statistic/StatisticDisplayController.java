@@ -143,11 +143,6 @@ public class StatisticDisplayController extends BasicController {
 	protected Component createInitialComponent(UserRequest ureq) {
 		statisticVc_ = createVelocityContainer("statistic");
 		statisticVc_.contextPut("statsSince", getStatsSinceStr(ureq));
-		Package pkg = getStatisticManager().getClass().getPackage();
-		String fullPkgName = pkg.getName();
-		String pkgName = fullPkgName.substring(fullPkgName.lastIndexOf(".")+1);
-		statisticVc_.contextPut("package", fullPkgName);
-		statisticVc_.contextPut("packageHtml", "statistic_"+pkgName+".html");
 		recreateTableController(ureq);
 		
 		return statisticVc_;

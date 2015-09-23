@@ -232,7 +232,7 @@ public class ListRenderer {
 			sb.append("<a id='o_sel_doc_").append(pos).append("'");
 		
 			if (isContainer) { // for directories... normal module URIs
-				ubu.buildHrefAndOnclick(sb, pathAndName, iframePostEnabled, false, false);
+				ubu.buildHrefAndOnclick(sb, pathAndName, iframePostEnabled, false, true);
 			} else { // for files, add PARAM_SERV command
 				sb.append(" href=\"");
 				ubu.buildURI(sb, new String[] { PARAM_SERV }, new String[] { "x" }, pathAndName, AJAXFlags.MODE_NORMAL);

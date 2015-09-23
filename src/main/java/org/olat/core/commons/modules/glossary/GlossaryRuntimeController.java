@@ -19,6 +19,8 @@
  */
 package org.olat.core.commons.modules.glossary;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -26,6 +28,8 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.modules.glossary.GlossaryEditSettingsController;
 import org.olat.modules.glossary.GlossaryRegisterSettingsController;
 import org.olat.repository.RepositoryEntry;
@@ -60,6 +64,24 @@ public class GlossaryRuntimeController extends RepositoryEntryRuntimeController 
 			settingsDropdown.addComponent(permissionLink);
 		}
 	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		entries = removeRepositoryEntry(entries);
+		if(entries != null && entries.size() > 0) {
+			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			if("GlossarySettings".equalsIgnoreCase(type)) {
+				if (reSecurity.isEntryAdmin()) {
+					doRegister(ureq);
+				}
+			} else if("GlossaryPermissions".equalsIgnoreCase(type)) {
+				if (reSecurity.isEntryAdmin()) {
+					doPermission(ureq);
+				}
+			}
+		}
+		super.activate(ureq, entries, state);
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
@@ -74,16 +96,18 @@ public class GlossaryRuntimeController extends RepositoryEntryRuntimeController 
 	
 	private void doRegister(UserRequest ureq) {
 		RepositoryEntry glossary = getRepositoryEntry();
+		WindowControl bwControl = getSubWindowControl("GlossarySettings");
 		GlossaryRegisterSettingsController glossRegisterSetCtr
-			= new GlossaryRegisterSettingsController(ureq, getWindowControl(), glossary.getOlatResource());
+			= new GlossaryRegisterSettingsController(ureq, addToHistory(ureq, bwControl), glossary.getOlatResource());
 		pushController(ureq, translate("tab.glossary.register"), glossRegisterSetCtr);
 		setActiveTool(registerLink);
 	}
 	
 	private void doPermission(UserRequest ureq) {
 		RepositoryEntry glossary = getRepositoryEntry();
+		WindowControl bwControl = getSubWindowControl("GlossaryPermissions");
 		GlossaryEditSettingsController glossEditCtr
-			= new GlossaryEditSettingsController(ureq, getWindowControl(), glossary.getOlatResource());
+			= new GlossaryEditSettingsController(ureq, addToHistory(ureq, bwControl), glossary.getOlatResource());
 		pushController(ureq, translate("tab.glossary.edit"), glossEditCtr);
 		setActiveTool(permissionLink);
 	}

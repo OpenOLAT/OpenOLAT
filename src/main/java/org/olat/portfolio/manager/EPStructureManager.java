@@ -204,7 +204,7 @@ public class EPStructureManager extends BasicManager {
 	}
 	
 	/**
-	 * Check if the identity is owner of the map
+	 * Check if the identity is owner of the map identified by the specified resource
 	 * @param identity
 	 * @param ores
 	 * @return
@@ -224,6 +224,29 @@ public class EPStructureManager extends BasicManager {
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("resourceableId", ores.getResourceableId())
 				.setParameter("resourceableTypeName", ores.getResourceableTypeName())
+				.getSingleResult();
+		return count == null ? false : count.intValue() > 0;
+	}
+	
+	/**
+	 * Check if the identity is owner of the map identified by the specified key
+	 * @param identity
+	 * @param mapKey The structure primary key
+	 * @return
+	 */
+	protected boolean isMapOwner(IdentityRef identity, Long mapKey) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(stEl) from ").append(EPStructureElement.class.getName()).append(" stEl ")
+		  .append(" inner join stEl.groups as relGroup on relGroup.defaultGroup=true")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" where stEl.key=:key")
+		  .append(" and exists (select membership from bgroupmember as membership " )
+		  .append("   where baseGroup=membership.group and membership.identity.key=:identityKey and membership.role='").append(GroupRoles.owner.name()).append("'")
+		  .append(" )");
+		
+		Number count =	dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("key", mapKey)
 				.getSingleResult();
 		return count == null ? false : count.intValue() > 0;
 	}

@@ -64,7 +64,7 @@ import org.olat.course.assessment.model.BulkAssessmentSettings;
 import org.olat.course.nodes.AssessableCourseNode;
 
 /**
- * 
+ *
  * Initial date: 18.11.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
@@ -72,7 +72,7 @@ import org.olat.course.nodes.AssessableCourseNode;
 public class DataStepForm extends StepFormBasicController {
 
 	private static final String[] keys = new String[] {"tab","comma"};
-	
+
 	private TextElement dataEl;
 	private FileElement returnFileEl;
 	private SingleSelection delimiter;
@@ -81,25 +81,25 @@ public class DataStepForm extends StepFormBasicController {
 	private BulkAssessmentDatas savedDatas;
 	private final AssessableCourseNode courseNode;
 	private OlatRootFolderImpl bulkAssessmentTmpDir;
-	
+
 	public DataStepForm(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
-		
+
 		courseNode = (AssessableCourseNode)getFromRunContext("courseNode");
-		
+
 		initForm(ureq);
 	}
-	
-	public DataStepForm(UserRequest ureq, WindowControl wControl, AssessableCourseNode courseNode, BulkAssessmentDatas savedDatas, 
+
+	public DataStepForm(UserRequest ureq, WindowControl wControl, AssessableCourseNode courseNode, BulkAssessmentDatas savedDatas,
 			StepsRunContext runContext, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
-		
+
 		this.savedDatas = savedDatas;
 		this.courseNode = courseNode;
 		addToRunContext("courseNode", courseNode);
 		initForm(ureq);
 	}
-	
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// hide data input field in case the element does not have any score, passed or comment field enabled
@@ -110,8 +110,8 @@ public class DataStepForm extends StepFormBasicController {
 		if (!onlyReturnFiles) {
 			setFormDescription("data.description");
 		}
-		setFormContextHelp("org.olat.course.assessment.bulk", "bulkassessment_data.html","help.hover.bulkassessment_data");
-		
+		setFormContextHelp("Using Course Tools#bulkassessment_data");
+
 		String dataVal = "";
 		if(savedDatas != null && StringHelper.containsNonWhitespace(savedDatas.getDataBackupFile())) {
 			OlatRootFileImpl file = new OlatRootFileImpl(savedDatas.getDataBackupFile(), null);
@@ -122,9 +122,9 @@ public class DataStepForm extends StepFormBasicController {
 				logError("", e);
 			} finally {
 				IOUtils.closeQuietly(in);
-			}	
+			}
 		}
-		
+
 		dataEl = uifactory.addTextAreaElement("data", "data", -1, 6, 60, true, dataVal, formLayout);
 		dataEl.showLabel(false);
 
@@ -143,8 +143,8 @@ public class DataStepForm extends StepFormBasicController {
 		if (onlyReturnFiles) {
 			dataEl.setVisible(false);
 			delimiter.setVisible(false);
-		}		
-		
+		}
+
 		// return files only when configured
 		if(settings.isHasReturnFiles()) {
 			returnFileEl = uifactory.addFileElement("returnfiles", "return.files", formLayout);
@@ -156,7 +156,7 @@ public class DataStepForm extends StepFormBasicController {
 				if(targetArchive.exists()) {
 					returnFileEl.setInitialFile(targetArchive.getBasefile());
 				}
-			}				
+			}
 		}
 	}
 
@@ -178,7 +178,7 @@ public class DataStepForm extends StepFormBasicController {
 		if(datas == null) {
 			datas = new BulkAssessmentDatas();
 		}
-		
+
 		if(bulkAssessmentTmpDir == null) {
 			OlatRootFolderImpl bulkAssessmentDir = new OlatRootFolderImpl("/bulkassessment/", null);
 			bulkAssessmentTmpDir = bulkAssessmentDir.createChildContainer(UUID.randomUUID().toString());
@@ -195,20 +195,20 @@ public class DataStepForm extends StepFormBasicController {
 		addToRunContext("datas", datas);
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
-	
+
 	private List<String[]> splitRawData(String idata) {
 		String[] lines = idata.split("\r?\n");
 		int numOfLines = lines.length;
-		
+
 		List<String[]> rows = new ArrayList<String[]>(numOfLines);
-		
+
 		String d;
 		if (delimiter.getSelectedKey().startsWith("t")) {
 			d = "\t";
 		} else {
 			d = ",";
 		}
-		
+
 		for (int i = 0; i < numOfLines; i++) {
 			String line = lines[i];
 			if(StringHelper.containsNonWhitespace(line)){
@@ -218,7 +218,7 @@ public class DataStepForm extends StepFormBasicController {
 		}
 		return rows;
 	}
-	
+
 	/**
 	 * Backup the input field for later editing purpose
 	 * @param val
@@ -234,7 +234,7 @@ public class DataStepForm extends StepFormBasicController {
 			inputFile = tmpDir.createChildLeaf(inputFilename);
 		}
 		OutputStream out = inputFile.getOutputStream(false);
-		
+
 		try {
 			IOUtils.write(val, out);
 			datas.setDataBackupFile(inputFile.getRelPath());
@@ -244,7 +244,7 @@ public class DataStepForm extends StepFormBasicController {
 			IOUtils.closeQuietly(out);
 		}
 	}
-	
+
 	private void processReturnFiles(BulkAssessmentDatas datas, List<BulkAssessmentRow> rows, OlatRootFolderImpl tmpDir) {
 		File uploadedFile = returnFileEl.getUploadFile();
 		if(uploadedFile == null) {
@@ -266,7 +266,7 @@ public class DataStepForm extends StepFormBasicController {
 					if(currentTarget != null && currentTarget.exists()) {
 						currentTarget.deleteSilently();
 					}
-					
+
 					targetArchive = tmpDir.createChildLeaf(uploadedFilename);
 					FileInputStream inStream = new FileInputStream(uploadedFile);
 					if(VFSManager.copyContent(inStream, targetArchive)) {
@@ -282,7 +282,7 @@ public class DataStepForm extends StepFormBasicController {
 			}
 		}
 	}
-	
+
 	private boolean isSame(VFSItem currentTarget, File uploadedFile) {
 		if(currentTarget instanceof LocalImpl) {
 			LocalImpl local = (LocalImpl)currentTarget;
@@ -298,18 +298,18 @@ public class DataStepForm extends StepFormBasicController {
 		}
 		return false;
 	}
-	
+
 	private void processReturnFiles(VFSLeaf target, List<BulkAssessmentRow> rows) {
 		Map<String, BulkAssessmentRow> assessedIdToRow = new HashMap<>();
 		for(BulkAssessmentRow row:rows) {
 			assessedIdToRow.put(row.getAssessedId(), row);
 		}
-		
+
 		if(target.exists()) {
 			InputStream is = target.getInputStream();
 			File parentTarget = ((LocalImpl)target).getBasefile().getParentFile();
 			ZipInputStream zis = new ZipInputStream(is);
-			
+
 			ZipEntry entry;
 			try {
 				byte[] b = new byte[FileUtils.BSIZE];
@@ -318,13 +318,13 @@ public class DataStepForm extends StepFormBasicController {
 						while (zis.read(b) > 0) {
 							//continue
 						}
-						
+
 						Path op = new File(parentTarget, entry.getName()).toPath();
 						if(!Files.isHidden(op) && !Files.isDirectory(op)) {
 							Path parentDir = op.getParent();
 							String assessedId = parentDir.getFileName().toString();
 							String filename = op.getFileName().toString();
-							
+
 							BulkAssessmentRow row;
 							if(assessedIdToRow.containsKey(assessedId)) {
 								row = assessedIdToRow.get(assessedId);
@@ -334,7 +334,7 @@ public class DataStepForm extends StepFormBasicController {
 								assessedIdToRow.put(assessedId, row);
 								rows.add(row);
 							}
-							
+
 							if(row.getReturnFiles() == null) {
 								row.setReturnFiles(new ArrayList<String>(2));
 							}

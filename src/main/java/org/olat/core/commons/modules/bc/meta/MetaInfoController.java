@@ -127,7 +127,7 @@ public class MetaInfoController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("mf.metadata.title");
-		setFormContextHelp(MetaInfoController.class.getPackage().getName(), "bc-metainfo.html", "chelp.bc-metainfo.hover");
+		setFormContextHelp("Folders#_metadata");
 
 		// filename
 		uifactory.addStaticTextElement("mf.filename", item.getName(), formLayout);

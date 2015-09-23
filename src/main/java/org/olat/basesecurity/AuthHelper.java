@@ -60,6 +60,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.OlatLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.SessionInfo;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
@@ -135,14 +136,21 @@ public class AuthHelper {
 		Window currentWindow = occ.getWindow();
 		currentWindow.setUriPrefix(WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED);
 		Windows.getWindows(ureq).registerWindow(currentWindow);
-	
-		// redirect to AuthenticatedDispatcher
-		// IMPORTANT: windowID has changed due to re-registering current window -> do not use ureq.getWindowID() to build new URLBuilder.
-		URLBuilder ubu = new URLBuilder(WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED, currentWindow.getInstanceId(), "1");	
-		StringOutput sout = new StringOutput(30);
-		ubu.buildURI(sout, null, null);
-		ureq.getDispatchResult().setResultingMediaResource(new RedirectMediaResource(sout.toString()));
-				
+		
+		RedirectMediaResource redirect;
+		String redirectTo = (String)ureq.getUserSession().getEntry("redirect-bc");
+		if(StringHelper.containsNonWhitespace(redirectTo)) {
+			String url = WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED + redirectTo;
+			redirect = new RedirectMediaResource(url);
+		} else {
+			// redirect to AuthenticatedDispatcher
+			// IMPORTANT: windowID has changed due to re-registering current window -> do not use ureq.getWindowID() to build new URLBuilder.
+			URLBuilder ubu = new URLBuilder(WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED, currentWindow.getInstanceId(), "1");	
+			StringOutput sout = new StringOutput(30);
+			ubu.buildURI(sout, null, null);
+			redirect = new RedirectMediaResource(sout.toString());
+		}
+		ureq.getDispatchResult().setResultingMediaResource(redirect);
 		return LOGIN_OK;
 	}
 	
@@ -182,7 +190,6 @@ public class AuthHelper {
 		BaseFullWebappControllerParts guestSitesAndNav = new GuestBFWCParts();
 		ChiefController cc = new BaseFullWebappController(ureq, guestSitesAndNav);
 		Windows.getWindows(ureq.getUserSession()).setChiefController(cc);
-		log.debug("set session-attribute 'AUTHCHIEFCONTROLLER'");
 		return cc;
 	}
 
@@ -199,7 +206,6 @@ public class AuthHelper {
 		BaseFullWebappControllerParts authSitesAndNav = new AuthBFWCParts();
 		ChiefController cc = new BaseFullWebappController(ureq, authSitesAndNav);
 		Windows.getWindows(ureq.getUserSession()).setChiefController(cc);
-		log.debug("set session-attribute 'AUTHCHIEFCONTROLLER'");
 		return cc;
 	}
 

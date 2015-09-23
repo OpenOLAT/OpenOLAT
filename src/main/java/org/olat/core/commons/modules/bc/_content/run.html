@@ -3,6 +3,9 @@
 	$r.render("subscription")
 #end
 	<div class="o_briefcase_foldercomp">
+		#if ($r.showCourseFolderHelp)
+		$r.contextHelpWithWrapper("Using Course Tools#_ablageordner")
+		#end
 		#if ($r.available("searchcomp"))
 		<div class="o_briefcase_searchcomp">$r.render("searchcomp")</div>
 		#end
@@ -11,7 +14,7 @@
 #if($webdavhttp or $webdavhttps)
 	<div class="o_briefcase_webdav">
 	#o_togglebox_start("o_briefcase_webdav_link" "$r.translate('webdav.link')")
-		<div class="pull-right">$r.contextHelp("Using WebDAV")</div> 
+		<div class="pull-right">$r.contextHelpWithWrapper("Using WebDAV")</div>
 		#if($webdavhttps)
 			<p>
 				<code>$webdavhttps</code>

@@ -251,7 +251,7 @@ public abstract class GTAAbstractController extends BasicController {
 		if(dueDate != null) {
 			if(dueDate.getDueDate() != null) {
 				Date date = dueDate.getDueDate();
-				String dateAsString = Formatter.getInstance(getLocale()).formatDateAndTime(date);
+				String dateAsString = formatDueDate(dueDate, true);
 				mainVC.contextPut("assignmentDueDate", dateAsString);
 				mainVC.contextRemove("assignmentDueDateMsg");
 				
@@ -266,6 +266,31 @@ public abstract class GTAAbstractController extends BasicController {
 			}
 		}
 		return assignedTask;
+	}
+	
+	/**
+	 * User friendly format, 2015-06-20 00:00 will be rendered as 2015-06-20
+	 * if @param userDeadLine is false (for solution,e.g) and 2015-06-20
+	 * if @param userDeadLine is true (meaning the user have the whole day
+	 * to do the job until the deadline at midnight).
+	 * @param dueDate
+	 * @param user deadline
+	 * @return
+	 */
+	protected String formatDueDate(DueDate dueDate, boolean userDeadLine) {
+		Date date = dueDate.getDueDate();
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		String formattedDate;
+		if(cal.get(Calendar.HOUR_OF_DAY) == 0 && cal.get(Calendar.MINUTE) == 0) {
+			if(userDeadLine) {
+				cal.add(Calendar.DATE, -1);
+			}
+			formattedDate = Formatter.getInstance(getLocale()).formatDate(cal.getTime());
+		} else {
+			formattedDate = Formatter.getInstance(getLocale()).formatDateAndTime(date);
+		}
+		return formattedDate;
 	}
 	
 	protected void resetDueDates() {
@@ -342,7 +367,7 @@ public abstract class GTAAbstractController extends BasicController {
 		if(dueDate != null) {
 			if(dueDate.getDueDate() != null) {
 				Date date = dueDate.getDueDate();
-				String dateAsString = Formatter.getInstance(getLocale()).formatDateAndTime(date);
+				String dateAsString = formatDueDate(dueDate, true);
 				mainVC.contextPut("submitDueDate", dateAsString);
 				mainVC.contextRemove("submitDueDateMsg");
 				
@@ -389,7 +414,7 @@ public abstract class GTAAbstractController extends BasicController {
 		DueDate availableDate = getSolutionDueDate(assignedTask);
 		if(availableDate != null) {
 			if(availableDate.getDueDate() != null) {
-				String date = Formatter.getInstance(getLocale()).formatDateAndTime(availableDate.getDueDate());
+				String date = formatDueDate(availableDate, false);
 				mainVC.contextPut("solutionAvailableDate", date);
 				mainVC.contextRemove("solutionAvailableDateMsg");
 			} else if(availableDate.getMessage() != null) {
@@ -496,6 +521,5 @@ public abstract class GTAAbstractController extends BasicController {
 		public String getMessage() {
 			return message;
 		}
-
 	}
 }

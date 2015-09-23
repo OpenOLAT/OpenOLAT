@@ -193,14 +193,14 @@ var BPlayer = {
 			if(config.width) {
 				meConfig.audioWidth = config.width;
 			}
-			content = "<audio id='" + mediaDomId + "' controls='controls'";
+			content = "<audio id='" + mediaDomId + "' controls='controls' oncontextmenu='return false;'";
 			if(typeof config.repeat != 'undefined' && config.repeat) {
 				content += " loop='loop'";
 			}
 			content += " type='" +mimeType + "' src='" + config.file + "'></audio>";
 		} else {
 			//controls are mandatory for Safari at least
-			content = "<video id='" + mediaDomId + "' controls='controls' preload='none'";
+			content = "<video id='" + mediaDomId + "' controls='controls' preload='none' oncontextmenu='return false;'";
 			if(typeof config.repeat != 'undefined' && config.repeat) {
 				content += " loop='loop'";
 			}

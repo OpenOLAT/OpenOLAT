@@ -103,7 +103,7 @@ public class DENCourseNode extends AbstractAccessableCourseNode {
 			String message = trans.translate("guestnoaccess.message");
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
-			controller = new DENRunController(ureq, wControl, getModuleConfiguration(), this);
+			controller = new DENRunController(ureq, wControl, getModuleConfiguration(), userCourseEnv, this);
 		}
 		
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_en_icon");

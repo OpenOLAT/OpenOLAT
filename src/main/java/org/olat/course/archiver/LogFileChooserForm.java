@@ -153,8 +153,8 @@ public class LogFileChooserForm extends FormBasicController {
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			setFormTitle("menu.archivelogfiles");
 			setFormDescription("course.logs.intro");
-			setFormContextHelp("org.olat.course.archiver", "arch-logf.html", "help.hover.log");
-			
+			setFormContextHelp("Record of Course Activities");
+
 			aE = uifactory.addCheckboxesVertical("a", "logfilechooserform.logadmin", formLayout, new String[]{"xx"}, new String[]{""}, 1);
 			uE = uifactory.addCheckboxesVertical("u", "logfilechooserform.loguser",  formLayout, new String[]{"xx"}, new String[]{""}, 1);
 			sE = uifactory.addCheckboxesVertical("s", "logfilechooserform.logstat",  formLayout, new String[]{"xx"}, new String[]{""}, 1);

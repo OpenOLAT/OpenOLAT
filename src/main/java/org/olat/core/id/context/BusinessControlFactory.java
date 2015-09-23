@@ -437,6 +437,14 @@ public class BusinessControlFactory {
 		return appendToURIString(retVal, ceList, normalize);
 	}
 	
+	public String getAsRestPart(List<ContextEntry> ceList, boolean normalize) {
+		StringBuilder retVal = new StringBuilder();
+		if(ceList == null || ceList.isEmpty()) {
+			return retVal.toString();
+		}
+		return appendToURIString(retVal, ceList, normalize);
+	}
+	
 	private String appendToURIString(StringBuilder retVal, List<ContextEntry> ceList, boolean normalize) {
 		String lastEntryString = null;
 		for (ContextEntry contextEntry : ceList) {

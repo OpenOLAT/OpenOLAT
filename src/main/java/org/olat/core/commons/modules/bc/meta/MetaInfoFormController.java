@@ -188,7 +188,7 @@ public class MetaInfoFormController extends FormBasicController {
 		if(isSubform) {
 			setFormTitle("mf.metadata.title");
 		}
-		setFormContextHelp(MetaInfoFormController.class.getPackage().getName(), "bc-metainfo.html", "chelp.bc-metainfo.hover");
+		setFormContextHelp("Folders#_metadata");
 
 		// filename
 		if (!isSubform) {
@@ -285,6 +285,7 @@ public class MetaInfoFormController extends FormBasicController {
 				String lockedTitle = getTranslator().translate("mf.locked");
 				String unlockedTitle = getTranslator().translate("mf.unlocked");
 				locked = uifactory.addRadiosHorizontal("locked","mf.locked",formLayout, new String[]{"lock","unlock"}, new String[]{lockedTitle, unlockedTitle});
+				locked.setHelpText(getTranslator().translate("mf.locked.help"));
 				if(vfsLockManager.isLocked(item)) {
 					locked.select("lock", true);
 				} else {
