@@ -125,13 +125,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 		// there is a var elementId = jQuery('#elementId');
 		// allowing to reference the link as an Ext.Element 
 		// Optimize initial length based on heuristic measurements of extJsSb
-		StringBuilder extJsSb = new StringBuilder(240); 
-		extJsSb.append(" <script type=\"text/javascript\">\n/* <![CDATA[ */\n");
-		// Execute code within an anonymous function (closure) to not leak
-		// variables to global scope (OLAT-5755)
-		extJsSb.append("(function(){ var ").append(elementId).append(" = jQuery('#").append(elementId).append("');");
-
-		boolean hasExtJsSb = false;
+		StringBuilder jsSb = new StringBuilder(240); 
 		boolean inForm = isInForm(args);
 
 		String i18n = link.getI18n();
@@ -241,12 +235,11 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			
 			//on click() is part of prototype.js
 			if(link.isRegisterForMousePositionEvent()) {
-				extJsSb.append("jQuery('#"+elementId+"').click(function(event) {")
+				jsSb.append("jQuery('#"+elementId+"').click(function(event) {")
 				       .append(" jQuery('#" + elementId + "').each(function(index, el) {;")
 				       .append("  var href = jQuery(el).attr('href');")
 				       .append(" 	if(href.indexOf('x') == -1) jQuery(el).attr('href',href+'x'+event.pageX+'y'+event.pageY+'');")
 				       .append(" });});");
-				hasExtJsSb = true;
 			}
 			/**
 			 * TODO:gs:b may be usefull as well
@@ -254,8 +247,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			 * Event.observe("id", "click", functionName.bindAsEventListener(this));
 			 */
 			if(link.getJavascriptHandlerFunction() != null) {
-				extJsSb.append("  jQuery('#"+elementId+"').on('"+link.getMouseEvent()+"', "+link.getJavascriptHandlerFunction()+");");
-				hasExtJsSb = true;
+				jsSb.append("  jQuery('#"+elementId+"').on('"+link.getMouseEvent()+"', "+link.getJavascriptHandlerFunction()+");");
 			}	
 		} else {
 			String text;
@@ -299,14 +291,25 @@ public class LinkRenderer extends DefaultComponentRenderer {
 
 			sb.append("</a>");
 		}
+		
+		if(link.getTarget() != null){
+			//if the link starts a download -> the o_afterserver is not called in
+			//non-ajax mode if a download is started.
+			//on click execute the "same" javascript as in o_ainvoke(r,true) for
+			//case 3:
+			jsSb.append("if (").append(elementId).append(") ")
+		        .append(elementId).append(".click(function() {setTimeout(removeBusyAfterDownload,1200)});");
+		}
 
 		//disabled or not, all tags should be closed here
 		//now append all gathered javascript stuff if any
-		if(hasExtJsSb){
-			// Execute anonymous function (closure) now (OLAT-5755)
-			extJsSb.append("})();")
-			       .append("\n/* ]]> */\n</script>");
-			sb.append(extJsSb);
+		if(jsSb.length() > 0) {
+			// Execute code within an anonymous function (closure) to not leak
+			// variables to global scope (OLAT-5755)
+			sb.append(" <script type=\"text/javascript\">\n/* <![CDATA[ */\n")
+			  .append("(function(){ var ").append(elementId).append(" = jQuery('#").append(elementId).append("');")
+			  .append(jsSb).append("})();")
+		      .append("\n/* ]]> */\n</script>");
 		}
 	}
 	
