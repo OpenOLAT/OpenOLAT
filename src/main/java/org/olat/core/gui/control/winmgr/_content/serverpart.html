@@ -118,4 +118,12 @@ function onPollFailure() {
 /* ]]> */
 </script>
 $r.render("pollperiodPanel")
+## for safari: we cannot use display:none which would be the obvious choice here
+<div id="oaawrp" style="visibility:hidden;width:0px;height:0px">
+## don't use the document.write approach, triggers an 'page contains insecure elements' warning (OLAT-4548). Load empty.html instead
+<iframe src='$r.staticLink("empty.html")' name="oaa0" id="oaa0" width="1" height="1" onload="clearAfterAjaxIframeCall()"></iframe>
+## try javascript:void(0)
+</div>
+## below we need to provide an action attribute to make it html 4.01 transitional
+	<form id="o_oaap" method="post" action="#" onsubmit="return false" target="oaa0"><input type="hidden" name="v"></form>
 </div>

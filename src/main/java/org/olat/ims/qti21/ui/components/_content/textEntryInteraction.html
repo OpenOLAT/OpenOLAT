@@ -1,0 +1,30 @@
+#set($identifier = $r.toString($interaction.identifier))
+#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
+#set($isBadResponse = $r.isBadResponse($interaction.responseIdentifier))
+#set($isInvalidResponse = $r.isInvalidResponse($interaction.responseIdentifier))
+#set($responseDeclaration = $r.getResponseDeclaration($interaction.responseIdentifier))
+#set($responseInput = $r.getResponseInput($interaction.responseIdentifier))
+#set($responseInputString = $r.extractSingleCardinalityResponseInput($responseInput))    
+#set($checkJavaScript = $r.checkJavaScript($responseDeclaration,$interaction.patternmask))
+
+<input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
+<span class="$localName">
+	<input type="text" name="qtiworks_response_${responseIdentifier}" #if($responseInputString && !$responseInputString.isEmpty()) value="$responseInputString" #else value="" #end #if($r.isItemSessionEnded()) disabled #end #if($isBadResponse) class='badResponse' #end #if($interaction.expectedLength) size='$interaction.expectdLength' #end #if($checks && $checks.size() > 0) onchange='$checkJavaScript' #end />
+	#if($isBadResponse)
+        <span class="badResponse">
+        	You must enter a valid
+			#if($responseDeclaration.cardinality.toQtiString() == "record")
+          		'number'
+			#else
+				$responseDeclaration.baseType.toQtiString()!
+			#end
+        </span>
+	#end
+	#if($isInvalidResponse)
+        ## This must be a regex issue
+		<span class="badResponse">
+			Your input is not of the required format!
+		</span>
+	#end
+</span>
+

@@ -1,0 +1,34 @@
+#set($identifier = $r.toString($interaction.identifier))
+#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
+#set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
+
+<input name="qtiworks_uploadpresented_${responseIdentifier}" type="hidden" value="1"/>
+<div class="{local-name()}">
+	#if($interaction.getPrompt())
+	<div class="prompt">
+		$r.renderPrompt($interaction.getPrompt())
+	</div>
+	#end
+	
+    #if($r.notEmpty($responseValue))
+		## Already uploaded something, so show file and ability to replace it
+		<div class="fileUploadStatus">
+            Uploaded: $responseValue.fileName
+		</div>
+         #if($isItemSessionOpen)
+              <div class="fileUploadInstruction">Upload New File</div>
+              <input type="file" name="qtiworks_uploadresponse_${responseIdentifier}"/>
+		#else
+              <input type="file" name="qtiworks_uploadresponse_${responseIdentifier}" disabled="disabled"/>
+		#end
+	#else
+         ## Nothing uploaded yet
+         #if($isItemSessionOpen)
+              <div class="fileUploadInstruction">Upload File</div>
+              <input type="file" name="qtiworks_uploadresponse_${responseIdentifier}"/>
+		#else
+              <input type="file" name="qtiworks_uploadresponse_${responseIdentifier}" disabled="disabled"/>
+		#end
+	#end
+</div>
+

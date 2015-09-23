@@ -97,6 +97,11 @@ public class StringOutput extends Writer {
 		sb.append(i);
 		return this;
 	}
+	
+	public StringOutput append(double d) {
+		sb.append(Double.toString(d));
+		return this;
+	}
 
 	/**
 	 * @param stringOutput

@@ -157,7 +157,7 @@ public class Form extends LogDelegator {
 	private String dispatchFieldId;
 	private String eventFieldId;
 	
-	private boolean standaloneRendering;
+	private String onSubmitCallback;
 
 	// the real form
 	private FormItemContainer formLayout;
@@ -213,14 +213,6 @@ public class Form extends LogDelegator {
 		form.eventFieldId = form.formName +"_eventval";
 		
 		return form;
-	}
-	
-	public boolean isStandaloneRendering() {
-		return standaloneRendering;
-	}
-
-	public void setStandaloneRendering(boolean standaloneRendering) {
-		this.standaloneRendering = standaloneRendering;
 	}
 
 	/**
@@ -778,6 +770,18 @@ public class Form extends LogDelegator {
 
 	public String getFormName() {
 		return formName;
+	}
+	
+	public String getOnSubmitCallback() {
+		return onSubmitCallback;
+	}
+
+	/**
+	 * Add an additional on onSubmit method
+	 * @param onSubmitCallback
+	 */
+	public void setOnSubmitCallback(String onSubmitCallback) {
+		this.onSubmitCallback = onSubmitCallback;
 	}
 
 	public void fireFormEvent(UserRequest ureq, FormEvent event) {

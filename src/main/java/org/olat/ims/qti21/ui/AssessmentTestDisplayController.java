@@ -38,6 +38,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
@@ -105,6 +107,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private Date currentRequestTimestamp;
 	private UserTestSession candidateSession;
 	private AssessmentEntry assessmentEntry;
+	private ResolvedAssessmentTest resolvedAssessmentTest;
 	
 	private OutcomesListener outcomesListener;
 
@@ -115,6 +118,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private AssessmentService assessmentService;
 	@Autowired
 	private JqtiExtensionManager jqtiExtensionManager;
+	
+	private final boolean velocity;
 	
 	/**
 	 * 
@@ -129,11 +134,15 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			RepositoryEntry testEntry, RepositoryEntry entry, String subIdent) {
 		super(ureq, wControl);
 		
+		velocity = true;
 		this.outcomesListener = listener;
 		
 		FileResourceManager frm = FileResourceManager.getInstance();
 		fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-		mapperUri = registerCacheableMapper(null, "QTI21Resources::" + testEntry.getKey(), new ResourcesMapper());
+		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentObject(fUnzippedDirRoot);
+		
+		URI assessmentObjectUri = qtiService.createAssessmentObjectUri(fUnzippedDirRoot);
+		mapperUri = registerCacheableMapper(null, "QTI21Resources::" + testEntry.getKey(), new ResourcesMapper(assessmentObjectUri));
 		
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		
@@ -204,7 +213,19 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-	
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(advanceTestPartDialog == source) {
+			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				processAdvanceTestPart(ureq);
+			}
+			mainVC.setDirty(true);
+		}
+		
+		super.event(ureq, source, event);
+	}
+
 	private void doExitTest(UserRequest ureq) {
 		fireEvent(ureq, new QTI21Event(QTI21Event.EXIT));
 	}
@@ -235,7 +256,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				processEndTestPart(ureq);
 				break;
 			case advanceTestPart:
-				processAdvanceTestPart(ureq);
+				confirmAdvanceTestPart(ureq);
 				break;
 			case reviewTestPart:
 				processReviewTestPart();
@@ -486,6 +507,14 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		 /* Update state */
         final Date requestTimestamp = ureq.getRequestTimestamp();
         testSessionController.endCurrentTestPart(requestTimestamp);
+	}
+	
+	private DialogBoxController advanceTestPartDialog;
+	
+	private void confirmAdvanceTestPart(UserRequest ureq) {
+		String title = translate("confirm.advance.testpart.title");
+		String text = translate("confirm.advance.testpart.text");
+		advanceTestPartDialog = activateOkCancelDialog(ureq, title, text, advanceTestPartDialog);
 	}
 	
 	private void processAdvanceTestPart(UserRequest ureq) {
@@ -771,7 +800,6 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private TestProcessingMap getTestProcessingMap() {
 		boolean assessmentPackageIsValid = true;
 
-		final ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentObject(fUnzippedDirRoot);
 		BadResourceException ex = resolvedAssessmentTest.getTestLookup().getBadResourceException();
 		if(ex instanceof QtiXmlInterpretationException) {
 			QtiXmlInterpretationException exml = (QtiXmlInterpretationException)ex;
@@ -818,10 +846,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			mainForm.setStandaloneRendering(true);
 			mainForm.setMultipartEnabled(true);
-			
-			qtiEl = new AssessmentTestFormItem("qtirun");
+			mainForm.setOnSubmitCallback("QtiWorksRendering.maySubmit();");
+
+			qtiEl = new AssessmentTestFormItem("qtirun", null);
+			qtiEl.setResolvedAssessmentTest(resolvedAssessmentTest);
 			formLayout.add("qtirun", qtiEl);
 
 			ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());

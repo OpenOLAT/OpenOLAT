@@ -138,7 +138,7 @@ function graphicGapMatchDrawResponse(responseValue) {
 	}
 }
 
-function graphicGapMatchitem(containerId, responseIdentifier) {
+function graphicGapMatchItem(containerId, responseIdentifier) {
 	jQuery(".gap_item").on('click', function(e, el) {
 		var gapitem = jQuery(this);
 		

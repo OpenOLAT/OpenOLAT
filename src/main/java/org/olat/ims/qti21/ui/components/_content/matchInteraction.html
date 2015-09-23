@@ -1,0 +1,55 @@
+#set($identifier = $r.toString($interaction.identifier))
+#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
+#set($orderedSet1 = $r.getVisibleOrderedChoices($interaction,0))
+#set($orderedSet2 = $r.getVisibleOrderedChoices($interaction,1))
+
+<input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
+<div class="$localName">
+	#if($interaction.getPrompt())
+	<div class="prompt">
+		$r.renderPrompt($interaction.getPrompt())
+	</div>
+	#end
+	
+	#if($r.isInvalidResponse($interaction.responseIdentifier))
+	<div class="o_error badResponse">
+      Please complete this interaction as directed.
+    </div>
+	#end
+
+	<table class="table">
+		<thead>
+			<tr>
+				<th/>
+            	#foreach($choice2 in $orderedSet2)
+				<th>$r.renderFlowStatics($choice2.getFlowStatics())</th>
+				#end
+			</tr>
+        </thead>
+		<tbody>
+		#foreach($choice1 in $orderedSet1)
+			#set($set1Identifier = $r.toString($choice1.identifier))
+            <tr>
+				<th>$r.renderFlowStatics($choice1.getFlowStatics())</th>
+				#foreach($choice2 in $orderedSet2)
+					#set($set2Identifier = $r.toString($choice2.identifier))
+					#set($responseValue = $set1Identifier + " " + $set2Identifier)
+					#set($responseChecked = $r.getResponseValue($interaction.responseIdentifier))
+                	<td>
+                  		<input type="checkbox" name="qtiworks_response_${responseIdentifier}" value="${responseValue}" #if($r.valueContains($responseChecked,$responseValue)) checked #end #if($isItemSessionEnded) disabled #end/>
+                	</td>
+				#end
+            </tr>
+		#end
+		</tbody>
+	</table>
+	#if($isItemSessionOpen)
+        <script type='text/javascript'>
+		QtiWorksRendering.registerMatchInteraction('$responseIdentifier', $interaction.maxAssociations,
+            {#foreach($choice1 in $orderedSet1) #if($foreach.count > 1),#end $choice1.identifier:$choice1.matchMax #end},
+            {#foreach($choice2 in $orderedSet2) #if($foreach.count > 1),#end $choice2.identifier:$choice2.matchMax #end}
+		);
+        </script>
+	#end
+</div>
+

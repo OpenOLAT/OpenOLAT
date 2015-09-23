@@ -31,6 +31,7 @@ import java.util.Set;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.OLATRuntimeException;
 
@@ -82,6 +83,10 @@ public class FormJSHelper {
 		content += (FormEvent.ON_DOTDOTDOT[actionIndex]);
 		content += ("')");
 		return content;
+	}
+	
+	public static String getXHRFnCallFor(FormItem item, boolean dirtyCheck, boolean pushState, NameValuePair... pairs) {
+		return getXHRFnCallFor(item.getRootForm(), item.getFormDispatchId(), 1, dirtyCheck, pushState, pairs);
 	}
 	
 	/**

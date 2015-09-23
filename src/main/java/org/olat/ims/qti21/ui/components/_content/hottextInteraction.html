@@ -1,0 +1,27 @@
+#set($identifier = $r.toString($interaction.identifier))
+#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
+
+<input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
+<div class="$localName">
+	#if($interaction.getPrompt())
+	<div class="prompt">
+		$r.renderPrompt($interaction.getPrompt())
+	</div>
+	#end
+	
+	#if($r.isInvalidResponse($interaction.responseIdentifier))
+	<div class="o_error badResponse">
+     	You must select
+		#if($interaction.minChoices > 0)
+            at least $interaction.minChoices
+            #if($interaction.maxChoices > 0) and #end
+		#end
+		#if($interaction.maxChoices > 0)
+            at most $interaction.maxChoices
+		#end
+		options.
+    </div>
+	#end
+	
+	$r.renderBlockStatics($interaction.getBlockStatics())
+</div>

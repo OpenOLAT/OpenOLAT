@@ -40,14 +40,22 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public abstract class AbstractAssessmentFormItem extends FormItemImpl {
+public abstract class AssessmentObjectFormItem extends FormItemImpl {
 	
-	public AbstractAssessmentFormItem(String name) {
+	public AssessmentObjectFormItem(String name) {
 		super(name);
 	}
 	
 	@Override
-	public abstract AbstractAssessmentComponent getComponent();
+	public abstract AssessmentObjectComponent getComponent();
+	
+	public String getMapperUri() {
+		return getComponent().getMapperUri();
+	}
+	
+	public void setMapperUri(String mapperUri) {
+		getComponent().setMapperUri(mapperUri);
+	}
 	
 	public URI getAssessmentObjectUri() {
 		return getComponent().getAssessmentObjectUri();

@@ -107,7 +107,10 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		candidateSession = qtiService.createTestSession(getIdentity(), assessmentEntry, testEntry, itemRef.getIdentifier().toString(), testEntry, authorMode);
-		mapperUri = registerCacheableMapper(null, UUID.randomUUID().toString(), new ResourcesMapper());
+		
+		//TODO qti beautify
+		URI assessmentObjectUri = new File(fUnzippedDirRoot, itemRef.getHref().toString()).toURI();
+		mapperUri = registerCacheableMapper(null, UUID.randomUUID().toString(), new ResourcesMapper(assessmentObjectUri));
 		
 		itemSessionController = enterSession(ureq);
 		
@@ -579,7 +582,6 @@ public class AssessmentItemDisplayController extends BasicController implements 
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			mainForm.setStandaloneRendering(true);
 			mainForm.setMultipartEnabled(true);
 			
 			qtiEl = new AssessmentItemFormItem("qtirun");
@@ -590,6 +592,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	        		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
 			qtiEl.setResourceLocator(inputResourceLocator);
 			qtiEl.setItemSessionController(itemSessionController);
+			qtiEl.setResolvedAssessmentItem(resolvedAssessmentItem);
 			
 			
 			File manifestPath = new File(fUnzippedDirRoot, filename);

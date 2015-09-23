@@ -1,0 +1,47 @@
+#set($identifier = $r.toString($interaction.identifier))
+#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
+#set($appletContainerId = "qtiworks_id_appletContainer_" + $responseIdentifier)
+#set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
+#set($hotspots = $r.getVisibleAssociableHotspots($interaction))
+#set($gapImgs = $r.getVisibleGapImgs($interaction))
+
+<input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
+<div class="$localName">
+ 	#if($interaction.getPrompt())
+	<div class="prompt">
+		$r.renderPrompt($interaction.getPrompt())
+	</div>
+	#end
+
+	#if($r.isInvalidResponse($interaction.responseIdentifier))
+	<div class="o_error badResponse">
+      Please complete this interaction as directed.
+    </div>
+	#end
+      
+	<div id="${appletContainerId}" class="appletContainer" style="position:relative;">
+		<img id="${appletContainerId}_img" width="${interaction.object.width}" height="${interaction.object.height}" src="${r.convertLinkFull($interaction.object.data)}" usemap="#${appletContainerId}_map"></img>
+		<map name="${appletContainerId}_map">
+		#foreach($hotspot in $hotspots)
+			<!-- @matchGroup, @matchMax -->
+			<area id="${hotspot.identifier}" shape="${r.shapeToString($hotspot.shape)}" coords="$r.coordsToString($hotspot.coords)" href="#" title="$hotspot.hotspotLabel" class="area-droppable"></area>
+		#end
+		</map>
+		<div class="gap_container" style="width:${interaction.object.width}px; height:50px; background-color:#cccccc;">
+			#foreach($gapImg in $gapImgs)
+				<!-- @matchGroup, @matchMax, @label -->
+            	<div id="${gapImg.identifier}" class="gap_item" style="width:${gapImg.object.width}px; height:${gapImg.object.height}px; margin:5px; background-image:url('${r.convertLinkFull($gapImg.object.data)}');"> </div>
+			#end
+		</div>
+		<script type="text/javascript">
+		jQuery(function() {
+		#if($r.isNotNullValue($responseValue))
+			graphicGapMatchDrawResponse('$r.toString($responseValue,","," ")');
+		#else
+			graphicGapMatchItem('$appletContainerId','$responseIdentifier');
+		#end
+	    });
+      	</script>
+	</div>
+</div>
+

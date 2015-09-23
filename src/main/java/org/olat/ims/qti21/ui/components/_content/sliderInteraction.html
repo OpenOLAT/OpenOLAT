@@ -1,0 +1,47 @@
+#set($identifier = $r.toString($interaction.identifier))
+#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
+#set($orientation = $r.getOrientation($interaction.orientation))
+#set($value = $r.toString($r.getResponseValue($interaction.responseIdentifier)))
+#set($options = $r.getSliderOptions($interaction))
+
+<input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
+<div class="$localName">
+	#if($interaction.getPrompt())
+	<div class="prompt">
+		$r.renderPrompt($interaction.getPrompt())
+	</div>
+	#end
+	
+	#if($r.isInvalidResponse($interaction.responseIdentifier))
+	<div class="o_error badResponse">
+		Please complete this interaction as directed.
+    </div>
+	#end
+
+	<div class="sliderInteraction">
+		#if($orientation == "horizontal")
+            <div class="sliderHorizontal">
+              <div class="sliderWidget" id="qtiworks_id_slider_${responseIdentifier}"></div>
+              <div class="sliderValue"><span id="qtiworks_id_slidervalue_${responseIdentifier}" class="">$value</span></div>
+            </div>
+		#else
+            <div class="sliderVertical">
+              <div class="sliderValue"><span id="qtiworks_id_slidervalue_${responseIdentifier}" Long>$value</span></div>
+              <div class="sliderWidget" id="qtiworks_id_slider_${responseIdentifier}"></div>
+            </div>
+		#end
+		<input type="hidden" name="qtiworks_response_${responseIdentifier}" value="$value"/>
+        <script type="text/javascript">
+          jQuery(document).ready(function() {
+            QtiWorksRendering.registerSliderInteraction('$responseIdentifier', {
+              min: $options.min,
+              max: $options.max,
+              step: $options.step,
+              orientation: '$orientation',
+              isReversed: $options.reverse,
+              isDiscrete: $options.discrete
+            });
+          });
+        </script>
+	</div>
+</div>

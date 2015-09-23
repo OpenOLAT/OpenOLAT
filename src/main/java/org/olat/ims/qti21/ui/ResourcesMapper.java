@@ -21,7 +21,6 @@ package org.olat.ims.qti21.ui;
 
 import java.io.File;
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -41,20 +40,26 @@ import org.olat.core.logging.Tracing;
 public class ResourcesMapper implements Mapper {
 	
 	private static final OLog log = Tracing.createLoggerFor(ResourcesMapper.class);
+	
+	private final URI assessmentObjectUri;
+	
+	public ResourcesMapper(URI assessmentObjectUri) {
+		this.assessmentObjectUri = assessmentObjectUri;
+	}
 
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
 		String href = request.getParameter("href");
 		MediaResource resource = null;
 		try {
-			URI uri = new URI(href);
-			File file = new File(uri);
+			File root = new File(assessmentObjectUri.getPath());
+			File file = new File(root.getParentFile(), href);
 			if(file.exists()) {
 				resource = new FileMediaResource(file);
 			} else {
 				resource = new NotFoundMediaResource(href);
 			}
-		} catch (URISyntaxException e) {
+		} catch (Exception e) {
 			log.error("", e);
 			resource = new NotFoundMediaResource(href);
 		}

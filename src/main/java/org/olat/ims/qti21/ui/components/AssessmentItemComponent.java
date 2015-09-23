@@ -19,8 +19,8 @@
  */
 package org.olat.ims.qti21.ui.components;
 
-import org.olat.core.gui.components.ComponentRenderer;
-
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.running.ItemSessionController;
 
 /**
@@ -29,11 +29,12 @@ import uk.ac.ed.ph.jqtiplus.running.ItemSessionController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentItemComponent extends AbstractAssessmentComponent {
+public class AssessmentItemComponent extends AssessmentObjectComponent {
 	
 	private static final AssessmentItemComponentRenderer RENDERER = new AssessmentItemComponentRenderer();
 	
 	private ItemSessionController itemSessionController;
+	private ResolvedAssessmentItem resolvedAssessmentItem;
 	
 	private final AssessmentItemFormItem qtiItem;
 	
@@ -41,10 +42,23 @@ public class AssessmentItemComponent extends AbstractAssessmentComponent {
 		super(name);
 		this.qtiItem = qtiItem;
 	}
+	
+	public ResolvedAssessmentItem getResolvedAssessmentItem() {
+		return resolvedAssessmentItem;
+	}
+	
+	public void setResolvedAssessmentItem(ResolvedAssessmentItem resolvedAssessmentItem) {
+		this.resolvedAssessmentItem = resolvedAssessmentItem;
+	}
 
 	public AssessmentItemFormItem getQtiItem() {
 		return qtiItem;
 	}
+	
+	public AssessmentItem getAssessmentItem() {
+		return resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
+	}
+	
 
 	public ItemSessionController getItemSessionController() {
 		return itemSessionController;
@@ -56,7 +70,7 @@ public class AssessmentItemComponent extends AbstractAssessmentComponent {
 
 
 	@Override
-	public ComponentRenderer getHTMLRendererSingleton() {
+	public AssessmentItemComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}
 }

@@ -32,8 +32,10 @@ import java.util.Map;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
+import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent;
 
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.running.ItemSessionController;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
@@ -44,11 +46,9 @@ import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentItemFormItem extends AbstractAssessmentFormItem {
+public class AssessmentItemFormItem extends AssessmentObjectFormItem {
 	
 	private final AssessmentItemComponent component;
-	
-	private String mapperUri;
 	
 	public AssessmentItemFormItem(String name) {
 		super(name);
@@ -59,13 +59,13 @@ public class AssessmentItemFormItem extends AbstractAssessmentFormItem {
 	public AssessmentItemComponent getComponent() {
 		return component;
 	}
-
-	public String getMapperUri() {
-		return mapperUri;
+	
+	public ResolvedAssessmentItem getResolvedAssessmentItem() {
+		return component.getResolvedAssessmentItem();
 	}
-
-	public void setMapperUri(String mapperUri) {
-		this.mapperUri = mapperUri;
+	
+	public void setResolvedAssessmentItem(ResolvedAssessmentItem resolvedAssessmentItem) {
+		component.setResolvedAssessmentItem(resolvedAssessmentItem);
 	}
 
 	public ItemSessionController getItemSessionController() {
@@ -89,9 +89,43 @@ public class AssessmentItemFormItem extends AbstractAssessmentFormItem {
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		String uri = ureq.getModuleURI();
-		if(uri.startsWith(solution.getPath())) {
-			QTIWorksAssessmentItemEvent event = new QTIWorksAssessmentItemEvent(solution, this);
-			getRootForm().fireFormEvent(ureq, event);
+		if(uri == null) {
+			QTIWorksAssessmentItemEvent event;
+			String cmd = ureq.getParameter("cid");
+			if(StringHelper.containsNonWhitespace(cmd)) {
+				switch(QTIWorksAssessmentItemEvent.Event.valueOf(cmd)) {
+					case solution:
+						event = new QTIWorksAssessmentItemEvent(solution, this);
+						break;
+					case resethard:
+						event = new QTIWorksAssessmentItemEvent(resethard, this);
+						break;
+					case resetsoft:
+						event = new QTIWorksAssessmentItemEvent(resetsoft, this);
+						break;
+					case close:
+						event = new QTIWorksAssessmentItemEvent(close, this);
+						break;
+					case exit:
+						event = new QTIWorksAssessmentItemEvent(exit, this);
+						break;
+					default:
+						event = null;	
+				}
+			} else {
+				Map<Identifier, StringResponseData> stringResponseMap = extractStringResponseData();
+				Map<Identifier, MultipartFileInfos> fileResponseMap;
+				if(getRootForm().isMultipartEnabled()) {
+					fileResponseMap = extractFileResponseData();
+				} else {
+					fileResponseMap = Collections.emptyMap();
+				}
+				event = new QTIWorksAssessmentItemEvent(response, stringResponseMap, fileResponseMap, this);
+			}
+			
+			if(event != null) {
+				getRootForm().fireFormEvent(ureq, event);
+			}
 		} else if(uri.startsWith(response.getPath())) {
 			Map<Identifier, StringResponseData> stringResponseMap = extractStringResponseData();
 			Map<Identifier, MultipartFileInfos> fileResponseMap;
@@ -102,19 +136,7 @@ public class AssessmentItemFormItem extends AbstractAssessmentFormItem {
 			}
 			QTIWorksAssessmentItemEvent event = new QTIWorksAssessmentItemEvent(response, stringResponseMap, fileResponseMap, this);
 			getRootForm().fireFormEvent(ureq, event);
-		} else if(uri.startsWith(resethard.getPath())) {
-			QTIWorksAssessmentItemEvent event = new QTIWorksAssessmentItemEvent(resethard, this);
-			getRootForm().fireFormEvent(ureq, event);
-		} else if(uri.startsWith(resetsoft.getPath())) {
-			QTIWorksAssessmentItemEvent event = new QTIWorksAssessmentItemEvent(resetsoft, this);
-			getRootForm().fireFormEvent(ureq, event);
-		} else if(uri.startsWith(close.getPath())) {
-			QTIWorksAssessmentItemEvent event = new QTIWorksAssessmentItemEvent(close, this);
-			getRootForm().fireFormEvent(ureq, event);
-		} else if(uri.startsWith(exit.getPath())) {
-			QTIWorksAssessmentItemEvent event = new QTIWorksAssessmentItemEvent(exit, this);
-			getRootForm().fireFormEvent(ureq, event);
-		}
+		} 
 	}
 
 	@Override

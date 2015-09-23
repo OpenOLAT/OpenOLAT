@@ -1,0 +1,46 @@
+#set($identifier = $r.toString($interaction.identifier))
+#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
+#set($responseDeclaration = $r.getResponseDeclaration($interaction.responseIdentifier))
+#set($minStrings = $r.getMinStrings($interaction))
+#set($maxStrings = $r.getMaxStrings($interaction))
+
+<input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
+<div class="$localName">
+	#if($interaction.getPrompt())
+	<div class="prompt">
+		$r.renderPrompt($interaction.getPrompt())
+	</div>
+	#end
+	
+	#if($r.isBadResponse($interaction.responseIdentifier))
+	<div class="badResponse">
+		// TODO: The message below isn't very suitable for list values
+		Your input must be a valid
+		#if($responseDeclaration.cardinality.toQtiString() == "record")
+          	'number'
+		#else
+			$responseDeclaration.baseType.toQtiString()!
+		#end
+	</div>
+	#end
+      
+	#if($r.isInvalidResponse($interaction.responseIdentifier))
+		<div class="badResponse">
+		## This will happen if either a pattern is wrong or the wrong number of choices were made
+          
+		## <xsl:variable name="requiredQuantity" as="xs:string" select="if ($minStrings=$maxStrings) then 'all' else concat('at least ', $minStrings)"/>
+ 
+		#if($interaction.patternMask && $interaction.minStrings > 0)
+              You must fill in <xsl:value-of select="$requiredQuantity"/> box(es)
+              and use the correct format for your input in each box.
+		#elseif($interaction.minStrings > 0)
+              You must fill in <xsl:value-of select="$requiredQuantity"/> box(es).
+		#elseif($interaction.patternMask)
+              You must use the correct format for your input in each box.
+ 		#end
+        </div>
+	#end
+
+	$r.renderExtendedTextBox($interaction)
+</div>
+

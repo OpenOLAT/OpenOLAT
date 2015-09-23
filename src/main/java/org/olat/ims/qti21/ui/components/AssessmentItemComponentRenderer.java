@@ -21,12 +21,9 @@ package org.olat.ims.qti21.ui.components;
 
 import java.util.Date;
 
-import javax.xml.transform.stream.StreamResult;
-
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.DefaultComponentRenderer;
-import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.control.winmgr.AJAXFlags;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -37,16 +34,16 @@ import org.olat.ims.qti21.UserTestSession;
 import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.jpa.CandidateEvent;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
-import org.olat.ims.qti21.ui.rendering.AbstractRenderingOptions;
-import org.olat.ims.qti21.ui.rendering.AbstractRenderingRequest;
-import org.olat.ims.qti21.ui.rendering.AssessmentRenderer;
-import org.olat.ims.qti21.ui.rendering.ItemRenderingOptions;
-import org.olat.ims.qti21.ui.rendering.ItemRenderingRequest;
-import org.olat.ims.qti21.ui.rendering.SerializationMethod;
-import org.olat.ims.qti21.ui.rendering.TerminatedRenderingRequest;
 
+import uk.ac.ed.ph.jqtiplus.node.content.variable.PrintedVariable;
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.template.declaration.TemplateDeclaration;
+import uk.ac.ed.ph.jqtiplus.node.outcome.declaration.OutcomeDeclaration;
+import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;
 import uk.ac.ed.ph.jqtiplus.running.ItemSessionController;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.value.Value;
 
 /**
  * 
@@ -54,125 +51,75 @@ import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentItemComponentRenderer extends DefaultComponentRenderer {
-	
-	private AssessmentRenderer assessmentRenderer = new AssessmentRenderer();
+public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
 
-		AJAXFlags flags = renderer.getGlobalSettings().getAjaxFlags();
-		boolean iframePostEnabled = flags.isIframePostEnabled();
-		
 		AssessmentItemComponent cmp = (AssessmentItemComponent)source;
-		ItemSessionController itemSessionController = cmp.getItemSessionController();
-		AssessmentItemFormItem item = cmp.getQtiItem();
+		sb.append("<div class='qtiworks assessmentItem'>");
 
-		//if(itemSessionController.getItemSessionState().isEnded()) {
-		//	sb.append("<h1>The End <small>say the renderer</small></h1>");
-		//} else {
-			Component rootFormCmp = item.getRootForm().getInitialComponent();
-			
-			URLBuilder formUbuBuilder = renderer.getUrlBuilder().createCopyFor(rootFormCmp);
-			StringOutput formUrl = new StringOutput();
-			formUbuBuilder.buildURI(formUrl,
-					new String[] { Form.FORMID, "dispatchuri", "dispatchevent" },
-					new String[] { Form.FORMCMD, item.getFormDispatchId(), "0" },
-					iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-			
+		ItemSessionController itemSessionController = cmp.getItemSessionController();
+		if(itemSessionController.getItemSessionState().isEnded()) {
+			renderTerminated(sb);
+		} else {
+			CandidateSessionContext candidateSessionContext = cmp.getCandidateSessionContext();
+
 	        /* Create appropriate options that link back to this controller */
-	        final String sessionBaseUrl = formUrl.toString();
-	        final String mapperUrl = item.getMapperUri();
-	        final ItemRenderingOptions renderingOptions = new ItemRenderingOptions();
-	        configureBaseRenderingOptions(sessionBaseUrl, mapperUrl, renderingOptions);
-	        renderingOptions.setEndUrl(sessionBaseUrl + "close");
-	        renderingOptions.setSolutionUrl(sessionBaseUrl + "solution");
-	        renderingOptions.setSoftResetUrl(sessionBaseUrl + "reset-soft");
-	        renderingOptions.setHardResetUrl(sessionBaseUrl + "reset-hard");
-	        renderingOptions.setExitUrl(sessionBaseUrl + "exit");
-	
-	        StreamResult result = new StreamResult(sb);
-	        renderCurrentCandidateItemSessionState(cmp.getCandidateSessionContext(), renderingOptions, result, cmp);
-		//}
+			final UserTestSession candidateSession = candidateSessionContext.getCandidateSession();
+	        if (candidateSession != null && candidateSession.isExploded()) {
+	            renderExploded(sb);
+	        } else if (candidateSessionContext.isTerminated()) {
+	            renderTerminated(sb);
+	        } else {
+	            /* Look up most recent event */
+	            final CandidateEvent latestEvent = candidateSessionContext.getLastEvent();// assertSessionEntered(candidateSession);
+
+	            /* Load the ItemSessionState */
+	            final ItemSessionState itemSessionState = cmp.getItemSessionController().getItemSessionState();// candidateDataService.loadItemSessionState(latestEvent);
+
+	            /* Touch the session's duration state if appropriate */
+	            if (itemSessionState.isEntered() && !itemSessionState.isEnded() && !itemSessionState.isSuspended()) {
+	                final Date timestamp = candidateSessionContext.getCurrentRequestTimestamp();
+	                itemSessionController.touchDuration(timestamp);
+	            }
+
+	            /* Render event */
+	            renderItemEvent(renderer, sb, cmp, latestEvent, itemSessionState, ubu, translator);
+	        }
+		}
+		sb.append("</div>");
 	}
 	
-	private void configureBaseRenderingOptions(final String sessionBaseUrl, final String mapperUrl, final AbstractRenderingOptions renderingOptions) {
-        renderingOptions.setSerializationMethod(SerializationMethod.HTML5_MATHJAX);
-        renderingOptions.setSourceUrl(sessionBaseUrl + "source");
-        renderingOptions.setStateUrl(sessionBaseUrl + "state");
-        renderingOptions.setResultUrl(sessionBaseUrl + "result");
-        renderingOptions.setValidationUrl(sessionBaseUrl + "validation");
-        renderingOptions.setServeFileUrl(mapperUrl + "/file");
-        renderingOptions.setAuthorViewUrl(sessionBaseUrl + "author-view");
-        renderingOptions.setResponseUrl(sessionBaseUrl + "response");
+    private void renderExploded(StringOutput sb) {
+		sb.append("<h1>Exploded <small>say the renderer</small></h1>");
+    }
+
+    private void renderTerminated(StringOutput sb) {
+		sb.append("<h1>Terminated <small>say the renderer</small></h1>");
     }
 	
-    private void renderCurrentCandidateItemSessionState(CandidateSessionContext candidateSessionContext,
-            ItemRenderingOptions renderingOptions, StreamResult result, AssessmentItemComponent component) {
-        
-    	final UserTestSession candidateSession = candidateSessionContext.getCandidateSession();
-        if (candidateSession != null && candidateSession.isExploded()) {
-            renderExploded(renderingOptions, result, component);
-        } else if (candidateSessionContext.isTerminated()) {
-            renderTerminated(renderingOptions, result, component);
-        } else {
-            /* Look up most recent event */
-            final CandidateEvent latestEvent = candidateSessionContext.getLastEvent();// assertSessionEntered(candidateSession);
-
-            /* Load the ItemSessionState */
-            final ItemSessionState itemSessionState = component.getItemSessionController().getItemSessionState();// candidateDataService.loadItemSessionState(latestEvent);
-
-            /* Touch the session's duration state if appropriate */
-            if (itemSessionState.isEntered() && !itemSessionState.isEnded() && !itemSessionState.isSuspended()) {
-                final Date timestamp = candidateSessionContext.getCurrentRequestTimestamp();
-                final ItemSessionController itemSessionController = component.getItemSessionController();
-                itemSessionController.touchDuration(timestamp);
-            }
-
-            /* Render event */
-            renderItemEvent(latestEvent, itemSessionState, renderingOptions, result, component);
-        }
-    }
-	
-    private void renderExploded(AbstractRenderingOptions renderingOptions, StreamResult result, AssessmentItemComponent component) {
-        assessmentRenderer.renderExploded(createTerminatedRenderingRequest(renderingOptions, component), result);
-    }
-
-    private void renderTerminated(AbstractRenderingOptions renderingOptions, StreamResult result, AssessmentItemComponent component) {
-        assessmentRenderer.renderTeminated(createTerminatedRenderingRequest(renderingOptions, component), result);
-    }
-
-    private TerminatedRenderingRequest createTerminatedRenderingRequest(AbstractRenderingOptions renderingOptions,
-    		AssessmentItemComponent component) {
-        final TerminatedRenderingRequest renderingRequest = new TerminatedRenderingRequest();
-        initRenderingRequest(renderingRequest, renderingOptions, component);
-        return renderingRequest;
-    }
-	
-    private void renderItemEvent(CandidateEvent candidateEvent, ItemSessionState itemSessionState,
-            ItemRenderingOptions renderingOptions, StreamResult result, AssessmentItemComponent component) {
+    private void renderItemEvent(Renderer renderer, StringOutput sb, AssessmentItemComponent component,
+    		CandidateEvent candidateEvent, ItemSessionState itemSessionState, URLBuilder ubu, Translator translator) {
         
     	final CandidateItemEventType itemEventType = candidateEvent.getItemEventType();
 
-
         /* Create and partially configure rendering request */
-        final ItemRenderingRequest renderingRequest = new ItemRenderingRequest();
-        initRenderingRequest(renderingRequest, renderingOptions, component);
-        renderingRequest.setItemSessionState(itemSessionState);
-        renderingRequest.setPrompt("" /* itemDeliverySettings.getPrompt() */);
+        //renderingRequest.setPrompt("" /* itemDeliverySettings.getPrompt() */);
 
         /* If session has terminated, render appropriate state and exit */
         if (itemSessionState.isExited()) {
-            assessmentRenderer.renderTeminated(createTerminatedRenderingRequest(renderingRequest.getRenderingOptions(), component), result);
+        	renderTerminated(sb);
             return;
         }
 
         /* Detect "modal" events. These will cause a particular rendering state to be
          * displayed, which candidate will then leave.
          */
+        RenderingRequest renderingRequest = new RenderingRequest();
         if (itemEventType==CandidateItemEventType.SOLUTION) {
-            renderingRequest.setSolutionMode(true);
+        	renderingRequest.setSolutionMode(true);
         }
 
         /* Now set candidate action permissions depending on state of session */
@@ -183,16 +130,14 @@ public class AssessmentItemComponentRenderer extends DefaultComponentRenderer {
             renderingRequest.setSoftResetAllowed(false /* itemDeliverySettings.isAllowSoftResetWhenEnded() */);
             renderingRequest.setSolutionAllowed(true /* itemDeliverySettings.isAllowSolutionWhenEnded() */);
             renderingRequest.setCandidateCommentAllowed(false);
-        }
-        else if (itemSessionState.isOpen()) {
+        } else if (itemSessionState.isOpen()) {
             /* Item session is open (interacting) */
             renderingRequest.setEndAllowed(true /* itemDeliverySettings.isAllowEnd() */);
             renderingRequest.setHardResetAllowed(false /* itemDeliverySettings.isAllowHardResetWhenOpen() */);
             renderingRequest.setSoftResetAllowed(false /* itemDeliverySettings.isAllowSoftResetWhenOpen() */);
             renderingRequest.setSolutionAllowed(true /* itemDeliverySettings.isAllowSolutionWhenOpen() */);
             renderingRequest.setCandidateCommentAllowed(false /* itemDeliverySettings.isAllowCandidateComment() */);
-        }
-        else {
+        } else {
             throw new OLATRuntimeException("Item has not been entered yet. We do not currently support rendering of this state.", null);
         }
 
@@ -200,26 +145,138 @@ public class AssessmentItemComponentRenderer extends DefaultComponentRenderer {
        // candidateAuditLogger.logItemRendering(candidateEvent);
         //final List<CandidateEventNotification> notifications = candidateEvent.getNotifications();
         try {
-            assessmentRenderer.renderItem(renderingRequest, result);
+        	renderTestItemBody(renderer, sb, component, itemSessionState, ubu, translator, renderingRequest);
         } catch (final RuntimeException e) {
             /* Rendering is complex and may trigger an unexpected Exception (due to a bug in the XSLT).
              * In this case, the best we can do for the candidate is to 'explode' the session.
              * See bug #49.
              */
             //handleExplosion(e, candidateSession);
-            assessmentRenderer.renderExploded(createTerminatedRenderingRequest(renderingOptions, component), result);
+            renderExploded(sb);
         }
     }
+    
+	private void renderTestItemBody(Renderer renderer, StringOutput sb, AssessmentItemComponent component, ItemSessionState itemSessionState,
+			URLBuilder ubu, Translator translator, RenderingRequest options) {
+		
+		final AssessmentItem assessmentItem = component.getAssessmentItem();
+
+		//title + status
+		sb.append("<h1 class='itemTitle'>");
+		renderItemStatus(sb, itemSessionState, options);
+		sb.append(assessmentItem.getTitle()).append("</h1>");
+		sb.append("<div id='itemBody'>");
+		
+		//TODO prompt
+
+		//render itemBody
+		assessmentItem.getItemBody().getBlocks().forEach((block)
+				-> renderBlock(renderer, sb, component, assessmentItem, itemSessionState, block, ubu, translator));
+
+		//comment
+		
+		//submit button
+		if(component.isItemSessionOpen(itemSessionState, options.isSolutionMode())) {
+			sb.append("<button type='button' name='cid' value='response' class='btn btn-primary' ");
+			sb.append(FormJSHelper.getRawJSFor(component.getQtiItem().getRootForm(), component.getQtiItem().getFormDispatchId(), FormEvent.ONCLICK));
+			sb.append("><span>Submit</span></button>");
+		}
+		//end body
+		sb.append("</div>");
+
+		// Display active modal feedback (only after responseProcessing)
+		if(itemSessionState.getSessionStatus() == SessionStatus.FINAL) {
+			renderTestItemModalFeedback(renderer, sb, component, assessmentItem, itemSessionState, ubu, translator);
+		}
+	}
+    
+	private void renderItemStatus(StringOutput sb, ItemSessionState itemSessionState, RenderingRequest options) {
+		if(options.isSolutionMode()) {
+			sb.append("<span class='itemStatus review'>Model Solution</span>");
+		} else {
+			super.renderItemStatus(sb, itemSessionState);
+		}
+	}
 	
-    private <P extends AbstractRenderingOptions> void initRenderingRequest(AbstractRenderingRequest<P> renderingRequest, P renderingOptions, AssessmentItemComponent component) {
-        renderingRequest.setRenderingOptions(renderingOptions);
-        renderingRequest.setAssessmentResourceLocator(component.getResourceLocator());
-        renderingRequest.setAssessmentResourceUri(component.getAssessmentObjectUri());
-        renderingRequest.setAuthorMode(false);
-        renderingRequest.setValidated(true);
-        renderingRequest.setLaunchable(true);
-        renderingRequest.setErrorCount(0);
-        renderingRequest.setWarningCount(0);
-        renderingRequest.setValid(true);
+	@Override
+	protected void renderPrintedVariable(StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem, ItemSessionState itemSessionState,
+			PrintedVariable printedVar) {
+
+		Identifier identifier = printedVar.getIdentifier();
+		Value templateValue = itemSessionState.getTemplateValues().get(identifier);
+		Value outcomeValue = itemSessionState.getOutcomeValues().get(identifier);
+		
+		sb.append("<span class='printedVariable'>");
+		if(outcomeValue != null) {
+			OutcomeDeclaration outcomeDeclaration = assessmentItem.getOutcomeDeclaration(identifier);
+			renderPrintedVariable(sb, printedVar, outcomeDeclaration, outcomeValue);
+		} else if(templateValue != null) {
+			TemplateDeclaration templateDeclaration = assessmentItem.getTemplateDeclaration(identifier);
+			renderPrintedVariable(sb, printedVar, templateDeclaration, templateValue);
+		} else {
+			sb.append("(variable ").append(identifier.toString()).append(" was not found)");
+		}
+		sb.append("</span>");
+	}
+    
+    public static final class RenderingRequest {
+    	private boolean solutionMode;
+    	private boolean endAllowed;
+    	private boolean hardResetAllowed;
+    	private boolean softResetAllowed;
+    	private boolean solutionAllowed;
+    	private boolean candidateCommentAllowed;
+    	
+    	public RenderingRequest() {
+    		//
+    	}
+
+		public boolean isSolutionMode() {
+			return solutionMode;
+		}
+
+		public void setSolutionMode(boolean solutionMode) {
+			this.solutionMode = solutionMode;
+		}
+
+		public boolean isEndAllowed() {
+			return endAllowed;
+		}
+
+		public void setEndAllowed(boolean endAllowed) {
+			this.endAllowed = endAllowed;
+		}
+
+		public boolean isHardResetAllowed() {
+			return hardResetAllowed;
+		}
+
+		public void setHardResetAllowed(boolean hardResetAllowed) {
+			this.hardResetAllowed = hardResetAllowed;
+		}
+
+		public boolean isSoftResetAllowed() {
+			return softResetAllowed;
+		}
+
+		public void setSoftResetAllowed(boolean softResetAllowed) {
+			this.softResetAllowed = softResetAllowed;
+		}
+
+		public boolean isSolutionAllowed() {
+			return solutionAllowed;
+		}
+
+		public void setSolutionAllowed(boolean solutionAllowed) {
+			this.solutionAllowed = solutionAllowed;
+		}
+
+		public boolean isCandidateCommentAllowed() {
+			return candidateCommentAllowed;
+		}
+
+		public void setCandidateCommentAllowed(boolean candidateCommentAllowed) {
+			this.candidateCommentAllowed = candidateCommentAllowed;
+		}
     }
 }

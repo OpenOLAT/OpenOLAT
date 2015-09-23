@@ -1,0 +1,60 @@
+#set($identifier = $r.toString($interaction.identifier))
+#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
+
+<input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
+
+<div class="choiceInteraction">
+#if($r.isInvalidResponse($interaction.responseIdentifier))
+	<div class="badResponse">
+	#if($interaction.minChoices == $interaction.maxChoices && $interaction.minChoices > 0)
+		You must select $interaction.minChoices #if($interaction.minChoices == 1) choice #else choices #end
+	#else
+        You must select
+        #if($interaction.minChoices > 0)
+			at least $interaction.minChoices <xsl:value-of select="@minChoices"/>
+			#if($interaction.maxChoices > 0) and #end
+		#end
+		#if($interaction.maxChoices > 0)
+			at most $interaction.maxChoices
+        #end
+		choices.
+	#end
+	</div>
+#end
+      
+	<table id="">
+		#if($interaction.getPrompt())
+         <tr class="prompt">
+           <td colspan="2">$r.renderPrompt($interaction.getPrompt())</td>
+         </tr>
+		#end
+		#if($interaction.getLabel() && !$interaction.getLabel().isEmpty())
+		<tr class="choiceInteractionLabelRow">
+			<td class="leftTextLabel">
+				$r.subStringBefore($interaction.getLabel(),"|")
+			</td>
+			<td class="rightTextLabel">
+				$r.subStringAfter($interaction.getLabel(),"|")
+			</td>
+		</tr>
+		#end
+		
+		#set($visibleOrderedChoices = $r.getVisibleOrderedSimpleChoices($interaction))
+		#foreach($simpleChoice in $visibleOrderedChoices)
+			<tr class="choiceinteraction">
+				#if($r.classContains($interaction,"choiceright"))
+					<td class="choiceInteraction">$r.renderFlowStatics($simpleChoice.getFlowStatics())</td>
+				#end
+				<td class="control">
+					<input name="qtiworks_response_${responseIdentifier}" value="$r.toString($simpleChoice.identifier)"
+					 #if($interaction.maxChoices == 1) type="radio" #else type="checkbox" #end
+					 #if($r.isItemSessionEnded()) disabled #end
+					 #if($r.valueContains($r.getResponseValue($interaction.responseIdentifier), $simpleChoice.identifier)) checked #end />
+				</td>
+				#if(!$r.classContains($interaction,"choiceright"))
+					<td class="choiceInteraction">$r.renderFlowStatics($simpleChoice.getFlowStatics())</td>
+				#end
+			</tr>
+		#end
+	</table>
+</div>

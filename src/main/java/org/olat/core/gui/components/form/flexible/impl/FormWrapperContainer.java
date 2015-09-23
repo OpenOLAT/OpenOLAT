@@ -55,10 +55,6 @@ class FormWrapperContainer extends AbstractComponent implements ComponentCollect
 		this.form = form;
 		firstInit = false;
 	}
-	
-	public boolean isStandaloneRendering() {
-		return form.isStandaloneRendering();
-	}
 
 	public String getDispatchFieldId() {
 		return form.getDispatchFieldId();
@@ -70,6 +66,10 @@ class FormWrapperContainer extends AbstractComponent implements ComponentCollect
 
 	public String getFormName() {
 		return form.getFormName();
+	}
+
+	public String getOnSubmitCallback() {
+		return form.getOnSubmitCallback();
 	}
 
 	/**

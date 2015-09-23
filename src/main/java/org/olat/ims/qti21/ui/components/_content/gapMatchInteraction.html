@@ -1,0 +1,50 @@
+#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
+#set($orderedVisibleGapTexts = $r.getVisibleOrderedChoices($interaction))
+#set($visibleGaps = $r.filterVisible($r.findGaps($interaction)))
+#set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
+
+<input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>  
+<div class="$localName">
+	#if($interaction.getPrompt())
+	<div class="prompt">
+		$r.renderPrompt($interaction.getPrompt())
+	</div>
+	#end
+	#if($r.isInvalidResponse($interaction.responseIdentifier))
+	<div class="o_error badResponse">
+      Please complete this interaction as directed.
+    </div>
+	#end
+	
+	$r.renderBlockStatics($interaction.getBlockStatics())
+	
+	<table class="table small">
+		<thead>
+	        <tr>
+				<th></th>
+				#foreach($aGapText in $orderedVisibleGapTexts)
+				<th id="qtiworks_id_${responseIdentifier}_${aGapText.identifier}">
+					$r.renderTextOrVariables($aGapText.getTextOrVariables())
+				</th>
+				#end
+	        </tr>
+		</thead>
+        #foreach($gap in $visibleGaps)
+		<tr>
+            <th>$foreach.count</th>
+            #foreach($orderedGapText in $orderedVisibleGapTexts)
+			<td>
+				#set($rValue = $orderedGapText.identifier + " " + $gap.identifier)
+                <input type="checkbox" name="qtiworks_response_${responseIdentifier}" value="${rValue}" #if($r.isItemSessionEnded()) disabled="disabled" #end #if($r.valueContains($responseValue, $rValue)) checked="checked" #end />
+			</td>
+			#end
+		</tr>
+		#end
+	</table>
+	<script type='text/javascript'>
+        QtiWorksRendering.registerGapMatchInteraction('$responseIdentifier',
+        {#foreach($oGap in $orderedVisibleGapTexts) #if($foreach.count > 1),#end $oGap.identifier:$oGap.matchMax #end},
+        {#foreach($vGap in $visibleGaps) #if($foreach.count > 1),#end $vGap.identifier:$vGap.required #end});
+	</script>
+</div>
+  

@@ -36,8 +36,11 @@ import java.util.Map;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent;
 
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
@@ -48,14 +51,14 @@ import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentTestFormItem extends AbstractAssessmentFormItem {
+public class AssessmentTestFormItem extends AssessmentObjectFormItem {
 	
 	private final AssessmentTestComponent component;
+	private final FormSubmit submitButton;
 	
-	private String mapperUri;
-	
-	public AssessmentTestFormItem(String name) {
+	public AssessmentTestFormItem(String name, FormSubmit submitButton) {
 		super(name);
+		this.submitButton = submitButton;
 		component = new AssessmentTestComponent(name + "_cmp", this);
 	}
 
@@ -63,16 +66,18 @@ public class AssessmentTestFormItem extends AbstractAssessmentFormItem {
 	public AssessmentTestComponent getComponent() {
 		return component;
 	}
-
-	public String getMapperUri() {
-		return mapperUri;
+	
+	public FormSubmit getSubmitButton() {
+		return submitButton;
 	}
 
-	public void setMapperUri(String mapperUri) {
-		this.mapperUri = mapperUri;
+	public ResolvedAssessmentTest getResolvedAssessmentTest() {
+		return component.getResolvedAssessmentTest();
 	}
 
-
+	public void setResolvedAssessmentTest(ResolvedAssessmentTest resolvedAssessmentTest) {
+		component.setResolvedAssessmentTest(resolvedAssessmentTest);
+	}
 
 	public TestSessionController getTestSessionController() {
 		return component.getTestSessionController();
@@ -81,10 +86,6 @@ public class AssessmentTestFormItem extends AbstractAssessmentFormItem {
 	public void setTestSessionController(TestSessionController testSessionController) {
 		component.setTestSessionController(testSessionController);
 	}
-	
-
-
-
 
 	@Override
 	protected Component getFormItemComponent() {
@@ -99,25 +100,71 @@ public class AssessmentTestFormItem extends AbstractAssessmentFormItem {
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		String uri = ureq.getModuleURI();
-		if(uri.startsWith(selectItem.getPath())) {
-			String sub = uri.substring(selectItem.getPath().length());
-			QTIWorksAssessmentTestEvent event = new QTIWorksAssessmentTestEvent(selectItem, sub, this);
-			getRootForm().fireFormEvent(ureq, event);
-		} else if(uri.startsWith(finishItem.getPath())) {
-			QTIWorksAssessmentTestEvent event = new QTIWorksAssessmentTestEvent(finishItem, this);
-			getRootForm().fireFormEvent(ureq, event);
-		} else if(uri.startsWith(reviewItem.getPath())) {
-			String sub = uri.substring(reviewItem.getPath().length());
-			QTIWorksAssessmentTestEvent event = new QTIWorksAssessmentTestEvent(reviewItem, sub, this);
-			getRootForm().fireFormEvent(ureq, event);
-		} else if(uri.startsWith(itemSolution.getPath())) {
-			String sub = uri.substring(itemSolution.getPath().length());
-			QTIWorksAssessmentTestEvent event = new QTIWorksAssessmentTestEvent(itemSolution, sub, this);
-			getRootForm().fireFormEvent(ureq, event);
-		} else if(uri.startsWith(testPartNavigation.getPath())) {
-			QTIWorksAssessmentTestEvent event = new QTIWorksAssessmentTestEvent(testPartNavigation, this);
-			getRootForm().fireFormEvent(ureq, event);
-		} else if(uri.startsWith(response.getPath())) {
+		if(uri == null) {
+			QTIWorksAssessmentTestEvent event;
+			String cmd = ureq.getParameter("cid");
+			if(StringHelper.containsNonWhitespace(cmd)) {
+				switch(QTIWorksAssessmentTestEvent.Event.valueOf(cmd)) {
+					case selectItem: {
+						String selectedItem = ureq.getParameter("item");
+						event = new QTIWorksAssessmentTestEvent(selectItem, selectedItem, this);
+						break;
+					}
+					case finishItem: {
+						event = new QTIWorksAssessmentTestEvent(finishItem, this);
+						break;
+					}
+					case endTestPart: {
+						event = new QTIWorksAssessmentTestEvent(endTestPart, this);
+						break;
+					}
+					case advanceTestPart: {
+						event = new QTIWorksAssessmentTestEvent(advanceTestPart, this);
+						break;
+					}
+					case testPartNavigation: {
+						event = new QTIWorksAssessmentTestEvent(testPartNavigation, this);
+						break;
+					}
+					case reviewItem: {
+						String selectedItem = ureq.getParameter("item");
+						event = new QTIWorksAssessmentTestEvent(reviewItem, selectedItem, this);
+						break;
+					}
+					case itemSolution: {
+						String selectedItem = ureq.getParameter("item");
+						event = new QTIWorksAssessmentTestEvent(itemSolution, selectedItem, this);
+						break;
+					}
+					case reviewTestPart: {
+						event = new QTIWorksAssessmentTestEvent(reviewTestPart, this);
+						break;
+					}
+					case exitTest: {
+						event = new QTIWorksAssessmentTestEvent(exitTest, this);
+						break;
+					}
+					default: {
+						event = null;
+					}
+				}
+			} else {
+				//press return
+				Map<Identifier, StringResponseData> stringResponseMap = extractStringResponseData();
+				Map<Identifier, MultipartFileInfos> fileResponseMap;
+				if(getRootForm().isMultipartEnabled()) {
+					fileResponseMap = extractFileResponseData();
+				} else {
+					fileResponseMap = Collections.emptyMap();
+				}
+				event = new QTIWorksAssessmentTestEvent(response, stringResponseMap, fileResponseMap, this);
+			}
+			if(event != null) {
+				getRootForm().fireFormEvent(ureq, event);
+			}
+			component.setDirty(true);
+			
+		}  else if(uri.startsWith(response.getPath())) {
 			Map<Identifier, StringResponseData> stringResponseMap = extractStringResponseData();
 			Map<Identifier, MultipartFileInfos> fileResponseMap;
 			if(getRootForm().isMultipartEnabled()) {
@@ -127,20 +174,7 @@ public class AssessmentTestFormItem extends AbstractAssessmentFormItem {
 			}
 			QTIWorksAssessmentTestEvent event = new QTIWorksAssessmentTestEvent(response, stringResponseMap, fileResponseMap, this);
 			getRootForm().fireFormEvent(ureq, event);
-		} else if(uri.startsWith(endTestPart.getPath())) {
-			QTIWorksAssessmentTestEvent event = new QTIWorksAssessmentTestEvent(endTestPart, this);
-			getRootForm().fireFormEvent(ureq, event);
-		} else if(uri.startsWith(advanceTestPart.getPath())) {
-			QTIWorksAssessmentTestEvent event = new QTIWorksAssessmentTestEvent(advanceTestPart, this);
-			getRootForm().fireFormEvent(ureq, event);
-		} else if(uri.startsWith(reviewTestPart.getPath())) {
-			QTIWorksAssessmentTestEvent event = new QTIWorksAssessmentTestEvent(reviewTestPart, this);
-			getRootForm().fireFormEvent(ureq, event);
-		} else if(uri.startsWith(exitTest.getPath())) {
-			QTIWorksAssessmentTestEvent event = new QTIWorksAssessmentTestEvent(exitTest, this);
-			getRootForm().fireFormEvent(ureq, event);
-			
-		}
+		} 
 	}
 
 	@Override

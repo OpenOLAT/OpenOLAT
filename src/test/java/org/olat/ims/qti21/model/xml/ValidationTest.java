@@ -46,7 +46,7 @@ public class ValidationTest {
 	@Test
 	public void generateUUID() {
 		for(int i=0; i<1000; i++) {
-			System.out.println("oo" + UUID.randomUUID().toString().replace("-", "").substring(2));
+			System.out.println("OO2-" + UUID.randomUUID().toString());
 		}
 	}
 	

@@ -1,0 +1,10 @@
+#set($identifier = $r.toString($interaction.identifier))
+#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
+
+<input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
+<span class="$localName">
+	<button type="button" name="qtiworks_response_${responseIdentifier}" class="btn btn-default" #if($isItemSessionEnded) disabled #end>
+		<span>${interaction.title}</span>
+	</button>
+</span>
+

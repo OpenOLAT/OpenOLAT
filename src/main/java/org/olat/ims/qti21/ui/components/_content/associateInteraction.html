@@ -1,0 +1,53 @@
+#set($identifier = $r.toString($interaction.identifier))
+#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
+#set($appletContainerId = "qtiworks_id_appletContainer_" + $responseIdentifier)
+#set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
+#set($choices = $r.getVisibleAssociableChoices($interaction))
+
+<input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
+<div class="$localName">
+	#if($interaction.getPrompt())
+	<div class="prompt">
+		$r.renderPrompt($interaction.getPrompt())
+	</div>
+	#end
+	
+	#if($r.isInvalidResponse($interaction.responseIdentifier))
+	<div class="o_error badResponse">
+      Please complete this interaction as directed.
+    </div>
+	#end
+
+	<div id="${appletContainerId}" class="appletContainer">
+		<div id="${appletContainerId}_items" style="padding:15px;">
+        	#foreach($choice in $choices)
+            	<div id="${choice.identifier}" class="o_associate_item" style="width: 100px; float:left; margin-right:15px; border:2px solid grey;">
+              		$r.renderFlowStatics($choice.getFlowStatics())
+            	</div>
+			#end
+			<div style="clear:both; "></div>
+		</div>
+		<div id="${appletContainerId}_panel" style="max-width:500px;">
+			#set($maxChoices = $r.maxToList($interaction.maxAssociations))
+			#foreach($maxChoice in $maxChoices)
+              	<div class="association" style="">
+					<div class="association_box left" style="width: 100px; height:50px; float:left; border: 3px dotted grey;"></div>
+					<div class="association_box right" style="width: 100px; height:50px; float:right; border: 3px dotted grey;"></div>
+					<div style="clear:both; "></div>
+				</div>
+            #end
+			<div style="clear:both; "></div>
+		</div>
+		
+		<script type="text/javascript">
+		jQuery(function() {
+		#if($r.isNotNullValue($responseValue))
+			associateDrawResponse('$appletContainerId','$r.toString($responseValue,",")');
+		#else
+			associateItem('$appletContainerId', '$responseIdentifier');
+		#end
+		});
+		</script>
+	</div>
+</div>
+

@@ -38,6 +38,7 @@ import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
@@ -74,64 +75,64 @@ class FormWrapperContainerRenderer implements ComponentRenderer {
 		boolean hasRenderInstr = (args != null && args.length > 0);
 
 		if (toRender != null) {
-			if(formC.isStandaloneRendering()) {
-				renderer.render(sb, toRender, args);
-			} else {
-				AJAXFlags flags = renderer.getGlobalSettings().getAjaxFlags();
-				boolean iframePostEnabled = flags.isIframePostEnabled();
-				/*
-				 * FORM HEADER
-				 */
-				sb.append("<form ");
-				if (hasRenderInstr) {
-					// append render instructions if available
-					// flexi form supports only class
-					FormJSHelper.appendRenderInstructions(sb, args[0], acceptedInstructions);
-				}
-				
-
-				sb.append(" method=\"post\"");
-				// Set encoding to multipart only if multipart data is available to reduce 
-				// transfer and parameter extracing overhead
-				if (formC.isMultipartEnabled()) {
-					sb.append(" enctype=\"multipart/form-data\"");
-				}
-
-				sb.append(" id=\"");
-				sb.append(formC.getFormName());
-				sb.append("\" name=\"");
-				sb.append(formC.getFormName());
-				sb.append("\" action=\"");
-				ubu.buildURI(sb, new String[] { Form.FORMID }, new String[] { Form.FORMCMD }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME
-						: AJAXFlags.MODE_NORMAL);
-				sb.append("\" ");
-				//check if ready to accept a new request
-				if(iframePostEnabled) {
-					sb.append(" onsubmit=\"o_XHRSubmit('").append(formC.getFormName()).append("');\" ");
-				} else {
-					sb.append(" onsubmit=\"if(o_info.linkbusy) return false; else o_beforeserver(); return true;\" ");
-				}
-				sb.append(">");
-				// hidden input field for dispatch uri
-				sb.append("<input type=\"hidden\" id=\"")
-				  .append(formC.getDispatchFieldId())
-				  .append("\" name=\"dispatchuri\" value=\"").append(Form.FORM_UNDEFINED).append("\" />")
-				  .append("<input type=\"hidden\" id=\"")
-				  .append(formC.getEventFieldId())
-				  .append("\" name=\"dispatchevent\" value=\"").append(Form.FORM_UNDEFINED).append("\" />");
-				/*
-				 * FORM CONTAINER
-				 */
-				renderer.render(sb, toRender, args);
-				/*
-				 * FORM FOOTER
-				 */
-				sb.append("</form>");
-				/*
-				 * FORM SUBMIT on keypress enter
-				 */
-				sb.append(FormJSHelper.submitOnKeypressEnter(formC.getFormName()));
+			AJAXFlags flags = renderer.getGlobalSettings().getAjaxFlags();
+			boolean iframePostEnabled = flags.isIframePostEnabled();
+			/*
+			 * FORM HEADER
+			 */
+			sb.append("<form ");
+			if (hasRenderInstr) {
+				// append render instructions if available
+				// flexi form supports only class
+				FormJSHelper.appendRenderInstructions(sb, args[0], acceptedInstructions);
 			}
+			
+
+			sb.append(" method=\"post\"");
+			// Set encoding to multipart only if multipart data is available to reduce 
+			// transfer and parameter extracing overhead
+			if (formC.isMultipartEnabled()) {
+				sb.append(" enctype=\"multipart/form-data\"");
+			}
+
+			sb.append(" id=\"");
+			sb.append(formC.getFormName());
+			sb.append("\" name=\"");
+			sb.append(formC.getFormName());
+			sb.append("\" action=\"");
+			ubu.buildURI(sb, new String[] { Form.FORMID }, new String[] { Form.FORMCMD }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME
+					: AJAXFlags.MODE_NORMAL);
+			sb.append("\" ");
+			//check if ready to accept a new request
+			if(iframePostEnabled) {
+				sb.append(" onsubmit=\"");
+				if(StringHelper.containsNonWhitespace(formC.getOnSubmitCallback())) {
+					sb.append(formC.getOnSubmitCallback());
+				}
+				sb.append("o_XHRSubmit('").append(formC.getFormName()).append("');\" ");
+			} else {
+				sb.append(" onsubmit=\"if(o_info.linkbusy) return false; else o_beforeserver(); return true;\" ");
+			}
+			sb.append(">");
+			// hidden input field for dispatch uri
+			sb.append("<input type=\"hidden\" id=\"")
+			  .append(formC.getDispatchFieldId())
+			  .append("\" name=\"dispatchuri\" value=\"").append(Form.FORM_UNDEFINED).append("\" />")
+			  .append("<input type=\"hidden\" id=\"")
+			  .append(formC.getEventFieldId())
+			  .append("\" name=\"dispatchevent\" value=\"").append(Form.FORM_UNDEFINED).append("\" />");
+			/*
+			 * FORM CONTAINER
+			 */
+			renderer.render(sb, toRender, args);
+			/*
+			 * FORM FOOTER
+			 */
+			sb.append("</form>");
+			/*
+			 * FORM SUBMIT on keypress enter
+			 */
+			sb.append(FormJSHelper.submitOnKeypressEnter(formC.getFormName()));
 		}
 	}
 

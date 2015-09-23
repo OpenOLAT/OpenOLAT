@@ -1,0 +1,33 @@
+#set($identifier = $r.toString($interaction.identifier))
+#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
+#set($appletContainerId = "qtiworks_id_appletContainer_" + $responseIdentifier)
+#set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
+
+<input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
+<div class="$localName">
+	#if($interaction.getPrompt())
+	<div class="prompt">
+		$r.renderPrompt($interaction.getPrompt())
+	</div>
+	#end
+
+	#if($r.isInvalidResponse($interaction.responseIdentifier))
+	<div class="o_error badResponse">
+      Please complete this interaction as directed.
+    </div>
+	#end
+	<div id="${appletContainerId}" class="appletContainer" data-openolat="">
+		<canvas id="${appletContainerId}_canvas" width="${interaction.object.width}" height="${interaction.object.height}" style="background-image:url('${r.convertLink($interaction.object.data)}');"></canvas>
+		<script type="text/javascript">
+		#if($r.isNotNullValue($responseValue))
+			jQuery(function() {
+				selectPointDrawResponse('$appletContainerId','$r.toString($responseValue,":")');
+			});
+		#else
+			jQuery(function() {
+				selectPointItem('$appletContainerId',$interaction.maxChoices,'$responseIdentifier');	
+			});			
+		#end
+      </script>
+	</div>
+</div>

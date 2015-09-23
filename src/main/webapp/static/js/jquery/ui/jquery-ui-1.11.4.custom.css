@@ -1,6 +1,6 @@
-/*! jQuery UI - v1.11.4 - 2015-05-04
+/*! jQuery UI - v1.11.4 - 2015-09-23
 * http://jqueryui.com
-* Includes: core.css, draggable.css, resizable.css, selectable.css, sortable.css, autocomplete.css, button.css, datepicker.css, dialog.css, menu.css, selectmenu.css, tooltip.css, theme.css
+* Includes: core.css, draggable.css, resizable.css, selectable.css, sortable.css, button.css, datepicker.css, dialog.css, slider.css, tooltip.css, theme.css
 * To view and modify this theme, visit http://jqueryui.com/themeroller/?ffDefault=Verdana%2CArial%2Csans-serif&fwDefault=normal&fsDefault=1.1em&cornerRadius=4px&bgColorHeader=cccccc&bgTextureHeader=highlight_soft&bgImgOpacityHeader=75&borderColorHeader=aaaaaa&fcHeader=222222&iconColorHeader=222222&bgColorContent=ffffff&bgTextureContent=flat&bgImgOpacityContent=75&borderColorContent=aaaaaa&fcContent=222222&iconColorContent=222222&bgColorDefault=e6e6e6&bgTextureDefault=glass&bgImgOpacityDefault=75&borderColorDefault=d3d3d3&fcDefault=555555&iconColorDefault=888888&bgColorHover=dadada&bgTextureHover=glass&bgImgOpacityHover=75&borderColorHover=999999&fcHover=212121&iconColorHover=454545&bgColorActive=ffffff&bgTextureActive=glass&bgImgOpacityActive=65&borderColorActive=aaaaaa&fcActive=212121&iconColorActive=454545&bgColorHighlight=fbf9ee&bgTextureHighlight=glass&bgImgOpacityHighlight=55&borderColorHighlight=fcefa1&fcHighlight=363636&iconColorHighlight=2e83ff&bgColorError=fef1ec&bgTextureError=glass&bgImgOpacityError=95&borderColorError=cd0a0a&fcError=cd0a0a&iconColorError=cd0a0a&bgColorOverlay=aaaaaa&bgTextureOverlay=flat&bgImgOpacityOverlay=0&opacityOverlay=30&bgColorShadow=aaaaaa&bgTextureShadow=flat&bgImgOpacityShadow=0&opacityShadow=30&thicknessShadow=8px&offsetTopShadow=-8px&offsetLeftShadow=-8px&cornerRadiusShadow=8px
 * Copyright 2015 jQuery Foundation and other contributors; Licensed MIT */
 
@@ -172,12 +172,6 @@
 .ui-sortable-handle {
 	-ms-touch-action: none;
 	touch-action: none;
-}
-.ui-autocomplete {
-	position: absolute;
-	top: 0;
-	left: 0;
-	cursor: default;
 }
 .ui-button {
 	display: inline-block;
@@ -508,107 +502,70 @@ button.ui-button::-moz-focus-inner {
 .ui-draggable .ui-dialog-titlebar {
 	cursor: move;
 }
-.ui-menu {
-	list-style: none;
-	padding: 0;
-	margin: 0;
+.ui-slider {
+	position: relative;
+	text-align: left;
+}
+.ui-slider .ui-slider-handle {
+	position: absolute;
+	z-index: 2;
+	width: 1.2em;
+	height: 1.2em;
+	cursor: default;
+	-ms-touch-action: none;
+	touch-action: none;
+}
+.ui-slider .ui-slider-range {
+	position: absolute;
+	z-index: 1;
+	font-size: .7em;
 	display: block;
-	outline: none;
-}
-.ui-menu .ui-menu {
-	position: absolute;
-}
-.ui-menu .ui-menu-item {
-	position: relative;
-	margin: 0;
-	padding: 3px 1em 3px .4em;
-	cursor: pointer;
-	min-height: 0; /* support: IE7 */
-	/* support: IE10, see #8844 */
-	list-style-image: url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7");
-}
-.ui-menu .ui-menu-divider {
-	margin: 5px 0;
-	height: 0;
-	font-size: 0;
-	line-height: 0;
-	border-width: 1px 0 0 0;
-}
-.ui-menu .ui-state-focus,
-.ui-menu .ui-state-active {
-	margin: -1px;
+	border: 0;
+	background-position: 0 0;
 }
 
-/* icon support */
-.ui-menu-icons {
-	position: relative;
-}
-.ui-menu-icons .ui-menu-item {
-	padding-left: 2em;
+/* support: IE8 - See #6727 */
+.ui-slider.ui-state-disabled .ui-slider-handle,
+.ui-slider.ui-state-disabled .ui-slider-range {
+	filter: inherit;
 }
 
-/* left-aligned */
-.ui-menu .ui-icon {
-	position: absolute;
+.ui-slider-horizontal {
+	height: .8em;
+}
+.ui-slider-horizontal .ui-slider-handle {
+	top: -.3em;
+	margin-left: -.6em;
+}
+.ui-slider-horizontal .ui-slider-range {
 	top: 0;
-	bottom: 0;
-	left: .2em;
-	margin: auto 0;
+	height: 100%;
 }
-
-/* right-aligned */
-.ui-menu .ui-menu-icon {
-	left: auto;
+.ui-slider-horizontal .ui-slider-range-min {
+	left: 0;
+}
+.ui-slider-horizontal .ui-slider-range-max {
 	right: 0;
 }
-.ui-selectmenu-menu {
-	padding: 0;
-	margin: 0;
-	position: absolute;
-	top: 0;
+
+.ui-slider-vertical {
+	width: .8em;
+	height: 100px;
+}
+.ui-slider-vertical .ui-slider-handle {
+	left: -.3em;
+	margin-left: 0;
+	margin-bottom: -.6em;
+}
+.ui-slider-vertical .ui-slider-range {
 	left: 0;
-	display: none;
+	width: 100%;
 }
-.ui-selectmenu-menu .ui-menu {
-	overflow: auto;
-	/* Support: IE7 */
-	overflow-x: hidden;
-	padding-bottom: 1px;
+.ui-slider-vertical .ui-slider-range-min {
+	bottom: 0;
 }
-.ui-selectmenu-menu .ui-menu .ui-selectmenu-optgroup {
-	font-size: 1em;
-	font-weight: bold;
-	line-height: 1.5;
-	padding: 2px 0.4em;
-	margin: 0.5em 0 0 0;
-	height: auto;
-	border: 0;
-}
-.ui-selectmenu-open {
-	display: block;
-}
-.ui-selectmenu-button {
-	display: inline-block;
-	overflow: hidden;
-	position: relative;
-	text-decoration: none;
-	cursor: pointer;
-}
-.ui-selectmenu-button span.ui-icon {
-	right: 0.5em;
-	left: auto;
-	margin-top: -8px;
-	position: absolute;
-	top: 50%;
-}
-.ui-selectmenu-button span.ui-selectmenu-text {
-	text-align: left;
-	padding: 0.4em 2.1em 0.4em 1em;
-	display: block;
-	line-height: 1.4;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+.ui-slider-vertical .ui-slider-range-max {
+	top: 0;
 }
 .ui-tooltip {
 	padding: 8px;

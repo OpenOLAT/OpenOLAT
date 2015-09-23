@@ -1,0 +1,21 @@
+#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
+#set($choices = $r.getVisibleOrderedChoices($interaction))
+#set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
+
+<input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
+<span class="$localName"> 
+	#if($r.isInvalidResponse($interaction.responseIdentifier))
+	<span class="o_error badResponse">
+          You must select one of the following options
+    </span>
+	#end
+      
+	<select name="qtiworks_response_${responseIdentifier}">
+        <option value="" #if($r.isItemSessionEnded()) disabled #end>(Select)</option>
+        #foreach($choice in $choices)
+        	<option value="${choice.identifier}" #if($r.isItemSessionEnded()) disabled #end #if($r.valueContains($responseValue,$choice.identifier)) selected #end>
+        	$r.renderTextOrVariables($choice.getTextOrVariables())
+        	</option>
+        #end
+	</select>
+</span>
