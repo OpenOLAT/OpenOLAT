@@ -47,6 +47,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ObjectivesHelper;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 
 import de.bps.course.nodes.DENCourseNode;
@@ -88,10 +89,10 @@ public class DENRunController extends BasicController implements GenericEventLis
 	 * @param denCourseNode
 	 * @param userCourseEnv
 	 */
-	public DENRunController(UserRequest ureq, WindowControl wControl, ModuleConfiguration moduleConfig, DENCourseNode denCourseNode) {
+	public DENRunController(UserRequest ureq, WindowControl wControl, ModuleConfiguration moduleConfig, UserCourseEnvironment userCourseEnv, DENCourseNode denCourseNode) {
 		super(ureq, wControl);
 		this.courseNode = denCourseNode;
-		this.ores = CourseFactory.loadCourse((Long)moduleConfig.get(DENCourseNode.CONF_COURSE_ID));
+		this.ores = CourseFactory.loadCourse(userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		this.cancelEnrollEnabled = ((Boolean) moduleConfig.get(DENCourseNode.CONF_CANCEL_ENROLL_ENABLED)).booleanValue();
 
 		denManager = DENManager.getInstance();

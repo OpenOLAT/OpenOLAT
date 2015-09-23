@@ -36,9 +36,11 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
@@ -141,6 +143,26 @@ public class CertificatePDFFormWorker {
 		
 		String fullName = userManager.getUserDisplayName(identity);
 		fillField("fullName", fullName, acroForm);
+		
+		String firstName = user.getProperty(UserConstants.FIRSTNAME, null);
+		String lastName = user.getProperty(UserConstants.LASTNAME, null);
+		
+		StringBuilder firstNameLastName = new StringBuilder();
+		StringBuilder lastNameFirstName = new StringBuilder();
+		if(StringHelper.containsNonWhitespace(firstName)) {
+			firstNameLastName.append(firstName);
+		}
+		if(StringHelper.containsNonWhitespace(lastName)) {
+			if(firstNameLastName.length() > 0) firstNameLastName.append(" ");
+			firstNameLastName.append(lastName);
+			lastNameFirstName.append(lastName);
+		}
+		if(StringHelper.containsNonWhitespace(firstName)) {
+			if(lastNameFirstName.length() > 0) lastNameFirstName.append(" ");
+			lastNameFirstName.append(firstName);
+		}
+		fillField("firstNameLastName", firstNameLastName.toString(), acroForm);
+		fillField("lastNameFirstName", lastNameFirstName.toString(), acroForm);
 	}
 
 	private void fillRepositoryEntry(PDAcroForm acroForm) throws IOException {

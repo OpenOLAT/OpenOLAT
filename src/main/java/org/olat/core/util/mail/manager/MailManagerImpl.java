@@ -1437,6 +1437,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	 */
 	private MimeMessage createMessage(Address bounceAdress) {
 		String mailhost = WebappHelper.getMailConfig("mailhost");
+		String mailport = WebappHelper.getMailConfig("mailport");
 		String mailhostTimeout = WebappHelper.getMailConfig("mailTimeout");
 		boolean sslEnabled = Boolean.parseBoolean(WebappHelper.getMailConfig("sslEnabled"));
 		boolean sslCheckCertificate = Boolean.parseBoolean(WebappHelper.getMailConfig("sslCheckCertificate"));
@@ -1454,12 +1455,16 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		Properties p = new Properties();
 		p.put("mail.smtp.from", bounceAdress.toString());
 		p.put("mail.smtp.host", mailhost);
+		if(StringHelper.containsNonWhitespace(mailport)) {
+			p.put("mail.smtp.port", mailport);
+		}
 		p.put("mail.smtp.timeout", mailhostTimeout);
 		p.put("mail.smtp.connectiontimeout", mailhostTimeout);
 		p.put("mail.smtp.ssl.enable", sslEnabled);
 		p.put("mail.smtp.ssl.checkserveridentity", sslCheckCertificate);
 		if(startTls) {
 			p.put("mail.smtp.starttls.enable", "true");
+			p.put("mail.smtp.ssl.trust", mailhost);
 		}
 		
 		Session mailSession;

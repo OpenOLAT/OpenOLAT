@@ -44,6 +44,9 @@ import org.olat.course.ICourse;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.PublishTreeModel;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
+import org.olat.resource.OLATResource;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -56,6 +59,9 @@ public class QuickPublishController extends BasicController {
 	private final Link noLink, manualLink, autoLink;
 	private final OLATResourceable courseOres;
 	
+	@Autowired
+	private RepositoryManager repositoryManager;
+	
 	public QuickPublishController(UserRequest ureq, WindowControl wControl, ICourse course) {
 		super(ureq, wControl);
 		this.courseOres = OresHelper.clone(course);
@@ -64,7 +70,8 @@ public class QuickPublishController extends BasicController {
 		
 		String accessI18n = "";
 		String accessI18CssClass = "o_success";
-		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		OLATResource courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(courseResource, false);
 		if(entry.isMembersOnly()) {
 			accessI18n = translate("cif.access.membersonly");
 		} else {
