@@ -60,6 +60,8 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 		super(name);
 	}
 	
+	public abstract AssessmentObjectFormItem getQtiItem();
+	
 	public String getMapperUri() {
 		return mapperUri;
 	}

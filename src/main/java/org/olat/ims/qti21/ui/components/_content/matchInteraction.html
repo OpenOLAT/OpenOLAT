@@ -36,14 +36,14 @@
 					#set($responseValue = $set1Identifier + " " + $set2Identifier)
 					#set($responseChecked = $r.getResponseValue($interaction.responseIdentifier))
                 	<td>
-                  		<input type="checkbox" name="qtiworks_response_${responseIdentifier}" value="${responseValue}" #if($r.valueContains($responseChecked,$responseValue)) checked #end #if($isItemSessionEnded) disabled #end/>
+                  		<input type="checkbox" name="qtiworks_response_${responseIdentifier}" value="${responseValue}" #if($r.valueContains($responseChecked,$responseValue)) checked #end #if($r.isItemSessionEnded()) disabled #end/>
                 	</td>
 				#end
             </tr>
 		#end
 		</tbody>
 	</table>
-	#if($isItemSessionOpen)
+	#if($r.isItemSessionOpen())
         <script type='text/javascript'>
 		QtiWorksRendering.registerMatchInteraction('$responseIdentifier', $interaction.maxAssociations,
             {#foreach($choice1 in $orderedSet1) #if($foreach.count > 1),#end $choice1.identifier:$choice1.matchMax #end},

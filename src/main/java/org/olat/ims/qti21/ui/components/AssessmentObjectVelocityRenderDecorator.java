@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -149,7 +150,6 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 			FileValue fValue = (FileValue)value;
 			return fValue.getFile() != null;
 		}
-		
 		return value != null && !value.isNull();
 	}
 	
@@ -174,64 +174,42 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	//<xsl:variable name="minStrings" select="if (@minStrings) then xs:integer(@minStrings) else 1" as="xs:integer"/>
 	public String getMinStrings(ExtendedTextInteraction interaction) {
 		int minStrings = interaction.getMinStrings();
-		
 		return Integer.toString(minStrings);
 	}
 	
 	public String getMaxStrings(ExtendedTextInteraction interaction) {
 		Integer maxStrings = interaction.getMaxStrings();
-		
 		return maxStrings == null ? "()" : Integer.toString(maxStrings);
 	}
 	
 	public List<SimpleAssociableChoice> getVisibleAssociableChoices(AssociateInteraction interaction) {
-		List<SimpleAssociableChoice> choices = new ArrayList<>(interaction.getSimpleAssociableChoices());
-		for(Iterator<SimpleAssociableChoice> it=choices.iterator(); it.hasNext(); ) {
-			if(!isVisible(it.next(), itemSessionState)) {
-				it.remove();
-			}
-		}
-		return choices;
+		return interaction.getSimpleAssociableChoices().stream()
+			.filter((choice) -> isVisible(choice, itemSessionState))
+			.collect(Collectors.toList());
 	}
 	
 	public List<HotspotChoice> getVisibleHotspotChoices(GraphicOrderInteraction interaction) {
-		List<HotspotChoice> choices = new ArrayList<>(interaction.getHotspotChoices());
-		for(Iterator<HotspotChoice> it=choices.iterator(); it.hasNext(); ) {
-			if(!isVisible(it.next(), itemSessionState)) {
-				it.remove();
-			}
-		}
-		return choices;
+		return interaction.getHotspotChoices().stream()
+				.filter((hotspot) -> isVisible(hotspot, itemSessionState))
+				.collect(Collectors.toList());
 	}
 	
 	public List<AssociableHotspot> getVisibleAssociableHotspots(GraphicGapMatchInteraction interaction) {
-		List<AssociableHotspot> choices = new ArrayList<>(interaction.getAssociableHotspots());
-		for(Iterator<AssociableHotspot> it=choices.iterator(); it.hasNext(); ) {
-			if(!isVisible(it.next(), itemSessionState)) {
-				it.remove();
-			}
-		}
-		return choices;
+		return interaction.getAssociableHotspots().stream()
+				.filter((hotspot) -> isVisible(hotspot, itemSessionState))
+				.collect(Collectors.toList());
 	}
 	
 	public List<AssociableHotspot> getVisibleAssociableHotspots(GraphicAssociateInteraction interaction) {
-		List<AssociableHotspot> choices = new ArrayList<>(interaction.getAssociableHotspots());
-		for(Iterator<AssociableHotspot> it=choices.iterator(); it.hasNext(); ) {
-			if(!isVisible(it.next(), itemSessionState)) {
-				it.remove();
-			}
-		}
-		return choices;
+		return interaction.getAssociableHotspots().stream()
+				.filter((hotspot) -> isVisible(hotspot, itemSessionState))
+				.collect(Collectors.toList());
 	}
 	
 	public List<GapImg> getVisibleGapImgs(GraphicGapMatchInteraction interaction) {
-		List<GapImg> choices = new ArrayList<>(interaction.getGapImgs());
-		for(Iterator<GapImg> it=choices.iterator(); it.hasNext(); ) {
-			if(!isVisible(it.next(), itemSessionState)) {
-				it.remove();
-			}
-		}
-		return choices;
+		return interaction.getGapImgs().stream()
+				.filter((gapImg) -> isVisible(gapImg, itemSessionState))
+				.collect(Collectors.toList());
 	}
 	
 	public List<SimpleAssociableChoice> getVisibleOrderedChoices(MatchInteraction interaction, int pos) {
@@ -249,17 +227,13 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 			for(Identifier choiceOrder:choiceOrders) {
 				choices.add(idTochoice.get(choiceOrder));
 			}
-			
 		} else {
-			choices = new ArrayList<>(interaction.getSimpleMatchSets().get(pos).getSimpleAssociableChoices());
+			choices = interaction.getSimpleMatchSets().get(pos).getSimpleAssociableChoices();
 		}
-
-		for(Iterator<SimpleAssociableChoice> it=choices.iterator(); it.hasNext(); ) {
-			if(!isVisible(it.next(), itemSessionState)) {
-				it.remove();
-			}
-		}
-		return choices;
+		
+		return choices.stream()
+				.filter((choice) -> isVisible(choice, itemSessionState))
+				.collect(Collectors.toList());
 	}
 	
 	//<xsl:apply-templates select="qw:get-visible-ordered-choices(., qti:simpleChoice)"/>
@@ -271,21 +245,17 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 			//<xsl:variable name="choiceSequence" as="xs:string?"
 		    //  select="$shuffledChoiceOrders[@responseIdentifier=$interaction/@responseIdentifier]/@choiceSequence"/>
 			List<Identifier> choiceOrders = itemSessionState.getShuffledInteractionChoiceOrder(interaction.getResponseIdentifier());
-
+			
 			choices = new ArrayList<>();
-			for(Identifier choiceOrder:choiceOrders) {
-				choices.add(interaction.getSimpleChoice(choiceOrder));
-			}
+			choiceOrders.forEach((choiceIdentifier)
+					-> choices.add(interaction.getSimpleChoice(choiceIdentifier)));
 		} else {
-			choices = new ArrayList<>(interaction.getSimpleChoices());
+			choices = interaction.getSimpleChoices();
 		}
-
-		for(Iterator<SimpleChoice> it=choices.iterator(); it.hasNext(); ) {
-			if(!isVisible(it.next(), itemSessionState)) {
-				it.remove();
-			}
-		}
-		return choices;
+		
+		return choices.stream()
+			.filter((choice) -> isVisible(choice, itemSessionState))
+			.collect(Collectors.toList());
 	}
 	
 	public List<SimpleChoice> getVisibleOrderedSimpleChoices(OrderInteraction interaction) {
@@ -302,15 +272,11 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 				choices.add(interaction.getSimpleChoice(choiceOrder));
 			}
 		} else {
-			choices = new ArrayList<>(interaction.getSimpleChoices());
+			choices = interaction.getSimpleChoices();
 		}
-
-		for(Iterator<SimpleChoice> it=choices.iterator(); it.hasNext(); ) {
-			if(!isVisible(it.next(), itemSessionState)) {
-				it.remove();
-			}
-		}
-		return choices;
+		return choices.stream()
+				.filter((choice) -> isVisible(choice, itemSessionState))
+				.collect(Collectors.toList());
 	}
 	/*
 	  <xsl:function name="qw:get-visible-ordered-choices" as="element()*">
@@ -345,15 +311,12 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 				choices.add(interaction.getInlineChoice(choiceOrder));
 			}
 		} else {
-			choices = new ArrayList<>(interaction.getInlineChoices());
+			choices = interaction.getInlineChoices();
 		}
-
-		for(Iterator<InlineChoice> it=choices.iterator(); it.hasNext(); ) {
-			if(!isVisible(it.next(), itemSessionState)) {
-				it.remove();
-			}
-		}
-		return choices;
+		
+		return choices.stream()
+				.filter((choice) -> isVisible(choice, itemSessionState))
+				.collect(Collectors.toList());
 	}
 	
 	public List<GapChoice> getVisibleOrderedChoices(GapMatchInteraction interaction) {
@@ -372,13 +335,10 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		} else {
 			choices = new ArrayList<>(interaction.getGapChoices());
 		}
-
-		for(Iterator<GapChoice> it=choices.iterator(); it.hasNext(); ) {
-			if(!isVisible(it.next(), itemSessionState)) {
-				it.remove();
-			}
-		}
-		return choices;
+		
+		return choices.stream()
+				.filter((choice) -> isVisible(choice, itemSessionState))
+				.collect(Collectors.toList());
 	}
 	
 	public List<Gap> findGaps(GapMatchInteraction interaction) {
@@ -388,13 +348,9 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	public List<Gap> filterVisible(List<Gap> gaps) {
 		if(gaps == null) return new ArrayList<>(0);
 		
-		List<Gap> gapsCopy = new ArrayList<>(gaps);
-		for(Iterator<Gap> it=gapsCopy.iterator(); it.hasNext(); ) {
-			if(!isVisible(it.next(), itemSessionState)) {
-				it.remove();
-			}
-		}
-		return gapsCopy;
+		return gaps.stream()
+				.filter((gap) -> isVisible(gap, itemSessionState))
+				.collect(Collectors.toList());
 	}
 	
 	/*

@@ -26,7 +26,6 @@ import static uk.ac.ed.ph.qtiworks.mathassess.MathAssessConstants.MATHS_CONTENT_
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.util.StringHelper;
@@ -39,6 +38,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
+import uk.ac.ed.ph.jqtiplus.node.item.template.declaration.TemplateDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.test.VisibilityMode;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
@@ -73,7 +73,7 @@ public class AssessmentRenderFunctions {
 	}
 	
 	public static boolean isNullValue(Value value) {
-		return value == null || value.isNull() || value instanceof NullValue;
+		return value == null || value.isNull();
 	}
 	
 	public static boolean isSingleCardinalityValue(Value value) {
@@ -128,8 +128,7 @@ public class AssessmentRenderFunctions {
 	//<xsl:if test="qw:is-invalid-response(@responseIdentifier)">
 	public static boolean isInvalidResponse(ItemSessionState itemSessionState, Identifier identifier) {
 		//$itemSessionState/@invalidResponseIdentifiers
-		Set<Identifier> identifiers = itemSessionState.getInvalidResponseIdentifiers();
-		return identifiers != null && identifiers.contains(identifier);
+		return itemSessionState.getInvalidResponseIdentifiers().contains(identifier);
 	}
 	
 	//<xsl:sequence select="$unboundResponseIdentifiers=$identifier"/>
@@ -140,6 +139,12 @@ public class AssessmentRenderFunctions {
 	public static final Value getTemplateValue(ItemSessionState itemSessionState, String identifierAsString) {
 		Identifier identifier = Identifier.assumedLegal(identifierAsString);
 		return itemSessionState.getTemplateValues().get(identifier);
+	}
+	
+	public static final boolean isTemplateDeclarationAMathVariable(AssessmentItem assessmentItem, String identifierString) {
+		Identifier identifier = Identifier.assumedLegal(identifierString);
+		TemplateDeclaration templateDeclaration = assessmentItem.getTemplateDeclaration(identifier);
+		return templateDeclaration == null ? false : templateDeclaration.getMathVariable();
 	}
 	
 	public static final Value getOutcomeValue(ItemSessionState itemSessionState, String identifierAsString) {
@@ -231,10 +236,6 @@ public class AssessmentRenderFunctions {
 		return null;
 	}
 	
-	public static void renderValue(StringOutput sb, Value valueHolder) {
-		renderValue(sb, valueHolder, ";", "=");
-	}
-	
 	public static void renderValue(StringOutput sb, Value valueHolder, String delimiter, String mappingIndicator) {
 		if(isNullValue(valueHolder)) {
 			//
@@ -259,18 +260,17 @@ public class AssessmentRenderFunctions {
 			switch(value.getBaseType()) {
 				case STRING: sb.append(((StringValue)value).stringValue()); break;
 				case INTEGER: sb.append(((IntegerValue)value).intValue()); break;
-				case FLOAT: sb.append(((FloatValue)value).doubleValue()); break;
+				case FLOAT: sb.append(((FloatValue)value).doubleValue()); break;//TODO qti format
 				case BOOLEAN: sb.append(((BooleanValue)value).booleanValue()); break;
-				//TODO Duration in seconds
+				//TODO qti Duration in seconds
 				case DURATION: sb.append(((DurationValue)value).doubleValue()); break;
-				//TODO File value ???
+				//TODO qti File value ???
 				case FILE: sb.append(((FileValue)value).toQtiString()); break;
 				case DIRECTED_PAIR:
 				case PAIR:
 				case IDENTIFIER:
 				case POINT: 
-				case URI:
-				default: sb.append(value.toQtiString());
+				case URI: sb.append(value.toQtiString()); break;
 			}
 		}
 	}
@@ -344,7 +344,7 @@ public class AssessmentRenderFunctions {
 	 */
 	public static SingleValue extractRecordFieldValue(Value value, Identifier identifier) {
 		SingleValue mappedValue = null;
-		if(value != null && value.hasCardinality(Cardinality.RECORD) && identifier != null) {
+		if(value != null && identifier != null && value.hasCardinality(Cardinality.RECORD) ) {
 			RecordValue recordValue = (RecordValue)value;
 			mappedValue = recordValue.get(identifier);
 		}
@@ -417,19 +417,38 @@ public class AssessmentRenderFunctions {
 					indexedValue = mValue.get(index);
 				}
 			}
-
 		}
 		return indexedValue;
 	}
 	
+	/**
+	 * The method only collect text from ForeignElement, but
+	 * recursively.
+	 * 
+	 * @param fElement
+	 * @return
+	 */
 	public static final String contentAsString(ForeignElement fElement) {
-		StringBuilder out = new StringBuilder();
-		for(QtiNode child:fElement.getChildren()) {
-			if(child instanceof TextRun) {
-				out.append(((TextRun)child).getTextContent());
-			}	
-		}
+		StringBuilder out = new StringBuilder(255);
+		contentAsString(out, fElement);
 		return out.toString();
+	}
+		
+	private static final void contentAsString(StringBuilder out, ForeignElement fElement) {
+		for(QtiNode child:fElement.getChildren()) {
+			switch(child.getQtiClassName()) {
+				case TextRun.DISPLAY_NAME:
+					out.append(((TextRun)child).getTextContent());
+					break;
+	
+				default: {
+					if(child instanceof ForeignElement) {
+						ForeignElement fChild = (ForeignElement)child;
+						contentAsString(out, fChild);
+					}
+				}
+			}
+		}
 	}
 	
 	public static String checkJavaScript(ResponseDeclaration declaration, String patternMask) {
@@ -460,9 +479,8 @@ public class AssessmentRenderFunctions {
 	
 	//value-contains
 	public static final boolean valueContains(Value value, Identifier identifier) {
-		//TODO qti
 		if(value != null && !value.isNull()) {
-			//mimic the XSLT
+			//TODO mimic the XSLT
 			return value.toQtiString().contains(identifier.toString());
 			/*
 			if(value.hasBaseType(BaseType.IDENTIFIER)) {
@@ -482,7 +500,11 @@ public class AssessmentRenderFunctions {
 		}
 	}
 	
-	//@class
+	/**
+	 * Mimic the @class
+	 * @param node
+	 * @return
+	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static final String getAtClass(QtiNode node) {
 		Attribute classAttribute = node.getAttributes().get("class");
@@ -502,6 +524,7 @@ public class AssessmentRenderFunctions {
 			case "class":
 			case "name":
 			case "id":
+			case "encoding":
 				value = getDomAttributeValue(attribute);
 				break;
 			case "href":

@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti21.ui.components;
 
+import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.contentAsString;
+
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
@@ -55,6 +57,9 @@ import org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event;
 import org.w3c.dom.Element;
 
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
+import uk.ac.ed.ph.jqtiplus.node.ForeignElement;
+import uk.ac.ed.ph.jqtiplus.node.QtiNode;
+import uk.ac.ed.ph.jqtiplus.node.content.basic.TextRun;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.PrintedVariable;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.RubricBlock;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -329,26 +334,68 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	@Override
 	protected void renderPrintedVariable(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem,
 			ItemSessionState itemSessionState, PrintedVariable printedVar) {
-		//TODO qti need tesSessionState too
-		//AssessmentTestComponent testCmp = (AssessmentTestComponent)component;
-		//TestSessionController testSessionController = testCmp.getTestSessionController();
-		//TestSessionState testSessionState = testSessionController.getTestSessionState();
-
-		Identifier identifier = printedVar.getIdentifier();
-		Value templateValue = itemSessionState.getTemplateValues().get(identifier);
-		Value outcomeValue = itemSessionState.getOutcomeValues().get(identifier);
 		
+		AssessmentTestComponent testCmp = (AssessmentTestComponent)component;
+		Identifier identifier = printedVar.getIdentifier();
 		sb.append("<span class='printedVariable'>");
-		if(outcomeValue != null) {
-			OutcomeDeclaration outcomeDeclaration = assessmentItem.getOutcomeDeclaration(identifier);
-			renderPrintedVariable(renderer, sb, printedVar, outcomeDeclaration, outcomeValue);
-		} else if(templateValue != null) {
-			TemplateDeclaration templateDeclaration = assessmentItem.getTemplateDeclaration(identifier);
-			renderPrintedVariable(renderer, sb, printedVar, templateDeclaration, templateValue);
+		if(itemSessionState == null) {
+			Value outcomeValue = testCmp.getTestSessionController().getTestSessionState().getOutcomeValue(identifier);
+			if(outcomeValue != null) {
+				OutcomeDeclaration outcomeDeclaration = testCmp.getAssessmentTest().getOutcomeDeclaration(identifier);
+				renderPrintedVariable(renderer, sb, printedVar, outcomeDeclaration, outcomeValue);
+			}
 		} else {
-			sb.append("(variable ").append(identifier.toString()).append(" was not found)");
+			Value templateValue = itemSessionState.getTemplateValues().get(identifier);
+			Value outcomeValue = itemSessionState.getOutcomeValues().get(identifier);
+			if(outcomeValue != null) {
+				OutcomeDeclaration outcomeDeclaration = assessmentItem.getOutcomeDeclaration(identifier);
+				renderPrintedVariable(renderer, sb, printedVar, outcomeDeclaration, outcomeValue);
+			} else if(templateValue != null) {
+				TemplateDeclaration templateDeclaration = assessmentItem.getTemplateDeclaration(identifier);
+				renderPrintedVariable(renderer, sb, printedVar, templateDeclaration, templateValue);
+			} else {
+				sb.append("(variable ").append(identifier.toString()).append(" was not found)");
+			}
 		}
 		sb.append("</span>");
+	}
+	
+	@Override
+	protected void renderMath(AssessmentRenderer renderer, StringOutput out, AssessmentObjectComponent component,
+			AssessmentItem assessmentItem, ItemSessionState itemSessionState, QtiNode mathElement) {
+		if(assessmentItem != null) {
+			super.renderMath(renderer, out, component, assessmentItem, itemSessionState, mathElement);
+		} else if(mathElement instanceof ForeignElement) {
+			ForeignElement fElement = (ForeignElement)mathElement;
+			boolean mi = fElement.getQtiClassName().equals("mi");
+			boolean ci = fElement.getQtiClassName().equals("ci");
+			if(mi || ci) {
+				String text = contentAsString(fElement);
+				Identifier identifier = Identifier.assumedLegal(text);
+
+				AssessmentTestComponent testComponent = (AssessmentTestComponent)component;
+				Value outcomeValue = testComponent.getTestSessionController().getTestSessionState().getOutcomeValue(identifier);
+				if(outcomeValue != null) {
+					if(ci) {
+						substituteCi(out, outcomeValue);
+					} else if(mi) {
+						substituteMi(out, outcomeValue);
+					}
+				} else {
+					renderStartHtmlTag(out, component, fElement, null);
+					fElement.getChildren().forEach((child)
+							-> renderMath(renderer, out, component, assessmentItem, itemSessionState, child));
+					renderEndTag(out, fElement);
+				}
+			} else {
+				renderStartHtmlTag(out, component, fElement, null);
+				fElement.getChildren().forEach((child)
+						-> renderMath(renderer, out, component, assessmentItem, itemSessionState, child));
+				renderEndTag(out, fElement);
+			}
+		} else if(mathElement instanceof TextRun) {
+			out.append(((TextRun)mathElement).getTextContent());
+		}
 	}
 	
 	private void renderTestPartFeedback(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component,

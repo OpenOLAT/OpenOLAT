@@ -15,7 +15,7 @@
 		<div class="fileUploadStatus">
             Uploaded: $responseValue.fileName
 		</div>
-         #if($isItemSessionOpen)
+         #if($r.isItemSessionOpen())
               <div class="fileUploadInstruction">Upload New File</div>
               <input type="file" name="qtiworks_uploadresponse_${responseIdentifier}"/>
 		#else
@@ -23,7 +23,7 @@
 		#end
 	#else
          ## Nothing uploaded yet
-         #if($isItemSessionOpen)
+         #if($r.isItemSessionOpen())
               <div class="fileUploadInstruction">Upload File</div>
               <input type="file" name="qtiworks_uploadresponse_${responseIdentifier}"/>
 		#else

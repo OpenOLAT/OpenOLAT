@@ -523,7 +523,6 @@ var QtiWorksRendering = (function() {
             if(submitCallbacks.length > 0) {
 	            for (var i in submitCallbacks) {
 	                allowSubmit = submitCallbacks[i]();
-	                console.log(allowSubmit, submitCallbacks[i]);
 	                if (!allowSubmit) {
 	                    break;
 	                }

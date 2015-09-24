@@ -43,12 +43,12 @@ import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.isNullV
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.isOrderedCardinalityValue;
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.isRecordCardinalityValue;
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.isSingleCardinalityValue;
+import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.isTemplateDeclarationAMathVariable;
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.isVisible;
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.renderMultipleCardinalityValue;
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.renderOrderedCardinalityValue;
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.renderRecordCardinalityValue;
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.renderSingleCardinalityValue;
-import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.renderValue;
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.valueContains;
 
 import java.io.Reader;
@@ -71,11 +71,11 @@ import org.olat.core.gui.render.StringOutputPool;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.render.velocity.VelocityHelper;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.ims.qti21.ui.rendering.QtiWorksRenderingException;
 import org.olat.ims.qti21.ui.rendering.XmlUtilities;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
@@ -154,6 +154,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	
 	private static final OLog log = Tracing.createLoggerFor(AssessmentObjectComponentRenderer.class);
 	private static final String velocity_root = Util.getPackageVelocityRoot(AssessmentObjectComponentRenderer.class);
+	private static final URI ctopXsltUri = URI.create("classpath:/org/olat/ims/qti21/ui/components/_content/ctop.xsl");
 	
 	protected void renderItemStatus(StringOutput sb, ItemSessionState itemSessionState) {
 		if(itemSessionState.getEndTime() != null) {
@@ -255,7 +256,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			}
 			case TemplateBlock.QTI_CLASS_NAME: break;//never rendered
 			case InfoControl.QTI_CLASS_NAME: {
-				//TODO popup some infos
+				renderInfoControl(renderer, sb, component, assessmentItem, itemSessionState, (InfoControl)block, ubu, translator);
 				break;
 			}
 			case FeedbackBlock.QTI_CLASS_NAME: {
@@ -270,7 +271,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			}
 			case RubricBlock.QTI_CLASS_NAME: break; //never rendered automatically
 			case Math.QTI_CLASS_NAME: {
-				renderMath(renderer, sb, component, itemSessionState, (Math)block);
+				renderMath(renderer, sb, component, assessmentItem, itemSessionState, (Math)block);
 				break;
 			}
 			case Div.QTI_CLASS_NAME:
@@ -322,7 +323,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			case FeedbackInline.QTI_CLASS_NAME: {
 				FeedbackInline feedbackInline = (FeedbackInline)inline;
 				if(component.isFeedback(feedbackInline, itemSessionState)) {
-					sb.append("<span class='feedbackBlock ").append(getAtClass(feedbackInline)).append("'>");
+					sb.append("<span class='feedbackInline ").append(getAtClass(feedbackInline)).append("'>");
 					feedbackInline.getInlines().forEach((child)
 							-> renderInline(renderer, sb, component, assessmentItem, itemSessionState, child, ubu, translator));
 					sb.append("</span>");
@@ -334,7 +335,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				break;
 			}
 			case Math.QTI_CLASS_NAME: {
-				renderMath(renderer, sb, component, itemSessionState, (Math)inline);
+				renderMath(renderer, sb, component, assessmentItem, itemSessionState, (Math)inline);
 				break;
 			}
 			case Img.QTI_CLASS_NAME: {
@@ -357,7 +358,18 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		}
 	}
 	
-	private void renderHtmlTag(StringOutput sb, AssessmentObjectComponent component, QtiNode node, String cssClass) {
+	protected final void renderInfoControl(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
+			AssessmentItem assessmentItem, ItemSessionState itemSessionState, InfoControl infoControl, URLBuilder ubu, Translator translator) {
+		sb.append("<div class=\"infoControl\">")
+		  .append("<button type='button' onclick=\"return QtiWorksRendering.showInfoControlContent(this)\" class='btn btn-default'>")
+		  .append("<span>").append(infoControl.getTitle()).append("</span></button>")
+		  .append("<div class='infoControlContent o_info'>");
+		infoControl.getChildren().forEach((flow)
+				-> renderFlow(renderer, sb, component, assessmentItem, itemSessionState, flow, ubu, translator));
+		sb.append("</div></div>");
+	}
+	
+	protected final void renderHtmlTag(StringOutput sb, AssessmentObjectComponent component, QtiNode node, String cssClass) {
 		sb.append("<").append(node.getQtiClassName());
 		for(Attribute<?> attribute:node.getAttributes()) {
 			String value = getHtmlAttributeValue(component, attribute);
@@ -373,7 +385,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		sb.append(" />");
 	}
 	
-	private void renderStartHtmlTag(StringOutput sb, AssessmentObjectComponent component, QtiNode node, String cssClass) {
+	protected final void renderStartHtmlTag(StringOutput sb, AssessmentObjectComponent component, QtiNode node, String cssClass) {
 		sb.append("<").append(node.getQtiClassName());
 		for(Attribute<?> attribute:node.getAttributes()) {
 			String value = getHtmlAttributeValue(component, attribute);
@@ -389,7 +401,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		sb.append(">");
 	}
 	
-	private void renderEndTag(StringOutput sb, QtiNode node) {
+	protected void renderEndTag(StringOutput sb, QtiNode node) {
 		sb.append("</").append(node.getQtiClassName()).append(">");
 	}
 	
@@ -701,7 +713,6 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			//(Spec says to output nothing in this case)
 		} else if(isSingleCardinalityValue(valueHolder)) {
 			if(valueDeclaration.hasBaseType(BaseType.INTEGER) || valueDeclaration.hasBaseType(BaseType.FLOAT)) {
-				//TODO qti format
 				renderSingleCardinalityValue(sb, valueHolder);
 			} else {
 				renderSingleCardinalityValue(sb, valueHolder);
@@ -710,7 +721,11 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		} else if (isMathsContentValue(valueHolder)) {
 			//<xsl:copy-of select="qw:extract-maths-content-pmathml($valueHolder)"/>
 			String mathMlContent = extractMathsContentPmathml(valueHolder);
-			sb.append(mathMlContent);
+			if(renderer.isMathXsltDisabled()) {
+				sb.append(mathMlContent);
+			} else {
+				transformMathmlAsString(sb, mathMlContent);
+			}
 		} else if(isMultipleCardinalityValue(valueHolder)) {
 			String delimiter = source.getDelimiter();
 			if(!StringHelper.containsNonWhitespace(delimiter)) {
@@ -756,67 +771,202 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		}
 	}
 	
-	protected void renderMath(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, ItemSessionState itemSessionState, Math math) {
+	protected void renderMath(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
+			AssessmentItem assessmentItem, ItemSessionState itemSessionState, Math math) {
+		
+		renderer.setMathXsltDisabled(true);
 		StringOutput mathOutput = StringOutputPool.allocStringBuilder(2048);
-		math.getContent().forEach((foreignElement) -> renderMath(mathOutput, component, itemSessionState, foreignElement));
+		mathOutput.append("<math xmlns=\"http://www.w3.org/1998/Math/MathML\">");
+		math.getContent().forEach((foreignElement)
+				-> renderMath(renderer, mathOutput, component, assessmentItem, itemSessionState, foreignElement));
+		mathOutput.append("</math>");
 		String enrichedMathML = StringOutputPool.freePop(mathOutput);
-		//renderMathmlAsString(sb, enrichedMathML);
-		sb.append(enrichedMathML);
+		renderer.setMathXsltDisabled(false);
+		transformMathmlAsString(sb, enrichedMathML);
 	}
 	
-	protected void renderMath(StringOutput out, AssessmentObjectComponent component, ItemSessionState itemSessionState, QtiNode mathElement) {
+	protected void renderMath(AssessmentRenderer renderer, StringOutput out, AssessmentObjectComponent component,
+			AssessmentItem assessmentItem, ItemSessionState itemSessionState, QtiNode mathElement) {
 		if(mathElement instanceof ForeignElement) {
 			ForeignElement fElement = (ForeignElement)mathElement;
-			if(fElement.getQtiClassName().equals("annotation")) {
-				//do nothing
-			} else if(fElement.getQtiClassName().equals("mi") || fElement.getQtiClassName().equals("ci")) {
+			boolean mi = fElement.getQtiClassName().equals("mi");
+			boolean ci = fElement.getQtiClassName().equals("ci");
+			
+			if(ci || mi) {
 				String text = contentAsString(fElement);
+				Identifier identifier = Identifier.assumedLegal(text);
 				Value templateValue = getTemplateValue(itemSessionState, text);
 				Value outcomeValue = getOutcomeValue(itemSessionState, text);
-				if(templateValue != null) {
-					renderValue(out, templateValue);
+				Value responseValue = getResponseValue(assessmentItem, itemSessionState, identifier, renderer.isSolutionMode());
+
+				if(templateValue != null && isTemplateDeclarationAMathVariable(assessmentItem, text)) {
+					if(ci) {
+						substituteCi(out, templateValue);
+					} else if(mi) {
+						substituteMi(out, templateValue);
+					}
 				} else if(outcomeValue != null) {
-					renderValue(out, outcomeValue);
+					if(ci) {
+						substituteCi(out, outcomeValue);
+					} else if(mi) {
+						substituteMi(out, outcomeValue);
+					}
+				}  else if(responseValue != null) {
+					if(ci) {
+						substituteCi(out, responseValue);
+					} else if(mi) {
+						substituteMi(out, responseValue);
+					}
 				} else {
-					out.append("<").append(mathElement.getQtiClassName()).append(">");
-					fElement.getChildren().forEach((child) -> renderMath(out, component, itemSessionState, child));
-					out.append("</").append(mathElement.getQtiClassName()).append(">");
+					renderStartHtmlTag(out, component, fElement, null);
+					fElement.getChildren().forEach((child)
+							-> renderMath(renderer, out, component, assessmentItem, itemSessionState, child));
+					renderEndTag(out, fElement);
 				}
 			} else {
-				out.append("<").append(mathElement.getQtiClassName()).append(">");
-				fElement.getChildren().forEach((child) -> renderMath(out, component, itemSessionState, child));
-				out.append("</").append(mathElement.getQtiClassName()).append(">");
+				renderStartHtmlTag(out, component, fElement, null);
+				fElement.getChildren().forEach((child)
+						-> renderMath(renderer, out, component, assessmentItem, itemSessionState, child));
+				renderEndTag(out, fElement);
 			}
 		} else if(mathElement instanceof TextRun) {
 			out.append(((TextRun)mathElement).getTextContent());
 		}
 	}
 	
-	protected void transformMathmlAsString(AssessmentRenderer renderer, StringOutput sb, String mathmlAsString) {
+	/*
+	  <xsl:template name="substitute-mi" as="element()">
+    <xsl:param name="identifier" as="xs:string"/>
+    <xsl:param name="value" as="element()"/>
+    <xsl:choose>
+      <xsl:when test="qw:is-null-value($value)">
+        <!-- We shall represent null as an empty mrow -->
+        <xsl:element name="mrow" namespace="http://www.w3.org/1998/Math/MathML"/>
+      </xsl:when>
+      <xsl:when test="qw:is-single-cardinality-value($value)">
+        <!-- Single cardinality template variables are substituted according to Section 6.3.1 of the
+        spec. Note that it does not define what should be done with multiple and ordered
+        cardinality variables. -->
+        <xsl:element name="mn" namespace="http://www.w3.org/1998/Math/MathML">
+          <xsl:copy-of select="@*"/>
+          <xsl:value-of select="qw:extract-single-cardinality-value($value)"/>
+        </xsl:element>
+      </xsl:when>
+      <xsl:when test="qw:is-maths-content-value($value)">
+        <!-- This is a MathAssess MathsContent variable. What we do here is
+        replace the matched MathML element with the child(ren) of the <math/> PMathML field
+        in this record, wrapping in an <mrow/> if required so as to ensure that we have a
+        single replacement element -->
+        <xsl:variable name="pmathml" select="qw:extract-maths-content-pmathml($value)" as="element(m:math)"/>
+        <xsl:choose>
+          <xsl:when test="count($pmathml/*)=1">
+            <xsl:copy-of select="$pmathml/*"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:element name="mrow" namespace="http://www.w3.org/1998/Math/MathML">
+              <xsl:copy-of select="$pmathml/*"/>
+            </xsl:element>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:when>
+      <xsl:otherwise>
+        <!-- Unsupported substitution -->
+        <xsl:message>
+          Substituting the variable <xsl:value-of select="$identifier"/> with value
+          <xsl:copy-of select="$value"/>
+          within MathML is not currently supported.
+        </xsl:message>
+        <xsl:element name="mtext" namespace="http://www.w3.org/1998/Math/MathML">(Unsupported variable substitution)</xsl:element>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+	
+	 */
+	protected void substituteMi(StringOutput sb, Value value) {
+		if(value == null || value.isNull()) {
+			sb.append("<mrow />");
+		} else if(isSingleCardinalityValue(value)) {
+			sb.append("<mn>");//<xsl:copy-of select="@*"/>
+			renderSingleCardinalityValue(sb, value);
+			sb.append("</mn>");
+		} else if(isMathsContentValue(value)) {
+			String mathMlContent = extractMathsContentPmathml(value);
+			sb.append(mathMlContent);
+		} else {
+			//not supported
+		}
+	}
+	/*
+  <xsl:template name="substitute-ci" as="element()*">
+    <xsl:param name="identifier" as="xs:string"/>
+    <xsl:param name="value" as="element()"/>
+    <xsl:choose>
+      <xsl:when test="qw:is-null-value($value)">
+        <!-- We shall omit nulls -->
+      </xsl:when>
+      <xsl:when test="qw:is-single-cardinality-value($value)">
+        <!-- Single cardinality template variables are substituted according to Section 6.3.1 of the
+        spec. Note that it does not define what should be done with multiple and ordered
+        cardinality variables. -->
+        <xsl:element name="cn" namespace="http://www.w3.org/1998/Math/MathML">
+          <xsl:copy-of select="@*"/>
+          <xsl:value-of select="qw:extract-single-cardinality-value($value)"/>
+        </xsl:element>
+      </xsl:when>
+      <xsl:when test="qw:is-maths-content-value($value)">
+        <!-- This is a MathAssess MathsContent variable. What we do here is
+        replace the matched MathML element with the child(ren) of the <math/> PMathML field
+        in this record, wrapping in an <mrow/> if required so as to ensure that we have a
+        single replacement element -->
+        <xsl:variable name="cmathml" select="qw:extract-maths-content-cmathml($value)" as="element(m:math)"/>
+        <xsl:copy-of select="$cmathml/*"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <!-- Unsupported substitution -->
+        <xsl:message>
+          Substituting the variable <xsl:value-of select="$identifier"/> with value
+          <xsl:copy-of select="$value"/>
+          within MathML is not currently supported.
+        </xsl:message>
+        <xsl:element name="mtext" namespace="http://www.w3.org/1998/Math/MathML">(Unsupported variable substitution)</xsl:element>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+	 */
+	protected void substituteCi(StringOutput sb, Value value) {
+		if(value == null || value.isNull()) {
+			//we omit null
+		} else if(isSingleCardinalityValue(value)) {
+			sb.append("<cn>");//<xsl:copy-of select="@*"/>
+			renderSingleCardinalityValue(sb, value);
+			sb.append("</cn>");
+		} else if(isMathsContentValue(value)) {
+			String mathMlContent = extractMathsContentPmathml(value);
+			sb.append(mathMlContent);
+		} else {
+			//not supported
+		}
+	}
+	
+	protected void transformMathmlAsString(StringOutput sb, String mathmlAsString) {
 		if(!StringHelper.containsNonWhitespace(mathmlAsString)) {
 			return;
 		}
-		if(renderer.isMathXsltDisabled()) {
-			sb.append(mathmlAsString);
-		} else {
-			XsltStylesheetManager stylesheetManager = new XsltStylesheetManager(new ClassPathResourceLocator(), new SimpleXsltStylesheetCache());
-	    	URI ctopXsltUri = URI.create("classpath:/org/olat/ims/qti21/ui/components/_content/ctop.xsl");
-	    	final TransformerHandler mathmlTransformerHandler = stylesheetManager.getCompiledStylesheetHandler(ctopXsltUri, null);
-	
-	        try {
-	        	StringOutput out = new StringOutput(255);
-	            mathmlTransformerHandler.setResult(new StreamResult(out));
-	            final XMLReader xmlReader = XmlUtilities.createNsAwareSaxReader(false);
-	            xmlReader.setContentHandler(mathmlTransformerHandler);
-	        	
-	            Reader mathStream = new StringReader(mathmlAsString);
-	            InputSource assessmentSaxSource = new InputSource(mathStream);
-	            xmlReader.parse(assessmentSaxSource);
-	            sb.append(out);
-	        } catch (final Exception e) {
-	            log.error("Rendering XSLT pipeline failed for request {}", e);
-	            throw new QtiWorksRenderingException("Unexpected Exception running rendering XML pipeline", e);
-	        }
-		}
+
+		XsltStylesheetManager stylesheetManager = new XsltStylesheetManager(new ClassPathResourceLocator(), new SimpleXsltStylesheetCache());
+    	final TransformerHandler mathmlTransformerHandler = stylesheetManager.getCompiledStylesheetHandler(ctopXsltUri, null);
+
+        try {
+            mathmlTransformerHandler.setResult(new StreamResult(sb));
+            final XMLReader xmlReader = XmlUtilities.createNsAwareSaxReader(false);
+            xmlReader.setContentHandler(mathmlTransformerHandler);
+        	
+            Reader mathStream = new StringReader(mathmlAsString);
+            InputSource assessmentSaxSource = new InputSource(mathStream);
+            xmlReader.parse(assessmentSaxSource);
+        } catch (final Exception e) {
+            log.error("Rendering XSLT pipeline failed for request {}", e);
+            throw new OLATRuntimeException("Unexpected Exception running rendering XML pipeline", e);
+        }
 	}
 }

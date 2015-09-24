@@ -18,6 +18,27 @@ href="http://www.w3.org/Consortium/Legal/copyright-software-19980720"
 
 <xsl:output method="xml" omit-xml-declaration="yes"/>
 
+<xsl:template match="m:semantics" mode="c2p" priority="10">
+  <xsl:choose>
+    <xsl:when test="not(*[position()!=1 and self::m:annotation-xml])">
+      <!-- All annotations are non-XML so remove this wrapper completely (and unwrap a container mrow if required) -->
+      <xsl:apply-templates select="if (*[1][self::m:mrow]) then *[1]/* else *[1]" mode="c2p"/>
+    </xsl:when>
+    <xsl:otherwise>
+      <!-- Keep non-XML annotations -->
+      <xsl:element name="semantics" namespace="http://www.w3.org/1998/Math/MathML">
+        <xsl:apply-templates select="* except m:annotation" mode="c2p"/>
+      </xsl:element>
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:template>
+<!-- Remove math elements included by templates --> 
+<xsl:template match="*//m:math" mode="c2p">
+  <xsl:apply-templates mode="c2p"/>
+</xsl:template>
+  
+
+
 <xsl:template match="/">
   <xsl:apply-templates mode="c2p"/>
 </xsl:template>
