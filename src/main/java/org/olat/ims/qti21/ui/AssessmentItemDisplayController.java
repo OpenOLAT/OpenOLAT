@@ -32,9 +32,10 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -161,6 +162,16 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		//
 	}
 	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(this.qtiWorksCtrl == source) {
+			if(event instanceof QTIWorksAssessmentItemEvent) {
+				this.processQTIEvent(ureq, (QTIWorksAssessmentItemEvent)event);
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
 	protected CandidateEvent assertSessionEntered(UserTestSession candidateSession) {
 		return lastEvent;
 	}
@@ -569,13 +580,13 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	 * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
 	 *
 	 */
-	private class QtiWorksController extends FormBasicController {
+	private class QtiWorksController extends AbstractQtiWorksController {
 		
 		private AssessmentItemFormItem qtiEl;
-		private String filename;
+		private final String filename;
 		
 		public QtiWorksController(UserRequest ureq, WindowControl wControl, String filename) {
-			super(ureq, wControl, LAYOUT_BAREBONE);
+			super(ureq, wControl);
 			this.filename = filename;
 			initForm(ureq);
 		}
@@ -583,8 +594,9 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			mainForm.setMultipartEnabled(true);
-			
-			qtiEl = new AssessmentItemFormItem("qtirun");
+
+			FormSubmit submit = uifactory.addFormSubmitButton("submit", formLayout);
+			qtiEl = new AssessmentItemFormItem("qtirun", submit);
 			formLayout.add("qtirun", qtiEl);
 
 			ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
@@ -593,34 +605,34 @@ public class AssessmentItemDisplayController extends BasicController implements 
 			qtiEl.setResourceLocator(inputResourceLocator);
 			qtiEl.setItemSessionController(itemSessionController);
 			qtiEl.setResolvedAssessmentItem(resolvedAssessmentItem);
-			
-			
+
 			File manifestPath = new File(fUnzippedDirRoot, filename);
-			
 			qtiEl.setAssessmentObjectUri(manifestPath.toURI());
 			qtiEl.setCandidateSessionContext(AssessmentItemDisplayController.this);
 			qtiEl.setMapperUri(mapperUri);
 		}
 		
 		@Override
-		protected void doDispose() {
-			//
-		}
-
-		@Override
 		protected void formOK(UserRequest ureq) {
-			//
+			processResponse(ureq, qtiEl.getSubmitButton());
 		}
 
 		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 			if(source == qtiEl) {
 				if(event instanceof QTIWorksAssessmentItemEvent) {
-					QTIWorksAssessmentItemEvent qe = (QTIWorksAssessmentItemEvent)event;
-					processQTIEvent(ureq, qe);
+					fireEvent(ureq, event);
 				}
+			} else if(source instanceof FormLink) {
+				FormLink formLink = (FormLink)source;
+				processResponse(ureq, formLink);	
 			}
 			super.formInnerEvent(ureq, source, event);
+		}
+
+		@Override
+		protected void fireResponse(UserRequest ureq, FormItem source, Map<Identifier, StringResponseData> stringResponseMap, Map<Identifier, MultipartFileInfos> fileResponseMap) {
+			fireEvent(ureq, new QTIWorksAssessmentItemEvent(QTIWorksAssessmentItemEvent.Event.response, stringResponseMap, fileResponseMap, source));
 		}
 	}
 }

@@ -61,35 +61,33 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		sb.append("<div class='qtiworks assessmentItem'>");
 
 		ItemSessionController itemSessionController = cmp.getItemSessionController();
-		if(itemSessionController.getItemSessionState().isEnded()) {
-			renderTerminated(sb);
-		} else {
-			CandidateSessionContext candidateSessionContext = cmp.getCandidateSessionContext();
+		
+		CandidateSessionContext candidateSessionContext = cmp.getCandidateSessionContext();
 
-	        /* Create appropriate options that link back to this controller */
-			final UserTestSession candidateSession = candidateSessionContext.getCandidateSession();
-	        if (candidateSession != null && candidateSession.isExploded()) {
-	            renderExploded(sb);
-	        } else if (candidateSessionContext.isTerminated()) {
-	            renderTerminated(sb);
-	        } else {
-	            /* Look up most recent event */
-	            final CandidateEvent latestEvent = candidateSessionContext.getLastEvent();// assertSessionEntered(candidateSession);
+        /* Create appropriate options that link back to this controller */
+		final UserTestSession candidateSession = candidateSessionContext.getCandidateSession();
+        if (candidateSession != null && candidateSession.isExploded()) {
+            renderExploded(sb);
+        } else if (candidateSessionContext.isTerminated()) {
+            renderTerminated(sb);
+        } else {
+            /* Look up most recent event */
+            final CandidateEvent latestEvent = candidateSessionContext.getLastEvent();// assertSessionEntered(candidateSession);
 
-	            /* Load the ItemSessionState */
-	            final ItemSessionState itemSessionState = cmp.getItemSessionController().getItemSessionState();// candidateDataService.loadItemSessionState(latestEvent);
+            /* Load the ItemSessionState */
+            final ItemSessionState itemSessionState = cmp.getItemSessionController().getItemSessionState();// candidateDataService.loadItemSessionState(latestEvent);
 
-	            /* Touch the session's duration state if appropriate */
-	            if (itemSessionState.isEntered() && !itemSessionState.isEnded() && !itemSessionState.isSuspended()) {
-	                final Date timestamp = candidateSessionContext.getCurrentRequestTimestamp();
-	                itemSessionController.touchDuration(timestamp);
-	            }
+            /* Touch the session's duration state if appropriate */
+            if (itemSessionState.isEntered() && !itemSessionState.isEnded() && !itemSessionState.isSuspended()) {
+                final Date timestamp = candidateSessionContext.getCurrentRequestTimestamp();
+                itemSessionController.touchDuration(timestamp);
+            }
 
-	            /* Render event */
-	            AssessmentRenderer renderHints = new AssessmentRenderer(renderer);
-	            renderItemEvent(renderHints, sb, cmp, latestEvent, itemSessionState, ubu, translator);
-	        }
-		}
+            /* Render event */
+            AssessmentRenderer renderHints = new AssessmentRenderer(renderer);
+            renderItemEvent(renderHints, sb, cmp, latestEvent, itemSessionState, ubu, translator);
+        }
+		
 		sb.append("</div>");
 	}
 	

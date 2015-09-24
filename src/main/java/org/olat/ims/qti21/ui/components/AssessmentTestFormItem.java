@@ -24,26 +24,19 @@ import static org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event.endTestPar
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event.exitTest;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event.finishItem;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event.itemSolution;
-import static org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event.response;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event.reviewItem;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event.reviewTestPart;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event.selectItem;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event.testPartNavigation;
 
-import java.util.Collections;
-import java.util.Map;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent;
 
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
-import uk.ac.ed.ph.jqtiplus.types.Identifier;
-import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
 
 /**
  * 
@@ -54,21 +47,15 @@ import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
 public class AssessmentTestFormItem extends AssessmentObjectFormItem {
 	
 	private final AssessmentTestComponent component;
-	private final FormSubmit submitButton;
 	
 	public AssessmentTestFormItem(String name, FormSubmit submitButton) {
-		super(name);
-		this.submitButton = submitButton;
+		super(name, submitButton);
 		component = new AssessmentTestComponent(name + "_cmp", this);
 	}
 
 	@Override
 	public AssessmentTestComponent getComponent() {
 		return component;
-	}
-	
-	public FormSubmit getSubmitButton() {
-		return submitButton;
 	}
 
 	public ResolvedAssessmentTest getResolvedAssessmentTest() {
@@ -101,7 +88,7 @@ public class AssessmentTestFormItem extends AssessmentObjectFormItem {
 	public void evalFormRequest(UserRequest ureq) {
 		String uri = ureq.getModuleURI();
 		if(uri == null) {
-			QTIWorksAssessmentTestEvent event;
+			QTIWorksAssessmentTestEvent event = null;
 			String cmd = ureq.getParameter("cid");
 			if(StringHelper.containsNonWhitespace(cmd)) {
 				switch(QTIWorksAssessmentTestEvent.Event.valueOf(cmd)) {
@@ -148,7 +135,9 @@ public class AssessmentTestFormItem extends AssessmentObjectFormItem {
 						event = null;
 					}
 				}
-			} else {
+			} 
+			/*
+			else {
 				//press return
 				Map<Identifier, StringResponseData> stringResponseMap = extractStringResponseData();
 				Map<Identifier, MultipartFileInfos> fileResponseMap;
@@ -159,22 +148,13 @@ public class AssessmentTestFormItem extends AssessmentObjectFormItem {
 				}
 				event = new QTIWorksAssessmentTestEvent(response, stringResponseMap, fileResponseMap, this);
 			}
+			*/
 			if(event != null) {
 				getRootForm().fireFormEvent(ureq, event);
 			}
 			component.setDirty(true);
 			
-		}  else if(uri.startsWith(response.getPath())) {
-			Map<Identifier, StringResponseData> stringResponseMap = extractStringResponseData();
-			Map<Identifier, MultipartFileInfos> fileResponseMap;
-			if(getRootForm().isMultipartEnabled()) {
-				fileResponseMap = extractFileResponseData();
-			} else {
-				fileResponseMap = Collections.emptyMap();
-			}
-			QTIWorksAssessmentTestEvent event = new QTIWorksAssessmentTestEvent(response, stringResponseMap, fileResponseMap, this);
-			getRootForm().fireFormEvent(ureq, event);
-		} 
+		}
 	}
 
 	@Override

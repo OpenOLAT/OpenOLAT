@@ -30,9 +30,10 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -119,8 +120,6 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	@Autowired
 	private JqtiExtensionManager jqtiExtensionManager;
 	
-	private final boolean velocity;
-	
 	/**
 	 * 
 	 * @param ureq
@@ -133,8 +132,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	public AssessmentTestDisplayController(UserRequest ureq, WindowControl wControl, OutcomesListener listener,
 			RepositoryEntry testEntry, RepositoryEntry entry, String subIdent) {
 		super(ureq, wControl);
-		
-		velocity = true;
+
 		this.outcomesListener = listener;
 		
 		FileResourceManager frm = FileResourceManager.getInstance();
@@ -221,8 +219,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				processAdvanceTestPart(ureq);
 			}
 			mainVC.setDirty(true);
+		} else if(qtiWorksCtrl == source) {
+			if(event instanceof QTIWorksAssessmentTestEvent) {
+				processQTIEvent(ureq, (QTIWorksAssessmentTestEvent)event);
+			}
 		}
-		
 		super.event(ureq, source, event);
 	}
 
@@ -835,12 +836,12 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
 	 *
 	 */
-	private class QtiWorksController extends FormBasicController {
+	private class QtiWorksController extends AbstractQtiWorksController {
 		
 		private AssessmentTestFormItem qtiEl;
 		
 		public QtiWorksController(UserRequest ureq, WindowControl wControl) {
-			super(ureq, wControl, LAYOUT_BAREBONE);
+			super(ureq, wControl);
 			initForm(ureq);
 		}
 
@@ -849,7 +850,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			mainForm.setMultipartEnabled(true);
 			mainForm.setOnSubmitCallback("QtiWorksRendering.maySubmit();");
 
-			qtiEl = new AssessmentTestFormItem("qtirun", null);
+			FormSubmit submit = uifactory.addFormSubmitButton("submit", formLayout);
+			qtiEl = new AssessmentTestFormItem("qtirun", submit);
 			qtiEl.setResolvedAssessmentTest(resolvedAssessmentTest);
 			formLayout.add("qtirun", qtiEl);
 
@@ -862,26 +864,28 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			qtiEl.setCandidateSessionContext(AssessmentTestDisplayController.this);
 			qtiEl.setMapperUri(mapperUri);
 		}
-		
-		@Override
-		protected void doDispose() {
-			//
-		}
 
 		@Override
 		protected void formOK(UserRequest ureq) {
-			//
+			processResponse(ureq, qtiEl.getSubmitButton());
 		}
 
 		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 			if(source == qtiEl) {
 				if(event instanceof QTIWorksAssessmentTestEvent) {
-					QTIWorksAssessmentTestEvent qe = (QTIWorksAssessmentTestEvent)event;
-					processQTIEvent(ureq, qe);
+					fireEvent(ureq, event);
 				}
+			} else if(source instanceof FormLink) {
+				FormLink formLink = (FormLink)source;
+				processResponse(ureq, formLink);	
 			}
 			super.formInnerEvent(ureq, source, event);
+		}
+
+		@Override
+		protected void fireResponse(UserRequest ureq, FormItem source, Map<Identifier, StringResponseData> stringResponseMap, Map<Identifier, MultipartFileInfos> fileResponseMap) {
+			fireEvent(ureq, new QTIWorksAssessmentTestEvent(QTIWorksAssessmentTestEvent.Event.response, stringResponseMap, fileResponseMap, source));
 		}
 	}
 }

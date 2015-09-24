@@ -38,10 +38,8 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
-import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -97,25 +95,12 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
 
-		AJAXFlags flags = renderer.getGlobalSettings().getAjaxFlags();
-		boolean iframePostEnabled = flags.isIframePostEnabled();
-		
 		AssessmentTestComponent cmp = (AssessmentTestComponent)source;
 		TestSessionController testSessionController = cmp.getTestSessionController();
-		AssessmentTestFormItem item = cmp.getQtiItem();
-		
+
 		if(testSessionController.getTestSessionState().isEnded()) {
 			sb.append("<h1>The End <small>say the renderer</small></h1>");
 		} else {
-			Component rootFormCmp = item.getRootForm().getInitialComponent();
-			
-			URLBuilder formUbuBuilder = renderer.getUrlBuilder().createCopyFor(rootFormCmp);
-			StringOutput formUrl = new StringOutput();
-			formUbuBuilder.buildURI(formUrl,
-					new String[] { Form.FORMID, "dispatchuri", "dispatchevent" },
-					new String[] { Form.FORMCMD, item.getFormDispatchId(), "0" },
-					iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-			
 	        /* Create appropriate options that link back to this controller */
 	        TestSessionState testSessionState = testSessionController.getTestSessionState();
 			CandidateSessionContext candidateSessionContext = cmp.getCandidateSessionContext();
@@ -123,18 +108,9 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			
 	        if (candidateSession.isExploded()) {
 	            renderExploded(sb);
-	        }
-		
-	        if (candidateSessionContext.isTerminated()) {
+	        } else if (candidateSessionContext.isTerminated()) {
 	            renderTerminated(sb);
 	        } else {
-				/* Look up most recent event */
-				   // final CandidateEvent latestEvent = assertSessionEntered(candidateSession);
-				
-				/* Load the TestSessionState and create a TestSessionController */
-				//final TestSessionState testSessionState = candidateDataService.loadTestSessionState(latestEvent);
-				//final TestSessionController testSessionController = createTestSessionController(candidateSession, testSessionState);
-				
 				/* Touch the session's duration state if appropriate */
 				if (testSessionState.isEntered() && !testSessionState.isEnded()) {
 				    final Date timestamp = candidateSessionContext.getCurrentRequestTimestamp();
@@ -202,10 +178,21 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
                 }
             } else {
                 /* No current testPart == start of multipart test */
-                //doRenderTestEntry(request, xsltParameters, result);
+                renderTestEntry(target, component, translator);
             }
         }
     }
+	
+	private void renderTestEntry(StringOutput sb, AssessmentTestComponent component, Translator translator) {
+		int numOfParts = component.getAssessmentTest().getTestParts().size();
+		sb.append("<h2>Test Entry Page</h2><p>")
+		  .append("This test consists of")
+		  .append("  up to ").append(numOfParts).append("  parts.</p>");
+		//precondition -> up to
+		
+		String title = translator.translate("assessment.test.enter.test");
+		renderControl(sb, component, title, new NameValuePair("cid", Event.advanceTestPart.name())); 
+	}
 	
 	private void renderControl(StringOutput sb, AssessmentTestComponent component, String title, NameValuePair... pairs) {
 		Form form = component.getQtiItem().getRootForm();
@@ -300,9 +287,14 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		
 		//submit button
 		if(component.isItemSessionOpen(itemSessionState, options.isSolutionMode())) {
+			Component submit = component.getQtiItem().getSubmitButton().getComponent();
+			submit.getHTMLRendererSingleton().render(renderer.getRenderer(), sb, submit, ubu, translator, new RenderResult(), null);
+			
+			/*
 			sb.append("<button type='button' name='cid' value='response' class='btn btn-primary' ");
 			sb.append(FormJSHelper.getRawJSFor(component.getQtiItem().getRootForm(), component.getQtiItem().getFormDispatchId(), FormEvent.ONCLICK));
 			sb.append("><span>Submit</span></button>");
+			*/
 		}
 		//end body
 		sb.append("</div>");

@@ -17,100 +17,80 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui.components;
+package org.olat.ims.qti21.ui;
 
-import java.net.URI;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemCollection;
-import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
-import org.olat.ims.qti21.ui.CandidateSessionContext;
+import org.olat.core.gui.control.WindowControl;
 
 import uk.ac.ed.ph.jqtiplus.exception.QtiParseException;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
-import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 
 /**
  * 
- * Initial date: 04.06.2015<br>
+ * Initial date: 24.09.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public abstract class AssessmentObjectFormItem extends FormItemImpl implements FormItemCollection {
-
-	private final FormSubmit submitButton;
-	private Map<String,FormItem> components = new HashMap<String,FormItem>();
-	
-	public AssessmentObjectFormItem(String name, FormSubmit submitButton) {
-		super(name);
-		this.submitButton = submitButton;
-	}
-	
-	public FormSubmit getSubmitButton() {
-		return submitButton;
+public abstract class AbstractQtiWorksController extends FormBasicController {
+		
+	public AbstractQtiWorksController(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl, "run");
 	}
 
 	@Override
-	public abstract AssessmentObjectComponent getComponent();
-	
-	@Override
-	public Iterable<FormItem> getFormItems() {
-		return new ArrayList<>(components.values());
-	}
-
-	@Override
-	public FormItem getFormComponent(String name) {
-		return components.get(name);
+	protected void doDispose() {
+		//
 	}
 	
-	public void addFormItem(FormItem item) {
-		components.put(item.getName(), item);
+	protected void processResponse(UserRequest ureq, FormItem source) {
+		Map<Identifier, StringResponseData> stringResponseMap = extractStringResponseData();
+		Map<Identifier, MultipartFileInfos> fileResponseMap;
+		if(mainForm.isMultipartEnabled()) {
+			fileResponseMap = extractFileResponseData();
+		} else {
+			fileResponseMap = Collections.emptyMap();
+		}
+		
+		if(source instanceof FormLink) {
+			FormLink button = (FormLink)source;
+			String cmd = button.getCmd();
+			if(cmd != null && cmd.startsWith("qtiworks_response_")) {
+				String responseIdentifierString = cmd.substring("qtiworks_response_".length());
+				String presentedFlag = "qtiworks_presented_".concat(responseIdentifierString);
+				if(mainForm.getRequestParameterSet().contains(presentedFlag)) {
+					Identifier responseIdentifier;
+					try {
+						responseIdentifier = Identifier.parseString(responseIdentifierString);
+					} catch (final QtiParseException e) {
+						throw new RuntimeException("Bad response identifier encoded in parameter " + cmd, e);
+					}
+					String[] responseValues = new String[]{ "submit" };
+			        StringResponseData stringResponseData = new StringResponseData(responseValues);
+					stringResponseMap.put(responseIdentifier, stringResponseData);
+				}
+			}
+		}
+		
+		fireResponse(ureq, source, stringResponseMap, fileResponseMap);
 	}
 	
-	public String getMapperUri() {
-		return getComponent().getMapperUri();
-	}
-	
-	public void setMapperUri(String mapperUri) {
-		getComponent().setMapperUri(mapperUri);
-	}
-	
-	public URI getAssessmentObjectUri() {
-		return getComponent().getAssessmentObjectUri();
-	}
-
-	public void setAssessmentObjectUri(URI assessmentObjectUri) {
-		getComponent().setAssessmentObjectUri(assessmentObjectUri);
-	}
-	
-	public ResourceLocator getResourceLocator() {
-		return getComponent().getResourceLocator();
-	}
-
-	public void setResourceLocator(ResourceLocator resourceLocator) {
-		getComponent().setResourceLocator(resourceLocator);
-	}
-	
-	public CandidateSessionContext getCandidateSessionContext() {
-		return getComponent().getCandidateSessionContext();
-	}
-
-	public void setCandidateSessionContext(CandidateSessionContext candidateSessionContext) {
-		getComponent().setCandidateSessionContext(candidateSessionContext);
-	}
-	
+	protected abstract void fireResponse(UserRequest ureq, FormItem source, Map<Identifier, StringResponseData> stringResponseMap, Map<Identifier, MultipartFileInfos> fileResponseMap);
+		
 	protected Map<Identifier, StringResponseData> extractStringResponseData() {
         final Map<Identifier, StringResponseData> responseMap = new HashMap<Identifier, StringResponseData>();
 
-        final Set<String> parameterNames = getRootForm().getRequestParameterSet();
+        final Set<String> parameterNames = mainForm.getRequestParameterSet();
         for (final String name : parameterNames) {
             if (name.startsWith("qtiworks_presented_")) {
                 final String responseIdentifierString = name.substring("qtiworks_presented_".length());
@@ -123,7 +103,7 @@ public abstract class AssessmentObjectFormItem extends FormItemImpl implements F
                 	throw new RuntimeException("Bad response identifier encoded in parameter  " + name, e);
                 }
                 
-                final String[] responseValues = getRootForm().getRequestParameterValues("qtiworks_response_" + responseIdentifierString);
+                final String[] responseValues = mainForm.getRequestParameterValues("qtiworks_response_" + responseIdentifierString);
                 final StringResponseData stringResponseData = new StringResponseData(responseValues);
                 responseMap.put(responseIdentifier, stringResponseData);
             }
@@ -134,8 +114,8 @@ public abstract class AssessmentObjectFormItem extends FormItemImpl implements F
 	protected Map<Identifier, MultipartFileInfos> extractFileResponseData() {
 		Map<Identifier, MultipartFileInfos> fileResponseMap = new HashMap<Identifier, MultipartFileInfos>();
 
-		Set<String> parameterNames = new HashSet<>(getRootForm().getRequestMultipartFilesSet());
-		parameterNames.addAll(getRootForm().getRequestParameterSet());
+		Set<String> parameterNames = new HashSet<>(mainForm.getRequestMultipartFilesSet());
+		parameterNames.addAll(mainForm.getRequestParameterSet());
 		for (String name : parameterNames) {
 			if (name.startsWith("qtiworks_uploadpresented_")) {
 				String responseIdentifierString = name.substring("qtiworks_uploadpresented_".length());
@@ -146,7 +126,7 @@ public abstract class AssessmentObjectFormItem extends FormItemImpl implements F
 					throw new RuntimeException("Bad response identifier encoded in parameter " + name, e);
 				}
 				String multipartName = "qtiworks_uploadresponse_" + responseIdentifierString;
-				MultipartFileInfos multipartFile = getRootForm().getRequestMultipartFileInfos(multipartName);
+				MultipartFileInfos multipartFile = mainForm.getRequestMultipartFileInfos(multipartName);
 				if (multipartFile == null) {
 					throw new RuntimeException("Expected to find multipart file with name " + multipartName);
 				}

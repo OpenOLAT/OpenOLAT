@@ -32,6 +32,7 @@ import java.util.Map;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent;
 
@@ -50,8 +51,8 @@ public class AssessmentItemFormItem extends AssessmentObjectFormItem {
 	
 	private final AssessmentItemComponent component;
 	
-	public AssessmentItemFormItem(String name) {
-		super(name);
+	public AssessmentItemFormItem(String name, FormSubmit submitButton) {
+		super(name, submitButton);
 		component = new AssessmentItemComponent(name + "_cmp", this);
 	}
 

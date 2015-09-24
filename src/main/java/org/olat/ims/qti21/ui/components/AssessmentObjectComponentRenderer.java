@@ -64,6 +64,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.context.Context;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormUIFactory;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -301,7 +304,10 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			ItemSessionState itemSessionState, Inline inline, URLBuilder ubu, Translator translator) {
 		
 		switch(inline.getQtiClassName()) {
-			case EndAttemptInteraction.QTI_CLASS_NAME:
+			case EndAttemptInteraction.QTI_CLASS_NAME: {
+				renderEndAttemptInteraction(renderer, sb, (EndAttemptInteraction)inline, component, ubu, translator);
+				break;
+			}
 			case InlineChoiceInteraction.QTI_CLASS_NAME:
 			case TextEntryInteraction.QTI_CLASS_NAME: {
 				renderInteraction(renderer, sb, (FlowInteraction)inline, assessmentItem, itemSessionState, component, ubu, translator);
@@ -405,6 +411,28 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		sb.append("</").append(node.getQtiClassName()).append(">");
 	}
 	
+	private void renderEndAttemptInteraction(AssessmentRenderer renderer, StringOutput sb, EndAttemptInteraction interaction,
+			AssessmentObjectComponent component, URLBuilder ubu, Translator translator) {
+		
+		sb.append("<input name=\"qtiworks_presented_").append(interaction.getResponseIdentifier().toString()).append("\" type=\"hidden\" value=\"1\"/>");
+
+		AssessmentObjectFormItem item = component.getQtiItem();
+		String id = "qtiworks_response_".concat(interaction.getResponseIdentifier().toString());
+		
+		FormItem endAttemptButton = item.getFormComponent(id);
+		if(endAttemptButton == null) {
+			endAttemptButton = FormUIFactory.getInstance().addFormLink(id, id, interaction.getTitle(), null, null, Link.BUTTON | Link.NONTRANSLATED);
+			endAttemptButton.setTranslator(translator);
+			if(item.getRootForm() != endAttemptButton.getRootForm()) {
+				endAttemptButton.setRootForm(item.getRootForm());
+			}
+			item.addFormItem(endAttemptButton);
+		}
+		
+		endAttemptButton.getComponent().getHTMLRendererSingleton()
+			.render(renderer.getRenderer(), sb, endAttemptButton.getComponent(), ubu, translator, new RenderResult(), null);
+	}
+	
 	private void renderPositionObjectStage(AssessmentRenderer renderer, StringOutput sb, PositionObjectStage positionObjectStage,
 			AssessmentItem assessmentItem, ItemSessionState itemSessionState, AssessmentObjectComponent component,
 			URLBuilder ubu, Translator translator) {
@@ -413,7 +441,6 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		String page = getInteractionTemplate(positionObjectStage);
 		renderVelocity(renderer, sb, positionObjectStage, ctx, page, assessmentItem, itemSessionState, component, ubu, translator);
 	}
-	
 	
 	/**
 	 * Render the interaction or the PositionStageObject
