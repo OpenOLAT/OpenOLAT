@@ -45,7 +45,7 @@ public class CoachParticipantsModelSort extends SortableFlexiTableModelDelegate<
 	@Override
 	protected void sort(List<CoachedIdentityRow> rows) {
 		int columnIndex = getColumnIndex();
-		if(GTACoachedGroupGradingController.USER_PROPS_OFFSET < columnIndex) {
+		if(columnIndex < GTACoachedGroupGradingController.USER_PROPS_OFFSET) {
 			CGCols column = CGCols.values()[columnIndex];
 			switch(column) {
 				case taskStatus: Collections.sort(rows, new TaskStatusComparator()); break;
