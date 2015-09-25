@@ -878,6 +878,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	private void doExport(UserRequest ureq) {
+		// ensure the all rows are loaded to export
+		if(dataSource != null) {
+			dataSource.load(getSearchText(), getConditionalQueries(), 0, -1, orderBy);
+		}
+		
 		MediaResource resource;
 		if(dataModel instanceof ExportableFlexiTableDataModel) {
 			resource = ((ExportableFlexiTableDataModel)dataModel).export(component);

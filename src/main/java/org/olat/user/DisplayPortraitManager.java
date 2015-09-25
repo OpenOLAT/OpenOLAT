@@ -211,8 +211,13 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 	 * Delete home-page config-file of a certain user.
 	 * @see org.olat.user.UserDataDeletable#deleteUserData(org.olat.core.id.Identity)
 	 */
+	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
-		deletePortrait(identity);
+		String userHomePage = FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomePage(identity.getName()); 
+		File portraitDir = new File(userHomePage, "portrait");
+		if(portraitDir.exists()) {
+			FileUtils.deleteDirsAndFiles(portraitDir, true, true);
+		}
 		logDebug("Homepage-config file deleted for identity=" + identity);
 	}
 }

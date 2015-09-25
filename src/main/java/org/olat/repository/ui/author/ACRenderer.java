@@ -58,27 +58,36 @@ public class ACRenderer implements FlexiCellRenderer {
 			}
 		} else if (val instanceof AuthoringEntryRow) {
 			AuthoringEntryRow entry = (AuthoringEntryRow)val;
-			renderPriceMethods(sb, entry.getAccessTypes());
+			renderPriceMethods(renderer, sb, entry.getAccessTypes());
 		} else if (val instanceof CatalogEntryRow) {
 			CatalogEntryRow entry = (CatalogEntryRow)val;
-			renderPriceMethods(sb, entry.getAccessTypes());
+			renderPriceMethods(renderer, sb, entry.getAccessTypes());
 		}
 		sb.append("</div>");
 	}
 	
-	private void renderPriceMethods(StringOutput sb, List<PriceMethod> methods) {
+	private void renderPriceMethods(Renderer renderer, StringOutput sb, List<PriceMethod> methods) {
 		if (methods != null && methods.size() > 0) {
-			sb.append("<ul class='list-inline'>");
-			for (PriceMethod priceMethod : methods) {
-				String price = priceMethod.getPrice();
-				String type = priceMethod.getType();
-				sb.append("<li title=\"").append(priceMethod.getDisplayName()).append("\"><i class='o_icon ").append(type).append(" o_icon-lg'></i>");
-				if(price != null && !price.isEmpty()) {
-					sb.append(" ").append(price);
+			if(renderer == null) {
+				for (PriceMethod priceMethod : methods) {
+					String price = priceMethod.getPrice();
+					if(price != null && !price.isEmpty()) {
+						sb.append(price).append(" ");
+					}
 				}
-				sb.append("</li>");
+			} else {
+				sb.append("<ul class='list-inline'>");
+				for (PriceMethod priceMethod : methods) {
+					String price = priceMethod.getPrice();
+					String type = priceMethod.getType();
+					sb.append("<li title=\"").append(priceMethod.getDisplayName()).append("\"><i class='o_icon ").append(type).append(" o_icon-lg'></i>");
+					if(price != null && !price.isEmpty()) {
+						sb.append(" ").append(price);
+					}
+					sb.append("</li>");
+				}
+				sb.append("</ul>");
 			}
-			sb.append("</ul>");
 		}
 	}
 }

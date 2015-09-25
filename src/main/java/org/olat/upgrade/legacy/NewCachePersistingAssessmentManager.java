@@ -885,7 +885,7 @@ public class NewCachePersistingAssessmentManager {
 				
 				if(passed != null && passed.booleanValue() && course.getCourseConfig().isAutomaticCertificationEnabled()) {
 					CertificatesManager certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
-					if(certificatesManager.isRecertificationAllowed(assessedIdentity, courseEntry)) {
+					if(certificatesManager.isCertificationAllowed(assessedIdentity, courseEntry)) {
 						CertificateTemplate template = null;
 						Long templateId = course.getCourseConfig().getCertificateTemplate();
 						if(templateId != null) {

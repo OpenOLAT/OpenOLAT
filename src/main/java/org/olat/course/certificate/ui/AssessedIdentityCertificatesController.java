@@ -185,7 +185,7 @@ public class AssessedIdentityCertificatesController extends BasicController impl
 		ICourse course = CourseFactory.loadCourse(resource);
 		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		if(certificatesManager.isRecertificationAllowed(assessedIdentity, courseEntry)) {
+		if(certificatesManager.isCertificationAllowed(assessedIdentity, courseEntry)) {
 			//don't need to confirm
 			doGenerateCertificate(ureq);
 		} else {
