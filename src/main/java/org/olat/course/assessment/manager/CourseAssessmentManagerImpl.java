@@ -282,7 +282,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 		
 		if(passed != null && passed.booleanValue() && course.getCourseConfig().isAutomaticCertificationEnabled()) {
-			if(certificatesManager.isRecertificationAllowed(assessedIdentity, courseEntry)) {
+			if(certificatesManager.isCertificationAllowed(assessedIdentity, courseEntry)) {
 				CertificateTemplate template = null;
 				Long templateId = course.getCourseConfig().getCertificateTemplate();
 				if(templateId != null) {
