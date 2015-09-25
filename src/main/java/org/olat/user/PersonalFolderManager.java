@@ -58,8 +58,9 @@ public class PersonalFolderManager extends BriefcaseWebDAVProvider implements  U
 	/**
 	 * Delete personal-folder homes/<username> (private & public) of an user.
 	 */
+	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
-		new OlatRootFolderImpl(getRootPathFor(identity), null).delete();
+		new OlatRootFolderImpl(getRootPathFor(identity), null).deleteSilently();
 		log.debug("Personal-folder deleted for identity=" + identity);
 	}
 
