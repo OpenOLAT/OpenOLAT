@@ -264,7 +264,7 @@ public class AuthoringEntryPublishController extends FormBasicController {
 			publishedForUsers.select(MEMBERSONLY_KEY, true);
 			usersSwitch.select(YES_KEY, true);
 		} else {
-			publishedForUsers.select(MEMBERSONLY_KEY, true);
+			publishedForUsers.select(OAU_KEY, true);
 			usersSwitch.select(NO_KEY, true);
 			userConfigLayout.setVisible(false);
 		}		
@@ -288,7 +288,7 @@ public class AuthoringEntryPublishController extends FormBasicController {
 			if (loginModule.isGuestLoginLinksEnabled()) {
 				publishedForUsers.select(OAUG_KEY, false);
 			}
-			publishedForUsers.select(MEMBERSONLY_KEY, true);
+			publishedForUsers.select(OAU_KEY, true);
 			userConfigLayout.setVisible(false);
 		}
 	}
