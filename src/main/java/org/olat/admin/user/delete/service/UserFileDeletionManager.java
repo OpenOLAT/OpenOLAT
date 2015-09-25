@@ -25,13 +25,11 @@
 
 package org.olat.admin.user.delete.service;
 
-import java.io.File;
-import java.io.FilenameFilter;
-
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.id.Identity;
-import org.olat.core.manager.BasicManager;
 import org.olat.user.UserDataDeletable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
 /**
@@ -39,49 +37,14 @@ import org.olat.user.UserDataDeletable;
  * 
  * @author Christian Guretzki  
  */
-public class UserFileDeletionManager extends BasicManager implements UserDataDeletable{
+@Service
+public class UserFileDeletionManager implements UserDataDeletable {
 
+	@Autowired
 	private TaskExecutorManager taskExecutorManager;
 
-
-	/**
-	 * [spring]
-	 * @param userDeletionManager
-	 */
-	private UserFileDeletionManager() {
-		//
-	}
-
-	/**
-	 * [spring]
-	 * @param taskExecutorManager
-	 */
-	public void setTaskExecutorManager(TaskExecutorManager taskExecutorManager) {
-		this.taskExecutorManager = taskExecutorManager;
-	}
-
-  public void deleteUserData(final Identity identity, final String newDeletedUserName) {
-  	taskExecutorManager.execute(new DeleteUserDataTask(identity.getKey(), newDeletedUserName));
-  }
-}
-	
-class UserFileFilter implements FilenameFilter  {
-	
-	private String username;
-
-	UserFileFilter(String username) {
-		this.username = username;
-	}
-
 	@Override
-	public boolean accept(File dir, String name) {
-		// don't add overlayLocales as selectable availableLanguages
-		// (LocaleStrings_de__VENDOR.properties)
-		if (   name.equals(username) ) { 
-			return true; 
-		} else {
-			return false;
-		}
+	public void deleteUserData(final Identity identity, final String newDeletedUserName) {
+		taskExecutorManager.execute(new DeleteUserDataTask(identity.getKey(), identity.getName()));
 	}
 }
-

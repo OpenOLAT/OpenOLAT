@@ -72,11 +72,17 @@ public class TypeRenderer implements FlexiCellRenderer {
 			cssClass = RepositoyUIFactory.getIconCssClass(re);
 			managed = StringHelper.containsNonWhitespace(re.getManagedFlagsString());
 		}
-		target.append("<div class='o_nowrap o_repoentry_type'>")
-		      .append("<i class='o_icon o_icon-lg ").append(cssClass).append("' title=\"").append(type).append("\"></i>");
-		if (managed) {
-			target.append(" <i class='o_icon o_icon_managed' title=\"").append(translator.translate("cif.managedflags")).append("\"></i> ");
+		
+		if(renderer == null) {
+			// excel download
+			target.append(type);
+		} else {
+			target.append("<div class='o_nowrap o_repoentry_type'>")
+			      .append("<i class='o_icon o_icon-lg ").append(cssClass).append("' title=\"").append(type).append("\"></i>");
+			if (managed) {
+				target.append(" <i class='o_icon o_icon_managed' title=\"").append(translator.translate("cif.managedflags")).append("\"></i> ");
+			}
+			target.append("</div>");
 		}
-		target.append("</div>");
 	}
 }

@@ -70,6 +70,7 @@ public class HomePageConfigManagerImpl extends BasicManager implements HomePageC
 	 * @param userName
 	 * @return homePageConfig
 	 */
+	@Override
 	public HomePageConfig loadConfigFor(String userName) {
 		HomePageConfig retVal = null;
 		File configFile = getConfigFile(userName);
@@ -119,6 +120,7 @@ public class HomePageConfigManagerImpl extends BasicManager implements HomePageC
 	 * @param userName
 	 * @param homePageConfig
 	 */
+	@Override
 	public void saveConfigTo(String userName, HomePageConfig homePageConfig) {
 	    homePageConfig.setUserName(userName);
 		File configFile = getConfigFile(userName);
@@ -132,19 +134,15 @@ public class HomePageConfigManagerImpl extends BasicManager implements HomePageC
 	 */
 	static File getConfigFile(String userName) {
 		File userHomePage = getUserHomePageDir(userName);
-		
-		/*
-		String pathHome = FolderConfig.getCanonicalRoot() + FolderConfig.getUserHome(userName);
-		File userHome = new File(pathHome);
-		if (!userHome.exists()) userHome.mkdir();
-		*/
-		File homePageConfigFile = new File(userHomePage, HomePageConfigManager.HOMEPAGECONFIG_XML);
-		return homePageConfigFile;
+		return new File(userHomePage, HomePageConfigManager.HOMEPAGECONFIG_XML);
 	}
+	
 	private static File getUserHomePageDir(String userName) {
 		String pathHomePage = FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomePage(userName);
 		File userHomePage = new File(pathHomePage);
-		userHomePage.mkdirs();
+		if(!userHomePage.exists()) {
+			userHomePage.mkdirs();
+		}
 		return userHomePage;
 	}
 
@@ -152,10 +150,13 @@ public class HomePageConfigManagerImpl extends BasicManager implements HomePageC
 	 * Delete home-page config-file of a certain user.
 	 * @see org.olat.user.UserDataDeletable#deleteUserData(org.olat.core.id.Identity)
 	 */
+	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
-		getConfigFile(identity.getName()).delete();
-		FileUtils.deleteDirsAndFiles(getUserHomePageDir(identity.getName()), true, true);
-		logDebug("Homepage-config file and homepage-dir deleted for identity=" + identity);
+		String pathHomePage = FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomePage(identity.getName());
+		File userHomePage = new File(pathHomePage);
+		if(userHomePage.exists()) {
+			FileUtils.deleteDirsAndFiles(userHomePage, true, true);
+		}
+		logAudit("Homepage-config file and homepage-dir deleted for identity=" + identity);
 	}
-
 }
