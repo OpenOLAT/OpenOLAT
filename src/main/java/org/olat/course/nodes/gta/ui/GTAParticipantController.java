@@ -42,6 +42,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
@@ -284,10 +285,23 @@ public class GTAParticipantController extends GTAAbstractController {
 		String title = translate("run.submit.button");
 		String text;
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
-			text = translate("run.submit.confirm.group", new String[]{ StringHelper.escapeHtml(assessedGroup.getName()) });
+			File documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedGroup);
+			File[] submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
+			if(submittedDocuments.length == 0) {
+				text = "<div class='o_warning'>" + translate("run.submit.confirm.warning.group", new String[]{ StringHelper.escapeHtml(assessedGroup.getName()) }) + "</div>";
+			} else {
+				text = translate("run.submit.confirm.group", new String[]{ StringHelper.escapeHtml(assessedGroup.getName()) });
+			}
 		} else {
-			text = translate("run.submit.confirm");
+			File documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, getIdentity());
+			File[] submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
+			if(submittedDocuments.length == 0) {
+				text = "<div class='o_warning'>" + translate("run.submit.confirm.warning") + "</div>";
+			} else {
+				text = translate("run.submit.confirm");
+			}
 		}
+
 		confirmSubmitDialog = activateOkCancelDialog(ureq, title, text, confirmSubmitDialog);
 		confirmSubmitDialog.setUserObject(task);
 	}
