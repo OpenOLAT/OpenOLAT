@@ -424,9 +424,17 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 
 	@Override
 	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String charset) {
-		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
+		final GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
+		final ModuleConfiguration config =  getModuleConfiguration();
+
+		String prefix;
+		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
+			prefix = "grouptask_";
+		} else {
+			prefix = "ita_";
+		}
 	
-		String dirName = "grouptask_"
+		String dirName = prefix
 				+ StringHelper.transformDisplayNameToFileSystemName(getShortName())
 				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
 		
@@ -434,7 +442,6 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 
 		//save assessment datas
 		List<Identity> users = null;
-		ModuleConfiguration config = getModuleConfiguration();
 		if(config.getBooleanSafe(GTASK_GRADING)) {
 			users = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment(), options);
 			
@@ -777,11 +784,17 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 				tools.add(new GTAGroupAssessmentToolController(ureq, wControl, courseEnv, options.getGroup(), this));
 			}
 			tools.add(new BulkDownloadToolController(ureq, wControl, courseEnv, options, this));
-		} else if(GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))
-				&& (config.getBooleanSafe(GTASK_REVIEW_AND_CORRECTION)
-						|| config.getBooleanSafe(GTASK_GRADING))) {
-			tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, this));
-			tools.add(new BulkDownloadToolController(ureq, wControl, courseEnv, options, this));
+		} else if(GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
+			if(config.getBooleanSafe(GTASK_REVIEW_AND_CORRECTION) || config.getBooleanSafe(GTASK_GRADING)){
+				tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, this));
+			}
+			
+			if(config.getBooleanSafe(GTASK_ASSIGNMENT)
+					|| config.getBooleanSafe(GTASK_SUBMIT)
+					|| config.getBooleanSafe(GTASK_REVIEW_AND_CORRECTION)
+					|| config.getBooleanSafe(GTASK_REVISION_PERIOD)) {
+				tools.add(new BulkDownloadToolController(ureq, wControl, courseEnv, options, this));
+			}
 		}
 		return tools;
 	}
