@@ -94,7 +94,7 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 			mainVC.put("segmentCmp", statementCtrl.getInitialComponent());
 		} else {
 			try {
-				ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+				ICourse course = CourseFactory.loadCourse(entry);
 				assessmentCtrl = new IdentityAssessmentEditController(wControl, ureq, null,
 						assessedIdentity, course, true, false, false);
 				listenTo(assessmentCtrl);

@@ -90,7 +90,6 @@ import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.modules.iq.IQSubmittedEvent;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -402,11 +401,10 @@ public class IQRunController extends BasicController implements GenericEventList
 					displayContainerController = new LayoutMain3ColsController(ureq, getWindowControl(), displayController);
 					listenTo(displayContainerController); // autodispose
 
-					
 					//need to wrap a course restart controller again, because IQDisplay
 					//runs on top of GUIStack
 					ICourse course = CourseFactory.loadCourse(courseResId);
-					RepositoryEntry courseRepositoryEntry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
+					RepositoryEntry courseRepositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 					Panel empty = new Panel("empty");//empty panel set as "menu" and "tool"
 					Controller courseCloser = new DisposedCourseRestartController(ureq, getWindowControl(), courseRepositoryEntry);
 					Controller disposedRestartController = new LayoutMain3ColsController(ureq, getWindowControl(), empty, courseCloser.getInitialComponent(), "disposed course whily in iqRun" + courseResId);

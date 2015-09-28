@@ -143,7 +143,7 @@ public class VCCourseNode extends AbstractAccessableCourseNode {
 			if(roles.isInstitutionalResourceManager() | roles.isAuthor()) {
 				RepositoryManager rm = RepositoryManager.getInstance();
 				ICourse course = CourseFactory.loadCourse(key);
-				RepositoryEntry re = rm.lookupRepositoryEntry(course, false);
+				RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 				if (re != null) {
 					moderator = rm.isOwnerOfRepositoryEntry(ureq.getIdentity(), re);
 					if(!moderator) {

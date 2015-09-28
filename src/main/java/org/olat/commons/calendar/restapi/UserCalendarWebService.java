@@ -244,7 +244,7 @@ public class UserCalendarWebService {
 					AccessResult result = acManager.isAccessible(entry, retrievedUser, false);
 					if(result.isAccessible()) {
 						try {
-							final ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+							final ICourse course = CourseFactory.loadCourse(entry);
 							CourseConfig config = course.getCourseEnvironment().getCourseConfig();
 							UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
 							

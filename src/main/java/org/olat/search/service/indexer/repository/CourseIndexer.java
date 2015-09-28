@@ -91,7 +91,7 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 				return;
 			}
 
-			ICourse course = CourseFactory.loadCourse(repositoryEntry.getOlatResource());
+			ICourse course = CourseFactory.loadCourse(repositoryEntry);
 			// course.getCourseTitle(); // do not index title => index root-node
 			parentResourceContext.setParentContextType(TYPE);
 			parentResourceContext.setParentContextName(course.getCourseTitle());

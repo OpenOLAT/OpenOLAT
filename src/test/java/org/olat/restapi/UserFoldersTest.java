@@ -90,7 +90,7 @@ public class UserFoldersTest extends OlatJerseyTestCase {
 		File courseWithForums = new File(courseWithForumsUrl.toURI());
 		myCourseRe = CourseFactory.deployCourseFromZIP(courseWithForums, UUID.randomUUID().toString(), 4);
 		Assert.assertNotNull(myCourseRe);
-		myCourse = CourseFactory.loadCourse(myCourseRe.getOlatResource().getResourceableId());
+		myCourse = CourseFactory.loadCourse(myCourseRe);
 
 		setup = true;
 	}

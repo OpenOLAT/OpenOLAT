@@ -80,7 +80,7 @@ public class ScoreRuleSPI implements FilterRuleSPI {
 			String operator = r.getOperator();
 			float value = Float.parseFloat(r.getRightOperand());
 			
-			ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+			ICourse course = CourseFactory.loadCourse(entry);
 			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
 			
 			Map<Long, Float> scores = helperDao.getScores(entry.getOlatResource().getResourceableId(), courseNode, identities);

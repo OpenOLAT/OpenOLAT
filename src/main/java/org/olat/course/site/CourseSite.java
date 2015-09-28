@@ -105,7 +105,7 @@ public class CourseSite extends AbstractSiteInstance {
 		}
 
 		MainLayoutController c;
-		ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+		ICourse course = CourseFactory.loadCourse(entry);
 
 		// course-launch-state depending course-settings
 		RepositoryEntrySecurity reSecurity = rm.isAllowed(ureq, entry);
@@ -138,7 +138,7 @@ public class CourseSite extends AbstractSiteInstance {
 					public Controller create(UserRequest uureq, WindowControl wwControl,
 							TooledStackedPanel toolbarPanel, RepositoryEntry re, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
 						return new RunMainController(uureq, wwControl, toolbarPanel,
-								CourseFactory.loadCourse(re.getOlatResource()), re, security, assessmentMode);
+								CourseFactory.loadCourse(re), re, security, assessmentMode);
 					}
 				}, false, true);
 			

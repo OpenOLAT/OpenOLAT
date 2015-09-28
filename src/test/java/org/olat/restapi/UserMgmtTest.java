@@ -247,7 +247,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 			repositoryService.addRole(id1, entry, GroupRoles.participant.name());
 		}
 		
-		demoCourse = CourseFactory.loadCourse(entry.getOlatResource());
+		demoCourse = CourseFactory.loadCourse(entry);
 		TreeVisitor visitor = new TreeVisitor(new Visitor() {
 			@Override
 			public void visit(INode node) {

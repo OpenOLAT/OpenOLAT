@@ -74,7 +74,7 @@ public class ScoreRuleEditor extends RuleEditorFragment {
 		formLayout.add(ruleCont);
 		ruleCont.getFormItemComponent().contextPut("id", id);
 		
-		ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+		ICourse course = CourseFactory.loadCourse(entry);
 		
 		
 		String currentValue = null;

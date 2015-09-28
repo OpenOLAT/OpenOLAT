@@ -41,6 +41,7 @@ import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
@@ -178,8 +179,9 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	// PROJECT GROUP MANAGEMENT
 	////////////////////////////
 	public BusinessGroup createProjectGroupFor(Long projectBrokerId, Identity identity, String groupName, String groupDescription, Long courseId) {
-		OLATResource resource = CourseFactory.loadCourse(courseId).getCourseEnvironment().getCourseGroupManager().getCourseResource();
-		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(resource, false);
+		CourseGroupManager cgm = CourseFactory.loadCourse(courseId).getCourseEnvironment().getCourseGroupManager();
+		OLATResource resource = cgm.getCourseResource();
+		RepositoryEntry re = cgm.getCourseEntry();
 
 		logDebug("createProjectGroupFor groupName=" + groupName);
 		BusinessGroup projectGroup = businessGroupService.createBusinessGroup(identity, groupName, groupDescription, -1, -1, false, false, re);
@@ -283,7 +285,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	@Override
 	public void sendGroupChangeEvent(Project project, Long courseResourceableId, Identity identity) {
 		ICourse course = CourseFactory.loadCourse(courseResourceableId);
-		RepositoryEntry ores = repositoryManager.lookupRepositoryEntry(course, true);
+		RepositoryEntry ores = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		MultiUserEvent modifiedEvent = new BusinessGroupModifiedEvent(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, project.getProjectGroup(), identity);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, ores);
 	}

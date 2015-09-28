@@ -207,7 +207,7 @@ public class CoursesInfosWebService {
 		AccessResult result = acManager.isAccessible(entry, identity, false);
 		if(result.isAccessible()) {
 			try {
-				final ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+				final ICourse course = CourseFactory.loadCourse(entry);
 				final List<FolderVO> folders = new ArrayList<FolderVO>();
 				final List<ForumVO> forums = new ArrayList<ForumVO>();
 				final IdentityEnvironment ienv = new IdentityEnvironment(identity, roles);
