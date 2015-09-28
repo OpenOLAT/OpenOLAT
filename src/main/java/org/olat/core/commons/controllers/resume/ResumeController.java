@@ -105,11 +105,11 @@ public class ResumeController extends FormBasicController implements SupportsAft
 		if(isREST(ureq)) {
 			//do nothing
 		} else if(!historyModule.isResumeEnabled()) {
-			String bc = getLandingBC(ureq);
-			redirect(ureq, bc);
+			String url = toUrl(getLandingBC(ureq));
+			redirect(ureq, url);
 		} else if(usess.getRoles().isGuestOnly()) {
-			String bc = getLandingBC(ureq);
-			redirect(ureq, bc);
+			String url = toUrl(getLandingBC(ureq));
+			redirect(ureq, url);
 		} else {
 			Preferences prefs =  usess.getGuiPreferences();
 			String resumePrefs = (String)prefs.get(WindowManager.class, "resume-prefs");
@@ -118,8 +118,8 @@ public class ResumeController extends FormBasicController implements SupportsAft
 			}
 
 			if("none".equals(resumePrefs)) {
-				String bc = getLandingBC(ureq);
-				redirect(ureq, bc);
+				String url = toUrl(getLandingBC(ureq));
+				redirect(ureq, url);
 			} else if ("auto".equals(resumePrefs)) {
 				HistoryPoint historyEntry = HistoryManager.getInstance().readHistoryPoint(ureq.getIdentity());
 				if(historyEntry != null && StringHelper.containsNonWhitespace(historyEntry.getBusinessPath())) {
@@ -127,8 +127,8 @@ public class ResumeController extends FormBasicController implements SupportsAft
 					String bc = BusinessControlFactory.getInstance().getAsRestPart(cloneCes, true);
 					redirect(ureq, bc);
 				} else {
-					String bc = getLandingBC(ureq);
-					redirect(ureq, bc);
+					String url = toUrl(getLandingBC(ureq));
+					redirect(ureq, url);
 				}
 			} else if ("ondemand".equals(resumePrefs)) {
 				HistoryPoint historyEntry = historyManager.readHistoryPoint(ureq.getIdentity());
@@ -142,8 +142,8 @@ public class ResumeController extends FormBasicController implements SupportsAft
 						landingButton.setVisible(false);
 					}
 				} else {
-					String bc = getLandingBC(ureq);
-					redirect(ureq, bc);
+					String url = toUrl(getLandingBC(ureq));
+					redirect(ureq, url);
 				}
 			}
 		}
@@ -212,10 +212,13 @@ public class ResumeController extends FormBasicController implements SupportsAft
 		if(StringHelper.containsNonWhitespace(landingPage)) {
 			String path = Rules.cleanUpLandingPath(landingPage);
 			if(StringHelper.containsNonWhitespace(path)) {
-				return BusinessControlFactory.getInstance().formatFromURI(path);
+				landingPage = BusinessControlFactory.getInstance().formatFromURI(path);
 			}
 		}
-		return lpModule.getRules().match(ureq.getUserSession());
+		if(!StringHelper.containsNonWhitespace(landingPage)) {
+			landingPage = lpModule.getRules().match(ureq.getUserSession());
+		}
+		return landingPage;
 	}
 	
 	private void launch(UserRequest ureq, String businessPath) {
@@ -229,10 +232,24 @@ public class ResumeController extends FormBasicController implements SupportsAft
 		}
 	}
 	
-	private void redirect(UserRequest ureq, String businessPath) {
-		if(StringHelper.containsNonWhitespace(businessPath)) {
+	private String toUrl(String businessPath) {
+		String url = businessPath;
+		if(StringHelper.containsNonWhitespace(url)) {
+			if(url.startsWith("[")) {
+				List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(url);
+				url = BusinessControlFactory.getInstance().getAsRestPart(ces, true);
+			}
+			if(url.startsWith("/")) {
+				url = url.substring(1, url.length());
+			}
+		}
+		return url;
+	}
+	
+	private void redirect(UserRequest ureq, String url) {
+		if(StringHelper.containsNonWhitespace(url)) {
 			try {
-				ureq.getUserSession().putEntry("redirect-bc", businessPath);
+				ureq.getUserSession().putEntry("redirect-bc", url);
 			} catch (Exception e) {
 				logError("Error while resuming", e);
 			}
