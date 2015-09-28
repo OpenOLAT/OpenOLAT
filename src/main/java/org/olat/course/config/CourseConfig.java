@@ -72,7 +72,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	/**
 	 * current config file version
 	 */
-	transient private final static int CURRENTVERSION = 9;
+	transient private final static int CURRENTVERSION = 10;
 	/**
 	 * Log levels
 	 */
@@ -238,7 +238,7 @@ public class CourseConfig implements Serializable, Cloneable {
 				if (!configuration.containsKey(CERTIFICATE_MANUAL_ENABLED)) configuration.put(CERTIFICATE_MANUAL_ENABLED, Boolean.FALSE);
 				if (!configuration.containsKey(CERTIFICATE_TEMPLATE)) configuration.put(CERTIFICATE_TEMPLATE, "");
 				if (!configuration.containsKey(RECERTIFICATION_ENABLED)) configuration.put(RECERTIFICATION_ENABLED, Boolean.FALSE);
-				if (!configuration.containsKey(RECERTIFICATION_TIMELAPSE)) configuration.put(RECERTIFICATION_TIMELAPSE, "");
+				if (!configuration.containsKey(RECERTIFICATION_TIMELAPSE)) configuration.put(RECERTIFICATION_TIMELAPSE, new Integer(0));
 				this.version = 10;
 			}
 
@@ -426,30 +426,6 @@ public class CourseConfig implements Serializable, Cloneable {
 	public void setManualCertificationEnabled(boolean enabled) {
 		configuration.put(CERTIFICATE_MANUAL_ENABLED, new Boolean(enabled));
 	}
-	
-	
-	
-	/*
-	public PDFCertificatesOptions getPdfCertificateOption2() {
-		PDFCertificatesOptions option;
-		String opt = (String)configuration.get(CERTIFICATE_ENABLED);
-		if(StringHelper.containsNonWhitespace(opt)) {
-			try {
-				option = PDFCertificatesOptions.valueOf(opt);
-			} catch (Exception e) {
-				log.error("", e);
-				option = PDFCertificatesOptions.none;
-			}
-		} else {
-			option = PDFCertificatesOptions.none;
-		}
-
-		return option;
-	}
-	
-	public void setPdfCertificateOption(PDFCertificatesOptions option) {
-		configuration.put(PDF_CERTIFICATE_ENABLED, option.name());
-	}*/
 
 	/**
 	 * @return true if the efficency statement is enabled
@@ -467,8 +443,11 @@ public class CourseConfig implements Serializable, Cloneable {
 	}
 	
 	public int getRecertificationTimelapse() {
-		Integer timelapse = (Integer)configuration.get(RECERTIFICATION_TIMELAPSE);
-		return timelapse == null ? 0 : timelapse.intValue();
+		Object timelapse = configuration.get(RECERTIFICATION_TIMELAPSE);
+		if(timelapse instanceof Integer) {
+			return ((Integer)timelapse).intValue();
+		}
+		return 0;
 	}
 	
 	public void setRecertificationTimelapse(int timelapse) {
