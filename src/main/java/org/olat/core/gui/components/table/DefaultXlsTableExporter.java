@@ -43,6 +43,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.filter.FilterFactory;
@@ -114,6 +115,9 @@ public class DefaultXlsTableExporter implements TableExporter {
 				cellValue = FilterFactory.getHtmlTagsFilter().filter(cellValue);
 				if(StringHelper.containsNonWhitespace(cellValue)) {
 					cellValue = StringEscapeUtils.unescapeHtml(cellValue);
+					if(cellValue.length() >= 32767) {
+						cellValue = Formatter.truncate(cellValue, 32760);
+					}
 				}
 				Cell cell = dataRow.createCell(c);
 				cell.setCellValue(cellValue);
