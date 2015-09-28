@@ -2180,11 +2180,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-orm</artifactId>
-			<version>${org.springframework.version}</version>
-		</dependency>
 		<!-- end Spring dependencies -->
 		<!-- Start Jersey dependency -->
 		<dependency>

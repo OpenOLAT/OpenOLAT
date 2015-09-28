@@ -31,12 +31,13 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
+import java.util.Properties;
 
 import javax.persistence.Cache;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
+import javax.persistence.Persistence;
 import javax.persistence.RollbackException;
 
 import org.hibernate.HibernateException;
@@ -53,12 +54,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.springframework.orm.jpa.EntityManagerFactoryUtils;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 
 /**
  * A <b>DB </b> is a central place to get a Entity Managers. It acts as a
@@ -74,8 +70,7 @@ public class DBImpl implements DB, Destroyable {
 	private static DBImpl INSTANCE;
 	
 	private String dbVendor;
-	private EntityManagerFactory emf;
-	private PlatformTransactionManager txManager;
+	private static EntityManagerFactory emf;
 
 	private final ThreadLocal<ThreadLocalData> data = new ThreadLocal<ThreadLocalData>();
 	// Max value for commit-counter, values over this limit will be logged.
@@ -84,8 +79,16 @@ public class DBImpl implements DB, Destroyable {
 	/**
 	 * [used by spring]
 	 */
-	private DBImpl() {
-		INSTANCE = this;
+	public DBImpl(Properties databaseProperties) {
+		if(INSTANCE == null) {
+			INSTANCE = this;
+			try {
+				emf = Persistence.createEntityManagerFactory("default", databaseProperties);
+			} catch (Exception e) {
+				log.error("", e);
+				throw e;
+			}
+		}
 	}
 	
 	protected static DBImpl getInstance() {
@@ -118,14 +121,6 @@ public class DBImpl implements DB, Destroyable {
 	public void setDbVendor(String dbVendor) {
 		this.dbVendor = dbVendor;
 	}
-    
-	public void setEntityManagerFactory(EntityManagerFactory emf) {
-		this.emf = emf;
-	}
-	
-	public void setTxManager(PlatformTransactionManager txManager) {
-		this.txManager = txManager;
-	}
 
 	/**
 	 * A <b>ThreadLocalData</b> is used as a central place to store data on a per
@@ -134,7 +129,7 @@ public class DBImpl implements DB, Destroyable {
 	 * @author Andreas CH. Kapp
 	 * @author Christian Guretzki
 	 */
-	protected static class ThreadLocalData {
+	protected class ThreadLocalData {
 
 		private boolean error;
 		private Exception lastError;
@@ -145,8 +140,41 @@ public class DBImpl implements DB, Destroyable {
 		// count number of commit in db-session, used to log warn 'Call more than one commit in a db-session'
 		private int commitCounter = 0;
 		
+		private EntityManager em;
+		
 		private ThreadLocalData() {
 		// don't let any other class instantiate ThreadLocalData.
+		}
+		
+		public EntityManager getEntityManager(boolean createIfNecessary) {
+			if(em == null && createIfNecessary) {
+				em = emf.createEntityManager();
+			}
+			return em;
+		}
+		
+		public EntityManager renewEntityManager() {
+			if(em != null && !em.isOpen()) {
+				try {
+					em.close();
+				} catch (Exception e) {
+					log.error("", e);
+				}
+				em = null;
+			}
+			return getEntityManager(true);
+		}
+		
+		public void removeEntityManager() {
+			em = null;
+		}
+		
+		public boolean hasTransaction() {
+			if(em != null && em.isOpen()) {
+				EntityTransaction trx = em.getTransaction();
+				return trx != null && trx.isActive();
+			}
+			return false;
 		}
 
 		/**
@@ -161,6 +189,12 @@ public class DBImpl implements DB, Destroyable {
 		}
 
 		public boolean isError() {
+			if(em != null && em.isOpen()) {
+				EntityTransaction trx = em.getTransaction();
+				if (trx != null && trx.isActive()) {
+					return trx.getRollbackOnly();
+				} 
+			}
 			return error;
 		}
 
@@ -218,7 +252,7 @@ public class DBImpl implements DB, Destroyable {
 	@Override
 	public EntityManager getCurrentEntityManager() {
 		//if spring has already an entity manager in this thread bounded, return it
-		EntityManager threadBoundedEm = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
+		EntityManager threadBoundedEm = getData().getEntityManager(true);
 		if(threadBoundedEm != null && threadBoundedEm.isOpen()) {
 			EntityTransaction trx = threadBoundedEm.getTransaction();
 			//if not active begin a new one (possibly manual committed)
@@ -227,10 +261,17 @@ public class DBImpl implements DB, Destroyable {
 			}
 			updateDataStatistics("entityManager");
 			return threadBoundedEm;
+		} else if(threadBoundedEm == null || !threadBoundedEm.isOpen()) {
+			threadBoundedEm = getData().renewEntityManager();
 		}
-		EntityManager em = getEntityManager();
+		
+		EntityTransaction trx = threadBoundedEm.getTransaction();
+		//if not active begin a new one (possibly manual committed)
+		if(!trx.isActive()) {
+			trx.begin();
+		}
 		updateDataStatistics("entityManager");
-		return em;
+		return threadBoundedEm;
 	}
 	
 	private Session getSession(EntityManager em) {
@@ -241,61 +282,14 @@ public class DBImpl implements DB, Destroyable {
 		return trx == null || !trx.isActive() || trx.getRollbackOnly();
 	}
 	
-	private EntityManager getEntityManager() {
-		EntityManager txEm = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
-		if(txEm == null) {
-			if(txManager != null) {
-				DefaultTransactionDefinition def = new DefaultTransactionDefinition();
-				txManager.getTransaction(def);
-				txEm = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
-			} else {
-				txEm = emf.createEntityManager();
-			}
-		} else if(!txEm.isOpen()) {
-			DefaultTransactionDefinition def = new DefaultTransactionDefinition();
-			def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-			txManager.getTransaction(def);
-			txEm = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
+	private void updateDataStatistics(Object logObject) {
+		if (getData().getAccessCounter() > MAX_DB_ACCESS_COUNT) {
+			log.warn("beginTransaction bulk-change, too many db access for one transaction, could be a performance problem (add closeSession/createSession in loop) logObject=" + logObject, null);
+			getData().resetAccessCounter();
 		} else {
-			EntityTransaction trx = txEm.getTransaction();
-			//if not active begin a new one (possibly manual committed)
-			if(!trx.isActive()) {
-				trx.begin();
-			}
-		}
-		return txEm;
-	}
-
-  private void updateDataStatistics(Object logObject) {
-		/*
-  	//OLAT-3621: paranoia check for error state: we need to catch errors at the earliest point possible. OLAT-3621 has a suspected situation
-		//           where an earlier transaction failed and didn't clean up nicely. To check this, we introduce error checking in getInstance here
-	  
-		if (transaction != null && transaction.isActive() && transaction.getRollbackOnly()
-				&& !Thread.currentThread().getName().equals("TaskExecutorThread")) {
-			INSTANCE.logWarn("beginTransaction: Transaction (still?) in Error state: "+transaction, new Exception("DBImpl begin transaction)"));
-		}
-		*/
-	
-  	// increment only non-cachable query 
-  	if (logObject instanceof String ) {
-  		String query = (String) logObject;
-  		query = query.trim();
-  		if (   !query.startsWith("select count(poi) from org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi, org.olat.basesecurity.PolicyImpl as poi,")
-  		    && !query.startsWith("select count(grp) from org.olat.group.BusinessGroupImpl as grp")
-  		    && !query.startsWith("select count(sgmsi) from  org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi") ) {
-  			// it is no of cached queries
-  			getData().incrementAccessCounter();  			
-  		}
-  	} else {
-  		getData().incrementAccessCounter();
-  	}
-
-    if (getData().getAccessCounter() > MAX_DB_ACCESS_COUNT) {
-    	log.warn("beginTransaction bulk-change, too many db access for one transaction, could be a performance problem (add closeSession/createSession in loop) logObject=" + logObject, null);
-    	getData().resetAccessCounter();
+  			getData().incrementAccessCounter();
+    	}
     }
-  }
 
 	/**
 	 * Close the database session.
@@ -313,7 +307,7 @@ public class DBImpl implements DB, Destroyable {
 
 		//commit
 		//getCurrentEntityManager();
-		EntityManager s = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
+		EntityManager s = getData().getEntityManager(false);
 		if(s != null) {
 			EntityTransaction trx = s.getTransaction();
 			if(trx.isActive()) {
@@ -327,13 +321,7 @@ public class DBImpl implements DB, Destroyable {
 					trx.rollback();
 				}
 			}
-	
-			TransactionSynchronizationManager.clear();
-			EntityManagerFactoryUtils.closeEntityManager(s);
-			Map<Object,Object> map = TransactionSynchronizationManager.getResourceMap();
-			if(map.containsKey(emf)) {
-				TransactionSynchronizationManager.unbindResource(emf);
-			}
+			s.close();
 		}
 		data.remove();
 	}
@@ -600,24 +588,11 @@ public class DBImpl implements DB, Destroyable {
 	 */
 	@Override
 	public boolean isError() {
-		//EntityTransaction trx = getCurrentEntityManager().getTransaction();
-		EntityManager em = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
-		if(em != null && em.isOpen()) {
-			EntityTransaction trx = em.getTransaction();
-			if (trx != null && trx.isActive()) {
-				return trx.getRollbackOnly();
-			} 
-		}
-		return getData() == null ? false : getData().isError();
+		return getData().isError();
 	}
 
 	private boolean hasTransaction() {
-		EntityManager em = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
-		if(em != null && em.isOpen()) {
-			EntityTransaction trx = em.getTransaction();
-			return trx != null && trx.isActive();
-		}
-		return false;
+		return getData().hasTransaction();
 	}
 
 	/**
@@ -756,9 +731,6 @@ public class DBImpl implements DB, Destroyable {
 			// Error when trying to commit
 			try {
 				if (hasTransaction()) {
-					TransactionStatus status = txManager.getTransaction(null);
-					txManager.rollback(status);
-					
 					EntityTransaction trx = getCurrentEntityManager().getTransaction();
 					if(trx != null && trx.isActive()) {
 						if(trx.getRollbackOnly()) {
@@ -792,10 +764,6 @@ public class DBImpl implements DB, Destroyable {
 		try {
 			// see closeSession() and OLAT-4318: more robustness with commit/rollback/close, therefore
 			// we check if the connection is open at this stage at all
-
-			TransactionStatus status = txManager.getTransaction(null);
-			txManager.rollback(status);
-			
 			EntityTransaction trx = getCurrentEntityManager().getTransaction();
 			if(trx != null && trx.isActive()) {
 				if(trx.getRollbackOnly()) {

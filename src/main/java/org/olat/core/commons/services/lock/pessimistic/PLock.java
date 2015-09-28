@@ -22,43 +22,8 @@
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
 */
+package org.olat.core.commons.services.lock.pessimistic;
 
-package org.olat.resource.lock.pessimistic;
-
-import org.olat.core.commons.persistence.PersistentObject;
-
-/**
- * A <b>OLATResourceImpl</b> is 
- * 
- * @author Andreas
- *
- */
-public class PLockImpl extends PersistentObject implements PLock {
-
-	private String asset;
-	
-	/**
-	* Constructor needed for Hibernate.
-	*/
-	PLockImpl() {
-		// singleton
-	}
-
-	PLockImpl(String asset) {
-		this.asset = asset;
-	}
-
-
-	public String getAsset() {
-		return asset;
-	}
-
-	/**
-	 * [for hibernate]
-	 * @param asset
-	 */
-	void setAsset(String asset) {
-		this.asset = asset;
-	}
+public interface PLock {
 
 }

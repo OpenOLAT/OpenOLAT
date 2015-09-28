@@ -30,8 +30,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -42,28 +42,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial Date:  10.12.2007 <br>
  * @author Felix Jost, http://www.goodsolutions.ch
  */
-public class ClusterLockManager extends BasicManager {
-	private static ClusterLockManager INSTANCE;
-	
+@Service("clusterLockManager")
+public class ClusterLockManager {
+
 	private static final OLog log = Tracing.createLoggerFor(ClusterLockManager.class);
-	
+
 	@Autowired
 	private DB dbInstance;
-	
-	/**
-	 * [spring]
-	 */
-	private ClusterLockManager() {
-		INSTANCE = this;
-	}
-	
-	/**
-	 * to be used only by the cluster package and subpackages 
-	 * @return
-	 */
-	public static ClusterLockManager getInstance() {
-		return INSTANCE;
-	}
 	
 	LockImpl findLock(String asset) {
 		log.info("findLock: "+asset+" START");

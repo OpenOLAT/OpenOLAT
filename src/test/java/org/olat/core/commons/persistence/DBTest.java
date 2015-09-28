@@ -32,31 +32,24 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.model.RepositoryEntryShortImpl;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.jpa.EntityManagerFactoryUtils;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 
 /**
@@ -70,61 +63,20 @@ public class DBTest extends OlatTestCase {
 	private static final OLog log = Tracing.createLoggerFor(DBTest.class);
 	
 	@Autowired
- 	private RepositoryManager repositoryManager;
+	private DBImpl dbInstance;
 	@Autowired
- 	private EntityManagerFactory emf;
+ 	private RepositoryManager repositoryManager;
 		
 	/**
 	 * testCloseOfUninitializedSession
 	 */
 	@Test
 	public void testCloseOfUninitializedSession() {
-		// first get a initialized db
-		DB db = DBImpl.getInstance();
 		//close it
-		db.closeSession();
-		//then get a uninitialized db
-		db = DBImpl.getInstance();
+		dbInstance.closeSession();
 		// and close it.
-		db.closeSession();
+		dbInstance.closeSession();
 	}
-	
-	@Test
-	public void testMergeEntityManager() {	
- 		EntityManager em1 = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
- 		Assert.assertNull(em1);
- 		List<RepositoryEntryShortImpl> res = repositoryManager.loadRepositoryEntryShortsByResource(Collections.singletonList(27l), "CourseModule");
- 		Assert.assertNotNull(res);
- 		EntityManager em2 = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
- 		Assert.assertNotNull(em2);
- 		
- 		EntityTransaction trx = em2.getTransaction();
- 		Assert.assertTrue(trx.isActive());
- 		trx.commit();
- 		
- 		EntityManagerFactoryUtils.closeEntityManager(em2);
- 		
- 		EntityManager em3 = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
- 		Assert.assertNotNull(em3);
-
- 		//search in the thread local used by Spring
- 		List<TransactionSynchronization> syncs = TransactionSynchronizationManager.getSynchronizations();
- 		Assert.assertNotNull(syncs);
- 		TransactionSynchronizationManager.clear();
- 		Map<Object,Object> map = TransactionSynchronizationManager.getResourceMap();
- 		Assert.assertNotNull(map);
- 		EntityManager em4 = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
- 		Assert.assertNotNull(em4);
- 		
- 		//unbind the entity manager
- 		if(map.containsKey(emf)) {
-			TransactionSynchronizationManager.unbindResource(emf);
-		}
- 		
- 		//no entity manager anymore
- 		EntityManager em5 = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
- 		Assert.assertNull(em5);
- 	}
 	
 	@Test
 	public void testMergeEntityManager_transactional() {
@@ -157,10 +109,10 @@ public class DBTest extends OlatTestCase {
 		
  		public void run() {
  			try {
-				EntityManager em1 = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
+				EntityManager em1 = dbInstance.getCurrentEntityManager();
 				Assert.assertNull(em1);
 				repoManager.lookupRepositoryEntry(27l, false);
-				EntityManager em2 = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
+				EntityManager em2 = dbInstance.getCurrentEntityManager();
 				//Transactional annotation must clean-up the entity manager
 				Assert.assertNull(em2);
 			} catch (Exception e) {
@@ -177,37 +129,28 @@ public class DBTest extends OlatTestCase {
 	 */
 	@Test
 	public void testErrorHandling() {
-		TestTable entry = new TestTable();
-		entry.setField1("foo");
-		entry.setField2(1234354566776L);
-		DBImpl db = DBImpl.getInstance();
+		GroupImpl entry = new GroupImpl();
+		entry.setName("foo");
 		try {		
-			db.saveObject(entry);
+			dbInstance.saveObject(entry);
 			fail("Should generate an error");
 		} catch (DBRuntimeException dre) {
-			assertTrue(db.isError());
-			assertNotNull(db.getError());
+			assertTrue(dbInstance.isError());
+			Assert.assertNotNull(dbInstance.getError());
 		}
-
-		db.closeSession();
-		// in a transaction
-		db = DBImpl.getInstance();
-		TestTable entryTwo = new TestTable();
-		entryTwo.setField1("bar");
-		entryTwo.setField2(2221234354566776L);
-		try {
-			db.saveObject(entryTwo);
-			db.closeSession();
-			fail("Should generate an error");
-		} catch (DBRuntimeException dre) {
-			assertTrue(db.isError());
-			assertNotNull(db.getError());
-		}
+		//the close must clear the transaction
+		dbInstance.closeSession();
+		
+		//a second try must work
+		GroupImpl entryTwo = new GroupImpl();
+		entryTwo.setName("bar");
+		entryTwo.setCreationDate(new Date());
+		dbInstance.saveObject(entryTwo);
+		dbInstance.commitAndCloseSession();
 	}
 	
 	@Test
 	public void testRollback() {
-		DB db = DBFactory.getInstance();
 		String propertyKey = "testRollback-1";
 		String testValue = "testRollback-1";
 		try {
@@ -218,13 +161,12 @@ public class DBTest extends OlatTestCase {
 			// name is null => generated DB error => rollback
 			Property p2 = pm.createPropertyInstance(null, null, null, null, null, null, null, testValue2, null);
 			pm.saveProperty(p2);
-			db.commit();
+			dbInstance.commit();
 			fail("Should generate error for rollback.");
 		} catch (Exception ex) {
-			db.closeSession();
+			dbInstance.closeSession();
 		}
 		// check if p1 is rollbacked
-		db = DBFactory.getInstance();
 		PropertyManager pm = PropertyManager.getInstance();
 		Property p =pm.findProperty(null, null, null, null, propertyKey);
 		assertNull("Property.save is NOT rollbacked", p);
@@ -232,7 +174,6 @@ public class DBTest extends OlatTestCase {
 	
 	@Test
 	public void testMixedNonTransactional_Transactional() {
-		DB db = DBFactory.getInstance();
 		String propertyKey1 = "testMixed-1";
 		String testValue1 = "testMixed-1";
 		String propertyKey2 = "testMixed-2";
@@ -249,11 +190,11 @@ public class DBTest extends OlatTestCase {
 			// name is null => generated DB error => rollback
 			Property p3 = pm.createPropertyInstance(null, null, null, null, null, null, null, testValue3, null);
 			pm.saveProperty(p3);
-			db.commit();
+			dbInstance.commit();
 			fail("Should generate error for rollback.");
-			db.closeSession();
+			dbInstance.closeSession();
 		} catch (Exception ex) {
-			db.closeSession();
+			dbInstance.closeSession();
 		}
 		// check if p1&p2 is rollbacked
 		PropertyManager pm = PropertyManager.getInstance();
@@ -265,7 +206,6 @@ public class DBTest extends OlatTestCase {
 	
 	@Test
 	public void testRollbackNonTransactional() {
-		DB db = DBFactory.getInstance();
 		String propertyKey1 = "testNonTransactional-1";
 		String testValue1 = "testNonTransactional-1";
 		String propertyKey2 = "testNonTransactional-2";
@@ -280,11 +220,11 @@ public class DBTest extends OlatTestCase {
 			// name is null => generated DB error => rollback ?
 			Property p3 = pm.createPropertyInstance(null, null, null, null, null, null, null, testValue3, null);
 			pm.saveProperty(p3);
-			db.commit();
+			dbInstance.commit();
 			fail("Should generate error for rollback.");
-			db.closeSession();
+			dbInstance.closeSession();
 		} catch (Exception ex) {
-			db.closeSession();
+			dbInstance.closeSession();
 		}
 		// check if p1 & p2 is NOT rollbacked
 		PropertyManager pm = PropertyManager.getInstance();
@@ -303,13 +243,12 @@ public class DBTest extends OlatTestCase {
 			long startTime = System.currentTimeMillis();
 			for (int loopCounter=0; loopCounter<loops; loopCounter++) {
 				String propertyKey = "testDbPerfKey-" + loopCounter;
-				DB db = DBFactory.getInstance();
 				PropertyManager pm = PropertyManager.getInstance();
 				String testValue = "testDbPerfValue-" + loopCounter;
 				Property p = pm.createPropertyInstance(null, null, null, null, propertyKey, null, null, testValue, null);
 				pm.saveProperty(p);
 				// forget session cache etc.
-				db.closeSession();
+				dbInstance.closeSession();
 				pm.deleteProperty(p);
 			}
 			long endTime = System.currentTimeMillis();
@@ -323,14 +262,12 @@ public class DBTest extends OlatTestCase {
 			long startTime = System.currentTimeMillis();
 			for (int loopCounter=0; loopCounter<loops; loopCounter++) {	
 				String propertyKey = "testDbPerfKey-" + loopCounter;
-				DB db = DBFactory.getInstance();
 				PropertyManager pm = PropertyManager.getInstance();
 				String testValue = "testDbPerfValue-" + loopCounter;
 				Property p = pm.createPropertyInstance(null, null, null, null, propertyKey, null, null, testValue, null);
 				pm.saveProperty(p);
 				// forget session cache etc.
-				db.closeSession();
-				db = DBFactory.getInstance();
+				dbInstance.closeSession();
 				pm.deleteProperty(p);
 			}
 			long endTime = System.currentTimeMillis();
@@ -344,16 +281,15 @@ public class DBTest extends OlatTestCase {
 	
 	@Test
 	public void testDBUTF8capable() {
-		DB db = DBFactory.getInstance();
 		PropertyManager pm = PropertyManager.getInstance();
-		String name = UUID.randomUUID().toString();
+		String uuid = UUID.randomUUID().toString();
 		String unicodetest = "a-greek a\u03E2a\u03EAa\u03E8 arab \u0630a\u0631 chinese:\u3150a\u3151a\u3152a\u3153a\u3173a\u3110-z";
-		Property p = pm.createPropertyInstance(null, null, null, null, name, null, null, unicodetest, null);
+		Property p = pm.createPropertyInstance(null, null, null, null, uuid, null, null, unicodetest, null);
 		pm.saveProperty(p);
 		// forget session cache etc.
-		db.closeSession();
+		dbInstance.closeSession();
 		
-		Property p2 = pm.findProperty(null, null, null, null, name);
+		Property p2 = pm.findProperty(null, null, null, null, uuid);
 		String lStr = p2.getStringValue();
 		assertEquals(unicodetest, lStr);
 	}
@@ -365,13 +301,13 @@ public class DBTest extends OlatTestCase {
 		PropertyManager.getInstance().saveProperty(p);
 		long propertyKey = p.getKey();
 		// forget session cache etc.
-		DBFactory.getInstance().closeSession();
+		dbInstance.closeSession();
 		// 2. try to find object
-		Object testObject = DBFactory.getInstance().findObject(Property.class, propertyKey);
+		Object testObject = dbInstance.findObject(Property.class, propertyKey);
 		assertNotNull(testObject);
 		// 3. Delete object
 		PropertyManager.getInstance().deleteProperty( (Property)testObject );
-		DBFactory.getInstance().closeSession();
+		dbInstance.closeSession();
 		// 4. try again to find object, now no-one should be found, must return null
 		testObject = DBFactory.getInstance().findObject(Property.class, propertyKey);
 		assertNull(testObject);
@@ -427,21 +363,19 @@ public class DBTest extends OlatTestCase {
 				
 				while (loopCounter++ < numberOfLoops ) {
 					String propertyKey = UUID.randomUUID().toString();
-					DB db = DBFactory.getInstance();
 					PropertyManager pm = PropertyManager.getInstance();
 					String testValue = "DbWorkerValue-" + workerId + "-" + loopCounter;
 					Property p = pm.createPropertyInstance(null, null, null, null, propertyKey, null, null, testValue, null);
 					pm.saveProperty(p);
 					// forget session cache etc.
-					db.closeSession();
+					dbInstance.closeSession();
 					
-					db = DBFactory.getInstance();
 					Property p2 = pm.findProperty(null, null, null, null, propertyKey);
 					String lStr = p2.getStringValue();
 					if (!testValue.equals(lStr)) {
 						errorCounter++;
 					}
-					db.closeSession();
+					dbInstance.closeSession();
 				}
 			} catch (Exception ex) {
 				log.error("", ex);

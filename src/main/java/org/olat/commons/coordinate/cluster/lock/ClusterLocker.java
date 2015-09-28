@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.lock.pessimistic.PessimisticLockManager;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -47,7 +48,6 @@ import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.resource.lock.pessimistic.PessimisticLockManager;
 
 /**
  * Description:<br>
@@ -67,6 +67,7 @@ public class ClusterLocker implements Locker, GenericEventListener {
 	private EventBus eventBus;
 	private ClusterLockManager clusterLockManager;
 	private PersistentLockManager persistentLockManager;
+	private PessimisticLockManager pessimisticLockManager;
 	/**
 	 * [used by spring]
 	 *
@@ -88,13 +89,21 @@ public class ClusterLocker implements Locker, GenericEventListener {
 
 	
 	//cluster:::::: on init of olat system, clear all locks?? but only the one from node in question?
-
+	@Override
 	public PersistentLockManager getPersistentLockManager() {
 		return persistentLockManager;
 	}
 
 	public void setPersistentLockManager(PersistentLockManager persistentLockManager) {
 		this.persistentLockManager = persistentLockManager;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param pessimisticLockManager
+	 */
+	public void setPessimisticLockManager(PessimisticLockManager pessimisticLockManager) {
+		this.pessimisticLockManager = pessimisticLockManager;
 	}
 
 	public LockResult acquireLock(final OLATResourceable ores, final Identity requestor, final String locksubkey) {
@@ -186,7 +195,7 @@ public class ClusterLocker implements Locker, GenericEventListener {
 		
 		
 		// cluster:: change to useage with syncer, but we don't have the olatresourceable yet
-		PessimisticLockManager.getInstance().findOrPersistPLock(asset);
+		pessimisticLockManager.findOrPersistPLock(asset);
 
 		LockImpl li = clusterLockManager.findLock(asset);
 		if (li == null) {

@@ -43,6 +43,8 @@ import org.junit.Test;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.lock.pessimistic.PLock;
+import org.olat.core.commons.services.lock.pessimistic.PessimisticLockManager;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;

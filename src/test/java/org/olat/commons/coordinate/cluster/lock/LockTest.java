@@ -40,9 +40,9 @@ import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.model.GroupImpl;
 import org.olat.commons.coordinate.cluster.ClusterCoordinator;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.TestTable;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -172,30 +172,29 @@ public class LockTest extends OlatTestCase {
 
 	@Test
 	public void testSaveEvent() {
-		BaseSecurity baseSecurityManager = applicationContext.getBean(BaseSecurity.class);
-    Identity identity = baseSecurityManager.createAndPersistIdentity("lock-save-event-" + UUID.randomUUID().toString(), null, null, null, null);
-    dbInstance.closeSession();
-    log.info("Created identity=" + identity);
-		//
-		TestTable entry = new TestTable();
-		entry.setField1("bar");
-		entry.setField2(2221234354566776L);
+		Identity identity = securityManager.createAndPersistIdentity("lock-save-event-" + UUID.randomUUID().toString(), null, null, null, null);
+		dbInstance.closeSession();
+		log.info("Created identity=" + identity);
+		
+		//The group has no creation date -> commit will fail
+		GroupImpl entry = new GroupImpl();
+		entry.setName("bar");
 		try {
 			dbInstance.saveObject(entry);
 			dbInstance.commit();
-	    fail("Should generate an error");
+			fail("Should generate an error");
 		} catch (DBRuntimeException dre) {
 			log.info("DB connection is in error-state");
 		}
+		
 		// DB transaction must be in error state for this test
 		try {
-			
 			Locker locker = clusterCoordinator.getLocker();
 			assertTrue(locker instanceof ClusterLocker);
 			log.info("ClusterLocker created");
-	    Event event = new SignOnOffEvent(identity, false);
-	    log.info("START locker.event(event)");
-	    ((ClusterLocker)locker).event(event);
+			Event event = new SignOnOffEvent(identity, false);
+			log.info("START locker.event(event)");
+			((ClusterLocker)locker).event(event);
 			log.info("DONE locker.event(event)");
 		} catch(Exception ex) {
 			log.error("", ex);
