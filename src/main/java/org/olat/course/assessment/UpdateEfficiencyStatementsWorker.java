@@ -66,7 +66,7 @@ public class UpdateEfficiencyStatementsWorker implements Runnable {
 			List<Identity> identities = EfficiencyStatementManager.getInstance().findIdentitiesWithEfficiencyStatements(re.getKey());
 			esm.updateEfficiencyStatements(ores, identities);
 			// close db session in this thread
-			DBFactory.getInstance(false).commitAndCloseSession();
+			DBFactory.getInstance().commitAndCloseSession();
 			success = true;
 			
 			EfficiencyStatementEvent finishedEvent = new EfficiencyStatementEvent(EfficiencyStatementEvent.CMD_FINISHED, ores.getResourceableId());
@@ -76,7 +76,7 @@ public class UpdateEfficiencyStatementsWorker implements Runnable {
 		} finally {
 			// close db session in this thread
 			if (!success) {
-				DBFactory.getInstance(false).rollbackAndCloseSession();
+				DBFactory.getInstance().rollbackAndCloseSession();
 			}
 		}
 	}

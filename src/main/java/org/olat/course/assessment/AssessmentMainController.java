@@ -1408,11 +1408,11 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 							+ "ms");
 				}
 				// finished in this thread, close database session of this thread!
-				DBFactory.getInstance(false).commitAndCloseSession();
+				DBFactory.getInstance().commitAndCloseSession();
 				success = true;
 			} finally {
 				if (!success) {
-					DBFactory.getInstance(false).rollbackAndCloseSession();
+					DBFactory.getInstance().rollbackAndCloseSession();
 				}
 			}
 		}

@@ -39,14 +39,4 @@ public class DBFactory {
 	public static DB getInstance() {
 		return DBImpl.getInstance();
 	}
-
-    public static DB getInstance(boolean initialize) {
-        return DBImpl.getInstance();
-    }
-
-    public static DB getInstanceForClosing() {
-      return DBImpl.getInstance();
-  }
-
-
 }

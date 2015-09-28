@@ -75,7 +75,7 @@ public class PaypalIPNFilter implements Filter {
 			//we must log all errors, it's critical for this part of the payment
 			log.error("Paypal IPN unexpected error", t);
 		} finally {
-			DBFactory.getInstanceForClosing().closeSession();
+			DBFactory.getInstance().closeSession();
 		}
 	}
 

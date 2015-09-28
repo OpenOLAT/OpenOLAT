@@ -19,7 +19,8 @@
  */
 package org.olat.admin.sysinfo;
 
-import org.olat.core.commons.persistence.DBFactory;
+import org.hibernate.stat.Statistics;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -28,6 +29,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -40,6 +42,9 @@ public class HibernateStatisticsController extends BasicController {
 	private Link disableLink;
 	private Link clearLink;
 	private VelocityContainer mainVC;
+	
+	@Autowired
+	private DB dbInstance;
 
 	public HibernateStatisticsController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -54,8 +59,9 @@ public class HibernateStatisticsController extends BasicController {
 	}
 	
 	public void loadModel() {
-		mainVC.contextPut("isStatisticsEnabled", DBFactory.getInstance(false).getStatistics().isStatisticsEnabled());
-		mainVC.contextPut("hibernateStatistics", DBFactory.getInstance(false).getStatistics());
+		Statistics statistics = dbInstance.getStatistics();
+		mainVC.contextPut("isStatisticsEnabled", statistics.isStatisticsEnabled());
+		mainVC.contextPut("hibernateStatistics", statistics);
 	}
 	
 	@Override
@@ -65,18 +71,19 @@ public class HibernateStatisticsController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
+		Statistics statistics = dbInstance.getStatistics();
 		if (source == enableLink){
-			DBFactory.getInstance(false).getStatistics().setStatisticsEnabled(true);
-			mainVC.contextPut("isStatisticsEnabled", DBFactory.getInstance(false).getStatistics().isStatisticsEnabled());
+			statistics.setStatisticsEnabled(true);
+			mainVC.contextPut("isStatisticsEnabled",statistics.isStatisticsEnabled());
 			getWindowControl().setInfo("Hibernate statistics enabled.");
 			loadModel();
 		} else if (source == disableLink){
-			DBFactory.getInstance(false).getStatistics().setStatisticsEnabled(false);
-			mainVC.contextPut("isStatisticsEnabled", DBFactory.getInstance(false).getStatistics().isStatisticsEnabled());
+			statistics.setStatisticsEnabled(false);
+			mainVC.contextPut("isStatisticsEnabled", statistics.isStatisticsEnabled());
 			getWindowControl().setInfo("Hibernate statistics disabled.");
 			loadModel();
 		} else if (source == clearLink){
-			DBFactory.getInstance(false).getStatistics().clear();
+			statistics.clear();
 			getWindowControl().setInfo("Hibernate statistics clear done.");
 			loadModel();
 		}

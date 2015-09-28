@@ -442,7 +442,7 @@ public class CourseFactory extends BasicManager {
 		File fTargetCourseBasePath = targetCourse.getCourseBaseContainer().getBasefile();
 		
 		//close connection before file copy
-		DBFactory.getInstance(false).commitAndCloseSession();
+		DBFactory.getInstance().commitAndCloseSession();
 		
 		synchronized (sourceCourse) { // o_clusterNOK - cannot be solved with doInSync since could take too long (leads to error: "Lock wait timeout exceeded")
 			// copy configuration
@@ -474,7 +474,7 @@ public class CourseFactory extends BasicManager {
 			for (Reference ref: refs) {
 				referenceManager.addReference(targetCourse, ref.getTarget(), ref.getUserdata());
 				if(count % 20 == 0) {
-					DBFactory.getInstance(false).intermediateCommit();
+					DBFactory.getInstance().intermediateCommit();
 				}
 			}
 			
@@ -723,7 +723,7 @@ public class CourseFactory extends BasicManager {
 		// cause db connection timeout to be triggered
 		//@TODO transactions/backgroundjob:
 		// rework when backgroundjob infrastructure exists
-		DBFactory.getInstance(false).intermediateCommit();
+		DBFactory.getInstance().intermediateCommit();
 		AsyncExportManager.getInstance().asyncArchiveCourseLogFiles(archiveOnBehalfOf, new Runnable() {
 			public void run() {
 				// that's fine, I dont need to do anything here

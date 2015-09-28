@@ -96,7 +96,7 @@ public class QuotaManagerImpl extends QuotaManager {
 	public void init() {
 		quotaResource = resourceManager.findOrPersistResourceable(OresHelper.lookupType(Quota.class));
 		initDefaultQuotas(); // initialize default quotas
-		DBFactory.getInstance(false).intermediateCommit();
+		DBFactory.getInstance().intermediateCommit();
 		log.info("Successfully initialized Quota Manager");
 	}
 

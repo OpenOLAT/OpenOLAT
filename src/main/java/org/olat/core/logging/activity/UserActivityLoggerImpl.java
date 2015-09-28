@@ -833,7 +833,7 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		logObj.setUserProperties(tmpUserProperties);
 		
 		// and store it
-		DB db = DBFactory.getInstanceForClosing();
+		DB db = DBFactory.getInstance();
 		if (db!=null && db.isError()) {
 			// then we would run into an ERROR when we'd do more with this DB
 			// hence we just issue a log.info here with the details
