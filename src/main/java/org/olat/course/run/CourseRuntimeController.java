@@ -202,7 +202,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		super(ureq, wControl, re, reSecurity, runtimeControllerCreator, offerBookmark, showCourseConfigLink);
 		
 		if(!corrupted) {
-			ICourse course = CourseFactory.loadCourse(getOlatResourceable());
+			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 			addLoggingResourceable(LoggingResourceable.wrap(course));
 
 			coordinatorManager.getCoordinator().getEventBus().registerFor(this, getIdentity(), getOlatResourceable());
@@ -238,7 +238,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		super.loadRights(security);
 		if(corrupted) return;
 		
-		ICourse course = CourseFactory.loadCourse(getOlatResourceable());
+		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		// 3) all other rights are defined in the groupmanagement using the learning
 		// group rights
@@ -320,7 +320,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 	
 	private void addCustomCSS(UserRequest ureq) {
-		ICourse course = CourseFactory.loadCourse(getOlatResourceable());
+		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 		CustomCSS customCSS = CourseFactory.getCustomCourseCss(ureq.getUserSession(), course.getCourseEnvironment());
 		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
 		if (cc != null) {
@@ -1073,7 +1073,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(delayedClose == Delayed.options || requestForClose(ureq)) {
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
 				removeCustomCSS();
-				ICourse course = CourseFactory.loadCourse(getOlatResourceable());
+				ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 				CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig().clone();
 				CourseOptionsController ctrl = new CourseOptionsController(ureq, getWindowControl(), getRepositoryEntry(), courseConfig, true);
 				optionsToolCtr = pushController(ureq, translate("command.options"), ctrl);
@@ -1104,7 +1104,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(delayedClose == Delayed.certificates || requestForClose(ureq)) {
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
 				removeCustomCSS();
-				ICourse course = CourseFactory.loadCourse(getOlatResourceable());
+				ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 				CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig().clone();
 				WindowControl bwControl = getSubWindowControl("CertificationSettings");
 				CertificatesOptionsController ctrl = new CertificatesOptionsController(ureq, addToHistory(ureq, bwControl),
@@ -1137,7 +1137,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(delayedClose == Delayed.archive || requestForClose(ureq)) {
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_ARCHIVING)) {
 				removeCustomCSS();
-				ICourse course = CourseFactory.loadCourse(getOlatResourceable());
+				ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 				ArchiverMainController ctrl = new ArchiverMainController(ureq, getWindowControl(), course, new FullAccessArchiverCallback());
 				listenTo(ctrl);
 				archiverCtrl = pushController(ureq, translate("command.openarchiver"), ctrl);
@@ -1153,7 +1153,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(delayedClose == Delayed.courseFolder || requestForClose(ureq)) {
 			removeCustomCSS();
 			// Folder for course with custom link model to jump to course nodes
-			ICourse course = CourseFactory.loadCourse(getOlatResourceable());
+			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 			VFSContainer namedCourseFolder = new NamedContainerImpl(translate("command.coursefolder"), course.getCourseFolderContainer());
 			CustomLinkTreeModel customLinkTreeModel = new CourseInternalLinkTreeModel(course.getEditorTreeModel());
 
@@ -1171,7 +1171,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private void doCourseAreas(UserRequest ureq) {
 		if(delayedClose == Delayed.courseAreas || requestForClose(ureq)) {
 			removeCustomCSS();
-			ICourse course = CourseFactory.loadCourse(getOlatResourceable());
+			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 			CourseAreasController ctrl = new CourseAreasController(ureq, getWindowControl(), getRepositoryEntry().getOlatResource());
 			ctrl.addLoggingResourceable(LoggingResourceable.wrap(course));
 			areasCtrl = pushController(ureq, translate("command.courseareas"), ctrl);
@@ -1186,7 +1186,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(delayedClose == Delayed.databases || requestForClose(ureq)) {
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_DB)) {
 				removeCustomCSS();
-				ICourse course = CourseFactory.loadCourse(getOlatResourceable());
+				ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 				CustomDBMainController ctrl = new CustomDBMainController(ureq, getWindowControl(), course);
 				listenTo(ctrl);
 				databasesCtrl = pushController(ureq, translate("command.opendb"), ctrl);
@@ -1202,7 +1202,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(delayedClose == Delayed.courseStatistics || requestForClose(ureq)) {
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_STATISTICS)) {
 				removeCustomCSS();
-				ICourse course = CourseFactory.loadCourse(getOlatResourceable());
+				ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 				StatisticMainController ctrl = new StatisticMainController(ureq, getWindowControl(), course);
 				listenTo(ctrl);
 				statisticsCtrl = pushController(ureq, translate("command.openstatistic"), ctrl);
@@ -1457,7 +1457,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	
 	private void launchGlossary(UserRequest ureq) {
 		// start glossary in window
-		ICourse course = CourseFactory.loadCourse(getOlatResourceable());
+		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 		final CourseConfig cc = course.getCourseConfig(); // do not cache cc, not save
 		final boolean allowGlossaryEditing = reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_GLOSSARY);
 		
@@ -1500,7 +1500,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		switch(event.getType()) {
 			case calendar: {
 				if(calendarLink != null) {
-					ICourse course = CourseFactory.loadCourse(getOlatResourceable());
+					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
 					calendarLink.setVisible(cc.isCalendarEnabled() && calendarModule.isEnabled() && calendarModule.isEnableCourseToolCalendar());
 					toolbarPanel.setDirty(true);
@@ -1509,7 +1509,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			}
 			case chat: {
 				if(chatLink != null) {
-					ICourse course = CourseFactory.loadCourse(getOlatResourceable());
+					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
 					chatLink.setVisible(cc.isChatEnabled());
 					toolbarPanel.setDirty(true);
@@ -1518,7 +1518,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			}
 			case efficiencyStatement: {
 				if(efficiencyStatementsLink != null) {
-					ICourse course = CourseFactory.loadCourse(getOlatResourceable());
+					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
 					efficiencyStatementsLink.setVisible(cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled());
 					if(cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled()) {
@@ -1532,7 +1532,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			}
 			case glossary: {
 				if(glossary != null) {
-					ICourse course = CourseFactory.loadCourse(getOlatResourceable());
+					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
 					glossary.setVisible(cc.hasGlossary());
 					toolbarPanel.setDirty(true);

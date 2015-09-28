@@ -35,7 +35,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.manager.BasicManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
@@ -56,7 +55,7 @@ import org.olat.resource.OLATResourceManager;
  *         manager), only view controllers use the course property manager
  *         directly.
  */
-public class PersistingCoursePropertyManager extends BasicManager implements CoursePropertyManager {
+public class PersistingCoursePropertyManager implements CoursePropertyManager {
 
 	private NarrowedPropertyManager pm;
 	private Map<String,String> anonymizerMap;

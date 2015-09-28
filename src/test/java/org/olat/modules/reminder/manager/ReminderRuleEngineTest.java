@@ -1042,7 +1042,7 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 	
 	private String assessmentData(Identity tutor, Identity student, ScoreEvaluation scoreEval, RepositoryEntry re) {
 		//create user course infos
-		ICourse course = CourseFactory.loadCourse(re.getOlatResource());
+		ICourse course = CourseFactory.loadCourse(re);
 		List<CourseNode> assessableNodeList = AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), null);
 		AssessableCourseNode testNode = null; 
 		for(CourseNode currentNode: assessableNodeList) {	

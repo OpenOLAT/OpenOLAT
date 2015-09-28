@@ -22,19 +22,20 @@
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
 */
-package org.olat.resource.lock.pessimistic;
+package org.olat.core.commons.services.lock.pessimistic;
 
-import java.util.HashMap;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
-import org.hibernate.LockMode;
-import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
-import org.olat.core.configuration.Initializable;
+import javax.persistence.LockModeType;
+
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
 /**
@@ -47,26 +48,24 @@ import org.olat.core.logging.Tracing;
  * Initial Date:  25.10.2007 <br>
  * @author Felix Jost, http://www.goodsolutions.ch
  */
-public class PessimisticLockManager implements Initializable {
+@Service("lockManager")
+public class PessimisticLockManager implements InitializingBean {
 	
 	private static final OLog log = Tracing.createLoggerFor(PessimisticLockManager.class);
 	
-	private static PessimisticLockManager INSTANCE;
+
 	private final String ASSET_INSERT_LOCK = "SYS_plock_global";
 	private boolean initDone = false;
 	
-	/**
-	 * [used by spring]
-	 */
-	private PessimisticLockManager() {
-		INSTANCE = this;
+	private final DB dbInstance;
+	
+	@Autowired
+	private PessimisticLockManager(DB dbInstance) {
+		this.dbInstance = dbInstance;
 	}
 	
-	public static PessimisticLockManager getInstance() {
-		return INSTANCE;
-	}
-	
-	public void init() {
+	@Override
+	public void afterPropertiesSet() throws Exception {
 		// make sure that the resource (= row in our table) to lock the creation of new assets exists
 		PLock gLock = findPLock(ASSET_INSERT_LOCK);
 		if (gLock == null) {
@@ -74,32 +73,34 @@ public class PessimisticLockManager implements Initializable {
 			gLock = createPLock(ASSET_INSERT_LOCK);
 			savePLock(gLock);
 		}
-		DBFactory.getInstance().intermediateCommit();
+		dbInstance.intermediateCommit();
 		initDone = true;
 	}
 	
 	private PLock findPLock(String asset) {	
-		DBQuery q = DBFactory.getInstance().createQuery("select plock from org.olat.resource.lock.pessimistic.PLockImpl as plock where plock.asset = :asset");
-		q.setParameter("asset", asset);
-		q.setLockMode("plock", LockMode.PESSIMISTIC_WRITE);
-		
-		Map<String,Object> props = new HashMap<String, Object>();
-		props.put("javax.persistence.lock.timeout", new Integer(30000));
-		q.setProperties(props);
-		List res = q.list();
+		List<PLock> res = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadByPLockByAsset", PLock.class)
+				.setParameter("asset", asset)
+				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
+				.setHint("javax.persistence.lock.timeout", new Integer(30000))
+				.getResultList();
+
 		if (res.size() == 0) {
 			return null; 
 		} else {
-			return (PLock) res.get(0);
+			return res.get(0);
 		}
 	}
 	
 	private PLock createPLock(String asset) {
-		return new PLockImpl(asset);
+		PLockImpl lock = new PLockImpl();
+		lock.setAsset(asset);
+		lock.setCreationDate(new Date());
+		return lock;
 	}
 	
 	private void savePLock(PLock plock) {
-		DBFactory.getInstance().saveObject(plock);
+		dbInstance.saveObject(plock);
 	}
 	
 	/**

@@ -98,7 +98,7 @@ public class MemberListWithOriginFilterController extends AbstractMemberListCont
 		removeAsListenerAndDispose(identityAssessmentController);
 		
 		Identity assessedIdentity = securityManager.loadIdentityByKey(member.getIdentityKey());
-		ICourse course = CourseFactory.loadCourse(repoEntry.getOlatResource());
+		ICourse course = CourseFactory.loadCourse(repoEntry);
 		
 		identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(),ureq, toolbarPanel,
 				assessedIdentity, course, true, false, true);

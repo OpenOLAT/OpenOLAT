@@ -78,10 +78,10 @@ public class DialogElement {
 		} catch (NumberFormatException nEx) {
 			return author;
 		} catch (ObjectNotFoundException oEx) {
-			DBFactory.getInstanceForClosing().rollbackAndCloseSession();
+			DBFactory.getInstance().rollbackAndCloseSession();
 			return author;
 		} catch (Throwable th) {
-			DBFactory.getInstanceForClosing().rollbackAndCloseSession();
+			DBFactory.getInstance().rollbackAndCloseSession();
 			return author;
 		}
 	}

@@ -3,38 +3,12 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+  http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<!-- Persistence unit manager -->
-	<bean id="pum" class="org.springframework.orm.jpa.persistenceunit.DefaultPersistenceUnitManager" depends-on="databaseUpgrader">
-  		<property name="persistenceXmlLocations">
-    		<list>
-     			<value>classpath:/org/olat/core/commons/persistence/_spring/core_persistence.xml</value>
-			</list>
-  		</property>
-  		<!-- 
-		<property name="defaultDataSource" ref="${db.vendor}PooledDataSource"/>
-		-->
-	</bean>
-	
-	<!-- EntityManagerFactory -->
-	<bean id="emf" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
-		<property name="persistenceUnitManager" ref="pum"/>
-		<property name="jpaProperties" ref="${db.vendor}_${db.source}_HibernateProperties"/>
-	</bean>
-	
     <bean id="AuditInterceptor" class="org.olat.core.commons.persistence.AuditInterceptor" />
-    
-    <bean id="txManager" class="org.springframework.orm.jpa.JpaTransactionManager">
-		<property name="jpaDialect" ref="jpaDialect" />
-		<property name="entityManagerFactory" ref="emf"/>
-	</bean>
-	
-	<bean id="jpaDialect" class="org.springframework.orm.jpa.vendor.HibernateJpaDialect" />
 
 	<bean id="database" class="org.olat.core.commons.persistence.DBImpl" destroy-method="destroy">
-		<property name="txManager" ref="txManager"/>
-		<property name="entityManagerFactory" ref="emf"/>
+		<constructor-arg index="0" ref="${db.vendor}_${db.source}_HibernateProperties"/>
 		<property name="dbVendor" value="${db.vendor}" />
 	</bean>
 

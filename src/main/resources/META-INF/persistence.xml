@@ -21,7 +21,6 @@
 		<mapping-file>org/olat/group/area/BGtoAreaRelationImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/group/BusinessGroupImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/group/model/BusinessGroupViewImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/resource/lock/pessimistic/PLockImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/OLATResourceImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/accesscontrol/model/Offer.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/accesscontrol/model/AccessMethod.hbm.xml</mapping-file>
@@ -95,6 +94,7 @@
 		<class>org.olat.commons.calendar.model.ImportedCalendar</class>
 		<class>org.olat.commons.calendar.model.ImportedToCalendar</class>
 		<class>org.olat.commons.calendar.model.CalendarUserConfiguration</class>
+		<class>org.olat.core.commons.services.lock.pessimistic.PLockImpl</class>
 		<class>org.olat.core.commons.services.notifications.model.SubscriberImpl</class>
 		<class>org.olat.core.commons.services.notifications.model.PublisherImpl</class>
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTask</class>

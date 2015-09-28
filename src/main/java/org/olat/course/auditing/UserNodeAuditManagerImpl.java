@@ -28,8 +28,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
-import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.properties.CoursePropertyManager;
@@ -53,10 +51,10 @@ public class UserNodeAuditManagerImpl implements UserNodeAuditManager {
 	protected static final String LOG_PREFIX_REMOVED_OLD_LOG_ENTRIES = "Removed old log entires because of limited log size\n";
 	private static final SimpleDateFormat sdb = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 	
-	private final OLATResourceable ores;
+	private final CoursePropertyManager cpm;
 
 	public UserNodeAuditManagerImpl(ICourse course) {
-		ores = course;
+		cpm = course.getCourseEnvironment().getCoursePropertyManager();
 	}
 	
 	/**
@@ -66,9 +64,6 @@ public class UserNodeAuditManagerImpl implements UserNodeAuditManager {
 	 */
 	@Override
 	public void appendToUserNodeLog(CourseNode courseNode, Identity identity, Identity assessedIdentity, String logText) {
-		ICourse course = CourseFactory.loadCourse(ores);
-		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
-
 		String text = formatMessage(identity, logText) ;
 		
 		Property logProperty = cpm.findCourseNodeProperty(courseNode, assessedIdentity, null, LOG_IDENTIFYER);
@@ -85,9 +80,6 @@ public class UserNodeAuditManagerImpl implements UserNodeAuditManager {
 		
 	@Override
 	public void appendToUserNodeLog(CourseNode courseNode, Identity identity, BusinessGroup assessedGroup, String logText) {
-		ICourse course = CourseFactory.loadCourse(ores);
-		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
-
 		String text = formatMessage(identity, logText) ;
 		
 		Property logProperty = cpm.findCourseNodeProperty(courseNode, null, assessedGroup, LOG_IDENTIFYER);
@@ -135,8 +127,6 @@ public class UserNodeAuditManagerImpl implements UserNodeAuditManager {
 	 */
 	@Override
 	public boolean hasUserNodeLogs(CourseNode node) {
-		ICourse course = CourseFactory.loadCourse(ores);
-		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		int numOfProperties = cpm.countCourseNodeProperties(node, null, null, LOG_IDENTIFYER);
 		return numOfProperties > 0;
 	}
@@ -147,16 +137,12 @@ public class UserNodeAuditManagerImpl implements UserNodeAuditManager {
 	 */
 	@Override
 	public String getUserNodeLog(CourseNode courseNode, Identity identity) {
-		ICourse course = CourseFactory.loadCourse(ores);
-		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		Property property = cpm.findCourseNodeProperty(courseNode, identity, null, LOG_IDENTIFYER);
 		return property == null ? null : property.getTextValue();
 	}
 
 	@Override
 	public String getUserNodeLog(CourseNode courseNode, BusinessGroup businessGroup) {
-		ICourse course = CourseFactory.loadCourse(ores);
-		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		Property property = cpm.findCourseNodeProperty(courseNode, businessGroup, LOG_IDENTIFYER);
 		return property == null ? null : property.getTextValue();
 	}

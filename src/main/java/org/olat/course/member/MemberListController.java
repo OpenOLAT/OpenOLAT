@@ -57,7 +57,7 @@ public class MemberListController extends AbstractMemberListController {
 		removeAsListenerAndDispose(identityAssessmentController);
 		
 		Identity assessedIdentity = securityManager.loadIdentityByKey(member.getIdentityKey());
-		ICourse course = CourseFactory.loadCourse(repoEntry.getOlatResource());
+		ICourse course = CourseFactory.loadCourse(repoEntry);
 		
 		identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(),ureq, toolbarPanel,
 				assessedIdentity, course, true, false, true);

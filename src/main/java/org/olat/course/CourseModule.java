@@ -109,7 +109,7 @@ public class CourseModule extends AbstractOLATModule {
 			deployCoursesFromCourseExportFiles();
 		}
 		//also in startup event processing intermediateCommit
-		DBFactory.getInstance(false).intermediateCommit();
+		DBFactory.getInstance().intermediateCommit();
 	}
 
 	
@@ -140,14 +140,7 @@ public class CourseModule extends AbstractOLATModule {
 	 */
 	@Override
 	public void init() {
-		// skip all the expensive course demo setup and deployment when we are in junit mode.
-		if (Settings.isJUnitTest()) return;
-		
-		logInfo("Initializing the OpenOLAT course system");		
-		
-		// Cleanup, otherwise this subjects will have problems in normal OLAT
-		// operation
-		DBFactory.getInstance(false).intermediateCommit();		
+		//
 	}
 
 	private void deployCoursesFromCourseExportFiles( ) {

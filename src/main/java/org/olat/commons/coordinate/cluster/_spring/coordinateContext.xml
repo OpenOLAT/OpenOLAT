@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans.xsd">
+  http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<context:component-scan base-package="org.olat.commons.coordinate.cluster.lock" />
   
 	<bean id="persistentLockManager" class="org.olat.core.util.coordinate.DBPersistentLockManager"/>  
 
@@ -27,9 +32,10 @@
 
 	<bean id="clusterLocker" class="org.olat.commons.coordinate.cluster.lock.ClusterLocker" init-method="init">
 		<constructor-arg index="0" ref="clusterLockManager" />
+		<property name="pessimisticLockManager" ref="lockManager"/>
+		<property name="persistentLockManager" ref="persistentLockManager"/>
 		<property name="syncer" ref="org.olat.commons.coordinate.cluster.ClusterSyncer" />
 		<property name="eventBus" ref="org.olat.commons.coordinate.cluster.jms.ClusterEventBus" />
-		<property name="persistentLockManager" ref="persistentLockManager"/>
 	</bean>
 	
 	<bean id="org.olat.commons.coordinate.cluster.ClusterSyncer" class="org.olat.commons.coordinate.cluster.ClusterSyncer" >
@@ -47,8 +53,6 @@
 		<property name="sendInterval"      value="15000" />
 		<property name="jmsMsgDelayLimit"  value="5000" />
 	</bean>
-
-	<bean id="clusterLockManager" class="org.olat.commons.coordinate.cluster.lock.ClusterLockManager"/>
 
 	<import resource="classpath:/org/olat/commons/coordinate/cluster/_spring/coordinate_jms_${jms.provider}.xml"/>
 

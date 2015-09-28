@@ -89,10 +89,10 @@ public class GroupIndexer extends AbstractHierarchicalIndexer {
 			  super.doIndex(searchResourceContext, businessGroup, indexWriter);
 			} catch(Exception ex) {
 				logError("Exception indexing group=" + businessGroup, ex);
-				DBFactory.getInstance(false).rollbackAndCloseSession();
+				DBFactory.getInstance().rollbackAndCloseSession();
 			} catch (Error err) {
 				logError("Error indexing group=" + businessGroup, err);
-				DBFactory.getInstance(false).rollbackAndCloseSession();
+				DBFactory.getInstance().rollbackAndCloseSession();
 			}
 	  }
 		long indexTime = System.currentTimeMillis() - startTime;

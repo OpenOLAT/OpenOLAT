@@ -150,7 +150,7 @@ public class RSSServlet extends HttpServlet {
 			DispatcherModule.sendNotFound("none", response);
 		} finally {
 			IOUtils.closeQuietly(writer);
-			DBFactory.getInstance(false).commitAndCloseSession();
+			DBFactory.getInstance().commitAndCloseSession();
 		}
 	}
 

@@ -74,7 +74,7 @@ public class PassedRuleEditor extends RuleEditorFragment {
 		formLayout.add(ruleCont);
 		ruleCont.getFormItemComponent().contextPut("id", id);
 		
-		ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+		ICourse course = CourseFactory.loadCourse(entry);
 
 		String currentStatus = null;
 		String currentCourseNode = null;

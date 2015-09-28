@@ -100,7 +100,7 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 
 		//logging
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
-		ICourse course = CourseFactory.loadCourse(re.getOlatResource());
+		ICourse course = CourseFactory.loadCourse(re);
 		addLoggingResourceable(LoggingResourceable.wrap(course));
 		
 		//ui stuff

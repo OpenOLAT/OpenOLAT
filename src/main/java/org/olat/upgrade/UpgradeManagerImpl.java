@@ -78,10 +78,10 @@ public class UpgradeManagerImpl extends UpgradeManager {
 				if (upgrade.doPostSystemInitUpgrade(this))
 					logAudit("Successfully installed PostSystemInitUpgrade::" + upgrade.getVersion());
 				//just in case a doPostSystemInitUpgrade did forget it.
-				DBFactory.getInstance(false).commitAndCloseSession();
+				DBFactory.getInstance().commitAndCloseSession();
 			}
 		} catch (Throwable e) {
-			DBFactory.getInstance(false).rollbackAndCloseSession();
+			DBFactory.getInstance().rollbackAndCloseSession();
 			logWarn("Error upgrading PostSystemInitUpgrade::" + upgrade.getVersion(), e);
 			abort(e);
 		} 

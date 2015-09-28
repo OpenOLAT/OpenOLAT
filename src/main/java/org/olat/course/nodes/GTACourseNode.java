@@ -88,7 +88,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
-import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
 
 /**
@@ -270,8 +269,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 		if(cev != null) {
 			//check assignment
 			GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
-			OLATResource courseOres = cev.getCourseGroupManager().getCourseResource();
-			ICourse course = CourseFactory.loadCourse(courseOres);
+			RepositoryEntry courseRe = cev.getCourseGroupManager().getCourseEntry();
+			ICourse course = CourseFactory.loadCourse(courseRe);
 			if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
 				File taskDirectory = gtaManager.getTasksDirectory(course.getCourseEnvironment(), this);
 				if(!TaskHelper.hasDocuments(taskDirectory)) {

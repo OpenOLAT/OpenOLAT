@@ -62,6 +62,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.OresHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -101,6 +102,9 @@ public class ClusterAdminControllerCluster extends BasicController {
 	private VelocityContainer cachetest;
 	
 	private UserSearchController usc;
+	
+	@Autowired
+	private ClusterLockManager clusterLockManager;
 	
 	/**
 	 * @param ureq
@@ -333,7 +337,7 @@ public class ClusterAdminControllerCluster extends BasicController {
 				// we configured usc to either cancel or to only accept single user selection.
 				SingleIdentityChosenEvent sce = (SingleIdentityChosenEvent)event;
 				Identity ident = sce.getChosenIdentity();
-				ClusterLockManager.getInstance().releaseAllLocksFor(ident.getKey());
+				clusterLockManager.releaseAllLocksFor(ident.getKey());
 				showInfo("locks.released", ident.getName());
 			}
 		}

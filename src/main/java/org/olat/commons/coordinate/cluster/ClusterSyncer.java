@@ -25,6 +25,7 @@
 package org.olat.commons.coordinate.cluster;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.lock.pessimistic.PessimisticLockManager;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
@@ -34,7 +35,6 @@ import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.coordinate.util.DerivedStringSyncer;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.resource.lock.pessimistic.PessimisticLockManager;
 
 /**
  * Description:<br>

@@ -376,7 +376,7 @@ public class CoursesWebService {
 		
 		//publish
 		log.info("REST Publish course " + displayName + " START");
-		ICourse course = CourseFactory.loadCourse(re.getOlatResource());
+		ICourse course = CourseFactory.loadCourse(re);
 		CourseFactory.publishCourse(course, RepositoryEntry.ACC_USERS, false,  identity, ureq.getLocale());
 		log.info("REST Publish course " + displayName + " END");
 		return course;
