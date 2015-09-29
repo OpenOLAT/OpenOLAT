@@ -23,23 +23,16 @@ import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.close;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.exit;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.resethard;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.resetsoft;
-import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.response;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.solution;
-
-import java.util.Collections;
-import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent;
 
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.running.ItemSessionController;
-import uk.ac.ed.ph.jqtiplus.types.Identifier;
-import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
 
 /**
  * 
@@ -91,7 +84,7 @@ public class AssessmentItemFormItem extends AssessmentObjectFormItem {
 	public void evalFormRequest(UserRequest ureq) {
 		String uri = ureq.getModuleURI();
 		if(uri == null) {
-			QTIWorksAssessmentItemEvent event;
+			QTIWorksAssessmentItemEvent event = null;
 			String cmd = ureq.getParameter("cid");
 			if(StringHelper.containsNonWhitespace(cmd)) {
 				switch(QTIWorksAssessmentItemEvent.Event.valueOf(cmd)) {
@@ -113,31 +106,12 @@ public class AssessmentItemFormItem extends AssessmentObjectFormItem {
 					default:
 						event = null;	
 				}
-			} else {
-				Map<Identifier, StringResponseData> stringResponseMap = extractStringResponseData();
-				Map<Identifier, MultipartFileInfos> fileResponseMap;
-				if(getRootForm().isMultipartEnabled()) {
-					fileResponseMap = extractFileResponseData();
-				} else {
-					fileResponseMap = Collections.emptyMap();
-				}
-				event = new QTIWorksAssessmentItemEvent(response, stringResponseMap, fileResponseMap, this);
 			}
 			
 			if(event != null) {
 				getRootForm().fireFormEvent(ureq, event);
 			}
-		} else if(uri.startsWith(response.getPath())) {
-			Map<Identifier, StringResponseData> stringResponseMap = extractStringResponseData();
-			Map<Identifier, MultipartFileInfos> fileResponseMap;
-			if(getRootForm().isMultipartEnabled()) {
-				fileResponseMap = extractFileResponseData();
-			} else {
-				fileResponseMap = Collections.emptyMap();
-			}
-			QTIWorksAssessmentItemEvent event = new QTIWorksAssessmentItemEvent(response, stringResponseMap, fileResponseMap, this);
-			getRootForm().fireFormEvent(ureq, event);
-		} 
+		}
 	}
 
 	@Override

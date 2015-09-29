@@ -136,24 +136,10 @@ public class AssessmentTestFormItem extends AssessmentObjectFormItem {
 					}
 				}
 			} 
-			/*
-			else {
-				//press return
-				Map<Identifier, StringResponseData> stringResponseMap = extractStringResponseData();
-				Map<Identifier, MultipartFileInfos> fileResponseMap;
-				if(getRootForm().isMultipartEnabled()) {
-					fileResponseMap = extractFileResponseData();
-				} else {
-					fileResponseMap = Collections.emptyMap();
-				}
-				event = new QTIWorksAssessmentTestEvent(response, stringResponseMap, fileResponseMap, this);
-			}
-			*/
 			if(event != null) {
 				getRootForm().fireFormEvent(ureq, event);
 			}
 			component.setDirty(true);
-			
 		}
 	}
 

@@ -251,7 +251,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				processTestPartNavigation(ureq);
 				break;
 			case response:
-				handleResponse(ureq, qe.getStringResponseMap(), qe.getFileResponseMap());
+				handleResponse(ureq, qe.getStringResponseMap(), qe.getFileResponseMap(), qe.getComment());
 				break;
 			case endTestPart:
 				processEndTestPart(ureq);
@@ -419,10 +419,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
     //        final Map<Identifier, MultipartFile> fileResponseMap,
     //        final String candidateComment)
             
-	private void handleResponse(UserRequest ureq,
-			Map<Identifier, StringResponseData> stringResponseMap,
-			Map<Identifier,MultipartFileInfos> fileResponseMap) {
-		String candidateComment = null;
+	private void handleResponse(UserRequest ureq, Map<Identifier, StringResponseData> stringResponseMap,
+			Map<Identifier,MultipartFileInfos> fileResponseMap, String candidateComment) {
 		
 		//Assert.notNull(candidateSessionContext, "candidateSessionContext");
         //assertSessionType(candidateSessionContext, AssessmentObjectType.ASSESSMENT_TEST);
@@ -884,8 +882,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		}
 
 		@Override
-		protected void fireResponse(UserRequest ureq, FormItem source, Map<Identifier, StringResponseData> stringResponseMap, Map<Identifier, MultipartFileInfos> fileResponseMap) {
-			fireEvent(ureq, new QTIWorksAssessmentTestEvent(QTIWorksAssessmentTestEvent.Event.response, stringResponseMap, fileResponseMap, source));
+		protected void fireResponse(UserRequest ureq, FormItem source,
+				Map<Identifier, StringResponseData> stringResponseMap, Map<Identifier, MultipartFileInfos> fileResponseMap,
+				String comment) {
+			fireEvent(ureq, new QTIWorksAssessmentTestEvent(QTIWorksAssessmentTestEvent.Event.response, stringResponseMap, fileResponseMap, comment, source));
 		}
 	}
 }

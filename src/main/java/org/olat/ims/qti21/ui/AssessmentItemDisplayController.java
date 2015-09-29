@@ -184,7 +184,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 				requestSolution(ureq);
 				break;
 			case response:
-				handleResponses(ureq, qe.getStringResponseMap(), qe.getFileResponseMap(), null);
+				handleResponses(ureq, qe.getStringResponseMap(), qe.getFileResponseMap(), qe.getComment());
 				break;
 			case close:
 				endSession(ureq);
@@ -631,8 +631,10 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		}
 
 		@Override
-		protected void fireResponse(UserRequest ureq, FormItem source, Map<Identifier, StringResponseData> stringResponseMap, Map<Identifier, MultipartFileInfos> fileResponseMap) {
-			fireEvent(ureq, new QTIWorksAssessmentItemEvent(QTIWorksAssessmentItemEvent.Event.response, stringResponseMap, fileResponseMap, source));
+		protected void fireResponse(UserRequest ureq, FormItem source,
+				Map<Identifier, StringResponseData> stringResponseMap, Map<Identifier, MultipartFileInfos> fileResponseMap,
+				String comment) {
+			fireEvent(ureq, new QTIWorksAssessmentItemEvent(QTIWorksAssessmentItemEvent.Event.response, stringResponseMap, fileResponseMap, comment, source));
 		}
 	}
 }

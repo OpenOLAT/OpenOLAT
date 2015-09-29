@@ -73,30 +73,32 @@ public class QTIWorksAssessmentTestEvent extends FormEvent {
 	}
 	
 	private final Event event;
+	private final String comment;
 	private final String subCommand;
 	private final Map<Identifier, MultipartFileInfos> fileResponseMap;
 	private final Map<Identifier, StringResponseData> stringResponseMap;
 	
 	public QTIWorksAssessmentTestEvent(Event event,  FormItem source) {
-		this(event, null, null, source);
+		this(event, null, null, null, source);
 	}
 
 	public QTIWorksAssessmentTestEvent(Event event, String subCommand, FormItem source) {
-		this(event, subCommand, null, null, source);
+		this(event, subCommand, null, null, null, source);
 	}
 	
 	public QTIWorksAssessmentTestEvent(Event event, Map<Identifier, StringResponseData> stringResponseMap,
-			Map<Identifier, MultipartFileInfos> fileResponseMap, FormItem source) {
-		this(event, null, stringResponseMap, fileResponseMap, source);
+			Map<Identifier, MultipartFileInfos> fileResponseMap, String comment, FormItem source) {
+		this(event, null, stringResponseMap, fileResponseMap, comment, source);
 	}
 	
 	private QTIWorksAssessmentTestEvent(Event event, String subCommand,
 			Map<Identifier, StringResponseData> stringResponseMap,
 			Map<Identifier, MultipartFileInfos> fileResponseMap,
-			FormItem source) {
+			String comment, FormItem source) {
 		super(event.name(), source);
 		this.subCommand = subCommand;
 		this.event = event;
+		this.comment = comment;
 		this.fileResponseMap = fileResponseMap;
 		this.stringResponseMap = stringResponseMap;
 	}
@@ -107,6 +109,10 @@ public class QTIWorksAssessmentTestEvent extends FormEvent {
 
 	public Event getEvent() {
 		return event;
+	}
+	
+	public String getComment() {
+		return comment;
 	}
 
 	public Map<Identifier, StringResponseData> getStringResponseMap() {

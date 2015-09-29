@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 
 import uk.ac.ed.ph.jqtiplus.exception.QtiParseException;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
@@ -52,6 +53,15 @@ public abstract class AbstractQtiWorksController extends FormBasicController {
 	protected void doDispose() {
 		//
 	}
+	
+	protected String extractComment() {
+        if (mainForm.getRequestParameter("qtiworks_comment_presented") == null) {
+            /* No comment box given to candidate */
+            return null;
+        }
+        String comment = mainForm.getRequestParameter("qtiworks_comment");
+        return StringHelper.containsNonWhitespace(comment) ? comment : null;
+    }
 	
 	protected void processResponse(UserRequest ureq, FormItem source) {
 		Map<Identifier, StringResponseData> stringResponseMap = extractStringResponseData();
@@ -82,10 +92,13 @@ public abstract class AbstractQtiWorksController extends FormBasicController {
 			}
 		}
 		
-		fireResponse(ureq, source, stringResponseMap, fileResponseMap);
+		String candidateComment = extractComment();
+		fireResponse(ureq, source, stringResponseMap, fileResponseMap, candidateComment);
 	}
 	
-	protected abstract void fireResponse(UserRequest ureq, FormItem source, Map<Identifier, StringResponseData> stringResponseMap, Map<Identifier, MultipartFileInfos> fileResponseMap);
+	protected abstract void fireResponse(UserRequest ureq, FormItem source,
+			Map<Identifier, StringResponseData> stringResponseMap, Map<Identifier, MultipartFileInfos> fileResponseMap,
+			String comment);
 		
 	protected Map<Identifier, StringResponseData> extractStringResponseData() {
         final Map<Identifier, StringResponseData> responseMap = new HashMap<Identifier, StringResponseData>();
