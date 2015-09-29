@@ -36,6 +36,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -64,6 +66,11 @@ import org.olat.resource.OLATResourceImpl;
  */
 @Entity(name="repositoryentry")
 @Table(name="o_repositoryentry")
+@NamedQueries({
+	@NamedQuery(name="getRepositoryEntryRoleAndDefaults", query="select membership.role, relGroup.defaultGroup from repositoryentry as v inner join v.groups as relGroup inner join relGroup.group as baseGroup inner join baseGroup.members as membership where v.key=:repoKey and membership.identity.key=:identityKey"),
+	@NamedQuery(name="filterRepositoryEntryMembership", query="select v.key, membership.identity.key from repositoryentry as v inner join v.groups as relGroup inner join relGroup.group as baseGroup inner join baseGroup.members as membership on membership.role in ('owner','coach','.participant') where membership.identity.key=:identityKey and v.key in (:repositoryEntryKey)"),
+	@NamedQuery(name="loadRepositoryEntryByKey", query="select v from repositoryentry as v  inner join fetch v.olatResource as ores inner join fetch v.statistics as statistics left join fetch v.lifecycle as lifecycle where v.key = :repoKey")
+})
 public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntryRef, ModifiedInfo, OLATResourceable {
 
 	private static final long serialVersionUID = 5319576295875289054L;

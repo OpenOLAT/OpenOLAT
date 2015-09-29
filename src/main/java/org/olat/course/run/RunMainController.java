@@ -134,6 +134,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private Link nextLink, previousLink;
 	private GlossaryMarkupItemController glossaryMarkerCtr;
 	
+	
 	/**
 	 * Constructor for the run main controller
 	 * 
@@ -330,7 +331,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	
 	private void setLaunchDates() {
 		UserCourseInformationsManager userCourseInfoMgr = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
-		userCourseInfoMgr.updateUserCourseInformations(uce.getCourseEnvironment().getCourseResourceableId(), getIdentity(), false);
+		userCourseInfoMgr.updateUserCourseInformations(uce.getCourseEnvironment().getCourseGroupManager().getCourseResource(), getIdentity(), false);
 	}
 	
 	private CourseNode updateAfterChanges(CourseNode courseNode) {

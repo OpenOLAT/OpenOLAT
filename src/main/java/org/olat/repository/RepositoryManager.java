@@ -230,15 +230,8 @@ public class RepositoryManager extends BasicManager {
 		if(strict) {
 			return lookupRepositoryEntry(key);
 		}
-		StringBuilder query = new StringBuilder();
-		query.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
-		     .append(" inner join fetch v.olatResource as ores")
-			 .append(" inner join fetch v.statistics as statistics")
-		     .append(" left join fetch v.lifecycle as lifecycle")
-		     .append(" where v.key = :repoKey");
-		
 		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
-				.createQuery(query.toString(), RepositoryEntry.class)
+				.createNamedQuery("loadRepositoryEntryByKey", RepositoryEntry.class)
 				.setParameter("repoKey", key)
 				//.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();

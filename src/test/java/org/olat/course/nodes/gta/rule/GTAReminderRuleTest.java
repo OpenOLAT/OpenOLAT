@@ -318,9 +318,9 @@ public class GTAReminderRuleTest extends OlatTestCase {
 		
 		//create user course infos
 		Long courseResId = course.getCourseEnvironment().getCourseResourceableId();
-		userCourseInformationsManager.updateUserCourseInformations(courseResId, id1, true);
-		userCourseInformationsManager.updateUserCourseInformations(courseResId, id2, true);
-		userCourseInformationsManager.updateUserCourseInformations(courseResId, id3, true);
+		userCourseInformationsManager.updateUserCourseInformations(re.getOlatResource(), id1, true);
+		userCourseInformationsManager.updateUserCourseInformations(re.getOlatResource(), id2, true);
+		userCourseInformationsManager.updateUserCourseInformations(re.getOlatResource(), id3, true);
 		dbInstance.commit();
 		
 		//fake the date
