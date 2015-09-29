@@ -42,7 +42,7 @@ public interface UserCourseInformationsManager {
 	public List<UserCourseInformations> getUserCourseInformations(List<Long> keys);
 	
 	
-	public void updateUserCourseInformations(Long courseResId, Identity identity, boolean strict);
+	public void updateUserCourseInformations(OLATResource courseResource, Identity identity, boolean strict);
 	
 	public Date getInitialLaunchDate(Long courseResourceId, IdentityRef identity);
 	

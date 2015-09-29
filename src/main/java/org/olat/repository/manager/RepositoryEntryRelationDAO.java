@@ -88,15 +88,8 @@ public class RepositoryEntryRelationDAO {
 	 * @return Return an array with the role and true if the relation is the default one.
 	 */
 	public List<Object[]> getRoleAndDefaults(IdentityRef identity, RepositoryEntryRef re) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select membership.role, relGroup.defaultGroup from ").append(RepositoryEntry.class.getName()).append(" as v")
-		  .append(" inner join v.groups as relGroup")
-		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as membership")
-		  .append(" where v.key=:repoKey and membership.identity.key=:identityKey");
-
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Object[].class)
+				.createNamedQuery("getRepositoryEntryRoleAndDefaults", Object[].class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("repoKey", re.getKey())
 				.getResultList();
@@ -196,17 +189,9 @@ public class RepositoryEntryRelationDAO {
 	 */
 	public void filterMembership(IdentityRef identity, List<Long> entries) {
 		if(entries == null || entries.isEmpty()) return;
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("select v.key, membership.identity.key ")
-		  .append(" from ").append(RepositoryEntry.class.getName()).append(" as v ")
-		  .append(" inner join v.groups as relGroup")
-		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as membership on membership.role in ")
-		  .append("   ('").append(GroupRoles.owner.name()).append("','").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("')")
-		  .append(" where membership.identity.key=:identityKey and v.key in (:repositoryEntryKey)");
 
-		List<Object[]> membershipList = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class)
+		List<Object[]> membershipList = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("filterRepositoryEntryMembership", Object[].class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("repositoryEntryKey", entries)
 				.getResultList();

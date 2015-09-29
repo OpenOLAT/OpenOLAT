@@ -44,7 +44,6 @@ import org.olat.course.assessment.UserCourseInformations;
 import org.olat.course.assessment.model.UserCourseInfosImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -61,8 +60,6 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private OLATResourceManager resourceManager;
 
 	@Override
 	public UserCourseInfosImpl getUserCourseInformations(Long courseResourceId, IdentityRef identity) {
@@ -140,17 +137,16 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 	 * @return
 	 */
 	@Override
-	public void updateUserCourseInformations(final Long courseResourceableId, final Identity identity, final boolean strict) {
-		UltraLightInfos ulInfos = getUserCourseInformationsKey(courseResourceableId, identity);
+	public void updateUserCourseInformations(final OLATResource courseResource, final Identity identity, final boolean strict) {
+		UltraLightInfos ulInfos = getUserCourseInformationsKey(courseResource, identity);
 		if(ulInfos == null) {
 			OLATResourceable lockRes = OresHelper.createOLATResourceableInstance("CourseLaunchDate::Identity", identity.getKey());
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(lockRes, new SyncerExecutor(){
 				@Override
 				public void execute() {
 					try {
-						UltraLightInfos reloadedUlInfos = getUserCourseInformationsKey(courseResourceableId, identity);
+						UltraLightInfos reloadedUlInfos = getUserCourseInformationsKey(courseResource, identity);
 						if(reloadedUlInfos == null) {
-							OLATResource courseResource = resourceManager.findResourceable(courseResourceableId, "CourseModule");
 							UserCourseInfosImpl infos = new UserCourseInfosImpl();
 							infos.setIdentity(identity);
 							infos.setCreationDate(new Date());
@@ -204,18 +200,18 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 		}
 	}
 	
-	private UltraLightInfos getUserCourseInformationsKey(Long courseResourceId, Identity identity) {
+	private UltraLightInfos getUserCourseInformationsKey(OLATResource courseResource, Identity identity) {
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append("select infos.key, infos.lastModified from ").append(UserCourseInfosImpl.class.getName()).append(" as infos ")
 			  .append(" inner join infos.resource as resource")
 			  .append(" inner join infos.identity as identity")
-			  .append(" where identity.key=:identityKey and resource.resId=:resId and resource.resName='CourseModule'");
+			  .append(" where identity.key=:identityKey and resource.key=:resourceKey");
 
 			List<Object[]> infoList = dbInstance.getCurrentEntityManager()
 					.createQuery(sb.toString(), Object[].class)
 					.setParameter("identityKey", identity.getKey())
-					.setParameter("resId", courseResourceId)
+					.setParameter("resourceKey", courseResource.getKey())
 					.getResultList();
 
 			if(infoList.isEmpty()) {
