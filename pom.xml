@@ -1267,6 +1267,7 @@
 					<testNGArtifactName>none:none</testNGArtifactName>
 					<includes>
 						<include>org/olat/test/AllTestsJunit4.java</include>
+						<include>org/olat/test/QtiWorksTests.java</include>
 					</includes>
 				</configuration>
 			</plugin>
@@ -1833,10 +1834,24 @@
 			<artifactId>reload-moonunit</artifactId>
 			<version>reload_dist255-moonunit.jar</version>
 		</dependency>
+		<!-- Sart dependency to qtiworks -->
 		<dependency>
 			<groupId>uk.ac.ed.ph.qtiworks</groupId>
 			<artifactId>qtiworks-jqtiplus</artifactId>
 			<version>${qtiworks.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>ch.qos.logback</groupId>
+					<artifactId>logback-classic</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.ed.ph.qtiworks</groupId>
+			<artifactId>qtiworks-jqtiplus</artifactId>
+			<version>${qtiworks.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
 			<exclusions>
 				<exclusion>
 					<groupId>ch.qos.logback</groupId>
@@ -1866,6 +1881,45 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<dependency>
+			<groupId>uk.ac.ed.ph.qtiworks</groupId>
+			<artifactId>qtiworks-mathassess-glue</artifactId>
+			<version>${qtiworks.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>ch.qos.logback</groupId>
+					<artifactId>logback-classic</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.ed.ph.qtiworks</groupId>
+			<artifactId>qtiworks-samples</artifactId>
+			<version>${qtiworks.version}</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>ch.qos.logback</groupId>
+					<artifactId>logback-classic</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.ed.ph.qtiworks</groupId>
+			<artifactId>qtiworks-samples</artifactId>
+			<version>${qtiworks.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>ch.qos.logback</groupId>
+					<artifactId>logback-classic</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!-- End dependency to qtiworks -->
 		<dependency>
 			<groupId>org.openolat.imscp</groupId>
 			<artifactId>manifest</artifactId>
@@ -2278,6 +2332,12 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>xmlunit</groupId>
+			<artifactId>xmlunit</artifactId>
+			<version>1.5</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

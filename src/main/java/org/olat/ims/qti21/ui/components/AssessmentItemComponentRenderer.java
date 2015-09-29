@@ -22,8 +22,6 @@ package org.olat.ims.qti21.ui.components;
 import java.util.Date;
 
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -167,19 +165,21 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		sb.append("<div id='itemBody'>");
 		
 		//TODO prompt
+	
 
 		//render itemBody
 		assessmentItem.getItemBody().getBlocks().forEach((block)
 				-> renderBlock(renderer, sb, component, assessmentItem, itemSessionState, block, ubu, translator));
 
 		//comment
-		
+		renderComment(renderer, sb, component, itemSessionState, translator);
+				
 		//submit button
 		if(component.isItemSessionOpen(itemSessionState, renderer.isSolutionMode())) {
-			sb.append("<button type='button' name='cid' value='response' class='btn btn-primary' ");
-			sb.append(FormJSHelper.getRawJSFor(component.getQtiItem().getRootForm(), component.getQtiItem().getFormDispatchId(), FormEvent.ONCLICK));
-			sb.append("><span>Submit</span></button>");
+			Component submit = component.getQtiItem().getSubmitButton().getComponent();
+			submit.getHTMLRendererSingleton().render(renderer.getRenderer(), sb, submit, ubu, translator, new RenderResult(), null);
 		}
+
 		//end body
 		sb.append("</div>");
 

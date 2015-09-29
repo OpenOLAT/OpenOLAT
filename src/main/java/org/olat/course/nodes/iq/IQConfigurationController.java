@@ -385,7 +385,7 @@ public class IQConfigurationController extends BasicController {
 					SurveyFileResource.TYPE_NAME, translate("command.chooseSurvey"));
 		} else { // test and selftest use same repository resource type
 			searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, 
-					TestFileResource.TYPE_NAME, translate("command.chooseTest"));
+					new String[] { TestFileResource.TYPE_NAME, ImsQTI21Resource.TYPE_NAME }, translate("command.chooseTest"));
 		}			
 		listenTo(searchController);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent(), true, translate("command.chooseRepFile"));
@@ -501,22 +501,26 @@ public class IQConfigurationController extends BasicController {
 
 	private void checkEssay(RepositoryEntry re) {
 		if(OnyxModule.isOnyxTest(re.getOlatResource())) return;
-		if(courseNode instanceof IQSURVCourseNode || courseNode instanceof IQSELFCourseNode) return;
-		
-		TestFileResource fr = new TestFileResource();
-		fr.overrideResourceableId(re.getOlatResource().getResourceableId());
-		QTIEditorPackage qtiPackage = new QTIEditorPackageImpl(getIdentity(), fr, null, getTranslator());
-		Assessment ass = qtiPackage.getQTIDocument().getAssessment();
-
-		//Sections with their Items
-		List<Section> sections = ass.getSections();
-		for (Section section:sections) {
-			List<Item> items = section.getItems();
-			for (Item item:items) {
-				String ident = item.getIdent();
-				if(ident != null && ident.startsWith("QTIEDIT:ESSAY")) {
-					showWarning("warning.test.with.essay");
-					break;
+		if(courseNode instanceof IQSURVCourseNode || courseNode instanceof IQSELFCourseNode) {
+			//nothing to do
+		} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
+			//TODO qti ()	
+		} else {
+			TestFileResource fr = new TestFileResource();
+			fr.overrideResourceableId(re.getOlatResource().getResourceableId());
+			QTIEditorPackage qtiPackage = new QTIEditorPackageImpl(getIdentity(), fr, null, getTranslator());
+			Assessment ass = qtiPackage.getQTIDocument().getAssessment();
+	
+			//Sections with their Items
+			List<Section> sections = ass.getSections();
+			for (Section section:sections) {
+				List<Item> items = section.getItems();
+				for (Item item:items) {
+					String ident = item.getIdent();
+					if(ident != null && ident.startsWith("QTIEDIT:ESSAY")) {
+						showWarning("warning.test.with.essay");
+						break;
+					}
 				}
 			}
 		}
@@ -554,6 +558,11 @@ public class IQConfigurationController extends BasicController {
 					myContent.contextPut("onyxDisplayName", displayName);
 					moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI2);
 					setOnyxVariables(re);
+				} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
+					//TODO qti
+					myContent.contextPut("showOutcomes", Boolean.FALSE);
+					moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI21);
+					
 				} else {
 					myContent.contextPut("showOutcomes", Boolean.FALSE);
 					moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI1);

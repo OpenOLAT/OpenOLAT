@@ -20,10 +20,12 @@
 package org.olat.core.commons.services.help.spi;
 
 import java.util.Locale;
+import java.util.concurrent.Callable;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.helpers.SettingsTest;
+import org.olat.test.OlatTestCase;
 
 /**
  * 
@@ -31,7 +33,7 @@ import org.olat.core.helpers.SettingsTest;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ConfluenceLinkSPITest {
+public class ConfluenceLinkSPITest extends OlatTestCase {
 	
 	@Test
 	public void getURL_confluence() {
@@ -93,13 +95,13 @@ public class ConfluenceLinkSPITest {
 		Assert.assertNotNull(url2);
 		Assert.assertTrue(url2.endsWith("Data%20Management#DataManagement-qb_import"));
 		// Wait 5secs and try it again, should be translated now
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		url2 = linkSPI.getURL(Locale.GERMAN, "Data Management#qb_import");
-		Assert.assertNotNull(url2);
-		Assert.assertTrue(url2.endsWith("Handhabung%20der%20Daten#HandhabungderDaten-qb_import"));
+		
+		waitForCondition(new Callable<Boolean>(){
+			@Override
+			public Boolean call() throws Exception {
+				String url3 = linkSPI.getURL(Locale.GERMAN, "Data Management#qb_import");
+				return url3 != null && url3.endsWith("Handhabung%20der%20Daten#HandhabungderDaten-qb_import");
+			}
+		}, 5000);
 	}
 }

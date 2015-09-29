@@ -130,6 +130,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	public static final String CONFIG_KEY_TEMPLATE = "templateid";
 	public static final String CONFIG_KEY_TYPE_QTI = "qtitype";
 	public static final String CONFIG_VALUE_QTI2 = "qti2";
+	public static final String CONFIG_VALUE_QTI21 = "qti2w";
 	public static final Object CONFIG_VALUE_QTI1 = "qti1";
 	public static final String CONFIG_KEY_IS_SURVEY = "issurv";
 

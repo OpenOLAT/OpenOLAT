@@ -58,6 +58,7 @@ import org.olat.core.util.PathUtils.YesMatcher;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.fileresource.ZippedDirectoryMediaResource;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ResourceEvaluation;
@@ -72,6 +73,7 @@ import org.olat.ims.qti21.ui.QTI21RuntimeController;
 import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
 import org.olat.imscp.xml.manifest.ManifestType;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.handlers.FileHandler;
@@ -274,7 +276,10 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 
 	@Override
 	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
-		return null;
+		File unzippedDir = FileResourceManager.getInstance().unzipFileResource(res);
+		String displayName = CoreSpringFactory.getImpl(RepositoryManager.class)
+				.lookupDisplayNameByOLATResourceableId(res.getResourceableId());
+		return new ZippedDirectoryMediaResource(displayName, unzippedDir);
 	}
 	
 	@Override

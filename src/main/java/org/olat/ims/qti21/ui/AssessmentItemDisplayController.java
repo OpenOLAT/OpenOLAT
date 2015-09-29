@@ -164,9 +164,9 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(this.qtiWorksCtrl == source) {
+		if(qtiWorksCtrl == source) {
 			if(event instanceof QTIWorksAssessmentItemEvent) {
-				this.processQTIEvent(ureq, (QTIWorksAssessmentItemEvent)event);
+				processQTIEvent(ureq, (QTIWorksAssessmentItemEvent)event);
 			}
 		}
 		super.event(ureq, source, event);
@@ -192,9 +192,26 @@ public class AssessmentItemDisplayController extends BasicController implements 
 			case exit:
 				exitSession(ureq);
 				break;
-		
+			case resetsoft:
+				break;
+			case resethard:
+				break;
+			case source:
+				logError("QtiWorks event source not implemented", null);
+				break;
+			case state:
+				logError("QtiWorks event state not implemented", null);
+				break;
+			case validation:
+				logError("QtiWorks event validation not implemented", null);
+				break;
+			case authorview:
+				logError("QtiWorks event authorview not implemented", null);
+				break;
+			case result:
+				logError("QtiWorks event result not implemented", null);
+				break;
 		}
-		
 	}
 	
 	private ItemSessionController enterSession(UserRequest ureq /*, final UserTestSession candidateSession */) {

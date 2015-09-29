@@ -318,49 +318,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			super.renderItemStatus(sb, itemSessionState);
 		}
 	}
-	
-  /*
-  <xsl:choose>
-    <xsl:when test="$allowComment and $isItemSessionOpen">
-      <fieldset class="candidateComment">
-        <legend>Please use the following text box if you need to provide any additional information, comments or feedback during this test:</legend>
-        <input name="qtiworks_comment_presented" type="hidden" value="true"/>
-        <textarea name="qtiworks_comment"><xsl:value-of select="$itemSessionState/qw:candidateComment"/></textarea>
-      </fieldset>
-    </xsl:when>
-    <xsl:when test="$allowComment and $isItemSessionEnded and exists($itemSessionState/qw:candidateComment)">
-      <fieldset class="candidateComment">
-        <legend>You submitted the folllowing comment with this item:</legend>
-        <input name="qtiworks_comment_presented" type="hidden" value="true"/>
-        <textarea name="qtiworks_comments" disabled="disabled"><xsl:value-of select="$itemSessionState/qw:candidateComment"/></textarea>
-      </fieldset>
-    </xsl:when>
-  </xsl:choose>
-  */
-	private void renderComment(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, ItemSessionState itemSessionState, Translator translator) {
-		if(renderer.isCandidateCommentAllowed()) {
-			if(component.isItemSessionOpen(itemSessionState, renderer.isSolutionMode())) {
-				String comment = itemSessionState.getCandidateComment();
-				renderComment(sb, comment, false, translator);
-			} else if(component.isItemSessionEnded(itemSessionState, renderer.isSolutionMode())
-					&& StringHelper.containsNonWhitespace(itemSessionState.getCandidateComment())) {
-				String comment = itemSessionState.getCandidateComment();
-				renderComment(sb, comment, true, translator);
-			}
-		}
-		
-	}
-	
-	private void renderComment(StringOutput sb, String comment, boolean disabled, Translator translator) {
-		sb.append("<fieldset class='candidateComment'>")
-		  .append("<legend>").append(translator.translate("assessment.comment.legend")).append("</legend>")
-		  .append("<input name='qtiworks_comment_presented' type='hidden' value='true' />")
-		  .append("<textarea name='qtiworks_comment'").append(" disabled=\"disabled\"", disabled).append(">");
-		if(StringHelper.containsNonWhitespace(comment)) {
-			sb.append(comment);
-		}
-		sb.append("</textarea></fieldset>");
-	}
+
 	
 	@Override
 	protected void renderPrintedVariable(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem,
@@ -580,7 +538,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	}
 	
 	private void renderNavigation(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, URLBuilder ubu, Translator translator) {
-		sb.append("<div class='qtiworks assessmentTest testPartNavigation'>");
+		sb.append("<div id='o_qti_menu' class='qtiworks assessmentTest testPartNavigation'>");
 		
 		//title
 		boolean multiPartTest = component.hasMultipleTestParts();
@@ -630,7 +588,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	
 	private void renderNavigationAssessmentSection(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode sectionNode,
 			URLBuilder ubu, Translator translator) {
-		sb.append("<li class='assessmentSection'>")
+		sb.append("<li class='assessmentSection o_qti_menu_item'>")
 		  .append("<header><h2>").append(sectionNode.getSectionPartTitle()).append("</h2>");
 		renderAssessmentSectionRubrickBlock(renderer, sb, component, sectionNode, ubu, translator);
 
