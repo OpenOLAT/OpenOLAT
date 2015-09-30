@@ -79,7 +79,7 @@ public class TranslationDevManager extends BasicManager {
 	}
 
 	protected Set<String> getAllLanguages() {
-		return I18nModule.getTranslatableLanguageKeys();
+		return I18nModule.getAvailableLanguageKeys();
 	}
 
 	protected void renameKeyTask(String bundleName, String origKey, String targetKey) {
@@ -197,7 +197,7 @@ public class TranslationDevManager extends BasicManager {
 		checkForEmptyBundleAndDelete(bundleName);
 	}
 
-	private void addKey(Locale locale, String bundleName, String key, String value) {
+	protected void addKey(Locale locale, String bundleName, String key, String value) {
 		I18nItem i18nItem = new I18nItem(bundleName, key, locale, I18nManager.DEFAULT_BUNDLE_PRIORITY, I18nManager.DEFAULT_KEY_PRIORITY);
 		i18nMgr.saveOrUpdateI18nItem(i18nItem, value);
 	}
