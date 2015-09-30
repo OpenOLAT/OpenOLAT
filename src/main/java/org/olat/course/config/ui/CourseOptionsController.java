@@ -161,8 +161,8 @@ public class CourseOptionsController extends FormBasicController {
 			FormLayoutContainer calCont = FormLayoutContainer.createDefaultFormLayout("cal", getTranslator());
 			calCont.setRootForm(mainForm);
 			formLayout.add(calCont);
-			calCont.setFormContextHelp("org.olat.course.config.ui","course-calendar.html","help.hover.coursecal");
-			
+			calCont.setFormContextHelp("Course Settings#_optionen");
+
 			boolean calendarEnabled = courseConfig.isCalendarEnabled();
 			boolean managedCal = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.calendar);
 			calendarEl = uifactory.addCheckboxesHorizontal("calIsOn", "chkbx.calendar.onoff", calCont, new String[] {"xx"}, new String[] {""});
@@ -175,7 +175,6 @@ public class CourseOptionsController extends FormBasicController {
 		FormLayoutContainer chatCont = FormLayoutContainer.createDefaultFormLayout("chat", getTranslator());
 		chatCont.setRootForm(mainForm);
 		formLayout.add(chatCont);
-		chatCont.setFormContextHelp("org.olat.course.config.ui","course-chat.html","help.hover.course-chat");
 
 		boolean chatEnabled = courseConfig.isChatEnabled();
 		boolean managedChat = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.chat);
@@ -188,7 +187,6 @@ public class CourseOptionsController extends FormBasicController {
 		FormLayoutContainer glossaryCont = FormLayoutContainer.createDefaultFormLayout("glossary", getTranslator());
 		glossaryCont.setRootForm(mainForm);
 		formLayout.add(glossaryCont);
-		glossaryCont.setFormContextHelp("org.olat.course.config.ui","course-glossary.html","help.hover.course-gloss");
 
 		glossaryNameEl = uifactory.addStaticTextElement("glossaryName", "glossary.isconfigured",
 				translate("glossary.no.glossary"), glossaryCont);
@@ -206,11 +204,12 @@ public class CourseOptionsController extends FormBasicController {
 		FormLayoutContainer sharedFolderCont = FormLayoutContainer.createDefaultFormLayout("sharedfolder", getTranslator());
 		sharedFolderCont.setRootForm(mainForm);
 		formLayout.add(sharedFolderCont);
-		sharedFolderCont.setFormContextHelp("org.olat.course.config.ui","course-resfolder.html","help.hover.course-res");
 
 		folderNameEl = uifactory.addStaticTextElement("folderName", "sf.resourcetitle",
 				translate("sf.notconfigured"), sharedFolderCont);
-		
+		folderNameEl.setHelpText(translate("sf.resourcetitle.helptext"));
+		folderNameEl.setHelpUrlForManualPage("Course Settings#_detail_ressourcen");
+
 		FormLayoutContainer buttons2Cont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		sharedFolderCont.add(buttons2Cont);
 		removeFolderCommand = uifactory.addFormLink("sf.unselectsfresource", buttons2Cont, Link.BUTTON);
