@@ -137,7 +137,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
 		descCont = FormLayoutContainer.createDefaultFormLayout("desc", getTranslator());
-		descCont.setFormContextHelp("org.olat.repository","rep-meta-desc.html","help.hover.lifecycle");
+		descCont.setFormContextHelp("Info Page: Add Meta Data");
 		descCont.setRootForm(mainForm);
 		formLayout.add("desc", descCont);
 
