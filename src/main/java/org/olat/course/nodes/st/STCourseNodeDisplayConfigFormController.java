@@ -125,8 +125,7 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("config.fieldset.view");
-		setFormContextHelp("org.olat.course.nodes.st", "ced-st-overview.html", "help.st.design");
-		// 
+		setFormContextHelp("Knowledge Transfer#_struktur");
 		FormUIFactory formFact = FormUIFactory.getInstance();
 		// Display type
 		String[] values_displayType = new String[] { translate("form.system"), translate("form.peekview"), translate("form.self"),
