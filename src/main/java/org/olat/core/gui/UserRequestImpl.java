@@ -424,10 +424,4 @@ public class UserRequestImpl implements UserRequest {
 	public int getMode() {
 		return mode;
 	}
-
-	/* TODO: offer businesspath via hash part of url
-	 * public String getBusinessControlPath() {
-		return businessControlPath;
-	}*/
-
 }

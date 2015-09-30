@@ -144,7 +144,10 @@ public class OpenOLATServlet extends HttpServlet {
 	@Override
 	protected void service(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
-		//log.info(req.getMethod() + " :: " + req.getPathInfo());
+		/*if(!req.getPathInfo().startsWith("/m/")) {
+			log.info(req.getMethod() + " :: " + req.getPathInfo());
+			ServletUtil.printOutRequestParameters(req);
+		}*/
 
 		Tracing.setUreq(req);
 		ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(req);
