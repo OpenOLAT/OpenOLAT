@@ -319,13 +319,16 @@ public class TranslationDevManager extends BasicManager {
 								addKey(locale, bundleName, key.substring(0, key.length()-1), value);
 							}
 						}
-						log.info("XKEY detected in lang::" + locale.getLanguage() + " bundle::" + bundleName + " key::" + key);	
-						logText.append(i18nMgr.getPropertiesFile(locale, bundleName, I18nModule.getPropertyFilesBaseDir(locale, bundleName)) + 
-								" XKEY detected in lang::" + locale.getLanguage() + " bundle::" + bundleName + " key::" + key + " value::" + value + "\n");		
-						if (reallyRemoveIt) {
-							deleteKey(locale, bundleName, key);							
+						log.info("XKEY detected in lang::" + locale.getLanguage() + " bundle::" + bundleName + " key::" + key);
+						File propertyFileDir = I18nModule.getPropertyFilesBaseDir(locale, bundleName);
+						if(propertyFileDir != null) {
+							File propertyFile = i18nMgr.getPropertiesFile(locale, bundleName, propertyFileDir);
+							logText.append(propertyFile + " XKEY detected in lang::" + locale.getLanguage() + " bundle::" + bundleName + " key::" + key + " value::" + value + "\n");		
+							if (reallyRemoveIt) {
+								deleteKey(locale, bundleName, key);							
+							}
+							counter++;
 						}
-						counter++;
 					}
 				}
 			}
@@ -415,11 +418,14 @@ public class TranslationDevManager extends BasicManager {
 					String value = properties.getProperty(key);
 					if (!StringHelper.containsNonWhitespace(value) ) {
 						log.info("empty Key detected in lang::" + locale.getLanguage() + " bundle::" + bundleName + " key::" + key + " value::" + value);
-						logText.append(i18nMgr.getPropertiesFile(locale, bundleName, I18nModule.getPropertyFilesBaseDir(locale, bundleName)) + 
-								" empty Key detected in lang" + locale.getLanguage() + " bundle::" + bundleName + " key::" + key + " value::" + value + "\n");						
-						if (reallyRemoveIt) {
-							deleteKey(locale, bundleName, key);
-						} 
+						File propertyFileDir = I18nModule.getPropertyFilesBaseDir(locale, bundleName);
+						if(propertyFileDir != null) {
+							File propertyFile = i18nMgr.getPropertiesFile(locale, bundleName, propertyFileDir);
+							logText.append(propertyFile + " empty Key detected in lang" + locale.getLanguage() + " bundle::" + bundleName + " key::" + key + " value::" + value + "\n");						
+							if (reallyRemoveIt) {
+								deleteKey(locale, bundleName, key);
+							}
+						}
 					}
 					counter++;
 				} //each key

@@ -182,7 +182,6 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	public void setDisplayName(String name) {
 		this.name = name;
 	}
-	
 
 	public String getShortenedDescription() {
 		if(shortenedDescription != null) {

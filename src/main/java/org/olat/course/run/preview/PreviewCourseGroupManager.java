@@ -49,7 +49,7 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 
 	private List<BGArea> areas;
 	private List<BusinessGroup> groups;
-	private final RepositoryEntry courseResource;
+	private RepositoryEntry courseResource;
 	private boolean isCoach, isCourseAdmin;
 	
 	/**
@@ -75,6 +75,11 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	@Override
 	public RepositoryEntry getCourseEntry() {
 		return courseResource;
+	}
+
+	@Override
+	public void refreshRepositoryEntry(RepositoryEntry entry) {
+		this.courseResource = entry;
 	}
 
 	/**

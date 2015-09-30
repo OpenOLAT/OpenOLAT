@@ -115,6 +115,11 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		}
 		return courseRepoEntry;
 	}
+	
+	@Override
+	public void refreshRepositoryEntry(RepositoryEntry entry) {
+		courseRepoEntry = entry;
+	}
 
 	/**
 	 * @param course The current course

@@ -44,15 +44,8 @@ public class RepositoryEntryDAO {
 	private DB dbInstance;
 	
 	public RepositoryEntry loadByKey(Long key) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
-		  .append(" inner join fetch v.olatResource as ores")
-		  .append(" inner join fetch v.statistics as statistics")
-		  .append(" left join fetch v.lifecycle as lifecycle")
-		  .append(" where v.key = :repoKey");
-		
 		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), RepositoryEntry.class)
+				.createNamedQuery("loadRepositoryEntryByKey", RepositoryEntry.class)
 				.setParameter("repoKey", key)
 				.getResultList();
 		if(entries.isEmpty()) {
@@ -63,15 +56,8 @@ public class RepositoryEntryDAO {
 	}
 	
 	public RepositoryEntry loadByResourceKey(Long resourceKey) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
-		  .append(" inner join fetch v.olatResource as ores")
-		  .append(" inner join fetch v.statistics as statistics")
-		  .append(" left join fetch v.lifecycle as lifecycle")
-		  .append(" where ores.key = :resourceKey");
-		
 		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), RepositoryEntry.class)
+				.createNamedQuery("loadRepositoryEntryByResourceKey", RepositoryEntry.class)
 				.setParameter("resourceKey", resourceKey)
 				.getResultList();
 		if(entries.isEmpty()) {

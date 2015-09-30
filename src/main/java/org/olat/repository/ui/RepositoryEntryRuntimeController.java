@@ -254,8 +254,14 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		return re;
 	}
 	
-	protected void loadRepositoryEntry() {
+	protected RepositoryEntry loadRepositoryEntry() {
 		re = repositoryService.loadByKey(re.getKey());
+		return re;
+	}
+	
+	protected RepositoryEntry refreshRepositoryEntry(RepositoryEntry refreshedEntry) {
+		re = refreshedEntry;
+		return re;
 	}
 	
 	protected OLATResourceable getOlatResourceable() {
@@ -534,7 +540,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			}
 		} else if(accessCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
-				re = accessCtrl.getEntry();
+				refreshRepositoryEntry(accessCtrl.getEntry());
 				if(ordersLink != null) {
 					boolean booking = acService.isResourceAccessControled(re.getOlatResource(), null);
 					ordersLink.setVisible(!corrupted && booking);
@@ -542,7 +548,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			}
 		} else if(descriptionCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
-				re = descriptionCtrl.getEntry();
+				refreshRepositoryEntry(descriptionCtrl.getEntry());
 			}
 		} else if(detailsCtrl == source) {
 			if(event instanceof LeavingEvent) {
@@ -632,7 +638,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	 */
 	protected void doAccess(UserRequest ureq) {
 		WindowControl bwControl = getSubWindowControl("Access");
-		AuthoringEditAccessController ctrl = new AuthoringEditAccessController(ureq, addToHistory(ureq, bwControl), re);
+		RepositoryEntry refreshedEntry = loadRepositoryEntry();
+		AuthoringEditAccessController ctrl = new AuthoringEditAccessController(ureq, addToHistory(ureq, bwControl), refreshedEntry);
 		listenTo(ctrl);
 		accessCtrl = pushController(ureq, translate("tab.accesscontrol"), ctrl);
 		setActiveTool(accessLink);
@@ -674,8 +681,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		if(!reSecurity.isEntryAdmin()) return;
 		
 		WindowControl bwControl = getSubWindowControl("Settings");
+		RepositoryEntry refreshedEntry = loadRepositoryEntry();
 		RepositoryEditDescriptionController ctrl
-			= new RepositoryEditDescriptionController(ureq, addToHistory(ureq, bwControl), re);
+			= new RepositoryEditDescriptionController(ureq, addToHistory(ureq, bwControl), refreshedEntry);
 		listenTo(ctrl);
 		descriptionCtrl = pushController(ureq, translate("settings.editor"), ctrl);
 		currentToolCtr = descriptionCtrl;
