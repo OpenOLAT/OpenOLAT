@@ -151,8 +151,7 @@ public class AccessConfigurationController extends FormBasicController {
 		
 		if(!embbed) {
 			setFormTitle("accesscontrol.title");
-			setFormContextHelp(AccessConfigurationController.class.getPackage().getName(), "accesscontrol.html", "chelp.accesscontrol.hover");
-			
+
 			if(editable) {
 				final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 				buttonGroupLayout.setRootForm(mainForm);

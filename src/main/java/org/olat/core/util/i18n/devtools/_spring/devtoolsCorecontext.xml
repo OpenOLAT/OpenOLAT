@@ -8,5 +8,23 @@
 <bean id="translationDevManager" class="org.olat.core.util.i18n.devtools.TranslationDevManager">
 	<constructor-arg ref="I18nManager" />
 </bean>
-
+	<!-- Devel / snoop user session -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
+			<property name="order" value="15120" />
+			<property name="actionController">
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.core.util.i18n.devtools.TranslationDevController"/>
+				</bean>
+			</property>
+			<property name="navigationKey" value="i18nDev" />
+			<property name="parentTreeNodeIdentifier" value="develParent" />
+			<property name="translationPackage" value="org.olat.core.util.i18n.devtools"/>
+			<property name="i18nActionKey" value="menu.i18nDev"/>
+			<property name="i18nDescriptionKey" value="menu.i18nDev.alt"/>
+			<property name="extensionPoints">
+				<list>
+					<value>org.olat.admin.SystemAdminMainController</value>
+				</list>
+			</property>
+	</bean>
 </beans>

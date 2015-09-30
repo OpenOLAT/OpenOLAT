@@ -285,25 +285,29 @@ public class I18nTest extends OlatTestCase {
 	}
 	
 	//remove after execution!
-	@Test public void testRemoveXKeyTask(){
+	@Test
+	public void testRemoveXKeyTask(){
 		tDMgr.removeXKeysTask(false);		
 		tDMgr.logToFile("XKeys");
 	}
 	
 	//remove after execution!
-	@Test public void testRemoveTodoKeyTask(){
+	@Test
+	public void testRemoveTodoKeyTask(){
 		tDMgr.removeTodoKeysTask(false);
 		tDMgr.logToFile("todoKeys");
 	}
 	
 	//remove after execution!
-	@Test public void testRemoveEmptyKeysTask(){
+	@Test
+	public void testRemoveEmptyKeysTask(){
 		tDMgr.removeEmptyKeysTask(false);
 		tDMgr.logToFile("emptyKeys");
 	}
 	
 	//remove after execution!	
-	@Test public void testRemoveReferenceLanguageCopiesTask(){
+	@Test
+	public void testRemoveReferenceLanguageCopiesTask(){
 		if (I18nModule.isTransToolEnabled()) {
 			tDMgr.removeReferenceLanguageCopiesTask(false);
 			tDMgr.logToFile("refLangCopied");			

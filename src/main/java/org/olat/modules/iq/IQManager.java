@@ -175,7 +175,9 @@ public class IQManager implements UserDataDeletable {
 		// -- VERY RARE CASE -- 1) qti is open in an editor session right now on the screen (or session on the way to timeout)
 		// -- 99% of cases   -- 2) qti is ready to be run as test/survey
 		if (CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(res, null)){
-			GenericMainController glc = createLockedMessageController(ureq, wControl);
+			LockResult lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().aquirePersistentLock(res, ureq.getIdentity(), null);
+			String fullName = userManager.getUserDisplayName(lockEntry.getOwner());
+			GenericMainController glc = createLockedMessageController(ureq, wControl, fullName);
 			return glc;
 		}else{
 			Controller controller = new IQDisplayController(resolver, type, secCallback, ureq, wControl);
@@ -185,14 +187,14 @@ public class IQManager implements UserDataDeletable {
 		}
 	}
 
-	private GenericMainController createLockedMessageController(UserRequest ureq, WindowControl wControl) {
+	private GenericMainController createLockedMessageController(UserRequest ureq, WindowControl wControl, String fullName) {
 		//wrap simple message into mainLayout
 		GenericMainController glc = new GenericMainController(ureq, wControl) {
 			@Override
 			public void init(UserRequest ureq) {
-				Panel empty = new Panel("empty");			
-				setTranslator(Util.createPackageTranslator(this.getClass(), ureq.getLocale())); 
-				Controller contentCtr = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), translate("status.currently.locked.title"), translate("status.currently.locked"));
+				Panel empty = new Panel("empty");
+				setTranslator(Util.createPackageTranslator(this.getClass(), ureq.getLocale()));
+				Controller contentCtr = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), translate("status.currently.locked.title"), translate("status.currently.locked", fullName));
 				listenTo(contentCtr); // auto dispose later
 				Component resComp = contentCtr.getInitialComponent();
 				LayoutMain3ColsController columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), empty, resComp, /*do not save no prefs*/null);

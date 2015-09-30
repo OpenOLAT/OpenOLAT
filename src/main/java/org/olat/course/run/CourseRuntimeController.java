@@ -271,6 +271,31 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		return run == null ? null : run.getUce();
 	}
 	
+	/**
+	 * Refresh the cached repository entry of the course
+	 * @return
+	 */
+	@Override
+	protected RepositoryEntry loadRepositoryEntry() {
+		RepositoryEntry refreshedEntry = super.loadRepositoryEntry();
+		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
+		cgm.refreshRepositoryEntry(refreshedEntry);
+		return refreshedEntry;
+	}
+	
+	/**
+	 * Refresh the cached repository entry of the course
+	 * @return
+	 */
+	@Override
+	protected RepositoryEntry refreshRepositoryEntry(RepositoryEntry refreshedEntry) {
+		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
+		cgm.refreshRepositoryEntry(refreshedEntry);
+		return super.refreshRepositoryEntry(refreshedEntry);
+	}
+
 	private RunMainController getRunMainController() {
 		return getRuntimeController() instanceof RunMainController ?
 			(RunMainController)getRuntimeController() : null;

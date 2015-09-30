@@ -782,19 +782,20 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		String type = firstEntry.getOLATResourceable().getResourceableTypeName();
 		if("CourseNode".equalsIgnoreCase(type)) {
 			CourseNode cn = course.getRunStructure().getNode(firstEntry.getOLATResourceable().getResourceableId().toString());
-
-			getWindowControl().makeFlat();
-			// add logging information for case course gets started via jump-in
-			// link/search
-			addLoggingResourceable(LoggingResourceable.wrap(course));
-			if (cn != null) {
-				addLoggingResourceable(LoggingResourceable.wrap(cn));
+			if(currentCourseNode == null || !currentCourseNode.equals(cn)) {
+				getWindowControl().makeFlat();
+				// add logging information for case course gets started via jump-in
+				// link/search
+				addLoggingResourceable(LoggingResourceable.wrap(course));
+				if (cn != null) {
+					addLoggingResourceable(LoggingResourceable.wrap(cn));
+				}
+				
+				if(entries.size() > 1) {
+					entries = entries.subList(1, entries.size());
+				}
+				updateTreeAndContent(ureq, cn, null, entries, firstEntry.getTransientState());
 			}
-			
-			if(entries.size() > 1) {
-				entries = entries.subList(1, entries.size());
-			}
-			updateTreeAndContent(ureq, cn, null, entries, firstEntry.getTransientState());
 		}
 	}
 

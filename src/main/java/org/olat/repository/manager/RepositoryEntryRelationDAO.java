@@ -189,7 +189,7 @@ public class RepositoryEntryRelationDAO {
 	 */
 	public void filterMembership(IdentityRef identity, List<Long> entries) {
 		if(entries == null || entries.isEmpty()) return;
-
+		
 		List<Object[]> membershipList = dbInstance.getCurrentEntityManager()
 				.createNamedQuery("filterRepositoryEntryMembership", Object[].class)
 				.setParameter("identityKey", identity.getKey())

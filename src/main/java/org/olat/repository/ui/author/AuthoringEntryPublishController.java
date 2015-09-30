@@ -184,7 +184,7 @@ public class AuthoringEntryPublishController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("rentry.publish");
-		setFormContextHelp("org.olat.repository", "rep-meta-olatauthorEd.html", "help.hover.rep.detail");
+		setFormContextHelp("Course Settings#_zugriff");
 		formLayout.setElementCssClass("o_sel_repositoryentry_access");
 
 		String resourceType = entry.getOlatResource().getResourceableTypeName();
