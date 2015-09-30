@@ -105,7 +105,7 @@ public class CheckListBoxListEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("config.checkbox.title");
 		setFormDescription("config.checkbox.description");
-		setFormContextHelp("org.olat.course.nodes.cl.ui", "cl-checkbox.html", "help.hover.checkbox");
+		setFormContextHelp("Assessment#_checklist_cb");
 		if(inUse) {
 			setFormWarning("config.warning.inuse");
 		}

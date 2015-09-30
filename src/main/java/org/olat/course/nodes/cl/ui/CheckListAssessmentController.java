@@ -189,7 +189,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("coach.desc");
-		setFormContextHelp("org.olat.course.nodes.cl.ui", "cl-coach-assessment.html", "help.hover.coach.assessment");
+		setFormContextHelp("Assessment#_checklist_manage");
 
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;

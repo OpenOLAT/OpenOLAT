@@ -100,7 +100,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		} else {
 			setFormTitle("config.title");
 			setFormDescription("config.description");
-			setFormContextHelp("org.olat.course.nodes.cl.ui", "cl-config.html", "help.hover.config");
+			setFormContextHelp("Assessment#_checklist_kursbaustein");
 			if(inUse) {
 				setFormWarning("config.warning.inuse");
 			}
