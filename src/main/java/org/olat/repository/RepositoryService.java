@@ -84,11 +84,26 @@ public interface RepositoryService {
 	 */
 	public void deleteRepositoryEntryAndBaseGroups(RepositoryEntry entry);
 	
-
+	/**
+	 * Increment the launch counter and the last usage date.
+	 * 
+	 * @param re The repository entry
+	 */
 	public void incrementLaunchCounter(RepositoryEntry re);
 	
+	/**
+	 * Increment the download counter and the last usage date.
+	 * 
+	 * @param re The repository entry
+	 */
 	public void incrementDownloadCounter(RepositoryEntry re);
 	
+	/**
+	 * Update the last usage of the specified repository entry
+	 * with a granularity of 1 minute.
+	 * 
+	 * @param re The repository entry
+	 */
 	public void setLastUsageNowFor(RepositoryEntry re);
 
 	public Group getDefaultGroup(RepositoryEntryRef ref);

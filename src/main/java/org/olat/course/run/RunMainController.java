@@ -93,8 +93,10 @@ import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.modules.cp.TreeNodeEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description: <br>
@@ -134,6 +136,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private Link nextLink, previousLink;
 	private GlossaryMarkupItemController glossaryMarkerCtr;
 	
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	/**
 	 * Constructor for the run main controller
@@ -431,7 +435,17 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		contentP.setContent(currentNodeController.getInitialComponent());
 		
 		updateNextPrevious();
+		updateLastUsage(nclr.getCalledCourseNode());
 		return true;
+	}
+	
+	private void updateLastUsage(CourseNode calledCourseNode) {
+		if(calledCourseNode != null && calledCourseNode.needsReferenceToARepositoryEntry()) {
+			RepositoryEntry referencedRe = calledCourseNode.getReferencedRepositoryEntry();
+			if(referencedRe != null) {
+				repositoryService.setLastUsageNowFor(referencedRe);
+			}
+		}
 	}
 
 	/**
@@ -611,6 +625,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				currentNodeController = nclr.getRunController();
 				Component nodeComp = currentNodeController.getInitialComponent();
 				contentP.setContent(nodeComp);
+				updateLastUsage(nclr.getCalledCourseNode());
 			}
 			
 			if(nclr.getSelectedNodeId() != null && nclr.getOpenNodeIds() != null) {
@@ -636,6 +651,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			currentNodeController.dispose();
 		}
 		currentNodeController = nclr.getRunController();
+		updateLastUsage(nclr.getCalledCourseNode());
 		Component nodeComp = currentNodeController.getInitialComponent();
 		contentP.setContent(nodeComp);
 		addToHistory(ureq, currentNodeController);
