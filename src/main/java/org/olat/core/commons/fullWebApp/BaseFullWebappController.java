@@ -249,7 +249,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	    	}
     	}
 		
-    	if(assessmentGuardCtrl == null && (aftLHookCtr == null || aftLHookCtr.isDisposed())) {
+    	if(assessmentGuardCtrl == null && (aftLHookCtr == null || aftLHookCtr.isDisposed())
+    			&& usess.getEntry("AuthDispatcher:entryUrl") == null) {
     		String bc = initializeDefaultSite(ureq);
     		if(StringHelper.containsNonWhitespace(bc) && usess.getEntry("redirect-bc") == null) {
     			usess.putEntry("redirect-bc", bc);
