@@ -1731,7 +1731,7 @@ alter table o_checkpoint add constraint FK9E30F4B661159ZZZ foreign key (checklis
 create index idx_chpt_checklist_fk on o_checkpoint (checklist_fk);
 
 -- plock
--- index created asset_idx on unique constraint
+create index asset_idx on o_plock (asset);
 
 -- property
 alter table o_property add constraint FKB60B1BA5190E5 foreign key (grp) references o_gp_business;

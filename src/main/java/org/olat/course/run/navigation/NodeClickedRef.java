@@ -27,12 +27,9 @@ package org.olat.course.run.navigation;
 
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.course.nodes.CourseNode;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryService;
 
 /**
  * Description: <br>
@@ -148,14 +145,6 @@ public class NodeClickedRef {
 	 */
 	public Controller getRunController() {
 		if(calledCourseNode == null || nodeConstructionResult == null) return null;
-		if(calledCourseNode.needsReferenceToARepositoryEntry()) {
-			RepositoryEntry referencedRe = calledCourseNode.getReferencedRepositoryEntry();
-			if(referencedRe != null) {
-				CoreSpringFactory.getImpl(RepositoryService.class).setLastUsageNowFor(referencedRe);
-			}
-		}
 		return nodeConstructionResult.getRunController();
 	}
-
 }
-

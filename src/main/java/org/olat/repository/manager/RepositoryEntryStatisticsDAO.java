@@ -61,14 +61,12 @@ public class RepositoryEntryStatisticsDAO implements UserRatingsDelegate, UserCo
 	 * Increment the launch counter.
 	 * @param re
 	 */
-	public synchronized void incrementLaunchCounter(RepositoryEntry re) {
-		RepositoryEntryStatistics stats = loadStatisticsForUpdate(re);
-		if(stats != null) {
-			stats.setLaunchCounter(stats.getLaunchCounter() + 1);
-			stats.setLastUsage(new Date());
-			dbInstance.getCurrentEntityManager().merge(stats);
-		}
-		dbInstance.commit();
+	public void incrementLaunchCounter(RepositoryEntry re) {
+		String updateQuery = "update repoentrystats set launchCounter=launchCounter+1, lastUsage=:now where key=:statsKey";
+		dbInstance.getCurrentEntityManager().createQuery(updateQuery)
+			.setParameter("statsKey", re.getStatistics().getKey())
+			.setParameter("now", new Date())
+			.executeUpdate();
 	}
 
 	/**
@@ -76,30 +74,28 @@ public class RepositoryEntryStatisticsDAO implements UserRatingsDelegate, UserCo
 	 * @param re
 	 */
 	public void incrementDownloadCounter(RepositoryEntry re) {
-		RepositoryEntryStatistics stats = loadStatisticsForUpdate(re);
-		if(stats != null) {
-			stats.setDownloadCounter(stats.getDownloadCounter() + 1);
-			stats.setLastUsage(new Date());
-			dbInstance.getCurrentEntityManager().merge(stats);
-		}
-		dbInstance.commit();
+		String updateQuery = "update repoentrystats set downloadCounter=downloadCounter+1, lastUsage=:now where key=:statsKey";
+		dbInstance.getCurrentEntityManager().createQuery(updateQuery)
+			.setParameter("statsKey", re.getStatistics().getKey())
+			.setParameter("now", new Date())
+			.executeUpdate();
 	}
 
 	/**
-	 * Set last-usage date to to now for certain repository-entry.
+	 * Set last-usage date to now for the specified repository entry
+	 * with a granularity of 1 minute.
 	 * @param 
 	 */
 	public void setLastUsageNowFor(RepositoryEntry re) {
 		if (re == null) return;
 		
 		Date newUsage = new Date();
-		RepositoryEntryStatistics stats = loadStatistics(re);
-		Date lastUsage = stats.getLastUsage();
-		//update every minute and not shorter
-		if(lastUsage == null || (newUsage.getTime() - lastUsage.getTime()) > 60000) {
-			stats.setLastUsage(newUsage);
-			dbInstance.getCurrentEntityManager().merge(stats);
-			dbInstance.commit();
+		if(re.getStatistics().getLastUsage().getTime() + 60000 < newUsage.getTime()) {
+			String updateQuery = "update repoentrystats set lastUsage=:now where key=:statsKey";
+			dbInstance.getCurrentEntityManager().createQuery(updateQuery)
+				.setParameter("statsKey", re.getStatistics().getKey())
+				.setParameter("now", new Date())
+				.executeUpdate();
 		}
 	}
 	
