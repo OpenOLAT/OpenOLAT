@@ -395,8 +395,9 @@ public class CertificatesOptionsController extends FormBasicController {
 		if(updateStatement) {
 			if(enableEfficiencyStatment) {
 	            // first create the efficiencies, send event to agency (all courses add link)
+				RepositoryEntry courseRe = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 				List<Identity> identitiesWithData = course.getCourseEnvironment().getCoursePropertyManager().getAllIdentitiesWithCourseAssessmentData(null);
-				efficiencyStatementManager.updateEfficiencyStatements(course, identitiesWithData);							
+				efficiencyStatementManager.updateEfficiencyStatements(courseRe, identitiesWithData);							
 			} else {
 	            // delete really the efficiencies of the users.
 				RepositoryEntry courseRepoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);

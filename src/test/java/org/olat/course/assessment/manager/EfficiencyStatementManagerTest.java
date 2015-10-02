@@ -89,7 +89,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 					}
 					List<Identity> assessedIdentities = loadIdentities.subList(fromIndex - 100, fromIndex);
 					//force the storing of the efficiencyStatement - this is usually done only at Learnresource/modify properties/Efficiency statement (ON)
-					efficiencyStatementManager.updateEfficiencyStatements(course, assessedIdentities);
+					efficiencyStatementManager.updateEfficiencyStatements(entry, assessedIdentities);
 					
 				} catch (Exception e) {
 					e.printStackTrace();

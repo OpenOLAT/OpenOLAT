@@ -163,7 +163,7 @@ public class OLATUpgrade_8_1_0 extends OLATUpgrade {
 		String repoKeyStr = property.getName();
 		Long repoKey = new Long(repoKeyStr);
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(repoKey, false);
-		UserEfficiencyStatementImpl impl = efficiencyStatementManager.getUserEfficiencyStatementFull(repoKey, property.getIdentity());
+		UserEfficiencyStatementImpl impl = efficiencyStatementManager.getUserEfficiencyStatementFull(re, property.getIdentity());
 		if(impl != null) {
 			return;
 		}

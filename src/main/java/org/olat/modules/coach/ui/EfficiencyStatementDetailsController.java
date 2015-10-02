@@ -175,7 +175,8 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 		UserEfficiencyStatement statement = statementEntry.getUserEfficencyStatement();
 		EfficiencyStatement efficiencyStatement = null;
 		if(statement != null) {
-			efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatementByCourseRepoKey(statement.getCourseRepoKey(), assessedIdentity);
+			RepositoryEntry re = statementEntry.getCourse();
+			efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatementByCourseRepositoryEntry(re, assessedIdentity);
 		}
 		return new CertificateAndEfficiencyStatementController(getWindowControl(), ureq, assessedIdentity, null, entry.getOlatResource().getKey(), entry, efficiencyStatement, true);
 	}
@@ -183,6 +184,6 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 	private void efficiencyStatementChanged() {
 		List<Identity> assessedIdentityList = Collections.singletonList(assessedIdentity);
 		RepositoryEntry re = statementEntry.getCourse();
-		efficiencyStatementManager.updateEfficiencyStatements(re.getOlatResource(), assessedIdentityList);
+		efficiencyStatementManager.updateEfficiencyStatements(re, assessedIdentityList);
 	}
 }

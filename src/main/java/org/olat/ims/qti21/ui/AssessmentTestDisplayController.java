@@ -149,7 +149,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), entry, subIdent, testEntry);
 		
 		UserTestSession lastSession = qtiService.getResumableTestSession(getIdentity(), entry, subIdent, testEntry);
-		if(lastSession == null) {
+		if(lastSession == null || true) {
 			candidateSession = qtiService.createTestSession(getIdentity(), assessmentEntry, entry, subIdent, testEntry, false);
 			testSessionController = enterSession(ureq);
 		} else {

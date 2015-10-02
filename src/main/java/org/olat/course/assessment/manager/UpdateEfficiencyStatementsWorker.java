@@ -66,7 +66,7 @@ public class UpdateEfficiencyStatementsWorker implements Runnable {
 			RepositoryEntry re = rm.lookupRepositoryEntry(ores, false);
 			
 			List<Identity> identities = esm.findIdentitiesWithEfficiencyStatements(re.getKey());
-			esm.updateEfficiencyStatements(ores, identities);
+			esm.updateEfficiencyStatements(re, identities);
 			// close db session in this thread
 			DBFactory.getInstance().commitAndCloseSession();
 			success = true;
