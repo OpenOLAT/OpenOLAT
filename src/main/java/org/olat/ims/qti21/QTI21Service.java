@@ -34,12 +34,16 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
+import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationRecorder;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentObject;
+import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
+import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltStylesheetCache;
+import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltStylesheetManager;
 
 /**
  * 
@@ -48,6 +52,29 @@ import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
  *
  */
 public interface QTI21Service {
+	
+	/**
+	 * New QTI serializer
+	 * @return
+	 */
+	public QtiSerializer qtiSerializer();
+	
+	/**
+	 * The manager for custom extensions to QTI (MathExtensio )
+	 * @return
+	 */
+	public JqtiExtensionManager jqtiExtensionManager();
+	
+	/**
+	 * @return The cache for stylesheets used by MathML transformation
+	 */
+	public XsltStylesheetCache getXsltStylesheetCache();
+	
+	/**
+	 * @return The stylesheets manager used by MathML transformation
+	 */
+	public XsltStylesheetManager getXsltStylesheetManager();
+	
 	
 	public URI createAssessmentObjectUri(File resourceDirectory);
 	

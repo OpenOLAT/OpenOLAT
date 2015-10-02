@@ -62,6 +62,7 @@ import org.olat.fileresource.ZippedDirectoryMediaResource;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
@@ -83,7 +84,6 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.springframework.stereotype.Service;
 
-import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
@@ -134,11 +134,13 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	
 	public void createMinimalAssessmentTest(String displayName, File directory) {
         ManifestType manifestType = ManifestPackage.createEmptyManifest();
+        
+        QTI21Service qti21Service = CoreSpringFactory.getImpl(QTI21Service.class);
 
 		//single choice
 		File itemFile = new File(directory, IdentifierGenerator.newAssessmentTestFilename());
 		AssessmentItem assessmentItem = AssessmentItemFactory.createSingleChoice();
-		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
+		QtiSerializer qtiSerializer = qti21Service.qtiSerializer();
 		ManifestPackage.appendAssessmentItem(itemFile.getName(), manifestType);	
 		
 		//test

@@ -52,7 +52,6 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.JqtiPlus;
 import uk.ac.ed.ph.jqtiplus.exception.QtiCandidateStateException;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
@@ -95,8 +94,6 @@ public class AssessmentItemDisplayController extends BasicController implements 
 
 	@Autowired
 	private QTI21Service qtiService;
-	@Autowired
-	private JqtiExtensionManager jqtiExtensionManager;
 	
 	public AssessmentItemDisplayController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry testEntry, AssessmentEntry assessmentEntry, boolean authorMode,
@@ -171,10 +168,6 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		}
 		super.event(ureq, source, event);
 	}
-
-	protected CandidateEvent assertSessionEntered(UserTestSession candidateSession) {
-		return lastEvent;
-	}
 	
 	private void processQTIEvent(UserRequest ureq, QTIWorksAssessmentItemEvent qe) {
 		currentRequestTimestamp = ureq.getRequestTimestamp();
@@ -219,7 +212,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
         final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
 
         /* Create fresh JQTI+ state Object and try to create controller */
-        final ItemSessionController itemSessionController = createNewItemSessionStateAndController(notificationRecorder);
+        itemSessionController = createNewItemSessionStateAndController(notificationRecorder);
         if (itemSessionController==null) {
         	logError("", null);
             return null;//handleExplosion(null, candidateSession);
@@ -244,7 +237,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
         lastEvent = candidateEvent;
 
         /* Record current result state */
-        final AssessmentResult assessmentResult = computeAndRecordItemAssessmentResult(ureq, candidateSession, itemSessionController);
+        final AssessmentResult assessmentResult = computeAndRecordItemAssessmentResult(ureq);
 
         /* Handle immediate end of session */
         if (itemSessionState.isEnded()) {
@@ -270,7 +263,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
         itemSessionControllerSettings.setMaxAttempts(10 /*itemDeliverySettings.getMaxAttempts() */);
 
         /* Create controller and wire up notification recorder */
-        final ItemSessionController result = new ItemSessionController(jqtiExtensionManager,
+        final ItemSessionController result = new ItemSessionController(qtiService.jqtiExtensionManager(),
                 itemSessionControllerSettings, itemProcessingMap, itemSessionState);
         if (notificationRecorder != null) {
             result.addNotificationListener(notificationRecorder);
@@ -302,10 +295,9 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		// assertSessionNotTerminated(candidateSession);
 
 		/* Retrieve current JQTI state and set up JQTI controller */
-		final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
-		final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
 		//final ItemSessionController itemSessionController = this.candidateDataService.createItemSessionController(mostRecentEvent, notificationRecorder);
-		final ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
+		ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
 
 		/* Make sure an attempt is allowed */
 		if (itemSessionState.isEnded()) {
@@ -410,13 +402,13 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		lastEvent = candidateEvent;
 
 		/* Record current result state, or finish session */
-		updateSessionFinishedStatus(ureq, candidateSession, itemSessionController);
+		updateSessionFinishedStatus(ureq);
 	}
 	
-    private UserTestSession updateSessionFinishedStatus(UserRequest ureq, UserTestSession candidateSession, ItemSessionController itemSessionController) {
+    private UserTestSession updateSessionFinishedStatus(UserRequest ureq) {
         /* Record current result state and maybe close session */
         final ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
-        final AssessmentResult assessmentResult = computeAndRecordItemAssessmentResult(ureq, candidateSession, itemSessionController);
+        final AssessmentResult assessmentResult = computeAndRecordItemAssessmentResult(ureq);
         if (itemSessionState.isEnded()) {
             qtiService.finishItemSession(candidateSession, assessmentResult, null);
         }
@@ -430,13 +422,13 @@ public class AssessmentItemDisplayController extends BasicController implements 
         return candidateSession;
     }
     
-    public AssessmentResult computeAndRecordItemAssessmentResult(UserRequest ureq, UserTestSession candidateSession, ItemSessionController itemSessionController) {
-        final AssessmentResult assessmentResult = computeItemAssessmentResult(ureq, candidateSession, itemSessionController);
+    public AssessmentResult computeAndRecordItemAssessmentResult(UserRequest ureq) {
+        final AssessmentResult assessmentResult = computeItemAssessmentResult(ureq);
         qtiService.recordItemAssessmentResult(candidateSession, assessmentResult);
         return assessmentResult;
     }
     
-    public AssessmentResult computeItemAssessmentResult(UserRequest ureq, UserTestSession candidateSession, ItemSessionController itemSessionController) {
+    public AssessmentResult computeItemAssessmentResult(UserRequest ureq) {
     	String baseUrl = "http://localhost:8080/olat";
         final URI sessionIdentifierSourceId = URI.create(baseUrl);
         final String sessionIdentifier = "itemsession/" + (candidateSession == null ? "sdfj" : candidateSession.getKey());
@@ -449,11 +441,8 @@ public class AssessmentItemDisplayController extends BasicController implements 
         //final CandidateSession candidateSession = candidateSessionContext.getCandidateSession();
         //assertSessionNotTerminated(candidateSession);
 
-        /* Retrieve current JQTI state and set up JQTI controller */
-        final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
-        final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-        //final ItemSessionController itemSessionController = candidateDataService.createItemSessionController(mostRecentEvent, notificationRecorder);
-        final ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
+        NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+        ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
 
         /* Make sure caller may do this */
         boolean allowSolutionWhenOpen = true;//itemDeliverySettings.isAllowSolutionWhenOpen()
@@ -486,7 +475,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
         }
 
         /* Record current result state, and maybe close session */
-        final AssessmentResult assessmentResult = computeAndRecordItemAssessmentResult(ureq, candidateSession, itemSessionController);
+        final AssessmentResult assessmentResult = computeAndRecordItemAssessmentResult(ureq);
         if (isClosingSession) {
             qtiService.finishItemSession(candidateSession, assessmentResult, timestamp);
         }
@@ -505,11 +494,9 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		//final CandidateSession candidateSession = candidateSessionContext.getCandidateSession();
 		//assertSessionNotTerminated(candidateSession);
 
-        /* Retrieve current JQTI state and set up JQTI controller */
-        final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
-        final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+        NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
         //final ItemSessionController itemSessionController = candidateDataService.createItemSessionController(mostRecentEvent, notificationRecorder);
-        final ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
+        ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
 
         /* Check this is allowed in current state */
         
@@ -538,7 +525,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
         }
 
         /* Record current result state */
-        final AssessmentResult assessmentResult = computeAndRecordItemAssessmentResult(ureq, candidateSession, itemSessionController);
+        final AssessmentResult assessmentResult = computeAndRecordItemAssessmentResult(ureq);
 
         /* Record and log event */
         final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession,
@@ -558,11 +545,8 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	        //final CandidateSession candidateSession = candidateSessionContext.getCandidateSession();
 	        //assertSessionNotTerminated(candidateSession);
 
-	        /* Retrieve current JQTI state and set up JQTI controller */
-	        final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
-	        final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-	        //final ItemSessionController itemSessionController = candidateDataService.createItemSessionController(mostRecentEvent, notificationRecorder);
-	        final ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
+	        NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+	        ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
 
 	        /* Are we terminating a session that hasn't already been ended? If so end the session and record final result. */
 	        final Date currentTimestamp = ureq.getRequestTimestamp();
@@ -573,7 +557,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	            	logError("", e);
 	                return;// handleExplosion(e, candidateSession);
 	            }
-	            final AssessmentResult assessmentResult = computeAndRecordItemAssessmentResult(ureq, candidateSession, itemSessionController);
+	            final AssessmentResult assessmentResult = computeAndRecordItemAssessmentResult(ureq);
 	            qtiService.finishItemSession(candidateSession, assessmentResult, currentTimestamp);
 	        }
 

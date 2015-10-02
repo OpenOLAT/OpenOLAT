@@ -36,6 +36,7 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
@@ -47,6 +48,7 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.StringHelper;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.UserTestSession;
 import org.olat.ims.qti21.model.CandidateTestEventType;
 import org.olat.ims.qti21.model.jpa.CandidateEvent;
@@ -54,7 +56,6 @@ import org.olat.ims.qti21.ui.CandidateSessionContext;
 import org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event;
 import org.w3c.dom.Element;
 
-import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.node.ForeignElement;
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.TextRun;
@@ -532,7 +533,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 				|| (!identifierMatch && testFeedback.getVisibilityMode() == VisibilityMode.HIDE_IF_MATCH)) {
 			sb.append("<h2>Feedback</h2>");
 			
-			final QtiSerializer serializer = new QtiSerializer(new JqtiExtensionManager());
+			final QtiSerializer serializer = CoreSpringFactory.getImpl(QTI21Service.class).qtiSerializer();
 			//TODO QTI flow: need to handle url, feedbackBlock... -->
 			testFeedback.getChildren().forEach((flow) -> sb.append(serializer.serializeJqtiObject(flow)));
 		}
@@ -569,7 +570,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		}
 		String endTestTitle = multiPartTest ?
 				translator.translate("assessment.test.end.testPart") : translator.translate("assessment.test.end.test");
-		sb.append(";\" class='btn btn-default'").append(" disabled", !allowedToEndTestPart).append("><span>")
+		sb.append(";\" class='btn btn-default o_sel_end_testpart'").append(" disabled", !allowedToEndTestPart).append("><span>")
 		  .append(endTestTitle).append("</span>");
 
 		sb.append("</button>");

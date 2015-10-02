@@ -30,7 +30,9 @@ import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.SimpleXsltStylesheetCache;
+import org.olat.core.CoreSpringFactory;
+import org.olat.ims.qti21.QTI21Service;
+
 import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltStylesheetCache;
 import uk.ac.ed.ph.qtiworks.mathassess.XsltStylesheetCacheAdapter;
 import uk.ac.ed.ph.qtiworks.mathassess.glue.AsciiMathHelper;
@@ -55,7 +57,7 @@ public class MathWebService {
     @Path("verifyAsciiMath")
     @Produces({MediaType.APPLICATION_JSON})
     public Response verifyAsciiMath(@FormParam("input") String asciiMathInput) {
-    	XsltStylesheetCache stylesheetCache = new SimpleXsltStylesheetCache();
+    	XsltStylesheetCache stylesheetCache = CoreSpringFactory.getImpl(QTI21Service.class).getXsltStylesheetCache();
     	AsciiMathHelper asciiMathHelper = new AsciiMathHelper(new XsltStylesheetCacheAdapter(stylesheetCache));
         Map<String, String> upConvertedAsciiMathInput = asciiMathHelper.upConvertAsciiMathInput(asciiMathInput);
         return Response.ok(upConvertedAsciiMathInput).lastModified(new Date()).cacheControl(cc).build();

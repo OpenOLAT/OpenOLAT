@@ -63,6 +63,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.io.IOUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.context.Context;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
@@ -79,6 +80,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.ui.rendering.XmlUtilities;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
@@ -142,8 +144,6 @@ import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 import uk.ac.ed.ph.jqtiplus.value.Value;
-import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ClassPathResourceLocator;
-import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.SimpleXsltStylesheetCache;
 import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltStylesheetManager;
 import uk.ac.ed.ph.qtiworks.mathassess.MathEntryInteraction;
 
@@ -1023,7 +1023,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			return;
 		}
 
-		XsltStylesheetManager stylesheetManager = new XsltStylesheetManager(new ClassPathResourceLocator(), new SimpleXsltStylesheetCache());
+		XsltStylesheetManager stylesheetManager = CoreSpringFactory.getImpl(QTI21Service.class).getXsltStylesheetManager();
     	final TransformerHandler mathmlTransformerHandler = stylesheetManager.getCompiledStylesheetHandler(ctopXsltUri, null);
 
         try {

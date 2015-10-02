@@ -44,6 +44,8 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.cache.CacheWrapper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.QTI21Constants;
@@ -58,8 +60,9 @@ import org.olat.ims.qti21.ui.rendering.XmlUtilities;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
 
@@ -88,8 +91,10 @@ import uk.ac.ed.ph.jqtiplus.value.NumberValue;
 import uk.ac.ed.ph.jqtiplus.value.RecordValue;
 import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 import uk.ac.ed.ph.jqtiplus.value.Value;
+import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ClassPathResourceLocator;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltSerializationOptions;
+import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltStylesheetCache;
 import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltStylesheetManager;
 import uk.ac.ed.ph.qtiworks.mathassess.GlueValueBinder;
 import uk.ac.ed.ph.qtiworks.mathassess.MathAssessConstants;
@@ -102,7 +107,7 @@ import uk.ac.ed.ph.qtiworks.mathassess.MathAssessExtensionPackage;
  *
  */
 @Service
-public class QTI21ServiceImpl implements QTI21Service {
+public class QTI21ServiceImpl implements QTI21Service, InitializingBean, DisposableBean {
 	
 	private static final OLog log = Tracing.createLoggerFor(QTI21ServiceImpl.class);
 	
@@ -114,53 +119,93 @@ public class QTI21ServiceImpl implements QTI21Service {
 	private QTI21Storage storage;
 	@Autowired
 	private QTI21Module qtiModule;
-	
+	@Autowired
+	private CoordinatorManager coordinatorManager;
+
+	private JqtiExtensionManager jqtiExtensionManager;
+	private XsltStylesheetManager xsltStylesheetManager;
 	private InfinispanXsltStylesheetCache xsltStylesheetCache;
+	private CacheWrapper<File,ResolvedAssessmentObject<?>> assessmentTestsAndItemsCache;
 	
 	@Autowired
 	public QTI21ServiceImpl(InfinispanXsltStylesheetCache xsltStylesheetCache) {
 		this.xsltStylesheetCache = xsltStylesheetCache;
 	}
-	
-    @Bean(initMethod="init", destroyMethod="destroy")
-    public JqtiExtensionManager jqtiExtensionManager() {
-        final List<JqtiExtensionPackage<?>> extensionPackages = new ArrayList<JqtiExtensionPackage<?>>();
+
+    @Override
+	public void afterPropertiesSet() throws Exception {
+    	final List<JqtiExtensionPackage<?>> extensionPackages = new ArrayList<JqtiExtensionPackage<?>>();
 
         /* Enable MathAssess extensions if requested */
         if (qtiModule.isMathAssessExtensionEnabled()) {
             log.info("Enabling the MathAssess extensions");
             extensionPackages.add(new MathAssessExtensionPackage(xsltStylesheetCache));
         }
+        jqtiExtensionManager = new JqtiExtensionManager(extensionPackages);
+        xsltStylesheetManager = new XsltStylesheetManager(new ClassPathResourceLocator(), xsltStylesheetCache);
+        
+        jqtiExtensionManager.init();
 
-        return new JqtiExtensionManager(extensionPackages);
+        assessmentTestsAndItemsCache = coordinatorManager.getInstance().getCoordinator().getCacher().getCache("QTIWorks", "assessmentTestsAndItems");
+	}
+
+    @Override
+	public void destroy() throws Exception {
+		if(jqtiExtensionManager != null) {
+			jqtiExtensionManager.destroy();
+		}
+	}
+
+	@Override
+	public XsltStylesheetCache getXsltStylesheetCache() {
+		return xsltStylesheetCache;
+	}
+
+	@Override
+    public XsltStylesheetManager getXsltStylesheetManager() {
+    	return xsltStylesheetManager;
+    }
+
+    @Override
+    public JqtiExtensionManager jqtiExtensionManager() {
+        return jqtiExtensionManager;
     }
     
-    @Bean
+    @Override
     public QtiSerializer qtiSerializer() {
         return new QtiSerializer(jqtiExtensionManager());
     }
+    
+    
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public <E extends ResolvedAssessmentObject<?>> E loadAndResolveAssessmentObject(File resourceDirectory) {
-		QtiXmlReader qtiXmlReader = new QtiXmlReader(jqtiExtensionManager());
-        
-		ResourceLocator fileResourceLocator = new PathResourceLocator(resourceDirectory.toPath());
-		final ResourceLocator inputResourceLocator = 
-        		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
-        final URI assessmentObjectSystemId = createAssessmentObjectUri(resourceDirectory);
-        final AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, inputResourceLocator);
-        final AssessmentObjectType assessmentObjectType = AssessmentObjectType.ASSESSMENT_TEST;
-        E result;
-        if (assessmentObjectType==AssessmentObjectType.ASSESSMENT_ITEM) {
-            result = (E) assessmentObjectXmlLoader.loadAndResolveAssessmentItem(assessmentObjectSystemId);
-        }
-        else if (assessmentObjectType==AssessmentObjectType.ASSESSMENT_TEST) {
-            result = (E) assessmentObjectXmlLoader.loadAndResolveAssessmentTest(assessmentObjectSystemId);
-        }
-        else {
-            throw new OLATRuntimeException("Unexpected branch " + assessmentObjectType, null);
-        }
+	public ResolvedAssessmentObject<?> loadAndResolveAssessmentObject(File resourceDirectory) {
+		ResolvedAssessmentObject<?> result;
+		if(assessmentTestsAndItemsCache.containsKey(resourceDirectory)) {
+			return assessmentTestsAndItemsCache.get(resourceDirectory);
+		} else {
+			QtiXmlReader qtiXmlReader = new QtiXmlReader(jqtiExtensionManager());
+			ResourceLocator fileResourceLocator = new PathResourceLocator(resourceDirectory.toPath());
+			final ResourceLocator inputResourceLocator = 
+	        		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
+	        final URI assessmentObjectSystemId = createAssessmentObjectUri(resourceDirectory);
+	        final AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, inputResourceLocator);
+	        final AssessmentObjectType assessmentObjectType = AssessmentObjectType.ASSESSMENT_TEST;
+	        
+	        if (assessmentObjectType==AssessmentObjectType.ASSESSMENT_ITEM) {
+	            result = assessmentObjectXmlLoader.loadAndResolveAssessmentItem(assessmentObjectSystemId);
+	        } else if (assessmentObjectType==AssessmentObjectType.ASSESSMENT_TEST) {
+	            result = assessmentObjectXmlLoader.loadAndResolveAssessmentTest(assessmentObjectSystemId);
+	        } else {
+	            throw new OLATRuntimeException("Unexpected branch " + assessmentObjectType, null);
+	        }
+	        
+	        ResolvedAssessmentObject<?> cachedResult = assessmentTestsAndItemsCache.putIfAbsent(resourceDirectory, result);
+	        if(cachedResult != null) {
+	        	result = cachedResult;
+	        }
+		}
         return result;
 	}
 
@@ -385,7 +430,6 @@ public class QTI21ServiceImpl implements QTI21Service {
             throw new OLATRuntimeException("Unexpected Exception serializing state DOM", e);
         }
     }
-
 
 	@Override
 	public UserTestSession finishItemSession(UserTestSession candidateSession, AssessmentResult assessmentResult, Date timestamp) {

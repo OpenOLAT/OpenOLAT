@@ -437,7 +437,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		try {
-		 am.saveScoreEvaluation(this, coachingIdentity, mySelf, scoreEvaluation, userCourseEnvironment, incrementAttempts);
+			am.saveScoreEvaluation(this, coachingIdentity, mySelf, scoreEvaluation, userCourseEnvironment, incrementAttempts);
 		} catch(DBRuntimeException ex) {
 			throw new KnownIssueException("DBRuntimeException - Row was updated or deleted...", 3570, ex);
 		}

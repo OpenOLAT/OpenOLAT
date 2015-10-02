@@ -23,6 +23,7 @@ import java.io.File;
 import java.net.URI;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -41,6 +42,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
@@ -57,7 +62,6 @@ import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.JqtiPlus;
 import uk.ac.ed.ph.jqtiplus.exception.QtiCandidateStateException;
 import uk.ac.ed.ph.jqtiplus.node.result.AbstractResult;
@@ -117,8 +121,6 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private QTI21Service qtiService;
 	@Autowired
 	private AssessmentService assessmentService;
-	@Autowired
-	private JqtiExtensionManager jqtiExtensionManager;
 	
 	/**
 	 * 
@@ -160,7 +162,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		}
 
 		/* Handle immediate end of test session */
-        if (testSessionController.getTestSessionState().isEnded()) {
+        if (testSessionController.getTestSessionState() != null && testSessionController.getTestSessionState().isEnded()) {
         	AssessmentResult assessmentResult = null;
             qtiService.finishTestSession(candidateSession, assessmentResult, ureq.getRequestTimestamp());
         	mainVC = createVelocityContainer("end");
@@ -203,10 +205,6 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		return currentRequestTimestamp;
 	}
 
-	protected CandidateEvent assertSessionEntered(UserTestSession candidateSession) {
-		return lastEvent;
-	}
-
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
@@ -245,7 +243,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				processReviewItem(ureq, qe.getSubCommand());
 				break;
 			case itemSolution:
-				processItemSolution(qe.getSubCommand());
+				processItemSolution(ureq, qe.getSubCommand());
 				break;
 			case testPartNavigation:
 				processTestPartNavigation(ureq);
@@ -291,15 +289,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	
 	private void processReviewItem(UserRequest ureq, String key) {
 		TestPlanNodeKey itemKey = TestPlanNodeKey.fromString(key);
-		Date requestTimestamp = ureq.getRequestTimestamp();
-		
         //Assert.notNull(itemKey, "itemKey");
 
-        /* Get current JQTI state and create JQTI controller */
-        final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-        final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
-        //final TestSessionController testSessionController = candidateDataService.createTestSessionController(mostRecentEvent, notificationRecorder);
-        final TestSessionState testSessionState = testSessionController.getTestSessionState();
+		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+        TestSessionState testSessionState = testSessionController.getTestSessionState();
 
         /* Make sure caller may do this */
         //assertSessionNotTerminated(candidateSession);
@@ -319,7 +312,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         }
 
         /* Record current result state */
-        computeAndRecordTestAssessmentResult(candidateSession, testSessionController, false);
+        computeAndRecordTestAssessmentResult(ureq, false);
 
         /* Record and log event */
         final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession,
@@ -328,13 +321,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
         //candidateAuditLogger.logCandidateEvent(candidateTestEvent);
 	}
 
-	private void processItemSolution(String key) {
+	private void processItemSolution(UserRequest ureq, String key) {
 		TestPlanNodeKey itemKey = TestPlanNodeKey.fromString(key);
 
-        /* Get current JQTI state and create JQTI controller */
         NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-        CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
-        //final TestSessionController testSessionController = candidateDataService.createTestSessionController(mostRecentEvent, notificationRecorder);
         TestSessionState testSessionState = testSessionController.getTestSessionState();
 
         /* Make sure caller may do this */
@@ -356,7 +346,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         }
 
         /* Record current result state */
-        computeAndRecordTestAssessmentResult(candidateSession, testSessionController, false);
+        computeAndRecordTestAssessmentResult(ureq, false);
 
         /* Record and log event */
         CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession,
@@ -368,12 +358,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	//public CandidateSession finishLinearItem(final CandidateSessionContext candidateSessionContext)
     // throws CandidateException {
 	private void processFinish(UserRequest ureq) {
-		
-        /* Get current JQTI state and create JQTI controller */
-        final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-        final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
-        //final TestSessionController testSessionController = candidateDataService.createTestSessionController(mostRecentEvent, notificationRecorder);
-        final TestSessionState testSessionState = testSessionController.getTestSessionState();
+		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+        TestSessionState testSessionState = testSessionController.getTestSessionState();
 		
 		try {
 			if (!testSessionController.mayAdvanceItemLinear()) {
@@ -392,10 +378,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		final Date requestTimestamp = ureq.getRequestTimestamp();
 	    final TestPlanNode nextItemNode = testSessionController.advanceItemLinear(requestTimestamp);
 	    
-	    boolean terminated = nextItemNode == null && testSessionController.findNextEnterableTestPart() == null; 
+	    //boolean terminated = nextItemNode == null && testSessionController.findNextEnterableTestPart() == null; 
 
 	    // Record current result state
-	    final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(candidateSession, testSessionController, terminated);
+	    final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(ureq, false);
 
 	    /* If we ended the testPart and there are now no more available testParts, then finish the session now */
 	    if (nextItemNode==null && testSessionController.findNextEnterableTestPart()==null) {
@@ -427,11 +413,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
         //final CandidateSession candidateSession = candidateSessionContext.getCandidateSession();
         //assertSessionNotTerminated(candidateSession);
 
-        /* Get current JQTI state and create JQTI controller */
-        final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-        final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
-        //final TestSessionController testSessionController = candidateDataService.createTestSessionController(mostRecentEvent, notificationRecorder);
-        final TestSessionState testSessionState = testSessionController.getTestSessionState();
+		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+        TestSessionState testSessionState = testSessionController.getTestSessionState();
 		
 		final Map<Identifier, ResponseData> responseDataMap = new HashMap<Identifier, ResponseData>();
         if (stringResponseMap != null) {
@@ -495,7 +478,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         
         
         /* Record current result state */
-        computeAndRecordTestAssessmentResult(candidateSession, testSessionController, false);
+        computeAndRecordTestAssessmentResult(ureq, false);
 
         /* Save any change to session state */
         candidateSession = qtiService.updateTestSession(candidateSession);
@@ -517,13 +500,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	}
 	
 	private void processAdvanceTestPart(UserRequest ureq) {
-		
-		//final CandidateSessionContext candidateSessionContext = getCandidateSessionContext();
-		
         /* Get current JQTI state and create JQTI controller */
-        final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-        final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
-        final TestSessionState testSessionState = testSessionController.getTestSessionState();
+        NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+        TestSessionState testSessionState = testSessionController.getTestSessionState();
 
         /* Perform action */
         final TestPlanNode nextTestPart;
@@ -563,7 +542,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         boolean terminated = isTerminated();
 
         /* Record current result state */
-        computeAndRecordTestAssessmentResult(candidateSession, testSessionController, terminated);
+        computeAndRecordTestAssessmentResult(ureq, terminated);
 
         /* Record and log event */
         final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession,
@@ -577,17 +556,12 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	}
 	
 	private void processReviewTestPart() {
-		
-        /* Get current JQTI state and create JQTI controller */
-        final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-        final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
-        //final TestSessionController testSessionController = candidateDataService.createTestSessionController(mostRecentEvent, notificationRecorder);
-        final TestSessionState testSessionState = testSessionController.getTestSessionState();
+		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+        TestSessionState testSessionState = testSessionController.getTestSessionState();
 
         /* Make sure caller may do this */
         //assertSessionNotTerminated(candidateSession);
         if (testSessionState.getCurrentTestPartKey()==null || !testSessionState.getCurrentTestPartSessionState().isEnded()) {
-        	
             // candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_REVIEW_TEST_PART);
             logError("CANNOT_REVIEW_TEST_PART", null);
         	return;
@@ -604,12 +578,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 * Exit multi-part tests
 	 */
 	private void processExitTest(UserRequest ureq) {
-
-        /* Get current JQTI state and create JQTI controller */
-        final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-        final CandidateEvent mostRecentEvent = assertSessionEntered(candidateSession);
-        //final TestSessionController testSessionController = candidateDataService.createTestSessionController(mostRecentEvent, notificationRecorder);
-        final TestSessionState testSessionState = testSessionController.getTestSessionState();
+        NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+        TestSessionState testSessionState = testSessionController.getTestSessionState();
 
         /* Perform action */
         final Date currentTimestamp = ureq.getRequestTimestamp();
@@ -629,7 +599,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         candidateSession = qtiService.updateTestSession(candidateSession);
 
         /* Record current result state (final) */
-        computeAndRecordTestAssessmentResult(candidateSession, testSessionController, true);
+        computeAndRecordTestAssessmentResult(ureq, true);
 
         /* Record and log event */
         final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession,
@@ -646,7 +616,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
 
         /* Create fresh JQTI+ state & controller for it */
-        TestSessionController testSessionController = createNewTestSessionStateAndController(notificationRecorder);
+        testSessionController = createNewTestSessionStateAndController(notificationRecorder);
         if (testSessionController == null) {
             return null;
         }
@@ -684,7 +654,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         boolean ended = testSessionState.isEnded();
 
         /* Record current result state */
-        final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(candidateSession, testSessionController, ended);
+        final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(ureq, ended);
 
         /* Handle immediate end of test session */
         if (ended) {
@@ -709,7 +679,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         testSessionControllerSettings.setTemplateProcessingLimit(computeTemplateProcessingLimit());
 
         /* Create controller and wire up notification recorder */
-        final TestSessionController result = new TestSessionController(jqtiExtensionManager,
+        final TestSessionController result = new TestSessionController(qtiService.jqtiExtensionManager(),
                 testSessionControllerSettings, testProcessingMap, testSessionState);
         if (notificationRecorder!=null) {
             result.addNotificationListener(notificationRecorder);
@@ -739,7 +709,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         testSessionControllerSettings.setTemplateProcessingLimit(computeTemplateProcessingLimit());
 
         /* Create controller and wire up notification recorder (if passed) */
-        final TestSessionController result = new TestSessionController(jqtiExtensionManager,
+        final TestSessionController result = new TestSessionController(qtiService.jqtiExtensionManager(),
                 testSessionControllerSettings, testProcessingMap, testSessionState);
         if (notificationRecorder!=null) {
             result.addNotificationListener(notificationRecorder);
@@ -748,9 +718,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
         return result;
     }
 	
-	private AssessmentResult computeAndRecordTestAssessmentResult(UserTestSession candidateSession,
-			TestSessionController testSessionController, boolean submit) {
-		AssessmentResult assessmentResult = computeTestAssessmentResult(candidateSession, testSessionController);
+	private AssessmentResult computeAndRecordTestAssessmentResult(UserRequest ureq, boolean submit) {
+		AssessmentResult assessmentResult = computeTestAssessmentResult(ureq, candidateSession);
 		qtiService.recordTestAssessmentResult(candidateSession, assessmentResult);
 		processOutcomeVariables(assessmentResult.getTestResult(), submit);
 		return assessmentResult;
@@ -778,22 +747,24 @@ public class AssessmentTestDisplayController extends BasicController implements 
             }
         }
         
-        if(score != null) {
+        if(score != null || pass != null) {
         	if(submit) {
-        		outcomesListener.updateOutcomes(score, pass);
-        	} else {
         		outcomesListener.submit(score, pass);
+        	} else {
+        		outcomesListener.updateOutcomes(score, pass);
         	}
         }
     }
 	
-    private AssessmentResult computeTestAssessmentResult(final UserTestSession candidateSession, final TestSessionController testSessionController) {
-    	String baseUrl = "http://localhost:8080/olat";
-        final URI sessionIdentifierSourceId = URI.create(baseUrl);
-        final String sessionIdentifier = "testsession/" + candidateSession.getKey();
-        
-        Date timestamp = new Date();//requestTimestampContext.getCurrentRequestTimestamp();
-        return testSessionController.computeAssessmentResult(timestamp, sessionIdentifier, sessionIdentifierSourceId);
+    private AssessmentResult computeTestAssessmentResult(UserRequest ureq, final UserTestSession testSession) {
+    	List<ContextEntry> entries = getWindowControl().getBusinessControl().getEntries();
+    	OLATResourceable testSessionOres = OresHelper.createOLATResourceableInstance("TestSession", testSession.getKey());
+    	entries.add(BusinessControlFactory.getInstance().createContextEntry(testSessionOres));
+    	String url = BusinessControlFactory.getInstance().getAsAuthURIString(entries, true);
+        final URI sessionIdentifierSourceId = URI.create(url);
+        final String sessionIdentifier = "testsession/" + testSession.getKey();
+        return testSessionController
+        		.computeAssessmentResult(ureq.getRequestTimestamp(), sessionIdentifier, sessionIdentifierSourceId);
     }
 	
 	private TestProcessingMap getTestProcessingMap() {

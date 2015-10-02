@@ -282,8 +282,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 
 	@Override
 	public void updateOutcomes(Float score, Boolean pass) {
-		ScoreEvaluation sceval = new ScoreEvaluation(score, pass, Boolean.FALSE);
-		courseNode.updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), false);
+		//ScoreEvaluation sceval = new ScoreEvaluation(score, pass, Boolean.FALSE);
+		//courseNode.updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), false);
 	}
 
 	@Override
