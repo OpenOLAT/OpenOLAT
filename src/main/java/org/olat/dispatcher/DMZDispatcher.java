@@ -296,12 +296,8 @@ public class DMZDispatcher implements Dispatcher {
 			canRedirect = false;
 		} else if(StringHelper.containsNonWhitespace(request.getParameter("logout"))) {
 			canRedirect = false;
-		} else if(oauthModule.isAdfsRootEnabled()) {
-			if(oauthModule.getRootProvider() != null) {
-				canRedirect = true;
-			} else {
-				canRedirect = false;
-			}
+		} else if(oauthModule.getRootProvider() != null) {
+			canRedirect = true;
 		} else {
 			canRedirect = false;
 		}

@@ -66,6 +66,11 @@ public class LinkedInProvider implements OAuthSPI {
 	public boolean isEnabled() {
 		return oauthModule.isLinkedInEnabled();
 	}
+	
+	@Override
+	public boolean isRootEnabled() {
+		return false;
+	}
 
 	@Override
 	public String getName() {
