@@ -142,9 +142,7 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		if(oauthSPIs != null) {
 			for(OAuthSPI spi:oauthSPIs) {
 				if(spi.isEnabled() && spi.isRootEnabled()) {
-					if(adfsRootEnabled) {
-						rootSpi = spi;
-					}
+					rootSpi = spi;
 				}
 			}
 		}
