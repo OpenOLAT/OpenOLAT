@@ -53,6 +53,11 @@ public class ADFSProvider implements OAuthSPI {
 	}
 
 	@Override
+	public boolean isRootEnabled() {
+		return oauthModule.isAdfsRootEnabled();
+	}
+
+	@Override
 	public Class<? extends Api> getScribeProvider() {
 		return ADFSApi.class;
 	}

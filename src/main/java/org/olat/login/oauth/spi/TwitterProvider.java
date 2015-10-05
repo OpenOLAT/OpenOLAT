@@ -55,6 +55,11 @@ public class TwitterProvider implements OAuthSPI {
 	public boolean isEnabled() {
 		return oauthModule.isTwitterEnabled();
 	}
+	
+	@Override
+	public boolean isRootEnabled() {
+		return false;
+	}
 
 	@Override
 	public Class<? extends Api> getScribeProvider() {

@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.login.oauth.spi.ADFSProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -142,10 +141,8 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		OAuthSPI rootSpi = null;
 		if(oauthSPIs != null) {
 			for(OAuthSPI spi:oauthSPIs) {
-				if(spi.isEnabled() && spi instanceof ADFSProvider) {
-					if(adfsRootEnabled) {
-						rootSpi = spi;
-					}
+				if(spi.isEnabled() && spi.isRootEnabled()) {
+					rootSpi = spi;
 				}
 			}
 		}
