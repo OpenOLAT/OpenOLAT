@@ -20,7 +20,6 @@
 package org.olat.ims.qti21.ui.editor;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.net.URI;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -55,7 +54,6 @@ import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
-import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 
 /**
  * Assessment test editor and composer.
@@ -84,8 +82,6 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	@Autowired
 	private QTI21Service qtiService;
-	@Autowired
-	private QtiSerializer qtiSerializer;
 	
 	public AssessmentTestComposerController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar,
 			RepositoryEntry testEntry) {
@@ -178,14 +174,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private void doSaveAssessmentTest() {
 		URI testURI = resolvedAssessmentTest.getTestLookup().getSystemId();
 		File testFile = new File(testURI);
-		AssessmentTest assessmentTest = resolvedAssessmentTest.getTestLookup().getRootNodeHolder().getRootNode();
-
-		try(FileOutputStream out = new FileOutputStream(testFile)) {
-			qtiSerializer.serializeJqtiObject(assessmentTest, out);	
-		} catch(Exception e) {
-			logError("", e);
-			showError("serialize.error");
-		}
+		qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
 	}
 	
 	private void doUpdate(AssessmentSection section) {
@@ -198,8 +187,6 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				menuTree.setDirty(true);
 			}
 		}
-		
-		
 	}
 	
 	private void partEditorFactory(UserRequest ureq, TreeNode selectedNode) {

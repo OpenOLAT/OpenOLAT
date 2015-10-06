@@ -80,6 +80,8 @@ public interface QTI21Service {
 	
 	public <E extends ResolvedAssessmentObject<?>> E loadAndResolveAssessmentObject(File resourceDirectory);
 	
+	public boolean updateAssesmentObject(File resourceFile, ResolvedAssessmentObject<?> resolvedAssessmentObject);
+	
 	
 	public UserTestSession createTestSession(Identity identity, AssessmentEntry assessmentEntry,
 			RepositoryEntry entry, String subIdent, RepositoryEntry testEntry,

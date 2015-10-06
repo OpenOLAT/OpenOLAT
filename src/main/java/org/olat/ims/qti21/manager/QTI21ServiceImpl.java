@@ -69,6 +69,7 @@ import org.w3c.dom.Document;
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionPackage;
 import uk.ac.ed.ph.jqtiplus.QtiConstants;
+import uk.ac.ed.ph.jqtiplus.node.AssessmentObject;
 import uk.ac.ed.ph.jqtiplus.node.AssessmentObjectType;
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.result.AbstractResult;
@@ -78,7 +79,9 @@ import uk.ac.ed.ph.jqtiplus.node.result.OutcomeVariable;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationRecorder;
 import uk.ac.ed.ph.jqtiplus.reading.AssessmentObjectXmlLoader;
 import uk.ac.ed.ph.jqtiplus.reading.QtiXmlReader;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentObject;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
@@ -207,6 +210,30 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	        }
 		}
         return result;
+	}
+	
+	@Override
+	public boolean updateAssesmentObject(File resourceFile, ResolvedAssessmentObject<?> resolvedAssessmentObject) {
+		AssessmentObject assessmentObject;
+		if(resolvedAssessmentObject instanceof ResolvedAssessmentItem) {
+			assessmentObject = ((ResolvedAssessmentItem)resolvedAssessmentObject)
+					.getItemLookup().getRootNodeHolder().getRootNode();
+		} else if(resolvedAssessmentObject instanceof ResolvedAssessmentTest) {
+			assessmentObject = ((ResolvedAssessmentTest)resolvedAssessmentObject)
+					.getTestLookup().getRootNodeHolder().getRootNode();
+		} else {
+			return false;
+		}
+
+		try(FileOutputStream out = new FileOutputStream(resourceFile)) {
+			qtiSerializer().serializeJqtiObject(assessmentObject, out);
+			//TODO qti
+			assessmentTestsAndItemsCache.remove(resourceFile);
+			return true;
+		} catch(Exception e) {
+			log.error("", e);
+			return false;
+		}
 	}
 
 	@Override

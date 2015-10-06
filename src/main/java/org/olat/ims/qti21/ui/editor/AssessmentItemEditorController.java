@@ -20,7 +20,6 @@
 package org.olat.ims.qti21.ui.editor;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.net.URI;
 import java.util.List;
 
@@ -34,6 +33,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
@@ -45,7 +45,6 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
-import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 
 /**
  * 
@@ -64,7 +63,7 @@ public class AssessmentItemEditorController extends BasicController {
 	private AssessmentItemDisplayController displayCtrl;
 	
 	@Autowired
-	private QtiSerializer qtiSerializer;
+	private QTI21Service qtiService;
 	@Autowired
 	private AssessmentService assessmentService;
 	
@@ -150,13 +149,6 @@ public class AssessmentItemEditorController extends BasicController {
 	private void doSaveAssessmentItem() {
 		URI itemUri = resolvedAssessmentItem.getItemLookup().getSystemId();
 		File itemFile = new File(itemUri);
-		AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
-		
-		try(FileOutputStream out = new FileOutputStream(itemFile)) {
-			qtiSerializer.serializeJqtiObject(assessmentItem, out);	
-		} catch(Exception e) {
-			logError("", e);
-			showError("serialize.error");
-		}
+		qtiService.updateAssesmentObject(itemFile, resolvedAssessmentItem);
 	}
 }
