@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.Query;
 import javax.persistence.LockModeType;
 
 import org.olat.basesecurity.GroupRoles;
@@ -481,6 +482,30 @@ public class GTAManagerImpl implements GTAManager {
 			numOfDeletedObjects = 0;
 		}
 		return numOfDeletedObjects;
+	}
+
+	@Override
+	public int deleteAllTaskLists(RepositoryEntryRef entry) {
+		String q = "select tasks from gtatasklist tasks where tasks.entry.key=:entryKey";
+		List<TaskList> taskLists = dbInstance.getCurrentEntityManager().createQuery(q, TaskList.class)
+			.setParameter("entryKey", entry.getKey())
+			.getResultList();
+		
+		String deleteTasks = "delete from gtatask as task where task.taskList.key=:taskListKey";
+		Query deleteTaskQuery = dbInstance.getCurrentEntityManager().createQuery(deleteTasks);
+		
+		int numOfDeletedObjects = 0;
+		for(TaskList taskList:taskLists) {
+			int numOfTasks = deleteTaskQuery.setParameter("taskListKey", taskList.getKey()).executeUpdate();
+			numOfDeletedObjects += numOfTasks;
+		}
+		
+		String deleteTaskLists = "delete from gtatasklist as tasks where tasks.entry.key=:entryKey";
+		numOfDeletedObjects +=  dbInstance.getCurrentEntityManager()
+				.createQuery(deleteTaskLists)
+				.setParameter("entryKey", entry.getKey())
+				.executeUpdate();
+		return numOfDeletedObjects;	
 	}
 
 	@Override

@@ -112,6 +112,7 @@ import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.TACourseNode;
+import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
 import org.olat.course.run.RunMainController;
@@ -298,7 +299,7 @@ public class CourseFactory extends BasicManager {
 	 * 
 	 * @param res
 	 */
-	public static void deleteCourse(OLATResource res) {
+	public static void deleteCourse(RepositoryEntry entry, OLATResource res) {
 		final long start = System.currentTimeMillis();
 		log.info("deleteCourse: starting to delete course. res="+res);
 
@@ -321,6 +322,7 @@ public class CourseFactory extends BasicManager {
 			TreeVisitor tv = new TreeVisitor(visitor, course.getRunStructure().getRootNode(), true);
 			tv.visitAll();
 		}
+		
 
 		// delete assessment notifications
 		OLATResourceable assessmentOres = OresHelper.createOLATResourceableInstance(CourseModule.ORES_COURSE_ASSESSMENT, res.getResourceableId());
@@ -348,6 +350,8 @@ public class CourseFactory extends BasicManager {
 		calManager.deleteCourseCalendar(res);
 		// delete IM messages
 		CoreSpringFactory.getImpl(InstantMessagingService.class).deleteMessages(res);
+		//delete tasks
+		CoreSpringFactory.getImpl(GTAManager.class).deleteAllTaskLists(entry);
 
 		// cleanup cache
 		removeFromCache(res.getResourceableId());

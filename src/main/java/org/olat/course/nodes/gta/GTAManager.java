@@ -164,7 +164,20 @@ public interface GTAManager {
 	
 	public int updateTaskName(TaskList taskList, String currentTaskName, String newTaskName);
 	
+	/**
+	 * Delete the task list and the tasks of the specified course element of the course.
+	 * @param entry The repository entry of the course
+	 * @param cNode The course element
+	 * @return
+	 */
 	public int deleteTaskList(RepositoryEntryRef entry, GTACourseNode cNode);
+	
+	/**
+	 * Delete all the task list and tasks of a course specified by its repository entry.
+	 * @param entry
+	 * @return
+	 */
+	public int deleteAllTaskLists(RepositoryEntryRef entry);
 	
 	
 	public Membership getMembership(IdentityRef identity, RepositoryEntryRef entry, GTACourseNode cNode);
