@@ -176,7 +176,7 @@ public interface RepositoryHandler {
 	 * @param wControl
 	 * @return true if delete successfull, false if not.
 	 */
-	public boolean cleanupOnDelete(OLATResourceable res);
+	public boolean cleanupOnDelete(RepositoryEntry entry, OLATResourceable res);
 
 	/**
 	 * Called if the repository entry referencing the given Resourceable will be deleted

@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.course.nodes.GTACourseNode;
@@ -39,6 +40,7 @@ import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.vitero.model.GroupRole;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +61,8 @@ public class GTAManagerTest extends OlatTestCase {
 	private BusinessGroupDAO businessGroupDao;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	
 	@Test
 	public void createIfNotExists() {
@@ -465,6 +469,123 @@ public class GTAManagerTest extends OlatTestCase {
 		List<Task> notDeletedAssignedTasks2 = gtaManager.getTasks(participant, re, node2);
 		Assert.assertNotNull(notDeletedAssignedTasks2);
 		Assert.assertEquals(1, notDeletedAssignedTasks2.size());
+	}
+	
+	@Test
+	public void deleteAllTaskLists() {
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-9");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-10");
+		dbInstance.commit();
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
+		repositoryEntryRelationDao.addRole(coach, re, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(participant, re, GroupRoles.participant.name());
+
+		GTACourseNode node = new GTACourseNode();
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+		File taskFile = new File("bg.txt");
+		Assert.assertNotNull(tasks);
+		dbInstance.commit();
+		
+		//select
+		AssignmentResponse response = gtaManager.selectTask(participant, tasks, node, taskFile);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(response);
+		
+		//check that there is tasks
+		List<Task> assignedTasks = gtaManager.getTasks(participant, re, node);
+		Assert.assertNotNull(assignedTasks);
+		Assert.assertEquals(1, assignedTasks.size());
+		
+		//delete
+		int numOfDeletedObjects = gtaManager.deleteAllTaskLists(re);
+		Assert.assertEquals(2, numOfDeletedObjects);
+		dbInstance.commitAndCloseSession();
+		
+		//check that there isn't any tasks
+		List<Task> deletedAssignedTasks = gtaManager.getTasks(participant, re, node);
+		Assert.assertNotNull(deletedAssignedTasks);
+		Assert.assertEquals(0, deletedAssignedTasks.size());
+	}
+	
+	/**
+	 * Create 2 pseudo courses in a course, and delete the task of the first course
+	 * and check that the task of second are always there.
+	 * 
+	 */
+	@Test
+	public void deleteAllTaskLists_parano() {
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-20");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-21");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-22");
+		
+		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry("", false);
+		repositoryEntryRelationDao.addRole(coach, re1, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(participant1, re1, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(participant2, re1, GroupRoles.participant.name());
+		
+		//course 1
+		GTACourseNode node1 = new GTACourseNode();
+		node1.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		TaskList tasks1 = gtaManager.createIfNotExists(re1, node1);
+		File taskFile = new File("bg.txt");
+		Assert.assertNotNull(tasks1);
+		dbInstance.commit();
+
+		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry("", false);
+		repositoryEntryRelationDao.addRole(coach, re2, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(participant1, re2, GroupRoles.participant.name());
+
+		//participant 2 course 2
+		GTACourseNode node2 = new GTACourseNode();
+		node2.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		TaskList tasks2 = gtaManager.createIfNotExists(re2, node2);
+		Assert.assertNotNull(tasks2);
+		dbInstance.commit();
+		
+		//participant 1 and 2 select course 1
+		AssignmentResponse response1_1 = gtaManager.selectTask(participant1, tasks1, node1, taskFile);
+		AssignmentResponse response1_2 = gtaManager.selectTask(participant2, tasks1, node1, taskFile);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(response1_1);
+		Assert.assertNotNull(response1_2);
+
+		//participant 2 select node 2
+		AssignmentResponse response2_2 = gtaManager.selectTask(participant2, tasks2, node2, taskFile);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(response2_2);
+		
+		//check that there is tasks
+		List<Task> assignedTasks1_1 = gtaManager.getTasks(participant1, re1, node1);
+		Assert.assertNotNull(assignedTasks1_1);
+		Assert.assertEquals(1, assignedTasks1_1.size());
+		
+		List<Task> assignedTasks1_2 = gtaManager.getTasks(participant2, re1, node1);
+		Assert.assertNotNull(assignedTasks1_2);
+		Assert.assertEquals(1, assignedTasks1_2.size());
+		
+		List<Task> assignedTasks2_2 = gtaManager.getTasks(participant2, re2, node2);
+		Assert.assertNotNull(assignedTasks2_2);
+		Assert.assertEquals(1, assignedTasks2_2.size());
+		
+		//delete
+		int numOfDeletedObjects = gtaManager.deleteAllTaskLists(re1);
+		Assert.assertEquals(3, numOfDeletedObjects);
+		dbInstance.commitAndCloseSession();
+		
+		//check that there isn't any tasks in node 1
+		List<Task> deletedAssignedTasks1_1 = gtaManager.getTasks(participant1, re1, node1);
+		Assert.assertNotNull(deletedAssignedTasks1_1);
+		Assert.assertEquals(0, deletedAssignedTasks1_1.size());
+		
+		List<Task> deletedAssignedTasks1_2 = gtaManager.getTasks(participant2, re1, node1);
+		Assert.assertNotNull(deletedAssignedTasks1_2);
+		Assert.assertEquals(0, deletedAssignedTasks1_2.size());
+		
+		//but always in node 2
+		List<Task> notDeletedAssignedTasks2_2 = gtaManager.getTasks(participant2, re2, node2);
+		Assert.assertNotNull(notDeletedAssignedTasks2_2);
+		Assert.assertEquals(1, notDeletedAssignedTasks2_2.size());
 	}
 	
 	@Test

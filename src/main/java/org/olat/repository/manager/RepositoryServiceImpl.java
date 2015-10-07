@@ -327,7 +327,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 		
 		// inform handler to do any cleanup work... handler must delete the
 		// referenced resourceable a swell.
-		handler.cleanupOnDelete(resource);
+		handler.cleanupOnDelete(entry, resource);
 		
 		dbInstance.commit();
 

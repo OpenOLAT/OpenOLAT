@@ -60,7 +60,7 @@ public abstract class FileHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public boolean cleanupOnDelete(OLATResourceable res) {
+	public boolean cleanupOnDelete(RepositoryEntry entry,  OLATResourceable res) {
 		// notify all current users of this resource (content packaging file resource) that it will be deleted now.
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new OLATResourceableJustBeforeDeletedEvent(res), res);
 		FileResourceManager.getInstance().deleteFileResource(res);
