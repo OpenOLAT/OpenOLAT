@@ -26,7 +26,9 @@
 package org.olat.registration;
 
 import java.text.DateFormat;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.Authentication;
@@ -83,6 +85,8 @@ public class PwChangeController extends BasicController {
 	
 	@Autowired
 	private RegistrationManager rm;
+	@Autowired
+	private UserManager userManager;
 	
 	/**
 	 * Controller to change a user's password.
@@ -167,6 +171,7 @@ public class PwChangeController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == pwf) {
 			// pwchange Form was clicked
@@ -179,9 +184,14 @@ public class PwChangeController extends BasicController {
 				pwchangeHomelink.setCustomEnabledLinkCSS("btn btn-primary");
 				//pwf.setVisible(false);
 				pwarea.setVisible(false);
-				Identity identToChange = UserManager.getInstance().findIdentityByEmail(tempKey.getEmailAddress());
-				if(identToChange == null || !pwf.saveFormData(identToChange)) {
+				List<Identity> identToChanges = userManager.findIdentitiesByEmail(Collections.singletonList(tempKey.getEmailAddress()));
+				if(identToChanges == null || identToChanges.size() == 0 || identToChanges.size() > 1) {
 					getWindowControl().setError(translate("pwchange.failed"));
+				} else {
+					Identity identToChange = identToChanges.get(0);
+					if(!pwf.saveFormData(identToChange)) {
+						getWindowControl().setError(translate("pwchange.failed"));
+					}
 				}
 				rm.deleteTemporaryKeyWithId(tempKey.getRegistrationKey());				
 			} else if (event == Event.CANCELLED_EVENT) {
@@ -213,7 +223,10 @@ public class PwChangeController extends BasicController {
 					// Try fallback with email, maybe user used his email address instead
 					// only do this, if its really an email, may lead to multiple results else.
 					if (MailHelper.isValidEmailAddress(emailOrUsername)) {
-						identity = UserManager.getInstance().findIdentityByEmail(emailOrUsername);
+						List<Identity> identities = userManager.findIdentitiesByEmail(Collections.singletonList(emailOrUsername));
+						if(identities.size() == 1) {
+							identity = identities.get(0);
+						}
 					}
 				}
 				if (identity != null) {
