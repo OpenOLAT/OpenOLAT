@@ -280,7 +280,7 @@ public class SearchResultsImpl implements SearchResults {
 			String title = doc.get(AbstractOlatDocument.TITLE_FIELD_NAME);
 			title = title.trim();
 			if(title.length() > 128) {
-				title = FilterFactory.getHtmlTagsFilter().filter(title);
+				title = FilterFactory.getHtmlTagAndDescapingFilter().filter(title);
 				title = Formatter.truncate(title, 128);
 			}
 			tokenStream = analyzer.tokenStream(AbstractOlatDocument.TITLE_FIELD_NAME, new StringReader(title));
