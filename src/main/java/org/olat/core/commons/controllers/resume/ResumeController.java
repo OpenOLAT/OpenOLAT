@@ -103,7 +103,8 @@ public class ResumeController extends FormBasicController implements SupportsAft
 
 		boolean interception = false;
 		if(isREST(ureq)) {
-			//do nothing
+			String url = getRESTRedirectURL(ureq);
+			redirect(ureq, url);
 		} else if(!historyModule.isResumeEnabled()) {
 			String url = toUrl(getLandingBC(ureq));
 			redirect(ureq, url);
@@ -169,6 +170,18 @@ public class ResumeController extends FormBasicController implements SupportsAft
 		if(usess.getEntry("AuthDispatcher:businessPath") != null) return true;
 		if(usess.getEntry("AuthDispatcher:entryUrl") != null) return true;
 		return false;
+	}
+	
+	private String getRESTRedirectURL(UserRequest ureq) {
+		UserSession usess = ureq.getUserSession();
+		
+		String url = (String)usess.getEntry("AuthDispatcher:businessPath");
+		if(url == null) {
+			url = (String)usess.getEntry("AuthDispatcher:entryUrl");
+		}
+		
+		List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(url);
+		return BusinessControlFactory.getInstance().getAsRestPart(ces, true);
 	}
 
 	@Override
