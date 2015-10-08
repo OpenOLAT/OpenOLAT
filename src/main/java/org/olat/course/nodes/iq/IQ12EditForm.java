@@ -51,7 +51,9 @@ import org.olat.modules.ModuleConfiguration;
  * @author Mike Stock
  */
 public class IQ12EditForm extends FormBasicController {
-
+	
+	private static final String[] correctionModeKeys = new String[] { "auto", "manual" };
+	
 	private SelectionElement enableMenu;
 	private SelectionElement displayMenu;
 	private SelectionElement displayScoreProgress;
@@ -60,6 +62,7 @@ public class IQ12EditForm extends FormBasicController {
 	private SelectionElement autoEnumerateChoices;
 	private SelectionElement provideMemoField;
 	private SingleSelection sequence;
+	private SingleSelection correctionModeEl;
 	private SelectionElement enableCancel;
 	private SelectionElement enableSuspend;
 	private SingleSelection summary;
@@ -79,9 +82,11 @@ public class IQ12EditForm extends FormBasicController {
 	
 	private String[] menuRenderOptKeys, menuRenderOptValues;
 	private String[] sequenceKeys, sequenceValues;
+	private String[] correctionModeValues;
 	private String configKeyType;
 	
 	private boolean isAssessment, isSelfTest, isSurvey;
+	private final boolean hasEssay;
 	
 	/**
 	 * Constructor for the qti configuration form
@@ -89,9 +94,10 @@ public class IQ12EditForm extends FormBasicController {
 	 * @param wControl
 	 * @param modConfig
 	 */
-	IQ12EditForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig) {
+	IQ12EditForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig, boolean hasEssay) {
 		super (ureq, wControl);
 		this.modConfig = modConfig;
+		this.hasEssay = hasEssay;
 		
 		configKeyType = (String)modConfig.get(IQEditController.CONFIG_KEY_TYPE);
 		
@@ -114,6 +120,10 @@ public class IQ12EditForm extends FormBasicController {
 		sequenceValues = new String[] {
 				translate("qti.form.sequence.item"),
 				translate("qti.form.sequence.section")
+		};
+		correctionModeValues = new String[]{
+				translate("correction.auto"),
+				translate("correction.manual")
 		};
 		
 		initForm(ureq);
@@ -154,6 +164,9 @@ public class IQ12EditForm extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		modConfig.set(IQEditController.CONFIG_KEY_DISPLAYMENU, new Boolean(isDisplayMenu()));
 		modConfig.set(IQEditController.CONFIG_FULLWINDOW, new Boolean(isFullWindow()));
+		if(correctionModeEl.isOneSelected()) {
+			modConfig.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, correctionModeEl.getSelectedKey());
+		}
 		
 		if (isDisplayMenu()) {
 			modConfig.set(IQEditController.CONFIG_KEY_RENDERMENUOPTION, isMenuRenderSectionsOnly());
@@ -220,6 +233,23 @@ public class IQ12EditForm extends FormBasicController {
 			attempts.setVisible(false);
 			blockAfterSuccess.select("xx", false);
 			blockAfterSuccess.setVisible(false);
+		}
+		
+		correctionModeEl = uifactory.addRadiosVertical("correction.mode", "correction.mode", formLayout, correctionModeKeys, correctionModeValues);
+		String mode = modConfig.getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
+		boolean selected = false;
+		for(String correctionModeKey:correctionModeKeys) {
+			if(correctionModeKey.equals(mode)) {
+				correctionModeEl.select(correctionModeKey, true);
+				selected = true;
+			}
+		}
+		if(!selected) {
+			if(hasEssay) {
+				correctionModeEl.select(correctionModeKeys[1], true);
+			} else {
+				correctionModeEl.select(correctionModeKeys[0], true);
+			}
 		}
 		
 		Boolean fullWindow = (Boolean) modConfig.get(IQEditController.CONFIG_FULLWINDOW);

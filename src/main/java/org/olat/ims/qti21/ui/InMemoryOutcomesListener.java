@@ -49,7 +49,7 @@ public class InMemoryOutcomesListener implements OutcomesListener {
 	}
 
 	@Override
-	public void submit(Float submittedScore, Boolean submittedPass) {
+	public void submit(Float submittedScore, Boolean submittedPass, Long assessmentId) {
 		score = submittedScore;
 		pass = submittedPass;
 	}

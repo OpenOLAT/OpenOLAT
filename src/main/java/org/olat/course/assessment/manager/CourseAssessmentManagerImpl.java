@@ -225,6 +225,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		assessmentEntry.setPassed(passed);
 		assessmentEntry.setFullyAssessed(scoreEvaluation.getFullyAssessed());
 		assessmentEntry.setAssessmentId(assessmentId);
+		if(scoreEvaluation.getAssessmentStatus() != null) {
+			assessmentEntry.setAssessmentStatus(scoreEvaluation.getAssessmentStatus());
+		}
 		Integer attempts = null;
 		if(incrementUserAttempts) {
 			attempts = assessmentEntry.getAttempts() == null ? 1 :assessmentEntry.getAttempts().intValue() + 1;

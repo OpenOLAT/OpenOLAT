@@ -120,6 +120,11 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	//</OLATCE-2009>
 	/** Test in full window mode*/
 	public final static String CONFIG_FULLWINDOW = "fullwindow";
+	/** Enable manual correction */
+	public final static String CONFIG_CORRECTION_MODE = "correctionMode";
+	
+	public final static String CORRECTION_AUTO = "auto";
+	public final static String CORRECTION_MANUAL = "manual";
 
 	public static final String CONFIG_KEY_DATE_DEPENDENT_RESULTS = "dateDependentResults";
 	public static final String CONFIG_KEY_RESULTS_START_DATE = "resultsStartDate";

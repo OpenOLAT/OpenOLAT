@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -54,6 +55,10 @@ public interface AssessmentEntry {
 	public Boolean getPassed();
 
 	public void setPassed(Boolean passed);
+	
+	public AssessmentEntryStatus getAssessmentStatus();
+	
+	public void setAssessmentStatus(AssessmentEntryStatus assessmentStatus);
 
 	public Boolean getFullyAssessed();
 

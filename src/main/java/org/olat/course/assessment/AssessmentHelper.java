@@ -79,7 +79,7 @@ public class AssessmentHelper {
 	public static final float MAX_SCORE_SUPPORTED = 10000f;
 	/** Lowest score value supported by OLAT * */
 	public static final float MIN_SCORE_SUPPORTED = -10000f;
-	//fxdiff VCRP-4: assessment overview with max score
+
 	private final static DecimalFormat scoreFormat = new DecimalFormat("#0.###", new DecimalFormatSymbols(Locale.ENGLISH));
 
 	/**

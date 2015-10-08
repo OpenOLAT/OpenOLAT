@@ -36,6 +36,6 @@ public interface OutcomesListener {
 	public void updateOutcomes(Float score, Boolean pass);
 	
 	
-	public void submit(Float score, Boolean pass);
+	public void submit(Float score, Boolean pass, Long assessmentId);
 
 }

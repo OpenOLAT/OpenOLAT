@@ -311,20 +311,10 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 
 	@Override
 	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		Boolean passed = null;
-		Float score = null;
 		if (hasPassedConfigured() || hasScoreConfigured()) {
-			AssessmentEntry entry = getUserAssessmentEntry(userCourseEnv);
-			if(entry != null) {
-				if (hasPassedConfigured()) {
-					passed = entry.getPassed();
-				}
-				if (hasScoreConfigured() && entry.getScore() != null) {
-					score = entry.getScore().floatValue();
-				}
-			}
+			return getUserScoreEvaluation(getUserAssessmentEntry(userCourseEnv));
 		}
-		return new ScoreEvaluation(score, passed);
+		return ScoreEvaluation.EMPTY_EVALUATION;
 	}
 
 	@Override

@@ -120,9 +120,11 @@ public class AssessmentIdentitiesCourseController extends FormBasicController {
 		}
 	
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseCols.passed, new PassedCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseCols.certificate, new DownloadCertificateCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseCols.score));
+		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseCols.lastScoreUpdate));
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseCols.certificate, new DownloadCertificateCellRenderer()));
 		
 		usersTableModel = new AssessmentIdentitiesCourseTableModel(columnsModel); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", usersTableModel, 20, false, getTranslator(), formLayout);

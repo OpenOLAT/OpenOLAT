@@ -58,6 +58,7 @@ import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.QTI21Event;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -177,7 +178,6 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	
 	@Override
 	protected void doDispose() {
-		
 		singleUserEventCenter.deregisterFor(this, assessmentInstanceOres);
 		singleUserEventCenter.deregisterFor(this, InstantMessagingService.TOWER_EVENT_ORES);
 		
@@ -287,8 +287,14 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	}
 
 	@Override
-	public void submit(Float score, Boolean pass) {
-		ScoreEvaluation sceval = new ScoreEvaluation(score, pass, Boolean.TRUE);
+	public void submit(Float score, Boolean pass, Long assessmentId) {
+		AssessmentEntryStatus assessmentStatus;
+		if(IQEditController.CORRECTION_MANUAL.equals(courseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE))) {
+			assessmentStatus = AssessmentEntryStatus.inReview;
+		} else {
+			assessmentStatus = AssessmentEntryStatus.done;
+		}
+		ScoreEvaluation sceval = new ScoreEvaluation(score, pass, assessmentStatus, Boolean.TRUE, assessmentId);
 		courseNode.updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), true);
 	}
 }

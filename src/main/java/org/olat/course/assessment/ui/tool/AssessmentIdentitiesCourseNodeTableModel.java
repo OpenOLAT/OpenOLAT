@@ -77,6 +77,7 @@ public class AssessmentIdentitiesCourseNodeTableModel extends DefaultFlexiTableD
 				}
 				case status: return "";
 				case passed: return aEntry == null ? null : aEntry.getPassed();
+				case assessmentStatus: return aEntry == null ? null : aEntry.getAssessmentStatus();
 				case initialLaunchDate: return aEntry == null ? null : aEntry.getCreationDate();
 				case lastScoreUpdate: return aEntry == null ? null : aEntry.getLastModified();
 			}
@@ -98,6 +99,7 @@ public class AssessmentIdentitiesCourseNodeTableModel extends DefaultFlexiTableD
 		max("table.header.max"),
 		status("table.header.status"),
 		passed("table.header.passed"),
+		assessmentStatus("table.header.assessmentStatus"),
 		initialLaunchDate("table.header.initialLaunchDate"),
 		lastScoreUpdate("table.header.lastScoreDate");
 		

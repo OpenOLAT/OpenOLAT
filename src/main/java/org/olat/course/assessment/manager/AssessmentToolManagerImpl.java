@@ -35,6 +35,7 @@ import org.olat.course.assessment.model.CourseStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.model.UserCourseInfosImpl;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -250,27 +251,54 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	}
 	
 	@Override
-	public List<AssessmentEntry> getAssessmentEntries(SearchAssessedIdentityParams params) {
+	public List<AssessmentEntry> getAssessmentEntries(Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select infos from assessmententry infos where infos.repositoryEntry.key=:entryKey");
+		sb.append("select aentry from assessmententry aentry")
+		  .append(" where aentry.repositoryEntry.key=:repoEntryKey");
 		if(params.getReferenceEntry() != null) {
-			sb.append(" and infos.referenceEntry.key=:referenceKey");
+			sb.append(" and aentry.referenceEntry.key=:referenceKey");
 		}
 		if(params.getSubIdent() != null) {
-			sb.append(" and infos.subIdent=:subIdent");
+			sb.append(" and aentry.subIdent=:subIdent");
 		}
+		if(status != null) {
+			sb.append(" and aentry.status=:assessmentStatus");
+		}
+		sb.append(" and (aentry.identity in");
+		if(params.isAdmin()) {
+			sb.append(" (select participant.identity from repoentrytogroup as rel, bgroupmember as participant")
+	          .append("    where rel.entry.key=:repoEntryKey and rel.group=participant.group")
+	          .append("      and participant.role='").append(GroupRoles.participant.name()).append("'")
+	          .append("  )");
+			if(params.isNonMembers()) {
+				sb.append(" or aentry.identity not in (select membership.identity from repoentrytogroup as rel, bgroupmember as membership")
+		          .append("    where rel.entry.key=:repoEntryKey and rel.group=membership.group and membership.identity=aentry.identity")
+		          .append(" )");
+			}
+		} else if(params.isBusinessGroupCoach() || params.isRepositoryEntryCoach()) {
+			sb.append(" (select participant.identity from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
+	          .append("    where rel.entry.key=:repoEntryKey")
+	          .append("      and rel.group=coach.group and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey")
+	          .append("      and rel.group=participant.group and participant.role='").append(GroupRoles.participant.name()).append("'")
+	          .append("  )");
+		}
+		sb.append(" )");
 		
 		TypedQuery<AssessmentEntry> list = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), AssessmentEntry.class)
-			.setParameter("entryKey", params.getEntry().getKey());
+			.setParameter("repoEntryKey", params.getEntry().getKey());
 		if(params.getReferenceEntry() != null) {
 			list.setParameter("referenceKey", params.getReferenceEntry().getKey());
 		}
 		if(params.getSubIdent() != null) {
 			list.setParameter("subIdent", params.getSubIdent());
 		}
+		if(!params.isAdmin()) {
+			list.setParameter("identityKey", coach.getKey());
+		}
+		if(status != null) {
+			list.setParameter("assessmentStatus", status.name());
+		}
 		return list.getResultList();
-		
 	}
-	
 }

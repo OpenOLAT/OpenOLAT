@@ -25,6 +25,7 @@ import org.olat.core.id.Identity;
 import org.olat.course.assessment.model.CourseStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
  * The manager taylored for the assessment tool.
@@ -40,6 +41,6 @@ public interface AssessmentToolManager {
 	
 	public List<Identity> getAssessedIdentities(Identity coach, SearchAssessedIdentityParams params);
 	
-	public List<AssessmentEntry> getAssessmentEntries(SearchAssessedIdentityParams params);
+	public List<AssessmentEntry> getAssessmentEntries(Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status);
 
 }

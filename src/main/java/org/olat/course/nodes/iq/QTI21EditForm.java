@@ -22,6 +22,7 @@ package org.olat.course.nodes.iq;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -38,24 +39,49 @@ public class QTI21EditForm extends FormBasicController {
 	
 
 	private SelectionElement fullWindowEl;
+	private SingleSelection correctionModeEl;
 	
-	private ModuleConfiguration modConfig;
+	private final ModuleConfiguration modConfig;
+	private final boolean needManulCorrection;
 	
-	public QTI21EditForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig) {
+	private static final String[] correctionModeKeys = new String[]{ "auto", "manual" };
+	
+	public QTI21EditForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig, boolean needManulCorrection) {
 		super(ureq, wControl);
 		
 		this.modConfig = modConfig;
+		this.needManulCorrection = needManulCorrection;
 		
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		String [] correctionModeValues = new String[]{
+			translate("correction.auto"),
+			translate("correction.manual")
+		};
+		correctionModeEl = uifactory.addRadiosVertical("correction.mode", "correction.mode", formLayout, correctionModeKeys, correctionModeValues);
+		String mode = modConfig.getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
+		boolean selected = false;
+		for(String correctionModeKey:correctionModeKeys) {
+			if(correctionModeKey.equals(mode)) {
+				correctionModeEl.select(correctionModeKey, true);
+				selected = true;
+			}
+		}
+		if(!selected) {
+			if(needManulCorrection) {
+				correctionModeEl.select(correctionModeKeys[1], true);
+			} else {
+				correctionModeEl.select(correctionModeKeys[0], true);
+			}
+		}
+		
 		boolean fullWindow = modConfig.getBooleanSafe(IQEditController.CONFIG_FULLWINDOW);
 		fullWindowEl = uifactory.addCheckboxesHorizontal("fullwindow", "qti.form.fullwindow", formLayout, new String[]{"x"}, new String[]{""});
 		fullWindowEl.select("x", fullWindow);
 		
-		uifactory.addSpacerElement("submitSpacer", formLayout, true);
 		uifactory.addFormSubmitButton("submit", formLayout);
 	}
 	
@@ -67,12 +93,9 @@ public class QTI21EditForm extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		modConfig.setBooleanEntry(IQEditController.CONFIG_FULLWINDOW, fullWindowEl.isSelected(0));
-
+		if(correctionModeEl.isOneSelected()) {
+			modConfig.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, correctionModeEl.getSelectedKey());
+		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
-
-
-	
-	
-
 }

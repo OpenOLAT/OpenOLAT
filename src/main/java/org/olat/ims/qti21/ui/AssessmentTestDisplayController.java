@@ -116,7 +116,6 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	
 	private OutcomesListener outcomesListener;
 
-
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
@@ -149,7 +148,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), entry, subIdent, testEntry);
 		
 		UserTestSession lastSession = qtiService.getResumableTestSession(getIdentity(), entry, subIdent, testEntry);
-		if(lastSession == null || true) {
+		if(lastSession == null) {
 			candidateSession = qtiService.createTestSession(getIdentity(), assessmentEntry, entry, subIdent, testEntry, false);
 			testSessionController = enterSession(ureq);
 		} else {
@@ -749,7 +748,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         
         if(score != null || pass != null) {
         	if(submit) {
-        		outcomesListener.submit(score, pass);
+        		outcomesListener.submit(score, pass, candidateSession.getKey());
         	} else {
         		outcomesListener.updateOutcomes(score, pass);
         	}

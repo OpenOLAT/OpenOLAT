@@ -78,6 +78,7 @@ import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.QTIHelper;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQPreviewSecurityCallback;
@@ -92,6 +93,18 @@ import de.bps.onyx.plugin.OnyxModule;
 import de.bps.onyx.plugin.course.nodes.iq.IQEditForm;
 import de.bps.webservices.clients.onyxreporter.OnyxReporterConnector;
 import de.bps.webservices.clients.onyxreporter.OnyxReporterException;
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.UploadInteraction;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
+import uk.ac.ed.ph.jqtiplus.node.test.SectionPart;
+import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
 /**
  * 
@@ -127,6 +140,8 @@ public class IQConfigurationController extends BasicController {
 
 	@Autowired
 	private IQManager iqManager;
+	@Autowired
+	private QTI21Service qti21service;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -236,11 +251,12 @@ public class IQConfigurationController extends BasicController {
 		
 		RepositoryEntry re = getIQReference(moduleConfiguration, false);
 		if(re == null) {
-			mod12ConfigForm = new IQ12EditForm(ureq, getWindowControl(), moduleConfiguration);
+			mod12ConfigForm = new IQ12EditForm(ureq, getWindowControl(), moduleConfiguration, false);
 			listenTo(mod12ConfigForm);
 			myContent.put("iqeditform", mod12ConfigForm.getInitialComponent());
 		} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
-			mod21ConfigForm = new QTI21EditForm(ureq, getWindowControl(), moduleConfiguration);
+			boolean needManualCorrection = needManualCorrectionQTI21(re);
+			mod21ConfigForm = new QTI21EditForm(ureq, getWindowControl(), moduleConfiguration, needManualCorrection);
 			listenTo(mod21ConfigForm);
 			myContent.put("iqeditform", mod21ConfigForm.getInitialComponent());
 		} else if(OnyxModule.isOnyxTest(re.getOlatResource())) {
@@ -248,7 +264,8 @@ public class IQConfigurationController extends BasicController {
 			listenTo(modOnyxConfigForm);
 			myContent.put("iqeditform", modOnyxConfigForm.getInitialComponent());
 		} else {
-			mod12ConfigForm = new IQ12EditForm(ureq, getWindowControl(), moduleConfiguration);
+			boolean hasEssay = needManualCorrectionQTI12(re);
+			mod12ConfigForm = new IQ12EditForm(ureq, getWindowControl(), moduleConfiguration, hasEssay);
 			listenTo(mod12ConfigForm);
 			myContent.put("iqeditform", mod12ConfigForm.getInitialComponent());
 		}
@@ -312,7 +329,7 @@ public class IQConfigurationController extends BasicController {
 				RepositoryEntry re = searchController.getSelectedEntry();
 				doIQReference(urequest, re);
 				updateEditController(urequest);
-				checkEssay(re);
+				checkManualCorrectionNeeded(re);
 			}
 		} else if (source == fccecontr) {
 			if (event == FileChooseCreateEditController.FILE_CHANGED_EVENT) {
@@ -499,31 +516,91 @@ public class IQConfigurationController extends BasicController {
 		}
 	}
 
-	private void checkEssay(RepositoryEntry re) {
+	private void checkManualCorrectionNeeded(RepositoryEntry re) {
 		if(OnyxModule.isOnyxTest(re.getOlatResource())) return;
 		if(courseNode instanceof IQSURVCourseNode || courseNode instanceof IQSELFCourseNode) {
 			//nothing to do
 		} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
-			//TODO qti ()	
+			if(needManualCorrectionQTI21(re)) {
+				showWarning("warning.test.with.essay");
+			}
 		} else {
-			TestFileResource fr = new TestFileResource();
-			fr.overrideResourceableId(re.getOlatResource().getResourceableId());
-			QTIEditorPackage qtiPackage = new QTIEditorPackageImpl(getIdentity(), fr, null, getTranslator());
-			Assessment ass = qtiPackage.getQTIDocument().getAssessment();
+			if(needManualCorrectionQTI12(re)) {
+				showWarning("warning.test.with.essay");
+			}
+		}
+	}
 	
-			//Sections with their Items
-			List<Section> sections = ass.getSections();
-			for (Section section:sections) {
-				List<Item> items = section.getItems();
-				for (Item item:items) {
-					String ident = item.getIdent();
-					if(ident != null && ident.startsWith("QTIEDIT:ESSAY")) {
-						showWarning("warning.test.with.essay");
-						break;
-					}
+	private boolean needManualCorrectionQTI21(RepositoryEntry re) {
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File fUnzippedDirRoot = frm.unzipFileResource(re.getOlatResource());
+		ResolvedAssessmentTest resolvedAssessmentTest = qti21service.loadAndResolveAssessmentObject(fUnzippedDirRoot);
+		AssessmentTest test = resolvedAssessmentTest.getTestLookup().getRootNodeHolder().getRootNode();
+		
+		boolean needManualCorrection = false; 
+		List<TestPart> parts = test.getChildAbstractParts();
+		for(TestPart part:parts) {
+			List<AssessmentSection> sections = part.getAssessmentSections();
+			for(AssessmentSection section:sections) {
+				if(needManualCorrectionQTI21(section, resolvedAssessmentTest)) {
+					needManualCorrection = true;
+					break;
 				}
 			}
 		}
+		return needManualCorrection;
+	}
+	
+	private boolean needManualCorrectionQTI21(AssessmentSection section, ResolvedAssessmentTest resolvedAssessmentTest) {
+		for(SectionPart part: section.getSectionParts()) {
+			if(part instanceof AssessmentItemRef) {
+				if(needManualCorrectionQTI21((AssessmentItemRef)part, resolvedAssessmentTest)) {
+					return true;
+				}
+			} else if(part instanceof AssessmentSection) {
+				if(needManualCorrectionQTI21((AssessmentSection) part, resolvedAssessmentTest)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+
+	private boolean needManualCorrectionQTI21(AssessmentItemRef itemRef, ResolvedAssessmentTest resolvedAssessmentTest) {
+		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+		AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
+		List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
+		for(Interaction interaction:interactions) {
+			if(interaction instanceof UploadInteraction
+					|| interaction instanceof DrawingInteraction
+					|| interaction instanceof ExtendedTextInteraction) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private boolean needManualCorrectionQTI12(RepositoryEntry re) {
+		TestFileResource fr = new TestFileResource();
+		fr.overrideResourceableId(re.getOlatResource().getResourceableId());
+		QTIEditorPackage qtiPackage = new QTIEditorPackageImpl(getIdentity(), fr, null, getTranslator());
+		Assessment ass = qtiPackage.getQTIDocument().getAssessment();
+
+		boolean needManualCorrection = false;
+		//Sections with their Items
+		List<Section> sections = ass.getSections();
+		for (Section section:sections) {
+			List<Item> items = section.getItems();
+			for (Item item:items) {
+				String ident = item.getIdent();
+				if(ident != null && ident.startsWith("QTIEDIT:ESSAY")) {
+					needManualCorrection = true;
+					break;
+				}
+			}
+		}
+		return needManualCorrection;
 	}
 	
 	private void doIQReference(UserRequest urequest, RepositoryEntry re) {

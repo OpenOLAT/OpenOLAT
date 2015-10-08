@@ -25,6 +25,8 @@
 
 package org.olat.course.run.scoring;
 
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
+
 /**
  *  Description:<br>
  * @author Felix Jost
@@ -37,6 +39,7 @@ public class ScoreEvaluation {
 	private final Boolean passed; //could be Boolean.TRUE, Boolean.FALSE or null if "passed" info is not defined
 	private final Long assessmentID;
 	private final Boolean fullyAssessed;
+	private final AssessmentEntryStatus assessmentStatus;
 	
 	private ScoreEvaluation() {
 		this(null, null, null);
@@ -67,10 +70,15 @@ public class ScoreEvaluation {
 	 * @param assessmentID
 	 */
 	public ScoreEvaluation(Float score, Boolean passed, Boolean fullyAssessed, Long assessmentID) {
+		this(score, passed, null, fullyAssessed, assessmentID);
+	}
+	
+	public ScoreEvaluation(Float score, Boolean passed, AssessmentEntryStatus assessmentStatus, Boolean fullyAssessed, Long assessmentID) {
 		this.score = score;
 		this.passed = passed;
 		this.assessmentID = assessmentID;
 		this.fullyAssessed = fullyAssessed;
+		this.assessmentStatus = assessmentStatus;
 	}
 
 	/**
@@ -85,6 +93,10 @@ public class ScoreEvaluation {
 	 */
 	public Float getScore() {
 		return score;
+	}
+	
+	public AssessmentEntryStatus getAssessmentStatus() {
+		return assessmentStatus;
 	}
 	
 	/** (non-Javadoc)

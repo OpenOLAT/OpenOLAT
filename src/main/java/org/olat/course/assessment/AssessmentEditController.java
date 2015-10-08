@@ -284,7 +284,6 @@ public class AssessmentEditController extends BasicController {
 		}
 
 		if (assessmentForm.isHasScore() && assessmentForm.isScoreDirty()) {
-		//fxdiff VCRP-4: assessment overview with max score
 			newScore = assessmentForm.getScore();
 			// Update properties in db later... see
 			// courseNode.updateUserSocreAndPassed...
@@ -292,7 +291,6 @@ public class AssessmentEditController extends BasicController {
 		
 		if (assessmentForm.isHasPassed()) {
 			if (assessmentForm.getCut() != null && assessmentForm.getScore() != null) {
-			//fxdiff VCRP-4: assessment overview with max score
 				newPassed = assessmentForm.getScore() >= assessmentForm.getCut().floatValue()
 				          ? Boolean.TRUE : Boolean.FALSE;
 			} else {

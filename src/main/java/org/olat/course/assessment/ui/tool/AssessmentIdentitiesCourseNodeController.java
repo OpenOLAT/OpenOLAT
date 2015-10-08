@@ -134,6 +134,7 @@ public class AssessmentIdentitiesCourseNodeController extends FormBasicControlle
 			}
 		}
 
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.assessmentStatus, new AssessmentStatusCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.initialLaunchDate, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.lastScoreUpdate, "select"));
 
@@ -149,11 +150,10 @@ public class AssessmentIdentitiesCourseNodeController extends FormBasicControlle
 		}
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, referenceEntry, courseNode.getIdent(), assessmentCallback);
 		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(getIdentity(), params);
-		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(params);
+		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(getIdentity(), params, null);
 		Map<Long,AssessmentEntry> entryMap = new HashMap<>();
 		assessmentEntries.forEach((entry) -> entryMap.put(entry.getIdentity().getKey(), entry));
-		
-		
+
 		List<AssessedIdentityCourseElementRow> rows = new ArrayList<>(assessedIdentities.size());
 		for(Identity assessedIdentity:assessedIdentities) {
 			AssessmentEntry entry = entryMap.get(assessedIdentity.getKey());
