@@ -54,6 +54,11 @@ public class Google2Provider implements OAuthSPI {
 	public boolean isEnabled() {
 		return oauthModule.isGoogleEnabled();
 	}
+	
+	@Override
+	public boolean isRootEnabled() {
+		return false;
+	}
 
 	@Override
 	public Class<? extends Api> getScribeProvider() {

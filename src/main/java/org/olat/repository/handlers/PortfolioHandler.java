@@ -189,7 +189,7 @@ public class PortfolioHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public boolean cleanupOnDelete(OLATResourceable res) {
+	public boolean cleanupOnDelete(RepositoryEntry entry, OLATResourceable res) {
 		CoreSpringFactory.getImpl(EPFrontendManager.class).deletePortfolioMapTemplate(res);
 		return true;
 	}

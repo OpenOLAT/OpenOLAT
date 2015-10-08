@@ -37,6 +37,8 @@ public interface OAuthSPI extends ConfigOnOff {
 	
 	public String getName();
 	
+	public boolean isRootEnabled();
+	
 	/**
 	 * Limit of 8 characters
 	 * @return

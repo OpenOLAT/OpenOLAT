@@ -270,7 +270,7 @@ public class CourseModule extends AbstractOLATModule {
 		try {
 			propertyManager.deleteProperty(prop);
 			repositoryService.deleteRepositoryEntryAndBaseGroups(re);
-			CourseFactory.deleteCourse(re.getOlatResource());
+			CourseFactory.deleteCourse(re, re.getOlatResource());
 			OLATResource ores = olatResourceManager.findResourceable(re.getOlatResource());
 			olatResourceManager.deleteOLATResource(ores);
 		} catch (Exception e) {
