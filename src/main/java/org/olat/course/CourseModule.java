@@ -67,7 +67,7 @@ public class CourseModule extends AbstractOLATModule {
 	private static boolean displayParticipantsCount;
 	// Repository types
 	public static String ORES_TYPE_COURSE = OresHelper.calculateTypeName(CourseModule.class);
-	private static OLATResourceable ORESOURCEABLE_TYPE_COURSE = OresHelper.lookupType(CourseModule.class);
+	public static OLATResourceable ORESOURCEABLE_TYPE_COURSE = OresHelper.lookupType(CourseModule.class);
 	public static final String ORES_COURSE_ASSESSMENT = OresHelper.calculateTypeName(AssessmentManager.class);
 	private static String helpCourseSoftkey;
 	private static CoordinatorManager coordinatorManager;

@@ -40,6 +40,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.CourseFactory;
+import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -138,6 +139,6 @@ public class EfficiencyStatementAssessmentController extends FormBasicController
 	private void recalculate() {
 		flc.contextPut("recalculating", Boolean.TRUE);
 		EfficiencyStatementEvent recalculateEvent = new EfficiencyStatementEvent(EfficiencyStatementEvent.CMD_RECALCULATE, ores.getResourceableId());
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(recalculateEvent, ores);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(recalculateEvent, CourseModule.ORESOURCEABLE_TYPE_COURSE);
 	}
 }

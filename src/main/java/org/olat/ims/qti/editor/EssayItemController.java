@@ -71,7 +71,7 @@ public class EssayItemController extends BasicController implements ControllerEv
 		this.item = item;
 		this.qtiPackage = qtiPackage;
 		this.trnsltr = trnsltr;
-		main = createVelocityContainer("tab_essayItem.html");
+		main = createVelocityContainer("tab_essayItem");
 		essayQuestion = (EssayQuestion) item.getQuestion();
 		main.contextPut("question", essayQuestion);
 		main.contextPut("response", essayQuestion.getEssayResponse());
