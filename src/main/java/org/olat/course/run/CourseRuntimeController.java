@@ -90,7 +90,7 @@ import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CoachingGroupAccessAssessmentCallback;
 import org.olat.course.assessment.FullAccessAssessmentCallback;
 import org.olat.course.assessment.ui.mode.AssessmentModeListController;
-import org.olat.course.assessment.ui.tool.AssessmentOverviewController;
+import org.olat.course.assessment.ui.tool.AssessmentToolController;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
 import org.olat.course.certificate.ui.CertificatesOptionsController;
 import org.olat.course.config.CourseConfig;
@@ -120,6 +120,7 @@ import org.olat.ims.qti.statistics.QTIType;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.reminder.ReminderModule;
 import org.olat.note.NoteController;
 import org.olat.repository.LeavingStatusList;
@@ -171,7 +172,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private CourseOptionsController optionsToolCtr;
 	private CourseRemindersController remindersCtrl;
 	private AssessmentMainController assessmentToolCtr;
-	private AssessmentOverviewController assessmentTool_v2_Ctr;
+	private AssessmentToolController assessmentTool_v2_Ctr;
 	private MembersManagementMainController membersCtrl;
 	private StatisticCourseNodesController statsToolCtr;
 	private AssessmentModeListController assessmentModeCtrl;
@@ -1327,30 +1328,24 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl swControl = addToHistory(ureq, ores, null);
 			
-			// 1) course admins and users with tool right: full access
-			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
-				removeCustomCSS();
-				AssessmentOverviewController ctrl = new AssessmentOverviewController(ureq, swControl, toolbarPanel,
-						getRepositoryEntry(), new FullAccessAssessmentCallback(reSecurity.isEntryAdmin()));
-				ctrl.activate(ureq, null, null);
-				listenTo(ctrl);
-				assessmentTool_v2_Ctr = pushController(ureq, translate("command.openassessment"), ctrl);
-				currentToolCtr = assessmentTool_v2_Ctr;
-				setActiveTool(assessmentLink);
-				return assessmentToolCtr;
-			}
-			// 2) users with coach right: limited access to coached groups
-			if (reSecurity.isCourseCoach() || reSecurity.isGroupCoach()) {
-				removeCustomCSS();
-				AssessmentOverviewController ctrl = new AssessmentOverviewController(ureq, swControl, toolbarPanel,
-						getRepositoryEntry(), new CoachingGroupAccessAssessmentCallback());
-				ctrl.activate(ureq, null, null);
-				listenTo(ctrl);
-				assessmentTool_v2_Ctr = pushController(ureq, translate("command.openassessment"), ctrl);
-				currentToolCtr = assessmentTool_v2_Ctr;
-				setActiveTool(assessmentLink);
-				return assessmentToolCtr;
-			}
+			boolean admin = reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT);
+			boolean nonMembers = reSecurity.isEntryAdmin();
+			boolean repositoryEntryMembers = reSecurity.isCourseCoach();
+			boolean businessGoupMembers = reSecurity.isGroupCoach();
+			
+			AssessmentToolSecurityCallback secCallBack
+				= new AssessmentToolSecurityCallback(admin, nonMembers, repositoryEntryMembers, businessGoupMembers);
+
+			removeCustomCSS();
+			AssessmentToolController ctrl = new AssessmentToolController(ureq, swControl, toolbarPanel, getRepositoryEntry(), secCallBack);
+			ctrl.activate(ureq, null, null);
+			listenTo(ctrl);
+			assessmentTool_v2_Ctr = pushController(ureq, translate("command.openassessment"), ctrl);
+			currentToolCtr = assessmentTool_v2_Ctr;
+			setActiveTool(assessmentLink);
+			ctrl.initToolbar();
+			return assessmentToolCtr;
+
 		} else {
 			delayedClose = Delayed.assessmentTool;
 		}

@@ -54,13 +54,13 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessedIdentitiesTableDataModel;
 import org.olat.course.assessment.AssessmentMainController;
 import org.olat.course.assessment.AssessmentToolManager;
-import org.olat.course.assessment.IAssessmentCallback;
 import org.olat.course.assessment.IdentityAssessmentEditController;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -84,7 +84,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 
 	private RepositoryEntry courseEntry;
 	private final boolean isAdministrativeUser;
-	private final IAssessmentCallback assessmentCallback;
+	private final AssessmentToolSecurityCallback assessmentCallback;
 	
 	@Autowired
 	private UserManager userManager;
@@ -99,7 +99,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 
 	
 	public AssessedIdentityListController(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel stackPanel, RepositoryEntry courseEntry, IAssessmentCallback assessmentCallback) {
+			TooledStackedPanel stackPanel, RepositoryEntry courseEntry, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl, "identities");
 		setTranslator(Util.createPackageTranslator(AssessmentMainController.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
@@ -125,7 +125,6 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserCols.username, "select"));
 		
 		int colIndex = USER_PROPS_OFFSET;
-		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
 			boolean visible = UserManager.getInstance().isMandatoryUserProperty(usageIdentifyer , userPropertyHandler);
@@ -135,14 +134,14 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserCols.certificate, new DownloadCertificateCellRenderer()));
 
 		usersTableModel = new AssessedUserTableModel(columnsModel); 
-		tableEl = uifactory.addTableElement(getWindowControl(), "identities", usersTableModel, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", usersTableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 	}
 	
 	private void updateModel() {
-		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry);
-		params.setWithCertificates(true);
-		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(params);
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, null, null, assessmentCallback);
+
+		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(getIdentity(), params);
 		List<AssessedIdentityRow> rows = new ArrayList<>(assessedIdentities.size());
 		for(Identity assessedIdentity:assessedIdentities) {
 			rows.add(new AssessedIdentityRow(assessedIdentity, userPropertyHandlers, getLocale()));
@@ -158,6 +157,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 			}
 		}
 		usersTableModel.setCertificates(certificates);
+		tableEl.reloadData();
 	}
 	
 	private void updateCertificate(Long certificateKey) {

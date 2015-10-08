@@ -41,6 +41,7 @@ import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 
@@ -87,10 +88,12 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	private BigDecimal score;
 	@Column(name="a_passed", nullable=true, insertable=true, updatable=true)
 	private Boolean passed;
+	@Column(name="a_status", nullable=true, insertable=true, updatable=true)
+	private String status;
 
 	@Column(name="a_completion", nullable=true, insertable=true, updatable=true)
 	private Double completion;
-	
+
 	@Column(name="a_comment", nullable=true, insertable=true, updatable=true)
 	private String comment;
 	@Column(name="a_coach_comment", nullable=true, insertable=true, updatable=true)
@@ -137,70 +140,107 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 		return lastModified;
 	}
 
+	@Override
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
 	}
 
+	@Override
 	public Integer getAttempts() {
 		return attempts;
 	}
 
+	@Override
 	public void setAttempts(Integer attempts) {
 		this.attempts = attempts;
 	}
 
+	@Override
 	public BigDecimal getScore() {
 		return score;
 	}
 
+	@Override
 	public void setScore(BigDecimal score) {
 		this.score = score;
 	}
 
+	@Override
 	public Boolean getPassed() {
 		return passed;
 	}
 
+	@Override
 	public void setPassed(Boolean passed) {
 		this.passed = passed;
 	}
+	
+	public String getStatus() {
+		return status;
+	}
 
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	
+	public AssessmentEntryStatus getAssessmentStatus() {
+		return StringHelper.containsNonWhitespace(status) ? AssessmentEntryStatus.valueOf(status) : null;
+	}
+	
+	public void setAssessmentStatus(AssessmentEntryStatus assessmentStatus) {
+		if(assessmentStatus == null) {
+			this.status = null;
+		} else {
+			this.status = assessmentStatus.name();
+		}
+	}
+
+	@Override
 	public Boolean getFullyAssessed() {
 		return fullyAssessed;
 	}
 
+	@Override
 	public void setFullyAssessed(Boolean fullyAssessed) {
 		this.fullyAssessed = fullyAssessed;
 	}
 
+	@Override
 	public Double getCompletion() {
 		return completion;
 	}
 
+	@Override
 	public void setCompletion(Double completion) {
 		this.completion = completion;
 	}
 
+	@Override
 	public String getComment() {
 		return comment;
 	}
 
+	@Override
 	public void setComment(String comment) {
 		this.comment = comment;
 	}
 
+	@Override
 	public String getCoachComment() {
 		return coachComment;
 	}
 
+	@Override
 	public void setCoachComment(String coachComment) {
 		this.coachComment = coachComment;
 	}
 
+	@Override
 	public Long getAssessmentId() {
 		return assessmentId;
 	}
 
+	@Override
 	public void setAssessmentId(Long assessmentId) {
 		this.assessmentId = assessmentId;
 	}
@@ -223,6 +263,7 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 		this.subIdent = subIdent;
 	}
 
+	@Override
 	public RepositoryEntry getReferenceEntry() {
 		return referenceEntry;
 	}
@@ -231,6 +272,7 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 		this.referenceEntry = referenceEntry;
 	}
 
+	@Override
 	public Identity getIdentity() {
 		return identity;
 	}

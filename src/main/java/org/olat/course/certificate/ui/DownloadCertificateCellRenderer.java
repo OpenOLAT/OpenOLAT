@@ -62,7 +62,13 @@ public class DownloadCertificateCellRenderer implements CustomCellRenderer, Flex
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
 		if(val instanceof CertificateLight) {
-			render(sb, (CertificateLight)val, assessedIdentity, locale);
+			CertificateLight certificate = (CertificateLight)val;
+			if(assessedIdentity == null) {
+				IdentityRef idRef = new IdentityRefImpl(certificate.getIdentityKey());
+				render(sb, certificate, idRef, locale);
+			} else {
+				render(sb, certificate, assessedIdentity, locale);
+			}
 		} else if(val instanceof CertificateLightPack) {
 			CertificateLightPack pack = (CertificateLightPack)val;
 			render(sb, pack.getCertificate(), pack.getIdentity(), locale);		

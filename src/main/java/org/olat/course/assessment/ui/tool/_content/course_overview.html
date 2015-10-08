@@ -1,0 +1,16 @@
+<h2>Overview</h2>
+<div class="row">
+	<div class="col-sm-6">
+		<h4><i class="o_icon o_icon_back_history"> </i> Reviews waiting</h4>
+		#if($r.available("toReview"))
+			$r.render("toReview")
+		#end
+	</div>
+	<div class="col-sm-6">
+		#if($r.available("statistics"))
+			$r.render("statistics")
+		#end
+	</div>
+</div>
+
+

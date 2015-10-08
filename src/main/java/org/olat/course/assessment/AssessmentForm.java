@@ -255,7 +255,9 @@ public class AssessmentForm extends FormBasicController {
 		
 		UserCourseEnvironment userCourseEnv = assessedIdentityWrapper.getUserCourseEnvironment();
 		ScoreEvaluation scoreEval = userCourseEnv.getScoreAccounting().evalCourseNode(assessableCourseNode);
-		if (scoreEval == null) scoreEval = new ScoreEvaluation(null, null);
+		if (scoreEval == null) {
+			scoreEval = ScoreEvaluation.EMPTY_EVALUATION;
+		}
 
 		if (hasAttempts) {
 			attemptsValue = assessableCourseNode.getUserAttempts(userCourseEnv);

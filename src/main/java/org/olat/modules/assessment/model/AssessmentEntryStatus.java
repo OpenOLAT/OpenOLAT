@@ -17,29 +17,19 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment;
-
-import java.util.List;
-
-import org.olat.core.id.Identity;
-import org.olat.course.assessment.model.CourseStatistics;
-import org.olat.course.assessment.model.SearchAssessedIdentityParams;
-import org.olat.modules.assessment.AssessmentEntry;
+package org.olat.modules.assessment.model;
 
 /**
- * The manager taylored for the assessment tool.
  * 
- * 
- * Initial date: 22.07.2015<br>
+ * Initial date: 06.10.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface AssessmentToolManager {
+public enum AssessmentEntryStatus {
 	
-	public CourseStatistics getStatistics(Identity coach, SearchAssessedIdentityParams params);
-	
-	public List<Identity> getAssessedIdentities(Identity coach, SearchAssessedIdentityParams params);
-	
-	public List<AssessmentEntry> getAssessmentEntries(SearchAssessedIdentityParams params);
+	notStarted,
+	inProgress,//student
+	inReview,//coach
+	done
 
 }

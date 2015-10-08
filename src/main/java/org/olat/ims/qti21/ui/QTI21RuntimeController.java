@@ -32,6 +32,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.ims.qti21.ui.statistics.QTI21AssessmentTestStatisticsController;
 import org.olat.modules.assessment.ui.AssessmentOverviewController;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.model.RepositoryEntrySecurity;
@@ -123,8 +124,12 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 		WindowControl swControl = addToHistory(ureq, ores, null);
 		
 		if (reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || reSecurity.isGroupCoach()) {
+			AssessmentToolSecurityCallback secCallback
+				= new AssessmentToolSecurityCallback(reSecurity.isEntryAdmin(), reSecurity.isEntryAdmin(), reSecurity.isCourseCoach(), reSecurity.isGroupCoach());
+			
+			
 			AssessmentOverviewController ctrl = new AssessmentOverviewController(ureq, swControl, toolbarPanel,
-					getRepositoryEntry(), null);
+					getRepositoryEntry(), secCallback);
 			listenTo(ctrl);
 			assessmentToolCtrl = pushController(ureq, "Statistics", ctrl);
 			currentToolCtr = assessmentToolCtrl;

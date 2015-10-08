@@ -181,7 +181,9 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 			return wrappedIdentity.getNodeAttempts();
 		} else if (colName.equals(COL_SCORE)) {
 			ScoreEvaluation scoreEval = wrappedIdentity.getUserCourseEnvironment().getScoreAccounting().evalCourseNode(courseNode);
-			if (scoreEval == null) scoreEval = new ScoreEvaluation(null, null);
+			if (scoreEval == null) {
+				scoreEval = ScoreEvaluation.EMPTY_EVALUATION;
+			}
 			return scoreEval.getScore();
 		} else if (colName.equals(COL_MINSCORE)) {
 			if(!(courseNode instanceof STCourseNode)) {
@@ -197,7 +199,9 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 			return getStatusFor(courseNode, wrappedIdentity);
 		} else if (colName.equals(COL_PASSED)) {
 			ScoreEvaluation scoreEval = wrappedIdentity.getUserCourseEnvironment().getScoreAccounting().evalCourseNode(courseNode);
-			if (scoreEval == null) scoreEval = new ScoreEvaluation(null, null);
+			if (scoreEval == null) {
+				scoreEval = ScoreEvaluation.EMPTY_EVALUATION;
+			}
 			return scoreEval.getPassed();
 		} else if (colName.equals(COL_INITIAL_LAUNCH)) {
 			return wrappedIdentity.getInitialLaunchDate();

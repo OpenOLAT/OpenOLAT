@@ -399,7 +399,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 			}
 		}
 
-		ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+		ICourse course = CourseFactory.loadCourse(entry);
 		List<Identity> assessedUsers = getAllIdentitiesWithCourseAssessmentData(course.getResourceableId());
 		for(Identity assessedUser:assessedUsers) {
 			if(!duplicateKiller.contains(assessedUser)) {
@@ -435,6 +435,13 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		entry.setRepositoryEntry(courseEntry);
 		entry.setSubIdent(nodeIdent);
 		entry.setReferenceEntry(referenceEntry);
+		//TODO qti ita/gta -> set status
+		//TODO qti 1.2 -> find status ( test closed?)
+		//TODO portfolio -> map.status (close status -> coach)
+		//TODO ms -> score -> done
+		//TODO lti -> score -> done
+		//TODO SCORM -> score ( state finished?) 
+		
 		return entry;
 	}
 

@@ -17,29 +17,36 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment;
+package org.olat.course.assessment.ui.tool;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.id.Identity;
-import org.olat.course.assessment.model.CourseStatistics;
-import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.user.UserPropertiesRow;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
- * The manager taylored for the assessment tool.
  * 
- * 
- * Initial date: 22.07.2015<br>
+ * Initial date: 06.10.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface AssessmentToolManager {
+public class AssessedIdentityCourseElementRow extends UserPropertiesRow {
 	
-	public CourseStatistics getStatistics(Identity coach, SearchAssessedIdentityParams params);
+	private AssessmentEntry entry;
 	
-	public List<Identity> getAssessedIdentities(Identity coach, SearchAssessedIdentityParams params);
 	
-	public List<AssessmentEntry> getAssessmentEntries(SearchAssessedIdentityParams params);
+	public AssessedIdentityCourseElementRow(Identity identity, AssessmentEntry entry, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		super(identity, userPropertyHandlers, locale);
+		this.entry = entry;
+	}
+	
+	public AssessmentEntry getAssessmentEntry() {
+		return entry;
+	}
+
+
 
 }

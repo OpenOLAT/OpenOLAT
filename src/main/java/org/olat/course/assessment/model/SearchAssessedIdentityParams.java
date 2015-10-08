@@ -19,9 +19,7 @@
  */
 package org.olat.course.assessment.model;
 
-import java.util.List;
-
-import org.olat.group.BusinessGroupRef;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -32,35 +30,52 @@ import org.olat.repository.RepositoryEntry;
  */
 public class SearchAssessedIdentityParams {
 	
-	private final RepositoryEntry courseEntry;
-	private boolean withCertificates;
-	private List<? extends BusinessGroupRef> businessGroups;
+	private final RepositoryEntry entry;
+	private final RepositoryEntry referenceEntry;
+	private final String subIdent;
 	
-	public SearchAssessedIdentityParams(RepositoryEntry courseEntry) {
-		this.courseEntry = courseEntry;
+	private final boolean admin;
+	private final boolean nonMembers;
+	private final boolean repositoryEntryCoach;
+	private final boolean businessGroupCoach;
+	
+	
+	public SearchAssessedIdentityParams(RepositoryEntry entry, RepositoryEntry referenceEntry, String subIdent,
+			AssessmentToolSecurityCallback secCallback) {
+		this.entry = entry;
+		this.referenceEntry = referenceEntry;
+		this.subIdent = subIdent;
+		this.admin = secCallback.isAdmin();
+		this.nonMembers = secCallback.canAssessNonMembers();
+		this.repositoryEntryCoach = secCallback.canAssessRepositoryEntryMembers();
+		this.businessGroupCoach = secCallback.canAssessBusinessGoupMembers();
 	}
 	
-	public RepositoryEntry getCourseEntry() {
-		return courseEntry;
+	public RepositoryEntry getEntry() {
+		return entry;
 	}
 	
-	
-	public List<? extends BusinessGroupRef> getBusinessGroups() {
-		return businessGroups;
+	public RepositoryEntry getReferenceEntry() {
+		return referenceEntry;
 	}
 
-	public void setBusinessGroups(List<? extends BusinessGroupRef> businessGroups) {
-		this.businessGroups = businessGroups;
+	public String getSubIdent() {
+		return subIdent;
 	}
 
-	public boolean isWithCertificates() {
-		return withCertificates;
+	public boolean isAdmin() {
+		return admin;
 	}
-	
-	public void setWithCertificates(boolean withCertificates) {
-		this.withCertificates = withCertificates;
-	}
-	
-	
 
+	public boolean isNonMembers() {
+		return nonMembers;
+	}
+
+	public boolean isRepositoryEntryCoach() {
+		return repositoryEntryCoach;
+	}
+
+	public boolean isBusinessGroupCoach() {
+		return businessGroupCoach;
+	}
 }

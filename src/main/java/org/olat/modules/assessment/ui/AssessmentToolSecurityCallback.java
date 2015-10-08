@@ -17,29 +17,44 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment;
-
-import java.util.List;
-
-import org.olat.core.id.Identity;
-import org.olat.course.assessment.model.CourseStatistics;
-import org.olat.course.assessment.model.SearchAssessedIdentityParams;
-import org.olat.modules.assessment.AssessmentEntry;
+package org.olat.modules.assessment.ui;
 
 /**
- * The manager taylored for the assessment tool.
  * 
- * 
- * Initial date: 22.07.2015<br>
+ * Initial date: 07.10.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface AssessmentToolManager {
+public class AssessmentToolSecurityCallback {
 	
-	public CourseStatistics getStatistics(Identity coach, SearchAssessedIdentityParams params);
+	private final boolean admin;
+	private final boolean nonMembers;
+	private final boolean repositoryEntryMembers;
+	private final boolean businessGoupMembers;
 	
-	public List<Identity> getAssessedIdentities(Identity coach, SearchAssessedIdentityParams params);
 	
-	public List<AssessmentEntry> getAssessmentEntries(SearchAssessedIdentityParams params);
+	public AssessmentToolSecurityCallback(boolean admin, boolean nonMembers,
+			boolean repositoryEntryMembers, boolean businessGoupMembers) {
+		this.admin = admin;
+		this.nonMembers = nonMembers;
+		this.repositoryEntryMembers = repositoryEntryMembers;
+		this.businessGoupMembers = businessGoupMembers;
+	}
 
+
+	public boolean isAdmin() {
+		return admin;
+	}
+
+	public boolean canAssessNonMembers() {
+		return nonMembers;
+	}
+
+	public boolean canAssessRepositoryEntryMembers() {
+		return repositoryEntryMembers;
+	}
+
+	public boolean canAssessBusinessGoupMembers() {
+		return businessGoupMembers;
+	}
 }

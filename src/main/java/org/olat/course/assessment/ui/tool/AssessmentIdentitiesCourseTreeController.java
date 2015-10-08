@@ -1,0 +1,164 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.course.assessment.ui.tool;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.tree.GenericTreeModel;
+import org.olat.core.gui.components.tree.GenericTreeNode;
+import org.olat.core.gui.components.tree.MenuTree;
+import org.olat.core.gui.components.tree.TreeModel;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.nodes.ProjectBrokerCourseNode;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.repository.RepositoryEntry;
+
+/**
+ * 
+ * Initial date: 07.10.2015<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public class AssessmentIdentitiesCourseTreeController extends BasicController {
+	
+	private final MenuTree menuTree;
+	private final Panel mainPanel;
+	private TooledStackedPanel stackPanel;
+	private Controller currentCtrl;
+	
+	private final RepositoryEntry courseEntry;
+	private AssessmentToolSecurityCallback assessmentCallback;
+	
+	public AssessmentIdentitiesCourseTreeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry courseEntry, AssessmentToolSecurityCallback assessmentCallback) {
+		super(ureq, wControl);
+		this.courseEntry = courseEntry;
+		this.stackPanel = stackPanel;
+		this.assessmentCallback = assessmentCallback;
+
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		
+		// Navigation menu
+		menuTree = new MenuTree("menuTree");
+		TreeModel tm = buildTreeModel(course);
+		menuTree.setTreeModel(tm);
+		menuTree.setSelectedNodeId(tm.getRootNode().getIdent());
+		menuTree.addListener(this);
+		
+		mainPanel = new Panel("empty");
+		
+		
+		LayoutMain3ColsController columLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, mainPanel, "course" + course.getResourceableId());
+		listenTo(columLayoutCtr); // cleanup on dispose
+		putInitialPanel(columLayoutCtr.getInitialComponent());
+	}
+	
+	private TreeModel buildTreeModel(ICourse course) {
+		CourseNode rootNode = course.getRunStructure().getRootNode();
+		GenericTreeModel gtm = new GenericTreeModel();
+		GenericTreeNode node = new GenericTreeNode();
+		node.setTitle(rootNode.getShortTitle());
+		node.setUserObject(rootNode);
+		node.setIconCssClass(CourseNodeFactory.getInstance().getCourseNodeConfiguration(rootNode.getType()).getIconCSSClass());
+		gtm.setRootNode(node);
+		
+		List<GenericTreeNode> children = addAssessableNodesToList(rootNode);
+		children.forEach((child) -> node.addChild(child));
+		return gtm;
+	}
+	
+	private List<GenericTreeNode> addAssessableNodesToList(CourseNode parentCourseNode) {
+		List<GenericTreeNode> result = new ArrayList<>();
+		for(int i=0; i<parentCourseNode.getChildCount(); i++) {
+			CourseNode courseNode = (CourseNode)parentCourseNode.getChildAt(i);
+			List<GenericTreeNode> assessableChildren = addAssessableNodesToList(courseNode);
+			
+			if (assessableChildren.size() > 0 || isAssessable(courseNode)) {
+				GenericTreeNode node = new GenericTreeNode();
+				node.setTitle(courseNode.getShortTitle());
+				node.setUserObject(courseNode);
+				node.setIconCssClass(CourseNodeFactory.getInstance().getCourseNodeConfiguration(courseNode.getType()).getIconCSSClass());
+				result.add(node);
+				assessableChildren.forEach((child) -> node.addChild(child));
+			}
+		}
+		return result;
+	}
+	
+	private boolean isAssessable(CourseNode courseNode) {
+		boolean assessable = false;
+		if (courseNode instanceof AssessableCourseNode && !(courseNode instanceof ProjectBrokerCourseNode)) {
+			AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
+			if (assessableCourseNode.hasDetails()
+				|| assessableCourseNode.hasAttemptsConfigured()
+				|| assessableCourseNode.hasScoreConfigured()
+				|| assessableCourseNode.hasPassedConfigured()
+				|| assessableCourseNode.hasCommentConfigured()) {
+
+				assessable = true;
+			}
+		}
+		return assessable;
+	}
+	
+	@Override
+	protected void doDispose() {
+		//
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		if (source == menuTree) {
+			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
+				Object uo = menuTree.getSelectedNode().getUserObject();
+				if(uo instanceof CourseNode) {
+					doSelectCourseNode(ureq, (CourseNode)uo);
+				}
+			}
+		}
+	}
+
+	private void doSelectCourseNode(UserRequest ureq, CourseNode courseNode) {
+		removeAsListenerAndDispose(currentCtrl);
+
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		if(course.getRunStructure().getRootNode().equals(courseNode)) {
+			currentCtrl = new AssessmentIdentitiesCourseController(ureq, getWindowControl(), courseEntry, assessmentCallback);
+		} else {
+			currentCtrl = new AssessmentIdentitiesCourseNodeController(ureq, getWindowControl(), courseEntry, courseNode, assessmentCallback);
+		}
+		listenTo(currentCtrl);
+		mainPanel.setContent(currentCtrl.getInitialComponent());
+	}
+}

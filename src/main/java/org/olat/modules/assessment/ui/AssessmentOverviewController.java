@@ -38,7 +38,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentMainController;
-import org.olat.course.assessment.IAssessmentCallback;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -54,10 +53,10 @@ public class AssessmentOverviewController extends MainLayoutBasicController impl
 	private TooledStackedPanel stackPanel;
 	
 	private RepositoryEntry entry;
-	private IAssessmentCallback assessmentCallback;
+	private AssessmentToolSecurityCallback assessmentCallback;
 	
 	public AssessmentOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry entry, IAssessmentCallback assessmentCallback) {
+			RepositoryEntry entry, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentMainController.class, getLocale(), getTranslator()));
 		this.entry = entry;

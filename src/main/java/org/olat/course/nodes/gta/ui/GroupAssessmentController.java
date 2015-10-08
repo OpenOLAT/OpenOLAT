@@ -297,7 +297,7 @@ public class GroupAssessmentController extends FormBasicController {
 			if(withScore || withPassed) {	
 				scoreEval = gtaNode.getUserScoreEvaluation(entry);
 				if (scoreEval == null) {
-					scoreEval = new ScoreEvaluation(null, null);
+					scoreEval = ScoreEvaluation.EMPTY_EVALUATION;
 				}
 			}
 			

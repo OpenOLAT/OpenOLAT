@@ -30,12 +30,17 @@ package org.olat.course.run.scoring;
  * @author Felix Jost
  */
 public class ScoreEvaluation {
+	//works because it's immutable
+	public static final ScoreEvaluation EMPTY_EVALUATION = new ScoreEvaluation();
 	
 	private final Float score;
 	private final Boolean passed; //could be Boolean.TRUE, Boolean.FALSE or null if "passed" info is not defined
 	private final Long assessmentID;
 	private final Boolean fullyAssessed;
 	
+	private ScoreEvaluation() {
+		this(null, null, null);
+	}
 	
 	/**
 	 * @param score

@@ -248,7 +248,7 @@ public class AssessmentHelper {
 	public static String getRoundedScore(BigDecimal score) {
 		if (score == null) return null;
 		
-		Float fscore = score.floatValue();
+		Double fscore = score.doubleValue();
 		return getRoundedScore(fscore); 
 	}
 
@@ -257,6 +257,15 @@ public class AssessmentHelper {
 	 * @return The rounded score for GUI presentation
 	 */
 	public static String getRoundedScore(Float score) {
+		if (score == null) return null;
+
+		//cluster_OK the formatter is not multi-thread and costly to create
+		synchronized(scoreFormat) {
+			return scoreFormat.format(score);
+		}
+	}
+	
+	public static String getRoundedScore(Double score) {
 		if (score == null) return null;
 
 		//cluster_OK the formatter is not multi-thread and costly to create
