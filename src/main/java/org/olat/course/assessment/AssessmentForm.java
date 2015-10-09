@@ -65,7 +65,7 @@ public class AssessmentForm extends FormBasicController {
 	private boolean hasScore, hasPassed, hasComment, hasAttempts;
 	private Float min, max, cut;
 
-	private AssessedIdentityWrapper assessedIdentityWrapper;
+	private UserCourseEnvironment assessedUserCourseEnv;
 	private AssessableCourseNode assessableCourseNode;
 	
 	private Integer attemptsValue;
@@ -82,7 +82,7 @@ public class AssessmentForm extends FormBasicController {
 	 * @param trans The package translator
 	 */
 	public AssessmentForm(UserRequest ureq, WindowControl wControl, AssessableCourseNode assessableCourseNode,
-			AssessedIdentityWrapper assessedIdentityWrapper, boolean saveAndClose) {
+			UserCourseEnvironment assessedUserCourseEnv, boolean saveAndClose) {
 		super(ureq, wControl);
 		
 		this.saveAndClose = saveAndClose;
@@ -92,7 +92,7 @@ public class AssessmentForm extends FormBasicController {
 		hasPassed = assessableCourseNode.hasPassedConfigured();
 		hasComment = assessableCourseNode.hasCommentConfigured();
 		
-		this.assessedIdentityWrapper = assessedIdentityWrapper;
+		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		this.assessableCourseNode = assessableCourseNode;
 
 		initForm(ureq);
@@ -225,12 +225,11 @@ public class AssessmentForm extends FormBasicController {
 	}
 	
 	public void reloadData() {
-		UserCourseEnvironment userCourseEnv = assessedIdentityWrapper.getUserCourseEnvironment();
-		ScoreEvaluation scoreEval = userCourseEnv.getScoreAccounting().evalCourseNode(assessableCourseNode);
+		ScoreEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(assessableCourseNode);
 		if (scoreEval == null) scoreEval = new ScoreEvaluation(null, null);
 		
 		if (hasAttempts) {
-			attemptsValue = assessableCourseNode.getUserAttempts(userCourseEnv);
+			attemptsValue = assessableCourseNode.getUserAttempts(assessedUserCourseEnv);
 			attempts.setIntValue(attemptsValue == null ? 0 : attemptsValue.intValue());
 		}
 		
@@ -253,14 +252,13 @@ public class AssessmentForm extends FormBasicController {
 		setFormTitle("form.title", null);
 		formLayout.setElementCssClass("o_sel_assessment_form");
 		
-		UserCourseEnvironment userCourseEnv = assessedIdentityWrapper.getUserCourseEnvironment();
-		ScoreEvaluation scoreEval = userCourseEnv.getScoreAccounting().evalCourseNode(assessableCourseNode);
+		ScoreEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(assessableCourseNode);
 		if (scoreEval == null) {
 			scoreEval = ScoreEvaluation.EMPTY_EVALUATION;
 		}
 
 		if (hasAttempts) {
-			attemptsValue = assessableCourseNode.getUserAttempts(userCourseEnv);
+			attemptsValue = assessableCourseNode.getUserAttempts(assessedUserCourseEnv);
 			attempts = uifactory.addIntegerElement("attempts", "form.attempts", (attemptsValue == null ? 0 : attemptsValue.intValue()), formLayout);
 			attempts.setDisplaySize(3);
 			attempts.setMinValueCheck(0, null);
@@ -320,14 +318,14 @@ public class AssessmentForm extends FormBasicController {
 
 		if (hasComment) {
 			// Use init variables from db, not available from wrapper
-			userCommentValue = assessableCourseNode.getUserUserComment(userCourseEnv);
+			userCommentValue = assessableCourseNode.getUserUserComment(assessedUserCourseEnv);
 			if (userCommentValue == null) {
 				userCommentValue = "";
 			}
 			userComment = uifactory.addTextAreaElement("usercomment", "form.usercomment", 2500, 5, 40, true, userCommentValue, formLayout);
 		}
 
-		coachCommentValue = assessableCourseNode.getUserCoachComment(userCourseEnv);
+		coachCommentValue = assessableCourseNode.getUserCoachComment(assessedUserCourseEnv);
 		if (coachCommentValue == null) {
 			coachCommentValue = "";
 		}

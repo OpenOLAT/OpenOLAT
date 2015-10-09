@@ -1,0 +1,31 @@
+<div class="panel panel-default">
+	<ul class="list-group">
+		<li class="list-group-item"><span><i class="o_icon o_icon_certificate"> </i> $r.translate("certificate")</span></li>
+		<li class="list-group-item">
+			#if($certificates.isEmpty())
+				$r.translate("no.certificate")
+			#else
+				<ul class="list-unstyled o_certificates">
+				#foreach($certificate in $certificates)
+					<li>
+					#if($certificate.status == "pending")
+						<span><i class="o_icon o_icon_pending o_icon-spin"> </i> $certificate.name</span>
+					#elseif($certificate.status == "ok")
+						<a href="$certificate.url" target="_blank"><i class="o_icon o_filetype_pdf"> </i> $certificate.name</a>
+					#elseif($certificate.status == "error")
+						<span><i class="o_icon o_icon_error"> </i> $certificate.name</span>
+					#end
+
+					#if($r.available($certificate.getDeleteName())) 
+						$r.render($certificate.getDeleteName())
+					#end
+					</li>
+				#end
+				</ul>
+			#end
+			#if($r.available("generate.certificate"))
+				<div class="o_button_group">$r.render("generate.certificate")</div>
+			#end
+		</li>
+	</ul>
+</div>

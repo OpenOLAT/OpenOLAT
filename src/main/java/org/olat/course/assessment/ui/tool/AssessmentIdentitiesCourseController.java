@@ -83,7 +83,7 @@ public class AssessmentIdentitiesCourseController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private TooledStackedPanel stackPanel;
 	private AssessmentIdentitiesCourseTableModel usersTableModel;
-	private AssessmentIdentityCourseNodeController currentIdentityCtrl;
+	private AssessmentIdentityCourseController currentIdentityCtrl;
 
 	@Autowired
 	private UserManager userManager;
@@ -251,7 +251,7 @@ public class AssessmentIdentitiesCourseController extends FormBasicController {
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
 		String fullName = userManager.getUserDisplayName(assessedIdentity);
 		
-		currentIdentityCtrl = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), assessedIdentity);
+		currentIdentityCtrl = new AssessmentIdentityCourseController(ureq, getWindowControl(), stackPanel, courseEntry, assessedIdentity);
 		listenTo(currentIdentityCtrl);
 		stackPanel.pushController(fullName, currentIdentityCtrl);
 		

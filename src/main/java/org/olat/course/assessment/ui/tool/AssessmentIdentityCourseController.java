@@ -19,14 +19,32 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.Roles;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessedIdentityInfosController;
+import org.olat.course.assessment.IdentityAssessmentOverviewController;
+import org.olat.course.config.CourseConfig;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -37,14 +55,28 @@ import org.olat.course.assessment.AssessedIdentityInfosController;
 public class AssessmentIdentityCourseController extends BasicController {
 	
 	private final Identity assessedIdentity;
-	
+	private final RepositoryEntry courseEntry;
+
+	private Link nextLink, previousLink;
+	private final TooledStackedPanel stackPanel;
 	private final VelocityContainer identityAssessmentVC;
-	private AssessedIdentityInfosController infosController;
 	
-	public AssessmentIdentityCourseController(UserRequest ureq, WindowControl wControl,
-			Identity assessedIdentity) {
+	private IdentityCertificatesController certificateCtrl;
+	private AssessedIdentityInfosController infosController;
+	private IdentityAssessmentOverviewController treeOverviewCtrl;
+	private AssessmentIdentityCourseNodeController currentNodeCtrl;
+	
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	
+	public AssessmentIdentityCourseController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry courseEntry, Identity assessedIdentity) {
 		super(ureq, wControl);
 		
+		this.stackPanel = stackPanel;
+		this.courseEntry = courseEntry;
 		this.assessedIdentity = assessedIdentity;
 		
 		identityAssessmentVC = createVelocityContainer("identity_personal_infos");
@@ -54,6 +86,22 @@ public class AssessmentIdentityCourseController extends BasicController {
 		listenTo(infosController);
 		identityAssessmentVC.put("identityInfos", infosController.getInitialComponent());
 		
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		CourseConfig courseConfig = course.getCourseConfig();
+		Roles roles = securityManager.getRoles(assessedIdentity);
+		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
+		UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
+
+		if(courseConfig.isAutomaticCertificationEnabled() || courseConfig.isManualCertificationEnabled()) {
+			certificateCtrl = new IdentityCertificatesController(ureq, wControl, courseEntry, assessedIdentity);
+			identityAssessmentVC.put("certificateInfos", certificateCtrl.getInitialComponent());
+			listenTo(certificateCtrl);
+		}
+
+		treeOverviewCtrl = new IdentityAssessmentOverviewController(ureq, getWindowControl(), assessedUserCourseEnv, true, true, false);
+		listenTo(treeOverviewCtrl);
+		identityAssessmentVC.put("courseOverview", treeOverviewCtrl.getInitialComponent());
+
 		putInitialPanel(identityAssessmentVC);
 	}
 	
@@ -67,12 +115,58 @@ public class AssessmentIdentityCourseController extends BasicController {
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(treeOverviewCtrl == source) {
+			if(IdentityAssessmentOverviewController.EVENT_NODE_SELECTED.equals(event)) {
+				doSelectCourseNode(ureq, treeOverviewCtrl.getSelectedCourseNode());
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
-
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		if(previousLink == source) {
+			doPreviousNode(ureq);
+		} else if(nextLink == source) {
+			doNextNode(ureq);
+		}
+	}
 	
+	private void doNextNode(UserRequest ureq) {
+		stackPanel.popController(currentNodeCtrl);
+		
+		CourseNode nextNode = treeOverviewCtrl.getNextNode(currentNodeCtrl.getCourseNode());
+		if(nextNode != null && nextNode.getParent() != null) {
+			doSelectCourseNode(ureq, nextNode);
+		}
+	}
 	
-
+	private void doPreviousNode(UserRequest ureq) {
+		stackPanel.popController(currentNodeCtrl);
+		
+		CourseNode previousNode = treeOverviewCtrl.getPreviousNode(currentNodeCtrl.getCourseNode());
+		if(previousNode != null && previousNode.getParent() != null) {
+			doSelectCourseNode(ureq, previousNode);
+		}
+	}
+	
+	private void doSelectCourseNode(UserRequest ureq, CourseNode courseNode) {
+		if(courseNode == null) return;
+		
+		removeAsListenerAndDispose(currentNodeCtrl);
+		
+		String fullName = userManager.getUserDisplayName(assessedIdentity);
+		currentNodeCtrl = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), stackPanel,
+				courseEntry, courseNode, assessedIdentity);
+		listenTo(currentNodeCtrl);
+		stackPanel.pushController(fullName, currentNodeCtrl);
+		
+		previousLink = LinkFactory.createToolLink("previouselement","", this, "o_icon_previous_toolbar");
+		previousLink.setTitle(translate("command.previous"));
+		stackPanel.addTool(previousLink, Align.rightEdge, false, "o_tool_previous");
+		nextLink = LinkFactory.createToolLink("nextelement","", this, "o_icon_next_toolbar");
+		nextLink.setTitle(translate("command.next"));
+		stackPanel.addTool(nextLink, Align.rightEdge, false, "o_tool_next");
+	}
 }

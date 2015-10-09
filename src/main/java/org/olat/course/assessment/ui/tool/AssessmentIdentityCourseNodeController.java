@@ -19,14 +19,32 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.Roles;
+import org.olat.core.util.Formatter;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessedIdentityInfosController;
+import org.olat.course.assessment.AssessmentForm;
+import org.olat.course.assessment.OpenSubDetailsEvent;
+import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.MSCourseNode;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -36,29 +54,70 @@ import org.olat.course.assessment.AssessedIdentityInfosController;
  */
 public class AssessmentIdentityCourseNodeController extends BasicController {
 	
-	private final Identity assessedIdentity;
-	
+	private final TooledStackedPanel stackPanel;
 	private final VelocityContainer identityAssessmentVC;
+	
+	private AssessmentForm assessmentForm;
+	private Controller subDetailsController;
+	private Controller detailsEditController;
 	private AssessedIdentityInfosController infosController;
 	
-	public AssessmentIdentityCourseNodeController(UserRequest ureq, WindowControl wControl,
-			Identity assessedIdentity) {
+	private final CourseNode courseNode;
+	private final Identity assessedIdentity;
+	
+	@Autowired
+	private BaseSecurity securityManager;
+	
+	public AssessmentIdentityCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry courseEntry, CourseNode courseNode, Identity assessedIdentity) {
 		super(ureq, wControl);
 		
+		this.stackPanel = stackPanel;
+		this.courseNode = courseNode;
 		this.assessedIdentity = assessedIdentity;
 		
-		identityAssessmentVC = createVelocityContainer("identity_personal_infos");
+		identityAssessmentVC = createVelocityContainer("identity_personal_node_infos");
 		identityAssessmentVC.contextPut("user", assessedIdentity.getUser());
 		
 		infosController = new AssessedIdentityInfosController(ureq, wControl, assessedIdentity);
 		listenTo(infosController);
 		identityAssessmentVC.put("identityInfos", infosController.getInitialComponent());
 		
+		ModuleConfiguration modConfig = courseNode.getModuleConfiguration();
+		String infoCoach = (String) modConfig.get(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH);
+		infoCoach = Formatter.formatLatexFormulas(infoCoach);
+		identityAssessmentVC.contextPut("infoCoach", infoCoach);
+		
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		Roles roles = securityManager.getRoles(assessedIdentity);
+		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
+		UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
+
+		// Add the assessment details form
+		if(courseNode instanceof AssessableCourseNode) {
+			AssessableCourseNode aCourseNode = (AssessableCourseNode)courseNode;
+
+			// Add the users details controller
+			if (aCourseNode.hasDetails()) {
+				detailsEditController = aCourseNode.getDetailsEditController(ureq, wControl, stackPanel, assessedUserCourseEnv);
+				listenTo(detailsEditController);
+				identityAssessmentVC.put("details", detailsEditController.getInitialComponent());
+			}
+
+			assessmentForm = new AssessmentForm(ureq, wControl, aCourseNode, assessedUserCourseEnv, true);
+			listenTo(assessmentForm);
+			identityAssessmentVC.put("assessmentForm", assessmentForm.getInitialComponent());
+		}
+		
 		putInitialPanel(identityAssessmentVC);
 	}
 	
 	public Identity getAssessedIdentity() {
 		return assessedIdentity;
+	}
+	
+	public CourseNode getCourseNode() {
+		return courseNode;
 	}
 
 	@Override
@@ -67,12 +126,27 @@ public class AssessmentIdentityCourseNodeController extends BasicController {
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == detailsEditController) {
+			// reset SCORM test
+			if(event == Event.CHANGED_EVENT) {
+				assessmentForm.reloadData();
+			} else if(event == Event.DONE_EVENT) {
+				fireEvent(ureq, Event.DONE_EVENT);
+			} else if(event instanceof OpenSubDetailsEvent) {
+				removeAsListenerAndDispose(subDetailsController);
+				
+				OpenSubDetailsEvent detailsEvent = (OpenSubDetailsEvent)event;
+				subDetailsController = detailsEvent.getSubDetailsController();
+				listenTo(subDetailsController);
+				stackPanel.pushController(translate("sub.details"), subDetailsController);
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
-
-	
-	
-
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		 
+	}
 }

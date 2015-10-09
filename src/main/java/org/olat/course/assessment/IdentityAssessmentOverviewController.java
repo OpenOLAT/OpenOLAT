@@ -135,6 +135,54 @@ public class IdentityAssessmentOverviewController extends BasicController {
 		putInitialPanel(main);
 	}
 	
+	public CourseNode getNextNode(CourseNode node) {
+		int index = getIndexOf(node);
+		
+		String nodeIdent = null; 
+		if(index >= 0) {
+			int nextIndex = index + 1;//next
+			if(nextIndex >= 0 && nextIndex < nodesTableModel.getRowCount()) {
+				nodeIdent = (String)nodesTableModel.getObject(nextIndex).get(AssessmentHelper.KEY_IDENTIFYER);
+			} else if(nodesTableModel.getRowCount() > 0) {
+				nodeIdent = (String)nodesTableModel.getObject(0).get(AssessmentHelper.KEY_IDENTIFYER);
+			}
+		}
+		
+		if(nodeIdent != null) {
+			return runStructure.getNode(nodeIdent);
+		}
+		return null;
+	}
+	
+	public CourseNode getPreviousNode(CourseNode node) {
+		int index = getIndexOf(node);
+		
+		String nodeIdent = null; 
+		if(index >= 0) {
+			int previousIndex = index - 1;//next
+			if(previousIndex >= 0 && previousIndex < nodesTableModel.getRowCount()) {
+				nodeIdent = (String)nodesTableModel.getObject(previousIndex).get(AssessmentHelper.KEY_IDENTIFYER);
+			} else if(nodesTableModel.getRowCount() > 0) {
+				nodeIdent = (String)nodesTableModel.getObject(nodesTableModel.getRowCount() - 1).get(AssessmentHelper.KEY_IDENTIFYER);
+			}
+		}
+		
+		if(nodeIdent != null) {
+			return runStructure.getNode(nodeIdent);
+		}
+		return null;
+	}
+	
+	private int getIndexOf(CourseNode node) {
+		for(int i=nodesTableModel.getRowCount(); i-->0; ) {
+			Object rowIdentityKey = nodesTableModel.getObject(i).get(AssessmentHelper.KEY_IDENTIFYER);
+			if(rowIdentityKey.equals(node.getIdent())) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,

@@ -136,7 +136,7 @@ public class AssessmentEditController extends BasicController {
 			infoCoach = Formatter.formatLatexFormulas(infoCoach);
 			detailView.contextPut("infoCoach", infoCoach);
 			// Add the assessment details form
-			assessmentForm = new AssessmentForm(ureq, wControl, courseNode, assessedIdentityWrapper, saveAndCloseButton);
+			assessmentForm = new AssessmentForm(ureq, wControl, courseNode, assessedIdentityWrapper.getUserCourseEnvironment(), saveAndCloseButton);
 			listenTo(assessmentForm);
 			
 			detailView.put("assessmentform", assessmentForm.getInitialComponent());

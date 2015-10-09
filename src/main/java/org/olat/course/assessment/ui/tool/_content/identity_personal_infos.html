@@ -1,4 +1,9 @@
-
 #if($r.available("identityInfos"))
 	$r.render("identityInfos")
+#end
+#if($r.available("certificateInfos"))
+	$r.render("certificateInfos")
+#end
+#if($r.available("courseOverview"))
+	$r.render("courseOverview")
 #end

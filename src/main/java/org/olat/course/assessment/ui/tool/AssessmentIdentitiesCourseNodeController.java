@@ -69,16 +69,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class AssessmentIdentitiesCourseNodeController extends FormBasicController {
-	
-	
-	
+
 	private final CourseNode courseNode;
 	private final RepositoryEntry courseEntry;
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	
-
 	private Link nextLink, previousLink;
 	private FlexiTableElement tableEl;
 	private final TooledStackedPanel stackPanel;
@@ -246,14 +243,13 @@ public class AssessmentIdentitiesCourseNodeController extends FormBasicControlle
 	}
 	
 	private int getIndexOf(Identity identity) {
-		int index = -1;
 		for(int i=usersTableModel.getRowCount(); i-->0; ) {
 			Long rowIdentityKey = usersTableModel.getObject(i).getIdentityKey();
 			if(rowIdentityKey.equals(identity.getKey())) {
 				return i;
 			}
 		}
-		return index;
+		return -1;
 	}
 	
 	private void doSelect(UserRequest ureq, AssessedIdentityCourseElementRow row) {
@@ -262,7 +258,8 @@ public class AssessmentIdentitiesCourseNodeController extends FormBasicControlle
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
 		String fullName = userManager.getUserDisplayName(assessedIdentity);
 		
-		currentIdentityCtrl = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), assessedIdentity);
+		currentIdentityCtrl = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), stackPanel,
+				courseEntry, courseNode, assessedIdentity);
 		listenTo(currentIdentityCtrl);
 		stackPanel.pushController(fullName, currentIdentityCtrl);
 		
