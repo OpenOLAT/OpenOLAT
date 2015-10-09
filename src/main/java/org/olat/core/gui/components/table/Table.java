@@ -523,7 +523,7 @@ public class Table extends AbstractComponent {
 	}
 
 	protected void resort() {
-		if (isSortingEnabled()) {
+		if (isSortingEnabled() && sortColumn < getColumnCount()) {
 			ColumnDescriptor currentSortingCd = getColumnDescriptor(sortColumn); // we sort after this
 			// column descriptor
 			// notify all nonactive ColumnDescriptors about their state
