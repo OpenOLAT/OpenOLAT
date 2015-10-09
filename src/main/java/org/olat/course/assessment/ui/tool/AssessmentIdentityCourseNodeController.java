@@ -25,37 +25,40 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
-import org.olat.repository.RepositoryEntry;
+import org.olat.core.id.Identity;
+import org.olat.course.assessment.AssessedIdentityInfosController;
 
 /**
  * 
- * Initial date: 07.10.2015<br>
+ * Initial date: 09.10.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentCourseOverviewController extends BasicController {
+public class AssessmentIdentityCourseNodeController extends BasicController {
 	
-	private final VelocityContainer mainVC;
-	private final AssessmentToReviewSmallController toReviewCtrl;
-	private final AssessmentCourseStatisticsSmallController statisticsCtrl;
-
+	private final Identity assessedIdentity;
 	
-	public AssessmentCourseOverviewController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry courseEntry, AssessmentToolSecurityCallback assessmentCallback) {
+	private final VelocityContainer identityAssessmentVC;
+	private AssessedIdentityInfosController infosController;
+	
+	public AssessmentIdentityCourseNodeController(UserRequest ureq, WindowControl wControl,
+			Identity assessedIdentity) {
 		super(ureq, wControl);
 		
-		mainVC = createVelocityContainer("course_overview");
+		this.assessedIdentity = assessedIdentity;
 		
-		toReviewCtrl = new AssessmentToReviewSmallController(ureq, getWindowControl(), courseEntry, assessmentCallback);
-		listenTo(toReviewCtrl);
-		mainVC.put("toReview", toReviewCtrl.getInitialComponent());
+		identityAssessmentVC = createVelocityContainer("identity_personal_infos");
+		identityAssessmentVC.contextPut("user", assessedIdentity.getUser());
 		
-		statisticsCtrl = new AssessmentCourseStatisticsSmallController(ureq, getWindowControl(), courseEntry, assessmentCallback);
-		listenTo(statisticsCtrl);
-		mainVC.put("statistics", statisticsCtrl.getInitialComponent());
-
-		putInitialPanel(mainVC);
+		infosController = new AssessedIdentityInfosController(ureq, wControl, assessedIdentity);
+		listenTo(infosController);
+		identityAssessmentVC.put("identityInfos", infosController.getInitialComponent());
+		
+		putInitialPanel(identityAssessmentVC);
+	}
+	
+	public Identity getAssessedIdentity() {
+		return assessedIdentity;
 	}
 
 	@Override
@@ -68,5 +71,8 @@ public class AssessmentCourseOverviewController extends BasicController {
 		//
 	}
 
+
+	
+	
 
 }

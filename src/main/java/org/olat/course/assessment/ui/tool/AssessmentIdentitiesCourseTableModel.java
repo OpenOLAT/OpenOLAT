@@ -74,7 +74,7 @@ public class AssessmentIdentitiesCourseTableModel extends DefaultFlexiTableDataM
 				case lastScoreUpdate: return statement == null ? null : statement.getLastModified();
 			}
 		}
-		int propPos = col - AssessmentIdentitiesCourseController.USER_PROPS_OFFSET;
+		int propPos = col - AssessmentToolConstants.USER_PROPS_OFFSET;
 		return row.getIdentityProp(propPos);
 	}
 

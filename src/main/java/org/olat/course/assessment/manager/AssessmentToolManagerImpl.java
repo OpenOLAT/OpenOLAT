@@ -29,7 +29,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.CodeHelper;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.CourseStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
@@ -102,8 +101,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		          .append("  )");
 			}
 			sf.append(" ) group by infos.resource.key");
-			
-			long start = System.nanoTime();
+
 			TypedQuery<Object[]> infos = dbInstance.getCurrentEntityManager()
 				.createQuery(sf.toString(), Object[].class)
 				.setParameter("resourceKey", courseEntry.getOlatResource().getKey())
@@ -111,7 +109,6 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			if(!params.isAdmin()) {
 				infos.setParameter("identityKey", coach.getKey());
 			}
-			CodeHelper.printNanoTime(start, "Infos takes:");
 
 			Object[] result = infos.getSingleResult();
 			Long initalLaunch = (Long)result[0];

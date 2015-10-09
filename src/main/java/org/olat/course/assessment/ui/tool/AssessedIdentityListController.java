@@ -51,7 +51,6 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessedIdentitiesTableDataModel;
 import org.olat.course.assessment.AssessmentMainController;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.IdentityAssessmentEditController;
@@ -73,9 +72,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class AssessedIdentityListController extends FormBasicController implements GenericEventListener {
-	
-	public static final int USER_PROPS_OFFSET = 500;
-	public static final String usageIdentifyer = AssessedIdentitiesTableDataModel.usageIdentifyer;
 
 	private FlexiTableElement tableEl;
 	private AssessedUserTableModel usersTableModel;
@@ -108,7 +104,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		this.courseEntry = courseEntry;
 		this.assessmentCallback = assessmentCallback;
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
-		userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AssessmentToolConstants.usageIdentifyer, isAdministrativeUser);
 		
 		initForm(ureq);
 		updateModel();
@@ -124,10 +120,10 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserCols.username, "select"));
 		
-		int colIndex = USER_PROPS_OFFSET;
+		int colIndex = AssessmentToolConstants.USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
-			boolean visible = UserManager.getInstance().isMandatoryUserProperty(usageIdentifyer , userPropertyHandler);
+			boolean visible = userManager.isMandatoryUserProperty(AssessmentToolConstants.usageIdentifyer , userPropertyHandler);
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, "select", false, null));
 		}
 		
@@ -253,7 +249,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 					case certificate: return certificates.get(row.getIdentityKey());
 				}
 			}
-			int propPos = col - USER_PROPS_OFFSET;
+			int propPos = col - AssessmentToolConstants.USER_PROPS_OFFSET;
 			return row.getIdentityProp(propPos);
 		}
 

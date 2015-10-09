@@ -86,6 +86,7 @@ import org.olat.ims.qti.process.ImsRepositoryResolver;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.iq.IQDisplayController;
 import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQSecurityCallback;
@@ -468,21 +469,27 @@ public class IQRunController extends BasicController implements GenericEventList
 		if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS)) {
 			AssessmentContext ac = ai.getAssessmentContext();
 			AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-			Float score = new Float(ac.getScore());
-			Boolean passed = new Boolean(ac.isPassed());
-			ScoreEvaluation sceval = new ScoreEvaluation(score, passed, am.getNodeFullyAssessed(courseNode,
-					getIdentity()), new Long(ai.getAssessID()));
-			AssessableCourseNode acn = (AssessableCourseNode)courseNode; // assessment nodes are assesable			
-			boolean incrementUserAttempts = true;
-			acn.updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), incrementUserAttempts);
+			Boolean fullyAssed = am.getNodeFullyAssessed(courseNode, getIdentity());
+			
+			String correctionMode = courseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
+			AssessmentEntryStatus assessmentStatus;
+			if(IQEditController.CORRECTION_MANUAL.equals(correctionMode)) {
+				assessmentStatus = AssessmentEntryStatus.inReview;
+			} else {
+				assessmentStatus = AssessmentEntryStatus.done;
+			}
+			
+			ScoreEvaluation sceval = new ScoreEvaluation(ac.getScore(), ac.isPassed(), assessmentStatus, fullyAssed, ai.getAssessID());
+			AssessableCourseNode acn = (AssessableCourseNode)courseNode; // assessment nodes are assesable		
+			acn.updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), true);
 				
 			// Mark publisher for notifications
 			Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 			assessmentNotificationsHandler.markPublisherNews(getIdentity(), courseId);
 			if(!assessmentStopped) {
-			  assessmentStopped = true;					  
-			  AssessmentEvent assessmentStoppedEvent = new AssessmentEvent(AssessmentEvent.TYPE.STOPPED, userSession);
-			  singleUserEventCenter.deregisterFor(this, assessmentInstanceOres);
+				assessmentStopped = true;					  
+				AssessmentEvent assessmentStoppedEvent = new AssessmentEvent(AssessmentEvent.TYPE.STOPPED, userSession);
+				singleUserEventCenter.deregisterFor(this, assessmentInstanceOres);
 				singleUserEventCenter.fireEventToListenersOf(assessmentStoppedEvent, assessmentEventOres);
 			}
 		} else if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY)) {

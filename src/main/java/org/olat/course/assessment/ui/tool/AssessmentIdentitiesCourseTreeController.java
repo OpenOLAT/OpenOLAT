@@ -31,10 +31,14 @@ import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeModel;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.AssessableCourseNode;
@@ -50,11 +54,11 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentIdentitiesCourseTreeController extends BasicController {
+public class AssessmentIdentitiesCourseTreeController extends BasicController implements Activateable2 {
 	
 	private final MenuTree menuTree;
 	private final Panel mainPanel;
-	private TooledStackedPanel stackPanel;
+	private final TooledStackedPanel stackPanel;
 	private Controller currentCtrl;
 	
 	private final RepositoryEntry courseEntry;
@@ -138,6 +142,16 @@ public class AssessmentIdentitiesCourseTreeController extends BasicController {
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) {
+			TreeNode rootNode = menuTree.getTreeModel().getRootNode();
+			if(rootNode.getUserObject() instanceof CourseNode) {
+				doSelectCourseNode(ureq, (CourseNode)rootNode.getUserObject());
+			}
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == menuTree) {
 			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
@@ -154,9 +168,9 @@ public class AssessmentIdentitiesCourseTreeController extends BasicController {
 
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		if(course.getRunStructure().getRootNode().equals(courseNode)) {
-			currentCtrl = new AssessmentIdentitiesCourseController(ureq, getWindowControl(), courseEntry, assessmentCallback);
+			currentCtrl = new AssessmentIdentitiesCourseController(ureq, getWindowControl(), stackPanel, courseEntry, assessmentCallback);
 		} else {
-			currentCtrl = new AssessmentIdentitiesCourseNodeController(ureq, getWindowControl(), courseEntry, courseNode, assessmentCallback);
+			currentCtrl = new AssessmentIdentitiesCourseNodeController(ureq, getWindowControl(), stackPanel, courseEntry, courseNode, assessmentCallback);
 		}
 		listenTo(currentCtrl);
 		mainPanel.setContent(currentCtrl.getInitialComponent());

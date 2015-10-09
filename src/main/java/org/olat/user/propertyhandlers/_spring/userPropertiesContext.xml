@@ -812,6 +812,23 @@
 					</bean>
 				</entry>
 				
+				<entry key="org.olat.course.assessment.ui.tool.AssessmentToReviewSmallController">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />														
+							</list>
+						</property>		
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+							</set>
+						</property>				
+					</bean>
+				</entry>
+				
 				<entry key="org.olat.admin.user.bulkChange.UserBulkChangeStep00">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">

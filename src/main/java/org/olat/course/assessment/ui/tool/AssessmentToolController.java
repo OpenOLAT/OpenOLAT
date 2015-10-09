@@ -96,9 +96,11 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private void doSelectUsersView(UserRequest ureq) {
 		removeAsListenerAndDispose(currentCtl);
 		
-		currentCtl = new AssessmentIdentitiesCourseTreeController(ureq, getWindowControl(), stackPanel,
+		AssessmentIdentitiesCourseTreeController treeCtrl = new AssessmentIdentitiesCourseTreeController(ureq, getWindowControl(), stackPanel,
 				courseEntry, assessmentCallback);
-		listenTo(currentCtl);
-		stackPanel.pushController(translate("users"), currentCtl);
+		listenTo(treeCtrl);
+		stackPanel.pushController(translate("users"), treeCtrl);
+		currentCtl = treeCtrl;
+		treeCtrl.activate(ureq, null, null);
 	}
 }

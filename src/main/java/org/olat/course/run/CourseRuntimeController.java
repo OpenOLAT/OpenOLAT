@@ -423,7 +423,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				assessmentLink.setElementCssClass("o_sel_course_assessment_tool");
 				tools.addComponent(assessmentLink);
 				
-				assessment_v2_Link = LinkFactory.createToolLink("assessment", translate("command.openassessment") + " v2", this, "o_icon_rocket");
+				assessment_v2_Link = LinkFactory.createToolLink("assessment", translate("command.openassessment") + " v2", this, "o_icon_assessment_tool");
 				assessment_v2_Link.setElementCssClass("o_sel_course_assessment_tool");
 				tools.addComponent(assessment_v2_Link);
 				
@@ -929,6 +929,22 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						//the wrong link to the wrong person
 					}
 				}
+			} else if ("assessmentToolv2".equalsIgnoreCase(type)) {
+				//check the security before, the link is perhaps in the wrong hands
+				if(reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || reSecurity.isGroupCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
+					try {
+						Activateable2 assessmentCtrl = doAssessmentTool_v2(ureq);
+						List<ContextEntry> subEntries;
+						if(entries.size() > 1 && entries.get(1).getOLATResourceable().getResourceableTypeName().equals(type)) {
+							subEntries = entries.subList(2, entries.size());
+						} else {
+							subEntries = entries.subList(1, entries.size());
+						}
+						assessmentCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+					} catch (OLATSecurityException e) {
+						//the wrong link to the wrong person
+					}
+				}
 			} else if ("TestStatistics".equalsIgnoreCase(type) || "SurveyStatistics".equalsIgnoreCase(type)) {
 				//check the security before, the link is perhaps in the wrong hands
 				if(reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || reSecurity.isGroupCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
@@ -1324,7 +1340,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	
 	private Activateable2 doAssessmentTool_v2(UserRequest ureq) {
 		if(delayedClose == Delayed.assessmentTool || requestForClose(ureq)) {
-			OLATResourceable ores = OresHelper.createOLATResourceableType("assessmentTool");
+			OLATResourceable ores = OresHelper.createOLATResourceableType("assessmentToolv2");
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl swControl = addToHistory(ureq, ores, null);
 			
@@ -1342,9 +1358,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			listenTo(ctrl);
 			assessmentTool_v2_Ctr = pushController(ureq, translate("command.openassessment"), ctrl);
 			currentToolCtr = assessmentTool_v2_Ctr;
-			setActiveTool(assessmentLink);
+			setActiveTool(assessment_v2_Link);
 			ctrl.initToolbar();
-			return assessmentToolCtr;
+			return assessmentTool_v2_Ctr;
 
 		} else {
 			delayedClose = Delayed.assessmentTool;

@@ -19,12 +19,45 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
+import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
+import org.olat.core.util.tree.TreeVisitor;
+import org.olat.core.util.tree.Visitor;
+import org.olat.course.CourseFactory;
+import org.olat.course.Structure;
+import org.olat.course.assessment.AssessmentMainController;
+import org.olat.course.assessment.AssessmentToolManager;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams;
+import org.olat.course.nodes.CourseNode;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserManager;
+import org.olat.user.UserPropertiesRow;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -34,19 +67,98 @@ import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
  */
 public class AssessmentToReviewSmallController extends FormBasicController {
 	
-	private final AssessmentToolSecurityCallback assessmentCallback;;
+
+	
+	private final RepositoryEntry courseEntry;
+	private final boolean isAdministrativeUser;
+	private final AssessmentToolSecurityCallback assessmentCallback;
+	
+	private FlexiTableElement tableEl;
+	private UsersToReviewTableModel usersTableModel;
+	private final List<UserPropertyHandler> userPropertyHandlers;
+	private final Map<String,String> nodeIdentToNodeShortTitles;
+	
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
+	@Autowired
+	private AssessmentToolManager assessmentToolManager;
 	
 	public AssessmentToReviewSmallController(UserRequest ureq, WindowControl wControl,
-			AssessmentToolSecurityCallback assessmentCallback) {
-		super(ureq, wControl);
+			RepositoryEntry courseEntry, AssessmentToolSecurityCallback assessmentCallback) {
+		super(ureq, wControl, "overview_to_review");
+		setTranslator(Util.createPackageTranslator(AssessmentMainController.class, getLocale(), getTranslator()));
+		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		
+		this.courseEntry = courseEntry;
 		this.assessmentCallback = assessmentCallback;
 		
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AssessmentToolConstants.reducedUsageIdentifyer, isAdministrativeUser);
+		
+		nodeIdentToNodeShortTitles = new HashMap<>();
+		Structure structure = CourseFactory.loadCourse(courseEntry).getRunStructure();
+		new TreeVisitor(new Visitor() {
+			@Override
+			public void visit(INode node) {
+				if(node instanceof CourseNode) {
+					CourseNode tNode = (CourseNode)node;
+					nodeIdentToNodeShortTitles.put(tNode.getIdent(), tNode.getShortTitle());
+				}
+			}
+		}, structure.getRootNode(), false).visitAll();
+		
 		initForm(ureq);
+		loadModel();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		//
+		//add the table
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		if(isAdministrativeUser) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToReviewCols.username, "select"));
+		}
+		
+		int colIndex = AssessmentToolConstants.USER_PROPS_OFFSET;
+		for (int i = 0; i < userPropertyHandlers.size(); i++) {
+			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
+			boolean visible = UserManager.getInstance().isMandatoryUserProperty(AssessmentToolConstants.reducedUsageIdentifyer , userPropertyHandler);
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, "select", false, null));
+		}
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToReviewCols.toReview, "select",
+				new ElementToReviewCellRenderer(nodeIdentToNodeShortTitles, getTranslator())));
+
+		usersTableModel = new UsersToReviewTableModel(columnsModel); 
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", usersTableModel, 20, false, getTranslator(), formLayout);
+		tableEl.setNumOfRowsEnabled(false);
+		tableEl.setExportEnabled(false);
+		tableEl.setCustomizeColumns(false);
+	}
+	
+	private void loadModel() {
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, null, null, assessmentCallback);
+		List<AssessmentEntry> entries = assessmentToolManager.getAssessmentEntries(getIdentity(), params, AssessmentEntryStatus.inReview);
+		List<UserToReviewRow> rows = new ArrayList<>();
+		
+		Map<Long,UserToReviewRow> identityKeyToRow = new HashMap<>();
+		for(AssessmentEntry entry:entries) {
+			Identity assessedIdentity = entry.getIdentity();
+			if(identityKeyToRow.containsKey(assessedIdentity.getKey())) {
+				identityKeyToRow.get(assessedIdentity.getKey())
+					.getNodeIndents().add(entry.getSubIdent());
+			} else {
+				UserToReviewRow row = new UserToReviewRow(entry.getIdentity(), userPropertyHandlers, getLocale());
+				row.getNodeIndents().add(entry.getSubIdent());
+				rows.add(row);
+				identityKeyToRow.put(assessedIdentity.getKey(), row);
+			}
+		}
+		
+		usersTableModel.setObjects(rows);
+		tableEl.reset();
 	}
 	
 	@Override
@@ -58,9 +170,68 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
-
 	
-	
+	public static class UserToReviewRow extends UserPropertiesRow implements ToReviewRow {
+		
+		private List<String> nodeIndents = new ArrayList<>(3);
+		
+		public UserToReviewRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+			super(identity, userPropertyHandlers, locale);
+		}
 
+		public List<String> getNodeIndents() {
+			return nodeIndents;
+		}
+	}
+
+	public class UsersToReviewTableModel extends DefaultFlexiTableDataModel<UserToReviewRow> implements SortableFlexiTableDataModel<UserToReviewRow> {
+
+		public UsersToReviewTableModel(FlexiTableColumnModel columnModel) {
+			super(columnModel);
+		}
+		
+		@Override
+		public void sort(SortKey sortKey) {
+			//
+		}
+		
+		@Override
+		public Object getValueAt(int row, int col) {
+			UserToReviewRow identityRow = getObject(row);
+			return getValueAt(identityRow, col);
+		}
+
+		@Override
+		public Object getValueAt(UserToReviewRow row, int col) {
+			if(col >= 0 && col < ToReviewCols.values().length) {
+				switch(ToReviewCols.values()[col]) {
+					case username: return row.getIdentityName();
+					case toReview: return row;
+				}
+			}
+			int propPos = col - AssessmentToolConstants.USER_PROPS_OFFSET;
+			return row.getIdentityProp(propPos);
+		}
+
+		@Override
+		public DefaultFlexiTableDataModel<UserToReviewRow> createCopyWithEmptyList() {
+			return new UsersToReviewTableModel(getTableColumnModel());
+		}
+	}
+
+	public enum ToReviewCols implements FlexiColumnDef {
+		
+		username("table.header.name"),
+		toReview("table.header.elements.toReview");
+		
+		private final String i18nKey;
+		
+		private ToReviewCols(String i18nKey) {
+			this.i18nKey = i18nKey;
+		}
+		
+		public String i18nHeaderKey() {
+			return i18nKey;
+		}
+	}
 }
