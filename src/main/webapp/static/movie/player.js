@@ -227,7 +227,21 @@ var BPlayer = {
 			content += "&amp;file=" + config.file + "' /></object></video>";
 		}
 
-		jQuery('#' + domId).html(content);
+		var target = jQuery('#' + domId);
+		// Set height on target element to auto to support responsive scaling
+		// with auto-resize
+		target.css({'height' : 'auto'});
+		// Set also width to auto in case the video is larger than the window.
+		// Normally the max-width on the target does already fix this responsive
+		// problem, but this does not work on iOS. 
+		// Don't set it permanently to auto because this will expand all videos
+		// to 100% and discard the configured width
+		if (jQuery(window).width() <= config.width) {
+			target.css({ 'width' : 'auto'});
+		}
+		// Now finally add video tags and flash fallback HTML code to DOM and
+		// call player on new video element
+		target.html(content);
 		jQuery('#' + mediaDomId).mediaelementplayer(meConfig);
 	},
 	
