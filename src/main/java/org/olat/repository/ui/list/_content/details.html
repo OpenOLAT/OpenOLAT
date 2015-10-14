@@ -14,7 +14,7 @@
 		</div>
 		#end
 		#if($r.available("thumbnail"))
-		<div class="o_media">
+		<div class="o_media #if(!$description || $description.length() == 0) o_desc_empty"#end ">
 			$r.render("thumbnail")
 		</div>
 		#end

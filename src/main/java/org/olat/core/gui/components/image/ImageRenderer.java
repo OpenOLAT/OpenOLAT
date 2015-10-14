@@ -92,7 +92,7 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		sb.append("<div id='").append(compId).append("' class='o_video'>"); // START component
 		// The inner component 
 		String imgId = "mov_" + ic.getDispatchID();
-		sb.append("<div id='").append(imgId).append("' name='").append(imgId).append("'></div>")
+		sb.append("<div id='").append(imgId).append("' name='").append(imgId).append("' style='width:").append(width).append("px; height:").append(height).append("px;' class='o_video_wrapper'></div>")
 		  .append("<script type='text/javascript'>")
 		  .append("/* <![CDATA[ */")
 		  .append("BPlayer.insertPlayer('").append(Settings.createServerURI()).append(mapperUrl);

@@ -15,7 +15,14 @@
 			float: right;
 			margin-left: 2em;
 			margin-bottom: 2em;			
-		}
+			/* reset when no description is there to render left aligned */
+			&.o_desc_empty {
+				float: none;
+				margin-left: 0;
+				margin-bottom: 0;						
+			}
+		}		
+		
 		h1 i {
 			display: none;
 		}
