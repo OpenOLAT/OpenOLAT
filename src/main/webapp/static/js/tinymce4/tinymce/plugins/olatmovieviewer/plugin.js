@@ -367,7 +367,7 @@
 					id:domIdentity,
 					name:domIdentity,
 					"class":"olatFlashMovieViewer",
-					"style":'display:block;border:solid 1px #000; width:' + playerWidth + 'px; height:' + playerHeight + 'px;'
+					"style":'display:block;border:solid 1px #000; width:auto; height:auto; max-width:100%;'
 				},h);
 				return node;
 			};

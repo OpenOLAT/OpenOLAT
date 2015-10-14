@@ -210,12 +210,13 @@ img.b_with_border {
 	@extend %o_video;
 } 
 
-/* movie player responsive fix */
+/* movie player responsive fix, compatibility with old embedded movies */
 span.olatFlashMovieViewer {
-	max-width: 100%;
+	max-width: 100% !important;
+	width: auto !important;
 	height: auto !important;
 }
-.mejs-container, .mejs-mediaelement video, .mejs-layers div {
+.mejs-container, .mejs-mediaelement video, .mejs-layers div, .me-cannotplay {
 	max-width: 100%;
 }
 
