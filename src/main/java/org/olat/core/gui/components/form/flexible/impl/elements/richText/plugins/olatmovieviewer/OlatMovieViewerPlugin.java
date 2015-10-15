@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin;
+import org.olat.core.helpers.Settings;
 
 /**
  * Description:<br>
@@ -64,7 +65,15 @@ public class OlatMovieViewerPlugin extends TinyMCECustomPlugin {
 
 		// Get static URI for transparent GIF.
 		params.put("transparentImage", StaticMediaDispatcher.createStaticURIFor("images/transparent.gif", false));
-		params.put("playerScript", StaticMediaDispatcher.createStaticURIFor("movie/player.js", true));
+		
+		// In production, we use the minified player, for debug the non-minified.
+		// However, in production the non-minified must be available as well to
+		// be compatible with old content that embedded the other code. 
+		if (Settings.isDebuging()) {
+			params.put("playerScript", StaticMediaDispatcher.createStaticURIFor("movie/player.js", true));
+		} else {
+			params.put("playerScript", StaticMediaDispatcher.createStaticURIFor("movie/player.min.js", true));			
+		}
 
 		setPluginParameters(params);
 		return params;
