@@ -77,7 +77,7 @@
 					#if ($!helper.getMediaType($episode.getEnclosure()) == "video")
 						BPlayer.insertPlayer("$!helper.getMediaUrl($episode)","o_podcast_${podId}_episode",$!helper.getWidth($episode),$!helper.getHeight($episode),false,null,"video");
 					#else
-						BPlayer.insertPlayer("$!helper.getMediaUrl($episode)","o_podcast_${podId}_episode",400,24,false,null,"sound");
+						BPlayer.insertPlayer("$!helper.getMediaUrl($episode)","o_podcast_${podId}_episode",400,30,false,null,"sound");
 					#end
 					/* ]]> */
 					</script>

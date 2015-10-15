@@ -182,11 +182,13 @@
 }
 
 /* media classes for video and image component */
-.o_video, %o_video {
+.o_video, .o_video video, %o_video, .o_video_wrapper {
 	@include img-responsive(inline-block);
+	max-width: 100%;
 }
-.o_image, %o_image {
+.o_image, .o_image img, %o_image {
 	@include img-responsive(inline-block);
+	max-width: 100%;
 }
 
 /* Hyphenated text */

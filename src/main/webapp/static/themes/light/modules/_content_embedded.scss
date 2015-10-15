@@ -210,11 +210,10 @@ img.b_with_border {
 	@extend %o_video;
 } 
 
-/* movie player responsive fix, compatibility with old embedded movies */
+/* Movie player responsive fix. Must correspond with js code in player.js*/
 span.olatFlashMovieViewer {
 	max-width: 100% !important;
-	width: auto !important;
-	height: auto !important;
+	border: none !important;
 }
 .mejs-container, .mejs-mediaelement video, .mejs-layers div, .me-cannotplay {
 	max-width: 100%;
