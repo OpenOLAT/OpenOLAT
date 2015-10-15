@@ -1,6 +1,5 @@
 The main library is MediaElement.js, there is a fallback the JWPlayer for some
 rtmp streams.
 
-mediaelement-and-player.min.js is slightly modified. At the beginning of the
-file, search for "audio/mp3","audio/m4a" and after add "audio/aac" to support
-AAC files
+mediaelement-and-player.min.js is slightly modified to support AAC even in flash fallback. 
+This AAC type support is added automatically by the BPlayer code after loading. 
