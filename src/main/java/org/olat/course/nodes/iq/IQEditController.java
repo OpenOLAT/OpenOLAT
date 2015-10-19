@@ -652,17 +652,20 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		TestFileResource fr = new TestFileResource();
 		fr.overrideResourceableId(re.getOlatResource().getResourceableId());
 		QTIEditorPackage qtiPackage = new QTIEditorPackageImpl(getIdentity(), fr, null, getTranslator());
-		Assessment ass = qtiPackage.getQTIDocument().getAssessment();
-
-		//Sections with their Items
-		List<Section> sections = ass.getSections();
-		for (Section section:sections) {
-			List<Item> items = section.getItems();
-			for (Item item:items) {
-				String ident = item.getIdent();
-				if(ident != null && ident.startsWith("QTIEDIT:ESSAY")) {
-					showWarning("warning.test.with.essay");
-					break;
+		if(qtiPackage.getQTIDocument() == null || qtiPackage.getQTIDocument().getAssessment() == null) {
+			showWarning("error.test.undefined.long", re.getDisplayname());
+		} else {
+			Assessment ass = qtiPackage.getQTIDocument().getAssessment();
+			//Sections with their Items
+			List<Section> sections = ass.getSections();
+			for (Section section:sections) {
+				List<Item> items = section.getItems();
+				for (Item item:items) {
+					String ident = item.getIdent();
+					if(ident != null && ident.startsWith("QTIEDIT:ESSAY")) {
+						showWarning("warning.test.with.essay");
+						break;
+					}
 				}
 			}
 		}
