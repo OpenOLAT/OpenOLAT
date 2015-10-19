@@ -918,13 +918,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				if(reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || reSecurity.isGroupCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
 					try {
 						Activateable2 assessmentCtrl = doAssessmentTool(ureq);
-						List<ContextEntry> subEntries;
-						if(entries.size() > 1 && entries.get(1).getOLATResourceable().getResourceableTypeName().equals(type)) {
-							subEntries = entries.subList(2, entries.size());
-						} else {
-							subEntries = entries.subList(1, entries.size());
+						if(assessmentCtrl != null) {
+							List<ContextEntry> subEntries;
+							if(entries.size() > 1 && entries.get(1).getOLATResourceable().getResourceableTypeName().equals(type)) {
+								subEntries = entries.subList(2, entries.size());
+							} else {
+								subEntries = entries.subList(1, entries.size());
+							}
+							assessmentCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 						}
-						assessmentCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 					} catch (OLATSecurityException e) {
 						//the wrong link to the wrong person
 					}

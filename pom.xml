@@ -162,7 +162,29 @@
 										</aggregation>
 									</aggregations>
 								</configuration>
-							</execution>
+							</execution>														
+							<execution>
+								<!-- compress movie player in place, don't append to any other file -->
+								<id>compressmovieplayer</id>
+								<phase>process-resources</phase>
+								<goals>
+									<goal>compress</goal>
+								</goals>
+								<configuration>
+									<suffix>.min</suffix>
+									<force>true</force>
+									<encoding>UTF-8</encoding>
+									<nocompress>false</nocompress>
+									<outputDirectory>${basedir}/src/main/webapp/static/movie</outputDirectory>
+									<sourceDirectory>${basedir}/src/main/webapp/static/movie</sourceDirectory>
+									<excludeResources>true</excludeResources>
+									<excludes>
+										<exclude>**/*.min.js</exclude>
+										<exclude>**/mediaelementjs/*</exclude>
+										<exclude>**/jw/*</exclude>
+									</excludes>
+								</configuration>
+							</execution>							
 							<execution>
 								<id>compressjs</id>
 								<phase>process-resources</phase>

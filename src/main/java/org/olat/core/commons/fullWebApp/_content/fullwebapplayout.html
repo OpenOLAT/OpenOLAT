@@ -87,12 +87,13 @@ function o_start(){
 	<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/modal.js")'></script>
 	<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/tooltip.js")'></script>
 	<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/popover.js")'></script>
+	## The OpenOLAT video player. In separate file as it is also used in content iframes
+	<script type="text/javascript" src='$r.staticLink("movie/player.js")'></script>	
 #else
 	<script type="text/javascript" src='$r.staticLink("js/js.plugins.min.js")'></script>
+	<script type="text/javascript" src='$r.staticLink("movie/player.min.js")'></script>
 #end
 
-## The OpenOLAT video player. In separate file as it is also used in content iframes
-<script type="text/javascript" src='$r.staticLink("movie/player.js")'></script>
 <script type="text/javascript" src='$r.staticLink("assessment/rendering/javascript/AsciiMathInputController.js")'></script>
 <script type="text/javascript" src='$r.staticLink("assessment/rendering/javascript/UpConversionAjaxController.js")'></script>
 
