@@ -118,8 +118,8 @@ public class IQControllerCreatorOlat implements IQControllerCreator {
 		Controller controller;
 		// Do not allow guests to start tests
 		Roles roles = ureq.getUserSession().getRoles();
-		Translator trans = Util.createPackageTranslator(IQTESTCourseNode.class, ureq.getLocale());
 		if (roles.isGuestOnly()) {
+			Translator trans = Util.createPackageTranslator(IQTESTCourseNode.class, ureq.getLocale());
 			String title = trans.translate("guestnoaccess.title");
 			String message = trans.translate("guestnoaccess.message");
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
@@ -132,17 +132,25 @@ public class IQControllerCreatorOlat implements IQControllerCreator {
 				AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 				IQSecurityCallback sec = new CourseIQSecurityCallback(courseNode, am, ureq.getIdentity());
 				RepositoryEntry repositoryEntry = courseNode.getReferencedRepositoryEntry();
-				OLATResourceable ores = repositoryEntry.getOlatResource();
-				Long resId = ores.getResourceableId();
-				TestFileResource fr = new TestFileResource();
-				fr.overrideResourceableId(resId);
-				if(!CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(fr, null)) {
-					//QTI1
-					controller = new IQRunController(userCourseEnv, courseNode.getModuleConfiguration(), sec, ureq, wControl, courseNode);
-				} else {
-					String title = trans.translate("editor.lock.title");
-					String message = trans.translate("editor.lock.message");
+				if(repositoryEntry == null) {
+					Translator trans = Util.createPackageTranslator(IQControllerCreatorOlat.class, ureq.getLocale());
+					String title = trans.translate("error.test.undefined.short", new String[]{ courseNode.getShortTitle() });
+					String message = trans.translate("error.test.undefined.long", new String[]{ courseNode.getShortTitle() });
 					controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+				} else {
+					OLATResourceable ores = repositoryEntry.getOlatResource();
+					Long resId = ores.getResourceableId();
+					TestFileResource fr = new TestFileResource();
+					fr.overrideResourceableId(resId);
+					if(!CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(fr, null)) {
+						//QTI1
+						controller = new IQRunController(userCourseEnv, courseNode.getModuleConfiguration(), sec, ureq, wControl, courseNode);
+					} else {
+						Translator trans = Util.createPackageTranslator(IQTESTCourseNode.class, ureq.getLocale());
+						String title = trans.translate("editor.lock.title");
+						String message = trans.translate("editor.lock.message");
+						controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+					}
 				}
 			}
 		}

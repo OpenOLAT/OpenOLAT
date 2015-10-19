@@ -79,7 +79,7 @@ public class RepositoryMailing {
 	 * @param actor
 	 * @return the generated MailTemplate
 	 */
-	public static MailTemplate createAddTutorMailTemplate(RepositoryEntry re, Identity actor) {
+	private static MailTemplate createAddTutorMailTemplate(RepositoryEntry re, Identity actor) {
 		String subjectKey = "notification.mail.added.subject";
 		String bodyKey = "notification.mail.added.body";
 		return createMailTemplate(re, actor, subjectKey, bodyKey);
@@ -92,7 +92,7 @@ public class RepositoryMailing {
 	 * @param actor
 	 * @return the generated MailTemplate
 	 */
-	public static MailTemplate createRemoveParticipantMailTemplate(RepositoryEntry re, Identity actor) {
+	private static MailTemplate createRemoveParticipantMailTemplate(RepositoryEntry re, Identity actor) {
 		String subjectKey = "notification.mail.removed.subject";
 		String bodyKey = "notification.mail.removed.body";
 		return createMailTemplate(re, actor, subjectKey, bodyKey);
@@ -173,9 +173,6 @@ public class RepositoryMailing {
 		Translator trans = Util.createPackageTranslator(RepositoryManager.class, locale);
 		String subject = trans.translate(subjectKey);
 		String body = trans.translate(bodyKey, bodyArgs);
-		
-		subject = subject.replaceAll("\\$coursename", reName == null ? "" : reName);
-		body = body.replaceAll("\\$coursedescription", redescription == null ? "" : redescription);
 		
 		// create a mail template which all these data
 		MailTemplate mailTempl = new MailTemplate(subject, body, null) {
