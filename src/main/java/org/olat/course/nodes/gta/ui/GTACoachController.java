@@ -34,6 +34,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
@@ -72,6 +74,7 @@ public class GTACoachController extends GTAAbstractController {
 	private GTACoachedGroupGradingController groupGradingCtrl;
 	private GTACoachedParticipantGradingController participantGradingCtrl;
 	private GTACoachRevisionAndCorrectionsController revisionDocumentsCtrl;
+	private DialogBoxController confirmRevisionsCtrl, confirmReviewDocumentCtrl;
 	private ContactFormController emailController;
 	private CloseableModalController cmc;
 	private Link emailLink;
@@ -390,12 +393,12 @@ public class GTACoachController extends GTAAbstractController {
 		if(reviewedButton == source) {
 			if(submitCorrectionsCtrl != null) {
 				Task assignedTask = submitCorrectionsCtrl.getAssignedTask();
-				doReviewedDocument(ureq, assignedTask);
+				doConfirmReviewDocument(ureq, assignedTask);
 			}
 		} else if(needRevisionsButton == source) {
 			if(submitCorrectionsCtrl != null) {
 				Task assignedTask = submitCorrectionsCtrl.getAssignedTask();
-				doRevisions(ureq, assignedTask);
+				doConfirmRevisions(ureq, assignedTask);
 			}
 		} else if (emailLink == source) {
 			doOpenMailForm(ureq);
@@ -419,12 +422,21 @@ public class GTACoachController extends GTAAbstractController {
 				Task assignedTask = submitCorrectionsCtrl.getAssignedTask();
 				gtaManager.log("Corrections", (SubmitEvent)event, assignedTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
 			}
+		} else if(confirmReviewDocumentCtrl == source) {
+			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				Task assignedTask = (Task)confirmReviewDocumentCtrl.getUserObject();
+				doReviewedDocument(ureq, assignedTask);
+			}
+		} else if(confirmRevisionsCtrl == source) {
+			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				Task assignedTask = (Task)confirmRevisionsCtrl.getUserObject();
+				doRevisions(ureq, assignedTask);
+			}
 		} else if(source == cmc) {
 			doCloseMailForm(false);
 		} else if (source == emailController) {
 			doCloseMailForm(true);
 		}
-
 		super.event(ureq, source, event);
 	}
 
@@ -466,6 +478,14 @@ public class GTACoachController extends GTAAbstractController {
 		revisionDocumentsCtrl = null;
 	}
 	
+	private void doConfirmReviewDocument(UserRequest ureq, Task task) {
+		String title = translate("coach.reviewed.confirm.title");
+		String text = translate("coach.reviewed.confirm.text");
+		confirmReviewDocumentCtrl = activateOkCancelDialog(ureq, title, text, confirmReviewDocumentCtrl);	
+		listenTo(confirmReviewDocumentCtrl);
+		confirmReviewDocumentCtrl.setUserObject(task);
+	}
+	
 	private void doReviewedDocument(UserRequest ureq, Task task) {
 		//go to solution, grading or graded
 		TaskProcess nextStep = gtaManager.nextStep(TaskProcess.correction, gtaNode);
@@ -475,6 +495,14 @@ public class GTACoachController extends GTAAbstractController {
 		
 		cleanUpProcess();
 		process(ureq);
+	}
+	
+	private void doConfirmRevisions(UserRequest ureq, Task task) {
+		String title = translate("coach.revisions.confirm.title");
+		String text = translate("coach.revisions.confirm.text");
+		confirmRevisionsCtrl = activateOkCancelDialog(ureq, title, text, confirmRevisionsCtrl);	
+		listenTo(confirmRevisionsCtrl);
+		confirmRevisionsCtrl.setUserObject(task);
 	}
 	
 	private void doRevisions(UserRequest ureq, Task task) {

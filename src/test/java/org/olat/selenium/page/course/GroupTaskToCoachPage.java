@@ -93,19 +93,26 @@ public class GroupTaskToCoachPage {
 		By reviewBy = By.cssSelector("#o_step_review_content .o_sel_course_gta_reviewed");
 		browser.findElement(reviewBy).click();
 		OOGraphene.waitBusy(browser);
-		return this;
+		return confirm();
 	}
 	
 	public GroupTaskToCoachPage needRevision() {
 		By reviewBy = By.cssSelector("#o_step_review_content .o_sel_course_gta_need_revision");
 		browser.findElement(reviewBy).click();
 		OOGraphene.waitBusy(browser);
-		return this;
+		return confirm();
 	}
 	
 	public GroupTaskToCoachPage closeRevisions() {
 		By closeRevisionBy = By.cssSelector("#o_step_revision_content .o_sel_course_gta_close_revision");
 		browser.findElement(closeRevisionBy).click();
+		OOGraphene.waitBusy(browser);
+		return confirm();
+	}
+	
+	public GroupTaskToCoachPage confirm() {
+		WebElement yesLink = browser.findElement(By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@href,'link_0')]"));
+		yesLink.click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
