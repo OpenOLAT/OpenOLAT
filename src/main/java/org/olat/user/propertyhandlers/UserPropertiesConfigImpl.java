@@ -26,12 +26,15 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.olat.core.configuration.Initializable;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.LogDelegator;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LogModule;
 import org.olat.user.UserPropertiesConfig;
 
@@ -43,18 +46,19 @@ import org.olat.user.UserPropertiesConfig;
  * 
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
-public class UserPropertiesConfigImpl extends LogDelegator implements UserPropertiesConfig, Initializable {
-	
+public class UserPropertiesConfigImpl implements UserPropertiesConfig, Initializable {
+	private static final OLog log = Tracing.createLoggerFor(UserPropertiesConfigImpl.class);
 	private static final String USER_PROPERTY_LOG_CONFIGURATION = "userPropertyLogConfiguration";
 	public static final String PACKAGE = UserPropertiesConfigImpl.class.getPackage().getName(); 
 
 	
 	private Map<String, UserPropertyHandler> userPropertyNameLookupMap;
-	private Map<String, List<UserPropertyHandler>> userPropertyUsageContextsLookupMap = new HashMap<String, List<UserPropertyHandler>>();
+	private ConcurrentMap<String, List<UserPropertyHandler>> userPropertyUsageContextsLookupMap = new ConcurrentHashMap<String, List<UserPropertyHandler>>();
 	
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private Map<String, UserPropertyUsageContext> userPropertyUsageContexts;
 
+	@Override
 	public void init() {
 		List<UserPropertyHandler> userPropHandlers = getUserPropertyHandlersFor(USER_PROPERTY_LOG_CONFIGURATION, false);
 		Set<String> userProperties = new LinkedHashSet<String>();
@@ -71,15 +75,17 @@ public class UserPropertiesConfigImpl extends LogDelegator implements UserProper
 	public void setUserPropertyUsageContexts(Map<String,UserPropertyUsageContext> userPropertyUsageContexts) {
 		this.userPropertyUsageContexts = userPropertyUsageContexts;
 	}
-	
+
+	@Override
 	public Map<String,UserPropertyUsageContext> getUserPropertyUsageContexts(){
-		return this.userPropertyUsageContexts;
+		return userPropertyUsageContexts;
 	}
 
 	/**
 	 * Spring setter
 	 * @param userPropertyHandlers
 	 */
+	@Override
 	public void setUserPropertyHandlers(List<UserPropertyHandler> userPropertyHandlers) {
 		this.userPropertyHandlers = userPropertyHandlers;
 		// populate name lookup map for faster lookup service
@@ -94,10 +100,11 @@ public class UserPropertiesConfigImpl extends LogDelegator implements UserProper
 	 * 
 	 * @see org.olat.user.UserPropertiesConfig#getPropertyHandler(java.lang.String)
 	 */
+	@Override
 	public UserPropertyHandler getPropertyHandler(String handlerName) {
 		UserPropertyHandler handler =  userPropertyNameLookupMap.get(handlerName);
-		if (isLogDebugEnabled() && handler == null) {
-			logDebug("UserPropertyHander for handlerName::" + handlerName + " not found, check your configuration.", null);
+		if (handler == null && log.isDebug()) {
+			log.debug("UserPropertyHander for handlerName::" + handlerName + " not found, check your configuration.", null);
 		}
 		return handler;
 	}
@@ -105,6 +112,7 @@ public class UserPropertiesConfigImpl extends LogDelegator implements UserProper
 	/**
 	 * @see org.olat.user.UserPropertiesConfig#getTranslator(org.olat.core.gui.translator.Translator)
 	 */
+	@Override
 	public Translator getTranslator(Translator fallBack) {
 		return new PackageTranslator(PACKAGE, fallBack.getLocale(), fallBack); 
 	}
@@ -112,6 +120,7 @@ public class UserPropertiesConfigImpl extends LogDelegator implements UserProper
 	/**
 	 * @see org.olat.user.UserPropertiesConfig#getAllUserPropertyHandlers()
 	 */
+	@Override
 	public List<UserPropertyHandler> getAllUserPropertyHandlers() {
 		return userPropertyHandlers;
 	}
@@ -119,42 +128,35 @@ public class UserPropertiesConfigImpl extends LogDelegator implements UserProper
 	/**
 	 * @see org.olat.user.UserPropertiesConfig#getUserPropertyHandlersFor(java.lang.String, boolean)
 	 */
+	@Override
 	public List<UserPropertyHandler> getUserPropertyHandlersFor(String usageIdentifyer, boolean isAdministrativeUser) {
 		String key = usageIdentifyer + "_" + isAdministrativeUser;
 		List<UserPropertyHandler> currentUsageHandlers = userPropertyUsageContextsLookupMap.get(key);
-		if (currentUsageHandlers != null) {
-			return currentUsageHandlers;
-		}
-		
-		// synchronize access to lookup map in this VM. No need for clustering locks.
-		synchronized (userPropertyUsageContextsLookupMap) {
-			// use little hashmap as local cache makes no sense to perform this over
-			// and over again
-			currentUsageHandlers = userPropertyUsageContextsLookupMap.get(key);
-			if (currentUsageHandlers != null) {
-				return currentUsageHandlers;
-			} 
-			// not found, build it and put it in cache
-			currentUsageHandlers = new ArrayList<UserPropertyHandler>();
+		if (currentUsageHandlers == null) {
+			List<UserPropertyHandler> newUsageHandlers = new ArrayList<>();
 			UserPropertyUsageContext currentUsageConfig = getCurrentUsageConfig(usageIdentifyer);			
-			// add all handlers that are accessable for this user
+			// add all handlers that are accessible for this user
 			for (UserPropertyHandler propertyHandler : currentUsageConfig.getPropertyHandlers()) {
 				// if configured for this class and if isAdministrativeUser
 				if (currentUsageConfig.isForAdministrativeUserOnly(propertyHandler) && !isAdministrativeUser) {
 					// don't add this handler for this user
 					continue;
 				}
-				currentUsageHandlers.add(propertyHandler);								
+				newUsageHandlers.add(propertyHandler);								
 			}
-			// now add list to cache
-			userPropertyUsageContextsLookupMap.put(key, currentUsageHandlers);
-			return currentUsageHandlers;			
+			
+			currentUsageHandlers = userPropertyUsageContextsLookupMap.putIfAbsent(key, newUsageHandlers);
+			if(currentUsageHandlers == null) {
+				currentUsageHandlers = newUsageHandlers;
+			}
 		}
+		return currentUsageHandlers;
 	}
 
 	/**
 	 * @see org.olat.user.UserPropertiesConfig#isMandatoryUserProperty(java.lang.String, org.olat.user.propertyhandlers.UserPropertyHandler)
 	 */
+	@Override
 	public boolean isMandatoryUserProperty(String usageIdentifyer, UserPropertyHandler propertyHandler) {
 		UserPropertyUsageContext currentUsageConfig = getCurrentUsageConfig(usageIdentifyer);
 		return currentUsageConfig.isMandatoryUserProperty(propertyHandler);
@@ -163,6 +165,7 @@ public class UserPropertiesConfigImpl extends LogDelegator implements UserProper
 	/**
 	 * @see org.olat.user.UserPropertiesConfig#isUserViewReadOnly(java.lang.String, org.olat.user.propertyhandlers.UserPropertyHandler)
 	 */
+	@Override
 	public boolean isUserViewReadOnly(String usageIdentifyer, UserPropertyHandler propertyHandler) {
 		UserPropertyUsageContext currentUsageConfig = getCurrentUsageConfig(usageIdentifyer);
 		return currentUsageConfig.isUserViewReadOnly(propertyHandler);
@@ -177,11 +180,12 @@ public class UserPropertiesConfigImpl extends LogDelegator implements UserProper
 		UserPropertyUsageContext currentUsageConfig = userPropertyUsageContexts.get(usageIdentifyer);
 		if (currentUsageConfig == null) {
 			currentUsageConfig = userPropertyUsageContexts.get("default");
-			logWarn(
+			log.warn(
 					"Could not find user property usage configuration for usageIdentifyer::" + usageIdentifyer
 							+ ", please check yout olat_userconfig.xml file. Using default configuration instead.", null);
-			if (currentUsageConfig == null) { throw new OLATRuntimeException(
-					"Missing default user property usage configuratoin in olat_userconfig.xml", null); }
+			if (currentUsageConfig == null) {
+				throw new OLATRuntimeException("Missing default user property usage configuratoin in olat_userconfig.xml", null);
+			}
 		}
 		return currentUsageConfig;
 	}
