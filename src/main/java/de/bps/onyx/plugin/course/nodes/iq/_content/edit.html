@@ -1,6 +1,6 @@
 <fieldset>
 	<legend>$repEntryTitle</legend>
-	$r.contextHelpWithWrapper("org.olat.course.nodes.iq","ced-qti-append.html","help.iq.file.name")
+	$r.contextHelpWithWrapper("Assessment#_selbsttest_kursbaustein")
 	#if ($dontRenderRepositoryButton)
 		<p>		
 		<strong>$r.translate("file.name"):</strong>&nbsp;
@@ -55,12 +55,6 @@ $r.render("filechoosecreateedit")
 
 <fieldset>
 	<legend>$r.translate("choosenlayout")</legend>
-	#if ($type == "Assessment")
-		$r.contextHelpWithWrapper("org.olat.course.nodes.iq","ced-qti-config-test.html","help.iq.layout")
-	#elseif ($type == "Self-Assessment")
-		$r.contextHelpWithWrapper("org.olat.course.nodes.iq","ced-qti-config-self.html","help.iq.layout")
-	#else
-		$r.contextHelpWithWrapper("org.olat.course.nodes.iq","ced-qti-config-surv.html","help.iq.layout")
-	#end
+	$r.contextHelpWithWrapper("Assessment#_fragebogen")
 	$r.render("iqeditform")
 </fieldset>

@@ -143,8 +143,8 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("option.desc");
-		setFormContextHelp(this.getClass().getPackage().getName(), "display-options.html", "chelp.display-options.title");
-		
+		setFormContextHelp("Knowledge Transfer");
+
 		String[] inheritValues = new String[]{
 				translate("inherit"), translate("custom")	
 		};

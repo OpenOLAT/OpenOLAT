@@ -236,8 +236,8 @@ public class LTIConfigForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("form.title");
-		setFormContextHelp("org.olat.course.nodes.basiclti","ced-lti-conf.html","help.hover.lt.conf");
-			
+		setFormContextHelp("Other#_lti_config");
+
 		thost = uifactory.addTextElement("host", "LTConfigForm.url", 255, fullURI, formLayout);
 		thost.setExampleKey("LTConfigForm.url.example", null);
 		thost.setDisplaySize(64);

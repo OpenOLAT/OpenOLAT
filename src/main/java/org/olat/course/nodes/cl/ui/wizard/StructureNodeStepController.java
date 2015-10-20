@@ -67,8 +67,7 @@ public class StructureNodeStepController extends StepFormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("structurenode.configuration");
 		setFormDescription("structurenode.configuration.description");
-		setFormContextHelp("org.olat.course.nodes.cl.ui", "cl-st-config.html", "help.hover.structurenodeconfig");
-		
+
 		shortTitleEl = uifactory.addTextElement("nodeConfigForm.menutitle", "nodeConfigForm.menutitle", NodeConfigFormController.SHORT_TITLE_MAX_LENGTH, null, formLayout);
 		shortTitleEl.setMandatory(true);
 		shortTitleEl.setCheckVisibleLength(true);

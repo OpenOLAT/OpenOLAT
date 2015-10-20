@@ -59,8 +59,7 @@ public class CheckListConfigurationStepController extends StepFormBasicControlle
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("configuration.template");
 		setFormDescription("configuration.template.description");
-		setFormContextHelp("org.olat.course.nodes.cl.ui", "cl-template-configuration.html", "help.hover.templateconfiguration");
-		
+
 		formLayout.add("config", configController.getInitialFormItem());
 	}
 

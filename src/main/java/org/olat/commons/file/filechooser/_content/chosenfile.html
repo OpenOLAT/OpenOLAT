@@ -1,13 +1,7 @@
 <fieldset class="o_form form-horizontal clearfix">
 	<legend>
-		#if ($target == "Assessment")
-			$r.contextHelpWithWrapper("org.olat.course.nodes.iq","ced-qti-start-test.html", "help.choose.file")
-		#elseif ($target == "Self-Assessment")
-			$r.contextHelpWithWrapper("org.olat.course.nodes.iq","ced-qti-start-self.html", "help.choose.file")
-		#elseif ($target == "Survey")
-			$r.contextHelpWithWrapper("org.olat.course.nodes.iq","ced-qti-start-surv.html", "help.choose.file")
-		#elseif ($target == "default")
-			$r.contextHelpWithWrapper("org.olat.course.nodes.sp","ced-sp-choose.html", "help.choose.file")
+		if ($target == "default")
+			$r.contextHelpWithWrapper("Knowledge Transfer#_einzelseite")
 		#end
 	$fieldSetLegend</legend>
 	
@@ -45,7 +39,7 @@
 
 #if ($fileIsChoosen)
 <fieldset>
-	<legend>$r.contextHelpWithWrapper("org.olat.course.nodes.sp","ced-sp-secur.html", "help.link.file")
+	<legend>
 	$r.translate("fieldset.allowRelativeLinksForm")</legend>
 	$r.render("allowRelativeLinksForm")
 </fieldset>

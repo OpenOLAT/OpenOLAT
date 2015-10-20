@@ -95,8 +95,7 @@ public class PortfolioTextForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("pane.tab.portfolio_config.explanation");
-		setFormContextHelp(this.getClass().getPackage().getName(), "ced_portfolio_task.html", "chelp.ced_portfolio_task.hoover");
-		
+
 		String[] absolutKeys = new String[]{DeadlineType.none.name(), DeadlineType.absolut.name(), DeadlineType.relative.name()};
 		String[] absolutValues = new String[] {
 				translate("map.deadline." + absolutKeys[0]), translate("map.deadline." + absolutKeys[1]), translate("map.deadline." + absolutKeys[2])

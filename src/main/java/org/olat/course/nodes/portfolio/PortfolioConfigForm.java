@@ -112,8 +112,7 @@ public class PortfolioConfigForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("pane.tab.portfolio_config.title");
-		setFormContextHelp("org.olat.course.nodes.portfolio", "ced_portfolio.html", "ced.hover");
-	
+
 		String name = map == null
 				? translate("error.noreference.short", courseNode.getShortTitle())
 				: StringHelper.escapeHtml(map.getTitle());
