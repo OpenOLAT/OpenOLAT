@@ -204,7 +204,6 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		initForm(ureq);
 	}
 	
-	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -267,19 +266,17 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			if (userPropertyHandler == null) continue;
 
 			String propName = userPropertyHandler.getName();
-			boolean visible = UserManager.getInstance().isMandatoryUserProperty(USER_PROPS_ID , userPropertyHandler);
-			if(visible) {
-				FlexiColumnModel col;
-				if(UserConstants.FIRSTNAME.equals(propName)
-						|| UserConstants.LASTNAME.equals(propName)) {
-					col = new StaticFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(),
-							colPos++, TABLE_ACTION_EDIT, true, propName,
-							new StaticFlexiCellRenderer(TABLE_ACTION_EDIT, new TextFlexiCellRenderer()));
-				} else {
-					col = new DefaultFlexiColumnModel(true, userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos++, true, propName);
-				}
-				columnsModel.addFlexiColumnModel(col);
+			boolean visible = userManager.isMandatoryUserProperty(USER_PROPS_ID , userPropertyHandler);
+
+			FlexiColumnModel col;
+			if(UserConstants.FIRSTNAME.equals(propName) || UserConstants.LASTNAME.equals(propName)) {
+				col = new StaticFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos, TABLE_ACTION_EDIT, true, propName,
+						new StaticFlexiCellRenderer(TABLE_ACTION_EDIT, new TextFlexiCellRenderer()));
+			} else {
+				col = new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos, true, propName);
 			}
+			columnsModel.addFlexiColumnModel(col);
+			colPos++;
 		}
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.firstTime.i18n(), Cols.firstTime.ordinal(), true, Cols.firstTime.name()));
