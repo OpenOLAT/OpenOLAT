@@ -45,12 +45,11 @@ import org.olat.ims.qti.export.helper.QTIItemObject;
  * 
  * @author Alexander Schneider
  */
-public class QTIExportFormatterCSVType3 extends QTIExportFormatter{
+public class QTIExportFormatterCSVType3 extends QTIExportFormatter {
 	private String fileNamePrefix = "QUEST_";
 	private int type = 3;
 	private String sep; // fields separated by
 	private String emb; // fields embedded by
-	private String esc; // fields escaped by
 	private String car; // carriage return
 	// Author can export the mattext without HTML tags
 	// especially used for the results export of matrix questions created by QANT
@@ -74,11 +73,10 @@ public class QTIExportFormatterCSVType3 extends QTIExportFormatter{
 	 * @param Map qtiExportFormatConfig with (QTIExportItemXYZ.class,IQTIExportItemFormatConfig)
 	 */
 	
-	public QTIExportFormatterCSVType3(Locale locale, IdentityAnonymizerCallback anonymizerCallback, String sep, String emb, String esc, String car, boolean tagless) {
+	public QTIExportFormatterCSVType3(Locale locale, IdentityAnonymizerCallback anonymizerCallback, String sep, String emb, String car, boolean tagless) {
 		super(locale, anonymizerCallback);
 		this.sep = sep;
 		this.emb = emb;
-		this.esc = esc;
 		this.car = car;
 		this.tagless = tagless;
 	}

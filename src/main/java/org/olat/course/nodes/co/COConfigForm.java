@@ -342,8 +342,8 @@ public class COConfigForm extends FormBasicController {
 
 		
 		setFormTitle("header", null);
-		setFormContextHelp("org.olat.course.nodes.co","ced-co.html","help.hover.co");
-		
+		setFormContextHelp("Administration and Organisation#_mail");
+
 		//for displaying error message in case neither group stuff nor email is selected
 				recipentsContainer = FormLayoutContainer.createHorizontalFormLayout(
 						"recipents", getTranslator()

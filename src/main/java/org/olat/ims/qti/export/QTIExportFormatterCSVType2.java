@@ -51,7 +51,6 @@ public class QTIExportFormatterCSVType2 extends QTIExportFormatter {
 	// Delimiters and file name suffix for the export file
 	private String sep; // fields separated by
 	private String emb; // fields embedded by
-	private String esc; // fields escaped by
 	private String car; // carriage return
 	// Author can export the mattext without HTML tags
 	// especially used for the results export of matrix questions created by QANT
@@ -74,11 +73,10 @@ public class QTIExportFormatterCSVType2 extends QTIExportFormatter {
 	 *            qtiExportFormatConfig with (QTIExportItemXYZ.class,IQTIExportItemFormatConfig)
 	 */
 	
-	public QTIExportFormatterCSVType2(Locale locale, IdentityAnonymizerCallback anonymizerCallback, String sep, String emb, String esc, String car, boolean tagless) {
+	public QTIExportFormatterCSVType2(Locale locale, IdentityAnonymizerCallback anonymizerCallback, String sep, String emb, String car, boolean tagless) {
 		super(locale, anonymizerCallback);
 		this.sep = sep;
 		this.emb = emb;
-		this.esc = esc;
 		this.car = car;
 		this.tagless = tagless;
 	}

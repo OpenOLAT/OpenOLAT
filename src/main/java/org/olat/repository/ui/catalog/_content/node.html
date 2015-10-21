@@ -39,6 +39,12 @@
 						</div>
 					</div>
 				#end
+				#if($subCategories && $subCategories.size() % 2 == 1)
+					<div class="o_sublevel o_fill_sublevels">
+						<div class="o_visual"></div>
+						<div class="o_meta"><h4 class="o_title">&nbsp;</h4></div>
+					</div>
+				#end
 			</div>
 		#elseif($listStyle == "compact")
 			<ul class="o_sublevels_compact list-unstyled">

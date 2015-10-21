@@ -1,15 +1,7 @@
 <div id="o_cal_config_below_cal_container">
 	<div class="o_cal_toptoolbar clearfix">
 		<div class="o_cal_toptoolbar_help">
-		#if ($caller == "home")
-			$r.contextHelp("org.olat.commons.calendar","personal-calendar.html","help.hover.personalcal")
-		#elseif ($caller == "course")
-			$r.contextHelp("Course Settings#_optionen")
-		#elseif ($caller == "collab")
-			$r.contextHelp("org.olat.commons.calendar","group-calendar.html","help.hover.groupcal")
-		#elseif ($caller == "profile")
-			$r.contextHelp("org.olat.commons.calendar","personal-calendar.html","help.hover.cal")
-		#end
+			$r.contextHelp("Calendar")
 		</div>
 		#if ($r.available("calsubscription"))
 			$r.render("calsubscription")

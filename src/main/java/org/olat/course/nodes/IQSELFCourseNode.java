@@ -240,7 +240,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true);
 		
 		try {
-			QTIExportFormatter qef = new QTIExportFormatterCSVType2(locale, null, "\t", "\"", "\\", "\r\n", false);
+			QTIExportFormatter qef = new QTIExportFormatterCSVType2(locale, null, "\t", "\"", "\r\n", false);
 			return qem.selectAndExportResults(qef, course.getResourceableId(), getShortTitle(), getIdent(), re, exportStream, ".xls");
 		} catch (IOException e) {
 			log.error("", e);

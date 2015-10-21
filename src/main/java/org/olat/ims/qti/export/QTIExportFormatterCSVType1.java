@@ -57,7 +57,6 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 	// Delimiters and file name suffix for the export file
 	private String sep; // fields separated by
 	private String emb; // fields embedded by
-	private String esc; // fields escaped by
 	private String car; // carriage return
 	// Author can export the mattext without HTML tags
 	// especially used for the results export of matrix questions created by QANT
@@ -78,11 +77,10 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 	 *            qtiExportFormatConfig with (QTIExportItemXYZ.class,IQTIExportItemFormatConfig)
 	 */
 	
-	public QTIExportFormatterCSVType1(Locale locale, String sep, String emb, String esc, String car, boolean tagless) {
+	public QTIExportFormatterCSVType1(Locale locale, String sep, String emb, String car, boolean tagless) {
 		super(locale, null);
 		this.sep = sep;
 		this.emb = emb;
-		this.esc = esc;
 		this.car = car;
 		this.tagless = tagless;
 		// initialize user property handlers
@@ -448,7 +446,20 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 	}
 
 	private String createHeaderRow1Intro() {
-		return sep + sep + sep + sep + sep + sep + sep + sep + sep + sep;
+		StringBuilder hr1Intro = new StringBuilder();
+		hr1Intro.append(sep);//seqnum
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			if (userPropertyHandler != null) {
+				hr1Intro.append(sep);
+			}
+		}
+		hr1Intro.append(sep);
+		hr1Intro.append(sep);
+		hr1Intro.append(sep);
+		hr1Intro.append(sep);
+		hr1Intro.append(sep);
+		hr1Intro.append(sep);
+		return hr1Intro.toString();//  + sep + sep + sep + sep + sep + sep + sep + sep + sep;
 	}
 
 	/**
@@ -467,7 +478,7 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 		hr2Intro.append(sep);
 
 		// add configured user properties
-		for (UserPropertyHandler userPropertyHandler : this.userPropertyHandlers) {
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) {
 				continue;
 			}

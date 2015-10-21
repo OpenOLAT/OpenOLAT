@@ -1,11 +1,11 @@
 <fieldset class="o_form form-horizontal ">
 	<legend>
 	#if ($type == "Assessment")
-		$r.contextHelpWithWrapper("org.olat.course.nodes.iq","ced-qti-append-test.html","help.select.file.test")
+		$r.contextHelpWithWrapper("Assessment#_test_kursbaustein")
 	#elseif ($type == "Self-Assessment")
-		$r.contextHelpWithWrapper("org.olat.course.nodes.iq","ced-qti-append-self.html","help.select.file.self")
+		$r.contextHelpWithWrapper("Assessment#_selbsttest_kursbaustein")
 	#else
-		$r.contextHelpWithWrapper("org.olat.course.nodes.iq","ced-qti-append-surv.html","help.select.file.surv")
+		$r.contextHelpWithWrapper("Assessment#_fragebogen")
 	#end
 	$repEntryTitle</legend>
 	
@@ -71,13 +71,6 @@
 $r.render("filechoosecreateedit")
 <fieldset>
 	<legend>
-	#if ($type == "Assessment")
-		$r.contextHelpWithWrapper("org.olat.course.nodes.iq","ced-qti-config-test.html","help.iq.layout")
-	#elseif ($type == "Self-Assessment")
-		$r.contextHelpWithWrapper("org.olat.course.nodes.iq","ced-qti-config-self.html","help.iq.layout")
-	#else
-		$r.contextHelpWithWrapper("org.olat.course.nodes.iq","ced-qti-config-surv.html","help.iq.layout")
-	#end
 	$r.translate("choosenlayout")</legend>
 	$r.render("iqeditform")
 </fieldset>

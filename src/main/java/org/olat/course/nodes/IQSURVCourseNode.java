@@ -308,7 +308,7 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 		String repositorySoftKey = (String) getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true);
 
-		QTIExportFormatter qef = new QTIExportFormatterCSVType3(locale, null,"\t", "\"", "\\", "\r\n", false);
+		QTIExportFormatter qef = new QTIExportFormatterCSVType3(locale, null,"\t", "\"", "\r\n", false);
 		try {
 			return qem.selectAndExportResults(qef, course.getResourceableId(), getShortTitle(), getIdent(), re, exportStream, ".xls");
 		} catch (IOException e) {

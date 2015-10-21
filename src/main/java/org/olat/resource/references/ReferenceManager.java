@@ -50,7 +50,8 @@ import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.RepositoryEntryDAO;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.OLATResourceManager;
@@ -76,9 +77,11 @@ public class ReferenceManager {
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
-	private RepositoryService repositoryService;
+	private RepositoryEntryDAO repositoryEntryDAO;
 	@Autowired
 	private OLATResourceManager olatResourceManager;
+	@Autowired
+	private RepositoryEntryRelationDAO reToGroupDao;
 
 	/**
 	 * Add a new reference. The meaning of source and target is
@@ -175,7 +178,7 @@ public class ReferenceManager {
 		
 		boolean isOlatAdmin = roles.isOLATAdmin();
 		
-		List<RepositoryEntry> entries = repositoryService.loadByResourceKeys(targetResourceKeys);
+		List<RepositoryEntry> entries = repositoryEntryDAO.loadByResourceKeys(targetResourceKeys);
 		List<ReferenceInfos> infos = new ArrayList<>(entries.size());
 		for(RepositoryEntry entry:entries) {
 			Long resourceKey = entry.getOlatResource().getKey();
@@ -185,7 +188,7 @@ public class ReferenceManager {
 
 			boolean isInstitutionalResourceManager = !roles.isGuestOnly()
 						&& repositoryManager.isInstitutionalRessourceManagerFor(identity, roles, entry);
-			boolean isOwner = isOlatAdmin || repositoryService.hasRole(identity, entry, GroupRoles.owner.name())
+			boolean isOwner = isOlatAdmin || reToGroupDao.hasRole(identity, entry, GroupRoles.owner.name())
 						|| isInstitutionalResourceManager;
 
 			ReferenceInfos refInfos = new ReferenceInfos(entry, !notOrphan, isOwner, deleteManaged);
@@ -282,22 +285,22 @@ public class ReferenceManager {
 	}
 	
 	/**
+	 * Delete all references of an OLAT-resource as source or target.
+	 * @param olatResource  an OLAT-Resource
+	 */
+	public int deleteAllReferencesOf(OLATResource olatResource) {
+		String dq = "delete from references as refs where refs.source.key=:resourceKey or refs.target.key=:resourceKey";
+		return dbInstance.getCurrentEntityManager().createQuery(dq)
+				.setParameter("resourceKey", olatResource.getKey())
+				.executeUpdate();
+	}
+	
+	/**
 	 * @param ref
 	 */
 	public void delete(Reference ref) {
 		ReferenceImpl reloadedRef = dbInstance.getCurrentEntityManager()
 				.getReference(ReferenceImpl.class, ref.getKey());
 		dbInstance.getCurrentEntityManager().remove(reloadedRef);
-	}
-
-	/**
-	 * Only for cleanup : Delete all references of an OLAT-resource.
-	 * @param olatResource  an OLAT-Resource
-	 */
-	public void deleteAllReferencesOf(OLATResource olatResource) {
-		List<Reference> references = getReferences(olatResource);
-		for (Reference ref:references) {
-			delete(ref);
-		}
 	}
 }

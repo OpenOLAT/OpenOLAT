@@ -92,8 +92,8 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("pane.tab.vcconfig");
 		setFormDescription("create.room.desc");
-		setFormContextHelp(OpenMeetingsRoomEditController.class.getPackage().getName(), "room.html", "help.hover.openmeetings.room");
-		
+		setFormContextHelp("Communication and Collaboration#_openmeeting");
+
 		if(serverDown) {
 			setFormWarning(errorKey);
 		}

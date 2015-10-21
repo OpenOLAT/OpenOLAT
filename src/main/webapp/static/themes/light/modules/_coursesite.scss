@@ -356,6 +356,14 @@
 				}	
 			}	
 		}
+		
+		.o_sublevel.o_fill_sublevels {
+			border: 1px solid transparent;
+			
+			.o_meta {
+				border-left: 1px solid transparent;
+			}
+		}
 	}	
 	
 	.o_sublevels {

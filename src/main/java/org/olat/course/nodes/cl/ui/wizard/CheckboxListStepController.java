@@ -85,8 +85,7 @@ public class CheckboxListStepController extends StepFormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("checkbox.template");
 		setFormDescription("checkbox.template.description");
-		setFormContextHelp("org.olat.course.nodes.cl.ui", "cl-checkbox-template.html", "help.hover.checkboxtemplate");
-		
+
 		FormLayoutContainer tableCont = FormLayoutContainer
 				.createCustomFormLayout("tablecontainer", getTranslator(), velocity_root + "/checkboxlist_edit.html");
 		formLayout.add(tableCont);

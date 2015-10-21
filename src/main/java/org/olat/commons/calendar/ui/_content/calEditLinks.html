@@ -1,9 +1,6 @@
 <fieldset>
-	<legend>#if ($caller == "course")
-		$r.contextHelpWithWrapper("org.olat.commons.calendar","course-calendar-link.html","help.hover.callink")
-	#else
-		$r.contextHelpWithWrapper("org.olat.commons.calendar","course-calendar-noLink.html","help.hover.calnolink")
-	#end
+	<legend>
+	$r.contextHelpWithWrapper("Calendar")
 	$r.translate("cal.links.title")</legend>
 	#if ($hasLinkProvider)
 	$r.render("linkprovider")

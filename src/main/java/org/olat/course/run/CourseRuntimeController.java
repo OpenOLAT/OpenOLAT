@@ -824,7 +824,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						case assessmentMode: doAssessmentMode(ureq); break;
 						case assessmentSurveyStatistics: doAssessmentSurveyStatistics(ureq); break;
 						case assessmentTestStatistics: doAssessmentTestStatistics(ureq); break;
-						case assessmentTool: doAssessmentTool(ureq);
+						case assessmentTool: doAssessmentTool(ureq); break;
 						case certificates: doCertificatesOptions(ureq); break;
 						case reminders: doReminders(ureq); break;
 						case courseAreas: doCourseAreas(ureq); break;

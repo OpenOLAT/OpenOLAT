@@ -100,7 +100,7 @@ public class DropboxForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("fieldset.dropbox.title");
-		setFormContextHelp("org.olat.course.nodes.ta","ced-ta-conf.html","help.hover.ta-dropbox");
+		setFormContextHelp("Other#bb_themenvergabe_abgabe");
 
 		String sConfirmation = (String)config.get(TACourseNode.CONF_DROPBOX_CONFIRMATION);
 		if (sConfirmation == null || sConfirmation.length() == 0) {

@@ -130,9 +130,8 @@ public class CheckboxAssessmentController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("assessment.checkbox.description");
-		setFormContextHelp("org.olat.course.nodes.cl.ui", "cl-assessment-checkbox.html", "help.hover.assessment.checkbox");
-		
-		
+
+
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(isAdministrativeUser) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.username.i18nKey(), Cols.username.ordinal()));

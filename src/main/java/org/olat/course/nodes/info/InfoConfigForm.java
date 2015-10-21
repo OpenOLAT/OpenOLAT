@@ -78,8 +78,8 @@ public class InfoConfigForm extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_course_info_form");
 		setFormTitle("pane.tab.infos_config.title");
-		setFormContextHelp(InfoConfigForm.class.getPackage().getName(), "ced-info-config.html", "help.hover.info.config");
-		
+		setFormContextHelp("Administration and Organisation#_mitteilung_zugang");
+
 		String page = velocity_root + "/editShow.html";
 		final FormLayoutContainer showLayout = FormLayoutContainer.createCustomFormLayout("pane.tab.infos_config.shown", getTranslator(), page);
 		showLayout.setLabel("pane.tab.infos_config.shown", null);

@@ -33,6 +33,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.nodes.GTACourseNode;
@@ -58,6 +60,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 	private Link returnToRevisionsButton, closeRevisionsButton;
 	private DirectoryController revisionsCtrl, correctionsCtrl;
 	private SubmitDocumentsController uploadCorrectionsCtrl;
+	private DialogBoxController confirmCloseRevisionProcessCtrl, confirmReturnToRevisionsCtrl;
 	
 	private Task assignedTask;
 	private final int currentIteration;
@@ -223,7 +226,16 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 				Task aTask = uploadCorrectionsCtrl.getAssignedTask();
 				gtaManager.log("Corrections", (SubmitEvent)event, aTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
 			}
-
+		} else if(confirmReturnToRevisionsCtrl == source) {
+			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				doReturnToRevisions();
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
+		} else if(confirmCloseRevisionProcessCtrl == source) {
+			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				doCloseRevisionProcess();
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -231,17 +243,29 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(returnToRevisionsButton == source) {
-			doReturnToRevisions();
-			fireEvent(ureq, Event.DONE_EVENT);
+			doConfirmReturnToRevisions(ureq);
 		} else if(closeRevisionsButton == source) {
-			doCloseRevisionProcess();
-			fireEvent(ureq, Event.DONE_EVENT);
+			doConfirmCloseRevisionProcess(ureq);
 		}
+	}
+	
+	private void doConfirmReturnToRevisions(UserRequest ureq) {
+		String title = translate("coach.revisions.confirm.title");
+		String text = translate("coach.revisions.confirm.text");
+		confirmReturnToRevisionsCtrl = activateOkCancelDialog(ureq, title, text, confirmReturnToRevisionsCtrl);	
+		listenTo(confirmReturnToRevisionsCtrl);
 	}
 	
 	private void doReturnToRevisions() {
 		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.revision, currentIteration + 1);
 		gtaManager.log("Revision", "need another revision", assignedTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
+	}
+	
+	private void doConfirmCloseRevisionProcess(UserRequest ureq) {
+		String title = translate("coach.reviewed.confirm.title");
+		String text = translate("coach.reviewed.confirm.text");
+		confirmCloseRevisionProcessCtrl = activateOkCancelDialog(ureq, title, text, confirmCloseRevisionProcessCtrl);	
+		listenTo(confirmCloseRevisionProcessCtrl);
 	}
 	
 	private void doCloseRevisionProcess() {

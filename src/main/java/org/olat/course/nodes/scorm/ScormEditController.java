@@ -525,8 +525,7 @@ class VarForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("headerform");
-		setFormContextHelp("org.olat.course.nodes.scorm","ced-scorm-settings.html","help.hover.scorm-settings-filename");
-		
+
 		showMenuEl = uifactory.addCheckboxesHorizontal("showmenu", "showmenu.label", formLayout, new String[]{"xx"}, new String[]{null});
 		showMenuEl.select("xx", showMenu);
 		
