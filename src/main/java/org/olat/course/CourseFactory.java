@@ -303,12 +303,6 @@ public class CourseFactory extends BasicManager {
 		final long start = System.currentTimeMillis();
 		log.info("deleteCourse: starting to delete course. res="+res);
 
-		// find all references to course
-		List<Reference> refs = referenceManager.getReferences(res);
-		for (Reference ref:refs) {
-			referenceManager.delete(ref);
-		}
-		
 		PersistingCourseImpl course = null;
 		try {
 			course = (PersistingCourseImpl)loadCourse(res);
@@ -322,7 +316,6 @@ public class CourseFactory extends BasicManager {
 			TreeVisitor tv = new TreeVisitor(visitor, course.getRunStructure().getRootNode(), true);
 			tv.visitAll();
 		}
-		
 
 		// delete assessment notifications
 		OLATResourceable assessmentOres = OresHelper.createOLATResourceableInstance(CourseModule.ORES_COURSE_ASSESSMENT, res.getResourceableId());

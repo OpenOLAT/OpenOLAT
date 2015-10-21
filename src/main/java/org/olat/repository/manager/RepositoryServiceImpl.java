@@ -76,6 +76,7 @@ import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
+import org.olat.resource.references.ReferenceManager;
 import org.olat.search.service.document.RepositoryEntryDocument;
 import org.olat.search.service.indexer.LifeFullIndexer;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -103,6 +104,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 	private BaseSecurity securityManager;
 	@Autowired
 	private ACReservationDAO reservationDao;
+	@Autowired
+	private ReferenceManager referenceManager;
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDAO;
 	@Autowired
@@ -323,6 +326,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 		securityManager.deletePolicies(resource);
 		//delete reservations
 		reservationDao.deleteReservations(resource);
+		//delete references
+		referenceManager.deleteAllReferencesOf(resource);
 		dbInstance.commit();
 		
 		// inform handler to do any cleanup work... handler must delete the
