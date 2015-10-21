@@ -24,6 +24,8 @@
 */
 package org.olat.course;
 
+import java.util.List;
+
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -34,10 +36,15 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.DTab;
+import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.messages.MessageController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResourceManager;
@@ -91,7 +98,35 @@ public class DisposedCourseRestartController extends BasicController {
 				panel.setContent(msgController.getInitialComponent());
 			} else {
 				OLATResourceable reOres = OresHelper.clone(courseRepositoryEntry);
-				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(getWindowControl(), reOres);
+				DTabs dtabs = getWindowControl().getWindowBackOffice().getWindow().getDTabs();
+				if(dtabs != null) {
+					DTab dt = dtabs.getDTab(reOres);
+					if(dt != null) {
+						dtabs.removeDTab(ureq, dt);
+					}
+				}
+				
+				List<ContextEntry> entries = null;
+				List<HistoryPoint> stacks = ureq.getUserSession().getHistoryStack();
+				for(int i=stacks.size(); i-->0; ) {
+					HistoryPoint point = stacks.get(i);
+					if(point != null && point.getEntries() != null && point.getEntries().size() > 0) {
+						ContextEntry entry = point.getEntries().get(0);
+						if(reOres.equals(entry.getOLATResourceable())) {
+							entries = point.getEntries();
+							break;
+						}
+					}
+				}
+				
+				WindowControl bwControl;
+				if(entries == null) {
+					bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(getWindowControl(), reOres);
+				} else {
+					BusinessControl bc = BusinessControlFactory.getInstance().createFromContextEntries(entries);
+					bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+				}
+
 				NewControllerFactory.getInstance().launch(ureq, bwControl);
 				dispose();
 			}
