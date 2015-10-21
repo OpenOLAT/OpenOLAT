@@ -174,6 +174,44 @@ public class ReferenceManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void testAddAndDeleteAllReferences_parano() {
+		OLATResource oressource = JunitTestHelper.createRandomResource();
+		OLATResource orestarget1 = JunitTestHelper.createRandomResource();
+		OLATResource orestarget2 = JunitTestHelper.createRandomResource();
+		OLATResource orestarget3 = JunitTestHelper.createRandomResource();
+		// add the references
+		referenceManager.addReference(oressource, orestarget1, "üserdätä");
+		referenceManager.addReference(orestarget2, orestarget1, "üserdätä");
+		referenceManager.addReference(oressource, orestarget2, "éserdàtà");
+		referenceManager.addReference(orestarget2, oressource, "éserdàtà");
+		referenceManager.addReference(orestarget3, oressource, "éserdàtà");
+		referenceManager.addReference(orestarget3, orestarget1, "éserdàtà");
+		dbInstance.commitAndCloseSession();
+				
+		List<Reference> refs = referenceManager.getReferences(oressource);
+		Assert.assertEquals("2 references exist", 2, refs.size());
+		List<Reference> reverseRefs = referenceManager.getReferencesTo(oressource);
+		Assert.assertEquals("2 references exist", 2, reverseRefs.size());
+
+		referenceManager.deleteAllReferencesOf(oressource);
+		dbInstance.commitAndCloseSession();
+
+		// now make sure the reference was deleted
+		List<Reference> norefs = referenceManager.getReferences(oressource);
+		Assert.assertTrue("reference should now be deleted", norefs.isEmpty());
+		
+		//check target 3 has 1
+		List<Reference> refTarget3s = referenceManager.getReferences(orestarget3);
+		Assert.assertEquals(1, refTarget3s.size());
+		Assert.assertEquals(orestarget1, refTarget3s.get(0).getTarget());
+		
+		//check target 2 has 1
+		List<Reference> refTarget2s = referenceManager.getReferences(orestarget2);
+		Assert.assertEquals(1, refTarget2s.size());
+		Assert.assertEquals(orestarget1, refTarget2s.get(0).getTarget());
+	}
+	
+	@Test
 	public void getReferencesInfos_simpleCase() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("Asuka");
 		Roles adminRoles = new Roles(true, false, false, false, false, false, false);
