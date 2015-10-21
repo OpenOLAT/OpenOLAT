@@ -217,11 +217,7 @@
 			<div class="panel panel-default o_infopanel">
 				<div class="panel-heading" data-toggle="collapse" data-target="#collapseInfo">
 			    	<h3 class="panel-title">
-						#if ($isGuestAllowed)
-							$r.contextHelpWithWrapper("org.olat.repository","rep-meta-guest.html","help.hover.rep.detail")
-						#else
-							$r.contextHelpWithWrapper("Technical Information on Resources and Usage")
-						#end
+						$r.contextHelpWithWrapper("Technical Information on Resources and Usage")
 						<i id="collapseInfoToggler" class="o_icon o_icon-fw o_icon_open_togglebox"> </i>
 						$r.translate("details.entryinfoheader")
 			    	</h3>
