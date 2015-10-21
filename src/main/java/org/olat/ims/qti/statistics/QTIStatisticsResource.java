@@ -118,7 +118,6 @@ public class QTIStatisticsResource implements MediaResource {
 		try {
 			String sep = "\\t"; // fields separated by
 			String emb = "\""; // fields embedded by
-			String esc = "\\"; // fields escaped by
 			String car = "\\r\\n"; // carriage return
 			
 			sep = QTIArchiveWizardController.convert2CtrlChars(sep);
@@ -128,10 +127,10 @@ public class QTIStatisticsResource implements MediaResource {
 			QTIExportFormatter formatter;
 			if (QTIType.test.equals(resourceResult.getType())){
 				exportType = 1;
-				formatter = new QTIExportFormatterCSVType1(locale, sep, emb, esc, car, true);
+				formatter = new QTIExportFormatterCSVType1(locale, sep, emb, car, true);
 		  	} else if (QTIType.survey.equals(resourceResult.getType())) {
 		  		exportType = 2;
-		  		formatter = new QTIExportFormatterCSVType2(locale, null, sep, emb, esc, car, true);
+		  		formatter = new QTIExportFormatterCSVType2(locale, null, sep, emb, car, true);
 		  	} else {
 		  		return;
 		  	}

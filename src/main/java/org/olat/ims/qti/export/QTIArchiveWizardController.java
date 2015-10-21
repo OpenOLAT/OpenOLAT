@@ -292,7 +292,7 @@ public class QTIArchiveWizardController extends BasicController {
 									this.sep = convert2CtrlChars(sep);
 									this.car = convert2CtrlChars(car);
 								
-									formatter = getFormatter(ureq.getLocale(), sep, emb, esc, car, true);
+									formatter = getFormatter(ureq.getLocale(), sep, emb, car, true);
 									formatter.setMapWithExportItemConfigs(qtiItemConfigs);
 								
 									exportDir = CourseFactory.getOrCreateDataExportDirectory(ureq.getIdentity(), course.getCourseTitle());
@@ -355,7 +355,7 @@ public class QTIArchiveWizardController extends BasicController {
 				this.sep = convert2CtrlChars(sep);
 				this.car = convert2CtrlChars(car);
 				
-				formatter = getFormatter(ureq.getLocale(), sep, emb, esc, car, dcForm.isTagless());
+				formatter = getFormatter(ureq.getLocale(), sep, emb, car, dcForm.isTagless());
 				formatter.setMapWithExportItemConfigs(qtiItemConfigs);
 				
 				ICourse course = CourseFactory.loadCourse(ores);
@@ -539,21 +539,19 @@ public class QTIArchiveWizardController extends BasicController {
 		return itConfigs;
 	}
 	
-	private QTIExportFormatter getFormatter(Locale locale, String se, String em, String es, String ca, boolean tagless){
+	private QTIExportFormatter getFormatter(Locale locale, String se, String em, String ca, boolean tagless){
 		QTIExportFormatter frmtr = null;
-  	if (type == 1){
-    	frmtr = new QTIExportFormatterCSVType1(locale, se, em, es, ca, tagless);
-  	}
-  	else if (type == 2){
-    	frmtr = new QTIExportFormatterCSVType2(locale, null, se, em, es, ca, tagless);
-  	}
-    else { // type == 3
-  	frmtr = new QTIExportFormatterCSVType3(locale, null, se, em, es, ca, tagless);
-    }
-  	return frmtr;
+		if (type == 1){
+			frmtr = new QTIExportFormatterCSVType1(locale, se, em, ca, tagless);
+		} else if (type == 2){
+			frmtr = new QTIExportFormatterCSVType2(locale, null, se, em, ca, tagless);
+		} else { // type == 3
+			frmtr = new QTIExportFormatterCSVType3(locale, null, se, em, ca, tagless);
+		}
+		return frmtr;
 	}
 	
-	
+	@Override
 	protected void doDispose() {
 		//
 	}
