@@ -53,13 +53,13 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.search.SearchModule;
 import org.olat.search.SearchService;
 import org.olat.search.model.AbstractOlatDocument;
-import org.olat.search.service.SearchServiceImpl;
 
 /**
  * TODO or not: to make the Indexer cluster wide functional. It would be
@@ -69,7 +69,7 @@ import org.olat.search.service.SearchServiceImpl;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class JmsIndexer implements MessageListener, LifeFullIndexer {
+public class JmsIndexer implements MessageListener, LifeFullIndexer, ConfigOnOff {
 	private static final int INDEX_MERGE_FACTOR = 1000;
 	private static final OLog log = Tracing.createLoggerFor(JmsIndexer.class);
 	
@@ -79,7 +79,7 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 	private ConnectionFactory connectionFactory;
 	private QueueConnection connection;
 	
-	private SearchService searchService;
+	private String enabled;
 	private CoordinatorManager coordinatorManager;
 
 	private String permanentIndexPath;
@@ -122,8 +122,13 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 	 * [used by Spring]
 	 * @param searchService
 	 */
-	public void setSearchService(SearchService searchService) {
-		this.searchService = searchService;
+	public void setSearchServiceEnabled(String enabled) {
+		this.enabled = enabled;
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return enabled != null && "enabled".equalsIgnoreCase(enabled);
 	}
 
 	public void setIndexers(List<LifeIndexer> indexers) {
@@ -308,7 +313,7 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 	}
 	
 	private void doIndex(JmsIndexWork workUnit) {
-		if(searchService instanceof SearchServiceImpl) {
+		if(isEnabled()) {
 			String type = workUnit.getIndexType();
 			List<LifeIndexer> lifeIndexers = getIndexerByType(type);
 			for(LifeIndexer indexer:lifeIndexers) {
@@ -318,7 +323,7 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 	}
 	
 	private void doDelete(JmsIndexWork workUnit) {
-		if(searchService instanceof SearchServiceImpl) {
+		if(isEnabled()) {
 			String type = workUnit.getIndexType();
 			List<LifeIndexer> lifeIndexers = getIndexerByType(type);
 			for(LifeIndexer indexer:lifeIndexers) {
