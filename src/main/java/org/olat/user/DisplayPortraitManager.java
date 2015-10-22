@@ -56,6 +56,8 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 	// The following class names refer to CSS class names in olat.css 
 	public static final String AVATAR_BIG_CSS_CLASS = "o_portrait_avatar";
 	public static final String AVATAR_SMALL_CSS_CLASS = "o_portrait_avatar_small";
+	public static final String ANONYMOUS_BIG_CSS_CLASS = "o_portrait_anonymous";
+	public static final String ANONYMOUS_SMALL_CSS_CLASS = "o_portrait_anonymous_small";
 	public static final String DUMMY_BIG_CSS_CLASS = "o_portrait_dummy";
 	public static final String DUMMY_SMALL_CSS_CLASS = "o_portrait_dummy_small";
 	public static final String DUMMY_FEMALE_BIG_CSS_CLASS = "o_portrait_dummy_female_big";

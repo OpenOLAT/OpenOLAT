@@ -67,6 +67,7 @@ public class DisplayPortraitController extends BasicController implements Generi
 	
 	private final boolean useLarge;
 	private final boolean displayPortraitImage;
+	private final boolean isAnonymous;
 	
 	/**
 	 * most common used constructor<br />
@@ -114,6 +115,7 @@ public class DisplayPortraitController extends BasicController implements Generi
 		this.useLarge = useLarge;
 		this.portraitIdent = portraitIdent;
 		this.displayPortraitImage = displayPortraitImage;
+		this.isAnonymous = ureq.getUserSession().getRoles().isGuestOnly();
 
 		mapper = new UserAvatarMapper(useLarge);
 		mapperPath = registerMapper(ureq, mapper);
@@ -150,6 +152,8 @@ public class DisplayPortraitController extends BasicController implements Generi
 				portrait = DisplayPortraitManager.getInstance().getBigPortrait(portraitIdent.getName());
 				if (portrait != null) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.AVATAR_BIG_CSS_CLASS);					
+				} else if (isAnonymous) {
+					myContent.contextPut("portraitCssClass", DisplayPortraitManager.ANONYMOUS_BIG_CSS_CLASS);
 				} else if (gender.equals("-")) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_BIG_CSS_CLASS);
 				} else if (gender.equals("male")) {
@@ -161,6 +165,8 @@ public class DisplayPortraitController extends BasicController implements Generi
 				portrait = DisplayPortraitManager.getInstance().getSmallPortrait(portraitIdent.getName());
 				if (portrait != null) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.AVATAR_SMALL_CSS_CLASS);					
+				} else if (isAnonymous) {
+					myContent.contextPut("portraitCssClass", DisplayPortraitManager.ANONYMOUS_SMALL_CSS_CLASS);
 				} else if (gender.equals("-")) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_SMALL_CSS_CLASS);
 				} else if (gender.equals("male")) {

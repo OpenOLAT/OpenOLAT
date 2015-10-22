@@ -234,7 +234,15 @@ ul.o_dropdown {
 	}
 }
 
-/* Dummy user portrait (avatar) display - portrait sizes must match with DisplayPortraitManager.WIDTH_PORTRAIT_SMALL  DisplayPortraitManager.WIDTH_PORTRAIT_BIG */
+/* Dummy user portrait (avatar) display - portrait sizes must match with DisplayPortraitManager.WIDTH_PORTRAIT_SMALL  DisplayPortraitManager.WIDTH_PORTRAIT_BIG
+
+   Dummy is used for registered users which have no personal avatar image. 
+   - dummy is used if gender is not known
+   - dummy_female is used for femal users
+   - dummy_male is used for male users
+   
+   Anonymous is used for guest users and in anonymous chat / forum postings
+*/
 .o_portrait_avatar,
 .o_portrait_dummy,
 .o_portrait_dummy_female_big,
@@ -243,7 +251,7 @@ ul.o_dropdown {
 .o_portrait_dummy                {background-image: url('#{$o-images-path}portrait/dummy.png');}
 .o_portrait_dummy_female_big     {background-image: url('#{$o-images-path}portrait/dummy_female_big.png');}
 .o_portrait_dummy_male_big       {background-image: url('#{$o-images-path}portrait/dummy_male_big.png');}
-.o_portrait_anonymous 			 {background-image: url('#{$o-images-path}portrait/dummy.png'); }
+.o_portrait_anonymous 			 {background-image: url('#{$o-images-path}portrait/anonymous.png'); }
 
 .o_portrait_avatar_small,
 .o_portrait_dummy_small,
@@ -253,7 +261,7 @@ ul.o_dropdown {
 .o_portrait_dummy_small          {background-image: url('#{$o-images-path}portrait/dummy_small.png');}
 .o_portrait_dummy_female_small   {background-image: url('#{$o-images-path}portrait/dummy_female_small.png');}
 .o_portrait_dummy_male_small     {background-image: url('#{$o-images-path}portrait/dummy_male_small.png');}
-.o_portrait_anonymous_small 	 {background-image: url('#{$o-images-path}portrait/dummy_small.png'); } 
+.o_portrait_anonymous_small 	 {background-image: url('#{$o-images-path}portrait/anonymous_small.png'); } 
 
 
 /* Date component, used in info course element, blog etc */
