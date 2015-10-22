@@ -49,6 +49,7 @@ import org.olat.core.gui.components.form.flexible.impl.rules.RulesFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
 import de.tuchemnitz.wizard.workflows.coursecreation.CourseCreationHelper;
@@ -185,11 +186,35 @@ public class EnrollmentEditForm extends FormBasicController {
 		uifactory.addFormCancelButton("cancelButton", formButtons, ureq, getWindowControl());
 	}
 	
+	
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		String groupCountStr = groupCount.getValue();
+		if(StringHelper.containsNonWhitespace(groupCountStr)) {
+			try {
+				Integer.parseInt(groupCountStr);
+			} catch (NumberFormatException e) {
+				groupCount.setErrorKey("form.error.nointeger", null);
+				allOk &= false;
+			}
+		} else {
+			groupCount.setErrorKey("form.mandatory.hover", null);
+			allOk &= false;
+		}
+		
+		return allOk & super.validateFormLogic(ureq);
+	}
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		Integer groupCountInt = new Integer(groupCount.getValue());
 		// minimum of one group
-		if (groupCountInt <= 0) groupCountInt = 1;
+		if (groupCountInt <= 0) {
+			groupCountInt = 1;
+		}
 		courseConfig.setGroupCount(groupCountInt);
 		String s = subscriberCount.getValue().trim();
 		if (s.length() > 0) {
