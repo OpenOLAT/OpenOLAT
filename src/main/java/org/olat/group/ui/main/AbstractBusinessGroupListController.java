@@ -1108,6 +1108,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			}
 		}
 		List<BGRepositoryEntryRelation> resources = businessGroupService.findRelationToRepositoryEntries(groupKeysWithRelations, 0, -1);
+
 		//find offers
 		List<Long> groupWithOfferKeys = new ArrayList<Long>(groups.size());
 		for(BusinessGroupView view:groups) {
@@ -1131,6 +1132,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		}
 		
 		List<BGTableItem> items = new ArrayList<BGTableItem>();
+		Map<Long, BGTableItem> groupKeyToItems = new HashMap<>();
 		for(BusinessGroupView group:groups) {
 			Long oresKey = group.getResource().getKey();
 			List<PriceMethodBundle> accessMethods = null;
@@ -1150,12 +1152,20 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			markLink.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 
 			BGTableItem tableItem = new BGTableItem(group, markLink, marked, membership, allowLeave, allowDelete, accessMethods);
-			tableItem.setUnfilteredRelations(resources);
+			//tableItem.setUnfilteredRelations(resources);
 			items.add(tableItem);
 			markLink.setUserObject(tableItem);
 			
 			if(group.getNumOfValidOffers() > 0l) {
 				addAccessLink(tableItem);
+			}
+			groupKeyToItems.put(group.getKey(), tableItem);
+		}
+		
+		for(BGRepositoryEntryRelation relation:resources) {
+			BGTableItem tableItem = groupKeyToItems.get(relation.getGroupKey());
+			if(tableItem != null) {
+				tableItem.addRelation(relation);
 			}
 		}
 
