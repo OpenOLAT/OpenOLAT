@@ -28,7 +28,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.AbstractCSSIconFlexiCellRenderer;
@@ -50,9 +50,11 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 class ImportStep01 extends BasicStep {
 	private static final String usageIdentifyer = UserImportController.class.getCanonicalName();
+	private static final String[] theKeys = new String[]{ "", "update", "ignore" };
 
 	private boolean newUsers;
 	private boolean canCreateOLATPassword;
@@ -77,17 +79,19 @@ class ImportStep01 extends BasicStep {
 	}
 
 	private final class ImportStepForm01 extends StepFormBasicController {
-
+		
+		
 		private FormLayoutContainer textContainer;
-		private MultipleSelectionElement updateEl;
-		private MultipleSelectionElement updatePasswordEl;
+		private SingleSelection updateEl, updatePasswordEl;
 		private List<UserPropertyHandler> userPropertyHandlers;
 
+		@Autowired
+		private UserManager userManager;
+		
 		public ImportStepForm01(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
 			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
 			// use custom translator with fallback to user properties translator
-			UserManager um = UserManager.getInstance();
-			setTranslator(um.getPropertyHandlerTranslator(getTranslator()));
+			setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 			flc.setTranslator(getTranslator());
 			initForm(ureq);
 		}
@@ -100,17 +104,32 @@ class ImportStep01 extends BasicStep {
 		@Override
 		protected void formOK(UserRequest ureq) {
 			Boolean updateUsers = Boolean.FALSE;
-			if(updateEl != null && updateEl.isAtLeastSelected(1)) {
+			if(updateEl != null && updateEl.isOneSelected() && updateEl.isSelected(1)) {
 				updateUsers = Boolean.TRUE; 
 			}
 			addToRunContext("updateUsers", updateUsers);
 			
 			Boolean updatePasswords = Boolean.FALSE;
-			if(updatePasswordEl != null && updatePasswordEl.isAtLeastSelected(1)) {
+			if(updatePasswordEl != null && updatePasswordEl.isOneSelected() && updatePasswordEl.isSelected(1)) {
 				updatePasswords = Boolean.TRUE; 
 			}
 			addToRunContext("updatePasswords", updatePasswords);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+		}
+
+		@Override
+		protected boolean validateFormLogic(UserRequest ureq) {
+			boolean allOk = true;
+			if(updateEl != null && (!updateEl.isOneSelected() || updateEl.isSelected(0))) {
+				updateEl.setErrorKey("form.mandatory.hover", null);
+				allOk &= false;
+			}
+			
+			if(updatePasswordEl != null && (!updatePasswordEl.isOneSelected() || updatePasswordEl.isSelected(0))) {
+				updatePasswordEl.setErrorKey("form.mandatory.hover", null);
+				allOk &= false;
+			}
+			return allOk & super.validateFormLogic(ureq);
 		}
 
 		@Override
@@ -135,15 +154,13 @@ class ImportStep01 extends BasicStep {
 			textContainer.contextPut("overview", overview);
 			textContainer.contextPut("updateusers", updateIdents.isEmpty());
 			if(!updateIdents.isEmpty()) {
-				String[] updateValues = new String[]{ translate("update.user") };
+				String[] theValues = new String[]{ translate("update.select"), translate("update.yes"), translate("update.no") };
 				updateEl = uifactory
-						.addCheckboxesHorizontal("update.user", textContainer, new String[]{"on"}, updateValues);
-				updateEl.select("on", true);
+						.addDropdownSingleselect("update.user", textContainer, theKeys, theValues, null);
 				
 				if(canCreateOLATPassword) {
-					String[] theValues = new String[]{ translate("update.password") };
 					updatePasswordEl = uifactory
-							.addCheckboxesHorizontal("update.password", textContainer, new String[]{"on"}, theValues);
+						.addDropdownSingleselect("update.password", textContainer, theKeys, theValues, null);
 				}
 			}
 
@@ -175,45 +192,36 @@ class ImportStep01 extends BasicStep {
 			uifactory.addTableElement(getWindowControl(), "newUsers", tableDataModel, getTranslator(), formLayoutVertical);
 		}
 	}
-}
+	
+	private static class UserNewOldCustomFlexiCellRenderer extends AbstractCSSIconFlexiCellRenderer {
 
-/**
- * 
- * Description:<br>
- * Special cell renderer that uses a css class icon to display the new user type
- * 
- * <P>
- * Initial Date:  21.03.2008 <br>
- * @author gnaegi
- */
-class UserNewOldCustomFlexiCellRenderer extends AbstractCSSIconFlexiCellRenderer {
-
-	@Override
-	protected String getCellValue(Object cellValue) {
-		return "";
-	}
-
-	@Override
-	protected String getCssClass(Object cellValue) {
-		if (cellValue instanceof Boolean) {
-			if (((Boolean) cellValue).booleanValue()) {
-				return "o_icon_new";
-			} else {
-				return "o_icon_warn";
-			}
+		@Override
+		protected String getCellValue(Object cellValue) {
+			return "";
 		}
-		return "o_icon_error";
-	}
 
-	@Override
-	protected String getHoverText(Object cellValue, Translator translator) {
-		if (cellValue instanceof Boolean) {
-			if (((Boolean) cellValue).booleanValue()) {
-				return translator.translate("import.user.new.alt");
-			} else {
-				return translator.translate("import.user.existing.alt");
+		@Override
+		protected String getCssClass(Object cellValue) {
+			if (cellValue instanceof Boolean) {
+				if (((Boolean) cellValue).booleanValue()) {
+					return "o_icon_new";
+				} else {
+					return "o_icon_warn";
+				}
 			}
+			return "o_icon_error";
 		}
-		return translator.translate("error");
+
+		@Override
+		protected String getHoverText(Object cellValue, Translator translator) {
+			if (cellValue instanceof Boolean) {
+				if (((Boolean) cellValue).booleanValue()) {
+					return translator.translate("import.user.new.alt");
+				} else {
+					return translator.translate("import.user.existing.alt");
+				}
+			}
+			return translator.translate("error");
+		}
 	}
 }
