@@ -32,7 +32,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailModule;
-import org.olat.core.util.mail.MailUIFactory;
 
 /**
  * 
