@@ -71,8 +71,8 @@ public class RestapiAdminController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("rest.title");
-		setFormContextHelp(RestapiAdminController.class.getPackage().getName(), "rest.html", "help.hover.rest");
-		
+		setFormContextHelp("REST API");
+
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutContainer = (FormLayoutContainer)formLayout;
 			

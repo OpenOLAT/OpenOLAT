@@ -14,7 +14,7 @@
 			$r.translate("podcast.has.no.episodes")
 		</p>
 		#if ( $callback.mayEditMetadata() && $feed.isUndefined() && $r.available("feed.make.internal") )
-			$r.contextHelpWithWrapper("org.olat.modules.webFeed.ui.podcast","internal-external.html","help.hover.internal-external")
+			$r.contextHelpWithWrapper("Knowledge Transfer#_podcast_createentry")
 			<p>$r.translate("podcast.internal.or.external")</p>
 			<div class="o_button_group">
 				$r.render("feed.make.internal")
