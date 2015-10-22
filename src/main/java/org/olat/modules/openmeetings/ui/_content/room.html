@@ -33,7 +33,7 @@
 	#if($r.available("open.room") || $r.available("room.members") || $r.available("edit"))
 		<p />
 		<hr />
-		$r.contextHelpWithWrapper("org.olat.modules.openmeetings.ui","room_admin.html","help.hover.openmeetings.room_admin")
+		$r.contextHelpWithWrapper("Communication and Collaboration#_room_admin")
 		<h4>$r.translate("administration.title")</h4>
 		#if($r.available("open.room"))
 			$r.render("open.room")
