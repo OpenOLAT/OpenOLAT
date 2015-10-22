@@ -169,7 +169,7 @@ public class MessageEditController extends FormBasicController {
 
 		// provide upload field
 		if (forumCallback.mayEditMessageAsModerator() || ((userIsMsgCreator) && (msgHasChildren == false))) {
-			fileUpload = uifactory.addFileElement("msg.upload", formLayout);
+			fileUpload = uifactory.addFileElement(getWindowControl(), "msg.upload", formLayout);
 			fileUpload.addActionListener(FormEvent.ONCHANGE);
 			fileUpload.setMaxUploadSizeKB((int) FolderConfig.getLimitULKB(), "attachments.too.big", new String[] { ((Long) (FolderConfig
 					.getLimitULKB() / 1024)).toString() });

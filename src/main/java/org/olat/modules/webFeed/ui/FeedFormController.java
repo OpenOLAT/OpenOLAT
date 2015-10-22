@@ -240,7 +240,7 @@ class FeedFormController extends FormBasicController {
 		deleteImage= uifactory.addFormLink("feed.image.delete", formLayout, Link.BUTTON);
 		deleteImage.setVisible(false);
 
-		file = uifactory.addFileElement("feed.file.label", formLayout);
+		file = uifactory.addFileElement(getWindowControl(), "feed.file.label", formLayout);
 		file.addActionListener(FormEvent.ONCHANGE);
 		file.setPreview(ureq.getUserSession(), true);
 		if (feed.getImageName() != null) {

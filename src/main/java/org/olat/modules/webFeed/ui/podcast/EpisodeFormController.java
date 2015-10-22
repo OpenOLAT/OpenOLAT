@@ -257,7 +257,7 @@ public class EpisodeFormController extends FormBasicController {
 		// set upload dir to the media dir
 		richTextConfig.setFileBrowserUploadRelPath("media");
 
-		file = uifactory.addFileElement("file", this.flc);
+		file = uifactory.addFileElement(getWindowControl(), "file", flc);
 		file.setLabel("podcast.episode.file.label", null);
 		file.setMandatory(true, "podcast.episode.mandatory");
 		File mediaFile = FeedManager.getInstance().getItemEnclosureFile(episode, podcast);

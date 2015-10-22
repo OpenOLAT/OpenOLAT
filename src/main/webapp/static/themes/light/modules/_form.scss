@@ -97,10 +97,13 @@
 		/* real file chooser is transparent but on layer 2, click events trigger realchooser, not fakechooser */
 		.o_realchooser { 
 			position: absolute; 
-			top: 0; left: 0;
+			top: 0; right: 0;
 			z-index: 2; 
 			@include opacity(0); /* this is the magic: visually don't show the input element, but nevertheless catch click events */
-		}	
+		}
+		.o_realchooser.o_chooser_with_delete {
+			right: 38px;
+		}
 	}
 }
 

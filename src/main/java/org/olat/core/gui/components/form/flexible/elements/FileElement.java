@@ -111,6 +111,10 @@ public interface FileElement extends FormMultipartItem {
 	 */
 	public void setMandatory(boolean mandatory, String i18nErrKey);
 
+	public boolean isDeleteEnabled();
+	
+	public void setDeleteEnabled(boolean enable);
+	
 	//
 	// Methods that are used when a file has been uploaded
 

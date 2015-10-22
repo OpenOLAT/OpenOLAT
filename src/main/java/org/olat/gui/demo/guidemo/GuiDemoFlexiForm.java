@@ -151,7 +151,7 @@ public class GuiDemoFlexiForm extends FormBasicController {
 		lastName.setPlaceholderText("Muster");
 		lastName.setHelpUrl("https://en.wikipedia.org/wiki/Family_name");
 
-		fileElement = uifactory.addFileElement("file", formLayout);
+		fileElement = uifactory.addFileElement(getWindowControl(), "file", formLayout);
 		fileElement.setLabel("guidemo.flexi.form.file", null);
 		fileElement.setMaxUploadSizeKB(500, "guidemo.flexi.form.filetobig", null);
 		Set<String> mimeTypes = new HashSet<String>();

@@ -1042,8 +1042,8 @@ public class FormUIFactory {
 	 * @param formLayout
 	 * @return
 	 */
-	public FileElement addFileElement(String name, FormItemContainer formLayout) {
-		return addFileElement(name, name, formLayout);
+	public FileElement addFileElement(WindowControl wControl, String name, FormItemContainer formLayout) {
+		return addFileElement(wControl, name, name, formLayout);
 	}
 	
 		
@@ -1054,8 +1054,8 @@ public class FormUIFactory {
 	 * @param formLayout
 	 * @return
 	 */
-	public FileElement addFileElement(String name, String i18nLabel, FormItemContainer formLayout) {
-		FileElement fileElement = new FileElementImpl(name);
+	public FileElement addFileElement(WindowControl wControl, String name, String i18nLabel, FormItemContainer formLayout) {
+		FileElement fileElement = new FileElementImpl(wControl, name);
 		setLabelIfNotNull(i18nLabel, fileElement);
 		formLayout.add(fileElement);
 		return fileElement;
