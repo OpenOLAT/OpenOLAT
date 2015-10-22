@@ -32,7 +32,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailModule;
-import org.olat.core.util.mail.MailUIFactory;
 
 /**
  * 
@@ -65,8 +64,8 @@ public class MailSettingsAdminController extends FormBasicController  {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("mail.admin.title");
 		setFormDescription("mail.admin.description");
-		setFormContextHelp(MailUIFactory.class.getPackage().getName(), "mail-admin.html", "chelp.mail-admin.title");
-		
+		setFormContextHelp("E-Mail Settings");
+
 		boolean internEnabled = isEnabled();
 		enabled = uifactory.addCheckboxesHorizontal("mail.admin.intern.enabled", formLayout, keys, values);
 		enabled.select(keys[0], internEnabled);

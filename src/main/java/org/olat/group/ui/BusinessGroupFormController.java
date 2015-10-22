@@ -259,8 +259,7 @@ public class BusinessGroupFormController extends FormBasicController {
 				FormLayoutContainer flagsFlc = FormLayoutContainer.createHorizontalFormLayout("flc_flags", getTranslator());
 				flagsFlc.setLabel("create.form.managedflags", null);
 				formLayout.add(flagsFlc);
-				flagsFlc.setFormContextHelp("org.olat.admin.restapi","managed.html","help.hover.managed");
-	
+
 				String flags = businessGroup.getManagedFlagsString() == null ? "" : businessGroup.getManagedFlagsString().trim();
 				String flagsFormatted = null;
 				if (flags.length() > 0) {

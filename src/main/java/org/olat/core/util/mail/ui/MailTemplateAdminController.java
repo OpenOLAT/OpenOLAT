@@ -30,7 +30,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailModule;
-import org.olat.core.util.mail.MailUIFactory;
 
 /**
  * 
@@ -59,8 +58,8 @@ public class MailTemplateAdminController extends FormBasicController  {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("mail.template.title");
 		setFormDescription("mail.template.description");
-		setFormContextHelp(MailUIFactory.class.getPackage().getName(), "mail-admin-template.html", "chelp.mail-admin-template.title");
-		
+		setFormContextHelp("E-Mail Settings#_template");
+
 		String def = mailManager.getMailTemplate();
 		templateEl = uifactory.addTextAreaElement("mail.template", "mail.template", 10000, 25, 50, true, def, formLayout);
 

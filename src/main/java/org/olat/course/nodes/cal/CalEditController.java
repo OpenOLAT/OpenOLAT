@@ -231,14 +231,13 @@ public class CalEditController extends ActivateableTabbableDefaultController imp
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			setFormTitle("pane.tab.calconfig");
 			//setFormDescription("pane.tab.calconfigdesc");
-			setFormContextHelp(CalEditController.class.getPackage().getName(), "caledit.html", "help.hover.calendar");
-			
 
 			boolean autoDate = getAutoDate(config);
 			String[] keys = new String[]{"auto","selected"};
 			String[] values = new String[]{translate("pane.tab.auto_date"),translate("pane.tab.manual_date")};
 			autoDateEl = uifactory.addRadiosVertical("pane.tab_auto_date", formLayout, keys, values);
-			
+
+			autoDateEl.setHelpText(translate("help.hover.start_date"));
 			autoDateEl.select(autoDate ? keys[0] : keys[1], autoDate);
 			autoDateEl.setLabel("pane.tab.start_date", null);
 			autoDateEl.addActionListener(FormEvent.ONCLICK);

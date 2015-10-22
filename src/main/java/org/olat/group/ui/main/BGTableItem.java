@@ -216,19 +216,13 @@ public class BGTableItem {
 		return relations;
 	}
 	
-	/**
-	 * Give the item a list of relations, it found alone which are its own
-	 * @param resources
-	 */
-	public void setUnfilteredRelations(List<BGRepositoryEntryRelation> resources) {
-		relations = new ArrayList<RepositoryEntryShort>(3);
-		for(BGRepositoryEntryRelation resource:resources) {
-			if(businessGroup.getKey().equals(resource.getGroupKey())) {
-				relations.add(new REShort(resource));
-				if(relations.size() >= 3) {
-					return;
-				}
-			}
+	public void addRelation(BGRepositoryEntryRelation resource) {
+		if(resource == null) return;
+		if(relations == null) {
+			relations = new ArrayList<RepositoryEntryShort>(3);
+		}
+		if(relations.size() < 3) {
+			relations.add(new REShort(resource));
 		}
 	}
 
