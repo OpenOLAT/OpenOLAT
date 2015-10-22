@@ -147,7 +147,7 @@ public class DataStepForm extends StepFormBasicController {
 
 		// return files only when configured
 		if(settings.isHasReturnFiles()) {
-			returnFileEl = uifactory.addFileElement("returnfiles", "return.files", formLayout);
+			returnFileEl = uifactory.addFileElement(getWindowControl(), "returnfiles", "return.files", formLayout);
 			Set<String> mimes = new HashSet<String>();
 			mimes.add(WebappHelper.getMimeType("file.zip"));
 			returnFileEl.limitToMimeType(mimes, "return.mime", null);

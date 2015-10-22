@@ -151,7 +151,7 @@ public class CheckboxEditController extends FormBasicController {
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("description", "description", desc, 5, -1, formLayout,
 				getWindowControl());
 
-		fileEl = uifactory.addFileElement("file", formLayout);
+		fileEl = uifactory.addFileElement(getWindowControl(), "file", formLayout);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 
 		String template = velocity_root + "/delete_file.html";

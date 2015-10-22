@@ -80,7 +80,7 @@ public class EPCreateFileArtefactStepForm00 extends StepFormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("step0.file.short.descr");
 
-		fileupload = uifactory.addFileElement("file.upload", formLayout);
+		fileupload = uifactory.addFileElement(getWindowControl(), "file.upload", formLayout);
 		fileupload.setMandatory(true, "file.upload.no.file");
 		fileupload.setMaxUploadSizeKB(MAX_UPLOADSIZE_KB, "file.upload.too.big", new String[] { String.valueOf(MAX_UPLOADSIZE_KB) });
 

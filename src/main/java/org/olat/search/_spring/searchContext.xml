@@ -61,7 +61,7 @@
 		<constructor-arg index="1" ref="coordinatorManager"/>
 		<property name="connectionFactory" ref="indexConnectionFactory"/>
 		<property name="jmsQueue" ref="indexQueue"/>
-		<property name="searchService" ref="org.olat.search.service.${search.service}" />
+		<property name="searchServiceEnabled" value="${search.service}" />
 		<property name="indexers">
 			<list>
 				<ref bean="questionItemIndexer" />

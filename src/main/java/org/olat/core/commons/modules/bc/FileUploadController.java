@@ -240,7 +240,7 @@ public class FileUploadController extends FormBasicController {
 		}
 
 		
-		fileEl = uifactory.addFileElement("fileEl", "ul.file", fileUpload);
+		fileEl = uifactory.addFileElement(getWindowControl(), "fileEl", "ul.file", fileUpload);
 		
 		setMaxUploadSizeKB((uploadLimitKB < remainingQuotKB ? uploadLimitKB : remainingQuotKB));
 		fileEl.setMandatory(true, "NoFileChoosen");

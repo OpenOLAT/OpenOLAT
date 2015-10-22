@@ -208,7 +208,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		
 		// offer upload for 2nd logo
 		if(editable) {
-			logoUpl = uifactory.addFileElement("upload.second.logo", formLayout);
+			logoUpl = uifactory.addFileElement(getWindowControl(), "upload.second.logo", formLayout);
 			logoUpl.addActionListener(FormEvent.ONCHANGE);
 			Set<String> mimeTypes = new HashSet<String>();
 			mimeTypes.add("image/*");

@@ -22,6 +22,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import java.util.Collections;
 
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -58,6 +59,11 @@ public class FileElementComponent extends FormBaseComponentImpl implements Compo
 	
 	protected ImageFormItem getPreviewElementImpl() {
 		return element.getPreviewFormItem();
+	}
+
+	@Override
+	protected void doDispatchRequest(UserRequest ureq) {
+		super.doDispatchRequest(ureq);
 	}
 
 	@Override

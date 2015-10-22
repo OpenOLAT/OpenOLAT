@@ -27,6 +27,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
+import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.image.ImageFormItem;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -88,6 +89,9 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				sb.append("</div>");
 			}
 			
+			boolean showDeleteButton = fileElem.isDeleteEnabled()
+					&& (fileElem.getInitialFile() != null || fileElem.getUploadFile() != null);
+			
 			sb.append("<div class='o_fileinput'>");	
 			// input.Browse is the real filebrowser, but set to be transparent. 
 			// the div.o_fakechooser is layered below the input.Browse and represents the visual GUI. 
@@ -97,7 +101,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 	 		sb.append(id); // name for form labeling
 	 		sb.append("\" id=\"");
 	 		sb.append(id); // id to make dirty button work
-	 		sb.append("\" class='form-control o_realchooser' ");
+	 		sb.append("\" class='form-control o_realchooser ").append(" o_chooser_with_delete", showDeleteButton).append("' ");
 	 		// Add on* event handlers
 	 		StringBuilder eventHandlers = FormJSHelper.getRawJSFor(fileElem.getRootForm(), id, fileElem.getAction());
 	 		int onChangePos = eventHandlers.indexOf("onchange=");
@@ -118,13 +122,28 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			// Add the visible but fake input field and a styled faked file chooser button
 			sb.append("<div class='o_fakechooser input-group'>");
 			sb.append("<input class='form-control' name='fake_").append(id).append("' value=\"").append(StringEscapeUtils.escapeHtml(fileName))
-			  .append("\" placeholder=\"").append(StringEscapeUtils.escapeHtml(trans.translate("file.element.select"))).append("\" />")
-			  .append("<span class='input-group-addon'><a href='javascript:;'><i class='o_icon o_icon_upload'> </i></a></span>");	
-			sb.append("</div></div>");	
-			// Add Max upload size
-			if (fileElem.getMaxUploadSizeKB() != FileElement.UPLOAD_UNLIMITED) {
-				String maxUpload = Formatter.formatBytes(fileElem.getMaxUploadSizeKB() * 1024);
-				sb.append("<div class='o_form_example help-block o_maxsize'>(")
+			  .append("\" placeholder=\"").append(StringEscapeUtils.escapeHtml(trans.translate("file.element.select"))).append("\" />");  
+			sb.append("<span class='input-group-addon'><a href='javascript:;'><i class='o_icon o_icon_upload'> </i></a></span>");
+			if(showDeleteButton) {
+				sb.append("<a class='input-group-addon' href=\"javascript:")
+				  .append(FormJSHelper.getXHRFnCallFor(fileElem.getRootForm(), fileComp.getFormDispatchId(), 1, false, false, new NameValuePair("delete", "delete")))
+				  .append(";\" onclick=\"\"><i class='o_icon o_icon_delete'> </i></a>");
+			}
+			sb.append("</div></div>");
+			// Add example text and  max upload size
+			if(fileElem.getExampleText() != null) {
+				sb.append("<div class='help-block'>")
+				  .append(fileElem.getExampleText());
+				if (fileElem.getMaxUploadSizeKB() != FileElement.UPLOAD_UNLIMITED) {
+					String maxUpload = Formatter.formatBytes(fileElem.getMaxUploadSizeKB() * 1000);
+					sb.append(" (")
+					  .append(trans.translate("file.element.select.maxsize", new String[]{maxUpload}))
+					  .append(")");
+				}
+				sb.append("</div>");	
+			} else if (fileElem.getMaxUploadSizeKB() != FileElement.UPLOAD_UNLIMITED) {
+				String maxUpload = Formatter.formatBytes(fileElem.getMaxUploadSizeKB() * 1000);
+				sb.append("<div class='help-block o_maxsize'>(")
 				.append(trans.translate("file.element.select.maxsize", new String[]{maxUpload}))
 				.append(")</div>");	
 			}
