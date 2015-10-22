@@ -217,9 +217,11 @@ public class BGTableItem {
 	}
 	
 	public void addRelation(BGRepositoryEntryRelation resource) {
+		if(resource == null) return;
 		if(relations == null) {
 			relations = new ArrayList<RepositoryEntryShort>(3);
-		} else if(relations.size() < 3) {
+		}
+		if(relations.size() < 3) {
 			relations.add(new REShort(resource));
 		}
 	}
