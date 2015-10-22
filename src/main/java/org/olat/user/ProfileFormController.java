@@ -37,14 +37,13 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -91,8 +90,7 @@ public class ProfileFormController extends FormBasicController {
 
 	private Identity identityToModify;
 	private DialogBoxController dialogCtr;
-	
-	private FormLink deletePortrait;
+
 	private FileElement portraitUpload;
 	
 	private final boolean isAdministrativeUser;
@@ -236,8 +234,6 @@ public class ProfileFormController extends FormBasicController {
 		groupContainer.setFormTitle(translate("ul.header"));
 		formLayout.add(groupContainer);
 
-		deletePortrait = uifactory.addFormLink("command.delete", groupContainer, Link.BUTTON);
-
 		File portraitFile = dps.getBigPortrait(identityToModify.getName());
 		// Init upload controller
 		Set<String> mimeTypes = new HashSet<String>();
@@ -246,11 +242,12 @@ public class ProfileFormController extends FormBasicController {
 		mimeTypes.add("image/jpeg");
 		mimeTypes.add("image/png");
 
-		portraitUpload = uifactory.addFileElement("ul.select", "ul.select", groupContainer);
+		portraitUpload = uifactory.addFileElement(getWindowControl(), "ul.select", "ul.select", groupContainer);
 		portraitUpload.setMaxUploadSizeKB(10000, null, null);
 		portraitUpload.setPreview(ureq.getUserSession(), true);
 		portraitUpload.addActionListener(FormEvent.ONCHANGE);
 		portraitUpload.setHelpTextKey("ul.select.fhelp", null);
+		portraitUpload.setDeleteEnabled(true);
 		if(portraitFile != null) {
 			portraitUpload.setInitialFile(portraitFile);
 		}
@@ -359,26 +356,25 @@ public class ProfileFormController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		 if (source == portraitUpload) {
-			if (portraitUpload.isUploadSuccess()) {
-				deletePortrait.setVisible(true);
+			if(event instanceof FileElementEvent) {
+				if(FileElementEvent.DELETE.equals(event.getCommand())) {
+					File img = dps.getBigPortrait(identityToModify.getName());
+					if(portraitUpload.getUploadFile() != null) {
+						portraitUpload.reset();
+						if(img != null) {
+							portraitUpload.setInitialFile(img);
+						}
+					} else if(img != null) {
+						dps.deletePortrait(identityToModify);
+						portraitUpload.setInitialFile(null);
+						notifyPortraitChanged();
+					}
 					flc.setDirty(true);
-			}
-		} else if (source == deletePortrait) {
-			File img = dps.getBigPortrait(identityToModify.getName());
-			if(portraitUpload.getUploadFile() != null) {
-				portraitUpload.reset();
-				if(img == null) {
-					deletePortrait.setVisible(false);
-				} else {
-					deletePortrait.setVisible(true);
+					
 				}
-			} else if(img != null) {
-				dps.deletePortrait(identityToModify);
-				deletePortrait.setVisible(false);
-				portraitUpload.setInitialFile(null);
-				notifyPortraitChanged();
+			} else if (portraitUpload.isUploadSuccess()) {
+				flc.setDirty(true);
 			}
-			flc.setDirty(true);
 		}
 
 		super.formInnerEvent(ureq, source, event);

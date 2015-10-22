@@ -174,7 +174,7 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 
 		// File Chooser
 		// There is a multipart parameter problem with that element.
-		file = uifactory.addFileElement("file", "advanced_form.file", form);
+		file = uifactory.addFileElement(getWindowControl(), "file", "advanced_form.file", form);
 	}
 
 	/**

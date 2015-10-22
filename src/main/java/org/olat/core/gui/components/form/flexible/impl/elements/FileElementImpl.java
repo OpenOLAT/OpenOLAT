@@ -39,14 +39,23 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.image.ImageFormItem;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Disposable;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.ValidationStatusImpl;
 import org.olat.core.util.WebappHelper;
@@ -70,9 +79,11 @@ import org.olat.core.util.vfs.VFSManager;
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
 
-public class FileElementImpl extends FormItemImpl implements FileElement, FormItemCollection, Disposable {
+public class FileElementImpl extends FormItemImpl
+		implements FileElement, FormItemCollection, ControllerEventListener, Disposable {
+
 	private static final OLog log = Tracing.createLoggerFor(FileElementImpl.class);
-	
+
 	private final FileElementComponent component;
 	private ImageFormItem previewEl;
 
@@ -81,6 +92,9 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 	private long maxUploadSizeKB = UPLOAD_UNLIMITED;
 	private String uploadFilename;
 	private String uploadMimeType;
+
+	private boolean deleteEnabled;
+	private boolean confirmDelete;
 
 	private boolean checkForMaxFileSize = false;
 	private boolean checkForMimeTypes = false;
@@ -92,14 +106,18 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 	private String[] i18nErrMaxSizeArgs;
 	private String[] i18nErrMimeTypeArgs;
 
+	private WindowControl wControl;
+	private DialogBoxController dialogCtr;
+
 	/**
-	 * Constructor for a file element. Use the limitToMimeType and setter methods
-	 * to configure the element
+	 * Constructor for a file element. Use the limitToMimeType and setter
+	 * methods to configure the element
 	 * 
 	 * @param name
 	 */
-	public FileElementImpl(String name) {
+	public FileElementImpl(WindowControl wControl, String name) {
 		super(name);
+		this.wControl = wControl;
 		component = new FileElementComponent(this);
 	}
 
@@ -108,7 +126,20 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 	 */
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
-		Set<String> keys = getRootForm().getRequestMultipartFilesSet();
+		Form form = getRootForm();
+
+		String dispatchuri = form.getRequestParameter("dispatchuri");
+		if (dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
+			if ("delete".equals(form.getRequestParameter("delete"))) {
+				if (isConfirmDelete()) {
+					doConfirmDelete(ureq);
+				} else {
+					getRootForm().fireFormEvent(ureq,
+							new FileElementEvent(FileElementEvent.DELETE, this, FormEvent.ONCLICK));
+				}
+			}
+		}
+		Set<String> keys = form.getRequestMultipartFilesSet();
 		if (keys.size() > 0 && keys.contains(component.getFormDispatchId())) {
 			// Remove old files first
 			if (tempUploadFile != null && tempUploadFile.exists()) {
@@ -119,7 +150,7 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 			// temporary form item scope. The file must be moved later using the
 			// moveUploadFileTo() method to the final destination.
 			tempUploadFile = new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID());
-			File tmpRequestFile = getRootForm().getRequestMultipartFile(component.getFormDispatchId());
+			File tmpRequestFile = form.getRequestMultipartFile(component.getFormDispatchId());
 			// Move file to internal temp location
 			boolean success = tmpRequestFile.renameTo(tempUploadFile);
 			if (!success) {
@@ -128,21 +159,21 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 				FileUtils.copyFileToFile(tmpRequestFile, tempUploadFile, true);
 			}
 
-			uploadFilename = getRootForm().getRequestMultipartFileName(component.getFormDispatchId());
-			//prevent an issue with Firefox
+			uploadFilename = form.getRequestMultipartFileName(component.getFormDispatchId());
+			// prevent an issue with Firefox
 			uploadFilename = Normalizer.normalize(uploadFilename, Normalizer.Form.NFKC);
 			// use mime-type from file name to have deterministic mime types
 			uploadMimeType = WebappHelper.getMimeType(uploadFilename);
 			if (uploadMimeType == null) {
 				// use browser mime type as fallback if unknown
-				uploadMimeType = getRootForm().getRequestMultipartFileMimeType(component.getFormDispatchId());
+				uploadMimeType = form.getRequestMultipartFileMimeType(component.getFormDispatchId());
 			}
 			if (uploadMimeType == null) {
-				// use application fallback for worst case 
+				// use application fallback for worst case
 				uploadMimeType = "application/octet-stream";
 			}
-			
-			if(previewEl != null && uploadMimeType != null
+
+			if (previewEl != null && uploadMimeType != null
 					&& (uploadMimeType.startsWith("image/") || uploadMimeType.startsWith("video/"))) {
 				VFSLeaf media = new LocalFileImpl(tempUploadFile);
 				previewEl.setMedia(media, uploadMimeType);
@@ -156,16 +187,32 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 	}
 
 	@Override
+	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
+		if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+			getRootForm().fireFormEvent(ureq, new FileElementEvent(FileElementEvent.DELETE, this, FormEvent.ONCLICK));
+		}
+	}
+
+	private void doConfirmDelete(UserRequest ureq) {
+		Translator translator = Util.createPackageTranslator(FileElementImpl.class, ureq.getLocale(), getTranslator());
+		String title = translator.translate("confirm.delete.file.title");
+		String text = translator.translate("confirm.delete.file");
+		dialogCtr = DialogBoxUIFactory.createOkCancelDialog(ureq, wControl, title, text);
+		dialogCtr.addControllerListener(this);
+		dialogCtr.activate();
+	}
+
+	@Override
 	public Iterable<FormItem> getFormItems() {
-		if(previewEl != null) {
-			return Collections.<FormItem>singletonList(previewEl);
+		if (previewEl != null) {
+			return Collections.<FormItem> singletonList(previewEl);
 		}
 		return Collections.emptyList();
 	}
 
 	@Override
 	public FormItem getFormComponent(String name) {
-		if(previewEl != null && previewEl.getName().equals(name)) {
+		if (previewEl != null && previewEl.getName().equals(name)) {
 			return previewEl;
 		}
 		return null;
@@ -178,7 +225,7 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 	protected Component getFormItemComponent() {
 		return component;
 	}
-	
+
 	protected ImageFormItem getPreviewFormItem() {
 		return previewEl;
 	}
@@ -192,13 +239,13 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 			tempUploadFile.delete();
 		}
 		tempUploadFile = null;
-		if(previewEl != null) {
-			if(initialFile != null) {
+		if (previewEl != null) {
+			if (initialFile != null) {
 				VFSLeaf media = new LocalFileImpl(initialFile);
 				previewEl.setMedia(media);
 				previewEl.setMaxWithAndHeightToFitWithin(300, 200);
 				previewEl.setVisible(true);
-			} else if(previewEl != null) {
+			} else if (previewEl != null) {
 				previewEl.setVisible(false);
 			}
 		}
@@ -211,7 +258,7 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 	 */
 	@Override
 	protected void rootFormAvailable() {
-		if(previewEl != null && previewEl.getRootForm() != getRootForm()) {
+		if (previewEl != null && previewEl.getRootForm() != getRootForm()) {
 			previewEl.setRootForm(getRootForm());
 		}
 	}
@@ -245,15 +292,15 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 			return;
 
 			// check if uploaded at all
-		} else if (isMandatory() &&
-				((initialFile == null && (tempUploadFile == null || !tempUploadFile.exists()))
+		} else if (isMandatory() && ((initialFile == null && (tempUploadFile == null || !tempUploadFile.exists()))
 				|| (initialFile != null && tempUploadFile != null && !tempUploadFile.exists()))) {
 			setErrorKey(i18nErrMandatory, null);
 			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
 			return;
 
 			// check for file size of current file
-		} else if (checkForMaxFileSize && tempUploadFile != null && tempUploadFile.exists() && tempUploadFile.length() > maxUploadSizeKB * 1024l) {
+		} else if (checkForMaxFileSize && tempUploadFile != null && tempUploadFile.exists()
+				&& tempUploadFile.length() > maxUploadSizeKB * 1024l) {
 			setErrorKey(i18nErrMaxSize, i18nErrMaxSizeArgs);
 			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
 			return;
@@ -269,7 +316,8 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 						break;
 					} else if (validType.endsWith("/*")) {
 						// wildcard match: image/*
-						if (uploadMimeType != null && uploadMimeType.startsWith(validType.substring(0, validType.length() - 2))) {
+						if (uploadMimeType != null
+								&& uploadMimeType.startsWith(validType.substring(0, validType.length() - 2))) {
 							found = true;
 							break;
 						}
@@ -288,14 +336,13 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 
 	@Override
 	public void setPreview(UserSession usess, boolean enable) {
-		if(enable) {
+		if (enable) {
 			previewEl = new ImageFormItem(usess, this.getName() + "_PREVIEW");
 			previewEl.setRootForm(getRootForm());
 		} else {
 			previewEl = null;
 		}
 	}
-	
 
 	@Override
 	public void setCropSelectionEnabled(boolean enable) {
@@ -308,12 +355,12 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 	@Override
 	public void setInitialFile(File initialFile) {
 		this.initialFile = initialFile;
-		if(initialFile != null && previewEl != null) {
+		if (initialFile != null && previewEl != null) {
 			VFSLeaf media = new LocalFileImpl(initialFile);
 			previewEl.setMedia(media);
 			previewEl.setMaxWithAndHeightToFitWithin(300, 200);
 			previewEl.setVisible(true);
-		} else if(previewEl != null) {
+		} else if (previewEl != null) {
 			previewEl.setVisible(false);
 		}
 	}
@@ -340,7 +387,8 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 	 * @see org.olat.core.gui.components.form.flexible.elements.FileElement#getMimeTypeLimitations()
 	 */
 	public Set<String> getMimeTypeLimitations() {
-		if (mimeTypes == null) mimeTypes = new HashSet<String>();
+		if (mimeTypes == null)
+			mimeTypes = new HashSet<String>();
 		return mimeTypes;
 	}
 
@@ -360,6 +408,24 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 	 */
 	public long getMaxUploadSizeKB() {
 		return maxUploadSizeKB;
+	}
+
+	@Override
+	public boolean isDeleteEnabled() {
+		return deleteEnabled;
+	}
+
+	@Override
+	public void setDeleteEnabled(boolean deleteEnabled) {
+		this.deleteEnabled = deleteEnabled;
+	}
+
+	public boolean isConfirmDelete() {
+		return confirmDelete;
+	}
+
+	public void setConfirmDelete(boolean confirmDelete) {
+		this.confirmDelete = confirmDelete;
 	}
 
 	/**
@@ -397,7 +463,8 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 	 * @see org.olat.core.gui.components.form.flexible.elements.FileElement#getUploadInputStream()
 	 */
 	public InputStream getUploadInputStream() {
-		if (tempUploadFile == null) return null;
+		if (tempUploadFile == null)
+			return null;
 		try {
 			return new FileInputStream(tempUploadFile);
 		} catch (FileNotFoundException e) {
@@ -440,7 +507,7 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 		}
 		return null;
 	}
-	
+
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.FileElement#moveUploadFileTo(org.olat.core.util.vfs.VFSContainer)
 	 */
@@ -465,21 +532,23 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 				LocalFolderImpl folderContainer = (LocalFolderImpl) destinationContainer;
 				File destinationDir = folderContainer.getBasefile();
 				File targetFile = new File(destinationDir, uploadFilename);
-				
+
 				Crop cropSelection = previewEl == null ? null : previewEl.getCropSelection();
-				if(crop && cropSelection != null) {
+				if (crop && cropSelection != null) {
 					CoreSpringFactory.getImpl(ImageService.class).cropImage(tempUploadFile, targetFile, cropSelection);
 					targetLeaf = (VFSLeaf) destinationContainer.resolve(targetFile.getName());
-				} else if (FileUtils.copyFileToFile(tempUploadFile, targetFile, true)) { 
+				} else if (FileUtils.copyFileToFile(tempUploadFile, targetFile, true)) {
 					targetLeaf = (VFSLeaf) destinationContainer.resolve(targetFile.getName());
-				}	else {
-					log.error("Error after copying content from temp file, cannot copy file::" 
-							+ (tempUploadFile == null ? "NULL" : tempUploadFile) + " - " + (targetFile == null ? "NULL" : targetFile), null);
+				} else {
+					log.error("Error after copying content from temp file, cannot copy file::"
+							+ (tempUploadFile == null ? "NULL" : tempUploadFile) + " - "
+							+ (targetFile == null ? "NULL" : targetFile), null);
 				}
-				
-				if(targetLeaf == null) {
-					log.error("Error after copying content from temp file, cannot resolve copied file::" 
-							+ (tempUploadFile == null ? "NULL" : tempUploadFile) + " - " + (targetFile == null ? "NULL" : targetFile), null);
+
+				if (targetLeaf == null) {
+					log.error("Error after copying content from temp file, cannot resolve copied file::"
+							+ (tempUploadFile == null ? "NULL" : tempUploadFile) + " - "
+							+ (targetFile == null ? "NULL" : targetFile), null);
 				}
 			} else {
 				// Copy stream in case the destination is a non-local container
@@ -488,23 +557,23 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 				try {
 					success = VFSManager.copyContent(new FileInputStream(tempUploadFile), leaf);
 				} catch (FileNotFoundException e) {
-					log.error("Error while copying content from temp file::" 
+					log.error("Error while copying content from temp file::"
 							+ (tempUploadFile == null ? "NULL" : tempUploadFile.getAbsolutePath()), e);
 				}
 				if (success) {
-					// Delete original temp file after copy to simulate move behavior
-					tempUploadFile.delete();				
+					// Delete original temp file after copy to simulate move
+					// behavior
+					tempUploadFile.delete();
 					targetLeaf = leaf;
 				}
 			}
-		} else if(log.isDebug()) {
-			log.debug("Error while copying content from temp file, no temp file::" 
+		} else if (log.isDebug()) {
+			log.debug("Error while copying content from temp file, no temp file::"
 					+ (tempUploadFile == null ? "NULL" : tempUploadFile.getAbsolutePath()));
 		}
 		return targetLeaf;
-		
-	}
 
+	}
 
 	/**
 	 * @see org.olat.core.gui.control.Disposable#dispose()

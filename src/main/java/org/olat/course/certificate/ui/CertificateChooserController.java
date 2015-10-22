@@ -97,7 +97,7 @@ public class CertificateChooserController extends UploadCertificateController {
 		
 		uifactory.addSpacerElement("spaceman", formLayout, false);
 		
-		fileEl = uifactory.addFileElement("template.file", formLayout);
+		fileEl = uifactory.addFileElement(getWindowControl(), "template.file", formLayout);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		
 		String[] orientationValues = new String[]{

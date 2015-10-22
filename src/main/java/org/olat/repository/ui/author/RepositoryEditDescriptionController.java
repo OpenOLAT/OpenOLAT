@@ -38,15 +38,14 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -99,7 +98,6 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	private RichTextElement description, objectives, requirements, credits;
 	private SingleSelection dateTypesEl, publicDatesEl;
 	private DateChooser startDateEl, endDateEl;
-	private FormLink deleteImage, deleteMovie;
 	private FormSubmit submit;
 	private FormLayoutContainer descCont, privateDatesCont;
 	
@@ -304,31 +302,26 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		boolean managed = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
 		
 		VFSLeaf img = repositoryManager.getImage(repositoryEntry);
-		deleteImage = uifactory.addFormLink("deleteimg", "cmd.delete", null, descCont, Link.BUTTON);
-		deleteImage.setVisible(img != null && !managed);
-
-		fileUpload = uifactory.addFileElement("rentry.pic", "rentry.pic", descCont);
+		fileUpload = uifactory.addFileElement(getWindowControl(), "rentry.pic", "rentry.pic", descCont);
 		fileUpload.setExampleKey("rentry.pic.example", new String[] {RepositoryManager.PICTUREWIDTH + "x" + (RepositoryManager.PICTUREWIDTH / 3 * 2)});
 		fileUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
 		fileUpload.setPreview(ureq.getUserSession(), true);
 		fileUpload.addActionListener(FormEvent.ONCHANGE);
+		fileUpload.setDeleteEnabled(!managed);
 		if(img instanceof LocalFileImpl) {
 			fileUpload.setPreview(ureq.getUserSession(), true);
 			fileUpload.setInitialFile(((LocalFileImpl)img).getBasefile());
 		}
 		fileUpload.setVisible(!managed);
 		fileUpload.limitToMimeType(imageMimeTypes, null, null);
-		
 
 		VFSLeaf movie = repositoryService.getIntroductionMovie(repositoryEntry);
-		deleteMovie = uifactory.addFormLink("deletemovie", "cmd.delete", null, descCont, Link.BUTTON);
-		deleteMovie.setVisible(movie != null && !managed);
-		
-		movieUpload = uifactory.addFileElement("rentry.movie", "rentry.movie", descCont);
+		movieUpload = uifactory.addFileElement(getWindowControl(), "rentry.movie", "rentry.movie", descCont);
 		movieUpload.setExampleKey("rentry.movie.example", new String[] {"3:2"});
 		movieUpload.setMaxUploadSizeKB(movieUploadlimitKB, null, null);
 		movieUpload.setPreview(ureq.getUserSession(), true);
 		movieUpload.addActionListener(FormEvent.ONCHANGE);
+		movieUpload.setDeleteEnabled(movie != null && !managed);
 		if(movie instanceof LocalFileImpl) {
 			movieUpload.setPreview(ureq.getUserSession(), true);
 			movieUpload.setInitialFile(((LocalFileImpl)movie).getBasefile());
@@ -411,42 +404,33 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		if (source == dateTypesEl) {
 			updateDatesVisibility();
 		} else if (source == fileUpload) {
-			if (fileUpload.isUploadSuccess()) {
-				deleteImage.setVisible(true);
+			if(FileElementEvent.DELETE.equals(event.getCommand())) {
+				VFSLeaf img = repositoryManager.getImage(repositoryEntry);
+				if(fileUpload.getUploadFile() != null && fileUpload.getUploadFile() != fileUpload.getInitialFile()) {
+					fileUpload.reset();
+					if(img != null) {
+						fileUpload.setInitialFile(((LocalFileImpl)img).getBasefile());
+					}
+				} else if(img != null) {
+					repositoryManager.deleteImage(repositoryEntry);
+					fileUpload.setInitialFile(null);
+				}
+				flc.setDirty(true);	
+			}
+		} else if (source == movieUpload) {
+			if(FileElementEvent.DELETE.equals(event.getCommand())) {
+				VFSLeaf movie = repositoryService.getIntroductionMovie(repositoryEntry);
+				if(movieUpload.getUploadFile() != null && movieUpload.getUploadFile() != movieUpload.getInitialFile()) {
+					movieUpload.reset();
+					if(movie != null) {
+						movieUpload.setInitialFile(((LocalFileImpl)movie).getBasefile());
+					}
+				} else if(movie != null) {
+					movie.delete();
+					movieUpload.setInitialFile(null);
+				}
 				flc.setDirty(true);
 			}
-		} else if (source == deleteImage) {
-			VFSLeaf img = repositoryManager.getImage(repositoryEntry);
-			if(fileUpload.getUploadFile() != null && fileUpload.getUploadFile() != fileUpload.getInitialFile()) {
-				fileUpload.reset();
-				if(img == null) {
-					deleteImage.setVisible(false);
-				} else {
-					deleteImage.setVisible(true);
-				}
-			} else if(img != null) {
-				repositoryManager.deleteImage(repositoryEntry);
-				deleteImage.setVisible(false);
-				fileUpload.setInitialFile(null);
-			}
-
-			flc.setDirty(true);
-		} else if (source == deleteMovie) {
-			VFSLeaf movie = repositoryService.getIntroductionMovie(repositoryEntry);
-			if(movieUpload.getUploadFile() != null && movieUpload.getUploadFile() != movieUpload.getInitialFile()) {
-				movieUpload.reset();
-				if(movie == null) {
-					deleteMovie.setVisible(false);
-				} else {
-					deleteMovie.setVisible(true);
-				}
-			} else if(movie != null) {
-				movie.delete();
-				deleteMovie.setVisible(false);
-				movieUpload.setInitialFile(null);
-			}
-
-			flc.setDirty(true);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
