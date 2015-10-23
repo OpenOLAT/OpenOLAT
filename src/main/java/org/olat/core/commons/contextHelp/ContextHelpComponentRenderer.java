@@ -30,8 +30,8 @@ import org.olat.core.gui.translator.Translator;
 
 /**
  * Draw the link to the context help.
- * 
- * 
+ *
+ *
  * Initial date: 17.06.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
@@ -41,7 +41,7 @@ public class ContextHelpComponentRenderer extends DefaultComponentRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
-		
+
 		ContextHelpComponent cmp = (ContextHelpComponent)source;
 		String hoverTextKey = cmp.getHoverTextKey();
 		String packageName = cmp.getPackageName();
