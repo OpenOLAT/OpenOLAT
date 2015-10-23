@@ -150,8 +150,6 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
-	private NotificationsManager notificationsManager;
-	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
@@ -961,6 +959,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			} else {
 				template = null;
 			}
+		} else {
+			template = null;
 		}
 		return template;
 	}
