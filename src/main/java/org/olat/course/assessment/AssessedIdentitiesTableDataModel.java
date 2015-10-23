@@ -151,6 +151,16 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 			certificates.put(certificate.getIdentityKey(), certificate);
 		}
 	}
+	
+	public boolean replaceWrapper(AssessedIdentityWrapper wrappedIdentity) {
+		boolean replaced = false;
+		int index = getObjects().indexOf(wrappedIdentity);
+		if(index >= 0 && index < getObjects().size()) {
+			getObjects().set(index, wrappedIdentity);
+			replaced = true;
+		}
+		return replaced;
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
@@ -218,16 +228,16 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 
 	/**
 	 * Return task Status (not_ok,ok,working_on) for a certain user and course
-	 * @param courseNode
+	 * @param assessableCourseNode
 	 * @param wrappedIdentity
 	 * @return
 	 */
-	private String getStatusFor(AssessableCourseNode courseNode, AssessedIdentityWrapper wrappedIdentity) {
+	private String getStatusFor(AssessableCourseNode assessableCourseNode, AssessedIdentityWrapper wrappedIdentity) {
 		
 	  CoursePropertyManager cpm = wrappedIdentity.getUserCourseEnvironment().getCourseEnvironment().getCoursePropertyManager();
 		Property statusProperty;
 		Translator trans = Util.createPackageTranslator(StatusForm.class, getLocale());
-		statusProperty = cpm.findCourseNodeProperty(courseNode, wrappedIdentity.getIdentity(), null, StatusManager.PROPERTY_KEY_STATUS);
+		statusProperty = cpm.findCourseNodeProperty(assessableCourseNode, wrappedIdentity.getIdentity(), null, StatusManager.PROPERTY_KEY_STATUS);
 		if (statusProperty == null) {
 			String value = trans.translate(StatusForm.PROPERTY_KEY_UNDEFINED);
 			return value;
@@ -248,47 +258,47 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 		if (courseNode == null || courseNode.isEditableConfigured()) {
 			editCmd = actionCommand; // only selectable if editable
 		}
-		int colCount = 0;
+		int columnCount = 0;
 		
 		if(isAdministrativeUser) {
-			userListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.name", colCount++, editCmd, getLocale()));
+			userListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.name", columnCount++, editCmd, getLocale()));
 		}
 		
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
 			boolean visible = UserManager.getInstance().isMandatoryUserProperty(usageIdentifyer , userPropertyHandler);
-			userListCtr.addColumnDescriptor(visible, userPropertyHandler.getColumnDescriptor(colCount++, editCmd, getLocale()));	
+			userListCtr.addColumnDescriptor(visible, userPropertyHandler.getColumnDescriptor(columnCount++, editCmd, getLocale()));	
 		}		
 		if ( (courseNode != null) && isNodeOrGroupFocus) {			
 			if (courseNode.hasDetails()) {
 				String headerKey = courseNode.getDetailsListViewHeaderKey();
 				userListCtr.addColumnDescriptor((headerKey == null ? false : true), 
-						new DefaultColumnDescriptor(headerKey == null ? "table.header.details" : headerKey, colCount++, null, getLocale()));
+						new DefaultColumnDescriptor(headerKey == null ? "table.header.details" : headerKey, columnCount++, null, getLocale()));
 			}
 			if (courseNode.hasAttemptsConfigured()) {				
-				userListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.attempts", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
+				userListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.attempts", columnCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
 			}
 			if (courseNode.hasScoreConfigured()) {				
-				userListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.score", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT,
+				userListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.score", columnCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT,
 						new ScoreCellRenderer()));
-				userListCtr.addColumnDescriptor(false, new CustomRenderColumnDescriptor("table.header.min", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT,
+				userListCtr.addColumnDescriptor(false, new CustomRenderColumnDescriptor("table.header.min", columnCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT,
 						new ScoreCellRenderer()));
-				userListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.max", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT,
+				userListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.max", columnCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT,
 						new ScoreCellRenderer()));
 			}
 			if (courseNode.hasStatusConfigured()) {				
-				userListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.status", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
+				userListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.status", columnCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
 			}
 			if (courseNode.hasPassedConfigured()) {				
-				userListCtr.addColumnDescriptor(new BooleanColumnDescriptor("table.header.passed", colCount++, translator.translate("passed.true"), 
+				userListCtr.addColumnDescriptor(new BooleanColumnDescriptor("table.header.passed", columnCount++, translator.translate("passed.true"), 
 						translator.translate("passed.false")));
 			}
-			userListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.initialLaunchDate", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
-			userListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.lastScoreDate", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
+			userListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.initialLaunchDate", columnCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
+			userListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.lastScoreDate", columnCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
 		}
 		
 		if(certificate) {
-			CustomRenderColumnDescriptor statColdesc = new CustomRenderColumnDescriptor("table.header.certificate", colCount++, null, getLocale(),
+			CustomRenderColumnDescriptor statColdesc = new CustomRenderColumnDescriptor("table.header.certificate", columnCount++, null, getLocale(),
 					ColumnDescriptor.ALIGNMENT_LEFT, new DownloadCertificateCellRenderer());
 			userListCtr.addColumnDescriptor(statColdesc);
 		}
