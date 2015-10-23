@@ -513,7 +513,7 @@ public class TableController extends BasicController {
 			table.setSearchString(null);
 		}
 		table.modelChanged();
-		TableDataModel tableModel = table.getTableDataModel();
+		TableDataModel<?> tableModel = table.getTableDataModel();
 		if (tableModel != null) {
 			contentVc.contextPut("tableEmpty", tableModel.getRowCount() == 0 ? Boolean.TRUE : Boolean.FALSE);
 			contentVc.contextPut("numberOfElements", String.valueOf(table.getUnfilteredRowCount()));

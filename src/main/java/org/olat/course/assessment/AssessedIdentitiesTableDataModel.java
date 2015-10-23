@@ -151,6 +151,16 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 			certificates.put(certificate.getIdentityKey(), certificate);
 		}
 	}
+	
+	public boolean replaceWrapper(AssessedIdentityWrapper wrappedIdentity) {
+		boolean replaced = false;
+		int index = getObjects().indexOf(wrappedIdentity);
+		if(index >= 0 && index < getObjects().size()) {
+			getObjects().set(index, wrappedIdentity);
+			replaced = true;
+		}
+		return replaced;
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
