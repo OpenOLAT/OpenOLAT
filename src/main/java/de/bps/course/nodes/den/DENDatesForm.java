@@ -77,7 +77,7 @@ public class DENDatesForm extends FormBasicController {
 			showDurationTE = true;
 			showPauseTE = true;
 			showRetakeTE = true;
-			setFormContextHelp("de.bps.course.nodes.den","ced-den-dates-creat.html","help.hover.den");
+			setFormContextHelp("Other#_addentry");
 		} else if(layout == EDIT_SINGLE_DATE_LAYOUT) {
 			showBeginDateChooser = true;
 			showDurationTE = true;

@@ -20,6 +20,7 @@
 package org.olat.group.ui.main;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,6 +36,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -723,39 +725,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		if(identityKeys.isEmpty()) {
 			identities = new ArrayList<Identity>(0);
 		} else  {
-			SearchIdentityParams idParams = new SearchIdentityParams();
-			if(StringHelper.containsNonWhitespace(params.getSearchString())) {
-				String searchString = params.getSearchString();
-				
-				Map<String,String> propertiesSearch = new HashMap<>();
-				for(UserPropertyHandler handler:userPropertyHandlers) {
-					propertiesSearch.put(handler.getName(), searchString);
-				}
-				idParams.setLogin(searchString);
-				idParams.setUserProperties(propertiesSearch);
-			} else {
-				if(params.getUserPropertiesSearch() != null && !params.getUserPropertiesSearch().isEmpty()) {
-					idParams.setUserProperties(params.getUserPropertiesSearch());
-				}
-				if(StringHelper.containsNonWhitespace(params.getLogin())) {
-					idParams.setLogin(params.getLogin());
-				}
-			}
-			
-			List<Long> identityKeyList = new ArrayList<>(identityKeys);
-			identities = new ArrayList<>(identityKeyList.size());
-
-			int count = 0;
-			int batch = 500;
-			do {
-				int toIndex = Math.min(count + batch, identityKeyList.size());
-				List<Long> toLoad = identityKeyList.subList(count, toIndex);
-				idParams.setIdentityKeys(toLoad);
-
-				List<Identity> batchOfIdentities = securityManager.getIdentitiesByPowerSearch(idParams, 0, -1);
-				identities.addAll(batchOfIdentities);
-				count += batch;
-			} while(count < identityKeyList.size());
+			identities = filterIdentities(params, identityKeys);
 		}
 
 		Map<Long,MemberView> keyToMemberMap = new HashMap<Long,MemberView>();
@@ -772,13 +742,28 @@ public abstract class AbstractMemberListController extends FormBasicController i
 				resourcesForReservations.add(group.getResource());
 			}
 			List<ResourceReservation> reservations = acService.getReservations(resourcesForReservations);
+			List<Long> pendingIdentityKeys = new ArrayList<>(reservations.size());
+			for(ResourceReservation reservation:reservations) {
+				pendingIdentityKeys.add(reservation.getIdentity().getKey());
+			}
+			
+			if(StringHelper.containsNonWhitespace(params.getSearchString())
+					|| StringHelper.containsNonWhitespace(params.getLogin())
+					|| (params.getUserPropertiesSearch() != null && !params.getUserPropertiesSearch().isEmpty())) {
+				
+				List<Identity> pendingIdentities = filterIdentities(params, pendingIdentityKeys);
+				pendingIdentityKeys.retainAll(PersistenceHelper.toKeys(pendingIdentities));
+			}
+			
 			for(ResourceReservation reservation:reservations) {
 				Identity identity = reservation.getIdentity();
-				MemberView member = new MemberView(identity, userPropertyHandlers, locale);
-				member.getMembership().setPending(true);
-				memberList.add(member);
-				forgeLinks(member);
-				keyToMemberMap.put(identity.getKey(), member);
+				if(pendingIdentityKeys.contains(identity.getKey())) {
+					MemberView member = new MemberView(identity, userPropertyHandlers, locale);
+					member.getMembership().setPending(true);
+					memberList.add(member);
+					forgeLinks(member);
+					keyToMemberMap.put(identity.getKey(), member);
+				}
 			}
 		}
 		
@@ -862,6 +847,44 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		memberListModel.setObjects(memberList);
 		membersTable.reset();
 		return memberList;
+	}
+	
+	private List<Identity> filterIdentities(SearchMembersParams params, Collection<Long> identityKeys) {
+		SearchIdentityParams idParams = new SearchIdentityParams();
+		if(StringHelper.containsNonWhitespace(params.getSearchString())) {
+			String searchString = params.getSearchString();
+			
+			Map<String,String> propertiesSearch = new HashMap<>();
+			for(UserPropertyHandler handler:userPropertyHandlers) {
+				propertiesSearch.put(handler.getName(), searchString);
+			}
+			idParams.setLogin(searchString);
+			idParams.setUserProperties(propertiesSearch);
+		} else {
+			if(params.getUserPropertiesSearch() != null && !params.getUserPropertiesSearch().isEmpty()) {
+				idParams.setUserProperties(params.getUserPropertiesSearch());
+			}
+			if(StringHelper.containsNonWhitespace(params.getLogin())) {
+				idParams.setLogin(params.getLogin());
+			}
+		}
+		
+		List<Long> identityKeyList = new ArrayList<>(identityKeys);
+		List<Identity> identities = new ArrayList<>(identityKeyList.size());
+
+		int count = 0;
+		int batch = 500;
+		do {
+			int toIndex = Math.min(count + batch, identityKeyList.size());
+			List<Long> toLoad = identityKeyList.subList(count, toIndex);
+			idParams.setIdentityKeys(toLoad);
+
+			List<Identity> batchOfIdentities = securityManager.getIdentitiesByPowerSearch(idParams, 0, -1);
+			identities.addAll(batchOfIdentities);
+			count += batch;
+		} while(count < identityKeyList.size());
+		
+		return identities;
 	}
 	
 	protected void forgeLinks(MemberView row) {

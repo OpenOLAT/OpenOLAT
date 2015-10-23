@@ -154,6 +154,8 @@ public class CertificateChooserController extends UploadCertificateController {
 			if(validateTemplate()) {
 				doUpload(ureq);
 			}
+		} else if(fileEl == source) {
+			validateTemplate();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -163,6 +165,9 @@ public class CertificateChooserController extends UploadCertificateController {
 		if(template != null) {
 			String name = fileEl.getUploadFileName();
 			selectedTemplate = certificatesManager.addTemplate(name, template, getFormat(), getOrientation(), false);
+			if(selectedTemplate == null) {
+				showError("upload.wrong.mimetype");
+			}
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
 	}

@@ -150,13 +150,13 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
-	private NotificationsManager notificationsManager;
-	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private CoordinatorManager coordinatorManager;
+	@Autowired
+	private NotificationsManager notificationsManager;
 
 	@Resource(name="certificateQueue")
 	private Queue jmsQueue;
@@ -961,6 +961,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			} else {
 				template = null;
 			}
+		} else {
+			template = null;
 		}
 		return template;
 	}

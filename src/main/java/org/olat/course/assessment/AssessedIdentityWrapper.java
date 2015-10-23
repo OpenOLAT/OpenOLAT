@@ -39,6 +39,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  * variables that should be displayed in the user list table.
  */
 public class AssessedIdentityWrapper {
+	private final Long identityKey;
     private final UserCourseEnvironment userCourseEnvironment;
     private final Integer nodeAttempts;
     private final String detailsListView;
@@ -56,6 +57,11 @@ public class AssessedIdentityWrapper {
     		Date initialLaunchDate, Date lastModified) {
         super();
         this.userCourseEnvironment = userCourseEnvironment;
+        if(userCourseEnvironment.getIdentityEnvironment().getIdentity() != null) {
+        	identityKey = userCourseEnvironment.getIdentityEnvironment().getIdentity().getKey();
+        } else {
+        	identityKey = null;
+        }
         this.nodeAttempts = nodeAttempts;
         this.detailsListView = detailsListView;
         this.initialLaunchDate = initialLaunchDate;
@@ -96,5 +102,23 @@ public class AssessedIdentityWrapper {
 
 	public Date getLastModified() {
 		return lastModified;
+	}
+
+	@Override
+	public int hashCode() {
+		return identityKey == null ? 3894759 : identityKey.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof AssessedIdentityWrapper) {
+			AssessedIdentityWrapper wrapper = (AssessedIdentityWrapper)obj;
+			return identityKey != null && wrapper.identityKey != null
+					&& identityKey.equals(wrapper.identityKey);
+		}
+		return false;
 	}
 }

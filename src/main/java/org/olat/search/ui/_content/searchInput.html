@@ -1,13 +1,12 @@
 <div id="o_search_form">
 	<div id="o_search_form_content"><div>
+		$r.contextHelpWithWrapper('Full-Text Search')
 		#if($advancedSearchFlag)
-			$r.contextHelpWithWrapper('org.olat.search.ui','advanced-search.html','help.hover.search')
 			<div id="o_local_fulltextsearch">
 				$r.render("ext_search_form")
 			</div>
 			$r.render("switch.simple.search")
 		#else
-			$r.contextHelpWithWrapper('org.olat.search.ui','simple-search.html','help.hover.search')
 			<div id="o_local_fulltextsearch">
 				$r.render("search_form")
 			</div>
@@ -17,7 +16,7 @@
 	</div></div>
 	## toggle the form on/off on click to the form title
 	<script type="text/javascript">
-	/* <![CDATA[ */ 
+	/* <![CDATA[ */
 		jQuery(function() {
 			jQuery('#o_search_form_toggler').click(function() {
 				jQuery('#o_search_form_content').slideToggle(300);

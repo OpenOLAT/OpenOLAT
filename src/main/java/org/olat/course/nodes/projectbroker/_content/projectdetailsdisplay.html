@@ -1,12 +1,12 @@
 <fieldset>
 	<legend>
 	#if ($isProjectManager == true)
-		$r.contextHelpWithWrapper("org.olat.course.nodes.projectbroker","projectbroker-descriptionProjectManager.html","help.hover.projectbroker-descriptionProjectManager")
+		$r.contextHelpWithWrapper("Other#_bb_themenvergabe_runtime")
 	#else
-		$r.contextHelpWithWrapper("org.olat.course.nodes.projectbroker","projectbroker-descriptionProject.html","help.hover.projectbroker-descriptionProject")	
+		$r.contextHelpWithWrapper("Working With Course Elements#_topic_select")
 	#end
 	$r.translate("detailsform.description.fieldset")</legend>
-	
+
 <div class="panel panel-default">
 	<div class="panel-heading"><h4>$title</h4></div>
 	<table class="table table-condensed"><tbody>
@@ -16,7 +16,7 @@
             #set ($notFirst = false)
 			#foreach($projectLeaderLinkName in $projectLeaderLinkNameList)
                          #if ($notFirst)
-                             , 
+                             ,
                          #end
                          #set ($notFirst = true)
 				$r.render("${projectLeaderLinkName}")
@@ -26,7 +26,7 @@
 		<tr>
 			<th>$r.translate("detailsform.description.label")</th>
 			<td>$description</td>
-			
+
 		</tr>
 		<tr>
 			<th>$r.translate("detailsform.state.label")</th>
@@ -47,10 +47,10 @@
 			<th>$r.translate("$event.eventType")</th>
 			<td>#if ($event.startDate)
 			      $r.translate("event.start.text")
-			      $event.formattedStartDate 
+			      $event.formattedStartDate
 			    #end
 			    #if ($event.endDate)
-			      $r.translate("event.to.text") 
+			      $r.translate("event.to.text")
 			      $event.formattedEndDate
 			    #end
 			</td>
