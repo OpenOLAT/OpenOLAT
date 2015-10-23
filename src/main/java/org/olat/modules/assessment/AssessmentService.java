@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -58,10 +59,29 @@ public interface AssessmentService {
 	
 	public AssessmentEntry updateAssessmentEntry(AssessmentEntry entry);
 	
+	
 	public List<AssessmentEntry> loadAssessmentEntriesBySubIdent(RepositoryEntry entry, String subIdent);
 	
 	public List<AssessmentEntry> loadAssessmentEntriesByAssessedIdentity(Identity assessedIdentity, RepositoryEntry entry);
 	
 	public List<AssessmentEntry> loadAssessmentEntries(BusinessGroup assessedGroup, RepositoryEntry entry, String subIdent);
+	
+	/**
+	 * Update the status for a user, create the assessment entries if it doesn't exist.
+	 * exist.
+	 * @param group
+	 * @param status
+	 * @return
+	 */
+	public AssessmentEntry updateAssessmentEntry(Identity assessedIdentity, RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry, AssessmentEntryStatus status);
+	
+	/**
+	 * Update the status for a whole group of users, create the assessment entries if they don't
+	 * exist.
+	 * @param group
+	 * @param status
+	 * @return
+	 */
+	public List<AssessmentEntry> updateAssessmentEntries(BusinessGroup group, RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry, AssessmentEntryStatus status);
 
 }

@@ -60,7 +60,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.assessment.NodeTableDataModel;
-import org.olat.course.assessment.NodeTableRow;
+import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
@@ -133,7 +133,7 @@ public class QTIArchiveWizardController extends BasicController {
 	private OLATResourceable ores;
 
 
-	public QTIArchiveWizardController(boolean dummyMode, UserRequest ureq, List<NodeTableRow> nodesTableObjectArrayList, OLATResourceable ores, WindowControl wControl) {
+	public QTIArchiveWizardController(boolean dummyMode, UserRequest ureq, List<AssessmentNodeData> assessmentNodeData, OLATResourceable ores, WindowControl wControl) {
 		super(ureq, wControl);
 		this.dummyMode = dummyMode;
 		this.ores = ores;
@@ -160,7 +160,7 @@ public class QTIArchiveWizardController extends BasicController {
 		nodeListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.action.select", 1,
 				CMD_SELECT_NODE, ureq.getLocale()));
 		
-		nodeTableModel = new NodeTableDataModel(nodesTableObjectArrayList, getTranslator());
+		nodeTableModel = new NodeTableDataModel(assessmentNodeData, getTranslator());
 		nodeListCtr.setTableDataModel(nodeTableModel);
 		nodeChooseVC.put("nodeTable", nodeListCtr.getInitialComponent());
 		
@@ -221,7 +221,7 @@ public class QTIArchiveWizardController extends BasicController {
 				String actionid = te.getActionId();
 				if (actionid.equals(CMD_SELECT_NODE)) {
 					int rowid = te.getRowId();
-					NodeTableRow nodeData = nodeTableModel.getObject(rowid);
+					AssessmentNodeData nodeData = nodeTableModel.getObject(rowid);
 					ICourse course = CourseFactory.loadCourse(ores);
 					this.currentCourseNode = course.getRunStructure().getNode(nodeData.getIdent());
 

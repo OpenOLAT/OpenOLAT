@@ -489,7 +489,7 @@ public class GTACoachController extends GTAAbstractController {
 	private void doReviewedDocument(UserRequest ureq, Task task) {
 		//go to solution, grading or graded
 		TaskProcess nextStep = gtaManager.nextStep(TaskProcess.correction, gtaNode);
-		gtaManager.updateTask(task, nextStep);
+		gtaManager.updateTask(task, nextStep, gtaNode);
 		showInfo("coach.documents.successfully.reviewed");
 		gtaManager.log("Review", "documents reviewed", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
 		
@@ -506,7 +506,7 @@ public class GTACoachController extends GTAAbstractController {
 	}
 	
 	private void doRevisions(UserRequest ureq, Task task) {
-		gtaManager.updateTask(task, TaskProcess.revision, 1);
+		gtaManager.updateTask(task, TaskProcess.revision, 1, gtaNode);
 		gtaManager.log("Review", "need revision", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
 		
 		cleanUpProcess();

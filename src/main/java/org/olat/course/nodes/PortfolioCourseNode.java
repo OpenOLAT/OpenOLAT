@@ -146,7 +146,7 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 			String message = trans.translate("guestnoaccess.message");
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
-			controller = new PortfolioCourseNodeRunController(ureq, wControl, userCourseEnv, ne, this);
+			controller = new PortfolioCourseNodeRunController(ureq, wControl, userCourseEnv, this);
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_ep_icon");
 		return new NodeRunConstructionResult(ctrl);

@@ -305,6 +305,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	/**
 	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
 	 */
+	@Override
 	public StatusDescription isConfigValid() {
 		/*
 		 * first check the one click cache
@@ -332,6 +333,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	/**
 	 * @see org.olat.course.nodes.CourseNode#isConfigValid(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
 		// only here we know which translator to take for translating condition
@@ -345,6 +347,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	/**
 	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
 	 */
+	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		return null;
 	}
@@ -352,6 +355,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	/**
 	 * @see org.olat.course.nodes.CourseNode#needsReferenceToARepositoryEntry()
 	 */
+	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return false;
 	}
@@ -428,6 +432,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserLog(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public String getUserLog(UserCourseEnvironment userCourseEnvironment) {
 		throw new OLATRuntimeException(STCourseNode.class, "No user logs available in ST nodes", null);
 	}
@@ -435,6 +440,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserUserComment(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public String getUserUserComment(UserCourseEnvironment userCourseEnvironment) {
 		throw new OLATRuntimeException(STCourseNode.class, "No comments available in ST nodes", null);
 	}
@@ -442,6 +448,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasCommentConfigured()
 	 */
+	@Override
 	public boolean hasCommentConfigured() {
 		// never has comments
 		return false;
@@ -450,22 +457,29 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasPassedConfigured()
 	 */
+	@Override
 	public boolean hasPassedConfigured() {
-		if (scoreCalculator != null && StringHelper.containsNonWhitespace(scoreCalculator.getPassedExpression())) return true;
+		if (scoreCalculator != null && StringHelper.containsNonWhitespace(scoreCalculator.getPassedExpression())) {
+			return true;
+		}
 		return false;
 	}
 
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasScoreConfigured()
 	 */
+	@Override
 	public boolean hasScoreConfigured() {
-		if (scoreCalculator != null && StringHelper.containsNonWhitespace(scoreCalculator.getScoreExpression())) return true;
+		if (scoreCalculator != null && StringHelper.containsNonWhitespace(scoreCalculator.getScoreExpression())) {
+			return true;
+		}
 		return false;
 	}
 
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasStatusConfigured()
 	 */
+	@Override
 	public boolean hasStatusConfigured() {
 		return false;
 	}
@@ -473,6 +487,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#isEditableConfigured()
 	 */
+	@Override
 	public boolean isEditableConfigured() {
 		// ST nodes never editable, data generated on the fly
 		return false;
@@ -482,6 +497,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	 * @see org.olat.course.nodes.AssessableCourseNode#updateUserCoachComment(java.lang.String,
 	 *      org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public void updateUserCoachComment(String coachComment, UserCourseEnvironment userCourseEnvironment) {
 		throw new OLATRuntimeException(STCourseNode.class, "Coach comment variable can't be updated in ST nodes", null);
 	}
@@ -491,6 +507,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.core.id.Identity)
 	 */
+	@Override
 	public void updateUserScoreEvaluation(ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnvironment,
 			Identity coachingIdentity, boolean incrementAttempts) {
 		throw new OLATRuntimeException(STCourseNode.class, "Score variable can't be updated in ST nodes", null);
@@ -501,6 +518,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.core.id.Identity)
 	 */
+	@Override
 	public void updateUserUserComment(String userComment, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
 		throw new OLATRuntimeException(STCourseNode.class, "Comment variable can't be updated in ST nodes", null);
 	}
@@ -508,6 +526,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public Integer getUserAttempts(UserCourseEnvironment userCourseEnvironment) {
 		throw new OLATRuntimeException(STCourseNode.class, "No attempts available in ST nodes", null);
 
@@ -516,6 +535,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasAttemptsConfigured()
 	 */
+	@Override
 	public boolean hasAttemptsConfigured() {
 		return false;
 	}
@@ -525,6 +545,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.core.id.Identity)
 	 */
+	@Override
 	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
 		throw new OLATRuntimeException(STCourseNode.class, "Attempts variable can't be updated in ST nodes", null);
 	}
@@ -532,6 +553,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#incrementUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment) {
 		throw new OLATRuntimeException(STCourseNode.class, "Attempts variable can't be updated in ST nodes", null);
 	}
@@ -554,6 +576,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsListViewHeaderKey()
 	 */
+	@Override
 	public String getDetailsListViewHeaderKey() {
 		throw new OLATRuntimeException(STCourseNode.class, "Details not available in ST nodes", null);
 	}
@@ -561,6 +584,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasDetails()
 	 */
+	@Override
 	public boolean hasDetails() {
 		return false;
 	}

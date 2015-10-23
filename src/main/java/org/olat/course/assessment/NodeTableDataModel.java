@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.translator.Translator;
+import org.olat.course.assessment.model.AssessmentNodeData;
 
 /**
  * Initial Date:  Jun 23, 2004
@@ -38,7 +39,7 @@ import org.olat.core.gui.translator.Translator;
  * Comment: 
  * Use the IndentedNodeRenderer to render the node element!
  */
-public class NodeTableDataModel extends DefaultTableDataModel<NodeTableRow> {
+public class NodeTableDataModel extends DefaultTableDataModel<AssessmentNodeData> {
 	private final Translator trans;
 	
 		/**
@@ -47,7 +48,7 @@ public class NodeTableDataModel extends DefaultTableDataModel<NodeTableRow> {
 		 * @param trans The table model translator
 		 * any node select link
 		 */
-    public NodeTableDataModel(List<NodeTableRow> objects, Translator trans) {
+    public NodeTableDataModel(List<AssessmentNodeData> objects, Translator trans) {
         super(objects);
         this.trans = trans;
     }
@@ -66,7 +67,7 @@ public class NodeTableDataModel extends DefaultTableDataModel<NodeTableRow> {
      */
     @Override
     public Object getValueAt(int row, int col) {
-    	NodeTableRow nodeData = getObject(row);
+    	AssessmentNodeData nodeData = getObject(row);
     	switch (col) {
 			case 0: return nodeData;// rendered using the indentedNodeRenderer
 			case 1: return nodeData.isSelectable() ? trans.translate("select") : null;

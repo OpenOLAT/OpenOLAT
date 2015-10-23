@@ -28,6 +28,7 @@ package org.olat.course.certificate.ui;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
@@ -56,10 +57,12 @@ import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.IdentityAssessmentEditController;
 import org.olat.course.assessment.IdentityAssessmentOverviewController;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
+import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.portfolio.EfficiencyStatementArtefact;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
@@ -300,7 +303,9 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	
 	private void selectCourseInfos(UserRequest ureq) {
 		if(courseDetailsCtrl == null) {
-			courseDetailsCtrl = new IdentityAssessmentOverviewController(ureq, getWindowControl(), efficiencyStatement.getAssessmentNodes());
+			List<Map<String,Object>> assessmentNodes = efficiencyStatement.getAssessmentNodes();
+			List<AssessmentNodeData> assessmentNodeList = AssessmentHelper.assessmentNodeDataMapToList(assessmentNodes);
+			courseDetailsCtrl = new IdentityAssessmentOverviewController(ureq, getWindowControl(), assessmentNodeList);
 			listenTo(courseDetailsCtrl);
 		}
 		mainVC.put("segmentCmp", courseDetailsCtrl.getInitialComponent());

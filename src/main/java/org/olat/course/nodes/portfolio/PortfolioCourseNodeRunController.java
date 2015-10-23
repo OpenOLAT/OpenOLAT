@@ -24,7 +24,6 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -50,7 +49,6 @@ import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration.DeadlineType;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
-import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.portfolio.EPLoggingAction;
@@ -59,6 +57,7 @@ import org.olat.portfolio.model.structel.EPStructuredMap;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -72,7 +71,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class PortfolioCourseNodeRunController extends FormBasicController {
-	private final EPFrontendManager ePFMgr;
+	
 	
 	private final PortfolioCourseNode courseNode;
 	private final ModuleConfiguration config;
@@ -92,8 +91,11 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 
 	private StaticTextElement deadlineDateText;
 	
+	@Autowired
+	private EPFrontendManager ePFMgr;
+	
 	public PortfolioCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation ne, PortfolioCourseNode courseNode) {
+			PortfolioCourseNode courseNode) {
 		super(ureq, wControl, "run");
 		
 		this.courseNode = courseNode;
@@ -103,7 +105,6 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 		Long courseResId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 		courseOres = OresHelper.createOLATResourceableInstance(CourseModule.class, courseResId);
 		
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		formatter = Formatter.getInstance(getLocale());
 		
 		RepositoryEntry mapEntry = courseNode.getReferencedRepositoryEntry();
@@ -266,7 +267,8 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == newMapLink) {
-			copy = ePFMgr.assignStructuredMapToUser(getIdentity(), template, courseOres, courseNode.getIdent(), null, getDeadline());
+			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			copy = ePFMgr.assignStructuredMapToUser(getIdentity(), template, courseEntry, courseNode.getIdent(), null, getDeadline());
 			if(copy != null) {
 				showInfo("map.copied", StringHelper.escapeHtml(template.getTitle()));
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapPortfolioOres(copy));

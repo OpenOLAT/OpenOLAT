@@ -53,26 +53,6 @@ import org.olat.modules.assessment.AssessmentEntry;
  */
 public interface AssessmentManager {
 
-	// Names used to save user data in the properties table
-	/*
-	public static final String SCORE = "SCORE";
-	public static final String PASSED = "PASSED";
-	public static final String ATTEMPTS = "ATTEMPTS";
-	public static final String COMMENT = "COMMENT";
-	public static final String COACH_COMMENT = "COACH_COMMENT";
-	public static final String ASSESSMENT_ID = "ASSESSMENT_ID";
-
-	public final static String FULLY_ASSESSED = "FULLY_ASSESSED";
-	*/
-	
-	/**
-	 * Load all persisted assessment data into a local cache if such a cache is available
-	 * @param identity Restrict preloading to a certain identity or null to preload assessment data from all users
-	 */
-	public void preloadCache(Identity identity);
-	public void preloadCache(List<Identity> identities);
-
-	
 	/**
 	 * Save the users attempts for this node. If there is already an attempts property available, it will be
 	 * overwritten with the new value

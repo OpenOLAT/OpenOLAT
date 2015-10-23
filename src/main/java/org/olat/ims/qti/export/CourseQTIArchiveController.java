@@ -47,7 +47,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.IndentedNodeRenderer;
-import org.olat.course.assessment.NodeTableRow;
+import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
@@ -73,7 +73,7 @@ public class CourseQTIArchiveController extends BasicController {
 	private CloseableModalController cmc;
 	private OLATResourceable ores;
 	
-	private List<NodeTableRow> nodesTableObjectArrayList;
+	private List<AssessmentNodeData> nodesTableObjectArrayList;
 	private Link startExportDummyButton;
 	private Link startExportButton;
 	
@@ -108,6 +108,7 @@ public class CourseQTIArchiveController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		ICourse course = CourseFactory.loadCourse(ores);
 		if (source == startExportButton){
@@ -125,6 +126,7 @@ public class CourseQTIArchiveController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == qawc){
 			if (event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
@@ -138,7 +140,7 @@ public class CourseQTIArchiveController extends BasicController {
 	 * @param ureq
 	 * @return 
 	 */
-	private List<NodeTableRow> doNodeChoose(UserRequest ureq){
+	private List<AssessmentNodeData> doNodeChoose(UserRequest ureq){
 	    //table configuraton
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("nodesoverview.nonodes"));
@@ -160,7 +162,7 @@ public class CourseQTIArchiveController extends BasicController {
 		// get list of course node data and populate table data model
 		ICourse course = CourseFactory.loadCourse(ores);
 		CourseNode rootNode = course.getRunStructure().getRootNode();
-		List<NodeTableRow> objectArrayList = addQTINodesAndParentsToList(0, rootNode);
+		List<AssessmentNodeData> objectArrayList = addQTINodesAndParentsToList(0, rootNode);
 		
 		return objectArrayList;		
 	}
@@ -171,12 +173,12 @@ public class CourseQTIArchiveController extends BasicController {
 	 * @param courseNode
 	 * @return A list of Object[indent, courseNode, selectable]
 	 */
-	private List<NodeTableRow> addQTINodesAndParentsToList(int recursionLevel, CourseNode courseNode) {
+	private List<AssessmentNodeData> addQTINodesAndParentsToList(int recursionLevel, CourseNode courseNode) {
 		// 1) Get list of children data using recursion of this method
-		List<NodeTableRow> childrenData = new ArrayList<>();
+		List<AssessmentNodeData> childrenData = new ArrayList<>();
 		for (int i = 0; i < courseNode.getChildCount(); i++) {
 			CourseNode child = (CourseNode) courseNode.getChildAt(i);
-			List<NodeTableRow> childData = addQTINodesAndParentsToList( (recursionLevel + 1),  child);
+			List<AssessmentNodeData> childData = addQTINodesAndParentsToList( (recursionLevel + 1),  child);
 			if (childData != null) {
 				childrenData.addAll(childData);
 			}
@@ -189,7 +191,7 @@ public class CourseQTIArchiveController extends BasicController {
 			// Store node data in hash map. This hash map serves as data model for 
 			// the tasks overview table. Leave user data empty since not used in
 			// this table. (use only node data)
-			NodeTableRow nodeData = new NodeTableRow(recursionLevel, courseNode);
+			AssessmentNodeData nodeData = new AssessmentNodeData(recursionLevel, courseNode);
 			if (courseNode instanceof IQTESTCourseNode
 			        || courseNode instanceof IQSELFCourseNode
 			        || courseNode instanceof IQSURVCourseNode){
@@ -198,7 +200,7 @@ public class CourseQTIArchiveController extends BasicController {
 				nodeData.setSelectable(false);
 			}
 			
-			List<NodeTableRow> nodeAndChildren = new ArrayList<>();
+			List<AssessmentNodeData> nodeAndChildren = new ArrayList<>();
 			nodeAndChildren.add(nodeData);
 			nodeAndChildren.addAll(childrenData);
 			return nodeAndChildren;

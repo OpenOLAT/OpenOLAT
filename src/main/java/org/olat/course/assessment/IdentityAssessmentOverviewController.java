@@ -27,7 +27,6 @@ package org.olat.course.assessment;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.gui.ShortName;
 import org.olat.core.gui.UserRequest;
@@ -48,6 +47,8 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.logging.AssertException;
 import org.olat.course.Structure;
+import org.olat.course.assessment.model.AssessmentNodeData;
+import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -85,7 +86,7 @@ public class IdentityAssessmentOverviewController extends BasicController {
 	private ShortName discardEmptyNodesFilter;
 	private ShortName showAllNodesFilter;
 	private ShortName currentTableFilter;
-	private List<Map<String, Object>> preloadedNodesList;
+	private List<AssessmentNodeData> preloadedNodesList;
 	private boolean loadNodesFromCourse;
 
 	/**
@@ -121,7 +122,7 @@ public class IdentityAssessmentOverviewController extends BasicController {
 	 * @param wControl
 	 * @param assessmentCourseNodes List of maps containing the node assessment data using the AssessmentManager keys
 	 */
-	public IdentityAssessmentOverviewController(UserRequest ureq, WindowControl wControl, List<Map<String,Object>> assessmentCourseNodes) {
+	public IdentityAssessmentOverviewController(UserRequest ureq, WindowControl wControl, List<AssessmentNodeData> assessmentCourseNodes) {
 		super(ureq, wControl);
 		this.runStructure = null;
 		this.nodesSelectable = false;
@@ -142,9 +143,9 @@ public class IdentityAssessmentOverviewController extends BasicController {
 		if(index >= 0) {
 			int nextIndex = index + 1;//next
 			if(nextIndex >= 0 && nextIndex < nodesTableModel.getRowCount()) {
-				nodeIdent = (String)nodesTableModel.getObject(nextIndex).get(AssessmentHelper.KEY_IDENTIFYER);
+				nodeIdent = nodesTableModel.getObject(nextIndex).getIdent();
 			} else if(nodesTableModel.getRowCount() > 0) {
-				nodeIdent = (String)nodesTableModel.getObject(0).get(AssessmentHelper.KEY_IDENTIFYER);
+				nodeIdent = nodesTableModel.getObject(0).getIdent();
 			}
 		}
 		
@@ -161,9 +162,9 @@ public class IdentityAssessmentOverviewController extends BasicController {
 		if(index >= 0) {
 			int previousIndex = index - 1;//next
 			if(previousIndex >= 0 && previousIndex < nodesTableModel.getRowCount()) {
-				nodeIdent = (String)nodesTableModel.getObject(previousIndex).get(AssessmentHelper.KEY_IDENTIFYER);
+				nodeIdent = nodesTableModel.getObject(previousIndex).getIdent();
 			} else if(nodesTableModel.getRowCount() > 0) {
-				nodeIdent = (String)nodesTableModel.getObject(nodesTableModel.getRowCount() - 1).get(AssessmentHelper.KEY_IDENTIFYER);
+				nodeIdent = nodesTableModel.getObject(nodesTableModel.getRowCount() - 1).getIdent();
 			}
 		}
 		
@@ -175,7 +176,7 @@ public class IdentityAssessmentOverviewController extends BasicController {
 	
 	private int getIndexOf(CourseNode node) {
 		for(int i=nodesTableModel.getRowCount(); i-->0; ) {
-			Object rowIdentityKey = nodesTableModel.getObject(i).get(AssessmentHelper.KEY_IDENTIFYER);
+			Object rowIdentityKey = nodesTableModel.getObject(i).getIdent();
 			if(rowIdentityKey.equals(node.getIdent())) {
 				return i;
 			}
@@ -205,8 +206,8 @@ public class IdentityAssessmentOverviewController extends BasicController {
 				String actionid = te.getActionId();
 				if (actionid.equals(CMD_SELECT_NODE)) {
 					int rowid = te.getRowId();
-					Map<String,Object> nodeData = nodesTableModel.getObject(rowid);
-					CourseNode node = runStructure.getNode((String) nodeData.get(AssessmentHelper.KEY_IDENTIFYER));
+					AssessmentNodeData nodeData = nodesTableModel.getObject(rowid);
+					CourseNode node = runStructure.getNode(nodeData.getIdent());
 					this.selectedCourseNode = (AssessableCourseNode) node;
 					// cast should be save, only assessable nodes are selectable
 					fireEvent(ureq, EVENT_NODE_SELECTED);
@@ -221,11 +222,11 @@ public class IdentityAssessmentOverviewController extends BasicController {
 	}
 
 	private void doIdentityAssessmentOverview(UserRequest ureq) {
-		List<Map<String, Object>> nodesTableList;
+		List<AssessmentNodeData> nodesTableList;
 		if (loadNodesFromCourse) {
-			// get list of course node and user data and populate table data model 
-			CourseNode rootNode = runStructure.getRootNode();		
-			nodesTableList = AssessmentHelper.addAssessableNodeAndDataToList(0, rootNode, userCourseEnvironment, this.discardEmptyNodes, false);
+			// get list of course node and user data and populate table data model 	
+			userCourseEnvironment.getScoreAccounting().evaluateAll();
+			nodesTableList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnvironment, discardEmptyNodes, false);
 		} else {
 			// use list from efficiency statement 
 			nodesTableList = preloadedNodesList;
@@ -235,9 +236,7 @@ public class IdentityAssessmentOverviewController extends BasicController {
 			String text = translate("nodesoverview.emptylist");
 			Controller messageCtr = MessageUIFactory.createSimpleMessage(ureq, getWindowControl(), text);
 			main.setContent(messageCtr.getInitialComponent());
-		} 
-		else {
-
+		} else {
 			TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 			tableConfig.setDownloadOffered(false);
 			tableConfig.setSortingEnabled(true);
@@ -268,19 +267,22 @@ public class IdentityAssessmentOverviewController extends BasicController {
 			// table columns
 			tableFilterCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.node", 0, null, 
 					ureq.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, nodeRenderer){
-					@Override
-					public int compareTo(int rowa, int rowb) {
-						return rowa - rowb;
-					}
+				@Override
+				public int compareTo(int rowa, int rowb) {
+					return rowa - rowb;
+				}
 			});
-			tableFilterCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.details",1, null, ureq.getLocale()));
-			tableFilterCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.attempts", 2, null, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_RIGHT));
-			tableFilterCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.score", 3, null, ureq.getLocale(),
+			tableFilterCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.details",1, null, getLocale()));
+			tableFilterCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.attempts", 2, null, getLocale(), ColumnDescriptor.ALIGNMENT_RIGHT));
+			tableFilterCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.score", 3, null, getLocale(),
 					ColumnDescriptor.ALIGNMENT_RIGHT, new ScoreCellRenderer()));
-			tableFilterCtr.addColumnDescriptor(false, new CustomRenderColumnDescriptor("table.header.min", 6, null, ureq.getLocale(), 
+			tableFilterCtr.addColumnDescriptor(false, new CustomRenderColumnDescriptor("table.header.min", 6, null, getLocale(), 
 					ColumnDescriptor.ALIGNMENT_RIGHT, new ScoreCellRenderer()));
-			tableFilterCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.max", 7, null, ureq.getLocale(),
+			tableFilterCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.max", 7, null, getLocale(),
 					ColumnDescriptor.ALIGNMENT_RIGHT, new ScoreCellRenderer()));
+			tableFilterCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.status", 8, null, getLocale(),
+					ColumnDescriptor.ALIGNMENT_RIGHT, new AssessmentStatusCellRenderer()));
+			
 			tableFilterCtr.addColumnDescriptor(new BooleanColumnDescriptor("table.header.passed", 4, translate("passed.true"), translate("passed.false")));
 			// node selection only available if configured
 			if (nodesSelectable) {
@@ -301,18 +303,19 @@ public class IdentityAssessmentOverviewController extends BasicController {
 	
 	private void initNodesoverviewTableFilters(){
 		// create filter for only nodes with values
-		this.discardEmptyNodesFilter = new FilterName(translate("nodesoverview.filter.discardEmptyNodes"));
+		discardEmptyNodesFilter = new FilterName(translate("nodesoverview.filter.discardEmptyNodes"));
 		// create filter for all nodes, even with no values
-		this.showAllNodesFilter = new FilterName(translate("nodesoverview.filter.showEmptyNodes"));
+		showAllNodesFilter = new FilterName(translate("nodesoverview.filter.showEmptyNodes"));
 		// add this two filter to the filters list
-		this.nodesoverviewTableFilters = new ArrayList<ShortName>();
-		this.nodesoverviewTableFilters.add(discardEmptyNodesFilter);
-		this.nodesoverviewTableFilters.add(showAllNodesFilter);
+		nodesoverviewTableFilters = new ArrayList<>(3);
+		nodesoverviewTableFilters.add(discardEmptyNodesFilter);
+		nodesoverviewTableFilters.add(showAllNodesFilter);
 		// set the current table filter according to configuration
-		if (this.discardEmptyNodes)
-			this.currentTableFilter = this.discardEmptyNodesFilter;
-		else
-			this.currentTableFilter = this.showAllNodesFilter;			
+		if (discardEmptyNodes) {
+			currentTableFilter = discardEmptyNodesFilter;
+		} else {
+			currentTableFilter = showAllNodesFilter;	
+		}
 	}
 	
 	/**
@@ -321,17 +324,14 @@ public class IdentityAssessmentOverviewController extends BasicController {
 	 * @return AssessableCourseNode
 	 */
 	public AssessableCourseNode getSelectedCourseNode() {
-		if (selectedCourseNode == null)
+		if (selectedCourseNode == null) {
 			throw new AssertException("Selected course node was null. Maybe getSelectedCourseNode called prior to EVENT_NODE_SELECTED has been fired?");
+		}
 		return selectedCourseNode;
 	}
 	
-	
-	/** 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
-  	//
+		//
 	}
-
 }

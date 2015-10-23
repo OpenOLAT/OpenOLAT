@@ -73,14 +73,8 @@ public class ScoreAccounting {
 		Identity identity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		List<AssessmentEntry> entries = userCourseEnvironment.getCourseEnvironment()
 				.getAssessmentManager().getAssessmentEntries(identity);
-		
-		
+
 		AssessableTreeVisitor visitor = new AssessableTreeVisitor(entries);
-		
-		
-		
-		
-		
 		// collect all assessable nodes and eval 'em
 		CourseNode root = userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode();
 		// breadth first traversal gives an easier order of evaluation for debugging
@@ -96,7 +90,7 @@ public class ScoreAccounting {
 	
 	private class AssessableTreeVisitor implements Visitor {
 		
-		private int recursionCnt = 0;
+		private int recursionLevel = 0;
 		private final  Map<String,AssessmentEntry> identToEntries = new HashMap<>();
 		private final  Map<AssessableCourseNode, ScoreEvaluation> nodeToScoreEvals = new HashMap<>();
 		
@@ -124,20 +118,17 @@ public class ScoreAccounting {
 		
 		public ScoreEvaluation evalCourseNode(AssessableCourseNode cn) {
 			// make sure we have no circular calculations
-			recursionCnt++;
-			if (recursionCnt > 15) throw new OLATRuntimeException("scoreaccounting.stackoverflow", 
-					new String[]{cn.getIdent(), cn.getShortTitle()},
-					Util.getPackageName(ScoreAccounting.class), 
-					"stack overflow in scoreaccounting, probably circular logic: acn ="
-					+ cn.toString(), null);
-
-			ScoreEvaluation se = nodeToScoreEvals.get(cn);
-			if (se == null) { // result of this node has not been calculated yet, do it
-				AssessmentEntry entry = identToEntries.get(cn.getIdent());
-				se = cn.getUserScoreEvaluation(entry);
-				nodeToScoreEvals.put(cn, se);
+			recursionLevel++;
+			ScoreEvaluation se = null;
+			if (recursionLevel <= 15) {
+				se = nodeToScoreEvals.get(cn);
+				if (se == null) { // result of this node has not been calculated yet, do it
+					AssessmentEntry entry = identToEntries.get(cn.getIdent());
+					se = cn.getUserScoreEvaluation(entry);
+					nodeToScoreEvals.put(cn, se);
+				}
 			}
-			recursionCnt--;
+			recursionLevel--;
 			return se;
 		}
 	}
@@ -175,7 +166,6 @@ public class ScoreAccounting {
 		if (se == null) { // result of this node has not been calculated yet, do it
 			se = cn.getUserScoreEvaluation(userCourseEnvironment);
 			cachedScoreEvals.put(cn, se);
-			//System.out.println("cn eval: "+cn+" = "+ se);
 		}
 		recursionCnt--;
 		return se;

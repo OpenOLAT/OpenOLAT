@@ -51,11 +51,11 @@ import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.EfficiencyStatementArchiver;
 import org.olat.course.assessment.UserEfficiencyStatement;
+import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.model.UserEfficiencyStatementImpl;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.course.assessment.model.UserEfficiencyStatementStandalone;
 import org.olat.course.config.CourseConfig;
-import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -164,9 +164,8 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 		// write only when enabled for this course
 		if (cc.isEfficencyStatementEnabled()) {
 			Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();				
-
-			CourseNode rootNode = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode(); 
-			List<Map<String,Object>> assessmentNodes = AssessmentHelper.addAssessableNodeAndDataToList(0, rootNode, userCourseEnv, true, true);
+			List<AssessmentNodeData> assessmentNodeList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnv, true, true);
+			List<Map<String,Object>> assessmentNodes = AssessmentHelper.assessmentNodeDataListToMap(assessmentNodeList);
 					
 			EfficiencyStatement efficiencyStatement = new EfficiencyStatement();
 			efficiencyStatement.setAssessmentNodes(assessmentNodes);

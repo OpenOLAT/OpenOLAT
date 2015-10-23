@@ -179,10 +179,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		luTree.setElementCssClass("o_course_menu");
 		contentP = new Panel("building_block_content");
 
-		// preload user assessment data in assessment properties cache to speed up
-		// course loading
-		course.getCourseEnvironment().getAssessmentManager().preloadCache(identity);
-
 		// build up the running structure for this user;
 		// get all group memberships for this course
 		uce = loadUserCourseEnvironment(ureq, reSecurity);

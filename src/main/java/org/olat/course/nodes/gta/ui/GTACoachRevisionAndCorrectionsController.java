@@ -257,7 +257,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 	}
 	
 	private void doReturnToRevisions() {
-		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.revision, currentIteration + 1);
+		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.revision, currentIteration + 1, gtaNode);
 		gtaManager.log("Revision", "need another revision", assignedTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
 	}
 	
@@ -270,7 +270,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 	
 	private void doCloseRevisionProcess() {
 		TaskProcess nextStep = gtaManager.nextStep(TaskProcess.correction, gtaNode);
-		assignedTask = gtaManager.updateTask(assignedTask, nextStep);
+		assignedTask = gtaManager.updateTask(assignedTask, nextStep, gtaNode);
 		gtaManager.log("Revision", "close revision", assignedTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
 	}
 }

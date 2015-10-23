@@ -49,7 +49,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.assessment.NodeTableDataModel;
-import org.olat.course.assessment.NodeTableRow;
+import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.CourseNode;
@@ -105,7 +105,7 @@ public class GenericArchiveController extends BasicController {
 				TableEvent te = (TableEvent)event;
 				String actionid = te.getActionId();
 				if (actionid.equals(CMD_SELECT_NODE)) {
-					NodeTableRow nodeData = nodeTableModel.getObject(te.getRowId());
+					AssessmentNodeData nodeData = nodeTableModel.getObject(te.getRowId());
 					doSelectNode(ureq, nodeData);
 				}
 			}
@@ -157,7 +157,7 @@ public class GenericArchiveController extends BasicController {
 		// get list of course node data and populate table data model
 		ICourse course = CourseFactory.loadCourse(ores);
 		CourseNode rootNode = course.getRunStructure().getRootNode();
-		List<NodeTableRow> nodesTableObjectArrayList = addNodesAndParentsToList(0, rootNode);
+		List<AssessmentNodeData> nodesTableObjectArrayList = addNodesAndParentsToList(0, rootNode);
 
 		// only populate data model if data available
 		if (nodesTableObjectArrayList == null) {
@@ -180,12 +180,12 @@ public class GenericArchiveController extends BasicController {
 	 * @param courseNode
 	 * @return A list of maps containing the node data
 	 */
-	private List<NodeTableRow> addNodesAndParentsToList(int recursionLevel, CourseNode courseNode) {
+	private List<AssessmentNodeData> addNodesAndParentsToList(int recursionLevel, CourseNode courseNode) {
 		// 1) Get list of children data using recursion of this method
-		List<NodeTableRow> childrenData = new ArrayList<>();
+		List<AssessmentNodeData> childrenData = new ArrayList<>();
 		for (int i = 0; i < courseNode.getChildCount(); i++) {
 			CourseNode child = (CourseNode) courseNode.getChildAt(i);
-			List<NodeTableRow> childData = addNodesAndParentsToList((recursionLevel + 1), child);
+			List<AssessmentNodeData> childData = addNodesAndParentsToList((recursionLevel + 1), child);
 			if (childData != null) {
 				childrenData.addAll(childData);
 			}
@@ -196,10 +196,10 @@ public class GenericArchiveController extends BasicController {
 			// Store node data in map. This map array serves as data model for
 			// the tasks overview table. Leave user data empty since not used in
 			// this table. (use only node data)
-			NodeTableRow nodeData = new NodeTableRow(new Integer(recursionLevel), courseNode);
+			AssessmentNodeData nodeData = new AssessmentNodeData(recursionLevel, courseNode);
 			nodeData.setSelectable(matchType);
 			
-			List<NodeTableRow> nodeAndChildren = new ArrayList<>();
+			List<AssessmentNodeData> nodeAndChildren = new ArrayList<>();
 			nodeAndChildren.add(nodeData);
 			nodeAndChildren.addAll(childrenData);
 			return nodeAndChildren;
@@ -215,7 +215,7 @@ public class GenericArchiveController extends BasicController {
 		return match;
 	}
 	
-	private void doSelectNode(UserRequest ureq, NodeTableRow nodeData) {
+	private void doSelectNode(UserRequest ureq, AssessmentNodeData nodeData) {
 		ICourse course = CourseFactory.loadCourse(ores);
 		CourseNode node = course.getRunStructure().getNode(nodeData.getIdent());
 		//some node can limit the archive to a business group

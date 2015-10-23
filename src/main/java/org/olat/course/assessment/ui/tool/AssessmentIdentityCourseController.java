@@ -43,7 +43,6 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.repository.RepositoryEntry;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -66,8 +65,6 @@ public class AssessmentIdentityCourseController extends BasicController {
 	private IdentityAssessmentOverviewController treeOverviewCtrl;
 	private AssessmentIdentityCourseNodeController currentNodeCtrl;
 	
-	@Autowired
-	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
 	
@@ -153,14 +150,12 @@ public class AssessmentIdentityCourseController extends BasicController {
 	
 	private void doSelectCourseNode(UserRequest ureq, CourseNode courseNode) {
 		if(courseNode == null) return;
-		
 		removeAsListenerAndDispose(currentNodeCtrl);
-		
-		String fullName = userManager.getUserDisplayName(assessedIdentity);
+
 		currentNodeCtrl = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), stackPanel,
 				courseEntry, courseNode, assessedIdentity);
 		listenTo(currentNodeCtrl);
-		stackPanel.pushController(fullName, currentNodeCtrl);
+		stackPanel.pushController(courseNode.getShortTitle(), currentNodeCtrl);
 		
 		previousLink = LinkFactory.createToolLink("previouselement","", this, "o_icon_previous_toolbar");
 		previousLink.setTitle(translate("command.previous"));

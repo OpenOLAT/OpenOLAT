@@ -381,14 +381,4 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	public void deregisterFromAssessmentChangeEvents(GenericEventListener gel) {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(gel, courseEntry.getOlatResource());
 	}
-	
-	@Override
-	public void preloadCache(Identity identity) {
-		// 
-	}
-
-	@Override
-	public void preloadCache(List<Identity> identities) {
-		//
-	}
 }

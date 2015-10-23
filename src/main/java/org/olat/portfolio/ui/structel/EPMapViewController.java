@@ -218,7 +218,7 @@ public class EPMapViewController extends BasicController implements Activateable
 			fireEvent(ureq, new EPMapEvent(EPStructureEvent.CLOSE, map));
 		} else if(source == submitAssessLink) {
 			if (preCheckMapSubmit()){
-				submitAssess(ureq);
+				doConfirmSubmitAssess(ureq);
 			} else {
 				showWarning("map.cannot.submit.nomore.coursenode");
 			}
@@ -304,7 +304,7 @@ public class EPMapViewController extends BasicController implements Activateable
 		return true;
 	}
 	
-	protected void submitAssess(UserRequest ureq) {
+	private void doConfirmSubmitAssess(UserRequest ureq) {
 		if(ePFMgr.checkCollectRestrictionOfMap(map)) {
 			String title = translate("map.submit.assess.title");
 			String text = translate("map.submit.assess.description");
@@ -316,6 +316,16 @@ public class EPMapViewController extends BasicController implements Activateable
 			confirmationSubmissionCtr = activateYesNoDialog(ureq, title, text, confirmationSubmissionCtr);
 			confirmationSubmissionCtr.setCssClass("o_icon_warn");
 		}
+	}
+	
+	private void doSubmitAssess(UserRequest ureq) {
+		ePFMgr.submitMap(map);
+		secCallback = EPSecurityCallbackFactory.getSecurityCallback(ureq, map, ePFMgr);
+		fireEvent(ureq, new EPMapEvent(EPStructureEvent.SUBMIT, map));
+		mainVc.remove(mainVc.getComponent("editor")); // switch back to non-edit mode
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapPortfolioOres(map));
+		ThreadLocalUserActivityLogger.log(EPLoggingAction.EPORTFOLIO_TASK_FINISHED, getClass());
+		reloadMapAndRefreshUI(ureq);
 	}
 
 	/**
@@ -342,13 +352,7 @@ public class EPMapViewController extends BasicController implements Activateable
 			initOrUpdateEditMode(ureq, selectedPage);
 		} else if (source == confirmationSubmissionCtr) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
-				ePFMgr.submitMap(map);
-				secCallback = EPSecurityCallbackFactory.getSecurityCallback(ureq, map, ePFMgr);
-				fireEvent(ureq, new EPMapEvent(EPStructureEvent.SUBMIT, map));
-				mainVc.remove(mainVc.getComponent("editor")); // switch back to non-edit mode
-				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapPortfolioOres(map));
-				ThreadLocalUserActivityLogger.log(EPLoggingAction.EPORTFOLIO_TASK_FINISHED, getClass());
-				reloadMapAndRefreshUI(ureq);
+				doSubmitAssess(ureq);
 			}
 		} 
 		

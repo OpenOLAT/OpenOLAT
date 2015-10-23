@@ -53,7 +53,6 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
@@ -308,7 +307,7 @@ public class GTAParticipantController extends GTAAbstractController {
 	
 	private void doSubmitDocuments(UserRequest ureq, Task task) {
 		TaskProcess review = gtaManager.nextStep(TaskProcess.submit, gtaNode);
-		task = gtaManager.updateTask(task, review);
+		task = gtaManager.updateTask(task, review, gtaNode);
 		showInfo("run.documents.successfully.submitted");
 		
 		gtaManager.log("Submit", "submit documents", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
@@ -326,10 +325,7 @@ public class GTAParticipantController extends GTAAbstractController {
 	private void doUpdateAttempts() {
 		if(businessGroupTask) {
 			List<Identity> identities = businessGroupService.getMembers(assessedGroup, GroupRoles.participant.name());
-			AssessmentManager assessmentManager = courseEnv.getAssessmentManager();
-			assessmentManager.preloadCache(identities);
 			ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
-
 			for(Identity identity:identities) {
 				UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
 				gtaNode.incrementUserAttempts(uce);

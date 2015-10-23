@@ -26,10 +26,10 @@
 package org.olat.course.assessment;
 
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.translator.Translator;
+import org.olat.course.assessment.model.AssessmentNodeData;
 
 /**
  * Description:<br>
@@ -38,7 +38,7 @@ import org.olat.core.gui.translator.Translator;
  *
  * @author gnaegi
  */
-public class NodeAssessmentTableDataModel extends DefaultTableDataModel<Map<String,Object>> {
+public class NodeAssessmentTableDataModel extends DefaultTableDataModel<AssessmentNodeData> {
 		private Translator trans;
 		private boolean nodesSelectable;
 	
@@ -49,7 +49,7 @@ public class NodeAssessmentTableDataModel extends DefaultTableDataModel<Map<Stri
 		 * @param nodesSelectable true: show node select link where available, false: don't show
 		 * any node select link
 		 */
-    public NodeAssessmentTableDataModel(List<Map<String,Object>> objects, Translator trans, boolean nodesSelectable) {
+    public NodeAssessmentTableDataModel(List<AssessmentNodeData> objects, Translator trans, boolean nodesSelectable) {
         super(objects);
         this.trans = trans;
         this.nodesSelectable = nodesSelectable;
@@ -58,45 +58,33 @@ public class NodeAssessmentTableDataModel extends DefaultTableDataModel<Map<Stri
     /**
      * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
      */
+    @Override
     public int getColumnCount() {
-    		// node, details, attempts, score, passed
-        return 6;
+        return 7;
     }
 
     /**
      * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
      */
+    @Override
     public Object getValueAt(int row, int col) {
-    	Map<String,Object> nodeData = getObject(row);
+    	AssessmentNodeData nodeData = getObject(row);
     	switch (col) {
-				case 0:
-					// rendered using the indentedNodeRenderer
-					return nodeData;
-				case 1:
-					return nodeData.get(AssessmentHelper.KEY_TITLE_SHORT);
-				case 2:
-					return nodeData.get(AssessmentHelper.KEY_ATTEMPTS);
-				case 3:
-					//fxdiff VCRP-4: assessment overview with max score
-					return nodeData.get(AssessmentHelper.KEY_SCORE_F);
-				case 4:
-					return nodeData.get(AssessmentHelper.KEY_PASSED);
-				case 5:
-					// selection command
-					Boolean courseNodeEditable = (Boolean) nodeData.get(AssessmentHelper.KEY_SELECTABLE);
-					if (nodesSelectable && courseNodeEditable.booleanValue()) return trans.translate("select");
-					else return null;
-				case 6:
-					//min score
-					Float minScore = (Float)nodeData.get(AssessmentHelper.KEY_MIN);
-					return minScore == null ? null : minScore;
-				case 7:
-					//max score
-					Float maxScore = (Float)nodeData.get(AssessmentHelper.KEY_MAX);
-					return maxScore == null ? null : maxScore;
-				default:
-					return "error";
-			}
+			case 0: return nodeData;// rendered using the indentedNodeRenderer
+			case 1: return nodeData.getShortTitle();
+			case 2: return nodeData.getAttempts();
+			case 3: return nodeData.getScore();
+			case 4: return nodeData.getPassed();
+			case 5:
+				// selection command
+				if (nodesSelectable && nodeData.isSelectable()) {
+					return trans.translate("select");
+				}
+				return null;
+			case 6: return nodeData.getMinScore();
+			case 7: return nodeData.getMaxScore();
+			case 8: return nodeData.getAssessmentStatus();
+			default: return "error";
+		}
     }
-    
 }

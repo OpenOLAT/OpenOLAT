@@ -19,6 +19,7 @@
  */
 package org.olat.modules.assessment.manager;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
@@ -26,6 +27,7 @@ import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -87,13 +89,18 @@ public class AssessmentServiceImpl implements AssessmentService {
 	public List<AssessmentEntry> loadAssessmentEntries(BusinessGroup assessedGroup, RepositoryEntry entry, String subIdent) {
 		return assessmentEntryDao.loadAssessmentEntryByBusinessGroup(assessedGroup.getBaseGroup(), entry, subIdent);
 	}
-	
-	
-	
-	
-	
-	
-	
-	
 
+	@Override
+	public AssessmentEntry updateAssessmentEntry(Identity assessedIdentity, RepositoryEntry entry, String subIdent,
+			RepositoryEntry referenceEntry, AssessmentEntryStatus status) {
+		AssessmentEntry assessmentEntry = getOrCreateAssessmentEntry(assessedIdentity, entry, subIdent, referenceEntry);
+		assessmentEntry.setAssessmentStatus(status);
+		return assessmentEntryDao.updateAssessmentEntry(assessmentEntry);
+	}
+
+	@Override
+	public List<AssessmentEntry> updateAssessmentEntries(BusinessGroup group, RepositoryEntry entry, String subIdent,
+			RepositoryEntry referenceEntry, AssessmentEntryStatus status) {
+		return Collections.emptyList();
+	}
 }

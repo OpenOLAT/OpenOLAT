@@ -182,11 +182,13 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	public void setStatus(String status) {
 		this.status = status;
 	}
-	
+
+	@Override
 	public AssessmentEntryStatus getAssessmentStatus() {
 		return StringHelper.containsNonWhitespace(status) ? AssessmentEntryStatus.valueOf(status) : null;
 	}
-	
+
+	@Override
 	public void setAssessmentStatus(AssessmentEntryStatus assessmentStatus) {
 		if(assessmentStatus == null) {
 			this.status = null;

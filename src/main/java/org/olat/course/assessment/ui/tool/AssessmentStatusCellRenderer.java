@@ -19,8 +19,11 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.Locale;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -33,7 +36,12 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentStatusCellRenderer implements FlexiCellRenderer {
+public class AssessmentStatusCellRenderer implements FlexiCellRenderer, CustomCellRenderer {
+	
+	@Override
+	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
+		render(renderer, sb, val, -1, null, null, renderer.getTranslator());
+	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue,

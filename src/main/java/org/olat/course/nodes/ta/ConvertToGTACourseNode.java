@@ -243,7 +243,7 @@ public class ConvertToGTACourseNode {
 				if(task == null) {
 					gtaManager.createTask(null, taskList, TaskProcess.graded, null, assessedIdentity, gtaNode);
 				} else {
-					gtaManager.updateTask(task, TaskProcess.graded);
+					gtaManager.updateTask(task, TaskProcess.graded, gtaNode);
 				}
 			}
 			
@@ -362,7 +362,7 @@ public class ConvertToGTACourseNode {
 		if(task == null) {
 			gtaManager.createTask(null, taskList, process, null, assessedIdentity, gtaNode);
 		} else {
-			gtaManager.updateTask(task, process);
+			gtaManager.updateTask(task, process, gtaNode);
 		}
 	}
 	

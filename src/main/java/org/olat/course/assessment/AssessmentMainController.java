@@ -98,6 +98,7 @@ import org.olat.course.assessment.NodeTableDataModel.Cols;
 import org.olat.course.assessment.bulk.BulkAssessmentOverviewController;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
+import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificatesManager;
@@ -568,7 +569,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 				if (actionid.equals(CMD_SELECT_NODE)) {
 					ICourse course = CourseFactory.loadCourse(ores);
 					int rowid = te.getRowId();
-					NodeTableRow nodeData = nodeTableModel.getObject(rowid);
+					AssessmentNodeData nodeData = nodeTableModel.getObject(rowid);
 					CourseNode node = course.getRunStructure().getNode(nodeData.getIdent());
 					this.currentCourseNode = (AssessableCourseNode) node;
 					// cast should be save, only assessable nodes are selectable
@@ -581,7 +582,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 				} else if (actionid.equals(CMD_SHOW_ONYXREPORT)) {
 					int rowid = te.getRowId();
 					ICourse course = CourseFactory.loadCourse(ores);
-					NodeTableRow nodeData = nodeTableModel.getObject(rowid);
+					AssessmentNodeData nodeData = nodeTableModel.getObject(rowid);
 					CourseNode node = course.getRunStructure().getNode(nodeData.getIdent());
 					this.currentCourseNode = (AssessableCourseNode) node;
 					this.onyxReporterBackLocation = "nodeListCtr";
@@ -1057,7 +1058,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		
 		// get list of course node data and populate table data model 
 		CourseNode rootNode = course.getRunStructure().getRootNode();		
-		List<NodeTableRow> nodesTableObjectArrayList = addAssessableNodesAndParentsToList(0, rootNode);
+		List<AssessmentNodeData> nodesTableObjectArrayList = addAssessableNodesAndParentsToList(0, rootNode);
 		
 		// only populate data model if data available
 		if (nodesTableObjectArrayList == null) {
@@ -1094,12 +1095,12 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	 * @param courseNode
 	 * @return A list of maps containing the node data
 	 */
-	private List<NodeTableRow> addAssessableNodesAndParentsToList(int recursionLevel, CourseNode courseNode) {
+	private List<AssessmentNodeData> addAssessableNodesAndParentsToList(int recursionLevel, CourseNode courseNode) {
 		// 1) Get list of children data using recursion of this method
-		List<NodeTableRow> childrenData = new ArrayList<>();
+		List<AssessmentNodeData> childrenData = new ArrayList<>();
 		for (int i = 0; i < courseNode.getChildCount(); i++) {
 			CourseNode child = (CourseNode) courseNode.getChildAt(i);
-			List<NodeTableRow> childData = addAssessableNodesAndParentsToList( (recursionLevel + 1),  child);
+			List<AssessmentNodeData> childData = addAssessableNodesAndParentsToList( (recursionLevel + 1),  child);
 			if (childData != null)
 				childrenData.addAll(childData);
 		}
@@ -1109,7 +1110,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			// TODO:cg 04.11.2010 ProjectBroker : no assessment-tool in V1.0 , remove projectbroker completely form assessment-tool gui			// Store node data in hash map. This hash map serves as data model for 
 			// the user assessment overview table. Leave user data empty since not used in
 			// this table. (use only node data)
-			NodeTableRow nodeData = new NodeTableRow(recursionLevel, courseNode);
+			AssessmentNodeData nodeData = new AssessmentNodeData(recursionLevel, courseNode);
 			RepositoryEntry refEntry = courseNode.getReferencedRepositoryEntry();
 			if (refEntry != null) {
 				if (OnyxModule.isOnyxTest(refEntry.getOlatResource())) {
@@ -1133,7 +1134,6 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 					hasDisplayableValuesConfigured = true;
 				}
 				
-				//fxdiff VCRP-4: assessment overview with max score
 				if(assessableCourseNode.hasScoreConfigured()) {
 					if(!(courseNode instanceof STCourseNode)) {
 						Float min = assessableCourseNode.getMinScoreConfiguration();
@@ -1167,7 +1167,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			// structure nodes without scoring rules)! When the discardEmptyNodes flag is set then only
 			// add this node when there is user data found for this node.
 			if (childrenData.size() > 0 || hasDisplayableValuesConfigured) {
-				List<NodeTableRow> nodeAndChildren = new ArrayList<>();
+				List<AssessmentNodeData> nodeAndChildren = new ArrayList<>();
 				nodeAndChildren.add(nodeData);
 				// 4) Add children data list to master list
 				nodeAndChildren.addAll(childrenData);
@@ -1399,8 +1399,6 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 				boolean logDebug = log.isDebug();
 				if(logDebug) start = System.currentTimeMillis();
 				List<Identity> identities = getAllAssessableIdentities();
-				course.getCourseEnvironment().getAssessmentManager().preloadCache(identities);
-	
 				UserCourseInformationsManager mgr = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
 				initialLaunchDates.putAll(mgr.getInitialLaunchDates(course.getResourceableId(), identities));
 				

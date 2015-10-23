@@ -225,9 +225,9 @@ public interface GTAManager {
 	
 	public TaskProcess nextStep(TaskProcess currentStep, GTACourseNode cNode);
 	
-	public Task updateTask(Task task, TaskProcess newStatus);
+	public Task updateTask(Task task, TaskProcess newStatus, GTACourseNode cNode);
 	
-	public Task updateTask(Task task, TaskProcess newStatus, int iteration);
+	public Task updateTask(Task task, TaskProcess newStatus, int iteration, GTACourseNode cNode);
 	
 	public void log(String step, String operation, Task assignedTask, Identity actor, Identity assessedIdentity, BusinessGroup assessedGroup,
 			CourseEnvironment courseEnv, GTACourseNode cNode);
