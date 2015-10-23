@@ -274,7 +274,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			}
 			updateUI();
 		} else if (source == selectMapLink) {
-			String resourceUrl = "[HomeSite:" + getIdentity().getKey() + "][EPStructuredMaps:0][" + copy.getClass().getSimpleName() + ":" + copy.getResourceableId() + "]";
+			String resourceUrl = "[HomeSite:" + getIdentity().getKey() + "][Portfolio:0][EPStructuredMap:" + copy.getKey() + "]";
 			BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 			NewControllerFactory.getInstance().launch(ureq, bwControl);
