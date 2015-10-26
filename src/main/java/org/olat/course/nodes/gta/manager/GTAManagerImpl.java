@@ -30,8 +30,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.persistence.Query;
 import javax.persistence.LockModeType;
+import javax.persistence.Query;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -64,6 +64,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.DeletableGroupData;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.BusinessGroupRefImpl;
@@ -81,7 +82,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class GTAManagerImpl implements GTAManager {
+public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	
 	private static final OLog log = Tracing.createLoggerFor(GTAManagerImpl.class);
 	
@@ -466,6 +467,18 @@ public class GTAManagerImpl implements GTAManager {
 		return tasks.isEmpty() ? null : tasks.get(0);
 	}
 	
+	@Override
+	public boolean deleteGroupDataFor(BusinessGroup group) {
+		log.audit("Delete tasks of business group: " + group.getKey());
+		String deleteTasks = "delete from gtatask as task where task.businessGroup.key=:groupKey";
+		dbInstance.getCurrentEntityManager()
+				.createQuery(deleteTasks)
+				.setParameter("groupKey", group.getKey())
+				.executeUpdate();
+		return true;	
+
+	}
+
 	@Override
 	public int deleteTaskList(RepositoryEntryRef entry, GTACourseNode cNode) {
 		TaskList taskList = getTaskList(entry, cNode);
