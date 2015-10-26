@@ -51,6 +51,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.messages.MessageController;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.wizard.WizardInfoController;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.helpers.Settings;
@@ -59,7 +61,6 @@ import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -106,9 +107,14 @@ public class RegistrationController extends BasicController implements Activatea
 	 */
 	public RegistrationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);		
-		if (!CoreSpringFactory.getImpl(RegistrationModule.class).isSelfRegistrationEnabled()) { 
-			throw new OLATRuntimeException(RegistrationController.class,
-				"Registration controller launched but self registration is turned off in the config file", null);
+		if (!CoreSpringFactory.getImpl(RegistrationModule.class).isSelfRegistrationEnabled()) {
+			String contact = WebappHelper.getMailConfig("mailSupport");
+			String text = translate("reg.error.disabled.body", new String[]{ contact });
+			MessageController msg = MessageUIFactory.createWarnMessage(ureq, getWindowControl(), null, text);
+			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, msg.getInitialComponent(), null);
+			listenTo(layoutCtr);
+			putInitialPanel(layoutCtr.getInitialComponent());
+			return;
 		}
 		// override language when not the same as in ureq and add fallback to
 		// property handler translator for user properties
