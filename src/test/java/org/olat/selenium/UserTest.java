@@ -583,7 +583,8 @@ public class UserTest {
 			.next() // -> preview
 			.assertGreen(1)
 			.assertWarn(1)
-			.changePassword()
+			.updatePasswords()
+			.updateUsers()
 			.next() // -> groups
 			.next() // -> emails
 			.finish();
