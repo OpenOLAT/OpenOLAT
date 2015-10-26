@@ -58,6 +58,7 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -73,7 +74,7 @@ import org.olat.resource.OLATResource;
  * @author gnaegi
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
-public class MSCourseNode extends AbstractAccessableCourseNode implements AssessableCourseNode {
+public class MSCourseNode extends AbstractAccessableCourseNode implements PersistentAssessableCourseNode {
 	private static final long serialVersionUID = -7741172700015384397L;
 	private static final String PACKAGE_MS = Util.getPackageName(MSCourseNodeRunController.class);
 
@@ -212,28 +213,16 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Assess
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserScoreEvaluation(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
 	@Override
-	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		if(hasPassedConfigured() || hasScoreConfigured()) {
+	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
+		if(hasPassedConfigured() || hasScoreConfigured() || hasCommentConfigured()) {
 			return getUserScoreEvaluation(getUserAssessmentEntry(userCourseEnv));
 		}
-		return ScoreEvaluation.EMPTY_EVALUATION;
+		return AssessmentEvaluation.EMPTY_EVAL;
 	}
 
 	@Override
-	public ScoreEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
-		Boolean passed = null;
-		Float score = null;
-		if(hasPassedConfigured() || hasScoreConfigured()) {
-			if(entry != null) {
-				if (hasPassedConfigured()) {
-					passed = entry.getPassed();
-				}
-				if (hasScoreConfigured() && entry.getScore() != null) {
-					score = entry.getScore().floatValue();
-				}
-			}
-		}
-		return new ScoreEvaluation(score, passed);
+	public AssessmentEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
+		return AssessmentEvaluation.toAssessmentEvalutation(entry, this);
 	}
 
 	@Override

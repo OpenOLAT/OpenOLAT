@@ -103,6 +103,7 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -122,7 +123,7 @@ import com.thoughtworks.xstream.XStream;
  *   @author Christian Guretzki
  */
 
-public class ProjectBrokerCourseNode extends GenericCourseNode implements AssessableCourseNode {
+public class ProjectBrokerCourseNode extends GenericCourseNode implements PersistentAssessableCourseNode {
 
 	private static final long serialVersionUID = -8177448874150049173L;
 	private static final OLog log = Tracing.createLoggerFor(ProjectBrokerCourseNode.class);
@@ -469,12 +470,12 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 	}
 
 	@Override
-	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
+	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
 		return null;
 	}
 
 	@Override
-	public ScoreEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
+	public AssessmentEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
 		return null;
 	}
 

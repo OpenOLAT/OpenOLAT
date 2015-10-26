@@ -240,12 +240,23 @@ public class AssessmentNodeData {
 		return nodeData;
 	}
 
-
 	private void fromMap(Map<String,Object> nodeData) {
-		recursionLevel = ((Integer)nodeData.get(KEY_INDENT)).intValue();
-		
-		
+		if(nodeData.get(KEY_INDENT) instanceof Integer) {
+			recursionLevel = ((Integer)nodeData.get(KEY_INDENT)).intValue();
+		}
+		type = (String)nodeData.get(KEY_TYPE);
+		shortTitle = (String)nodeData.get(KEY_TITLE_SHORT);
+		longTitle = (String)nodeData.get(KEY_TITLE_LONG);
+		ident = (String)nodeData.get(KEY_IDENTIFYER);
+		details = (String)nodeData.get(KEY_DETAILS);
+		attempts = (Integer)nodeData.get(KEY_ATTEMPTS);
+		score = (Float)nodeData.get(KEY_SCORE_F);
+		roundedScore = (String)nodeData.get(KEY_SCORE);
+		maxScore = (Float)nodeData.get(KEY_MAX);
+		minScore = (Float)nodeData.get(KEY_MIN);
+		passed = (Boolean)nodeData.get(KEY_PASSED);
+		if(nodeData.get(KEY_SELECTABLE) instanceof Boolean) {
+			selectable = ((Boolean)nodeData.get(KEY_SELECTABLE)).booleanValue();
+		}
 	}
-	
-
 }

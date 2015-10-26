@@ -51,8 +51,8 @@ import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.nodes.iq.IQEditController;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
-import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -339,8 +339,8 @@ public class AssessmentHelper {
 		List<AssessmentNodeData> data = new ArrayList<AssessmentNodeData>(50);
 		ScoreAccounting scoreAccounting = userCourseEnv.getScoreAccounting();
 		scoreAccounting.evaluateAll();
-		getAssessmentNodeDataList(0, userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode(), scoreAccounting, userCourseEnv,
-				discardEmptyNodes, discardComments, data);
+		getAssessmentNodeDataList(0, userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode(),
+				scoreAccounting, userCourseEnv, discardEmptyNodes, discardComments, data);
 		return data;
 	}
 	
@@ -354,7 +354,8 @@ public class AssessmentHelper {
 		int numOfChildren = 0;
 		for (int i = 0; i < courseNode.getChildCount(); i++) {
 			CourseNode child = (CourseNode) courseNode.getChildAt(i);
-			numOfChildren += getAssessmentNodeDataList(recursionLevel + 1,  child,  scoreAccounting, userCourseEnv, discardEmptyNodes, discardComments, data);
+			numOfChildren += getAssessmentNodeDataList(recursionLevel + 1,  child,  scoreAccounting,
+					userCourseEnv, discardEmptyNodes, discardComments, data);
 		}
 		
 		// 2) Get data of this node only if
@@ -365,7 +366,7 @@ public class AssessmentHelper {
 		if ((numOfChildren > 0 || courseNode instanceof AssessableCourseNode) && !(courseNode instanceof ProjectBrokerCourseNode) ) {
 			if (courseNode instanceof AssessableCourseNode) {
 				AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
-				ScoreEvaluation scoreEvaluation = scoreAccounting.evalCourseNode(assessableCourseNode);
+				AssessmentEvaluation scoreEvaluation = scoreAccounting.evalCourseNode(assessableCourseNode);
 				if(scoreEvaluation != null) {
 					assessmentNodeData.setAssessmentStatus(scoreEvaluation.getAssessmentStatus());
 				}
@@ -385,7 +386,7 @@ public class AssessmentHelper {
 				// attempts
 				if (assessableCourseNode.hasAttemptsConfigured()) {
 					hasDisplayableValuesConfigured = true;
-					Integer attemptsValue = assessableCourseNode.getUserAttempts(userCourseEnv); 
+					Integer attemptsValue = scoreEvaluation.getAttempts(); 
 					if (attemptsValue != null) {
 						assessmentNodeData.setAttempts(attemptsValue);
 						if (attemptsValue.intValue() > 0) {

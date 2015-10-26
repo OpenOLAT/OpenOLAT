@@ -9,7 +9,7 @@
 			  $r.render("tableSearch")
 			#end
 		</div>
-		<div class="col-sm-3 col-xs-4 o_table_row_count">
+		<div class="col-sm-2 col-xs-4 o_table_row_count">
 		#if ($tableConfig.isDisplayRowCount())
 			$rowCounts
 			#if ($rowCounts == "1")
@@ -19,7 +19,7 @@
 			#end
 		#end
 		</div>
-		<div class="col-sm-3 col-xs-8"><div class="pull-right"><div class="o_table_tools">
+		<div class="col-sm-4 col-xs-8"><div class="pull-right"><div class="o_table_tools">
 			#if ($hasFilters && $filters.size() > 0)
 			<div class="btn-group">	
 				<button id='table-button-filters' type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>

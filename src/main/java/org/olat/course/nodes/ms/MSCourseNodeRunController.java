@@ -37,10 +37,10 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.auditing.UserNodeAuditManager;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.ObjectivesHelper;
+import org.olat.course.nodes.PersistentAssessableCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -64,7 +64,7 @@ public class MSCourseNodeRunController extends DefaultController {
 	 * @param msCourseNode The manual scoring course node
 	 * @param displayNodeInfo True: the node title and learning objectives will be displayed
 	 */
-	public MSCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, AssessableCourseNode msCourseNode,
+	public MSCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, PersistentAssessableCourseNode msCourseNode,
 			boolean displayNodeInfo, boolean showLog) {
 		super(wControl);
 		
@@ -139,7 +139,7 @@ public class MSCourseNodeRunController extends DefaultController {
 	    myContent.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MAX, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX)));
 	}
 	
-	private void exposeUserDataToVC(UserCourseEnvironment userCourseEnv, AssessableCourseNode courseNode) {
+	private void exposeUserDataToVC(UserCourseEnvironment userCourseEnv, PersistentAssessableCourseNode courseNode) {
 		AssessmentEntry assessmentEntry = courseNode.getUserAssessmentEntry(userCourseEnv);
 		if(assessmentEntry == null) {
 			myContent.contextPut("hasPassedValue", Boolean.FALSE);

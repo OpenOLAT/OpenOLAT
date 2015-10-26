@@ -65,6 +65,7 @@ import org.olat.course.nodes.iq.QTI21AssessmentRunController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -105,7 +106,7 @@ import de.bps.onyx.plugin.run.OnyxRunController;
  * @author Mike Stock Comment:
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
-public class IQTESTCourseNode extends AbstractAccessableCourseNode implements AssessableCourseNode, QTICourseNode {
+public class IQTESTCourseNode extends AbstractAccessableCourseNode implements PersistentAssessableCourseNode, QTICourseNode {
 	private static final long serialVersionUID = 5806292895738005387L;
 	private static final OLog log = Tracing.createLoggerFor(IQTESTCourseNode.class);
 	private static final String translatorStr = Util.getPackageName(IQEditController.class);
@@ -297,7 +298,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserScoreEvaluation(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
 	@Override
-	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
+	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
 		// read score from properties save score, passed and attempts information
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
@@ -315,11 +316,11 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 			assessmentID = entry.getAssessmentId();
 			fullyAssessed = entry.getFullyAssessed();
 		}	
-		return new ScoreEvaluation(score, passed, fullyAssessed, assessmentID);
+		return new AssessmentEvaluation(score, passed, fullyAssessed, assessmentID);
 	}
 
 	@Override
-	public ScoreEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
+	public AssessmentEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
 		Boolean passed = null;
 		Float score = null;		
 		Long assessmentID = null;	
@@ -332,7 +333,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 			assessmentID = entry.getAssessmentId();
 			fullyAssessed = entry.getFullyAssessed();
 		}	
-		return new ScoreEvaluation(score, passed, fullyAssessed, assessmentID);
+		return new AssessmentEvaluation(score, passed, fullyAssessed, assessmentID);
 	}
 
 	@Override

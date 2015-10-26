@@ -34,9 +34,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.assessment.AssessmentEntry;
 
 
 /**
@@ -109,16 +109,7 @@ public interface AssessableCourseNode extends CourseNode {
 	 * @param userCourseEnv
 	 * @return null, if this node cannot deliver any useful scoring info (this is not the case for a test never tried or manual scoring: those have default values 0.0f / false for score/passed; currently only the STNode returns null if there are no scoring rules defined.)
 	 */
-	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv);
-	
-	/**
-	 * 
-	 * @param entry
-	 * @return
-	 */
-	public ScoreEvaluation getUserScoreEvaluation(AssessmentEntry entry);
-	
-	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv);
+	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv);
 
 	/**
 	 * @param userCourseEnvironment

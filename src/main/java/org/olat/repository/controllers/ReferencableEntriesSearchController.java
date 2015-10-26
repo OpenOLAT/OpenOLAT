@@ -25,6 +25,7 @@
 
 package org.olat.repository.controllers;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -47,13 +48,13 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.Roles;
 import org.olat.fileresource.types.BlogFileResource;
 import org.olat.fileresource.types.ImsCPFileResource;
+import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.PodcastFileResource;
 import org.olat.fileresource.types.ScormCPFileResource;
 import org.olat.fileresource.types.WikiResource;
 import org.olat.group.BusinessGroupModule;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
-import org.olat.portfolio.EPTemplateMapResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.RepositorySearchController.Can;
@@ -92,7 +93,6 @@ public class ReferencableEntriesSearchController extends BasicController {
 	private Link myEntriesLink, allEntriesLink, searchEntriesLink, adminEntriesLink;
 	private Link importRessourceButton;
 	private Component createRessourceCmp;
-	private List<Link> createRessourceButtons;
 	
 	private CreateRepositoryEntryController createController;
 	private ImportRepositoryEntryController importController;
@@ -102,7 +102,6 @@ public class ReferencableEntriesSearchController extends BasicController {
 	private List<RepositoryEntry> selectedRepositoryEntries;
 	
 	private final boolean canImport;
-	private final boolean canCreate;
 	private final Can canBe;
 	
 	private Object userObject;
@@ -131,7 +130,6 @@ public class ReferencableEntriesSearchController extends BasicController {
 		super(ureq, wControl);
 		this.canBe = canBe;
 		this.canImport = canImport;
-		this.canCreate = canCreate;
 		this.limitTypes = limitTypes;
 		setBasePackage(RepositoryService.class);
 		mainVC = createVelocityContainer("referencableSearch");
@@ -145,18 +143,30 @@ public class ReferencableEntriesSearchController extends BasicController {
 		listenTo(searchCtr);
 		
 		// do instantiate buttons
-		if (canCreate && isCreateButtonVisible()) {
-			if(limitTypes != null && limitTypes.length == 1) {
+		if (canCreate && limitTypes != null) {
+			List<String> creatorTypes = new ArrayList<>(limitTypes.length);
+			for(String limitType:limitTypes) {
+				RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(limitType);
+				if(handler.isCreate()) {
+					creatorTypes.add(limitType);
+				}
+			}
+			
+			if(creatorTypes.size() == 1) {
 				Link createButton = LinkFactory.createButtonSmall("cmd.create.ressource", mainVC, this);
 				createButton.setElementCssClass("o_sel_repo_popup_create_resource");
-				RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(limitTypes[0]);
+				RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(creatorTypes.get(0));
 				createButton.setUserObject(handler);
 				createRessourceCmp = createButton;
-			} else if(limitTypes != null && limitTypes.length > 1) {
+			} else if(creatorTypes.size() > 1) {
 				Dropdown dropdown = new Dropdown("cmd.create.ressource", "cmd.create.ressource", false, getTranslator());
-				for(String limitType:limitTypes) {
+				dropdown.setElementCssClass("o_sel_repo_popup_create_resources");
+				dropdown.setButton(true);
+				mainVC.put("cmd.create.ressource", dropdown);
+				for(String limitType:creatorTypes) {
 					RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(limitType);
 					Link createLink = LinkFactory.createLink(handler.getSupportedType(), getTranslator(), this);
+					createLink.setUserObject(handler);
 					dropdown.addComponent(createLink);
 				}
 				createRessourceCmp = dropdown;
@@ -225,6 +235,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 		List<String> limitTypeList = Arrays.asList(limitTypes);
 		
 		String[] importAllowed = new String[] {
+				ImsQTI21Resource.TYPE_NAME,
 				TestFileResource.TYPE_NAME,
 				WikiResource.TYPE_NAME,
 				ImsCPFileResource.TYPE_NAME,
@@ -236,30 +247,6 @@ public class ReferencableEntriesSearchController extends BasicController {
 		
 		if (Collections.indexOfSubList(Arrays.asList(importAllowed), limitTypeList) != -1) { return true; }
 		
-		return false;
-	}
-
-	/**
-	 * if building block can be created during choose-process, return true
-	 * 
-	 * @return
-	 */
-	private boolean isCreateButtonVisible() {
-		if(!canCreate) return false;
-		
-		List<String> limitTypeList = Arrays.asList(limitTypes);
-		
-		String[] createAllowed = new String[] {
-				TestFileResource.TYPE_NAME,
-				WikiResource.TYPE_NAME,
-				ImsCPFileResource.TYPE_NAME,
-				SurveyFileResource.TYPE_NAME,
-				BlogFileResource.TYPE_NAME,
-				PodcastFileResource.TYPE_NAME,
-				EPTemplateMapResource.TYPE_NAME
-		};
-		
-		if (Collections.indexOfSubList(Arrays.asList(createAllowed), limitTypeList) != -1) { return true; }
 		return false;
 	}
 
@@ -308,8 +295,8 @@ public class ReferencableEntriesSearchController extends BasicController {
 				}
 				mainVC.setDirty(true);
 			}
-		} else if(source == createRessourceCmp ||
-				(createRessourceButtons != null && createRessourceButtons.contains(source))) {
+		} else if(source == createRessourceCmp
+				|| (source instanceof Link && ((Link)source).getUserObject() instanceof RepositoryHandler)) {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(createController);
 			RepositoryHandler handler = (RepositoryHandler)((Link)source).getUserObject();

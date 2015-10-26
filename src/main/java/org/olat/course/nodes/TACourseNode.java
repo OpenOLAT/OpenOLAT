@@ -90,6 +90,7 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -106,7 +107,7 @@ import org.olat.resource.OLATResource;
  * 	 @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
 
-public class TACourseNode extends GenericCourseNode implements AssessableCourseNode {
+public class TACourseNode extends GenericCourseNode implements PersistentAssessableCourseNode {
 	private static final long serialVersionUID = -7266553843441305310L;
 
 	private static final String PACKAGE_TA = Util.getPackageName(TACourseNodeRunController.class);
@@ -485,28 +486,16 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserScoreEvaluation(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
 	@Override
-	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
+	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
 		if(hasPassedConfigured() || hasScoreConfigured()) {
 			return getUserScoreEvaluation(getUserAssessmentEntry(userCourseEnv));
 		}
-		return ScoreEvaluation.EMPTY_EVALUATION;
+		return AssessmentEvaluation.EMPTY_EVAL;
 	}
 	
 	@Override
-	public ScoreEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
-		Boolean passed = null;
-		Float score = null;
-		if(hasPassedConfigured() || hasScoreConfigured()) {
-			if(entry != null) {
-				if (hasPassedConfigured()) {
-					passed = entry.getPassed();
-				}
-				if (hasScoreConfigured() && entry.getScore() != null) {
-					score = entry.getScore().floatValue();
-				}
-			}
-		}
-		return new ScoreEvaluation(score, passed);
+	public AssessmentEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
+		return AssessmentEvaluation.toAssessmentEvalutation(entry, this);
 	}
 
 	@Override

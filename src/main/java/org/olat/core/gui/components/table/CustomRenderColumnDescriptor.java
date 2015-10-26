@@ -55,6 +55,7 @@ public class CustomRenderColumnDescriptor extends DefaultColumnDescriptor {
 	/**
 	 * @see org.olat.core.gui.components.table.DefaultColumnDescriptor#renderValue(org.olat.core.gui.render.StringOutput, int, org.olat.core.gui.render.Renderer)
 	 */
+	@Override
 	public void renderValue(final StringOutput sb, final int row, final Renderer renderer) {
 		Object val = getModelData(row);
 		customCellRenderer.render(sb, renderer, val, getLocale(), getAlignment(), getAction(row));

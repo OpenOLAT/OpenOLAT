@@ -1,6 +1,6 @@
 <div class="o_sel_search_referenceable_entries o_header_with_buttons">
 	<h4>#if($titleCss)<i class="$titleCss"> </i> #end$r.translate("referencableSearch.title")</h4>
-	<div class="o_button_group o_button_group_right">
+	<div class="o_button_group o_button_group_right dropdown">
 		#if($r.available("cmd.create.ressource"))
 			$r.render("cmd.create.ressource")
 		#end

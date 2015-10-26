@@ -54,7 +54,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -70,13 +69,13 @@ import org.olat.course.nodes.st.STCourseNodeEditController;
 import org.olat.course.nodes.st.STCourseNodeRunController;
 import org.olat.course.nodes.st.STPeekViewController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -175,11 +174,12 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 			spCtr.addLoggingResourceable(LoggingResourceable.wrap(this));
 			// create clone wrapper layout, allow popping into second window
 			CloneLayoutControllerCreatorCallback clccc = new CloneLayoutControllerCreatorCallback() {
-				public ControllerCreator createLayoutControllerCreator(final UserRequest ureq, final ControllerCreator contentControllerCreator) {
-					return BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, new ControllerCreator() {
-						@SuppressWarnings("synthetic-access")
+				@Override
+				public ControllerCreator createLayoutControllerCreator(final UserRequest uureq, final ControllerCreator contentControllerCreator) {
+					return BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(uureq, new ControllerCreator() {
+						@Override
 						public Controller createController(UserRequest lureq, WindowControl lwControl) {
-							// wrapp in column layout, popup window needs a layout controller
+							// wrap in column layout, popup window needs a layout controller
 							Controller ctr = contentControllerCreator.createController(lureq, lwControl);
 							LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, ctr);
 							layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), userCourseEnv.getCourseEnvironment()));
@@ -231,6 +231,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.course.run.userview.NodeEvaluation)
 	 */
+	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		return createNodeRunConstructionResult(ureq, wControl, userCourseEnv, ne, null).getRunController();
 	}
@@ -242,6 +243,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.course.run.userview.NodeEvaluation)
 	 */
+	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			NodeEvaluation ne) {
 		if (ne.isAtLeastOneAccessible()) {
@@ -268,7 +270,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserScoreEvaluation(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
 	@Override
-	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
+	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
 		Float score = null;
 		Boolean passed = null;
 
@@ -280,26 +282,13 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 		String passedExpressionStr = scoreCalculator.getPassedExpression();
 
 		ConditionInterpreter ci = userCourseEnv.getConditionInterpreter();
-		userCourseEnv.getScoreAccounting().setEvaluatingCourseNode(this);
 		if (scoreExpressionStr != null) {
 			score = new Float(ci.evaluateCalculation(scoreExpressionStr));
 		}
 		if (passedExpressionStr != null) {
 			passed = new Boolean(ci.evaluateCondition(passedExpressionStr));
 		}
-		return new ScoreEvaluation(score, passed);
-	}
-
-	@Override
-	public ScoreEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
-		return null;
-	}
-
-	@Override
-	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
-		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
-		return am.getAssessmentEntry(this, mySelf, null);
+		return new AssessmentEvaluation(score, passed);
 	}
 
 	/**

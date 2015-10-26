@@ -46,9 +46,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.Util;
 import org.olat.course.Structure;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
+import org.olat.course.assessment.ui.tool.AssessmentToolController;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -94,7 +96,7 @@ public class IdentityAssessmentOverviewController extends BasicController {
 	 * course overview page
 	 * @param ureq The user request
 	 * @param wControl
-	 * @param userCourseEnvironment The assessed identitys user course environment
+	 * @param userCourseEnvironment The assessed identities user course environment
 	 * @param nodesSelectable configuration switch: true: user may select the nodes, e.g. to edit the nodes result, false: readonly view (user view)
 	 * @param discardEmptyNodes filtering default value: true: do not show nodes that have no value. false: show all assessable nodes
 	 * @param allowTableFiltering configuration switch: true: allow user to filter table all nodes/only nodes with data
@@ -102,6 +104,8 @@ public class IdentityAssessmentOverviewController extends BasicController {
 	public IdentityAssessmentOverviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnvironment, 
 			boolean nodesSelectable, boolean discardEmptyNodes, boolean allowTableFiltering) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(AssessmentToolController.class, ureq.getLocale(), getTranslator()));
+		
 		this.runStructure = userCourseEnvironment.getCourseEnvironment().getRunStructure();
 		this.nodesSelectable = nodesSelectable;
 		this.discardEmptyNodes = discardEmptyNodes;
@@ -225,8 +229,7 @@ public class IdentityAssessmentOverviewController extends BasicController {
 		List<AssessmentNodeData> nodesTableList;
 		if (loadNodesFromCourse) {
 			// get list of course node and user data and populate table data model 	
-			userCourseEnvironment.getScoreAccounting().evaluateAll();
-			nodesTableList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnvironment, discardEmptyNodes, false);
+			nodesTableList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnvironment, discardEmptyNodes, true);
 		} else {
 			// use list from efficiency statement 
 			nodesTableList = preloadedNodesList;

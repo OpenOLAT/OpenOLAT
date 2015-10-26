@@ -75,6 +75,7 @@ import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.ObjectivesHelper;
+import org.olat.course.nodes.PersistentAssessableCourseNode;
 import org.olat.course.nodes.SelfAssessableCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -579,8 +580,8 @@ public class IQRunController extends BasicController implements GenericEventList
 
 		// user data
 		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
-    	if(courseNode instanceof AssessableCourseNode) {
-    		AssessableCourseNode acn = (AssessableCourseNode)courseNode;
+    	if(courseNode instanceof PersistentAssessableCourseNode) {
+    		PersistentAssessableCourseNode acn = (PersistentAssessableCourseNode)courseNode;
     		AssessmentEntry assessmentEntry = acn.getUserAssessmentEntry(userCourseEnv);
     		if(assessmentEntry == null) {
     			myContent.contextPut("blockAfterSuccess", Boolean.FALSE);

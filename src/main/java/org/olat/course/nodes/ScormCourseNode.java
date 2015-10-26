@@ -58,6 +58,7 @@ import org.olat.course.nodes.scorm.ScormEditController;
 import org.olat.course.nodes.scorm.ScormRunController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -78,7 +79,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
  * @author Felix Jost
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
-public class ScormCourseNode extends AbstractAccessableCourseNode implements AssessableCourseNode {
+public class ScormCourseNode extends AbstractAccessableCourseNode implements PersistentAssessableCourseNode {
 	private static final OLog log = Tracing.createLoggerFor(ScormCourseNode.class);
 	private static final long serialVersionUID = 2970594874787761801L;
 	private static final String TYPE = "scorm";
@@ -376,21 +377,13 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Ass
 	}
 
 	@Override
-	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
+	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
 		return getUserScoreEvaluation(getUserAssessmentEntry(userCourseEnv));
 	}
 	
 	@Override
-	public ScoreEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
-		Boolean passed = null;
-		Float score = null;
-		if(entry != null) {
-			passed = entry.getPassed();
-			if(entry.getScore() != null) {
-				score = entry.getScore().floatValue();
-			}
-		}
-		return new ScoreEvaluation(score, passed);
+	public AssessmentEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
+		return AssessmentEvaluation.toAssessmentEvalutation(entry, this);
 	}
 
 	@Override
