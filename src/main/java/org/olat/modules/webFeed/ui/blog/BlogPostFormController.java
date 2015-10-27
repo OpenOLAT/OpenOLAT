@@ -151,7 +151,7 @@ public class BlogPostFormController extends FormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp(this.getClass().getPackage().getName(), "post_form_help.html", "chelp.hover.form");
+		setFormContextHelp("Working With Course Elements#_blog_lerner");
 		formLayout.setElementCssClass("o_sel_blog_form");
 
 		title = uifactory.addTextElement("title", "feed.title.label", 256, post.getTitle(), flc);
