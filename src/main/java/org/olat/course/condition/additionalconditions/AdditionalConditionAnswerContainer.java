@@ -32,17 +32,19 @@ public class AdditionalConditionAnswerContainer {
 	
 	private final Map<String, Object> container = new HashMap<String, Object>();
 	
-	public Object getAnswers(String nodeKey, String courseId){
+	public Object getAnswers(String nodeKey, Long courseId){
 		return container.get(generateMapKey(nodeKey, courseId));
 	}
 	
-	private String generateMapKey(String nodeKey, String courseId) {
-		return nodeKey+SEPARATOR+courseId;
+	private String generateMapKey(String nodeKey, Long courseId) {
+		return nodeKey + SEPARATOR + courseId;
 	}
 
-	public void insertAnswer(String nodeKey, String courseId, Object answer){
+	public void insertAnswer(String nodeKey, Long courseId, Object answer){
 		Object object = container.get(generateMapKey(nodeKey, courseId));
-		if(!answer.equals(object))	container.put(generateMapKey(nodeKey, courseId), answer);
+		if(!answer.equals(object)) {
+			container.put(generateMapKey(nodeKey, courseId), answer);
+		}
 	}
 	
 	public Map<String, Object> getContainer() {
@@ -53,11 +55,11 @@ public class AdditionalConditionAnswerContainer {
 		return container.isEmpty();
 	}
 
-	public void removeAnswer(String nodeKey, String courseId) {
+	public void removeAnswer(String nodeKey, Long courseId) {
 		container.remove(generateMapKey(nodeKey, courseId));
 	}
 
-	public boolean containsAnswer(String nodeKey, String courseId) {
+	public boolean containsAnswer(String nodeKey, Long courseId) {
 		return container.containsKey(generateMapKey(nodeKey, courseId));
 	}
 }

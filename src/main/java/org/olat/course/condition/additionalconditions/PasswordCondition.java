@@ -23,6 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
+import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
  * Only a placeholder to import courses from other vendors
@@ -53,7 +54,7 @@ public class PasswordCondition extends AdditionalCondition {
 		String userAnswer = null;
 		if(userAnswerObj instanceof AdditionalConditionAnswerContainer) {
 			AdditionalConditionAnswerContainer answersContainer = (AdditionalConditionAnswerContainer)userAnswerObj;
-			Object obj = answersContainer.getAnswers(node.getIdent(), courseId.toString()); 
+			Object obj = answersContainer.getAnswers(node.getIdent(), courseId); 
 			if(obj instanceof PasswordStore){
 				userAnswer = ((PasswordStore)obj).getPassword();
 			}
@@ -65,8 +66,8 @@ public class PasswordCondition extends AdditionalCondition {
 	}
 
 	@Override
-	public Controller getUserInputController(UserRequest ureq, WindowControl wControl){
-		return new PasswordVerificationController(ureq, wControl, this);
+	public Controller getUserInputController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv){
+		return new PasswordVerificationController(ureq, wControl, this, userCourseEnv);
 	}
 	
 	@Override

@@ -26,6 +26,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.condition.Condition;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
+import org.olat.course.run.userview.UserCourseEnvironment;
 
 public abstract class AdditionalCondition extends Condition implements Cloneable, Serializable {
 
@@ -58,7 +59,7 @@ public abstract class AdditionalCondition extends Condition implements Cloneable
 	 * @param wControl
 	 * @return the controller, null if this condition could not be fulfilled by the user and no specific message i.e webservice not reachable should be shown
 	 */
-	public abstract Controller getUserInputController(UserRequest ureq, WindowControl wControl);
+	public abstract Controller getUserInputController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv);
 	
 	public String getNodeIdentifier() {
 		return node != null ? node.getIdent() : null;
