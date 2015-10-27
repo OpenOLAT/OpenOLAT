@@ -88,7 +88,7 @@ public class SectionController extends FormBasicController implements TabbableCo
 		if(qtiPackage.getQTIDocument().isSurvey()) {
 			setFormContextHelp("org.olat.ims.qti.editor","qed-meta-surv-sect.html","help.hover.section-survey");
 		} else {
-			setFormContextHelp("org.olat.ims.qti.editor","qed-meta-test-sect.html","help.hover.section-assess");
+			setFormContextHelp("Test and Questionnaire Editor in Detail#details_testeditor_test_konf");
 		}
 		
 		String title = section.getTitle();
@@ -152,6 +152,7 @@ public class SectionController extends FormBasicController implements TabbableCo
 			theValues[i+1] = Integer.toString(i+1);
 		}
 		selectionNumEl = uifactory.addDropdownSingleselect("selection.num", "form.section.selection_pre", formLayout, theKeys, theValues, null);
+		selectionNumEl.setHelpText(translate("form.section.selection_pre.hover"));
 		selectionNumEl.setEnabled(!restrictedEdit);
 		int selectionNum = section.getSelection_ordering().getSelectionNumber();
 		if(selectionNum <= 0) {

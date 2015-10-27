@@ -178,7 +178,7 @@ public class ItemMetadataFormController extends FormBasicController {
 		}
 		
 		if (isSurvey) {
-			setFormContextHelp("org.olat.ims.qti.editor", "qed-meta-surv-"+t+".html", "help.hover.qti-meta-"+t);
+			setFormContextHelp("Test and Questionnaire Editor in Detail#details_testeditor_test_konf_frage");
 		} else {
 			setFormContextHelp("Test and Questionnaire Editor in Detail#details_testeditor_test_konf_frage");
 		}

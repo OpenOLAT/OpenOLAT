@@ -183,7 +183,7 @@ public class FeedbackFormController extends FormBasicController {
 	 */
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("fieldset.legend.feedback");
-		setFormContextHelp("org.olat.ims.qti.editor", "qed-feedback.html", "help.hover.qti-feedback");
+		setFormContextHelp("Test and Questionnaire Editor in Detail#details_testeditor_feedback");
 
 		FormLayoutContainer switchLayout = FormLayoutContainer.createDefaultFormLayout("switchLayout", getTranslator());
 		overallFeedbackLayout = FormLayoutContainer.createDefaultFormLayout("overallFeedbackLayout", getTranslator());

@@ -13,13 +13,7 @@
 </script>
 <fieldset class="o_form form-horizontal" role="form">
 	<legend>$r.translate("fieldset.legend.assessmentglobalsettings")
-	#if ($isRestrictedEdit)
-		$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-meta-surv.html","help.hover.survey")
-	#elseif($isSurveyMode.equals("false"))
 		$r.contextHelpWithWrapper("Test and Questionnaire Editor in Detail#details_testeditor_test_konf")
-	#else
-		$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-meta-surv.html","help.hover.survey")
-	#end
 	</legend>
 	<form id="ofo_assessform" action="$r.formURIbg("sao")" method="post" onsubmit="o_XHRSubmit('ofo_assessform');">
 	<div class="form-group">
