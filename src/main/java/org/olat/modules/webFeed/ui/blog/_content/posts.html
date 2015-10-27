@@ -14,7 +14,7 @@
 			$r.translate("blog.has.no.episodes")
 		</p>
 		#if ( $callback.mayEditMetadata() && $feed.isUndefined() && $r.available("feed.make.internal"))
-			$r.contextHelpWithWrapper("Knowledge Transfer#_podcast_createentry")
+			$r.contextHelpWithWrapper("Knowledge Transfer#_blog_createentry")
 			<p>$r.translate("blog.internal.or.external")</p>
 			<div class="o_button_group">
 				$r.render("feed.make.internal")
