@@ -27,6 +27,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.course.condition.additionalconditions.AdditionalConditionAnswerContainer;
 import org.olat.course.condition.additionalconditions.PasswordStore;
+import org.olat.course.run.preview.PreviewIdentity;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 
@@ -65,26 +66,36 @@ public class CourseNodePasswordManagerImpl implements CourseNodePasswordManager 
 	 */
 	@Override
 	public AdditionalConditionAnswerContainer getAnswerContainer(Identity identity) {
-		AdditionalConditionAnswerContainer acac = new AdditionalConditionAnswerContainer();
+		AdditionalConditionAnswerContainer acac;
 		if(identity == null) {
-			//do nothing
+			acac = new AdditionalConditionAnswerContainer();
 		} else if (cache.containsKey(identity.getKey())) {
 			acac = cache.get(identity.getKey());
 		} else {
 			PropertyManager pm = PropertyManager.getInstance();
 			List<Property> properties = pm.listProperties(identity, null, AdditionalConditionAnswerContainer.RESOURCE_NAME, null, null, AdditionalConditionAnswerContainer.RESOURCE_NAME);
-			if(properties == null) return null;
-			for (Object object : properties) {
-				Property property = (Property) object;
-				PasswordStore store = new PasswordStore();
-				store.setPassword(property.getStringValue());
-				store.setCourseId(property.getLongValue());
-				store.setNodeIdent(property.getResourceTypeId());
-				acac.insertAnswer(Long.toString(property.getResourceTypeId()), Long.toString(property.getLongValue()), store);
+			if(properties == null) {
+				acac = null;
+			} else {
+				acac = new AdditionalConditionAnswerContainer();
+				for (Object object : properties) {
+					Property property = (Property) object;
+					PasswordStore store = new PasswordStore();
+					store.setPassword(property.getStringValue());
+					store.setCourseId(property.getLongValue());
+					store.setNodeIdent(property.getResourceTypeId());
+					acac.insertAnswer(Long.toString(property.getResourceTypeId()), property.getLongValue(), store);
+				}
+				cache.put(identity.getKey(), acac);
 			}
-			cache.put(identity.getKey(), acac);
 		}
 		return acac;
+	}
+
+	@Override
+	public AdditionalConditionAnswerContainer removeAnswerContainerFromCache(Identity identity) {
+		if(identity == null) return null;
+		return cache.remove(identity.getKey());
 	}
 
 	/**
@@ -94,7 +105,10 @@ public class CourseNodePasswordManagerImpl implements CourseNodePasswordManager 
 	 * @param answers
 	 */
 	private void persistAnswerContainer(Identity identity, AdditionalConditionAnswerContainer answers) {
-		if (!answers.isContainerEmpty()) {
+		if(identity instanceof PreviewIdentity) {
+			//preview identity are not persistable
+			cache.put(identity.getKey(), answers);
+		} else if (!answers.isContainerEmpty()) {
 			boolean updateInDatabase = false;
 			PropertyManager pm = PropertyManager.getInstance();
 			Map<String, Object> container = answers.getContainer();
@@ -137,7 +151,9 @@ public class CourseNodePasswordManagerImpl implements CourseNodePasswordManager 
 					updateInDatabase = true;
 				}
 			}
-			if (updateInDatabase) cache.put(identity.getKey(), answers);
+			if (updateInDatabase) {
+				cache.put(identity.getKey(), answers);
+			}
 		}
 	}
 
@@ -145,7 +161,7 @@ public class CourseNodePasswordManagerImpl implements CourseNodePasswordManager 
 	 * @see de.bps.course.nodes.CourseNodePasswordManager#updatePwd(org.olat.core.id.Identity, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void updatePwd(Identity identity, String nodeIdentifier, String courseId, String value) {
+	public void updatePwd(Identity identity, String nodeIdentifier, Long courseId, String value) {
 		AdditionalConditionAnswerContainer answers = getAnswerContainer(identity);
 
 		if (answers == null) {
@@ -183,8 +199,8 @@ public class CourseNodePasswordManagerImpl implements CourseNodePasswordManager 
 	private void removeAnswers(Long nodeId, Long courseId) {
 		for (Long key : cache.keySet()) {
 			AdditionalConditionAnswerContainer acac = cache.get(key);
-			if (acac.containsAnswer(Long.toString(nodeId), Long.toString(courseId))) {
-				acac.removeAnswer(Long.toString(nodeId), Long.toString(courseId));
+			if (acac.containsAnswer(Long.toString(nodeId), courseId)) {
+				acac.removeAnswer(Long.toString(nodeId), courseId);
 			}
 		}
 	}

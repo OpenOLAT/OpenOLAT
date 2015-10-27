@@ -43,6 +43,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.ArrayHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
@@ -104,11 +105,14 @@ public class ContextHelpTopNavController extends FormBasicController implements 
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		SearchServiceUIFactory searchUIFactory = (SearchServiceUIFactory)CoreSpringFactory.getBean(SearchServiceUIFactory.class);
-		searchController = searchUIFactory.createInputController(ureq, getWindowControl(), DisplayOption.STANDARD, mainForm);
-		searchController.setResourceContextEnable(false);
-		searchController.setDocumentType("type.contexthelp");
-		flc.add("search_input", searchController.getFormItem());
+		UserSession usess = ureq.getUserSession();
+		if(usess != null && usess.getRoles() != null && usess.getIdentity() != null) {
+			SearchServiceUIFactory searchUIFactory = (SearchServiceUIFactory)CoreSpringFactory.getBean(SearchServiceUIFactory.class);
+			searchController = searchUIFactory.createInputController(ureq, getWindowControl(), DisplayOption.STANDARD, mainForm);
+			searchController.setResourceContextEnable(false);
+			searchController.setDocumentType("type.contexthelp");
+			flc.add("search_input", searchController.getFormItem());
+		}
 		
 		// Add target languages without overlays
 		I18nManager i18nMgr = I18nManager.getInstance();
@@ -137,6 +141,7 @@ public class ContextHelpTopNavController extends FormBasicController implements 
 	 *      org.olat.core.gui.components.form.flexible.FormItem,
 	 *      org.olat.core.gui.components.form.flexible.impl.FormEvent)
 	 */
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == closeLink) {
 			// close window (a html page which calls Window.close onLoad
@@ -171,6 +176,7 @@ public class ContextHelpTopNavController extends FormBasicController implements 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose()
 	 */
+	@Override
 	protected void doDispose() {
 		if(searchController != null) {
 			searchController.dispose();

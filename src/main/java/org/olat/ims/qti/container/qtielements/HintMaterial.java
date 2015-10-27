@@ -57,9 +57,11 @@ public class HintMaterial extends GenericQTIElement {
 	 */
 	@Override
 	public void render(StringBuilder buffer, RenderInstructions ri) {
-		buffer.append("<div id=\"o_qti_hints\" class=\"o_togglebox_wrapper\"><a href=\"#\" data-target=\"#o_qti_hints_inner\" onclick=\"jQuery(this).toggleClass('o_in')\"><i class='o_icon o_icon-fw'></i> ");
-		buffer.append(getHintTitle(ri));
-		buffer.append("</a><div id=\"o_qti_hints_inner\" class=\"collapse\"><div class=\"o_important clearfix\">");
+		buffer.append("<div id='o_qti_hints' class='o_togglebox_wrapper'>")
+		      .append("<a href='#' data-toggle='collapse' data-target='#o_qti_hints_inner' onclick='jQuery(this).toggleClass('o_in')'>")
+		      .append("<i class='o_icon o_icon-fw o_icon_help'></i> ")
+		      .append(getHintTitle(ri))
+		      .append("</a><div id=\"o_qti_hints_inner\" class=\"collapse\"><div class=\"o_important o_togglebox_content clearfix\">");
 		super.render(buffer, ri);
 		buffer.append("</div></div></div>");
 	}
