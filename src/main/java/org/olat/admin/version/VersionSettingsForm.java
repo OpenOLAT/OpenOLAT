@@ -72,8 +72,8 @@ public class VersionSettingsForm extends FormBasicController {
 		// First add title and context help
 		setFormTitle("version.title");
 		setFormDescription("version.intro");
-		setFormContextHelp(VersionSettingsForm.class.getPackage().getName(), "version.html", "help.hover.version");
-		
+		setFormContextHelp("Versioning");
+
 		numOfVersions = uifactory.addDropdownSingleselect("version.numOfVersions", formLayout, keys, values, null);
 		numOfVersions.addActionListener(FormEvent.ONCHANGE);
 		Long maxNumber = getNumOfVersions();

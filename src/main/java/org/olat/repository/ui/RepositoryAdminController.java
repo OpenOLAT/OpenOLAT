@@ -55,7 +55,6 @@ public class RepositoryAdminController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("repository.admin.title");
-		setFormContextHelp(RepositoryService.class.getPackage().getName(), "rep-admin.html", "help.hover.repository.admin");
 
 		boolean searchEnabled = repositoryModule.isMyCoursesSearchEnabled();
 		String[] values = new String[] { translate("on") };
