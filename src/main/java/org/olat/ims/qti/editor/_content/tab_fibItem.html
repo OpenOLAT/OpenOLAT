@@ -1,10 +1,6 @@
 <fieldset class="o_form form-horizontal" role="form">
 	<legend>$r.translate("fieldset.legend.answers")
-	#if ($isSurveyMode == "true")
-		$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-answer-surv-3.html","help.hover.qti-answer-3")
-	#else
 		$r.contextHelpWithWrapper("Test and Questionnaire Editor in Detail#details_testeditor_fragetypen_fib")
-	#end
 	</legend>
 	
 	<form action="$r.formURIbg("sfib")" id="ofo_tab_fibitem" name="ofo_tab_fibitem" method="post" onsubmit="o_XHRSubmit('ofo_tab_fibitem');">

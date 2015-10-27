@@ -85,12 +85,8 @@ public class SectionController extends FormBasicController implements TabbableCo
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("fieldset.legend.sectionsettings");
-		if(qtiPackage.getQTIDocument().isSurvey()) {
-			setFormContextHelp("org.olat.ims.qti.editor","qed-meta-surv-sect.html","help.hover.section-survey");
-		} else {
-			setFormContextHelp("Test and Questionnaire Editor in Detail#details_testeditor_test_konf");
-		}
-		
+		setFormContextHelp("Test and Questionnaire Editor in Detail#details_testeditor_test_konf");
+
 		String title = section.getTitle();
 		titleEl = uifactory.addTextElement("title", "form.metadata.title", 255, title, formLayout);
 		

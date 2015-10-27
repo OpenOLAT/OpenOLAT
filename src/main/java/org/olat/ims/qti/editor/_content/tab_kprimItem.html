@@ -1,10 +1,6 @@
 <fieldset>
 	<legend>$r.translate("fieldset.legend.question")
-	#if ($isSurveyMode == "true")
-		$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-quest-surv-mcsc.html","help.hover.qti-quest-5")
-	#else
-		$r.contextHelpWithWrapper("Test and Questionnaire Editor in Detail#details_testeditor_fragetypen_kprim")
-	#end
+	$r.contextHelpWithWrapper("Test and Questionnaire Editor in Detail#details_testeditor_fragetypen_kprim")
 	</legend>
 	
 	<table class="table">
@@ -24,9 +20,6 @@
 </fieldset>
 <fieldset class="o_form form-horizontal" role="form">
 	<legend>$r.translate("fieldset.legend.answers")
-	#if ($isSurveyMode == "true")
-		$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-answer-surv-2.html","help.hover.qti-quest-5")
-	#end
 	</legend>
 	
 	<form action="$r.formURIbg("skprim")" id="ofo_tab_kprimitem" name="ofo_tab_kprimitem" method="post" onsubmit="o_XHRSubmit('ofo_tab_kprimitem');">

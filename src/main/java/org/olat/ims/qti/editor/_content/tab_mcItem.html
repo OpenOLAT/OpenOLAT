@@ -1,10 +1,6 @@
 <fieldset>
 	<legend>$r.translate("fieldset.legend.question")
-	#if ($isSurveyMode == "true")
-		$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-quest-surv-2.html","help.hover.qti-quest-2")
-	#else
 		$r.contextHelpWithWrapper("Test and Questionnaire Editor in Detail#details_testeditor_fragetypen_mc")
-	#end
 	</legend>
 
 	<table class="table" style="position:relative">
@@ -21,10 +17,7 @@
 	</table>
 </fieldset>
 <fieldset class="o_form form-horizontal" role="form">
-	<legend>$r.translate("fieldset.legend.answers")	
-	#if ($isSurveyMode == "true")
-		$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-answer-surv-2.html","help.hover.qti-answer-2")
-	#end
+	<legend>$r.translate("fieldset.legend.answers")
 	</legend>
 	
 	<form action="$r.formURIbg("smc")" id="ofo_tab_mcitem" name="ofo_tab_mcitem" method="post" onsubmit="o_XHRSubmit('ofo_tab_mcitem');">
