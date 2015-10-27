@@ -49,14 +49,17 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.course.condition.Condition;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.RunMainController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.navigation.NodeClickedRef;
-import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.group.BusinessGroup;
 import org.olat.group.area.BGArea;
+
+import de.bps.course.nodes.CourseNodePasswordManagerImpl;
 
 /**
  * Description: <br>
@@ -67,8 +70,9 @@ public class PreviewRunController extends MainLayoutBasicController {
 	private MenuTree luTree;
 	private Panel content;
 
-	private NavigationHandler navHandler;
-	private UserCourseEnvironment uce;
+	private final NavigationHandler navHandler;
+	private final UserCourseEnvironment uce;
+	private CourseNode currentCourseNode;
 
 	private Controller currentNodeController; // the currently open node
 	private VelocityContainer detail;
@@ -116,6 +120,7 @@ public class PreviewRunController extends MainLayoutBasicController {
 		
 		content = new Panel("building_block_content");
 		currentNodeController = nclr.getRunController();
+		currentCourseNode = nclr.getCalledCourseNode();
 		currentNodeController.addControllerListener(this);
 		content.setContent(currentNodeController.getInitialComponent());
 		detail.put("content", content);
@@ -150,6 +155,7 @@ public class PreviewRunController extends MainLayoutBasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == luTree) {
 			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
@@ -190,6 +196,7 @@ public class PreviewRunController extends MainLayoutBasicController {
 					String visibilityExpr = (c.getConditionExpression() == null? translate("details.visibility.none") : c.getConditionExpression());
 					detail.contextPut("visibilityExpr", visibilityExpr);
 					detail.contextPut("coursenode", cn);
+					currentCourseNode = cn;
 				}
 
 				Component nodeComp = currentNodeController.getInitialComponent();
@@ -204,6 +211,7 @@ public class PreviewRunController extends MainLayoutBasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == currentNodeController) {
 			if (event instanceof OlatCmdEvent) {
@@ -215,6 +223,8 @@ public class PreviewRunController extends MainLayoutBasicController {
 					updateTreeAndContent(ureq, identNode);
 					oe.accept();
 				}
+			} else if (RunMainController.REBUILD.equals(event.getCommand())) {
+				updateTreeAndContent(ureq, currentCourseNode);
 			}
 		}
 	}
@@ -266,6 +276,7 @@ public class PreviewRunController extends MainLayoutBasicController {
 			currentNodeController.dispose();
 			currentNodeController = null;
 		}
+		CourseNodePasswordManagerImpl.getInstance().removeAnswerContainerFromCache(uce.getIdentityEnvironment().getIdentity());
 		navHandler.dispose();
 	}
 }

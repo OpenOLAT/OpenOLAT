@@ -35,22 +35,28 @@ import org.olat.core.id.Persistable;
 import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.CodeHelper;
 
 /**
  * Initial Date: 08.02.2005
  * 
  * @author Mike Stock
  */
-final class PreviewIdentity implements Identity, User {
+public final class PreviewIdentity implements Identity, User {
 
 	private static final long serialVersionUID = 6582855975941440446L;
 	
 	private final Map<String, String> data = new HashMap<String, String>();
+	private final Long key;
 	private Map<String, String> envAttrs;
 	{
 		data.put(UserConstants.FIRSTNAME, "Jane");
 		data.put(UserConstants.LASTNAME, "Doe");
 		data.put(UserConstants.EMAIL, "jane.doe@testmail.com");
+	}
+	
+	public PreviewIdentity() {
+		key = CodeHelper.getRAMUniqueID();
 	}
 
 	/**
@@ -58,7 +64,7 @@ final class PreviewIdentity implements Identity, User {
 	 */
 	@Override
 	public Long getKey() {
-		return 2l;
+		return key;
 	}
 	
 	@Override

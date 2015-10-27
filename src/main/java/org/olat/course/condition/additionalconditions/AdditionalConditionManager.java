@@ -26,6 +26,7 @@ import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.TitledWrapperHelper;
+import org.olat.course.run.userview.UserCourseEnvironment;
 
 public class AdditionalConditionManager {
 	
@@ -61,13 +62,13 @@ public class AdditionalConditionManager {
 	 * @param wControl
 	 * @return null if either nothing is wrong or the user is unable to influence the condition in olat (and won't get a more detailed error-message) 
 	 */
-	public Controller nextUserInputController(UserRequest ureq, WindowControl wControl){
+	public Controller nextUserInputController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv) {
 		for(AdditionalCondition cond : node.getAdditionalConditions()){
 			cond.setNode(node);
 			cond.setCourseId(courseId);
 			boolean retVal = cond.evaluate(answers);
 			if(!retVal) {
-				Controller ctrl = cond.getUserInputController(ureq, wControl);
+				Controller ctrl = cond.getUserInputController(ureq, wControl, userCourseEnv);
 				CourseNodeConfiguration config = CourseNodeFactory.getInstance().getCourseNodeConfiguration(node.getType());
 				return TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, node, config.getIconCSSClass());
 			}

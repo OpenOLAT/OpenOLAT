@@ -31,6 +31,8 @@ public interface CourseNodePasswordManager {
 	 * @return
 	 */
 	public AdditionalConditionAnswerContainer getAnswerContainer(Identity identity);
+	
+	public AdditionalConditionAnswerContainer removeAnswerContainerFromCache(Identity identity);
 
 	/**
 	 * updates inputted password
@@ -39,7 +41,7 @@ public interface CourseNodePasswordManager {
 	 * @param courseId
 	 * @param value
 	 */
-	public void updatePwd(Identity identity, String nodeIdentifier, String courseId, String value);
+	public void updatePwd(Identity identity, String nodeIdentifier, Long courseId, String value);
 	
 	/**
 	 * deletes password for a repository entry

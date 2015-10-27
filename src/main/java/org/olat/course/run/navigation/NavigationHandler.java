@@ -47,6 +47,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.title.TitledWrapperController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -360,7 +361,8 @@ public class NavigationHandler implements Disposable {
 			if (courseNode instanceof AbstractAccessableCourseNode) {
 				Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 				CourseNodePasswordManager cnpm = CourseNodePasswordManagerImpl.getInstance();
-				AdditionalConditionAnswerContainer answerContainer = cnpm.getAnswerContainer(ureq.getIdentity());
+				Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
+				AdditionalConditionAnswerContainer answerContainer = cnpm.getAnswerContainer(identity);
 				addMan = new AdditionalConditionManager( (AbstractAccessableCourseNode) courseNode, courseId, answerContainer);
 			}
 			
@@ -373,7 +375,7 @@ public class NavigationHandler implements Disposable {
 				//this is the case if only one of the additional conditions failed
 
 				if (nodeEval.oldStyleConditionsOk()) {
-					controller = addMan.nextUserInputController(ureq, wControl);
+					controller = addMan.nextUserInputController(ureq, wControl, userCourseEnv);
 					if (listeningController != null) {
 						controller.addControllerListener(listeningController);
 					}
@@ -399,7 +401,6 @@ public class NavigationHandler implements Disposable {
 				nclr = new NodeClickedRef(treeModel, true, newSelectedNodeId, null, courseNode, ncr, false);
 			} else { // access ok
 				
-				// fxdiff FXOLAT-262
 				if (STCourseNode.isDelegatingSTCourseNode(courseNode) && (courseNode.getChildCount() > 0)) {
 					// the clicked node is a STCourse node and is set to "delegate", so
 					// delegate to its first visible child; if no child is visible, just skip and do normal eval
