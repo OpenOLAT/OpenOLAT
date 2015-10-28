@@ -28,7 +28,6 @@ package org.olat.core.gui.components.table;
 
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.logging.AssertException;
 
 /**
  * Description:<br>
@@ -108,8 +107,10 @@ public class StaticColumnDescriptor implements ColumnDescriptor {
 	/**
 	 * @see org.olat.core.gui.components.table.ColumnDescriptor#compareTo(int, int)
 	 */
+	@Override
 	public int compareTo(final int rowa, final int rowb) {
-		throw new AssertException("staticcolumndescriptor was called to be sorted, but did not offer to be sorted");
+		//dummy order but fixed
+		return rowb - rowa;
 	}
 
 	/**
