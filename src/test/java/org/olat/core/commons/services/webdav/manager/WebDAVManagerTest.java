@@ -60,20 +60,6 @@ public class WebDAVManagerTest extends OlatTestCase {
 	private WebDAVManagerImpl webDAVManager;
 	
 	@Test
-	public void parseDigestAuthentication() {
-		String request = "username=\"kanu\",realm=\"OLAT WebDAV Access\",nonce=\"dcd98b7102dd2f0e8b11d0f600bfb0c093\",uri=\"/webdav\",cnonce=\"195d0d15b31ee8f0a7f243b9bfcd881d\",nc=00000001,response=\"671742b00fae8d4c8ceb6a5bcf2b36fa\",qop=\"auth\"";
-		DigestAuthentication auth = DigestAuthentication.parse(request);
-		Assert.assertEquals("kanu", auth.getUsername());
-		Assert.assertEquals("OLAT WebDAV Access", auth.getRealm());
-		Assert.assertEquals("dcd98b7102dd2f0e8b11d0f600bfb0c093", auth.getNonce());
-		Assert.assertEquals("/webdav", auth.getUri());
-		Assert.assertEquals("195d0d15b31ee8f0a7f243b9bfcd881d", auth.getCnonce());
-		Assert.assertEquals("00000001", auth.getNc());
-		Assert.assertEquals("671742b00fae8d4c8ceb6a5bcf2b36fa", auth.getResponse());
-		Assert.assertEquals("auth", auth.getQop());
-	}
-	
-	@Test
 	public void handleBasicAuthentication() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("dav-user-" + UUID.randomUUID().toString());
 
