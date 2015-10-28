@@ -19,7 +19,13 @@
  */
 package org.olat.core.commons.services.webdav.manager;
 
-import java.util.StringTokenizer;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Map;
+
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.http.Authorization;
 
 /**
  * 
@@ -30,6 +36,8 @@ import java.util.StringTokenizer;
  *
  */
 public class DigestAuthentication {
+	
+	private static final OLog log = Tracing.createLoggerFor(DigestAuthentication.class);
 	
 	private final String username;
 	private final String realm;
@@ -83,7 +91,7 @@ public class DigestAuthentication {
 		return qop;
 	}
 
-	public static DigestAuthentication parse(String request) {
+	public static DigestAuthentication parse(String header) {
 		String username = null;
 		String realm = null;
 		String nonce = null;
@@ -92,30 +100,19 @@ public class DigestAuthentication {
 		String nc = null;
 		String response = null;
 		String qop = null;
-	
-		StringTokenizer tokenizer = new StringTokenizer(request, ",\n");
-		for(; tokenizer.hasMoreTokens(); ) {
-			String token=tokenizer.nextToken().trim();
-			int index = token.indexOf('=');
-			String key = token.substring(0, index);
-			String val = token.substring(index + 1, token.length()).replace("\"", "");
-			if("username".equals(key)) {
-				username = val;
-			} else if("realm".equals(key)) {
-				realm = val;
-			} else if("nonce".equals(key)) {
-				nonce = val;
-			} else if("uri".equals(key)) {
-				uri = val;
-			} else if("cnonce".equals(key)) {
-				cnonce = val;
-			} else if("nc".equals(key)) {
-				nc = val;
-			} else if("response".equals(key)) {
-				response = val;
-			} else if("qop".equals(key)) {
-				qop = val;
-			}
+		
+		try {
+			Map<String,String> parsedHeader = Authorization.parseAuthorizationDigest(new StringReader(header));
+			username = parsedHeader.get("username");
+			realm = parsedHeader.get("realm");
+			nonce = parsedHeader.get("nonce");
+			uri = parsedHeader.get("uri");
+			cnonce = parsedHeader.get("cnonce");
+			nc = parsedHeader.get("nc");
+			response = parsedHeader.get("response");
+			qop = parsedHeader.get("qop");
+		} catch (IOException | IllegalArgumentException e) {
+			log.error("", e);
 		}
 		return new DigestAuthentication(username, realm, nonce, uri, cnonce, nc, response, qop);
 	}
