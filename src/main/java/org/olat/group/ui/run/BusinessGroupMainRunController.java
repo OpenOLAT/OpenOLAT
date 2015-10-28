@@ -616,7 +616,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		
 		if (sendToChooserForm.waitingListChecked().equals(BusinessGroupSendToChooserForm.NLS_RADIO_NOTHING)) {
 			String restUrl = BusinessControlFactory.getInstance().getAsURIString(getWindowControl().getBusinessControl(), true);
-			cmsg.setBodyText( getTranslator().translate("businessgroup.contact.bodytext", new String[]{ businessGroup.getName(), restUrl} ) );
+			cmsg.setBodyText( getTranslator().translate("businessgroup.contact.bodytext", new String[]{ businessGroup.getName(), "<a href='" + restUrl + "'>" + restUrl + "</a>"} ) );
 		} else {
 			cmsg.setBodyText ("");
 		}
