@@ -1,0 +1,58 @@
+<script type="text/javascript">
+/* <![CDATA[ */
+function check() {
+	document.write(
+		"<tr><td>$r.translate("browsercheck.yourbrowser.name")</td><td><b>"+navigator.appName+"</b></td></tr>"+
+		"<tr'><td>$r.translate("browsercheck.yourbrowser.generation")</td><td>"+navigator.appVersion+"</td></tr>"+
+		"<tr><td>$r.translate("browsercheck.yourbrowser.language")</td><td>"+navigator.language+"</td></tr>"+
+		"<tr><td>$r.translate("browsercheck.yourbrowser.codename")</td><td>"+navigator.appCodeName+"</td></tr>"+
+		"<tr><td>$r.translate("browsercheck.yourbrowser.os")</td><td>"+navigator.platform+"</td></tr>"+
+		"<tr><td>$r.translate("browsercheck.yourbrowser.usragent")</td><td>"+	navigator.userAgent+"</td></tr>"+
+		"<tr><td>$r.translate("browsercheck.yourbrowser.cookies")</td><td>" + ( navigator.cookieEnabled ? "$r.translate("browsercheck.yes")" : "$r.translate("browsercheck.no")") + "</td></tr>"+
+		"<tr><td>$r.translate("browsercheck.yourbrowser.js")</td><td>$r.translate("browsercheck.yes")</tr>"
+		);
+}
+
+/* ]]> */
+</script>
+
+<h3>$r.translate("browsercheck.title")</h3>
+<h4>$r.translate("browsercheck.minimum.title")</h4>
+<ul class="list-unstyled">
+  <li>$r.translate("browsercheck.minimum.first")</li>
+  <li>$r.translate("browsercheck.minimum.second")</li>
+</ul>
+<p>
+	<span>
+		<a href="https://www.google.com/chrome">
+			<img src="$r.staticLink("images/chrome-button.png")" title="Get google Chrome!" alt="Get google Chrome!" border="0" width="150" height="50" />
+		</a>
+	</span>
+	<br />
+	<span>
+		<a href="http://www.mozilla.org/firefox" target="_blank">
+			<img border="0" alt="Get Firefox!" title="Get Firefox!" src="$r.staticLink("images/getfirefox.gif")" width="150" />
+		</a>
+	</span>
+</p>
+<h4>$r.translate("browsercheck.bestresults.title")</h4>
+<ul class="list-unstyled">
+	<li><a href="http://www.google.com/chrome/" target="_blank"><i class="o_icon o_icon_link_extern"> </i> Google Chrome 28</a> $r.translate("browsercheck.bestresults.newerversion") $r.translate("browsercheck.bestresults.recommended") ($r.translate("browsercheck.since","10"))</li>
+	<li><a href="http://www.apple.com/safari/" target="_blank"><i class="o_icon o_icon_link_extern"> </i> Apple Safari 6</a> $r.translate("browsercheck.bestresults.newerversion") ($r.translate("browsercheck.since","5"))</li>
+	<li><a href="http://www.mozilla.org/firefox/" target="_blank"><i class="o_icon o_icon_link_extern"> </i> Firefox 23</a> $r.translate("browsercheck.bestresults.newerversion") ($r.translate("browsercheck.since","10"))</li>
+	<li><a href="http://www.microsoft.com/internetexplorer/" target="_blank"><i class="o_icon o_icon_link_extern"> </i> Microsoft Internet Explorer 9</a> $r.translate("browsercheck.bestresults.newerversion") ($r.translate("browsercheck.since","8"))</li>
+</ul>
+
+<h4>$r.translate("browsercheck.others.title")</h4>
+<p>$r.translate("browsercheck.others.others")</p>
+<p>
+	$r.translate("browsercheck.others.IE6")
+	<a href="http://ie6countdown.com/">IE6 countdown</a>
+</p>
+
+<h4>$r.translate("browsercheck.yourbrowser.title")</h4>
+<table class="table"><tbody>
+	<script type="text/javascript">
+	check();
+	</script>
+</tbody></table>
