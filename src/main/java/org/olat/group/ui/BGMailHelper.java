@@ -244,6 +244,7 @@ public class BGMailHelper {
 				User user = identity.getUser();
 				context.put("firstname", user.getProperty(UserConstants.FIRSTNAME, null));
 				context.put("lastname", user.getProperty(UserConstants.LASTNAME, null));
+				//the email of the user, needs to stay named 'login'
 				context.put("login", user.getProperty(UserConstants.EMAIL, null));
 				// Put variables from greater context
 				context.put("groupname", groupname);

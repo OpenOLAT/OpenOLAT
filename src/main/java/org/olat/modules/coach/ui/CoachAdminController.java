@@ -50,6 +50,7 @@ public class CoachAdminController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("coaching.title");
+		setFormContextHelp("Coaching");
 
 		boolean restEnabled = coachingModule.isEnabled();
 		String[] values = new String[] { translate("coaching.on") };
