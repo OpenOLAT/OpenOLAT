@@ -695,7 +695,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		IdentityImpl iimpl = new IdentityImpl(username, user);
 		dbInstance.getCurrentEntityManager().persist(iimpl);
 		if (provider != null) { 
-			createAndPersistAuthentication(iimpl, provider, authusername, credential, loginModule.getDefaultHashAlgorithm());
+			createAndPersistAuthenticationIntern(iimpl, provider, authusername, credential, loginModule.getDefaultHashAlgorithm());
 		}
 		notifyNewIdentityCreated(iimpl);
 		return iimpl;
@@ -715,7 +715,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		iimpl.setExternalId(externalId);
 		dbInstance.getCurrentEntityManager().persist(iimpl);
 		if (provider != null) { 
-			createAndPersistAuthentication(iimpl, provider, authusername, null, null);
+			createAndPersistAuthenticationIntern(iimpl, provider, authusername, null, null);
 		}
 		notifyNewIdentityCreated(iimpl);
 		return iimpl;
@@ -738,7 +738,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		iimpl.setExternalId(externalId);
 		dbInstance.getCurrentEntityManager().persist(iimpl);
 		if (provider != null) { 
-			createAndPersistAuthentication(iimpl, provider, authusername, credential, loginModule.getDefaultHashAlgorithm());
+			createAndPersistAuthenticationIntern(iimpl, provider, authusername, credential, loginModule.getDefaultHashAlgorithm());
 		}
 		notifyNewIdentityCreated(iimpl);
 		return iimpl;
@@ -1227,19 +1227,35 @@ public class BaseSecurityManager implements BaseSecurity {
 			public Authentication execute() {
 				Authentication auth = findAuthentication(ident, provider);
 				if(auth == null) {
-					if(algorithm != null && credentials != null) {
-						String salt = algorithm.isSalted() ? Encoder.getSalt() : null;
-						String hash = Encoder.encrypt(credentials, salt, algorithm);
-						auth = new AuthenticationImpl(ident, provider, authUserName, hash, salt, algorithm.name());
-					} else {
-						auth = new AuthenticationImpl(ident, provider, authUserName, credentials);
-					}
-					dbInstance.getCurrentEntityManager().persist(auth);
-					log.audit("Create " + provider + " authentication (login=" + ident.getName() + ",authusername=" + authUserName + ")");
+					auth = createAndPersistAuthenticationIntern(ident, provider,  authUserName, credentials, algorithm);
 				}
 				return auth;
 			}
 		});
+	}
+	
+	/**
+	 * This method is not protected by a doInSync and will not check if the authentication already exists.
+	 * @param ident
+	 * @param provider
+	 * @param authUserName
+	 * @param credentials
+	 * @param algorithm
+	 * @return
+	 */
+	private Authentication createAndPersistAuthenticationIntern(final Identity ident, final String provider, final String authUserName,
+			final String credentials, final Encoder.Algorithm algorithm) {
+		Authentication auth;
+		if(algorithm != null && credentials != null) {
+			String salt = algorithm.isSalted() ? Encoder.getSalt() : null;
+			String hash = Encoder.encrypt(credentials, salt, algorithm);
+			auth = new AuthenticationImpl(ident, provider, authUserName, hash, salt, algorithm.name());
+		} else {
+			auth = new AuthenticationImpl(ident, provider, authUserName, credentials);
+		}
+		dbInstance.getCurrentEntityManager().persist(auth);
+		log.audit("Create " + provider + " authentication (login=" + ident.getName() + ",authusername=" + authUserName + ")");
+		return auth;
 	}
 
 	/**
