@@ -504,23 +504,21 @@ public class Table extends AbstractComponent {
 	protected void resort() {
 		if (isSortingEnabled() && sortColumn < getColumnCount()) {
 			ColumnDescriptor currentSortingCd = getColumnDescriptor(sortColumn); // we sort after this
-			// column descriptor
-			// notify all nonactive ColumnDescriptors about their state
-			int cdcnt = getColumnCount();
-			for (int i = 0; i < cdcnt; i++) {
-				ColumnDescriptor cd = getColumnDescriptor(i);
-				if (cd != currentSortingCd){
-					cd.otherColumnDescriptorSorted();
+			if(currentSortingCd != null && currentSortingCd.isSortingAllowed()) {
+				// column descriptor
+				// notify all nonactive ColumnDescriptors about their state
+				int cdcnt = getColumnCount();
+				for (int i = 0; i < cdcnt; i++) {
+					ColumnDescriptor cd = getColumnDescriptor(i);
+					if (cd != currentSortingCd){
+						cd.otherColumnDescriptorSorted();
+					}
 				}
+				currentSortingCd.sortingAboutToStart();
+				Collections.sort(sorter, new TableComparator(currentSortingCd, sortAscending));
+			} else {
+				log.error("Sort column not found:" + sortColumn + " in columns: " + columnOrder, null);
 			}
-
-			if (currentSortingCd == null){
-				throw new RuntimeException("cannot find columndesc for column "
-						+ sortColumn
-						+ " in sorting process, maybe you have set the tabledatamodel before the columndescriptors?");
-			}
-			currentSortingCd.sortingAboutToStart();
-			Collections.sort(sorter, new TableComparator(currentSortingCd, sortAscending));
 		}
 	}
 	

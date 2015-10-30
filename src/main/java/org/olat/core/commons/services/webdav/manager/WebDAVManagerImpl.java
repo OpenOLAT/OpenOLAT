@@ -202,13 +202,11 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 						usess = handleBasicAuthentication(credentials, request);
 					}
 				} else if (basic.equalsIgnoreCase("Digest")) {
-					int digestIndex = authHeader.indexOf("Digest");
-					String digestInfos = authHeader.substring(digestIndex + 7);
-					DigestAuthentication digestAuth = DigestAuthentication.parse(digestInfos);
+					DigestAuthentication digestAuth = DigestAuthentication.parse(authHeader);
 					cacheKey = digestAuth.getUsername();
 					usess = timedSessionCache.get(new CacheKey(remoteAddr, digestAuth.getUsername()));
 					if (usess == null || !usess.isAuthenticated()) {
-						usess = handleDigestAuthentication(digestInfos, request);
+						usess = handleDigestAuthentication(digestAuth, request);
 					}
 				}
 			}
@@ -241,8 +239,7 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 		return null;
 	}
 
-	protected UserSession handleDigestAuthentication(String credentials, HttpServletRequest request) {
-		DigestAuthentication digestAuth = DigestAuthentication.parse(credentials);
+	protected UserSession handleDigestAuthentication(DigestAuthentication digestAuth, HttpServletRequest request) {
 		Identity identity = webDAVAuthManager.digestAuthentication(request.getMethod(), digestAuth);
 		if(identity != null) {
 			return afterAuthorization(identity, request);

@@ -9,14 +9,14 @@
 			</a>
 			<ul class="dropdown-menu dropdown-menu-right">          
 			#if ($isContextHelpEnabled)
-				<li><a href="javascript:contextHelpWindow('$r.relLink("help/${r.getLanguageCode()}/org.olat.login/dmz.html")')" title="$r.translateInAttribute("topnav.help.alt")">
+				<li><a href="$r.contextHelpLink("Login Page")" target="_blank" title="$r.translateInAttribute("topnav.help.alt")">
 					<i class="o_icon o_icon_help o_icon-fw"></i> <span>$r.translate("topnav.help")</span></a></li>
 					#if($r.available("topnav.help"))
 					<li id="o_navbar_help">
 						$r.render("topnav.help")
 					</li>
 					#end
-				<li><a href="javascript:$r.contextHelpJSCommand("org.olat.login","browsercheck.html")" title="$r.translateWithPackage("org.olat.login","menu.check.alt")">
+				<li><a href="$r.contextHelpLink("Login Page#login_browsercheck")" target="_blank" title="$r.translateWithPackage("org.olat.login","menu.check.alt")">
 					<i class="o_icon o_icon_browsercheck o_icon-fw"></i> <span>$r.translateWithPackage("org.olat.login","menu.check")</span></a></li>
 			#else
 				#if($r.available("topnav.help"))

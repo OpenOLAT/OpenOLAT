@@ -123,8 +123,8 @@ public class PaypalMasterAccountController extends FormBasicController {
 
 		if(acModule.isPaypalEnabled()) {
 			setFormDescription("paypal.config.description");
-			setFormContextHelp(PaypalMasterAccountController.class.getPackage().getName(), "paypalMasterAccount.html", "chelp.paypalMasterAccount.hover");
-			
+			setFormContextHelp("PayPal Configuration");
+
 			currencyEl = uifactory.addDropdownSingleselect("currency", "currency", formLayout, currencies, currencies, null);
 			String currency = paypalModule.getPaypalCurrency();
 			if(StringHelper.containsNonWhitespace(currency)) {

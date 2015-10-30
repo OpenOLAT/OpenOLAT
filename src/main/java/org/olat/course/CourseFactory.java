@@ -213,8 +213,9 @@ public class CourseFactory extends BasicManager {
 	 * @param learningObjectives Learning objectives of root node
 	 * @return an empty course with a single root node.
 	 */
-	public static ICourse createEmptyCourse(OLATResourceable ores, String shortTitle, String longTitle, String learningObjectives) {
-		PersistingCourseImpl newCourse = new PersistingCourseImpl(ores.getResourceableId());
+	public static ICourse createEmptyCourse(RepositoryEntry courseEntry, String shortTitle, String longTitle, String learningObjectives) {
+		OLATResource courseResource = courseEntry.getOlatResource();
+		PersistingCourseImpl newCourse = new PersistingCourseImpl(courseResource.getResourceableId());
 		// Put new course in course cache    
 		loadedCourses.put(newCourse.getResourceableId() ,newCourse);
 		

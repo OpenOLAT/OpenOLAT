@@ -27,10 +27,10 @@ import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
-import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -101,17 +101,18 @@ public class RepositoryEntryAuthorQueries {
 	protected <T> TypedQuery<T> createViewQuery(SearchAuthorRepositoryEntryViewParams params,
 			Class<T> type) {
 
-		Identity identity = params.getIdentity();
+		IdentityRef identity = params.getIdentity();
 		Roles roles = params.getRoles();
 		List<String> resourceTypes = params.getResourceTypes();
 		boolean oracle = "oracle".equals(dbInstance.getDbVendor());
 		boolean admin = (roles != null && (roles.isInstitutionalResourceManager() || roles.isOLATAdmin()));
 
 		boolean count = Number.class.equals(type);
+		boolean needIdentity = false;
 		StringBuilder sb = new StringBuilder();
 		if(count) {
 			sb.append("select count(v.key) ")
-			  .append(" from repositoryentry as v, ").append(IdentityImpl.class.getName()).append(" as ident ")
+			  .append(" from repositoryentry as v")
 			  .append(" inner join v.olatResource as res")
 			  .append(" left join v.lifecycle as lifecycle");
 		} else {
@@ -120,32 +121,34 @@ public class RepositoryEntryAuthorQueries {
 				sb.append(" 1 as marks,");
 			} else {
 				sb.append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
-				  .append("   where mark.creator=ident and mark.resId=v.key and mark.resName='RepositoryEntry'")
+				  .append("   where mark.creator.key=:identityKey and mark.resId=v.key and mark.resName='RepositoryEntry'")
 				  .append(" ) as marks,");
+				needIdentity = true;
 			}
 			sb.append(" (select count(offer.key) from ").append(OfferImpl.class.getName()).append(" as offer ")
 			  .append("   where offer.resource=res and offer.valid=true")
 			  .append(" ) as offers")
-			  .append(" from repositoryentry as v, ").append(IdentityImpl.class.getName()).append(" as ident ")
+			  .append(" from repositoryentry as v")
 			  .append(" inner join ").append(oracle ? "" : "fetch").append(" v.olatResource as res")
 			  .append(" inner join fetch v.statistics as stats")
 			  .append(" left join fetch v.lifecycle as lifecycle ");
 		}
 
-		sb.append(" where ident.key=:identityKey ");
-		//only my entries as author
+		sb.append(" where");
 		if(params.isOwnedResourcesOnly()) {
-			sb.append(" and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
-			  .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=ident.key")
+			needIdentity = true;
+			sb.append(" v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+			  .append("    where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
 			  .append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
 			  .append(" )");
 		} else if(admin) {
-			sb.append(" and v.access>=").append(RepositoryEntry.ACC_OWNERS);
+			sb.append(" v.access>=").append(RepositoryEntry.ACC_OWNERS);
 		} else {
-			sb.append(" and (v.access>=").append(RepositoryEntry.ACC_OWNERS_AUTHORS)
+			needIdentity = true;
+			sb.append(" (v.access>=").append(RepositoryEntry.ACC_OWNERS_AUTHORS)
 			  .append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS)
-			  .append("   and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
-			  .append("     where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=ident.key")
+			  .append("   and v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+			  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
 			  .append("       and membership.role='").append(GroupRoles.owner.name()).append("'")
 			  .append("   )")
 			  .append(" ))");
@@ -159,8 +162,9 @@ public class RepositoryEntryAuthorQueries {
 			sb.append(" and res.resName in (:resourcetypes)");
 		}
 		if(params.getMarked() != null && params.getMarked().booleanValue()) {
+			needIdentity = true;
 			sb.append(" and exists (select mark2.key from ").append(MarkImpl.class.getName()).append(" as mark2 ")
-			  .append("   where mark2.creator=ident and mark2.resId=v.key and mark2.resName='RepositoryEntry'")
+			  .append("   where mark2.creator.key=:identityKey and mark2.resId=v.key and mark2.resName='RepositoryEntry'")
 			  .append(" )");
 		}
 		
@@ -168,9 +172,9 @@ public class RepositoryEntryAuthorQueries {
 		if (StringHelper.containsNonWhitespace(author)) { // fuzzy author search
 			author = PersistenceHelper.makeFuzzyQueryString(author);
 
-			sb.append(" and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership, ")
+			sb.append(" and v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership, ")
 			     .append(IdentityImpl.class.getName()).append(" as identity, ").append(UserImpl.class.getName()).append(" as user")
-		         .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity=identity and identity.user=user")
+		         .append("    where rel.group.key=membership.group.key and membership.identity.key=identity.key and identity.user.key=user.key")
 		         .append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
 		         .append("      and (");
 			PersistenceHelper.appendFuzzyLike(sb, "user.userProperties['firstName']", "author", dbInstance.getDbVendor());
@@ -283,7 +287,9 @@ public class RepositoryEntryAuthorQueries {
 			dbQuery.setParameter("desc", desc);
 		}
 
-		dbQuery.setParameter("identityKey", identity.getKey());
+		if(needIdentity) {
+			dbQuery.setParameter("identityKey", identity.getKey());
+		}
 		return dbQuery;
 	}
 	

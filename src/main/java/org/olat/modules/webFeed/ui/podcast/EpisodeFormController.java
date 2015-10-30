@@ -245,7 +245,7 @@ public class EpisodeFormController extends FormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp(this.getClass().getPackage().getName(), "episode_form_help.html", "chelp.hover.episode");
+		setFormContextHelp("Working With Course Elements#_podcast_lerner");
 
 		title = uifactory.addTextElement("title", "feed.title.label", 256, episode.getTitle(), this.flc);
 		title.setMandatory(true);

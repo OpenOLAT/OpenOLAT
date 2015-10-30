@@ -53,7 +53,7 @@ public class WebDAVAdminController extends FormBasicController {
 		
 		setFormTitle("admin.menu.title.alt");
 		setFormDescription("admin.webdav.description");
-		setFormContextHelp(WebDAVAdminController.class.getPackage().getName(), "webdavconfig.html", "help.hover.webdavconfig");
+		setFormContextHelp("WebDAV");
 
 
 		boolean enabled = webDAVModule.isEnabled();

@@ -29,17 +29,18 @@ package org.olat.course.config;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
-import org.olat.core.util.resource.OresHelper;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.course.CourseFactory;
+import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description: <br>
@@ -50,54 +51,43 @@ import org.olat.test.OlatTestCase;
  * @author patrick
  */
 public class CourseConfigManagerImplTest extends OlatTestCase {
-	private static OLog log = Tracing.createLoggerFor(CourseConfigManagerImplTest.class);
 
-	private static ICourse course1;
-
-	private static boolean isSetup = false;
-
-	
-	/**
-	 * SetUp is called before each test.
-	 */
-	@Before
-	public void setUp() {
-		if (isSetup) return;
-		try {
-			// create course and persist as OLATResourceImpl
-			OLATResourceable resourceable = OresHelper.createOLATResourceableInstance("junitConfigCourse", new Long(System.currentTimeMillis()));
-			course1 = CourseFactory.createEmptyCourse(resourceable, "JUnitCourseConfig", "JUnitCourseConfig Long Title",
-					"objective 1 objective 2 objective 3");
-			DBFactory.getInstance().closeSession();
-			isSetup = true;
-		} catch (Exception e) {
-			log.error("Exception in setUp(): " + e);
-			e.printStackTrace();
-		}
-	}
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private OLATResourceManager resourceManager;
 
 	@Test
 	public void testConfigFileCRUD() {
+		// create course and persist as OLATResourceImpl
+		OLATResource resource = resourceManager.createOLATResourceInstance(CourseModule.class);
+		RepositoryEntry addedEntry = repositoryService.create("Ayanami", "-", "JUnit course configuration course", "A JUnit course", resource);
+		ICourse course = CourseFactory.createEmptyCourse(addedEntry, "JUnitCourseConfig", "JUnitCourseConfig Long Title",
+				"objective 1 objective 2 objective 3");
+		dbInstance.commitAndCloseSession();
+		
 		/*
 		 * a new created course gets its configuration upon the first load with
 		 * default values
 		 */
 		CourseConfigManager ccm = CourseConfigManagerImpl.getInstance();
-		CourseConfig cc1 = ccm.loadConfigFor(course1);
+		CourseConfig cc1 = ccm.loadConfigFor(course);
 		assertNotNull("CourseConfiguration is not null", cc1);
 		/*
 		 * update values
 		 */
-		ccm.saveConfigTo(course1, cc1);
+		ccm.saveConfigTo(course, cc1);
 		cc1 = null;
 		// check the saved values
-		cc1 = ccm.loadConfigFor(course1);
+		cc1 = ccm.loadConfigFor(course);
 		assertNotNull("CourseConfiguration is not null", cc1);
 		/*
 		 * delete configuration
 		 */
-		ccm.deleteConfigOf(course1);
-		VFSItem cc1File = CourseConfigManagerImpl.getConfigFile(course1);
+		ccm.deleteConfigOf(course);
+		VFSItem cc1File = CourseConfigManagerImpl.getConfigFile(course);
 		assertFalse("CourseConfig file no longer exists.", cc1File != null);
 	}
 }

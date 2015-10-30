@@ -419,9 +419,22 @@ public class VelocityRenderDecorator implements Closeable {
 		}
 		return sb;
 	}
+
+	/**
+	 * create a link to open a specifc context help page
+	 * @param page 
+	 */
 	
-	
-	
+	public StringOutput contextHelpLink(String page) {
+		StringOutput sb = new StringOutput(100);
+		if (ContextHelpModule.isContextHelpEnabled()) {
+			HelpModule helpModule = CoreSpringFactory.getImpl(HelpModule.class);
+			String url = helpModule.getHelpProvider().getURL(renderer.getTranslator().getLocale(), page);
+			sb.append(url);
+		}
+		return sb;
+	}
+
 	/**
 	 * Create a link that can be used within a context help page to link to
 	 * another context help page from the same package.

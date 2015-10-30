@@ -52,15 +52,14 @@ import org.olat.core.gui.control.info.WindowControlInfo;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
+import org.olat.course.CourseModule;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.properties.CoursePropertyManager;
@@ -70,6 +69,9 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,6 +100,10 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 	private static Translator testTranslator = null;
 	private static BusinessGroup bgWithWaitingList = null;
 	
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private OLATResourceManager resourceManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
@@ -151,8 +157,10 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 	public void testEnroll() throws Exception {
 		log.info("testEnroll: start...");
 		ENCourseNode enNode = new ENCourseNode();
-		OLATResourceable ores = OresHelper.createOLATResourceableTypeWithoutCheck("TestCourse");
-		CourseEnvironment cenv = CourseFactory.createEmptyCourse(ores, "Test", "Test", "learningObjectives").getCourseEnvironment();
+
+		OLATResource resource = resourceManager.createOLATResourceInstance(CourseModule.class);
+		RepositoryEntry addedEntry = repositoryService.create("Ayanami", "-", "Enrollment test course 1", "A JUnit course", resource);
+		CourseEnvironment cenv = CourseFactory.createEmptyCourse(addedEntry, "Test", "Test", "learningObjectives").getCourseEnvironment();
 		// 1. enroll wg1 user
 		IdentityEnvironment ienv = new IdentityEnvironment();
 		ienv.setIdentity(wg1);
@@ -247,8 +255,9 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 		}
 		
 		ENCourseNode enNode = new ENCourseNode();
-		OLATResourceable ores = OresHelper.createOLATResourceableTypeWithoutCheck("TestEnrollmentCourse");
-		CourseEnvironment cenv = CourseFactory.createEmptyCourse(ores, "Test-Enroll", "Test", "Test enrollment with concurrent users").getCourseEnvironment();
+		OLATResource resource = resourceManager.createOLATResourceInstance(CourseModule.class);
+		RepositoryEntry addedEntry = repositoryService.create("Ayanami", "-", "Enrollment test course 2", "A JUnit course", resource);
+		CourseEnvironment cenv = CourseFactory.createEmptyCourse(addedEntry, "Test-Enroll", "Test", "Test enrollment with concurrent users").getCourseEnvironment();
 		BusinessGroup group = businessGroupService.createBusinessGroup(id1, "Enrollment", "Enroll", new Integer(1), new Integer(10), true, false, null);
 		Assert.assertNotNull(group);
 		dbInstance.commitAndCloseSession();

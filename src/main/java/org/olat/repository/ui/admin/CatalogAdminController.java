@@ -58,7 +58,6 @@ public class CatalogAdminController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("admin.catalog.settings");
-		setFormContextHelp("org.olat.repository", "cat-admin.html", "help.hover.catalog.admin");
 
 		boolean enabled = repositoryModule.isCatalogEnabled();
 		enableEl = uifactory.addCheckboxesHorizontal("catalog.enable", "catalog.enable", formLayout, new String[]{"xx"}, new String[]{""});

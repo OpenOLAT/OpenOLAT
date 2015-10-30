@@ -61,7 +61,6 @@ public class UserToolsAdminController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("usertools");
 		setFormDescription("usertools.description");
-		setFormContextHelp("org.olat.admin.user.tools.ui", "admin-usertools.html", "help.hover.adminusertools");
 
 		int numOfTools = userTools.size();
 		String[] toolKeys = new String[numOfTools];

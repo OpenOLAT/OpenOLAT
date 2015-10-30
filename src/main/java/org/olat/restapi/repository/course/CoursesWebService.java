@@ -494,42 +494,36 @@ public class CoursesWebService {
 		}
 		
 		try {
-			OLATResource resource = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
 			// create a repository entry
-			RepositoryEntry addedEntry = createCourseRepositoryEntry(initialAuthor, reDisplayName,  softKey, externalId, externalRef, managedFlags, resource);
-			// create an empty course
-			CourseFactory.createEmptyCourse(resource, shortTitle, longTitle, learningObjectives);
+			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+			OLATResource resource = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
+			RepositoryEntry addedEntry = repositoryService.create(initialAuthor, null, "-", shortTitle, null, resource, 0);
+			if(StringHelper.containsNonWhitespace(softKey) && softKey.length() <= 30) {
+				addedEntry.setSoftkey(softKey);
+			}
+			addedEntry.setExternalId(externalId);
+			addedEntry.setExternalRef(externalRef);
+			addedEntry.setManagedFlagsString(managedFlags);
+			if(RepositoryEntryManagedFlag.isManaged(addedEntry, RepositoryEntryManagedFlag.membersmanagement)) {
+				addedEntry.setAllowToLeaveOption(RepositoryEntryAllowToLeaveOptions.never);
+			} else {
+				addedEntry.setAllowToLeaveOption(RepositoryEntryAllowToLeaveOptions.atAnyTime);//default
+			}
 			if(membersOnly) {
 				addedEntry.setMembersOnly(true);
 				addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
 			} else {
 				addedEntry.setAccess(access);
 			}
-			CoreSpringFactory.getImpl(RepositoryService.class).update(addedEntry);
+			addedEntry = repositoryService.update(addedEntry);
+			
+			// create an empty course
+			CourseFactory.createEmptyCourse(addedEntry, shortTitle, longTitle, learningObjectives);
+
 			return prepareCourse(addedEntry, shortTitle, longTitle, courseConfigVO);
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
-	}
-	
-	private static RepositoryEntry createCourseRepositoryEntry(Identity initialAuthor, String shortTitle, 
-			String softKey, String externalId, String externalRef, String managedFlags, OLATResourceable oresable) {
-		// create a repository entry
-		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(oresable);
-		RepositoryEntry addedEntry = repositoryService.create(initialAuthor, null, "-", shortTitle, null, ores, 0);
-		if(StringHelper.containsNonWhitespace(softKey) && softKey.length() <= 30) {
-			addedEntry.setSoftkey(softKey);
-		}
-		addedEntry.setExternalId(externalId);
-		addedEntry.setExternalRef(externalRef);
-		addedEntry.setManagedFlagsString(managedFlags);
-		if(RepositoryEntryManagedFlag.isManaged(addedEntry, RepositoryEntryManagedFlag.membersmanagement)) {
-			addedEntry.setAllowToLeaveOption(RepositoryEntryAllowToLeaveOptions.never);
-		} else {
-			addedEntry.setAllowToLeaveOption(RepositoryEntryAllowToLeaveOptions.atAnyTime);//default
-		}
-		return addedEntry;//!!!no update at this point
 	}
 	
 	private static ICourse prepareCourse(RepositoryEntry addedEntry, String shortTitle, String longTitle, CourseConfigVO courseConfigVO) {
@@ -576,7 +570,6 @@ public class CoursesWebService {
 
 		CourseFactory.saveCourse(course.getResourceableId());
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
-		course = CourseFactory.loadCourse(course.getResourceableId());
-		return course;
+		return CourseFactory.loadCourse(addedEntry);
 	}
 }

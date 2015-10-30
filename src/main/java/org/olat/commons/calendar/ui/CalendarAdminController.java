@@ -59,7 +59,6 @@ public class CalendarAdminController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("calendar.admin");
 		setFormDescription("calendar.admin.description");
-		setFormContextHelp("org.olat.commons.calendar", "admin-calendar.html", "help.hover.calendaradmin");
 		
 		//
 		enableEl = uifactory.addCheckboxesHorizontal("enable", "calendar.enable", formLayout, onKeys, onValues);
