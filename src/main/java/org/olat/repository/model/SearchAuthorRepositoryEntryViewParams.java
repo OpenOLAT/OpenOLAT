@@ -22,7 +22,7 @@ package org.olat.repository.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.id.Identity;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Roles;
 
 /**
@@ -32,7 +32,7 @@ import org.olat.core.id.Roles;
  *
  */
 public class SearchAuthorRepositoryEntryViewParams {
-	private final Identity identity;
+	private final IdentityRef identity;
 	private final Roles roles;
 	
 	private Boolean marked;
@@ -49,7 +49,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private List<String> resourceTypes;
 	private List<Long> repoEntryKeys;
 	
-	public SearchAuthorRepositoryEntryViewParams(Identity identity, Roles roles) {
+	public SearchAuthorRepositoryEntryViewParams(IdentityRef identity, Roles roles) {
 		this.identity = identity;
 		this.roles = roles;
 	}
@@ -149,7 +149,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 		}
 	}
 	
-	public Identity getIdentity() {
+	public IdentityRef getIdentity() {
 		return identity;
 	}
 	
