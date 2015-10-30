@@ -34,16 +34,17 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.Formatter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessedIdentityInfosController;
 import org.olat.course.assessment.AssessmentForm;
 import org.olat.course.assessment.OpenSubDetailsEvent;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -60,11 +61,12 @@ public class AssessmentIdentityCourseNodeController extends BasicController {
 	private AssessmentForm assessmentForm;
 	private Controller subDetailsController;
 	private Controller detailsEditController;
-	private AssessedIdentityInfosController infosController;
 	
 	private final CourseNode courseNode;
 	private final Identity assessedIdentity;
 	
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
 	
@@ -78,10 +80,12 @@ public class AssessmentIdentityCourseNodeController extends BasicController {
 		
 		identityAssessmentVC = createVelocityContainer("identity_personal_node_infos");
 		identityAssessmentVC.contextPut("user", assessedIdentity.getUser());
+		identityAssessmentVC.contextPut("fullName", userManager.getUserDisplayName(assessedIdentity));
+		identityAssessmentVC.contextPut("courseNode", courseNode.getShortTitle());
 		
-		infosController = new AssessedIdentityInfosController(ureq, wControl, assessedIdentity);
-		listenTo(infosController);
-		identityAssessmentVC.put("identityInfos", infosController.getInitialComponent());
+		String courseNodeCssClass = CourseNodeFactory.getInstance()
+				.getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass();
+		identityAssessmentVC.contextPut("courseNodeCss", courseNodeCssClass);
 		
 		ModuleConfiguration modConfig = courseNode.getModuleConfiguration();
 		String infoCoach = (String) modConfig.get(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH);

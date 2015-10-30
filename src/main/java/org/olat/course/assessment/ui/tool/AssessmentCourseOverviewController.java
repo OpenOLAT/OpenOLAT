@@ -19,12 +19,19 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 
@@ -34,12 +41,15 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentCourseOverviewController extends BasicController {
+public class AssessmentCourseOverviewController extends BasicController implements Activateable2 {
+	
+	protected static final Event SELECT_USERS_EVENT = new Event("assessment-tool-select-users");
 	
 	private final VelocityContainer mainVC;
 	private final AssessmentToReviewSmallController toReviewCtrl;
 	private final AssessmentCourseStatisticsSmallController statisticsCtrl;
 
+	private Link assessedIdentitiesLink;
 	
 	public AssessmentCourseOverviewController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry courseEntry, AssessmentToolSecurityCallback assessmentCallback) {
@@ -54,6 +64,10 @@ public class AssessmentCourseOverviewController extends BasicController {
 		statisticsCtrl = new AssessmentCourseStatisticsSmallController(ureq, getWindowControl(), courseEntry, assessmentCallback);
 		listenTo(statisticsCtrl);
 		mainVC.put("statistics", statisticsCtrl.getInitialComponent());
+		
+		int numOfAssessedIdentities = statisticsCtrl.getNumOfAssessedIdentities();
+		assessedIdentitiesLink = LinkFactory.createLink("assessed.identities", "assessed.identities", getTranslator(), mainVC, this, Link.NONTRANSLATED);
+		assessedIdentitiesLink.setCustomDisplayText(translate("assessment.tool.numOfAssessedIdentities", new String[]{ Integer.toString(numOfAssessedIdentities) }));
 
 		putInitialPanel(mainVC);
 	}
@@ -64,9 +78,14 @@ public class AssessmentCourseOverviewController extends BasicController {
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//
 	}
 
-
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		if(assessedIdentitiesLink == source) {
+			fireEvent(ureq, SELECT_USERS_EVENT);
+		}
+	}
 }

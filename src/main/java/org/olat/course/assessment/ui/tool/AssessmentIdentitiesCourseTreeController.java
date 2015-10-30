@@ -19,7 +19,6 @@
  */
 package org.olat.course.assessment.ui.tool;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -27,8 +26,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.components.tree.GenericTreeModel;
-import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
@@ -37,14 +34,15 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.CourseNodeFactory;
-import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 
@@ -75,7 +73,7 @@ public class AssessmentIdentitiesCourseTreeController extends BasicController im
 		
 		// Navigation menu
 		menuTree = new MenuTree("menuTree");
-		TreeModel tm = buildTreeModel(course);
+		TreeModel tm = AssessmentHelper.assessmentTreeModel(course);
 		menuTree.setTreeModel(tm);
 		menuTree.setSelectedNodeId(tm.getRootNode().getIdent());
 		menuTree.addListener(this);
@@ -86,54 +84,6 @@ public class AssessmentIdentitiesCourseTreeController extends BasicController im
 		LayoutMain3ColsController columLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, mainPanel, "course" + course.getResourceableId());
 		listenTo(columLayoutCtr); // cleanup on dispose
 		putInitialPanel(columLayoutCtr.getInitialComponent());
-	}
-	
-	private TreeModel buildTreeModel(ICourse course) {
-		CourseNode rootNode = course.getRunStructure().getRootNode();
-		GenericTreeModel gtm = new GenericTreeModel();
-		GenericTreeNode node = new GenericTreeNode();
-		node.setTitle(rootNode.getShortTitle());
-		node.setUserObject(rootNode);
-		node.setIconCssClass(CourseNodeFactory.getInstance().getCourseNodeConfiguration(rootNode.getType()).getIconCSSClass());
-		gtm.setRootNode(node);
-		
-		List<GenericTreeNode> children = addAssessableNodesToList(rootNode);
-		children.forEach((child) -> node.addChild(child));
-		return gtm;
-	}
-	
-	private List<GenericTreeNode> addAssessableNodesToList(CourseNode parentCourseNode) {
-		List<GenericTreeNode> result = new ArrayList<>();
-		for(int i=0; i<parentCourseNode.getChildCount(); i++) {
-			CourseNode courseNode = (CourseNode)parentCourseNode.getChildAt(i);
-			List<GenericTreeNode> assessableChildren = addAssessableNodesToList(courseNode);
-			
-			if (assessableChildren.size() > 0 || isAssessable(courseNode)) {
-				GenericTreeNode node = new GenericTreeNode();
-				node.setTitle(courseNode.getShortTitle());
-				node.setUserObject(courseNode);
-				node.setIconCssClass(CourseNodeFactory.getInstance().getCourseNodeConfiguration(courseNode.getType()).getIconCSSClass());
-				result.add(node);
-				assessableChildren.forEach((child) -> node.addChild(child));
-			}
-		}
-		return result;
-	}
-	
-	private boolean isAssessable(CourseNode courseNode) {
-		boolean assessable = false;
-		if (courseNode instanceof AssessableCourseNode && !(courseNode instanceof ProjectBrokerCourseNode)) {
-			AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
-			if (assessableCourseNode.hasDetails()
-				|| assessableCourseNode.hasAttemptsConfigured()
-				|| assessableCourseNode.hasScoreConfigured()
-				|| assessableCourseNode.hasPassedConfigured()
-				|| assessableCourseNode.hasCommentConfigured()) {
-
-				assessable = true;
-			}
-		}
-		return assessable;
 	}
 	
 	@Override
@@ -165,14 +115,18 @@ public class AssessmentIdentitiesCourseTreeController extends BasicController im
 
 	private void doSelectCourseNode(UserRequest ureq, CourseNode courseNode) {
 		removeAsListenerAndDispose(currentCtrl);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Node", new Long(courseNode.getIdent()));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		if(course.getRunStructure().getRootNode().equals(courseNode)) {
-			currentCtrl = new AssessmentIdentitiesCourseController(ureq, getWindowControl(), stackPanel, courseEntry, assessmentCallback);
+			currentCtrl = new AssessmentIdentitiesCourseController(ureq, bwControl, stackPanel, courseEntry, assessmentCallback);
 		} else {
-			currentCtrl = new AssessmentIdentitiesCourseNodeController(ureq, getWindowControl(), stackPanel, courseEntry, courseNode, assessmentCallback);
+			currentCtrl = new AssessmentIdentitiesCourseNodeController(ureq, bwControl, stackPanel, courseEntry, courseNode, assessmentCallback);
 		}
 		listenTo(currentCtrl);
 		mainPanel.setContent(currentCtrl.getInitialComponent());
+		addToHistory(ureq, currentCtrl);
 	}
 }

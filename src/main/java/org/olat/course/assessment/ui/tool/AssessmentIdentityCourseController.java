@@ -31,15 +31,17 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessedIdentityInfosController;
 import org.olat.course.assessment.IdentityAssessmentOverviewController;
+import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.repository.RepositoryEntry;
@@ -56,14 +58,16 @@ public class AssessmentIdentityCourseController extends BasicController {
 	private final Identity assessedIdentity;
 	private final RepositoryEntry courseEntry;
 
-	private Link nextLink, previousLink;
 	private final TooledStackedPanel stackPanel;
 	private final VelocityContainer identityAssessmentVC;
+	private Link nextLink, previousLink, courseNodeSelectionLink;
 	
 	private IdentityCertificatesController certificateCtrl;
-	private AssessedIdentityInfosController infosController;
+	private AssessedIdentityLargeInfosController infosController;
 	private IdentityAssessmentOverviewController treeOverviewCtrl;
 	private AssessmentIdentityCourseNodeController currentNodeCtrl;
+	private CourseNodeSelectionController courseNodeChooserCtrl;
+	private CloseableCalloutWindowController courseNodeChooserCalloutCtrl;
 	
 	@Autowired
 	private BaseSecurity securityManager;
@@ -79,7 +83,7 @@ public class AssessmentIdentityCourseController extends BasicController {
 		identityAssessmentVC = createVelocityContainer("identity_personal_infos");
 		identityAssessmentVC.contextPut("user", assessedIdentity.getUser());
 		
-		infosController = new AssessedIdentityInfosController(ureq, wControl, assessedIdentity);
+		infosController = new AssessedIdentityLargeInfosController(ureq, wControl, assessedIdentity);
 		listenTo(infosController);
 		identityAssessmentVC.put("identityInfos", infosController.getInitialComponent());
 		
@@ -95,7 +99,7 @@ public class AssessmentIdentityCourseController extends BasicController {
 			listenTo(certificateCtrl);
 		}
 
-		treeOverviewCtrl = new IdentityAssessmentOverviewController(ureq, getWindowControl(), assessedUserCourseEnv, true, true, false);
+		treeOverviewCtrl = new IdentityAssessmentOverviewController(ureq, getWindowControl(), assessedUserCourseEnv, true, false, true);
 		listenTo(treeOverviewCtrl);
 		identityAssessmentVC.put("courseOverview", treeOverviewCtrl.getInitialComponent());
 
@@ -117,6 +121,19 @@ public class AssessmentIdentityCourseController extends BasicController {
 			if(IdentityAssessmentOverviewController.EVENT_NODE_SELECTED.equals(event)) {
 				doSelectCourseNode(ureq, treeOverviewCtrl.getSelectedCourseNode());
 			}
+		} else if(courseNodeChooserCtrl == source) {
+			if(CourseNodeEvent.SELECT_COURSE_NODE.equals(event.getCommand())
+					&& event instanceof CourseNodeEvent) {
+				CourseNodeEvent cne = (CourseNodeEvent)event;
+				CourseNode selectedNode = treeOverviewCtrl.getNodeByIdent(cne.getIdent());
+				if(selectedNode != null) {
+					doSelectCourseNode(ureq, selectedNode);
+				}
+			}
+			courseNodeChooserCalloutCtrl.deactivate();
+			cleanUp();
+		} else if(courseNodeChooserCalloutCtrl == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
@@ -127,7 +144,29 @@ public class AssessmentIdentityCourseController extends BasicController {
 			doPreviousNode(ureq);
 		} else if(nextLink == source) {
 			doNextNode(ureq);
+		} else if(courseNodeSelectionLink == source) {
+			doSelectCourseNode(ureq);
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(courseNodeChooserCtrl);
+		removeAsListenerAndDispose(courseNodeChooserCalloutCtrl);
+		courseNodeChooserCalloutCtrl = null;
+		courseNodeChooserCtrl = null;
+	}
+	
+	private void doSelectCourseNode(UserRequest ureq) {
+		removeAsListenerAndDispose(courseNodeChooserCtrl);
+		removeAsListenerAndDispose(courseNodeChooserCalloutCtrl);
+		
+		courseNodeChooserCtrl = new CourseNodeSelectionController(ureq, getWindowControl(), courseEntry);
+		listenTo(courseNodeChooserCtrl);
+		
+		courseNodeChooserCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				courseNodeChooserCtrl.getInitialComponent(), courseNodeSelectionLink, "", true, "");
+		listenTo(courseNodeChooserCalloutCtrl);
+		courseNodeChooserCalloutCtrl.activate();
 	}
 	
 	private void doNextNode(UserRequest ureq) {
@@ -149,7 +188,14 @@ public class AssessmentIdentityCourseController extends BasicController {
 	}
 	
 	private void doSelectCourseNode(UserRequest ureq, CourseNode courseNode) {
-		if(courseNode == null) return;
+		if(courseNode == null) {
+			return;
+		} 
+		stackPanel.popUpToController(this);
+		if(treeOverviewCtrl.isRoot(courseNode)) {
+			return;
+		}
+		
 		removeAsListenerAndDispose(currentNodeCtrl);
 
 		currentNodeCtrl = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), stackPanel,
@@ -157,11 +203,24 @@ public class AssessmentIdentityCourseController extends BasicController {
 		listenTo(currentNodeCtrl);
 		stackPanel.pushController(courseNode.getShortTitle(), currentNodeCtrl);
 		
-		previousLink = LinkFactory.createToolLink("previouselement","", this, "o_icon_previous_toolbar");
+		int index = treeOverviewCtrl.getIndexOf(courseNode);
+		int numOfNodes = treeOverviewCtrl.getNumberOfNodes();
+		
+		previousLink = LinkFactory.createToolLink("previouselement","", this, "o_icon_previous");
 		previousLink.setTitle(translate("command.previous"));
-		stackPanel.addTool(previousLink, Align.rightEdge, false, "o_tool_previous");
-		nextLink = LinkFactory.createToolLink("nextelement","", this, "o_icon_next_toolbar");
+		previousLink.setEnabled(index > 1 && index <= numOfNodes);
+		stackPanel.addTool(previousLink, Align.rightEdge, false, "");
+
+		courseNodeSelectionLink =  LinkFactory.createToolLink("node.select", "node.select", courseNode.getShortTitle(), this);
+		String courseNodeCssClass = CourseNodeFactory.getInstance()
+				.getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass();
+		courseNodeSelectionLink.setIconLeftCSS("o_icon " + courseNodeCssClass);
+		courseNodeSelectionLink.setIconRightCSS("o_icon o_icon_caret");
+		stackPanel.addTool(courseNodeSelectionLink, Align.rightEdge, false);
+		
+		nextLink = LinkFactory.createToolLink("nextelement","", this, "o_icon_next");
 		nextLink.setTitle(translate("command.next"));
-		stackPanel.addTool(nextLink, Align.rightEdge, false, "o_tool_next");
+		nextLink.setEnabled(index > 0 && index < numOfNodes);
+		stackPanel.addTool(nextLink, Align.rightEdge, false, "");
 	}
 }

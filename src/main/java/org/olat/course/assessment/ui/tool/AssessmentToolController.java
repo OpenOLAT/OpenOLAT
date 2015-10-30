@@ -26,13 +26,17 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentMainController;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
@@ -92,11 +96,24 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 			doSelectUsersView(ureq);
 		}
 	}
-	
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(overviewCtrl == source) {
+			if(event == AssessmentCourseOverviewController.SELECT_USERS_EVENT) {
+				doSelectUsersView(ureq);
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
 	private void doSelectUsersView(UserRequest ureq) {
 		removeAsListenerAndDispose(currentCtl);
 		
-		AssessmentIdentitiesCourseTreeController treeCtrl = new AssessmentIdentitiesCourseTreeController(ureq, getWindowControl(), stackPanel,
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Users", 0l);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		addToHistory(ureq, bwControl);
+		AssessmentIdentitiesCourseTreeController treeCtrl = new AssessmentIdentitiesCourseTreeController(ureq, bwControl, stackPanel,
 				courseEntry, assessmentCallback);
 		listenTo(treeCtrl);
 		stackPanel.pushController(translate("users"), treeCtrl);

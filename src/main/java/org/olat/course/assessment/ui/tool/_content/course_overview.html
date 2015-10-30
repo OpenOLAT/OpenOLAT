@@ -1,4 +1,14 @@
-<h2>Overview</h2>
+<h2>$r.translate("assessment.tool.overview")</h2>
+<div class="row o_block">
+	<div class="col-sm-6">
+		#if($r.available("assessed.identities"))
+			$r.render("assessed.identities")
+		#end
+	</div>
+	<div class="col-sm-6">
+		Other links
+	</div>
+</div>
 <div class="row">
 	<div class="col-sm-6">
 		#if($r.available("toReview"))

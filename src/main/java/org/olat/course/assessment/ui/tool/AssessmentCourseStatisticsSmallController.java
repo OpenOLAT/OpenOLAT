@@ -46,6 +46,8 @@ public class AssessmentCourseStatisticsSmallController extends BasicController {
 	private final RepositoryEntry courseEntry;
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	
+	private int numOfAssessedIdentities;
+	
 	@Autowired
 	private AssessmentToolManager assessmentToolManager;
 	
@@ -60,11 +62,16 @@ public class AssessmentCourseStatisticsSmallController extends BasicController {
 		updateStatistics();
 	}
 	
+	public int getNumOfAssessedIdentities() {
+		return numOfAssessedIdentities;
+	}
+	
 	public void updateStatistics() {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, null, null, assessmentCallback);
 		CourseStatistics stats = assessmentToolManager.getStatistics(getIdentity(), params);
 		
-		mainVC.contextPut("numOfAssessedIdentities", stats.getNumOfAssessedIdentities());
+		numOfAssessedIdentities = stats.getNumOfAssessedIdentities();
+		mainVC.contextPut("numOfAssessedIdentities", numOfAssessedIdentities);
 		mainVC.contextPut("scoreAverage", AssessmentHelper.getRoundedScore(stats.getAverageScore()));
 		mainVC.contextPut("numOfPassed", stats.getCountPassed());
 		int percentPassed = Math.round(100.0f * ((float)stats.getCountPassed() / (float)stats.getNumOfAssessedIdentities()));
@@ -74,8 +81,6 @@ public class AssessmentCourseStatisticsSmallController extends BasicController {
 		mainVC.contextPut("percentFailed", percentFailed);
 		
 		mainVC.contextPut("numOfInitialLaunch", stats.getInitialLaunch());
-		
-		
 	}
 
 	@Override
@@ -87,6 +92,4 @@ public class AssessmentCourseStatisticsSmallController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-
-
 }

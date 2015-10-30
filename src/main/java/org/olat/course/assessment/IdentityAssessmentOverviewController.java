@@ -140,6 +140,18 @@ public class IdentityAssessmentOverviewController extends BasicController {
 		putInitialPanel(main);
 	}
 	
+	public boolean isRoot(CourseNode node) {
+		return node != null && node.getIdent().equals(runStructure.getRootNode().getIdent());
+	}
+	
+	public int getNumberOfNodes() {
+		return nodesTableModel.getRowCount();
+	}
+	
+	public CourseNode getNodeByIdent(String ident) {
+		return runStructure.getNode(ident);
+	}
+	
 	public CourseNode getNextNode(CourseNode node) {
 		int index = getIndexOf(node);
 		
@@ -178,7 +190,7 @@ public class IdentityAssessmentOverviewController extends BasicController {
 		return null;
 	}
 	
-	private int getIndexOf(CourseNode node) {
+	public int getIndexOf(CourseNode node) {
 		for(int i=nodesTableModel.getRowCount(); i-->0; ) {
 			Object rowIdentityKey = nodesTableModel.getObject(i).getIdent();
 			if(rowIdentityKey.equals(node.getIdent())) {

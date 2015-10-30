@@ -35,6 +35,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.olat.core.gui.components.tree.GenericTreeModel;
+import org.olat.core.gui.components.tree.GenericTreeNode;
+import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.OLog;
@@ -47,6 +50,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.ScormCourseNode;
@@ -306,6 +310,59 @@ public class AssessmentHelper {
 				return null;
 			}
 		}
+	}
+	
+	/**
+	 * 
+	 * @param course
+	 * @return
+	 */
+	public static TreeModel assessmentTreeModel(ICourse course) {
+		CourseNode rootNode = course.getRunStructure().getRootNode();
+		GenericTreeModel gtm = new GenericTreeModel();
+		GenericTreeNode node = new GenericTreeNode();
+		node.setTitle(rootNode.getShortTitle());
+		node.setUserObject(rootNode);
+		node.setIconCssClass(CourseNodeFactory.getInstance().getCourseNodeConfiguration(rootNode.getType()).getIconCSSClass());
+		gtm.setRootNode(node);
+		
+		List<GenericTreeNode> children = addAssessableNodesToList(rootNode);
+		children.forEach((child) -> node.addChild(child));
+		return gtm;
+	}
+	
+	private static List<GenericTreeNode> addAssessableNodesToList(CourseNode parentCourseNode) {
+		List<GenericTreeNode> result = new ArrayList<>();
+		for(int i=0; i<parentCourseNode.getChildCount(); i++) {
+			CourseNode courseNode = (CourseNode)parentCourseNode.getChildAt(i);
+			List<GenericTreeNode> assessableChildren = addAssessableNodesToList(courseNode);
+			
+			if (assessableChildren.size() > 0 || isAssessable(courseNode)) {
+				GenericTreeNode node = new GenericTreeNode();
+				node.setTitle(courseNode.getShortTitle());
+				node.setUserObject(courseNode);
+				node.setIconCssClass(CourseNodeFactory.getInstance().getCourseNodeConfiguration(courseNode.getType()).getIconCSSClass());
+				result.add(node);
+				assessableChildren.forEach((child) -> node.addChild(child));
+			}
+		}
+		return result;
+	}
+	
+	private static boolean isAssessable(CourseNode courseNode) {
+		boolean assessable = false;
+		if (courseNode instanceof AssessableCourseNode && !(courseNode instanceof ProjectBrokerCourseNode)) {
+			AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
+			if (assessableCourseNode.hasDetails()
+				|| assessableCourseNode.hasAttemptsConfigured()
+				|| assessableCourseNode.hasScoreConfigured()
+				|| assessableCourseNode.hasPassedConfigured()
+				|| assessableCourseNode.hasCommentConfigured()) {
+
+				assessable = true;
+			}
+		}
+		return assessable;
 	}
 	
 

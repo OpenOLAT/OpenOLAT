@@ -1,6 +1,5 @@
-#if($r.available("identityInfos"))
-	$r.render("identityInfos")
-#end
+<h2><i class="o_icon $courseNodeCss"> </i> $r.escapeHtml($courseNode) <small><i class="o_icon o_icon_user"> </i> $r.escapeHtml($fullName) </small></h2>
+
 #if($r.available("details")) 
 	$r.render("details")
 #end
