@@ -144,7 +144,7 @@ public class CourseHandler implements RepositoryHandler {
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 		DBFactory.getInstance().commit();
 		
-		ICourse course = CourseFactory.createEmptyCourse(resource, "New Course", "New Course", "");
+		ICourse course = CourseFactory.createEmptyCourse(re, "New Course", "New Course", "");
 		course = CourseFactory.openCourseEditSession(re.getOlatResource().getResourceableId());
 		
 		String shortDisplayname = Formatter.truncateOnly(displayname, 25);

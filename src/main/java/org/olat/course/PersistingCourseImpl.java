@@ -134,8 +134,8 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	}
 	
 	PersistingCourseImpl(RepositoryEntry courseEntry) {
-		this.courseTitle = courseEntry.getDisplayname();
-		this.resourceableId = courseEntry.getOlatResource().getResourceableId();
+		courseTitle = courseEntry.getDisplayname();
+		resourceableId = courseEntry.getOlatResource().getResourceableId();
 		// prepare filesystem and set course base path and course folder paths
 		prepareFilesystem();
 		courseConfig = CourseConfigManagerImpl.getInstance().loadConfigFor(this); // load or init defaults
