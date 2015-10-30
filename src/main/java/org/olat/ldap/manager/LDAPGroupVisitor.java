@@ -54,24 +54,26 @@ public class LDAPGroupVisitor implements LDAPVisitor {
 		Attribute memberAttr = resAttributes.get("member");
 		Attribute cnAttr = resAttributes.get("cn");
 
-		LDAPGroup group = new LDAPGroup();
-		Object cn = cnAttr.get();
-		if(cn instanceof String) {
-			group.setCommonName((String)cn);
-		}
-		
-		List<String> members = new ArrayList<String>();
-		try {
-			for(NamingEnumeration<?> memberEn = memberAttr.getAll(); memberEn.hasMoreElements(); ) {
-				Object member = memberEn.next();
-				if(member instanceof String) {
-					members.add((String)member);
-				}
+		if(memberAttr != null) {
+			LDAPGroup group = new LDAPGroup();
+			Object cn = cnAttr.get();
+			if(cn instanceof String) {
+				group.setCommonName((String)cn);
 			}
-		} catch (NamingException e) {
-			log.error("", e);
+
+			List<String> members = new ArrayList<String>();
+			try {
+				for(NamingEnumeration<?> memberEn = memberAttr.getAll(); memberEn.hasMoreElements(); ) {
+					Object member = memberEn.next();
+					if(member instanceof String) {
+						members.add((String)member);
+					}
+				}
+			} catch (NamingException e) {
+				log.error("", e);
+			}
+			group.setMembers(members);
+			groups.add(group);
 		}
-		group.setMembers(members);
-		groups.add(group);
 	}
 }
