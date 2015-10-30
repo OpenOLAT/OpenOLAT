@@ -154,6 +154,8 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			}
 		} else {
 			externalRef = uifactory.addTextElement("cif.externalref", "cif.externalref", 100, extRef, descCont);
+			externalRef.setHelpText(translate("cif.externalref.hover"));
+			externalRef.setHelpUrlForManualPage("Info Page#_identification");
 			externalRef.setDisplaySize(30);
 		}
 

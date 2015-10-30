@@ -56,8 +56,8 @@ public class SecurityAdminController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("sec.title");
 		setFormDescription("sec.description");
-		setFormContextHelp("org.olat.admin.security", "ced-sec.html", "help.hover.sec");
-		
+		setFormContextHelp("Security");
+
 		String[] keys = new String[]{ "on" };
 		String[] values = new String[]{ "" };
 		
