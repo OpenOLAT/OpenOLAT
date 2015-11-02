@@ -185,6 +185,7 @@ public class GTAAssignmentEditController extends FormBasicController {
 		} else {
 			previewEl.select(previewKeys[1], true);
 		}
+		previewEl.setVisible(typeEl.isSelected(0));
 		
 		String[] samplingValues = new String[]{ translate("sampling.unique"), translate("sampling.reuse") };
 		samplingEl = uifactory.addRadiosVertical("sampling", configCont, samplingKeys, samplingValues);
