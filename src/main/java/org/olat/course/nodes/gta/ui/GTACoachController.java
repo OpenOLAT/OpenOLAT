@@ -49,7 +49,6 @@ import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.model.TaskDefinitionList;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupService;
 import org.olat.modules.co.ContactFormController;
 import org.olat.resource.OLATResource;
 import org.olat.user.DisplayPortraitController;
@@ -82,8 +81,6 @@ public class GTACoachController extends GTAAbstractController {
 	
 	@Autowired
 	private UserManager userManager;
-	@Autowired
-	private BusinessGroupService groupService;
 	
 	public GTACoachController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, GTACourseNode gtaNode,
 			BusinessGroup assessedGroup, boolean withTitle, boolean withGrading) {
@@ -519,7 +516,7 @@ public class GTACoachController extends GTAAbstractController {
 		if (assessedGroup != null) {
 			String toName = assessedGroup.getName();
 			contactList = new ContactList(toName);
-			List<Identity> memberList = groupService.getMembers(assessedGroup, GroupRoles.participant.name());
+			List<Identity> memberList = businessGroupService.getMembers(assessedGroup, GroupRoles.participant.name());
 			contactList.addAllIdentites(memberList);
 			
 		} else if (assessedIdentity != null) {

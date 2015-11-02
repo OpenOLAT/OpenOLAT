@@ -21,7 +21,9 @@ package org.olat.course.nodes.gta.ui;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
@@ -34,6 +36,10 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
@@ -45,6 +51,7 @@ import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -91,6 +98,8 @@ public abstract class GTAAbstractController extends BasicController {
 	protected GTAManager gtaManager;
 	@Autowired
 	protected RepositoryService repositoryService;
+	@Autowired
+	protected BusinessGroupService businessGroupService;
 	@Autowired
 	protected UserCourseInformationsManager userCourseInformationsManager;
 	
@@ -375,6 +384,7 @@ public abstract class GTAAbstractController extends BasicController {
 						&& date.compareTo(new Date()) < 0) {
 					//push to the next step
 					assignedTask = gtaManager.nextStep(assignedTask, gtaNode);
+					doUpdateAttempts();
 				}
 			} else if(dueDate.getMessage() != null) {
 				mainVC.contextPut("submitDueDateMsg", dueDate.getMessage());
@@ -459,6 +469,26 @@ public abstract class GTAAbstractController extends BasicController {
 			}
 		}
 		return assignedTask;
+	}
+	
+	protected void doUpdateAttempts() {
+		if(businessGroupTask) {
+			List<Identity> identities = businessGroupService.getMembers(assessedGroup, GroupRoles.participant.name());
+			AssessmentManager assessmentManager = courseEnv.getAssessmentManager();
+			assessmentManager.preloadCache(identities);
+			ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
+
+			for(Identity identity:identities) {
+				UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
+				gtaNode.incrementUserAttempts(uce);
+			}
+		} else {
+			if(userCourseEnv == null) {
+				ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
+				userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
+			}
+			gtaNode.incrementUserAttempts(userCourseEnv);
+		}
 	}
 	
 	@Override
