@@ -66,7 +66,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.group.BusinessGroupImpl;
 import org.olat.login.LoginModule;
 import org.olat.portfolio.manager.InvitationDAO;
 import org.olat.resource.OLATResource;
@@ -1073,7 +1072,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident ")
 		  .append(" where not exists (")
-		  .append("   select bgroup from ").append(BusinessGroupImpl.class.getName()).append(" bgroup, bgroupmember as me")
+		  .append("   select bgroup from businessgroup bgroup, bgroupmember as me")
 		  .append("   where  me.group=bgroup.baseGroup and me.identity=ident")
 		  .append(" )");
 		if (status != null) {

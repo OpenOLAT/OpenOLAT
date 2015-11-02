@@ -40,7 +40,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupImpl;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -125,7 +124,7 @@ public class BusinessGroupArchiver {
 	
 	public List<GroupMembership> getMembers(BusinessGroup group) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select membership from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
+		sb.append("select membership from businessgroup as bgroup ")
 		  .append(" inner join bgroup.baseGroup as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
 		  .append(" where bgroup.key=:businessGroupKey");

@@ -22,12 +22,9 @@ package org.olat.group.ui.main;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.group.BusinessGroupManagedFlag;
@@ -39,17 +36,13 @@ import org.olat.group.BusinessGroupMembership;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BusinessGroupFlexiTableModel extends DefaultFlexiTableDataModel<BGTableItem>
-	implements SortableFlexiTableDataModel<BGTableItem> {
-
-	private final Translator trans;
+public abstract class AbstractBusinessGroupFlexiTableModel extends DefaultFlexiTableDataModel<BGTableItem> {
 
 	/**
 	 * @param owned list of business groups
 	 */
-	public BusinessGroupFlexiTableModel(Translator trans, FlexiTableColumnModel columnModel) {
+	public AbstractBusinessGroupFlexiTableModel(FlexiTableColumnModel columnModel) {
 		super(new ArrayList<BGTableItem>(), columnModel);
-		this.trans = trans;
 	}
 
 	/**
@@ -61,7 +54,6 @@ public class BusinessGroupFlexiTableModel extends DefaultFlexiTableDataModel<BGT
 		return getValueAt(wrapped, col);
 	}	
 		
-	@Override
 	public Object getValueAt(BGTableItem wrapped, int col) {
 		switch (Cols.values()[col]) {
 			case name:
@@ -150,19 +142,13 @@ public class BusinessGroupFlexiTableModel extends DefaultFlexiTableDataModel<BGT
 				return "ERROR";
 		}
 	}
-	
-	@Override
+	/*
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<BGTableItem> views = new BusinessGroupFlexiTableModelSort(orderBy, this, null).sort();
+			List<BGTableItem> views = new BusinessGroupFlexiTableModelSort(orderBy, null, null).sort();
 			super.setObjects(views);
 		}
-	}
-
-	@Override
-	public BusinessGroupFlexiTableModel createCopyWithEmptyList() {
-		return new BusinessGroupFlexiTableModel(trans, getTableColumnModel());
-	}
+	}*/
 	
 	public boolean filterEditableGroupKeys(UserRequest ureq, List<Long> groupKeys) {
 		if(ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager()) {

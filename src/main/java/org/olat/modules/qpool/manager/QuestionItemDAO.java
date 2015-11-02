@@ -344,7 +344,7 @@ public class QuestionItemDAO {
 	
 	public List<BusinessGroup> getResourcesWithSharedItems(Identity identity) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct(bgi) from ").append(org.olat.group.BusinessGroupImpl.class.getName()).append(" as bgi ")
+		sb.append("select distinct(bgi) from businessgroup as bgi ")
 		  .append(" inner join fetch bgi.resource bgResource")
 		  .append(" inner join fetch bgi.baseGroup as baseGroup")
 		  .append(" inner join fetch baseGroup.members as membership")

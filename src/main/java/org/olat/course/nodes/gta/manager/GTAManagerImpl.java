@@ -61,7 +61,6 @@ import org.olat.course.nodes.gta.model.TaskListImpl;
 import org.olat.course.nodes.gta.ui.SubmitEvent;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.DeletableGroupData;
@@ -558,7 +557,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		  .append(" inner join tasklist.entry rentry ")
 		  .append(" where tasklist.entry.key=:entryKey and tasklist.courseNodeIdent=:courseNodeIdent and (task.identity.key=:identityKey ")
 		  .append(" or task.businessGroup.key in (")
-		  .append("   select bgroup.key from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
+		  .append("   select bgroup.key from businessgroup as bgroup ")
 		  .append("     inner join bgroup.baseGroup as baseGroup")
 		  .append("     inner join baseGroup.members as membership")
 		  .append("     where membership.identity.key=:identityKey and membership.role='").append(GroupRoles.participant.name()).append("'")

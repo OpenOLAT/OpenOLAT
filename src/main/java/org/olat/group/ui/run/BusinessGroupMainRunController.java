@@ -774,10 +774,10 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		addToHistory(ureq, bwControl);
 		
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
-		Controller collabToolCtr = collabTools.createPortfolioController(ureq, bwControl, businessGroup);
-		listenTo(collabToolCtr);
-		mainPanel.setContent(collabToolCtr.getInitialComponent());
-		return (Activateable2)collabToolCtr;
+		Controller collaborationToolCtr = collabTools.createPortfolioController(ureq, bwControl, businessGroup);
+		listenTo(collaborationToolCtr);
+		mainPanel.setContent(collaborationToolCtr.getInitialComponent());
+		return (Activateable2)collaborationToolCtr;
 	}
 	
 	private void doOpenMeetings(UserRequest ureq) {

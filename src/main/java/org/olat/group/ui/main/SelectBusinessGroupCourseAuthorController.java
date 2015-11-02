@@ -19,20 +19,16 @@
  */
 package org.olat.group.ui.main;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.group.BusinessGroupView;
-import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.group.model.BusinessGroupQueryParams;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class SelectBusinessGroupCourseAuthorController extends AbstractBusinessGroupListController {
+public class SelectBusinessGroupCourseAuthorController extends AbstractSelectBusinessGroupListController {
 	
 	public SelectBusinessGroupCourseAuthorController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "group_list", "authors");
@@ -50,24 +46,16 @@ public class SelectBusinessGroupCourseAuthorController extends AbstractBusinessG
 	}
 
 	@Override
-	protected FlexiTableColumnModel initColumnModel() {
-		return BusinessGroupFlexiTableModel.getSelectColumnModel(flc, groupModule, getTranslator());
-	}
-
-	@Override
-	protected SearchBusinessGroupParams getSearchParams(SearchEvent event) {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+	protected BusinessGroupQueryParams getSearchParams(SearchEvent event) {
+		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
+		params.setAuthorConnection(true);
 		return params;
 	}
 
 	@Override
-	protected SearchBusinessGroupParams getDefaultSearchParams() {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+	protected BusinessGroupQueryParams getDefaultSearchParams() {
+		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
+		params.setAuthorConnection(true);
 		return params;
-	}
-
-	@Override
-	protected List<BusinessGroupView> searchBusinessGroupViews(SearchBusinessGroupParams params) {
-		return businessGroupService.findBusinessGroupViewsWithAuthorConnection(getIdentity());
 	}
 }

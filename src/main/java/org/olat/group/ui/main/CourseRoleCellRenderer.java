@@ -44,7 +44,7 @@ public class CourseRoleCellRenderer implements CustomCellRenderer, FlexiCellRend
 	
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
-			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+			FlexiTableComponent source, URLBuilder ubu, Translator trans) {
 		if (cellValue instanceof CourseMembership) {
 			render(target, (CourseMembership) cellValue);
 		}

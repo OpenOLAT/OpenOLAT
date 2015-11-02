@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.NewControllerFactory;
+import org.olat.admin.user.groups.BusinessGroupTableModelWithType.Cols;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -61,10 +62,6 @@ import org.olat.group.model.AddToGroupsEvent;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.BGRoleCellRenderer;
-import org.olat.group.ui.main.BGTableItem;
-import org.olat.group.ui.main.BusinessGroupNameColumnDescriptor;
-import org.olat.group.ui.main.BusinessGroupTableModelWithType;
-import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
 
 /**
  * Description:<br>
@@ -156,10 +153,10 @@ public class GroupOverviewController extends BasicController {
 			memberships.put(membership.getGroupKey(), membership);
 		}
 
-		List<BGTableItem> items = new ArrayList<BGTableItem>();
+		List<GroupOverviewRow> items = new ArrayList<GroupOverviewRow>();
 		for(BusinessGroup group:groups) {
 			BusinessGroupMembership membership =  memberships.get(group.getKey());
-			BGTableItem tableItem = new BGTableItem(group, false, membership, Boolean.TRUE, Boolean.FALSE, null);
+			GroupOverviewRow tableItem = new GroupOverviewRow(group, membership, Boolean.TRUE);
 			items.add(tableItem);
 		}
 		tableDataModel.setEntries(items);
@@ -198,8 +195,8 @@ public class GroupOverviewController extends BasicController {
 		if (source == groupListCtr){
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
 				TableEvent te = (TableEvent) event;
-				BGTableItem item = tableDataModel.getObject(te.getRowId());
-				BusinessGroup currBusinessGroup = businessGroupService.loadBusinessGroup(item.getBusinessGroupKey());
+				GroupOverviewRow item = tableDataModel.getObject(te.getRowId());
+				BusinessGroup currBusinessGroup = businessGroupService.loadBusinessGroup(item.getKey());
 				if (currBusinessGroup==null) {
 					//group seems to be removed meanwhile, reload table and show error
 					showError("group.removed");
@@ -211,7 +208,7 @@ public class GroupOverviewController extends BasicController {
 				}
 			} else if (event instanceof TableMultiSelectEvent) {
 				TableMultiSelectEvent mse = (TableMultiSelectEvent)event;
-				List<BGTableItem> items = tableDataModel.getObjects(mse.getSelection());
+				List<GroupOverviewRow> items = tableDataModel.getObjects(mse.getSelection());
 				if (TABLE_ACTION_UNSUBSCRIBE.equals(mse.getAction())){
 					List<BusinessGroup> groups = toBusinessGroups(items);
 					doLeave(ureq, groups);
@@ -341,10 +338,10 @@ public class GroupOverviewController extends BasicController {
 		showInfo("unsubscribe.successful", groupNames.toString());	
 	}
 	
-	private List<BusinessGroup> toBusinessGroups(List<BGTableItem> items) {
+	private List<BusinessGroup> toBusinessGroups(List<GroupOverviewRow> items) {
 		List<Long> groupKeys = new ArrayList<Long>();
-		for(BGTableItem item:items) {
-			groupKeys.add(item.getBusinessGroupKey());
+		for(GroupOverviewRow item:items) {
+			groupKeys.add(item.getKey());
 		}
 		List<BusinessGroup> groups = businessGroupService.loadBusinessGroups(groupKeys);
 		return groups;

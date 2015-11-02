@@ -17,18 +17,44 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.group.ui.main;
-
-import org.olat.group.model.BusinessGroupRow;
+package org.olat.group.model;
 
 /**
  * 
- * Initial date: 10.07.2013<br>
+ * Initial date: 29.10.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface BusinessGroupViewFilter {
+public class StatisticsBusinessGroupRow extends BusinessGroupRow {
 	
-	public boolean accept(BusinessGroupRow row);
+	private int numOfCoaches;
+	private int numOfParticipants;
+	private int numWaiting;
+	private int numPending;
+	
+	public StatisticsBusinessGroupRow(BusinessGroupToSearch businessGroup,
+			Number coaches, Number participants, Number waiting, Number pending) {
+		super(businessGroup);
+		numOfCoaches = coaches == null ? 0 : coaches.intValue();
+		numOfParticipants = participants == null ? 0 : participants.intValue();
+		numWaiting = waiting == null ? 0 : waiting.intValue();
+		numPending = pending == null ? 0 : pending.intValue();
+	}
+
+	public long getNumOfCoaches() {
+		return numOfCoaches;
+	}
+	
+	public long getNumOfParticipants() {
+		return numOfParticipants;
+	}
+	
+	public long getNumWaiting() {
+		return numWaiting;
+	}
+
+	public long getNumPending() {
+		return numPending;
+	}
 
 }

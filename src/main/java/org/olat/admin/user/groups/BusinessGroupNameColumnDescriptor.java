@@ -17,14 +17,15 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.group.ui.main;
+package org.olat.admin.user.groups;
 
 import java.util.Locale;
 
+import org.olat.admin.user.groups.BusinessGroupTableModelWithType.Cols;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.group.BusinessGroupShort;
-import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
+import org.olat.group.ui.main.BusinessGroupNameCellRenderer;
 
 /**
  * Show and sort business group name decorated

@@ -19,72 +19,43 @@
 **/
 package org.olat.group.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.olat.core.id.Identity;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Description:<br>
- * 
- * <P>
- * Initial Date:  6 déc. 2011 <br>
- *
+ * Initial date: 08.10.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class SearchBusinessGroupParams {
+public class BusinessGroupQueryParams {
 	
-	private Collection<String> tools;
 	private String nameOrDesc;
-	private Collection<Long> groupKeys;
 	private String name;
-	private String exactName;
 	private String description;
+	private String ownerName;
 	private String courseTitle;
 	private String externalId;
-	private Boolean managed;
 	private String idRef;
 	
-	private Identity identity;
 	private boolean owner;
 	private boolean attendee;
 	private boolean waiting;
+	private Boolean publicGroups;
+	private boolean marked;
+	private Boolean resources;
+	private boolean headless = false;
+	private boolean authorConnection;
 	
-	public SearchBusinessGroupParams() {
+	private Long businessGroupKey;
+	private RepositoryEntry repositoryEntry;
+	
+	public BusinessGroupQueryParams() {
 		//
 	}
 	
-	public SearchBusinessGroupParams(Identity identity, boolean owner, boolean attendee) {
-		this.identity = identity;
+	public BusinessGroupQueryParams(boolean owner, boolean attendee) {
 		this.owner = owner;
 		this.attendee = attendee;
-	}
-	
-	public Collection<String> getTools() {
-		return tools;
-	}
-
-	public void setTools(List<String> tools) {
-		this.tools = tools;
-	}
-	
-	public void addTools(String... toolsToAdd) {
-		if(this.tools == null) {
-			this.tools = new ArrayList<String>();
-		}
-		for(String tool:toolsToAdd) {
-			this.tools.add(tool);
-		}
-	}
-
-	public Collection<Long> getGroupKeys() {
-		return groupKeys;
-	}
-
-	public void setGroupKeys(Collection<Long> groupKeys) {
-		this.groupKeys = groupKeys;
 	}
 
 	public String getIdRef() {
@@ -102,14 +73,6 @@ public class SearchBusinessGroupParams {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
-	public String getExactName() {
-		return exactName;
-	}
-
-	public void setExactName(String exactName) {
-		this.exactName = exactName;
-	}
 
 	public String getDescription() {
 		return description;
@@ -117,6 +80,14 @@ public class SearchBusinessGroupParams {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getOwnerName() {
+		return ownerName;
+	}
+
+	public void setOwnerName(String ownerName) {
+		this.ownerName = ownerName;
 	}
 
 	public String getCourseTitle() {
@@ -143,22 +114,6 @@ public class SearchBusinessGroupParams {
 		this.externalId = externalId;
 	}
 
-	public Boolean getManaged() {
-		return managed;
-	}
-
-	public void setManaged(Boolean managed) {
-		this.managed = managed;
-	}
-
-	public Identity getIdentity() {
-		return identity;
-	}
-
-	public void setIdentity(Identity identity) {
-		this.identity = identity;
-	}
-
 	public boolean isOwner() {
 		return owner;
 	}
@@ -183,6 +138,71 @@ public class SearchBusinessGroupParams {
 		this.waiting = waiting;
 	}
 
+	public Boolean getPublicGroups() {
+		return publicGroups;
+	}
 
+	public void setPublicGroups(Boolean publicGroups) {
+		this.publicGroups = publicGroups;
+	}
 
+	public boolean isMarked() {
+		return marked;
+	}
+
+	/**
+	 * Set true to see the bookmarked groups, false has no effect.
+	 * @param marked
+	 */
+	public void setMarked(boolean marked) {
+		this.marked = marked;
+	}
+
+	public boolean isAuthorConnection() {
+		return authorConnection;
+	}
+
+	public void setAuthorConnection(boolean authorConnection) {
+		this.authorConnection = authorConnection;
+	}
+
+	public Boolean getResources() {
+		return resources;
+	}
+
+	public void setResources(Boolean resources) {
+		this.resources = resources;
+	}
+
+	public Long getBusinessGroupKey() {
+		return businessGroupKey;
+	}
+
+	public void setBusinessGroupKey(Long businessGroupKey) {
+		this.businessGroupKey = businessGroupKey;
+	}
+
+	public RepositoryEntry getRepositoryEntry() {
+		return repositoryEntry;
+	}
+
+	public void setRepositoryEntry(RepositoryEntry repositoryEntry) {
+		this.repositoryEntry = repositoryEntry;
+	}
+
+	/**
+	 * Only available on views
+	 * @return
+	 */
+	public boolean isHeadless() {
+		return headless;
+	}
+
+	/**
+	 * Only available on views
+	 * @param headless
+	 */
+	public void setHeadless(boolean headless) {
+		this.headless = headless;
+	}
 }

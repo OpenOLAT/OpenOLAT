@@ -19,16 +19,24 @@
  */
 package org.olat.group.ui.main;
 
-import org.olat.group.model.BusinessGroupRow;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 
 /**
  * 
- * Initial date: 10.07.2013<br>
+ * Initial date: 29.10.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface BusinessGroupViewFilter {
+public class BusinessGroupListFlexiTableModel extends AbstractBusinessGroupFlexiTableModel {
 	
-	public boolean accept(BusinessGroupRow row);
+	public BusinessGroupListFlexiTableModel(FlexiTableColumnModel columnModel) {
+		super(columnModel);
+	}
+
+	@Override
+	public DefaultFlexiTableDataModel<BGTableItem> createCopyWithEmptyList() {
+		return new BusinessGroupListFlexiTableModel(getTableColumnModel());
+	}
 
 }

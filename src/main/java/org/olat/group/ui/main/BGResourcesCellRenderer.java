@@ -79,7 +79,7 @@ public class BGResourcesCellRenderer implements FlexiCellRenderer {
 							allResourcesLink = uifactory.addFormLink("repo_entry_" + counter.incrementAndGet(), "allresources", "...",
 								null, formLayout, Link.NONTRANSLATED);
 						}
-						allResourcesLink.setUserObject(item.getBusinessGroup());
+						allResourcesLink.setUserObject(item);
 						allResourcesLink.getComponent().getHTMLRendererSingleton()
 							.render(renderer, sb, allResourcesLink.getComponent(), ubu, translator, null, null);
 						break;

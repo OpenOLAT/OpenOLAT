@@ -17,18 +17,39 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.group.ui.main;
+package org.olat.group.model;
 
-import org.olat.group.model.BusinessGroupRow;
+import java.util.Set;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupImpl;
 
 /**
+ * Build the relation repository entry to business group.
  * 
- * Initial date: 10.07.2013<br>
+ * Initial date: 29.10.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface BusinessGroupViewFilter {
+@Entity(name="grouptobusinessgroup")
+@Table(name="o_bs_group")
+public class GroupToBusinessGroup {
 	
-	public boolean accept(BusinessGroupRow row);
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+
+	@OneToMany(targetEntity=BusinessGroupImpl.class, mappedBy="baseGroup")
+	private Set<BusinessGroup> businessGroups;
 
 }

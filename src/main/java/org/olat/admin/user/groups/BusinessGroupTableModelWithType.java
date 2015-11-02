@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.group.ui.main;
+package org.olat.admin.user.groups;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,8 +31,6 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Formatter;
-import org.olat.core.util.filter.FilterFactory;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupMembership;
 
@@ -40,7 +38,7 @@ import org.olat.group.BusinessGroupMembership;
  * @author gnaegi
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTableItem> {
+class BusinessGroupTableModelWithType extends DefaultTableDataModel<GroupOverviewRow> {
 	private final int columnCount;
 	private final Translator trans;
 
@@ -48,7 +46,7 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 	 * @param owned list of business groups
 	 */
 	public BusinessGroupTableModelWithType(Translator trans, int columnCount) {
-		super(new ArrayList<BGTableItem>());
+		super(new ArrayList<GroupOverviewRow>());
 		this.trans = trans;
 		this.columnCount = columnCount;
 	}
@@ -64,15 +62,10 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public Object getValueAt(int row, int col) {
-		BGTableItem wrapped = objects.get(row);
+		GroupOverviewRow wrapped = objects.get(row);
 		switch (Cols.values()[col]) {
 			case name:
-				return wrapped.getBusinessGroup();
-			case description:
-				String description = wrapped.getBusinessGroupDescription();
-				description = FilterFactory.getHtmlTagsFilter().filter(description);
-				description = Formatter.truncate(description, 256);
-				return description;
+				return wrapped;
 			case allowLeave: {
 				Boolean allowed = wrapped.getAllowLeave();
 				if(allowed != null && allowed.booleanValue()) {
@@ -83,35 +76,6 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 				}
 				return allowed;
 			}
-			case allowDelete: {
-				Boolean allowed =  wrapped.getAllowDelete();
-				if(allowed != null && allowed.booleanValue()) {
-					//check managed groups
-					if(BusinessGroupManagedFlag.isManaged(wrapped.getManagedFlags(), BusinessGroupManagedFlag.delete)) {
-						return Boolean.FALSE;
-					}
-				}
-				return allowed;
-			}
-			case resources:
-				return wrapped;
-			//fxdiff VCRP-1,2: access control of resources
-			case accessControl:
-				return new Boolean(wrapped.isAccessControl());
-			case accessControlLaunch:
-				if(wrapped.isAccessControl()) {
-					if(wrapped.getMembership() != null) {
-						return trans.translate("select");
-					}
-					return trans.translate("table.access");
-				}
-				return null;
-			case accessTypes:
-				return wrapped.getAccessTypes();
-			case mark:
-				return new Boolean(wrapped.isMarked());
-			case lastUsage:
-				return wrapped.getBusinessGroupLastUsage();
 			case role:
 				return wrapped.getMembership();
 			case firstTime: {
@@ -123,34 +87,7 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 				return membership == null ? null : membership.getLastModified();
 			}
 			case key:
-				return wrapped.getBusinessGroupKey().toString();
-			case freePlaces: {
-				Integer maxParticipants = wrapped.getMaxParticipants();
-				if(maxParticipants != null && maxParticipants.intValue() >= 0) {
-					long free = maxParticipants - (wrapped.getNumOfParticipants() + wrapped.getNumOfPendings());
-					return new GroupNumber(free);
-				}
-				return GroupNumber.INFINITE;
-			}
-			case participantsCount: {
-				long count = wrapped.getNumOfParticipants() + wrapped.getNumOfPendings();
-				return count < 0 ? GroupNumber.ZERO : new GroupNumber(count);
-			}
-			case tutorsCount: {
-				long count = wrapped.getNumOfOwners();
-				return count < 0 ? GroupNumber.ZERO : new GroupNumber(count);
-			}
-			case waitingListCount: {
-				if(wrapped.isWaitingListEnabled()) {
-					long count = wrapped.getNumWaiting();
-					return count < 0 ? GroupNumber.ZERO : new GroupNumber(count);
-				}
-				return GroupNumber.NONE;
-			}
-			case wrapper:
-				return wrapped;
-			case externalId:
-				return wrapped.getBusinessGroupExternalId();
+				return wrapped.getKey().toString();
 			default:
 				return "ERROR";
 		}
@@ -168,8 +105,8 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 		
 		int countBefore = groupKeys.size();
 		
-		for(BGTableItem item:getObjects()) {
-			Long groupKey = item.getBusinessGroupKey();
+		for(GroupOverviewRow item:getObjects()) {
+			Long groupKey = item.getKey();
 			if(groupKeys.contains(groupKey)) {
 				BusinessGroupMembership membership = item.getMembership();
 				if(membership == null || !membership.isOwner()) {
@@ -184,45 +121,17 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 	/**
 	 * @param owned
 	 */
-	public void setEntries(List<BGTableItem> owned) {
+	public void setEntries(List<GroupOverviewRow> owned) {
 		setObjects(owned);
-	}
-	
-	public void removeBusinessGroup(Long bgKey) {
-		if(bgKey == null) return;
-		
-		for(int i=objects.size(); i-->0; ) {
-			BGTableItem wrapped = objects.get(i);
-			if(bgKey.equals(wrapped.getBusinessGroupKey())) {
-				objects.remove(i);
-				return;
-			}
-		}
 	}
 	
 	public enum Cols {
 		name("table.header.bgname"),
-		description("table.header.description"),
-		groupType(""),
-		allowLeave("table.header.leave"),
-		allowDelete("table.header.delete"),
-		resources("table.header.resources"),
-		accessControl(""),
-		accessControlLaunch("table.header.ac"),
-		accessTypes("table.header.ac.method"),
-		mark("table.header.mark"),
-		lastUsage("table.header.lastUsage"),
-		role("table.header.role"),
+		key("table.header.key"),
 		firstTime("table.header.firstTime"),
 		lastTime("table.header.lastTime"),
-		key("table.header.key"),
-		freePlaces("table.header.freePlaces"),
-		participantsCount("table.header.participantsCount"),
-		tutorsCount("table.header.tutorsCount"),
-		waitingListCount("table.header.waitingListCount"),
-		wrapper(""),
-		card("table.header.businesscard"),
-		externalId("table.header.externalid");
+		role("table.header.role"),
+		allowLeave("table.header.leave");
 		
 		private final String i18n;
 		

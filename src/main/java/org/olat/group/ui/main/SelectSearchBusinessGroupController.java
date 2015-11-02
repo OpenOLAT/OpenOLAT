@@ -21,15 +21,14 @@ package org.olat.group.ui.main;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.group.model.BusinessGroupQueryParams;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class SelectSearchBusinessGroupController extends AbstractBusinessGroupListController {
+public class SelectSearchBusinessGroupController extends AbstractSelectBusinessGroupListController {
 	
 	private final boolean restricted;
 	
@@ -49,13 +48,8 @@ public class SelectSearchBusinessGroupController extends AbstractBusinessGroupLi
 	}
 
 	@Override
-	protected FlexiTableColumnModel initColumnModel() {
-		return BusinessGroupFlexiTableModel.getSelectColumnModel(flc, groupModule, getTranslator());
-	}
-
-	@Override
-	protected SearchBusinessGroupParams getSearchParams(SearchEvent event) {
-		SearchBusinessGroupParams params = event.convertToSearchBusinessGroupParams(getIdentity());
+	protected BusinessGroupQueryParams getSearchParams(SearchEvent event) {
+		BusinessGroupQueryParams params = event.convertToBusinessGroupQueriesParams();
 		//security
 		if(restricted && !params.isAttendee() && !params.isOwner() && !params.isWaiting()
 				&& (params.getPublicGroups() == null || !params.getPublicGroups().booleanValue())) {
@@ -67,15 +61,14 @@ public class SelectSearchBusinessGroupController extends AbstractBusinessGroupLi
 	}
 
 	@Override
-	protected SearchBusinessGroupParams getDefaultSearchParams() {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+	protected BusinessGroupQueryParams getDefaultSearchParams() {
+		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
 		//security
 		if(restricted) {
 			params.setOwner(true);
 			params.setAttendee(true);
 			params.setWaiting(true);
 		}
-		params.setIdentity(getIdentity());
 		return params;
 	}
 

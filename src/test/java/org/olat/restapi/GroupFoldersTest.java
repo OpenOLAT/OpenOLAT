@@ -133,6 +133,7 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 	    // create groups without waiting list
 	    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, c1);
 	    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, c1);
+	    DBFactory.getInstance().commitAndCloseSession();
 	    
 	    //permission to see owners and participants
 	    businessGroupService.updateDisplayMembers(g1, false, false, false, false, false, false, false);
@@ -147,8 +148,6 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 	    // members g2
 	    businessGroupRelationDao.addRole(owner1, g2, GroupRoles.coach.name());
 	    businessGroupRelationDao.addRole(part1, g2, GroupRoles.participant.name());
-	    
-	    DBFactory.getInstance().commitAndCloseSession(); // simulate user clicks
     
 	    //3) collaboration tools
 	    CollaborationTools collabTools1 = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(g1);

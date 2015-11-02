@@ -21,15 +21,14 @@ package org.olat.group.ui.main;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.group.model.BusinessGroupQueryParams;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class SelectFavoritBusinessGroupController extends AbstractBusinessGroupListController {
+public class SelectFavoritBusinessGroupController extends AbstractSelectBusinessGroupListController {
 
 	public SelectFavoritBusinessGroupController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "group_list", "sel-favorit");
@@ -46,32 +45,24 @@ public class SelectFavoritBusinessGroupController extends AbstractBusinessGroupL
 		initButtons(formLayout, ureq, false, true, false);
 		tableEl.setSearchEnabled(false);
 	}
-	
-	@Override
-	protected FlexiTableColumnModel initColumnModel() {
-		return BusinessGroupFlexiTableModel.getSelectColumnModel(flc, groupModule, getTranslator());
-	}
-
 
 	@Override
-	protected SearchBusinessGroupParams getSearchParams(SearchEvent event) {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+	protected BusinessGroupQueryParams getSearchParams(SearchEvent event) {
+		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
 		params.setMarked(Boolean.TRUE);
 		params.setAttendee(true);
 		params.setOwner(true);
 		params.setWaiting(true);
-		params.setIdentity(getIdentity());
 		return params;
 	}
 
 	@Override
-	protected SearchBusinessGroupParams getDefaultSearchParams() {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+	protected BusinessGroupQueryParams getDefaultSearchParams() {
+		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
 		params.setMarked(Boolean.TRUE);
 		params.setAttendee(true);
 		params.setOwner(true);
 		params.setWaiting(true);
-		params.setIdentity(getIdentity());
 		return params;
 	}
 }

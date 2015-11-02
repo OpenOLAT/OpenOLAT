@@ -20,7 +20,7 @@
 package org.olat.group.ui.main;
 
 import org.olat.group.BusinessGroupManagedFlag;
-import org.olat.group.BusinessGroupView;
+import org.olat.group.model.BusinessGroupRow;
 
 /**
  * Accept only NOT managed groups.
@@ -38,7 +38,7 @@ public class UnmanagedGroupFilter implements BusinessGroupViewFilter {
 	}
 
 	@Override
-	public boolean accept(BusinessGroupView view) {
-		return !BusinessGroupManagedFlag.isManaged(view.getManagedFlags(), flag);
+	public boolean accept(BusinessGroupRow row) {
+		return !BusinessGroupManagedFlag.isManaged(row.getManagedFlags(), flag);
 	}
 }

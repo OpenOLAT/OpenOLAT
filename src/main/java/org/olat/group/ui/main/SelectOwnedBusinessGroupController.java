@@ -21,15 +21,14 @@ package org.olat.group.ui.main;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.group.model.BusinessGroupQueryParams;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class SelectOwnedBusinessGroupController extends AbstractBusinessGroupListController {
+public class SelectOwnedBusinessGroupController extends AbstractSelectBusinessGroupListController {
 	
 	public SelectOwnedBusinessGroupController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "group_list", "sel-owned");
@@ -47,26 +46,15 @@ public class SelectOwnedBusinessGroupController extends AbstractBusinessGroupLis
 	}
 
 	@Override
-	protected FlexiTableColumnModel initColumnModel() {
-		return BusinessGroupFlexiTableModel.getSelectColumnModel(flc, groupModule, getTranslator());
-	}
-
-	@Override
-	protected SearchBusinessGroupParams getSearchParams(SearchEvent event) {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.setIdentity(getIdentity());
-		params.setOwner(true);
-		params.setAttendee(false);
+	protected BusinessGroupQueryParams getSearchParams(SearchEvent event) {
+		BusinessGroupQueryParams params = new BusinessGroupQueryParams(true, false);
 		params.setWaiting(false);
 		return params;
 	}
 
 	@Override
-	protected SearchBusinessGroupParams getDefaultSearchParams() {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.setIdentity(getIdentity());
-		params.setOwner(true);
-		params.setAttendee(false);
+	protected BusinessGroupQueryParams getDefaultSearchParams() {
+		BusinessGroupQueryParams params = new BusinessGroupQueryParams(true, false);
 		params.setWaiting(false);
 		return params;
 	}

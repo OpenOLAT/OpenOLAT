@@ -19,7 +19,16 @@
  */
 package org.olat.group.model;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.olat.core.id.Persistable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
@@ -33,13 +42,32 @@ import org.olat.group.BusinessGroupShort;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class BusinessGroupShortImpl extends PersistentObject implements BusinessGroupShort {
+@Entity(name="businessgroupshort")
+@Table(name="o_gp_business")
+@NamedQueries({
+	@NamedQuery(name="loadBusinessGroupShortByIds",query="select bgi from businessgroupshort bgi  where bgi.key in (:ids)")
+})
+public class BusinessGroupShortImpl implements Persistable, BusinessGroupShort {
 
 	private static final long serialVersionUID = -5404538852842562897L;
 	
-	private String name;
-	private String managedFlagsString;
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@Column(name="group_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
 
+	@Column(name="groupname", nullable=true, insertable=false, updatable=false)
+	private String name;
+	@Column(name="managed_flags", nullable=true, insertable=false, updatable=false)
+	private String managedFlagsString;
+	
+	@Override
+	public Long getKey() {
+		return key;
+	}
+
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -85,7 +113,12 @@ public class BusinessGroupShortImpl extends PersistentObject implements Business
 		}
 		return false;
 	}
-	
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
+	}
+
 	@Override
 	public int hashCode() {
 		return getKey() == null ? 2901 : getKey().hashCode();

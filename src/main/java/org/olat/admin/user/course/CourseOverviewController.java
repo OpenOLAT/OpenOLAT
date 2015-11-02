@@ -70,7 +70,6 @@ import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BGRepositoryEntryRelation;
-import org.olat.group.ui.main.BusinessGroupTableModelWithType;
 import org.olat.group.ui.main.CourseMembership;
 import org.olat.group.ui.main.EditSingleMembershipController;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
@@ -123,7 +122,7 @@ public class CourseOverviewController extends BasicController  {
 	private BusinessGroupService businessGroupService;
 	
 	public CourseOverviewController(UserRequest ureq, WindowControl wControl, Identity identity) {
-		super(ureq, wControl, Util.createPackageTranslator(BusinessGroupTableModelWithType.class, ureq.getLocale()));
+		super(ureq, wControl, Util.createPackageTranslator(CourseMembership.class, ureq.getLocale()));
 		this.setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 
 		editedIdentity = identity;

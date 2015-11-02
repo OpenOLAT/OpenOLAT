@@ -17,18 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.group.ui.main;
-
-import org.olat.group.model.BusinessGroupRow;
+package org.olat.group.model;
 
 /**
  * 
- * Initial date: 10.07.2013<br>
+ * Initial date: 29.10.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface BusinessGroupViewFilter {
+public class OpenBusinessGroupRow extends BusinessGroupRow {
 	
-	public boolean accept(BusinessGroupRow row);
+	private Long numOfParticipants;
+	private Long numOfReservations;
+	
+	public OpenBusinessGroupRow(BusinessGroupToSearch businessGroup, Long numOfParticipants, Long numOfReservations) {
+		super(businessGroup);
+		this.numOfParticipants = numOfParticipants;
+		this.numOfReservations = numOfReservations;
+	}
+
+	public Long getNumOfParticipants() {
+		return numOfParticipants;
+	}
+
+	public Long getNumOfReservations() {
+		return numOfReservations;
+	}
 
 }

@@ -35,9 +35,13 @@ import org.olat.group.area.BGArea;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BusinessGroupEnvironment;
 import org.olat.group.model.BusinessGroupMembershipChange;
+import org.olat.group.model.BusinessGroupQueryParams;
+import org.olat.group.model.BusinessGroupRow;
 import org.olat.group.model.EnrollState;
 import org.olat.group.model.LeaveOption;
 import org.olat.group.model.MembershipModification;
+import org.olat.group.model.OpenBusinessGroupRow;
+import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
@@ -267,7 +271,7 @@ public interface BusinessGroupService {
 	public List<BusinessGroup> findBusinessGroups(SearchBusinessGroupParams params, RepositoryEntryRef resource, int firstResult, int maxResults, BusinessGroupOrder... ordering);
 	
 	/**
-	 * Find business groups (the view)
+	 * Find my favorite business groups with some additional useful informations
 	 * @param params
 	 * @param resource
 	 * @param firstResult
@@ -275,14 +279,48 @@ public interface BusinessGroupService {
 	 * @param ordering
 	 * @return
 	 */
-	public List<BusinessGroupView> findBusinessGroupViews(SearchBusinessGroupParams params, RepositoryEntryRef resource, int firstResult, int maxResults, BusinessGroupOrder... ordering);
+	public List<BusinessGroupRow> findBusinessGroupsWithMemberships(BusinessGroupQueryParams params, IdentityRef identity);
 	
 	/**
-	 * Find all groups within resources where the identity is author.
-	 * @param author
+	 * Retrieve the business groups of a repository entry with the number of coaches, participants,
+	 * user in waiting list and reservation in each groups. For each groups, there is as additional
+	 * informations the courses linked to them, and the list of offers.
+	 *  
+	 * @param params
+	 * @param entryRef
 	 * @return
 	 */
-	public List<BusinessGroupView> findBusinessGroupViewsWithAuthorConnection(Identity author);
+	public List<StatisticsBusinessGroupRow> findBusinessGroupsFromRepositoryEntry(BusinessGroupQueryParams params, RepositoryEntryRef entry);
+	
+	/**
+	 * Retrieve the business groups of a repository entry with the number of coaches, participants,
+	 * user in waiting list and reservation in each groups. For each groups, there is as additional
+	 * informations the courses linked to them, the list of offers, and the book mark flag for the
+	 * specified identity.
+	 * 
+	 * @param params
+	 * @param identity
+	 * @return
+	 */
+	public List<StatisticsBusinessGroupRow> findBusinessGroupsForSelection(BusinessGroupQueryParams params, IdentityRef identity);
+	
+	/**
+	 * Retrieve the business groups of a repository entry with the number of coaches, participants,
+	 * user in waiting list and reservation in each groups.
+	 * 
+	 * @param params
+	 * @return
+	 */
+	public List<StatisticsBusinessGroupRow> findBusinessGroupsStatistics(BusinessGroupQueryParams params);
+	
+	/**
+	 * Retrieve the published/open business groups of a repository entry with the number of participants
+	 * and reservation in each groups.
+	 * 
+	 * @param params
+	 * @return
+	 */
+	public List<OpenBusinessGroupRow> findPublishedBusinessGroups(BusinessGroupQueryParams params, IdentityRef identity);
 	
 	public List<Long> toGroupKeys(String groupNames, RepositoryEntryRef resource);
 

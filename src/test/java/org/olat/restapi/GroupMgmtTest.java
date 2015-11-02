@@ -143,11 +143,11 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		// create groups without waiting list
 		g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, c1);
 		g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, c1);
-    
+		DBFactory.getInstance().commit();
 		//permission to see owners and participants
 		businessGroupService.updateDisplayMembers(g1, false, false, false, false, false, false, false);
 		businessGroupService.updateDisplayMembers(g2, true, true, false, false, false, false, false);
-    
+		
 		// members g1
 		businessGroupRelationDao.addRole(owner1, g1, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(owner2, g1, GroupRoles.coach.name());
@@ -164,11 +164,10 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		// groups
 		g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, -1, -1, false, false, c2);
 		g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, -1, -1, false, false, c2);
+		DBFactory.getInstance().commit();
 		// members
 		businessGroupRelationDao.addRole(owner1, g3, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(owner2, g4, GroupRoles.participant.name());
-    
-		DBFactory.getInstance().closeSession(); // simulate user clicks
     
 		//3) collaboration tools
 		CollaborationTools collabTools1 = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(g1);

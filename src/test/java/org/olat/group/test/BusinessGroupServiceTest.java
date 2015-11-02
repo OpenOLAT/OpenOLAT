@@ -474,10 +474,10 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		Identity ident2 = JunitTestHelper.createAndPersistIdentityAsUser("move-w1-2-" + UUID.randomUUID().toString());
 		Identity ident3 = JunitTestHelper.createAndPersistIdentityAsUser("move-w1-3-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "move-bg-1", "move-desc", 0, 10, true, false, null);
+		dbInstance.commitAndCloseSession();
 		businessGroupService.addToWaitingList(admin, Collections.singletonList(ident1), group, null);
 		businessGroupService.addToWaitingList(admin, Collections.singletonList(ident2), group, null);
 		businessGroupService.addParticipants(admin, JunitTestHelper.getAdminRoles(), Collections.singletonList(ident3), group, null);
-		
 		dbInstance.commitAndCloseSession();
 		
 		//move id1 from waiting-list to participant
@@ -501,6 +501,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		Identity ident2 = JunitTestHelper.createAndPersistIdentityAsUser("move-w2-2-" + UUID.randomUUID().toString());
 		Identity ident3 = JunitTestHelper.createAndPersistIdentityAsUser("move-w2-3-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "move-bg-1", "move-desc", 0, 10, true, false, null);
+		dbInstance.commitAndCloseSession();
 		//add id1
 		businessGroupService.addToWaitingList(ident1, Collections.singletonList(ident1), group, null);
 		dbInstance.commitAndCloseSession();
@@ -534,6 +535,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		Identity ident2 = JunitTestHelper.createAndPersistIdentityAsUser("move-w3-2-" + UUID.randomUUID().toString());
 		Identity ident3 = JunitTestHelper.createAndPersistIdentityAsUser("move-w3-3-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "move-bg-3", "move-desc", 0, 10, true, false, null);
+		dbInstance.commitAndCloseSession();
 		businessGroupService.addToWaitingList(ident1, Collections.singletonList(ident1), group, null);
 		businessGroupService.addToWaitingList(ident2, Collections.singletonList(ident2), group, null);
 		businessGroupService.addToWaitingList(ident3, Collections.singletonList(ident3), group, null);
@@ -632,6 +634,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		Identity ident1 = JunitTestHelper.createAndPersistIdentityAsUser("move-w4-1-" + UUID.randomUUID().toString());
 		Roles rolesId1 = securityManager.getRoles(ident1);
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "move-bg-4", "move-desc", 0, 10, true, false, null);
+		dbInstance.commitAndCloseSession();
 		businessGroupService.addParticipants(ident1, rolesId1, Collections.singletonList(ident1), group, null);
 		dbInstance.commitAndCloseSession();
 
@@ -657,6 +660,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		Identity ident2 = JunitTestHelper.createAndPersistIdentityAsUser("move-w5-2-" + UUID.randomUUID().toString());;
 		Roles rolesId1 = securityManager.getRoles(ident1);
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "move-bg-5", "move-desc", 0, 1, true, true, null);
+		dbInstance.commitAndCloseSession();
 		businessGroupService.addParticipants(ident1, rolesId1, Collections.singletonList(ident1), group, null);
 		businessGroupService.addToWaitingList(ident2, Collections.singletonList(ident2), group, null);
 		dbInstance.commitAndCloseSession();

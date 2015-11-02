@@ -19,10 +19,14 @@
  */
 package org.olat.group.ui.main;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -30,9 +34,12 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.group.BusinessGroup;
-import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.group.BusinessGroupMembership;
+import org.olat.group.model.BusinessGroupQueryParams;
+import org.olat.group.model.OpenBusinessGroupRow;
 import org.olat.group.ui.main.BusinessGroupFlexiTableModel.Cols;
 
 /**
@@ -87,18 +94,75 @@ public class OpenBusinessGroupListController extends AbstractBusinessGroupListCo
 			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 		}
 	}
-	
+
 	@Override
-	protected SearchBusinessGroupParams getSearchParams(SearchEvent event) {
-		SearchBusinessGroupParams params = event.convertToSearchBusinessGroupParams(getIdentity());
+	protected BusinessGroupQueryParams getSearchParams(SearchEvent event) {
+		BusinessGroupQueryParams params = event.convertToBusinessGroupQueriesParams();
 		params.setPublicGroups(Boolean.TRUE);
 		return params;
 	}
 
 	@Override
-	protected SearchBusinessGroupParams getDefaultSearchParams() {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+	protected BusinessGroupQueryParams getDefaultSearchParams() {
+		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
 		params.setPublicGroups(Boolean.TRUE);
 		return params;
+	}
+
+	@Override
+	protected List<BGTableItem> searchTableItems(BusinessGroupQueryParams params) {
+		List<OpenBusinessGroupRow> rows = businessGroupService.findPublishedBusinessGroups(params, getIdentity());
+		List<BGTableItem> items = new ArrayList<>(rows.size());
+		for(OpenBusinessGroupRow row:rows) {
+			BusinessGroupMembership membership = row.getMember();
+			Boolean allowLeave =  membership != null;
+			BGTableItem item = new BGTableItem(row, null, allowLeave, Boolean.FALSE);
+			addAccessLink(item);
+			items.add(item);
+		}
+		return items;
+	}
+	
+	protected void addAccessLink(BGTableItem item) {
+		String action;
+		BusinessGroupMembership membership = item.getMembership();
+		if(membership != null && membership.isOwner()) {
+			return;
+		} else if(membership != null && (membership.isParticipant() || membership.isWaiting())) {
+			action = TABLE_ACTION_LEAVE;
+		} else if(item.isFull() && !item.isWaitingListEnabled()) {
+			action = null;
+		} else {
+			action = TABLE_ACTION_ACCESS;
+		}
+		
+		String i18nKey;
+		if (membership != null && membership.isParticipant()) {
+			i18nKey = "table.header.leave";
+		} else if (membership != null && membership.isWaiting()) {
+			i18nKey = "table.header.leave.waiting";
+		} else if(item.isFull()) {
+			if(item.isWaitingListEnabled()) {
+				i18nKey = "table.access.waitingList";
+			} else {
+				i18nKey = "table.header.group.full";
+			}
+		} else if(item.isWaitingListEnabled()) {
+			if(item.isFull()) {
+				i18nKey = "table.access.waitingList";
+			}	else {
+				i18nKey = "table.access";
+			}
+		} else {
+			i18nKey = "table.access";
+		}
+		
+		FormLink accessLink = uifactory.addFormLink("open_" + item.getBusinessGroupKey(), action, i18nKey,
+				null, null, Link.LINK);
+		if(action == null) {
+			accessLink.setEnabled(false);
+		}
+		accessLink.setUserObject(item);
+		item.setAccessLink(accessLink);
 	}
 }
