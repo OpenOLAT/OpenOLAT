@@ -22,7 +22,6 @@ package org.olat.selenium.page.course;
 import java.io.File;
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.user.restapi.UserVO;
@@ -40,12 +39,7 @@ import org.openqa.selenium.WebElement;
  */
 public class GroupTaskToCoachPage {
 	
-	@Drone
 	private WebDriver browser;
-	
-	public GroupTaskToCoachPage() {
-		//
-	}
 	
 	public GroupTaskToCoachPage(WebDriver browser) {
 		this.browser = browser;
@@ -134,7 +128,16 @@ public class GroupTaskToCoachPage {
 	
 	public GroupTaskToCoachPage openIndividualAssessment() {
 		By assessmentButtonBy = By.cssSelector("#o_step_grading_content .o_sel_course_gta_assessment_button");
-		browser.findElement(assessmentButtonBy).click();
+		List<WebElement> buttons = browser.findElements(assessmentButtonBy);
+		if(buttons.isEmpty() || !buttons.get(0).isDisplayed()) {
+			//open grading tab
+			By collpaseBy = By.xpath("//a[@href='#o_step_grading_content']");
+			browser.findElement(collpaseBy).click();
+			OOGraphene.waitElement(assessmentButtonBy, browser);
+			browser.findElement(assessmentButtonBy).click();
+		} else {
+			buttons.get(0).click();
+		}
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -158,7 +161,16 @@ public class GroupTaskToCoachPage {
 	
 	public GroupTaskToCoachPage openGroupAssessment() {
 		By assessmentButtonBy = By.cssSelector("#o_step_grading_content .o_sel_course_gta_assessment_button");
-		browser.findElement(assessmentButtonBy).click();
+		List<WebElement> buttons = browser.findElements(assessmentButtonBy);
+		if(buttons.isEmpty() || !buttons.get(0).isDisplayed()) {
+			//open grading tab
+			By collpaseBy = By.xpath("//a[@href='#o_step_grading_content']");
+			browser.findElement(collpaseBy).click();
+			OOGraphene.waitElement(assessmentButtonBy, browser);
+			browser.findElement(assessmentButtonBy).click();
+		} else {
+			buttons.get(0).click();
+		}
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
