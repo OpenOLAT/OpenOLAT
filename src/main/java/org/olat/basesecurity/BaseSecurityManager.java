@@ -1128,7 +1128,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		if(strict) return loadIdentityByKey(identityKey);
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from ").append(IdentityShort.class.getName()).append(" as ident where ident.key=:identityKey");
+		sb.append("select ident from ").append(Identity.class.getName()).append(" as ident where ident.key=:identityKey");
 		
 		List<Identity> identities = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
