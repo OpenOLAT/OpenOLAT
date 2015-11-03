@@ -19,7 +19,11 @@
  */
 package org.olat.core.commons.contextHelp;
 
+import java.util.Locale;
+
 import org.apache.commons.lang.StringEscapeUtils;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.render.RenderResult;
@@ -38,25 +42,24 @@ import org.olat.core.gui.translator.Translator;
  */
 public class ContextHelpComponentRenderer extends DefaultComponentRenderer {
 
+	private final String page;
+
+	public ContextHelpComponentRenderer(String page) {
+		this.page = page;
+	}
+
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
 
-		ContextHelpComponent cmp = (ContextHelpComponent)source;
-		String hoverTextKey = cmp.getHoverTextKey();
-		String packageName = cmp.getPackageName();
-		String pageName = cmp.getPageName();
-		String cId = cmp.getDispatchID();
-
-		String hooverText = translator.translate(hoverTextKey);
-		if (hooverText != null) {
-			hooverText = StringEscapeUtils.escapeHtml(hooverText);
-		}
-		sb.append("<a id='").append(cId).append("' href=\"javascript:contextHelpWindow('");
-		Renderer.renderNormalURI(sb, "help/");
-		sb.append(translator.getLocale().toString()).append("/").append(packageName).append("/").append(pageName)
-		  .append("')\" title=\"").append(hooverText).append("\" class=\"o_chelp\"><i class='o_icon o_icon_help'></i> ")
-		  .append(translator.translate("help"))
+		HelpModule helpModule = CoreSpringFactory.getImpl(HelpModule.class);
+		Locale locale = renderer.getTranslator().getLocale();
+		String title = StringEscapeUtils.escapeHtml(renderer.getTranslator().translate("help.button"));
+		String url = helpModule.getHelpProvider().getURL(locale, page);
+		  sb.append("<a href=\"").append(url)
+		  .append("\" class=\"o_chelp\" target=\"_blank\" title=\"").append(title).append("\"><i class='o_icon o_icon_help'></i> ")
+		  .append(renderer.getTranslator().translate("help"))
 		  .append("</a>");
+
 	}
 }

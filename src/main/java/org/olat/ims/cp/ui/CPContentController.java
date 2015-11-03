@@ -104,10 +104,9 @@ public class CPContentController extends BasicController {
 		previewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_preview");
 		previewLink.setTooltip(translate("contentcontroller.previewlink_title"));
 		toolbar.addTool(previewLink, Align.right);
-		
-		ContextHelpComponent contextHelp = new ContextHelpComponent("cpeditorhelp",
-				"org.olat.ims.cp.ui", "cpeditorhelp.html", "chelp.cpeditorhelp.hover", getLocale());
-		
+
+		ContextHelpComponent contextHelp = new ContextHelpComponent("CP Editor");
+
 		toolbar.addTool(contextHelp, Align.right);
 	}
 

@@ -37,12 +37,9 @@ package org.olat.core.commons.contextHelp;
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-import java.util.Locale;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.util.Util;
 
 /**
  * 
@@ -53,13 +50,14 @@ import org.olat.core.util.Util;
  *
  */
 public class ContextHelpComponent extends AbstractComponent {
-	
-	private static final ComponentRenderer RENDERER = new ContextHelpComponentRenderer();
-	
-	private final String hoverTextKey;
-	private final String packageName;
-	private final String pageName;
-	
+
+	private static ComponentRenderer RENDERER ;
+
+	public ContextHelpComponent(String name) {
+		super(name);
+		RENDERER = new ContextHelpComponentRenderer(name);
+	}
+
 	/**
 	 * 
 	 * @param name Name of the component
@@ -68,25 +66,7 @@ public class ContextHelpComponent extends AbstractComponent {
 	 * @param hoverTextKey i18n key of the tooltip
 	 * @param locale Locale of the user
 	 */
-	public ContextHelpComponent(String name, String packageName, String pageName, String hoverTextKey, Locale locale) {
-		super(name, Util.createPackageTranslator(packageName, locale, null));
-		setDomReplacementWrapperRequired(false);
-		this.pageName = pageName;
-		this.packageName = packageName;
-		this.hoverTextKey = hoverTextKey;
-	}
 
-	public String getHoverTextKey() {
-		return hoverTextKey;
-	}
-
-	public String getPackageName() {
-		return packageName;
-	}
-
-	public String getPageName() {
-		return pageName;
-	}
 
 	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
