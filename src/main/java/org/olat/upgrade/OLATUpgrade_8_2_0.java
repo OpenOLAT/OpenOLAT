@@ -176,7 +176,7 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 					try {
 						ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
 						CourseEnvironmentMapper envMapper = getCourseEnvironmentMapper(entry);
-						course.postImport(envMapper);
+						course.postImport(null, envMapper);
 					} catch (CorruptedCourseException e) {
 						log.error("Course seems corrupt: " + entry.getOlatResource().getResourceableId());
 					} catch (Exception e) {

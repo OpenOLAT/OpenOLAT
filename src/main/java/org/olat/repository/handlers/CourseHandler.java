@@ -271,9 +271,10 @@ public class CourseHandler implements RepositoryHandler {
 		cgm = course.getCourseEnvironment().getCourseGroupManager();
 		File fImportBaseDirectory = course.getCourseExportDataDir().getBasefile();
 		CourseEnvironmentMapper envMapper = cgm.importCourseBusinessGroups(fImportBaseDirectory);
+		envMapper.setAuthor(initialAuthor);
 		//upgrade course
 		course = CourseFactory.loadCourse(cgm.getCourseResource());
-		course.postImport(envMapper);
+		course.postImport(fImportBaseDirectory, envMapper);
 		
 		//rename root nodes
 		course.getRunStructure().getRootNode().setShortTitle(Formatter.truncateOnly(displayname, 25)); //do not use truncate!
@@ -443,6 +444,7 @@ public class CourseHandler implements RepositoryHandler {
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		// import groups
 		CourseEnvironmentMapper envMapper = cgm.importCourseBusinessGroups(fExportDir);
+		envMapper.setAuthor(author);
 		//upgrade to the current version of the course
 		course = CourseFactory.loadCourse(cgm.getCourseResource());
 		course.postCopy(envMapper, sourceCourse);

@@ -75,7 +75,7 @@ public interface ICourse extends OLATResourceable {
 	
 	public void postCopy(CourseEnvironmentMapper envMapper, ICourse sourceCourse);
 	
-	public void postImport(CourseEnvironmentMapper envMapper);
+	public void postImport(File importDirectory, CourseEnvironmentMapper envMapper);
 	
 	/**
 	 * Return the container to files for this course.
