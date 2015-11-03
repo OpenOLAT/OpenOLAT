@@ -25,6 +25,7 @@
 
 package org.olat.course.nodes;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -617,8 +618,8 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
     }
 	
 	@Override
-	public void postImport(CourseEnvironmentMapper envMapper, Processing processType) {
-		super.postImport(envMapper, processType);
+	public void postImport(File importDirectory, ICourse course, CourseEnvironmentMapper envMapper, Processing processType) {
+		super.postImport(importDirectory, course, envMapper, processType);
 		postImportCopy(envMapper);
 	}
 		

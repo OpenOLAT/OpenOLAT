@@ -440,7 +440,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	}
 
 	@Override
-	public void postImport(CourseEnvironmentMapper envMapper, Processing processType) {
+	public void postImport(File importDirectory, ICourse course, CourseEnvironmentMapper envMapper, Processing processType) {
 		postImportCopyConditions(envMapper);
 	}
 	
