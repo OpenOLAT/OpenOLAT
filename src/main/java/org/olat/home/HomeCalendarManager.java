@@ -129,7 +129,7 @@ public class HomeCalendarManager implements PersonalCalendarManager {
 			List<Object[]> resources =  getCourses(identity);
 			for(Object[] resource:resources) {
 				RepositoryEntry courseEntry = (RepositoryEntry)resource[0];
-				String calendarId = courseEntry.getKey().toString();
+				String calendarId = courseEntry.getOlatResource().getResourceableId().toString();
 				CalendarKey key = new CalendarKey(CalendarManager.TYPE_COURSE, calendarId);
 				CalendarUserConfiguration calendarConfig = configMap.get(key);
 				if(calendarConfig == null || calendarConfig.isInAggregatedFeed()) {
