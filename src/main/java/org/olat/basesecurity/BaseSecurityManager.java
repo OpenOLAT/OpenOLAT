@@ -50,6 +50,7 @@ import org.olat.basesecurity.events.NewIdentityCreatedEvent;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
@@ -1113,7 +1114,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select ident from ").append(Identity.class.getName()).append(" as ident where ident.key in (:keys)");
 		
-		return DBFactory.getInstance().getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("keys", identityKeys)
 				.getResultList();
@@ -1122,15 +1123,60 @@ public class BaseSecurityManager implements BaseSecurity {
 	/**
 	 * @see org.olat.basesecurity.Manager#loadIdentityByKey(java.lang.Long,boolean)
 	 */
+	@Override
 	public Identity loadIdentityByKey(Long identityKey, boolean strict) {
 		if(strict) return loadIdentityByKey(identityKey);
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from ").append(IdentityShort.class.getName()).append(" as ident where ident.key=:identityKey");
 		
-		String queryStr = "select ident from org.olat.basesecurity.IdentityImpl as ident where ident.key=:identityKey";
-		DBQuery dbq = DBFactory.getInstance().createQuery(queryStr);
-		dbq.setLong("identityKey", identityKey);
-		List<Identity> identities = dbq.list();
-		if (identities.size() == 1) return identities.get(0);
-		return null;
+		List<Identity> identities = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("identityKey", identityKey)
+				.getResultList();
+		return identities.size() == 1 ? identities.get(0) : null;
+	}
+
+	@Override
+	public List<IdentityShort> searchIdentityShort(String search, int maxResults) {
+		String[] searchArr = search.split(" ");
+		String[] attributes = new String[]{ "name", "firstName", "lastName", "email" };
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from ").append(IdentityShort.class.getName()).append(" as ident ")
+		  .append(" where ident.status<").append(Identity.STATUS_VISIBLE_LIMIT).append(" and (");
+		
+		boolean start = true;
+		for(int i=0; i<searchArr.length; i++) {
+			for(String attribute:attributes) {
+				if(start) {
+					start = false;
+				} else {
+					sb.append(" or ");
+				}
+				
+				if (searchArr[i].contains("_") && dbVendor.equals("oracle")) {
+					//oracle needs special ESCAPE sequence to search for escaped strings
+					sb.append(" lower(ident.").append(attribute).append(") like :search").append(i).append(" ESCAPE '\\'");
+				} else if (dbVendor.equals("mysql")) {
+					sb.append(" ident.").append(attribute).append(" like :search").append(i);
+				} else {
+					sb.append(" lower(ident.").append(attribute).append(") like :search").append(i);
+				}
+			}
+		}
+		sb.append(")");
+		
+		TypedQuery<IdentityShort> searchQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), IdentityShort.class);
+		for(int i=searchArr.length; i-->0; ) {
+			searchQuery.setParameter("search" + i, PersistenceHelper.makeFuzzyQueryString(searchArr[i]));
+		}
+
+		return searchQuery
+				.setFirstResult(0)
+				.setMaxResults(maxResults)
+				.getResultList();
 	}
 
 	@Override
@@ -1139,7 +1185,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		sb.append("select identity from ").append(IdentityShort.class.getName()).append(" as identity ")
 			.append(" where identity.key=:identityKey");
 		
-		List<IdentityShort> idents = DBFactory.getInstance().getCurrentEntityManager()
+		List<IdentityShort> idents = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), IdentityShort.class)
 				.setParameter("identityKey", identityKey)
 				.getResultList();

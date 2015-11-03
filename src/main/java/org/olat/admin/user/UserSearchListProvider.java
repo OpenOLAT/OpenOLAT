@@ -25,11 +25,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.IdentityShort;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListReceiver;
 import org.olat.core.gui.util.CSSHelper;
-import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.user.UserManager;
 
@@ -38,6 +38,8 @@ import org.olat.user.UserManager;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class UserSearchListProvider implements ListProvider {
+	
+	private static final int MAX_ENTRIES = 15;
 	
 	private final BaseSecurity securityManager;
 	private final UserManager userManager;
@@ -57,12 +59,14 @@ public class UserSearchListProvider implements ListProvider {
 		userProperties.put(UserConstants.LASTNAME, searchValue);
 		userProperties.put(UserConstants.EMAIL, searchValue);
 		// Search in all fileds -> non intersection search
-		List<Identity> res = searchUsers(searchValue,	userProperties, false);
-		int maxEntries = 15;
+
+		int maxEntries = MAX_ENTRIES;
+		List<IdentityShort> res = securityManager.searchIdentityShort(searchValue, maxEntries);
+
 		boolean hasMore = false;
-		for (Iterator<Identity> it_res = res.iterator(); (hasMore=it_res.hasNext()) && maxEntries > 0;) {
+		for (Iterator<IdentityShort> it_res = res.iterator(); (hasMore=it_res.hasNext()) && maxEntries > 0;) {
 			maxEntries--;
-			Identity ident = it_res.next();
+			IdentityShort ident = it_res.next();
 			String key = ident.getKey().toString();
 			String displayKey = ident.getName();
 			String displayText = userManager.getUserDisplayName(ident);
@@ -71,12 +75,5 @@ public class UserSearchListProvider implements ListProvider {
 		if(hasMore){
 			receiver.addEntry(".....",".....");
 		}
-	}
-	
-	protected List<Identity> searchUsers(String login, Map<String, String> userPropertiesSearch, boolean userPropertiesAsIntersectionSearch) {
-	  return securityManager.getVisibleIdentitiesByPowerSearch(
-			("".equals(login) ? null : login),
-			userPropertiesSearch, userPropertiesAsIntersectionSearch,	// in normal search fields are intersected
-			null, null, null, null, null);
 	}
 }
