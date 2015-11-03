@@ -191,13 +191,13 @@ public class HomeCalendarManager implements PersonalCalendarManager {
 			SearchBusinessGroupParams groupParams = new SearchBusinessGroupParams(identity, true, false);
 			groupParams.addTools(CollaborationTools.TOOL_CALENDAR);
 			List<BusinessGroup> ownerGroups = businessGroupService.findBusinessGroups(groupParams, null, 0, -1);
-			addCalendars(ownerGroups, true, calendars, configMap);
+			addCalendars(ownerGroups, true, false, calendars, configMap);
 			
 			SearchBusinessGroupParams groupParams2 = new SearchBusinessGroupParams(identity, false, true);
 			groupParams2.addTools(CollaborationTools.TOOL_CALENDAR);
 			List<BusinessGroup> attendedGroups = businessGroupService.findBusinessGroups(groupParams2, null, 0, -1);
 			attendedGroups.removeAll(ownerGroups);
-			addCalendars(attendedGroups, false, calendars, configMap);
+			addCalendars(attendedGroups, false, true, calendars, configMap);
 		}
 	}
 
@@ -234,6 +234,10 @@ public class HomeCalendarManager implements PersonalCalendarManager {
 							courseCalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
 						}
 						
+						if(role != null && (GroupRoles.owner.name().equals(role) || GroupRoles.coach.name().equals(role) || GroupRoles.participant.name().equals(role))) {
+							courseCalendarWrapper.setPrivateEventsVisible(true);
+						}
+
 						CalendarUserConfiguration config = configMap.get(courseCalendarWrapper.getCalendarKey());
 						if (config != null) {
 							courseCalendarWrapper.setConfiguration(config);
@@ -308,7 +312,7 @@ public class HomeCalendarManager implements PersonalCalendarManager {
 	 * @param isOwner
 	 * @param calendars
 	 */
-	private void addCalendars(List<BusinessGroup> groups, boolean isOwner,
+	private void addCalendars(List<BusinessGroup> groups, boolean isOwner, boolean isParticipant,
 			List<KalendarRenderWrapper> calendars, Map<CalendarKey,CalendarUserConfiguration> configMap) {
 		
 		Map<Long,Long> groupKeyToAccess = CoreSpringFactory.getImpl(CollaborationManager.class).lookupCalendarAccess(groups);
@@ -329,6 +333,9 @@ public class HomeCalendarManager implements PersonalCalendarManager {
 			CalendarUserConfiguration config = configMap.get(groupCalendarWrapper.getCalendarKey());
 			if (config != null) {
 				groupCalendarWrapper.setConfiguration(config);
+			}
+			if(isOwner || isParticipant) {
+				groupCalendarWrapper.setPrivateEventsVisible(true);
 			}
 			calendars.add(groupCalendarWrapper);
 		}

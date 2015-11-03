@@ -555,8 +555,8 @@ public class BusinessGroupDAO {
 		
 		if(resource != null) {
 			where = where(query, where);
-			query.append(" exists (")
-			     .append("   select relation from repoentrytogroup as relation where relation.group=baseGroup and relation.entry.key=:resourceKey")
+			query.append(" bgi.baseGroup.key in (")
+			     .append("   select relation.group.key from repoentrytogroup as relation where relation.entry.key=:resourceKey")
 			     .append(" )");
 		}
 		
@@ -573,8 +573,8 @@ public class BusinessGroupDAO {
 		if(params.isOwner() || params.isAttendee() || params.isWaiting()) {
 			where = where(query, where);
 			roles = new ArrayList<>();
-			query.append(" exists (select bmember from bgroupmember as bmember")
-			     .append("   where bmember.identity.key=:identId and bmember.group=baseGroup and bmember.role in (:roles)")
+			query.append(" bgi.baseGroup.key in (select bmember.group.key from bgroupmember as bmember")
+			     .append("   where bmember.identity.key=:identId and bmember.role in (:roles)")
 			     .append(" )");
 			
 			if(params.isOwner()) {

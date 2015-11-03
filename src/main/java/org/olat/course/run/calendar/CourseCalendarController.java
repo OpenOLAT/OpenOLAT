@@ -45,13 +45,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
-import org.olat.course.groupsandrights.CourseRights;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,15 +57,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CourseCalendarController extends BasicController {
 
 	private CalendarController calendarController;
+	
+	private final UserCourseEnvironment courseEnv;
 	private KalendarRenderWrapper courseKalendarWrapper;
-	private OLATResourceable ores;
 
 	@Autowired
 	private CalendarManager calendarManager;
 	
-	public CourseCalendarController(UserRequest ureq, WindowControl wControl, OLATResourceable course) {
+	public CourseCalendarController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment courseEnv) {
 		super(ureq, wControl);
-		this.ores = course;
+		this.courseEnv = courseEnv;
 		List<KalendarRenderWrapper> calendars = getListOfCalendarWrappers(ureq);
 		calendarController = new WeeklyCalendarController(ureq, wControl, calendars,
 				WeeklyCalendarController.CALLER_COURSE, false);
@@ -78,18 +77,19 @@ public class CourseCalendarController extends BasicController {
 	private List<KalendarRenderWrapper> getListOfCalendarWrappers(UserRequest ureq) {
 		List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
 		// add course calendar
-		ICourse course = CourseFactory.loadCourse(ores);
+		ICourse course = CourseFactory.loadCourse(courseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 		courseKalendarWrapper = calendarManager.getCourseCalendar(course);
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		Identity identity = ureq.getIdentity();
+		
 		Roles roles = ureq.getUserSession().getRoles();
-		boolean isPrivileged = cgm.isIdentityCourseAdministrator(identity)
-				|| cgm.hasRight(identity, CourseRights.RIGHT_COURSEEDITOR)
-				|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, course.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
+		boolean isPrivileged = roles.isOLATAdmin() || courseEnv.isAdmin()
+				|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(getIdentity(), roles, cgm.getCourseEntry());
 		if (isPrivileged) {
 			courseKalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
+			courseKalendarWrapper.setPrivateEventsVisible(true);
 		} else {
 			courseKalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
+			courseKalendarWrapper.setPrivateEventsVisible(courseEnv.isAdmin() || courseEnv.isCoach() || courseEnv.isParticipant());
 		}
 		CalendarUserConfiguration config = calendarManager.findCalendarConfigForIdentity(courseKalendarWrapper.getKalendar(), getIdentity());
 		if (config != null) {
@@ -103,9 +103,9 @@ public class CourseCalendarController extends BasicController {
 		// add course group calendars
 		
 		// learning groups
-		List<BusinessGroup> ownerGroups = cgm.getOwnedBusinessGroups(identity);
+		List<BusinessGroup> ownerGroups = cgm.getOwnedBusinessGroups(getIdentity());
 		addCalendars(ownerGroups, true, clpc, calendars);
-		List<BusinessGroup> attendedGroups = cgm.getParticipatingBusinessGroups(identity);
+		List<BusinessGroup> attendedGroups = cgm.getParticipatingBusinessGroups(getIdentity());
 		for (Iterator<BusinessGroup> ownerGroupsIterator = ownerGroups.iterator(); ownerGroupsIterator.hasNext();) {
 			BusinessGroup ownerGroup = ownerGroupsIterator.next();
 			if (attendedGroups.contains(ownerGroup))
