@@ -24,7 +24,6 @@
 	<import resource="classpath:/org/olat/core/commons/fullWebApp/util/_spring/StickyMessageCorecontext.xml"/>
 	<import resource="classpath:/org/olat/core/commons/modules/bc/_spring/folderModuleCorecontext.xml"/>
 	<import resource="classpath:/org/olat/core/commons/modules/glossary/_spring/glossaryCorecontext.xml"/>
-	<import resource="classpath:/org/olat/core/commons/contextHelp/_spring/contextHelpCorecontext.xml"/>
 	<import resource="classpath:/org/olat/core/logging/_spring/loggingCorecontext.xml"/>
 	<import resource="classpath:/org/olat/core/logging/activity/_spring/activityCorecontext.xml"/>
 	

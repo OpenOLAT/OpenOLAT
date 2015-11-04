@@ -45,7 +45,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.search.SearchServiceUIFactory;
 import org.olat.search.model.ResultDocument;
-import org.olat.search.service.document.ContextHelpDocument;
 import org.olat.user.UserManager;
 
 /**
@@ -99,12 +98,7 @@ public class SearchControllerFactory implements SearchServiceUIFactory {
 			return creator.createController(ureq, wControl, mainForm, document);
 		}
 		
-		ResultController ctrl;
-		if(ContextHelpDocument.TYPE.equals(documentType)) {
-			ctrl = new ContextHelpResultController(ureq, wControl, mainForm, document);
-		} else {
-			ctrl = new StandardResultController(ureq, wControl, mainForm, document);
-		}
+		ResultController ctrl = new StandardResultController(ureq, wControl, mainForm, document);
 		return ctrl;
 	}
 	

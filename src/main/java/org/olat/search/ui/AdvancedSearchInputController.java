@@ -50,7 +50,6 @@ import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.search.model.AbstractOlatDocument;
 import org.olat.search.service.SearchMetadataFieldsProvider;
-import org.olat.search.service.document.ContextHelpDocument;
 import org.olat.search.service.document.file.ExcelDocument;
 import org.olat.search.service.document.file.HtmlDocument;
 import org.olat.search.service.document.file.OpenDocument;
@@ -89,7 +88,7 @@ public class AdvancedSearchInputController extends FormBasicController {
 	private static final String USER_TYPES = "type.identity";
 	private static final String PORTFOLIO_TYPES = "type.db.EP*Map* type.group.EP*Map*";
 	private static final String OTHER_TYPES = TextDocument.FILE_TYPE + " " + OpenDocument.FORMULA_FILE_TYPE + " " + OpenDocument.GRAPHIC_FILE_TYPE + " " 
-		+ ContextHelpDocument.TYPE + " " + UnkownDocument.UNKOWN_TYPE + " " + OpenDocument.TEXT_FILE_TYPE;
+		+ UnkownDocument.UNKOWN_TYPE + " " + OpenDocument.TEXT_FILE_TYPE;
 	
 	private final List<DocumentInfo> documentInfos = new ArrayList<DocumentInfo>();
 	 

@@ -37,9 +37,6 @@
 				<entry key="/admin.html">
 					<ref bean="adminbean" />
 				</entry>
-				<entry key="/help/">
-					<ref bean="contexthelpbean" />
-				</entry>
 				<entry key="/qti/">
 					<ref bean="secstaticlegacybean" />
 				</entry>
@@ -199,13 +196,6 @@
 		class="org.olat.core.dispatcher.impl.StaticMediaDispatcher">
 		<constructor-arg index="0">
 			<value>/raw/</value>
-		</constructor-arg>
-	</bean>
-	
-	<bean id="contexthelpbean"
-		class="org.olat.core.commons.contextHelp.ContextHelpDispatcher">
-		<constructor-arg index="0">
-			<value>/help/</value>
 		</constructor-arg>
 	</bean>
 	

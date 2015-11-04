@@ -26,10 +26,11 @@
 
 package org.olat.ims.cp.ui;
 
-import org.olat.core.commons.contextHelp.ContextHelpComponent;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsPreviewController;
+import org.olat.core.commons.services.help.HelpLinkSPI;
+import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -54,6 +55,7 @@ import org.olat.ims.cp.CPManager;
 import org.olat.ims.cp.CPManagerImpl;
 import org.olat.ims.cp.ContentPackage;
 import org.olat.modules.cp.CPUIFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class CPContentController extends BasicController {
 
@@ -66,8 +68,12 @@ public class CPContentController extends BasicController {
 	private CloseableModalController dialogCtr;
 	private LayoutMain3ColsPreviewController previewCtr;
 	private Link editMetadataLink, previewLink;
+	private Component helpLink;
 	private DeliveryOptions deliveryOptions;
 	private StackedPanel mainPanel;
+	
+	@Autowired
+	private HelpModule helpModule;
 
 	protected CPContentController(UserRequest ureq, WindowControl control, ContentPackage cp) {
 		super(ureq, control);
@@ -77,6 +83,12 @@ public class CPContentController extends BasicController {
 		CPPackageConfig packageConfig = CPManager.getInstance().getCPPackageConfig(cp.getResourcable());
 		if(packageConfig != null) {
 			deliveryOptions = packageConfig.getDeliveryOptions();
+		}
+
+		// init help link, can't do this in initToolbar because ureq is missing
+		if (helpModule.isHelpEnabled()) {
+			HelpLinkSPI provider = helpModule.getHelpProvider();
+			helpLink = provider.getHelpPageLink(ureq, translate("help"), translate("help.hover"), "o_icon o_icon-lg o_icon_help", null, "CP Editor");
 		}
 		
 		// set initial page to display
@@ -105,8 +117,9 @@ public class CPContentController extends BasicController {
 		previewLink.setTooltip(translate("contentcontroller.previewlink_title"));
 		toolbar.addTool(previewLink, Align.right);
 
-        ContextHelpComponent contextHelp = new ContextHelpComponent("cpHelp", getLocale());
-        toolbar.addTool(contextHelp, Align.right);
+		if (helpLink != null) {
+			toolbar.addTool(helpLink, Align.right);			
+		}
 	}
 
 	/**
