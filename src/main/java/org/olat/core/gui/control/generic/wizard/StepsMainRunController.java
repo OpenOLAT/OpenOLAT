@@ -130,18 +130,24 @@ public class StepsMainRunController extends FormBasicController implements Gener
 	private StepRunnerCallback finish;
 	private boolean finishCycle = false;
 
+
+	public StepsMainRunController(UserRequest ureq, WindowControl control, Step startStep, StepRunnerCallback finish,
+			StepRunnerCallback cancel, String wizardTitle, String elementCssClass) {
+		this(ureq, control, startStep, finish, cancel, wizardTitle, elementCssClass, "");
+	}
 	/**
 	 * @param ureq
 	 * @param control
 	 */
 	public StepsMainRunController(UserRequest ureq, WindowControl control, Step startStep, StepRunnerCallback finish,
-			StepRunnerCallback cancel, String wizardTitle, String elementCssClass) {
+			StepRunnerCallback cancel, String wizardTitle, String elementCssClass, String contextHelpPage) {
 		super(ureq, control, "stepslayout");
 
 		this.finish = finish;
 		this.cancel = cancel;
 		flc.contextPut("wizardTitle", wizardTitle);
 		flc.contextPut("elementCssClass", elementCssClass);
+		flc.contextPut("helpPage", contextHelpPage);
 
 		this.startStep = startStep;
 		steps = new Stack<Step>();

@@ -78,7 +78,7 @@ public class ContextHelpComponent extends AbstractComponent {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param name Name of the component
 	 * @param packageName Package name where the help is
 	 * @param pageName The name of the page of this specific context help
