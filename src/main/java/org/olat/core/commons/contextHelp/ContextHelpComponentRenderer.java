@@ -19,9 +19,6 @@
  */
 package org.olat.core.commons.contextHelp;
 
-import java.util.Locale;
-
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.components.Component;
@@ -31,6 +28,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * Draw the link to the context help.
@@ -53,12 +51,11 @@ public class ContextHelpComponentRenderer extends DefaultComponentRenderer {
 			Translator translator, RenderResult renderResult, String[] args) {
 
 		HelpModule helpModule = CoreSpringFactory.getImpl(HelpModule.class);
-		Locale locale = renderer.getTranslator().getLocale();
-		String title = StringEscapeUtils.escapeHtml(renderer.getTranslator().translate("help.button"));
-		String url = helpModule.getHelpProvider().getURL(locale, page);
-		  sb.append("<a href=\"").append(url)
+		String title = StringHelper.escapeHtml(source.getTranslator().translate("help.button"));
+		String url = helpModule.getHelpProvider().getURL(source.getTranslator().getLocale(), page);
+		sb.append("<a href=\"").append(url)
 		  .append("\" class=\"o_chelp\" target=\"_blank\" title=\"").append(title).append("\"><i class='o_icon o_icon_help'></i> ")
-		  .append(renderer.getTranslator().translate("help"))
+		  .append(source.getTranslator().translate("help"))
 		  .append("</a>");
 
 	}

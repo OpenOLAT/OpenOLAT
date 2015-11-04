@@ -18,6 +18,8 @@
  * <p>
  */
 package org.olat.core.commons.contextHelp;
+import java.util.Locale;
+
 /**
 
  * OpenOLAT - Online Learning and Training</a><br>
@@ -40,6 +42,8 @@ package org.olat.core.commons.contextHelp;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 
 /**
  * 
@@ -52,10 +56,25 @@ import org.olat.core.gui.components.ComponentRenderer;
 public class ContextHelpComponent extends AbstractComponent {
 
 	private static ComponentRenderer RENDERER ;
+	
+	private final Locale locale;
 
-	public ContextHelpComponent(String name) {
+	public ContextHelpComponent(String name, Locale locale) {
 		super(name);
+		this.locale = locale;
+		setTranslator(Util.createPackageTranslator(ContextHelpComponent.class, locale));
 		RENDERER = new ContextHelpComponentRenderer(name);
+	}
+	
+	public Locale getLocale() {
+		return locale;
+	}
+	
+	public void setTranslator(Translator translator) {
+		if(translator == null) {
+			System.out.println();
+		}
+		super.setTranslator(translator);
 	}
 
 	/**

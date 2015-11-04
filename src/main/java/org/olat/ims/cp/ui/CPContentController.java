@@ -105,7 +105,7 @@ public class CPContentController extends BasicController {
 		previewLink.setTooltip(translate("contentcontroller.previewlink_title"));
 		toolbar.addTool(previewLink, Align.right);
 
-        ContextHelpComponent contextHelp = new ContextHelpComponent("CP Editor");
+        ContextHelpComponent contextHelp = new ContextHelpComponent("cpHelp", getLocale());
         toolbar.addTool(contextHelp, Align.right);
 	}
 
