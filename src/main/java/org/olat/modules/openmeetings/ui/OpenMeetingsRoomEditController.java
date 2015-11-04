@@ -79,7 +79,8 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 		this.ores = ores;
 		this.subIdentifier = subIdentifier;
 		this.defaultSettings = defaultSettings;
-		
+		this.setFormContextHelp("Communication and Collaboration#_openmeeting_raum");
+
 		roomTypeKeys = new String[]{
 				RoomType.conference.typeStr(), RoomType.restricted.typeStr(), RoomType.interview.typeStr()
 		};

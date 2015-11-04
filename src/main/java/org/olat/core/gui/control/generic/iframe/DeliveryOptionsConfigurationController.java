@@ -51,7 +51,8 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 	private SingleSelection jsOptionEl, cssOptionEl;
 	private SingleSelection encodingContentEl, encodingJSEl, heightEl;
 	private MultipleSelectionElement glossarEl;
-	
+	private String helpPage;
+
 	private static final String[] jsKeys = new String[] {"none", "jQuery", "prototypejs" };
 	private static final String[] cssKeys = new String[] {"none", "openolat" };
 	
@@ -72,15 +73,16 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 	
 	private static final String[] standardModeKeys = new String[]{ "standard", "configured" };
 	private static final String[] inheritKeys = new String[]{ "inherit", "custom"};
-	
-	public DeliveryOptionsConfigurationController(UserRequest ureq, WindowControl wControl, DeliveryOptions config) {
-		this(ureq, wControl, config, null);
+
+	public DeliveryOptionsConfigurationController(UserRequest ureq, WindowControl wControl, DeliveryOptions config, String helpPage) {
+		this(ureq, wControl, config, helpPage, null);
 	}
-	
-	public DeliveryOptionsConfigurationController(UserRequest ureq, WindowControl wControl, DeliveryOptions config, DeliveryOptions parentConfig) {
+
+	public DeliveryOptionsConfigurationController(UserRequest ureq, WindowControl wControl, DeliveryOptions config, String helpPage, DeliveryOptions parentConfig) {
 		super(ureq, wControl);
 		this.config = (config == null ? new DeliveryOptions() : config.clone());
 		this.parentConfig = parentConfig;
+		this.helpPage = helpPage;
 		initForm(ureq);
 
 		if(parentConfig != null && config != null && config.getInherit() != null && config.getInherit().booleanValue()) {
@@ -143,7 +145,9 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("option.desc");
-		setFormContextHelp("Knowledge Transfer");
+		if(helpPage != null || helpPage != ""){
+			setFormContextHelp(helpPage);
+		}
 
 		String[] inheritValues = new String[]{
 				translate("inherit"), translate("custom")	

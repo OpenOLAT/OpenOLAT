@@ -1167,7 +1167,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		Step start = new CheckList_1_CheckboxStep(ureq, ores);
 		StepRunnerCallback finish = new CheckListStepRunnerCallback(ores);
 		checklistWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("checklist.wizard"), "o_sel_checklist_wizard");
+				translate("checklist.wizard"), "o_sel_checklist_wizard", "Assessment#_checklist_multiple");
 		listenTo(checklistWizard);
 		getWindowControl().pushAsModalDialog(checklistWizard.getInitialComponent());
 	}

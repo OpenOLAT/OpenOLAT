@@ -142,7 +142,7 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 		DeliveryOptions config = cpConfig == null ? null : cpConfig.getDeliveryOptions();
 		WindowControl bwControl = getSubWindowControl("Layout");
 		final DeliveryOptionsConfigurationController deliveryOptionsCtrl
-			= new DeliveryOptionsConfigurationController(ureq, addToHistory(ureq, bwControl), config);
+			= new DeliveryOptionsConfigurationController(ureq, addToHistory(ureq, bwControl), config, "Knowledge Transfer#_cp_layout");
 		deliveryOptionsCtrl.addControllerListener(new ControllerEventListener() {
 
 			@Override

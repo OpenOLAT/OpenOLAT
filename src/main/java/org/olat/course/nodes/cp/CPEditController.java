@@ -180,7 +180,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 		listenTo(accessibilityCondContr);
 
 		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(CPEditController.CONFIG_DELIVERYOPTIONS);
-		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), deliveryOptions, parentConfig);
+		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), deliveryOptions, "Knowledge Transfer#_cp_layout", parentConfig);
 		listenTo(deliveryOptionsCtrl);
 
 		main.setContent(cpConfigurationVc);

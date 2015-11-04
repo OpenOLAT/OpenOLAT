@@ -99,8 +99,8 @@ public class ScormRuntimeController extends RepositoryEntryRuntimeController {
 		final OLATResource resource = entry.getOlatResource();
 		WindowControl bwControl = getSubWindowControl("Layout");
 		final DeliveryOptionsConfigurationController deliveryOptionsCtrl
-			= new DeliveryOptionsConfigurationController(ureq, addToHistory(ureq, bwControl), config);
-	
+			= new DeliveryOptionsConfigurationController(ureq, addToHistory(ureq, bwControl), config, "Knowledge Transfer#_scorm_layout");
+
 		deliveryOptionsCtrl.addControllerListener(new ControllerEventListener() {
 			@Override
 			public void dispatchEvent(UserRequest uureq, Controller source, Event event) {
