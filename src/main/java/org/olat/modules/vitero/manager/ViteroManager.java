@@ -533,9 +533,13 @@ public class ViteroManager implements UserDataDeletable {
 			//optional
 			String language = identity.getUser().getPreferences().getLanguage();
 			if(StringHelper.containsNonWhitespace(language) && language.startsWith("de")) {
-				user.setLocale("de");
+				user.setLocale("de_DE");
+			} else if(StringHelper.containsNonWhitespace(language) && language.startsWith("fr")) {
+				user.setLocale("fr_FR");
+			} else if(StringHelper.containsNonWhitespace(language) && language.startsWith("zh_CN")) {
+				user.setLocale("zh_CN");
 			} else {
-				user.setLocale("en");
+				user.setLocale("en_GB");
 			}
 			user.setPcstate("NOT_TESTED");
 			user.setTimezone(viteroModule.getTimeZoneId());
