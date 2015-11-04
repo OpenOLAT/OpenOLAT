@@ -23,6 +23,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.olat.admin.sysinfo.model.DatabaseConnectionVO;
+
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com

@@ -1,0 +1,14 @@
+<div class="o_buttons_box_right">
+#if ($isStatisticsEnabled)
+  $r.render("disable.hibernate.statistics") $r.render("clear.hibernate.statistics")
+#else
+  $r.render("enable.hibernate.statistics")
+#end
+</div>
+<div class="o_block clearfix">
+	$r.render("segments") <br/>	
+		
+	#if($r.available("segmentCmp"))
+		$r.render("segmentCmp")
+	#end
+</div>

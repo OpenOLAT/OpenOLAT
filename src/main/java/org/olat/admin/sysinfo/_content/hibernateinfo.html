@@ -1,39 +1,34 @@
-<div class="o_buttons_box_right">
-#if ($isStatisticsEnabled)
-  $r.render("disable.hibernate.statistics") $r.render("clear.hibernate.statistics")
-#else
-  $r.render("enable.hibernate.statistics")
-#end
-</div>
-
-<br/><br/>
-<fieldset><legend>$r.translate("title.hibernate.statistics")</legend>
-Hibernate.ConnectCount : $hibernateStatistics.connectCount<br>
-Hibernate.FlushCount : $hibernateStatistics.flushCount<br>
-Hibernate.SessionOpenCount : $hibernateStatistics.sessionOpenCount<br>
-Hibernate.SessionCloseCount : $hibernateStatistics.sessionCloseCount<br>
-Hibernate.QueryExecutionCount : $hibernateStatistics.queryExecutionCount<br>
-Hibernate.QueryExecutionMaxTime : $hibernateStatistics.queryExecutionMaxTime<br>
-#if ($hibernateStatistics.queryExecutionMaxTimeQueryString)
-Hibernate.QueryExecutionMaxTimeQueryString : $hibernateStatistics.queryExecutionMaxTimeQueryString<br>
-#end
-Hibernate.QueryCacheHitCount : $hibernateStatistics.queryCacheHitCount<br>
-Hibernate.QueryCacheMissCount : $hibernateStatistics.queryCacheMissCount<br>
-Hibernate.TransactionCount : $hibernateStatistics.transactionCount<br>
-Hibernate.SuccessfulTransactionCount : $hibernateStatistics.successfulTransactionCount<br>
+<fieldset>
+	<legend>$r.translate("title.connection.statistics")</legend>
+	<table class="table table-condensed table-striped">
+		<tbody>
+			<tr><th style="width:25%;">Active connection count</th><td>$connectionInfos.activeConnectionCount</td></tr>
+			<tr><th>Current connection count</th><td>$connectionInfos.currentConnectionCount</td></tr>
+		</tbody>
+	</table>
+</fieldset>
+<fieldset>
+	<legend>$r.translate("title.hibernate.statistics")</legend>
+	<table class="table table-condensed table-striped">
+		<tbody>
+			<tr><th>Connect count</th><td>$hibernateStatistics.connectCount</td></tr>
+			<tr><th>Flush count</th><td>$hibernateStatistics.flushCount</td></tr>
+			<tr><th>Open session count</th><td>$hibernateStatistics.sessionOpenCount</td></tr>
+			<tr><th>Close session count</th><td>$hibernateStatistics.sessionCloseCount</td></tr>
+			<tr><th>Query execution count</th><td>$hibernateStatistics.queryExecutionCount</td></tr>
+			<tr><th>Query execution max. time</th><td>$hibernateStatistics.queryExecutionMaxTime</td></tr>
+			#if ($hibernateStatistics.queryExecutionMaxTimeQueryString)
+			<tr><th>Query&nbsp;execution&nbsp;max&nbsp;time&nbsp;query</th><td>$hibernateStatistics.queryExecutionMaxTimeQueryString</td></tr>
+			#end
+			<tr><th>Query cache hit count</th><td>$hibernateStatistics.queryCacheHitCount</td></tr>
+			<tr><th>Query cache miss count</th><td>$hibernateStatistics.queryCacheMissCount</td></tr>
+			<tr><th>Transaction count</th><td>$hibernateStatistics.transactionCount</td></tr>
+			<tr><th>Successful&nbsp;transaction&nbsp;count</th><td>$hibernateStatistics.successfulTransactionCount</td></tr>
+		</tbody>
+	</table>
 </fieldset>
 
-<fieldset><legend>List all queries</legend>
-#foreach ($query in $hibernateStatistics.queries)
-  <b>$query</b><br>
-  $hibernateStatistics.getQueryStatistics($query)<br>
-#end
-</fieldset>
 
-<fieldset><legend>List all entities</legend>
-#foreach ($entity in $hibernateStatistics.entityNames)
-  <b>$entity</b><br>
-  $hibernateStatistics.getEntityStatistics($entity)<br>
-#end
-</fieldset>
+
+
 
