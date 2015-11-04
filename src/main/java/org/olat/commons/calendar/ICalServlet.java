@@ -27,7 +27,6 @@
 package org.olat.commons.calendar;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.URISyntaxException;
 import java.util.Iterator;
@@ -49,7 +48,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.i18n.I18nManager;
 
 import net.fortuna.ical4j.data.CalendarOutputter;
-import net.fortuna.ical4j.data.FoldingWriter;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.PropertyList;
@@ -58,6 +56,7 @@ import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Url;
 import net.fortuna.ical4j.model.property.XProperty;
+import net.fortuna.ical4j.util.Strings;
 
 
 /**
@@ -216,12 +215,11 @@ public class ICalServlet extends HttpServlet {
 			List<CalendarFileInfos> iCalFiles = homeCalendarManager.getListOfCalendarsFiles(identity);
 			DBFactory.getInstance().commitAndCloseSession();
 			
-			PrintWriter responseWriter = response.getWriter();
-			FoldingWriter out = new FoldingWriter(responseWriter);
-			
+			Writer out = response.getWriter();
 			out.write(Calendar.BEGIN);
 			out.write(':');
 			out.write(Calendar.VCALENDAR);
+			out.write(Strings.LINE_SEPARATOR);
 
 			int numOfFiles = iCalFiles.size();
 			for(int i=0; i<numOfFiles; i++) {
