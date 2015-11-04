@@ -93,7 +93,7 @@ public class HomeCalendarManager implements PersonalCalendarManager {
 		Map<CalendarKey,CalendarUserConfiguration> configMap = calendarManager.getCalendarUserConfigurationsMap(identity);
 		
 		//personal calendar
-		CalendarKey personalCalendarKey = new CalendarKey(CalendarManager.TYPE_USER, identity.getName());
+		CalendarKey personalCalendarKey = new CalendarKey(identity.getName(), CalendarManager.TYPE_USER);
 		CalendarUserConfiguration personalCalendarConfig = configMap.get(personalCalendarKey);
 		if(calendarModule.isEnablePersonalCalendar()
 				&& (personalCalendarConfig == null || personalCalendarConfig.isInAggregatedFeed())) {
@@ -114,7 +114,7 @@ public class HomeCalendarManager implements PersonalCalendarManager {
 			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(groupParams, null, 0, -1);
 			for(BusinessGroup group:groups) {
 				String calendarId = group.getKey().toString();
-				CalendarKey key = new CalendarKey(CalendarManager.TYPE_GROUP, calendarId);
+				CalendarKey key = new CalendarKey(calendarId, CalendarManager.TYPE_GROUP);
 				CalendarUserConfiguration calendarConfig = configMap.get(key);
 				if(calendarConfig == null || calendarConfig.isInAggregatedFeed()) {
 					File iCalFile = calendarManager.getCalendarICalFile(CalendarManager.TYPE_GROUP, calendarId);
@@ -130,7 +130,7 @@ public class HomeCalendarManager implements PersonalCalendarManager {
 			for(Object[] resource:resources) {
 				RepositoryEntry courseEntry = (RepositoryEntry)resource[0];
 				String calendarId = courseEntry.getOlatResource().getResourceableId().toString();
-				CalendarKey key = new CalendarKey(CalendarManager.TYPE_COURSE, calendarId);
+				CalendarKey key = new CalendarKey(calendarId, CalendarManager.TYPE_COURSE);
 				CalendarUserConfiguration calendarConfig = configMap.get(key);
 				if(calendarConfig == null || calendarConfig.isInAggregatedFeed()) {
 					File iCalFile = calendarManager.getCalendarICalFile(CalendarManager.TYPE_COURSE, calendarId);

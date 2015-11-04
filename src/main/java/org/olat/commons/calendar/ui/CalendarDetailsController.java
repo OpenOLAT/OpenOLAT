@@ -43,8 +43,10 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.helpers.Settings;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +63,7 @@ public class CalendarDetailsController extends BasicController {
 	private final KalendarRenderWrapper calendar;
 	
 	private Link editButton;
+	private final VelocityContainer mainVC;
 	
 	private final boolean isGuestOnly;
 	
@@ -73,7 +76,7 @@ public class CalendarDetailsController extends BasicController {
 		this.calEvent = event;
 		this.calendar = calendar;
 		isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
-		VelocityContainer mainVC = createVelocityContainer("event_details");
+		mainVC = createVelocityContainer("event_details");
 
 		if(!isGuestOnly
 				&& !(calendarModule.isManagedCalendars() && CalendarManagedFlag.isManaged(event, CalendarManagedFlag.all))
@@ -149,7 +152,16 @@ public class CalendarDetailsController extends BasicController {
 					wrapper.setIntern(false);
 				} else {
 					wrapper.setIntern(true);
-				} 
+				}
+				if(wrapper.isIntern()) {
+					Link ooLink = LinkFactory.createLink("link-intern-" + CodeHelper.getRAMUniqueID(), "intern.link", getTranslator(), mainVC, this, Link.NONTRANSLATED);
+					ooLink.setCustomDisplayText(StringHelper.escapeHtml(link.getDisplayName()));
+					ooLink.setUserObject(wrapper);
+					if(StringHelper.containsNonWhitespace(wrapper.getCssClass())) {
+						ooLink.setIconLeftCSS("o_icon ".concat(wrapper.getCssClass()));
+					}
+					wrapper.setLink(ooLink);
+				}
 				linkWrappers.add(wrapper);
 			}
 		}
@@ -167,6 +179,14 @@ public class CalendarDetailsController extends BasicController {
 			if(!isGuestOnly) {
 				fireEvent(ureq, new CalendarGUIEditEvent(calEvent, calendar));
 			}
+		} else if(source instanceof Link) {
+			Link internalLink = (Link)source;
+			if(internalLink.getUserObject() instanceof LinkWrapper) {
+				fireEvent(ureq, Event.DONE_EVENT);
+				LinkWrapper wrapper = (LinkWrapper)internalLink.getUserObject();
+				ureq.getDispatchResult()
+					.setResultingMediaResource(new RedirectMediaResource(wrapper.getUri()));
+			}
 		}
 	}
 	
@@ -177,6 +197,7 @@ public class CalendarDetailsController extends BasicController {
 		private String title;
 		private String cssClass;
 		private String displayName;
+		private Link link;
 		
 		public boolean isIntern() {
 			return intern;
@@ -216,6 +237,14 @@ public class CalendarDetailsController extends BasicController {
 		
 		public void setCssClass(String cssClass) {
 			this.cssClass = cssClass;
+		}
+
+		public Link getLink() {
+			return link;
+		}
+
+		public void setLink(Link link) {
+			this.link = link;
 		}
 	}
 }
