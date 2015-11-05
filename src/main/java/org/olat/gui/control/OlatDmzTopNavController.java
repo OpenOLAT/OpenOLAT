@@ -65,6 +65,7 @@ public class OlatDmzTopNavController extends BasicController implements Lockable
 		// impressum
 		vc.contextPut("impressumInfos", new ImpressumInformations(impressumModule));
 		impressumLink = LinkFactory.createLink("_top_nav_dmz_impressum", "topnav.impressum", vc, this);
+		impressumLink.setSuppressDirtyFormWarning(true);
 		impressumLink.setTooltip("topnav.impressum.alt");
 		impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-lg");
 		impressumLink.setAjaxEnabled(false);
@@ -81,6 +82,7 @@ public class OlatDmzTopNavController extends BasicController implements Lockable
 		}
 		// about link
 		aboutLink = AboutController.aboutLinkFactory(getLocale(), this, true, false);
+		aboutLink.setSuppressDirtyFormWarning(true);
 		vc.put("topnav.about", aboutLink);
 
 		//choosing language 

@@ -160,7 +160,7 @@ public class URLBuilder {
 		sb.append("\" onclick=\"");
 		if(ajaxEnabled) {
 			buildXHREvent(sb, urlEnding, dirtyCheck, pushState, commands).append(" return false;");
-		} else {
+		} else if(dirtyCheck) {
 			sb.append("return o2cl();");
 		}
 		sb.append("\" ");

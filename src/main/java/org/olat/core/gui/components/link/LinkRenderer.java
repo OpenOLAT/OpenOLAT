@@ -166,7 +166,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				  .append(popup.getTarget()).append("',").append(popup.getWidth())
 				  .append(",").append(popup.getHeight()).append("); return false;\" ");
 			} else {
-				ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, link.isSuppressDirtyFormWarning(), true,
+				ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, !link.isSuppressDirtyFormWarning(), true,
 						new NameValuePair(VelocityContainer.COMMAND_ID, command));
 			}
 			
