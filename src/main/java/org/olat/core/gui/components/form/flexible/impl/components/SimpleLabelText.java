@@ -147,7 +147,7 @@ public class SimpleLabelText extends FormBaseComponentImpl {
 						// append spacer between custom and generic link text
 						sb.append("<br />");
 					}
-					sb.append(translator.translate("form.fhelp.link", new String[]{"<i class='o_icon o_icon-fw o_icon_help'></i>"}));					
+					sb.append(translator.translate("help.tooltip.link", new String[]{"<i class='o_icon o_icon-fw o_icon_help'></i>"}));					
 				}
 				sb.append("\"});})</script>");		
 			}

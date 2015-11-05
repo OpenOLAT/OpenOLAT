@@ -26,6 +26,7 @@ package org.olat.gui.demo.guidemo;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.helpTooltip.HelpTooltip;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -74,6 +75,13 @@ public class GuiDemoTooltipsController extends BasicController {
 		LinkFactory.createLink("link3", content, this);
 		content.put("tooltipContent", tooltipContent);
 		link4 = LinkFactory.createLink("link4", tooltipContent, this);
+
+		/* help text component with link to manual */
+		HelpTooltip helpText1 = new HelpTooltip("helpText1", "This is a little help, just for the sake of beeing!");
+		content.put("helpText1", helpText1);
+		HelpTooltip helpText2 = new HelpTooltip("helpText2", "Boy, boy, check out this cool introduction in the manual!", "Introduction", getLocale());
+		content.put("helpText2", helpText2);
+		
 		
 		//add source view control
     Controller sourceview = new SourceViewController(ureq, wControl, this.getClass(), content);
