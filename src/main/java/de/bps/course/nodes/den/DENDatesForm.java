@@ -77,16 +77,15 @@ public class DENDatesForm extends FormBasicController {
 			showDurationTE = true;
 			showPauseTE = true;
 			showRetakeTE = true;
-			setFormContextHelp("Other#_addentry");
 		} else if(layout == EDIT_SINGLE_DATE_LAYOUT) {
 			showBeginDateChooser = true;
 			showDurationTE = true;
-			setFormContextHelp("de.bps.course.nodes.den","ced-den-dates-singl.html","help.hover.den");
 		} else if(layout == EDIT_MULTIPLE_DATES_LAYOUT) {
 			showMoveTE = true;
-			setFormContextHelp("de.bps.course.nodes.den","ced-den-dates-multi.html","help.hover.den");
 		}
-		
+		setFormContextHelp("Other#_addentry");
+
+
 		initForm(this.flc, this, ureq);
 	}
 	

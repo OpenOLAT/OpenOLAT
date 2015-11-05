@@ -1630,47 +1630,6 @@ create view o_bs_gp_membership_v as (
    inner join o_gp_business gp on (gp.fk_group_id=membership.fk_group_id)
 );
 
-create or replace view o_gp_business_v  as (
-   select
-      gp.group_id as group_id,
-      gp.groupname as groupname,
-      gp.lastmodified as lastmodified,
-      gp.creationdate as creationdate,
-      gp.lastusage as lastusage,
-      gp.descr as descr,
-      gp.minparticipants as minparticipants,
-      gp.maxparticipants as maxparticipants,
-      gp.waitinglist_enabled as waitinglist_enabled,
-      gp.autocloseranks_enabled as autocloseranks_enabled,
-      gp.external_id as external_id,
-      gp.managed_flags as managed_flags,
-      (select count(part.id) from o_bs_group_member part where part.fk_group_id = gp.fk_group_id and part.g_role='participant') as num_of_participants,
-      (select count(pending.reservation_id) from o_ac_reservation pending where pending.fk_resource = gp.fk_resource) as num_of_pendings,
-      (select count(own.id) from o_bs_group_member own where own.fk_group_id = gp.fk_group_id and own.g_role='coach') as num_of_owners,
-      (case when gp.waitinglist_enabled > 0
-         then 
-           (select count(waiting.id) from o_bs_group_member waiting where waiting.fk_group_id = gp.fk_group_id and waiting.g_role='waiting')
-         else
-           0
-      end) as num_waiting,
-      (select count(offer.offer_id) from o_ac_offer offer 
-         where offer.fk_resource_id = gp.fk_resource
-         and offer.is_valid > 0
-         and (offer.validfrom is null or offer.validfrom <= current_date)
-         and (offer.validto is null or offer.validto >= current_date)
-      ) as num_of_valid_offers,
-      (select count(offer.offer_id) from o_ac_offer offer 
-         where offer.fk_resource_id = gp.fk_resource
-         and offer.is_valid > 0
-      ) as num_of_offers,
-      (select count(relation.fk_entry_id) from o_re_to_group relation 
-         where relation.fk_group_id = gp.fk_group_id
-      ) as num_of_relations,
-      gp.fk_resource as fk_resource,
-      gp.fk_group_id as fk_group_id
-   from o_gp_business gp
-);
-
 create or replace view o_re_membership_v as (
    select
       bmember.id as membership_id,

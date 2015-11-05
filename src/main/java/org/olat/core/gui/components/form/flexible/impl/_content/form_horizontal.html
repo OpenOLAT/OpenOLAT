@@ -1,10 +1,8 @@
 ## for odd reason bootstrap calls horizontal inline...
 <fieldset #if(!$!f.domReplacementWrapperRequired) id="$r.getCId()" #end class="o_form form-inline #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()" role="form">
-#if ($off_title || $off_chelp_package || $off_chelp_url) 
+#if ($off_title) 
 	<legend>
-	#if ($off_chelp_package) 
-		$r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") 
-	#elseif ($off_chelp_url) 
+	#if ($off_chelp_url) 
 		$r.contextHelpWithWrapper("$off_chelp_url") 
 	#end
 	#if ($off_icon)

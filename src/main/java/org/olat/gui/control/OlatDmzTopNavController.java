@@ -25,7 +25,6 @@
 package org.olat.gui.control;
 
 import org.olat.core.commons.chiefcontrollers.LanguageChooserController;
-import org.olat.core.commons.contextHelp.ContextHelpModule;
 import org.olat.core.commons.controllers.impressum.ImpressumDmzMainController;
 import org.olat.core.commons.controllers.impressum.ImpressumInformations;
 import org.olat.core.commons.controllers.impressum.ImpressumModule;
@@ -50,7 +49,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class OlatDmzTopNavController extends BasicController implements LockableController {
 	
-	private static final Boolean contextHelpEnabled = Boolean.valueOf(ContextHelpModule.isContextHelpEnabled());
 	private Link impressumLink, aboutLink;
 	private LanguageChooserController languageChooserC;
 
@@ -67,20 +65,24 @@ public class OlatDmzTopNavController extends BasicController implements Lockable
 		// impressum
 		vc.contextPut("impressumInfos", new ImpressumInformations(impressumModule));
 		impressumLink = LinkFactory.createLink("_top_nav_dmz_impressum", "topnav.impressum", vc, this);
+		impressumLink.setSuppressDirtyFormWarning(true);
 		impressumLink.setTooltip("topnav.impressum.alt");
 		impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-lg");
 		impressumLink.setAjaxEnabled(false);
 		impressumLink.setTarget("_blank");
 
 		// help on login page
-		vc.contextPut("isContextHelpEnabled", contextHelpEnabled);
 		if (helpModule.isHelpEnabled()) {
 			HelpLinkSPI provider = helpModule.getHelpProvider();
-			Component helpLink = provider.getHelpPageLink(ureq, translate("help.manual"), translate("help.manual"), "o_icon o_icon-wf o_icon_manual", null, "Login page");
+			Component helpLink = provider.getHelpPageLink(ureq, translate("topnav.help"), translate("topnav.help.alt"), "o_icon o_icon-wf o_icon_help", null, "Login Page");
 			vc.put("topnav.help", helpLink);
+			
+			Component browsercheckLink = provider.getHelpPageLink(ureq, translate("topnav.check"), translate("topnav.check.alt"), "o_icon o_icon-wf o_icon_browsercheck", null, "Login Page#login_browsercheck");
+			vc.put("topnav.browsercheck", browsercheckLink);
 		}
 		// about link
 		aboutLink = AboutController.aboutLinkFactory(getLocale(), this, true, false);
+		aboutLink.setSuppressDirtyFormWarning(true);
 		vc.put("topnav.about", aboutLink);
 
 		//choosing language 

@@ -253,11 +253,10 @@ public class OLATUpgrade_10_4_0 extends OLATUpgrade {
 				.getCalendarUserConfiguration(identity, cal.getCalendarID(), cal.getType());
 		if(userConfig == null) {
 			userConfig = calendarUserConfigurationDao.createCalendarUserConfiguration(cal, identity);
+			userConfig.setCssClass(config.getCss());
+			userConfig.setVisible(config.isVis());
+			userConfig = calendarUserConfigurationDao.update(userConfig);
 		}
-		
-		userConfig.setCssClass(config.getCss());
-		userConfig.setVisible(config.isVis());
-		userConfig = calendarUserConfigurationDao.update(userConfig);
 	}
 	
 	private boolean migrateImportedCalendars(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {

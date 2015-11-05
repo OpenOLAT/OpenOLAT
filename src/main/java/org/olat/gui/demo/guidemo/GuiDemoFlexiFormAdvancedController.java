@@ -98,10 +98,9 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("guidemo_flexi_form_advanced");
 		setFormDescription("advanced_form.description");
-		// setFormContextHelp(this.getClass().getPackage().getName(),
-		// "advancedFormHelp", "advanced_form.description");
-		// Mandatory and read-only text fields
-		
+		setFormContextHelp("Introduction");
+
+		// Mandatory and read-only text fields		
 		this.addTextFields(formLayout);
 
 		// More form items: Date, link and file selector

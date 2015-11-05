@@ -376,6 +376,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			cmc.deactivate();
 			if(Event.DONE_EVENT.equals(event)) {
 				launchEditDescription(ureq, createCtrl.getAddedEntry());
+				reloadRows();
 				cleanUp();
 			} else if(CreateRepositoryEntryController.CREATION_WIZARD.equals(event)) {
 				doPostCreateWizard(ureq, createCtrl.getAddedEntry(), createCtrl.getHandler());
@@ -398,6 +399,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			if (event.equals(Event.CHANGED_EVENT) || event.equals(Event.CANCELLED_EVENT)) {
 				getWindowControl().pop();
 				RepositoryEntry newEntry = (RepositoryEntry)wizardCtrl.getRunContext().get("authoringNewEntry");
+				reloadRows();
 				cleanUp();
 				launchEditDescription(ureq, newEntry);
 			}

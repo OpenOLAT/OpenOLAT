@@ -20,7 +20,6 @@
 
 package org.olat.core.util.i18n.ui;
 
-import org.olat.core.commons.contextHelp.ContextHelpModule;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -112,9 +111,8 @@ public class TranslationToolLauncherController extends BasicController {
 			setNewInlineStatus(ureq, false);
 
 		} else if (source == cacheFlushLink) {
-			// clear i18n chache and refresh context help index
+			// clear i18n cache
 			I18nModule.reInitializeAndFlushCache();
-			ContextHelpModule.refreshContextHelpIndex();
 			showInfo("cache.flush.ok");
 		}
 	}

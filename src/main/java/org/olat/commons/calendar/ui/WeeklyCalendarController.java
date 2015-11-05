@@ -354,6 +354,8 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 
 				CalendarGUIEditEvent editEvent = (CalendarGUIEditEvent)event;
 				pushEditEventController(ureq, editEvent.getKalendarEvent(), editEvent.getKalendarRenderWrapper());
+			} else if(event == Event.DONE_EVENT) {
+				eventCalloutCtr.deactivate();
 			}
 		} else if(source == printCtrl) {
 			if (event instanceof CalendarGUIPrintEvent) {

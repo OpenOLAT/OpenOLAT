@@ -49,7 +49,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -445,12 +444,6 @@ public class SearchInputController extends FormBasicController implements Generi
 			if(!StringHelper.containsNonWhitespace(url)) {
 				//no url, no document
 				getWindowControl().setWarning(getTranslator().translate("error.resource.could.not.found"));
-			} else if(url != null && url.startsWith("[ContextHelpModule:")) {
-				//do something special for ContextHelp
-				int pathIndex = url.indexOf("path=");
-				String uri = url.substring(pathIndex + 5, url.length() - 1);
-				RedirectMediaResource rsrc = new RedirectMediaResource(uri);
-				ureq.getDispatchResult().setResultingMediaResource(rsrc);
 			} else {
 				BusinessControl bc = BusinessControlFactory.getInstance().createFromString(url);
 			  WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());

@@ -31,6 +31,7 @@ import java.util.Map;
  * @author Roman Haag, roman.haag@frentix.com, www.frentix.com
  */
 public class AfterLoginConfig {
+	
 	private List<Map<String, Object>> afterLoginControllerList;
 	
 	

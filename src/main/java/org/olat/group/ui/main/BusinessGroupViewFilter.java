@@ -19,7 +19,7 @@
  */
 package org.olat.group.ui.main;
 
-import org.olat.group.BusinessGroupView;
+import org.olat.group.model.BusinessGroupRow;
 
 /**
  * 
@@ -29,6 +29,6 @@ import org.olat.group.BusinessGroupView;
  */
 public interface BusinessGroupViewFilter {
 	
-	public boolean accept(BusinessGroupView view);
+	public boolean accept(BusinessGroupRow row);
 
 }

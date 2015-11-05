@@ -27,13 +27,29 @@ package org.olat.group;
 
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Version;
+
+import org.hibernate.annotations.GenericGenerator;
 import org.olat.basesecurity.Group;
-import org.olat.core.commons.persistence.PersistentObject;
+import org.olat.basesecurity.model.GroupImpl;
+import org.olat.core.id.ModifiedInfo;
+import org.olat.core.id.Persistable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceImpl;
 
 /**
  * Description: <br>
@@ -43,33 +59,76 @@ import org.olat.resource.OLATResource;
  * 
  * @author patrick
  */
-
-public class BusinessGroupImpl extends PersistentObject implements BusinessGroup {
+@Entity(name="businessgroup")
+@Table(name="o_gp_business")
+public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGroup {
 
 	private static final long serialVersionUID = -6977108696910447781L;
 	private static final OLog log = Tracing.createLoggerFor(BusinessGroupImpl.class);
 	
-	private String description;
-	private String name;
-	private String externalId;
-	private String managedFlagsString;
-	private Integer minParticipants;
-	private Integer maxParticipants;
-	private OLATResource resource;
-	private Group baseGroup;
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@Column(name="group_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	@Version
+	private int version = 0;
 	
-	private Date lastUsage;
-	private Boolean waitingListEnabled;
-	private Boolean autoCloseRanksEnabled;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
+
+	@Column(name="descr", nullable=true, insertable=true, updatable=true)
+	private String description;
+	@Column(name="groupname", nullable=true, insertable=true, updatable=true)
+	private String name;
+	
+	@Column(name="external_id", nullable=true, insertable=true, updatable=true)
+	private String externalId;
+	@Column(name="managed_flags", nullable=true, insertable=true, updatable=true)
+	private String managedFlagsString;
+	
+	@Column(name="minparticipants", nullable=true, insertable=true, updatable=true)
+	private Integer minParticipants;
+	@Column(name="maxparticipants", nullable=true, insertable=true, updatable=true)
+	private Integer maxParticipants;
+	@Column(name="waitinglist_enabled", nullable=true, insertable=true, updatable=true)
+	private Boolean waitingListEnabled;
+	@Column(name="autocloseranks_enabled", nullable=true, insertable=true, updatable=true)
+	private Boolean autoCloseRanksEnabled;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="lastusage", nullable=true, insertable=true, updatable=true)
+	private Date lastUsage;
+
+	@Column(name="ownersintern", nullable=true, insertable=true, updatable=true)
 	private boolean ownersVisibleIntern;
+	@Column(name="participantsintern", nullable=true, insertable=true, updatable=true)
 	private boolean participantsVisibleIntern;
+	@Column(name="waitingintern", nullable=true, insertable=true, updatable=true)
 	private boolean waitingListVisibleIntern;
+	@Column(name="ownerspublic", nullable=true, insertable=true, updatable=true)
 	private boolean ownersVisiblePublic;
+	@Column(name="participantspublic", nullable=true, insertable=true, updatable=true)
 	private boolean participantsVisiblePublic;
+	@Column(name="waitingpublic", nullable=true, insertable=true, updatable=true)
 	private boolean waitingListVisiblePublic;
+
+	@Column(name="downloadmembers", nullable=true, insertable=true, updatable=true)
 	private boolean downloadMembersLists;
+	@Column(name="allowtoleave", nullable=true, insertable=true, updatable=true)
 	private boolean allowToLeave;
+	
+	@ManyToOne(targetEntity=OLATResourceImpl.class,fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_resource", nullable=true, insertable=true, updatable=true)
+	private OLATResource resource;
+	
+	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_group_id", nullable=false, insertable=true, updatable=false)
+	private Group baseGroup;
 
 	/**
 	 * constructs an unitialised BusinessGroup, use setXXX for setting attributes
@@ -94,6 +153,27 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 		setLastUsage(new Date());
 		setLastModified(new Date());
 	}
+	
+	@Override
+	public Long getKey() {
+		return key;
+	}
+
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	@Override
+	public Date getLastModified() {
+		return lastModified;
+	}
+
+	@Override
+	public void setLastModified(Date date) {
+		this.lastModified = date;
+	}
+
 
 	/**
 	 * @param groupName
@@ -338,24 +418,12 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	}
 	
 	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
+	}
+	
+	@Override
 	public int hashCode() {
 		return getKey() == null ? 2901 : getKey().hashCode();
 	}
-
-	/**
-	 * 
-	 * @see org.olat.core.id.ModifiedInfo#getLastModified()
-	 */
-	public Date getLastModified() {
-		return lastModified;
-	}
-
-	/**
-	 * 
-	 * @see org.olat.core.id.ModifiedInfo#setLastModified(java.util.Date)
-	 */
-	public void setLastModified(Date date) {
-		this.lastModified = date;
-	}
-
 }

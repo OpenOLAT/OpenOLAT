@@ -154,15 +154,12 @@
 			<list>
 				<ref bean="groupIndexer" />
 				<ref bean="repositoryIndexer" />
-				<ref bean="helpIndexer" />
 				<ref bean="identityIndexer" />
 				<ref bean="epDefaultMapIndexer" />
 				<ref bean="epStructuredMapIndexer" />
 			</list>
 		</property>
 	</bean>
-	
-	<bean id="helpIndexer" class="org.olat.search.service.indexer.ContextHelpIndexer" />
 	
 	<!-- Repository -->
 	<bean id="repositoryIndexer" class="org.olat.search.service.indexer.repository.RepositoryIndexer">

@@ -55,7 +55,7 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  */
 public class GroupForumIndexer extends ForumIndexer{
 
-  //Must correspond with LocalString_xx.properties
+	//Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
 	public static final String TYPE = "type.group.forum.message";
 
@@ -66,6 +66,7 @@ public class GroupForumIndexer extends ForumIndexer{
 	 * @param indexWriter
 	 * @throws IOException
 	 */
+	@Override
 	public void doIndex(SearchResourceContext parentResourceContext, Object businessObj, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
 		if (!(businessObj instanceof BusinessGroup) )
 			throw new AssertException("businessObj must be BusinessGroup");
@@ -97,18 +98,19 @@ public class GroupForumIndexer extends ForumIndexer{
    * 
    * @see org.olat.search.service.indexer.Indexer#checkAccess(org.olat.core.id.context.ContextEntry, org.olat.core.id.context.BusinessControl, org.olat.core.id.Identity, org.olat.core.id.Roles)
    */
+	@Override
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		//	 TODO:chg: check with collabTools if forum is enabled
 		ContextEntry ce = businessControl.popLauncherContextEntry();
 		Long resourceableId = ce.getOLATResourceable().getResourceableId();
 		Message message = ForumManager.getInstance().loadMessage(resourceableId);
+		if(message == null)  return false;
+
 		Message threadtop = message.getThreadtop();
 		if(threadtop==null) {
 			threadtop = message;
 		}
 		boolean isMessageHidden = Status.getStatus(threadtop.getStatusCode()).isHidden(); 
 		//assumes that if is owner then is moderator so it is allowed to see the hidden forum threads
-		//TODO: (LD) fix this!!!
 		//here it is checked if the identity is owner of the forum tool but it has no way to find out whether is owner of the group that owns the forum tool
 		boolean isOwner = BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_ACCESS,  contextEntry.getOLATResourceable());
 		if(isMessageHidden && !isOwner) {
@@ -117,6 +119,7 @@ public class GroupForumIndexer extends ForumIndexer{
 		return super.checkAccess(contextEntry, businessControl, identity, roles);
 	}
 
+	@Override
 	public String getSupportedTypeName() {
 		return BusinessGroupMainRunController.ORES_TOOLFORUM.getResourceableTypeName();
 	}

@@ -52,7 +52,6 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.model.BGMembership;
@@ -284,7 +283,7 @@ public class EnrollmentManager extends BasicManager {
 		  .append("  and meWaiting.identity.key=:identityKey")
 		  .append(" ) as numOfMeWaiting")
 		  
-		  .append(" from ").append(BusinessGroupImpl.class.getName()).append(" grp ")
+		  .append(" from businessgroup grp ")
 		  .append(" inner join grp.baseGroup as baseGroup ")
 		  .append(" where grp.key in (:groupKeys)");
 		

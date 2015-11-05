@@ -79,7 +79,8 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 		this.ores = ores;
 		this.subIdentifier = subIdentifier;
 		this.defaultSettings = defaultSettings;
-		
+		this.setFormContextHelp("Communication and Collaboration#_openmeeting_raum");
+
 		roomTypeKeys = new String[]{
 				RoomType.conference.typeStr(), RoomType.restricted.typeStr(), RoomType.interview.typeStr()
 		};
@@ -135,7 +136,7 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp(this.getClass().getPackage().getName(), "room.html", "help.hover.openmeetings.room");
+		setFormContextHelp("Communication and Collaboration#CommunicationandCollaboration-_openmeeting_raum");
 		
 		String name = room == null ? (defaultSettings == null ? null : defaultSettings.getName()) : room.getName();
 		roomNameEl = uifactory.addTextElement("roomname", "room.name", 255, name == null ? "" : name, formLayout);

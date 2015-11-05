@@ -19,17 +19,24 @@
  */
 package org.olat.group.ui.main;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.group.BusinessGroupMembership;
+import org.olat.group.model.BusinessGroupQueryParams;
+import org.olat.group.model.BusinessGroupRow;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class FavoritBusinessGroupListController extends AbstractBusinessGroupListController {
+public class FavoritBusinessGroupListController extends AbstractStandardBusinessGroupListController {
 
 	public FavoritBusinessGroupListController(UserRequest ureq, WindowControl wControl, String prefsKey) {
 		super(ureq, wControl, "group_list", prefsKey);
@@ -39,34 +46,45 @@ public class FavoritBusinessGroupListController extends AbstractBusinessGroupLis
 	protected void initButtons(FormItemContainer formLayout, UserRequest ureq) {
 		initButtons(formLayout, ureq, true, false, false);
 	}
-
-	@Override
-	protected FlexiTableColumnModel initColumnModel() {
-		return BusinessGroupFlexiTableModel.getStandardColumnModel(false, flc, groupModule, getTranslator());
-	}
 	
 	@Override
-	protected SearchBusinessGroupParams getSearchParams(SearchEvent event) {
-		SearchBusinessGroupParams params = event.convertToSearchBusinessGroupParams(getIdentity());
+	protected BusinessGroupQueryParams getSearchParams(SearchEvent event) {
+		BusinessGroupQueryParams params = event.convertToBusinessGroupQueriesParams();
 		//security
 		if(!params.isAttendee() && !params.isOwner() && !params.isWaiting()) {
 			params.setOwner(true);
 			params.setAttendee(true);
 			params.setWaiting(true);
 		}
-		params.setMarked(Boolean.TRUE);
-		params.setIdentity(getIdentity());
+		params.setMarked(true);
 		return params;
 	}
 	
 	@Override
-	protected SearchBusinessGroupParams getDefaultSearchParams() {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.setMarked(Boolean.TRUE);
+	protected BusinessGroupQueryParams getDefaultSearchParams() {
+		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
+		params.setMarked(true);
 		params.setAttendee(true);
 		params.setOwner(true);
 		params.setWaiting(true);
-		params.setIdentity(getIdentity());
 		return params;
+	}
+
+	@Override
+	protected List<BGTableItem> searchTableItems(BusinessGroupQueryParams params) {
+		List<BusinessGroupRow> rows = businessGroupService.findBusinessGroupsWithMemberships(params, getIdentity());
+		List<BGTableItem> items = new ArrayList<>(rows.size());
+		for(BusinessGroupRow row:rows) {
+			BusinessGroupMembership membership = row.getMember();
+			Boolean allowLeave =  membership != null;
+			Boolean allowDelete = isAdmin() ? Boolean.TRUE : (membership == null ? null : new Boolean(membership.isOwner()));
+			
+			FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "", null, null, Link.NONTRANSLATED);
+			markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+			
+			BGTableItem item = new BGTableItem(row, markLink, allowLeave, allowDelete);
+			items.add(item);
+		}
+		return items;
 	}
 }

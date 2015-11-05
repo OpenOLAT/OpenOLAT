@@ -19,9 +19,11 @@
  */
 package org.olat.course.member;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -46,8 +48,11 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
+import org.olat.group.BusinessGroupMembership;
+import org.olat.group.model.BusinessGroupQueryParams;
+import org.olat.group.model.BusinessGroupRow;
 import org.olat.group.model.BusinessGroupSelectionEvent;
-import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.group.ui.main.AbstractBusinessGroupListController;
 import org.olat.group.ui.main.BGAccessControlledCellRenderer;
 import org.olat.group.ui.main.BGResourcesCellRenderer;
@@ -156,13 +161,35 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	}
 
 	@Override
+	protected List<BGTableItem> searchTableItems(BusinessGroupQueryParams params) {
+		List<StatisticsBusinessGroupRow> rows = businessGroupService.findBusinessGroupsFromRepositoryEntry(params, getResource());
+		List<BGTableItem> items = new ArrayList<>(rows.size());
+		for(StatisticsBusinessGroupRow row:rows) {
+			BusinessGroupMembership membership = row.getMember();
+			Boolean allowLeave =  membership != null;
+			Boolean allowDelete = isAdmin() ? Boolean.TRUE : (membership == null ? null : new Boolean(membership.isOwner()));
+			
+			FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "", null, null, Link.NONTRANSLATED);
+			markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+			
+			BGTableItem item = new BGTableItem(row, markLink, allowLeave, allowDelete);
+			item.setNumOfOwners(row.getNumOfCoaches());
+			item.setNumOfParticipants(row.getNumOfParticipants());
+			item.setNumWaiting(row.getNumWaiting());
+			item.setNumOfPendings(row.getNumPending());
+			items.add(item);
+		}
+		return items;
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == createGroup) {
 			doCreate(ureq, getWindowControl(), re);
 		} else if (source == addGroup) {
 			doSelectGroups(ureq);
 		} else if(source == removeGroups) {
-			List<BGTableItem> selectedItems = getSelectedItems();
+			List<BusinessGroupRow> selectedItems = getSelectedItems();
 			if(selectedItems.isEmpty()) {
 				showWarning("error.select.one");
 			} else {
@@ -204,7 +231,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		} else if (source == confirmRemoveMultiResource) {
 			if (DialogBoxUIFactory.isYesEvent(event)) { // yes case
 				@SuppressWarnings("unchecked")
-				List<BGTableItem> selectedItems = (List<BGTableItem>)confirmRemoveMultiResource.getUserObject();
+				List<BusinessGroupRow> selectedItems = (List<BusinessGroupRow>)confirmRemoveMultiResource.getUserObject();
 				List<BusinessGroup> groups = toBusinessGroups(ureq, selectedItems, false);
 				doRemoveBusinessGroups(groups);
 			}
@@ -214,9 +241,9 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	}
 
 	@Override
-	protected void doCreate(UserRequest ureq, WindowControl wControl, RepositoryEntry re) {
+	protected void doCreate(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		ureq.getUserSession().putEntry("wild_card_new", Boolean.TRUE);
-		super.doCreate(ureq, wControl, re);
+		super.doCreate(ureq, wControl, entry);
 	}
 
 	@Override
@@ -252,11 +279,11 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		}
 	}
 
-	private void doConfirmRemove(UserRequest ureq, List<BGTableItem> selectedItems) {
+	private void doConfirmRemove(UserRequest ureq, List<BusinessGroupRow> selectedItems) {
 		StringBuilder sb = new StringBuilder();
 		StringBuilder managedSb = new StringBuilder();
-		for(BGTableItem item:selectedItems) {
-			String gname = item.getBusinessGroupName() == null ? "???" : StringHelper.escapeHtml(item.getBusinessGroupName());
+		for(BusinessGroupRow item:selectedItems) {
+			String gname = item.getName() == null ? "???" : StringHelper.escapeHtml(item.getName());
 			if(BusinessGroupManagedFlag.isManaged(item.getManagedFlags(), BusinessGroupManagedFlag.resources)) {
 				if(managedSb.length() > 0) managedSb.append(", ");
 				managedSb.append(gname);
@@ -309,13 +336,13 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	}
 	
 	@Override
-	protected SearchBusinessGroupParams getSearchParams(SearchEvent event) {
-		return new SearchBusinessGroupParams();
+	protected BusinessGroupQueryParams getSearchParams(SearchEvent event) {
+		return new BusinessGroupQueryParams();
 	}
 
 	@Override
-	protected SearchBusinessGroupParams getDefaultSearchParams() {
-		return new SearchBusinessGroupParams();
+	protected BusinessGroupQueryParams getDefaultSearchParams() {
+		return new BusinessGroupQueryParams();
 	}
 
 	@Override

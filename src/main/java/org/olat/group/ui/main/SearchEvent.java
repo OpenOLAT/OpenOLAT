@@ -20,10 +20,9 @@
 package org.olat.group.ui.main;
 
 import org.olat.core.gui.control.Event;
-import org.olat.core.id.Identity;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
-import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.group.model.BusinessGroupQueryParams;
 
 /**
  * 
@@ -136,9 +135,9 @@ public class SearchEvent extends Event implements StateEntry {
 	public void setHeadless(boolean headless) {
 		this.headless = headless;
 	}
-
-	public SearchBusinessGroupParams convertToSearchBusinessGroupParams(Identity identity) {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+	
+	public BusinessGroupQueryParams convertToBusinessGroupQueriesParams() {
+		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
 		params.setIdRef(StringHelper.containsNonWhitespace(idRef) ? idRef : null);
 		params.setName(StringHelper.containsNonWhitespace(name) ? name : null);
 		params.setDescription(StringHelper.containsNonWhitespace(description) ? description : null);
@@ -149,7 +148,6 @@ public class SearchEvent extends Event implements StateEntry {
 		params.setWaiting(isWaiting());
 		params.setPublicGroups(getPublicGroups());
 		params.setResources(getResources());
-		params.setIdentity(identity);
 		params.setHeadless(isHeadless());
 		return params;
 	}

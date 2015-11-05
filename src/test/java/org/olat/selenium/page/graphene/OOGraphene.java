@@ -136,6 +136,10 @@ public class OOGraphene {
 		return Locale.ENGLISH;
 	}
 	
+	/**
+	 * Wait the end of the transition of the user's tools bar.
+	 * @param browser
+	 */
 	public static final void waitingTransition(WebDriver browser) {
 		Graphene.waitModel(browser).pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new TransitionPredicate());
 		waitingALittleBit();

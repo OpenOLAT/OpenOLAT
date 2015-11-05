@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.group.model.BGAreaReference;
 import org.olat.group.model.BusinessGroupEnvironment;
@@ -40,6 +41,20 @@ public class CourseEnvironmentMapper {
 	private final List<BGAreaReference> areas = new ArrayList<BGAreaReference>();
 	private final List<BusinessGroupReference> groups = new ArrayList<BusinessGroupReference>();
 	
+	private Identity author;
+	
+	public CourseEnvironmentMapper() {
+		//
+	}
+	
+	public Identity getAuthor() {
+		return author;
+	}
+
+	public void setAuthor(Identity author) {
+		this.author = author;
+	}
+
 	public List<BGAreaReference> getAreas() {
 		return areas;
 	}
@@ -114,6 +129,18 @@ public class CourseEnvironmentMapper {
 			}
 		}
 		return groupKeyList;
+	}
+	
+	public Long toGroupKeyFromOriginalKey(Long originalKey) {
+		if(originalKey == null) return null;
+		Long groupKey = null;
+		for(BusinessGroupReference group:groups) {
+			if(originalKey.equals(group.getOriginalKey())) {
+				groupKey = group.getKey();
+				break;
+			}
+		}
+		return groupKey;
 	}
 	
 	public List<Long> toAreaKeyFromOriginalNames(String areaNames) {

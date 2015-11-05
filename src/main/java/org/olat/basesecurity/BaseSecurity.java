@@ -217,6 +217,12 @@ public interface BaseSecurity {
 	 */
 	public Identity loadIdentityByKey(Long identityKey);
 	
+	/**
+	 * 
+	 * @param search
+	 * @return
+	 */
+	public List<IdentityShort> searchIdentityShort(String search, int maxResults);
 
 	public IdentityShort loadIdentityShortByKey(Long identityKey);
 	

@@ -212,7 +212,7 @@ public class CalendarPrintMapper implements Mapper {
 			if (begin.before(dayStart)) {
 				begin = dayStart;
 			}
-			if (end.after(dayEnd)) {
+			if (end == null || end.after(dayEnd)) {
 				end = dayEnd;
 			}
 			sb.append(StringHelper.formatLocaleTime(begin, translator.getLocale()));

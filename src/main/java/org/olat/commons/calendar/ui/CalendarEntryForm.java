@@ -48,7 +48,6 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -218,7 +217,7 @@ public class CalendarEntryForm extends FormBasicController {
 		if (end.getDate() == null) {
 			end.setErrorKey("cal.form.error.date", null);
 			allOk &= false;
-		} else if (end.getDate().before(begin.getDate())) {
+		} else if (begin.getDate() != null && end.getDate().before(begin.getDate())) {
 			end.setErrorKey("cal.form.error.endbeforebegin", null);
 			allOk &= false;
 		}
@@ -230,7 +229,8 @@ public class CalendarEntryForm extends FormBasicController {
 			allOk &= false;
 		}
 		
-		if (hasEnd && recurrenceEnd.getDate().before(begin.getDate())) {
+		if (hasEnd && recurrenceEnd.getDate() != null && begin.getDate() != null
+				&& recurrenceEnd.getDate().before(begin.getDate())) {
 			recurrenceEnd.setErrorKey("cal.form.error.endbeforebegin", null);
 			allOk &= false;
 		}
@@ -402,7 +402,7 @@ public class CalendarEntryForm extends FormBasicController {
 		formLayout.add(buttonLayout);
 		uifactory.addFormSubmitButton(SUBMIT_SINGLE, "cal.form.submitSingle", buttonLayout);
 		if (writeableCalendars.size() > 1) {
-			multi = uifactory.addFormLink("cal.form.submitMulti", buttonLayout, Link.BUTTON);
+			//multi = uifactory.addFormLink("cal.form.submitMulti", buttonLayout, Link.BUTTON);
 		}
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		

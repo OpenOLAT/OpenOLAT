@@ -1429,7 +1429,6 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(event, InstantMessagingService.TOWER_EVENT_ORES);
 	}
 	
-	
 	private void launchCalendar(UserRequest ureq) {
 		ControllerCreator ctrlCreator = new ControllerCreator() {
 			@Override
@@ -1437,7 +1436,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 				ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(getRepositoryEntry());
 				WindowControl llwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, lwControl);
-				CourseCalendarController calendarController = new CourseCalendarController(lureq, llwControl, course);					
+				CourseCalendarController calendarController = new CourseCalendarController(lureq, llwControl, getUserCourseEnvironment());					
 				// use a one-column main layout
 				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, llwControl, calendarController);
 				layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), course.getCourseEnvironment()));

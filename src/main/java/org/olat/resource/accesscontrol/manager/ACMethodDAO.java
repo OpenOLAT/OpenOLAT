@@ -46,7 +46,6 @@ import org.olat.core.util.event.FrameworkStartedEvent;
 import org.olat.core.util.event.FrameworkStartupEventChannel;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
@@ -246,7 +245,7 @@ public class ACMethodDAO implements GenericEventListener {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("select access.method, group.key, offer.price from ").append(OfferAccessImpl.class.getName()).append(" access, ")
-			.append(BusinessGroupImpl.class.getName()).append(" group ")
+			.append(" businessgroup group ")
 			.append(" inner join access.offer offer")
 			.append(" where access.valid=").append(valid)
 			.append(" and offer.valid=").append(valid)

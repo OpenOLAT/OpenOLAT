@@ -38,7 +38,6 @@ import java.util.UUID;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.contextHelp.ContextHelpModule;
 import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
@@ -67,11 +66,11 @@ import org.olat.core.util.i18n.I18nModule;
  */
 public class VelocityRenderDecorator implements Closeable {
 	
-	public static final String PARAM_CHELP_BUNDLE = "chelpbundle";
 	private VelocityComponent vc;
 	private Renderer renderer;
 	private final boolean isIframePostEnabled;
 	private StringOutput target;
+	private HelpModule helpModule;
 
 	/**
 	 * @param renderer
@@ -82,6 +81,7 @@ public class VelocityRenderDecorator implements Closeable {
 		this.vc = vc;
 		this.target = target;
 		this.isIframePostEnabled = renderer.getGlobalSettings().getAjaxFlags().isIframePostEnabled();
+		this.helpModule = CoreSpringFactory.getImpl(HelpModule.class);
 	}
 
 	@Override
@@ -345,49 +345,17 @@ public class VelocityRenderDecorator implements Closeable {
 		return doRender(componentName, null);
 	}
 
-	/**
-	 * used to position help icon inside div-class o_chelp_wrapper
-	 * @param packageName
-	 * @param pageName
-	 * @param hoverTextKey
-	 * @return
-	 */
-	public StringOutput contextHelpWithWrapper(String packageName, String pageName, String hoverTextKey) {
-		StringOutput sb = new StringOutput(100);
-		if (ContextHelpModule.isContextHelpEnabled()) {
-			sb.append("<span class=\"o_chelp_wrapper\">");
-			sb.append(contextHelp(packageName, pageName, hoverTextKey));
-			sb.append("</span>");
-		}
-		return sb;
-	}
 
 	/**
-	 * @param packageName
-	 * @param pageName
-	 * @param hoverTextKey
+	 * Create a link wrapped with some markup to render a nice help button. The
+	 * link points to the corresponding page in the manual.
+	 * 
+	 * @param page Help page name
 	 * @return
 	 */
-	public StringOutput contextHelp(String packageName, String pageName, String hoverTextKey) {
-		StringOutput sb = new StringOutput(100);
-		if (ContextHelpModule.isContextHelpEnabled()) {
-			String hooverText = renderer.getTranslator().translate(hoverTextKey);
-			if (hooverText != null) {
-				hooverText = StringEscapeUtils.escapeHtml(hooverText);
-			}
-			sb.append("<a href=\"javascript:");
-			sb.append(contextHelpJSCommand(packageName, pageName));
-			sb.append("\" title=\"").append(hooverText).append("\" class=\"o_chelp\"><i class='o_icon o_icon_help'></i> ");
-			sb.append(renderer.getTranslator().translate("help"));
-			sb.append("</a>");
-		}
-		return sb;
-	}
-	
 	public StringOutput contextHelpWithWrapper(String page) {
 		StringOutput sb = new StringOutput(192);
-		if (ContextHelpModule.isContextHelpEnabled()) {
-			HelpModule helpModule = CoreSpringFactory.getImpl(HelpModule.class);
+		if (helpModule.isHelpEnabled()) {
 			Locale locale = renderer.getTranslator().getLocale();
 			String url = helpModule.getHelpProvider().getURL(locale, page);
 			if(url != null) {
@@ -403,103 +371,38 @@ public class VelocityRenderDecorator implements Closeable {
 	}
 
 	/**
-	 * Create a js command to open a specific context help page
-	 * @param packageName
-	 * @param pageName
+	 * Create a js command to open a specific page in the manual.
+	 * 
+	 * @param page Help page name
 	 * @return
 	 */
-	public StringOutput contextHelpJSCommand(String packageName, String pageName) {
+	public StringOutput contextHelpJSCommand(String page) {
 		StringOutput sb = new StringOutput(100);
-		if (ContextHelpModule.isContextHelpEnabled()) {
-			String langCode = renderer.getTranslator().getLocale().toString();
-			sb.append("contextHelpWindow('");
-			Renderer.renderNormalURI(sb, "help/");
-			sb.append(langCode).append("/").append(packageName).append("/").append(pageName);
-			sb.append("')");
+		if (helpModule.isHelpEnabled()) {
+			Locale locale = renderer.getTranslator().getLocale();
+			String url = helpModule.getHelpProvider().getURL(locale, page);
+			sb.append("contextHelpWindow('").append(url).append("')");
 		}
 		return sb;
 	}
 
 	/**
-	 * create a link to open a specifc context help page
-	 * @param page 
+	 * Create a link to a specific page in the manual. The link points to the
+	 * corresponding page in the manual.
+	 * 
+	 * @param page
+	 *            Help page name
 	 */
 	
 	public StringOutput contextHelpLink(String page) {
 		StringOutput sb = new StringOutput(100);
-		if (ContextHelpModule.isContextHelpEnabled()) {
-			HelpModule helpModule = CoreSpringFactory.getImpl(HelpModule.class);
+		if (helpModule.isHelpEnabled()) {
 			String url = helpModule.getHelpProvider().getURL(renderer.getTranslator().getLocale(), page);
 			sb.append(url);
 		}
 		return sb;
 	}
 
-	/**
-	 * Create a link that can be used within a context help page to link to
-	 * another context help page from the same package.
-	 * 
-	 * @param pageName e.g. "my-page.html"
-	 * @return
-	 */
-	public StringOutput contextHelpRelativeLink(String pageName) {
-		return contextHelpRelativeLink(null, pageName);
-	}
-
-	/**
-	 * Create a link that can be used within a context help page to link to
-	 * another context help page from another package. As link text the page title
-	 * is used.
-	 * 
-	 * @param bundleName e.g. "org.olat.core"
-	 * @param pageName e.g. "my-page.html"
-	 * @return
-	 */
-	public StringOutput contextHelpRelativeLink(String bundleName, String pageName) {
-		String linkText;
-		int lastDotPos = pageName.lastIndexOf(".");
-		if (lastDotPos != -1) {
-			Translator pageTrans = renderer.getTranslator();
-			if (bundleName != null) {
-				Locale locale = pageTrans.getLocale();
-				pageTrans = new PackageTranslator(bundleName, locale);
-			}
-			linkText = pageTrans.translate("chelp." + pageName.subSequence(0, lastDotPos) + ".title");					
-		} else {
-			linkText = pageName; // fallback
-		}
-		return contextHelpRelativeLink(bundleName, pageName, linkText);
-	}
-
-	/**
-	 * Create a link that can be used within a context help page to link to
-	 * another context help page from another package. The link text can be
-	 * specified as a thirt attribute.
-	 * 
-	 * @param bundleName e.g. "org.olat.core"
-	 * @param pageName e.g. "my-page.html"
-	 * @return
-	 */
-	public StringOutput contextHelpRelativeLink(String bundleName, String pageName, String linkText) {
-		StringOutput sb = new StringOutput(100);
-		if (ContextHelpModule.isContextHelpEnabled()) {
-			sb.append("<a ");
-			NameValuePair[] commands;
-			if (bundleName == null) {
-				commands = new NameValuePair[]{ new NameValuePair(VelocityContainer.COMMAND_ID, pageName) }; 
-			} else {
-				commands = new NameValuePair[]{
-						new NameValuePair(VelocityContainer.COMMAND_ID, pageName),
-						new NameValuePair(PARAM_CHELP_BUNDLE, bundleName)
-				};
-			}
-			renderer.getUrlBuilder().buildHrefAndOnclick(sb, isIframePostEnabled, commands);
-			sb.append(">").append(linkText).append("</a>");
-		}
-		return sb;
-	}	
-
-	
 	/**
 	 * @param componentName
 	 * @param arg1

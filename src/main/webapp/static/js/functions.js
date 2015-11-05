@@ -818,20 +818,6 @@ function gotonode(nodeid) {
 	}
 }
 
-
-function o_openUriInMainWindow(uri) {
-	if(!o2cl()) return false;
-	
-	// get the "olatmain" window
-	try {
-		var w = o_getMainWin();
-		w.focus();
-		w.location.replace(uri);		
-	} catch (e) {
-		showMessageBox("error", "Error", "Can not find main OpenOLAT window to open URL.");		
-	}
-}
-
 function o_viewportHeight() {
 	// based on prototype library
 	var prototypeViewPortHeight = jQuery(document).height()
@@ -1759,7 +1745,7 @@ function b_hideExtMessageBox() {
 var BDebugger = {
 	_lastDOMCount : 0,
 	_lastObjCount : 0,
-	_knownGlobalOLATObjects : ["o_afterserver","o_onc","o_getMainWin","o_ainvoke","o_info","o_beforeserver","o_ffEvent","o_openPopUp","o_debu_show","o_logwarn","o_dbg_unmark","o_ffRegisterSubmit","o_clearConsole","o_init","o_log","o_allowNextClick","o_dbg_mark","o_debu_hide","o_logerr","o_debu_oldcn","o_debu_oldtt","o_openUriInMainWindow","o_debug_trid","o_log_all"],
+	_knownGlobalOLATObjects : ["o_afterserver","o_onc","o_getMainWin","o_ainvoke","o_info","o_beforeserver","o_ffEvent","o_openPopUp","o_debu_show","o_logwarn","o_dbg_unmark","o_ffRegisterSubmit","o_clearConsole","o_init","o_log","o_allowNextClick","o_dbg_mark","o_debu_hide","o_logerr","o_debu_oldcn","o_debu_oldtt","o_debug_trid","o_log_all"],
 		
 	_countDOMElements : function() {
 		return document.getElementsByTagName('*').length;

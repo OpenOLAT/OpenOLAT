@@ -62,6 +62,11 @@ public class ConfluenceLinkSPI implements HelpLinkSPI {
 	private static final Map<String, String> translatedPages = new ConcurrentHashMap<String, String>();
 	private static final Map<String, Date> translatTrials = new ConcurrentHashMap<String, Date>();
 
+	private static final String confluenceBaseUrl = "https://confluence.openolat.org";
+	private static final String confluenceDisplayUrl = confluenceBaseUrl + "/display";
+	private static final String confluencePagesUrl = confluenceBaseUrl + "/pages/";
+	
+	
 	public static final Locale EN_Locale = new Locale("en");
 	public static final Locale DE_Locale = new Locale("de");
 
@@ -73,7 +78,7 @@ public class ConfluenceLinkSPI implements HelpLinkSPI {
 	@Override
 	public String getURL(Locale locale, String page) {
 		StringBuilder sb = new StringBuilder(64);
-		sb.append("https://confluence.openolat.org/display");
+		sb.append(confluenceDisplayUrl);
 		String space = spaces.get(locale.toString());
 		if (space == null) {
 			// Generate space only once per language, version does not change at
@@ -226,6 +231,7 @@ public class ConfluenceLinkSPI implements HelpLinkSPI {
 					public void run() {
 						CloseableHttpClient httpClient = HttpClientFactory.getHttpClientInstance(false);
 						try {
+							// Phase 1: lookup alias redirect
 							HttpGet httpMethod = new HttpGet(aliasUrl);
 							httpMethod.setHeader("User-Agent", Settings.getFullVersionInfo());
 							HttpResponse response = httpClient.execute(httpMethod);
@@ -248,6 +254,48 @@ public class ConfluenceLinkSPI implements HelpLinkSPI {
 								String path = body.substring(locationPos + 18, endPos);
 								String translatedPage = path.substring(path.lastIndexOf("/") + 1);
 								translatedPage = translatedPage.replaceAll("\\+", " ");
+								
+								// Phase 2:Lookup real page name in confluence
+								// if this just a stupid confluence page ID
+								// instead of the page name. This totally breaks
+								// the anchor mechanism which is broken anyway,
+								// we need the real page name. For some reason
+								// confluence does not always adress pages using
+								// the page name, sometimes the page ID is used.
+								// Anchors do not work on such pages. For iso
+								// latin pages this should be fine for most
+								// cases.
+								if (translatedPage.indexOf("viewpage.action?pageId") != -1) {
+									String redirectUrl = confluencePagesUrl + translatedPage;
+									httpMethod = new HttpGet(redirectUrl);
+									httpMethod.setHeader("User-Agent", Settings.getFullVersionInfo());
+									response = httpClient.execute(httpMethod);
+									httpStatusCode = response.getStatusLine().getStatusCode();
+									// Looking at the HTTP status code tells us whether a
+									// user with the given MSN name exists.
+									if (httpStatusCode == HttpStatus.SC_OK) {
+										body = EntityUtils.toString(response.getEntity());
+										// Page contains a javascript redirect call, extract
+										// redirect location
+										int titlePos = body.indexOf("ajs-page-title");
+										if (titlePos == -1) {
+											return;
+										}
+										endPos = body.indexOf("\"", titlePos + 25);
+										if (endPos == -1) {
+											return;
+										}
+										// Remove the path to extract the page name
+										path = body.substring(titlePos + 25, endPos);
+										translatedPage = path.substring(path.lastIndexOf("/") + 1);
+										translatedPage = translatedPage.replaceAll("\\+", " ");
+										// Check if this just a stupid page ID instead
+										// of the page name. This totally breaks the
+										// anchor stuff, we need the real page name. For
+										// iso latin pages this should be fine for most cases.
+									}								
+								}
+								
 								// We're done. Put to cache for next retrieval
 								translatedPages.putIfAbsent(aliasUrl, translatedPage);
 							}

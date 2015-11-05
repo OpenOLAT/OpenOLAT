@@ -21,6 +21,8 @@ package org.olat.restapi.system.vo;
 
 import java.util.Date;
 
+import org.olat.admin.sysinfo.model.DatabaseConnectionVO;
+
 /**
  * 
  * Description:<br>

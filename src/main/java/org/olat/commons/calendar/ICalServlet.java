@@ -27,13 +27,13 @@
 package org.olat.commons.calendar;
 
 import java.io.IOException;
+import java.io.Writer;
 import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -56,6 +56,7 @@ import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Url;
 import net.fortuna.ical4j.model.property.XProperty;
+import net.fortuna.ical4j.util.Strings;
 
 
 /**
@@ -170,6 +171,12 @@ public class ICalServlet extends HttpServlet {
 			log.warn("Type not supported: " + pathInfo);
 			return;
 		}
+		
+		try {
+			response.setCharacterEncoding("UTF-8");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 		CalendarManager calendarManager = CoreSpringFactory.getImpl(CalendarManager.class);
 		if(CalendarManager.TYPE_USER_AGGREGATED.equals(calendarType)) {
@@ -208,23 +215,24 @@ public class ICalServlet extends HttpServlet {
 			List<CalendarFileInfos> iCalFiles = homeCalendarManager.getListOfCalendarsFiles(identity);
 			DBFactory.getInstance().commitAndCloseSession();
 			
-			ServletOutputStream out = response.getOutputStream();
-			out.print(Calendar.BEGIN);
-			out.print(':');
-			out.println(Calendar.VCALENDAR);
+			Writer out = response.getWriter();
+			out.write(Calendar.BEGIN);
+			out.write(':');
+			out.write(Calendar.VCALENDAR);
+			out.write(Strings.LINE_SEPARATOR);
 
 			int numOfFiles = iCalFiles.size();
 			for(int i=0; i<numOfFiles; i++) {
 				outputCalendar(iCalFiles.get(i), out);
 			}
 			
-			out.print(Calendar.END);
-			out.print(':');
-			out.print(Calendar.VCALENDAR);
+			out.write(Calendar.END);
+			out.write(':');
+			out.write(Calendar.VCALENDAR);
 		}
 	}
 	
-	private void outputCalendar(CalendarFileInfos fileInfos, ServletOutputStream out) throws IOException {
+	private void outputCalendar(CalendarFileInfos fileInfos, Writer out) throws IOException {
 		CalendarManager calendarManager = CoreSpringFactory.getImpl(CalendarManager.class);
 		Calendar calendar = calendarManager.readCalendar(fileInfos.getCalendarFile());
 		updateUrlProperties(calendar);
@@ -234,7 +242,8 @@ public class ICalServlet extends HttpServlet {
 		
 		ComponentList events = calendar.getComponents();
 		for (final Iterator<?> i = events.iterator(); i.hasNext();) {
-			out.print(i.next().toString());
+			String event = i.next().toString();
+			out.write(event);
 		}
 	}
 	

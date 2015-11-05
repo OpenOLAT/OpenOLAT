@@ -371,7 +371,7 @@ public interface CourseNode extends INode, ShortName {
 	/**
 	 * Remap the node to the context of the course after import.
 	 */
-	public void postImport(CourseEnvironmentMapper envMapper, Processing type);
+	public void postImport(File importDirectory, ICourse course, CourseEnvironmentMapper envMapper, Processing type);
 	
 	/**
 	 * 

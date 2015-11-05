@@ -221,7 +221,7 @@ public class OLATUpgrade_9_4_0 extends OLATUpgrade {
 	
 	private List<BusinessGroupImpl> findGroups(int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();	
-		sb.append("select grp from ").append(BusinessGroupImpl.class.getName()).append(" grp order by key");
+		sb.append("select grp from businessgroup grp order by key");
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BusinessGroupImpl.class)
 				.setFirstResult(firstResult)
 				.setMaxResults(maxResults)

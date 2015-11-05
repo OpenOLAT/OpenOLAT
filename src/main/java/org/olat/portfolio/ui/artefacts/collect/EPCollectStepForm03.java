@@ -131,7 +131,7 @@ public class EPCollectStepForm03 extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("step3.short.descr");
-		setFormContextHelp("org.olat.portfolio.ui.artefacts.collect", "reflexion.html", "step3.chelp.hover");
+		setFormContextHelp("Personal Menu");
 
 		if (showNoReflexionOnStructLinkYetWarning) {
 			uifactory.addStaticTextElement("hint", "info.no.reflexion.yet", "", formLayout);

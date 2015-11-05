@@ -20,10 +20,8 @@
 
 package org.olat.search.ui;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.IdentityShort;
@@ -45,7 +43,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.search.SearchServiceUIFactory;
 import org.olat.search.model.ResultDocument;
-import org.olat.search.service.document.ContextHelpDocument;
 import org.olat.user.UserManager;
 
 /**
@@ -56,13 +53,8 @@ import org.olat.user.UserManager;
  * @author srosse, stephane.rosse@frentix.com
  */
 public class SearchControllerFactory implements SearchServiceUIFactory {
+	
 	private static final OLog log = Tracing.createLoggerFor(SearchControllerFactory.class);
-	
-	private final Map<String,ResultControllerCreator> resultControllerCreator = new HashMap<String,ResultControllerCreator>();
-	
-	public void addResultControllerCreator(ResultControllerCreator creator) {
-		resultControllerCreator.put(creator.getFileType(), creator);
-	}
 	
 	@Override
 	public SearchInputController createInputController(UserRequest ureq, WindowControl wControl, DisplayOption displayOption, Form mainForm) {
@@ -93,22 +85,8 @@ public class SearchControllerFactory implements SearchServiceUIFactory {
 	
 	@Override
 	public ResultController createController(UserRequest ureq, WindowControl wControl, Form mainForm, ResultDocument document) {
-		String documentType = document.getDocumentType();
-		if(resultControllerCreator.containsKey(documentType)) {
-			ResultControllerCreator creator = resultControllerCreator.get(documentType);
-			return creator.createController(ureq, wControl, mainForm, document);
-		}
-		
-		ResultController ctrl;
-		if(ContextHelpDocument.TYPE.equals(documentType)) {
-			ctrl = new ContextHelpResultController(ureq, wControl, mainForm, document);
-		} else {
-			ctrl = new StandardResultController(ureq, wControl, mainForm, document);
-		}
-		return ctrl;
+		return new StandardResultController(ureq, wControl, mainForm, document);
 	}
-	
-	
 	
 	@Override
 	public String getBusinessPathLabel(String token, List<String> allTokens, Locale locale) {

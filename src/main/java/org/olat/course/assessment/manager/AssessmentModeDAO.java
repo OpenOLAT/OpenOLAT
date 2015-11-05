@@ -41,7 +41,6 @@ import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.model.AssessmentModeImpl;
 import org.olat.course.assessment.model.SearchAssessmentModeParams;
 import org.olat.course.nodes.CourseNode;
-import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.area.BGtoAreaRelationImpl;
 import org.olat.repository.RepositoryEntryRef;
@@ -190,17 +189,17 @@ public class AssessmentModeDAO {
 		  .append(" left join mode.areas as modeToArea")
 		  .append(" where mode.key in (:modeKeys)")
 		  .append("  and ((mode.targetAudienceString in ('").append(AssessmentMode.Target.courseAndGroups.name()).append("','").append(AssessmentMode.Target.groups.name()).append("')")
-		  .append("   and (exists (select businessGroup from ").append(BusinessGroupImpl.class.getName()).append(" as businessGroup, bgroupmember as membership")
-		  .append("     where modeToGroup.businessGroup=businessGroup and membership.group=businessGroup.baseGroup and membership.identity.key=:identityKey")
+		  .append("   and (exists (select businessGroup from businessgroup as businessGroup, bgroupmember as membership")
+		  .append("     where modeToGroup.businessGroup.key=businessGroup.key and membership.group.key=businessGroup.baseGroup.key and membership.identity.key=:identityKey")
 		  .append("     and (membership.role='").append(GroupRoles.participant.name()).append("' or ")
 		  .append("       (mode.applySettingsForCoach=true and membership.role='").append(GroupRoles.coach.name()).append("'))")
-		  .append("   ) or exists (select areaToGroup from ").append(BGtoAreaRelationImpl.class.getName()).append(" as areaToGroup,").append(BusinessGroupImpl.class.getName()).append(" as businessGroupArea, bgroupmember as membership")
+		  .append("   ) or exists (select areaToGroup from ").append(BGtoAreaRelationImpl.class.getName()).append(" as areaToGroup,businessgroup as businessGroupArea, bgroupmember as membership")
 		  .append("     where modeToArea.area=areaToGroup.groupArea and areaToGroup.businessGroup=businessGroupArea and membership.group=businessGroupArea.baseGroup and membership.identity.key=:identityKey")
 		  .append("     and (membership.role='").append(GroupRoles.participant.name()).append("' or ")
 		  .append("       (mode.applySettingsForCoach=true and membership.role='").append(GroupRoles.coach.name()).append("'))")
 		  .append("  ))) or (mode.targetAudienceString in ('").append(AssessmentMode.Target.courseAndGroups.name()).append("','").append(AssessmentMode.Target.course.name()).append("')")
 		  .append("   and exists (select rel from repoentrytogroup as rel,  bgroupmember as membership ")
-		  .append("     where mode.repositoryEntry=rel.entry and membership.group=rel.group and rel.defaultGroup=true and membership.identity.key=:identityKey")
+		  .append("     where mode.repositoryEntry.key=rel.entry.key and membership.group.key=rel.group.key and rel.defaultGroup=true and membership.identity.key=:identityKey")
 		  .append("     and (membership.role='").append(GroupRoles.participant.name()).append("' or ")
 		  .append("       (mode.applySettingsForCoach=true and membership.role='").append(GroupRoles.coach.name()).append("'))")
 		  .append("  ))")

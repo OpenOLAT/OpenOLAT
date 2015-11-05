@@ -42,7 +42,6 @@ public class SearchBusinessGroupParams {
 	private String name;
 	private String exactName;
 	private String description;
-	private String ownerName;
 	private String courseTitle;
 	private String externalId;
 	private Boolean managed;
@@ -52,13 +51,6 @@ public class SearchBusinessGroupParams {
 	private boolean owner;
 	private boolean attendee;
 	private boolean waiting;
-	private Boolean publicGroups;
-	private Boolean marked;
-	private Boolean resources;
-	private boolean headless = false;
-	private int numOfMembers = -1;
-	private boolean numOfMembersBigger = true;
-	
 	
 	public SearchBusinessGroupParams() {
 		//
@@ -127,14 +119,6 @@ public class SearchBusinessGroupParams {
 		this.description = description;
 	}
 
-	public String getOwnerName() {
-		return ownerName;
-	}
-
-	public void setOwnerName(String ownerName) {
-		this.ownerName = ownerName;
-	}
-
 	public String getCourseTitle() {
 		return courseTitle;
 	}
@@ -199,75 +183,6 @@ public class SearchBusinessGroupParams {
 		this.waiting = waiting;
 	}
 
-	public Boolean getPublicGroups() {
-		return publicGroups;
-	}
 
-	public void setPublicGroups(Boolean publicGroups) {
-		this.publicGroups = publicGroups;
-	}
 
-	public Boolean getMarked() {
-		return marked;
-	}
-
-	public void setMarked(Boolean marked) {
-		this.marked = marked;
-	}
-
-	public Boolean getResources() {
-		return resources;
-	}
-
-	public void setResources(Boolean resources) {
-		this.resources = resources;
-	}
-
-	/**
-	 * Only available on views
-	 * @return
-	 */
-	public boolean isHeadless() {
-		return headless;
-	}
-
-	/**
-	 * Only available on views
-	 * @param headless
-	 */
-	public void setHeadless(boolean headless) {
-		this.headless = headless;
-	}
-
-	/**
-	 * Only available on views
-	 * @return
-	 */
-	public int getNumOfMembers() {
-		return numOfMembers;
-	}
-
-	/**
-	 * Only available on views
-	 * @param headless
-	 */
-	public void setNumOfMembers(int numOfMembers) {
-		this.numOfMembers = numOfMembers;
-	}
-	
-	/**
-	 * Only available on views
-	 * @return
-	 */
-	public boolean isNumOfMembersBigger() {
-		return numOfMembersBigger;
-	}
-
-	/**
-	 * Only available on views
-	 * @param headless
-	 */
-	public void setNumOfMembersBigger(boolean numOfMembersBigger) {
-		this.numOfMembersBigger = numOfMembersBigger;
-	}
 }

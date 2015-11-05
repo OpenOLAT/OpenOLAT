@@ -19,34 +19,19 @@
  */
 package org.olat.group.ui.main;
 
-import static org.olat.group.ui.main.AbstractBusinessGroupListController.TABLE_ACTION_DELETE;
-import static org.olat.group.ui.main.AbstractBusinessGroupListController.TABLE_ACTION_LAUNCH;
-import static org.olat.group.ui.main.AbstractBusinessGroupListController.TABLE_ACTION_LEAVE;
-import static org.olat.group.ui.main.AbstractBusinessGroupListController.TABLE_ACTION_SELECT;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.EscapeMode;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupMembership;
-import org.olat.group.BusinessGroupModule;
 
 /**
  * 
@@ -66,87 +51,6 @@ public class BusinessGroupFlexiTableModel extends DefaultFlexiTableDataModel<BGT
 		super(new ArrayList<BGTableItem>(), columnModel);
 		this.trans = trans;
 	}
-	
-	public static FlexiTableColumnModel getStandardColumnModel(boolean delete, FormLayoutContainer flc, BusinessGroupModule groupModule, Translator translator) {
-		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		//mark
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mark.i18n(), Cols.mark.ordinal(),
-				true, Cols.mark.name()));
-		//group name
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18n(), Cols.name.ordinal(), TABLE_ACTION_LAUNCH,
-				true, Cols.name.name(), new StaticFlexiCellRenderer(TABLE_ACTION_LAUNCH, new BusinessGroupNameCellRenderer())));
-		//id and reference
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18n(), Cols.key.ordinal(), true, Cols.key.name()));
-		if(groupModule.isManagedBusinessGroups()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.externalId.i18n(), Cols.externalId.ordinal(),
-					true, Cols.externalId.name()));
-		}
-		//description
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.description.i18n(), Cols.description.ordinal(),
-				false, null, FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(EscapeMode.antisamy)));
-		//courses
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.resources.i18n(), Cols.resources.ordinal(),
-				true, Cols.resources.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGResourcesCellRenderer(flc)));
-		//access
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.accessTypes.i18n(), Cols.accessTypes.ordinal(),
-				true, Cols.accessTypes.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGAccessControlledCellRenderer()));
-		//launch dates
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.firstTime.i18n(), Cols.firstTime.ordinal(),
-				true, Cols.firstTime.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(translator.getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.lastTime.i18n(), Cols.lastTime.ordinal(),
-				true, Cols.lastTime.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(translator.getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastUsage.i18n(), Cols.lastUsage.ordinal(),
-				true, Cols.lastUsage.name()));
-		//roles
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.role.i18n(), Cols.role.ordinal(),
-				true, Cols.role.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGRoleCellRenderer(translator.getLocale())));
-		
-		//actions
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.allowLeave.i18n(), Cols.allowLeave.ordinal(), TABLE_ACTION_LEAVE,
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translator.translate("table.header.leave"), TABLE_ACTION_LEAVE), null)));
-		if(delete) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.allowDelete.i18n(), Cols.allowDelete.ordinal(), TABLE_ACTION_DELETE,
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translator.translate("table.header.delete"), TABLE_ACTION_DELETE), null)));
-		}
-		
-		return columnsModel;
-	}
-	
-	public static FlexiTableColumnModel getSelectColumnModel(FormLayoutContainer flc, BusinessGroupModule groupModule, Translator translator) {
-		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		//mark
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mark.i18n(), Cols.mark.ordinal(),
-				true, Cols.mark.name()));
-		//group name
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18n(), Cols.name.ordinal(), TABLE_ACTION_LAUNCH,
-				true, Cols.name.name(), new StaticFlexiCellRenderer(TABLE_ACTION_LAUNCH, new BusinessGroupNameCellRenderer())));
-		//id and reference
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18n(), Cols.key.ordinal(), true, Cols.key.name()));
-		if(groupModule.isManagedBusinessGroups()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.externalId.i18n(), Cols.externalId.ordinal(),
-					true, Cols.externalId.name()));
-		}
-		//description
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.description.i18n(), Cols.description.ordinal(),
-				false, null, FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(EscapeMode.antisamy)));
-		//courses
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.resources.i18n(), Cols.resources.ordinal(),
-				true, Cols.resources.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGResourcesCellRenderer(flc)));
-
-		//stats
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.tutorsCount.i18n(), Cols.tutorsCount.ordinal(),
-				true, Cols.tutorsCount.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.participantsCount.i18n(), Cols.participantsCount.ordinal(),
-				true, Cols.participantsCount.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.freePlaces.i18n(), Cols.freePlaces.ordinal(),
-				true, Cols.freePlaces.name(), FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(EscapeMode.none)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.waitingListCount.i18n(), Cols.waitingListCount.ordinal(),
-				true, Cols.waitingListCount.name()));
-		
-		//actions
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translator.translate("select"), TABLE_ACTION_SELECT));
-		return columnsModel;
-	}
 
 	/**
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
@@ -161,7 +65,7 @@ public class BusinessGroupFlexiTableModel extends DefaultFlexiTableDataModel<BGT
 	public Object getValueAt(BGTableItem wrapped, int col) {
 		switch (Cols.values()[col]) {
 			case name:
-				return wrapped.getBusinessGroup();
+				return wrapped;
 			case description:
 				String description = wrapped.getBusinessGroupDescription();
 				description = FilterFactory.getHtmlTagsFilter().filter(description);
@@ -192,12 +96,6 @@ public class BusinessGroupFlexiTableModel extends DefaultFlexiTableDataModel<BGT
 			case accessControl:
 				return new Boolean(wrapped.isAccessControl());
 			case accessControlLaunch:
-				/*if(wrapped.isAccessControl()) {
-					if(wrapped.getMembership() != null) {
-						return trans.translate("select");
-					}
-					return trans.translate("table.access");
-				}*/
 				return wrapped.getAccessLink();
 			case accessTypes:
 				return wrapped.getAccessTypes();

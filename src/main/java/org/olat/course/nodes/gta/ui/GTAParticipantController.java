@@ -50,9 +50,6 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
@@ -65,7 +62,6 @@ import org.olat.course.nodes.gta.model.TaskDefinitionList;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -92,8 +88,6 @@ public class GTAParticipantController extends GTAAbstractController {
 	
 	@Autowired
 	private MailManager mailManager;
-	@Autowired
-	private BusinessGroupService businessGroupService;
 
 	public GTAParticipantController(UserRequest ureq, WindowControl wControl,
 			GTACourseNode gtaNode, UserCourseEnvironment userCourseEnv) {
@@ -322,18 +316,7 @@ public class GTAParticipantController extends GTAAbstractController {
 		}
 	}
 	
-	private void doUpdateAttempts() {
-		if(businessGroupTask) {
-			List<Identity> identities = businessGroupService.getMembers(assessedGroup, GroupRoles.participant.name());
-			ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
-			for(Identity identity:identities) {
-				UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-				gtaNode.incrementUserAttempts(uce);
-			}
-		} else {
-			gtaNode.incrementUserAttempts(userCourseEnv);
-		}
-	}
+	
 	
 	private void doSubmissionEmail() {
 		String body = config.getStringValue(GTACourseNode.GTASK_SUBMISSION_TEXT);
@@ -351,7 +334,7 @@ public class GTAParticipantController extends GTAAbstractController {
 			
 			String subject = translate("submission.mail.subject");
 			File[] files = TaskHelper.getDocuments(submitDirectory);
-			MailTemplate template = new GTAMailTemplate(subject, body, files, getIdentity(), getLocale());
+			MailTemplate template = new GTAMailTemplate(subject, body, files, getIdentity(), getTranslator());
 			
 			MailerResult result = new MailerResult();
 			MailBundle[] bundles = mailManager.makeMailBundles(context, recipientsTO, template, null, UUID.randomUUID().toString(), result);

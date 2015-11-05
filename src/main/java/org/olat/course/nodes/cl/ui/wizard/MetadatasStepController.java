@@ -62,8 +62,7 @@ public class MetadatasStepController extends StepFormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("metadatas.details");
 		setFormDescription("metadatas.details.description");
-		setFormContextHelp("org.olat.course.nodes.cl.ui", "cl-metadatas.html", "help.hover.metadatas");
-		
+
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			

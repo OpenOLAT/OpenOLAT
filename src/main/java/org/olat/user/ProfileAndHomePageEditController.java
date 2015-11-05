@@ -100,13 +100,10 @@ public class ProfileAndHomePageEditController extends BasicController implements
 	}
 	
 	@Override
-	public boolean isInterceptionRequired(UserRequest ureq) {
-		if (ureq.getUserSession().getRoles() == null || ureq.getUserSession().getRoles().isInvitee()
-				|| ureq.getUserSession().getRoles().isGuestOnly()) {
-			return false;
-		} else {
-			return true; 
-		}
+	public boolean isUserInteractionRequired(UserRequest ureq) {
+		return !(ureq.getUserSession().getRoles() == null
+				|| ureq.getUserSession().getRoles().isInvitee()
+				|| ureq.getUserSession().getRoles().isGuestOnly());
 	}
 
 	@Override

@@ -171,8 +171,8 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		if (editorEnabled) {
 			addCustomFileConfigToView(ureq);
 		}
-				
-		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), deliveryOptions);
+
+		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), deliveryOptions, "Knowledge Transfer#_splayout");
 		listenTo(deliveryOptionsCtrl);
 
 		// Find assessable children nodes

@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import org.apache.velocity.VelocityContext;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Formatter;
@@ -37,24 +38,29 @@ import org.olat.core.util.mail.MailTemplate;
  */
 public class GTAMailTemplate extends MailTemplate {
 	
-	private final Locale locale;
 	private final Identity identity;
 	private final File[] files;
+	private final Translator translator;
 	
-	public GTAMailTemplate(String subject, String body, File[] files, Identity identity, Locale locale) {
+	public GTAMailTemplate(String subject, String body, File[] files, Identity identity, Translator translator) {
 		super(subject, body, null);
-		this.locale = locale;
+		this.translator = translator;
 		this.identity = identity;
 		this.files = files;
 	}
 
 	@Override
 	public void putVariablesInMailContext(VelocityContext context, Identity recipient) {
+		Locale locale = translator.getLocale();
 		//compatibility with the old TA
 		context.put("login", identity.getName());
 		context.put("first", identity.getUser().getProperty(UserConstants.FIRSTNAME, locale));
+		context.put("firstName", identity.getUser().getProperty(UserConstants.FIRSTNAME, locale));
 		context.put("last", identity.getUser().getProperty(UserConstants.LASTNAME, locale));
+		context.put("lastName", identity.getUser().getProperty(UserConstants.LASTNAME, locale));
 		context.put("email", identity.getUser().getProperty(UserConstants.EMAIL, locale));
+		context.put("numberOfFiles", files == null ? "0" : Integer.toString(files.length));
+
 		if(files != null && files.length > 0) {
 			StringBuilder sb = new StringBuilder();
 			for(File file:files) {
@@ -62,6 +68,8 @@ public class GTAMailTemplate extends MailTemplate {
 				sb.append(file.getName());
 			}
 			context.put("filename", sb.toString());
+		} else {
+			context.put("filename", translator.translate("submission.nofile"));
 		}
 		
 		Date now = new Date();

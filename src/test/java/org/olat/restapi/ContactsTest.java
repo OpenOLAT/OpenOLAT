@@ -97,38 +97,41 @@ public class ContactsTest extends OlatJerseyTestCase {
 		// create groups without waiting list
 		g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, c1);
 		g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, c1);
+		DBFactory.getInstance().commit();
     
 		//permission to see owners and participants
 		businessGroupService.updateDisplayMembers(g1, false, false, false, false, false, false, false);
 		businessGroupService.updateDisplayMembers(g2, true, true, false, false, false, false, false);
     
 		// members g1
-	businessGroupRelationDao.addRole(owner1, g1, GroupRoles.coach.name());
-	businessGroupRelationDao.addRole(owner2, g1, GroupRoles.coach.name());
-	businessGroupRelationDao.addRole(part1, g1, GroupRoles.participant.name());
-	businessGroupRelationDao.addRole(part2, g1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(owner1, g1, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(owner2, g1, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(part1, g1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(part2, g1, GroupRoles.participant.name());
     
-    // members g2
-	businessGroupRelationDao.addRole(owner1, g2, GroupRoles.coach.name());
-	businessGroupRelationDao.addRole(part1, g2, GroupRoles.participant.name());
+		// members g2
+		businessGroupRelationDao.addRole(owner1, g2, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(part1, g2, GroupRoles.participant.name());
     
     
-    // 2) context two: right groups
+		// 2) context two: right groups
 		RepositoryEntry c2 =  JunitTestHelper.createAndPersistRepositoryEntry();
-    // groups
-    g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, -1, -1, false, false, c2);
-    businessGroupService.updateDisplayMembers(g3, false, true, false, false, false, false, false);
-    g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, -1, -1, false, false, c2);
-    businessGroupService.updateDisplayMembers(g4, false, true, false, false, false, false, false);
-    // members -> default participants are visible
-	businessGroupRelationDao.addRole(owner1, g3, GroupRoles.participant.name());
-	businessGroupRelationDao.addRole(part3, g3, GroupRoles.participant.name());
+		// groups
+		g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, -1, -1, false, false, c2);
+		g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, -1, -1, false, false, c2);
+		DBFactory.getInstance().commit();
+		
+		businessGroupService.updateDisplayMembers(g3, false, true, false, false, false, false, false);
+		businessGroupService.updateDisplayMembers(g4, false, true, false, false, false, false, false);
+		// members -> default participants are visible
+		businessGroupRelationDao.addRole(owner1, g3, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(part3, g3, GroupRoles.participant.name());
     
-	businessGroupRelationDao.addRole(owner2, g4, GroupRoles.participant.name());
-	businessGroupRelationDao.addRole(part3, g4, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(owner2, g4, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(part3, g4, GroupRoles.participant.name());
     
-    DBFactory.getInstance().commitAndCloseSession(); // simulate user clicks
-    initialized = true;
+		DBFactory.getInstance().commitAndCloseSession(); // simulate user clicks
+		initialized = true;
 	}
 	
 	@Test

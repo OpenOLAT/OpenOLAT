@@ -100,7 +100,7 @@ public class CourseCalendars {
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		Identity identity = ureq.getIdentity();
 		Roles roles = ureq.getUserSession().getRoles();
-		boolean isPrivileged = roles.isOLATAdmin() || cgm.isIdentityCourseAdministrator(identity)
+		boolean isPrivileged = roles.isOLATAdmin() || courseEnv.isAdmin()
 				|| (ne != null && ne.isCapabilityAccessible(CalCourseNode.EDIT_CONDITION_ID))
 				|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, cgm.getCourseEntry());
 		
