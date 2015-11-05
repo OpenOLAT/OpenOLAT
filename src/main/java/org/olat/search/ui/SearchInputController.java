@@ -445,12 +445,6 @@ public class SearchInputController extends FormBasicController implements Generi
 			if(!StringHelper.containsNonWhitespace(url)) {
 				//no url, no document
 				getWindowControl().setWarning(getTranslator().translate("error.resource.could.not.found"));
-			} else if(url != null && url.startsWith("[ContextHelpModule:")) {
-				//do something special for ContextHelp
-				int pathIndex = url.indexOf("path=");
-				String uri = url.substring(pathIndex + 5, url.length() - 1);
-				RedirectMediaResource rsrc = new RedirectMediaResource(uri);
-				ureq.getDispatchResult().setResultingMediaResource(rsrc);
 			} else {
 				BusinessControl bc = BusinessControlFactory.getInstance().createFromString(url);
 			  WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());

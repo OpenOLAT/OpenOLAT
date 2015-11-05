@@ -43,6 +43,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.GenericEventListener;
 
 /**
@@ -147,7 +148,9 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		this.cancel = cancel;
 		flc.contextPut("wizardTitle", wizardTitle);
 		flc.contextPut("elementCssClass", elementCssClass);
-		flc.contextPut("helpPage", contextHelpPage);
+		if (StringHelper.containsNonWhitespace(contextHelpPage)) {
+			flc.contextPut("helpPage", contextHelpPage);			
+		}
 
 		this.startStep = startStep;
 		steps = new Stack<Step>();

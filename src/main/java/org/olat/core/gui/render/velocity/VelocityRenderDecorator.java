@@ -65,7 +65,6 @@ import org.olat.core.util.i18n.I18nModule;
  */
 public class VelocityRenderDecorator implements Closeable {
 	
-	public static final String PARAM_CHELP_BUNDLE = "chelpbundle";
 	private VelocityContainer vc;
 	private Renderer renderer;
 	private final boolean isIframePostEnabled;

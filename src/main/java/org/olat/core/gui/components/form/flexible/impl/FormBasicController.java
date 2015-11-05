@@ -552,25 +552,6 @@ public abstract class FormBasicController extends BasicController {
 		}
 	}
 	
-	/**
-	 * Set an optional context help link for this form. If you use a custom
-	 * template this will have no effect
-	 * 
-	 * @param packageName The bundle name, e.g. org.olat.core
-	 * @param pageName The page name, e.g. my-helppage.html
-	 * @param hoverTextKey The hover text to indicate what this help is about
-	 *          (i18nkey)
-	 */
-	protected void setFormContextHelp(String packageName, String pageName, String hoverTextKey) {
-		if (packageName == null) {
-			flc.contextRemove("off_chelp_package");
-		} else {
-			flc.contextPut("off_chelp_package", packageName);
-			flc.contextPut("off_chelp_page", pageName);
-			flc.contextPut("off_chelp_hover", hoverTextKey);
-		}
-	}
-	
 	protected void setFormContextHelp(String url) {
 		if (url == null) {
 			flc.contextRemove("off_chelp_url");

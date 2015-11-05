@@ -136,7 +136,7 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp(this.getClass().getPackage().getName(), "room.html", "help.hover.openmeetings.room");
+		setFormContextHelp("Communication and Collaboration#CommunicationandCollaboration-_openmeeting_raum");
 		
 		String name = room == null ? (defaultSettings == null ? null : defaultSettings.getName()) : room.getName();
 		roomNameEl = uifactory.addTextElement("roomname", "room.name", 255, name == null ? "" : name, formLayout);

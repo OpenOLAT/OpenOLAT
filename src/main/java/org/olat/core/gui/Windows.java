@@ -55,7 +55,6 @@ public class Windows implements Disposable, Serializable {
 	private final AtomicInteger assessmentStarted = new AtomicInteger();
 	private transient WindowManager windowManagerImpl;
 	private transient ChiefController chiefController;
-	private transient ChiefController contextHelpChiefController;
 
 	private transient SlowBandWidthSimulator sbws;
 	
@@ -210,21 +209,10 @@ public class Windows implements Disposable, Serializable {
 		this.chiefController = chiefController;
 	}
 
-	public ChiefController getContextHelpChiefController() {
-		return contextHelpChiefController;
-	}
-
-	public void setContextHelpChiefController(ChiefController contextHelpChiefController) {
-		this.contextHelpChiefController = contextHelpChiefController;
-	}
-
 	@Override
 	public void dispose() {
 		if(chiefController != null) {
 			chiefController.dispose();
-		}
-		if(contextHelpChiefController != null) {
-			contextHelpChiefController.dispose();
 		}
 		if(windowManagerImpl != null) {
 			windowManagerImpl.dispose();

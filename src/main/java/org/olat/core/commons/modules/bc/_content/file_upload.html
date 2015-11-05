@@ -1,10 +1,10 @@
 <div class="container-fluid">
 ## for odd reason bootstrap calls vertical horizontal
 <fieldset #if(!$!f.domReplacementWrapperRequired) id="$r.getCId()" #end class="o_form form-horizontal #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()" role="form">
-#if ($off_title || $off_chelp_package) 
+#if ($off_title) 
 	<legend>
-		#if ($off_chelp_package) 
-			$r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") 
+		#if ($off_chelp_url) 
+			$r.contextHelpWithWrapper("$off_chelp_url") 
 		#end
 		$!off_title
 	</legend> 

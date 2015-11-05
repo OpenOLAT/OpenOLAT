@@ -57,7 +57,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 
 /**
  * <h3>Description:</h3>
@@ -131,19 +130,17 @@ public class DialogBoxController extends BasicController {
 		}
 	}
 	
-	public void setContextHelp(String pageName) {
-		setContextHelp(null, pageName, null);
-	}
-	
-	public void setContextHelp(String packageName, String pageName, String hoverTextKey) {
-		if (packageName == null) {
-			dialogBoxVC.contextRemove("off_chelp_package");
+	/**
+	 * Set an optional context help link for this form. If you use a custom
+	 * template this will have no effect
+	 * 
+	 * @param url The page in confluence 
+	 */
+	public void setContextHelp(String url) {
+		if (url == null) {
+			dialogBoxVC.contextRemove("off_chelp_url");
 		} else {
-			setTranslator(Util.createPackageTranslator(packageName, getLocale(), getTranslator()));
-			dialogBoxVC.contextPut("off_chelp_package", packageName);
-			dialogBoxVC.contextPut("off_chelp_page", pageName);
-			dialogBoxVC.contextPut("off_chelp_hover", hoverTextKey);
-			dialogBoxVC.setTranslator(getTranslator());
+			dialogBoxVC.contextPut("off_chelp_url", url);
 		}
 	}
 

@@ -82,7 +82,7 @@ public class ModulesForm extends FormBasicController {
 		    scoring.isSelected(0) ||
 		    solution.isSelected(0)) return true;
 		
-		setFormInfo("chelp.sel2");
+		setFormInfo("atleastone");
 		cb.select("xx", true);
 		return false;
 	}

@@ -131,7 +131,7 @@ public class EPCollectStepForm03 extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("step3.short.descr");
-		setFormContextHelp("Personal Menu#");
+		setFormContextHelp("Personal Menu");
 
 		if (showNoReflexionOnStructLinkYetWarning) {
 			uifactory.addStaticTextElement("hint", "info.no.reflexion.yet", "", formLayout);

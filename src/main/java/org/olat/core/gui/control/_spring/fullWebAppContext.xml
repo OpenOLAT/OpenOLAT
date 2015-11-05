@@ -66,30 +66,4 @@
 		<property name="className" value="org.olat.gui.control.OlatMinimalTopNavController"/>
 	</bean>
 
-	<!--
-		******************************************
-		*** Configure the controller in the    ***
-		*** header part, in context help       ***
-		******************************************
-	-->
-	<bean id="fullWebApp.ContextHelpHeaderControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator"/> 		
-	<!--
-		******************************************
-		*** Configure the controller in the    ***
-		*** right upper corner inin context help**
-		******************************************
-	-->
-	<bean id="fullWebApp.ContextHelpTopNavControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
-		<property name="className" value="org.olat.core.commons.contextHelp.ContextHelpTopNavController" />
-	</bean>
-	<!--
-		******************************************
-		*** Configure the controller in the    ***
-		*** Footer in in context help.         ***
-		******************************************
-	-->
-	<bean id="fullWebApp.ContextHelpFooterControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator" >
-		<property name="className" value="org.olat.gui.control.OlatFooterController"/>
-	</bean>
-
 </beans>

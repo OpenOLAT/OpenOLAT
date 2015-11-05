@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.course.editor.NodeEditController;
 
 /**
@@ -145,7 +146,7 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("option.desc");
-		if(helpPage != null || helpPage != ""){
+		if(StringHelper.containsNonWhitespace(helpPage)){
 			setFormContextHelp(helpPage);
 		}
 

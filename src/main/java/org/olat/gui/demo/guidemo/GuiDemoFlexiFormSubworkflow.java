@@ -165,7 +165,7 @@ public class GuiDemoFlexiFormSubworkflow extends FormBasicController {
 		// Example2: Set a form description above the form
 		setFormDescription("guidemo_flexi_form_withchooser.desc");
 		// Example3: Set a context help link
-		setFormContextHelp("org.olat.core.commons.modules.bc", "bc-webdav.html", "guidemo_flexi_form_withchooser.helphover");		
+		setFormContextHelp("Folders#Folders-MetaData");		
 		
 		final boolean inputMode = !personData.isReadOnly();
 		

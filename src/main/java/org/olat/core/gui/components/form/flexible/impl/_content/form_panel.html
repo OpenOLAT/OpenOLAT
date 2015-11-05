@@ -1,9 +1,7 @@
 <div #if(!$!f.domReplacementWrapperRequired) id="$r.getCId()" #end class="panel #if($off_warn) panel-warning #elseif($off_info) panel-info #else panel-default #end #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()">
-#if ($off_title || $off_chelp_package || $off_chelp_url || $off_icon) 
+#if ($off_title || $off_chelp_url || $off_icon) 
 	<div class="panel-heading">	
-		#if ($off_chelp_package) 
-			$r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") 
-		#elseif ($off_chelp_url) 
+		#if ($off_chelp_url) 
 			$r.contextHelpWithWrapper("$off_chelp_url") 
 		#end
 		#if ($off_icon)
@@ -18,7 +16,7 @@
 		#if ($off_desc) <p>$off_desc</p> #end
 		#if ($off_warn) <p>$off_warn</p> #end
 		#if ($off_info) <p>$off_info</p> #end
-	</div></div>
+	</div>
 #end
 
 <table class="table table-condensed">
@@ -35,19 +33,18 @@
 			#if($f.hasError($item))
 				<span class="o_icon o_icon_error form-control-feedback"></span>
 			#end
-		</div>
-		#if($f.hasExample($item))
-			<div class="o_form_example help-block">
-				$r.render("${item}_EXAMPLE")
-			</div>
-		#end
-		#if($f.hasError($item))
-			<div class="">
-				$r.render("${item}_ERROR")
-			</div>
-		#end
+			#if($f.hasExample($item))
+				<div class="o_form_example help-block">
+					$r.render("${item}_EXAMPLE")
+				</div>
+			#end
+			#if($f.hasError($item))
+				<div class="">
+					$r.render("${item}_ERROR")
+				</div>
+			#end
 		</td>
-	</div>
+	</tr>
 	#end
 #end
 	</tbody>
