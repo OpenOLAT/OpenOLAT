@@ -42,6 +42,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.commons.chiefcontrollers.ChiefControllerMessageEvent;
 import org.olat.core.commons.chiefcontrollers.LanguageChangedEvent;
+import org.olat.core.commons.controllers.resume.ResumeSessionController;
 import org.olat.core.commons.fullWebApp.util.GlobalStickyMessage;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.gui.GUIMessage;
@@ -113,7 +114,6 @@ import org.olat.course.assessment.ui.AssessmentModeGuardController;
 import org.olat.course.assessment.ui.ChooseAssessmentModeEvent;
 import org.olat.gui.control.UserToolsMenuController;
 import org.olat.home.HomeSite;
-import org.olat.login.AfterLoginInterceptionController;
 
 /**
  * Description:<br>
@@ -176,7 +176,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 
 	private BaseFullWebappControllerParts baseFullWebappControllerParts;
 	protected Controller contentCtrl;
-	private AfterLoginInterceptionController aftLHookCtr;
+	private ResumeSessionController resumeSessionCtrl;
 	private AssessmentModeGuardController assessmentGuardCtrl;
 	
 	private StackedPanel initialPanel;
@@ -242,14 +242,15 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
     		// presented only once per session.
     		Boolean alreadySeen = ((Boolean)usess.getEntry(PRESENTED_AFTER_LOGIN_WORKFLOW));
     		if (usess.isAuthenticated() && alreadySeen == null) {
-    			aftLHookCtr = new AfterLoginInterceptionController(ureq, getWindowControl());
-    			listenTo(aftLHookCtr);
-    			aftLHookCtr.getInitialComponent();
+    			resumeSessionCtrl = new ResumeSessionController(ureq, getWindowControl());
+    			listenTo(resumeSessionCtrl);
+    			resumeSessionCtrl.getInitialComponent();
     			ureq.getUserSession().putEntry(PRESENTED_AFTER_LOGIN_WORKFLOW, Boolean.TRUE);
 	    	}
     	}
 		
-    	if(assessmentGuardCtrl == null && (aftLHookCtr == null || aftLHookCtr.isDisposed())
+    	if(assessmentGuardCtrl == null
+    			&& (resumeSessionCtrl == null || (!resumeSessionCtrl.redirect() && !resumeSessionCtrl.userInteractionNeeded()))
     			&& usess.getEntry("AuthDispatcher:entryUrl") == null
     			&& usess.getEntry("AuthDispatcher:businessPath") == null) {
     		String bc = initializeDefaultSite(ureq);
@@ -650,7 +651,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(aftLHookCtr == source) {
+		if(resumeSessionCtrl == source) {
+			resumeSessionCtrl.redirect();
 			initializeDefaultSite(ureq);
 		} else if(assessmentGuardCtrl == source) {
 			if(event instanceof ChooseAssessmentModeEvent) {

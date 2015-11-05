@@ -68,13 +68,11 @@ public class ChangeEMailExecuteController extends ChangeEMailController implemen
 	}
 	
 	@Override
-	//fxdiff BAKS-20 instantiate controllers
-	public boolean isInterceptionRequired(UserRequest ureq) {
+	public boolean isUserInteractionRequired(UserRequest ureq) {
 		User user = ureq.getIdentity().getUser();
 		if(StringHelper.containsNonWhitespace(user.getProperty("emchangeKey", null))) {
 			if (isLinkTimeUp()) {
 				deleteRegistrationKey();
-				return false;
 			} else {
 				if (isLinkClicked()) {
 					changeEMail(getWindowControl());

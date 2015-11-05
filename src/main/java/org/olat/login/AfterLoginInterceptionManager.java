@@ -20,8 +20,6 @@
 package org.olat.login;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -42,36 +40,20 @@ public class AfterLoginInterceptionManager {
 	private static final OLog log = Tracing.createLoggerFor(AfterLoginInterceptionManager.class);
 	
 	private List<Map<String, Object>> afterLoginControllerList;
-
-	protected static List<Map<String,Object>> sortControllerListByOrder(List<Map<String,Object>> list2order){
-	    int n = list2order.size();
-	    for (int pass=1; pass < n; pass++) {  // count how many times
-	        // This next loop becomes shorter and shorter
-	        for (int i=0; i < n-pass; i++) {
-	        	Map<String,Object> currentCtrConfig_1 = list2order.get(i);
-	        	Map<String,Object> currentCtrConfig_2 = list2order.get(i+1);
-	        	
-	        	int order_1 = 1;
-	        	int order_2 = 1;
-	        	if (currentCtrConfig_1.containsKey(AfterLoginInterceptionController.ORDER_KEY)) {
-	    				order_1 = Integer.parseInt(currentCtrConfig_1.get(AfterLoginInterceptionController.ORDER_KEY).toString());
-	        	}
-	        	if (currentCtrConfig_2.containsKey(AfterLoginInterceptionController.ORDER_KEY)) {
-	    				order_2 = Integer.parseInt(currentCtrConfig_2.get(AfterLoginInterceptionController.ORDER_KEY).toString());
-	        	}
-	            if (order_1 > order_2) {
-	            	Collections.swap(list2order,i,i+1);
-	            }
-	        }
-	    }
-		return list2order;
-	}
 	
 	/**
 	 * @return Returns the afterLoginControllerList.
 	 */
 	protected List<Map<String, Object>> getAfterLoginControllerList() {
 		return afterLoginControllerList;
+	}
+	
+	public List<LoginInterceptorConfiguration> getInterceptorsConfiguration() {
+		List<LoginInterceptorConfiguration> interceptors = new ArrayList<>();
+		for(Map<String, Object> afterLoginController:afterLoginControllerList) {
+			interceptors.add(new LoginInterceptorConfiguration(afterLoginController));
+		}
+		return interceptors;
 	}
 
 	/**
@@ -98,22 +80,10 @@ public class AfterLoginInterceptionManager {
 			afterLoginControllerList = new ArrayList<Map<String, Object>>();
 		}
 		log.info("added one or more afterLoginControllers to the list.");
-		List<Map<String, Object>> ctrlList = aLConf.getAfterLoginControllerList();
-		for (Iterator<Map<String, Object>> iterator = ctrlList.iterator(); iterator.hasNext();) {
-			Map<String, Object> map = iterator.next();
-			if (map.containsKey("controller-instance")) log.info("  controller-instance: " + map.get("controller-instance"));
-			if (map.containsKey("controller")) log.info("  controller-key to instantiate: " + map.get("controller"));
-			if (map.containsKey("forceUser")) log.info("  force User: " + map.get("forceUser"));
-			if (map.containsKey("redoTimeout")) log.info("  redo-Timeout: " + map.get("redoTimeout"));
-		}
 		afterLoginControllerList.addAll(aLConf.getAfterLoginControllerList());
 	}
 
 	public boolean containsAnyController() {
-		if (afterLoginControllerList != null && afterLoginControllerList.size() != 0) {
-			return true;
-		} else {
-			return false;
-		}
+		return afterLoginControllerList != null && afterLoginControllerList.size() > 0;
 	}
 }

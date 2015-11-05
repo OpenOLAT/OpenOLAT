@@ -36,6 +36,7 @@ import org.olat.core.gui.UserRequest;
  */
 public interface SupportsAfterLoginInterceptor {
 	
-	public boolean isInterceptionRequired(UserRequest ureq);
+	public boolean isUserInteractionRequired(UserRequest ureq);
+
 	
 }
