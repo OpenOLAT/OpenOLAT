@@ -192,8 +192,12 @@ public class ResumeSessionController extends BasicController {
 				launch(ureq, redirect.getLandingPage());
 			} else if("no".equals(cmd)) {
 				//nothing to do
-			} else {
-				launch(ureq, redirect.getRedirectUrl());
+			} else if(StringHelper.containsNonWhitespace(redirect.getRedirectUrl())) {
+				String bc = redirect.getRedirectUrl();
+				if(bc.indexOf("]") < 0) {
+					bc = BusinessControlFactory.getInstance().formatFromURI(bc);
+				}
+				launch(ureq, bc);
 			}
 			terminateInterception(ureq);
 		} else if (currentInterceptor != null && currentInterceptor.getController() == source) {
