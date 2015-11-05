@@ -217,7 +217,7 @@ public class CalendarEntryForm extends FormBasicController {
 		if (end.getDate() == null) {
 			end.setErrorKey("cal.form.error.date", null);
 			allOk &= false;
-		} else if (end.getDate().before(begin.getDate())) {
+		} else if (begin.getDate() != null && end.getDate().before(begin.getDate())) {
 			end.setErrorKey("cal.form.error.endbeforebegin", null);
 			allOk &= false;
 		}
@@ -229,7 +229,8 @@ public class CalendarEntryForm extends FormBasicController {
 			allOk &= false;
 		}
 		
-		if (hasEnd && recurrenceEnd.getDate().before(begin.getDate())) {
+		if (hasEnd && recurrenceEnd.getDate() != null && begin.getDate() != null
+				&& recurrenceEnd.getDate().before(begin.getDate())) {
 			recurrenceEnd.setErrorKey("cal.form.error.endbeforebegin", null);
 			allOk &= false;
 		}
