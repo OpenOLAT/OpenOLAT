@@ -1858,7 +1858,7 @@
 		</dependency>
 		<!-- Sart dependency to qtiworks -->
 		<dependency>
-			<groupId>uk.ac.ed.ph.qtiworks</groupId>
+			<groupId>org.openolat.qtiworks</groupId>
 			<artifactId>qtiworks-jqtiplus</artifactId>
 			<version>${qtiworks.version}</version>
 			<exclusions>
@@ -1869,7 +1869,7 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>uk.ac.ed.ph.qtiworks</groupId>
+			<groupId>org.openolat.qtiworks</groupId>
 			<artifactId>qtiworks-jqtiplus</artifactId>
 			<version>${qtiworks.version}</version>
 			<type>test-jar</type>
@@ -1882,7 +1882,7 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>uk.ac.ed.ph.qtiworks</groupId>
+			<groupId>org.openolat.qtiworks</groupId>
 			<artifactId>qtiworks-mathassess</artifactId>
 			<version>${qtiworks.version}</version>
 			<exclusions>
@@ -1893,7 +1893,7 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>uk.ac.ed.ph.qtiworks</groupId>
+			<groupId>org.openolat.qtiworks</groupId>
 			<artifactId>qtiworks-mathassess-glue</artifactId>
 			<version>${qtiworks.version}</version>
 			<exclusions>
@@ -1904,7 +1904,7 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>uk.ac.ed.ph.qtiworks</groupId>
+			<groupId>org.openolat.qtiworks</groupId>
 			<artifactId>qtiworks-mathassess-glue</artifactId>
 			<version>${qtiworks.version}</version>
 			<type>test-jar</type>
@@ -1917,7 +1917,7 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>uk.ac.ed.ph.qtiworks</groupId>
+			<groupId>org.openolat.qtiworks</groupId>
 			<artifactId>qtiworks-samples</artifactId>
 			<version>${qtiworks.version}</version>
 			<scope>test</scope>
@@ -1929,7 +1929,7 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>uk.ac.ed.ph.qtiworks</groupId>
+			<groupId>org.openolat.qtiworks</groupId>
 			<artifactId>qtiworks-samples</artifactId>
 			<version>${qtiworks.version}</version>
 			<type>test-jar</type>
