@@ -19,7 +19,9 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins;
 
+import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Description:<br>
@@ -44,7 +46,7 @@ import java.util.Map;
 public abstract class TinyMCECustomPlugin {
 	
 	// Optional plugin parameters
-	private Map<String, String> pluginParameters;
+	private final Map<String, String> pluginParameters = new ConcurrentHashMap<>();
 
 	/**
 	 * @return The name of the plugin, must be URL save. E.g. 'myplugin'
@@ -55,7 +57,7 @@ public abstract class TinyMCECustomPlugin {
 	 * Get the optional plugin parameters if available. 
 	 * @return the parameter map or NULL if not available
 	 */
-	public Map<String, String> getPluginParameters() {
+	public Map<String, String> getPluginParameters(@SuppressWarnings("unused") Locale locale) {
 		return pluginParameters;
 	}
 
@@ -64,7 +66,7 @@ public abstract class TinyMCECustomPlugin {
 	 * @param pluginParameters
 	 */
 	public void setPluginParameters(Map<String,String> pluginParameters) {
-		this.pluginParameters = pluginParameters;
+		this.pluginParameters.putAll(pluginParameters);
 	}
 
 }

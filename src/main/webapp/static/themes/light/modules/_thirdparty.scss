@@ -153,7 +153,7 @@ label.mce-label {
 	font-weight: normal;
 }
 
-i.mce-ico.mce-i-media, i.mce-ico.mce-i-movie {
+i.mce-ico.mce-i-media, i.mce-ico.mce-i-movie, i.mce-ico.mce-i-help {
 	display: inline-block;
 	font: normal normal normal #{$fa-font-size-base}/1 FontAwesome; // shortening font declaration
 	font-size: inherit; // can't have font-size inherit on line above, so need to override
@@ -170,6 +170,22 @@ i.mce-ico.mce-i-media:before {
 i.mce-ico.mce-i-movie:before {
 	content: $fa-var-file-video-o;
 }
+
+i.mce-ico.mce-i-help {
+	width: 9px;
+	height: 9px;
+	padding-top:1px;
+}
+i.mce-ico.mce-i-help:before {
+	content: $fa-var-question-circle;
+	color: white;
+}
+
+.mce-tabs span.o_chelp_wrapper {
+	float:right;
+	margin:5px;
+}
+
 
 
 

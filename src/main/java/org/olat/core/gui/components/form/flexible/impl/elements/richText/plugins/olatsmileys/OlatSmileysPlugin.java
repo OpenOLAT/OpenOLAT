@@ -20,7 +20,7 @@
 
 package org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatsmileys;
 
-import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
@@ -57,14 +57,13 @@ public class OlatSmileysPlugin extends TinyMCECustomPlugin {
 	 * @see org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin#getPluginParameters()
 	 */
 	@Override
-	public Map<String, String> getPluginParameters() {
+	public Map<String, String> getPluginParameters(Locale locale) {
 		// Create only if not already present.
-		Map<String, String> params = super.getPluginParameters();
-		if (params != null) return params;
-		params = new HashMap<String, String>();
-		// Get static URI for transparent GIF.
-		params.put(PARAM_TRANSPARENT_IMAGE, StaticMediaDispatcher.createStaticURIFor("images/transparent.gif", false));
-		setPluginParameters(params);
+		Map<String, String> params = super.getPluginParameters(locale);
+		if (!params.containsKey(PARAM_TRANSPARENT_IMAGE)) {
+			// Get static URI for transparent GIF.
+			params.put(PARAM_TRANSPARENT_IMAGE, StaticMediaDispatcher.createStaticURIFor("images/transparent.gif", false));
+		}
 		return params;
 	}
 }

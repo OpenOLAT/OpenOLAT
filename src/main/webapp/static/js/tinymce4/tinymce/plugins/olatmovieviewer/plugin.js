@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '2.3.2'
+				version : '2.3.3'
 			};
 		},
 
@@ -35,17 +35,29 @@
 		 */
 		init : function(ed, url) {
 			
-			var cachedTrans;
+			var cachedTrans, cachedCoreTrans;
+			var cachedHelp;
+			
 			// Load the OLAT translator.
 			function translator() {	
 				if(cachedTrans) return cachedTrans;
 				var mainWin = o_getMainWin();
 				if (mainWin) {
-					cachedTrans = jQuery(document).ooTranslator().getTranslator(mainWin.o_info.locale, 'org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmovieviewer')	
+					cachedTrans = jQuery(document).ooTranslator().getTranslator(mainWin.o_info.locale, 'org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmovieviewer');
 				} else {
 					cachedTrans = {	translate : function(key) { return key; } }
 				}
 				return cachedTrans;
+			}
+			function coreTranslator() {	
+				if(cachedCoreTrans) return cachedCoreTrans;
+				var mainWin = o_getMainWin();
+				if (mainWin) {
+					cachedCoreTrans = jQuery(document).ooTranslator().getTranslator(mainWin.o_info.locale, 'org.olat.core');
+				} else {
+					cachedCoreTrans = {	translate : function(key) { return key; } }
+				}
+				return cachedCoreTrans;
 			}
 			
 			function serializeParameters() {
@@ -313,7 +325,11 @@
 						deserializeParameters(pl, fe[0]);
 						setTimeout(generatePreview, 500);
 					}
-				}	
+				}
+				
+				var helpButton = coreTranslator().translate('help');
+				var helpLink = top.tinymce.activeEditor.getParam("olatmovieviewer_helpUrl" + o_getMainWin().o_info.locale);
+				jQuery(".mce-tabs").append("<span class='o_chelp_wrapper'><a href='" + helpLink + "' class='o_chelp' target='_blank'><i class='mce-ico mce-i-help'> </i> " + helpButton + "</a></span>")
 			}
 			
 			function parseBPlayerScript(editor,script) {

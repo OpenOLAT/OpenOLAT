@@ -20,7 +20,7 @@
 
 package org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmatheditor;
 
-import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
@@ -53,23 +53,16 @@ public class OlatMathEditorPlugin extends TinyMCECustomPlugin {
 	}
 	
 	@Override
-	public Map<String, String> getPluginParameters() {
-		
+	public Map<String, String> getPluginParameters(Locale locale) {
 		// Create only if not already present.
-		Map<String, String> params = super.getPluginParameters();
-		if (params != null) {
-			return params;
-		} else {
-			params = new HashMap<String, String>();
-			
+		Map<String, String> params = super.getPluginParameters(locale);
+		if (!params.containsKey(PARAM_TRANSPARENT_IMAGE)) {
 			// Get static URI for transparent GIF.
 			params.put(PARAM_TRANSPARENT_IMAGE, StaticMediaDispatcher.createStaticURIFor("images/transparent.gif", false));
 			
 			// Get static URI for jsMath library.
 			params.put(PARAM_JS_MATH_LIB_BASE_PATH, StaticMediaDispatcher.createStaticURIFor("js/jsMath/", false));
-			
-			setPluginParameters(params);
-			return params;
 		}
+		return params;
 	}
 }

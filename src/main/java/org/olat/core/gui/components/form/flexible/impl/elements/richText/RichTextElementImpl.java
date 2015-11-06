@@ -20,6 +20,8 @@
 
 package org.olat.core.gui.components.form.flexible.impl.elements.richText;
 
+import java.util.Locale;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -65,8 +67,8 @@ public class RichTextElementImpl extends AbstractTextElement implements
 	 * @param form The dispatch ID of the root form that deals with the submit button
 	 * @param windowBackOffice The window back office used to properly cleanup code in browser window
 	 */
-	public RichTextElementImpl(String name, String predefinedValue, int rows, int cols, Form form) {
-		this(name, rows, cols, form);
+	public RichTextElementImpl(String name, String predefinedValue, int rows, int cols, Form form, Locale locale) {
+		this(name, rows, cols, form, locale);
 		setValue(predefinedValue);
 	}
 
@@ -82,13 +84,13 @@ public class RichTextElementImpl extends AbstractTextElement implements
 	 * @param form The dispatch ID of the root form that deals with the submit button
 	 * @param windowBackOffice The window back office used to properly cleanup code in browser window
 	 */
-	protected RichTextElementImpl(String name, int rows, int cols, Form rootForm) {
+	protected RichTextElementImpl(String name, int rows, int cols, Form rootForm, Locale locale) {
 		super(name);
 		// initialize the component
 		component = new RichTextElementComponent(this, rows, cols);
 		// configure tiny (must be after component initialization)
 		// init editor on our form element
-		configuration = new RichTextConfiguration(getFormDispatchId(), rootForm.getDispatchFieldId());
+		configuration = new RichTextConfiguration(getFormDispatchId(), rootForm.getDispatchFieldId(), locale);
 	}
 	
 	@Override
