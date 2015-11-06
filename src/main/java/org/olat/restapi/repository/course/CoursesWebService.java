@@ -518,7 +518,7 @@ public class CoursesWebService {
 			addedEntry = repositoryService.update(addedEntry);
 			
 			// create an empty course
-			CourseFactory.createEmptyCourse(addedEntry, shortTitle, longTitle, learningObjectives);
+			CourseFactory.createCourse(addedEntry, shortTitle, longTitle, learningObjectives);
 
 			return prepareCourse(addedEntry, shortTitle, longTitle, courseConfigVO);
 		} catch (Exception e) {

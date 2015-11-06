@@ -160,7 +160,7 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 
 		OLATResource resource = resourceManager.createOLATResourceInstance(CourseModule.class);
 		RepositoryEntry addedEntry = repositoryService.create("Ayanami", "-", "Enrollment test course 1", "A JUnit course", resource);
-		CourseEnvironment cenv = CourseFactory.createEmptyCourse(addedEntry, "Test", "Test", "learningObjectives").getCourseEnvironment();
+		CourseEnvironment cenv = CourseFactory.createCourse(addedEntry, "Test", "Test", "learningObjectives").getCourseEnvironment();
 		// 1. enroll wg1 user
 		IdentityEnvironment ienv = new IdentityEnvironment();
 		ienv.setIdentity(wg1);
@@ -257,7 +257,7 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 		ENCourseNode enNode = new ENCourseNode();
 		OLATResource resource = resourceManager.createOLATResourceInstance(CourseModule.class);
 		RepositoryEntry addedEntry = repositoryService.create("Ayanami", "-", "Enrollment test course 2", "A JUnit course", resource);
-		CourseEnvironment cenv = CourseFactory.createEmptyCourse(addedEntry, "Test-Enroll", "Test", "Test enrollment with concurrent users").getCourseEnvironment();
+		CourseEnvironment cenv = CourseFactory.createCourse(addedEntry, "Test-Enroll", "Test", "Test enrollment with concurrent users").getCourseEnvironment();
 		BusinessGroup group = businessGroupService.createBusinessGroup(id1, "Enrollment", "Enroll", new Integer(1), new Integer(10), true, false, null);
 		Assert.assertNotNull(group);
 		dbInstance.commitAndCloseSession();

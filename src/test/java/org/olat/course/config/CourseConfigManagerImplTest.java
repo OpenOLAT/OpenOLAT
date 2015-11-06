@@ -64,7 +64,7 @@ public class CourseConfigManagerImplTest extends OlatTestCase {
 		// create course and persist as OLATResourceImpl
 		OLATResource resource = resourceManager.createOLATResourceInstance(CourseModule.class);
 		RepositoryEntry addedEntry = repositoryService.create("Ayanami", "-", "JUnit course configuration course", "A JUnit course", resource);
-		ICourse course = CourseFactory.createEmptyCourse(addedEntry, "JUnitCourseConfig", "JUnitCourseConfig Long Title",
+		ICourse course = CourseFactory.createCourse(addedEntry, "JUnitCourseConfig", "JUnitCourseConfig Long Title",
 				"objective 1 objective 2 objective 3");
 		dbInstance.commitAndCloseSession();
 		
