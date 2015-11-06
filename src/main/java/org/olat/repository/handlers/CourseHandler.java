@@ -85,7 +85,6 @@ import org.olat.course.config.CourseConfig;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
-import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.CourseRuntimeController;
 import org.olat.course.run.RunMainController;
 import org.olat.course.tree.CourseEditorTreeNode;
@@ -143,27 +142,10 @@ public class CourseHandler implements RepositoryHandler {
 		OLATResource resource = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 		DBFactory.getInstance().commit();
-		
-		ICourse course = CourseFactory.createEmptyCourse(re, "New Course", "New Course", "");
-		course = CourseFactory.openCourseEditSession(re.getOlatResource().getResourceableId());
-		
+
 		String shortDisplayname = Formatter.truncateOnly(displayname, 25);
-		CourseNode runRootNode = course.getRunStructure().getRootNode();
-		runRootNode.setShortTitle(shortDisplayname); //do not use truncate!
-		runRootNode.setLongTitle(displayname);
-		
-		//enable efficiency statement per default
-		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
-		courseConfig.setEfficencyStatementIsEnabled(true);
-		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
-		
-		CourseNode rootNode = ((CourseEditorTreeNode)course.getEditorTreeModel().getRootNode()).getCourseNode();
-		rootNode.setShortTitle(shortDisplayname); //do not use truncate!
-		rootNode.setLongTitle(displayname);
-		
-		CourseFactory.saveCourse(course.getResourceableId());
-		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
-		
+		ICourse course = CourseFactory.createCourse(re, shortDisplayname, displayname, "");
+		log.audit("Course created: " + course.getCourseTitle());
 		return re;
 	}
 	

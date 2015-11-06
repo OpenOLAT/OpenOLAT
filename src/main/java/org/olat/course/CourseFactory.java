@@ -205,19 +205,20 @@ public class CourseFactory extends BasicManager {
 
 	/**
 	 * Creates an empty course with a single root node. The course is linked to
-	 * the resourceable ores.
+	 * the resourceable ores. The efficiency statment are enabled per default!
 	 * 
 	 * @param ores
 	 * @param shortTitle Short title of root node
 	 * @param longTitle Long title of root node
 	 * @param learningObjectives Learning objectives of root node
-	 * @return an empty course with a single root node.
+	 * @return An empty course with a single root node.
 	 */
-	public static ICourse createEmptyCourse(RepositoryEntry courseEntry, String shortTitle, String longTitle, String learningObjectives) {
+	public static ICourse createCourse(RepositoryEntry courseEntry,
+			String shortTitle, String longTitle, String learningObjectives) {
 		OLATResource courseResource = courseEntry.getOlatResource();
 		PersistingCourseImpl newCourse = new PersistingCourseImpl(courseResource.getResourceableId());
 		// Put new course in course cache    
-		loadedCourses.put(newCourse.getResourceableId() ,newCourse);
+		loadedCourses.put(newCourse.getResourceableId(), newCourse);
 		
 		Structure initialStructure = new Structure();
 		CourseNode runRootNode = new STCourseNode();
@@ -233,9 +234,16 @@ public class CourseFactory extends BasicManager {
 		editorTreeModel.setRootNode(editorRootNode);
 		newCourse.setEditorTreeModel(editorTreeModel);
 		newCourse.saveEditorTreeModel();
+		
+		//enable efficiency statement per default
+		CourseConfig courseConfig = newCourse.getCourseConfig();
+		courseConfig.setEfficencyStatementIsEnabled(true);
+		newCourse.setCourseConfig(courseConfig);
 
 		return newCourse;
 	}
+	
+	
 
 	/**
 	 * Gets the course from cache if already there, or loads the course and puts it into cache.

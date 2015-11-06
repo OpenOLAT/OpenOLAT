@@ -20,9 +20,11 @@
 
 package org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmovieviewer;
 
-import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPlugin;
 import org.olat.core.helpers.Settings;
@@ -56,26 +58,28 @@ public class OlatMovieViewerPlugin extends TinyMCECustomPlugin {
 	}
 	
 	@Override
-	public Map<String, String> getPluginParameters() {
+	public Map<String, String> getPluginParameters(Locale locale) {
 		// Create only if not already present.
-		Map<String, String> params = super.getPluginParameters();
-		if (params == null) {
-			params = new HashMap<String, String>();
+		Map<String, String> params = super.getPluginParameters(locale);
+		if(!params.containsKey("transparentImage")) {
+			// Get static URI for transparent GIF.
+			params.put("transparentImage", StaticMediaDispatcher.createStaticURIFor("images/transparent.gif", false));
+			
+			// In production, we use the minified player, for debug the non-minified.
+			// However, in production the non-minified must be available as well to
+			// be compatible with old content that embedded the other code. 
+			if (Settings.isDebuging()) {
+				params.put("playerScript", StaticMediaDispatcher.createStaticURIFor("movie/player.js", true));
+			} else {
+				params.put("playerScript", StaticMediaDispatcher.createStaticURIFor("movie/player.min.js", true));			
+			}
 		}
-
-		// Get static URI for transparent GIF.
-		params.put("transparentImage", StaticMediaDispatcher.createStaticURIFor("images/transparent.gif", false));
 		
-		// In production, we use the minified player, for debug the non-minified.
-		// However, in production the non-minified must be available as well to
-		// be compatible with old content that embedded the other code. 
-		if (Settings.isDebuging()) {
-			params.put("playerScript", StaticMediaDispatcher.createStaticURIFor("movie/player.js", true));
-		} else {
-			params.put("playerScript", StaticMediaDispatcher.createStaticURIFor("movie/player.min.js", true));			
+		String helpKey = "helpUrl" + locale.getLanguage();
+		if(!params.containsKey(helpKey)) {
+			String url = CoreSpringFactory.getImpl(HelpModule.class).getHelpProvider().getURL(locale, "TinyMCE");
+			params.put(helpKey, url);
 		}
-
-		setPluginParameters(params);
 		return params;
 	}
 }

@@ -147,6 +147,7 @@ public class RichTextConfiguration implements Disposable {
 	
 	private MapperKey contentMapperKey;
 	
+	private final Locale locale;
 	private TinyConfig tinyConfig;
 
 	/**
@@ -156,8 +157,9 @@ public class RichTextConfiguration implements Disposable {
 	 * @param domID The ID of the flexi element in the browser DOM
 	 * @param rootFormDispatchId The dispatch ID of the root form that deals with the submit button
 	 */
-	RichTextConfiguration(String domID, String rootFormDispatchId) {
+	RichTextConfiguration(String domID, String rootFormDispatchId, Locale locale) {
 		this.domID = domID;
+		this.locale = locale;
 		// use exact mode that only applies to this DOM element
 		setQuotedConfigValue(MODE, MODE_VALUE_EXACT);
 		setQuotedConfigValue(ELEMENTS, domID);
@@ -435,7 +437,7 @@ public class RichTextConfiguration implements Disposable {
 	 */
 	private void setCustomPluginEnabled(TinyMCECustomPlugin customPlugin) {
 		// Add plugin specific parameters
-		Map<String,String> params = customPlugin.getPluginParameters();
+		Map<String,String> params = customPlugin.getPluginParameters(locale);
 		if (params != null) {
 			for (Entry<String, String> param : params.entrySet()) {
 				// don't use pluginName var, don't add the '-' char for params

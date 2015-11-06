@@ -37,6 +37,14 @@ a.o_chelp {
 	margin-left: 10px;
 }
 
+/* context help for input element in forms, right from label and context help tooltips */
+.o_form_chelp, 
+.o_chelp_tooltip {
+	color: $o-chelp-tooltip-color;
+}
+
+
+
 /* iframe display controller - used to deliver all course contents */
 .o_iframedisplay {
 	iframe {

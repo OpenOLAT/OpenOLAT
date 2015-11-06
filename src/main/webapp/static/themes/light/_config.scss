@@ -407,6 +407,8 @@ $o-chelp-bg						: $btn-primary-bg !default;
 $o-chelp-color					: $btn-primary-color !default;
 $o-chelp-border					: $btn-primary-border !default;
 $o-chelp-border-radius			: 2px !default;
+/* Form context help, aka help text */
+$o-chelp-tooltip-color			: lighten($text-color, 25%) !default;
 
 /* Date component */
 $o-datecomp-border				: $gray !default;
