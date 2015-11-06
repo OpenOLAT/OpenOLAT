@@ -33,10 +33,11 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
@@ -125,7 +126,9 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
 			boolean visible = UserManager.getInstance().isMandatoryUserProperty(AssessmentToolConstants.reducedUsageIdentifyer , userPropertyHandler);
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, "select", false, null));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, "select",
+					true, "userProp-" + colIndex));
+			colIndex++;
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToReviewCols.toReview, "select",
@@ -191,8 +194,11 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 		}
 		
 		@Override
-		public void sort(SortKey sortKey) {
-			//
+		public void sort(SortKey orderBy) {
+			SortableFlexiTableModelDelegate<UserToReviewRow> sorter
+					= new SortableFlexiTableModelDelegate<>(orderBy, this, null);
+			List<UserToReviewRow> views = sorter.sort();
+			super.setObjects(views);
 		}
 		
 		@Override
@@ -219,7 +225,7 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 		}
 	}
 
-	public enum ToReviewCols implements FlexiColumnDef {
+	public enum ToReviewCols implements FlexiSortableColumnDef {
 		
 		username("table.header.name"),
 		toReview("table.header.elements.toReview");
@@ -230,8 +236,19 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 			this.i18nKey = i18nKey;
 		}
 		
+		@Override
 		public String i18nHeaderKey() {
 			return i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return true;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
 		}
 	}
 }

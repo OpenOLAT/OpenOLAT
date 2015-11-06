@@ -19,11 +19,14 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.id.Identity;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -35,18 +38,52 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class AssessedIdentityCourseElementRow extends UserPropertiesRow {
 	
-	private AssessmentEntry entry;
-	
+	private final Integer attempts;
+	private final BigDecimal score;
+	private final Boolean passed;
+	private final Date creationDate;
+	private final Date lastModified;
+	private final AssessmentEntryStatus status;
 	
 	public AssessedIdentityCourseElementRow(Identity identity, AssessmentEntry entry, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
-		this.entry = entry;
+		if(entry != null) {
+			attempts = entry.getAttempts();
+			score = entry.getScore();
+			passed = entry.getPassed();
+			creationDate = entry.getCreationDate();
+			lastModified = entry.getLastModified();
+			status = entry.getAssessmentStatus();
+		} else {
+			attempts = null;
+			score = null;
+			passed = null;
+			creationDate = lastModified = null;
+			status = null;
+		}
 	}
-	
-	public AssessmentEntry getAssessmentEntry() {
-		return entry;
+
+	public Integer getAttempts() {
+		return attempts;
 	}
 
+	public BigDecimal getScore() {
+		return score;
+	}
 
+	public Boolean getPassed() {
+		return passed;
+	}
 
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public Date getLastModified() {
+		return lastModified;
+	}
+
+	public AssessmentEntryStatus getAssessmentStatus() {
+		return status;
+	}
 }

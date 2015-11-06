@@ -53,7 +53,6 @@ import org.olat.course.assessment.AssessmentMainController;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
-import org.olat.course.assessment.ui.tool.AssessmentIdentitiesCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.assessment.ui.tool.AssessmentIdentitiesCourseTableModel.IdentityCourseCols;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificatesManager;
@@ -121,21 +120,21 @@ public class AssessmentIdentitiesCourseController extends FormBasicController {
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.username, "select"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseCols.username, "select"));
 		}
 		
 		int colIndex = AssessmentToolConstants.USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
 			boolean visible = UserManager.getInstance().isMandatoryUserProperty(AssessmentToolConstants.usageIdentifyer , userPropertyHandler);
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, "select", false, null));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, "select",
+					true, "userProp-" + colIndex));
+			colIndex++;
 		}
 	
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseCols.passed, new PassedCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseCols.score));
-		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseCols.lastScoreUpdate));
-		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseCols.certificate, new DownloadCertificateCellRenderer()));
 		
 		usersTableModel = new AssessmentIdentitiesCourseTableModel(columnsModel); 

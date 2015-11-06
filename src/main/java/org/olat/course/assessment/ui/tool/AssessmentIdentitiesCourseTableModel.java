@@ -19,14 +19,15 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.course.assessment.UserEfficiencyStatement;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.course.certificate.CertificateLight;
 
 /**
@@ -49,8 +50,11 @@ public class AssessmentIdentitiesCourseTableModel extends DefaultFlexiTableDataM
 	}
 
 	@Override
-	public void sort(SortKey sortKey) {
-		//
+	public void sort(SortKey orderBy) {
+		SortableFlexiTableModelDelegate<AssessedIdentityCourseRow> sorter
+				= new SortableFlexiTableModelDelegate<>(orderBy, this, null);
+		List<AssessedIdentityCourseRow> views = sorter.sort();
+		super.setObjects(views);
 	}
 	
 	@Override
@@ -62,16 +66,13 @@ public class AssessmentIdentitiesCourseTableModel extends DefaultFlexiTableDataM
 	@Override
 	public Object getValueAt(AssessedIdentityCourseRow row, int col) {
 		if(col >= 0 && col < IdentityCourseCols.values().length) {
-			UserEfficiencyStatement statement = null;
-			if(row.getAssessmentEntry() != null) {
-				statement = row.getAssessmentEntry().getUserEfficencyStatement();
-			}
+	
 			switch(IdentityCourseCols.values()[col]) {
 				case username: return row.getIdentityName();
 				case certificate: return certificateMap.get(row.getIdentityKey());
-				case score: return statement == null ? null : statement.getScore();
-				case passed: return statement == null ? null : statement.getPassed();
-				case lastScoreUpdate: return statement == null ? null : statement.getLastModified();
+				case score: return row.getScore();
+				case passed: return row.getPassed();
+				case lastScoreUpdate: return row.getLastModified();
 			}
 		}
 		int propPos = col - AssessmentToolConstants.USER_PROPS_OFFSET;
@@ -83,7 +84,7 @@ public class AssessmentIdentitiesCourseTableModel extends DefaultFlexiTableDataM
 		return new AssessmentIdentitiesCourseTableModel(getTableColumnModel());
 	}
 	
-	public enum IdentityCourseCols implements FlexiColumnDef {
+	public enum IdentityCourseCols implements FlexiSortableColumnDef {
 		username("table.header.name"),
 		passed("table.header.passed"),
 		certificate("table.header.certificate"),
@@ -99,6 +100,16 @@ public class AssessmentIdentitiesCourseTableModel extends DefaultFlexiTableDataM
 		@Override
 		public String i18nHeaderKey() {
 			return i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return true;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
 		}
 	}
 }

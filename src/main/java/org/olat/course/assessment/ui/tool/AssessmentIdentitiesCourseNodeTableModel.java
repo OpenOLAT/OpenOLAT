@@ -19,14 +19,16 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.List;
+
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.STCourseNode;
-import org.olat.modules.assessment.AssessmentEntry;
 
 /**
  * 
@@ -45,8 +47,11 @@ public class AssessmentIdentitiesCourseNodeTableModel extends DefaultFlexiTableD
 	}
 	
 	@Override
-	public void sort(SortKey sortKey) {
-		//
+	public void sort(SortKey orderBy) {
+		SortableFlexiTableModelDelegate<AssessedIdentityCourseElementRow> sorter
+				= new SortableFlexiTableModelDelegate<>(orderBy, this, null);
+		List<AssessedIdentityCourseElementRow> views = sorter.sort();
+		super.setObjects(views);
 	}
 	
 	@Override
@@ -58,11 +63,10 @@ public class AssessmentIdentitiesCourseNodeTableModel extends DefaultFlexiTableD
 	@Override
 	public Object getValueAt(AssessedIdentityCourseElementRow row, int col) {
 		if(col >= 0 && col < IdentityCourseElementCols.values().length) {
-			AssessmentEntry aEntry = row.getAssessmentEntry();
 			switch(IdentityCourseElementCols.values()[col]) {
 				case username: return row.getIdentityName();
-				case attempts: return aEntry == null ? null : aEntry.getAttempts();
-				case score: return aEntry == null ? null : aEntry.getScore();
+				case attempts: return row.getAttempts();
+				case score: return row.getScore();
 				case min: {
 					if(!(courseNode instanceof STCourseNode) && courseNode.hasScoreConfigured()) {
 						return courseNode.getMinScoreConfiguration();
@@ -76,10 +80,10 @@ public class AssessmentIdentitiesCourseNodeTableModel extends DefaultFlexiTableD
 					return "";
 				}
 				case status: return "";
-				case passed: return aEntry == null ? null : aEntry.getPassed();
-				case assessmentStatus: return aEntry == null ? null : aEntry.getAssessmentStatus();
-				case initialLaunchDate: return aEntry == null ? null : aEntry.getCreationDate();
-				case lastScoreUpdate: return aEntry == null ? null : aEntry.getLastModified();
+				case passed: return row.getPassed();
+				case assessmentStatus: return row.getAssessmentStatus();
+				case initialLaunchDate: return row.getCreationDate();
+				case lastScoreUpdate: return row.getLastModified();
 			}
 		}
 		int propPos = col - AssessmentToolConstants.USER_PROPS_OFFSET;
@@ -91,7 +95,7 @@ public class AssessmentIdentitiesCourseNodeTableModel extends DefaultFlexiTableD
 		return new AssessmentIdentitiesCourseNodeTableModel(getTableColumnModel(), courseNode);
 	}
 	
-	public enum IdentityCourseElementCols implements FlexiColumnDef {
+	public enum IdentityCourseElementCols implements FlexiSortableColumnDef {
 		username("table.header.name"),
 		attempts("table.header.attempts"),
 		score("table.header.score"),
@@ -112,6 +116,16 @@ public class AssessmentIdentitiesCourseNodeTableModel extends DefaultFlexiTableD
 		@Override
 		public String i18nHeaderKey() {
 			return i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return true;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
 		}
 	}
 }

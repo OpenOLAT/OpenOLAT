@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -35,18 +36,33 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class AssessedIdentityCourseRow extends UserPropertiesRow {
 	
-	private EfficiencyStatementEntry entry;
-	
+	private final Float score;
+	private final Boolean passed;
+	private final Date lastModified;
 	
 	public AssessedIdentityCourseRow(Identity identity, EfficiencyStatementEntry entry, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
-		this.entry = entry;
+		
+		if(entry != null && entry.getUserEfficencyStatement() != null) {
+			score = entry.getUserEfficencyStatement().getScore();
+			passed = entry.getUserEfficencyStatement().getPassed();
+			lastModified = entry.getUserEfficencyStatement().getLastModified();
+		} else {
+			score = null;
+			passed = null;
+			lastModified = null;
+		}
 	}
-	
-	public EfficiencyStatementEntry getAssessmentEntry() {
-		return entry;
+
+	public Float getScore() {
+		return score;
 	}
 
+	public Boolean getPassed() {
+		return passed;
+	}
 
-
+	public Date getLastModified() {
+		return lastModified;
+	}
 }
