@@ -231,7 +231,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		// ------ all the frame preparation is finished ----
 		initializeBase(ureq, winman, initialPanel);
 		
-		if(ureq.getUserSession().isAuthenticated() && !isAdmin && usess.getAssessmentModes() != null && usess.getAssessmentModes().size() > 0) {
+		if(usess.isAuthenticated() && !isAdmin && usess.getAssessmentModes() != null && usess.getAssessmentModes().size() > 0) {
     		assessmentGuardCtrl = new AssessmentModeGuardController(ureq, getWindowControl(),
     				usess.getAssessmentModes(), false);
     		listenTo(assessmentGuardCtrl);
