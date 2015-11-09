@@ -198,6 +198,38 @@ public class LoginModule extends AbstractSpringModule {
 	}
 	
 	/**
+	 * This method will always return something and will try to find some
+	 * matching provider. It will find LDAP'A0 -> LDAP or return the
+	 * default provider.
+	 * 
+	 * @param provider
+	 * @return
+	 */
+	public AuthenticationProvider getAuthenticationProviderHeuristic(String provider) {
+		//first exact match
+		AuthenticationProvider authenticationProvider = getAuthenticationProvider(provider);
+		if(authenticationProvider == null && StringHelper.containsNonWhitespace(provider)) {
+			String upperedCaseProvider = provider.toUpperCase();
+			for(AuthenticationProvider authProvider:authenticationProviders) {
+				if(upperedCaseProvider.contains(authProvider.getName().toUpperCase())) {
+					authenticationProvider = authProvider;
+					break;
+				}
+			}
+		}
+		if(authenticationProvider == null) {
+			//return default
+			for(AuthenticationProvider authProvider:authenticationProviders) {
+				if(authProvider.isDefault()) {
+					authenticationProvider = authProvider;
+					break;
+				}
+			}
+		}
+		return authenticationProvider;
+	}
+	
+	/**
 	 * @return Collection of available AuthenticationProviders
 	 */
 	public Collection<AuthenticationProvider> getAuthenticationProviders() {
