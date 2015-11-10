@@ -32,7 +32,7 @@
 	
 #if($isRestrictedEdit)
 	<div class="form-group">
-		<label class="control-label col-sm-3">$r.translate("form.assessment.selection_pre")</label>
+		<label class="control-label col-sm-3">$r.translate("form.assessment.selection_pre")$r.render("selectionPreHelpText")</label>
 		<div class="col-sm-9">
 			#if ($selection_number == "0") 
 				<p class="form-control-static">$r.translate("form.section.selection_all")</p>
@@ -45,7 +45,7 @@
 	</div>
 	
 	<div class="form-group">
-		<label class="control-label col-sm-3">$r.translate("form.assessment.order_type")</label>
+		<label class="control-label col-sm-3">$r.translate("form.assessment.order_type")$r.render("orderTypeHelpText")</label>
 		<div class="col-sm-9">
 			#if ($order_type == "Random")
 				<p class="form-control-static">$r.translate("form.section.order_type.random")</p>
@@ -81,7 +81,7 @@
 	</div>
 
 	<div class="form-group">
-		<label class="control-label col-sm-3">$r.translate("form.assessment.order_type")</label>
+		<label class="control-label col-sm-3">$r.translate("form.assessment.order_type")$r.render("orderTypeHelpText")</label>
 		<div class="col-sm-9">
 			<select id="order_type" name="order_type" class="form-control $css" onchange="return setFormDirty('ofo_assessform')" onclick="return setFormDirty('ofo_assessform')" $readonly>
 			<option value="Random" #if ($order_type == "Random") selected="selected" #end
@@ -139,7 +139,7 @@
 		
 	#if($isRestrictedEdit)
 		<div class="form-group">
-			<label class="control-label col-sm-3">$r.translate("form.metadata.globalfeedbackNsolution")</label>
+			<label class="control-label col-sm-3">$r.translate("form.metadata.globalfeedbackNsolution")$r.render("globalfeedbackNsolutionHelpText")</label>
 			<div class="col-sm-9">
 				#if ($assessment.isInheritControls())
 					<p class="form-control-static">$r.translate("yes")</p>
@@ -157,7 +157,7 @@
 			#else
 				#set ($nochecked = 'checked="checked"')
 			#end
-			<label class="control-label col-sm-3">$r.translate("form.metadata.globalfeedbackNsolution")</label>
+			<label class="control-label col-sm-3">$r.translate("form.metadata.globalfeedbackNsolution")$r.render("globalfeedbackNsolutionHelpText")</label>
 			<div class="col-sm-9">
 				<input type="radio" name="inheritswitch" value="Yes" $!yeschecked onclick="return setFormDirty('ofo_assessform');showSwitches();" onkeypress="return setFormDirty('ofo_assessform');showSwitches();" onchange="return setFormDirty('ofo_assessform')" /> $r.translate("yes")
 				&nbsp;

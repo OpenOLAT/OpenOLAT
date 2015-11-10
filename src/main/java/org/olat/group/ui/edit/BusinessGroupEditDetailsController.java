@@ -21,6 +21,7 @@ package org.olat.group.ui.edit;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.helpTooltip.HelpTooltip;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -50,6 +51,10 @@ public class BusinessGroupEditDetailsController extends BasicController {
 		this.businessGroup = businessGroup;
 		
 		mainVC = createVelocityContainer("tab_bgDetail");
+
+		//hoover helptext for ID
+		HelpTooltip idHelpText = new HelpTooltip("idHelpText", translate("group.id.help"));
+		mainVC.put("idHelpText", idHelpText);
 
 		editController = new BusinessGroupFormController(ureq, getWindowControl(), businessGroup);
 		listenTo(editController);
