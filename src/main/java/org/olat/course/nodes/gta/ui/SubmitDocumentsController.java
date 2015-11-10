@@ -401,6 +401,8 @@ class SubmitDocumentsController extends FormBasicController {
 	
 			newDocumentEditorCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(),
 					documentsContainer, documentName, "media", true, true);
+			newDocumentEditorCtrl.getRichTextConfiguration().disableImageAnMovie();
+			newDocumentEditorCtrl.getRichTextConfiguration().disableFileBrowserCallback();
 			newDocumentEditorCtrl.setNewFile(true);
 			listenTo(newDocumentEditorCtrl);
 			
@@ -415,6 +417,8 @@ class SubmitDocumentsController extends FormBasicController {
 
 		editDocumentEditorCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(),
 				documentsContainer, documentName, "media", true, true);
+		editDocumentEditorCtrl.getRichTextConfiguration().disableImageAnMovie();
+		editDocumentEditorCtrl.getRichTextConfiguration().disableFileBrowserCallback();
 		listenTo(editDocumentEditorCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", editDocumentEditorCtrl.getInitialComponent());
