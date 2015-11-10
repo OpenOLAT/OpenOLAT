@@ -386,6 +386,10 @@ public class RichTextConfiguration implements Disposable {
 	public void disableMathEditor() {
 		tinyConfig = tinyConfig.disableMathEditor();
 	}
+	
+	public void disableImageAnMovie() {
+		tinyConfig = tinyConfig.disableImageAndMedia();
+	}
 
 	/**
 	 * Enable / disable the full-screen plugin
@@ -521,6 +525,15 @@ public class RichTextConfiguration implements Disposable {
 		linkBrowserFlashPlayerSuffixes = supportedFlashPlayerSuffixes;
 		linkBrowserBaseContainer = vfsContainer;
 		linkBrowserCustomTreeModel = customLinkTreeModel;
+	}
+	
+	public void disableFileBrowserCallback() {
+		linkBrowserImageSuffixes = null;
+		linkBrowserMediaSuffixes = null;
+		linkBrowserFlashPlayerSuffixes = null;
+		linkBrowserBaseContainer = null;
+		linkBrowserCustomTreeModel = null;
+		nonQuotedConfigValues.remove(FILE_BROWSER_CALLBACK);
 	}
 
 	/**

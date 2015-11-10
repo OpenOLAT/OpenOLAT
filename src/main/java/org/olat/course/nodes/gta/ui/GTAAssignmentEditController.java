@@ -414,6 +414,8 @@ public class GTAAssignmentEditController extends FormBasicController {
 				tasksContainer, documentName, "media", true, true);
 		newTaskEditorCtrl.setNewFile(true);
 		newTaskEditorCtrl.setUserObject(taskDef);
+		newTaskEditorCtrl.getRichTextConfiguration().disableImageAnMovie();
+		newTaskEditorCtrl.getRichTextConfiguration().disableFileBrowserCallback();
 		listenTo(newTaskEditorCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", newTaskEditorCtrl.getInitialComponent());
@@ -426,6 +428,8 @@ public class GTAAssignmentEditController extends FormBasicController {
 
 		editTaskEditorCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(),
 				tasksContainer, documentName, "media", true, true);
+		editTaskEditorCtrl.getRichTextConfiguration().disableImageAnMovie();
+		editTaskEditorCtrl.getRichTextConfiguration().disableFileBrowserCallback();
 		listenTo(editTaskEditorCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", editTaskEditorCtrl.getInitialComponent());

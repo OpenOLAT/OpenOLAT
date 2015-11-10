@@ -115,6 +115,16 @@ public class TinyConfig {
 	}
 	
 	/**
+	 * Disable image, media and movie plugins.
+	 * @return
+	 */
+	public TinyConfig disableImageAndMedia() {
+		return disableFeature("image")
+				.disableFeature("media")
+				.disableFeature("olatmovieviewer");
+	}
+	
+	/**
 	 * Remove media + olatmovie
 	 * @return
 	 */
