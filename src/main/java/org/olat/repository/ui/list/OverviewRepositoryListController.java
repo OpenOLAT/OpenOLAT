@@ -123,7 +123,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		if(entries == null || entries.isEmpty()) {
 			if(currentCtrl == null) {
 				if(isGuestOnly) {
-					 doOpenMyCourses(ureq);
+					doOpenMyCourses(ureq);
 					segmentView.select(myCourseLink);
 				} else {
 					boolean markEmpty = doOpenMark(ureq).isEmpty();
