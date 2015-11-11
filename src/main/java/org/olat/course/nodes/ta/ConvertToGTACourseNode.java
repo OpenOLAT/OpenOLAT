@@ -167,20 +167,22 @@ public class ConvertToGTACourseNode {
 				VFSContainer userDropContainer = (VFSContainer)userDropbox;
 				String username = userDropContainer.getName();
 				Identity assessedIdentity = securityManager.findIdentityByName(username);
-				VFSContainer sumbitContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, assessedIdentity);
-				
-				boolean dropped = false;
-				for(VFSItem dropppedItem:userDropContainer.getItems()) {
-					if(dropppedItem instanceof VFSLeaf) {
-						VFSLeaf submittedDocument = sumbitContainer.createChildLeaf(dropppedItem.getName());
-						VFSManager.copyContent((VFSLeaf)dropppedItem, submittedDocument);
-						convertMetada(userDropContainer, sumbitContainer, dropppedItem.getName(), null, null);
-						dropped = true;
+				if(assessedIdentity != null) {
+					VFSContainer sumbitContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, assessedIdentity);
+					
+					boolean dropped = false;
+					for(VFSItem dropppedItem:userDropContainer.getItems()) {
+						if(dropppedItem instanceof VFSLeaf) {
+							VFSLeaf submittedDocument = sumbitContainer.createChildLeaf(dropppedItem.getName());
+							VFSManager.copyContent((VFSLeaf)dropppedItem, submittedDocument);
+							convertMetada(userDropContainer, sumbitContainer, dropppedItem.getName(), null, null);
+							dropped = true;
+						}
 					}
-				}
-				
-				if(dropped) {
-					setTaskStatus(taskList, assessedIdentity, TaskProcess.submit, gtaNode);
+					
+					if(dropped) {
+						setTaskStatus(taskList, assessedIdentity, TaskProcess.submit, gtaNode);
+					}
 				}
 			}
 		}
@@ -194,20 +196,22 @@ public class ConvertToGTACourseNode {
 				VFSContainer userContainer = (VFSContainer)item;
 				String username = userContainer.getName();
 				Identity assessedIdentity = securityManager.findIdentityByName(username);
-				VFSContainer correctionContainer = gtaManager.getCorrectionContainer(courseEnv, gtaNode, assessedIdentity);
-				
-				boolean returned = false;
-				for(VFSItem returnedItem:userContainer.getItems()) {
-					if(returnedItem instanceof VFSLeaf) {
-						VFSLeaf correctionDocument = correctionContainer.createChildLeaf(returnedItem.getName());
-						VFSManager.copyContent((VFSLeaf)returnedItem, correctionDocument);
-						convertMetada(userContainer, correctionContainer, returnedItem.getName(), null, null);
-						returned = true;
+				if(assessedIdentity != null) {
+					VFSContainer correctionContainer = gtaManager.getCorrectionContainer(courseEnv, gtaNode, assessedIdentity);
+					
+					boolean returned = false;
+					for(VFSItem returnedItem:userContainer.getItems()) {
+						if(returnedItem instanceof VFSLeaf) {
+							VFSLeaf correctionDocument = correctionContainer.createChildLeaf(returnedItem.getName());
+							VFSManager.copyContent((VFSLeaf)returnedItem, correctionDocument);
+							convertMetada(userContainer, correctionContainer, returnedItem.getName(), null, null);
+							returned = true;
+						}
 					}
-				}
-				
-				if(returned) {
-					setTaskStatus(taskList, assessedIdentity, TaskProcess.grading, gtaNode);
+					
+					if(returned) {
+						setTaskStatus(taskList, assessedIdentity, TaskProcess.grading, gtaNode);
+					}
 				}
 			}
 		}
