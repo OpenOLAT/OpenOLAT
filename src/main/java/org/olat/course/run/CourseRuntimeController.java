@@ -610,7 +610,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			}
 			
 			if(repositoryService.isParticipantAllowedToLeave(getRepositoryEntry())
-					&& !assessmentLock
+					&& !assessmentLock && !roles.isGuestOnly()
 					&& (uce.isParticipant() || !uce.getParticipatingGroups().isEmpty())) {
 				leaveLink = LinkFactory.createToolLink("sign.out", "leave", translate("sign.out"), this);
 				leaveLink.setIconLeftCSS("o_icon o_icon-fw o_icon_sign_out");
@@ -1049,6 +1049,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 	
 	private void doLeave(UserRequest ureq) {
+		if(roles.isGuestOnly()) return;
+		
 		MailerResult result = new MailerResult();
 		MailPackage reMailing = new MailPackage(result, getWindowControl().getBusinessControl().getAsString(), true);
 		//leave course

@@ -313,7 +313,8 @@ public class RepositoryEntryDetailsController extends FormBasicController {
             Roles roles = ureq.getUserSession().getRoles();
 			layoutCont.contextPut("roles", roles);
 
-			if(memberRoles.contains(GroupRoles.participant.name()) && repositoryService.isParticipantAllowedToLeave(entry)) {
+			if(!guestOnly && memberRoles.contains(GroupRoles.participant.name())
+					&& repositoryService.isParticipantAllowedToLeave(entry)) {
 				leaveLink = uifactory.addFormLink("sign.out", "leave", "sign.out", null, formLayout, Link.LINK);
 				leaveLink.setIconLeftCSS("o_icon o_icon_sign_out");
 			}
@@ -576,6 +577,8 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	}
 	
 	protected void doLeave() {
+		if(guestOnly) return;
+		
 		MailerResult result = new MailerResult();
 		MailPackage reMailing = new MailPackage(result, getWindowControl().getBusinessControl().getAsString(), true);
 		LeavingStatusList status = new LeavingStatusList();

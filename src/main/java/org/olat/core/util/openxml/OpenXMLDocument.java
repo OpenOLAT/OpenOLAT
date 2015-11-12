@@ -1010,7 +1010,15 @@ public class OpenXMLDocument {
 	}
 	
 	private String getUniqueFilename(File image) {
-		String filename = image.getName();
+		String filename = image.getName().toLowerCase();
+		int extensionIndex = filename.lastIndexOf('.');
+		if(extensionIndex > 0) {
+			String name = filename.substring(0, extensionIndex);
+			String extension = filename.substring(extensionIndex);
+			filename = StringHelper.transformDisplayNameToFileSystemName(name) + extension;
+		} else {
+			filename = StringHelper.transformDisplayNameToFileSystemName(filename);
+		}
 		if(imageFilenames.contains(filename)) {
 			for(int i=1; i<1000; i++) {
 				String nextFilename = i +"_" + filename;
