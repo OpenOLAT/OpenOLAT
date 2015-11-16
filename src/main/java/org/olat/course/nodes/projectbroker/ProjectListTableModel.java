@@ -34,8 +34,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.course.nodes.projectbroker.datamodel.CustomField;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerManager;
@@ -60,7 +58,6 @@ public class ProjectListTableModel extends DefaultTableDataModel<Project> {
 	// Array with numbers of the customfields [0...MAX_NBR_CUSTOMFIELDS] which are enabled for table-view 
 	private int[] enabledCustomFieldNumbers;
 	
-	private static final OLog log = Tracing.createLoggerFor(ProjectListTableModel.class);
 	private final ProjectBrokerManager projectBrokerManager;
 	
 	/**

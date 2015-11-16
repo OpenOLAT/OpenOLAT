@@ -75,22 +75,31 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	private ProjectBrokerManager projectBrokerManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
-	
-	
+
 	//////////////////////
 	// ACCOUNT MANAGEMENT
 	//////////////////////
+	@Override
+	public Long getAccountManagerGroupKey(CoursePropertyManager cpm, CourseNode courseNode) {
+		Property accountManagerGroupProperty = cpm.findCourseNodeProperty(courseNode, null, null, ProjectBrokerCourseNode.CONF_ACCOUNTMANAGER_GROUP_KEY);
+		if (accountManagerGroupProperty != null) {
+			return accountManagerGroupProperty.getLongValue();
+		}
+		return null;
+	}
+	
+	@Override
 	public BusinessGroup getAccountManagerGroupFor(CoursePropertyManager cpm, CourseNode courseNode, ICourse course, String groupName, String groupDescription, Identity identity) {
 		Long groupKey = null;
 		BusinessGroup accountManagerGroup = null;
-  	Property accountManagerGroupProperty = cpm.findCourseNodeProperty(courseNode, null, null, ProjectBrokerCourseNode.CONF_ACCOUNTMANAGER_GROUP_KEY);
+		Property accountManagerGroupProperty = cpm.findCourseNodeProperty(courseNode, null, null, ProjectBrokerCourseNode.CONF_ACCOUNTMANAGER_GROUP_KEY);
 		// Check if account-manager-group-key-property already exist
 		if (accountManagerGroupProperty != null) {
-		  groupKey = accountManagerGroupProperty.getLongValue();
-		  logDebug("accountManagerGroupProperty=" + accountManagerGroupProperty + "  groupKey=" + groupKey);
+			groupKey = accountManagerGroupProperty.getLongValue();
+			logDebug("accountManagerGroupProperty=" + accountManagerGroupProperty + "  groupKey=" + groupKey);
 		} 
-    logDebug("groupKey=" + groupKey);
-    if (groupKey != null) {
+		logDebug("groupKey=" + groupKey);
+		if (groupKey != null) {
 			accountManagerGroup = businessGroupService.loadBusinessGroup(groupKey);
 			logDebug("load businessgroup=" + accountManagerGroup);
 			if (accountManagerGroup != null) {
@@ -102,7 +111,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 				groupKey = null;
 				logWarn("ProjectBroker: Account-manager does no longer exist, create a new one", null);
 			}
-    } else {
+		} else {
 			logDebug("No group for project-broker exist => create a new one");
 			RepositoryEntry re = repositoryManager.lookupRepositoryEntry(cpm.getCourseResource(), false);
 			accountManagerGroup = businessGroupService.createBusinessGroup(identity, groupName, groupDescription, -1, -1, false, false, re);
@@ -119,6 +128,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 		} 
 		return accountManagerGroup;
 	}
+	
 
 	public void saveAccountManagerGroupKey(Long accountManagerGroupKey, CoursePropertyManager cpm, CourseNode courseNode) {
 		Property accountManagerGroupKeyProperty = cpm.createCourseNodePropertyInstance(courseNode, null, null, ProjectBrokerCourseNode.CONF_ACCOUNTMANAGER_GROUP_KEY, null, accountManagerGroupKey, null, null);

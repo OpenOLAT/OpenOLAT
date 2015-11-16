@@ -396,7 +396,7 @@ public interface CourseNode extends INode, ShortName {
 	 * @param course the course in which the copying is happening
 	 * @return
 	 */
-	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course);
+	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author);
 
 	/**
 	 * @return empty list, or list with active condition expressions of the course
