@@ -188,7 +188,7 @@ public class MoveCopySubtreeController extends BasicController {
 
 	private void recursiveCopy(CourseEditorTreeNode copyFrom2, CourseEditorTreeNode insertParent, int pos, boolean firstIteration, ICourse course) {		
 		// create copy of course node
-		CourseNode copyOfNode = copyFrom2.getCourseNode().createInstanceForCopy(firstIteration, course);
+		CourseNode copyOfNode = copyFrom2.getCourseNode().createInstanceForCopy(firstIteration, course, getIdentity());
 		copyNodeId = copyOfNode.getIdent();
 		// Insert at desired position		
 		course.getEditorTreeModel().insertCourseNodeAt(copyOfNode, insertParent.getCourseNode(), pos);
