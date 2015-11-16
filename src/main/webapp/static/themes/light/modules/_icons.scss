@@ -346,6 +346,12 @@ $fa-css-prefix: "o_icon" !default;
 .o_forum_status_hidden_icon:before { content: $fa-var-eye-slash; color: $state-danger-text}
 .o_forum_status_visible_icon:before { content: $fa-var-eye; color: $state-success-text}
 
+.o_forum_all_icon:before { content: $fa-var-align-right; }
+.o_forum_all_flat_icon:before { content: $fa-var-align-justify; }
+.o_forum_one_icon:before { content: $fa-var-eye; }
+.o_forum_marked_icon:before { content: $fa-var-bookmark; }
+.o_forum_new_icon:before { content: $fa-var-asterisk; }
+
 /* tests icons */
 .o_mi_qpool_import:before { content: $fa-var-database; }
 .o_mi_qtisection:before { content: $fa-var-cubes; }

@@ -25,26 +25,34 @@
 
 package org.olat.modules.fo.archiver.formatters;
 
+import java.util.Locale;
+
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.Visitor;
+import org.olat.modules.fo.Forum;
 
 /**
  * Initial Date: Nov 11, 2005 <br>
  * @author Patrick Brunner, Alexander Schneider
  */
 
-public abstract class ForumFormatter implements Visitor{
+public abstract class ForumFormatter implements Visitor {
 	protected StringBuilder sb;
 	protected boolean isTopThread = false;
 	protected boolean filePerThread = false;
 	private Long forumKey;
 
+	protected final Translator translator;
+
 	/**
 	 * init string buffer
 	 *
 	 */
-	protected ForumFormatter(){
-		this.sb = new StringBuilder();
+	protected ForumFormatter(Locale locale){
+		sb = new StringBuilder(4096);
+		translator = Util.createPackageTranslator(Forum.class, locale);
 	}
 	/**
 	 * contains (translation keys, value) pairs such as:

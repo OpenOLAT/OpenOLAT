@@ -25,12 +25,18 @@
 
 package org.olat.modules.fo;
 
-import java.text.Collator;
+import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Locale;
 
-import org.olat.core.util.Formatter;
+import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.modules.fo.archiver.MessageNode;
 
 /**
  * 
@@ -46,6 +52,20 @@ public class ForumHelper {
 	public static final String CSS_ICON_CLASS_MESSAGE = "o_forum_message_icon";
 	
 	public static int NOT_MY_JOB = 0;
+	
+	public static final VFSContainer getArchiveContainer(UserRequest ureq, Forum forum) {
+		VFSContainer container = new OlatRootFolderImpl(FolderConfig.getUserHomes() + File.separator + ureq.getIdentity().getName() + "/private/archive", null);
+		// append export timestamp to avoid overwriting previous export 
+		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH_mm_ss");
+		String folder = "forum_" + forum.getKey().toString()+"_"+formatter.format(new Date());
+		VFSItem vfsItem = container.resolve(folder);
+		if (vfsItem == null || !(vfsItem instanceof VFSContainer)) {
+			vfsItem = container.createChildContainer(folder);
+		}
+		container = (VFSContainer) vfsItem;
+		return container;
+	}
+	
 
 	/**
 	 * Comparators can be passed to a sort method (such as Collections.sort) 
@@ -60,104 +80,8 @@ public class ForumHelper {
 		return new MessageNodeComparator();
 	}
 	
-	/**
-	 * Compares two MessageWrappers. <br>
-	 * If a and b both sticky or if none sticky, let the caller do the sorting (return NOT_MY_JOB),<br> 
-	 * else if a is sticky and sortAscending is true then a less then b (return -1) <br>
-	 * else if b is sticky and sortAscending is true then a greater then b (return 1)<p>
-	 * @param a
-	 * @param b
-	 * @param sortAscending
-	 * @return -1, 1, or NOT_MY_JOB which means the caller has to do the comparison.
-	 */
-	public static int compare(MessageWrapper a, MessageWrapper b, boolean sortAscending) {
-		if (a.isSticky() && b.isSticky()) {
-			return NOT_MY_JOB;
-		} else if (a.isSticky()) {
-			if (sortAscending) return -1;
-			else return 1;
-		} else if (b.isSticky()) {
-			if (sortAscending) return 1;
-			else return -1;
-		} else {
-			return NOT_MY_JOB;
-		}
-	}
-	
-	/**
-	 * Description:<br>
-	 * Wrapper for the table cell values for providing the sticky info
-	 * about a message.
-	 * <P>
-	 * Initial Date: 11.07.2007 <br>
-	 * 
-	 * @author Lavinia Dumitrescu
-	 */
-	protected static class MessageWrapper implements Comparable {	
-		
-		private Comparable value;
-		private boolean sticky;
-		private Collator collator = Collator.getInstance();
-		private Formatter formatter = Formatter.getInstance(Locale.getDefault());
-		
-		public MessageWrapper(Comparable value_, boolean sticky_, Collator collator, Formatter formatter) {
-			value = value_;
-			sticky = sticky_;
-			if (collator != null) {				
-				this.collator = collator;
-			}
-			if (formatter != null) {				
-				this.formatter = formatter;
-			}
-		}
-		
-		/**
-		 * 
-		 * @see java.lang.Object#toString()
-		 */
-		public String toString() {
-			if (value instanceof Date) {
-				return formatter.formatDateAndTime((Date)value);
-			}
-			else return value.toString();
-		}
-
-		public boolean isSticky() {
-			return sticky;
-		}			
-
-		public Comparable getValue() {
-			return value;
-		}
-
-		/**
-		 * 
-		 * @see java.lang.Comparable#compareTo(java.lang.Object)
-		 */
-		public int compareTo(Object o) {	
-			MessageWrapper theOtherMessage = ((MessageWrapper)o);
-			if(getValue() instanceof String) {				
-				return collator.compare(getValue().toString(), theOtherMessage.getValue().toString());
-			}
-			return getValue().compareTo(theOtherMessage.getValue());
-		}
-		
-		/**
-		 * 
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
-		public boolean equals(Object obj) {
-			try {
-				MessageWrapper theOther = (MessageWrapper)obj;
-				return getValue().equals(theOther.getValue());
-			} catch(Exception ex) {
-				//nothing to do
-			}
-			return false;
-		}		
-	}
-	
 	private static class MessageNodeComparator implements Comparator<MessageNode> {
+		@Override
 		public int compare(final MessageNode m1, final MessageNode m2) {			
 			if(m1.isSticky() && m2.isSticky()) {
 				return m2.getModifiedDate().compareTo(m1.getModifiedDate()); //last first

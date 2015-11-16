@@ -68,8 +68,16 @@ public class SortableFlexiTableModelDelegate<T> {
 		return columnIndex;
 	}
 	
+	public boolean isAsc() {
+		return asc;
+	}
+	
 	public Collator getCollator() {
 		return collator;
+	}
+	
+	public SortableFlexiTableDataModel<T> getTableModel() {
+		return tableModel;
 	}
 	
 	public List<T> sort() {
@@ -147,6 +155,20 @@ public class SortableFlexiTableModelDelegate<T> {
 		boolean ba = (a == null);
 		boolean bb = (b == null);
 		return ba? (bb? 0: -1):(bb? 1: 0);
+	}
+	
+	public class ReverseComparator implements Comparator<T> {
+		
+		private final Comparator<T> delegate;
+		
+		public ReverseComparator(Comparator<T> delegate) {
+			this.delegate = delegate;
+		}
+
+		@Override
+		public int compare(T o1, T o2) {
+			return -1 * delegate.compare(o1, o2);
+		}
 	}
 	
 	public class DefaultComparator implements Comparator<T> {

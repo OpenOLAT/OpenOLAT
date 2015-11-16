@@ -65,6 +65,7 @@ import org.olat.core.util.ZipUtil;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.Quota;
@@ -83,11 +84,11 @@ import org.olat.instantMessaging.ui.ChatToolController;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
-import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.ForumUIFactory;
 import org.olat.modules.fo.archiver.ForumArchiveManager;
 import org.olat.modules.fo.archiver.formatters.ForumFormatter;
 import org.olat.modules.fo.archiver.formatters.ForumRTFFormatter;
+import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.openmeetings.manager.OpenMeetingsException;
 import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
@@ -259,6 +260,11 @@ public class CollaborationTools implements Serializable {
 		TitleInfo titleInfo = new TitleInfo(null, trans.translate("collabtools.named.hasForum"));
 		titleInfo.setSeparatorEnabled(true);
 		Controller forumController = ForumUIFactory.getTitledForumController(ureq, wControl, forum, new ForumCallback() {
+
+			@Override
+			public boolean mayUsePseudonym() {
+				return false;
+			}
 
 			public boolean mayOpenNewThread() {
 				return true;
@@ -878,7 +884,7 @@ public class CollaborationTools implements Serializable {
 			VFSContainer archiveContainer = new LocalFolderImpl(new File(archivFilePath));
 			String archiveForumName = "del_forum_" + forumKeyProperty.getLongValue();
 			VFSContainer archiveForumContainer = archiveContainer.createChildContainer(archiveForumName);
-			ForumFormatter ff = new ForumRTFFormatter(archiveForumContainer, false);
+			ForumFormatter ff = new ForumRTFFormatter(archiveForumContainer, false, I18nModule.getDefaultLocale());
 			ForumArchiveManager.getInstance().applyFormatter(ff, forumKeyProperty.getLongValue(), null);
 		}
 	}

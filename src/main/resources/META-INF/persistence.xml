@@ -38,9 +38,6 @@
 		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/Project.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/ProjectBroker.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/assessment/model/UserEfficiencyStatementImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/modules/fo/ForumImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/modules/fo/MessageImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/modules/fo/ReadMessage.hbm.xml</mapping-file>
 		<mapping-file>org/olat/modules/openmeetings/model/OpenMeetingsReference.hbm.xml</mapping-file>
 		<mapping-file>org/olat/properties/Property.hbm.xml</mapping-file>
 		<mapping-file>org/olat/registration/TemporaryKeyImpl.hbm.xml</mapping-file>
@@ -136,6 +133,13 @@
 		<class>org.olat.instantMessaging.model.InstantMessageNotificationImpl</class>
 		<class>org.olat.ims.qti.statistics.model.QTIStatisticResult</class>
 		<class>org.olat.ims.qti.statistics.model.QTIStatisticResultSet</class>
+		<class>org.olat.modules.fo.model.ForumImpl</class>
+		<class>org.olat.modules.fo.model.MessageImpl</class>
+		<class>org.olat.modules.fo.model.MessageRefImpl</class>
+		<class>org.olat.modules.fo.model.MessageLightImpl</class>
+		<class>org.olat.modules.fo.model.MessagePeekviewImpl</class>
+		<class>org.olat.modules.fo.model.ReadMessageImpl</class>
+		<class>org.olat.modules.fo.model.MessageStatistics</class>
 		<class>org.olat.modules.qpool.model.PoolImpl</class>
 		<class>org.olat.modules.qpool.model.PoolToItem</class>
 		<class>org.olat.modules.qpool.model.PoolItemShortView</class>

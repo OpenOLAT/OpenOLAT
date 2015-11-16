@@ -23,7 +23,8 @@ import java.io.IOException;
 import java.io.StringReader;
 
 import org.cyberneko.html.parsers.DOMParser;
-import org.olat.core.logging.LogDelegator;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.Filter;
 import org.w3c.dom.Document;
@@ -31,7 +32,9 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-public class QuoteAndTagFilter extends LogDelegator implements Filter {
+public class QuoteAndTagFilter implements Filter {
+	
+	private static final OLog log = Tracing.createLoggerFor(QuoteAndTagFilter.class);
 
 	/**
 	 * @see org.olat.core.util.filter.Filter#filter(java.lang.String)
@@ -46,10 +49,10 @@ public class QuoteAndTagFilter extends LogDelegator implements Filter {
 			scanNode(document, sb);
 			return sb.toString();
 		} catch (SAXException e) {
-			logError("", e);
+			log.error("", e);
 			return null;
 		} catch (IOException e) {
-			logError("", e);
+			log.error("", e);
 			return null;
 		}
 	}

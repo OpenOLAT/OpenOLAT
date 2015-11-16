@@ -1,0 +1,17 @@
+<div class="o_forum">
+	<div class="o_forum_message o_block_large_bottom">
+		<div class="o_forum_message_header clearfix">
+			#if(!$guestOnly && $r.available("portrait"))
+				$r.render("portrait")
+			#end			
+			<h4 class="o_forum_message_title">$r.escapeHtml($message.getTitle())</h4>
+			<div class="o_author">
+				$r.escapeHtml($identity.getUser().getProperty("firstName", $locale)) $r.escapeHtml($identity.getUser().getProperty("lastName", $locale))
+			</div>
+			<div class="o_date">$r.formatDateAndTime($message.getCreationDate())</div>
+		</div>
+		<div class="o_forum_message_body">
+			<div class="clearfix o_scrollblock">$r.formatLatexFormulas($messageBody)</div>
+		</div>			
+	</div>
+</div>

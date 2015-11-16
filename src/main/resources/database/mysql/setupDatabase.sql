@@ -228,9 +228,11 @@ create table if not exists o_message (
    creationdate datetime,
    title varchar(100),
    body longtext,
+   pseudonym varchar(255),
+   guest bit default 0,
    parent_id bigint,
    topthread_id bigint,
-   creator_id bigint not null,
+   creator_id bigint,
    modifier_id bigint,
    forum_fk bigint,
    statuscode integer,
@@ -238,6 +240,9 @@ create table if not exists o_message (
    numofcharacters integer,
    primary key (message_id)
 );
+
+
+
 create table if not exists o_gp_bgtoarea_rel (
    bgtoarea_id bigint not null,
    version mediumint unsigned not null,

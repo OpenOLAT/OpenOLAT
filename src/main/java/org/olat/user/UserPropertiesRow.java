@@ -35,17 +35,21 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class UserPropertiesRow {
 	
-	private Long identityKey;
-	private String identityName;
-	private String[] identityProps;
+	private final Long identityKey;
+	private final String identityName;
+	private final String[] identityProps;
 	
 	public UserPropertiesRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
-		identityKey = identity.getKey();
-		identityName = identity.getName();
-		
 		identityProps = new String[userPropertyHandlers.size()];
-		for(int i=userPropertyHandlers.size(); i-->0; ) {
-			identityProps[i] = userPropertyHandlers.get(i).getUserProperty(identity.getUser(), locale);
+		if(identity == null) {
+			identityKey = null;
+			identityName = null;
+		} else {
+			identityKey = identity.getKey();
+			identityName = identity.getName();
+			for(int i=userPropertyHandlers.size(); i-->0; ) {
+				identityProps[i] = userPropertyHandlers.get(i).getUserProperty(identity.getUser(), locale);
+			}
 		}
 	}
 	

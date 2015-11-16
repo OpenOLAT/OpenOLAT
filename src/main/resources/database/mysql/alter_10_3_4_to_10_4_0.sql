@@ -1,3 +1,9 @@
+alter table o_message modify creator_id bigint NULL DEFAULT NULL;
+alter table o_message add column pseudonym varchar(255);
+alter table o_message add column guest bit default 0;
+
+
+
 create table o_cal_use_config (
    id bigint not null,
    creationdate datetime not null,

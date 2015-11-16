@@ -37,10 +37,9 @@ import org.olat.core.util.tree.TreeVisitor;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
 import org.olat.modules.fo.ForumHelper;
-import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
-import org.olat.modules.fo.MessageNode;
 import org.olat.modules.fo.archiver.formatters.ForumFormatter;
+import org.olat.modules.fo.manager.ForumManager;
 
 /**
  *          Initial Date: Nov 11, 2005 <br>
@@ -86,7 +85,6 @@ public class ForumArchiveManager {
 	 * @return the message thread as String formatted
 	 */
 	public String applyFormatterForOneThread(ForumFormatter forumFormatter, Long forumId, Long topMessageId){
-		log.info("Archiving forum.thread: "+forumId+"."+topMessageId);
 		MessageNode topMessageNode = convertToThreadTree(topMessageId);
 		return formatThread(topMessageNode, forumFormatter, forumId);
 	}

@@ -33,32 +33,53 @@ import org.olat.core.id.Persistable;
 /**
  * @author schneider
  */
-public interface Message extends CreateInfo, ModifiedInfo,  Persistable, Comparable<Message> {
-	public abstract String getBody();
-	public abstract Identity getCreator();
-	public abstract Forum getForum();
-	public abstract Identity getModifier();
-	public abstract Message getParent();
-	public abstract Message getThreadtop();
-	public abstract String getTitle();
-	public abstract Integer getNumOfWords();
-	public abstract Integer getNumOfCharacters();
-	public abstract void setBody(String string);
-	public abstract void setCreator(Identity identity);
-	public abstract void setForum(Forum forum);
-	public abstract void setModifier(Identity identity);
-	public abstract void setParent(Message message);
-	public abstract void setThreadtop(Message message);
-	public abstract void setTitle(String string);
-	public abstract void setNumOfWords(Integer numOfWords);
-	public abstract void setNumOfCharacters(Integer numOfCharacters);
+public interface Message extends MessageLight, CreateInfo, ModifiedInfo,  Persistable, Comparable<Message> {
+	
+	public String getTitle();
+	
+	public void setTitle(String string);
+	
+	public String getBody();
+	
+	public void setBody(String string);
+	
+	public Identity getCreator();
+	
+	public boolean isGuest();
+	
+	public String getPseudonym();
+	
+	public void setPseudonym(String pseudonym);
+	
+	public Forum getForum();
+	
+	public Identity getModifier();
+	
+	public void setModifier(Identity identity);
+	
+	public Message getParent();
+	
+	public void setParent(Message message);
+	
+	public Message getThreadtop();
+	
+	public void setThreadtop(Message message);
+
+	public Integer getNumOfWords();
+	
+	public void setNumOfWords(Integer numOfWords);
+	
+	public Integer getNumOfCharacters();
+
+	public void setNumOfCharacters(Integer numOfCharacters);
+	
 	public int getStatusCode();
+	
 	public void setStatusCode(int statusCode);
 	
 	
 	public enum OrderBy {
 		title,
 		creationDate
-		
 	}
 }

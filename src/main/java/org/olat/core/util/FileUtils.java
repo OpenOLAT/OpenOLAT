@@ -1021,7 +1021,7 @@ public class FileUtils {
 	public static String appendNumberAtTheEndOfFilename(String name, int number) {
 		// Try to match the file to the pattern "[name].[extension]"
 		Matcher m = fileNamePattern.matcher(name);
-		StringBuffer newName = new StringBuffer();
+		StringBuilder newName = new StringBuilder();
 		if (m.matches()) {
 			newName.append(m.group(1)).append(number);
 			if (m.group(2) != null) {

@@ -51,7 +51,7 @@ import org.olat.core.logging.activity.ResourceableTypeList;
  * Initial Date:  20.10.2009 <br>
  * @author Stefan
  */
-/* package protected */ class ForumLoggingAction extends BaseLoggingAction {
+public class ForumLoggingAction extends BaseLoggingAction {
 
 	public static final ILoggingAction FORUM_MESSAGE_LIST = 
 		new ForumLoggingAction(ActionType.tracking, CrudAction.retrieve, ActionVerb.view, ActionObject.forumthread).setTypeList(

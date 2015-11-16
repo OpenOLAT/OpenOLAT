@@ -64,8 +64,8 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.fo.Forum;
-import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
+import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.fo.restapi.MessageVO;
 import org.olat.modules.fo.restapi.MessageVOes;
 import org.olat.modules.fo.restapi.ReplyVO;
@@ -92,32 +92,32 @@ public class ForumTest extends OlatJerseyTestCase {
 		
 		forum = forumManager.addAForum();
 		
-		m1 = forumManager.createMessage();
+		m1 = forumManager.createMessage(forum, id1, false);
 		m1.setTitle("Thread-1");
 		m1.setBody("Body of Thread-1");
-		forumManager.addTopMessage(id1, forum, m1);
+		forumManager.addTopMessage(m1);
 		
-		m2 = forumManager.createMessage();
+		m2 = forumManager.createMessage(forum, id1, false);
 		m2.setTitle("Thread-2");
 		m2.setBody("Body of Thread-2");
-		forumManager.addTopMessage(id1, forum, m2);
+		forumManager.addTopMessage(m2);
 		
 		DBFactory.getInstance().intermediateCommit();
 		
-		m3 = forumManager.createMessage();
+		m3 = forumManager.createMessage(forum, id1, false);
 		m3.setTitle("Message-1.1");
 		m3.setBody("Body of Message-1.1");
-		forumManager.replyToMessage(m3, id1, m1);
+		forumManager.replyToMessage(m3, m1);
 		
-		m4 = forumManager.createMessage();
+		m4 = forumManager.createMessage(forum, id1, false);
 		m4.setTitle("Message-1.1.1");
 		m4.setBody("Body of Message-1.1.1");
-		forumManager.replyToMessage(m4, id1, m3);
+		forumManager.replyToMessage(m4, m3);
 		
-		m5 = forumManager.createMessage();
+		m5 = forumManager.createMessage(forum, id1, false);
 		m5.setTitle("Message-1.2");
 		m5.setBody("Body of Message-1.2");
-		forumManager.replyToMessage(m5, id1, m1);
+		forumManager.replyToMessage(m5, m1);
 
 		DBFactory.getInstance().intermediateCommit();
 	}

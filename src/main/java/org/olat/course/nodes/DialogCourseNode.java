@@ -65,11 +65,11 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.dialog.DialogElement;
 import org.olat.modules.dialog.DialogElementsPropertyManager;
 import org.olat.modules.dialog.DialogPropertyElements;
-import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.archiver.ForumArchiveManager;
 import org.olat.modules.fo.archiver.formatters.ForumFormatter;
 import org.olat.modules.fo.archiver.formatters.ForumRTFFormatter;
 import org.olat.modules.fo.archiver.formatters.ForumStreamedRTFFormatter;
+import org.olat.modules.fo.manager.ForumManager;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -224,7 +224,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 	 * @param element
 	 * @param exportDirectory
 	 */
-	public void doArchiveElement(DialogElement element, File exportDirectory) {
+	public void doArchiveElement(DialogElement element, File exportDirectory, Locale locale) {
 		VFSContainer forumContainer = getForumContainer(element.getForumKey());
 		//there is only one file (leave) in the top forum container 
 		VFSItem dialogFile = forumContainer.getItems(new VFSLeafFilter()).get(0);
@@ -238,7 +238,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 		diaNodeElemExportContainer.copyFrom(dialogFile);
 
 		ForumArchiveManager fam = ForumArchiveManager.getInstance();
-		ForumFormatter ff = new ForumRTFFormatter(diaNodeElemExportContainer, false);
+		ForumFormatter ff = new ForumRTFFormatter(diaNodeElemExportContainer, false, locale);
 		fam.applyFormatter(ff, element.getForumKey(), null);
 	}
 	
@@ -250,7 +250,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 				.getDialogPropertyElements();
 		if(list.size() > 0) {
 			for (DialogElement element:list) {
-				doArchiveElement(element, exportStream);
+				doArchiveElement(element, exportStream, locale);
 				dataFound = true;
 			}
 		}
@@ -262,7 +262,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 	 * @param element
 	 * @param exportDirectory
 	 */
-	public void doArchiveElement(DialogElement element, ZipOutputStream exportStream) {
+	public void doArchiveElement(DialogElement element, ZipOutputStream exportStream, Locale locale) {
 		// append export timestamp to avoid overwriting previous export 
 		String exportDirName = Formatter.makeStringFilesystemSave(getShortTitle())
 				+ "_" + element.getForumKey()
@@ -274,7 +274,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 		}
 
 		ForumArchiveManager fam = ForumArchiveManager.getInstance();
-		ForumFormatter ff = new ForumStreamedRTFFormatter(exportStream, exportDirName, false);
+		ForumFormatter ff = new ForumStreamedRTFFormatter(exportStream, exportDirName, false, locale);
 		fam.applyFormatter(ff, element.getForumKey(), null);
 	}
 

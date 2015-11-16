@@ -1,3 +1,9 @@
+alter table o_message modify (creator_id null);
+alter table o_message add pseudonym varchar2(255 char);
+alter table o_message add guest number default 0 not null;
+
+
+
 create table o_cal_use_config (
    id number(20) not null,
    creationdate date not null,

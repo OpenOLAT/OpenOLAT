@@ -68,8 +68,8 @@ import org.olat.course.run.userview.CourseTreeVisitor;
 import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.fo.Forum;
-import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
+import org.olat.modules.fo.manager.ForumManager;
 import org.olat.properties.Property;
 import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
 import org.olat.restapi.repository.course.CourseWebService;
@@ -403,7 +403,7 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 		
 		if(parentMessageId == null || parentMessageId == 0L) {
 			// creating the thread (a message without a parent message)
-			Message newThread = fom.createMessage();
+			Message newThread = fom.createMessage(forum, identity, false);
 			if (isSticky != null && isSticky.booleanValue()) {
 				// set sticky
 				org.olat.modules.fo.Status status = new org.olat.modules.fo.Status();
@@ -413,7 +413,7 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 			newThread.setTitle(title);
 			newThread.setBody(body);
 			// open a new thread
-			fom.addTopMessage(identity, forum, newThread);
+			fom.addTopMessage(newThread);
 			
 			vo = new MessageVO(newThread);
 		} else {
@@ -424,11 +424,10 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
 			// create new message
-			Message message = fom.createMessage();
+			Message message = fom.createMessage(forum, identity, false);
 			message.setTitle(title);
 			message.setBody(body);
-			
-			fom.replyToMessage(message, identity, threadMessage);
+			fom.replyToMessage(message, threadMessage);
 			
 			vo = new MessageVO(message);
 		}

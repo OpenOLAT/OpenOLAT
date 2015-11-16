@@ -229,7 +229,6 @@ public class CollaborationToolsSettingsController extends BasicController {
 			// update quota form: only show when enabled
 			if (collabTools.isToolEnabled(CollaborationTools.TOOL_FOLDER)) {
 				vc_collabtools.contextPut("folderToolEnabled", Boolean.TRUE);
-				//fxdiff VCRP-8: collaboration tools folder access control
 				if(folderForm != null) {
 					removeAsListenerAndDispose(folderForm);
 				}
@@ -245,7 +244,6 @@ public class CollaborationToolsSettingsController extends BasicController {
 			} else {
 				vc_collabtools.contextPut("folderToolEnabled", Boolean.FALSE);
 			}
-			
 		} else if (source == newsController) {
 			if (event.equals(Event.DONE_EVENT)) {
 				String news = newsController.getNewsValue();

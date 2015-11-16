@@ -182,7 +182,7 @@ public class OpenXMLDocument {
 		List<Element> runsEl = new ArrayList<Element>(2);
 		Element runEl = createRunEl(Collections.singletonList(textEl));
 		runsEl.add(runEl);
-		Element styleEl = createParagraphStyle(style.styleId());
+		Element styleEl = createParagraphStyle(style.styleId(), style.runStyleId());
 		if(StringHelper.containsNonWhitespace(additionalText)) {
 			//add an "insecable" blank between the title and the additional text
 			Element blankRunEl = document.createElement("w:r");
@@ -205,6 +205,16 @@ public class OpenXMLDocument {
 			runsEl.add(addRunEl);
 		}
 
+		Element paragraphEl = createParagraphEl(styleEl, runsEl);
+		getCursor().appendChild(paragraphEl);
+	}
+	
+	public void appendSubtitle(String text) {
+		Element textEl = createTextEl(text);
+		List<Element> runsEl = new ArrayList<Element>(2);
+		Element runEl = createRunEl(Collections.singletonList(textEl), Heading.subSubtleEmphasis.runStyleId());
+		runsEl.add(runEl);
+		Element styleEl = createParagraphStyle(Heading.subSubtleEmphasis.styleId(), Heading.subSubtleEmphasis.runStyleId());
 		Element paragraphEl = createParagraphEl(styleEl, runsEl);
 		getCursor().appendChild(paragraphEl);
 	}
@@ -295,7 +305,7 @@ public class OpenXMLDocument {
 		}
 	}
 	
-	public void appendText(String text, boolean newParagraph, Style... styles) {
+	public void appendText(String text, boolean newParagraph, Style... textStyles) {
 		if(!StringHelper.containsNonWhitespace(text)) return;
 		
 		List<Element> textEls = new ArrayList<Element>();
@@ -311,8 +321,8 @@ public class OpenXMLDocument {
 		if(textEls.size() > 0) {
 			Element paragraphEl = getParagraphToAppendTo(newParagraph);
 			Element runEl = document.createElement("w:r");
-			if(styles != null && styles.length > 0) {
-				runEl.appendChild(createRunPrefsEl(styles));
+			if(textStyles != null && textStyles.length > 0) {
+				runEl.appendChild(createRunPrefsEl(textStyles));
 			}
 			for(Element textEl:textEls) {
 				runEl.appendChild(textEl);
@@ -372,6 +382,19 @@ public class OpenXMLDocument {
 		getCursor().appendChild(paragraphEl);
 	}
 	
+	public void appendHtmlText(String html, Spacing spacing) {
+		if(!StringHelper.containsNonWhitespace(html)) return;
+		try {
+			SAXParser parser = new SAXParser();
+			parser.setContentHandler(new HTMLToOpenXMLHandler(this, spacing));
+			parser.parse(new InputSource(new StringReader(html)));
+		} catch (SAXException e) {
+			log.error("", e);
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
+	
 	public void appendHtmlText(String html, boolean newParagraph) {
 		if(!StringHelper.containsNonWhitespace(html)) return;
 		try {
@@ -394,12 +417,20 @@ public class OpenXMLDocument {
 /*
 <w:pPr>
 	<w:pStyle w:val="berschrift1" />
+	<w:rPr>
+		<w:rStyle w:val="SchwacheHervorhebung" />
+	</w:rPr>
 </w:pPr>
  */
-	public Element createParagraphStyle(String styleId) {
+	public Element createParagraphStyle(String styleId, String runStyleId) {
 		Element paragraphEl = document.createElement("w:pPr");
 		Element styleEl = (Element)paragraphEl.appendChild(document.createElement("w:pStyle"));
 		styleEl.setAttribute("w:val", styleId);
+		if(StringHelper.containsNonWhitespace(runStyleId)) {
+			Element runPrefsEl = (Element)paragraphEl.appendChild(document.createElement("w:rPr"));
+			Element rStyleEl = (Element)runPrefsEl.appendChild(document.createElement("w:rStyle"));
+			rStyleEl.setAttribute("w:val", runStyleId);
+		}
 		return paragraphEl;
 	}
 	
@@ -426,8 +457,33 @@ public class OpenXMLDocument {
 		return paragraphEl;
 	}
 	
+	/*
+<w:pPr>
+	<w:spacing w:before="120" w:after="120" w:beforeAutospacing="0" w:afterAutospacing="0"/>
+</w:pPr>
+*/
+	public Element createParagraphEl(Spacing spacing) {
+		Element paragraphEl = document.createElement("w:p");
+		Element paragraphPrefsEl = (Element)paragraphEl.appendChild(document.createElement("w:pPr"));
+		Element spacingEl = (Element)paragraphPrefsEl.appendChild(document.createElement("w:spacing"));
+		spacingEl.setAttribute("w:before", Integer.toString(spacing.getBefore()));
+		spacingEl.setAttribute("w:after", Integer.toString(spacing.getAfter()));
+		spacingEl.setAttribute("w:beforeAutospacing", "0");
+		spacingEl.setAttribute("w:afterAutospacing", "0");
+		return paragraphEl;
+	}
+	
 	public Element createRunEl(Collection<? extends Node> textEls) {
+		return createRunEl(textEls, null);
+	}
+	
+	public Element createRunEl(Collection<? extends Node> textEls, String runStyleId) {
 		Element runEl = document.createElement("w:r");
+		if(StringHelper.containsNonWhitespace(runStyleId)) {
+			Element runPrefsEl = (Element)runEl.appendChild(document.createElement("w:rPr"));
+			Element rStyleEl = (Element)runPrefsEl.appendChild(document.createElement("w:rStyle"));
+			rStyleEl.setAttribute("w:val", runStyleId);
+		}
 		if(textEls != null && textEls.size() > 0) {
 			for(Node textEl:textEls) {
 				runEl.appendChild(textEl);
@@ -436,14 +492,14 @@ public class OpenXMLDocument {
 		return runEl;
 	}
 	
-	public Node createRunPrefsEl(Style... styles) {
+	public Node createRunPrefsEl(Style... runStyles) {
 		Element runPrefsEl = document.createElement("w:rPr");
-		return createRunPrefsEl(runPrefsEl, styles);
+		return createRunPrefsEl(runPrefsEl, runStyles);
 	}
 	
-	public Node createRunPrefsEl(Node runPrefsEl, Style... styles) {
-		if(styles != null && styles.length > 0) {
-			for(Style style:styles) {
+	public Node createRunPrefsEl(Node runPrefsEl, Style... prefsStyles) {
+		if(prefsStyles != null && prefsStyles.length > 0) {
+			for(Style style:prefsStyles) {
 				if(style != null) {
 					switch(style) {
 						case underline: {
@@ -461,9 +517,9 @@ public class OpenXMLDocument {
 		return runPrefsEl;
 	}
 	
-	public Node createRunReversePrefsEl(Node runPrefsEl, Style... styles) {
-		if(styles != null && styles.length > 0) {
-			for(Style style:styles) {
+	public Node createRunReversePrefsEl(Node runPrefsEl, Style... runStyles) {
+		if(runStyles != null && runStyles.length > 0) {
+			for(Style style:runStyles) {
 				if(style != null) {
 					switch(style) {
 						case underline:
@@ -837,6 +893,16 @@ public class OpenXMLDocument {
 		}
 		return mathEls;
 	}
+	
+	public void appendImage(File file) {
+		Element imgEl = createImageEl(file);
+		if(imgEl != null) {
+			Element runEl = createRunEl(Collections.singletonList(imgEl));
+			Element paragraphEl = getParagraphToAppendTo(true);
+			paragraphEl.appendChild(runEl);
+			getCursor().appendChild(paragraphEl);
+		}
+	}
 
 	public Element createImageEl(String path) {
 		if(mediaContainer == null) return null;
@@ -1061,9 +1127,8 @@ public class OpenXMLDocument {
 		return docEl;
 	}
 	
-	private final Element createBodyElement(Element rootElement, Document doc) {
-		Element bodyEl = (Element)rootElement.appendChild(doc.createElement("w:body"));
-		return bodyEl;
+	private final Element createBodyElement(Element rootEl, Document doc) {
+		return (Element)rootEl.appendChild(doc.createElement("w:body"));
 	}
 	
 	public enum Style {
@@ -1090,18 +1155,26 @@ public class OpenXMLDocument {
 	}
 	
 	public enum Heading {
-		title("ooTitle"),
-		heading1("ooHeading1"),
-		heading2("ooHeading2");
+		title("ooTitle", null),
+		heading1("ooHeading1", null),
+		heading2("ooHeading2", null),
+		subTitle("ooUntertitel", "ooUntertitelZeichen"),
+		subSubtleEmphasis("ooSubtleEmphasis", "ooSubtleEmphasisZeichen");
 		
 		private final String styleId;
+		private final String runStyleId;
 		
-		private Heading(String styleId) {
+		private Heading(String styleId, String runStyleId) {
 			this.styleId = styleId;
+			this.runStyleId = runStyleId;
 		}
 
 		public String styleId() {
 			return styleId;
+		}
+		
+		public String runStyleId() {
+			return runStyleId;
 		}
 	}
 	
@@ -1125,6 +1198,24 @@ public class OpenXMLDocument {
 		
 		public String getHeader() {
 			return header;
+		}
+	}
+	
+	public static class Spacing {
+		private final int before;
+		private final int after;
+		
+		public Spacing(int before, int after) {
+			this.before = before;
+			this.after = after;
+		}
+
+		public int getBefore() {
+			return before;
+		}
+
+		public int getAfter() {
+			return after;
 		}
 	}
 	

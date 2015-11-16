@@ -55,7 +55,7 @@ public abstract class NotificationsManager extends BasicManager {
 	 * 
 	 * @see org.olat.core.commons.services.notifications.NotificationsHandler and the corresponding code
 	 *      in such as
-	 * @see org.olat.modules.fo.ForumController where you add the subscription stuff
+	 * @see org.olat.modules.fo.ui.ForumController where you add the subscription stuff
 	 *      to the constructor and for the action that creates a new entry you have
 	 *      to inform the
 	 * @see org.olat.core.commons.services.notifications.manager.NotificationsManagerImpl#markPublisherNews(SubscriptionContext,

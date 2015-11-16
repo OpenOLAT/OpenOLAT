@@ -242,6 +242,26 @@
 					</bean>
 				</entry>
 				
+				<entry key="org.olat.modules.fo.ui.ForumUserListController">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+							</list>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set></set>						
+						</property>
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+							</set>
+						</property>
+					</bean>
+				</entry>
+				
 				<entry key="org.olat.group.ui.main.MemberInfoController">
 					<!-- First name and last name are already shown -->
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">

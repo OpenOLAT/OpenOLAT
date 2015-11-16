@@ -1,16 +1,9 @@
 <div class="o_forum_peekview clearfix">
 #foreach( $message in $messages ) 	
 	<div class="o_forum_peekview_message">
-		<h5>
-			$r.render("nodeLink_${message.getKey()}")
-			<small class="o_nowrap">
-				$r.escapeHtml($message.creator)
-				$formatter.formatDateAndTime($message.getCreationDate())
-			</small>
-		</h5>
-		<div>
-		$r.formatLatexFormulas($message.getBody())
-		</div>
+		<h5>$r.render("nodeLink_${message.getKey()}")
+			<small class="o_nowrap">$formatter.formatDateAndTime($message.getCreationDate())</small></h5>
+		<div>$r.formatLatexFormulas($message.getBody())</div>
 	</div>
 #end
 	$r.render("peekview.allItemsLink")

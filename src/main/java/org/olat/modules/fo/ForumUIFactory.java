@@ -35,6 +35,7 @@ import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.gui.control.generic.title.TitleInfo;
 import org.olat.core.gui.control.generic.title.TitledWrapperController;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.fo.ui.ForumController;
 
 
 /**

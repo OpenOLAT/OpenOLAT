@@ -60,9 +60,9 @@ import org.olat.fileresource.types.WikiResource;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.ForumNotificationsHandler;
 import org.olat.modules.fo.Message;
+import org.olat.modules.fo.manager.ForumManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 

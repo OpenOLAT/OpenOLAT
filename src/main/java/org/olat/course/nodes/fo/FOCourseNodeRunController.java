@@ -27,29 +27,20 @@ package org.olat.course.nodes.fo;
 
 import java.util.List;
 
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
-import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.core.gui.control.generic.docking.DockController;
-import org.olat.core.gui.control.generic.docking.DockLayoutControllerCreatorCallback;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.generic.title.TitledWrapperController;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.course.CourseFactory;
 import org.olat.course.nodes.FOCourseNode;
 import org.olat.course.nodes.TitledWrapperHelper;
-import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
-import org.olat.modules.fo.ForumUIFactory;
+import org.olat.modules.fo.ui.ForumController;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -60,11 +51,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class FOCourseNodeRunController extends BasicController implements Activateable2 {
 
-	private DockController dockC;
-	private FOCourseNode courseNode;
-	private CourseEnvironment courseEnv;
-	private Forum forum;
-	private ForumCallback foCallback;
+	private final ForumController forumCtrl;
 
 	/**
 	 * Constructor for a forum course building block runtime controller
@@ -76,50 +63,23 @@ public class FOCourseNodeRunController extends BasicController implements Activa
 	 * @param foCallback The forum security callback
 	 * @param foCourseNode The current course node
 	 */
-	public FOCourseNodeRunController(UserRequest ureq, UserCourseEnvironment userCourseEnv, WindowControl wControl, Forum forum,
-			ForumCallback foCallback, FOCourseNode foCourseNode) {
+	public FOCourseNodeRunController(UserRequest ureq, WindowControl wControl, Forum forum,
+			ForumCallback foCallback, FOCourseNode courseNode) {
 		super(ureq, wControl);
-		this.courseNode = foCourseNode;
-		this.courseEnv = userCourseEnv.getCourseEnvironment();
-		this.forum = forum;
-		this.foCallback = foCallback;
-		// set logger on this run controller
-		addLoggingResourceable(LoggingResourceable.wrap(foCourseNode));
 
-		doLaunch(ureq);
+		// set logger on this run controller
+		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
+		
+		forumCtrl = new ForumController(ureq, getWindowControl(), forum, foCallback, true);
+		listenTo(forumCtrl);
+		Controller titledCtrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), forumCtrl, courseNode, "o_fo_icon");
+		listenTo(titledCtrl);
+		putInitialPanel(titledCtrl.getInitialComponent());
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// nothing to do
-	}
-
-	private void doLaunch(UserRequest ureq) {
-		dockC = new DockController(ureq, getWindowControl(), false, new ControllerCreator(){
-			public Controller createController(UserRequest lureq, WindowControl lwControl) {
-				Controller foCtr = ForumUIFactory.getStandardForumController(lureq, lwControl, forum, foCallback);
-				listenTo(foCtr);
-				Controller titledCtrl = TitledWrapperHelper.getWrapper(lureq, lwControl, foCtr, courseNode, "o_fo_icon");
-				listenTo(titledCtrl);
-				return titledCtrl;
-			}}, 
-			new DockLayoutControllerCreatorCallback() {
-				public ControllerCreator createLayoutControllerCreator(UserRequest ureq, final ControllerCreator contentControllerCreator) {
-					return BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, new ControllerCreator() {
-						@SuppressWarnings("synthetic-access")
-						public Controller createController(UserRequest lureq, WindowControl lwControl) {
-							// Wrap in column layout, popup window needs a layout controller
-							Controller ctr = contentControllerCreator.createController(lureq, lwControl);
-							LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, ctr);
-							layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), courseEnv));
-							layoutCtr.addDisposableChildController(ctr);
-							return layoutCtr;
-						}
-					});
-				}
-			});
-		listenTo(dockC);
-		putInitialPanel(dockC.getInitialComponent());
 	}
 
 	@Override
@@ -129,12 +89,6 @@ public class FOCourseNodeRunController extends BasicController implements Activa
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(dockC != null && dockC.getController() instanceof TitledWrapperController) {
-			TitledWrapperController wrapper2 = (TitledWrapperController)dockC.getController();
-			if(wrapper2.getContentController() instanceof Activateable2) {
-				((Activateable2)wrapper2.getContentController()).activate(ureq, entries, state);
-			}
-		}
+		forumCtrl.activate(ureq, entries, state);
 	}
-
 }

@@ -90,8 +90,8 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.fo.Forum;
-import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
+import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.fo.restapi.ForumVO;
 import org.olat.modules.fo.restapi.ForumVOes;
 import org.olat.modules.fo.restapi.MessageVOes;
@@ -219,10 +219,10 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		CollaborationTools g1CTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(g1);
 		g1CTSMngr.setToolEnabled(CollaborationTools.TOOL_FORUM, true);
 		Forum g1Forum = g1CTSMngr.getForum();//create the forum
-		Message m1 = ForumManager.getInstance().createMessage();
+		Message m1 = ForumManager.getInstance().createMessage(g1Forum, id1, false);
 		m1.setTitle("Thread-1");
 		m1.setBody("Body of Thread-1");
-		ForumManager.getInstance().addTopMessage(id1, g1Forum, m1);
+		ForumManager.getInstance().addTopMessage(m1);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -255,10 +255,10 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 					if(demoForumNode == null) {
 						demoForumNode = (FOCourseNode)node;
 						Forum courseForum = demoForumNode.loadOrCreateForum(demoCourse.getCourseEnvironment());
-						Message message1 = ForumManager.getInstance().createMessage();
+						Message message1 = ForumManager.getInstance().createMessage(courseForum, id1, false);
 						message1.setTitle("Thread-1");
 						message1.setBody("Body of Thread-1");
-						ForumManager.getInstance().addTopMessage(id1, courseForum, message1);
+						ForumManager.getInstance().addTopMessage(message1);
 					}	
 				} else if (node instanceof BCCourseNode) {
 					if(demoBCCourseNode == null) {

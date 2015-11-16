@@ -120,6 +120,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private final WindowControl wControl;
 	
 	private String wrapperSelector;
+	private FlexiTableRowCssDelegate rowCssDelegate;
 
 	private SortKey[] orderBy;
 	private FlexiTableSortOptions sortOptions;
@@ -292,6 +293,14 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public void setWrapperSelector(String wrapperSelector) {
 		this.wrapperSelector = wrapperSelector;
+	}
+
+	public FlexiTableRowCssDelegate getRowCssDelegate() {
+		return rowCssDelegate;
+	}
+
+	public void setRowCssDelegate(FlexiTableRowCssDelegate rowCssDelegate) {
+		this.rowCssDelegate = rowCssDelegate;
 	}
 
 	@Override

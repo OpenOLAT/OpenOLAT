@@ -66,7 +66,7 @@ import org.olat.modules.dialog.DialogElementsPropertyManager;
 import org.olat.modules.dialog.DialogElementsTableModel;
 import org.olat.modules.dialog.DialogPropertyElements;
 import org.olat.modules.fo.Forum;
-import org.olat.modules.fo.ForumManager;
+import org.olat.modules.fo.manager.ForumManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**

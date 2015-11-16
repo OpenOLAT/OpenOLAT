@@ -25,7 +25,9 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.OpenXMLDocument.ListParagraph;
+import org.olat.core.util.openxml.OpenXMLDocument.Spacing;
 import org.olat.core.util.openxml.OpenXMLDocument.Style;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -45,6 +47,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 
 	private boolean latex = false;
 	private StringBuilder textBuffer;
+	private Spacing startSpacing;
 	
 	private final OpenXMLDocument factory;
 	
@@ -60,6 +63,11 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		this.currentParagraph = paragraph;
 	}
 	
+	public HTMLToOpenXMLHandler(OpenXMLDocument document, Spacing spacing) {
+		this.factory = document;
+		this.startSpacing = spacing;
+	}
+	
 	/**
 	 * Flush the text if a new paragraph is created. Trailing text is flushed
 	 * in the previous paragraph.
@@ -73,8 +81,24 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 				flushText();
 				addContent(currentParagraph);
 			}
-			currentParagraph = factory.createParagraphEl();
+			if(startSpacing == null) {
+				currentParagraph = factory.createParagraphEl();
+			} else {
+				currentParagraph = factory.createParagraphEl(startSpacing);
+				startSpacing = null;//consumed
+			}
 		}
+		return currentParagraph;
+	}
+	
+	private Element appendParagraph(Spacing spacing) {
+		//flush the text
+		if(textBuffer != null) {
+			flushText();
+			addContent(currentParagraph);
+		}
+
+		currentParagraph = factory.createParagraphEl(spacing);
 		return currentParagraph;
 	}
 	
@@ -122,12 +146,12 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			}
 		} else {
 			Element currentRun = getCurrentRun();
-			String content = textBuffer.toString();
-			if(content.length() > 0 && Character.isSpaceChar(content.charAt(0))) {
+			String text = textBuffer.toString();
+			if(text.length() > 0 && Character.isSpaceChar(text.charAt(0))) {
 				currentRun.appendChild(factory.createPreserveSpaceEl());
 			}
-			currentRun.appendChild(factory.createTextEl(content));
-			if(content.length() > 1 && Character.isSpaceChar(content.charAt(content.length() - 1))) {
+			currentRun.appendChild(factory.createTextEl(text));
+			if(text.length() > 1 && Character.isSpaceChar(text.charAt(text.length() - 1))) {
 				currentRun.appendChild(factory.createPreserveSpaceEl());
 			}
 		}
@@ -269,6 +293,25 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			currentListParagraph = factory.createListParagraph();
 		} else if("li".equals(tag)) {
 			getCurrentListParagraph(true);
+		} else if("div".equals(tag)) {
+			String cl = attributes.getValue("class");
+			if(StringHelper.containsNonWhitespace(cl)) {
+				if(cl.contains("o_quote_author")) {
+					appendParagraph(new Spacing(180, 0));
+					Style[] styles = setTextPreferences(Style.italic);
+					styleStack.add(new StyleStatus(tag, styles));
+				} else if(cl.contains("o_quote_wrapper")) {
+					//
+				} else if(cl.contains("o_quote")) {
+					appendParagraph(new Spacing(120, 0));
+					Style[] styles = setTextPreferences(Style.italic);
+					styleStack.add(new StyleStatus(tag, styles));
+				} else {
+					styleStack.add(new StyleStatus(tag, new Style[0]));
+				}
+			} else {
+				styleStack.add(new StyleStatus(tag, new Style[0]));
+			}
 		}
 	}
 
@@ -319,6 +362,8 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			currentListParagraph = null;
 		} else if("li".equals(tag)) {
 			//do nothing
+		} else if("div".equals(tag)) {
+			popStyle(tag);
 		}
 	}
 	

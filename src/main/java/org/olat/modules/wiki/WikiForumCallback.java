@@ -49,6 +49,11 @@ public class WikiForumCallback implements ForumCallback {
 	}
 
 	@Override
+	public boolean mayUsePseudonym() {
+		return false;
+	}
+
+	@Override
 	public boolean mayOpenNewThread() {
 		return !isGuestOnly ;
 	}

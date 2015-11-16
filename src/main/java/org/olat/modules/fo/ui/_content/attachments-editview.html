@@ -1,0 +1,14 @@
+#if($attachments && $attachments.size() > 0)
+$r.translate("attachments")
+<table class="table table-condensed  table-striped"><tbody>		
+	#foreach ($attachment in $attachments)
+		#set( $fname = $attachment.getName() )
+		<tr>
+			<td style="width:1%"><i class="o_icon o_icon-fw $r.getFiletypeIconCss($fname)"> </i></td>
+			<td>$r.escapeHtml($fname)</td>
+			<td>$r.formatBytes($attachment.getSize())</td>
+			<td style="width:1%">$r.render("delete.attachment.$velocityCount")</td>
+		</tr>
+	#end
+</tbody></table>
+#end
