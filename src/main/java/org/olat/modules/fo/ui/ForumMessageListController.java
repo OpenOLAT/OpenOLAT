@@ -20,7 +20,11 @@
 package org.olat.modules.fo.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +50,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.MessageLight;
+import org.olat.modules.fo.Status;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.fo.ui.ForumMessageDataModel.ForumMessageCols;
 import org.olat.modules.fo.ui.events.SelectMessageEvent;
@@ -128,40 +133,29 @@ public class ForumMessageListController extends FormBasicController implements F
 			keyToViews.put(view.getKey(), view);
 		}
 
-		//TODO forum: implement a reorder method which works on threads and parent line
-		/*calculate depth
-		
+		//calculate depth
+		Map<Long, List<Long>> keyToParentline = new HashMap<>();
 		for(MessageLightView view:views) {
 			if(view.getParentKey() == null) {
 				view.setDepth(0);
 			} else {
+				List<Long> parentLine = new ArrayList<>(5);
 				view.setDepth(1);
 				for(MessageLightView parent = keyToViews.get(view.getParentKey()); parent != null; parent = keyToViews.get(parent.getParentKey())) {
 					view.setDepth(view.getDepth() + 1);
+					parentLine.add(parent.getKey());
 				}
+				keyToParentline.put(view.getKey(), parentLine);
 			}
 		}
 		
 		//order
-		 */
-
-		dataModel.setObjects(views);
+		List<MessageNode> threads = convertToThreadTrees(views);
+		Collections.sort(threads, new MessageNodeComparator());
+		List<MessageLightView> orderedViews = new ArrayList<>(allMessages.size());
+		flatTree(threads, orderedViews);
+		dataModel.setObjects(orderedViews);
 	}
-	/*
-	private class MessageComparator implements Comparator<MessageLightView> {
-
-		@Override
-		public int compare(MessageLightView v1, MessageLightView v2) {
-			Long tt1 = v1.getThreadtopKey() == null ? v1.getKey() : v1.getThreadtopKey();
-			Long tt2 = v2.getThreadtopKey() == null ? v2.getKey() : v2.getThreadtopKey();
-			int c = Long.compare(tt1.longValue(), tt2.longValue());
-			if(c == 0) {
-				
-			}
-			return c;
-		}
-	}
-	*/
 	
 	public void loadMessages(List<MessageLightView> views) {
 		dataModel.setObjects(views);
@@ -228,5 +222,96 @@ public class ForumMessageListController extends FormBasicController implements F
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void flatTree(List<MessageNode> nodes, List<MessageLightView> orderedViews) {
+		for(MessageNode node:nodes) {
+			orderedViews.add(node.getView());
+			if(node.hasChildren()) {
+				flatTree(node.getChildren(), orderedViews);
+			}
+		}
+	}
+	
+	private List<MessageNode> convertToThreadTrees(List<MessageLightView> messages){
+		List<MessageNode> topNodeList = new ArrayList<>();
+	
+		for (Iterator<MessageLightView> iterTop = messages.iterator(); iterTop.hasNext();) {
+			MessageLightView msg = iterTop.next();
+			if (msg.getParentKey() == null) {
+				iterTop.remove();
+				MessageNode topNode = new MessageNode(msg);
+				addChildren(messages, topNode);
+				topNodeList.add(topNode);
+			}
+		}	
+		return topNodeList;
+	}
+	
+	private void addChildren(List<MessageLightView> messages, MessageNode mn){
+		for(Iterator<MessageLightView> iterMsg = messages.iterator(); iterMsg.hasNext(); ) {
+			MessageLightView msg = iterMsg.next();
+			if ((msg.getParentKey() != null) && (msg.getParentKey().equals(mn.getKey()))){
+				MessageNode childNode = new MessageNode(msg);
+				mn.addChild(childNode);
+				addChildren(messages, childNode);
+			}
+		}
+	}
+	
+	private static class MessageNode {
+		
+		private final MessageLightView view;
+		private List<MessageNode> children;
+		
+		public MessageNode(MessageLightView view) {
+			this.view = view;
+		}
+		
+		public Long getKey() {
+			return view.getKey();
+		}
+		
+		public boolean isSticky() {
+			return Status.getStatus(view.getStatusCode()).isSticky();
+		}
+		
+		public Date getLastModified() {
+			return view.getLastModified();
+		}
+		
+		public MessageLightView getView() {
+			return view;
+		}
+		
+		public boolean hasChildren() {
+			return children != null && children.size() > 0;
+		}
+		
+		public void addChild(MessageNode child) {
+			if(children == null) {
+				children = new ArrayList<>();
+			}
+			children.add(child);
+		}
+		
+		public List<MessageNode> getChildren() {
+			return children;
+		}
+	}
+	
+	public static class MessageNodeComparator implements Comparator<MessageNode> {
+		@Override
+		public int compare(final MessageNode m1, final MessageNode m2) {			
+			if(m1.isSticky() && m2.isSticky()) {
+				return m2.getLastModified().compareTo(m1.getLastModified()); //last first
+			} else if(m1.isSticky()) {
+				return -1;
+			} else if(m2.isSticky()){
+				return 1;
+			} else {
+				return m2.getLastModified().compareTo(m1.getLastModified()); //last first
+			}				
+		}
 	}
 }

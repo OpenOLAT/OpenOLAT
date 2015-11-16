@@ -28,6 +28,7 @@ package org.olat.core.gui.components.form.flexible.elements;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
@@ -234,6 +235,12 @@ public interface FlexiTableElement extends FormItem {
 	 * @param sorts
 	 */
 	public void setSortSettings(FlexiTableSortOptions options);
+	
+	/**
+	 * Return the current sorting if any.
+	 * @return
+	 */
+	public SortKey[] getOrderBy();
 	
 	/**
 	 * Enable export

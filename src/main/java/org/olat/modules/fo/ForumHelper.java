@@ -28,7 +28,6 @@ package org.olat.modules.fo;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Comparator;
 import java.util.Date;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -36,7 +35,6 @@ import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
-import org.olat.modules.fo.archiver.MessageNode;
 
 /**
  * 
@@ -64,34 +62,5 @@ public class ForumHelper {
 		}
 		container = (VFSContainer) vfsItem;
 		return container;
-	}
-	
-
-	/**
-	 * Comparators can be passed to a sort method (such as Collections.sort) 
-	 * to allow precise control over the sort order.  
-	 * <p>
-	 * Sticky threads first, last modified first.
-	 * 
-	 * @return a MessageNode comparator.
-	 * @see java.util.Comparator 
-	 */
-	public static Comparator<MessageNode> getMessageNodeComparator() {
-		return new MessageNodeComparator();
-	}
-	
-	private static class MessageNodeComparator implements Comparator<MessageNode> {
-		@Override
-		public int compare(final MessageNode m1, final MessageNode m2) {			
-			if(m1.isSticky() && m2.isSticky()) {
-				return m2.getModifiedDate().compareTo(m1.getModifiedDate()); //last first
-			} else if(m1.isSticky()) {
-				return -1;
-			} else if(m2.isSticky()){
-				return 1;
-			} else {
-				return m2.getModifiedDate().compareTo(m1.getModifiedDate()); //last first
-			}				
-		}
 	}
 }
