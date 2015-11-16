@@ -31,7 +31,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -203,7 +202,7 @@ public class ForumManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 	}
 	
-	@Ignore @Test
+	@Test
 	public void testDeleteForum() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-7");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-8");

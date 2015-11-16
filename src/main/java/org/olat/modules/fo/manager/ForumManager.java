@@ -595,18 +595,22 @@ public class ForumManager {
 			.setParameter("forumKey", forumKey)
 			.executeUpdate();
 		// delete messages
-		//TODO forum
-		/*
-		String deleteMessages = "delete from fomessage as msg where msg.forum.key=:forumKey";
-		dbInstance.getCurrentEntityManager().createQuery(deleteMessages)
-			.setParameter("forumKey", forumKey)
-			.executeUpdate();
+		String messagesToDelete = "select msg from fomessage as msg where msg.forum.key=:forumKey and msg.threadtop.key is null";
+		List<Message> threadsToDelete = dbInstance.getCurrentEntityManager()
+					.createQuery(messagesToDelete, Message.class)
+					.setParameter("forumKey", forumKey)
+					.getResultList();
+		for(Message threadToDelete:threadsToDelete) {
+			deleteMessageTree(forumKey, threadToDelete);
+			dbInstance.getCurrentEntityManager().remove(threadToDelete);
+		}
+		dbInstance.commit();
+		
 		// delete forum
 		String deleteForum = "delete from forum as fo where fo.key=:forumKey";
 		dbInstance.getCurrentEntityManager().createQuery(deleteForum)
 			.setParameter("forumKey", forumKey)
 			.executeUpdate();
-		*/
 		//delete all flags
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Forum.class, forum.getKey());
 		markingService.getMarkManager().deleteMarks(ores);
