@@ -595,6 +595,8 @@ public class ForumManager {
 			.setParameter("forumKey", forumKey)
 			.executeUpdate();
 		// delete messages
+		//TODO forum
+		/*
 		String deleteMessages = "delete from fomessage as msg where msg.forum.key=:forumKey";
 		dbInstance.getCurrentEntityManager().createQuery(deleteMessages)
 			.setParameter("forumKey", forumKey)
@@ -604,6 +606,7 @@ public class ForumManager {
 		dbInstance.getCurrentEntityManager().createQuery(deleteForum)
 			.setParameter("forumKey", forumKey)
 			.executeUpdate();
+		*/
 		//delete all flags
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Forum.class, forum.getKey());
 		markingService.getMarkManager().deleteMarks(ores);
