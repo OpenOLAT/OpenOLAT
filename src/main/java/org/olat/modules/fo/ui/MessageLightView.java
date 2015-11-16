@@ -46,7 +46,7 @@ public class MessageLightView extends UserPropertiesRow implements MessageRef {
 	private final boolean guest;
 	private final String pseudonym;
 
-	private Long threadtopKey;
+	private final Long threadtopKey;
 
 	private int depth;
 	private int numOfChildren = 0;
@@ -60,7 +60,7 @@ public class MessageLightView extends UserPropertiesRow implements MessageRef {
 		pseudonym = message.getPseudonym();
 		lastModified = message.getLastModified();
 		parentKey = message.getParentKey();
-		threadtopKey = message.getThreadtop().getKey();
+		threadtopKey = message.getThreadtop() == null ? null : message.getThreadtop().getKey();
 	}
 	
 	@Override
