@@ -64,6 +64,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -98,7 +99,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MessageListController extends BasicController {
+public class MessageListController extends BasicController implements GenericEventListener {
 
 	protected static final String USER_PROPS_ID = ForumUserListController.class.getCanonicalName();
 	
@@ -116,6 +117,7 @@ public class MessageListController extends BasicController {
 	private ForumMessageListController moveCtrl, messageTableCtrl;
 	
 	private Message thread;
+	private boolean reloadList;
 	
 	private final Forum forum;
 	private final boolean guestOnly;
@@ -166,6 +168,14 @@ public class MessageListController extends BasicController {
 		
 		putInitialPanel(mainVC);
 		initButtons();
+		
+		// Register for forum events
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), forum);
+	}
+	
+	@Override
+	protected void doDispose() {
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, forum);
 	}
 	
 	private void initButtons() {
@@ -240,6 +250,7 @@ public class MessageListController extends BasicController {
 	}
 	
 	private void reloadModel(UserRequest ureq, Message message) {
+		reloadList = false;
 		if(loadMode == LoadMode.thread) {
 			loadThread(ureq, thread);
 			scrollTo(message);
@@ -602,8 +613,18 @@ public class MessageListController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
+	public void event(Event event) {
+		if(event instanceof ForumChangedEvent) {
+			ForumChangedEvent fce = (ForumChangedEvent)event;
+			if(ForumChangedEvent.CHANGED_MESSAGE.equals(fce.getCommand()) || ForumChangedEvent.NEW_MESSAGE.equals(fce.getCommand())) {
+				Long threadtopKey = fce.getThreadtopKey();
+				Long senderId = fce.getSendByIdentityKey();
+				if(thread != null && threadtopKey != null && thread.getKey().equals(threadtopKey)
+						&& (senderId == null || !senderId.equals(getIdentity().getKey()))) {
+					reloadList = true;
+				}
+			}
+		}
 	}
 
 	@Override
@@ -621,11 +642,11 @@ public class MessageListController extends BasicController {
 		} else if (showThreadButton == source) {
 			doShowThread();
 		} else if (allButton == source) {
-			doShowAll();
+			doShowAll(ureq);
 		} else if (allFlatButton == source) {
-			doShowAllFlat();
+			doShowAllFlat(ureq);
 		}  else if (oneButton == source) {
-			doShowOne();
+			doShowOne(ureq);
 		}  else if (markedButton == source) {
 			doShowMarked();		
 		}  else if (newButton == source) {
@@ -913,7 +934,7 @@ public class MessageListController extends BasicController {
 		removeStickyButton.setVisible(status.isSticky() && foCallback.mayEditMessageAsModerator());
 		mainVC.setDirty(true);
 		
-		ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.STICKY, thread.getKey(), null);
+		ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.STICKY, thread.getKey(), null, getIdentity());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, forumOres);	
 		ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_MESSAGE_EDIT, getClass(), LoggingResourceable.wrap(thread));
 	}
@@ -937,7 +958,7 @@ public class MessageListController extends BasicController {
 			openThreadButton.setVisible(true && !guestOnly);
 			mainVC.setDirty(true);
 			
-			ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.CLOSE, thread.getKey(), null);
+			ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.CLOSE, thread.getKey(), null, getIdentity());
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, forumOres);	
 			ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_THREAD_CLOSE, getClass(), LoggingResourceable.wrap(thread));
 		}
@@ -956,7 +977,7 @@ public class MessageListController extends BasicController {
 			openThreadButton.setVisible(false);
 			mainVC.setDirty(true);
 
-			ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.OPEN, thread.getKey(), null);
+			ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.OPEN, thread.getKey(), null, getIdentity());
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, forumOres);	
 			ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_THREAD_REOPEN, getClass(), LoggingResourceable.wrap(thread));
 		}
@@ -981,7 +1002,7 @@ public class MessageListController extends BasicController {
 			showThreadButton.setVisible(true && !guestOnly);
 			mainVC.setDirty(true);
 
-			ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.HIDE, thread.getKey(), null);
+			ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.HIDE, thread.getKey(), null, getIdentity());
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, forumOres);	
 			ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_THREAD_HIDE, getClass(), LoggingResourceable.wrap(thread));
 		}
@@ -1006,27 +1027,36 @@ public class MessageListController extends BasicController {
 			showThreadButton.setVisible(false);
 			mainVC.setDirty(true);
 
-			ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.SHOW, thread.getKey(), null);
+			ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.SHOW, thread.getKey(), null, getIdentity());
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, forumOres);	
 			ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_THREAD_SHOW, getClass(), LoggingResourceable.wrap(thread));
 		}
 	}
 	
-	private void doShowAll() {
+	private void doShowAll(UserRequest ureq) {
+		if(reloadList) {
+			reloadModel(ureq, null);
+		}
 		updateButtons(allButton);
 		mainVC.contextPut("threadMode", Boolean.TRUE);
 		mainVC.contextPut("messages", backupViews);
 		mainVC.contextRemove("mode");
 	}
 	
-	private void doShowAllFlat() {
+	private void doShowAllFlat(UserRequest ureq) {
+		if(reloadList) {
+			reloadModel(ureq, null);
+		}
 		updateButtons(allFlatButton);
 		mainVC.contextPut("threadMode", Boolean.FALSE);
 		mainVC.contextPut("messages", backupViews);
 		mainVC.contextRemove("mode");
 	}
 	
-	private void doShowOne() {
+	private void doShowOne(UserRequest ureq) {
+		if(reloadList) {
+			reloadModel(ureq, null);
+		}
 		updateButtons(oneButton);
 		mainVC.contextPut("mode", "one");
 		mainVC.contextPut("threadMode", Boolean.FALSE);

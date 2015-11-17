@@ -64,8 +64,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.8</targetJdk>
-		<org.springframework.version>3.2.14.RELEASE</org.springframework.version>
-		<org.hibernate.version>4.3.10.Final</org.hibernate.version>
+		<org.springframework.version>3.2.15.RELEASE</org.springframework.version>
+		<org.hibernate.version>4.3.11.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.17.1</com.sun.jersey.version>
 		<jackson.version>1.9.2</jackson.version>
 		<org.mysql.version>5.1.36</org.mysql.version>
@@ -1766,17 +1766,17 @@
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi</artifactId>
-			<version>3.12</version>
+			<version>3.13</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-scratchpad</artifactId>
-			<version>3.12</version>
+			<version>3.13</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
-			<version>1.8.9</version>
+			<version>1.8.10</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>

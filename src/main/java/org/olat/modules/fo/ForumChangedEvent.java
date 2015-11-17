@@ -24,6 +24,7 @@
 */
 package org.olat.modules.fo;
 
+import org.olat.core.id.Identity;
 import org.olat.core.util.event.MultiUserEvent;
 
 /**
@@ -47,14 +48,20 @@ public class ForumChangedEvent extends MultiUserEvent {
 	public static final String SHOW = "show";
 	public static final String NEW = "new";
 	public static final String STICKY = "sticky";
+	public static final String NEW_MESSAGE = "new-message";
+	public static final String CHANGED_MESSAGE = "changed-message";
 	
 	private Long threadtopKey;
 	private Long messageKey;
+	private Long sendByIdentityKey;
 
-	public ForumChangedEvent(String command, Long threadtopKey, Long messageKey) {
+	public ForumChangedEvent(String command, Long threadtopKey, Long messageKey, Identity sendByIdentity) {
 		super(command);	
 		this.threadtopKey = threadtopKey;
 		this.messageKey = messageKey;
+		if(sendByIdentity != null) {
+			this.sendByIdentityKey = sendByIdentity.getKey();
+		}
 	}
 
 	public Long getThreadtopKey() {
@@ -63,5 +70,13 @@ public class ForumChangedEvent extends MultiUserEvent {
 
 	public Long getMessageKey() {
 		return messageKey;
+	}
+
+	public Long getSendByIdentityKey() {
+		return sendByIdentityKey;
+	}
+
+	public void setSendByIdentityKey(Long sendByIdentityKey) {
+		this.sendByIdentityKey = sendByIdentityKey;
 	}
 }

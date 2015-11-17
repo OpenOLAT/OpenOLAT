@@ -7,9 +7,9 @@
 		#if ($title)
 			<h4>$!title</h4>
 		#end
+		#if($off_chelp_url) $r.contextHelpWithWrapper("$off_chelp_url") #end
 	</div>
-	<div class="modal-body $!cssClass">	
-		#if($off_chelp_url) $r.contextHelpWithWrapper("$off_chelp_url") #end	
+	<div class="modal-body $!cssClass">
 		$r.render("guimessage")
 		$r.render("modalContent")
 	</div>

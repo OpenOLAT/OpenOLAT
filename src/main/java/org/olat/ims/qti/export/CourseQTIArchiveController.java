@@ -119,6 +119,7 @@ public class CourseQTIArchiveController extends BasicController {
 		listenTo(qawc);
 		String title = qawc.getAndRemoveWizardTitle();
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), qawc.getInitialComponent(), true, title);
+		cmc.setContextHelp(getTranslator(), "Archiving Results of Tests and Questionnaires");
 		cmc.activate();
 	}
 	

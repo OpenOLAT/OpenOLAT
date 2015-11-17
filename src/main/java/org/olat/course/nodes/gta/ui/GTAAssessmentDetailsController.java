@@ -160,14 +160,14 @@ public class GTAAssessmentDetailsController extends BasicController {
 	
 	private void doSelectBusinessGroup(UserRequest ureq, BusinessGroup group) {
 		removeAsListenerAndDispose(coachingCtrl);
-		coachingCtrl = new GTACoachController(ureq, getWindowControl(), courseEnv, gtaNode, group, true, true);
+		coachingCtrl = new GTACoachController(ureq, getWindowControl(), courseEnv, gtaNode, group, true, true, true);
 		listenTo(coachingCtrl);
 		mainVC.put("selection", coachingCtrl.getInitialComponent());
 	}
 	
 	private void doSelectParticipant(UserRequest ureq, Identity identity) {
 		removeAsListenerAndDispose(coachingCtrl);
-		coachingCtrl = new GTACoachController(ureq, getWindowControl(), courseEnv, gtaNode, identity, false, false);
+		coachingCtrl = new GTACoachController(ureq, getWindowControl(), courseEnv, gtaNode, identity, false, false, true);
 		listenTo(coachingCtrl);
 		mainVC.put("selection", coachingCtrl.getInitialComponent());
 	}

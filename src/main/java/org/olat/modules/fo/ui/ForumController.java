@@ -191,7 +191,7 @@ public class ForumController extends BasicController implements GenericEventList
 			if(fce.getMessageKey() == null) {
 				reloadThreadList = true;
 			}
-		}		
+		}
 	}
 
 	@Override

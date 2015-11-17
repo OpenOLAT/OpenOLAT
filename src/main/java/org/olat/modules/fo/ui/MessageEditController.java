@@ -31,6 +31,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -384,17 +385,18 @@ public class MessageEditController extends FormBasicController {
 		} else if(message.getCreator() != null && message.getCreator().equals(getIdentity())) {
 			message.setPseudonym(null);
 		}
-		
+
 		if(editMode == EditMode.newThread) {
 			if(foCallback.mayOpenNewThread()) {
 				// save a new thread
 				fm.addTopMessage(message);
 				fm.markAsRead(getIdentity(), forum, message);
 				// if notification is enabled -> notify the publisher about news
-				
 				notifiySubscription();
 				addLoggingResourceable(LoggingResourceable.wrap(message));
-				ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.NEW, message.getKey(), null);
+				//commit before sending events
+				DBFactory.getInstance().commit();
+				ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.NEW_MESSAGE, message.getKey(), message.getKey(), getIdentity());
 				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, forum);	
 				ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_MESSAGE_CREATE, getClass());
 			} else {
@@ -407,8 +409,12 @@ public class MessageEditController extends FormBasicController {
 				message.setModifier(getIdentity());	
 				message = fm.updateMessage(message, true);
 				persistTempUploadedFiles(message);
-				
 				notifiySubscription();
+				//commit before sending events
+				DBFactory.getInstance().commit();
+				Long threadTopKey = message.getThreadtop() == null ? null : message.getThreadtop().getKey();
+				ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.CHANGED_MESSAGE, threadTopKey, message.getKey(), getIdentity());
+				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, forum);
 				ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_MESSAGE_EDIT, getClass(),
 						LoggingResourceable.wrap(message));
 			} else {
@@ -418,8 +424,12 @@ public class MessageEditController extends FormBasicController {
 			fm.replyToMessage(message, parentMessage);
 			fm.markAsRead(getIdentity(), forum, message);
 			persistTempUploadedFiles(message);
-			
 			notifiySubscription();
+			//commit before sending events
+			DBFactory.getInstance().commit();
+			Long threadTopKey = message.getThreadtop() == null ? null : message.getThreadtop().getKey();
+			ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.NEW_MESSAGE, threadTopKey, message.getKey(), getIdentity());
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, forum);	
 			ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_REPLY_MESSAGE_CREATE, getClass(),
 					LoggingResourceable.wrap(message));
 		}

@@ -1,4 +1,6 @@
-$r.render("contextualSubscription")
+#if($r.available("contextualSubscription"))
+	<div class="clearfix">$r.render("contextualSubscription")</div>
+#end
 
 #if($groupName && !$groupName.isEmpty())
 	<h4>

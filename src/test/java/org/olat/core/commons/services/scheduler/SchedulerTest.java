@@ -26,17 +26,18 @@
 package org.olat.core.commons.services.scheduler;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 
 import org.junit.Test;
-import org.olat.test.MockServletContextWebContextLoader;
-import org.springframework.scheduling.quartz.JobDetailBean;
+import org.olat.test.OlatTestCase;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.quartz.SimpleTriggerBean;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 /**
  * Description:<br>
@@ -44,17 +45,26 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
  * Initial Date: 03.03.2008 <br>
  * 
  * @author guido
- */
-@ContextConfiguration(loader = MockServletContextWebContextLoader.class, locations = {
-	"classpath:org/olat/core/commons/services/scheduler/scheduler.xml"})
-	
-public class SchedulerTest extends AbstractJUnit4SpringContextTests {
+ */	
+public class SchedulerTest extends OlatTestCase {
 
-	@Test public void testSimpleTrigger() {
-		JobDetailBean job = (JobDetailBean)applicationContext.getBean("schedulerTestJobSimple");
-		assertNotNull(job);
-		SimpleTriggerBean trigger = (SimpleTriggerBean) applicationContext.getBean("schedulerTestJobSimpleTrigger");
-		
+	@Autowired
+	private Scheduler scheduler;
+	
+	@Test
+	public void testSimpleTrigger() throws SchedulerException, ParseException {
+		JobDetail job = new JobDetail("schedulerTestJobSimpleTrigger", Scheduler.DEFAULT_GROUP, SchedulerTestJob.class);
+		SimpleTriggerBean trigger = new SimpleTriggerBean();
+		trigger.setName("Test scheduler trigger");
+		trigger.setStartDelay(0);
+		trigger.setRepeatInterval(1000);
+		trigger.setRepeatCount(10);
+		trigger.setJobDetail(job);
+		trigger.afterPropertiesSet();
+		// Schedule job now
+		scheduler.scheduleJob(job, trigger);
+
+		//check next time
 		Calendar cal = Calendar.getInstance();
 		Date start = cal.getTime();
 		cal.add(Calendar.SECOND, 5);
@@ -62,5 +72,4 @@ public class SchedulerTest extends AbstractJUnit4SpringContextTests {
 		Date end = cal.getTime();
 		assertEquals(5, trigger.computeNumTimesFiredBetween(start, end));
 	}
-	
 }

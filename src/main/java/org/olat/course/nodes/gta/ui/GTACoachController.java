@@ -83,13 +83,13 @@ public class GTACoachController extends GTAAbstractController {
 	private UserManager userManager;
 	
 	public GTACoachController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, GTACourseNode gtaNode,
-			BusinessGroup assessedGroup, boolean withTitle, boolean withGrading) {
-		this(ureq, wControl, courseEnv, gtaNode, assessedGroup, null, withTitle, withGrading);
+			BusinessGroup assessedGroup, boolean withTitle, boolean withGrading, boolean withSubscription) {
+		this(ureq, wControl, courseEnv, gtaNode, assessedGroup, null, withTitle, withGrading, withSubscription);
 	}
 	
 	public GTACoachController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, GTACourseNode gtaNode,
-			Identity assessedIdentity, boolean withTitle, boolean withGrading) {
-		this(ureq, wControl, courseEnv, gtaNode, null, assessedIdentity, withTitle, withGrading);
+			Identity assessedIdentity, boolean withTitle, boolean withGrading, boolean withSubscription) {
+		this(ureq, wControl, courseEnv, gtaNode, null, assessedIdentity, withTitle, withGrading, withSubscription);
 	}
 
 	/**
@@ -104,8 +104,8 @@ public class GTACoachController extends GTAAbstractController {
 	 * @param withGrading Allow to remove the grading panel in assessment tool
 	 */
 	private GTACoachController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, GTACourseNode gtaNode,
-			BusinessGroup assessedGroup, Identity assessedIdentity, boolean withTitle, boolean withGrading) {
-		super(ureq, wControl, gtaNode, courseEnv, null, assessedGroup, assessedIdentity, withTitle, withGrading);
+			BusinessGroup assessedGroup, Identity assessedIdentity, boolean withTitle, boolean withGrading, boolean withSubscription) {
+		super(ureq, wControl, gtaNode, courseEnv, null, assessedGroup, assessedIdentity, withTitle, withGrading, withSubscription);
 	}
 
 	@Override

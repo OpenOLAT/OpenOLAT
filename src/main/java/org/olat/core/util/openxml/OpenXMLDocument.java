@@ -66,6 +66,8 @@ import fmath.conversion.ConvertFromLatexToMathML;
 import fmath.conversion.ConvertFromMathMLToWord;
 
 /**
+ * The page are A4 format, with 2.54cm margins on top, bottom, left and right.
+ * 
  * 
  * Initial date: 04.09.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -227,7 +229,8 @@ public class OpenXMLDocument {
 </w:sectPr>
  */
 	/**
-	 * Must be done at the end of the document
+	 * Must be done at the end of the document. The unit for the size of the
+	 * page and the margin is in twips or twentieths of a point.
 	 */
 	public void appendPageSettings() {
 		Node lastChild = bodyElement.getLastChild();
@@ -1014,7 +1017,7 @@ public class OpenXMLDocument {
 		} else {
 			id = generateId();
 			Size size = ImageUtils.getImageSize(image);
-			emuSize = OpenXMLUtils.convertPixelToEMUs(size, 72);
+			emuSize = OpenXMLUtils.convertPixelToEMUs(size, 72, 15.9/* cm */);
 			filename = getUniqueFilename(image);
 			fileToImagesMap.put(image, new DocReference(id, filename, emuSize, image));
 		}
