@@ -97,7 +97,7 @@ public class ForumPage {
 	}
 	
 	public ForumPage openThread(String title) {
-		By threadBy = By.xpath("//table[contains(@class,'o_table')]//tr//a[span[text()='" + title + "']]");
+		By threadBy = By.xpath("//table[contains(@class,'table')]//tr//a[text()='" + title + "']");
 		browser.findElement(threadBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
@@ -111,7 +111,7 @@ public class ForumPage {
 	}
 	
 	public ForumPage flatView() {
-		By flatBy = By.cssSelector("input[value='flat'][type='radio']");
+		By flatBy = By.cssSelector("a.o_forum_all_flat_messages");
 		browser.findElement(flatBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;

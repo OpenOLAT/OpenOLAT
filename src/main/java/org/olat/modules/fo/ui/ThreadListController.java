@@ -145,6 +145,7 @@ public class ThreadListController extends FormBasicController {
 		threadTableModel = new ThreadListDataModel(columnsModel, getTranslator());
 		threadTable = uifactory.addTableElement(getWindowControl(), "threads", threadTableModel, getTranslator(), formLayout);
 		threadTable.setCustomizeColumns(false);
+		threadTable.setElementCssClass("o_forum");
 	}
 
 	@Override

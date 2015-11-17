@@ -191,14 +191,19 @@ public class MessageListController extends BasicController {
 
 		allButton = LinkFactory.createButtonSmall("viewswitch.threadview", mainVC, this);
 		allButton.setIconLeftCSS("o_icon o_icon-fw o_icon-flip-vertical o_forum_all_icon");
+		allButton.setElementCssClass("o_forum_all_messages");
 		allFlatButton = LinkFactory.createButtonSmall("viewswitch.flatview", mainVC, this);
 		allFlatButton.setIconLeftCSS("o_icon o_icon-fw o_forum_all_flat_icon");
+		allFlatButton.setElementCssClass("o_forum_all_flat_messages");
 		oneButton = LinkFactory.createButtonSmall("viewswitch.messageview", mainVC, this);
 		oneButton.setIconLeftCSS("o_icon o_icon-fw o_forum_one_icon");
+		oneButton.setElementCssClass("o_forum_one_message");
 		markedButton = LinkFactory.createButtonSmall("viewswitch.marked", mainVC, this);
 		markedButton.setIconLeftCSS("o_icon o_icon-fw o_forum_marked_icon");
+		markedButton.setElementCssClass("o_forum_marked_messages");
 		newButton = LinkFactory.createButtonSmall("viewswitch.new", mainVC, this);
 		newButton.setIconLeftCSS("o_icon o_icon-fw o_forum_new_icon");
+		newButton.setElementCssClass("o_forum_new_messages");
 	}
 	
 	private void updateButtons(Link activeLink) {
