@@ -508,12 +508,10 @@ public class BusinessGroupDAO {
 		//inner joins
 		if(BusinessGroup.class.equals(resultClass)) {
 			query.append("inner join fetch bgi.resource bgResource ");
+			query.append("inner join fetch bgi.baseGroup as baseGroup ");
 		} else {
 			query.append("inner join bgi.resource bgResource ");
-		}
-
-		if(resource != null || params.isOwner() || params.isAttendee() || params.isWaiting()) {
-			query.append(" inner join bgi.baseGroup as baseGroup");
+			query.append("inner join bgi.baseGroup as baseGroup ");
 		}
 
 		boolean where = false;
