@@ -71,6 +71,7 @@ public abstract class GTAAbstractController extends BasicController {
 	protected final ModuleConfiguration config;
 	protected final RepositoryEntry courseEntry;
 	
+	protected final boolean withSubscription;
 	protected final PublisherData publisherData;
 	protected final SubscriptionContext subsContext;
 
@@ -95,22 +96,23 @@ public abstract class GTAAbstractController extends BasicController {
 	protected UserCourseInformationsManager userCourseInformationsManager;
 	
 	public GTAAbstractController(UserRequest ureq, WindowControl wControl,
-			GTACourseNode gtaNode, CourseEnvironment courseEnv, boolean withTitle, boolean withGrading) {
-		this(ureq, wControl, gtaNode, courseEnv, null, null, null, withTitle, withGrading);
+			GTACourseNode gtaNode, CourseEnvironment courseEnv, boolean withTitle, boolean withGrading, boolean withSubscription) {
+		this(ureq, wControl, gtaNode, courseEnv, null, null, null, withTitle, withGrading, withSubscription);
 	}
 	
 	public GTAAbstractController(UserRequest ureq, WindowControl wControl,
-			GTACourseNode gtaNode, CourseEnvironment courseEnv, UserCourseEnvironment userCourseEnv, boolean withTitle, boolean withGrading) {
-		this(ureq, wControl, gtaNode, courseEnv, userCourseEnv, null, null, withTitle, withGrading);
+			GTACourseNode gtaNode, CourseEnvironment courseEnv, UserCourseEnvironment userCourseEnv, boolean withTitle, boolean withGrading, boolean withSubscription) {
+		this(ureq, wControl, gtaNode, courseEnv, userCourseEnv, null, null, withTitle, withGrading, withSubscription);
 	}
 
 	public GTAAbstractController(UserRequest ureq, WindowControl wControl,
 			GTACourseNode gtaNode, CourseEnvironment courseEnv, UserCourseEnvironment userCourseEnv,
-			BusinessGroup assessedGroup, Identity assessedIdentity, boolean withTitle, boolean withGrading) {
+			BusinessGroup assessedGroup, Identity assessedIdentity, boolean withTitle, boolean withGrading, boolean withSubscription) {
 		super(ureq, wControl);
 		
 		this.withTitle = withTitle;
 		this.withGrading = withGrading;
+		this.withSubscription = withSubscription;
 		
 		this.gtaNode = gtaNode;
 		this.config = gtaNode.getModuleConfiguration();
@@ -154,7 +156,7 @@ public abstract class GTAAbstractController extends BasicController {
 			task = gtaManager.getTask(assessedIdentity, taskList);
 		}
 		
-		if (subsContext != null) {
+		if (withSubscription && subsContext != null) {
 			contextualSubscriptionCtr = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, publisherData);
 			listenTo(contextualSubscriptionCtr);
 			mainVC.put("contextualSubscription", contextualSubscriptionCtr.getInitialComponent());

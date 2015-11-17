@@ -1,10 +1,6 @@
 <div id="$r.getCId()" class="o_noti"> 
 	<a href="javascript:$r.contextHelpJSCommand("org.olat.core.commons.services.notifications.ui","home-notifications.html")" title="$r.translateInAttribute("help.hover.notif")" class="o_label">
-		<i class="o_icon o_icon_notification"></i> 
-		<span>
-			$r.translate("actions.title")
-		</span>
-	</a>	
+		<i class="o_icon o_icon_notification"></i> <span>$r.translate("actions.title")</span></a>	
 	#if ($subscribed)
 		$r.render("command.unsubscribe")
 	#else

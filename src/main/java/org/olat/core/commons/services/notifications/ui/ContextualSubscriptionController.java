@@ -38,6 +38,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description: <br>
@@ -50,12 +51,12 @@ public class ContextualSubscriptionController extends BasicController {
 	private VelocityContainer myContent;
 	private Link subscribeButton;
 	private Link unsubscribeButton;
-	private Panel allPanel;
-	private Panel detailsPanel;
-	private NotificationsManager notifManager;
 	private SubscriptionContext subscriptionContext;
 	private boolean isSubscribed;
 	private final PublisherData publisherData;
+	
+	@Autowired
+	private NotificationsManager notifManager;
 	
 	/**
 	 * @param ureq
@@ -73,9 +74,6 @@ public class ContextualSubscriptionController extends BasicController {
 			putInitialPanel(new Panel("empty:nosubscription"));
 			return;
 		}
-		
-		detailsPanel = new Panel("subscription_detail");
-		allPanel = new Panel("subscription_all");
 
 		subscribeButton = LinkFactory.createCustomLink("command.subscribe", "command.subscribe", "off", Link.LINK, myContent, this);
 		subscribeButton.setCustomEnabledLinkCSS("o_noti_subscribe_link o_button_toggle");
@@ -87,14 +85,11 @@ public class ContextualSubscriptionController extends BasicController {
 		unsubscribeButton.setIconRightCSS("o_icon o_icon_toggle");
 		unsubscribeButton.setTitle("command.unsubscribe");
 		
-		notifManager = NotificationsManager.getInstance();
 		// if subscribed, offer a unsubscribe button and vica versa.
 		isSubscribed = notifManager.isSubscribed(ureq.getIdentity(), subscriptionContext);
 
 		updateUI();
-		myContent.put("detailsPanel", detailsPanel);
-		allPanel.setContent(myContent);
-		putInitialPanel(allPanel);
+		putInitialPanel(myContent);
 	}
 	
 	public boolean isSubscribed() {

@@ -296,8 +296,6 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		SubscriptionContext sc = new SubscriptionContext("CourseModule", courseEnv.getCourseResourceableId(), cNode.getIdent());
 		return sc;
 	}
-	
-	
 
 	@Override
 	public List<BusinessGroup> filterBusinessGroups(List<BusinessGroup> groups, GTACourseNode cNode) {
