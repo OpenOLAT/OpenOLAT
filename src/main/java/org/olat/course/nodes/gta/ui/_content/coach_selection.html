@@ -5,7 +5,13 @@
 	#if($r.available("list"))
 		$r.render("backLink")
 	#end
+	#if($r.available("contextualSubscription"))
+		$r.render("contextualSubscription")
+	#end
 	$r.render("selection")
 #elseif($r.available("list"))
+	#if($r.available("contextualSubscription"))
+		<div class="clearfix">$r.render("contextualSubscription")</div>
+	#end
 	$r.render("list")
 #end
