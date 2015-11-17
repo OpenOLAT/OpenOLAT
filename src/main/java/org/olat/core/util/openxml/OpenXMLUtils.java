@@ -58,8 +58,9 @@ public class OpenXMLUtils {
 	private static final OLog log = Tracing.createLoggerFor(OpenXMLUtils.class);
 
 	public static final double emusPerInch = 914400.0d;
+	public static final double emusPerCm = 360000.0d;
 	
-	public static final Size convertPixelToEMUs(Size img, int dpi) {
+	public static final Size convertPixelToEMUs2(Size img, int dpi) {
 		int widthPx = img.getWidth();
 		int heightPx = img.getHeight();
 		double horzRezDpi = dpi * 1.0d;
@@ -68,6 +69,25 @@ public class OpenXMLUtils {
 		double widthEmus = (widthPx / horzRezDpi) * emusPerInch;
 		double heightEmus = (heightPx / vertRezDpi) * emusPerInch;
 		
+		return new Size((int)widthEmus, (int)heightEmus, 0, 0, true);
+	}
+	
+	public static final Size convertPixelToEMUs(Size img, int dpi, double maxWidthCm) {
+		int widthPx = img.getWidth();
+		int heightPx = img.getHeight();
+		double horzRezDpi = dpi * 1.0d;
+		double vertRezDpi = dpi * 1.0d;
+		
+		double widthEmus = (widthPx / horzRezDpi) * emusPerInch;
+		double heightEmus = (heightPx / vertRezDpi) * emusPerInch;
+
+		double maxWidthEmus = maxWidthCm * emusPerCm;
+		if (widthEmus > maxWidthEmus) {
+			double ratio = heightEmus / widthEmus;
+			widthEmus = maxWidthEmus;
+			heightEmus = widthEmus * ratio;
+		}
+
 		return new Size((int)widthEmus, (int)heightEmus, 0, 0, true);
 	}
 	
