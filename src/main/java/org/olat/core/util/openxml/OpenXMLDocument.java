@@ -164,25 +164,25 @@ public class OpenXMLDocument {
 	}
 	
 	public void appendTitle(String text) {
-		appendHeading(text, Heading.title, null);
+		appendHeading(text, PredefinedStyle.title, null);
 	}
 	
 	public void appendHeading1(String text, String additionalText) {
-		appendHeading(text, Heading.heading1, additionalText);
+		appendHeading(text, PredefinedStyle.heading1, additionalText);
 	}
 	
 	public void appendHeading2(String text, String additionalText) {
-		appendHeading(text, Heading.heading2, additionalText);
+		appendHeading(text, PredefinedStyle.heading2, additionalText);
 	}
 	
-	private void appendHeading(String text, Heading style, String additionalText) {
+	private void appendHeading(String text, PredefinedStyle style, String additionalText) {
 		if(!StringHelper.containsNonWhitespace(text)) return;
 
 		Element textEl = createTextEl(text);
 		List<Element> runsEl = new ArrayList<Element>(2);
 		Element runEl = createRunEl(Collections.singletonList(textEl));
 		runsEl.add(runEl);
-		Element styleEl = createParagraphStyle(style.styleId(), style.runStyleId());
+		Element styleEl = createParagraphStyle(style);
 		if(StringHelper.containsNonWhitespace(additionalText)) {
 			//add an "insecable" blank between the title and the additional text
 			Element blankRunEl = document.createElement("w:r");
@@ -212,9 +212,9 @@ public class OpenXMLDocument {
 	public void appendSubtitle(String text) {
 		Element textEl = createTextEl(text);
 		List<Element> runsEl = new ArrayList<Element>(2);
-		Element runEl = createRunEl(Collections.singletonList(textEl), Heading.subSubtleEmphasis.runStyleId());
+		Element runEl = createRunEl(Collections.singletonList(textEl), PredefinedStyle.subSubtleEmphasis);
 		runsEl.add(runEl);
-		Element styleEl = createParagraphStyle(Heading.subSubtleEmphasis.styleId(), Heading.subSubtleEmphasis.runStyleId());
+		Element styleEl = createParagraphStyle(PredefinedStyle.subSubtleEmphasis);
 		Element paragraphEl = createParagraphEl(styleEl, runsEl);
 		getCursor().appendChild(paragraphEl);
 	}
@@ -422,14 +422,17 @@ public class OpenXMLDocument {
 	</w:rPr>
 </w:pPr>
  */
-	public Element createParagraphStyle(String styleId, String runStyleId) {
+	public Element createParagraphStyle(PredefinedStyle styleId) {
 		Element paragraphEl = document.createElement("w:pPr");
-		Element styleEl = (Element)paragraphEl.appendChild(document.createElement("w:pStyle"));
-		styleEl.setAttribute("w:val", styleId);
-		if(StringHelper.containsNonWhitespace(runStyleId)) {
+		if(styleId != null && styleId.paragraphStyleId() != null) {
+			Element styleEl = (Element)paragraphEl.appendChild(document.createElement("w:pStyle"));
+			styleEl.setAttribute("w:val", styleId.paragraphStyleId());
+		}
+		
+		if(styleId != null && styleId.runStyleId() != null) {
 			Element runPrefsEl = (Element)paragraphEl.appendChild(document.createElement("w:rPr"));
 			Element rStyleEl = (Element)runPrefsEl.appendChild(document.createElement("w:rStyle"));
-			rStyleEl.setAttribute("w:val", runStyleId);
+			rStyleEl.setAttribute("w:val", styleId.runStyleId());
 		}
 		return paragraphEl;
 	}
@@ -462,14 +465,41 @@ public class OpenXMLDocument {
 	<w:spacing w:before="120" w:after="120" w:beforeAutospacing="0" w:afterAutospacing="0"/>
 </w:pPr>
 */
-	public Element createParagraphEl(Spacing spacing) {
+	public Element createParagraphEl(Indent indent, Border leftBorder, Spacing spacing, PredefinedStyle predefinedStyle) {
 		Element paragraphEl = document.createElement("w:p");
 		Element paragraphPrefsEl = (Element)paragraphEl.appendChild(document.createElement("w:pPr"));
-		Element spacingEl = (Element)paragraphPrefsEl.appendChild(document.createElement("w:spacing"));
-		spacingEl.setAttribute("w:before", Integer.toString(spacing.getBefore()));
-		spacingEl.setAttribute("w:after", Integer.toString(spacing.getAfter()));
-		spacingEl.setAttribute("w:beforeAutospacing", "0");
-		spacingEl.setAttribute("w:afterAutospacing", "0");
+		if(indent != null) {
+			//<w:ind w:left="1440" w:right="1440" w:hanging="1080" /> 
+			Element indEl = (Element)paragraphPrefsEl.appendChild(document.createElement("w:ind"));
+			if(indent.getLeft() > 0) {
+				indEl.setAttribute("w:left", Integer.toString(indent.getLeft()));
+			}
+		}
+		
+		if(predefinedStyle != null && predefinedStyle.paragraphStyleId() != null) {
+			Element styleEl = (Element)paragraphPrefsEl.appendChild(document.createElement("w:pStyle"));
+			styleEl.setAttribute("w:val", predefinedStyle.paragraphStyleId());
+		}
+		
+		if(leftBorder != null) {
+			//<w:pBdr>
+		    //  <w:left w:val="single" w:sz="24" w:space="4" w:color="B97034" w:themeColor="accent6" w:themeShade="BF" /> 
+			
+			Element borderEl = (Element)paragraphPrefsEl.appendChild(document.createElement("w:pBdr"));
+			Element leftEl = (Element)borderEl.appendChild(document.createElement("w:left"));
+			leftEl.setAttribute("w:val", leftBorder.getVal());
+			leftEl.setAttribute("w:sz", Integer.toString(leftBorder.getSize()));
+			leftEl.setAttribute("w:space", Integer.toString(leftBorder.getSpace()));
+			leftEl.setAttribute("w:color", leftBorder.getColor());
+		}
+		
+		if(spacing != null) {
+			Element spacingEl = (Element)paragraphPrefsEl.appendChild(document.createElement("w:spacing"));
+			spacingEl.setAttribute("w:before", Integer.toString(spacing.getBefore()));
+			spacingEl.setAttribute("w:after", Integer.toString(spacing.getAfter()));
+			spacingEl.setAttribute("w:beforeAutospacing", "0");
+			spacingEl.setAttribute("w:afterAutospacing", "0");
+		}
 		return paragraphEl;
 	}
 	
@@ -477,12 +507,12 @@ public class OpenXMLDocument {
 		return createRunEl(textEls, null);
 	}
 	
-	public Element createRunEl(Collection<? extends Node> textEls, String runStyleId) {
+	public Element createRunEl(Collection<? extends Node> textEls, PredefinedStyle style) {
 		Element runEl = document.createElement("w:r");
-		if(StringHelper.containsNonWhitespace(runStyleId)) {
+		if(style != null && style.runStyleId() != null) {
 			Element runPrefsEl = (Element)runEl.appendChild(document.createElement("w:rPr"));
 			Element rStyleEl = (Element)runPrefsEl.appendChild(document.createElement("w:rStyle"));
-			rStyleEl.setAttribute("w:val", runStyleId);
+			rStyleEl.setAttribute("w:val", style.runStyleId());
 		}
 		if(textEls != null && textEls.size() > 0) {
 			for(Node textEl:textEls) {
@@ -1154,23 +1184,24 @@ public class OpenXMLDocument {
 		}
 	}
 	
-	public enum Heading {
+	public enum PredefinedStyle {
 		title("ooTitle", null),
 		heading1("ooHeading1", null),
 		heading2("ooHeading2", null),
 		subTitle("ooUntertitel", "ooUntertitelZeichen"),
-		subSubtleEmphasis("ooSubtleEmphasis", "ooSubtleEmphasisZeichen");
+		subSubtleEmphasis("ooSubtleEmphasis", "ooSubtleEmphasisZeichen"),
+		quote("ooQuote", "ooQuoteZeichen");
 		
-		private final String styleId;
+		private final String paragraphStyleId;
 		private final String runStyleId;
 		
-		private Heading(String styleId, String runStyleId) {
-			this.styleId = styleId;
+		private PredefinedStyle(String paragraphStyleId, String runStyleId) {
+			this.paragraphStyleId = paragraphStyleId;
 			this.runStyleId = runStyleId;
 		}
 
-		public String styleId() {
-			return styleId;
+		public String paragraphStyleId() {
+			return paragraphStyleId;
 		}
 		
 		public String runStyleId() {
@@ -1216,6 +1247,68 @@ public class OpenXMLDocument {
 
 		public int getAfter() {
 			return after;
+		}
+	}
+	
+	public static class Border {
+		private final int space;
+		private final int size;
+		private final String val;
+		private final String color;
+		
+		public Border(int space, int size, String color) {
+			this.space = space;
+			this.size = size;
+			this.color = color;
+			val = "single";
+		}
+		
+		public Border(Border border, String val) {
+			this.space = border.space;
+			this.size = border.size;
+			this.color = border.color;
+			this.val = val;
+		}
+
+		public int getSpace() {
+			return space;
+		}
+
+		public int getSize() {
+			return size;
+		}
+
+		public String getColor() {
+			return color;
+		}
+		
+		public String getVal() {
+			return val;
+		}
+		
+		public boolean same(Border border) {
+			return color.equals(border.color) && size == border.size && space == border.space;
+		}
+		
+		public Border cloneAndStack(Border border) {
+			String stackedVal = border.val;
+			switch(border.val) {
+				case "single": stackedVal = "double"; break;
+				case "double": stackedVal = "triple"; break;
+			}
+			return new Border(this, stackedVal);
+		}
+	}
+	
+	public static class Indent {
+		private final int left;
+		
+		public Indent(int left) {
+			this.left = left;
+		}
+
+		public int getLeft() {
+			return left;
 		}
 	}
 	

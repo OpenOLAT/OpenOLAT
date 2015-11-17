@@ -26,7 +26,10 @@ import java.util.Deque;
 import java.util.List;
 
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.openxml.OpenXMLDocument.Border;
+import org.olat.core.util.openxml.OpenXMLDocument.Indent;
 import org.olat.core.util.openxml.OpenXMLDocument.ListParagraph;
+import org.olat.core.util.openxml.OpenXMLDocument.PredefinedStyle;
 import org.olat.core.util.openxml.OpenXMLDocument.Spacing;
 import org.olat.core.util.openxml.OpenXMLDocument.Style;
 import org.w3c.dom.Element;
@@ -44,6 +47,8 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  */
 public class HTMLToOpenXMLHandler extends DefaultHandler {
+	
+	private static final Border QUOTE_BORDER = new Border(400, 24, "EEEEEE");
 
 	private boolean latex = false;
 	private StringBuilder textBuffer;
@@ -81,12 +86,12 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 				flushText();
 				addContent(currentParagraph);
 			}
-			if(startSpacing == null) {
-				currentParagraph = factory.createParagraphEl();
-			} else {
-				currentParagraph = factory.createParagraphEl(startSpacing);
-				startSpacing = null;//consumed
-			}
+			
+			Indent indent = getCurrentIndent();
+			Border leftBorder = getCurrentLeftBorder();
+			PredefinedStyle predefinedStyle = getCurrentPredefinedStyle();
+			currentParagraph = factory.createParagraphEl(indent, leftBorder, startSpacing, predefinedStyle);
+			startSpacing = null;//consumed
 		}
 		return currentParagraph;
 	}
@@ -97,8 +102,10 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			flushText();
 			addContent(currentParagraph);
 		}
-
-		currentParagraph = factory.createParagraphEl(spacing);
+		Indent indent = getCurrentIndent();
+		Border leftBorder = getCurrentLeftBorder();
+		PredefinedStyle predefinedStyle = getCurrentPredefinedStyle();
+		currentParagraph = factory.createParagraphEl(indent, leftBorder, spacing, predefinedStyle);
 		return currentParagraph;
 	}
 	
@@ -166,7 +173,11 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	private Element getCurrentRun() {
 		Element paragraphEl;
 		if(currentParagraph == null) {
-			paragraphEl = currentParagraph = factory.createParagraphEl();
+			Indent indent = getCurrentIndent();
+			Border leftBorder = getCurrentLeftBorder();
+			PredefinedStyle predefinedStyle = getCurrentPredefinedStyle();
+			paragraphEl = currentParagraph = factory.createParagraphEl(indent, leftBorder, startSpacing, predefinedStyle);
+			startSpacing = null;
 		} else {
 			paragraphEl = currentParagraph;
 		}
@@ -174,7 +185,9 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		if(lastChild != null && "w:r".equals(lastChild.getNodeName())) {
 			return (Element)lastChild;
 		}
-		return (Element)paragraphEl.appendChild(factory.createRunEl(null));
+
+		PredefinedStyle runStyle = getCurrentPredefinedStyle();
+		return (Element)paragraphEl.appendChild(factory.createRunEl(null, runStyle));
 	}
 
 	private Style[] setTextPreferences(String cssStyles) {
@@ -218,7 +231,8 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		}
 		
 		if(runPrefs == null) {
-			run = paragraphEl.appendChild(factory.createRunEl(null));
+			PredefinedStyle style = getCurrentPredefinedStyle();
+			run = paragraphEl.appendChild(factory.createRunEl(null, style));
 			runPrefs = run.appendChild(factory.createRunPrefsEl());
 		}
 	
@@ -233,6 +247,55 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		return styleStack.getLast().getStyles();
 	}
 	
+	public Indent getCurrentIndent() {
+		if(styleStack.isEmpty()) return null;
+		
+		int indent = 0;
+		for(StyleStatus style:styleStack) {
+			if(style.isQuote()) {
+				indent++;
+			}
+		}
+		
+		int emuIndent = 0;
+		if(indent > 0) {
+			emuIndent = 700;
+		}
+		if(indent > 1) {
+			emuIndent += (indent - 1) * 100;
+		}
+		return emuIndent == 0 ? null : new Indent(emuIndent);
+	}
+	
+	public Border getCurrentLeftBorder() {
+		if(styleStack.isEmpty()) return null;
+		
+		int indent = 0;
+		for(StyleStatus style:styleStack) {
+			if(style.isQuote()) {
+				indent++;
+			}
+		}
+		
+		String val;
+		switch(indent) {
+			case 1: val = "single"; break;
+			case 2: val = "double"; break;
+			default: val = "triple";
+		}
+		return indent == 0 ? null : new Border(QUOTE_BORDER, val);
+	}
+	
+	public PredefinedStyle getCurrentPredefinedStyle() {
+		if(styleStack.isEmpty()) return null;
+		
+		boolean quote = false;
+		for(StyleStatus style:styleStack) {
+			quote |= style.isQuote();
+		}
+		return quote ? PredefinedStyle.quote : null;
+	}
+	
 	public Style[] popStyle(String tag) {
 		StyleStatus status = styleStack.pollLast();
 		if(status != null && status.getTag().equals(tag)) {
@@ -244,7 +307,8 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	private void setImage(String path) {
 		Element imgEl = factory.createImageEl(path);
 		if(imgEl != null) {
-			Element runEl = factory.createRunEl(Collections.singletonList(imgEl));
+			PredefinedStyle style = getCurrentPredefinedStyle();
+			Element runEl = factory.createRunEl(Collections.singletonList(imgEl), style);
 			Element paragrapheEl = getCurrentParagraph(false);
 			paragrapheEl.appendChild(runEl);
 		}
@@ -293,19 +357,17 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			currentListParagraph = factory.createListParagraph();
 		} else if("li".equals(tag)) {
 			getCurrentListParagraph(true);
+		} else if("blockquote".equals(tag)) {
+			Style[] styles = setTextPreferences(Style.italic);
+			styleStack.add(new StyleStatus(tag, true, styles));
+			appendParagraph(new Spacing(90, 0));
 		} else if("div".equals(tag)) {
 			String cl = attributes.getValue("class");
 			if(StringHelper.containsNonWhitespace(cl)) {
 				if(cl.contains("o_quote_author")) {
-					appendParagraph(new Spacing(180, 0));
 					Style[] styles = setTextPreferences(Style.italic);
-					styleStack.add(new StyleStatus(tag, styles));
-				} else if(cl.contains("o_quote_wrapper")) {
-					//
-				} else if(cl.contains("o_quote")) {
+					styleStack.add(new StyleStatus(tag, true, styles));
 					appendParagraph(new Spacing(120, 0));
-					Style[] styles = setTextPreferences(Style.italic);
-					styleStack.add(new StyleStatus(tag, styles));
 				} else {
 					styleStack.add(new StyleStatus(tag, new Style[0]));
 				}
@@ -362,6 +424,8 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			currentListParagraph = null;
 		} else if("li".equals(tag)) {
 			//do nothing
+		} else if("blockquote".equals(tag)) {
+			popStyle(tag);
 		} else if("div".equals(tag)) {
 			popStyle(tag);
 		}
@@ -380,14 +444,24 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	private static class StyleStatus {
 		private final String tag;
 		private final Style[] styles;
+		private final boolean quote;
 		
 		public StyleStatus(String tag, Style[] styles) {
+			this(tag, false, styles);
+		}
+		
+		public StyleStatus(String tag, boolean quote, Style[] styles) {
 			this.tag = tag;
+			this.quote = quote;
 			this.styles = styles;
 		}
 		
 		public String getTag() {
 			return tag;
+		}
+		
+		public boolean isQuote() {
+			return quote;
 		}
 		
 		public Style[] getStyles() {
