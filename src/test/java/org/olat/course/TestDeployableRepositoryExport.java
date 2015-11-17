@@ -32,8 +32,9 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 
 import org.junit.Test;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
+import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * 
@@ -44,12 +45,18 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
  * Initial Date:  22.12.2010 <br>
  * @author guido
  */
-@ContextConfiguration(locations={"classpath:org/olat/course/_spring/textContextDeployableRepoExport.xml"})
-public class TestDeployableRepositoryExport extends AbstractJUnit4SpringContextTests {
+public class TestDeployableRepositoryExport extends OlatTestCase {
+	
+	@Autowired @Qualifier("normalzip")
+	private DeployableCourseExport normalZipCourse;
+	@Autowired @Qualifier("badurl")
+	private DeployableCourseExport badUrlCourse;
+	@Autowired @Qualifier("textfile")
+	private DeployableCourseExport textFileCourse;
 	
 	@Test
 	public void testZipDownloadNormalCase() {
-		DeployableCourseExport bean = (DeployableCourseExport) applicationContext.getBean("normalzip");
+		DeployableCourseExport bean = normalZipCourse;
 		assertNotNull(bean);
 		assertEquals(bean.getAccess(),4);
 		assertEquals(bean.getVersion(),Float.valueOf(1));
@@ -62,14 +69,14 @@ public class TestDeployableRepositoryExport extends AbstractJUnit4SpringContextT
 	
 	@Test
 	public void testZipDownloadBadUrl() {
-		DeployableCourseExport bean = (DeployableCourseExport) applicationContext.getBean("badurl");
+		DeployableCourseExport bean = badUrlCourse;
 		assertNotNull(bean);
 		assertNull(bean.getDeployableCourseZipFile());
 	}
 	
 	@Test
 	public void testZipDownloadTextFile() {
-		DeployableCourseExport bean = (DeployableCourseExport) applicationContext.getBean("textfile");
+		DeployableCourseExport bean = textFileCourse;
 		assertNotNull(bean);
 		assertNull(bean.getDeployableCourseZipFile());
 	}
