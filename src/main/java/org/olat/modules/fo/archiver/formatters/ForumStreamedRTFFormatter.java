@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -43,14 +44,15 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
-import org.olat.modules.fo.ForumManager;
-import org.olat.modules.fo.MessageNode;
+import org.olat.modules.fo.archiver.MessageNode;
+import org.olat.modules.fo.manager.ForumManager;
 
 /**
  * Initial Date: Dec 19, 2013 <br>
@@ -88,9 +90,9 @@ public class ForumStreamedRTFFormatter extends ForumFormatter {
 	 * @param filePerThread
 	 */
 
-	public ForumStreamedRTFFormatter(ZipOutputStream exportStream, String path, boolean filePerThread) {
+	public ForumStreamedRTFFormatter(ZipOutputStream exportStream, String path, boolean filePerThread, Locale locale) {
 		// init String Buffer in ForumFormatter
-		super();
+		super(locale);
 		// where to write
 		this.exportStream = exportStream;
 		this.filePerThread = filePerThread;
@@ -126,9 +128,17 @@ public class ForumStreamedRTFFormatter extends ForumFormatter {
 		sb.append("} \\line ");
 		sb.append("{\\pard \\f0\\fs15 created: ");
 		// Creator and creation date
-		sb.append(mn.getCreator().getUser().getProperty(UserConstants.FIRSTNAME, null));
-		sb.append(", ");
-		sb.append(mn.getCreator().getUser().getProperty(UserConstants.LASTNAME, null));
+		if(StringHelper.containsNonWhitespace(mn.getPseudonym())) {
+			sb.append(mn.getPseudonym())
+			  .append(" ")
+			  .append(translator.translate("pseudonym.suffix"));
+		} else if(mn.isGuest()) {
+			sb.append(translator.translate("guest"));
+		} else {
+			sb.append(mn.getCreator().getUser().getProperty(UserConstants.FIRSTNAME, null));
+			sb.append(", ");
+			sb.append(mn.getCreator().getUser().getProperty(UserConstants.LASTNAME, null));
+		}
 		sb.append(" ");
 		sb.append(mn.getCreationDate().toString());
 		// Modifier and modified date
@@ -353,14 +363,14 @@ public class ForumStreamedRTFFormatter extends ForumFormatter {
 	 * @return title prefix for hidden forum threads.
 	 */
 	private String getTitlePrefix(MessageNode messageNode) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder titleSb = new StringBuilder();
 		if(messageNode.isHidden()) {
-			sb.append(HIDDEN_STR);
+			titleSb.append(HIDDEN_STR);
 		} 		
-		if(sb.length()>1) {
-			sb.append(": ");
+		if(titleSb.length()>1) {
+			titleSb.append(": ");
 		}
-		return sb.toString();
+		return titleSb.toString();
 	}
 	
 	/**
@@ -369,13 +379,13 @@ public class ForumStreamedRTFFormatter extends ForumFormatter {
 	 * @return the RTF image section for the input messageNode.
 	 */
 	private String getImageRTF(MessageNode messageNode) {			
-		StringBuilder sb = new StringBuilder();
-		for(String fileName : addImagesToVFSContainer(messageNode)) {
-			sb.append("{\\field\\fldedit{\\*\\fldinst { INCLUDEPICTURE ")
-			  .append("\"").append(fileName).append("\"")
+		StringBuilder imgSb = new StringBuilder();
+		for(String imageName : addImagesToVFSContainer(messageNode)) {
+			imgSb.append("{\\field\\fldedit{\\*\\fldinst { INCLUDEPICTURE ")
+			  .append("\"").append(imageName).append("\"")
 			  .append(" \\\\d }}{\\fldrslt {}}}");			
 		}				
-		return sb.toString();
+		return imgSb.toString();
 	}
 	
 	/**

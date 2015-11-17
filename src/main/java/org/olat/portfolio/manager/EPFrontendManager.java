@@ -315,6 +315,10 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 		return artefactManager.loadArtefactsByBusinessPath(businessPath, author);		
 	}
 	
+	public Map<String,Long> getNumOfArtefactsByStartingBusinessPath(String businessPath, IdentityRef author){
+		return artefactManager.loadNumOfArtefactsByStartingBusinessPath(businessPath, author);		
+	}
+	
 	/**
 	 * List artefacts for indexing
 	 * @param author (optional)

@@ -27,7 +27,6 @@
 package org.olat.util.logging.activity;
 
 import java.io.UnsupportedEncodingException;
-import java.util.List;
 
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.core.id.Identity;
@@ -46,8 +45,8 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.area.BGArea;
 import org.olat.group.ui.run.BusinessGroupMainRunController;
 import org.olat.modules.fo.Forum;
-import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
+import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
 import org.olat.repository.RepositoryEntry;
@@ -388,13 +387,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 	 * @return a LoggingResourceable wrapping the given Forum
 	 */
 	public static LoggingResourceable wrap(Forum forum) {
-		final String name;
-		List<Message> forumMessages = ForumManager.getInstance().getMessagesByForumID(forum.getKey(), 0, 1, null, true);
-		if (forumMessages==null || forumMessages.size()==0) {
-			name = null;
-		} else {
-			name = forumMessages.get(0).getTitle();
-		}
+		final String name = ForumManager.getInstance().getForumNameForLogging(forum);
 		return new LoggingResourceable(forum, OlatResourceableType.forum, forum.getResourceableTypeName(),
 				String.valueOf(forum.getResourceableId()), name, false);
 	}

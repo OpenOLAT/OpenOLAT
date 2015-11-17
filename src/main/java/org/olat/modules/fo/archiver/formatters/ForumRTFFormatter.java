@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,6 +47,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.filter.FilterFactory;
@@ -55,8 +57,8 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.modules.fo.ForumManager;
-import org.olat.modules.fo.MessageNode;
+import org.olat.modules.fo.archiver.MessageNode;
+import org.olat.modules.fo.manager.ForumManager;
 
 /**
  * Initial Date: Nov 09, 2005 <br>
@@ -88,16 +90,16 @@ public class ForumRTFFormatter extends ForumFormatter {
 	
 	//TODO: (LD) translate this!
 	private String HIDDEN_STR = "VERBORGEN";
-		
+	
 	/**
 	 * 
 	 * @param container
 	 * @param filePerThread
 	 */
 
-	public ForumRTFFormatter(VFSContainer container, boolean filePerThread) {
+	public ForumRTFFormatter(VFSContainer container, boolean filePerThread, Locale locale) {
 		// init String Buffer in ForumFormatter
-		super();
+		super(locale);
 		// where to write
 		this.container = container;
 		this.filePerThread = filePerThread;
@@ -140,9 +142,17 @@ public class ForumRTFFormatter extends ForumFormatter {
 		sb.append("} \\line ");
 		sb.append("{\\pard \\f0\\fs15 created: ");
 		// Creator and creation date
-		sb.append(mn.getCreator().getUser().getProperty(UserConstants.FIRSTNAME, null));
-		sb.append(", ");
-		sb.append(mn.getCreator().getUser().getProperty(UserConstants.LASTNAME, null));
+		if(StringHelper.containsNonWhitespace(mn.getPseudonym())) {
+			sb.append(mn.getPseudonym())
+			  .append(" ")
+			  .append(translator.translate("pseudonym.suffix"));
+		} else if(mn.isGuest()) {
+			sb.append(translator.translate("guest"));
+		} else {
+			sb.append(mn.getCreator().getUser().getProperty(UserConstants.FIRSTNAME, null));
+			sb.append(", ");
+			sb.append(mn.getCreator().getUser().getProperty(UserConstants.LASTNAME, null));
+		}
 		sb.append(" ");
 		sb.append(mn.getCreationDate().toString());
 		// Modifier and modified date
@@ -411,10 +421,10 @@ public class ForumRTFFormatter extends ForumFormatter {
 	 * and adds it to the input container.
 	 * 
 	 * @param messageNode
-	 * @param container
+	 * @param imageContainer
 	 * @return
 	 */
-	private List<String> addImagesToVFSContainer(MessageNode messageNode, VFSContainer container) {
+	private List<String> addImagesToVFSContainer(MessageNode messageNode, VFSContainer imageContainer) {
 		List<String> fileNameList = new ArrayList<String>();
 		String iconPath = null;
 		if(messageNode.isClosed() && messageNode.isSticky()) {
@@ -428,7 +438,7 @@ public class ForumRTFFormatter extends ForumFormatter {
 			File file = new File(iconPath);
 			if (file.exists()) {
 				LocalFileImpl imgFile = new LocalFileImpl(file);
-				container.copyFrom(imgFile);
+				imageContainer.copyFrom(imgFile);
 				fileNameList.add(file.getName());
 			} else {
 				log.error("Could not find image for forum RTF formatter::" + iconPath);

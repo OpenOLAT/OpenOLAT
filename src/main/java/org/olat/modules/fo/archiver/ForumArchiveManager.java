@@ -36,11 +36,9 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
-import org.olat.modules.fo.ForumHelper;
-import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
-import org.olat.modules.fo.MessageNode;
 import org.olat.modules.fo.archiver.formatters.ForumFormatter;
+import org.olat.modules.fo.manager.ForumManager;
 
 /**
  *          Initial Date: Nov 11, 2005 <br>
@@ -86,7 +84,6 @@ public class ForumArchiveManager {
 	 * @return the message thread as String formatted
 	 */
 	public String applyFormatterForOneThread(ForumFormatter forumFormatter, Long forumId, Long topMessageId){
-		log.info("Archiving forum.thread: "+forumId+"."+topMessageId);
 		MessageNode topMessageNode = convertToThreadTree(topMessageId);
 		return formatThread(topMessageNode, forumFormatter, forumId);
 	}
@@ -119,19 +116,24 @@ public class ForumArchiveManager {
 					topNodeList.add(topNode);
 				}
 			}
-		}	
-		return getMessagesSorted(topNodeList);
+		}
+		Collections.sort(topNodeList, new MessageNodeComparator());
+		return topNodeList;
 	}
 	
-  /**
-   * Sorts the input list by adding the sticky messages first.
-   * @param topNodeList
-   * @return the sorted list.
-   */	
-	private List<MessageNode> getMessagesSorted(List<MessageNode> topNodeList) { 
-		 Comparator<MessageNode> messageNodeComparator = ForumHelper.getMessageNodeComparator();
-		 Collections.sort(topNodeList, messageNodeComparator);
-		 return topNodeList;
+	public static class MessageNodeComparator implements Comparator<MessageNode> {
+		@Override
+		public int compare(final MessageNode m1, final MessageNode m2) {			
+			if(m1.isSticky() && m2.isSticky()) {
+				return m2.getModifiedDate().compareTo(m1.getModifiedDate()); //last first
+			} else if(m1.isSticky()) {
+				return -1;
+			} else if(m2.isSticky()){
+				return 1;
+			} else {
+				return m2.getModifiedDate().compareTo(m1.getModifiedDate()); //last first
+			}				
+		}
 	}
 	
 	/**

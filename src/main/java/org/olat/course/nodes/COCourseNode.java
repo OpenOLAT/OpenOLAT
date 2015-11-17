@@ -133,28 +133,26 @@ public class COCourseNode extends AbstractAccessableCourseNode {
         ModuleConfiguration mc = getModuleConfiguration();
         String coachesGroupNames = (String)mc.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP);
         String particpantsGroupNames = (String)mc.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP);
-        
-        @SuppressWarnings("unchecked")
-        List<Long> coachesGroupKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP_ID);
-        @SuppressWarnings("unchecked")
-        List<Long> participantsGroupKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID);
+        //remap group keys
+        List<Long> coachesGroupKeys = mc.getList(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP_ID, Long.class);
         if(coachesGroupKeys == null) {
             coachesGroupKeys = envMapper.toGroupKeyFromOriginalNames(coachesGroupNames);
         } else {
             coachesGroupKeys = envMapper.toGroupKeyFromOriginalKeys(coachesGroupKeys);
         }
-        mc.set(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS, coachesGroupKeys);
+        mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP_ID, coachesGroupKeys);
+
+        List<Long> participantsGroupKeys = mc.getList(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID, Long.class);
         if(participantsGroupKeys == null) {
             participantsGroupKeys = envMapper.toGroupKeyFromOriginalNames(particpantsGroupNames);
         } else {
             participantsGroupKeys = envMapper.toGroupKeyFromOriginalKeys(participantsGroupKeys);
         }
-        mc.set(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS, participantsGroupKeys);
+        mc.set(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID, participantsGroupKeys);
         
-        
+        //remap area keys
         String coachesAreaNames = (String)mc.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA);
-        @SuppressWarnings("unchecked")
-        List<Long> coachesAreaKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA_IDS);
+        List<Long> coachesAreaKeys = mc.getList(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA_IDS, Long.class);
         if(coachesAreaKeys == null) {
             coachesAreaKeys = envMapper.toAreaKeyFromOriginalNames(coachesAreaNames);
         } else {
@@ -163,8 +161,7 @@ public class COCourseNode extends AbstractAccessableCourseNode {
         mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA_IDS, coachesAreaKeys);
         
         String participantsAreaNames = (String)mc.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA);
-        @SuppressWarnings("unchecked")
-        List<Long> participantsAreaKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID);
+        List<Long> participantsAreaKeys = mc.getList(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID, Long.class);
         if(participantsAreaKeys == null) {
             participantsAreaKeys = envMapper.toAreaKeyFromOriginalNames(participantsAreaNames);
         } else {

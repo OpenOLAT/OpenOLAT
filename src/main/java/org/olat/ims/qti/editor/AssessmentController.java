@@ -27,6 +27,7 @@ package org.olat.ims.qti.editor;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.helpTooltip.HelpTooltip;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ControllerEventListener;
@@ -68,6 +69,17 @@ public class AssessmentController extends TabbableDefaultController implements C
 		this.qtiPackage = qtiPackage;
 				
 		main = createVelocityContainer("tab_assess");
+
+		//add Help Links for labels
+		HelpTooltip selectionPreHelpText = new HelpTooltip("selectionPreHelpText", translate("form.assessment.selection_pre.hover"));
+		main.put("selectionPreHelpText", selectionPreHelpText);
+
+		HelpTooltip orderTypeHelpText = new HelpTooltip("orderTypeHelpText", translate("form.metadata.globalfeedbackNsolution.hover"));
+		main.put("orderTypeHelpText", orderTypeHelpText);
+
+		HelpTooltip globalfeedbackNsolutionHelpText = new HelpTooltip("globalfeedbackNsolutionHelpText", translate("form.metadata.globalfeedbackNsolution.hover"), "Test and Questionnaire Editor in Detail#details_testeditor_feedback", getLocale());
+		main.put("globalfeedbackNsolutionHelpText", globalfeedbackNsolutionHelpText);
+
 		main.contextPut("assessment", assessment);
 		// fix missing selection ordering, new feature introduced in 9.3.3
 		if (assessment.getSelection_ordering() == null) {

@@ -406,8 +406,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 	}
 
 	@Override
-	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course) {
-		GTACourseNode cNode = (GTACourseNode)super.createInstanceForCopy(isNewTitle, course);
+	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
+		GTACourseNode cNode = (GTACourseNode)super.createInstanceForCopy(isNewTitle, course, author);
 		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
 		
 		//copy tasks

@@ -22,7 +22,6 @@ package org.olat.portfolio.ui.artefacts.collect;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -41,6 +40,7 @@ import org.olat.portfolio.EPArtefactHandler;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -55,17 +55,21 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
 public class ArtefactWizzardStepsController extends BasicController {
 
 	private Controller collectStepsCtrl;
-	EPFrontendManager ePFMgr;
-	private PortfolioModule portfolioModule;
+	
 	private Link addLink;
 	AbstractArtefact artefact;
 	private OLATResourceable ores;
 	private String businessPath;
 	private VFSContainer tmpFolder = null;
+	
+	@Autowired
+	private EPFrontendManager ePFMgr;
+	@Autowired
+	private PortfolioModule portfolioModule;
 
 	public ArtefactWizzardStepsController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		setManagersAndModule();
+		
 		EPArtefactHandler<?> handler = portfolioModule.getArtefactHandler("Forum");
 		AbstractArtefact newArtefact = handler.createArtefact();
 		this.artefact = newArtefact;
@@ -84,7 +88,7 @@ public class ArtefactWizzardStepsController extends BasicController {
 	 */
 	public ArtefactWizzardStepsController(UserRequest ureq, WindowControl wControl, AbstractArtefact artefact, VFSContainer tmpFolder) {
 		super(ureq, wControl);
-		setManagersAndModule();
+		
 		this.artefact = artefact;
 		this.tmpFolder  = tmpFolder;
 
@@ -105,7 +109,6 @@ public class ArtefactWizzardStepsController extends BasicController {
 	 */
 	public ArtefactWizzardStepsController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, String businessPath) {
 		super(ureq, wControl);
-		setManagersAndModule();
 		this.ores = ores;
 		this.businessPath = businessPath;
 		initCollectLinkVelocity();
@@ -121,35 +124,40 @@ public class ArtefactWizzardStepsController extends BasicController {
 	 */
 	public ArtefactWizzardStepsController(UserRequest ureq, WindowControl wControl, AbstractArtefact artefact) {
 		super(ureq, wControl);
-		setManagersAndModule();
 		this.artefact = artefact;
 		this.businessPath = artefact.getBusinessPath();
 		initCollectLinkVelocity();
 	}
-
-	/**
-	 * @param ureq
-	 * @param artefact
-	 */
+	
+	public ArtefactWizzardStepsController(UserRequest ureq, WindowControl wControl, int numOfArtefacts,
+			OLATResourceable ores, String businessPath) {
+		super(ureq, wControl);
+		this.ores = ores;
+		this.businessPath = businessPath;
+		initCollectLinkVelocity(numOfArtefacts);
+	}
+	
 	private void initCollectLinkVelocity() {
+		List<AbstractArtefact> existingArtefacts = ePFMgr.loadArtefactsByBusinessPath(businessPath, getIdentity());
+		int numOfArtefacts = existingArtefacts == null ? 0 : existingArtefacts.size();
+		initCollectLinkVelocity(numOfArtefacts);
+	}
+
+	private void initCollectLinkVelocity(int numOfArtefacts) {
 		addLink = LinkFactory.createCustomLink("add.to.eportfolio", "add.to.eportfolio", "", Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED,
 				null, this);
 		addLink.setCustomEnabledLinkCSS("o_eportfolio_add");
 		addLink.setIconLeftCSS("o_icon o_icon-lg o_icon_eportfolio_add");
 		addLink.setTooltip(translate("add.to.eportfolio"));
 		addLink.setTranslator(getTranslator());
-		// check for an already existing artefact with same businessPath, change collect-item
-		List<AbstractArtefact> existingArtefacts = ePFMgr.loadArtefactsByBusinessPath(businessPath, getIdentity());
-		if (existingArtefacts!=null){
-			int amount = existingArtefacts.size();
+		if (numOfArtefacts > 0) {
 			addLink.setIconLeftCSS("o_icon o_icon-lg o_icon_eportfolio_add");
 			addLink.setCustomEnabledLinkCSS("o_eportfolio_add_again");
-			addLink.setTooltip(translate("add.to.eportfolio.again", String.valueOf(amount)));	
+			addLink.setTooltip(translate("add.to.eportfolio.again", String.valueOf(numOfArtefacts)));	
 		}
 		putInitialPanel(addLink);
 		getInitialComponent().setSpanAsDomReplaceable(true); // special case since controller is actually just a link 
 	}
-
 	
 	/**
 	 * @param ores
@@ -165,10 +173,7 @@ public class ArtefactWizzardStepsController extends BasicController {
 		this.artefact = artefact1;
 	}
 
-	private void setManagersAndModule() {
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
-		portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
-	}
+
 
 	private void initCollectionStepWizzard(UserRequest ureq) {
 		if (artefact == null && ores != null) prepareNewArtefact();

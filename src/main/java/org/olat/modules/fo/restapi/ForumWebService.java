@@ -74,8 +74,8 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.restapi.SystemItemFilter;
 import org.olat.core.util.vfs.restapi.VFSStreamingOutput;
 import org.olat.modules.fo.Forum;
-import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
+import org.olat.modules.fo.manager.ForumManager;
 import org.olat.restapi.support.MediaTypeVariants;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.vo.File64VO;
@@ -220,11 +220,11 @@ public class ForumWebService {
 
 		Identity author = getMessageAuthor(authorKey, httpRequest);
 		// creating the thread (a message without a parent message)
-		Message newThread = fom.createMessage();
+		Message newThread = fom.createMessage(forum, author, false);
 		newThread.setTitle(title);
 		newThread.setBody(body);
 		// open a new thread
-		fom.addTopMessage(author, forum, newThread);
+		fom.addTopMessage(newThread);
 		
 		MessageVO vo = new MessageVO(newThread);
 		return Response.ok(vo).build();
@@ -259,7 +259,6 @@ public class ForumWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 
-		ForumManager fom = ForumManager.getInstance();
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
 			int totalCount = fom.countThread(threadKey);
 			Message.OrderBy order = toEnum(orderBy);
@@ -383,10 +382,10 @@ public class ForumWebService {
 		}
 
 		// creating the thread (a message without a parent message)
-		Message newMessage = fom.createMessage();
+		Message newMessage = fom.createMessage(forum, author, false);
 		newMessage.setTitle(reply.getTitle());
 		newMessage.setBody(reply.getBody());
-		fom.replyToMessage(newMessage, author, mess);
+		fom.replyToMessage(newMessage, mess);
 		if(reply.getAttachments() != null) {
 			for(File64VO attachment:reply.getAttachments()) {
 				byte[] fileAsBytes = Base64.decodeBase64(attachment.getFile());

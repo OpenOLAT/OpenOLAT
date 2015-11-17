@@ -31,8 +31,8 @@ import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.olat.modules.fo.Forum;
-import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
+import org.olat.modules.fo.manager.ForumManager;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.ForumMessageDocument;
 

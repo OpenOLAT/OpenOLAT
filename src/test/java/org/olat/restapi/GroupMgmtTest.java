@@ -68,8 +68,8 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.fo.Forum;
-import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
+import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.fo.restapi.MessageVO;
 import org.olat.properties.NarrowedPropertyManager;
 import org.olat.properties.Property;
@@ -192,32 +192,32 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		ForumManager fm = ForumManager.getInstance();
 		Forum forum = fm.loadForum(forumKeyProperty.getLongValue());
 		
-		m1 = fm.createMessage();
+		m1 = fm.createMessage(forum, owner1, false);
 		m1.setTitle("Thread-1");
 		m1.setBody("Body of Thread-1");
-		fm.addTopMessage(owner1, forum, m1);
+		fm.addTopMessage(m1);
 		
-		m2 = fm.createMessage();
+		m2 = fm.createMessage(forum, owner2, false);
 		m2.setTitle("Thread-2");
 		m2.setBody("Body of Thread-2");
-		fm.addTopMessage(owner2, forum, m2);
+		fm.addTopMessage(m2);
 		
 		DBFactory.getInstance().intermediateCommit();
 		
-		m3 = fm.createMessage();
+		m3 = fm.createMessage(forum, owner3, false);
 		m3.setTitle("Message-1.1");
 		m3.setBody("Body of Message-1.1");
-		fm.replyToMessage(m3, owner3, m1);
+		fm.replyToMessage(m3, m1);
 		
-		m4 = fm.createMessage();
+		m4 = fm.createMessage(forum, part1, false);
 		m4.setTitle("Message-1.1.1");
 		m4.setBody("Body of Message-1.1.1");
-		fm.replyToMessage(m4, part1, m3);
+		fm.replyToMessage(m4, m3);
 		
-		m5 = fm.createMessage();
+		m5 = fm.createMessage(forum, part2, false);
 		m5.setTitle("Message-1.2");
 		m5.setBody("Body of Message-1.2");
-		fm.replyToMessage(m5, part2, m1);
+		fm.replyToMessage(m5, m1);
 
 		DBFactory.getInstance().intermediateCommit();
 	}

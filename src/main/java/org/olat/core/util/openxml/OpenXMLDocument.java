@@ -164,25 +164,25 @@ public class OpenXMLDocument {
 	}
 	
 	public void appendTitle(String text) {
-		appendHeading(text, Heading.title, null);
+		appendHeading(text, PredefinedStyle.title, null);
 	}
 	
 	public void appendHeading1(String text, String additionalText) {
-		appendHeading(text, Heading.heading1, additionalText);
+		appendHeading(text, PredefinedStyle.heading1, additionalText);
 	}
 	
 	public void appendHeading2(String text, String additionalText) {
-		appendHeading(text, Heading.heading2, additionalText);
+		appendHeading(text, PredefinedStyle.heading2, additionalText);
 	}
 	
-	private void appendHeading(String text, Heading style, String additionalText) {
+	private void appendHeading(String text, PredefinedStyle style, String additionalText) {
 		if(!StringHelper.containsNonWhitespace(text)) return;
 
 		Element textEl = createTextEl(text);
 		List<Element> runsEl = new ArrayList<Element>(2);
 		Element runEl = createRunEl(Collections.singletonList(textEl));
 		runsEl.add(runEl);
-		Element styleEl = createParagraphStyle(style.styleId());
+		Element styleEl = createParagraphStyle(style);
 		if(StringHelper.containsNonWhitespace(additionalText)) {
 			//add an "insecable" blank between the title and the additional text
 			Element blankRunEl = document.createElement("w:r");
@@ -205,6 +205,16 @@ public class OpenXMLDocument {
 			runsEl.add(addRunEl);
 		}
 
+		Element paragraphEl = createParagraphEl(styleEl, runsEl);
+		getCursor().appendChild(paragraphEl);
+	}
+	
+	public void appendSubtitle(String text) {
+		Element textEl = createTextEl(text);
+		List<Element> runsEl = new ArrayList<Element>(2);
+		Element runEl = createRunEl(Collections.singletonList(textEl), PredefinedStyle.subSubtleEmphasis);
+		runsEl.add(runEl);
+		Element styleEl = createParagraphStyle(PredefinedStyle.subSubtleEmphasis);
 		Element paragraphEl = createParagraphEl(styleEl, runsEl);
 		getCursor().appendChild(paragraphEl);
 	}
@@ -295,7 +305,7 @@ public class OpenXMLDocument {
 		}
 	}
 	
-	public void appendText(String text, boolean newParagraph, Style... styles) {
+	public void appendText(String text, boolean newParagraph, Style... textStyles) {
 		if(!StringHelper.containsNonWhitespace(text)) return;
 		
 		List<Element> textEls = new ArrayList<Element>();
@@ -311,8 +321,8 @@ public class OpenXMLDocument {
 		if(textEls.size() > 0) {
 			Element paragraphEl = getParagraphToAppendTo(newParagraph);
 			Element runEl = document.createElement("w:r");
-			if(styles != null && styles.length > 0) {
-				runEl.appendChild(createRunPrefsEl(styles));
+			if(textStyles != null && textStyles.length > 0) {
+				runEl.appendChild(createRunPrefsEl(textStyles));
 			}
 			for(Element textEl:textEls) {
 				runEl.appendChild(textEl);
@@ -372,6 +382,19 @@ public class OpenXMLDocument {
 		getCursor().appendChild(paragraphEl);
 	}
 	
+	public void appendHtmlText(String html, Spacing spacing) {
+		if(!StringHelper.containsNonWhitespace(html)) return;
+		try {
+			SAXParser parser = new SAXParser();
+			parser.setContentHandler(new HTMLToOpenXMLHandler(this, spacing));
+			parser.parse(new InputSource(new StringReader(html)));
+		} catch (SAXException e) {
+			log.error("", e);
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
+	
 	public void appendHtmlText(String html, boolean newParagraph) {
 		if(!StringHelper.containsNonWhitespace(html)) return;
 		try {
@@ -394,12 +417,23 @@ public class OpenXMLDocument {
 /*
 <w:pPr>
 	<w:pStyle w:val="berschrift1" />
+	<w:rPr>
+		<w:rStyle w:val="SchwacheHervorhebung" />
+	</w:rPr>
 </w:pPr>
  */
-	public Element createParagraphStyle(String styleId) {
+	public Element createParagraphStyle(PredefinedStyle styleId) {
 		Element paragraphEl = document.createElement("w:pPr");
-		Element styleEl = (Element)paragraphEl.appendChild(document.createElement("w:pStyle"));
-		styleEl.setAttribute("w:val", styleId);
+		if(styleId != null && styleId.paragraphStyleId() != null) {
+			Element styleEl = (Element)paragraphEl.appendChild(document.createElement("w:pStyle"));
+			styleEl.setAttribute("w:val", styleId.paragraphStyleId());
+		}
+		
+		if(styleId != null && styleId.runStyleId() != null) {
+			Element runPrefsEl = (Element)paragraphEl.appendChild(document.createElement("w:rPr"));
+			Element rStyleEl = (Element)runPrefsEl.appendChild(document.createElement("w:rStyle"));
+			rStyleEl.setAttribute("w:val", styleId.runStyleId());
+		}
 		return paragraphEl;
 	}
 	
@@ -426,8 +460,60 @@ public class OpenXMLDocument {
 		return paragraphEl;
 	}
 	
+	/*
+<w:pPr>
+	<w:spacing w:before="120" w:after="120" w:beforeAutospacing="0" w:afterAutospacing="0"/>
+</w:pPr>
+*/
+	public Element createParagraphEl(Indent indent, Border leftBorder, Spacing spacing, PredefinedStyle predefinedStyle) {
+		Element paragraphEl = document.createElement("w:p");
+		Element paragraphPrefsEl = (Element)paragraphEl.appendChild(document.createElement("w:pPr"));
+		if(indent != null) {
+			//<w:ind w:left="1440" w:right="1440" w:hanging="1080" /> 
+			Element indEl = (Element)paragraphPrefsEl.appendChild(document.createElement("w:ind"));
+			if(indent.getLeft() > 0) {
+				indEl.setAttribute("w:left", Integer.toString(indent.getLeft()));
+			}
+		}
+		
+		if(predefinedStyle != null && predefinedStyle.paragraphStyleId() != null) {
+			Element styleEl = (Element)paragraphPrefsEl.appendChild(document.createElement("w:pStyle"));
+			styleEl.setAttribute("w:val", predefinedStyle.paragraphStyleId());
+		}
+		
+		if(leftBorder != null) {
+			//<w:pBdr>
+		    //  <w:left w:val="single" w:sz="24" w:space="4" w:color="B97034" w:themeColor="accent6" w:themeShade="BF" /> 
+			
+			Element borderEl = (Element)paragraphPrefsEl.appendChild(document.createElement("w:pBdr"));
+			Element leftEl = (Element)borderEl.appendChild(document.createElement("w:left"));
+			leftEl.setAttribute("w:val", leftBorder.getVal());
+			leftEl.setAttribute("w:sz", Integer.toString(leftBorder.getSize()));
+			leftEl.setAttribute("w:space", Integer.toString(leftBorder.getSpace()));
+			leftEl.setAttribute("w:color", leftBorder.getColor());
+		}
+		
+		if(spacing != null) {
+			Element spacingEl = (Element)paragraphPrefsEl.appendChild(document.createElement("w:spacing"));
+			spacingEl.setAttribute("w:before", Integer.toString(spacing.getBefore()));
+			spacingEl.setAttribute("w:after", Integer.toString(spacing.getAfter()));
+			spacingEl.setAttribute("w:beforeAutospacing", "0");
+			spacingEl.setAttribute("w:afterAutospacing", "0");
+		}
+		return paragraphEl;
+	}
+	
 	public Element createRunEl(Collection<? extends Node> textEls) {
+		return createRunEl(textEls, null);
+	}
+	
+	public Element createRunEl(Collection<? extends Node> textEls, PredefinedStyle style) {
 		Element runEl = document.createElement("w:r");
+		if(style != null && style.runStyleId() != null) {
+			Element runPrefsEl = (Element)runEl.appendChild(document.createElement("w:rPr"));
+			Element rStyleEl = (Element)runPrefsEl.appendChild(document.createElement("w:rStyle"));
+			rStyleEl.setAttribute("w:val", style.runStyleId());
+		}
 		if(textEls != null && textEls.size() > 0) {
 			for(Node textEl:textEls) {
 				runEl.appendChild(textEl);
@@ -436,14 +522,14 @@ public class OpenXMLDocument {
 		return runEl;
 	}
 	
-	public Node createRunPrefsEl(Style... styles) {
+	public Node createRunPrefsEl(Style... runStyles) {
 		Element runPrefsEl = document.createElement("w:rPr");
-		return createRunPrefsEl(runPrefsEl, styles);
+		return createRunPrefsEl(runPrefsEl, runStyles);
 	}
 	
-	public Node createRunPrefsEl(Node runPrefsEl, Style... styles) {
-		if(styles != null && styles.length > 0) {
-			for(Style style:styles) {
+	public Node createRunPrefsEl(Node runPrefsEl, Style... prefsStyles) {
+		if(prefsStyles != null && prefsStyles.length > 0) {
+			for(Style style:prefsStyles) {
 				if(style != null) {
 					switch(style) {
 						case underline: {
@@ -461,9 +547,9 @@ public class OpenXMLDocument {
 		return runPrefsEl;
 	}
 	
-	public Node createRunReversePrefsEl(Node runPrefsEl, Style... styles) {
-		if(styles != null && styles.length > 0) {
-			for(Style style:styles) {
+	public Node createRunReversePrefsEl(Node runPrefsEl, Style... runStyles) {
+		if(runStyles != null && runStyles.length > 0) {
+			for(Style style:runStyles) {
 				if(style != null) {
 					switch(style) {
 						case underline:
@@ -837,6 +923,16 @@ public class OpenXMLDocument {
 		}
 		return mathEls;
 	}
+	
+	public void appendImage(File file) {
+		Element imgEl = createImageEl(file);
+		if(imgEl != null) {
+			Element runEl = createRunEl(Collections.singletonList(imgEl));
+			Element paragraphEl = getParagraphToAppendTo(true);
+			paragraphEl.appendChild(runEl);
+			getCursor().appendChild(paragraphEl);
+		}
+	}
 
 	public Element createImageEl(String path) {
 		if(mediaContainer == null) return null;
@@ -1010,7 +1106,15 @@ public class OpenXMLDocument {
 	}
 	
 	private String getUniqueFilename(File image) {
-		String filename = image.getName();
+		String filename = image.getName().toLowerCase();
+		int extensionIndex = filename.lastIndexOf('.');
+		if(extensionIndex > 0) {
+			String name = filename.substring(0, extensionIndex);
+			String extension = filename.substring(extensionIndex);
+			filename = StringHelper.transformDisplayNameToFileSystemName(name) + extension;
+		} else {
+			filename = StringHelper.transformDisplayNameToFileSystemName(filename);
+		}
 		if(imageFilenames.contains(filename)) {
 			for(int i=1; i<1000; i++) {
 				String nextFilename = i +"_" + filename;
@@ -1053,9 +1157,8 @@ public class OpenXMLDocument {
 		return docEl;
 	}
 	
-	private final Element createBodyElement(Element rootElement, Document doc) {
-		Element bodyEl = (Element)rootElement.appendChild(doc.createElement("w:body"));
-		return bodyEl;
+	private final Element createBodyElement(Element rootEl, Document doc) {
+		return (Element)rootEl.appendChild(doc.createElement("w:body"));
 	}
 	
 	public enum Style {
@@ -1081,19 +1184,28 @@ public class OpenXMLDocument {
 		}
 	}
 	
-	public enum Heading {
-		title("ooTitle"),
-		heading1("ooHeading1"),
-		heading2("ooHeading2");
+	public enum PredefinedStyle {
+		title("ooTitle", null),
+		heading1("ooHeading1", null),
+		heading2("ooHeading2", null),
+		subTitle("ooUntertitel", "ooUntertitelZeichen"),
+		subSubtleEmphasis("ooSubtleEmphasis", "ooSubtleEmphasisZeichen"),
+		quote("ooQuote", "ooQuoteZeichen");
 		
-		private final String styleId;
+		private final String paragraphStyleId;
+		private final String runStyleId;
 		
-		private Heading(String styleId) {
-			this.styleId = styleId;
+		private PredefinedStyle(String paragraphStyleId, String runStyleId) {
+			this.paragraphStyleId = paragraphStyleId;
+			this.runStyleId = runStyleId;
 		}
 
-		public String styleId() {
-			return styleId;
+		public String paragraphStyleId() {
+			return paragraphStyleId;
+		}
+		
+		public String runStyleId() {
+			return runStyleId;
 		}
 	}
 	
@@ -1117,6 +1229,86 @@ public class OpenXMLDocument {
 		
 		public String getHeader() {
 			return header;
+		}
+	}
+	
+	public static class Spacing {
+		private final int before;
+		private final int after;
+		
+		public Spacing(int before, int after) {
+			this.before = before;
+			this.after = after;
+		}
+
+		public int getBefore() {
+			return before;
+		}
+
+		public int getAfter() {
+			return after;
+		}
+	}
+	
+	public static class Border {
+		private final int space;
+		private final int size;
+		private final String val;
+		private final String color;
+		
+		public Border(int space, int size, String color) {
+			this.space = space;
+			this.size = size;
+			this.color = color;
+			val = "single";
+		}
+		
+		public Border(Border border, String val) {
+			this.space = border.space;
+			this.size = border.size;
+			this.color = border.color;
+			this.val = val;
+		}
+
+		public int getSpace() {
+			return space;
+		}
+
+		public int getSize() {
+			return size;
+		}
+
+		public String getColor() {
+			return color;
+		}
+		
+		public String getVal() {
+			return val;
+		}
+		
+		public boolean same(Border border) {
+			return color.equals(border.color) && size == border.size && space == border.space;
+		}
+		
+		public Border cloneAndStack(Border border) {
+			String stackedVal = border.val;
+			switch(border.val) {
+				case "single": stackedVal = "double"; break;
+				case "double": stackedVal = "triple"; break;
+			}
+			return new Border(this, stackedVal);
+		}
+	}
+	
+	public static class Indent {
+		private final int left;
+		
+		public Indent(int left) {
+			this.left = left;
+		}
+
+		public int getLeft() {
+			return left;
 		}
 	}
 	

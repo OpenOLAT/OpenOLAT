@@ -76,8 +76,8 @@ import org.olat.course.nodes.FOCourseNode;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.fo.Forum;
-import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
+import org.olat.modules.fo.manager.ForumManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.restapi.repository.course.CoursesWebService;
@@ -461,10 +461,10 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	
 	private Message createMessage(Identity id, Forum fo) {
 		ForumManager fm = ForumManager.getInstance();
-		Message m1 = fm.createMessage();
+		Message m1 = fm.createMessage(fo, id, false);
 		m1.setTitle("Thread-1");
 		m1.setBody("Body of Thread-1");
-		fm.addTopMessage(id, fo, m1);
+		fm.addTopMessage(m1);
 		return m1;
 	}
 	

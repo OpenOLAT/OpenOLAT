@@ -51,13 +51,18 @@ import org.olat.course.tree.CourseEditorTreeModel;
  */
 public class FOCourseNodeEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
-	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";	
-	static final String[] paneKeys = { PANE_TAB_ACCESSIBILITY };
+	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
+	private static final String PANE_TAB_SETTINGS = "pane.tab.settings";
+	private static final String[] paneKeys = { PANE_TAB_ACCESSIBILITY, PANE_TAB_SETTINGS };
 	
-	private FOCourseNode foNode;
-	private VelocityContainer myContent;
+	public static final String PSEUDONYM_POST_ALLOWED = "pseudonym.post.allowed";
+	public static final String GUEST_POST_ALLOWED = "guest.post.allowed";
+	
+	private final FOCourseNode foNode;
+	private final VelocityContainer myContent;
 
-	private ConditionEditController readerCondContr, posterCondContr, moderatorCondContr;
+	private SettingsController settingsCtrl;
+	private final ConditionEditController readerCondContr, posterCondContr, moderatorCondContr;
 	private TabbedPane myTabbedPane;
 
 	/**
@@ -72,35 +77,40 @@ public class FOCourseNodeEditController extends ActivateableTabbableDefaultContr
 		super(ureq, wControl);
 		this.foNode = forumNode;
 		
-		myContent = this.createVelocityContainer("edit");		
+		myContent = createVelocityContainer("edit");		
 
 		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
 		// Reader precondition
 		Condition readerCondition = foNode.getPreConditionReader();
 		readerCondContr = new ConditionEditController(ureq, getWindowControl(), readerCondition,
 				AssessmentHelper.getAssessableNodes(editorModel, forumNode), euce);		
-		this.listenTo(readerCondContr);
+		listenTo(readerCondContr);
 		myContent.put("readerCondition", readerCondContr.getInitialComponent());
 
 		// Poster precondition
 		Condition posterCondition = foNode.getPreConditionPoster();
 		posterCondContr = new ConditionEditController(ureq, getWindowControl(), posterCondition,
 				AssessmentHelper.getAssessableNodes(editorModel, forumNode), euce);		
-		this.listenTo(posterCondContr);
+		listenTo(posterCondContr);
 		myContent.put("posterCondition", posterCondContr.getInitialComponent());
 
 		// Moderator precondition
 		Condition moderatorCondition = foNode.getPreConditionModerator();
 		moderatorCondContr = new ConditionEditController(ureq, getWindowControl(), moderatorCondition,
 				AssessmentHelper.getAssessableNodes(editorModel, forumNode), euce);		
-		this.listenTo(moderatorCondContr);
+		listenTo(moderatorCondContr);
 		myContent.put("moderatorCondition", moderatorCondContr.getInitialComponent());
+		
+		//Settings
+		settingsCtrl = new SettingsController(ureq, getWindowControl(), forumNode);
+		listenTo(settingsCtrl);
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
@@ -109,6 +119,7 @@ public class FOCourseNodeEditController extends ActivateableTabbableDefaultContr
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
 		if (source == readerCondContr) {
 			if (event == Event.CHANGED_EVENT) {
@@ -128,28 +139,43 @@ public class FOCourseNodeEditController extends ActivateableTabbableDefaultContr
 				foNode.setPreConditionModerator(cond);
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
+		} else if (source == settingsCtrl) {
+			if (event == Event.CHANGED_EVENT) {
+				String pseudoAllowed = settingsCtrl.isPseudonymPostAllowed() ? "true" : "false";
+				foNode.getModuleConfiguration().setStringValue(PSEUDONYM_POST_ALLOWED, pseudoAllowed);
+				String guestAllowed = settingsCtrl.isGuestPostAllowed() ? "true" : "false";
+				foNode.getModuleConfiguration().setStringValue(GUEST_POST_ALLOWED, guestAllowed);
+				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
 		}
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.generic.tabbable.TabbableDefaultController#addTabs(org.olat.core.gui.components.TabbedPane)
 	 */
+	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), myContent);
+		if(settingsCtrl != null) {
+			tabbedPane.addTab(translate(PANE_TAB_SETTINGS), settingsCtrl.getInitialComponent());
+		}
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
-    //child controllers registered with listenTo() get disposed in BasicController
+		//child controllers registered with listenTo() get disposed in BasicController
 	}
 
+	@Override
 	public String[] getPaneKeys() {
 		return paneKeys;
 	}
 
+	@Override
 	public TabbedPane getTabbedPane() {
 		return myTabbedPane;
 	}

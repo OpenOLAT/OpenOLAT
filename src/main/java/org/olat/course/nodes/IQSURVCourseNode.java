@@ -348,8 +348,8 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	}
 
 	@Override
-	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course) {
-		CourseNode copyInstance = super.createInstanceForCopy(isNewTitle, course);
+	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
+		CourseNode copyInstance = super.createInstanceForCopy(isNewTitle, course, author);
 		IQEditController.removeIQReference(copyInstance.getModuleConfiguration());
 		return copyInstance;
 	}

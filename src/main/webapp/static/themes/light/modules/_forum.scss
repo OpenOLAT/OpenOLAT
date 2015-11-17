@@ -21,6 +21,10 @@
 	.o_forum_fulltextsearch {
 		float: left;
 	}
+	
+	.o_forum_toolbar .o_forum_tool span {
+		display: none;
+	}
 }
 
 .o_forum {

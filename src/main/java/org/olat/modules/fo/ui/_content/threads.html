@@ -1,0 +1,20 @@
+<h3>$r.translate("header.overview")</h3>
+<div class="clearfix o_block">
+	<div class="o_forum_toolbar btn-group">
+	#if($r.available("msg.create"))
+		$r.render("msg.create")
+	#end
+	#if($r.available("archive.forum"))
+		$r.render("archive.forum")
+	#end
+	#if($r.available("filter"))
+		$r.render("filter")
+	#end
+	</div>
+	#if($r.available("search_input"))
+      <div id="o_forum_fulltextsearch" class="o_forum_fulltextsearch">
+      	$r.render("search_input")
+      </div>
+	#end
+</div>
+$r.render("threads")

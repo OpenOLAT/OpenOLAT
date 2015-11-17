@@ -31,40 +31,45 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
  * @author schneider
  */
 public interface ForumCallback {
+	
+	/**
+	 * @return if allowed to post in forum with a pseudonym
+	 */
+	public boolean mayUsePseudonym();
 
 	/**
 	 * @return if allowed to open a new forum thread
 	 */
-	boolean mayOpenNewThread();
+	public boolean mayOpenNewThread();
 	
 	/**
 	 * @return if the current user may reply to messages
 	 */
-	boolean mayReplyMessage();
+	public boolean mayReplyMessage();
 	
 	/**
 	 * @return if allowed to moderate
 	 */
-	boolean mayEditMessageAsModerator();
+	public boolean mayEditMessageAsModerator();
 	
 	/**
 	 * @return if allowed to delete non-owned messages
 	 */
-	boolean mayDeleteMessageAsModerator();
+	public boolean mayDeleteMessageAsModerator();
 	
 	/**
 	 * @return true if allowed to archive the whole forum or threads of it
 	 */
-	boolean mayArchiveForum();
+	public boolean mayArchiveForum();
 	
 	/**
 	 * @return true if allowed to filter the whole forum
 	 */
-	boolean mayFilterForUser();
+	public boolean mayFilterForUser();
 	
 	/**
 	 * @return the subscriptionContext. if null, then no subscription must be offered
 	 */
-	SubscriptionContext getSubscriptionContext();
+	public SubscriptionContext getSubscriptionContext();
 	
 }

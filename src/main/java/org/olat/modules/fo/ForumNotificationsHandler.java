@@ -48,6 +48,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.modules.fo.manager.ForumManager;
 import org.olat.repository.RepositoryManager;
 
 /**

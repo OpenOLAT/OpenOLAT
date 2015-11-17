@@ -26,160 +26,209 @@
 
 package org.olat.modules.fo;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
-import org.junit.Before;
+import org.junit.Assert;
 import org.junit.Test;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
+import org.olat.modules.fo.manager.ForumManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
+ * 
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  * @author Felix Jost
+ *
  */
-
 public class ForumManagerTest extends OlatTestCase {
 
-	private static OLog log = Tracing.createLoggerFor(ForumManagerTest.class); 
-
-	public Identity u1;
-	public Identity u2;
-	public Identity u3;
-	public UserManager um1;
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	public UserManager userManager;
+	@Autowired
+	public ForumManager forumManager;
 	
-	public ForumManager fm1;
-	public Forum fo;
-	
-  private Message message1, m3;
-  
+	@Test
+	public void testGetThread() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-4");
+		Forum fo = forumManager.addAForum();
+		dbInstance.commit();
 
-	/**
-	 * SetUp is called before each test
-	 */
-	@Before public void setup(){
-		// create some users with user manager
-		try{		
-			log.info("setUp start ------------------------");
-			
-			um1 = UserManager.getInstance();
-			//um1.resetSession(sess);
-			u1 = JunitTestHelper.createAndPersistIdentityAsUser("felix");
-			u2 = JunitTestHelper.createAndPersistIdentityAsUser("migros");
-			u3 = JunitTestHelper.createAndPersistIdentityAsUser("salat");
-			
-			fm1 = ForumManager.getInstance();
-			fo = fm1.addAForum();
-			
-			message1 = new MessageImpl();
-			message1.setTitle("stufe 0: subject 0");
-			message1.setBody("body/n dep 0");
-			
-			Message m2 = new MessageImpl();
-			m2.setTitle("stufe 0: subject 1");
-			m2.setBody("body 2 /n dep 0");
-			
-			m3 = new MessageImpl();
-			m3.setTitle("stufe 1: subject 2");
-			m3.setBody("body 21 /n dep 1");
-			
-			Message m4 = new MessageImpl();
-			m4.setTitle("stufe 1: subject 3");
-			m4.setBody("body 211 /n dep 2");
-			
-			fm1.addTopMessage(u1, fo, message1);
-			fm1.addTopMessage(u2, fo, m2);
-			
-			fm1.replyToMessage(m3, u3, m2);
-			fm1.replyToMessage(m4, u1, m3);			
-			
-			for (int i=0; i<10;i++) {
-				Message m = new MessageImpl();
-				m.setTitle("Title" + i);
-				m.setBody("Body" + i);
-				fm1.replyToMessage(m,u1,m4);
-			}
-			log.info("setUp done ------------------------");
+		Message message = forumManager.createMessage(fo, id, false);
+		message.setTitle("stufe 0: subject 0");
+		message.setBody("body/n dep 0");
+		forumManager.addTopMessage(message);
+		dbInstance.commit();
+
+		Long messageTopThread = message.getKey();
+		List<Message> threadMessageList = forumManager.getThread(messageTopThread);
+		Assert.assertEquals("Not the right number of messages for this forum", 1, threadMessageList.size());
+		
+		// lookup for a none existing thread
+		List<Message> noneThreadMessageList = forumManager.getThread(1234l);
+		Assert.assertEquals("Not the right number of messages for this forum", 0, noneThreadMessageList.size());
+	}
+
+	@Test
+	public void testCreateAndGetMessages_loadForumID() throws Exception {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-2");
+		Forum fo = forumManager.addAForum();
+		dbInstance.commit();
+
+		Message topMessage = forumManager.createMessage(fo, id1, false);
+		topMessage.setTitle("stufe 0: subject 0");
+		topMessage.setBody("body/n dep 0");
+		forumManager.addTopMessage(topMessage);
+		dbInstance.commit();
+
+		Message reply = forumManager.createMessage(fo, id2, false);
+		reply.setTitle("stufe 0: subject 0");
+		reply.setBody("body/n dep 0");
+		forumManager.replyToMessage(reply, topMessage);
+		dbInstance.commitAndCloseSession();
+
+		//load the forum
+		Forum forum = forumManager.loadForum(fo.getKey());
+		List<Message> messageList = forumManager.getMessagesByForum(forum);
+		Assert.assertNotNull(messageList);			
+		for(Message msg: messageList) {
+			Assert.assertNotNull(msg);
 		}
-		catch(Exception e){
-		 	log.error("Exception in setUp(): "+e);	
-		}
+		
+		Assert.assertEquals("Not the right number of messages for this forum", 2, messageList.size());
 	}
 	
 	@Test
-	public void testGetMessagesByForumID() throws Exception {
-		log.debug("Start testGetMessagesByForumID()");
-		
-		ForumManager foma = ForumManager.getInstance();
-		long start = System.currentTimeMillis();
-		Forum forum = foma.loadForum(fo.getKey());
-		List<Message> messageList = foma.getMessagesByForum(forum);
-		long stop = System.currentTimeMillis();		
-		assertNotNull(messageList);			
-		log.debug("time:"+(stop-start));
-		Iterator<Message> it = messageList.iterator();
-		while (it.hasNext()) {
-			Object o =  it.next();
-			log.debug("object:"+o);
-			Message msg = (Message)o;
-			log.debug("msg:"+msg.getTitle());
-		}
-		assertEquals("Not the right number of messages for this forum",14,messageList.size());
-	}
-	
-	@Test public void testCountMessagesByForumID() {
-		log.debug("Start testCountMessagesByForumID()");
-		ForumManager foma = ForumManager.getInstance();
-		assertEquals("Not the right number of messages for this forum",14,foma.countMessagesByForumID(fo.getKey()).intValue());
-	}
+	public void testCountMessagesByForumID() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-2");
+		Forum fo = forumManager.addAForum();
+		dbInstance.commit();
 
-	@Test public void testGetThread() {
-		log.debug("Start testGetThread()");
-		ForumManager foma = ForumManager.getInstance();
-		Long msgidTopThread = message1.getKey();
-		List<Message> threadMessageList = foma.getThread(msgidTopThread);
-		log.debug("threadMessageList.size()=" + threadMessageList.size());
-		assertEquals("Not the right number of messages for this forum",1,threadMessageList.size());
-		// lookup for 
-		Long notExistingTopThread = new Long(1234);
-		threadMessageList = foma.getThread(notExistingTopThread);
-		log.debug("threadMessageList.size()=" + threadMessageList.size());
-		assertEquals("Not the right number of messages for this forum",0,threadMessageList.size());
-	
+		Message topMessage = forumManager.createMessage(fo, id1, false);
+		topMessage.setTitle("stufe 0: subject 0");
+		topMessage.setBody("body/n dep 0");
+		forumManager.addTopMessage(topMessage);
+		dbInstance.commit();
+
+		Message reply = forumManager.createMessage(fo, id2, false);
+		reply.setTitle("stufe 1: subject 0");
+		reply.setBody("body/n dep 0");
+		forumManager.replyToMessage(reply, topMessage);
+		dbInstance.commit();
+		
+		Message reply2 = forumManager.createMessage(fo, id1, false);
+		reply2.setTitle("stufe 1: subject 0");
+		reply2.setBody("body/n dep 0");
+		forumManager.replyToMessage(reply2, reply);
+		dbInstance.commit();
+		
+		int numOfMessages = forumManager.countMessagesByForumID(fo.getKey());
+		Assert.assertEquals("Not the right number of messages for this forum", 3, numOfMessages);
 	}
 	
-	@Test public void testGetNewMessageInfo() {
-		log.debug("Start testGetNewMessageInfo()");
-		ForumManager foma = ForumManager.getInstance();
-		
+	@Test
+	public void testGetNewMessageInfo() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-5");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-6");
+		Forum fo = forumManager.addAForum();
+		dbInstance.commit();
+
+		Message topMessage = forumManager.createMessage(fo, id1, false);
+		topMessage.setTitle("New message 1");
+		topMessage.setBody("The newest stuff");
+		forumManager.addTopMessage(topMessage);
+		dbInstance.commit();
+
+		Message reply = forumManager.createMessage(fo, id2, false);
+		reply.setTitle("New message 2");
+		reply.setBody("The more newest stuff");
+		forumManager.replyToMessage(reply, topMessage);
+		dbInstance.commit();
+
 		sleep(1500);//we must ensure a lap of 1 second
+		
+		//check the newest messages, limit now
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(new Date());
-		List<Message> msgList = foma.getNewMessageInfo(fo.getKey(), cal.getTime());
-		assertEquals(0, msgList.size());
+		List<Message> newestMessages = forumManager.getNewMessageInfo(fo.getKey(), cal.getTime());
+		Assert.assertEquals(0, newestMessages.size());
+		
+		//check the newest messages, limit one hour in past
 		cal.add(Calendar.HOUR_OF_DAY, - 1);
-		msgList = foma.getNewMessageInfo(fo.getKey(), cal.getTime());
-		assertEquals(14, msgList.size());
+		List<Message> olderLastMessages = forumManager.getNewMessageInfo(fo.getKey(), cal.getTime());
+		Assert.assertEquals(2, olderLastMessages.size());
 	}
 	
-	@Test public void testDeleteMessageTree() {
-		log.debug("Start testDeleteMessageTree()");
-		ForumManager foma = ForumManager.getInstance();
-		foma.deleteMessageTree(fo.getKey(), m3); // throws Exception when failed		
+	@Test
+	public void testDeleteMessageTree() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-5");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-6");
+		Forum fo = forumManager.addAForum();
+		dbInstance.commit();
+
+		Message topMessage = forumManager.createMessage(fo, id1, false);
+		topMessage.setTitle("Future deleted message 1");
+		topMessage.setBody("Future deleted  stuff");
+		forumManager.addTopMessage(topMessage);
+		dbInstance.commit();
+
+		Message reply = forumManager.createMessage(fo, id2, false);
+		reply.setTitle("Future deleted 2");
+		reply.setBody("Future deleted  stuff");
+		forumManager.replyToMessage(reply, topMessage);
+		dbInstance.commit();
+		
+		Message reply2 = forumManager.createMessage(fo, id1, false);
+		reply2.setTitle("Future deleted 3");
+		reply2.setBody("Future deleted  stuff");
+		forumManager.replyToMessage(reply2, reply);
+		dbInstance.commit();
+		
+		//delete a message
+		forumManager.deleteMessageTree(fo.getKey(), reply2);
+		dbInstance.commitAndCloseSession();
+		
+		//delete a top message
+		forumManager.deleteMessageTree(fo.getKey(), topMessage);
+		dbInstance.commitAndCloseSession();
 	}
 	
-	@Test public void testDeleteForum() {
-		log.debug("Start testDeleteForum()");
-		ForumManager foma = ForumManager.getInstance();
-		foma.deleteForum(fo.getKey()); // throws Exception when failed
+	@Test
+	public void testDeleteForum() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-7");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-8");
+		Forum fo = forumManager.addAForum();
+		dbInstance.commit();
+
+		Message topMessage = forumManager.createMessage(fo, id1, false);
+		topMessage.setTitle("Future deleted forum part. 1");
+		topMessage.setBody("Future deleted  stuff");
+		forumManager.addTopMessage(topMessage);
+		dbInstance.commit();
+
+		Message reply = forumManager.createMessage(fo, id2, false);
+		reply.setTitle("Future deleted forum part. 2");
+		reply.setBody("Future deleted  stuff");
+		forumManager.replyToMessage(reply, topMessage);
+		dbInstance.commit();
+		
+		Message reply2 = forumManager.createMessage(fo, id1, false);
+		reply2.setTitle("Future deleted forum part. 3");
+		reply2.setBody("Future deleted  stuff");
+		forumManager.replyToMessage(reply2, reply);
+		dbInstance.commitAndCloseSession();
+
+		//delete the forum
+		forumManager.deleteForum(fo.getKey());
+		dbInstance.commit();
 	}
-    
 }

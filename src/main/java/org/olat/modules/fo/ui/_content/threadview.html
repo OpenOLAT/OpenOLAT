@@ -1,0 +1,198 @@
+#if($r.available("backLinkLT"))
+<div class="o_block">$r.render("backLinkLT")</div>
+#end
+<div class="o_forum">
+	<div class="clearfix o_block">
+		#if($filteredForLastName)
+		<h3>$r.translate("filter.results.title") $r.escapeHtml($filteredForFirstName) $r.escapeHtml($filteredForLastName)</h3>
+		#end
+		<div class="o_forum_toolbar btn-group">
+			#if($r.available("archive.thread") && $r.visible("archive.thread"))
+				$r.render("archive.thread")
+			#end
+			#if(!$guestOnly && (($r.available("close.thread") && $r.visible("close.thread")) || ($r.available("open.thread") && $r.visible("open.thread")) || ($r.available("hide.thread") && $r.visible("hide.thread")) || ($r.available("show.thread") && $r.visible("show.thread")) || ($r.available("msg.sticky") && $r.visible("msg.sticky")) || ($r.available("remove.sticky") && $r.visible("remove.sticky"))))
+			<button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown">
+				<i class="o_icon o_icon-fw o_icon_actions"></i>
+				<span class="caret"></span>
+			</button>
+			<ul class="dropdown-menu dropdown-menu-right">
+				#if($r.available("close.thread") && $r.visible("close.thread"))
+					<li>$r.render("close.thread")</li>
+				#end
+				#if($r.available("open.thread") && $r.visible("open.thread"))
+					<li>$r.render("open.thread")</li>
+				#end
+				#if($r.available("hide.thread") && $r.visible("hide.thread"))
+					<li>$r.render("hide.thread")</li>
+				#end
+				#if($r.available("show.thread") && $r.visible("show.thread"))
+					<li>$r.render("show.thread")</li>
+				#end
+				#if($r.available("msg.sticky") && $r.visible("msg.sticky"))
+					<li>$r.render("msg.sticky")</li>
+				#end
+				#if($r.available("remove.sticky") && $r.visible("remove.sticky"))
+					<li>$r.render("remove.sticky")</li>
+				#end
+			</ul>
+			#end
+		</div>
+		
+		<div class="o_forum_toolbar btn-group pull-right">
+		#if ($r.available("viewswitch.threadview") && $r.visible("viewswitch.threadview"))
+			$r.render("viewswitch.threadview")
+		#end
+		#if ($r.available("viewswitch.flatview"))
+			$r.render("viewswitch.flatview")
+		#end
+		#if ($r.available("viewswitch.messageview"))
+			$r.render("viewswitch.messageview")
+		#end
+		#if ($r.available("viewswitch.marked"))
+			$r.render("viewswitch.marked")
+		#end
+		#if ($r.available("viewswitch.new"))
+			$r.render("viewswitch.new")
+		#end
+		</div>
+	</div>
+	#if ($messages.isEmpty())
+		#if ($mode == "marked")
+		<p class="o_important">$r.translate("msg.no_marked_message")</p>
+		#elseif ($mode == "new")
+		<p class="o_important">$r.translate("msg.no_new_message")</p>
+		#end
+	#end
+	
+#foreach ($message in $messages)
+	#set( $count = $velocityCount - 1)
+	<div #if($threadMode) style="margin-left: ${message.depth}em" #end class="o_forum_message o_block_large_bottom #if($message.newMessage) o_forum_message_new #end #if($message.key == $goToMessageId) o_forum_message_highlight #end" id="o_forum_message_${message.key}">
+		<div class="o_forum_message_header clearfix">
+			#if($r.available("eportfolio_${message.key}"))
+				<div class="o_ep_collect">$r.render("eportfolio_${message.key}")</div>
+			#end
+			#if($r.available("mark_${count}"))
+				<div class="o_mark">$r.render("mark_${count}")</div>
+			#end
+			#if(!$guestOnly)
+				#if($message.guest || ($message.pseudonym && !${message.pseudonym.isEmpty()}))
+				 	<div class="o_portrait"><div class="o_portrait_image"><img src="$r.staticLink("images/transparent.gif")" class="o_portrait_avatar o_portrait_anonymous" /></div></div>
+				#elseif($r.available("portrait_${message.key}"))
+					$r.render("portrait_${message.key}")
+				#end
+			#end
+			
+			<h4 class="o_forum_message_title">
+				$r.escapeHtml($message.title)
+				#if($message.newMessage)
+					<span class="o_newindicator" title="$r.translateInAttribute("message.unread")"><i class="o_icon o_icon_new" > </i> <span class="o_label">$r.translate("new")</span></span>
+				#end
+			</h4>
+			<div class="o_author">
+				#if($message.pseudonym && !${message.pseudonym.isEmpty()})
+					$r.escapeHtml($message.pseudonym)
+				#elseif($message.guest)
+					$r.translate("anonymous.poster")
+				#elseif($r.available("vc_${count}"))
+					$r.render("vc_${count}")
+				#else							
+					$r.escapeHtml($message.creatorFirstname) $r.escapeHtml($message.creatorLastname)
+				#end
+			</div>
+			<div class="o_date">
+				$r.translate("msg.creationdate") $message.formattedCreationDate
+			</div>
+			
+			#if($message.modified || $message.moved)
+			<div class="o_modified">
+				#if($message.modified)
+		   			$r.translate("msg.modified"): $r.escapeHtml($message.modifierFirstName) $r.escapeHtml($message.modifierLastName) $message.formattedLastModified
+		   		#end
+		   		#if($message.moved)
+		   			$r.translate("msg.moved")
+	   			#end
+		   	</div>
+			#end	
+		</div>
+		
+		<div class="o_forum_message_body">
+			<div class="clearfix o_scrollblock">$r.formatLatexFormulas($message.body)</div>
+		</div>
+
+		<div class="o_forum_message_actions o_button_group">
+			#if($r.available("open_in_thread_${count}"))
+				$r.render("open_in_thread_${count}")
+			#end
+
+			#if ($r.available("dl_${count}") || $r.available("ed_${count}"))
+			<div class="btn-group">
+				#if($r.available("dl_${count}"))
+					$r.render("dl_${count}")
+				#end
+				#if ($r.available("ed_${count}"))
+					$r.render("ed_${count}")
+				#end
+			</div>
+			#end
+			
+			#if ($r.available("rp_${count}"))
+			<div class="btn-group">$r.render("qt_${count}") $r.render("rp_${count}")</div>
+			#end
+			
+			#if($r.available("split_${count}"))
+			<div class="btn-group">
+				<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+					<i class="o_icon o_icon-fw o_icon_actions"></i>
+					<span class="caret"></span>
+				</button>
+				<ul class="dropdown-menu dropdown-menu-right">
+					<li>$r.render("split_${count}")</li>
+					<li>$r.render("move_${count}")</li>
+				</ul>
+			</div>
+			#end
+		</div>
+		
+		#if(${message.hasAttachments()})
+		<div class="o_forum_message_attachments">
+			<h5>$r.translate("attachments"):</h5>
+			<ul class="list-inline">
+			#foreach($attachment in $message.attachments)
+				#set($fname = $attachment.getName())
+				<li class="o_attachment">
+					<a href="$r.commandURI("attachment_${velocityCount}_${message.key}")$fname" target="_blank">
+						<div class="o_filename">$r.escapeHtml($fname)</div>
+						<div class="o_size">
+							<i class="o_icon o_icon-fw $r.getFiletypeIconCss($fname)"></i>
+							 $r.formatBytes($attachment.getSize())
+						</div>
+						#if ($attachment.getMetaInfo() && $attachment.getMetaInfo().isThumbnailAvailable())										
+						<img src="${thumbMapper}/$message.key/$attachment.getMetaInfo().getUUID()/$fname" class="img-thumbnail" alt="$r.escapeHtml("$fname")" title="$r.escapeHtml("$fname")"/>
+						<i class="o_icon o_icon-lg o_icon_enlarge"></i>
+						#end
+					</a>		
+				</li>
+			#end 
+			</ul>
+		</div>
+		#end
+	</div>
+#end
+
+#if($mode == "one")
+	$r.render("singleThreadTable")
+	<script type="text/javascript">
+	/* <![CDATA[ */
+			o_scrollToElement('#o_top');
+	/* ]]> */
+	</script> 
+#end
+#if(${goToMessage.isTrue()})
+	<script type="text/javascript">
+	/* <![CDATA[ */
+	    o_scrollToElement('#o_forum_message_$goToMessageId');
+	/* ]]> */
+	</script> 
+#end
+
+</div> ## END of o_forum

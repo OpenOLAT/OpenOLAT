@@ -29,12 +29,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -42,7 +42,6 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
@@ -130,7 +129,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 	private static final OLog log = Tracing.createLoggerFor(ProjectBrokerCourseNode.class);
 
 	private transient static final String PACKAGE_PROJECTBROKER = Util.getPackageName(ProjectListController.class);
-
 	private transient static final String PACKAGE = Util.getPackageName(ProjectBrokerCourseNode.class);
 
 	private transient static final String TYPE = "projectbroker";
@@ -312,11 +310,9 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
-		// only here we know which translator to take for translating condition
-		// error messages
-		String translatorStr = Util.getPackageName(ProjectBrokerCourseEditorController.class);
+		// only here we know which translator to take for translating condition error messages
 		// check if group-manager is already initialized
-		List<StatusDescription> sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		List<StatusDescription> sds = isConfigValidWithTranslator(cev, PACKAGE_PROJECTBROKER, getConditionExpressions());
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}
@@ -710,6 +706,21 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 			projectBrokerManager.saveProjectBrokerId(projectBroker.getKey(), cpm, this);
 			// get the node folder inside of the importDirectory
 			File folderNodeData = new File(importDirectory, getIdent());
+
+			//for the broker prefs
+			File projectBrokerFile = new File(folderNodeData, "projectbroker.xml");
+			if(projectBrokerFile.exists()) {
+				XStream xstream = XStreamHelper.createXStreamInstance();
+				ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
+				ProjectBrokerConfig brokerConfig = (ProjectBrokerConfig)XStreamHelper.readObject(xstream, projectBrokerFile);
+				if(brokerConfig != null && brokerConfig.getAccountGroupKey() != null) {
+					Long accountGroupKey = envMapper.toGroupKeyFromOriginalKey(brokerConfig.getAccountGroupKey());
+					if(accountGroupKey != null) {
+						projectGroupManager.saveAccountManagerGroupKey(accountGroupKey, cpm, this);
+					}
+				}
+			}
+			
 			// loop through the project directories
 			if (folderNodeData.exists()) {
 				for (File projectDir : folderNodeData.listFiles(DirectoryFilter.DIRECTORY_FILTER)) {
@@ -799,8 +810,16 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 		ProjectBroker pb = projectBrokerManager.getProjectBroker(projectBrokerManager.getProjectBrokerId(cpm, this));
 		ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
 		XStream xstream = XStreamHelper.createXStreamInstance();
+		
 		// folder for the pb node
 		File pbNodeFolder = new File(exportDirectory, getIdent());
+		pbNodeFolder.mkdirs();
+		//for the broker prefs
+		ProjectBrokerConfig brokerConfig = new ProjectBrokerConfig();
+		brokerConfig.setAccountGroupKey(projectGroupManager.getAccountManagerGroupKey(cpm, this));
+		File projectBrokerFile = new File(pbNodeFolder, "projectbroker.xml");
+		XStreamHelper.writeObject(xstream, projectBrokerFile, brokerConfig);
+
 		// get all the projects available in the pb
 		List<Project> projects = projectBrokerManager.getProjectListBy(pb.getKey());
 		for (Project project:projects) {
@@ -946,7 +965,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 			// New config parameter version 2
 			config.setBooleanEntry(CONF_TASK_PREVIEW, false);
 			MSCourseNode.initDefaultConfig(config);
-	    config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
+			config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
 		} else {
 			int version = config.getConfigurationVersion();
 			if (version < CURRENT_CONFIG_VERSION) {
@@ -995,6 +1014,16 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 			//create new Project broker and get the old one
 			Long projectBrokerId = projectBrokerManager.createAndSaveProjectBroker().getKey();
 			projectBrokerManager.saveProjectBrokerId(projectBrokerId, course.getCourseEnvironment().getCoursePropertyManager(), this);
+			
+			//find the group for account manager and remap the account group
+			CourseNode sourceCourseNode = sourceCourse.getRunStructure().getNode(getIdent());
+			Long sourceAccountGroupKey = projectGroupManager.getAccountManagerGroupKey(oldCpm, sourceCourseNode);
+			if(sourceAccountGroupKey != null) {
+				Long copiedGroupKey = envMapper.toGroupKeyFromOriginalKey(sourceAccountGroupKey);
+				CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
+				projectGroupManager.saveAccountManagerGroupKey(copiedGroupKey, cpm, this);
+			} 
+
 			Long oldBrokerId = projectBrokerManager.getProjectBrokerId(oldCpm, this);
 			List<Project> projectsFromGroup = projectBrokerManager.getProjectListBy(oldBrokerId);
 			//loop create and configure the new Projects
@@ -1033,62 +1062,76 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 	 * @see org.olat.course.nodes.CourseNode#createInstanceForCopy()
 	 */
 	@Override
-	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course) {
+	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
 		// create the instance for the copy
-		CourseNode copyInstance = super.createInstanceForCopy(isNewTitle, course);
+		CourseNode copyInstance = super.createInstanceForCopy(isNewTitle, course, author);
 		// get all the different managers
-		ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
+		ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
+		
 		// get the pbID from the source pb
 		Long oldProjectBrokerId = projectBrokerManager.getProjectBrokerId(cpm, this);
 		// create a new projectBroker for the copyInstance
 		ProjectBroker newBroker = projectBrokerManager.createAndSaveProjectBroker();
 		Long projectBrokerId = newBroker.getKey();
 		projectBrokerManager.saveProjectBrokerId(projectBrokerId, cpm, copyInstance);
+		
+		
+		// configure the new Project like the old one
+		// copy the old accountManagergroup to preserve the
+		// "persons in charge"
+		Long originalAccountGroupKey = projectGroupManager.getAccountManagerGroupKey(cpm, this);
+		if(originalAccountGroupKey != null) {
+			BusinessGroup originalAccountGroup = projectGroupManager.getAccountManagerGroupFor(cpm, this, course, getShortTitle(), getShortTitle(), null);
+			BusinessGroup newAccountManagerGroup = bgs.copyBusinessGroup(author, originalAccountGroup,
+					originalAccountGroup.getName(), originalAccountGroup.getDescription(),
+					originalAccountGroup.getMinParticipants(), originalAccountGroup.getMaxParticipants(), false, false, true, false, false, true, false, false);
+			projectGroupManager.saveAccountManagerGroupKey(newAccountManagerGroup.getKey(), cpm, copyInstance);
+			bgs.addResourceTo(newAccountManagerGroup, course.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
+		}
+		
 		if (oldProjectBrokerId != null) {
 			List<Project> projects = projectBrokerManager.getProjectListBy(oldProjectBrokerId);
-			ListIterator<Project> projectIterator = projects.listIterator();
-			while (projectIterator.hasNext()) {
-				Project project = projectIterator.next();
-				BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-				List<Identity> members = bgs.getMembers(project.getProjectGroup(), GroupRoles.coach.name());
-				if (!members.isEmpty()) {
-					Identity ident = bgs.getMembers(project.getProjectGroup(), GroupRoles.coach.name()).get(0);
-					// create projectGroup
-					BusinessGroup projectGroup = projectGroupManager.createProjectGroupFor(projectBrokerId, ident, project.getTitle(), project.getDescription(), course.getResourceableId());
-					Project newProject = projectBrokerManager.createAndSaveProjectFor(project.getTitle(), project.getDescription(), projectBrokerId, projectGroup);
-					// configure the new Project like the old one
-					// copy the old accountManagergroup to preserve the
-					// "persons in charge"
-					BusinessGroup oldAccountManagerGroup = projectGroupManager.getAccountManagerGroupFor(cpm, this, course, this.getShortTitle(), this.getShortTitle(), ident);
-					BusinessGroup newAccountManagerGroup = bgs.copyBusinessGroup(ident, oldAccountManagerGroup, this.getShortTitle(), this.getShortTitle(), -1, -1, false, false, true, true, true, true, false, false);
-					// during the creation of the project an empty
-					// accountManagerGroup is automatically created. delete this
-					// one here and copy over the old one
-					projectGroupManager.deleteAccountManagerGroup(cpm, copyInstance);
-					projectGroupManager.saveAccountManagerGroupKey(newAccountManagerGroup.getKey(), cpm, copyInstance);
-					// copy all project configurations
-					newProject.setMailNotificationEnabled(project.isMailNotificationEnabled());
-					newProject.setMaxMembers(project.getMaxMembers());
-					for (int i = 0; i < project.getCustomFieldSize(); i++) {
-						newProject.setCustomFieldValue(i, project.getCustomFieldValue(i));
-					}
-					projectGroupManager.setDeselectionAllowed(newProject, project.getProjectGroup().isAllowToLeave());
-					projectBrokerManager.updateProject(newProject);
+			for (Project project: projects) {
+				// create projectGroup
+				BusinessGroup projectGroup = projectGroupManager.createProjectGroupFor(projectBrokerId, author, project.getTitle(), project.getDescription(), course.getResourceableId());
+				Project newProject = projectBrokerManager.createAndSaveProjectFor(project.getTitle(), project.getDescription(), projectBrokerId, projectGroup);
+				
+				// copy all project configurations
+				newProject.setMailNotificationEnabled(project.isMailNotificationEnabled());
+				newProject.setMaxMembers(project.getMaxMembers());
+				for (int i = 0; i < project.getCustomFieldSize(); i++) {
+					newProject.setCustomFieldValue(i, project.getCustomFieldValue(i));
+				}
+				projectGroupManager.setDeselectionAllowed(newProject, project.getProjectGroup().isAllowToLeave());
+				projectBrokerManager.updateProject(newProject);
 
-					// attachment file
-					OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(projectBrokerManager.getAttamchmentRelativeRootPath(project, course.getCourseEnvironment(), this), null);
-					VFSItem item = rootFolder.resolve(project.getAttachmentFileName());
-					if (item instanceof VFSLeaf) {
-						projectBrokerManager.saveAttachedFile(newProject, project.getAttachmentFileName(), (VFSLeaf) item, course.getCourseEnvironment(), copyInstance);
-						newProject.setAttachedFileName(project.getAttachmentFileName());
-						projectBrokerManager.updateProject(newProject);
-					}
+				// attachment file
+				OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(projectBrokerManager.getAttamchmentRelativeRootPath(project, course.getCourseEnvironment(), this), null);
+				VFSItem item = rootFolder.resolve(project.getAttachmentFileName());
+				if (item instanceof VFSLeaf) {
+					projectBrokerManager.saveAttachedFile(newProject, project.getAttachmentFileName(), (VFSLeaf) item, course.getCourseEnvironment(), copyInstance);
+					newProject.setAttachedFileName(project.getAttachmentFileName());
+					projectBrokerManager.updateProject(newProject);
 				}
 			}
 		}
 		return copyInstance;
 	}
+	
+	public static class ProjectBrokerConfig implements Serializable {
 
+		private static final long serialVersionUID = -1002067261836601966L;
+		private Long accountGroupKey;
+
+		public Long getAccountGroupKey() {
+			return accountGroupKey;
+		}
+
+		public void setAccountGroupKey(Long accountGroupKey) {
+			this.accountGroupKey = accountGroupKey;
+		}
+	}
 }

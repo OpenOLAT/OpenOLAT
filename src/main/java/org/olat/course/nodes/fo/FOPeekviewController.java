@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
@@ -39,9 +40,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.fo.Forum;
-import org.olat.modules.fo.ForumManager;
-import org.olat.modules.fo.Message;
-import org.olat.user.UserManager;
+import org.olat.modules.fo.manager.ForumManager;
+import org.olat.modules.fo.ui.MessagePeekview;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -60,9 +61,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class FOPeekviewController extends BasicController implements Controller {
 	// the current course node id
 	private final String nodeId;
-	
-	@Autowired
-	private UserManager userManager;
+	private final Link allItemsLink;
+	private final RepositoryEntry courseEntry;
+
 	@Autowired
 	private ForumManager forumManager;
 
@@ -74,26 +75,26 @@ public class FOPeekviewController extends BasicController implements Controller 
 	 * @param nodeId The course node ID
 	 * @param itemsToDisplay number of items to be displayed, must be > 0
 	 */
-	public FOPeekviewController(UserRequest ureq, WindowControl wControl, Forum forum, String nodeId, int itemsToDisplay) {		
+	public FOPeekviewController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry, Forum forum, String nodeId, int itemsToDisplay) {		
 		// Use fallback translator from forum
 		super(ureq, wControl, Util.createPackageTranslator(Forum.class, ureq.getLocale()));
 		this.nodeId = nodeId;
+		this.courseEntry = courseEntry;
 	
 		VelocityContainer peekviewVC = createVelocityContainer("peekview");
 		// add items, only as many as configured
-		List<Message> messages = forumManager.getMessagesByForumID(forum.getKey(), 0, itemsToDisplay, Message.OrderBy.creationDate, false);
+		List<MessagePeekview> messages = forumManager.getPeekviewMessages(forum, itemsToDisplay);
 		// only take the configured amount of messages
 		List<MessageView> views = new ArrayList<MessageView>(itemsToDisplay);
-		for (Message message :messages) {
+		for (MessagePeekview message :messages) {
 			// add link to item
 			// Add link to jump to course node
 			Link nodeLink = LinkFactory.createLink("nodeLink_" + message.getKey(), peekviewVC, this);
 			nodeLink.setCustomDisplayText(StringHelper.escapeHtml(message.getTitle()));
 			nodeLink.setIconLeftCSS("o_icon o_icon_post");
 			nodeLink.setCustomEnabledLinkCSS("o_gotoNode");
-			nodeLink.setUserObject(message.getKey());	
+			nodeLink.setUserObject(message);	
 			
-			String creator = userManager.getUserDisplayName(message.getCreator());
 			String body = message.getBody();
 			if(body.length() > 256) {
 				String truncateBody = FilterFactory.getHtmlTagsFilter().filter(body);
@@ -107,11 +108,11 @@ public class FOPeekviewController extends BasicController implements Controller 
 			} else {
 				body = StringHelper.xssScan(body);
 			}
-			views.add(new MessageView(message.getKey(), message.getCreationDate(), creator, body));
+			views.add(new MessageView(message.getKey(), message.getCreationDate(), body));
 		}
 		peekviewVC.contextPut("messages", views);
 		// Add link to show all items (go to node)
-		Link allItemsLink = LinkFactory.createLink("peekview.allItemsLink", peekviewVC, this);
+		allItemsLink = LinkFactory.createLink("peekview.allItemsLink", peekviewVC, this);
 		allItemsLink.setIconRightCSS("o_icon o_icon_start");
 		allItemsLink.setCustomEnabledLinkCSS("pull-right");
 		// Add Formatter for proper date formatting
@@ -124,13 +125,15 @@ public class FOPeekviewController extends BasicController implements Controller 
 	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source instanceof Link) {
+		if(allItemsLink == source) {
+			fireEvent(ureq, new OlatCmdEvent(OlatCmdEvent.GOTONODE_CMD, nodeId));
+		} else if (source instanceof Link) {
 			Link nodeLink = (Link) source;
-			Object messageId = nodeLink.getUserObject();
-			if (messageId == null) {
-				fireEvent(ureq, new OlatCmdEvent(OlatCmdEvent.GOTONODE_CMD, nodeId));								
-			} else {
-				fireEvent(ureq, new OlatCmdEvent(OlatCmdEvent.GOTONODE_CMD, nodeId + "/" + messageId));				
+			Object uobject = nodeLink.getUserObject();
+			if (uobject instanceof MessagePeekview) {
+				MessagePeekview message = (MessagePeekview)uobject;
+				String businessPath = "[RepositoryEntry:" + courseEntry.getKey() + "][CourseNode:" + nodeId + "][Message:" + message.getKey() + "]";
+				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());	
 			}
 		}
 	}
@@ -148,13 +151,11 @@ public class FOPeekviewController extends BasicController implements Controller 
 		private final Long key;
 		private final String body;
 		private final Date creationDate;
-		private final String creatorFullname;
 		
-		public MessageView(Long key, Date creationDate, String creatorFullname, String body) {
+		public MessageView(Long key, Date creationDate, String body) {
 			this.key = key;
 			this.body = body;
 			this.creationDate = creationDate;
-			this.creatorFullname = creatorFullname;
 		}
 		
 		public Long getKey() {
@@ -163,10 +164,6 @@ public class FOPeekviewController extends BasicController implements Controller 
 		
 		public Date getCreationDate() {
 			return creationDate;
-		}
-
-		public String getCreatorFullname() {
-			return creatorFullname;
 		}
 
 		public String getBody() {

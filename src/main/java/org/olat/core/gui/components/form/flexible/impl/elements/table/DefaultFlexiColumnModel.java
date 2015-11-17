@@ -80,6 +80,11 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 		this(true, false, def.i18nHeaderKey(), def.ordinal(), action, false, null, FlexiColumnModel.ALIGNMENT_LEFT, 
 				new StaticFlexiCellRenderer(action, renderer));
 	}
+	
+	public DefaultFlexiColumnModel(FlexiSortableColumnDef def, String action, FlexiCellRenderer renderer) {
+		this(true, false, def.i18nHeaderKey(), def.ordinal(), action, def.sortable(), def.sortKey(), FlexiColumnModel.ALIGNMENT_LEFT, 
+				new StaticFlexiCellRenderer(action, renderer));
+	}
 
 	/**
 	 * 

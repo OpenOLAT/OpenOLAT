@@ -54,7 +54,7 @@ public interface ProjectGroupManager {
 	 * @param groupDescription
 	 * @param identity
 	 */
-	public abstract BusinessGroup getAccountManagerGroupFor(CoursePropertyManager cpm, CourseNode courseNode, ICourse course, String groupName, String groupDescription, Identity identity);
+	public BusinessGroup getAccountManagerGroupFor(CoursePropertyManager cpm, CourseNode courseNode, ICourse course, String groupName, String groupDescription, Identity identity);
 
 	/**
 	 * Return true when identity is account-manager (could create projects).
@@ -63,7 +63,7 @@ public interface ProjectGroupManager {
 	 * @param courseNode
 	 * @return
 	 */
-	public abstract boolean isAccountManager(Identity identity, CoursePropertyManager cpm, CourseNode courseNode);
+	public boolean isAccountManager(Identity identity, CoursePropertyManager cpm, CourseNode courseNode);
 
 	/**
 	 * Delete an account-manager group and the key in the CoursePropertyManager. 
@@ -81,6 +81,16 @@ public interface ProjectGroupManager {
 	 */
 	public BusinessGroup updateAccountManagerGroupName(Identity ureqIdentity, String groupName, String groupDescription, BusinessGroup accountManagerGroup);
 
+	/**
+	 * Return the key (primary key) of the business group use for the account managers if
+	 * the business group exists.
+	 * 
+	 * @param cpm
+	 * @param courseNode
+	 * @return
+	 */
+	public Long getAccountManagerGroupKey(CoursePropertyManager cpm, CourseNode courseNode);
+	
 	/**
 	 * Save the ProjectGroupKey of the AccountManagementGroup in the Project
 	 * @param accountManagerGroupKey

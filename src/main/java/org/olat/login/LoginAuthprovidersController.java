@@ -55,7 +55,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.logging.AssertException;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -149,7 +148,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		}
 		AuthenticationProvider authProvider = loginModule.getAuthenticationProvider(provider);
 		if (authProvider == null) {
-			throw new AssertException("Invalid authentication provider: " + provider);
+			authProvider = loginModule.getAuthenticationProviderHeuristic(provider);
 		}
 		
 		//clean-up controllers

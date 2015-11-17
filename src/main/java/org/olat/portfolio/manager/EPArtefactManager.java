@@ -23,12 +23,16 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBQuery;
@@ -482,6 +486,30 @@ public class EPArtefactManager extends BasicManager {
 		// if not found, it is an empty list
 		if (artefacts.isEmpty()) return null;
 		return artefacts;		
+	}
+	
+	protected Map<String,Long> loadNumOfArtefactsByStartingBusinessPath(String startOfBusinessPath, IdentityRef author) {
+		if (!StringHelper.containsNonWhitespace(startOfBusinessPath) || author == null) {
+			return Collections.emptyMap();
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select artefact.businessPath, count(artefact.key) from ").append(AbstractArtefact.class.getName()).append(" artefact")
+		  .append(" where artefact.businessPath like :bpath and artefact.author.key=:identityKey")
+		  .append(" group by artefact.businessPath");
+
+		List<Object[]> objectsList = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("bpath", startOfBusinessPath + "%")
+				.setParameter("identityKey", author.getKey())
+				.getResultList();
+		Map<String,Long> stats = new HashMap<>();
+		for(Object[] objects:objectsList) {
+			String bp = (String)objects[0];
+			Long count = (Long)objects[1];
+			stats.put(bp, count);
+		}
+		return stats;
 	}
 
 	protected void deleteArtefact(AbstractArtefact artefact) {

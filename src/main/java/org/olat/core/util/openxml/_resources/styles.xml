@@ -415,8 +415,7 @@
 		<w:rsid w:val="000300CE" />
 		<w:pPr>
 			<w:pBdr>
-				<w:bottom w:val="single" w:sz="8" w:space="4" w:color="4F81BD"
-					w:themeColor="accent1" />
+				<w:bottom w:val="single" w:sz="8" w:space="4" w:color="4F81BD" w:themeColor="accent1" />
 			</w:pBdr>
 			<w:spacing w:after="300" />
 			<w:contextualSpacing />
@@ -445,6 +444,113 @@
 			<w:kern w:val="28" />
 			<w:sz w:val="52" />
 			<w:szCs w:val="52" />
+		</w:rPr>
+	</w:style>
+	<w:style w:type="paragraph" w:styleId="ooUntertitel">
+		<w:name w:val="OO Subtitle" />
+		<w:basedOn w:val="Standard" />
+		<w:next w:val="Standard" />
+		<w:link w:val="ooUntertitelZeichen" />
+		<w:uiPriority w:val="11" />
+		<w:qFormat />
+		<w:rsid w:val="00384D08" />
+		<w:pPr>
+			<w:numPr>
+				<w:ilvl w:val="1" />
+			</w:numPr>
+		</w:pPr>
+		<w:rPr>
+			<w:rFonts w:asciiTheme="majorHAnsi" w:eastAsiaTheme="majorEastAsia" w:hAnsiTheme="majorHAnsi" w:cstheme="majorBidi" />
+			<w:i />
+			<w:iCs />
+			<w:color w:val="4F81BD" w:themeColor="accent1" />
+			<w:spacing w:val="15" />
+		</w:rPr>
+	</w:style>
+	<w:style w:type="character" w:customStyle="1" w:styleId="ooUntertitelZeichen">
+		<w:name w:val="OO Untertitel Zeichen" />
+		<w:basedOn w:val="Absatzstandardschriftart" />
+		<w:link w:val="Untertitel" />
+		<w:uiPriority w:val="11" />
+		<w:rsid w:val="00384D08" />
+		<w:rPr>
+			<w:rFonts w:asciiTheme="majorHAnsi" w:eastAsiaTheme="majorEastAsia" w:hAnsiTheme="majorHAnsi" w:cstheme="majorBidi" />
+			<w:i />
+			<w:iCs />
+			<w:color w:val="4F81BD" w:themeColor="accent1" />
+			<w:spacing w:val="15" />
+		</w:rPr>
+	</w:style>
+	<w:style w:type="paragraph" w:styleId="ooSubtleEmphasis">
+		<w:name w:val="OO Subtle Emphasis" />
+		<w:basedOn w:val="Standard" />
+		<w:next w:val="Standard" />
+		<w:link w:val="ooSubtleEmphasisZeichen" />
+		<w:uiPriority w:val="11" />
+		<w:qFormat />
+		<w:rsid w:val="00384E11" />
+		<w:pPr>
+			<w:numPr>
+				<w:ilvl w:val="1" />
+			</w:numPr>
+		</w:pPr>
+		<w:rPr>
+			<w:rFonts w:asciiTheme="majorHAnsi" w:eastAsiaTheme="majorEastAsia" w:hAnsiTheme="majorHAnsi" w:cstheme="majorBidi" />
+			<w:i />
+			<w:iCs />
+			<w:color w:val="8A6D3B" w:themeColor="subtle1" />
+			<w:sz w:val="20" />
+			<w:szCs w:val="20" />
+		</w:rPr>
+	</w:style>
+	<w:style w:type="character" w:styleId="ooSubtleEmphasisZeichen">
+		<w:name w:val="OO Subtle Emphasis" />
+		<w:basedOn w:val="Absatzstandardschriftart" />
+		<w:uiPriority w:val="19" />
+		<w:qFormat />
+		<w:rsid w:val="00384E12" />
+		<w:rPr>
+			<w:i />
+			<w:iCs />
+			<w:color w:val="8A6D3B" w:themeColor="subtle1" />
+			<w:sz w:val="20" />
+			<w:szCs w:val="20" />
+		</w:rPr>
+	</w:style>
+	<w:style w:type="paragraph" w:styleId="ooQuote">
+		<w:name w:val="OO Quote" />
+		<w:basedOn w:val="Standard" />
+		<w:next w:val="Standard" />
+		<w:link w:val="ooQuoteZeichen" />
+		<w:uiPriority w:val="11" />
+		<w:qFormat />
+		<w:rsid w:val="00384E21" />
+		<w:pPr>
+			<w:numPr>
+				<w:ilvl w:val="1" />
+			</w:numPr>
+		</w:pPr>
+		<w:rPr>
+			<w:rFonts w:asciiTheme="majorHAnsi" w:eastAsiaTheme="majorEastAsia" w:hAnsiTheme="majorHAnsi" w:cstheme="majorBidi" />
+			<w:i />
+			<w:iCs />
+			<w:color w:val="555555" w:themeColor="quote1" />
+			<w:sz w:val="20" />
+			<w:szCs w:val="20" />
+		</w:rPr>
+	</w:style>
+	<w:style w:type="character" w:styleId="ooQuoteZeichen">
+		<w:name w:val="OO Quote" />
+		<w:basedOn w:val="Absatzstandardschriftart" />
+		<w:uiPriority w:val="19" />
+		<w:qFormat />
+		<w:rsid w:val="00384E22" />
+		<w:rPr>
+			<w:i />
+			<w:iCs />
+			<w:color w:val="555555" w:themeColor="quote1" />
+			<w:sz w:val="20" />
+			<w:szCs w:val="20" />
 		</w:rPr>
 	</w:style>
 </w:styles>

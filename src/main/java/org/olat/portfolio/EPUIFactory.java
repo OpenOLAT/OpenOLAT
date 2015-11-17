@@ -88,11 +88,22 @@ public class EPUIFactory {
 	 * @param businessPath
 	 * @return
 	 */
-	public static Controller createArtefactCollectWizzardController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, String businessPath) {
+	public static Controller createArtefactCollectWizzardController(UserRequest ureq, WindowControl wControl,
+			OLATResourceable ores, String businessPath) {
 		PortfolioModule portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
 		EPArtefactHandler<?> handler = portfolioModule.getArtefactHandler(ores.getResourceableTypeName());
 		if (portfolioModule.isEnabled() && handler != null && handler.isEnabled()) {
 			return new ArtefactWizzardStepsController(ureq, wControl, ores, businessPath);
+		}
+		return null;
+	}
+	
+	public static Controller createArtefactCollectWizzardController(UserRequest ureq, WindowControl wControl,
+			int numOfArtefact, OLATResourceable ores, String businessPath) {
+		PortfolioModule portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
+		EPArtefactHandler<?> handler = portfolioModule.getArtefactHandler(ores.getResourceableTypeName());
+		if (portfolioModule.isEnabled() && handler != null && handler.isEnabled()) {
+			return new ArtefactWizzardStepsController(ureq, wControl, numOfArtefact, ores, businessPath);
 		}
 		return null;
 	}

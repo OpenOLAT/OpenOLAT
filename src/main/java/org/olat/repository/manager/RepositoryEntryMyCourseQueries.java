@@ -150,6 +150,7 @@ public class RepositoryEntryMyCourseQueries {
 		Identity identity = params.getIdentity();
 		List<String> resourceTypes = params.getResourceTypes();
 
+		boolean needIdentityKey = false;
 		boolean count = Number.class.equals(type);
 		boolean oracle = "oracle".equals(dbInstance.getDbVendor());
 		StringBuilder sb = new StringBuilder();
@@ -164,6 +165,7 @@ public class RepositoryEntryMyCourseQueries {
 			if(params.getMarked() != null && params.getMarked().booleanValue()) {
 				sb.append(" 1 as marks,");
 			} else {
+				needIdentityKey = true;
 				sb.append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
 				  .append("   where mark.creator.key=:identityKey and mark.resId=v.key and mark.resName='RepositoryEntry'")
 				  .append(" ) as marks,");
@@ -173,16 +175,18 @@ public class RepositoryEntryMyCourseQueries {
 			  //TODO validity
 			  .append(" ) as offers, ");
 			if(repositoryModule.isRatingEnabled()) {
+				needIdentityKey = true;
 				sb.append(" (select rating.rating from userrating as rating")
 				  .append("   where rating.resId=v.key and rating.creator.key=:identityKey and rating.resName='RepositoryEntry'")
 				  .append(" ) as myrating");
 			} else {
 				sb.append(" 0 as myrating");
 			}
+			needIdentityKey = true;
 			sb.append(" ,(select eff.key from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as eff")
 			  .append("    where eff.resource=res and eff.identity.key=:identityKey")
 			  .append(" ) as effKey");
-			appendOrderByInSelect(params, sb);
+			needIdentityKey |= appendOrderByInSelect(params, sb);
 			sb.append(" from repositoryentry as v")
 			  .append(" inner join ").append(oracle ? "" : "fetch").append(" v.olatResource as res");
 			if(repositoryModule.isRatingEnabled() || repositoryModule.isCommentEnabled()) {
@@ -194,14 +198,14 @@ public class RepositoryEntryMyCourseQueries {
 		//efficiency statements
 
 		sb.append(" where ");
-		appendMyViewAccessSubSelect(sb, roles, params.getFilters(), params.isMembershipMandatory());
+		needIdentityKey |= appendMyViewAccessSubSelect(sb, roles, params.getFilters(), params.isMembershipMandatory());
 		if(params.getRepoEntryKeys() != null && params.getRepoEntryKeys().size() > 0) {
 			sb.append(" and v.key in (:repoEntryKeys) ");
 		}
 		
 		if(params.getFilters() != null) {
 			for(Filter filter:params.getFilters()) {
-				appendFiltersInWhereClause(filter, sb);
+				needIdentityKey |= appendFiltersInWhereClause(filter, sb);
 			}
 		}
 		
@@ -327,11 +331,15 @@ public class RepositoryEntryMyCourseQueries {
 		if (StringHelper.containsNonWhitespace(author)) { // fuzzy author search
 			dbQuery.setParameter("author", author);
 		}
-		dbQuery.setParameter("identityKey", identity.getKey());
+		if(needIdentityKey) {
+			dbQuery.setParameter("identityKey", identity.getKey());
+		}
 		return dbQuery;
 	}
 	
-	private void appendMyViewAccessSubSelect(StringBuilder sb, Roles roles, List<Filter> filters, boolean membershipMandatory) {
+	private boolean appendMyViewAccessSubSelect(StringBuilder sb, Roles roles, List<Filter> filters, boolean membershipMandatory) {
+		boolean needIdentityKey = false;
+		
 		sb.append("(v.access >= ");
 		if (roles.isAuthor()) {
 			sb.append(RepositoryEntry.ACC_OWNERS_AUTHORS);
@@ -362,6 +370,7 @@ public class RepositoryEntryMyCourseQueries {
 			sb.append(")");
 		} else {
 			if(inRoles.length() == 0 && !membershipMandatory) {
+				needIdentityKey = true;
 				//sub select are very quick
 				sb.append(" or (")
 				  .append("  v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true")
@@ -375,6 +384,7 @@ public class RepositoryEntryMyCourseQueries {
 				if(inRoles.length() == 0) {
 					inRoles.append("'").append(GroupRoles.owner.name()).append("','").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("'");
 				}
+				needIdentityKey = true;
 				//make sure that in all case the role is mandatory
 				sb.append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
 				  .append(" and v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
@@ -383,9 +393,11 @@ public class RepositoryEntryMyCourseQueries {
 				  .append(" )");
 			}
 		}
+		return needIdentityKey;
 	}
 	
-	private void appendFiltersInWhereClause(Filter filter, StringBuilder sb) {
+	private boolean appendFiltersInWhereClause(Filter filter, StringBuilder sb) {
+		boolean needIdentityKey = false;
 		switch(filter) {
 			case showAll: break;
 			case currentCourses:
@@ -398,41 +410,49 @@ public class RepositoryEntryMyCourseQueries {
 				sb.append(" and lifecycle.validTo<=:now");
 				break;
 			case passed:
+				needIdentityKey = true;
 				sb.append(" and exists (select eff2.key from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as eff2")
 				  .append("    where eff2.resource=res and eff2.identity.key=:identityKey and eff2.passed=true")
 				  .append(" )");
 				break;
 			case notPassed:
+				needIdentityKey = true;
 				sb.append(" and exists (select eff3.key from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as eff3")
 				  .append("    where eff3.resource=res and eff3.identity.key=:identityKey and eff3.passed=false")
 				  .append(" )");
 				break;
 			case withoutPassedInfos:
+				needIdentityKey = true;
 				sb.append(" and exists (select eff4.key from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as eff4")
 				  .append("    where eff4.resource=res and eff4.identity.key=:identityKey and eff4.passed is null")
 				  .append(" )");
 				break;
 			default: {}
 		}
+		return needIdentityKey;
 	}
 	
 
-	private void appendOrderByInSelect(SearchMyRepositoryEntryViewParams params, StringBuilder sb) {
+	private boolean appendOrderByInSelect(SearchMyRepositoryEntryViewParams params, StringBuilder sb) {
+		boolean needIdentityKey = false;
 		OrderBy orderBy = params.getOrderBy();
 		if(orderBy != null) {
 			switch(orderBy) {
 				case automatic://need lastVisited
 				case lastVisited:
+					needIdentityKey = true;
 					sb.append(" ,(select infos2.recentLaunch from usercourseinfos as infos2")
 					  .append("    where infos2.resource=res and infos2.identity.key=:identityKey")
 					  .append(" ) as recentLaunch");
 					break;
 				case passed:
+					needIdentityKey = true;
 					sb.append(" ,(select eff3.passed from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as eff3")
 					  .append("    where eff3.resource=res and eff3.identity.key=:identityKey")
 					  .append(" ) as passed");
 					break;
 				case score:
+					needIdentityKey = true;
 					sb.append(" ,(select eff4.score from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as eff4")
 					  .append("    where eff4.resource=res and eff4.identity.key=:identityKey")
 					  .append(" ) as score");
@@ -440,6 +460,7 @@ public class RepositoryEntryMyCourseQueries {
 				default: //do nothing
 			}
 		}
+		return needIdentityKey;
 	}
 	
 	private void appendOrderBy(OrderBy orderBy, boolean asc, StringBuilder sb) {

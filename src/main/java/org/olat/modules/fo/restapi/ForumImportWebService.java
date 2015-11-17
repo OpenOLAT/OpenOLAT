@@ -28,7 +28,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.olat.modules.fo.Forum;
-import org.olat.modules.fo.ForumManager;
+import org.olat.modules.fo.manager.ForumManager;
 
 /**
  * 

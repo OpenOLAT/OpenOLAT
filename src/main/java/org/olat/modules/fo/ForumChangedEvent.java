@@ -39,8 +39,29 @@ import org.olat.core.util.event.MultiUserEvent;
 public class ForumChangedEvent extends MultiUserEvent {
 
 	private static final long serialVersionUID = -6798225990538608024L;
+	
+	public static final String SPLIT = "split";
+	public static final String CLOSE = "close";
+	public static final String OPEN = "open";
+	public static final String HIDE = "hide";
+	public static final String SHOW = "show";
+	public static final String NEW = "new";
+	public static final String STICKY = "sticky";
+	
+	private Long threadtopKey;
+	private Long messageKey;
 
-	public ForumChangedEvent(String command) {
-		super(command);		
-	}	
+	public ForumChangedEvent(String command, Long threadtopKey, Long messageKey) {
+		super(command);	
+		this.threadtopKey = threadtopKey;
+		this.messageKey = messageKey;
+	}
+
+	public Long getThreadtopKey() {
+		return threadtopKey;
+	}
+
+	public Long getMessageKey() {
+		return messageKey;
+	}
 }

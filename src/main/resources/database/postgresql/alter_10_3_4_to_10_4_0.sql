@@ -1,3 +1,10 @@
+alter table o_message alter column creator_id DROP NOT NULL;
+alter table o_message add column pseudonym varchar(255);
+alter table o_message add column guest bool not null default false;
+
+
+
+
 create table o_cal_use_config (
    id int8 not null,
    creationdate timestamp not null,

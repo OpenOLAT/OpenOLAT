@@ -51,7 +51,6 @@ import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.objects.QTIDocument;
-import org.olat.ims.qti.editor.beecom.objects.Question;
 import org.olat.ims.qti.editor.beecom.objects.Section;
 import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
 import org.olat.ims.qti.statistics.QTIStatisticsManager;
@@ -129,7 +128,8 @@ public class QTI12AssessmentStatisticsController extends BasicController impleme
 		for(Section section:qtiDocument.getAssessment().getSections()) {
 			for(Item item:section.getItems()) {
 				items.add(item);
-				if(item.getQuestion().getType() == Question.TYPE_ESSAY) {
+				String ident = item.getIdent();
+				if(ident != null && ident.startsWith("QTIEDIT:ESSAY")) {
 					hasEssay = true;
 				}
 			}

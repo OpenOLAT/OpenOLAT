@@ -85,8 +85,8 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.fo.Forum;
-import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.ForumUIFactory;
+import org.olat.modules.fo.manager.ForumManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -365,7 +365,7 @@ public class DialogElementsController extends BasicController {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
 				DialogCourseNode node = (DialogCourseNode) courseNode;
 				// archive data to personal folder
-				node.doArchiveElement(selectedElement, CourseFactory.getOrCreateDataExportDirectory(ureq.getIdentity(), node.getShortTitle()));
+				node.doArchiveElement(selectedElement, CourseFactory.getOrCreateDataExportDirectory(getIdentity(), node.getShortTitle()), getLocale());
 				// delete element
 				dialogElmsMgr.deleteDialogElement(coursePropMgr, courseNode, selectedElement.getForumKey());
 				forumMgr.deleteForum(selectedElement.getForumKey());
