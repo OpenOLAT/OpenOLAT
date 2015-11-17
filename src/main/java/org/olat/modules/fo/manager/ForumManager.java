@@ -857,7 +857,7 @@ public class ForumManager {
 			}
 
 			dbInstance.commit();// before sending async event
-			ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.SPLIT, newTopMessage.getKey(), null);
+			ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.SPLIT, newTopMessage.getKey(), null, null);
 			CoordinatorManager.getInstance().getCoordinator().getEventBus()
 				.fireEventToListenersOf(event, firstMessage.getForum());
 		}		
