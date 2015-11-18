@@ -251,9 +251,9 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		this.waitingLists = waitingLists;
 	}
 	
-	public void setUserRoles(boolean admin, boolean coach) {
+	public void setUserRoles(boolean admin, boolean coach, boolean participant) {
 		this.admin = new Boolean(admin);
 		this.coach = new Boolean(coach);
-		this.participant = null;//reset it
+		this.participant = new Boolean(participant);
 	}
 }
