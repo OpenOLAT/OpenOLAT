@@ -93,7 +93,7 @@ public class MyCoursesPage {
 				linkToSelect = link;
 			}
 		}
-		Assert.assertNotNull(linkToSelect);
+		Assert.assertNotNull("Course not found:" + title + " (" + titleLinks.size() + " courses listed)", linkToSelect);
 		linkToSelect.click();
 		OOGraphene.waitBusy(browser);
 		return this;

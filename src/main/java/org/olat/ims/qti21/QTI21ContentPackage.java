@@ -128,6 +128,27 @@ public class QTI21ContentPackage {
 	public Path getManifest() {
 		return manifestFile;
 	}
+	
+	public boolean hasTest() {
+		if(manifestFile == null || manifestFile.getParent() == null) {
+			return false;
+		}
+		
+		NodeList list = null;
+		for (String s : TEST_EXPRESSION) {
+			list = getNodeList(s);
+			if (list.getLength() > 0) {
+				break;
+			}
+		}
+
+		if (list == null || list.getLength() == 0) {
+			return false;
+		}
+
+		Path testPath = manifestFile.getParent().resolve(list.item(0).getNodeValue());
+		return testPath != null && Files.exists(testPath);
+	}
 
 	public Path getTest() throws IOException {
 		NodeList list = null;
@@ -137,7 +158,7 @@ public class QTI21ContentPackage {
 				break;
 		}
 
-		if (list == null) {
+		if (list == null || list.getLength() == 0) {
 			throw new IOException("Cannot find test.");
 		}
 

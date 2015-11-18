@@ -104,10 +104,13 @@ public class ImsQTI21Resource extends FileResource {
 
 	public static boolean validateImsManifest(QTI21ContentPackage cp, ResourceLocator resourceLocator) {
 		try {
-			URI test = cp.getTest().toUri();
-			ResourceLocator chainedResourceLocator = createResolvingResourceLocator(resourceLocator);
-			XmlReadResult result = new QtiXmlReader().read(chainedResourceLocator, test, true);
-			return result != null && result.isSchemaValid();
+			if(cp.hasTest()) {
+				URI test = cp.getTest().toUri();
+				ResourceLocator chainedResourceLocator = createResolvingResourceLocator(resourceLocator);
+				XmlReadResult result = new QtiXmlReader().read(chainedResourceLocator, test, true);
+				return result != null && result.isSchemaValid();
+			}
+			return false;
 		} catch (Exception e) {
 			log.error("", e);
 			return false;
