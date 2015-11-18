@@ -43,6 +43,7 @@ import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.structel.EPAbstractMap;
 import org.olat.portfolio.model.structel.EPPage;
 import org.olat.portfolio.model.structel.PortfolioStructure;
+import org.olat.portfolio.model.structel.PortfolioStructureRef;
 import org.olat.portfolio.ui.structel.view.EPChangelogController;
 import org.olat.portfolio.ui.structel.view.EPTOCReadOnlyController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,8 +59,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EPMultiplePageController extends BasicController implements Activateable2 {
 
-	private List<PortfolioStructure> pageList;
-	private List<Long> pageListByKeys;
+	private List<PageTab> pageList;
 	private Controller currentActivePageCtrl;
 	private EPTOCReadOnlyController tocPageCtrl;
 	private EPChangelogController changelogPageCtrl;
@@ -74,16 +74,19 @@ public class EPMultiplePageController extends BasicController implements Activat
 	private static final int PAGENUM_TOC = -1; // pagenum of toc (first tab)
 	private static final int PAGENUM_CL = -2; // pagenum of changelog (last tab)
 
-	public EPMultiplePageController(UserRequest ureq, WindowControl wControl, List<PortfolioStructure> pageList, EPSecurityCallback secCallback) {
+	public EPMultiplePageController(UserRequest ureq, WindowControl wControl, List<PortfolioStructure> pages, EPSecurityCallback secCallback) {
 		super(ureq, wControl);
-		this.pageList = pageList;
-		this.pageListByKeys = new ArrayList<Long>(pageList.size());
 		this.secCallback = secCallback;
 		
+		pageList = new ArrayList<>(pages.size());
+		for(PortfolioStructure page:pages) {
+			if(page instanceof EPPage) {
+				pageList.add(new PageTab(page.getKey(), page.getTitle()));
+			}
+		}
+
 		vC = createVelocityContainer("multiPages");
-
 		init(ureq);
-
 		putInitialPanel(vC);
 	}
 
@@ -113,8 +116,7 @@ public class EPMultiplePageController extends BasicController implements Activat
 
 			int i = 1;
 			List<Link> pageLinkList = new ArrayList<Link>();
-			for (PortfolioStructure page : pageList) {
-				pageListByKeys.add(page.getKey());
+			for (PageTab page : pageList) {
 				String pageTitle =StringHelper.escapeHtml(page.getTitle());
 				String shortPageTitle = Formatter.truncate(pageTitle, 20);
 				Link pageLink = LinkFactory
@@ -132,7 +134,7 @@ public class EPMultiplePageController extends BasicController implements Activat
 
 	protected void selectPage(UserRequest ureq, PortfolioStructure page) {
 		int count = 0;
-		for (PortfolioStructure structure : pageList) {
+		for (PageTab structure : pageList) {
 			if (structure.getKey().equals(page.getKey())) {
 				setAndInitActualPage(ureq, count, false);
 				break;
@@ -179,7 +181,7 @@ public class EPMultiplePageController extends BasicController implements Activat
 	private void setAndInitTOCPage(UserRequest ureq) {
 		// this is the toc
 		if (tocPageCtrl == null) {
-			PortfolioStructure page = pageList.get(0);
+			PageTab page = pageList.get(0);
 			PortfolioStructure map = ePFMgr.loadStructureParent(page);
 			tocPageCtrl = new EPTOCReadOnlyController(ureq, getWindowControl(), map, secCallback);
 			listenTo(tocPageCtrl);
@@ -215,9 +217,8 @@ public class EPMultiplePageController extends BasicController implements Activat
 	 * @return
 	 */
 	private EPChangelogController instantiateCLController(UserRequest ureq) {
-		EPPage page = (EPPage) pageList.get(0);
-		PortfolioStructure parent = ePFMgr.loadStructureParent(page);
-		EPAbstractMap abstrMap = (EPAbstractMap) parent;
+		PageTab page = pageList.get(0);
+		EPAbstractMap abstrMap = (EPAbstractMap)ePFMgr.loadStructureParent(page);
 		return new EPChangelogController(ureq, getWindowControl(), abstrMap);
 	}
 
@@ -228,10 +229,11 @@ public class EPMultiplePageController extends BasicController implements Activat
 	 * @param withComments
 	 */
 	private void setAndInitNormalPage(UserRequest ureq, int pageNumberToInit, boolean withComments) {
-		PortfolioStructure structureElement = pageList.get(pageNumberToInit);
+		PageTab tab = pageList.get(pageNumberToInit);
+		PortfolioStructure structureElement = ePFMgr.loadPortfolioStructureByKey(tab);
 		if(structureElement instanceof EPPage) {
 			EPPage page = (EPPage)structureElement;
-			PortfolioStructure map = ePFMgr.loadStructureParent(page);
+			PortfolioStructure map = ePFMgr.loadStructureParent(tab);
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(EPPage.class, page.getKey()), null);
 			currentActivePageCtrl = new EPPageViewController(ureq, bwControl, map, page, withComments, secCallback);
 			listenTo(currentActivePageCtrl);
@@ -324,8 +326,8 @@ public class EPMultiplePageController extends BasicController implements Activat
 			setAndInitActualPage(ureq, PAGENUM_TOC, false);
 		} else if ("EPPage".equals(ores.getResourceableTypeName())) {
 			Long pageKey = ores.getResourceableId();
-			if (pageListByKeys.contains(pageKey)) {
-				int pos = pageListByKeys.indexOf(pageKey);
+			if (containsPage(pageKey)) {
+				int pos = indexOfPage(pageKey);
 				if (pos != -1) {
 					setAndInitActualPage(ureq, pos, false);
 				}
@@ -334,8 +336,8 @@ public class EPMultiplePageController extends BasicController implements Activat
 	}
 
 	private void findAndActivatePage(UserRequest ureq, PortfolioStructure selStruct, boolean withComments) {
-		if (pageListByKeys.contains(selStruct.getKey())) {
-			int pos = pageListByKeys.indexOf(selStruct.getKey());
+		if (containsPage(selStruct.getKey())) {
+			int pos = indexOfPage(selStruct.getKey());
 			if (pos != -1)
 				setAndInitActualPage(ureq, pos, withComments);
 		} else {
@@ -348,8 +350,8 @@ public class EPMultiplePageController extends BasicController implements Activat
 	}
 
 	private void findAndActivatePageByKey(UserRequest ureq, Long key) {
-		if (pageListByKeys.contains(key)) {
-			int pos = pageListByKeys.indexOf(key);
+		if (containsPage(key)) {
+			int pos = indexOfPage(key);
 			if (pos != -1)
 				setAndInitActualPage(ureq, pos, false);
 		}
@@ -362,5 +364,48 @@ public class EPMultiplePageController extends BasicController implements Activat
 	protected void doDispose() {
 		// nothing
 	}
-
+	
+	private int indexOfPage(Long key) {
+		if(key == null || pageList == null || pageList.isEmpty()) return -1;
+		
+		int count=0;
+		for(PageTab pageTab:pageList) {
+			if(pageTab.getKey().equals(key)) {
+				break;
+			}
+			count++;
+		}
+		return count;
+	}
+	
+	private boolean containsPage(Long key) {
+		if(key == null || pageList == null || pageList.isEmpty()) return false;
+		
+		for(PageTab pageTab:pageList) {
+			if(pageTab.getKey().equals(key)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private class PageTab implements PortfolioStructureRef {
+		
+		private final Long pageKey;
+		private final String title;
+		
+		public PageTab(Long pageKey, String title) {
+			this.pageKey = pageKey;
+			this.title = title;
+		}
+		
+		@Override
+		public Long getKey() {
+			return pageKey;
+		}
+		
+		public String getTitle() {
+			return title;
+		}
+	}
 }

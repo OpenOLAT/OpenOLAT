@@ -64,6 +64,7 @@ import org.olat.portfolio.model.structel.EPTargetResource;
 import org.olat.portfolio.model.structel.ElementType;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
+import org.olat.portfolio.model.structel.PortfolioStructureRef;
 import org.olat.properties.NarrowedPropertyManager;
 import org.olat.properties.Property;
 import org.olat.resource.OLATResource;
@@ -948,6 +949,10 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 		return structureManager.loadPortfolioStructureByKey(key);
 	}
 	
+	public PortfolioStructure loadPortfolioStructureByKey(PortfolioStructureRef ref){
+		return structureManager.loadPortfolioStructureByKey(ref.getKey());
+	}
+	
 	/**
 	 * Reload a portfolio structure
 	 * @param structure cannot be null
@@ -971,9 +976,10 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 	 * @param structure
 	 * @return
 	 */
-	public PortfolioStructure loadStructureParent(PortfolioStructure structure) {
+	public PortfolioStructure loadStructureParent(PortfolioStructureRef structure) {
 		return structureManager.loadStructureParent(structure);
 	}
+	
 	
 	/**
 	 * Retrieve the children structures
