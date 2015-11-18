@@ -34,13 +34,11 @@ import org.olat.resource.OLATResource;
  * Initial Date:  11.06.2010 <br>
  * @author rhaag, roman.haag@frentix.com, http://www.frentix.com
  */
-public interface PortfolioStructure extends OLATResourceable {
+public interface PortfolioStructure extends PortfolioStructureRef, OLATResourceable {
 	
 	public PortfolioStructure getRoot();
 	
 	public PortfolioStructureMap getRootMap();
-	
-	abstract Long getKey();
 	
 	abstract OLATResource getOlatResource();
 

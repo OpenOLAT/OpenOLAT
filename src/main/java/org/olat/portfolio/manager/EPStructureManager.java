@@ -49,7 +49,8 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
@@ -69,6 +70,7 @@ import org.olat.portfolio.model.structel.EPTargetResource;
 import org.olat.portfolio.model.structel.ElementType;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
+import org.olat.portfolio.model.structel.PortfolioStructureRef;
 import org.olat.portfolio.model.structel.StructureStatusEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -89,11 +91,12 @@ import org.springframework.stereotype.Service;
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
 @Service("epStructureManager")
-public class EPStructureManager extends BasicManager {
+public class EPStructureManager {
 	
 	public static final String STRUCTURE_ELEMENT_TYPE_NAME = "EPStructureElement";
 	
 	public static final OLATResourceable ORES_MAPOWNER = OresHelper.lookupType(EPStructureManager.class, "EPOwner");
+	public static final OLog log = Tracing.createLoggerFor(EPStructureManager.class);
 
 	@Autowired
 	private DB dbInstance;
@@ -101,8 +104,6 @@ public class EPStructureManager extends BasicManager {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private OLATResourceManager resourceManager;
-	@Autowired
-	private EPPolicyManager policyManager;
 	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
@@ -558,21 +559,21 @@ public class EPStructureManager extends BasicManager {
 	 * @param structure
 	 * @return
 	 */
-	protected PortfolioStructure loadStructureParent(PortfolioStructure structure) {
+	protected PortfolioStructure loadStructureParent(PortfolioStructureRef structure) {
 		if (structure == null) throw new NullPointerException();
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("select link.parent from ").append(EPStructureToStructureLink.class.getName()).append(" link")
-			.append(" where link.child=:structureEl");
+		  .append(" where link.child.key=:structureElKey");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setEntity("structureEl", structure);
-		
-		@SuppressWarnings("unchecked")
-		List<PortfolioStructure> resources = query.list();
+		List<PortfolioStructure> resources = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), PortfolioStructure.class)
+				.setParameter("structureElKey", structure.getKey())
+				.getResultList();
+
 		if(resources.isEmpty()) return null;
 		if(resources.size() == 1) return resources.get(0);
-		getLogger().error("A structure child has more than one parent");
+		log.error("A structure child has more than one parent");
 		return null;
 	}
 	
@@ -888,7 +889,7 @@ public class EPStructureManager extends BasicManager {
 			removeStructure(oldParStruct, structToBeMvd);
 			addStructureToStructure(newParStruct, structToBeMvd, destinationPos);
 		} catch (Exception e) {
-			logError("could not move structure " + structToBeMvd.getKey() + " from " + oldParStruct.getKey() + " to " + newParStruct.getKey(), e);
+			log.error("could not move structure " + structToBeMvd.getKey() + " from " + oldParStruct.getKey() + " to " + newParStruct.getKey(), e);
 			return false;
 		}
 		return true;
@@ -1235,7 +1236,7 @@ public class EPStructureManager extends BasicManager {
 		EPStructureElement childSourceEl = (EPStructureElement)refLink.getChild();
 		EPStructureElement clonedChildEl = instantiateClone(refLink.getChild());
 		if(clonedChildEl == null) {
-			logWarn("Attempt to clone an unsupported structure type: " + refLink.getChild(), null);
+			log.warn("Attempt to clone an unsupported structure type: " + refLink.getChild(), null);
 		} else {
 			OLATResource resource = resourceManager.createOLATResourceInstance(clonedChildEl.getClass());
 			clonedChildEl.setOlatResource(resource);

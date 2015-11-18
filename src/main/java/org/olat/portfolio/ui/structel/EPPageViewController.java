@@ -21,7 +21,6 @@ package org.olat.portfolio.ui.structel;
 
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
@@ -43,6 +42,7 @@ import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.portfolio.model.structel.StructureStatusEnum;
 import org.olat.portfolio.ui.artefacts.view.EPMultiArtefactsController;
 import org.olat.portfolio.ui.structel.edit.EPCollectRestrictionResultController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -56,11 +56,16 @@ public class EPPageViewController extends BasicController {
 
 	private EPPage page;
 	private PortfolioStructure map;
+	
 	private final VelocityContainer vC;
 	private final EPSecurityCallback secCallback;
+	
+	private EPAddElementsController addButtonCtrl;
 	private EPCollectRestrictionResultController resultCtrl;
-	private final EPFrontendManager ePFMgr;
 	private UserCommentsAndRatingsController commentsAndRatingCtr;
+	
+	@Autowired
+	private EPFrontendManager ePFMgr;
 
 	public EPPageViewController(UserRequest ureq, WindowControl wControl, PortfolioStructure map, EPPage page, boolean withComments,
 			EPSecurityCallback secCallback) {
@@ -70,7 +75,6 @@ public class EPPageViewController extends BasicController {
 		this.page = page;
 		this.secCallback = secCallback;
 
-		ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 
 		init(ureq);
 		
@@ -85,9 +89,10 @@ public class EPPageViewController extends BasicController {
 		return page;
 	}
 	
-	protected void init(UserRequest ureq) {
+	private void init(UserRequest ureq) {
 		vC.contextPut("page", page);
-		boolean parentMapClosed = StructureStatusEnum.CLOSED.equals( ((PortfolioStructureMap) ePFMgr.loadStructureParent(page)).getStatus());
+		PortfolioStructureMap parentOfPage = (PortfolioStructureMap)ePFMgr.loadStructureParent(page);
+		boolean parentMapClosed = StructureStatusEnum.CLOSED.equals(parentOfPage.getStatus());
 		
 		vC.remove(vC.getComponent("checkResults"));
 		if(secCallback.isRestrictionsEnabled()) {
@@ -122,15 +127,15 @@ public class EPPageViewController extends BasicController {
 		
 		vC.remove(vC.getComponent("addButton"));
 		if(!parentMapClosed && (secCallback.canAddArtefact() || secCallback.canAddStructure())) {
-			EPAddElementsController addButton = new EPAddElementsController(ureq, getWindowControl(), page);
+			addButtonCtrl = new EPAddElementsController(ureq, getWindowControl(), page);
+			listenTo(addButtonCtrl);
 			if(secCallback.canAddArtefact()) {
-				addButton.setShowLink(EPAddElementsController.ADD_ARTEFACT);
+				addButtonCtrl.setShowLink(EPAddElementsController.ADD_ARTEFACT);
 			}
 			if(secCallback.canAddStructure()) {
-				addButton.setShowLink(EPAddElementsController.ADD_STRUCTUREELEMENT);
+				addButtonCtrl.setShowLink(EPAddElementsController.ADD_STRUCTUREELEMENT);
 			}
-			vC.put("addButton", addButton.getInitialComponent());
-			listenTo(addButton);
+			vC.put("addButton", addButtonCtrl.getInitialComponent());
 		}
 		
 		vC.remove(vC.getComponent("commentCtrl"));

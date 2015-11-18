@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -118,11 +119,13 @@ public class EPAddElementsController extends BasicController {
 				String title = translate("new.page.title");
 				String description = translate("new.page.desc");
 				PortfolioStructure newPage = ePFMgr.createAndPersistPortfolioPage(portfolioStructure, title, description);
+				DBFactory.getInstance().commit();
 				fireEvent(ureq, new EPStructureChangeEvent(EPStructureChangeEvent.ADDED, newPage));
 			} else if (ADD_STRUCTUREELEMENT.equals(activeType)) {
 				String title = translate("new.structure.title");
 				String description = translate("new.structure.desc");
 				PortfolioStructure newStruct = ePFMgr.createAndPersistPortfolioStructureElement(portfolioStructure, title, description);
+				DBFactory.getInstance().commit();
 				fireEvent(ureq, new EPStructureChangeEvent(EPStructureChangeEvent.ADDED, newStruct));
 			} else if (ADD_PORTFOLIOSTRUCTURE.equals(activeType)) {
 				// show tree-with maps to choose from
