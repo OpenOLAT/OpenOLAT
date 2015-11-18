@@ -331,7 +331,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	
 	private void setLaunchDates() {
 		UserCourseInformationsManager userCourseInfoMgr = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
-		userCourseInfoMgr.updateUserCourseInformations(uce.getCourseEnvironment().getCourseGroupManager().getCourseResource(), getIdentity(), false);
+		userCourseInfoMgr.updateUserCourseInformations(uce.getCourseEnvironment().getCourseGroupManager().getCourseResource(), getIdentity());
 	}
 	
 	private CourseNode updateAfterChanges(CourseNode courseNode) {

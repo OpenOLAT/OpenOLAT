@@ -152,18 +152,17 @@ public class GTACoachedParticipantListController extends FormBasicController {
 			
 			String propName = userPropertyHandler.getName();
 			boolean visible = userManager.isMandatoryUserProperty(GTACoachedGroupGradingController.USER_PROPS_ID , userPropertyHandler);
-			if(visible) {
-				FlexiColumnModel col;
-				if(UserConstants.FIRSTNAME.equals(propName)
-						|| UserConstants.LASTNAME.equals(propName)) {
-					col = new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(),
-							colIndex, userPropertyHandler.getName(), true, propName,
-							new StaticFlexiCellRenderer(userPropertyHandler.getName(), new TextFlexiCellRenderer()));
-				} else {
-					col = new DefaultFlexiColumnModel(true, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, true, propName);
-				}
-				columnsModel.addFlexiColumnModel(col);
+
+			FlexiColumnModel col;
+			if(UserConstants.FIRSTNAME.equals(propName)
+					|| UserConstants.LASTNAME.equals(propName)) {
+				col = new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(),
+						colIndex, userPropertyHandler.getName(), true, propName,
+						new StaticFlexiCellRenderer(userPropertyHandler.getName(), new TextFlexiCellRenderer()));
+			} else {
+				col = new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, true, propName);
 			}
+			columnsModel.addFlexiColumnModel(col);
 		}
 
 		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {

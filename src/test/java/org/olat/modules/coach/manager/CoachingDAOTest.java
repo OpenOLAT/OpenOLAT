@@ -134,7 +134,7 @@ public class CoachingDAOTest extends OlatTestCase {
 	    effManager.createUserEfficiencyStatement(new Date(), 2.0f, false, participant2, re.getOlatResource());
 		dbInstance.commitAndCloseSession();
 		//make user infos
-		userCourseInformationsManager.updateUserCourseInformations(course.getCourseEnvironment().getCourseGroupManager().getCourseResource(), participant1, true);
+		userCourseInformationsManager.updateUserCourseInformations(course.getCourseEnvironment().getCourseGroupManager().getCourseResource(), participant1);
 		dbInstance.commitAndCloseSession();
 		
 		
@@ -243,11 +243,11 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//make user infos
-		userCourseInformationsManager.updateUserCourseInformations(re1.getOlatResource(), participant1, true);
-		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participant1, true);
-		userCourseInformationsManager.updateUserCourseInformations(re3.getOlatResource(), participant1, true);
-		userCourseInformationsManager.updateUserCourseInformations(re1.getOlatResource(), participant2, true);
-		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participant2, true);
+		userCourseInformationsManager.updateUserCourseInformations(re1.getOlatResource(), participant1);
+		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participant1);
+		userCourseInformationsManager.updateUserCourseInformations(re3.getOlatResource(), participant1);
+		userCourseInformationsManager.updateUserCourseInformations(re1.getOlatResource(), participant2);
+		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participant2);
 		dbInstance.commitAndCloseSession();
 		
 		//check course
@@ -366,15 +366,15 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//make user infos
-		userCourseInformationsManager.updateUserCourseInformations(re1.getOlatResource(), participant1, true);
-		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participant1, true);
-		userCourseInformationsManager.updateUserCourseInformations(re3.getOlatResource(), participant1, true);
-		userCourseInformationsManager.updateUserCourseInformations(re1.getOlatResource(), participant2, true);
-		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participant2, true);
-		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participant3, true);
-		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participant4, true);
-		userCourseInformationsManager.updateUserCourseInformations(re3.getOlatResource(), participant5, true);
-		userCourseInformationsManager.updateUserCourseInformations(re3.getOlatResource(), participant6, true);
+		userCourseInformationsManager.updateUserCourseInformations(re1.getOlatResource(), participant1);
+		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participant1);
+		userCourseInformationsManager.updateUserCourseInformations(re3.getOlatResource(), participant1);
+		userCourseInformationsManager.updateUserCourseInformations(re1.getOlatResource(), participant2);
+		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participant2);
+		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participant3);
+		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participant4);
+		userCourseInformationsManager.updateUserCourseInformations(re3.getOlatResource(), participant5);
+		userCourseInformationsManager.updateUserCourseInformations(re3.getOlatResource(), participant6);
 		dbInstance.commitAndCloseSession();
 		
 		//owner can see participant 1,2,3 and 4
@@ -538,20 +538,20 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//make user infos
-		userCourseInformationsManager.updateUserCourseInformations(re1.getOlatResource(), participant1, true);
-		userCourseInformationsManager.updateUserCourseInformations(re1.getOlatResource(), participant11, true);
-		userCourseInformationsManager.updateUserCourseInformations(re1.getOlatResource(), participantG1, true);
-		userCourseInformationsManager.updateUserCourseInformations(re1.getOlatResource(), participantG11, true);
+		userCourseInformationsManager.updateUserCourseInformations(re1.getOlatResource(), participant1);
+		userCourseInformationsManager.updateUserCourseInformations(re1.getOlatResource(), participant11);
+		userCourseInformationsManager.updateUserCourseInformations(re1.getOlatResource(), participantG1);
+		userCourseInformationsManager.updateUserCourseInformations(re1.getOlatResource(), participantG11);
 		
-		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participant2, true);
-		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participant21, true);
-		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participantG2, true);
-		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participantG21, true);
+		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participant2);
+		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participant21);
+		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participantG2);
+		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participantG21);
 		
-		userCourseInformationsManager.updateUserCourseInformations(re3.getOlatResource(), participant3, true);
-		userCourseInformationsManager.updateUserCourseInformations(re3.getOlatResource(), participant31, true);
-		userCourseInformationsManager.updateUserCourseInformations(re3.getOlatResource(), participantG3, true);
-		userCourseInformationsManager.updateUserCourseInformations(re3.getOlatResource(), participantG31, true);
+		userCourseInformationsManager.updateUserCourseInformations(re3.getOlatResource(), participant3);
+		userCourseInformationsManager.updateUserCourseInformations(re3.getOlatResource(), participant31);
+		userCourseInformationsManager.updateUserCourseInformations(re3.getOlatResource(), participantG3);
+		userCourseInformationsManager.updateUserCourseInformations(re3.getOlatResource(), participantG31);
 		dbInstance.commitAndCloseSession();
 		
 
@@ -790,9 +790,9 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//make user infos
-		userCourseInformationsManager.updateUserCourseInformations(re1.getOlatResource(), participant, true);
-		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participant, true);
-		userCourseInformationsManager.updateUserCourseInformations(re3.getOlatResource(), participant, true);
+		userCourseInformationsManager.updateUserCourseInformations(re1.getOlatResource(), participant);
+		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participant);
+		userCourseInformationsManager.updateUserCourseInformations(re3.getOlatResource(), participant);
 		dbInstance.commitAndCloseSession();
 
 		//update props
