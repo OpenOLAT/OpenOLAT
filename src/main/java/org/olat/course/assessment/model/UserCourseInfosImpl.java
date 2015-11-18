@@ -64,7 +64,7 @@ public class UserCourseInfosImpl implements UserCourseInformations, Persistable,
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="initiallaunchdate", nullable=false, insertable=true, updatable=false)
+	@Column(name="initiallaunchdate", nullable=false, insertable=true, updatable=true)
 	private Date initialLaunch;
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="recentlaunchdate", nullable=false, insertable=true, updatable=true)
