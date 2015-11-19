@@ -51,6 +51,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -118,13 +119,16 @@ public class STCourseNodeRunController extends BasicController {
 				CourseNode child = neChd.getCourseNode();
 				Controller childViewController = null;
 				Controller childPeekViewController = null;
+				boolean accessible = NavigationHandler.mayAccessWholeTreeUp(neChd);
 				if (displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW)) {
 					if (peekviewChildNodes.size() == 0) {
 						// Special case: no child nodes configured. This is the case when
 						// the node has been configured before it had any children. We just
 						// use the first children as they appear in the list
 						if (i < STCourseNodeConfiguration.MAX_PEEKVIEW_CHILD_NODES) {
-							childPeekViewController = child.createPeekViewRunController(ureq, wControl, userCourseEnv, neChd);
+							if(accessible) {
+								childPeekViewController = child.createPeekViewRunController(ureq, wControl, userCourseEnv, neChd);
+							}
 						} else {
 							// Stop, we already reached the max count
 							break;
@@ -132,7 +136,9 @@ public class STCourseNodeRunController extends BasicController {
 					} else {
 						// Only add configured children
 						if (peekviewChildNodes.contains(child.getIdent())) {
-							childPeekViewController = child.createPeekViewRunController(ureq, wControl, userCourseEnv, neChd);
+							if(accessible) {
+								childPeekViewController = child.createPeekViewRunController(ureq, wControl, userCourseEnv, neChd);
+							}
 						} else {
 							// Skip this child - not configured
 							continue;
@@ -141,9 +147,10 @@ public class STCourseNodeRunController extends BasicController {
 				}
 				// Add child to list
 				children.add(child);
-				childViewController = new PeekViewWrapperController(ureq, wControl, child, childPeekViewController);
+				childViewController = new PeekViewWrapperController(ureq, wControl, child, childPeekViewController, accessible);
 				listenTo(childViewController); // auto-dispose controller
 				myContent.put("childView_" + child.getIdent(), childViewController.getInitialComponent());
+
 			}
 		}
 
