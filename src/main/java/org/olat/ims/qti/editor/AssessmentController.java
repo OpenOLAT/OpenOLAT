@@ -74,7 +74,7 @@ public class AssessmentController extends TabbableDefaultController implements C
 		HelpTooltip selectionPreHelpText = new HelpTooltip("selectionPreHelpText", translate("form.assessment.selection_pre.hover"));
 		main.put("selectionPreHelpText", selectionPreHelpText);
 
-		HelpTooltip orderTypeHelpText = new HelpTooltip("orderTypeHelpText", translate("form.metadata.globalfeedbackNsolution.hover"));
+		HelpTooltip orderTypeHelpText = new HelpTooltip("orderTypeHelpText", translate("form.assessment.order_type.hover"));
 		main.put("orderTypeHelpText", orderTypeHelpText);
 
 		HelpTooltip globalfeedbackNsolutionHelpText = new HelpTooltip("globalfeedbackNsolutionHelpText", translate("form.metadata.globalfeedbackNsolution.hover"), "Test and Questionnaire Editor in Detail#details_testeditor_feedback", getLocale());
