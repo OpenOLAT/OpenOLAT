@@ -191,6 +191,7 @@ public class GTACoachController extends GTAAbstractController {
 				documentsContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, assessedGroup);
 			} else {
 				documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedIdentity);
+				documentsContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, assessedIdentity);
 			}
 			boolean hasDocuments = TaskHelper.hasDocuments(documentsDir);
 			if(hasDocuments) {
@@ -538,8 +539,7 @@ public class GTACoachController extends GTAAbstractController {
 			String title = translate(emailLink.getI18n()); // same title as link button
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), emailController.getInitialComponent(), true, title);
 			listenTo(cmc);
-			
-			cmc.activate();			
+			cmc.activate();
 		}
 	}
 	

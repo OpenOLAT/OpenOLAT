@@ -21,18 +21,22 @@ package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
 
+import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
@@ -50,8 +54,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class GTAAssignedTaskController extends BasicController {
 
 	private Link downloadButton, downloadLink;
+
+	private CloseableModalController cmc;
+	private SinglePageController viewTaskCtrl;
 	
 	private File taskFile;
+	private final GTACourseNode gtaNode;
+	private final CourseEnvironment courseEnv;
 	
 	@Autowired
 	private GTAManager gtaManager;
@@ -72,6 +81,9 @@ public class GTAAssignedTaskController extends BasicController {
 			TaskDefinition taskDef, CourseEnvironment courseEnv, GTACourseNode gtaNode,
 			String i18nDescription, String i18nWarning, String message) {
 		super(ureq, wControl);
+		
+		this.gtaNode = gtaNode;
+		this.courseEnv = courseEnv;
 		
 		VelocityContainer mainVC = createVelocityContainer("assigned_task");
 		mainVC.contextPut("description", translate(i18nDescription));
@@ -110,7 +122,9 @@ public class GTAAssignedTaskController extends BasicController {
 				downloadLink.setEnabled(false);
 			}
 			downloadLink.setTitle(taskInfos);
-			downloadLink.setTarget("_blank");
+			if(!taskFile.getName().endsWith(".html")) {
+				downloadLink.setTarget("_blank");
+			}
 		}
 
 		putInitialPanel(mainVC);
@@ -123,9 +137,50 @@ public class GTAAssignedTaskController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(downloadButton == source || downloadLink == source) {
-			MediaResource mdr = new FileMediaResource(taskFile, true);
+		if(downloadLink == source) {
+			if(taskFile.getName().endsWith(".html")) {
+				doPreview(ureq);
+			} else {
+				MediaResource mdr = new FileMediaResource(taskFile, true);
+				ureq.getDispatchResult().setResultingMediaResource(mdr);
+			}
+		} else if(downloadButton == source) {
+			MediaResource mdr;
+			if(taskFile.getName().endsWith(".html")) {
+				File taskDir = gtaManager.getTasksDirectory(courseEnv, gtaNode);
+				mdr = new HTMLZippedMediaResource(taskFile.getName(), taskDir);
+			} else {
+				mdr = new FileMediaResource(taskFile, true);
+			}
 			ureq.getDispatchResult().setResultingMediaResource(mdr);
 		}
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(viewTaskCtrl);
+		cmc = null;
+		viewTaskCtrl = null;
+	}
+	
+	private void doPreview(UserRequest ureq) {
+		if(viewTaskCtrl != null) return;
+		
+		VFSContainer tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
+		viewTaskCtrl = new SinglePageController(ureq, getWindowControl(), tasksContainer, taskFile.getName(),
+				false, null, TaskHelper.getStandardDeliveryOptions());
+		listenTo(viewTaskCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), viewTaskCtrl.getInitialComponent(), true, taskFile.getName());
+		listenTo(cmc);
+		cmc.activate();
 	}
 }

@@ -170,12 +170,13 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 			documentsContainer = gtaManager.getRevisedDocumentsContainer(courseEnv, gtaNode, iteration, assessedGroup);
 		} else {
 			documentsDir = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, getIdentity());
+			documentsContainer = gtaManager.getRevisedDocumentsContainer(courseEnv, gtaNode, iteration, getIdentity());
 		}
 
 		boolean hasDocument = TaskHelper.hasDocuments(documentsDir);
 		if(hasDocument) {
 			revisionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
-					"run.revised.description");
+					"run.revised.description", "bulk.submitted.revisions", "revisions.zip");
 			listenTo(revisionsCtrl);
 			mainVC.put(cmpName, revisionsCtrl.getInitialComponent());
 		}
@@ -190,6 +191,7 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 			documentsContainer = gtaManager.getRevisedDocumentsCorrectionsContainer(courseEnv, gtaNode, iteration, assessedGroup);
 		} else {
 			documentsDir = gtaManager.getRevisedDocumentsCorrectionsDirectory(courseEnv, gtaNode, iteration, getIdentity());
+			documentsContainer = gtaManager.getRevisedDocumentsCorrectionsContainer(courseEnv, gtaNode, iteration, getIdentity());
 		}
 		
 		boolean hasDocument = TaskHelper.hasDocuments(documentsDir);

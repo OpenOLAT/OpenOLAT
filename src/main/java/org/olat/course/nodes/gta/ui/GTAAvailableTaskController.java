@@ -26,10 +26,10 @@ import java.util.List;
 import java.util.UUID;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -47,6 +47,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
@@ -55,6 +56,7 @@ import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
 import org.olat.course.nodes.gta.GTAManager;
@@ -76,7 +78,9 @@ public class GTAAvailableTaskController extends FormBasicController {
 
 	private FlexiTableElement tableEl;
 	private AvailableTaskTableModel taskModel;
-	
+
+	private CloseableModalController cmc;
+	private SinglePageController previewCtrl;
 	private CloseableCalloutWindowController descriptionCalloutCtrl;
 	
 	/**
@@ -159,9 +163,18 @@ public class GTAAvailableTaskController extends FormBasicController {
 				descriptionLink.setIconLeftCSS("o_icon o_icon_description");
 			}
 			
-			File taskFile = new File(taskFolder, filename);
-			DownloadLink download = uifactory.addDownloadLink("prev-" + CodeHelper.getRAMUniqueID(), filename, null, taskFile, tableEl);
-
+			FormItem download = null;
+			boolean preview = gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_PREVIEW);
+			if(preview) {
+				if(taskDef.getFilename().endsWith(".html")) {
+					download = uifactory.addFormLink("prev-html-" + CodeHelper.getRAMUniqueID(), "preview-html", filename, null, flc, Link.LINK | Link.NONTRANSLATED);
+					download.setUserObject(filename);
+				} else {
+					File taskFile = new File(taskFolder, filename);
+					download = uifactory.addDownloadLink("prev-" + CodeHelper.getRAMUniqueID(), filename, null, taskFile, tableEl);
+				}
+			}
+			
 			AvailableTask wrapper = new AvailableTask(taskDef, descriptionLink, download);
 			availableTasks.add(wrapper);
 			if(descriptionLink != null) {
@@ -202,9 +215,39 @@ public class GTAAvailableTaskController extends FormBasicController {
 			FormLink link = (FormLink)source;
 			if("description".equals(link.getCmd())) {
 				doDescription(ureq, (AvailableTask)link.getUserObject());
+			} else if("preview-html".equals(link.getCmd())) {
+				String filename = (String)link.getUserObject();
+				doPreview(ureq, filename);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(previewCtrl);
+		cmc = null;
+		previewCtrl = null;
+	}
+	
+	private void doPreview(UserRequest ureq, String filename) {
+		if(filename != null && filename.endsWith(".html")) {
+			VFSContainer tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
+			previewCtrl = new SinglePageController(ureq, getWindowControl(), tasksContainer, filename, false);
+			listenTo(previewCtrl);
+
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), previewCtrl.getInitialComponent(), true, filename);
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 	
 	private void doSelect(UserRequest ureq, AvailableTask row) {
@@ -284,9 +327,9 @@ public class GTAAvailableTaskController extends FormBasicController {
 
 		private final TaskDefinition taskDef;
 		private final FormLink descriptionLink;
-		private final DownloadLink downloadLink;
+		private final FormItem downloadLink;
 		
-		public AvailableTask(TaskDefinition taskDef, FormLink descriptionLink,  DownloadLink downloadLink) {
+		public AvailableTask(TaskDefinition taskDef, FormLink descriptionLink,  FormItem downloadLink) {
 			this.taskDef = taskDef;
 			this.downloadLink = downloadLink;
 			this.descriptionLink = descriptionLink;
@@ -300,7 +343,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 			return descriptionLink;
 		}
 
-		public DownloadLink getDownloadLink() {
+		public FormItem getDownloadLink() {
 			return downloadLink;
 		}
 	}

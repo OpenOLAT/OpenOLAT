@@ -277,10 +277,9 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 
 		newSolutionEditorCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(),
 				solutionContainer, documentName, "media", true, true);
+		newSolutionEditorCtrl.getRichTextConfiguration().disableMedia();
 		newSolutionEditorCtrl.setNewFile(true);
 		newSolutionEditorCtrl.setUserObject(solution);
-		newSolutionEditorCtrl.getRichTextConfiguration().disableImageAnMovie();
-		newSolutionEditorCtrl.getRichTextConfiguration().disableFileBrowserCallback();
 		listenTo(newSolutionEditorCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", newSolutionEditorCtrl.getInitialComponent());
@@ -293,8 +292,7 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 
 		editSolutionEditorCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(),
 				solutionContainer, documentName, "media", true, true);
-		editSolutionEditorCtrl.getRichTextConfiguration().disableImageAnMovie();
-		editSolutionEditorCtrl.getRichTextConfiguration().disableFileBrowserCallback();
+		editSolutionEditorCtrl.getRichTextConfiguration().disableMedia();
 		listenTo(editSolutionEditorCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", editSolutionEditorCtrl.getInitialComponent());

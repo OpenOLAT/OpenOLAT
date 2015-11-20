@@ -24,6 +24,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
+import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.util.io.SystemFileFilter;
 
 /**
@@ -40,6 +41,13 @@ public class TaskHelper {
 		synchronized(formatFileSize) {
 			return formatFileSize.format(value);
 		}
+	}
+	
+	public static DeliveryOptions getStandardDeliveryOptions() {
+		DeliveryOptions config = new DeliveryOptions();
+		config.setjQueryEnabled(Boolean.TRUE);
+		config.setOpenolatCss(Boolean.TRUE);
+		return config;
 	}
 	
 	public static int countDocuments(File directory) {

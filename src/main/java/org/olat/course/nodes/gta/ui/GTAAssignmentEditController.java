@@ -419,6 +419,7 @@ public class GTAAssignmentEditController extends FormBasicController {
 
 		newTaskEditorCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(),
 				tasksContainer, documentName, "media", true, true);
+		newTaskEditorCtrl.getRichTextConfiguration().disableMedia();
 		newTaskEditorCtrl.setNewFile(true);
 		newTaskEditorCtrl.setUserObject(taskDef);
 		listenTo(newTaskEditorCtrl);
