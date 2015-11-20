@@ -76,6 +76,7 @@ public class BusinessGroupSearchController extends FormBasicController implement
 	private String[] openKeys = {"all", "yes", "no"};
 	private String[] resourceKeys = {"all", "yes", "no"};
 	
+	private final boolean admin;
 	private final boolean showId;
 	private final boolean managedEnable;
 	private boolean enabled = false;
@@ -89,8 +90,9 @@ public class BusinessGroupSearchController extends FormBasicController implement
 	 * @param limitTypes Limit searches to specific types.
 	 */
 	public BusinessGroupSearchController(UserRequest ureq, WindowControl wControl,
-			boolean showId, boolean showRoles, boolean showAdminTools, Form mainForm) {
+			boolean showId, boolean showRoles, boolean showAdminTools, boolean admin, Form mainForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "group_search", mainForm);
+		this.admin = admin;
 		this.showId = showId;
 		this.showRoles = showRoles;
 		this.showAdminTools = showAdminTools;
@@ -321,9 +323,13 @@ public class BusinessGroupSearchController extends FormBasicController implement
 		
 		if(rolesEl.isVisible() && rolesEl.isOneSelected()) {
 			String selectedRole = rolesEl.getSelectedKey();
-			e.setOwner("all".equals(selectedRole) || "owner".equals(selectedRole));
-			e.setAttendee("all".equals(selectedRole) || "attendee".equals(selectedRole));
-			e.setWaiting("all".equals(selectedRole) || "waiting".equals(selectedRole));
+			if(admin && "all".equals(selectedRole)) {
+				//don't limit the query
+			} else {
+				e.setOwner("all".equals(selectedRole) || "owner".equals(selectedRole));
+				e.setAttendee("all".equals(selectedRole) || "attendee".equals(selectedRole));
+				e.setWaiting("all".equals(selectedRole) || "waiting".equals(selectedRole));
+			}
 		}
 		
 		if(publicEl.isVisible() && publicEl.isOneSelected()) {
