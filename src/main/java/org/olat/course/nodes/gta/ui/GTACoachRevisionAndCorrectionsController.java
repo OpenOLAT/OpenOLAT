@@ -254,6 +254,21 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 	private void doConfirmReturnToRevisions(UserRequest ureq) {
 		String title = translate("coach.revisions.confirm.title");
 		String text = translate("coach.revisions.confirm.text");
+		
+		File documentsDir;
+		int iteration = assignedTask.getRevisionLoop();
+		if(businessGroupTask) {
+			documentsDir = gtaManager.getRevisedDocumentsCorrectionsDirectory(courseEnv, gtaNode, iteration, assessedGroup);
+		} else {
+			documentsDir = gtaManager.getRevisedDocumentsCorrectionsDirectory(courseEnv, gtaNode, iteration, assessedIdentity);
+		}
+		
+		boolean hasDocument = TaskHelper.hasDocuments(documentsDir);
+		if(!hasDocument) {
+			String warning = translate("coach.revisions.confirm.text.warn");
+			text = "<div class='o_warning'>" + warning + "</div>" + text;
+		}
+
 		confirmReturnToRevisionsCtrl = activateOkCancelDialog(ureq, title, text, confirmReturnToRevisionsCtrl);	
 		listenTo(confirmReturnToRevisionsCtrl);
 	}
