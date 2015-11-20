@@ -78,19 +78,6 @@
 		<property name="name" value="Information" />
 		<property name="enabled" value="${portlet.infomsg.enabled}" />
 	</bean>
-	<bean id="ShibLogin" class="org.olat.portal.shiblogin.ShibLoginPortlet" scope="prototype">
-		<constructor-arg ref="switchShibbolethAuthenticationConfigurator" />
-		<property name="name" value="ShibLogin" />
-		<property name="enabled" value="${portlet.shiblogin.enabled}" />
-		<property name="configuration">
-			<map>
-				<entry key="title_de" value="Login" />
-				<entry key="description_de" value="Möglichkeit zur direkten Anmeldung an der Lernplattform" />
-				<entry key="title_en" value="Login" />
-				<entry key="description_en" value="Quick possibility to log on directly" />
-			</map>
-		</property>
-	</bean>
 	<bean id="Links" class="de.bps.olat.portal.links.LinksPortlet" scope="prototype">
 		<property name="name" value="Links" />
 		<property name="enabled" value="${portlet.links.enabled}" />

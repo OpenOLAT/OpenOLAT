@@ -25,14 +25,17 @@ import java.util.List;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
+import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.util.CSSHelper;
@@ -57,6 +60,10 @@ public class DirectoryController extends BasicController {
 	
 	private final String zipName;
 	private final File documentsDir;
+	private final VFSContainer documentsContainer;
+	
+	private CloseableModalController cmc;
+	private SinglePageController previewCtrl;
 	
 	@Autowired
 	private UserManager userManager;
@@ -72,6 +79,7 @@ public class DirectoryController extends BasicController {
 		super(ureq, wControl);
 		this.zipName = zipName;
 		this.documentsDir = documentsDir;
+		this.documentsContainer = documentsContainer;
 
 		VelocityContainer mainVC = createVelocityContainer("documents_readonly");
 		mainVC.contextPut("description", translate(i18nDescription));
@@ -92,7 +100,9 @@ public class DirectoryController extends BasicController {
 			String cssClass = CSSHelper.createFiletypeIconCssClassFor(document.getName());
 			link.setIconLeftCSS("o_icon o_icon-fw " + cssClass);
 			link.setUserObject(document);
-			link.setTarget("_blank");
+			if(!document.getName().endsWith(".html")) {
+				link.setTarget("_blank");
+			}
 			
 			String uploadedBy = null;
 			if(documentsContainer != null) {
@@ -126,10 +136,34 @@ public class DirectoryController extends BasicController {
 			doDownload(ureq, (File)downloadLink.getUserObject());
 		}
 	}
-	
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(previewCtrl);
+		cmc = null;
+		previewCtrl = null;
+	}
+
 	private void doDownload(UserRequest ureq, File file) {
-		MediaResource mdr = new FileMediaResource(file, true);
-		ureq.getDispatchResult().setResultingMediaResource(mdr);
+		if(file.getName().endsWith(".html")) {
+			previewCtrl = new SinglePageController(ureq, getWindowControl(), documentsContainer, file.getName(), false);
+			listenTo(previewCtrl);
+
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), previewCtrl.getInitialComponent(), true, file.getName());
+			listenTo(cmc);
+			cmc.activate();
+		} else {
+			MediaResource mdr = new FileMediaResource(file, true);
+			ureq.getDispatchResult().setResultingMediaResource(mdr);
+		}
 	}
 	
 	private void doBulkdownload(UserRequest ureq) {

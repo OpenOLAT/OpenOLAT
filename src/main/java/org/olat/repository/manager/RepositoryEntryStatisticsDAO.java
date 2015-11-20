@@ -63,10 +63,13 @@ public class RepositoryEntryStatisticsDAO implements UserRatingsDelegate, UserCo
 	 */
 	public void incrementLaunchCounter(RepositoryEntry re) {
 		String updateQuery = "update repoentrystats set launchCounter=launchCounter+1, lastUsage=:now where key=:statsKey";
-		dbInstance.getCurrentEntityManager().createQuery(updateQuery)
+		int updated = dbInstance.getCurrentEntityManager().createQuery(updateQuery)
 			.setParameter("statsKey", re.getStatistics().getKey())
 			.setParameter("now", new Date())
 			.executeUpdate();
+		if(updated > 0) {
+			dbInstance.commit();//big performance improvement
+		}
 	}
 
 	/**
@@ -75,10 +78,13 @@ public class RepositoryEntryStatisticsDAO implements UserRatingsDelegate, UserCo
 	 */
 	public void incrementDownloadCounter(RepositoryEntry re) {
 		String updateQuery = "update repoentrystats set downloadCounter=downloadCounter+1, lastUsage=:now where key=:statsKey";
-		dbInstance.getCurrentEntityManager().createQuery(updateQuery)
+		int updated = dbInstance.getCurrentEntityManager().createQuery(updateQuery)
 			.setParameter("statsKey", re.getStatistics().getKey())
 			.setParameter("now", new Date())
 			.executeUpdate();
+		if(updated > 0) {
+			dbInstance.commit();//big performance improvement
+		}
 	}
 
 	/**

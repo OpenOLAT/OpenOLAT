@@ -56,7 +56,7 @@
 	</div>
 #else
 	<div class="form-group">
-		<label class="control-label col-sm-3">$r.translate("form.assessment.selection_pre")</label>
+		<label class="control-label col-sm-3">$r.translate("form.assessment.selection_pre")$r.render("selectionPreHelpText")</label>
 		<div class="col-sm-9">
 			<select id="selection_number" name="selection_number" class="form-control" onchange="if(this.form.selection_number.options.selectedIndex==0){unShadeFormElement('order_type');}else{shadeFormElement('order_type');this.form.order_type.options.selectedIndex=0}return setFormDirty('ofo_assessform')" onclick="return setFormDirty('ofo_assessform')">
 				<option value="0"

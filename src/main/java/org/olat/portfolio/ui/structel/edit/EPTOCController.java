@@ -238,7 +238,7 @@ public class EPTOCController extends BasicController {
 				}
 			} else if(event instanceof TreeDropEvent) {
 				TreeDropEvent te = (TreeDropEvent)event;
-				doDrop(ureq, te.getDroppedNodeId(), te.getTargetNodeId());
+				doDrop(ureq, te.getDroppedNodeId(), te.getTargetNodeId(), te.isAsChild());
 			}
 		}
 	}
@@ -271,7 +271,7 @@ public class EPTOCController extends BasicController {
 		}
 	}
 	
-	private void doDrop(UserRequest ureq, String droppedNodeId, String targetNodeId) {
+	private void doDrop(UserRequest ureq, String droppedNodeId, String targetNodeId, boolean asChild) {
 		TreeNode droppedNode = treeCtr.getTreeModel().getNodeById(droppedNodeId);
 		TreeNode targetNode = treeCtr.getTreeModel().getNodeById(targetNodeId);
 		if(droppedNode == null || targetNode == null) return;
@@ -296,9 +296,17 @@ public class EPTOCController extends BasicController {
 			}
 		} else if (droppedObj instanceof PortfolioStructure) {
 			PortfolioStructure droppedStruct = (PortfolioStructure)droppedObj;
-			if (checkStructureTarget(droppedStruct, droppedParentObj, targetObj, targetParentObj)) {
-				int newPos = TreeHelper.indexOfByUserObject(targetObj, (TreeNode)targetNode.getParent());
-				moveStructureToNewParent(ureq, droppedStruct, droppedParentObj, targetParentObj, newPos);
+			if (checkStructureTarget(droppedStruct, droppedParentObj, targetObj, targetParentObj, asChild)) {
+				if(asChild) {
+					int newPos = TreeHelper.indexOfByUserObject(targetObj, (TreeNode)targetNode.getParent());
+					moveStructureToNewParent(ureq, droppedStruct, droppedParentObj, targetObj, newPos);
+				} else if(droppedParentObj != null && targetParentObj != null && droppedParentObj.equals(targetParentObj)) {
+					int newPos = TreeHelper.indexOfByUserObject(targetObj, (TreeNode)targetNode.getParent());
+					moveStructureToNewParent(ureq, droppedStruct, droppedParentObj, targetParentObj, newPos);
+				} else {
+					int newPos = TreeHelper.indexOfByUserObject(targetObj, (TreeNode)targetNode.getParent());
+					moveStructureToNewParent(ureq, droppedStruct, droppedParentObj, targetParentObj, newPos);
+				}
 			}
 		}
 	}
@@ -376,7 +384,7 @@ public class EPTOCController extends BasicController {
 	}
 	
 	private boolean checkStructureTarget(PortfolioStructure droppedObj, Object droppedParentObj,
-			Object targetObj, Object targetParentObj){
+			Object targetObj, Object targetParentObj, boolean asChild) {
 		
 		if(targetObj == null || droppedParentObj == null) {
 			return false;
@@ -384,11 +392,25 @@ public class EPTOCController extends BasicController {
 		if (droppedParentObj != null && droppedParentObj.equals(targetParentObj)) {
 			return true; // seems only to be a move in order
 		}
-		if (droppedObj instanceof EPPage && targetObj instanceof EPPage) {
-			return false;
-		}
-		if (droppedObj instanceof EPStructureElement && !(targetObj instanceof EPPage)) {
-			return false;
+		
+		if(asChild) {
+			if (droppedParentObj != null && droppedParentObj.equals(targetParentObj)) {
+				return true; // seems only to be a move in order
+			}
+			if (droppedObj instanceof EPPage && targetObj instanceof EPPage) {
+				return false;
+			}
+			if (droppedObj instanceof EPStructureElement && !(targetObj instanceof EPPage)) {
+				return false;
+			}
+		} else {
+			
+			if (droppedObj instanceof EPPage && targetParentObj instanceof EPPage) {
+				return false;
+			}
+			if (droppedObj instanceof EPStructureElement && !(targetParentObj instanceof EPPage)) {
+				return false;
+			}
 		}
 		return true;
 	}

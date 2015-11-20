@@ -38,7 +38,6 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 
 /**
@@ -101,15 +100,8 @@ public class StaticServlet extends HttpServlet {
 			}
 		} else {
 			// version provided - remove it
-			String version;
-			if(StringHelper.containsNonWhitespace(WebappHelper.getRevisionNumber())) {
-				version = WebappHelper.getRevisionNumber() + ":" + WebappHelper.getChangeSet();
-			} else {
-				version = Settings.getBuildIdentifier();
-			}	
-			int start = version.length() + 1;
+			int start = pathInfo.indexOf("/", 2);
 			int end = pathInfo.length();
-			
 			if(start <= end) {
 				String staticRelPath = pathInfo.substring(start, end);
 				String normalizedRelPath = ServletUtil.normalizePath(staticRelPath);

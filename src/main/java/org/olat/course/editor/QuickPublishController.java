@@ -116,12 +116,15 @@ public class QuickPublishController extends BasicController {
 		} else if(manualLink == source) {
 			fireEvent(ureq, EditorMainController.MANUAL_PUBLISH);
 		} else if(autoLink == source) {
-			doAutoPublish();
-			fireEvent(ureq, Event.CHANGED_EVENT);
+			if(doAutoPublish()) {
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			} else {
+				fireEvent(ureq, Event.CANCELLED_EVENT);
+			}
 		}
 	}
 	
-	private void doAutoPublish() {
+	private boolean doAutoPublish() {
 		ICourse course = CourseFactory.loadCourse(courseOres);
 		CourseEditorTreeModel cetm = course.getEditorTreeModel();
 		PublishProcess publishProcess = PublishProcess.getInstance(course, cetm, getLocale());
@@ -145,11 +148,17 @@ public class QuickPublishController extends BasicController {
 			PublishSetInformations set = publishProcess.testPublishSet(getLocale());
 			StatusDescription[] status = set.getWarnings();
 			//publish not possible when there are errors
+			StringBuilder errMsg = new StringBuilder();
 			for(int i = 0; i < status.length; i++) {
 				if(status[i].isError()) {
+					errMsg.append(status[i].getLongDescription(getLocale()));
 					logError("Status error by publish: " + status[i].getLongDescription(getLocale()), null);
-					return;
 				}
+			}
+			
+			if(errMsg.length() > 0) {
+				getWindowControl().setWarning(errMsg.toString());
+				return false;
 			}
 			
 			PublishEvents publishEvents = publishProcess.getPublishEvents();
@@ -166,6 +175,8 @@ public class QuickPublishController extends BasicController {
 				}
 			}
 		}
+		
+		return true;
 	}
 	
 	private static void visitPublishModel(TreeNode node, INodeFilter filter, Collection<String> nodeToPublish) {

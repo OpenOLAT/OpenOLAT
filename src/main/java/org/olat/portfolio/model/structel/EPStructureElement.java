@@ -325,7 +325,7 @@ public class EPStructureElement extends PersistentObject implements PortfolioStr
 		}
 		if(obj instanceof EPStructureElement) {
 			EPStructureElement el = (EPStructureElement)obj;
-			return getKey() != null &&getKey().equals(el.getKey());
+			return getKey() != null && getKey().equals(el.getKey());
 		}
 		return false;
 	}

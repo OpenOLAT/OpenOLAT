@@ -32,10 +32,10 @@ import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
+import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -81,6 +81,7 @@ class SubmitDocumentsController extends FormBasicController {
 	private NewDocumentController newDocCtrl;
 	private DocumentUploadController uploadCtrl, replaceCtrl;
 	private DialogBoxController confirmDeleteCtrl;
+	private SinglePageController viewDocCtrl;
 	private HTMLEditorController newDocumentEditorCtrl, editDocumentEditorCtrl;
 	
 	private final int maxDocs;
@@ -160,8 +161,13 @@ class SubmitDocumentsController extends FormBasicController {
 				}
 			}
 			
-			
-			DownloadLink download = uifactory.addDownloadLink("view-" + CodeHelper.getRAMUniqueID(), filename, null, document, tableEl);
+			FormItem download;
+			if(filename.endsWith(".html")) {
+				download = uifactory.addFormLink("view-" + CodeHelper.getRAMUniqueID(), "view", filename, null, flc, Link.LINK | Link.NONTRANSLATED);
+				download.setUserObject(filename);
+			} else {
+				download = uifactory.addDownloadLink("view-" + CodeHelper.getRAMUniqueID(), filename, null, document, tableEl);
+			}
 			docList.add(new SubmittedSolution(document, uploadedBy, download));
 		}
 		model.setObjects(docList);
@@ -252,11 +258,13 @@ class SubmitDocumentsController extends FormBasicController {
 	private void cleanUp() {
 		removeAsListenerAndDispose(newDocumentEditorCtrl);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
+		removeAsListenerAndDispose(viewDocCtrl);
 		removeAsListenerAndDispose(uploadCtrl);
 		removeAsListenerAndDispose(newDocCtrl);
 		removeAsListenerAndDispose(cmc);
 		newDocumentEditorCtrl = null;
 		confirmDeleteCtrl = null;
+		viewDocCtrl = null;
 		uploadCtrl = null;
 		newDocCtrl = null;
 		cmc = null;
@@ -283,8 +291,24 @@ class SubmitDocumentsController extends FormBasicController {
 					doEdit(ureq, row);
 				}
 			}
+		} else if(source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			if("view".equals(link.getCmd())) {
+				doView(ureq, (String)link.getUserObject());
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doView(UserRequest ureq, String filename) {
+		if(viewDocCtrl != null) return;
+		
+		viewDocCtrl = new SinglePageController(ureq, getWindowControl(), documentsContainer, filename, false);
+		listenTo(viewDocCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), viewDocCtrl.getInitialComponent(), true, filename);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, SubmittedSolution solution) {
@@ -400,8 +424,7 @@ class SubmitDocumentsController extends FormBasicController {
 	
 			newDocumentEditorCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(),
 					documentsContainer, documentName, "media", true, true);
-			newDocumentEditorCtrl.getRichTextConfiguration().disableImageAnMovie();
-			newDocumentEditorCtrl.getRichTextConfiguration().disableFileBrowserCallback();
+			newDocumentEditorCtrl.getRichTextConfiguration().disableMedia();
 			newDocumentEditorCtrl.setNewFile(true);
 			listenTo(newDocumentEditorCtrl);
 			
@@ -416,8 +439,7 @@ class SubmitDocumentsController extends FormBasicController {
 
 		editDocumentEditorCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(),
 				documentsContainer, documentName, "media", true, true);
-		editDocumentEditorCtrl.getRichTextConfiguration().disableImageAnMovie();
-		editDocumentEditorCtrl.getRichTextConfiguration().disableFileBrowserCallback();
+		editDocumentEditorCtrl.getRichTextConfiguration().disableMedia();
 		listenTo(editDocumentEditorCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", editDocumentEditorCtrl.getInitialComponent());
@@ -446,9 +468,9 @@ class SubmitDocumentsController extends FormBasicController {
 		
 		private final File file;
 		private final String uploadedBy;
-		private final DownloadLink downloadLink;
+		private final FormItem downloadLink;
 		
-		public SubmittedSolution(File file, String uploadedBy, DownloadLink downloadLink) {
+		public SubmittedSolution(File file, String uploadedBy, FormItem downloadLink) {
 			this.file = file;
 			this.uploadedBy = uploadedBy;
 			this.downloadLink = downloadLink;
@@ -462,7 +484,7 @@ class SubmitDocumentsController extends FormBasicController {
 			return uploadedBy;
 		}
 
-		public DownloadLink getDownloadLink() {
+		public FormItem getDownloadLink() {
 			return downloadLink;
 		}
 	}

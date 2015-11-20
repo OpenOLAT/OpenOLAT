@@ -49,8 +49,8 @@ import org.olat.course.nodes.CourseNodeFactory;
  * @author gnaegi, gnaegi@frentix.com, www.frentix.com
  */
 public class PeekViewWrapperController extends BasicController {
-	private VelocityContainer peekViewWrapperVC;
-	private Link nodeLink;
+
+	private final Link nodeLink;
 	private Controller peekViewController;
 	
 	/**
@@ -62,13 +62,15 @@ public class PeekViewWrapperController extends BasicController {
 	 * @param peekViewController an optional peek view implementation for this
 	 *          node or NULL if not available
 	 */
-	public PeekViewWrapperController(UserRequest ureq, WindowControl wControl, CourseNode courseNode, Controller peekViewController) {
+	public PeekViewWrapperController(UserRequest ureq, WindowControl wControl,
+			CourseNode courseNode, Controller peekViewController, boolean accessible) {
 		super(ureq, wControl);
 
-		peekViewWrapperVC = createVelocityContainer("peekViewWrapper");
+		VelocityContainer peekViewWrapperVC = createVelocityContainer("peekViewWrapper");
 		peekViewWrapperVC.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 		// Add course node to get title etc
 		peekViewWrapperVC.contextPut("coursenode", courseNode);
+		peekViewWrapperVC.contextPut("accessible", new Boolean(accessible));
 		// Add link to jump to course node
 		nodeLink = LinkFactory.createLink("nodeLink", peekViewWrapperVC, this);
 		nodeLink.setCustomDisplayText(StringHelper.escapeHtml(courseNode.getShortTitle()));
@@ -78,13 +80,12 @@ public class PeekViewWrapperController extends BasicController {
 		nodeLink.setUserObject(courseNode.getIdent());
 		nodeLink.setElementCssClass("o_gotoNode");
 		// Add optional peekViewController
-		if (peekViewController != null) {
+		if (accessible && peekViewController != null) {
 			this.peekViewController = peekViewController;
 			peekViewWrapperVC.put("peekViewController", this.peekViewController.getInitialComponent());
 			// register for auto cleanup on dispose
 			listenTo(this.peekViewController);
 		}
-		//
 		putInitialPanel(peekViewWrapperVC);
 	}
 
@@ -117,6 +118,4 @@ public class PeekViewWrapperController extends BasicController {
 			fireEvent(ureq, event);
 		}
 	}
-	
-	
 }

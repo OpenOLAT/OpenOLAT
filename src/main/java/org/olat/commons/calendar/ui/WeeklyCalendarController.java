@@ -609,39 +609,46 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		removeAsListenerAndDispose(editController);
 		
 		KalendarRenderWrapper calendarWrapper = calendarEl.getCalendar(addEvent.getCalendarID());
-		// create new KalendarEvent
-		Date begin = addEvent.getStartDate();
-		
-		KalendarEvent newEvent;
-		if(addEvent.getEndDate() == null) {
-			newEvent = new KalendarEvent(CodeHelper.getGlobalForeverUniqueID(), "", begin, (1000 * 60 * 60 * 1));
-		} else {
-			newEvent = new KalendarEvent(CodeHelper.getGlobalForeverUniqueID(), "", begin, addEvent.getEndDate());
-		}
-
-		if (calendarWrapper != null &&
-				(calendarWrapper.getKalendar().getType().equals(CalendarManager.TYPE_COURSE) ||
-				 calendarWrapper.getKalendar().getType().equals(CalendarManager.TYPE_GROUP))) {
-			newEvent.setClassification(KalendarEvent.CLASS_PUBLIC);
-		}
-		
-		newEvent.setAllDayEvent(addEvent.isAllDayEvent());
-		String lastName  = ureq.getIdentity().getUser().getProperty(UserConstants.LASTNAME, getLocale());
-		String firstName = ureq.getIdentity().getUser().getProperty(UserConstants.FIRSTNAME, getLocale()); 
-		newEvent.setCreatedBy(firstName + " " + lastName);
-		newEvent.setCreated(new Date().getTime());
-		
 		List<KalendarRenderWrapper> copyCalendarWrappers = new ArrayList<KalendarRenderWrapper>(calendarWrappers);
 		
-		editController = new CalendarEntryDetailsController(ureq, newEvent, calendarWrapper, copyCalendarWrappers, true, caller, getWindowControl());
-		listenTo(editController);
+		boolean isReadOnly = calendarWrapper == null ? true : calendarWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY;
+		for(KalendarRenderWrapper copyCalendarWrapper:copyCalendarWrappers) {
+			isReadOnly &= copyCalendarWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY;
+		}
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), editController.getInitialComponent());
-		listenTo(cmc);
-		cmc.activate();
-		
-		// set logging action
-		setCalLoggingAction(CalendarLoggingAction.CALENDAR_ENTRY_CREATED);
+		if(!isReadOnly) {
+			// create new KalendarEvent
+			Date begin = addEvent.getStartDate();
+			
+			KalendarEvent newEvent;
+			if(addEvent.getEndDate() == null) {
+				newEvent = new KalendarEvent(CodeHelper.getGlobalForeverUniqueID(), "", begin, (1000 * 60 * 60 * 1));
+			} else {
+				newEvent = new KalendarEvent(CodeHelper.getGlobalForeverUniqueID(), "", begin, addEvent.getEndDate());
+			}
+
+			if (calendarWrapper != null &&
+					(calendarWrapper.getKalendar().getType().equals(CalendarManager.TYPE_COURSE) ||
+					 calendarWrapper.getKalendar().getType().equals(CalendarManager.TYPE_GROUP))) {
+				newEvent.setClassification(KalendarEvent.CLASS_PUBLIC);
+			}
+			
+			newEvent.setAllDayEvent(addEvent.isAllDayEvent());
+			String lastName  = ureq.getIdentity().getUser().getProperty(UserConstants.LASTNAME, getLocale());
+			String firstName = ureq.getIdentity().getUser().getProperty(UserConstants.FIRSTNAME, getLocale()); 
+			newEvent.setCreatedBy(firstName + " " + lastName);
+			newEvent.setCreated(new Date().getTime());
+
+			editController = new CalendarEntryDetailsController(ureq, newEvent, calendarWrapper, copyCalendarWrappers, true, caller, getWindowControl());
+			listenTo(editController);
+			
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), editController.getInitialComponent());
+			listenTo(cmc);
+			cmc.activate();
+			
+			// set logging action
+			setCalLoggingAction(CalendarLoggingAction.CALENDAR_ENTRY_CREATED);
+		}
 	}
 	
 	@Override
