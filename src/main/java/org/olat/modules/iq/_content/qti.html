@@ -83,7 +83,7 @@ function confirmSuspend() {
 	#end
 	</div>
 
-	<div id="o_qti_run_status" class="clearfix">
+	<div id="o_qti_run_${r.getId("")}_status" class="clearfix">
 	#if ($qtistatus.hasAssessTimeLimit())
 		<i class="o_icon o_icon_timelimit"> </i>$r.translate("timelimit.assessment"): $qtistatus.getAssessTimeLimit()
 	#end
@@ -168,6 +168,8 @@ function confirmSuspend() {
 #if($qtistatus.hasAssessTimeLimit() || $qtistatus.hasItemTimeLimit())
 <script type="text/javascript" defer="defer">
 /* <![CDATA[ */ 
+jQuery(function() {
+	
 ## JS code to show a live counter for the remaining time
 function o_qtiFormatCounter(remaining) {
 	var seconds = Math.floor(remaining / 1000);
@@ -227,8 +229,8 @@ try{
 ## assessment time counter
 function o_qtiFormatAssessmentCounter() {
 	try {
-		o_assessmentremain = jQuery('#o_assessmentremain');
-		if (o_assessmentremain) {
+		o_assessmentremain = jQuery('#o_qti_run_${r.getId("")}_status #o_assessmentremain');
+		if (o_assessmentremain.length == 1) {
 			if (o_assessmentremain_value >= 0) {
 				o_assessmentremain.text(o_qtiFormatCounter(o_assessmentremain_value));			
 				o_assessmentremain_value -= 1000;
@@ -237,12 +239,12 @@ function o_qtiFormatAssessmentCounter() {
 				## set message that time is now finished
 				o_assessmentremain.html("<b>$r.translate("timelimit.finished")</b>");			
 				## mark container with time message as warning
-				var container = jQuery('#o_qti_run_status div.o_qti_timelimit_icon');
+				var container = jQuery('#o_qti_run_${r.getId("")}_status div.o_qti_timelimit_icon');
 				if (container.length == 1) {
 					container.toggleClass('o_warning');
 				} else {
 					## fallback in case not container was found
-					jQuery('#o_qti_run_status').prepend("<div class='o_warning'>$r.translate("timelimit.finished")</div>");
+					jQuery('#o_qti_run_${r.getId("")}_status').prepend("<div class='o_warning'>$r.translate("timelimit.finished")</div>");
 				}
 				jQuery('#o_qti_info_timelimit').html('');
 			}
@@ -255,11 +257,11 @@ function o_qtiFormatAssessmentCounter() {
 		//
 	}
 }
-var o_assessmentremain = jQuery('#o_assessmentremain');
+var o_assessmentremain = jQuery('#o_qti_run_${r.getId("")}_status #o_assessmentremain');
 var o_assessmentremain_value = 0;
 var o_assessmentremain_pe = null;
 try {
-	if (o_assessmentremain) {
+	if (o_assessmentremain.length == 1) {
 		o_assessmentremain_value = o_assessmentremain.text();	
 		if (o_assessmentremain_value == 0) {
 			o_assessmentremain.html("<b>$r.translate("timelimit.finished")</b>");		
@@ -272,7 +274,7 @@ try {
 	//
 }
 
-
+});
 /* ]]> */
 </script>
 #end
