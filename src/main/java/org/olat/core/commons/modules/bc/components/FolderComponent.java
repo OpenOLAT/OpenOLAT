@@ -75,7 +75,7 @@ public class FolderComponent extends AbstractComponent {
 	// likely to be resolved after user logs out, caches get cleared - and if not the server
 	// restart overnight definitely removes those .nfs files.
 	// fxdiff: FXOLAT-333 hide all shadow-files per default
-	protected static final String[] ATTACHMENT_EXCLUDE_PREFIXES = new String[]{"."};
+	public static final String[] ATTACHMENT_EXCLUDE_PREFIXES = new String[]{"."};
 
 	protected boolean sortAsc = true;													// asc or desc?
 	protected String sortCol = "";  													// column to sort

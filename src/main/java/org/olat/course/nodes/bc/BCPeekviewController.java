@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderModule;
+import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.download.DownloadComponent;
@@ -42,6 +43,8 @@ import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
+import org.olat.core.util.vfs.filters.VFSItemFilter;
 
 /**
  * <h3>Description:</h3> The folder peekview controller displays the configurable
@@ -64,6 +67,9 @@ public class BCPeekviewController extends BasicController implements Controller 
 		}};
 	// the current course node id
 	private final String nodeId;
+	
+	private static final VFSItemFilter attachmentExcludeFilter = new VFSItemExcludePrefixFilter(FolderComponent.ATTACHMENT_EXCLUDE_PREFIXES);
+
 
 	/**
 	 * Constructor
@@ -143,7 +149,8 @@ public class BCPeekviewController extends BasicController implements Controller 
 	 * @param allLeafs
 	 */
 	private void addItems(VFSContainer container, List<VFSLeaf> allLeafs) {
-		for (VFSItem vfsItem : container.getItems()) {
+		// exclude files which are also excluded in FolderComponent
+		for (VFSItem vfsItem : container.getItems(attachmentExcludeFilter)) {
 			if (vfsItem instanceof VFSLeaf) {
 				// add leaf to our list
 				VFSLeaf leaf = (VFSLeaf) vfsItem;
