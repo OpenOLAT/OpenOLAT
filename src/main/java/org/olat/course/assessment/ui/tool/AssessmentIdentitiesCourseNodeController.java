@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -72,6 +73,7 @@ public class AssessmentIdentitiesCourseNodeController extends FormBasicControlle
 
 	private final CourseNode courseNode;
 	private final RepositoryEntry courseEntry;
+	private final RepositoryEntry referenceEntry;
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final AssessmentToolSecurityCallback assessmentCallback;
@@ -103,11 +105,17 @@ public class AssessmentIdentitiesCourseNodeController extends FormBasicControlle
 		this.courseEntry = courseEntry;
 		this.assessmentCallback = assessmentCallback;
 		
+		if(courseNode.needsReferenceToARepositoryEntry()) {
+			referenceEntry = courseNode.getReferencedRepositoryEntry();
+		} else {
+			referenceEntry = null;
+		}
+		
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AssessmentToolConstants.usageIdentifyer, isAdministrativeUser);
 		
 		initForm(ureq);
-		updateModel();
+		updateModel(null);
 	}
 
 	@Override
@@ -155,14 +163,12 @@ public class AssessmentIdentitiesCourseNodeController extends FormBasicControlle
 		usersTableModel = new AssessmentIdentitiesCourseNodeTableModel(columnsModel, assessableNode); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", usersTableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
+		tableEl.setSearchEnabled(new AssessedIdentityListProvider(getIdentity(), courseEntry, referenceEntry, courseNode.getIdent(), assessmentCallback), ureq.getUserSession());
 	}
 	
-	private void updateModel() {
-		RepositoryEntry referenceEntry = null;
-		if(courseNode.needsReferenceToARepositoryEntry()) {
-			referenceEntry = courseNode.getReferencedRepositoryEntry();
-		}
+	private void updateModel(String searchKey) {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, referenceEntry, courseNode.getIdent(), assessmentCallback);
+		params.setSearchString(searchKey);
 		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(getIdentity(), params);
 		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(getIdentity(), params, null);
 		Map<Long,AssessmentEntry> entryMap = new HashMap<>();
@@ -207,6 +213,10 @@ public class AssessmentIdentitiesCourseNodeController extends FormBasicControlle
 				if("select".equals(cmd)) {
 					doSelect(ureq, row);
 				}
+			} else if(event instanceof FlexiTableSearchEvent) {
+				FlexiTableSearchEvent ftse = (FlexiTableSearchEvent)event;
+				String searchKey = ftse.getSearch();
+				updateModel(searchKey);
 			}
 		}
 		

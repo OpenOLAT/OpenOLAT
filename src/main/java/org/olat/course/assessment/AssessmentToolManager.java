@@ -21,6 +21,7 @@ package org.olat.course.assessment;
 
 import java.util.List;
 
+import org.olat.basesecurity.IdentityShort;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.model.CourseStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
@@ -40,6 +41,8 @@ public interface AssessmentToolManager {
 	public CourseStatistics getStatistics(Identity coach, SearchAssessedIdentityParams params);
 	
 	public List<Identity> getAssessedIdentities(Identity coach, SearchAssessedIdentityParams params);
+	
+	public List<IdentityShort> getShortAssessedIdentities(Identity coach, SearchAssessedIdentityParams params, int maxResults);
 	
 	public List<AssessmentEntry> getAssessmentEntries(Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status);
 

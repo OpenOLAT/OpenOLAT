@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -111,12 +112,11 @@ public class AssessmentIdentitiesCourseController extends FormBasicController {
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AssessmentToolConstants.usageIdentifyer, isAdministrativeUser);
 
 		initForm(ureq);
-		loadModel();
+		loadModel(null);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(isAdministrativeUser) {
@@ -140,10 +140,12 @@ public class AssessmentIdentitiesCourseController extends FormBasicController {
 		usersTableModel = new AssessmentIdentitiesCourseTableModel(columnsModel); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", usersTableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
+		tableEl.setSearchEnabled(new AssessedIdentityListProvider(getIdentity(), courseEntry, null, null, assessmentCallback), ureq.getUserSession());
 	}
 	
-	public List<EfficiencyStatementEntry> loadModel() {
+	public List<EfficiencyStatementEntry> loadModel(String searchStr) {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, null, null, assessmentCallback);
+		params.setSearchString(searchStr);
 		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(getIdentity(), params);
 		List<EfficiencyStatementEntry> entries = coachingService.getCourse(getIdentity(), courseEntry);
 		Map<Long,EfficiencyStatementEntry> identityKeyToStatementMap = entries.stream()
@@ -197,6 +199,10 @@ public class AssessmentIdentitiesCourseController extends FormBasicController {
 				if("select".equals(cmd)) {
 					doSelect(ureq, row);
 				}
+			} else if(event instanceof FlexiTableSearchEvent) {
+				FlexiTableSearchEvent ftse = (FlexiTableSearchEvent)event;
+				String searchKey = ftse.getSearch();
+				loadModel(searchKey);
 			}
 		}
 		

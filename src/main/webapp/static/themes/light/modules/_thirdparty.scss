@@ -1,5 +1,5 @@
 /*
- * Overwrite jquery ui dialog and datepicket
+ * Overwrite jquery ui dialog and datepicker
  */
  
 .ui-widget {
@@ -144,6 +144,9 @@
 .ui-datepicker.ui-widget-content {
 	border: 1px solid transparent;
 }
+/*
+ * Some class for the movie plugin for tiny mce
+ */
 
 // override the label in _forms.scss of bootstrap
 label.mce-label {
@@ -186,6 +189,12 @@ i.mce-ico.mce-i-help:before {
 	margin:5px;
 }
 
-
+/*
+ * Overwrite some class of typehead needed by the flexi table
+ */
+div.o_table_search span.twitter-typeahead {
+	display: table-cell;
+	padding-top: 3px;
+}
 
 

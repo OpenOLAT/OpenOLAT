@@ -32,8 +32,11 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -44,12 +47,16 @@ import org.olat.repository.RepositoryEntry;
 public class AssessmentCourseOverviewController extends BasicController implements Activateable2 {
 	
 	protected static final Event SELECT_USERS_EVENT = new Event("assessment-tool-select-users");
+	protected static final Event SELECT_GROUPS_EVENT = new Event("assessment-tool-select-groups");
 	
 	private final VelocityContainer mainVC;
 	private final AssessmentToReviewSmallController toReviewCtrl;
 	private final AssessmentCourseStatisticsSmallController statisticsCtrl;
 
-	private Link assessedIdentitiesLink;
+	private Link assessedIdentitiesLink, assessedGroupsLink;
+	
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	public AssessmentCourseOverviewController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry courseEntry, AssessmentToolSecurityCallback assessmentCallback) {
@@ -68,6 +75,25 @@ public class AssessmentCourseOverviewController extends BasicController implemen
 		int numOfAssessedIdentities = statisticsCtrl.getNumOfAssessedIdentities();
 		assessedIdentitiesLink = LinkFactory.createLink("assessed.identities", "assessed.identities", getTranslator(), mainVC, this, Link.NONTRANSLATED);
 		assessedIdentitiesLink.setCustomDisplayText(translate("assessment.tool.numOfAssessedIdentities", new String[]{ Integer.toString(numOfAssessedIdentities) }));
+		assessedIdentitiesLink.setIconLeftCSS("o_icon o_icon_user");
+		
+		int numOfGroups = 0;
+		if(assessmentCallback.canAssessBusinessGoupMembers()) {
+			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+			if(assessmentCallback.isAdmin()) {
+				//all groups
+			} else {
+				params.setOwner(true);
+				params.setIdentity(getIdentity());
+			}
+			numOfGroups = businessGroupService.countBusinessGroups(params, courseEntry);
+		}
+		
+		if(numOfGroups > 0) {
+			assessedGroupsLink = LinkFactory.createLink("assessed.groups", "assessed.groups", getTranslator(), mainVC, this, Link.NONTRANSLATED);
+			assessedGroupsLink.setCustomDisplayText(translate("assessment.tool.numOfAssessedGroups", new String[]{ Integer.toString(numOfGroups) }));
+			assessedGroupsLink.setIconLeftCSS("o_icon o_icon_group");
+		}
 
 		putInitialPanel(mainVC);
 	}
@@ -86,6 +112,8 @@ public class AssessmentCourseOverviewController extends BasicController implemen
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(assessedIdentitiesLink == source) {
 			fireEvent(ureq, SELECT_USERS_EVENT);
+		} else if(assessedGroupsLink == source) {
+			fireEvent(ureq, SELECT_GROUPS_EVENT);
 		}
 	}
 }

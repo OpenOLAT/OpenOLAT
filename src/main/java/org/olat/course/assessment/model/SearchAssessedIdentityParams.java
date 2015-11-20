@@ -39,6 +39,7 @@ public class SearchAssessedIdentityParams {
 	private final boolean repositoryEntryCoach;
 	private final boolean businessGroupCoach;
 	
+	private String searchString;
 	
 	public SearchAssessedIdentityParams(RepositoryEntry entry, RepositoryEntry referenceEntry, String subIdent,
 			AssessmentToolSecurityCallback secCallback) {
@@ -78,4 +79,14 @@ public class SearchAssessedIdentityParams {
 	public boolean isBusinessGroupCoach() {
 		return businessGroupCoach;
 	}
+
+	public String getSearchString() {
+		return searchString;
+	}
+
+	public void setSearchString(String searchString) {
+		this.searchString = searchString;
+	}
+	
+	
 }

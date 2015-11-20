@@ -53,6 +53,9 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.AbstractTextElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.AutoCompleteEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.AutoCompleterImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.TextElementImpl;
 import org.olat.core.gui.components.link.Link;
@@ -61,10 +64,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.prefs.Preferences;
@@ -109,7 +114,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private FormLink customButton, exportButton;
 	private FormLink searchButton, extendedSearchButton;
 	private FormLink classicTypeButton, customTypeButton;
-	private TextElement searchFieldEl;
+	private AbstractTextElement searchFieldEl;
 	private ExtendedFlexiTableSearchController extendedSearchCtrl;
 	
 	private final FlexiTableDataModel<?> dataModel;
@@ -486,6 +491,24 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 	}
 	
+	@Override
+	public void setSearchEnabled(ListProvider autoCompleteProvider, UserSession usess) {
+		searchEnabled = true;
+
+		String dispatchId = component.getDispatchID();
+		searchFieldEl = new AutoCompleterImpl(dispatchId + "_searchField", "search");
+		searchFieldEl.showLabel(false);
+		searchFieldEl.getComponent().addListener(this);
+		((AutoCompleterImpl)searchFieldEl).setListProvider(autoCompleteProvider, usess);
+		components.put("rSearch", searchFieldEl);
+		searchButton = new FormLinkImpl(dispatchId + "_searchButton", "rSearchButton", "search", Link.BUTTON);
+		searchButton.setTranslator(translator);
+		searchButton.setIconLeftCSS("o_icon o_icon_search");
+		components.put("rSearchB", searchButton);
+		rootFormAvailable(searchFieldEl);
+		rootFormAvailable(searchButton);
+	}
+
 	public FormLink getExtendedSearchButton() {
 		return extendedSearchButton;
 	}
@@ -800,6 +823,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			if(callout != null) {
 				callout.deactivate();
 				callout = null;
+			}
+		} else if(searchFieldEl.getComponent() == source) {
+			if(event instanceof AutoCompleteEvent) {
+				AutoCompleteEvent ace = (AutoCompleteEvent)event;
+				doSearch(ureq, ace.getKey(), null);
 			}
 		}
 	}

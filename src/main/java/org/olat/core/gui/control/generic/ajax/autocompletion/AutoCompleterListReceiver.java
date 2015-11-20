@@ -57,7 +57,7 @@ public class AutoCompleterListReceiver extends LogDelegator implements ListRecei
 	 * @param showDisplayKey true: add displayKey in result; false: don't add
 	 *          displayKey in results (e.g. to protect privacy)
 	 */
-	AutoCompleterListReceiver(String noresults, boolean showDisplayKey) {
+	public AutoCompleterListReceiver(String noresults, boolean showDisplayKey) {
 		this.noresults = noresults;
 		this.showDisplayKey = showDisplayKey;
 	}

@@ -38,6 +38,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRowCssDelegate;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
+import org.olat.core.util.UserSession;
 
 /**
  * 
@@ -205,6 +207,13 @@ public interface FlexiTableElement extends FormItem {
 	 * @param enable
 	 */
 	public void setSearchEnabled(boolean enable);
+	
+	/**
+	 * Enable the search with a suggestions provider.
+	 * 
+	 * @param autoCompleteProvider
+	 */
+	public void setSearchEnabled(ListProvider autoCompleteProvider, UserSession usess);
 	
 	/**
 	 * Is the filer enabled?
