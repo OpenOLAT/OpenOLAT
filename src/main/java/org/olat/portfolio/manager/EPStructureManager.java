@@ -866,8 +866,8 @@ public class EPStructureManager {
 		if(childStructure instanceof EPStructureElement) {
 			//save eventual changes
 			dbInstance.updateObject(parentStructure);
-			//reconnect to the session
-			parentStructure = (EPStructureElement)dbInstance.loadObject((EPStructureElement)parentStructure);
+			//reconnect to the session (why reconnect? you update it already)
+			//parentStructure = (EPStructureElement)dbInstance.loadObject((EPStructureElement)parentStructure);
 			EPStructureToStructureLink link = new EPStructureToStructureLink();
 			link.setParent(parentStructure);
 			link.setChild(childStructure);
@@ -875,10 +875,13 @@ public class EPStructureManager {
 			//refresh internal link to its root element
 			((EPStructureElement)childStructure).setRoot((EPStructureElement) parentStructure);
 			
+			List<EPStructureToStructureLink> internalChildren = ((EPStructureElement)parentStructure).getInternalChildren();
 			if (destinationPos == -1) {
-				((EPStructureElement)parentStructure).getInternalChildren().add(link);
+				internalChildren.add(link);
+			} else if(destinationPos <= internalChildren.size()) {
+				internalChildren.add(destinationPos, link);
 			} else {
-				((EPStructureElement)parentStructure).getInternalChildren().add(destinationPos, link);
+				internalChildren.add(link);
 			}
 		}
 	}
@@ -1072,11 +1075,16 @@ public class EPStructureManager {
 		int oldPos = indexOf(structureLinks, orderSubject);		
 		if (oldPos != orderDest && oldPos != -1) {
 			EPStructureToStructureLink link = structureLinks.remove(oldPos);
-			if(orderDest > structureLinks.size()) {
-				orderDest = structureLinks.size() -1; // place at end
-			} else if(oldPos < orderDest) {
+			 if(oldPos < orderDest) {
 				orderDest--;
 			}
+			 
+			 if(orderDest < 0) {
+				orderDest = 0;
+			} else if(orderDest > structureLinks.size()) {
+				orderDest = structureLinks.size() -1; // place at end
+			}
+			
 			structureLinks.add(orderDest, link);			
 			dbInstance.updateObject(structureEl);
 			return true;
