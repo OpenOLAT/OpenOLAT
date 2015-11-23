@@ -52,7 +52,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellR
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
@@ -528,7 +528,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				} else if("select".equals(cmd)) {
 					launch(ureq, row);
 				}
-			} else if(event instanceof FlexiTableEvent) {
+			} else if(event instanceof FlexiTableSearchEvent) {
 				AuthorListState stateEntry = new AuthorListState();
 				stateEntry.setTableState(tableEl.getStateEntry());
 				addToHistory(ureq, stateEntry);

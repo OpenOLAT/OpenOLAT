@@ -67,6 +67,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -719,6 +720,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		String filter = form.getRequestParameter("filter");
 		String pagesize = form.getRequestParameter("pagesize");
 		String checkbox = form.getRequestParameter("chkbox");
+		ServletUtil.printOutRequestParameters(ureq.getHttpReq());
 		if("undefined".equals(dispatchuri)) {
 			evalSearchRequest(ureq);
 		} else if(StringHelper.containsNonWhitespace(checkbox)) {
@@ -775,6 +777,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			saveCustomSettings(ureq);
 		} else if(doSelect(ureq)) {
 			//do select
+		} else {
+			System.out.println("");
 		}
 	}
 	
@@ -827,7 +831,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		} else if(searchFieldEl.getComponent() == source) {
 			if(event instanceof AutoCompleteEvent) {
 				AutoCompleteEvent ace = (AutoCompleteEvent)event;
-				doSearch(ureq, ace.getKey(), null);
+				doSearch(ureq, FlexiTableSearchEvent.QUICK_SEARCH_KEY_SELECTION, ace.getKey(), null);
 			}
 		}
 	}
@@ -1135,7 +1139,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			search = searchFieldEl.getValue();
 		}
 		List<String> condQueries = extendedSearchCtrl.getConditionalQueries();
-		doSearch(ureq, search, condQueries);
+		doSearch(ureq, FlexiTableSearchEvent.SEARCH, search, condQueries);
 	}
 
 	protected void evalSearchRequest(UserRequest ureq) {
@@ -1146,8 +1150,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		String search = searchFieldEl.getValue();
 
 		if(StringHelper.containsNonWhitespace(search)) {
-			doSearch(ureq, search, null);
-			getRootForm().fireFormEvent(ureq, new FlexiTableEvent(this, search));
+			doSearch(ureq, FlexiTableSearchEvent.QUICK_SEARCH, search, null);
 		} else {
 			doResetSearch(ureq);
 		}
@@ -1160,7 +1163,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		if(StringHelper.containsNonWhitespace(search)) {
 			searchFieldEl.setValue(search);
-			doSearch(ureq, search, null);
+			doSearch(ureq, FlexiTableSearchEvent.QUICK_SEARCH, search, null);
 		}
 	}
 	
@@ -1193,7 +1196,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 
 	
-	protected void doSearch(UserRequest ureq, String search, List<String> condQueries) {
+	private void doSearch(UserRequest ureq, String eventCmd, String search, List<String> condQueries) {
 		if(condQueries == null || condQueries.isEmpty()) {
 			conditionalQueries = null;
 		} else {
@@ -1205,9 +1208,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			resetInternComponents();
 			dataSource.clear();
 			dataSource.load(search, conditionalQueries, 0, getPageSize(), orderBy);
-		} else {
-			getRootForm().fireFormEvent(ureq, new FlexiTableSearchEvent(this, search, condQueries, FormEvent.ONCLICK));
 		}
+		getRootForm().fireFormEvent(ureq, new FlexiTableSearchEvent(eventCmd, this, search, condQueries, FormEvent.ONCLICK));
 	}
 	
 	protected ResultInfos<?> doScroll(int firstResult, int maxResults, SortKey... sortKeys) {

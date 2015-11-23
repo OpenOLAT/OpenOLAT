@@ -49,8 +49,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.rating.RatingFormEvent;
@@ -327,7 +327,7 @@ public class RepositoryEntryListController extends FormBasicController
 						doOpenDetails(ureq, row);
 					}
 				}
-			} else if(event instanceof FlexiTableEvent) {
+			} else if(event instanceof FlexiTableSearchEvent) {
 				RepositoryEntryListState state = new RepositoryEntryListState();
 				state.setTableState(tableEl.getStateEntry());
 				addToHistory(ureq, state);

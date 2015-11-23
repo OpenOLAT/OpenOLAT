@@ -194,6 +194,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		}
 		
 		sb.append(" from ").append(IdentityImpl.class.getName()).append(" as ident ")
+		  .append(" inner join ident.user user ")
 		  .append(" where ");
 		if(params.isAdmin()) {
 			sb.append(" (ident.key in (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant")
@@ -216,22 +217,10 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	          .append("  )");
 		}
 		
+		Long identityKey = appendUserSearchByKey(sb, params.getSearchString());
+		String[] searchArr = appendUserSearchFull(sb, params.getSearchString());
 		
-		Long identityKey = null;
-		if(StringHelper.containsNonWhitespace(params.getSearchString())) {
-			String searchString = params.getSearchString();
-			if(StringHelper.isLong(searchString)) {
-				try {
-					identityKey = new Long(searchString);
-				} catch (NumberFormatException e) {
-					//it can happens
-				}
-			}
-			
-			if(identityKey != null) {
-				sb.append(" and ident.key=:searchIdentityKey");
-			}
-		}
+		System.out.println(sb.toString());
 		
 		TypedQuery<T> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), classResult)
@@ -242,6 +231,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		if(identityKey != null) {
 			query.setParameter("searchIdentityKey", identityKey);
 		}
+		appendUserSearchToQuery(searchArr, query);
 		return query;
 	}
 	
@@ -272,12 +262,30 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	          .append("  )");
 		}
 
+		Long identityKey = appendUserSearchByKey(sb, params.getSearchString());
+		String[] searchArr = appendUserSearch(sb, params.getSearchString());
+
+		TypedQuery<IdentityShort> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), IdentityShort.class)
+				.setFirstResult(0)
+				.setMaxResults(maxResults)
+				.setParameter("repoEntryKey", params.getEntry().getKey());
+		if(!params.isAdmin()) {
+			query.setParameter("identityKey", coach.getKey());
+		}
+		if(identityKey != null) {
+			query.setParameter("searchIdentityKey", identityKey);
+		}
+		appendUserSearchToQuery(searchArr, query);
+		return query.getResultList();
+	}
+	
+	private Long appendUserSearchByKey(StringBuilder sb, String search) {
 		Long identityKey = null;
-		if(StringHelper.containsNonWhitespace(params.getSearchString())) {
-			String searchString = params.getSearchString();
-			if(StringHelper.isLong(searchString)) {
+		if(StringHelper.containsNonWhitespace(search)) {
+			if(StringHelper.isLong(search)) {
 				try {
-					identityKey = new Long(searchString);
+					identityKey = new Long(search);
 				} catch (NumberFormatException e) {
 					//it can happens
 				}
@@ -287,10 +295,14 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				sb.append(" and ident.key=:searchIdentityKey");
 			}
 		}
-		
+		return identityKey;
+
+	}
+	
+	private String[] appendUserSearch(StringBuilder sb, String search) {
 		String[] searchArr = null;
-		String search = params.getSearchString();
-		if(StringHelper.containsNonWhitespace(params.getSearchString())) {
+
+		if(StringHelper.containsNonWhitespace(search)) {
 			String dbVendor = dbInstance.getDbVendor();
 			searchArr = search.split(" ");
 			String[] attributes = new String[]{ "name", "firstName", "lastName", "email" };
@@ -317,24 +329,52 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			}
 			sb.append(")");
 		}
+		return searchArr;
+	}
+	
+	private String[] appendUserSearchFull(StringBuilder sb, String search) {
+		String[] searchArr = null;
 
-		TypedQuery<IdentityShort> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), IdentityShort.class)
-				.setFirstResult(0)
-				.setMaxResults(maxResults)
-				.setParameter("repoEntryKey", params.getEntry().getKey());
-		if(!params.isAdmin()) {
-			query.setParameter("identityKey", coach.getKey());
+		if(StringHelper.containsNonWhitespace(search)) {
+			String dbVendor = dbInstance.getDbVendor();
+			searchArr = search.split(" ");
+			String[] attributes = new String[]{ "firstName", "lastName", "email" };
+
+			sb.append(" and (");
+			boolean start = true;
+			for(int i=0; i<searchArr.length; i++) {
+				for(String attribute:attributes) {
+					if(start) {
+						start = false;
+					} else {
+						sb.append(" or ");
+					}
+					
+					sb.append(" exists (select prop").append(attribute).append(".value from userproperty prop").append(attribute).append(" where ")
+					  .append(" prop").append(attribute).append(".propertyId.userId=user.key and prop").append(attribute).append(".propertyId.name ='").append(attribute).append("'")
+					  .append(" and ");
+					if(dbVendor.equals("mysql")) {
+						sb.append(" prop").append(attribute).append(".value like :search").append(i).append(" ");
+					} else {
+						sb.append(" lower(prop").append(attribute).append(".value) like :search").append(i).append(" ");
+					}
+					if(dbVendor.equals("oracle")) {
+						sb.append(" escape '\\'");
+					}
+					sb.append(")");
+				}
+			}
+			sb.append(")");
 		}
-		if(identityKey != null) {
-			query.setParameter("searchIdentityKey", identityKey);
-		}
+		return searchArr;
+	}
+	
+	private void appendUserSearchToQuery(String[] searchArr, TypedQuery<?> query) {
 		if(searchArr != null) {
 			for(int i=searchArr.length; i-->0; ) {
 				query.setParameter("search" + i, PersistenceHelper.makeFuzzyQueryString(searchArr[i]));
 			}
 		}
-		return query.getResultList();
 	}
 
 	@Override

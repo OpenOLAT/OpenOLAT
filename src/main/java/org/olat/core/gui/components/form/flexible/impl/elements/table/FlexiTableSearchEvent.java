@@ -33,14 +33,16 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 public class FlexiTableSearchEvent extends FormEvent {
 
 	private static final long serialVersionUID = -1977791683080030187L;
+	
 	public static final String SEARCH = "ftSearch";
-	public static final String RESET = "ftResetSearch";
+	public static final String QUICK_SEARCH = "ftQuickSearch";
+	public static final String QUICK_SEARCH_KEY_SELECTION = "ftQuickSearchSelectKey";
 
 	private final String search;
 	private final List<String> condQueries;
 
-	public FlexiTableSearchEvent(FormItem source, String search, List<String> condQueries, int action) {
-		super(SEARCH, source, action);
+	public FlexiTableSearchEvent(String cmd, FormItem source, String search, List<String> condQueries, int action) {
+		super(cmd, source, action);
 		this.search = search;
 		this.condQueries = condQueries;
 	}

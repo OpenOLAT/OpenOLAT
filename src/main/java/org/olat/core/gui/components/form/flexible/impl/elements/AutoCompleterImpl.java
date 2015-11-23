@@ -83,7 +83,11 @@ public class AutoCompleterImpl extends AbstractTextElement implements AutoComple
 
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
-		// 
+		String paramId = component.getFormDispatchId();
+		String paramValue = getRootForm().getRequestParameter(paramId);
+		if (paramValue != null) {
+			setValue(paramValue);
+		}
 	}
 	
 	@Override
