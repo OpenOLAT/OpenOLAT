@@ -141,6 +141,10 @@ public class MenuTree extends AbstractComponent {
 		super(null, name);
 	}
 	
+	public MenuTree(String id, String name) {
+		super(id, name);
+	}
+	
 	/**
 	 * @param id Fix unique identifier for state-less behavior
 	 * @param name
@@ -495,10 +499,10 @@ public class MenuTree extends AbstractComponent {
 
 	/**
 	 * Use the insert tool
-	 * @param showInsertTool
+	 * @param enableInsertTool
 	 */
-	public void enableInsertTool(boolean showInsertTool) {
-		this.showInsertTool = showInsertTool;
+	public void enableInsertTool(boolean enableInsertTool) {
+		showInsertTool = enableInsertTool;
 	}
 
 	protected boolean isMultiSelect() {

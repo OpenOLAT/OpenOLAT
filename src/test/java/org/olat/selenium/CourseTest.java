@@ -633,7 +633,8 @@ public class CourseTest {
 		//administrator clears the cache
 		administratorDrone.navigate().to(deploymentUrl);
 		LoginPage.getLoginPage(administratorDrone, deploymentUrl)
-			.loginAs("administrator", "openolat");
+			.loginAs("administrator", "openolat")
+			.resume();
 		new NavigationPage(administratorDrone)
 			.openAdministration()
 			.clearCache("FeedManager@feed");

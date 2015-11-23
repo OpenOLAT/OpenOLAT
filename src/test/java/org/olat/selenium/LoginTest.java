@@ -84,7 +84,9 @@ public class LoginTest {
 		//load dmz
 		loginPage.assertOnLoginPage();
 		//login as administrator
-		loginPage.loginAs("administrator", "openolat");
+		loginPage
+			.loginAs("administrator", "openolat")
+			.resume();
 	}
 	
 	/**
@@ -139,7 +141,8 @@ public class LoginTest {
 		// administrator come in, and set a maintenance message
 		loginPage
 			.assertOnLoginPage()
-			.loginAs("administrator", "openolat");
+			.loginAs("administrator", "openolat")
+			.resume();
 		
 		String message = "Hello - " + UUID.randomUUID();
 		AdministrationMessagesPage messagesPage = new NavigationPage(browser)

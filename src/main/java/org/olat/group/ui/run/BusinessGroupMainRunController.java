@@ -317,7 +317,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		mainPanel = new Panel("p_buddygroupRun");
 		mainPanel.setContent(main);
 		
-		bgTree = new MenuTree("bgTree");
+		bgTree = new MenuTree("bgtree", "bgTree");
 		TreeModel trMdl = buildTreeModel();
 		bgTree.setTreeModel(trMdl);
 		bgTree.addListener(this);
