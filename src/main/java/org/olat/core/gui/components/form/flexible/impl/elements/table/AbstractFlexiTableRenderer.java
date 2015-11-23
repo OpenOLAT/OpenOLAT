@@ -512,7 +512,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		sb.append("<li").append(" class='active'", (page == i)).append("><a href=\"javascript:")
 		  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true,
 				  new NameValuePair("page", Integer.toString(i))))
-		  .append("\">").append(i+1).append("</a></li>");
+		  .append(";\">").append(i+1).append("</a></li>");
 	}
 
 	private int adaptStepIfNeeded(final int page, final int maxStepSize, final int stepSize, final int i) {

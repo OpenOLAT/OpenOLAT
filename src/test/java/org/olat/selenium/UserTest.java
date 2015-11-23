@@ -428,7 +428,9 @@ public class UserTest {
 	throws IOException, URISyntaxException {
 		Assume.assumeTrue(browser instanceof FirefoxDriver);
 		
-		loginPage.loginAs("administrator", "openolat");
+		loginPage
+			.loginAs("administrator", "openolat")
+			.resume();
 		
 		navBar
 			.openPortal()

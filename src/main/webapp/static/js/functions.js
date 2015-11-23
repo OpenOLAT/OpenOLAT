@@ -1184,15 +1184,20 @@ function o_XHRSubmit(formNam) {
 			cache: false,
 			dataType: 'json',
 			success: function(data, textStatus, jqXHR) {
-				o_afterserver();
-				o_ainvoke(data);
-				if(push) {
-					var businessPath = data['businessPath'];
-					var documentTitle = data['documentTitle'];
-					var historyPointId = data['historyPointId'];
-					if(businessPath) {
-						o_pushState(historyPointId, documentTitle, businessPath);
+				try {
+					o_ainvoke(data);
+					if(push) {
+						var businessPath = data['businessPath'];
+						var documentTitle = data['documentTitle'];
+						var historyPointId = data['historyPointId'];
+						if(businessPath) {
+							o_pushState(historyPointId, documentTitle, businessPath);
+						}
 					}
+				} catch(e) {
+					if(window.console) console.log(e);
+				} finally {
+					o_afterserver();
 				}
 			},
 			error: o_onXHRError
@@ -1246,14 +1251,20 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 		cache: false,
 		dataType: 'json',
 		success: function(data, textStatus, jqXHR) {
-			o_ainvoke(data);
-			if(push) {
-				var businessPath = data['businessPath'];
-				var documentTitle = data['documentTitle'];
-				var historyPointId = data['historyPointId'];
-				if(businessPath) {
-					o_pushState(historyPointId, documentTitle, businessPath);
+			try {
+				o_ainvoke(data);
+				if(push) {
+					var businessPath = data['businessPath'];
+					var documentTitle = data['documentTitle'];
+					var historyPointId = data['historyPointId'];
+					if(businessPath) {
+						o_pushState(historyPointId, documentTitle, businessPath);
+					}
 				}
+			} catch(e) {
+				if(window.console) console.log(e);
+			} finally {
+				o_afterserver();
 			}
 		},
 		error: o_onXHRError
@@ -1284,7 +1295,6 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 		dataType: 'json',
 		success: function(data, textStatus, jqXHR) {
 			try {
-				o_afterserver();
 				o_ainvoke(data);
 				if(push) {
 					var businessPath = data['businessPath'];
@@ -1296,6 +1306,8 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 				}
 			} catch(e) {
 				if(window.console) console.log(e);
+			} finally {
+				o_afterserver();
 			}
 		},
 		error: o_onXHRError

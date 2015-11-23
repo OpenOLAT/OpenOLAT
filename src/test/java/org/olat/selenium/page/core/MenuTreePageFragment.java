@@ -21,7 +21,6 @@ package org.olat.selenium.page.core;
 
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -40,13 +39,8 @@ public class MenuTreePageFragment {
 	
 	private static final By treeBy = By.className("o_tree");
 	
-	@Drone
-	private WebDriver browser;
-	
-	public MenuTreePageFragment() {
-		//
-	}
-	
+	private final  WebDriver browser;
+
 	public MenuTreePageFragment(WebDriver browser) {
 		this.browser = browser;
 	}

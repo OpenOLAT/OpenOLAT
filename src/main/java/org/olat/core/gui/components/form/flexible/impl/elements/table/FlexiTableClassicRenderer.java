@@ -155,7 +155,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 			      .append("<input type='checkbox' name='tb_ms' value='").append(rowIdPrefix).append(row).append("'")
 			      .append(" onclick=\"javascript:")
 			      .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, false, false, new NameValuePair("chkbox", Integer.toString(row))))
-				  .append("\"");	 
+				  .append(";\"");	 
 			if(ftE.isMultiSelectedIndex(row)) {
 				target.append(" checked='checked'");
 			}   
