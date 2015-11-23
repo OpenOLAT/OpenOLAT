@@ -123,17 +123,10 @@ public class MyCoursesPage {
 	}
 	
 	public MyCoursesPage selectCatalogEntry(String title) {
-		By titleBy = By.cssSelector(".o_sublevel .o_meta h4.o_title a");
+		By titleBy = By.xpath("//div[contains(@class,'o_sublevel')]//div[contains(@class,'o_meta')]//h4[contains(@class,'o_title')]//a[span[text()[contains(.,'" + title + "')]]]");
 		List<WebElement> titleLinks = browser.findElements(titleBy);
 		Assert.assertFalse(titleLinks.isEmpty());
-		WebElement selectCategory = null;
-		for(WebElement titleLink:titleLinks) {
-			if(titleLink.getText().contains(title)) {
-				selectCategory = titleLink;
-			}
-		}
-		Assert.assertNotNull(selectCategory);
-		selectCategory.click();
+		titleLinks.get(0).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

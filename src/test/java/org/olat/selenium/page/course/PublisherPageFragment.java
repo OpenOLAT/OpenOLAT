@@ -88,7 +88,7 @@ public class PublisherPageFragment {
 		Assert.assertTrue(finish.isEnabled());
 		finish.click();
 		OOGraphene.waitBusy(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
 	

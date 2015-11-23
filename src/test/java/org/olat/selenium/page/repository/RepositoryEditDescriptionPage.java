@@ -86,6 +86,7 @@ public class RepositoryEditDescriptionPage {
 	}
 	
 	public void clickToolbarBack() {
+		OOGraphene.closeBlueMessageWindow(browser);
 		browser.findElement(NavigationPage.toolbarBackBy).click();
 		OOGraphene.waitBusy(browser);
 		

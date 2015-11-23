@@ -75,6 +75,7 @@ public class EfficiencyStatementConfigurationPage {
 	 * @return
 	 */
 	public CoursePageFragment clickToolbarBack() {
+		OOGraphene.closeBlueMessageWindow(browser);
 		By toolbarBackBy = By.cssSelector("li.o_breadcrumb_back>a");
 		browser.findElement(toolbarBackBy).click();
 		OOGraphene.waitBusy(browser);

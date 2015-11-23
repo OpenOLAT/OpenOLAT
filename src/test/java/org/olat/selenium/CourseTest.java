@@ -712,8 +712,6 @@ public class CourseTest {
 			.next() // -> no problem found
 			.finish();
 		
-		OOGraphene.closeBlueMessageWindow(browser);
-		
 		//User logs in, go to "My courses", navigate the catalog and start
 		//the course
 		LoginPage userLogin = LoginPage.getLoginPage(userBrowser, deploymentUrl);

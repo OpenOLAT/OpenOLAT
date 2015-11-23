@@ -497,7 +497,7 @@ public class CourseEditorPageFragment {
 		By autoPublishBy = By.cssSelector("div.modal  a.o_sel_course_quickpublish_auto");
 		browser.findElement(autoPublishBy).click();
 		OOGraphene.waitBusy(browser);
-		
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return new CoursePageFragment(browser);
 	}
 
