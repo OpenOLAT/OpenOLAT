@@ -83,7 +83,7 @@ public class BulkAssessmentPage {
 		Assert.assertTrue(finish.isEnabled());
 		finish.click();
 		OOGraphene.waitBusy(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
 	

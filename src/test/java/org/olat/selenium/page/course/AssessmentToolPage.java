@@ -151,6 +151,7 @@ public class AssessmentToolPage {
 		By userLinksBy = By.className("o_sel_certificate_generate");
 		browser.findElement(userLinksBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		
 		boolean newCertificate = false;
 		for(int i=0; i<50; i++) {

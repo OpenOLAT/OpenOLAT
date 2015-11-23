@@ -378,7 +378,9 @@ public class CourseEditorPageFragment {
 		browser.findElement(chooseButton).click();
 		OOGraphene.waitBusy(browser);
 		//popup
-		WebElement popup = browser.findElement(By.className("o_sel_search_referenceable_entries"));
+		By referenceableEntriesBy = By.className("o_sel_search_referenceable_entries");
+		OOGraphene.waitElement(referenceableEntriesBy, 1, browser);
+		WebElement popup = browser.findElement(referenceableEntriesBy);
 		popup.findElement(By.cssSelector("a.o_sel_repo_popup_my_resources")).click();
 		OOGraphene.waitBusy(browser);
 		

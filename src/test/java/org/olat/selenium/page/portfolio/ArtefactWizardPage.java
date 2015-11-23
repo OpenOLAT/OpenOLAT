@@ -67,7 +67,7 @@ public class ArtefactWizardPage {
 	}
 	
 	/**
-	 * Finish the wizard
+	 * Finish the wizard, wait and close the blue info box.
 	 * @return this
 	 */
 	public ArtefactWizardPage finish() {
@@ -76,7 +76,7 @@ public class ArtefactWizardPage {
 		Assert.assertTrue(finish.isEnabled());
 		finish.click();
 		OOGraphene.waitBusy(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
 	

@@ -121,10 +121,12 @@ public class FeedPage {
 		return this;
 	}
 	
-	public FeedPage addPost() {
+	public FeedPage addBlogPost() {
 		By newItemButton = By.className("o_sel_feed_item_new");
 		browser.findElement(newItemButton).click();
 		OOGraphene.waitBusy(browser);
+		By postForm = By.className("o_sel_blog_form");
+		OOGraphene.waitElement(postForm, 1, browser);
 		return this;
 	}
 	

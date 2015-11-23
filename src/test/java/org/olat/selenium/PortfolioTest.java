@@ -153,8 +153,6 @@ public class PortfolioTest {
 			.next()
 			.selectMap(mapTitle, pageTitle, structureElementTitle)
 			.finish();
-
-		OOGraphene.closeBlueMessageWindow(browser);
 		
 		//open the portfolio
 		portfolio = userTools
@@ -234,8 +232,6 @@ public class PortfolioTest {
 			.next()
 			.selectMap(mapTitle, pageTitle, structureElementTitle)
 			.finish();
-
-		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		
 		//open the portfolio
 		portfolio = userTools
@@ -333,8 +329,6 @@ public class PortfolioTest {
 			.next()
 			.selectMap(mapTitle, pageTitle, structureElementTitle)
 			.finish();
-
-		OOGraphene.closeBlueMessageWindow(browser);	
 		
 		//open the portfolio
 		portfolio = userTools
@@ -403,8 +397,6 @@ public class PortfolioTest {
 			.next()
 			.selectMap(mapTitle, pageTitle, structureElementTitle)
 			.finish();
-
-		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		
 		//open the portfolio
 		portfolio = userTools
@@ -468,8 +460,6 @@ public class PortfolioTest {
 			.next()
 			.selectMap(mapTitle, pageTitle, structureElementTitle)
 			.finish();
-
-		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		
 		//reopen the portfolio
 		portfolio = userTools
@@ -534,8 +524,6 @@ public class PortfolioTest {
 			.next()
 			.selectMap(mapTitle, pageTitle, structureElementTitle)
 			.finish();
-
-		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		
 		//open the portfolio
 		portfolio = userTools
@@ -612,8 +600,6 @@ public class PortfolioTest {
 			.next()
 			.selectMap(mapTitle, pageTitle, structureElementTitle)
 			.finish();
-
-		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		
 		//open the portfolio
 		portfolio = userTools
@@ -699,8 +685,6 @@ public class PortfolioTest {
 			.next()
 			.selectMap(mapTitle, pageTitle, structureElementTitle)
 			.finish();
-
-		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		
 		//open the portfolio
 		portfolio = userTools
@@ -773,8 +757,6 @@ public class PortfolioTest {
 			.next()
 			.selectMap(mapTitle, pageTitle, structureElementTitle)
 			.finish();
-
-		OOGraphene.closeBlueMessageWindow(browser);
 		
 		//open the portfolio
 		portfolio = userTools

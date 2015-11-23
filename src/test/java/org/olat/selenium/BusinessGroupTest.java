@@ -52,7 +52,6 @@ import org.olat.selenium.page.course.PublisherPageFragment.Access;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.group.GroupPage;
 import org.olat.selenium.page.group.MembersWizardPage;
-import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
@@ -79,8 +78,6 @@ public class BusinessGroupTest {
 	@ArquillianResource
 	private URL deploymentUrl;	
 
-	@Page
-	private UserToolsPage userTools;
 	@Page
 	private NavigationPage navBar;
 

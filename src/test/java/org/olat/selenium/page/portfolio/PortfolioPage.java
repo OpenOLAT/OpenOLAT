@@ -163,6 +163,7 @@ public class PortfolioPage {
 		
 		//title
 		By titleBy = By.xpath("//div[contains(@class,'o_sel_add_map_window')]//form//input[@type='text']");
+		OOGraphene.waitElement(titleBy, 1, browser);
 		WebElement titleEl = browser.findElement(titleBy);
 		titleEl.sendKeys(title);
 		
