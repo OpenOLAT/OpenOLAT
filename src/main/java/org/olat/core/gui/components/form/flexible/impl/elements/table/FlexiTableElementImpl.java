@@ -1312,6 +1312,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	@Override
 	public void deselectAll() {
+		component.setDirty(true);
 		multiSelectedIndex = null;
 	}
 

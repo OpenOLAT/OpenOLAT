@@ -120,7 +120,6 @@ public class ContactList extends LogDelegator {
 	 */
 	public void add(Identity identity) {
 		String email = identity.getUser().getProperty(UserConstants.EMAIL, null);
-		//fxdiff VCRP-5
 		if (email == null) {
 			logError("No email available for identity::" + identity.getName() + " - can not add to contact list", null);
 			return;
@@ -130,7 +129,6 @@ public class ContactList extends LogDelegator {
 	
 	public void remove(Identity identity) {
 		String email = identity.getUser().getProperty(UserConstants.EMAIL, null);
-		//fxdiff VCRP-5
 		if (email == null) {
 			logError("No email available for identity::" + identity.getName() + " - can not remove from contact list", null);
 			return;
@@ -203,7 +201,6 @@ public class ContactList extends LogDelegator {
 	 * 
 	 * @return
 	 */
-	//fxdiff VCRP-16: intern mail system
 	public List<String> getEmailsAsStrings() {
 		List<String> ret = new ArrayList<String>(stringEmails.values());
 		/*
