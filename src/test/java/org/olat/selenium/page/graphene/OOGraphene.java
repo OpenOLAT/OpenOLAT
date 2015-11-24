@@ -46,6 +46,8 @@ public class OOGraphene {
 
 	private static final long poolingDuration = 25;
 	
+	private static final By closeBlueBoxButtonBy = By.cssSelector("div.o_alert_info div.o_sel_info_message i.o_icon.o_icon_close");
+	
 	public static void waitBusy(WebDriver browser) {
 		Graphene.waitModel(browser).pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new BusyPredicate());
 	}
@@ -174,16 +176,15 @@ public class OOGraphene {
 	
 	public static final void waitAndCloseBlueMessageWindow(WebDriver browser) {
 		try {
-			Thread.sleep(350);
-		} catch (InterruptedException e) {
+			OOGraphene.waitElement(closeBlueBoxButtonBy, 1, browser);
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		closeBlueMessageWindow(browser);
 	}
 	
 	public static final void closeBlueMessageWindow(WebDriver browser) {
-		By closeButtonBy = By.cssSelector("div.o_alert_info div.o_sel_info_message i.o_icon.o_icon_close");
-		List<WebElement> closeButtons = browser.findElements(closeButtonBy);
+		List<WebElement> closeButtons = browser.findElements(closeBlueBoxButtonBy);
 		for(WebElement closeButton:closeButtons) {
 			if(closeButton.isDisplayed()) {
 				try {

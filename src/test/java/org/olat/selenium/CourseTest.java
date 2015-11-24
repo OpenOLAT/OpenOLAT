@@ -643,7 +643,7 @@ public class CourseTest {
 		String post2Title = "Blog-RW-2-" + UUID.randomUUID();
 		String post2Summary = "Some explantations as teaser";
 		String post2Content = "Content of the post";
-		feed.addPost()
+		feed.addBlogPost()
 			.fillPostForm(post2Title, post2Summary, post2Content)
 			.publishPost();
 		
@@ -711,8 +711,6 @@ public class CourseTest {
 			.selectCategory(node1, node2_2)
 			.next() // -> no problem found
 			.finish();
-		
-		OOGraphene.closeBlueMessageWindow(browser);
 		
 		//User logs in, go to "My courses", navigate the catalog and start
 		//the course
