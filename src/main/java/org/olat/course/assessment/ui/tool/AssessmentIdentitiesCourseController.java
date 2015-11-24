@@ -34,6 +34,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -49,7 +50,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMainController;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
@@ -58,6 +62,8 @@ import org.olat.course.assessment.ui.tool.AssessmentIdentitiesCourseTableModel.I
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
+import org.olat.group.BusinessGroup;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
@@ -112,7 +118,7 @@ public class AssessmentIdentitiesCourseController extends FormBasicController {
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AssessmentToolConstants.usageIdentifyer, isAdministrativeUser);
 
 		initForm(ureq);
-		loadModel(null);
+		loadModel(null, null, null);
 	}
 
 	@Override
@@ -141,11 +147,66 @@ public class AssessmentIdentitiesCourseController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", usersTableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setSearchEnabled(new AssessedIdentityListProvider(getIdentity(), courseEntry, null, null, assessmentCallback), ureq.getUserSession());
+		
+		List<FlexiTableFilter> filters = new ArrayList<>();
+		filters.add(new FlexiTableFilter(translate("filter.passed"), "passed"));
+		filters.add(new FlexiTableFilter(translate("filter.failed"), "failed"));
+		filters.add(new FlexiTableFilter(translate("filter.inProgress"), "inProgress"));
+		filters.add(new FlexiTableFilter(translate("filter.inReview"), "inReview"));
+		filters.add(new FlexiTableFilter(translate("filter.done"), "done"));
+		tableEl.setFilters("", filters);
+
+		if(assessmentCallback.canAssessBusinessGoupMembers()) {
+			List<BusinessGroup> coachedGroups = null;;
+			if(assessmentCallback.isAdmin()) {
+				ICourse course = CourseFactory.loadCourse(courseEntry);
+				coachedGroups = course.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups();
+			} else {
+				coachedGroups = assessmentCallback.getCoachedGroups(); 
+			}
+
+			if(coachedGroups.size() > 0) {
+				List<FlexiTableFilter> groupFilters = new ArrayList<>();
+				for(BusinessGroup coachedGroup:coachedGroups) {
+					groupFilters.add(new FlexiTableFilter(coachedGroup.getName(), coachedGroup.getKey().toString(), "o_icon o_icon_group"));
+				}
+				
+				tableEl.setExtendedFilterButton(translate("filter.groups"), groupFilters);
+			}
+		}
 	}
 	
-	public List<EfficiencyStatementEntry> loadModel(String searchStr) {
+	public List<EfficiencyStatementEntry> loadModel(String searchStr, List<FlexiTableFilter> filters, List<FlexiTableFilter> extendedFilters) {
+
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, null, null, assessmentCallback);
+		
+		List<AssessmentEntryStatus> assessmentStatus = null;
+		if(filters != null && filters.size() > 0) {
+			assessmentStatus = new ArrayList<>(filters.size());
+			for(FlexiTableFilter filter:filters) {
+				if("passed".equals(filter.getFilter())) {
+					params.setPassed(true);
+				} else if("failed".equals(filter.getFilter())) {
+					params.setFailed(true);
+				} else if(AssessmentEntryStatus.isValueOf(filter.getFilter())){
+					assessmentStatus.add(AssessmentEntryStatus.valueOf(filter.getFilter()));
+				}
+			}
+		}
+		params.setAssessmentStatus(assessmentStatus);
+		
+		List<Long> businessGroupKeys = null;
+		if(extendedFilters != null && extendedFilters.size() > 0) {
+			businessGroupKeys = new ArrayList<>(extendedFilters.size());
+			for(FlexiTableFilter extendedFilter:extendedFilters) {
+				if(StringHelper.isLong(extendedFilter.getFilter())) {
+					businessGroupKeys.add(Long.parseLong(extendedFilter.getFilter()));
+				}
+			}
+		}
+		params.setBusinessGroupKeys(businessGroupKeys);
 		params.setSearchString(searchStr);
+		
 		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(getIdentity(), params);
 		List<EfficiencyStatementEntry> entries = coachingService.getCourse(getIdentity(), courseEntry);
 		Map<Long,EfficiencyStatementEntry> identityKeyToStatementMap = entries.stream()
@@ -201,8 +262,7 @@ public class AssessmentIdentitiesCourseController extends FormBasicController {
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				FlexiTableSearchEvent ftse = (FlexiTableSearchEvent)event;
-				String searchKey = ftse.getSearch();
-				loadModel(searchKey);
+				loadModel(ftse.getSearch(), ftse.getFilters(), ftse.getExtendedFilters());
 			}
 		}
 		

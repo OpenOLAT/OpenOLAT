@@ -125,7 +125,8 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 		
 		if (reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || reSecurity.isGroupCoach()) {
 			AssessmentToolSecurityCallback secCallback
-				= new AssessmentToolSecurityCallback(reSecurity.isEntryAdmin(), reSecurity.isEntryAdmin(), reSecurity.isCourseCoach(), reSecurity.isGroupCoach());
+				= new AssessmentToolSecurityCallback(reSecurity.isEntryAdmin(), reSecurity.isEntryAdmin(),
+						reSecurity.isCourseCoach(), reSecurity.isGroupCoach(), null);
 			
 			
 			AssessmentOverviewController ctrl = new AssessmentOverviewController(ureq, swControl, toolbarPanel,

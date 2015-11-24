@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.nodes.GTACourseNode;
@@ -55,6 +56,9 @@ public class GTACoachedGroupListController extends FormBasicController {
 	
 	private FlexiTableElement tableEl;
 	private CoachGroupsTableModel tableModel;
+	private final BreadcrumbPanel stackPanel;
+	
+	private GTACoachController coachingCtrl;
 	
 	private final GTACourseNode gtaNode;
 	private final CourseEnvironment courseEnv;
@@ -63,12 +67,13 @@ public class GTACoachedGroupListController extends FormBasicController {
 	@Autowired
 	private GTAManager gtaManager;
 	
-	public GTACoachedGroupListController(UserRequest ureq, WindowControl wControl,
+	public GTACoachedGroupListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			CourseEnvironment courseEnv, GTACourseNode gtaNode, List<BusinessGroup> coachedGroups) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.gtaNode = gtaNode;
 		this.courseEnv = courseEnv;
 		this.coachedGroups = coachedGroups;
+		this.stackPanel = stackPanel;
 		initForm(ureq);
 		updateModel();
 	}
@@ -125,11 +130,23 @@ public class GTACoachedGroupListController extends FormBasicController {
 				String cmd = se.getCommand();
 				CoachedGroupRow row = tableModel.getObject(se.getIndex());
 				if("details".equals(cmd) || "select".equals(cmd)) {
-					fireEvent(ureq, new SelectBusinessGroupEvent(row.getBusinessGroup()));	
+					doSelect(ureq, row.getBusinessGroup());
 				}
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doSelect(UserRequest ureq, BusinessGroup businessGroup) {
+		if(stackPanel == null) {
+			fireEvent(ureq, new SelectBusinessGroupEvent(businessGroup));	
+		} else {
+			removeAsListenerAndDispose(coachingCtrl);
+			
+			coachingCtrl = new GTACoachController(ureq, getWindowControl(), courseEnv, gtaNode, businessGroup, true, true, true);
+			listenTo(coachingCtrl);
+			stackPanel.pushController(businessGroup.getName(), coachingCtrl);
+		}
 	}
 
 	@Override

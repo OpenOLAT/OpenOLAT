@@ -242,6 +242,11 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	public boolean needsReferenceToARepositoryEntry() {
 		return false;
 	}
+	
+	@Override
+	public boolean isAssessedBusinessGroups() {
+		return false;
+	}
 
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getCutValueConfiguration()

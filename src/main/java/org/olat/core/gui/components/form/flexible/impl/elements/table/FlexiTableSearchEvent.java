@@ -22,6 +22,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 
 /**
@@ -37,20 +38,28 @@ public class FlexiTableSearchEvent extends FormEvent {
 	public static final String SEARCH = "ftSearch";
 	public static final String QUICK_SEARCH = "ftQuickSearch";
 	public static final String QUICK_SEARCH_KEY_SELECTION = "ftQuickSearchSelectKey";
+	public static final String EXTENDED_FILTER = "ftEXTENDEDFILTER";
 
 	private final String search;
 	private final List<String> condQueries;
+	private final List<FlexiTableFilter> filters;
+	private final List<FlexiTableFilter> extendedFilters;
 
-	public FlexiTableSearchEvent(String cmd, FormItem source, String search, List<String> condQueries, int action) {
+	public FlexiTableSearchEvent(String cmd, FormItem source, String search, List<FlexiTableFilter> filters,
+			List<FlexiTableFilter> extendedFilters, List<String> condQueries, int action) {
 		super(cmd, source, action);
 		this.search = search;
+		this.filters = filters;
 		this.condQueries = condQueries;
+		this.extendedFilters = extendedFilters;
 	}
 	
 	public FlexiTableSearchEvent(FormItem source, int action) {
 		super(RESET, source, action);
 		this.search = null;
+		this.filters = null;
 		this.condQueries = null;
+		this.extendedFilters = null;
 	}
 
 	public String getSearch() {
@@ -59,5 +68,13 @@ public class FlexiTableSearchEvent extends FormEvent {
 
 	public List<String> getCondQueries() {
 		return condQueries;
+	}
+
+	public List<FlexiTableFilter> getFilters() {
+		return filters;
+	}
+
+	public List<FlexiTableFilter> getExtendedFilters() {
+		return extendedFilters;
 	}
 }

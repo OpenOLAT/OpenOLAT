@@ -134,7 +134,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}
 		sb.append("</div>");
 
-		sb.append("<div class='col-sm-3 col-xs-4 o_table_row_count'>");
+		sb.append("<div class='col-sm-2 col-xs-4 o_table_row_count'>");
 		if(ftE.isNumOfRowsEnabled()) {
 			int rowCount = ftE.getTableDataModel().getRowCount();
 			if(rowCount == 1) {
@@ -143,7 +143,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				sb.append(rowCount).append(" ").append(ftE.getTranslator().translate("table.entries"));
 			}
 		}
-		sb.append("</div><div class='col-sm-3 col-xs-8'><div class='pull-right'><div class='o_table_tools'>");
+		sb.append("</div><div class='col-sm-4 col-xs-8'><div class='pull-right'><div class='o_table_tools'>");
 		
 		boolean empty = ftE.getTableDataModel().getRowCount() == 0;
 
@@ -205,6 +205,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, args);
 			if(ftE.getExtendedSearchButton() != null) {
 				renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, args);
+			}
+			if(ftE.getExtendedFilterButton() != null) {
+				renderFormItem(renderer, sb, ftE.getExtendedFilterButton(), ubu, translator, renderResult, args);
 			}
 			sb.append("</div></div>");
 		} else if(ftE.getExtendedSearchButton() != null) {

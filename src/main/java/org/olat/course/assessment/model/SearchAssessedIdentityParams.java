@@ -19,6 +19,9 @@
  */
 package org.olat.course.assessment.model;
 
+import java.util.List;
+
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 
@@ -39,7 +42,12 @@ public class SearchAssessedIdentityParams {
 	private final boolean repositoryEntryCoach;
 	private final boolean businessGroupCoach;
 	
+	private boolean passed;
+	private boolean failed;
+	private List<AssessmentEntryStatus> assessmentStatus;
+	
 	private String searchString;
+	private List<Long> businessGroupKeys;
 	
 	public SearchAssessedIdentityParams(RepositoryEntry entry, RepositoryEntry referenceEntry, String subIdent,
 			AssessmentToolSecurityCallback secCallback) {
@@ -87,6 +95,36 @@ public class SearchAssessedIdentityParams {
 	public void setSearchString(String searchString) {
 		this.searchString = searchString;
 	}
-	
-	
+
+	public boolean isPassed() {
+		return passed;
+	}
+
+	public void setPassed(boolean passed) {
+		this.passed = passed;
+	}
+
+	public boolean isFailed() {
+		return failed;
+	}
+
+	public void setFailed(boolean failed) {
+		this.failed = failed;
+	}
+
+	public List<AssessmentEntryStatus> getAssessmentStatus() {
+		return assessmentStatus;
+	}
+
+	public void setAssessmentStatus(List<AssessmentEntryStatus> assessmentStatus) {
+		this.assessmentStatus = assessmentStatus;
+	}
+
+	public List<Long> getBusinessGroupKeys() {
+		return businessGroupKeys;
+	}
+
+	public void setBusinessGroupKeys(List<Long> businessGroupKeys) {
+		this.businessGroupKeys = businessGroupKeys;
+	}
 }

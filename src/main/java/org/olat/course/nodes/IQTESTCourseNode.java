@@ -345,6 +345,11 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		}
 		return null;
 	}
+	
+	@Override
+	public boolean isAssessedBusinessGroups() {
+		return false;
+	}
 
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getCutValueConfiguration()

@@ -282,6 +282,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasScoreConfigured()
 	 */
+	@Override
 	public boolean hasScoreConfigured() {
 		ModuleConfiguration config = getModuleConfiguration();
 		Boolean score = (Boolean) config.get(CONFIG_KEY_HAS_SCORE_FIELD);
@@ -292,13 +293,20 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasStatusConfigured()
 	 */
+	@Override
 	public boolean hasStatusConfigured() {
+		return false;
+	}
+	
+	@Override
+	public boolean isAssessedBusinessGroups() {
 		return false;
 	}
 
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getMaxScoreConfiguration()
 	 */
+	@Override
 	public Float getMaxScoreConfiguration() {
 		if (!hasScoreConfigured()) { throw new OLATRuntimeException(MSCourseNode.class, "getMaxScore not defined when hasScore set to false", null); }
 		ModuleConfiguration config = getModuleConfiguration();
@@ -309,6 +317,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getMinScoreConfiguration()
 	 */
+	@Override
 	public Float getMinScoreConfiguration() {
 		if (!hasScoreConfigured()) { throw new OLATRuntimeException(MSCourseNode.class, "getMinScore not defined when hasScore set to false", null); }
 		ModuleConfiguration config = getModuleConfiguration();
@@ -319,6 +328,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getCutValueConfiguration()
 	 */
+	@Override
 	public Float getCutValueConfiguration() {
 		if (!hasPassedConfigured()) { throw new OLATRuntimeException(MSCourseNode.class, "getCutValue not defined when hasPassed set to false", null); }
 		ModuleConfiguration config = getModuleConfiguration();
@@ -329,6 +339,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserCoachComment(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public String getUserCoachComment(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		String coachCommentValue = am.getNodeCoachComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
@@ -338,6 +349,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserUserComment(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public String getUserUserComment(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		String userCommentValue = am.getNodeComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
@@ -347,6 +359,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserLog(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public String getUserLog(UserCourseEnvironment userCourseEnvironment) {
 		UserNodeAuditManager am = userCourseEnvironment.getCourseEnvironment().getAuditManager();
 		String logValue = am.getUserNodeLog(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
@@ -356,6 +369,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#isEditableConfigured()
 	 */
+	@Override
 	public boolean isEditableConfigured() {
 		// manual scoring fields can be edited manually
 		return true;
@@ -365,6 +379,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	 * @see org.olat.course.nodes.AssessableCourseNode#updateUserCoachComment(java.lang.String,
 	 *      org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public void updateUserCoachComment(String coachComment, UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -378,6 +393,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.core.id.Identity)
 	 */
+	@Override
 	public void updateUserScoreEvaluation(ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnvironment,
 			Identity coachingIdentity, boolean incrementAttempts) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -390,6 +406,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.core.id.Identity)
 	 */
+	@Override
 	public void updateUserUserComment(String userComment, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -401,6 +418,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public Integer getUserAttempts(UserCourseEnvironment userCourseEnvironment) {
 		throw new OLATRuntimeException(MSCourseNode.class, "No attempts available in MS nodes", null);
 
@@ -409,6 +427,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasAttemptsConfigured()
 	 */
+	@Override
 	public boolean hasAttemptsConfigured() {
 		return false;
 	}
@@ -418,6 +437,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.core.id.Identity)
 	 */
+	@Override
 	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
 		throw new OLATRuntimeException(MSCourseNode.class, "Attempts variable can't be updated in MS nodes", null);
 	}
@@ -425,6 +445,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#incrementUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment) {
 		throw new OLATRuntimeException(MSCourseNode.class, "Attempts variable can't be updated in MS nodes", null);
 	}
@@ -434,6 +455,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	 *      org.olat.core.gui.control.WindowControl,
 	 *      org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, UserCourseEnvironment userCourseEnvironment) {
 		throw new OLATRuntimeException(MSCourseNode.class, "Details controler not available in MS nodes", null);
 	}
@@ -454,6 +476,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsListViewHeaderKey()
 	 */
+	@Override
 	public String getDetailsListViewHeaderKey() {
 		throw new OLATRuntimeException(MSCourseNode.class, "Details not available in MS nodes", null);
 	}
@@ -461,6 +484,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasDetails()
 	 */
+	@Override
 	public boolean hasDetails() {
 		return false;
 	}

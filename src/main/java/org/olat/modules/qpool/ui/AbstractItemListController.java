@@ -36,6 +36,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -388,7 +389,7 @@ public abstract class AbstractItemListController extends FormBasicController
 	}
 
 	@Override
-	public ResultInfos<ItemRow> getRows(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
+	public ResultInfos<ItemRow> getRows(String query, List<FlexiTableFilter> filters, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 		ResultInfos<QuestionItemView> items = itemsSource.getItems(query, condQueries, firstResult, maxResults, orderBy);
 		List<ItemRow> rows = new ArrayList<ItemRow>(items.getObjects().size());
 		for(QuestionItemView item:items.getObjects()) {

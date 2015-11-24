@@ -42,7 +42,10 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 
@@ -79,8 +82,6 @@ public class AssessmentIdentitiesCourseTreeController extends BasicController im
 		menuTree.addListener(this);
 		
 		mainPanel = new Panel("empty");
-		
-		
 		LayoutMain3ColsController columLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, mainPanel, "course" + course.getResourceableId());
 		listenTo(columLayoutCtr); // cleanup on dispose
 		putInitialPanel(columLayoutCtr.getInitialComponent());
@@ -122,6 +123,12 @@ public class AssessmentIdentitiesCourseTreeController extends BasicController im
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		if(course.getRunStructure().getRootNode().equals(courseNode)) {
 			currentCtrl = new AssessmentIdentitiesCourseController(ureq, bwControl, stackPanel, courseEntry, assessmentCallback);
+		} else if(courseNode instanceof AssessableCourseNode && ((AssessableCourseNode)courseNode).isAssessedBusinessGroups()) {
+			if(courseNode instanceof GTACourseNode) {
+				CourseEnvironment courseEnv = CourseFactory.loadCourse(courseEntry).getCourseEnvironment();
+				currentCtrl = ((GTACourseNode)courseNode).getCoachedGroupListController(ureq, getWindowControl(), stackPanel,
+						courseEnv, assessmentCallback.isAdmin(), assessmentCallback.getCoachedGroups());
+			}
 		} else {
 			currentCtrl = new AssessmentIdentitiesCourseNodeController(ureq, bwControl, stackPanel, courseEntry, courseNode, assessmentCallback);
 		}

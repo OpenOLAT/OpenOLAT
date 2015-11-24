@@ -391,9 +391,15 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 		passedExpression.setConditionId("passed");
 	}
 
+	@Override
+	public boolean isAssessedBusinessGroups() {
+		return false;
+	}
+
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getCutValueConfiguration()
 	 */
+	@Override
 	public Float getCutValueConfiguration() {
 		throw new OLATRuntimeException(STCourseNode.class, "Cut value never defined for ST nodes", null);
 	}
@@ -401,6 +407,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getMaxScoreConfiguration()
 	 */
+	@Override
 	public Float getMaxScoreConfiguration() {
 		throw new OLATRuntimeException(STCourseNode.class, "Max score never defined for ST nodes", null);
 	}
@@ -408,6 +415,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getMinScoreConfiguration()
 	 */
+	@Override
 	public Float getMinScoreConfiguration() {
 		throw new OLATRuntimeException(STCourseNode.class, "Min score never defined for ST nodes", null);
 	}
@@ -415,6 +423,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getUserCoachComment(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public String getUserCoachComment(UserCourseEnvironment userCourseEnvironment) {
 		throw new OLATRuntimeException(STCourseNode.class, "No coach comments available in ST nodes", null);
 	}

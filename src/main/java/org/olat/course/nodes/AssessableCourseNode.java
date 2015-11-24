@@ -49,6 +49,12 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  * tool.
  */
 public interface AssessableCourseNode extends CourseNode {
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public boolean isAssessedBusinessGroups();
     
 	/**
 	 * @return Returns the maximal score that can be achieved on this node. Throws 

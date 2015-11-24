@@ -245,6 +245,11 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 	}
 
 	@Override
+	public boolean isAssessedBusinessGroups() {
+		return false;
+	}
+
+	@Override
 	public Float getMaxScoreConfiguration() {
 		if (!hasScoreConfigured()) { 
 			throw new OLATRuntimeException(PortfolioCourseNode.class, "getMaxScore not defined when hasScore set to false", null);

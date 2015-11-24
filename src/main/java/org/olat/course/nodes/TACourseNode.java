@@ -552,6 +552,12 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 		}
 		return false;
 	}
+	
+
+	@Override
+	public boolean isAssessedBusinessGroups() {
+		return false;
+	}
 
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasStatusConfigured()

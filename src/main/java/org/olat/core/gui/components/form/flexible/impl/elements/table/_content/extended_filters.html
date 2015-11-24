@@ -1,0 +1,5 @@
+<ul class="list-unstyled">
+#foreach($filter in $filters)
+	<li>#if($filter.selected)<i class="o_icon o_icon_check"> </i> #end$r.render($filter.componentName)</li>
+#end
+</ul>

@@ -221,6 +221,8 @@ public interface FlexiTableElement extends FormItem {
 	 */
 	public boolean isFilterEnabled();
 	
+	public List<FlexiTableFilter> getSelectedFilters();
+	
 	/**
 	 * @return The selected key by the filter, or null if no item is selected
 	 */
@@ -293,6 +295,14 @@ public interface FlexiTableElement extends FormItem {
 	 * Close the extended search callout if open
 	 */
 	public void collapseExtendedSearch();
+	
+	/**
+	 * Setup a filter button right of the quick search
+	 * @param label
+	 */
+	public void setExtendedFilterButton(String label, List<FlexiTableFilter> extendedFilters);
+	
+	public List<FlexiTableFilter> getSelectedExtendedFilters();
 	
 	/**
 	 * Is the details view visible for this particular row?

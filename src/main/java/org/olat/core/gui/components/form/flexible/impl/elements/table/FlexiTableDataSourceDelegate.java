@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 
 /**
  * 
@@ -36,5 +37,5 @@ public interface FlexiTableDataSourceDelegate<V> {
 	
 	public List<V> reload(List<V> rows);
 	
-	public ResultInfos<V> getRows(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy);
+	public ResultInfos<V> getRows(String query, List<FlexiTableFilter> filters, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy);
 }

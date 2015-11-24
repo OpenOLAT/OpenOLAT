@@ -1352,9 +1352,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			boolean nonMembers = reSecurity.isEntryAdmin();
 			boolean repositoryEntryMembers = reSecurity.isCourseCoach();
 			boolean businessGoupMembers = reSecurity.isGroupCoach();
-			
+			List<BusinessGroup> coachedGroups = null;
+			if(businessGoupMembers) {
+				coachedGroups = getUserCourseEnvironment().getCoachedGroups();
+			}
 			AssessmentToolSecurityCallback secCallBack
-				= new AssessmentToolSecurityCallback(admin, nonMembers, repositoryEntryMembers, businessGoupMembers);
+				= new AssessmentToolSecurityCallback(admin, nonMembers, repositoryEntryMembers, businessGoupMembers, coachedGroups);
 
 			removeCustomCSS();
 			AssessmentToolController ctrl = new AssessmentToolController(ureq, swControl, toolbarPanel, getRepositoryEntry(), secCallBack);

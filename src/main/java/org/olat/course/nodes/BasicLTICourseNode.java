@@ -225,6 +225,11 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 	}
 
 	@Override
+	public boolean isAssessedBusinessGroups() {
+		return false;
+	}
+
+	@Override
 	public Float getMaxScoreConfiguration() {
 		if (!hasScoreConfigured()) {
 			throw new OLATRuntimeException(MSCourseNode.class, "getMaxScore not defined when hasScore set to false", null);

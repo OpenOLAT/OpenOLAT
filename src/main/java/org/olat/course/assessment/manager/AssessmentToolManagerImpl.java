@@ -196,7 +196,11 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		sb.append(" from ").append(IdentityImpl.class.getName()).append(" as ident ")
 		  .append(" inner join ident.user user ")
 		  .append(" where ");
-		if(params.isAdmin()) {
+		if(params.getBusinessGroupKeys() != null && params.getBusinessGroupKeys().size() > 0) {
+			sb.append(" ident.key in (select participant.identity.key from repoentrytogroup as rel, businessgroup bgi, bgroupmember as participant")
+	          .append("    where rel.entry.key=:repoEntryKey and rel.group=bgi.baseGroup and rel.group=participant.group and bgi.key in (:businessGroupKeys) ")
+	          .append("  )");
+		} else if(params.isAdmin()) {
 			sb.append(" (ident.key in (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant")
 	          .append("    where rel.entry.key=:repoEntryKey and rel.group=participant.group")
 	          .append("      and participant.role='").append(GroupRoles.participant.name()).append("'")
@@ -230,6 +234,9 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		}
 		if(identityKey != null) {
 			query.setParameter("searchIdentityKey", identityKey);
+		}
+		if(params.getBusinessGroupKeys() != null && params.getBusinessGroupKeys().size() > 0) {
+			query.setParameter("businessGroupKeys", params.getBusinessGroupKeys());
 		}
 		appendUserSearchToQuery(searchArr, query);
 		return query;

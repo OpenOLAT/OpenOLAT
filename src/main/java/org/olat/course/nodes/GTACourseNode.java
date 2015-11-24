@@ -67,6 +67,7 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
@@ -76,6 +77,7 @@ import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.model.TaskDefinitionList;
 import org.olat.course.nodes.gta.ui.BulkDownloadToolController;
 import org.olat.course.nodes.gta.ui.GTAAssessmentDetailsController;
+import org.olat.course.nodes.gta.ui.GTACoachedGroupListController;
 import org.olat.course.nodes.gta.ui.GTAEditController;
 import org.olat.course.nodes.gta.ui.GTAGroupAssessmentToolController;
 import org.olat.course.nodes.gta.ui.GTARunController;
@@ -604,7 +606,12 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		gtaManager.deleteTaskList(entry, this);
 	}
-	
+
+	@Override
+	public boolean isAssessedBusinessGroups() {
+		return GTAType.group.name().equals(getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE));
+	}
+
 	@Override
 	public boolean hasStatusConfigured() {
 		return true; // Task Course node has always a status-field
@@ -767,6 +774,20 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl,
 			BreadcrumbPanel stackPanel, UserCourseEnvironment userCourseEnvironment) {
 		return new GTAAssessmentDetailsController(ureq, wControl, userCourseEnvironment, this);
+	}
+	
+	public GTACoachedGroupListController getCoachedGroupListController(UserRequest ureq, WindowControl wControl,
+			BreadcrumbPanel stackPanel, CourseEnvironment courseEnv, boolean admin, List<BusinessGroup> coachedGroups) {
+		
+		List<BusinessGroup> groups;
+		CourseGroupManager gm = courseEnv.getCourseGroupManager();
+		if(admin) {
+			groups = gm.getAllBusinessGroups();
+		} else {
+			groups = coachedGroups;
+		}
+		groups = CoreSpringFactory.getImpl(GTAManager.class).filterBusinessGroups(groups, this);
+		return new GTACoachedGroupListController(ureq, wControl, stackPanel, courseEnv, this, groups);
 	}
 
 	@Override

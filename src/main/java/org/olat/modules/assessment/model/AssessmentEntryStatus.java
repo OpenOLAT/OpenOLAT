@@ -30,6 +30,15 @@ public enum AssessmentEntryStatus {
 	notStarted,
 	inProgress,//student
 	inReview,//coach
-	done
-
+	done;
+	
+	public static final boolean isValueOf(String val) {
+		if(val == null) return false;
+		for(AssessmentEntryStatus value:values()) {
+			if(val.equals(value.name())) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

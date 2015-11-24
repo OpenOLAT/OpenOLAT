@@ -107,7 +107,7 @@ public class GTACoachSelectionController extends BasicController {
 			if(groups.size() == 1) {
 				doSelectBusinessGroup(ureq, groups.get(0));
 			} else {
-				groupListCtrl = new GTACoachedGroupListController(ureq, getWindowControl(), courseEnv, gtaNode, groups);
+				groupListCtrl = new GTACoachedGroupListController(ureq, getWindowControl(), null, courseEnv, gtaNode, groups);
 				listenTo(groupListCtrl);
 				mainVC.put("list", groupListCtrl.getInitialComponent());
 			}	

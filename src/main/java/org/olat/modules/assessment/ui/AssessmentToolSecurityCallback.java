@@ -19,6 +19,10 @@
  */
 package org.olat.modules.assessment.ui;
 
+import java.util.List;
+
+import org.olat.group.BusinessGroup;
+
 /**
  * 
  * Initial date: 07.10.2015<br>
@@ -32,13 +36,16 @@ public class AssessmentToolSecurityCallback {
 	private final boolean repositoryEntryMembers;
 	private final boolean businessGoupMembers;
 	
+	private final List<BusinessGroup> coachedGroups;
 	
 	public AssessmentToolSecurityCallback(boolean admin, boolean nonMembers,
-			boolean repositoryEntryMembers, boolean businessGoupMembers) {
+			boolean repositoryEntryMembers, boolean businessGoupMembers,
+			List<BusinessGroup> coachedGroups) {
 		this.admin = admin;
 		this.nonMembers = nonMembers;
 		this.repositoryEntryMembers = repositoryEntryMembers;
 		this.businessGoupMembers = businessGoupMembers;
+		this.coachedGroups = coachedGroups;
 	}
 
 
@@ -56,5 +63,9 @@ public class AssessmentToolSecurityCallback {
 
 	public boolean canAssessBusinessGoupMembers() {
 		return businessGoupMembers;
+	}
+
+	public List<BusinessGroup> getCoachedGroups() {
+		return coachedGroups;
 	}
 }

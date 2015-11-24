@@ -819,14 +819,14 @@
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
-								<ref bean="userPropertyLastName" />														
 							</list>
 						</property>		
 						<property name="mandatoryProperties">
 							<set>
-								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyFirstName" />
 							</set>
 						</property>				
 					</bean>
@@ -836,8 +836,8 @@
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
-								<ref bean="userPropertyLastName" />														
 							</list>
 						</property>		
 						<property name="mandatoryProperties">
