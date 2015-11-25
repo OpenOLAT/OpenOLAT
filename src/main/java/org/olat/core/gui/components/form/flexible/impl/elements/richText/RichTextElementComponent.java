@@ -127,6 +127,7 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 	private void createFileSelectorPopupWindow(final UserRequest ureq, final String type, final String fileName) {
 		// Get allowed suffixes from configuration and requested media browser type from event
 		final RichTextConfiguration config = element.getEditorConfiguration();
+		final boolean allowCustomMediaFactory = config.isAllowCustomMediaFactory();
 		final String[] suffixes;
 		if(type.equals(CMD_FILEBROWSER)) {
 			suffixes = null;
@@ -144,6 +145,7 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 		
 		//helper code which is used to create link chooser controller
 		ControllerCreator linkChooserControllerCreator = new ControllerCreator() {
+			@Override
 			public Controller createController(UserRequest lureq,WindowControl lwControl) {
 				LinkChooserController myLinkChooserController;
 				VFSContainer baseContainer = config.getLinkBrowserBaseContainer();
@@ -152,11 +154,10 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 				CustomLinkTreeModel linkBrowserCustomTreeModel = config.getLinkBrowserCustomLinkTreeModel();
 				if (type.equals(CMD_FILEBROWSER)) {
 					// when in file mode we include the internal links to the selection
-					//FIXME: user activity logger
-					myLinkChooserController = new LinkChooserController(lureq, lwControl, baseContainer, uploadRelPath, absolutePath, suffixes, fileName, linkBrowserCustomTreeModel);			
+					myLinkChooserController = new LinkChooserController(lureq, lwControl, baseContainer, uploadRelPath, absolutePath, suffixes, fileName, linkBrowserCustomTreeModel, allowCustomMediaFactory);			
 				} else {
 					// in media or image mode, internal links make no sense here
-					myLinkChooserController = new LinkChooserController(lureq, lwControl, baseContainer, uploadRelPath, absolutePath, suffixes, fileName, null);						
+					myLinkChooserController = new LinkChooserController(lureq, lwControl, baseContainer, uploadRelPath, absolutePath, suffixes, fileName, null, allowCustomMediaFactory);						
 				}
 				return new LayoutMain3ColsController(lureq, lwControl, myLinkChooserController);
 			}
