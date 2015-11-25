@@ -195,7 +195,7 @@ public class LLEditForm extends FormBasicController {
 				removeAsListenerAndDispose(mediaChooserController);
 				
 				VFSContainer courseContainer = courseEnv.getCourseFolderContainer();
-				mediaChooserController = new MediaChooserController(ureq, getWindowControl(), courseContainer, null, null, "", null);
+				mediaChooserController = new MediaChooserController(ureq, getWindowControl(), courseContainer, null, null, "", null, true);
 				listenTo(mediaChooserController);
 				
 				mediaDialogBox = new CloseableModalController(getWindowControl(), translate("choose"), mediaChooserController.getInitialComponent());

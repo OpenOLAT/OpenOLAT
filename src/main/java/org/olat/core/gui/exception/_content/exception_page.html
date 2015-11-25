@@ -133,18 +133,12 @@ $r.renderHeaderIncludes()
 		## BEGIN ERROR AREA	
 		<div id="o_main" class="o_exception">
 			<div class="jumbotron">
-			
   				<h1>$r.translate("error.header")</h1>
 				<img src="$r.staticLink("images/transparent.gif")" class="o_visual img-rounded pull-right" alt="$r.translateInAttribute("error.header")" />
-  				<p>
-	  				$r.translate('error.message1') <a href="mailto:${supportaddress}" class="o_link_mailto">${supportaddress}</a> $r.translate('error.message2')	
-	  			</p>
+  				<p>$r.translate('error.message1') <a href="mailto:${supportaddress}" class="o_link_mailto">${supportaddress}</a> $r.translate('error.message2')</p>
+	  			<p>$r.translate('error.report.tell')</p>
 	  			
-	  			<p>
-					$r.translate('error.report.tell')
-				</p>
-	  			
-				<form method="get" name="reportform" action="$r.relLink('')error/" id="ofo_366191">
+				<form id="ofo_366191" name="reportform" method="post" action="$r.relLink('')error/">
 					<div class="o_button_group">		
 						#if ($allowBackButton)
 							<a class="btn btn-default" href="javascript:history.back()">
@@ -193,9 +187,7 @@ $r.translate('error.time') ${time}
 		## END ERROR AREA				
 		
 		<a id="o_toplink" href="#o_top" onclick="o_scrollToElement('#o_top');" title="$r.translateInAttribute("top.alt")">
-			<i class="o_icon o_icon_top"></i> 
-			$r.translate("top")
-		</a>	
+			<i class="o_icon o_icon_top"></i> $r.translate("top")</a>	
 	</div>
 ## END #o_main -----
 
@@ -205,5 +197,4 @@ $r.translate('error.time') ${time}
 	</div>
 </div>
 ## ---- END footer ---
-
 </body>

@@ -171,6 +171,8 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 			translate("mode.standard"), translate("mode.configured")	
 		};
 		standardModeEl = uifactory.addRadiosVertical("mode", formLayout, standardModeKeys, standardModeValues);
+		standardModeEl.setHelpTextKey("mode.hover", null);
+		standardModeEl.setHelpUrlForManualPage("Knowledge Transfer#_splayout");
 		standardModeEl.addActionListener(FormEvent.ONCHANGE);
 		
 		uifactory.addSpacerElement("spacer.js", formLayout, false);

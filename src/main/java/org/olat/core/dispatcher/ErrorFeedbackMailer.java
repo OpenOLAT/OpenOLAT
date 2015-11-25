@@ -54,16 +54,6 @@ public class ErrorFeedbackMailer implements Dispatcher {
 	
 	private static final OLog log = Tracing.createLoggerFor(ErrorFeedbackMailer.class);
 
-	private static final ErrorFeedbackMailer INSTANCE = new ErrorFeedbackMailer();
-
-	private ErrorFeedbackMailer() {
-		// private since singleton
-	}
-
-	protected static ErrorFeedbackMailer getInstance() {
-		return INSTANCE;
-	}
-
 	/**
 	 * send email to olat support with user submitted error informaition
 	 * 
@@ -71,9 +61,6 @@ public class ErrorFeedbackMailer implements Dispatcher {
 	 */
 	public void sendMail(HttpServletRequest request) {
 		String feedback = request.getParameter("textarea");
-		// fxdiff: correctly get the error-number
-		// was : String errorNr = feedback.substring(0, feedback.indexOf("\n") -
-		// 1);
 		String errorNr = request.getParameter("fx_errnum");
 		String username = request.getParameter("username");
 		try {
@@ -84,28 +71,25 @@ public class ErrorFeedbackMailer implements Dispatcher {
 			if (ident == null)
 				ident = im.findIdentityByName("guest");
 			Collection<String> logFileEntries = LogFileParser.getErrorToday(errorNr, false);
-			StringBuilder out = new StringBuilder();
+			StringBuilder out = new StringBuilder(2048);
+			out.append(feedback)
+			   .append("\n------------------------------------------\n\n --- from user: ").append(username).append(" ---");
 			if (logFileEntries != null) {
 				for (Iterator<String> iter = logFileEntries.iterator(); iter.hasNext();) {
 					out.append(iter.next());
 				}
 			}
 
-			String body = feedback + "\n------------------------------------------\n\n --- from user: " + username
-					+ " ---" + out.toString();
-			
 			MailBundle bundle = new MailBundle();
 			bundle.setFromId(ident);
 			bundle.setTo(WebappHelper.getMailConfig("mailError"));
-			bundle.setContent("Feedback from Error Nr.: " + errorNr, body);
+			bundle.setContent("Feedback from Error Nr.: " + errorNr, out.toString());
 			CoreSpringFactory.getImpl(MailManager.class).sendExternMessage(bundle, null);
 		} catch (Exception e) {
-			// error in recipient email address(es)
 			handleException(request, e);
 			return;
 		}
 	}
-
 
 	private void handleException(HttpServletRequest request, Exception e) {
 		String feedback = request.getParameter("textarea");
@@ -123,5 +107,4 @@ public class ErrorFeedbackMailer implements Dispatcher {
 		sendMail(request);
 		DispatcherModule.redirectToDefaultDispatcher(response);
 	}
-
 }

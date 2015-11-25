@@ -370,13 +370,6 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 	}
 
 	@Override
-	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
-		CourseNode copyInstance = super.createInstanceForCopy(isNewTitle, course, author);
-		CPEditController.removeCPReference(copyInstance.getModuleConfiguration());
-		return copyInstance;
-	}
-
-	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
 		return getUserScoreEvaluation(getUserAssessmentEntry(userCourseEnv));
 	}

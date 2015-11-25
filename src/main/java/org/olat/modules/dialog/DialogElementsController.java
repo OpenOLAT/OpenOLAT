@@ -466,7 +466,7 @@ public class DialogElementsController extends BasicController {
 	
 	private class MyLinkChooserController extends LinkChooserController {
 		public MyLinkChooserController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir, String uploadRelPath) {
-			super(ureq, wControl, rootDir, uploadRelPath, null, null, "", null);
+			super(ureq, wControl, rootDir, uploadRelPath, null, null, "", null, true);
 		}
 		
 		@Override

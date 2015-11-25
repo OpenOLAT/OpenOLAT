@@ -23,7 +23,6 @@ import java.io.File;
 import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -44,6 +43,7 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.co.ContactForm;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -53,25 +53,36 @@ public class BGEmailCompositionStepController extends StepFormBasicController   
 	
 	private ContactForm contactForm;
 	private final List<BusinessGroup> groups;
-	private final MailManager mailService;
-	private final BusinessGroupService businessGroupService;
+	
+	@Autowired
+	private MailManager mailService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	public BGEmailCompositionStepController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			StepsRunContext runContext, List<BusinessGroup> groups) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "wrapper");
-		
-		mailService = CoreSpringFactory.getImpl(MailManager.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		this.groups = groups;
-
 		initForm(ureq);
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-
 		
-		ContactList contacts = new ContactList("mails");
+		StringBuilder groupNames = new StringBuilder();
+		for(int i=0; i<5 && i<groups.size(); i++) {
+			if(groupNames.length() > 0) groupNames.append(" - ");
+			groupNames.append(groups.get(i).getName());
+		}
+		
+		String contactsName;
+		if(groups.size() > 5) {
+			String otherGroups = Integer.toString(groups.size() - 5);
+			contactsName = translate("email.other.groups", new String[] { groupNames.toString(), otherGroups });
+		} else {
+			contactsName = groupNames.toString();
+		}
+		ContactList contacts = new ContactList(contactsName);
 		
 		Boolean sendToTutorObj = (Boolean)getFromRunContext("tutors");
 		boolean sendToTutors = sendToTutorObj == null ? false : sendToTutorObj.booleanValue();

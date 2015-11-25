@@ -597,7 +597,7 @@ public class MessageListController extends BasicController implements GenericEve
 			mainVC.put("mark_" + msgCount, markCtrl.getInitialComponent());
 		}
 		
-		if(userIsMsgCreator) {
+		if(userIsMsgCreator && !StringHelper.containsNonWhitespace(m.getPseudonym())) {
 			OLATResourceable messageOres = OresHelper.createOLATResourceableInstance("Forum", m.getKey());
 			String businessPath = BusinessControlFactory.getInstance().getAsString(getWindowControl().getBusinessControl())
 					+ "[Message:" + m.getKey() + "]";

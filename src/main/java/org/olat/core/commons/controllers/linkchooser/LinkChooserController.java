@@ -71,7 +71,7 @@ public class LinkChooserController extends BasicController {
 	 */
 	public LinkChooserController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir,
 			String uploadRelPath, String absolutPath, String[] suffixes, String fileName,
-			CustomLinkTreeModel customLinkTreeModel) {
+			CustomLinkTreeModel customLinkTreeModel, boolean allowCustomMediaChooserFactory) {
 		super(ureq, wControl);
 		
 		tabbedPaneViewVC = createVelocityContainer("linkchooser");
@@ -91,7 +91,7 @@ public class LinkChooserController extends BasicController {
 		
 		// try to add custom media chooser from spring configuration. 
 		// This one will be added as additional tab.
-		if (CoreSpringFactory.containsBean(CustomMediaChooserFactory.class.getName())) {
+		if (allowCustomMediaChooserFactory && CoreSpringFactory.containsBean(CustomMediaChooserFactory.class.getName())) {
 			CustomMediaChooserFactory customMediaChooserFactory = (CustomMediaChooserFactory) CoreSpringFactory.getBean(CustomMediaChooserFactory.class.getName());
 			customMediaChooserCtr = customMediaChooserFactory.getInstance(ureq, wControl); 
 			if (customMediaChooserCtr != null) {

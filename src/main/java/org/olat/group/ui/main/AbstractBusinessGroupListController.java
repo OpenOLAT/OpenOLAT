@@ -145,7 +145,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	private BGUserManagementController userManagementController;
 	private BGMailNotificationEditController userManagementSendMailController;
 	private BusinessGroupDeleteDialogBoxController deleteDialogBox;
-	private StepsMainRunController businessGroupWizard;
+	private StepsMainRunController emailWizard, businessGroupWizard;
 	protected BusinessGroupSearchController searchCtrl;
 	protected CloseableModalController cmc;
 
@@ -457,6 +457,15 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 				businessGroupWizard = null;
 				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 					reloadModel();
+				}
+			}
+		} else if(source == emailWizard) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				removeAsListenerAndDispose(emailWizard);
+				emailWizard = null;
+				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					tableEl.deselectAll();
 				}
 			}
 		} else if (source == userManagementController) {
@@ -782,7 +791,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	 * @param items
 	 */
 	private void doEmails(UserRequest ureq, List<? extends BusinessGroupRef> selectedItems) {
-		removeAsListenerAndDispose(businessGroupWizard);
+		removeAsListenerAndDispose(emailWizard);
 		if(selectedItems == null || selectedItems.isEmpty()) {
 			showWarning("error.select.one");
 			return;
@@ -799,9 +808,9 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			}
 		};
 		
-		businessGroupWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("email.group"), "o_sel_groups_email_wizard");
-		listenTo(businessGroupWizard);
-		getWindowControl().pushAsModalDialog(businessGroupWizard.getInitialComponent());
+		emailWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("email.group"), "o_sel_groups_email_wizard");
+		listenTo(emailWizard);
+		getWindowControl().pushAsModalDialog(emailWizard.getInitialComponent());
 	}
 	
 	/**
@@ -1057,6 +1066,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	protected abstract List<BGTableItem> searchTableItems(BusinessGroupQueryParams params);
 	
 	protected final int loadModel(BusinessGroupQueryParams params) {
+		this.lastSearchParams = params;
 		if(params == null) {
 			groupTableModel.setEntries(Collections.<BGTableItem>emptyList());
 			tableEl.reset();

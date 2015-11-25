@@ -141,6 +141,7 @@ public class RichTextConfiguration implements Disposable {
 	private String linkBrowserUploadRelPath;
 	private String linkBrowserRelativeFilePath;
 	private String linkBrowserAbsolutFilePath;
+	private boolean allowCustomMediaFactory = true;
 	private CustomLinkTreeModel linkBrowserCustomTreeModel;	
 	// DOM ID of the flexi form element
 	private String domID;
@@ -294,6 +295,14 @@ public class RichTextConfiguration implements Disposable {
 		// Plugins without buttons
 		setNoneditableContentEnabled(true, null);
 		setTabFocusEnabled(true);
+	}
+
+	public boolean isAllowCustomMediaFactory() {
+		return allowCustomMediaFactory;
+	}
+
+	public void setAllowCustomMediaFactory(boolean allowCustomMediaFactory) {
+		this.allowCustomMediaFactory = allowCustomMediaFactory;
 	}
 
 	/**

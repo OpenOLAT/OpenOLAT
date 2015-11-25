@@ -253,7 +253,7 @@
 		if(item.length){ item = item.first(); }
 		var itemFit = false;
 		if(item.length){
-			if(dest){
+			if(dest && dest.length){
 				if(before){
 					dest.before(item);
 				} else {

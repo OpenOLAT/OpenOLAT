@@ -377,7 +377,7 @@ public class MessageEditController extends FormBasicController {
 		}
 
 		message.setBody(body.trim());
-		if(usePseudonymEl != null && usePseudonymEl.isAtLeastSelected(1)) {
+		if(usePseudonymEl != null && (usePseudonymEl.isAtLeastSelected(1) || guestOnly)) {
 			message.setPseudonym(pseudonymEl.getValue());
 			if(guestOnly) {
 				ureq.getUserSession().putEntry("FOPseudo" + forum.getKey(), message.getPseudonym());
@@ -425,9 +425,10 @@ public class MessageEditController extends FormBasicController {
 			fm.markAsRead(getIdentity(), forum, message);
 			persistTempUploadedFiles(message);
 			notifiySubscription();
+			Long threadTopKey = message.getThreadtop() == null ? null : message.getThreadtop().getKey();
+
 			//commit before sending events
 			DBFactory.getInstance().commit();
-			Long threadTopKey = message.getThreadtop() == null ? null : message.getThreadtop().getKey();
 			ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.NEW_MESSAGE, threadTopKey, message.getKey(), getIdentity());
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, forum);	
 			ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_REPLY_MESSAGE_CREATE, getClass(),

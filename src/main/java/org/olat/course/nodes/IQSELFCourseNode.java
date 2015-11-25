@@ -279,13 +279,6 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		}
 	}
 
-	@Override
-	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
-		CourseNode copyInstance = super.createInstanceForCopy(isNewTitle, course, author);
-		IQEditController.removeIQReference(copyInstance.getModuleConfiguration());
-		return copyInstance;
-	}
-
 	/**
 	 * Update the module configuration to have all mandatory configuration flags
 	 * set to usefull default values

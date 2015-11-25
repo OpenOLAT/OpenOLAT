@@ -80,6 +80,7 @@ public class EditHTMLTaskController extends FormBasicController {
 
 		contentEditor = new HTMLEditorController(ureq, getWindowControl(), taskContainer, task.getFilename(), null, "media", true, false, false, mainForm);
 		contentEditor.getRichTextConfiguration().disableMedia();
+		contentEditor.getRichTextConfiguration().setAllowCustomMediaFactory(false);
 		listenTo(contentEditor);
 		FormItem editorItem = contentEditor.getInitialFormItem();
 		editorItem.setLabel("task.file", null);

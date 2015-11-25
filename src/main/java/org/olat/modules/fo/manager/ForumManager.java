@@ -283,9 +283,8 @@ public class ForumManager {
 		  .append(" ) as lastModified");
 		if(identity != null) {
 			sb.append(" ,(select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
-			  .append("   where mark.creator.key=:identityKey and mark.resId=:forumKey and cast(msg.key as string) = mark.resSubPath and mark.resName='Forum'")
+			  .append("   where mark.creator.key=:identityKey and mark.resId=:forumKey and msg.key = cast(mark.resSubPath as long) and mark.resName='Forum'")
 			  .append(" ) as marks");
-			
 		}
 		
 		sb.append(" from fomessage as msg ")
@@ -325,6 +324,7 @@ public class ForumManager {
 		query.append("select msg from fomessage as msg")
 		     .append(" left join fetch msg.creator as creator")
 		     .append(" left join fetch msg.modifier as creator")
+		     .append(" left join fetch msg.threadtop as threadtop")
 		     .append(" where msg.key=:messageKey");
 		
 		List<Message> messages = dbInstance.getCurrentEntityManager()

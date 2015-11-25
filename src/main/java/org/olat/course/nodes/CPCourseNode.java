@@ -300,12 +300,4 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 			CPEditController.removeCPReference(getModuleConfiguration());
 		}
 	}
-
-	@Override
-	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
-		CourseNode copyInstance = super.createInstanceForCopy(isNewTitle, course, author);
-		CPEditController.removeCPReference(copyInstance.getModuleConfiguration());
-		return copyInstance;
-	}
-
 }

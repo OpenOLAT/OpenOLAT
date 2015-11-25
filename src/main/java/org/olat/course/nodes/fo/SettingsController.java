@@ -87,7 +87,7 @@ public class SettingsController extends FormBasicController {
 	}
 	
 	public boolean isPseudonymPostAllowed() {
-		return allowPseudonymEl.isAtLeastSelected(1);
+		return allowPseudonymEl == null ? false : allowPseudonymEl.isAtLeastSelected(1);
 	}
 	
 	public boolean isGuestPostAllowed() {
@@ -108,5 +108,4 @@ public class SettingsController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
 }
