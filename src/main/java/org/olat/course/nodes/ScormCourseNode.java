@@ -364,13 +364,6 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Ass
 	}
 
 	@Override
-	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
-		CourseNode copyInstance = super.createInstanceForCopy(isNewTitle, course, author);
-		CPEditController.removeCPReference(copyInstance.getModuleConfiguration());
-		return copyInstance;
-	}
-
-	@Override
 	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnvironment) {
 		// read score from properties save score, passed and attempts information
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
