@@ -324,6 +324,7 @@ public class ForumManager {
 		query.append("select msg from fomessage as msg")
 		     .append(" left join fetch msg.creator as creator")
 		     .append(" left join fetch msg.modifier as creator")
+		     .append(" left join fetch msg.threadtop as threadtop")
 		     .append(" where msg.key=:messageKey");
 		
 		List<Message> messages = dbInstance.getCurrentEntityManager()

@@ -93,8 +93,8 @@ public class ForumUserDataModel extends DefaultFlexiTableDataModel<ForumUser>
 		replies("table.user.replies"),
 		threads("table.user.threads"),
 		lastModified("table.lastModified"),
-		numOfWords("table.numOfCharacters"),
-		numOfCharacters("table.numOfWords");
+		numOfWords("table.numOfWords"),
+		numOfCharacters("table.numOfCharacters");
 		
 		private final String i18nKey;
 		
