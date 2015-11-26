@@ -111,7 +111,7 @@ public class UserRestClient {
 		
 		UserVO vo = new UserVO();
 		String rndUsername = (name + "-" + uuid).substring(0, 24);
-		vo.setLogin(rndUsername);
+		vo.setLogin(rndUsername.toLowerCase());
 		String rndPassword = ("passwd-" + uuid).substring(0, 24);
 		vo.setPassword(rndPassword);
 		vo.setFirstName(name + "-"+ role + "-" + uuid);

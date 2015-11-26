@@ -141,12 +141,6 @@ public class ForumManager {
 		return  dbQuery.getResultList();
 	}
 
-	public List<Long> getAllForumKeys(){
-		return dbInstance.getCurrentEntityManager()
-				.createNamedQuery("getAllForumKeys", Long.class)
-				.getResultList();
-	}
-
 	/**
 	 * 
 	 * @param forum_id
@@ -351,20 +345,6 @@ public class ForumManager {
 				.setParameter("forumKey", forum.getKey())
 				.getResultList();
 		return pseudonyms == null || pseudonyms.isEmpty() ? null : pseudonyms.get(0);
-	}
-	
-	public MessageLight getLightMessageById(Long messageKey) {
-		StringBuilder query = new StringBuilder();
-		query.append("select msg from fomessage as msg")
-		     .append(" left join fetch msg.creator as creator")
-		     .append(" left join fetch msg.modifier as modifier")
-		     .append(" where msg.key=:messageKey ");
-		
-		List<MessageLight> messages = dbInstance.getCurrentEntityManager()
-				.createQuery(query.toString(), MessageLight.class)
-				.setParameter("messageKey", messageKey)
-				.getResultList();
-		return messages == null || messages.isEmpty() ? null : messages.get(0);
 	}
 	
 	public List<MessageLight> getLightMessagesByForum(Forum forum) {

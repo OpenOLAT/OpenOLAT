@@ -29,12 +29,17 @@ package org.olat.modules.fo;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.fo.manager.ForumManager;
+import org.olat.modules.fo.model.ForumThread;
+import org.olat.modules.fo.model.ForumUserStatistics;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
@@ -54,9 +59,11 @@ public class ForumManagerTest extends OlatTestCase {
 	public UserManager userManager;
 	@Autowired
 	public ForumManager forumManager;
+	@Autowired
+	public BaseSecurity securityManager;
 	
 	@Test
-	public void testGetThread() {
+	public void getThread() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-4");
 		Forum fo = forumManager.addAForum();
 		dbInstance.commit();
@@ -77,21 +84,21 @@ public class ForumManagerTest extends OlatTestCase {
 	}
 
 	@Test
-	public void testCreateAndGetMessages_loadForumID() throws Exception {
+	public void createAndGetMessages_loadForumID() throws Exception {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-2");
 		Forum fo = forumManager.addAForum();
 		dbInstance.commit();
 
 		Message topMessage = forumManager.createMessage(fo, id1, false);
-		topMessage.setTitle("stufe 0: subject 0");
-		topMessage.setBody("body/n dep 0");
+		topMessage.setTitle("Create and get message");
+		topMessage.setBody("Create and get message");
 		forumManager.addTopMessage(topMessage);
 		dbInstance.commit();
 
 		Message reply = forumManager.createMessage(fo, id2, false);
-		reply.setTitle("stufe 0: subject 0");
-		reply.setBody("body/n dep 0");
+		reply.setTitle("Re: Create and get message");
+		reply.setBody("Create and get message");
 		forumManager.replyToMessage(reply, topMessage);
 		dbInstance.commitAndCloseSession();
 
@@ -107,36 +114,394 @@ public class ForumManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testCountMessagesByForumID() {
+	public void getForumThreads() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-2");
+		Forum forum = forumManager.addAForum();
+		dbInstance.commit();
+		
+		Message thread1 = forumManager.createMessage(forum, id1, false);
+		thread1.setTitle("Get forum threads");
+		thread1.setBody("Get forum threads");
+		forumManager.addTopMessage(thread1);
+		dbInstance.commit();
+
+		Message reply = forumManager.createMessage(forum, id2, false);
+		reply.setTitle("Re: Get forum threads");
+		reply.setBody("Get forum threads");
+		forumManager.replyToMessage(reply, thread1);
+		dbInstance.commitAndCloseSession();
+		
+		Message thread2 = forumManager.createMessage(forum, id1, false);
+		thread2.setTitle("More on get forum threads");
+		thread2.setBody("More on get forum threads");
+		forumManager.addTopMessage(thread2);
+		dbInstance.commit();
+		
+		List<ForumThread> forumThreads = forumManager.getForumThreads(forum, id1);
+		Assert.assertNotNull(forumThreads);
+		Assert.assertEquals(2, forumThreads.size());
+		
+		ForumThread forumThread1 = null;
+		ForumThread forumThread2 = null;
+		for(ForumThread forumThread:forumThreads) {
+			if(forumThread.getKey().equals(thread1.getKey())) {
+				forumThread1 = forumThread;
+			} else if(forumThread.getKey().equals(thread2.getKey())) {
+				forumThread2 = forumThread;
+			}
+		}
+		
+		Assert.assertNotNull(forumThread1);
+		Assert.assertNotNull(forumThread2);
+	}
+	
+	@Test
+	public void getForumUserStatistics() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-2");
+		Forum forum = forumManager.addAForum();
+		dbInstance.commit();
+		
+		Message thread1 = forumManager.createMessage(forum, id1, false);
+		thread1.setTitle("Get forum user statistics");
+		thread1.setBody("Get forum user statistics");
+		forumManager.addTopMessage(thread1);
+		dbInstance.commit();
+
+		Message reply = forumManager.createMessage(forum, id2, false);
+		reply.setTitle("Re: Get forum user statistics");
+		reply.setBody("Get forum user statistics and other usefull stuff to we need");
+		forumManager.replyToMessage(reply, thread1);
+		dbInstance.commitAndCloseSession();
+		
+		List<ForumUserStatistics> userStatistics = forumManager.getForumUserStatistics(forum);
+		Assert.assertNotNull(userStatistics);
+		Assert.assertEquals(2, userStatistics.size());
+
+		ForumUserStatistics userStatistic1 = null;
+		ForumUserStatistics userStatistic2 = null;
+		for(ForumUserStatistics userStatistic:userStatistics) {
+			if(userStatistic.getIdentity().getKey().equals(id1.getKey())) {
+				userStatistic1 = userStatistic;
+			} else if(userStatistic.getIdentity().getKey().equals(id2.getKey())) {
+				userStatistic2 = userStatistic;
+			}
+		}
+		
+		Assert.assertNotNull(userStatistic1);
+		Assert.assertNotNull(userStatistic2);
+		
+		//stats user 1
+		Assert.assertEquals(1, userStatistic1.getNumOfThreads());
+		Assert.assertEquals(0, userStatistic1.getNumOfReplies());
+		Assert.assertTrue(userStatistic1.getNumOfWords() > 1);
+		Assert.assertTrue(userStatistic1.getNumOfCharacters() > 1);
+		
+		//stats user 2
+		Assert.assertEquals(0, userStatistic2.getNumOfThreads());
+		Assert.assertEquals(1, userStatistic2.getNumOfReplies());
+		Assert.assertTrue(userStatistic2.getNumOfWords() > 1);
+		Assert.assertTrue(userStatistic2.getNumOfCharacters() > 1);
+	}
+	
+	@Test
+	public void getLightMessagesByForum() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-2");
+		Forum forum = forumManager.addAForum();
+		dbInstance.commit();
+		
+		Message thread1 = forumManager.createMessage(forum, id1, false);
+		thread1.setTitle("Get messages light by forum");
+		thread1.setBody("Get messages light by forum");
+		forumManager.addTopMessage(thread1);
+		dbInstance.commit();
+		
+		Message reply = forumManager.createMessage(forum, id2, false);
+		reply.setTitle("Re: Get messages light by forum");
+		reply.setBody("Get messages light by forum and other usefull stuff we need");
+		forumManager.replyToMessage(reply, thread1);
+		dbInstance.commitAndCloseSession();
+		
+		//load and check the messages
+		List<MessageLight> messages = forumManager.getLightMessagesByForum(forum);
+		dbInstance.commitAndCloseSession();
+		
+		MessageLight message1 = null;
+		MessageLight message2 = null;
+		for(MessageLight message:messages) {
+			if(message.getKey().equals(thread1.getKey())) {
+				message1 = message;
+			} else if(message.getKey().equals(reply.getKey())) {
+				message2 = message;
+			}
+		}
+		
+		//check thread
+		Assert.assertNotNull(message1);
+		Assert.assertEquals(thread1.getKey(), message1.getKey());
+		Assert.assertEquals(thread1.getTitle(), message1.getTitle());
+		Assert.assertEquals(thread1.getBody(), message1.getBody());
+		Assert.assertEquals(thread1.getCreator(), id1);
+		Assert.assertNull(message1.getThreadtop());
+		
+		//check reply
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(message2);
+		Assert.assertEquals(reply.getKey(), message2.getKey());
+		Assert.assertEquals(reply.getTitle(), message2.getTitle());
+		Assert.assertEquals(reply.getBody(), message2.getBody());
+		Assert.assertEquals(reply.getCreator(), id2);
+		Assert.assertNotNull(message2.getThreadtop());
+		Assert.assertEquals(thread1.getKey(), message2.getThreadtop().getKey());
+	}
+	
+	@Test
+	public void getLightMessagesByThread() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-2");
+		Forum forum = forumManager.addAForum();
+		dbInstance.commit();
+		
+		Message thread1 = forumManager.createMessage(forum, id1, false);
+		thread1.setTitle("Get messages light by thread");
+		thread1.setBody("Get messages light by thread");
+		forumManager.addTopMessage(thread1);
+		dbInstance.commit();
+		
+		Message reply = forumManager.createMessage(forum, id2, false);
+		reply.setTitle("Re: Get messages light by thread");
+		reply.setBody("Get messages light by thread and other usefull stuff we need");
+		forumManager.replyToMessage(reply, thread1);
+		dbInstance.commitAndCloseSession();
+		
+		//load and check the messages
+		List<MessageLight> messages = forumManager.getLightMessagesByThread(forum, thread1);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(messages);
+		Assert.assertEquals(1, messages.size());
+		MessageLight message = messages.get(0);
+		Assert.assertNotNull(message);
+		Assert.assertEquals(reply.getKey(), message.getKey());
+		Assert.assertEquals(reply.getTitle(), message.getTitle());
+		Assert.assertEquals(reply.getBody(), message.getBody());
+		Assert.assertEquals(reply.getCreator(), id2);
+		Assert.assertNotNull(message.getThreadtop());
+		Assert.assertEquals(thread1.getKey(), message.getThreadtop().getKey());
+	}
+	
+	@Test
+	public void getLightMessagesOfGuests() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Identity guest2 =  securityManager.getAndUpdateAnonymousUserForLanguage(Locale.ENGLISH);
+		Forum forum = forumManager.addAForum();
+		dbInstance.commit();
+		
+		Message thread1 = forumManager.createMessage(forum, id1, false);
+		thread1.setTitle("Get messages light of guests");
+		thread1.setBody("Get messages light of guests");
+		forumManager.addTopMessage(thread1);
+		dbInstance.commit();
+		
+		Message reply = forumManager.createMessage(forum, guest2, true);
+		reply.setTitle("Re: Get messages light of guests");
+		reply.setBody("Get messages light of guests and other usefull stuff we need");
+		reply.setPseudonym("Guest pseudo 1289");
+		forumManager.replyToMessage(reply, thread1);
+		dbInstance.commitAndCloseSession();
+		
+		//load and check the messages
+		List<MessageLight> messages = forumManager.getLightMessagesOfGuests(forum);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(messages);
+		Assert.assertEquals(1, messages.size());
+		MessageLight message = messages.get(0);
+		Assert.assertNotNull(message);
+		Assert.assertEquals(reply.getKey(), message.getKey());
+		Assert.assertEquals(reply.getTitle(), message.getTitle());
+		Assert.assertEquals(reply.getBody(), message.getBody());
+		Assert.assertEquals("Guest pseudo 1289", message.getPseudonym());
+		Assert.assertNull(message.getCreator());
+		Assert.assertTrue(message.isGuest());
+		Assert.assertNotNull(message.getThreadtop());
+		Assert.assertEquals(thread1.getKey(), message.getThreadtop().getKey());
+	}
+	
+	@Test
+	public void getLightMessagesByUser() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Identity id2 =  JunitTestHelper.createAndPersistIdentityAsRndUser("fo-2");
+		Identity id3 =  JunitTestHelper.createAndPersistIdentityAsRndUser("fo-3");
+		Forum forum = forumManager.addAForum();
+		dbInstance.commit();
+		
+		Message thread1 = forumManager.createMessage(forum, id1, false);
+		thread1.setTitle("Get messages light by user");
+		thread1.setBody("Get messages light by user");
+		forumManager.addTopMessage(thread1);
+		dbInstance.commit();
+		
+		Message reply = forumManager.createMessage(forum, id2, false);
+		reply.setTitle("Re: Get messages light by user");
+		reply.setBody("Get messages light by user and other usefull stuff we need");
+		forumManager.replyToMessage(reply, thread1);
+		dbInstance.commitAndCloseSession();
+		
+		Message replyPseudo = forumManager.createMessage(forum, id3, false);
+		replyPseudo.setTitle("Re: Get messages light by user");
+		replyPseudo.setBody("Get messages light by user and other usefull stuff we need");
+		replyPseudo.setPseudonym("Id pseudo 3476");
+		forumManager.replyToMessage(replyPseudo, thread1);
+		dbInstance.commitAndCloseSession();
+		
+		//load and check the messages of first user
+		List<MessageLight> messagesOfUser1 = forumManager.getLightMessagesByUser(forum, id1);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(messagesOfUser1);
+		Assert.assertEquals(1, messagesOfUser1.size());
+		MessageLight messageOfUser1 = messagesOfUser1.get(0);
+		Assert.assertNotNull(messageOfUser1);
+		Assert.assertEquals(thread1.getKey(), messageOfUser1.getKey());
+		Assert.assertEquals(thread1.getTitle(), messageOfUser1.getTitle());
+		Assert.assertEquals(thread1.getBody(), messageOfUser1.getBody());
+		Assert.assertNotNull(messageOfUser1.getCreator());
+		Assert.assertEquals(id1, messageOfUser1.getCreator());
+		Assert.assertFalse(messageOfUser1.isGuest());
+		Assert.assertNull(messageOfUser1.getThreadtop());
+		
+		//load and check the messages of second user
+		List<MessageLight> messagesOfUser2 = forumManager.getLightMessagesByUser(forum, id2);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(messagesOfUser2);
+		Assert.assertEquals(1, messagesOfUser2.size());
+		MessageLight messageOfUser2 = messagesOfUser2.get(0);
+		Assert.assertNotNull(messageOfUser2);
+		Assert.assertEquals(reply.getKey(), messageOfUser2.getKey());
+		Assert.assertEquals(reply.getTitle(), messageOfUser2.getTitle());
+		Assert.assertEquals(reply.getBody(), messageOfUser2.getBody());
+		Assert.assertNotNull(messageOfUser2.getCreator());
+		Assert.assertEquals(id2, messageOfUser2.getCreator());
+		Assert.assertFalse(messageOfUser2.isGuest());
+		Assert.assertNotNull(messageOfUser2.getThreadtop());
+		Assert.assertEquals(thread1.getKey(), messageOfUser2.getThreadtop().getKey());
+		
+		//load and check the messages of third user which use a pseudo
+		List<MessageLight> messagesOfUser3 = forumManager.getLightMessagesByUser(forum, id3);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(messagesOfUser3);
+		Assert.assertTrue(messagesOfUser3.isEmpty());
+	}
+	
+	@Test
+	public void getLightMessagesByUserUnderPseudo() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Identity id2 =  JunitTestHelper.createAndPersistIdentityAsRndUser("fo-2");
+		Forum forum = forumManager.addAForum();
+		dbInstance.commit();
+		
+		Message thread1 = forumManager.createMessage(forum, id1, false);
+		thread1.setTitle("Get messages light by user with pseudo");
+		thread1.setBody("Get messages light by user with pseudo");
+		forumManager.addTopMessage(thread1);
+		dbInstance.commit();
+		
+		Message reply = forumManager.createMessage(forum, id2, false);
+		reply.setTitle("Re: Get messages light by user with pseudo");
+		reply.setBody("Get messages light by user and other usefull stuff we need");
+		forumManager.replyToMessage(reply, thread1);
+		dbInstance.commitAndCloseSession();
+		
+		Message replyPseudo = forumManager.createMessage(forum, id2, false);
+		replyPseudo.setTitle("Re: Get messages light by user with pseudo");
+		replyPseudo.setBody("Get messages light by user and other usefull stuff we need");
+		String pseudo = "Id pseudo " + UUID.randomUUID();
+		replyPseudo.setPseudonym(pseudo);
+		forumManager.replyToMessage(replyPseudo, thread1);
+		dbInstance.commitAndCloseSession();
+		
+		//load and check the messages of user with pseudo
+		List<MessageLight> messagesOfUser2 = forumManager.getLightMessagesByUserUnderPseudo(forum, id2, pseudo);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(messagesOfUser2);
+		Assert.assertEquals(1, messagesOfUser2.size());
+		MessageLight messageUnderPseudo = messagesOfUser2.get(0);
+		Assert.assertNotNull(messageUnderPseudo);
+		Assert.assertEquals(replyPseudo.getKey(), messageUnderPseudo.getKey());
+		Assert.assertEquals(replyPseudo.getTitle(), messageUnderPseudo.getTitle());
+		Assert.assertEquals(replyPseudo.getBody(), messageUnderPseudo.getBody());
+		Assert.assertNotNull(messageUnderPseudo.getCreator());
+		Assert.assertEquals(id2, messageUnderPseudo.getCreator());
+		Assert.assertFalse(messageUnderPseudo.isGuest());
+		Assert.assertNotNull(messageUnderPseudo.getThreadtop());
+		Assert.assertEquals(thread1.getKey(), messageUnderPseudo.getThreadtop().getKey());
+	}
+	
+	@Test
+	public void countMessagesByForumID() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-2");
 		Forum fo = forumManager.addAForum();
 		dbInstance.commit();
 
 		Message topMessage = forumManager.createMessage(fo, id1, false);
-		topMessage.setTitle("stufe 0: subject 0");
-		topMessage.setBody("body/n dep 0");
+		topMessage.setTitle("Messages count by forum");
+		topMessage.setBody("Messages count by forum");
 		forumManager.addTopMessage(topMessage);
 		dbInstance.commit();
 
 		Message reply = forumManager.createMessage(fo, id2, false);
-		reply.setTitle("stufe 1: subject 0");
-		reply.setBody("body/n dep 0");
+		reply.setTitle("Re: Messages count by forum");
+		reply.setBody("Messages count by forum");
 		forumManager.replyToMessage(reply, topMessage);
 		dbInstance.commit();
 		
 		Message reply2 = forumManager.createMessage(fo, id1, false);
-		reply2.setTitle("stufe 1: subject 0");
-		reply2.setBody("body/n dep 0");
+		reply2.setTitle("Re: Re: Messages count by forum");
+		reply2.setBody("Messages count by forum");
 		forumManager.replyToMessage(reply2, reply);
 		dbInstance.commit();
 		
 		int numOfMessages = forumManager.countMessagesByForumID(fo.getKey());
 		Assert.assertEquals("Not the right number of messages for this forum", 3, numOfMessages);
 	}
+
+	@Test
+	public void countThreadsByForumID() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-2");
+		Forum fo = forumManager.addAForum();
+		dbInstance.commit();
+
+		Message topMessage = forumManager.createMessage(fo, id1, false);
+		topMessage.setTitle("Threads count by forum");
+		topMessage.setBody("Threads count by forum");
+		forumManager.addTopMessage(topMessage);
+		dbInstance.commit();
+
+		Message reply = forumManager.createMessage(fo, id2, false);
+		reply.setTitle("Re: Threads count by forum");
+		reply.setBody("Threads count by forum");
+		forumManager.replyToMessage(reply, topMessage);
+		dbInstance.commit();
+		
+		Message topMessage2 = forumManager.createMessage(fo, id2, false);
+		topMessage2.setTitle("More on threads count by forum");
+		topMessage2.setBody("More on threads count by forum");
+		forumManager.addTopMessage(topMessage2);
+		dbInstance.commit();
+		
+		int numOfThreads = forumManager.countThreadsByForumID(fo.getKey());
+		Assert.assertEquals("Not the right number of threads for this forum", 2, numOfThreads);
+	}
 	
 	@Test
-	public void testGetNewMessageInfo() {
+	public void getNewMessageInfo() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-5");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-6");
 		Forum fo = forumManager.addAForum();
@@ -169,7 +534,7 @@ public class ForumManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testDeleteMessageTree() {
+	public void deleteMessageTree() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-5");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-6");
 		Forum fo = forumManager.addAForum();
@@ -203,7 +568,7 @@ public class ForumManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testDeleteForum() {
+	public void deleteForum() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-7");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-8");
 		Forum fo = forumManager.addAForum();
