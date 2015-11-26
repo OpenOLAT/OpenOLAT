@@ -33,7 +33,6 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -57,18 +56,18 @@ public class CertificatesWizardController extends BasicController {
 	private StepsMainRunController wizardCtrl;
 	
 	private final boolean hasAssessableNodes;
-	private final OLATResourceable courseOres;
+	private final RepositoryEntry courseEntry;
 	private final AssessedIdentitiesTableDataModel dataModel;
 	
 	@Autowired
 	private CertificatesManager certificatesManager;
 	
 	public CertificatesWizardController(UserRequest ureq, WindowControl wControl,
-			AssessedIdentitiesTableDataModel dataModel, OLATResourceable courseOres, boolean hasAssessableNodes) {
+			AssessedIdentitiesTableDataModel dataModel, RepositoryEntry courseEntry, boolean hasAssessableNodes) {
 		super(ureq, wControl);
 		
 		this.dataModel = dataModel;
-		this.courseOres = courseOres;
+		this.courseEntry = courseEntry;
 		this.hasAssessableNodes = hasAssessableNodes;
 		
 		startButton = LinkFactory.createButton("generate.certificate", null, this);
@@ -106,7 +105,7 @@ public class CertificatesWizardController extends BasicController {
 
 	private void doStartWizard(UserRequest ureq) {
 		List<AssessedIdentityWrapper> datas = dataModel.getObjects();
-		Certificates_1_SelectionStep start = new Certificates_1_SelectionStep(ureq, courseOres, datas, hasAssessableNodes);
+		Certificates_1_SelectionStep start = new Certificates_1_SelectionStep(ureq, courseEntry, datas, hasAssessableNodes);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
@@ -127,8 +126,7 @@ public class CertificatesWizardController extends BasicController {
 	}
 	
 	private void doGenerateCertificates(List<CertificateInfos> assessedIdentitiesInfos) {
-		ICourse course = CourseFactory.loadCourse(courseOres);
-		RepositoryEntry resource = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		Long templateKey = course.getCourseConfig().getCertificateTemplate();
 		CertificateTemplate template = null;
 		if(templateKey != null) {
@@ -136,6 +134,6 @@ public class CertificatesWizardController extends BasicController {
 		}
 		
 		MailerResult result = new MailerResult();
-		certificatesManager.generateCertificates(assessedIdentitiesInfos, resource, template, result);
+		certificatesManager.generateCertificates(assessedIdentitiesInfos, courseEntry, template, result);
 	}
 }

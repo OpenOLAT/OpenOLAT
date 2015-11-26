@@ -26,7 +26,7 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.id.OLATResourceable;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -36,11 +36,11 @@ import org.olat.core.id.OLATResourceable;
  */
 public class BulkAssessment_1_SelectCourseNodeStep extends BasicStep {
 	
-	private final OLATResourceable courseOres;
+	private final RepositoryEntry courseEntry;
 	
-	public BulkAssessment_1_SelectCourseNodeStep(UserRequest ureq, OLATResourceable courseOres) {
+	public BulkAssessment_1_SelectCourseNodeStep(UserRequest ureq, RepositoryEntry courseEntry) {
 		super(ureq);
-		this.courseOres = courseOres;
+		this.courseEntry = courseEntry;
 		setI18nTitleAndDescr("choose.node.title", "choose.node.title");
 		setNextStep(new BulkAssessment_2_DatasStep(ureq));
 	}
@@ -53,7 +53,6 @@ public class BulkAssessment_1_SelectCourseNodeStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext context, Form form) {
 		form.setMultipartEnabled(true);
-		SelectCourseNodeStepForm ctrl = new SelectCourseNodeStepForm(ureq, wControl, courseOres, context, form);
-		return ctrl;
+		return new SelectCourseNodeStepForm(ureq, wControl, courseEntry, context, form);
 	}
 }

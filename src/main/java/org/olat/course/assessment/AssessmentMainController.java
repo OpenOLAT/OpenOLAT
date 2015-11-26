@@ -962,7 +962,8 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		if(courseConfig.isManualCertificationEnabled()) {
 			if(courseNode == null || courseNode == course.getRunStructure().getRootNode()) {
 				removeAsListenerAndDispose(certificateWizardCtrl);
-				certificateWizardCtrl = new CertificatesWizardController(ureq, getWindowControl(), tdm, ores, hasAssessableNodes);
+				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+				certificateWizardCtrl = new CertificatesWizardController(ureq, getWindowControl(), tdm, courseEntry, hasAssessableNodes);
 				listenTo(certificateWizardCtrl);
 
 				String toolCmpName = "ctrl_" + (count++);
@@ -1083,14 +1084,18 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	}
 	
 	private void doBulkAssessment(UserRequest ureq) {
-		bulkAssOverviewCtrl = new BulkAssessmentOverviewController(ureq, getWindowControl(), ores);
+		ICourse course = CourseFactory.loadCourse(ores);
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		bulkAssOverviewCtrl = new BulkAssessmentOverviewController(ureq, getWindowControl(), courseEntry);
 		listenTo(bulkAssOverviewCtrl);
 		main.setContent(bulkAssOverviewCtrl.getInitialComponent());
 	}
 	
 	private void doEfficiencyStatement(UserRequest ureq) {
 		removeAsListenerAndDispose(esac);
-		esac = new EfficiencyStatementAssessmentController(ureq, getWindowControl(), ores);
+		ICourse course = CourseFactory.loadCourse(ores);
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		esac = new EfficiencyStatementAssessmentController(ureq, getWindowControl(), courseEntry);
 		listenTo(esac);
 		main.setContent(esac.getInitialComponent());
 	}

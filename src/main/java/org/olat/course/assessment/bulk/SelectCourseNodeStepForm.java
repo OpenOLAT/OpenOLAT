@@ -42,11 +42,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.id.OLATResourceable;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.manager.BulkAssessmentTask;
 import org.olat.course.nodes.CourseNode;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -56,22 +56,21 @@ import org.olat.course.nodes.CourseNode;
  */
 public class SelectCourseNodeStepForm extends StepFormBasicController {
 	
-	private final OLATResourceable courseOres;
+	private final RepositoryEntry courseEntry;
 	
 	private FlexiTableElement tableEl;
 	private NodeTableDataModel tableModel;
 	
 	public SelectCourseNodeStepForm(UserRequest ureq, WindowControl wControl,
-			OLATResourceable courseOres, StepsRunContext runContext, Form rootForm) {
+			RepositoryEntry courseEntry, StepsRunContext runContext, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "select_node");
-		this.courseOres = courseOres;
-		
+		this.courseEntry = courseEntry;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		ICourse course = CourseFactory.loadCourse(courseOres);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		CourseNode rootNode = course.getRunStructure().getRootNode();
 		List<Node> courseNodes = addManualTaskNodesAndParentsToList(0, rootNode);
 		tableModel = new NodeTableDataModel(courseNodes);

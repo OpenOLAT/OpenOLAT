@@ -1,4 +1,9 @@
-<h2>$r.translate("assessment.tool.overview")</h2>
+$r.contextHelpWithWrapper("Using Course Tools#_bewertungswerkzeug")
+<h2><i class="o_icon o_icon_assessment_tool"> </i>  $r.translate("assessment.tool.overview")</h2>
+#if(!$hasAssessableNodes)
+	<p class="o_warning">$r.translate("index.noAssessableNodes")</p>
+#end
+<p class="o_info">$r.translate("index.intro")</p>
 <div class="row o_block">
 	<div class="col-sm-6">
 		#if($r.available("assessed.identities"))
@@ -22,4 +27,26 @@
 			$r.render("statistics")
 		#end
 	</div>
+</div>
+<div class="row">
+	#if($r.available("assessmentSubscription") || $r.available("certificationSubscription"))
+	<div class="col-sm-6">
+		<h4>$r.translate("index.notifications.title")</h4>
+		<table class="table">
+			#if($r.available("assessmentSubscription"))
+			<tr>
+				<th>$r.translate("index.notifications.assessment")</th>
+				<td>$r.render("assessmentSubscription")</td>
+			</tr>
+			#end
+			#if($r.available("certificationSubscription"))
+			<tr>
+				<th>$r.translate("index.notifications.certificate")</th>
+				<td>$r.render("certificationSubscription")</td>
+			</tr>
+			#end
+		</table>
+	</div>
+	<div class="col-sm-6"></div>
+	#end
 </div>

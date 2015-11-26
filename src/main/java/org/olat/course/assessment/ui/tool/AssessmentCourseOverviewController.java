@@ -21,17 +21,27 @@ package org.olat.course.assessment.ui.tool;
 
 import java.util.List;
 
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Util;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentMainController;
+import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
+import org.olat.course.certificate.CertificatesManager;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -54,15 +64,46 @@ public class AssessmentCourseOverviewController extends BasicController implemen
 	private final AssessmentCourseStatisticsSmallController statisticsCtrl;
 
 	private Link assessedIdentitiesLink, assessedGroupsLink;
-	
+
+	@Autowired
+	private CertificatesManager certificatesManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private AssessmentNotificationsHandler assessmentNotificationsHandler;
 	
 	public AssessmentCourseOverviewController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry courseEntry, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(AssessmentMainController.class, getLocale(), getTranslator()));
 		
 		mainVC = createVelocityContainer("course_overview");
+		
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		boolean hasAssessableNodes = course.hasAssessableNodes();
+		mainVC.contextPut("hasAssessableNodes", new Boolean(hasAssessableNodes));
+		
+		// assessment changes subscription
+		if (hasAssessableNodes) {
+			SubscriptionContext subsContext = assessmentNotificationsHandler.getAssessmentSubscriptionContext(ureq.getIdentity(), course);
+			if (subsContext != null) {
+				PublisherData pData = assessmentNotificationsHandler.getAssessmentPublisherData(course, wControl.getBusinessControl().getAsString());
+				Controller csc = new ContextualSubscriptionController(ureq, wControl, subsContext, pData);
+				listenTo(csc); // cleanup on dispose
+				mainVC.put("assessmentSubscription", csc.getInitialComponent());
+			}
+		}
+		
+		// certificate subscription
+		SubscriptionContext subsContext = certificatesManager.getSubscriptionContext(course);
+		if (subsContext != null) {
+			String businessPath = wControl.getBusinessControl().getAsString();
+			PublisherData pData = certificatesManager.getPublisherData(course, businessPath);
+			Controller certificateSubscriptionCtrl = new ContextualSubscriptionController(ureq, wControl, subsContext, pData);
+			listenTo(certificateSubscriptionCtrl);
+			mainVC.put("certificationSubscription", certificateSubscriptionCtrl.getInitialComponent());
+		}
+		
 		
 		toReviewCtrl = new AssessmentToReviewSmallController(ureq, getWindowControl(), courseEntry, assessmentCallback);
 		listenTo(toReviewCtrl);

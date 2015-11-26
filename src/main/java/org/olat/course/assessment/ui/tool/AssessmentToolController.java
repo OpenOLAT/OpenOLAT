@@ -26,6 +26,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -38,6 +39,8 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentMainController;
+import org.olat.course.assessment.EfficiencyStatementAssessmentController;
+import org.olat.course.assessment.bulk.BulkAssessmentOverviewController;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 
@@ -53,10 +56,13 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private RepositoryEntry courseEntry;
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	
-	private Link usersLink;
+	private Link usersLink, efficiencyStatementsLink, bulkAssessmentLink;
 	private final TooledStackedPanel stackPanel;
+	
 	private AssessmentCourseOverviewController overviewCtrl;
 	private AssessmentIdentitiesCourseTreeController currentCtl;
+	private BulkAssessmentOverviewController bulkAssessmentOverviewCtrl;
+	private EfficiencyStatementAssessmentController efficiencyStatementCtrl;
 	
 	public AssessmentToolController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, AssessmentToolSecurityCallback assessmentCallback) {
@@ -74,8 +80,16 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	
 	public void initToolbar() {
 		usersLink = LinkFactory.createToolLink("users", translate("users"), this, "o_icon_user");
+		usersLink.setElementCssClass("o_sel_assessment_tool_users");
 		stackPanel.addTool(usersLink);
 		
+		efficiencyStatementsLink = LinkFactory.createToolLink("efficiencyStatements", translate("menu.efficiency.statment"), this, "o_icon_certificate");
+		efficiencyStatementsLink.setElementCssClass("o_sel_assessment_tool_efficiency_statements");
+		stackPanel.addTool(efficiencyStatementsLink, Align.right);
+		
+		bulkAssessmentLink = LinkFactory.createToolLink("bulkAssessment", translate("menu.bulkfocus"), this, "o_icon_group");
+		bulkAssessmentLink.setElementCssClass("o_sel_assessment_tool_bulk");
+		stackPanel.addTool(bulkAssessmentLink, Align.right);
 	}
 
 	@Override
@@ -93,7 +107,14 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == usersLink) {
+			cleanUp();
 			doSelectUsersView(ureq);
+		} else if(efficiencyStatementsLink == source) {
+			cleanUp();
+			doEfficiencyStatementView(ureq);
+		} else if(bulkAssessmentLink == source) {
+			cleanUp();
+			doBulkAssessmentView(ureq);
 		}
 	}
 
@@ -106,10 +127,27 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		}
 		super.event(ureq, source, event);
 	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(bulkAssessmentOverviewCtrl);
+		removeAsListenerAndDispose(currentCtl);
+		bulkAssessmentOverviewCtrl = null;
+		currentCtl = null;
+	}
+	
+	private void doBulkAssessmentView(UserRequest ureq) {
+		bulkAssessmentOverviewCtrl = new BulkAssessmentOverviewController(ureq, getWindowControl(), courseEntry);
+		listenTo(bulkAssessmentOverviewCtrl);
+		stackPanel.pushController(translate("menu.bulkfocus"), bulkAssessmentOverviewCtrl);
+	}
+	
+	private void doEfficiencyStatementView(UserRequest ureq) {
+		efficiencyStatementCtrl = new EfficiencyStatementAssessmentController(ureq, getWindowControl(), courseEntry);
+		listenTo(efficiencyStatementCtrl);
+		stackPanel.pushController(translate("menu.efficiency.statment"), efficiencyStatementCtrl);
+	}
 
 	private void doSelectUsersView(UserRequest ureq) {
-		removeAsListenerAndDispose(currentCtl);
-		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Users", 0l);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		addToHistory(ureq, bwControl);

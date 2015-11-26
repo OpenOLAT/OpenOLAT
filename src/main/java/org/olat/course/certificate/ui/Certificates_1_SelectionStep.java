@@ -28,8 +28,8 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.id.OLATResourceable;
 import org.olat.course.assessment.AssessedIdentityWrapper;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -40,14 +40,14 @@ import org.olat.course.assessment.AssessedIdentityWrapper;
 public class Certificates_1_SelectionStep extends BasicStep {
 	
 	private final boolean hasAssessableNodes;
-	private final OLATResourceable courseOres;
+	private final RepositoryEntry courseEntry;
 	private final List<AssessedIdentityWrapper> datas;
 	
-	public Certificates_1_SelectionStep(UserRequest ureq, OLATResourceable courseOres,
+	public Certificates_1_SelectionStep(UserRequest ureq, RepositoryEntry courseEntry,
 			List<AssessedIdentityWrapper> datas, boolean hasAssessableNodes) {
 		super(ureq);
 		this.datas = datas;
-		this.courseOres = courseOres;
+		this.courseEntry = courseEntry;
 		this.hasAssessableNodes = hasAssessableNodes;
 		setNextStep(new Certificates_2_OverviewStep(ureq, hasAssessableNodes));
 		setI18nTitleAndDescr("certificates.wizard.select", "certificates.wizard.select");
@@ -61,7 +61,7 @@ public class Certificates_1_SelectionStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
 		CertificatesSelectionController selectCtrl = new CertificatesSelectionController(ureq, wControl, form, runContext,
-				courseOres, datas, hasAssessableNodes);
+				courseEntry, datas, hasAssessableNodes);
 		return selectCtrl;
 	}
 }

@@ -20,7 +20,6 @@
 package org.olat.course.assessment;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -39,11 +38,11 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 
 /**
  * 
@@ -56,12 +55,12 @@ public class EfficiencyStatementAssessmentController extends FormBasicController
 	private DialogBoxController recalculateEfficiencyDC;
 	
 	private final OLATResourceable ores;
-	private final RepositoryManager repositoryManager;
+	private final RepositoryEntry courseEntry;
 	
-	public EfficiencyStatementAssessmentController(UserRequest ureq, WindowControl wControl, OLATResourceable courseOres) {
+	public EfficiencyStatementAssessmentController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry) {
 		super(ureq, wControl, "assessment_eff_statement");
-		this.ores = courseOres;
-		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+		this.courseEntry = courseEntry;
+		this.ores = OresHelper.clone(courseEntry.getOlatResource());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), ores);
 		initForm(ureq);
 	}
@@ -70,7 +69,7 @@ public class EfficiencyStatementAssessmentController extends FormBasicController
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer container = (FormLayoutContainer)formLayout;
-			ICourse course = CourseFactory.loadCourse(ores);
+			ICourse course = CourseFactory.loadCourse(courseEntry);
 		
 			boolean enabled = course.getCourseEnvironment().getCourseConfig().isEfficencyStatementEnabled();
 			String enableStr = this.translate(enabled ? "efficiencystatement.config.on" : "efficiencystatement.config.off");
@@ -125,8 +124,7 @@ public class EfficiencyStatementAssessmentController extends FormBasicController
 	}
 
 	private void openConfiguration(UserRequest ureq) {
-		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(ores, false);
-		String resourceUrl = "[RepositoryEntry:" + re.getKey() + "][CertificationSettings:0]";
+		String resourceUrl = "[RepositoryEntry:" + courseEntry.getKey() + "][CertificationSettings:0]";
 		BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 		NewControllerFactory.getInstance().launch(ureq, bwControl);

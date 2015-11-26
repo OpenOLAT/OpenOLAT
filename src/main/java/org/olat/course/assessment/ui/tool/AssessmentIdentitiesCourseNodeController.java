@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.Group;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -42,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
@@ -58,6 +60,7 @@ import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.tool.AssessmentIdentitiesCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.AssessmentToolOptions;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.group.BusinessGroup;
@@ -65,6 +68,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +81,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AssessmentIdentitiesCourseNodeController extends FormBasicController {
 
+	private final BusinessGroup group;
 	private final CourseNode courseNode;
 	private final RepositoryEntry courseEntry;
 	private final RepositoryEntry referenceEntry;
@@ -98,6 +103,8 @@ public class AssessmentIdentitiesCourseNodeController extends FormBasicControlle
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
 	private AssessmentToolManager assessmentToolManager;
 	
 	public AssessmentIdentitiesCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
@@ -106,6 +113,7 @@ public class AssessmentIdentitiesCourseNodeController extends FormBasicControlle
 		setTranslator(Util.createPackageTranslator(AssessmentMainController.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
+		this.group = null;
 		this.courseNode = courseNode;
 		this.stackPanel = stackPanel;
 		this.courseEntry = courseEntry;
@@ -121,7 +129,7 @@ public class AssessmentIdentitiesCourseNodeController extends FormBasicControlle
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AssessmentToolConstants.usageIdentifyer, isAdministrativeUser);
 		
 		initForm(ureq);
-		updateModel(null, null, null);
+		updateModel(ureq, null, null, null);
 	}
 
 	@Override
@@ -199,7 +207,7 @@ public class AssessmentIdentitiesCourseNodeController extends FormBasicControlle
 		}
 	}
 	
-	private void updateModel(String searchString, List<FlexiTableFilter> filters, List<FlexiTableFilter> extendedFilters) {
+	private void updateModel(UserRequest ureq, String searchString, List<FlexiTableFilter> filters, List<FlexiTableFilter> extendedFilters) {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, referenceEntry, courseNode.getIdent(), assessmentCallback);
 		
 		List<AssessmentEntryStatus> assessmentStatus = null;
@@ -241,6 +249,51 @@ public class AssessmentIdentitiesCourseNodeController extends FormBasicControlle
 		}
 		usersTableModel.setObjects(rows);
 		tableEl.reloadData();
+
+		List<String> toolCmpNames = new ArrayList<>();
+		if(courseNode instanceof AssessableCourseNode) {
+			AssessableCourseNode acn = (AssessableCourseNode)courseNode;
+			ICourse course = CourseFactory.loadCourse(courseEntry);
+			AssessmentToolOptions options = new AssessmentToolOptions();
+			if(group == null) {
+				options.setIdentities(assessedIdentities);
+				fillAlternativeToAssessableIdentityList(options);
+			} else {
+				options.setGroup(group);
+			}
+			
+			//TODO qti filter by group?
+			List<Controller> tools = acn.createAssessmentTools(ureq, getWindowControl(), stackPanel, course.getCourseEnvironment(), options);
+			int count = 0;
+			if(tools.size() > 0) {
+				for(Controller tool:tools) {
+					listenTo(tool);
+					String toolCmpName = "ctrl_" + (count++);
+					flc.put(toolCmpName, tool.getInitialComponent());
+					toolCmpNames.add(toolCmpName);
+					if(tool instanceof BreadcrumbPanelAware) {
+						((BreadcrumbPanelAware)tool).setBreadcrumbPanel(stackPanel);
+					}
+				}
+			}
+			
+		}
+		flc.contextPut("toolCmpNames", toolCmpNames);
+	}
+	
+	private void fillAlternativeToAssessableIdentityList(AssessmentToolOptions options) {
+		List<Group> baseGroups = new ArrayList<>();
+		if((assessmentCallback.canAssessRepositoryEntryMembers() && assessmentCallback.getCoachedGroups().isEmpty())
+				|| assessmentCallback.canAssessNonMembers()) {
+			baseGroups.add(repositoryService.getDefaultGroup(courseEntry));
+		}
+		if(assessmentCallback.getCoachedGroups().size() > 0) {
+			for(BusinessGroup coachedGroup:assessmentCallback.getCoachedGroups()) {
+				baseGroups.add(coachedGroup.getBaseGroup());
+			}
+		}
+		options.setAlternativeToIdentities(baseGroups, assessmentCallback.canAssessNonMembers());
+
 	}
 
 	@Override
@@ -275,7 +328,7 @@ public class AssessmentIdentitiesCourseNodeController extends FormBasicControlle
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				FlexiTableSearchEvent ftse = (FlexiTableSearchEvent)event;
-				updateModel(ftse.getSearch(), ftse.getFilters(), ftse.getExtendedFilters());
+				updateModel(ureq, ftse.getSearch(), ftse.getFilters(), ftse.getExtendedFilters());
 			}
 		}
 		

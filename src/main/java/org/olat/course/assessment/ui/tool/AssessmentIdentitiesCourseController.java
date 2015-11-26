@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -49,19 +50,29 @@ import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessedIdentityWrapper;
 import org.olat.course.assessment.AssessmentMainController;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.tool.AssessmentIdentitiesCourseTableModel.IdentityCourseCols;
 import org.olat.course.certificate.CertificateLight;
+import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.model.CertificateInfos;
+import org.olat.course.certificate.ui.Certificates_1_SelectionStep;
 import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
+import org.olat.course.config.CourseConfig;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -86,9 +97,12 @@ public class AssessmentIdentitiesCourseController extends FormBasicController {
 	private final AssessmentToolSecurityCallback assessmentCallback;
 
 	private Link nextLink, previousLink;
+	private FormLink generateCertificateButton;
 	private FlexiTableElement tableEl;
 	private TooledStackedPanel stackPanel;
 	private AssessmentIdentitiesCourseTableModel usersTableModel;
+	
+	private StepsMainRunController wizardCtrl;
 	private AssessmentIdentityCourseController currentIdentityCtrl;
 
 	@Autowired
@@ -156,10 +170,10 @@ public class AssessmentIdentitiesCourseController extends FormBasicController {
 		filters.add(new FlexiTableFilter(translate("filter.done"), "done"));
 		tableEl.setFilters("", filters);
 
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		if(assessmentCallback.canAssessBusinessGoupMembers()) {
-			List<BusinessGroup> coachedGroups = null;;
+			List<BusinessGroup> coachedGroups = null;
 			if(assessmentCallback.isAdmin()) {
-				ICourse course = CourseFactory.loadCourse(courseEntry);
 				coachedGroups = course.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups();
 			} else {
 				coachedGroups = assessmentCallback.getCoachedGroups(); 
@@ -173,6 +187,11 @@ public class AssessmentIdentitiesCourseController extends FormBasicController {
 				
 				tableEl.setExtendedFilterButton(translate("filter.groups"), groupFilters);
 			}
+		}
+		
+		CourseConfig courseConfig = course.getCourseConfig();
+		if(courseConfig.isManualCertificationEnabled()) {
+			generateCertificateButton = uifactory.addFormLink("generate.certificate", formLayout, Link.BUTTON);
 		}
 	}
 	
@@ -249,6 +268,20 @@ public class AssessmentIdentitiesCourseController extends FormBasicController {
 		}
 		super.event(ureq, source, event);
 	}
+	
+	
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(wizardCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				removeAsListenerAndDispose(wizardCtrl);
+				wizardCtrl = null;
+			}
+		}
+		super.event(ureq, source, event);
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
@@ -264,9 +297,47 @@ public class AssessmentIdentitiesCourseController extends FormBasicController {
 				FlexiTableSearchEvent ftse = (FlexiTableSearchEvent)event;
 				loadModel(ftse.getSearch(), ftse.getFilters(), ftse.getExtendedFilters());
 			}
+		} else if(generateCertificateButton == source) {
+			doGenerateCertificates(ureq);
 		}
 		
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doGenerateCertificates(UserRequest ureq) {
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+
+		List<AssessedIdentityWrapper> datas = new ArrayList<>();
+		Certificates_1_SelectionStep start = new Certificates_1_SelectionStep(ureq, courseEntry, datas, course.hasAssessableNodes());
+		StepRunnerCallback finish = new StepRunnerCallback() {
+			@Override
+			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
+				@SuppressWarnings("unchecked")
+				List<CertificateInfos> assessedIdentitiesInfos = (List<CertificateInfos>)runContext.get("infos");
+				if(assessedIdentitiesInfos != null && assessedIdentitiesInfos.size() > 0) {
+					doGenerateCertificates(assessedIdentitiesInfos);
+					return StepsMainRunController.DONE_MODIFIED;
+				}
+				return StepsMainRunController.DONE_UNCHANGED;
+			}
+		};
+		
+		wizardCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("certificates.wizard.title"), "o_sel_certificates_wizard");
+		listenTo(wizardCtrl);
+		getWindowControl().pushAsModalDialog(wizardCtrl.getInitialComponent());
+	}
+	
+	private void doGenerateCertificates(List<CertificateInfos> assessedIdentitiesInfos) {
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		Long templateKey = course.getCourseConfig().getCertificateTemplate();
+		CertificateTemplate template = null;
+		if(templateKey != null) {
+			template = certificatesManager.getTemplateById(templateKey);
+		}
+		
+		MailerResult result = new MailerResult();
+		certificatesManager.generateCertificates(assessedIdentitiesInfos, courseEntry, template, result);
 	}
 	
 	private void doNext(UserRequest ureq) {

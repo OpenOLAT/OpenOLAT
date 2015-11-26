@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.taskexecutor.ui.TaskStatusRenderer;
@@ -54,7 +53,6 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.Structure;
@@ -64,9 +62,9 @@ import org.olat.course.assessment.model.BulkAssessmentDatas;
 import org.olat.course.assessment.model.BulkAssessmentFeedback;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
-import org.olat.repository.RepositoryManager;
-import org.olat.resource.OLATResource;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -83,19 +81,18 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 	private StepsMainRunController bulkAssessmentCtrl;
 	private DialogBoxController errorCtrl;
 	
-	private final OLATResourceable courseOres;
-	private final OLATResource courseRe;
-	private final UserManager userManager;
-	private final TaskExecutorManager taskManager;
+	private final RepositoryEntry courseEntry;
+	
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private TaskExecutorManager taskManager;
 	
 	private Task editedTask;
 	
-	public BulkAssessmentOverviewController(UserRequest ureq, WindowControl wControl, OLATResourceable courseOres) {
+	public BulkAssessmentOverviewController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry) {
 		super(ureq, wControl, "overview");
-		this.courseOres = courseOres;
-		courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(courseOres, false).getOlatResource();	
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
-		taskManager = CoreSpringFactory.getImpl(TaskExecutorManager.class);
+		this.courseEntry = courseEntry;
 		
 		initForm(ureq);
 	}
@@ -130,9 +127,9 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 	}
 	
 	private void reloadTaskModel() {
-		List<Task> tasks = taskManager.getTasks(courseRe);
+		List<Task> tasks = taskManager.getTasks(courseEntry.getOlatResource());
 		List<TaskData> taskDatas = new ArrayList<TaskData>(tasks.size());
-		ICourse course = CourseFactory.loadCourse(courseOres);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		Structure structure = course.getRunStructure();
 		
 		for(Task task:tasks) {
@@ -251,12 +248,12 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 		removeAsListenerAndDispose(bulkAssessmentCtrl);
 		
 		List<AssessableCourseNode> nodes = new ArrayList<>();
-		ICourse course = CourseFactory.loadCourse(courseOres);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		collectBulkAssessableCourseNode(course.getRunStructure().getRootNode(), nodes);
 
 		Step start;
 		if(nodes.size() > 1) {
-			start = new BulkAssessment_1_SelectCourseNodeStep(ureq, courseOres);
+			start = new BulkAssessment_1_SelectCourseNodeStep(ureq, courseEntry);
 		} else if(nodes.size() == 1){
 			start = new BulkAssessment_2_DatasStep(ureq, nodes.get(0));
 		} else {
@@ -339,7 +336,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 	}
 	
 	private Feedback doUpdateBulkAssessment(Task task, AssessableCourseNode node, Date scheduledDate, BulkAssessmentDatas datas) {
-		BulkAssessmentTask runnable = new BulkAssessmentTask(courseOres, node, datas, getIdentity().getKey());
+		BulkAssessmentTask runnable = new BulkAssessmentTask(courseEntry.getOlatResource(), node, datas, getIdentity().getKey());
 		Feedback feedback;
 		if(scheduledDate == null) {
 			List<BulkAssessmentFeedback> feedbacks = runnable.process();
@@ -355,13 +352,13 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 	}
 	
 	private Feedback doBulkAssessment(AssessableCourseNode node, Date scheduledDate, BulkAssessmentDatas datas) {
-		BulkAssessmentTask task = new BulkAssessmentTask(courseOres, node, datas, getIdentity().getKey());
+		BulkAssessmentTask task = new BulkAssessmentTask(courseEntry.getOlatResource(), node, datas, getIdentity().getKey());
 		Feedback feedback;
 		if(scheduledDate == null) {
 			List<BulkAssessmentFeedback> feedbacks = task.process();
 			feedback = new Feedback(true, feedbacks);
 		} else {
-			taskManager.execute(task, getIdentity(), courseRe, node.getIdent(), scheduledDate);
+			taskManager.execute(task, getIdentity(), courseEntry.getOlatResource(), node.getIdent(), scheduledDate);
 			feedback = new Feedback(false, null);
 		}
 		return feedback;

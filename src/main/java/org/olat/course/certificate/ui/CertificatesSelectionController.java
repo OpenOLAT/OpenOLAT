@@ -38,7 +38,6 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
@@ -50,6 +49,7 @@ import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +66,7 @@ public class CertificatesSelectionController extends StepFormBasicController {
 	private CertificatesSelectionDataModel tableModel;
 	
 	private final boolean hasAssessableNodes;
-	private final OLATResourceable courseOres;
+	private final RepositoryEntry courseEntry;
 	private final boolean isAdministrativeUser;
 	private final List<AssessedIdentityWrapper> datas;
 	
@@ -76,14 +76,14 @@ public class CertificatesSelectionController extends StepFormBasicController {
 	private BaseSecurityModule securityModule;
 	
 	public CertificatesSelectionController(UserRequest ureq, WindowControl wControl,
-			Form rootForm, StepsRunContext runContext, OLATResourceable courseOres,
+			Form rootForm, StepsRunContext runContext, RepositoryEntry courseEntry,
 			List<AssessedIdentityWrapper> datas, boolean hasAssessableNodes) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_BAREBONE, null);
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(AssessmentMainController.class, getLocale(), getTranslator()));
 		
 		this.datas = datas;
-		this.courseOres = courseOres;
+		this.courseEntry = courseEntry;
 		this.hasAssessableNodes = hasAssessableNodes;
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -106,10 +106,8 @@ public class CertificatesSelectionController extends StepFormBasicController {
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
 			boolean visible = userManager.isMandatoryUserProperty(AssessedIdentitiesTableDataModel.usageIdentifyer , userPropertyHandler);
-			if(visible) {
-				resultingPropertyHandlers.add(userPropertyHandler);
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos++));
-			}
+			resultingPropertyHandlers.add(userPropertyHandler);
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos++, false, null));
 		}
 		
 		if(hasAssessableNodes) {
@@ -120,7 +118,7 @@ public class CertificatesSelectionController extends StepFormBasicController {
 		tableModel = new CertificatesSelectionDataModel(columnsModel, resultingPropertyHandlers);
 
 		Set<Integer> preselectedRows = new HashSet<>();
-		ICourse course = CourseFactory.loadCourse(courseOres);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		CourseNode rootNode = course.getRunStructure().getRootNode();
 		List<CertificateInfos> infos = new ArrayList<CertificateInfos>(datas.size());
 		
