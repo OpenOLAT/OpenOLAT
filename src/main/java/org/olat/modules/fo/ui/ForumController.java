@@ -295,7 +295,7 @@ public class ForumController extends BasicController implements GenericEventList
 		viewCtrl = new MessageListController(ureq, bbwControl, forum, focallback);
 		viewCtrl.loadThread(ureq, thread);
 		viewCtrl.scrollTo(scrollTo);
-		viewCtrl.doShowMarked();
+		viewCtrl.doShowNew();
 		listenTo(viewCtrl);
 		putContent(viewCtrl);
 		addToHistory(ureq, viewCtrl);

@@ -268,7 +268,7 @@ public class SearchInputController extends FormBasicController implements Generi
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
+	public void formOK(UserRequest ureq) {
 		doSearch(ureq);
 	}
 	
@@ -278,7 +278,7 @@ public class SearchInputController extends FormBasicController implements Generi
 	}
 
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+	public void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == searchButton) {
 			doSearch(ureq);
 		} else if (didYouMeanLinks != null && didYouMeanLinks.contains(source)) {
@@ -289,10 +289,7 @@ public class SearchInputController extends FormBasicController implements Generi
 	}
 	
 	protected void doSearch(UserRequest ureq) {
-		if (resultCtlr != null) {
-			removeAsListenerAndDispose(resultCtlr);
-			resultCtlr = null;
-		}
+		if (resultCtlr != null) return;
 		
 		String oldSearchString = null;
 		Properties props = getPersistedSearch();
@@ -410,7 +407,7 @@ public class SearchInputController extends FormBasicController implements Generi
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
+	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == resultCtlr) {
 			if (event instanceof SearchEvent) {
 				SearchEvent goEvent = (SearchEvent)event;
@@ -420,6 +417,7 @@ public class SearchInputController extends FormBasicController implements Generi
 				setSearchString(resultCtlr.getSearchString());
 			}
 		} else if (source == searchDialogBox) {
+			cleanUp();
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
 	}
@@ -427,8 +425,15 @@ public class SearchInputController extends FormBasicController implements Generi
 	public void closeSearchDialogBox() {
 		if(searchDialogBox != null) {
 			searchDialogBox.deactivate();
-			searchDialogBox = null;
+			cleanUp();
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(searchDialogBox);
+		removeAsListenerAndDispose(resultCtlr);
+		searchDialogBox = null;
+		resultCtlr = null;
 	}
 	
 	/**
@@ -438,7 +443,7 @@ public class SearchInputController extends FormBasicController implements Generi
 	 */
 	public void gotoSearchResult(UserRequest ureq, ResultDocument document) {
 		try {
-		// attach the launcher data
+			// attach the launcher data
 			closeSearchDialogBox();
 			String url = document.getResourceUrl();
 			if(!StringHelper.containsNonWhitespace(url)) {
@@ -446,8 +451,8 @@ public class SearchInputController extends FormBasicController implements Generi
 				getWindowControl().setWarning(getTranslator().translate("error.resource.could.not.found"));
 			} else {
 				BusinessControl bc = BusinessControlFactory.getInstance().createFromString(url);
-			  WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
-			  NewControllerFactory.getInstance().launch(ureq, bwControl);
+				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+				NewControllerFactory.getInstance().launch(ureq, bwControl);
 			}
 		} catch (Exception ex) {
 			log.debug("Document not found");

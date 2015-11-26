@@ -26,6 +26,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -118,11 +119,11 @@ public class ThreadListController extends FormBasicController {
 			userListButton.setElementCssClass("o_sel_forum_filter");
 		}
 		
-		if(!guestOnly && formLayout instanceof FormLayoutContainer) {
+		if(formLayout instanceof FormLayoutContainer) {
 			SearchServiceUIFactory searchServiceUIFactory = (SearchServiceUIFactory)CoreSpringFactory.getBean(SearchServiceUIFactory.class);
 			searchController = searchServiceUIFactory.createInputController(ureq, getWindowControl(), DisplayOption.STANDARD, mainForm);
 			listenTo(searchController);
-			((FormLayoutContainer)formLayout).put("search_input", searchController.getInitialComponent());
+			((FormLayoutContainer)formLayout).add("search_input", searchController.getFormItem());
 		}
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -140,7 +141,8 @@ public class ThreadListController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(ThreadListCols.unreadMessages.i18nKey(), ThreadListCols.unreadMessages.ordinal(),
 					"unread", true, ThreadListCols.unreadMessages.name(), new StaticFlexiCellRenderer("unread", new TextFlexiCellRenderer())));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ThreadListCols.totalMessages.i18nKey(), ThreadListCols.totalMessages.ordinal()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ThreadListCols.totalMessages.i18nKey(), ThreadListCols.totalMessages.ordinal(),
+				true, ThreadListCols.totalMessages.name()));
 		
 		threadTableModel = new ThreadListDataModel(columnsModel, getTranslator());
 		threadTable = uifactory.addTableElement(getWindowControl(), "threads", threadTableModel, getTranslator(), formLayout);
@@ -170,6 +172,14 @@ public class ThreadListController extends FormBasicController {
 	}
 
 	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(searchController != null) {
+			searchController.event(ureq, source, event);
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(newThreadCtrl == source) {
 			if(event == Event.DONE_EVENT) {
@@ -181,6 +191,8 @@ public class ThreadListController extends FormBasicController {
 			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
+		} else if(searchController != null) {
+			//searchController.event(ureq, source, event);
 		}
 		super.event(ureq, source, event);
 	}
@@ -213,13 +225,17 @@ public class ThreadListController extends FormBasicController {
 					doSelectNew(ureq, row);
 				}
 			}
+		//propagate to the search controller
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//
+		//propagate to the search controller
+		/*if(searchController != null) {
+			searchController.formOK(ureq);
+		}*/
 	}
 	
 	private void doSelect(UserRequest ureq, MessageRef message) {

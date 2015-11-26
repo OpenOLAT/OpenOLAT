@@ -43,7 +43,7 @@ import org.olat.modules.fo.model.ForumThread;
 public class ThreadListDataModel extends DefaultFlexiTableDataModel<ForumThread>
 	implements SortableFlexiTableDataModel<ForumThread> {
 	
-	private Translator translator;
+	private final Translator translator;
 	
 	public ThreadListDataModel(FlexiTableColumnModel columnModel, Translator translator) {
 		super(columnModel);

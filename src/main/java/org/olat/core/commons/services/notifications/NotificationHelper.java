@@ -33,6 +33,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -132,7 +133,12 @@ public class NotificationHelper {
 			String[] properties = new String[propertyHandlers.size()];
 			for (int i = 0; i < propertyHandlers.size(); i++) {
 				UserPropertyHandler propHandler = propertyHandlers.get(i);
-				properties[i] = propHandler.getUserProperty(user, trans.getLocale());
+				String prop = propHandler.getUserProperty(user, trans.getLocale());
+				if(StringHelper.containsNonWhitespace(prop)) {
+					properties[i] = prop;
+				} else {
+					properties[i] = "-";
+				}
 			}
 			formattedName = trans.translate("user.formatted", properties);
 		}
