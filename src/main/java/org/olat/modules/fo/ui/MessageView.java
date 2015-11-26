@@ -88,7 +88,7 @@ public class MessageView extends MessageLightView {
 		this.formattedLastModified = formattedLastModified;
 	}
 
-	public boolean getNewMessage() {
+	public boolean isNewMessage() {
 		return newMessage;
 	}
 

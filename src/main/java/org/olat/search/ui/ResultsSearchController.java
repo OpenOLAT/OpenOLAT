@@ -116,7 +116,7 @@ public class ResultsSearchController extends SearchInputController {
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
+	public void formOK(UserRequest ureq) {
 		doSearch(ureq);
 	}
 	
@@ -126,7 +126,7 @@ public class ResultsSearchController extends SearchInputController {
 	}
 
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+	public void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == searchButton) {
 			doSearch(ureq);
 		} else if (didYouMeanLinks != null && didYouMeanLinks.contains(source)) {

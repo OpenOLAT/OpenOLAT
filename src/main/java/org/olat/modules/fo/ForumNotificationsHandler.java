@@ -45,6 +45,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.LogDelegator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -99,6 +100,10 @@ public class ForumNotificationsHandler extends LogDelegator implements Notificat
 					String name;
 					if(modifier != null) {
 						name = NotificationHelper.getFormatedName(modifier);
+					} else if(StringHelper.containsNonWhitespace(mInfo.getPseudonym())) {
+						name = mInfo.getPseudonym();
+					} else if(mInfo.isGuest()) {
+						name = translator.translate("anonymous.poster");
 					} else {
 						name = NotificationHelper.getFormatedName(creator);
 					}

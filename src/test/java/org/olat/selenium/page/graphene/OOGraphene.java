@@ -176,7 +176,7 @@ public class OOGraphene {
 	
 	public static final void waitAndCloseBlueMessageWindow(WebDriver browser) {
 		try {
-			OOGraphene.waitElement(closeBlueBoxButtonBy, 1, browser);
+			waitElement(closeBlueBoxButtonBy, 1, browser);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -188,10 +188,10 @@ public class OOGraphene {
 		for(WebElement closeButton:closeButtons) {
 			if(closeButton.isDisplayed()) {
 				try {
-					clickCloseButton(closeButton);
+					clickCloseButton(browser, closeButton);
 				} catch (TimeoutException e) {
 					try {
-						clickCloseButton(closeButton);
+						clickCloseButton(browser, closeButton);
 					} catch(Exception e2) {
 						//
 					}
@@ -200,10 +200,10 @@ public class OOGraphene {
 		}
 	}
 	
-	private static final void clickCloseButton(WebElement closeButton) {
+	private static final void clickCloseButton(WebDriver browser, WebElement closeButton) {
 		try {
 			closeButton.click();
-			Graphene.waitModel()
+			Graphene.waitModel(browser)
 				.withTimeout(1000, TimeUnit.MILLISECONDS)
 				.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS)
 				.until(new CloseAlertInfoPredicate());
@@ -211,4 +211,14 @@ public class OOGraphene {
 			//e.printStackTrace();
 		}
 	}
+	
+	/*public static void closeOffCanvas(WebDriver browser) {
+		By closeBy = By.cssSelector("a.o_offcanvas_close");
+		List<WebElement> closeButtons = browser.findElements(closeBy);
+		if(closeButtons.size() == 1 && closeButtons.get(0).isDisplayed()) {
+			closeButtons.get(0).click();
+			By bodyBy = By.xpath("//body[contains(@class,'o_offcanvas_right_visible')]");
+			OOGraphene.waitElementDisappears(bodyBy, 2, browser);
+		}	
+	}*/
 }

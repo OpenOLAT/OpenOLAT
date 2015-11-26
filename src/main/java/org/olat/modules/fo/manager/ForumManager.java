@@ -141,12 +141,6 @@ public class ForumManager {
 		return  dbQuery.getResultList();
 	}
 
-	public List<Long> getAllForumKeys(){
-		return dbInstance.getCurrentEntityManager()
-				.createNamedQuery("getAllForumKeys", Long.class)
-				.getResultList();
-	}
-
 	/**
 	 * 
 	 * @param forum_id
@@ -280,7 +274,10 @@ public class ForumManager {
 		  .append(" ) as numOfMessages")
 		  .append(" , (select max(replies.lastModified) from fomessage as replies")
 		  .append("  where replies.threadtop.key=msg.key and replies.forum.key=:forumKey")
-		  .append(" ) as lastModified");
+		  .append(" ) as lastModified")
+		  .append(" , (select count(read.key) from foreadmessage as read, fomessage as posts")
+		  .append("  where (posts.threadtop.key=msg.key or posts.key=msg.key) and read.message.key=posts.key and read.identity.key=:identityKey")
+		  .append(" ) as numOfReadMessages");
 		if(identity != null) {
 			sb.append(" ,(select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
 			  .append("   where mark.creator.key=:identityKey and mark.resId=:forumKey and msg.key = cast(mark.resSubPath as long) and mark.resName='Forum'")
@@ -293,10 +290,9 @@ public class ForumManager {
 
 		TypedQuery<Object[]> objectsQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
-				.setParameter("forumKey", forum.getKey());
-		if(identity != null) {
-			objectsQuery.setParameter("identityKey", identity.getKey());
-		}
+				.setParameter("forumKey", forum.getKey())
+				.setParameter("identityKey", identity.getKey());
+
 		
 		List<Object[]> objects = objectsQuery.getResultList();
 		List<ForumThread> threadList = new ArrayList<>(objects.size());
@@ -307,9 +303,13 @@ public class ForumManager {
 			int numOfMessages = numOfMessagesLong == null ? 1 : numOfMessagesLong.intValue() + 1;
 			String creator = userManager.getUserDisplayName(msg.getCreator());
 			ForumThread thread = new ForumThread(msg, creator, lastModifed, numOfMessages);
+
+			Number readMessages = (Number)object[3];
+			int numOfReadMessages = readMessages == null ? 0 : readMessages.intValue();
+			thread.setNewMessages(numOfMessages - numOfReadMessages);
 			
 			if(identity != null) {
-				Number numOfMarkedMessagesLong = (Number)object[3];
+				Number numOfMarkedMessagesLong = (Number)object[4];
 				int numOfMarkedMessages = numOfMarkedMessagesLong == null ? 0 : numOfMarkedMessagesLong.intValue();
 				thread.setMarkedMessages(numOfMarkedMessages);
 			}
@@ -345,20 +345,6 @@ public class ForumManager {
 				.setParameter("forumKey", forum.getKey())
 				.getResultList();
 		return pseudonyms == null || pseudonyms.isEmpty() ? null : pseudonyms.get(0);
-	}
-	
-	public MessageLight getLightMessageById(Long messageKey) {
-		StringBuilder query = new StringBuilder();
-		query.append("select msg from fomessage as msg")
-		     .append(" left join fetch msg.creator as creator")
-		     .append(" left join fetch msg.modifier as modifier")
-		     .append(" where msg.key=:messageKey ");
-		
-		List<MessageLight> messages = dbInstance.getCurrentEntityManager()
-				.createQuery(query.toString(), MessageLight.class)
-				.setParameter("messageKey", messageKey)
-				.getResultList();
-		return messages == null || messages.isEmpty() ? null : messages.get(0);
 	}
 	
 	public List<MessageLight> getLightMessagesByForum(Forum forum) {

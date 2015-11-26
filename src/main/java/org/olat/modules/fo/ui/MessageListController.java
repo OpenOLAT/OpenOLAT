@@ -1114,10 +1114,9 @@ public class MessageListController extends BasicController implements GenericEve
 		mainVC.contextPut("threadMode", Boolean.FALSE);
 		mainVC.contextPut("mode", "new");
 		
-		Set<Long> rms = forumManager.getReadSet(getIdentity(), forum);
 		List<MessageView> views = new ArrayList<>();
 		for(MessageView view:backupViews) {
-			if(!rms.contains(view.getKey())) {
+			if(view.isNewMessage()) {
 				views.add(view);
 			}
 		}

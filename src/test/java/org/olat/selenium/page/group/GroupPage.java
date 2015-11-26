@@ -49,6 +49,7 @@ public class GroupPage {
 	private static final By toolsBy = By.className("o_sel_collab_tools");
 	private static final By editDetails = By.className("o_sel_group_edit_title");
 	private static final By bookingConfigBy = By.className("o_sel_accesscontrol_create");
+	private static final By memberMenuItem = By.cssSelector("li.o_sel_group_members a");
 	
 	private WebDriver browser;
 	
@@ -148,30 +149,29 @@ public class GroupPage {
 		OOGraphene.waitBusy(browser);
 	}
 	
-	public GroupPage setVisibility(boolean owners, boolean participants, boolean waitingList) {	
+	public GroupPage setVisibility(boolean owners, boolean participants, boolean waitingList) {
 		if(owners) {
 			By showOwnersBy = By.cssSelector(".o_sel_group_show_owners input[type='checkbox']");
 			browser.findElement(showOwnersBy).click();
 			OOGraphene.waitBusy(browser);
-			OOGraphene.closeBlueMessageWindow(browser);
+			OOGraphene.waitElement(memberMenuItem, 2, browser);
 		}
 		
 		if(participants) {
 			By showParticipants = By.cssSelector(".o_sel_group_show_participants input[type='checkbox']");
 			browser.findElement(showParticipants).click();
 			OOGraphene.waitBusy(browser);
-			OOGraphene.closeBlueMessageWindow(browser);
+			OOGraphene.waitElement(memberMenuItem, 2, browser);
 		}
 		
 		if(waitingList) {
 			By showWaitingListBy = By.cssSelector(".o_sel_group_show_waiting_list input[type='checkbox']");
 			browser.findElement(showWaitingListBy).click();
 			OOGraphene.waitBusy(browser);
-			OOGraphene.closeBlueMessageWindow(browser);
+			OOGraphene.waitElement(memberMenuItem, 2, browser);
 		}
 		
 		OOGraphene.waitBusy(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
 		return this;
 	}
 	
@@ -276,9 +276,7 @@ public class GroupPage {
 	public GroupPage assertParticipantList() {
 		By participantListBy = By.id("o_sel_group_participants");
 		List<WebElement> participantListEl = browser.findElements(participantListBy);
-		if(participantListEl.size() == 0) {
-			System.out.println();
-		}
+		Assert.assertFalse(participantListEl.isEmpty());
 		return this;
 	}
 	

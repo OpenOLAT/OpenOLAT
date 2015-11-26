@@ -32,14 +32,14 @@ import org.olat.modules.fo.MessageRef;
  */
 public class ForumThread implements MessageRef {
 	
-	private int type;
-	private Long key;
-	private String title;
-	private Date lastModified;
+	private final int type;
+	private final Long key;
+	private final String title;
+	private final Date lastModified;
 	
-	private boolean guest;
-	private String pseudonym;
-	private String creatorFullname;
+	private final boolean guest;
+	private final String pseudonym;
+	private final String creatorFullname;
 	
 	private int markedMessages;
 	private int newMessages;
@@ -55,6 +55,7 @@ public class ForumThread implements MessageRef {
 			this.lastModified = lastModified;
 		}
 		this.guest = message.isGuest();
+		this.pseudonym = message.getPseudonym();
 		this.creatorFullname = creatorFullname;
 		this.numOfPosts = numOfPosts;
 	}

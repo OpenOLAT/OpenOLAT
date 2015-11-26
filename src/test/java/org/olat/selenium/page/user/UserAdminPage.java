@@ -123,6 +123,7 @@ public class UserAdminPage {
 		By saveBy = By.cssSelector(".o_sel_id_create button.btn-primary");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
 	

@@ -30,8 +30,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -51,9 +49,7 @@ import org.olat.modules.fo.Forum;
  */
 @Entity(name="forum")
 @Table(name="o_forum")
-@NamedQueries({
-	@NamedQuery(name="getAllForumKeys", query="select fo.key from forum as fo")
-})
+//@NamedQueries({})
 public class ForumImpl implements Forum, CreateInfo, Persistable{
 
 	private static final long serialVersionUID = 3240047228287740990L;
