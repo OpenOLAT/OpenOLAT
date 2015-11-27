@@ -100,8 +100,12 @@ public class ForumOpenXMLFormatter extends ForumFormatter {
 		StringBuilder creatorAndDate = new StringBuilder();
 		if(StringHelper.containsNonWhitespace(m.getPseudonym())) {
 			creatorAndDate.append(m.getPseudonym())
-			  .append(" ")
-			  .append(translator.translate("pseudonym.suffix"));
+			  .append(" ");
+			if(m.isGuest()) {
+				creatorAndDate.append(translator.translate("guest.suffix"));
+			} else {
+				creatorAndDate.append(translator.translate("pseudonym.suffix"));
+			}
 		} else if(m.isGuest()) {
 			creatorAndDate.append(translator.translate("guest"));
 		} else {

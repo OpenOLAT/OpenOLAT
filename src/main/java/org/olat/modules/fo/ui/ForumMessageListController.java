@@ -33,6 +33,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -165,13 +167,18 @@ public class ForumMessageListController extends FormBasicController implements F
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		List<FlexiTableSort> sorts = new ArrayList<>();
+		sorts.add(new FlexiTableSort(translate("natural.sort"), "natural"));
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(withType) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ForumMessageCols.type.i18nKey(), ForumMessageCols.type.ordinal(),
 				true, ForumMessageCols.type.name(), new StatusTypeCellRenderer()));
+			sorts.add(new FlexiTableSort(translate(ForumMessageCols.type.i18nKey()), ForumMessageCols.type.name()));
 		}
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(ForumMessageCols.thread.i18nKey(), ForumMessageCols.thread.ordinal(),
 				"select", true, ForumMessageCols.thread.name(), new StaticFlexiCellRenderer("select", new IndentCellRenderer())));
+		sorts.add(new FlexiTableSort(translate(ForumMessageCols.thread.i18nKey()), ForumMessageCols.thread.name()));
 		
 		int colPos = USER_PROPS_OFFSET;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -187,16 +194,24 @@ public class ForumMessageListController extends FormBasicController implements F
 			} else {
 				col = new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos, true, propName);
 			}
+
+			sorts.add(new FlexiTableSort(translate(userPropertyHandler.i18nColumnDescriptorLabelKey()), propName));
 			columnsModel.addFlexiColumnModel(col);
 			colPos++;
 		}
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ForumMessageCols.lastModified.i18nKey(), ForumMessageCols.lastModified.ordinal(),
 				true, ForumMessageCols.lastModified.name()));
+		sorts.add(new FlexiTableSort(translate(ForumMessageCols.lastModified.i18nKey()), ForumMessageCols.lastModified.name()));
 
 		dataModel = new ForumMessageDataModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "messages", dataModel, getTranslator(), formLayout);
 		tableEl.setRowCssDelegate(this);
+		
+		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
+		sortOptions.setFromColumnModel(false);
+		sortOptions.setSorts(sorts);
+		tableEl.setSortSettings(sortOptions);
 	}
 	
 	@Override

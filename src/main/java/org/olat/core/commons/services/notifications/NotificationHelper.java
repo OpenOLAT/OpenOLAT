@@ -107,12 +107,9 @@ public class NotificationHelper {
 	 * @return
 	 */
 	public static String getFormatedName(Identity ident) {
-		Translator trans;
-		User user = null;
-		String formattedName = null;
-		
+		String formattedName;
 		if (ident == null) {
-			trans = Util.createPackageTranslator(NotificationNewsController.class, I18nManager.getInstance().getLocaleOrDefault(null));
+			Translator trans = Util.createPackageTranslator(NotificationNewsController.class, I18nManager.getInstance().getLocaleOrDefault(null));
 			return trans.translate("user.unknown");
 		} else {
 			// Optimize: use from cache to not re-calculate user properties over and over again
@@ -121,10 +118,10 @@ public class NotificationHelper {
 				return formattedName;
 			}
 		}
-		trans = Util.createPackageTranslator(NotificationNewsController.class, I18nManager.getInstance().getLocaleOrDefault(
-				ident.getUser().getPreferences().getLanguage()));
-		user = ident.getUser();
 		
+		Translator trans = Util.createPackageTranslator(NotificationNewsController.class, I18nManager.getInstance().getLocaleOrDefault(
+				ident.getUser().getPreferences().getLanguage()));
+		User user = ident.getUser();
 		if (user == null) {
 			formattedName =  trans.translate("user.unknown");
 		} else {
@@ -144,7 +141,6 @@ public class NotificationHelper {
 		}
 		// put formatted name in cache, times out after 5 mins
 		userPropertiesCache.put(ident.getKey(), formattedName);
-		
 		return formattedName;
 	}
 

@@ -377,7 +377,7 @@ public class MessageListController extends BasicController implements GenericEve
 
 		MessageView view = new MessageView(message, userPropertyHandlers, getLocale());
 		view.setNumOfChildren(0);
-		addMessageToCurrentMessagesAndVC(ureq, message, view, backupViews.size(), marks, stats, artefactStats, rms);
+		addMessageToCurrentMessagesAndVC(ureq, message, view, marks, stats, artefactStats, rms);
 		return view;
 	}
 	
@@ -432,10 +432,9 @@ public class MessageListController extends BasicController implements GenericEve
 			}
 		}
 		
-		int msgNum = 0;
 		//append ui things
 		for (MessageLight msg: messages) {
-			addMessageToCurrentMessagesAndVC(ureq, msg, keyToViews.get(msg.getKey()), msgNum++, marks, stats, artefactStats, rms);
+			addMessageToCurrentMessagesAndVC(ureq, msg, keyToViews.get(msg.getKey()), marks, stats, artefactStats, rms);
 		}
 		
 		mainVC.contextPut("messages", views);
@@ -473,7 +472,7 @@ public class MessageListController extends BasicController implements GenericEve
 		}
 	}
 	
-	private void addMessageToCurrentMessagesAndVC(UserRequest ureq, MessageLight m, MessageView messageView, int msgCount,
+	private void addMessageToCurrentMessagesAndVC(UserRequest ureq, MessageLight m, MessageView messageView,
 			Map<String,Mark> marks, Map<String,MarkResourceStat> stats, Map<String,Long> artefactStats,
 			Set<Long> readSet) {
 		
@@ -544,44 +543,43 @@ public class MessageListController extends BasicController implements GenericEve
 		  
 			// Add link with username that is clickable
 			String creatorFullName = StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayName(creator));
-			Link visitingCardLink = LinkFactory.createCustomLink("vc_"+msgCount, "vc_"+msgCount, creatorFullName, Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, mainVC, this);
+			Link visitingCardLink = LinkFactory.createCustomLink("vc_".concat(keyString), "vc", creatorFullName, Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, mainVC, this);
 			visitingCardLink.setUserObject(messageView);
-			
 			LinkPopupSettings settings = new LinkPopupSettings(800, 600, "_blank");
 			visitingCardLink.setPopup(settings);
 		}
 
 		if(!isThreadClosed) {
 			if((numOfChildren == 0 && userIsMsgCreator) || foCallback.mayDeleteMessageAsModerator()) {
-				Link deleteLink = LinkFactory.createCustomLink("dl_"+msgCount, "dl_"+msgCount, "msg.delete", Link.BUTTON_SMALL, mainVC, this);
+				Link deleteLink = LinkFactory.createCustomLink("dl_".concat(keyString), "dl", "msg.delete", Link.BUTTON_SMALL, mainVC, this);
 				deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 				deleteLink.setUserObject(messageView);
 			}
 			
 			if((numOfChildren == 0 && userIsMsgCreator) || foCallback.mayEditMessageAsModerator()) {
-				Link editLink = LinkFactory.createCustomLink("ed_"+msgCount, "ed_"+msgCount, "msg.update", Link.BUTTON_SMALL, mainVC, this);
+				Link editLink = LinkFactory.createCustomLink("ed_".concat(keyString), "ed", "msg.update", Link.BUTTON_SMALL, mainVC, this);
 				editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 				editLink.setUserObject(messageView);
 			}
 			
 			if(foCallback.mayReplyMessage()) {
-				Link quoteLink = LinkFactory.createCustomLink("qt_"+msgCount, "qt_"+msgCount, "msg.quote", Link.BUTTON_SMALL, mainVC, this);
+				Link quoteLink = LinkFactory.createCustomLink("qt_".concat(keyString), "qt", "msg.quote", Link.BUTTON_SMALL, mainVC, this);
 				quoteLink.setElementCssClass("o_sel_forum_reply_quoted");
 				quoteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reply_with_quote");
 				quoteLink.setUserObject(messageView);
 				
-				Link replyLink = LinkFactory.createCustomLink("rp_"+msgCount, "rp_"+msgCount, "msg.reply", Link.BUTTON_SMALL, mainVC, this);
+				Link replyLink = LinkFactory.createCustomLink("rp_".concat(keyString), "rp", "msg.reply", Link.BUTTON_SMALL, mainVC, this);
 				replyLink.setElementCssClass("o_sel_forum_reply");
 				replyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reply");
 				replyLink.setUserObject(messageView);
 			}
 			
 			if(foCallback.mayEditMessageAsModerator() && !threadTop) {
-				Link splitLink = LinkFactory.createCustomLink("split_"+msgCount, "split_"+msgCount, "msg.split", Link.LINK, mainVC, this);
+				Link splitLink = LinkFactory.createCustomLink("split_".concat(keyString), "split", "msg.split", Link.LINK, mainVC, this);
 				splitLink.setIconLeftCSS("o_icon o_icon-fw o_icon_split");
 				splitLink.setUserObject(messageView);
 				
-				Link moveLink = LinkFactory.createCustomLink("move_"+msgCount, "move_"+msgCount, "msg.move", Link.LINK, mainVC, this);
+				Link moveLink = LinkFactory.createCustomLink("move_".concat(keyString), "move", "msg.move", Link.LINK, mainVC, this);
 				moveLink.setIconLeftCSS("o_icon o_icon-fw o_icon_move");
 				moveLink.setUserObject(messageView);
 			}
@@ -594,7 +592,7 @@ public class MessageListController extends BasicController implements GenericEve
 					getWindowControl().getBusinessControl().getAsString() + "[Message:" + m.getKey() + "]"
 					: currentMark.getBusinessPath();
 			Controller markCtrl = markingService.getMarkController(ureq, getWindowControl(), currentMark, stat, forumOres, keyString, businessPath);
-			mainVC.put("mark_" + msgCount, markCtrl.getInitialComponent());
+			mainVC.put("mark_".concat(keyString), markCtrl.getInitialComponent());
 		}
 		
 		if(userIsMsgCreator && !StringHelper.containsNonWhitespace(m.getPseudonym())) {

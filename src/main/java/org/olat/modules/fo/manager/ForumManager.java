@@ -199,7 +199,7 @@ public class ForumManager {
 	private List<Message> getMessagesByForumID(Long forumKey, int firstResult, int maxResults, boolean onlyThreads, Message.OrderBy orderBy, boolean asc) {
 		StringBuilder query = new StringBuilder();
 		query.append("select msg from fomessage as msg")
-		     .append(" inner join fetch msg.creator as creator")
+		     .append(" left join fetch msg.creator as creator")
 		     .append(" where msg.forum.key=:forumKey ");
 		if(onlyThreads) {
 			query.append(" and msg.parent is null");
@@ -279,8 +279,9 @@ public class ForumManager {
 		  .append("  where (posts.threadtop.key=msg.key or posts.key=msg.key) and read.message.key=posts.key and read.identity.key=:identityKey")
 		  .append(" ) as numOfReadMessages");
 		if(identity != null) {
-			sb.append(" ,(select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
-			  .append("   where mark.creator.key=:identityKey and mark.resId=:forumKey and msg.key = cast(mark.resSubPath as long) and mark.resName='Forum'")
+			sb.append(" ,(select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark, fomessage as mposts ")
+			  .append("   where mark.creator.key=:identityKey and mark.resId=:forumKey and (mposts.threadtop.key=msg.key or mposts.key=msg.key)")
+			  .append("    and mposts.key=cast(mark.resSubPath as long) and mark.resName='Forum'")
 			  .append(" ) as marks");
 		}
 		
