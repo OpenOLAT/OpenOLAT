@@ -389,6 +389,14 @@ public class ForumManager {
 				.getResultList();
 	}
 	
+	/**
+	 * Return the messages of a user written under it's own name
+	 * (not under a pseudonym).
+	 * 
+	 * @param forum
+	 * @param user
+	 * @return
+	 */
 	public List<MessageLight> getLightMessagesByUser(Forum forum, IdentityRef user) {
 		StringBuilder query = new StringBuilder();
 		query.append("select msg from folightmessage as msg")
@@ -404,6 +412,15 @@ public class ForumManager {
 				.getResultList();
 	}
 	
+	/**
+	 * Return the messages of a specified user under a specific
+	 * pseudonym.
+	 * 
+	 * @param forum
+	 * @param user
+	 * @param pseudonym
+	 * @return
+	 */
 	public List<MessageLight> getLightMessagesByUserUnderPseudo(Forum forum, IdentityRef user, String pseudonym) {
 		StringBuilder query = new StringBuilder();
 		query.append("select msg from folightmessage as msg")
