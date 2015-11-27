@@ -218,6 +218,18 @@ public class ForumManager {
 		return dbQuery.getResultList();
 	}
 	
+	public List<Message> getMessageChildren(Message parentMessage) {
+		StringBuilder query = new StringBuilder();
+		query.append("select msg from fomessage as msg")
+		     .append(" inner join msg.parent as parentMsg")
+		     .append(" where parentMsg.key=:parentKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query.toString(), Message.class)
+				.setParameter("parentKey", parentMessage.getKey())
+				.getResultList();
+		
+	}
+	
 	private int countMessagesByForumID(Long forumKey, boolean onlyThreads) {
 		StringBuilder query = new StringBuilder();
 		query.append("select count(msg) from fomessage as msg")
@@ -876,31 +888,34 @@ public class ForumManager {
 	 * @return the moved message
 	 */
 	public Message moveMessage(Message msg, Message topMsg) {
-		List<Message> oldThreadList = getThread(msg.getThreadtop().getKey());
-		List<Message> subThreadList = new ArrayList<Message>();
-		getSubthread(msg, oldThreadList, subThreadList);
-		// one has to set a new parent for all childs of the moved message
+		// one has to set a new parent for all children of the moved message
 		// first message of sublist has to get the parent from the moved message
-		for (Message childMessage : subThreadList) {
-			childMessage = getMessageById(childMessage.getKey());
-			childMessage.setParent(msg.getParent());
-			updateMessage(childMessage, false);
+		List<Message> children = getMessageChildren(msg);
+		for (Message child : children) {
+			child.setParent(msg.getParent());
+			dbInstance.getCurrentEntityManager().merge(child);
 		}
 		
-		// now move the message to the choosen thread
+		// now move the message to the chosen thread
+		Message targetThread = topMsg.getThreadtop();
+		if(targetThread == null) {
+			targetThread = topMsg;
+		}
+
 		final Message oldMessage = getMessageById(msg.getKey());
 		Message message = createMessage(oldMessage.getForum(), oldMessage.getCreator(), oldMessage.isGuest());
+		((MessageImpl)message).setCreationDate(oldMessage.getCreationDate());
+		message.setLastModified(oldMessage.getLastModified());
 		message.setModifier(oldMessage.getModifier());
-		message.setLastModified(oldMessage.getLastModified()); // OLAT-6295
 		message.setTitle(oldMessage.getTitle());
 		message.setBody(oldMessage.getBody());
 		message.setPseudonym(oldMessage.getPseudonym());
-		message.setThreadtop(topMsg);
+		message.setThreadtop(targetThread);
 		message.setParent(topMsg);
 		Status status = Status.getStatus(oldMessage.getStatusCode());
 		status.setMoved(true);
 		message.setStatusCode(Status.getStatusCode(status));
-		saveMessage(message);
+		message = saveMessage(message);
 		
 		//move marks
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Forum.class, msg.getForum().getKey());

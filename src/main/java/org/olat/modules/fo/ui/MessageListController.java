@@ -656,22 +656,22 @@ public class MessageListController extends BasicController implements GenericEve
 			String command = link.getCommand();
 			Object uobject = link.getUserObject();
 
-			if (command.startsWith("qt_")) {
+			if (command.startsWith("qt")) {
 				doReply(ureq, (MessageView)uobject, true);
-			} else if (command.startsWith("rp_")) {
+			} else if (command.startsWith("rp")) {
 				doReply(ureq, (MessageView)uobject, false);
-			} else if (command.startsWith("dl_")) {
+			} else if (command.startsWith("dl")) {
 				doConfirmDeleteMessage(ureq, (MessageView)uobject);
-			} else if (command.startsWith("ed_")) {
+			} else if (command.startsWith("ed")) {
 				doEditMessage(ureq, (MessageView)uobject);
-			}	else if (command.startsWith("split_")) {
+			}	else if (command.startsWith("split")) {
 				doConfirmSplit(ureq, (MessageView)uobject);
-			} else if (command.startsWith("move_")) {
+			} else if (command.startsWith("move")) {
 				doMoveMessage(ureq, (MessageView)uobject);
 			}
 		} else if(mainVC == source) {
 			String cmd = event.getCommand();
-			if (cmd.startsWith("attachment_")) {
+			if (cmd.startsWith("attachment")) {
 				doDeliverAttachment(ureq, cmd);
 			}
 		}
@@ -1146,6 +1146,7 @@ public class MessageListController extends BasicController implements GenericEve
 			Message parentMessage = forumManager.getMessageById(parentMessageKey);
 			message = forumManager.moveMessage(message, parentMessage);
 			markRead(message);
+			DBFactory.getInstance().commit();//commit before sending event
 			
 			ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_MESSAGE_MOVE, getClass(), LoggingResourceable.wrap(message));
 			Long threadKey = parentMessage.getThreadtop() == null ? parentMessage.getKey() : parentMessage.getThreadtop().getKey();
