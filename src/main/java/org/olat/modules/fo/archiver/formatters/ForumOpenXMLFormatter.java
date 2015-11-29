@@ -98,6 +98,7 @@ public class ForumOpenXMLFormatter extends ForumFormatter {
 		MessageNode m = (MessageNode) node;
 		
 		StringBuilder creatorAndDate = new StringBuilder();
+		Identity creator = m.getCreator();
 		if(StringHelper.containsNonWhitespace(m.getPseudonym())) {
 			creatorAndDate.append(m.getPseudonym())
 			  .append(" ");
@@ -108,17 +109,19 @@ public class ForumOpenXMLFormatter extends ForumFormatter {
 			}
 		} else if(m.isGuest()) {
 			creatorAndDate.append(translator.translate("guest"));
-		} else {
-			creatorAndDate.append(m.getCreator().getUser().getProperty(UserConstants.FIRSTNAME, null));
+		} else if(creator != null) {
+			creatorAndDate.append(creator.getUser().getProperty(UserConstants.FIRSTNAME, null));
 			creatorAndDate.append(" ");
-			creatorAndDate.append(m.getCreator().getUser().getProperty(UserConstants.LASTNAME, null));
+			creatorAndDate.append(creator.getUser().getProperty(UserConstants.LASTNAME, null));
+		} else {
+			creatorAndDate.append("???");
 		}
 		creatorAndDate.append(" ");
 		creatorAndDate.append(formatter.formatDateAndTime(m.getCreationDate()));
 
 		if (isTopThread) {
 			document.appendHeading1(m.getTitle(), creatorAndDate.toString());
-			this.isTopThread = false;
+			isTopThread = false;
 		} else {
 			document.appendHeading2(m.getTitle(), creatorAndDate.toString());
 		}
@@ -126,16 +129,29 @@ public class ForumOpenXMLFormatter extends ForumFormatter {
 		Identity modifier = m.getModifier();
 		if (modifier != null) {
 			StringBuilder modSb = new StringBuilder();
-			modSb.append(translator.translate("msg.modified")).append(": ")
-			     .append(modifier.getUser().getProperty(UserConstants.FIRSTNAME, null))
-			     .append(" ")
-			     .append(modifier.getUser().getProperty(UserConstants.LASTNAME,  null))
-			     .append(" ")
-			     .append(formatter.formatDateAndTime(m.getModifiedDate()));
+			if(modifier.equals(creator) && StringHelper.containsNonWhitespace(m.getPseudonym())) {
+				modSb.append(m.getPseudonym())
+				  .append(" ");
+				if(m.isGuest()) {
+					modSb.append(translator.translate("guest.suffix"));
+				} else {
+					modSb.append(translator.translate("pseudonym.suffix"));
+				}
+			} else {
+				modSb.append(translator.translate("msg.modified")).append(": ")
+				     .append(modifier.getUser().getProperty(UserConstants.FIRSTNAME, null))
+				     .append(" ")
+				     .append(modifier.getUser().getProperty(UserConstants.LASTNAME,  null))
+				     .append(" ")
+				     .append(formatter.formatDateAndTime(m.getModifiedDate()));
+			}
 			document.appendSubtitle(modSb.toString());
 		}
 		
 		String body = m.getBody();
+		if(body != null) {
+			body = body.replace("<p>&nbsp;", "<p>");
+		}
 		document.appendHtmlText(body, new Spacing(180, 0));
 		
 		// message attachments

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.fo.ui;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityModule;
@@ -53,6 +54,7 @@ import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
 import org.olat.modules.fo.Message;
 import org.olat.modules.fo.MessageRef;
+import org.olat.modules.fo.Status;
 import org.olat.modules.fo.archiver.formatters.ForumDownloadResource;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.fo.model.ForumThread;
@@ -158,6 +160,14 @@ public class ThreadListController extends FormBasicController {
 	public void loadModel() {
 		Identity identity = guestOnly ? null : getIdentity();
 		List<ForumThread> threads = forumManager.getForumThreads(forum, identity);
+		if(!foCallback.mayEditMessageAsModerator()) {
+			for(Iterator<ForumThread> threadIt=threads.iterator(); threadIt.hasNext(); ) {
+				if(Status.getStatus(threadIt.next().getStatusCode()).isHidden()) {
+					threadIt.remove();
+				}
+			}	
+		}
+		
 		threadTableModel.setObjects(threads);
 		threadTableModel.sort(new SortKey(ThreadListCols.thread.name(), true));
 		threadTable.reloadData();

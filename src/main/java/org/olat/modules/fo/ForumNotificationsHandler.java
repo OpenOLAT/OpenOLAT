@@ -99,7 +99,11 @@ public class ForumNotificationsHandler extends LogDelegator implements Notificat
 					
 					String name;
 					if(modifier != null) {
-						name = NotificationHelper.getFormatedName(modifier);
+						if(modifier.equals(creator) && StringHelper.containsNonWhitespace(mInfo.getPseudonym())) {
+							name = mInfo.getPseudonym();
+						} else {
+							name = NotificationHelper.getFormatedName(modifier);
+						}
 					} else if(StringHelper.containsNonWhitespace(mInfo.getPseudonym())) {
 						name = mInfo.getPseudonym();
 					} else if(mInfo.isGuest()) {

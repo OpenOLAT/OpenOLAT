@@ -1146,7 +1146,7 @@ public class CourseTest {
 	 */
 	@Test
 	@RunAsClient
-	public void concurrentForum(@InitialPage LoginPage loginPage,
+	public void forum_concurrent(@InitialPage LoginPage loginPage,
 			@Drone @Participant WebDriver kanuBrowser,
 			@Drone @Student WebDriver reiBrowser)
 	throws IOException, URISyntaxException {

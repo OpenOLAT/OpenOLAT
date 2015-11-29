@@ -490,17 +490,21 @@ public class MessageListController extends BasicController implements GenericEve
 		// add some data now
 		messageView.setFormattedCreationDate(formatter.formatDateAndTime(m.getCreationDate()));
 		messageView.setFormattedLastModified(formatter.formatDateAndTime(m.getLastModified()));
-		
+
+		Identity creator = m.getCreator();
 		Identity modifier = m.getModifier();
 		if (modifier != null) {
 			messageView.setModified(true);
-			messageView.setModifierFirstName(modifier.getUser().getProperty(UserConstants.FIRSTNAME, getLocale()));
-			messageView.setModifierLastName(modifier.getUser().getProperty(UserConstants.LASTNAME, getLocale()));
+			if(modifier.equals(creator) && StringHelper.containsNonWhitespace(m.getPseudonym())) {
+				messageView.setModifierPseudonym(m.getPseudonym());
+			} else {
+				messageView.setModifierFirstName(modifier.getUser().getProperty(UserConstants.FIRSTNAME, getLocale()));
+				messageView.setModifierLastName(modifier.getUser().getProperty(UserConstants.LASTNAME, getLocale()));
+			}
 		} else {
 			messageView.setModified(false);
 		}
 		
-		Identity creator = m.getCreator();
 		boolean userIsMsgCreator = false;
 		//keeps the first 15 chars
 		if(creator != null) {
@@ -535,9 +539,9 @@ public class MessageListController extends BasicController implements GenericEve
 		}
 		messageView.setClosed(isThreadClosed);
 		
-		if(!guestOnly && !m.isGuest() && !StringHelper.containsNonWhitespace(m.getPseudonym())) {
+		if(!guestOnly && !m.isGuest() && creator != null && !StringHelper.containsNonWhitespace(m.getPseudonym())) {
 			// add portrait to map for later disposal and key for rendering in velocity
-			DisplayPortraitController portrait = new DisplayPortraitController(ureq, getWindowControl(), m.getCreator(), true, true, false, true);
+			DisplayPortraitController portrait = new DisplayPortraitController(ureq, getWindowControl(), creator, true, true, false, true);
 			messageView.setPortrait(portrait);
 			mainVC.put("portrait_".concat(keyString), portrait.getInitialComponent());
 		  

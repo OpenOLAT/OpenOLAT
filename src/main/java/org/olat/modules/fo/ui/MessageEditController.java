@@ -370,11 +370,7 @@ public class MessageEditController extends FormBasicController {
 		// set values from form to message
 		message.setTitle(titleEl.getValue());
 		String body = bodyEl.getValue();
-		
-		String tinyBlanc = "<p>&nbsp;";
-		if(body.startsWith(tinyBlanc)) {
-			body = "<p>" + body.substring(tinyBlanc.length(), body.length());
-		}
+		body = body.replace("<p>&nbsp;", "<p>");
 
 		message.setBody(body.trim());
 		if(usePseudonymEl != null && (usePseudonymEl.isAtLeastSelected(1) || guestOnly)) {

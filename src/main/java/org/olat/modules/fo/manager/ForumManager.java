@@ -170,20 +170,7 @@ public class ForumManager {
 	 */
 	public List<Message> getMessagesByForum(Forum forum){
 		if (forum == null) return new ArrayList<Message>(0); // fxdiff: while indexing it can somehow occur, that forum is null!
-		return getMessagesByForumID(forum.getKey(),  0, -1, null, true);
-	}
-	
-	/**
-	 * 
-	 * @param forum_id
-	 * @param start
-	 * @param limit
-	 * @param orderBy
-	 * @param asc
-	 * @return
-	 */
-	public List<Message> getMessagesByForumID(Long forum_id, int firstResult, int maxResults, Message.OrderBy orderBy, boolean asc) {
-		return getMessagesByForumID(forum_id, firstResult, maxResults, false, orderBy, asc);
+		return getMessagesByForumID(forum.getKey(),  0, -1, false, null, true);
 	}
 	
 	/**
@@ -286,12 +273,13 @@ public class ForumManager {
 		  .append(" ) as numOfMessages")
 		  .append(" , (select max(replies.lastModified) from fomessage as replies")
 		  .append("  where replies.threadtop.key=msg.key and replies.forum.key=:forumKey")
-		  .append(" ) as lastModified")
-		  .append(" , (select count(read.key) from foreadmessage as read, fomessage as posts")
-		  .append("  where (posts.threadtop.key=msg.key or posts.key=msg.key) and read.message.key=posts.key and read.identity.key=:identityKey")
-		  .append(" ) as numOfReadMessages");
+		  .append(" ) as lastModified");
+
 		if(identity != null) {
-			sb.append(" ,(select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark, fomessage as mposts ")
+			sb.append(" , (select count(read.key) from foreadmessage as read, fomessage as posts")
+			  .append("  where (posts.threadtop.key=msg.key or posts.key=msg.key) and read.message.key=posts.key and read.identity.key=:identityKey")
+			  .append(" ) as numOfReadMessages")
+			  .append(" ,(select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark, fomessage as mposts ")
 			  .append("   where mark.creator.key=:identityKey and mark.resId=:forumKey and (mposts.threadtop.key=msg.key or mposts.key=msg.key)")
 			  .append("    and mposts.key=cast(mark.resSubPath as long) and mark.resName='Forum'")
 			  .append(" ) as marks");
@@ -303,10 +291,11 @@ public class ForumManager {
 
 		TypedQuery<Object[]> objectsQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
-				.setParameter("forumKey", forum.getKey())
-				.setParameter("identityKey", identity.getKey());
+				.setParameter("forumKey", forum.getKey());
+		if(identity != null) {
+			objectsQuery.setParameter("identityKey", identity.getKey());
+		}
 
-		
 		List<Object[]> objects = objectsQuery.getResultList();
 		List<ForumThread> threadList = new ArrayList<>(objects.size());
 		for(Object[] object:objects) {
@@ -317,11 +306,11 @@ public class ForumManager {
 			String creator = userManager.getUserDisplayName(msg.getCreator());
 			ForumThread thread = new ForumThread(msg, creator, lastModifed, numOfMessages);
 
-			Number readMessages = (Number)object[3];
-			int numOfReadMessages = readMessages == null ? 0 : readMessages.intValue();
-			thread.setNewMessages(numOfMessages - numOfReadMessages);
-			
 			if(identity != null) {
+				Number readMessages = (Number)object[3];
+				int numOfReadMessages = readMessages == null ? 0 : readMessages.intValue();
+				thread.setNewMessages(numOfMessages - numOfReadMessages);
+
 				Number numOfMarkedMessagesLong = (Number)object[4];
 				int numOfMarkedMessages = numOfMarkedMessagesLong == null ? 0 : numOfMarkedMessagesLong.intValue();
 				thread.setMarkedMessages(numOfMarkedMessages);
@@ -851,31 +840,23 @@ public class ForumManager {
 		} else {	
 			//it only make sense to split a thread if the current message is not a threadtop message.	
 			List<Message> threadList = getThread(msg.getThreadtop().getKey());
-			List<Message> subthreadList = new ArrayList<Message>();
-			subthreadList.add(msg);
+			List<Message> subthreadList = new ArrayList<>();
 			getSubthread(msg, threadList, subthreadList);
 
-			Iterator<Message> messageIterator = subthreadList.iterator();
-			Message firstMessage = null;
-			if (messageIterator.hasNext()) {
-				firstMessage = messageIterator.next();
-				firstMessage = getMessageById(firstMessage.getKey());
-				firstMessage.setParent(null);
-				firstMessage.setThreadtop(null);
-				updateMessage(firstMessage, false);
-				newTopMessage = firstMessage;
-			}
-			while (firstMessage != null && messageIterator.hasNext()) {
-				Message message = messageIterator.next();
-				message = getMessageById(firstMessage.getKey());
-				message.setThreadtop(firstMessage);
-				updateMessage(message, false);
+			newTopMessage = getMessageById(msg.getKey());
+			newTopMessage.setParent(null);
+			newTopMessage.setThreadtop(null);
+			newTopMessage = dbInstance.getCurrentEntityManager().merge(newTopMessage);
+
+			for(Message message : subthreadList) {
+				message.setThreadtop(newTopMessage);
+				message = dbInstance.getCurrentEntityManager().merge(message);
 			}
 
 			dbInstance.commit();// before sending async event
 			ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.SPLIT, newTopMessage.getKey(), null, null);
 			CoordinatorManager.getInstance().getCoordinator().getEventBus()
-				.fireEventToListenersOf(event, firstMessage.getForum());
+				.fireEventToListenersOf(event, newTopMessage.getForum());
 		}		
 		return newTopMessage;
 	}

@@ -45,6 +45,7 @@ public class MessageView extends MessageLightView {
 	private boolean modified;
 	private String modifierFirstName;
 	private String modifierLastName;
+	private String modifierPseudonym;
 	
 	private String creatorFirstname;
 	private String creatorLastname;
@@ -150,6 +151,14 @@ public class MessageView extends MessageLightView {
 
 	public void setModifierLastName(String modifierLastName) {
 		this.modifierLastName = modifierLastName;
+	}
+
+	public String getModifierPseudonym() {
+		return modifierPseudonym;
+	}
+
+	public void setModifierPseudonym(String modifierPseudonym) {
+		this.modifierPseudonym = modifierPseudonym;
 	}
 
 	public boolean isAuthor() {

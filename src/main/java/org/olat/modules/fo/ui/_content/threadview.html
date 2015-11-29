@@ -105,7 +105,13 @@
 			#if($message.modified || $message.moved)
 			<div class="o_modified">
 				#if($message.modified)
-		   			$r.translate("msg.modified"): $r.escapeHtml($message.modifierFirstName) $r.escapeHtml($message.modifierLastName) $message.formattedLastModified
+					$r.translate("msg.modified"):
+					#if($message.modifierPseudonym && !${message.modifierPseudonym.isEmpty()})
+						$r.escapeHtml($message.modifierPseudonym)
+					#else
+		   				$r.escapeHtml($message.modifierFirstName) $r.escapeHtml($message.modifierLastName)
+		   			#end
+		   			$message.formattedLastModified
 		   		#end
 		   		#if($message.moved)
 		   			$r.translate("msg.moved")
