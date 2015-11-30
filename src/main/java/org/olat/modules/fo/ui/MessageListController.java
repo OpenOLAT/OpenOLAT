@@ -377,7 +377,7 @@ public class MessageListController extends BasicController implements GenericEve
 
 		MessageView view = new MessageView(message, userPropertyHandlers, getLocale());
 		view.setNumOfChildren(0);
-		addMessageToCurrentMessagesAndVC(ureq, message, view, backupViews.size(), marks, stats, artefactStats, rms);
+		addMessageToCurrentMessagesAndVC(ureq, message, view, marks, stats, artefactStats, rms);
 		return view;
 	}
 	
@@ -432,10 +432,9 @@ public class MessageListController extends BasicController implements GenericEve
 			}
 		}
 		
-		int msgNum = 0;
 		//append ui things
 		for (MessageLight msg: messages) {
-			addMessageToCurrentMessagesAndVC(ureq, msg, keyToViews.get(msg.getKey()), msgNum++, marks, stats, artefactStats, rms);
+			addMessageToCurrentMessagesAndVC(ureq, msg, keyToViews.get(msg.getKey()), marks, stats, artefactStats, rms);
 		}
 		
 		mainVC.contextPut("messages", views);
@@ -473,7 +472,7 @@ public class MessageListController extends BasicController implements GenericEve
 		}
 	}
 	
-	private void addMessageToCurrentMessagesAndVC(UserRequest ureq, MessageLight m, MessageView messageView, int msgCount,
+	private void addMessageToCurrentMessagesAndVC(UserRequest ureq, MessageLight m, MessageView messageView,
 			Map<String,Mark> marks, Map<String,MarkResourceStat> stats, Map<String,Long> artefactStats,
 			Set<Long> readSet) {
 		
@@ -491,17 +490,21 @@ public class MessageListController extends BasicController implements GenericEve
 		// add some data now
 		messageView.setFormattedCreationDate(formatter.formatDateAndTime(m.getCreationDate()));
 		messageView.setFormattedLastModified(formatter.formatDateAndTime(m.getLastModified()));
-		
+
+		Identity creator = m.getCreator();
 		Identity modifier = m.getModifier();
 		if (modifier != null) {
 			messageView.setModified(true);
-			messageView.setModifierFirstName(modifier.getUser().getProperty(UserConstants.FIRSTNAME, getLocale()));
-			messageView.setModifierLastName(modifier.getUser().getProperty(UserConstants.LASTNAME, getLocale()));
+			if(modifier.equals(creator) && StringHelper.containsNonWhitespace(m.getPseudonym())) {
+				messageView.setModifierPseudonym(m.getPseudonym());
+			} else {
+				messageView.setModifierFirstName(modifier.getUser().getProperty(UserConstants.FIRSTNAME, getLocale()));
+				messageView.setModifierLastName(modifier.getUser().getProperty(UserConstants.LASTNAME, getLocale()));
+			}
 		} else {
 			messageView.setModified(false);
 		}
 		
-		Identity creator = m.getCreator();
 		boolean userIsMsgCreator = false;
 		//keeps the first 15 chars
 		if(creator != null) {
@@ -536,52 +539,51 @@ public class MessageListController extends BasicController implements GenericEve
 		}
 		messageView.setClosed(isThreadClosed);
 		
-		if(!guestOnly && !m.isGuest() && !StringHelper.containsNonWhitespace(m.getPseudonym())) {
+		if(!guestOnly && !m.isGuest() && creator != null && !StringHelper.containsNonWhitespace(m.getPseudonym())) {
 			// add portrait to map for later disposal and key for rendering in velocity
-			DisplayPortraitController portrait = new DisplayPortraitController(ureq, getWindowControl(), m.getCreator(), true, true, false, true);
+			DisplayPortraitController portrait = new DisplayPortraitController(ureq, getWindowControl(), creator, true, true, false, true);
 			messageView.setPortrait(portrait);
 			mainVC.put("portrait_".concat(keyString), portrait.getInitialComponent());
 		  
 			// Add link with username that is clickable
 			String creatorFullName = StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayName(creator));
-			Link visitingCardLink = LinkFactory.createCustomLink("vc_"+msgCount, "vc_"+msgCount, creatorFullName, Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, mainVC, this);
+			Link visitingCardLink = LinkFactory.createCustomLink("vc_".concat(keyString), "vc", creatorFullName, Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, mainVC, this);
 			visitingCardLink.setUserObject(messageView);
-			
 			LinkPopupSettings settings = new LinkPopupSettings(800, 600, "_blank");
 			visitingCardLink.setPopup(settings);
 		}
 
 		if(!isThreadClosed) {
 			if((numOfChildren == 0 && userIsMsgCreator) || foCallback.mayDeleteMessageAsModerator()) {
-				Link deleteLink = LinkFactory.createCustomLink("dl_"+msgCount, "dl_"+msgCount, "msg.delete", Link.BUTTON_SMALL, mainVC, this);
+				Link deleteLink = LinkFactory.createCustomLink("dl_".concat(keyString), "dl", "msg.delete", Link.BUTTON_SMALL, mainVC, this);
 				deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 				deleteLink.setUserObject(messageView);
 			}
 			
 			if((numOfChildren == 0 && userIsMsgCreator) || foCallback.mayEditMessageAsModerator()) {
-				Link editLink = LinkFactory.createCustomLink("ed_"+msgCount, "ed_"+msgCount, "msg.update", Link.BUTTON_SMALL, mainVC, this);
+				Link editLink = LinkFactory.createCustomLink("ed_".concat(keyString), "ed", "msg.update", Link.BUTTON_SMALL, mainVC, this);
 				editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 				editLink.setUserObject(messageView);
 			}
 			
 			if(foCallback.mayReplyMessage()) {
-				Link quoteLink = LinkFactory.createCustomLink("qt_"+msgCount, "qt_"+msgCount, "msg.quote", Link.BUTTON_SMALL, mainVC, this);
+				Link quoteLink = LinkFactory.createCustomLink("qt_".concat(keyString), "qt", "msg.quote", Link.BUTTON_SMALL, mainVC, this);
 				quoteLink.setElementCssClass("o_sel_forum_reply_quoted");
 				quoteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reply_with_quote");
 				quoteLink.setUserObject(messageView);
 				
-				Link replyLink = LinkFactory.createCustomLink("rp_"+msgCount, "rp_"+msgCount, "msg.reply", Link.BUTTON_SMALL, mainVC, this);
+				Link replyLink = LinkFactory.createCustomLink("rp_".concat(keyString), "rp", "msg.reply", Link.BUTTON_SMALL, mainVC, this);
 				replyLink.setElementCssClass("o_sel_forum_reply");
 				replyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reply");
 				replyLink.setUserObject(messageView);
 			}
 			
 			if(foCallback.mayEditMessageAsModerator() && !threadTop) {
-				Link splitLink = LinkFactory.createCustomLink("split_"+msgCount, "split_"+msgCount, "msg.split", Link.LINK, mainVC, this);
+				Link splitLink = LinkFactory.createCustomLink("split_".concat(keyString), "split", "msg.split", Link.LINK, mainVC, this);
 				splitLink.setIconLeftCSS("o_icon o_icon-fw o_icon_split");
 				splitLink.setUserObject(messageView);
 				
-				Link moveLink = LinkFactory.createCustomLink("move_"+msgCount, "move_"+msgCount, "msg.move", Link.LINK, mainVC, this);
+				Link moveLink = LinkFactory.createCustomLink("move_".concat(keyString), "move", "msg.move", Link.LINK, mainVC, this);
 				moveLink.setIconLeftCSS("o_icon o_icon-fw o_icon_move");
 				moveLink.setUserObject(messageView);
 			}
@@ -594,7 +596,7 @@ public class MessageListController extends BasicController implements GenericEve
 					getWindowControl().getBusinessControl().getAsString() + "[Message:" + m.getKey() + "]"
 					: currentMark.getBusinessPath();
 			Controller markCtrl = markingService.getMarkController(ureq, getWindowControl(), currentMark, stat, forumOres, keyString, businessPath);
-			mainVC.put("mark_" + msgCount, markCtrl.getInitialComponent());
+			mainVC.put("mark_".concat(keyString), markCtrl.getInitialComponent());
 		}
 		
 		if(userIsMsgCreator && !StringHelper.containsNonWhitespace(m.getPseudonym())) {
@@ -658,22 +660,22 @@ public class MessageListController extends BasicController implements GenericEve
 			String command = link.getCommand();
 			Object uobject = link.getUserObject();
 
-			if (command.startsWith("qt_")) {
+			if (command.startsWith("qt")) {
 				doReply(ureq, (MessageView)uobject, true);
-			} else if (command.startsWith("rp_")) {
+			} else if (command.startsWith("rp")) {
 				doReply(ureq, (MessageView)uobject, false);
-			} else if (command.startsWith("dl_")) {
+			} else if (command.startsWith("dl")) {
 				doConfirmDeleteMessage(ureq, (MessageView)uobject);
-			} else if (command.startsWith("ed_")) {
+			} else if (command.startsWith("ed")) {
 				doEditMessage(ureq, (MessageView)uobject);
-			}	else if (command.startsWith("split_")) {
+			}	else if (command.startsWith("split")) {
 				doConfirmSplit(ureq, (MessageView)uobject);
-			} else if (command.startsWith("move_")) {
+			} else if (command.startsWith("move")) {
 				doMoveMessage(ureq, (MessageView)uobject);
 			}
 		} else if(mainVC == source) {
 			String cmd = event.getCommand();
-			if (cmd.startsWith("attachment_")) {
+			if (cmd.startsWith("attachment")) {
 				doDeliverAttachment(ureq, cmd);
 			}
 		}
@@ -1148,6 +1150,7 @@ public class MessageListController extends BasicController implements GenericEve
 			Message parentMessage = forumManager.getMessageById(parentMessageKey);
 			message = forumManager.moveMessage(message, parentMessage);
 			markRead(message);
+			DBFactory.getInstance().commit();//commit before sending event
 			
 			ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_MESSAGE_MOVE, getClass(), LoggingResourceable.wrap(message));
 			Long threadKey = parentMessage.getThreadtop() == null ? parentMessage.getKey() : parentMessage.getThreadtop().getKey();

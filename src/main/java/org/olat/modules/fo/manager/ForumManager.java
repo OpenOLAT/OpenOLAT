@@ -170,20 +170,7 @@ public class ForumManager {
 	 */
 	public List<Message> getMessagesByForum(Forum forum){
 		if (forum == null) return new ArrayList<Message>(0); // fxdiff: while indexing it can somehow occur, that forum is null!
-		return getMessagesByForumID(forum.getKey(),  0, -1, null, true);
-	}
-	
-	/**
-	 * 
-	 * @param forum_id
-	 * @param start
-	 * @param limit
-	 * @param orderBy
-	 * @param asc
-	 * @return
-	 */
-	public List<Message> getMessagesByForumID(Long forum_id, int firstResult, int maxResults, Message.OrderBy orderBy, boolean asc) {
-		return getMessagesByForumID(forum_id, firstResult, maxResults, false, orderBy, asc);
+		return getMessagesByForumID(forum.getKey(),  0, -1, false, null, true);
 	}
 	
 	/**
@@ -199,7 +186,7 @@ public class ForumManager {
 	private List<Message> getMessagesByForumID(Long forumKey, int firstResult, int maxResults, boolean onlyThreads, Message.OrderBy orderBy, boolean asc) {
 		StringBuilder query = new StringBuilder();
 		query.append("select msg from fomessage as msg")
-		     .append(" inner join fetch msg.creator as creator")
+		     .append(" left join fetch msg.creator as creator")
 		     .append(" where msg.forum.key=:forumKey ");
 		if(onlyThreads) {
 			query.append(" and msg.parent is null");
@@ -216,6 +203,18 @@ public class ForumManager {
 			dbQuery.setMaxResults(maxResults);
 		}
 		return dbQuery.getResultList();
+	}
+	
+	public List<Message> getMessageChildren(Message parentMessage) {
+		StringBuilder query = new StringBuilder();
+		query.append("select msg from fomessage as msg")
+		     .append(" inner join msg.parent as parentMsg")
+		     .append(" where parentMsg.key=:parentKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query.toString(), Message.class)
+				.setParameter("parentKey", parentMessage.getKey())
+				.getResultList();
+		
 	}
 	
 	private int countMessagesByForumID(Long forumKey, boolean onlyThreads) {
@@ -274,13 +273,15 @@ public class ForumManager {
 		  .append(" ) as numOfMessages")
 		  .append(" , (select max(replies.lastModified) from fomessage as replies")
 		  .append("  where replies.threadtop.key=msg.key and replies.forum.key=:forumKey")
-		  .append(" ) as lastModified")
-		  .append(" , (select count(read.key) from foreadmessage as read, fomessage as posts")
-		  .append("  where (posts.threadtop.key=msg.key or posts.key=msg.key) and read.message.key=posts.key and read.identity.key=:identityKey")
-		  .append(" ) as numOfReadMessages");
+		  .append(" ) as lastModified");
+
 		if(identity != null) {
-			sb.append(" ,(select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
-			  .append("   where mark.creator.key=:identityKey and mark.resId=:forumKey and msg.key = cast(mark.resSubPath as long) and mark.resName='Forum'")
+			sb.append(" , (select count(read.key) from foreadmessage as read, fomessage as posts")
+			  .append("  where (posts.threadtop.key=msg.key or posts.key=msg.key) and read.message.key=posts.key and read.identity.key=:identityKey")
+			  .append(" ) as numOfReadMessages")
+			  .append(" ,(select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark, fomessage as mposts ")
+			  .append("   where mark.creator.key=:identityKey and mark.resId=:forumKey and (mposts.threadtop.key=msg.key or mposts.key=msg.key)")
+			  .append("    and mposts.key=cast(mark.resSubPath as long) and mark.resName='Forum'")
 			  .append(" ) as marks");
 		}
 		
@@ -290,10 +291,11 @@ public class ForumManager {
 
 		TypedQuery<Object[]> objectsQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
-				.setParameter("forumKey", forum.getKey())
-				.setParameter("identityKey", identity.getKey());
+				.setParameter("forumKey", forum.getKey());
+		if(identity != null) {
+			objectsQuery.setParameter("identityKey", identity.getKey());
+		}
 
-		
 		List<Object[]> objects = objectsQuery.getResultList();
 		List<ForumThread> threadList = new ArrayList<>(objects.size());
 		for(Object[] object:objects) {
@@ -304,11 +306,11 @@ public class ForumManager {
 			String creator = userManager.getUserDisplayName(msg.getCreator());
 			ForumThread thread = new ForumThread(msg, creator, lastModifed, numOfMessages);
 
-			Number readMessages = (Number)object[3];
-			int numOfReadMessages = readMessages == null ? 0 : readMessages.intValue();
-			thread.setNewMessages(numOfMessages - numOfReadMessages);
-			
 			if(identity != null) {
+				Number readMessages = (Number)object[3];
+				int numOfReadMessages = readMessages == null ? 0 : readMessages.intValue();
+				thread.setNewMessages(numOfMessages - numOfReadMessages);
+
 				Number numOfMarkedMessagesLong = (Number)object[4];
 				int numOfMarkedMessages = numOfMarkedMessagesLong == null ? 0 : numOfMarkedMessagesLong.intValue();
 				thread.setMarkedMessages(numOfMarkedMessages);
@@ -389,6 +391,14 @@ public class ForumManager {
 				.getResultList();
 	}
 	
+	/**
+	 * Return the messages of a user written under it's own name
+	 * (not under a pseudonym).
+	 * 
+	 * @param forum
+	 * @param user
+	 * @return
+	 */
 	public List<MessageLight> getLightMessagesByUser(Forum forum, IdentityRef user) {
 		StringBuilder query = new StringBuilder();
 		query.append("select msg from folightmessage as msg")
@@ -404,6 +414,15 @@ public class ForumManager {
 				.getResultList();
 	}
 	
+	/**
+	 * Return the messages of a specified user under a specific
+	 * pseudonym.
+	 * 
+	 * @param forum
+	 * @param user
+	 * @param pseudonym
+	 * @return
+	 */
 	public List<MessageLight> getLightMessagesByUserUnderPseudo(Forum forum, IdentityRef user, String pseudonym) {
 		StringBuilder query = new StringBuilder();
 		query.append("select msg from folightmessage as msg")
@@ -821,31 +840,23 @@ public class ForumManager {
 		} else {	
 			//it only make sense to split a thread if the current message is not a threadtop message.	
 			List<Message> threadList = getThread(msg.getThreadtop().getKey());
-			List<Message> subthreadList = new ArrayList<Message>();
-			subthreadList.add(msg);
+			List<Message> subthreadList = new ArrayList<>();
 			getSubthread(msg, threadList, subthreadList);
 
-			Iterator<Message> messageIterator = subthreadList.iterator();
-			Message firstMessage = null;
-			if (messageIterator.hasNext()) {
-				firstMessage = messageIterator.next();
-				firstMessage = getMessageById(firstMessage.getKey());
-				firstMessage.setParent(null);
-				firstMessage.setThreadtop(null);
-				updateMessage(firstMessage, false);
-				newTopMessage = firstMessage;
-			}
-			while (firstMessage != null && messageIterator.hasNext()) {
-				Message message = messageIterator.next();
-				message = getMessageById(firstMessage.getKey());
-				message.setThreadtop(firstMessage);
-				updateMessage(message, false);
+			newTopMessage = getMessageById(msg.getKey());
+			newTopMessage.setParent(null);
+			newTopMessage.setThreadtop(null);
+			newTopMessage = dbInstance.getCurrentEntityManager().merge(newTopMessage);
+
+			for(Message message : subthreadList) {
+				message.setThreadtop(newTopMessage);
+				message = dbInstance.getCurrentEntityManager().merge(message);
 			}
 
 			dbInstance.commit();// before sending async event
 			ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.SPLIT, newTopMessage.getKey(), null, null);
 			CoordinatorManager.getInstance().getCoordinator().getEventBus()
-				.fireEventToListenersOf(event, firstMessage.getForum());
+				.fireEventToListenersOf(event, newTopMessage.getForum());
 		}		
 		return newTopMessage;
 	}
@@ -858,31 +869,34 @@ public class ForumManager {
 	 * @return the moved message
 	 */
 	public Message moveMessage(Message msg, Message topMsg) {
-		List<Message> oldThreadList = getThread(msg.getThreadtop().getKey());
-		List<Message> subThreadList = new ArrayList<Message>();
-		getSubthread(msg, oldThreadList, subThreadList);
-		// one has to set a new parent for all childs of the moved message
+		// one has to set a new parent for all children of the moved message
 		// first message of sublist has to get the parent from the moved message
-		for (Message childMessage : subThreadList) {
-			childMessage = getMessageById(childMessage.getKey());
-			childMessage.setParent(msg.getParent());
-			updateMessage(childMessage, false);
+		List<Message> children = getMessageChildren(msg);
+		for (Message child : children) {
+			child.setParent(msg.getParent());
+			dbInstance.getCurrentEntityManager().merge(child);
 		}
 		
-		// now move the message to the choosen thread
+		// now move the message to the chosen thread
+		Message targetThread = topMsg.getThreadtop();
+		if(targetThread == null) {
+			targetThread = topMsg;
+		}
+
 		final Message oldMessage = getMessageById(msg.getKey());
 		Message message = createMessage(oldMessage.getForum(), oldMessage.getCreator(), oldMessage.isGuest());
+		((MessageImpl)message).setCreationDate(oldMessage.getCreationDate());
+		message.setLastModified(oldMessage.getLastModified());
 		message.setModifier(oldMessage.getModifier());
-		message.setLastModified(oldMessage.getLastModified()); // OLAT-6295
 		message.setTitle(oldMessage.getTitle());
 		message.setBody(oldMessage.getBody());
 		message.setPseudonym(oldMessage.getPseudonym());
-		message.setThreadtop(topMsg);
+		message.setThreadtop(targetThread);
 		message.setParent(topMsg);
 		Status status = Status.getStatus(oldMessage.getStatusCode());
 		status.setMoved(true);
 		message.setStatusCode(Status.getStatusCode(status));
-		saveMessage(message);
+		message = saveMessage(message);
 		
 		//move marks
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Forum.class, msg.getForum().getKey());

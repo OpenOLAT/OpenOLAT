@@ -65,14 +65,13 @@
 	#end
 	
 #foreach ($message in $messages)
-	#set( $count = $velocityCount - 1)
 	<div #if($threadMode) style="margin-left: ${message.depth}em" #end class="o_forum_message o_block_large_bottom #if($message.newMessage) o_forum_message_new #end #if($message.key == $goToMessageId) o_forum_message_highlight #end" id="o_forum_message_${message.key}">
 		<div class="o_forum_message_header clearfix">
 			#if($r.available("eportfolio_${message.key}"))
 				<div class="o_ep_collect">$r.render("eportfolio_${message.key}")</div>
 			#end
-			#if($r.available("mark_${count}"))
-				<div class="o_mark">$r.render("mark_${count}")</div>
+			#if($r.available("mark_${message.key}"))
+				<div class="o_mark">$r.render("mark_${message.key}")</div>
 			#end
 			#if(!$guestOnly)
 				#if($message.guest || ($message.pseudonym && !${message.pseudonym.isEmpty()}))
@@ -93,8 +92,8 @@
 					$r.escapeHtml($message.pseudonym)
 				#elseif($message.guest)
 					$r.translate("anonymous.poster")
-				#elseif($r.available("vc_${count}"))
-					$r.render("vc_${count}")
+				#elseif($r.available("vc_${message.key}"))
+					$r.render("vc_${message.key}")
 				#else							
 					$r.escapeHtml($message.creatorFirstname) $r.escapeHtml($message.creatorLastname)
 				#end
@@ -106,7 +105,13 @@
 			#if($message.modified || $message.moved)
 			<div class="o_modified">
 				#if($message.modified)
-		   			$r.translate("msg.modified"): $r.escapeHtml($message.modifierFirstName) $r.escapeHtml($message.modifierLastName) $message.formattedLastModified
+					$r.translate("msg.modified"):
+					#if($message.modifierPseudonym && !${message.modifierPseudonym.isEmpty()})
+						$r.escapeHtml($message.modifierPseudonym)
+					#else
+		   				$r.escapeHtml($message.modifierFirstName) $r.escapeHtml($message.modifierLastName)
+		   			#end
+		   			$message.formattedLastModified
 		   		#end
 		   		#if($message.moved)
 		   			$r.translate("msg.moved")
@@ -120,34 +125,34 @@
 		</div>
 
 		<div class="o_forum_message_actions o_button_group">
-			#if($r.available("open_in_thread_${count}"))
-				$r.render("open_in_thread_${count}")
+			#if($r.available("open_in_thread_${message.key}"))
+				$r.render("open_in_thread_${message.key}")
 			#end
 
-			#if ($r.available("dl_${count}") || $r.available("ed_${count}"))
+			#if ($r.available("dl_${message.key}") || $r.available("ed_${message.key}"))
 			<div class="btn-group">
-				#if($r.available("dl_${count}"))
-					$r.render("dl_${count}")
+				#if($r.available("dl_${message.key}"))
+					$r.render("dl_${message.key}")
 				#end
-				#if ($r.available("ed_${count}"))
-					$r.render("ed_${count}")
+				#if ($r.available("ed_${message.key}"))
+					$r.render("ed_${message.key}")
 				#end
 			</div>
 			#end
 			
-			#if ($r.available("rp_${count}"))
-			<div class="btn-group">$r.render("qt_${count}") $r.render("rp_${count}")</div>
+			#if ($r.available("rp_${message.key}"))
+			<div class="btn-group">$r.render("qt_${message.key}") $r.render("rp_${message.key}")</div>
 			#end
 			
-			#if($r.available("split_${count}"))
+			#if($r.available("split_${message.key}"))
 			<div class="btn-group">
 				<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
 					<i class="o_icon o_icon-fw o_icon_actions"></i>
 					<span class="caret"></span>
 				</button>
 				<ul class="dropdown-menu dropdown-menu-right">
-					<li>$r.render("split_${count}")</li>
-					<li>$r.render("move_${count}")</li>
+					<li>$r.render("split_${message.key}")</li>
+					<li>$r.render("move_${message.key}")</li>
 				</ul>
 			</div>
 			#end

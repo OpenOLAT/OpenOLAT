@@ -62,6 +62,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	private Table currentTable;
 	private Element currentParagraph;
 	private ListParagraph currentListParagraph;
+	private boolean pNeedNewParagraph = true;
 	
 	public HTMLToOpenXMLHandler(OpenXMLDocument document, Element paragraph) {
 		this.factory = document;
@@ -153,7 +154,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			}
 		} else {
 			Element currentRun = getCurrentRun();
-			String text = textBuffer.toString();
+			String text = textBuffer.toString().replace("\n", "").replace("\r", "");
 			if(text.length() > 0 && Character.isSpaceChar(text.charAt(0))) {
 				currentRun.appendChild(factory.createPreserveSpaceEl());
 			}
@@ -318,7 +319,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	public void startElement(String uri, String localName, String qName, Attributes attributes) {
 		String tag = localName.toLowerCase();
 		if("p".equalsIgnoreCase(tag)) {
-			getCurrentParagraph(true);
+			getCurrentParagraph(pNeedNewParagraph);
 		} else if("span".equalsIgnoreCase(tag)) {
 			flushText();
 
@@ -361,6 +362,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			Style[] styles = setTextPreferences(Style.italic);
 			styleStack.add(new StyleStatus(tag, true, styles));
 			appendParagraph(new Spacing(90, 0));
+			pNeedNewParagraph = false;
 		} else if("div".equals(tag)) {
 			String cl = attributes.getValue("class");
 			if(StringHelper.containsNonWhitespace(cl)) {
@@ -368,6 +370,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 					Style[] styles = setTextPreferences(Style.italic);
 					styleStack.add(new StyleStatus(tag, true, styles));
 					appendParagraph(new Spacing(120, 0));
+					pNeedNewParagraph = false;
 				} else {
 					styleStack.add(new StyleStatus(tag, new Style[0]));
 				}

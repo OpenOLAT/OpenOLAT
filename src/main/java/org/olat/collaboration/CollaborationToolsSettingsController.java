@@ -31,7 +31,6 @@ import java.util.List;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.ui.events.CalendarGUIModifiedEvent;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -275,30 +274,38 @@ public class CollaborationToolsSettingsController extends BasicController {
 }
 
 class ChoiceOfToolsForm extends FormBasicController {
-	CollaborationTools cts;
-	MultipleSelectionElement ms;
+	private CollaborationTools cts;
+	private MultipleSelectionElement ms;
 	
-	List <String>theKeys   = new ArrayList<String>();
-	List <String>theValues = new ArrayList<String>();
-
-	final String[] availableTools;
+	private final String[] toolsKeys;
+	private final String[] toolsValues;
+	private final String[] cssClasses;
+	private final String[] availableTools;
+	
+	@Autowired
+	private InstantMessagingModule imModule;
 	
 	public ChoiceOfToolsForm(UserRequest ureq, WindowControl wControl, CollaborationTools cts, final String[] availableTools) {
 		super(ureq, wControl);
 		this.cts = cts;
 		this.availableTools = availableTools;
 		
+		List<String> theKeys = new ArrayList<>();
+		List<String> theValues = new ArrayList<>();
+		List<String> theClasses = new ArrayList<>();
 		for (int i=0; i<availableTools.length; i++) {
 			String k = availableTools[i];
-			if (k.equals(CollaborationTools.TOOL_CHAT)) {
-				InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
-				if (!imModule.isEnabled() || !imModule.isGroupEnabled()) {
-					continue;
-				}
+			if (k.equals(CollaborationTools.TOOL_CHAT) && (!imModule.isEnabled() || !imModule.isGroupEnabled())) {
+				continue;
 			}
 			theKeys.add(""+i);
-			theValues.add(translate("collabtools.named."+availableTools[i]));
+			theValues.add(translate("collabtools.named." + availableTools[i]));
+			theClasses.add(translate("o_sel_" + availableTools[i]));
 		}
+		
+		toolsKeys = theKeys.toArray(new String[theKeys.size()]);
+		toolsValues = theValues.toArray(new String[theValues.size()]);
+		cssClasses = theClasses.toArray(new String[theClasses.size()]);
 		
 		initForm(ureq);
 	}
@@ -314,10 +321,7 @@ class ChoiceOfToolsForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		ms = uifactory.addCheckboxesVertical(
-				"selection", formLayout, 
-				theKeys.toArray(new String[theKeys.size()]),
-				theValues.toArray(new String[theValues.size()]), 1);
+		ms = uifactory.addCheckboxesVertical("selection", "selection", formLayout, toolsKeys, toolsValues, cssClasses, null, 1);
 		ms.setElementCssClass("o_sel_collab_tools");
 		for (int i=0; i<availableTools.length; i++) {
 			ms.select(""+i, cts.isToolEnabled(availableTools[i]));

@@ -49,6 +49,7 @@ import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
 import org.olat.modules.fo.ForumChangedEvent;
 import org.olat.modules.fo.Message;
+import org.olat.modules.fo.Status;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.fo.ui.events.SelectMessageEvent;
 import org.olat.modules.fo.ui.events.SelectUserEvent;
@@ -159,18 +160,19 @@ public class ForumController extends BasicController implements GenericEventList
 					if (message != null) {
 						doThreadList(ureq);
 						Message thread = message.getThreadtop() == null ? message : message.getThreadtop();
-
-						String subType = null;
-						if(entries.size() > 1) {
-							subType = entries.get(1).getOLATResourceable().getResourceableTypeName();
-						}
-						
-						if("Marked".equalsIgnoreCase(subType)) {
-							doMarkedView(ureq, thread, message);
-						} else if("New".equalsIgnoreCase(subType)) {
-							doMarkedView(ureq, thread, message);
-						} else {
-							doThreadView(ureq, thread, message);
+						if(focallback.mayEditMessageAsModerator() || !Status.getStatus(thread.getStatusCode()).isHidden()) {
+							String subType = null;
+							if(entries.size() > 1) {
+								subType = entries.get(1).getOLATResourceable().getResourceableTypeName();
+							}
+							
+							if("Marked".equalsIgnoreCase(subType)) {
+								doMarkedView(ureq, thread, message);
+							} else if("New".equalsIgnoreCase(subType)) {
+								doMarkedView(ureq, thread, message);
+							} else {
+								doThreadView(ureq, thread, message);
+							}
 						}
 					}
 				}

@@ -43,17 +43,18 @@ public class StatusTypeCellRenderer implements FlexiCellRenderer {
 			int status = ((Number)cellValue).intValue();
 			
 			Status messageStatus = Status.getStatus(status);
-			boolean isSticky = messageStatus.isSticky(); 
-			boolean isClosed = messageStatus.isClosed(); 
+			boolean isSticky = messageStatus.isSticky();
+			boolean isClosed = messageStatus.isClosed();
 
 			target.append("<i class='o_icon o_forum_");
-
 			if(isSticky && isClosed) {
 				target.append("status_sticky_closed");
-			} else if (isSticky) {
+			} else if(isSticky) {
 				target.append("status_sticky");
-			} else if (isClosed) {
+			} else if(isClosed) {
 				target.append("status_closed");
+			} else if(messageStatus.isHidden()) {
+				target.append("status_hidden");
 			} else {
 				target.append("status_thread");
 			}

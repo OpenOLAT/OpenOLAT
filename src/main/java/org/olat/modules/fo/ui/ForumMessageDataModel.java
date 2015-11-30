@@ -51,8 +51,12 @@ public class ForumMessageDataModel extends DefaultFlexiTableDataModel<MessageLig
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<MessageLightView> views = new ForumMessageDataModelSort(orderBy, this, null).sort();
-			super.setObjects(views);
+			if("natural".equals(orderBy.getKey())) {
+				System.out.println();
+			} else {
+				List<MessageLightView> views = new ForumMessageDataModelSort(orderBy, this, null).sort();
+				super.setObjects(views);
+			}
 		}
 	}
 	

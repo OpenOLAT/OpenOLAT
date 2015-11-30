@@ -43,7 +43,7 @@ public class IndentCellRenderer implements FlexiCellRenderer {
 			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		
 		SortKey[] keys = source.getFlexiTableElement().getOrderBy();
-		if(keys != null && keys.length > 0 && keys[0] != null) {
+		if(keys != null && keys.length > 0 && keys[0] != null && !"natural".equals(keys[0].getKey())) {
 			if(cellValue instanceof String) {
 				target.append((String)cellValue);
 			}

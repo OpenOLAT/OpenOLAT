@@ -33,11 +33,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.LogFileParser;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
@@ -53,6 +53,25 @@ import org.olat.core.util.mail.MailManager;
 public class ErrorFeedbackMailer implements Dispatcher {
 	
 	private static final OLog log = Tracing.createLoggerFor(ErrorFeedbackMailer.class);
+	
+	private MailManager mailManager;
+	private BaseSecurity securityManager;
+
+	/**
+	 * [used by Spring]
+	 * @param mailManager
+	 */
+	public void setMailManager(MailManager mailManager) {
+		this.mailManager = mailManager;
+	}
+
+	/**
+	 * [used by spring]
+	 * @param securityManager
+	 */
+	public void setSecurityManager(BaseSecurity securityManager) {
+		this.securityManager = securityManager;
+	}
 
 	/**
 	 * send email to olat support with user submitted error informaition
@@ -64,27 +83,26 @@ public class ErrorFeedbackMailer implements Dispatcher {
 		String errorNr = request.getParameter("fx_errnum");
 		String username = request.getParameter("username");
 		try {
-			BaseSecurity im = CoreSpringFactory.getImpl(BaseSecurity.class);
-			Identity ident = im.findIdentityByName(username);
-			// if null, user may crashed befor getting a valid session, try with
-			// guest user instead
-			if (ident == null)
-				ident = im.findIdentityByName("guest");
-			Collection<String> logFileEntries = LogFileParser.getErrorToday(errorNr, false);
-			StringBuilder out = new StringBuilder(2048);
-			out.append(feedback)
-			   .append("\n------------------------------------------\n\n --- from user: ").append(username).append(" ---");
-			if (logFileEntries != null) {
-				for (Iterator<String> iter = logFileEntries.iterator(); iter.hasNext();) {
-					out.append(iter.next());
+			if(StringHelper.containsNonWhitespace(username)) {
+				Identity ident = securityManager.findIdentityByName(username);
+				Collection<String> logFileEntries = LogFileParser.getErrorToday(errorNr, false);
+				StringBuilder out = new StringBuilder(2048);
+				out.append(feedback)
+				   .append("\n------------------------------------------\n\n --- from user: ").append(username).append(" ---");
+				if (logFileEntries != null) {
+					for (Iterator<String> iter = logFileEntries.iterator(); iter.hasNext();) {
+						out.append(iter.next());
+					}
 				}
+	
+				MailBundle bundle = new MailBundle();
+				bundle.setFromId(ident);
+				bundle.setTo(WebappHelper.getMailConfig("mailError"));
+				bundle.setContent("Feedback from Error Nr.: " + errorNr, out.toString());
+				mailManager.sendExternMessage(bundle, null);
+			} else {
+				log.error("Try to send a feedback without identity");
 			}
-
-			MailBundle bundle = new MailBundle();
-			bundle.setFromId(ident);
-			bundle.setTo(WebappHelper.getMailConfig("mailError"));
-			bundle.setContent("Feedback from Error Nr.: " + errorNr, out.toString());
-			CoreSpringFactory.getImpl(MailManager.class).sendExternMessage(bundle, null);
 		} catch (Exception e) {
 			handleException(request, e);
 			return;

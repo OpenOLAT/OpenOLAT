@@ -30,6 +30,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -40,6 +41,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.fo.model.ForumThread;
 import org.olat.modules.fo.model.ForumUserStatistics;
+import org.olat.modules.fo.ui.MessagePeekview;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
@@ -443,6 +445,182 @@ public class ForumManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getMessageById() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Forum forum = forumManager.addAForum();
+		dbInstance.commit();
+		
+		Message message = forumManager.createMessage(forum, id, false);
+		message.setTitle("Get message by id");
+		message.setBody("Get message by id");
+		forumManager.addTopMessage(message);
+		dbInstance.commit();
+		
+		//load the message by id
+		Message loadedMessage = forumManager.getMessageById(message.getKey());
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(loadedMessage);
+		Assert.assertEquals(message.getKey(), loadedMessage.getKey());
+		Assert.assertEquals(message.getTitle(), loadedMessage.getTitle());
+		Assert.assertEquals(message.getBody(), loadedMessage.getBody());
+		Assert.assertNotNull(loadedMessage.getCreator());
+		Assert.assertEquals(id, loadedMessage.getCreator());
+		Assert.assertFalse(loadedMessage.isGuest());
+		Assert.assertNull(loadedMessage.getThreadtop());
+	}
+	
+	@Test
+	public void getPeekviewMessages() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Identity id2 =  JunitTestHelper.createAndPersistIdentityAsRndUser("fo-2");
+		Forum forum = forumManager.addAForum();
+		dbInstance.commit();
+		
+		Message thread1 = forumManager.createMessage(forum, id1, false);
+		thread1.setTitle("Get peekview messages");
+		thread1.setBody("Get peekview messages");
+		forumManager.addTopMessage(thread1);
+		dbInstance.commit();
+		
+		Message reply = forumManager.createMessage(forum, id2, false);
+		reply.setTitle("Re: Get peekview messages");
+		reply.setBody("Get peekview messages");
+		forumManager.replyToMessage(reply, thread1);
+		dbInstance.commitAndCloseSession();
+		
+		Message replyPseudo = forumManager.createMessage(forum, id2, false);
+		replyPseudo.setTitle("Re: Get peekview messages with pseudo");
+		replyPseudo.setBody("Get peekview messages and other usefull stuff we need");
+		String pseudo = "Id pseudo " + UUID.randomUUID();
+		replyPseudo.setPseudonym(pseudo);
+		forumManager.replyToMessage(replyPseudo, thread1);
+		dbInstance.commitAndCloseSession();
+		
+		//load the peekview
+		List<MessagePeekview> peekViews = forumManager.getPeekviewMessages(forum, 2);
+		Assert.assertNotNull(peekViews);
+		Assert.assertEquals(2, peekViews.size());
+		
+		int found = 0;
+		for(MessagePeekview peekView:peekViews) {
+			if(peekView.getKey().equals(thread1.getKey())
+					|| peekView.getKey().equals(reply.getKey())
+					|| peekView.getKey().equals(replyPseudo.getKey())) {
+				found++;
+			}
+		}
+		Assert.assertEquals(2, found);
+	}
+	
+	@Test
+	public void getPseudonym() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Identity id2 =  JunitTestHelper.createAndPersistIdentityAsRndUser("fo-2");
+		Forum forum = forumManager.addAForum();
+		dbInstance.commit();
+		
+		Message thread1 = forumManager.createMessage(forum, id1, false);
+		thread1.setTitle("Get pseudonym");
+		thread1.setBody("Get pseudonym");
+		forumManager.addTopMessage(thread1);
+		dbInstance.commit();
+	
+		Message replyPseudo = forumManager.createMessage(forum, id2, false);
+		replyPseudo.setTitle("Re: Get pseudonym");
+		replyPseudo.setBody("Get pseudonym in forum and other usefull stuff we need");
+		String pseudo = "Id pseudo " + UUID.randomUUID();
+		replyPseudo.setPseudonym(pseudo);
+		forumManager.replyToMessage(replyPseudo, thread1);
+		dbInstance.commitAndCloseSession();
+		
+		// get pseudonym of id 2
+		String alias2 = forumManager.getPseudonym(forum, id2);
+		Assert.assertEquals(pseudo, alias2);
+		
+		// get pseudonym of id 1
+		String alias1 = forumManager.getPseudonym(forum, id1);
+		Assert.assertNull(alias1);
+	}
+	
+	@Test
+	public void readMessages() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-2");
+		Forum forum = forumManager.addAForum();
+		dbInstance.commit();
+		
+		Message thread1 = forumManager.createMessage(forum, id1, false);
+		thread1.setTitle("Read messages workflow");
+		thread1.setBody("Read messages workflow");
+		forumManager.addTopMessage(thread1);
+		dbInstance.commit();
+	
+		Message replyPseudo = forumManager.createMessage(forum, id1, false);
+		replyPseudo.setTitle("Re: Read messages workflow");
+		replyPseudo.setBody("Read messages workflow and other usefull stuff we need");
+		String pseudo = "Id pseudo " + UUID.randomUUID();
+		replyPseudo.setPseudonym(pseudo);
+		forumManager.replyToMessage(replyPseudo, thread1);
+		dbInstance.commitAndCloseSession();
+
+		Message reply = forumManager.createMessage(forum, id2, false);
+		reply.setTitle("Re: Read messages workflow");
+		reply.setBody("Read messages workflow and other usefull stuff we need");
+		forumManager.replyToMessage(reply, thread1);
+		dbInstance.commitAndCloseSession();
+		
+		//mark thread1 as read
+		forumManager.markAsRead(id1, forum, thread1);
+		dbInstance.commitAndCloseSession();
+		
+		//load read set and check for id1
+		Set<Long> readSet = forumManager.getReadSet(id1, forum);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(readSet);
+		Assert.assertEquals(1, readSet.size());
+		Assert.assertTrue(readSet.contains(thread1.getKey()));
+		
+		//mark thread1 as read
+		forumManager.markAsRead(id2, forum, reply);
+		forumManager.markAsRead(id2, forum, replyPseudo);
+		dbInstance.commitAndCloseSession();
+		
+		//load read set and check for id2
+		Set<Long> readSet2 = forumManager.getReadSet(id2, forum);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(readSet2);
+		Assert.assertEquals(2, readSet2.size());
+		Assert.assertTrue(readSet2.contains(reply.getKey()));
+		Assert.assertTrue(readSet2.contains(replyPseudo.getKey()));
+	}
+	
+	@Test
+	public void updateMessage() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Forum fo = forumManager.addAForum();
+		dbInstance.commit();
+
+		Message topMessage = forumManager.createMessage(fo, id, false);
+		topMessage.setTitle("Message counter");
+		topMessage.setBody("Message counter");
+		forumManager.addTopMessage(topMessage);
+		dbInstance.commit();
+		
+		//update message
+		topMessage.setBody("Message counter and other stuff");
+		Message updatedMessage = forumManager.updateMessage(topMessage, true);
+		Assert.assertNotNull(updatedMessage);
+		Assert.assertEquals(topMessage.getKey(), updatedMessage.getKey());
+		Assert.assertEquals("Message counter", updatedMessage.getTitle());
+		Assert.assertEquals("Message counter and other stuff", updatedMessage.getBody());
+		Assert.assertNotNull(updatedMessage.getNumOfCharacters());
+		Assert.assertEquals(27, updatedMessage.getNumOfCharacters().intValue());
+		Assert.assertNotNull(updatedMessage.getNumOfWords());
+		Assert.assertEquals(5, updatedMessage.getNumOfWords().intValue());
+	}
+	
+	@Test
 	public void countMessagesByForumID() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-2");
@@ -531,6 +709,261 @@ public class ForumManagerTest extends OlatTestCase {
 		cal.add(Calendar.HOUR_OF_DAY, - 1);
 		List<Message> olderLastMessages = forumManager.getNewMessageInfo(fo.getKey(), cal.getTime());
 		Assert.assertEquals(2, olderLastMessages.size());
+	}
+	
+	@Test
+	public void moveMessage() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-2");
+		Identity guest3 =  securityManager.getAndUpdateAnonymousUserForLanguage(Locale.ENGLISH);
+		Forum fo = forumManager.addAForum();
+		dbInstance.commit();
+		
+		// thread
+		// -> message
+		// -> -> message to move
+		// -> -> -> message child 1
+		// -> -> -> -> message child 1.1
+		// -> -> -> message child 2
+		// -> -> message staying
+
+		Message topMessage = forumManager.createMessage(fo, id1, false);
+		topMessage.setTitle("Thread move message");
+		topMessage.setBody("Thread move message");
+		forumManager.addTopMessage(topMessage);
+		dbInstance.commit();
+
+		Message message = forumManager.createMessage(fo, id2, false);
+		message.setTitle("Re: Thread move message");
+		message.setBody("Thread move message");
+		forumManager.replyToMessage(message, topMessage);
+		dbInstance.commit();
+		
+		Message messageToMove = forumManager.createMessage(fo, id2, false);
+		messageToMove.setTitle("Message to move");
+		messageToMove.setBody("Thread move message");
+		forumManager.replyToMessage(messageToMove, message);
+		dbInstance.commit();
+		
+		Message messageToMove_1 = forumManager.createMessage(fo, id2, false);
+		messageToMove_1.setTitle("Re: Message to move 1");
+		messageToMove_1.setBody("Thread move message");
+		forumManager.replyToMessage(messageToMove_1, messageToMove);
+		dbInstance.commit();
+		
+		Message messageToMove_1_1 = forumManager.createMessage(fo, guest3, true);
+		messageToMove_1_1.setTitle("Re: Message to move 1");
+		messageToMove_1_1.setBody("Thread move message");
+		forumManager.replyToMessage(messageToMove_1_1, messageToMove_1);
+		dbInstance.commit();
+		
+		Message messageToMove_2 = forumManager.createMessage(fo, id2, false);
+		messageToMove_2.setTitle("Re: Message to move 2");
+		messageToMove_2.setBody("Thread move message");
+		forumManager.replyToMessage(messageToMove_2, messageToMove);
+		dbInstance.commit();
+		
+		Message messageToStay = forumManager.createMessage(fo, id2, false);
+		messageToStay.setTitle("Message to stay");
+		messageToStay.setBody("Thread move message");
+		forumManager.replyToMessage(messageToStay, message);
+		dbInstance.commit();
+			
+		Message targetThread = forumManager.createMessage(fo, id2, false);
+		targetThread.setTitle("Target thread");
+		targetThread.setBody("Target thread");
+		forumManager.addTopMessage(targetThread);
+		dbInstance.commit();
+		
+		Message targetMessage = forumManager.createMessage(fo, id2, false);
+		targetMessage.setTitle("Message to stay");
+		targetMessage.setBody("Thread move message");
+		forumManager.replyToMessage(targetMessage, targetThread);
+		dbInstance.commit();
+		
+		//move the message
+		Message movedMessage = forumManager.moveMessage(messageToMove, targetMessage);
+		dbInstance.commitAndCloseSession();
+		
+		//check target thread
+		List<Message> targetMessages = forumManager.getThread(targetThread.getKey());
+		Assert.assertEquals(3, targetMessages.size());
+		Assert.assertTrue(targetMessages.contains(targetThread));
+		Assert.assertTrue(targetMessages.contains(targetMessage));
+		Assert.assertTrue(targetMessages.contains(movedMessage));
+		
+		//check thread and parent of the target thread
+		Message reloadedTargetThread = forumManager.getMessageById(targetThread.getKey());
+		Assert.assertNull(reloadedTargetThread.getThreadtop());
+		Assert.assertNull(reloadedTargetThread.getParent());
+
+		Message reloadedTargetMessage = forumManager.getMessageById(targetMessage.getKey());
+		Assert.assertEquals(targetThread, reloadedTargetMessage.getThreadtop());
+		Assert.assertEquals(targetThread, reloadedTargetMessage.getParent());
+
+		Message reloadedMovedMessage = forumManager.getMessageById(movedMessage.getKey());
+		Assert.assertEquals(targetThread, reloadedMovedMessage.getThreadtop());
+		Assert.assertEquals(targetMessage, reloadedMovedMessage.getParent());
+		
+		//check original thread
+		List<Message> originMessages = forumManager.getThread(topMessage.getKey());
+		Assert.assertEquals(6, originMessages.size());
+		Assert.assertTrue(originMessages.contains(topMessage));
+		Assert.assertTrue(originMessages.contains(message));
+		Assert.assertTrue(originMessages.contains(messageToStay));
+		Assert.assertTrue(originMessages.contains(messageToMove_1));
+		Assert.assertTrue(originMessages.contains(messageToMove_1_1));
+		Assert.assertTrue(originMessages.contains(messageToMove_2));
+		Assert.assertFalse(originMessages.contains(movedMessage));
+		Assert.assertFalse(originMessages.contains(messageToMove));
+		
+		// thread
+		// -> message
+		// -> -> message child 1
+		// -> -> -> message child 1.1
+		// -> -> message child 2
+		// -> -> message staying
+		
+		//check thread and parent of the target thread
+		Message reloadedTopMessage = forumManager.getMessageById(topMessage.getKey());
+		Assert.assertNull(reloadedTopMessage.getThreadtop());
+		Assert.assertNull(reloadedTopMessage.getParent());
+		
+		Message reloadedMessage = forumManager.getMessageById(message.getKey());
+		Assert.assertEquals(topMessage, reloadedMessage.getThreadtop());
+		Assert.assertEquals(topMessage, reloadedMessage.getParent());
+
+		Message reloadedMessageToMove_1 = forumManager.getMessageById(messageToMove_1.getKey());
+		Assert.assertEquals(topMessage, reloadedMessageToMove_1.getThreadtop());
+		Assert.assertEquals(message, reloadedMessageToMove_1.getParent());
+		
+		Message reloadedMessageToMove_1_1 = forumManager.getMessageById(messageToMove_1_1.getKey());
+		Assert.assertEquals(topMessage, reloadedMessageToMove_1_1.getThreadtop());
+		Assert.assertEquals(messageToMove_1, reloadedMessageToMove_1_1.getParent());
+		
+		Message reloadedMessageToMove_2 = forumManager.getMessageById(messageToMove_1.getKey());
+		Assert.assertEquals(topMessage, reloadedMessageToMove_2.getThreadtop());
+		Assert.assertEquals(message, reloadedMessageToMove_2.getParent());
+		
+		Message reloadedMessageToStay = forumManager.getMessageById(messageToStay.getKey());
+		Assert.assertEquals(topMessage, reloadedMessageToStay.getThreadtop());
+		Assert.assertEquals(message, reloadedMessageToStay.getParent());
+	}
+	
+	@Test
+	public void splitMessage() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-2");
+		Identity guest3 =  securityManager.getAndUpdateAnonymousUserForLanguage(Locale.ENGLISH);
+		Forum fo = forumManager.addAForum();
+		dbInstance.commit();
+		
+		// thread
+		// -> message
+		// -> -> message to split
+		// -> -> -> message child 1
+		// -> -> -> -> message child 1.1
+		// -> -> -> message child 2
+		// -> -> message staying
+
+		Message topMessage = forumManager.createMessage(fo, id1, false);
+		topMessage.setTitle("Thread split message");
+		topMessage.setBody("Thread split message");
+		forumManager.addTopMessage(topMessage);
+		dbInstance.commit();
+
+		Message message = forumManager.createMessage(fo, id2, false);
+		message.setTitle("Re: Thread split message");
+		message.setBody("Thread split message");
+		forumManager.replyToMessage(message, topMessage);
+		dbInstance.commit();
+		
+		Message messageToSplit = forumManager.createMessage(fo, id2, false);
+		messageToSplit.setTitle("Message to split");
+		messageToSplit.setBody("Thread split message");
+		forumManager.replyToMessage(messageToSplit, message);
+		dbInstance.commit();
+		
+		Message messageToSplit_1 = forumManager.createMessage(fo, id2, false);
+		messageToSplit_1.setTitle("Re: Message to split 1");
+		messageToSplit_1.setBody("Thread split message");
+		forumManager.replyToMessage(messageToSplit_1, messageToSplit);
+		dbInstance.commit();
+		
+		Message messageToSplit_1_1 = forumManager.createMessage(fo, guest3, true);
+		messageToSplit_1_1.setTitle("Re: Re: Message to split 1");
+		messageToSplit_1_1.setBody("Thread split message");
+		forumManager.replyToMessage(messageToSplit_1_1, messageToSplit_1);
+		dbInstance.commit();
+		
+		Message messageToSplit_2 = forumManager.createMessage(fo, id2, false);
+		messageToSplit_2.setTitle("Re: Message to split 2");
+		messageToSplit_2.setBody("Thread split message");
+		forumManager.replyToMessage(messageToSplit_2, messageToSplit);
+		dbInstance.commit();
+		
+		Message messageToStay = forumManager.createMessage(fo, id2, false);
+		messageToStay.setTitle("Message to stay");
+		messageToStay.setBody("Thread split message");
+		forumManager.replyToMessage(messageToStay, message);
+		dbInstance.commit();
+		
+		//move the message
+		Message splitedMessage = forumManager.splitThread(messageToSplit);
+		dbInstance.commitAndCloseSession();
+		
+		//check the original thread
+		// thread
+		// -> message
+		// -> -> message staying
+		List<Message> originalMessages = forumManager.getThread(topMessage.getKey());
+		Assert.assertEquals(3, originalMessages.size());
+		Assert.assertTrue(originalMessages.contains(topMessage));
+		Assert.assertTrue(originalMessages.contains(message));
+		Assert.assertTrue(originalMessages.contains(messageToStay));
+		
+		//check thread and parent of the target thread
+		Message reloadedTopMessage = forumManager.getMessageById(topMessage.getKey());
+		Assert.assertNull(reloadedTopMessage.getThreadtop());
+		Assert.assertNull(reloadedTopMessage.getParent());
+
+		Message reloadedMessage = forumManager.getMessageById(message.getKey());
+		Assert.assertEquals(topMessage, reloadedMessage.getThreadtop());
+		Assert.assertEquals(topMessage, reloadedMessage.getParent());
+
+		Message reloadedMessageToStay = forumManager.getMessageById(messageToStay.getKey());
+		Assert.assertEquals(topMessage, reloadedMessageToStay.getThreadtop());
+		Assert.assertEquals(message, reloadedMessageToStay.getParent());
+		
+		//check original thread
+		// message to split
+		// -> message child 1
+		// -> -> message child 1.1
+		// -> message child 2
+		List<Message> splitedMessages = forumManager.getThread(splitedMessage.getKey());
+		Assert.assertEquals(4, splitedMessages.size());
+		Assert.assertTrue(splitedMessages.contains(splitedMessage));
+		Assert.assertTrue(splitedMessages.contains(messageToSplit_1));
+		Assert.assertTrue(splitedMessages.contains(messageToSplit_1_1));
+		Assert.assertTrue(splitedMessages.contains(messageToSplit_2));
+
+		//check thread and parent of the splited thread
+		
+		Message reloadedmessageToSplit = forumManager.getMessageById(messageToSplit.getKey());
+		Assert.assertNull(reloadedmessageToSplit.getThreadtop());
+		Assert.assertNull(reloadedmessageToSplit.getParent());
+
+		Message reloadedMessageToSplit_1 = forumManager.getMessageById(messageToSplit_1.getKey());
+		Assert.assertEquals(messageToSplit, reloadedMessageToSplit_1.getThreadtop());
+		Assert.assertEquals(messageToSplit, reloadedMessageToSplit_1.getParent());
+		
+		Message reloadedMessageToSplit_1_1 = forumManager.getMessageById(messageToSplit_1_1.getKey());
+		Assert.assertEquals(messageToSplit, reloadedMessageToSplit_1_1.getThreadtop());
+		Assert.assertEquals(messageToSplit_1, reloadedMessageToSplit_1_1.getParent());
+		
+		Message reloadedMessageToSplit_2 = forumManager.getMessageById(messageToSplit_1.getKey());
+		Assert.assertEquals(messageToSplit, reloadedMessageToSplit_2.getThreadtop());
+		Assert.assertEquals(messageToSplit, reloadedMessageToSplit_2.getParent());
 	}
 	
 	@Test

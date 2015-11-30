@@ -68,7 +68,10 @@
 	<bean id="oauthcallback" class="org.olat.login.oauth.OAuthDispatcher" />
 	
 	<!-- send bug report dispatcher -->
-	<bean id="errorMailBean" class="org.olat.core.dispatcher.ErrorFeedbackMailer" />
+	<bean id="errorMailBean" class="org.olat.core.dispatcher.ErrorFeedbackMailer">
+		<property name="mailManager" ref="mailManager"/>
+		<property name="securityManager" ref="baseSecurityManager"/>
+	</bean>
 
 	<!--  all olat dispatchers -->
 	<bean id="dmzbean" class="org.olat.dispatcher.DMZDispatcher">

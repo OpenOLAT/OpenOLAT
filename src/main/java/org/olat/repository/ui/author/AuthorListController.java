@@ -557,13 +557,19 @@ public class AuthorListController extends FormBasicController implements Activat
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 
-		toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
-		listenTo(toolsCtrl);
-
-		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
-		listenTo(toolsCalloutCtrl);
-		toolsCalloutCtrl.activate();
+		RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
+		if(entry == null) {
+			tableEl.reloadData();
+			showWarning("repositoryentry.not.existing");
+		} else {
+			toolsCtrl = new ToolsController(ureq, getWindowControl(), row, entry);
+			listenTo(toolsCtrl);
+	
+			toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+					toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+			listenTo(toolsCalloutCtrl);
+			toolsCalloutCtrl.activate();
+		}
 	}
 	
 	private void doImport(UserRequest ureq) {
@@ -916,19 +922,18 @@ public class AuthorListController extends FormBasicController implements Activat
 	private class ToolsController extends BasicController {
 		
 		private final AuthoringEntryRow row;
-		private final RepositoryEntry entry;
+
 		private final VelocityContainer mainVC;
 		
 		private boolean isOwner;
 		private boolean isOlatAdmin;
 		private boolean isAuthor;
 		
-		public ToolsController(UserRequest ureq, WindowControl wControl, AuthoringEntryRow row) {
+		public ToolsController(UserRequest ureq, WindowControl wControl, AuthoringEntryRow row, RepositoryEntry entry) {
 			super(ureq, wControl);
 			setTranslator(AuthorListController.this.getTranslator());
 			this.row = row;
-			this.entry = repositoryService.loadByKey(row.getKey());
-
+			
 			Identity identity = getIdentity();
 			Roles roles = ureq.getUserSession().getRoles();
 			isOlatAdmin = roles.isOLATAdmin();
