@@ -131,7 +131,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				putInitialPanel(vc);
 			} else {
 				// add as listener to BusinessGroup so we are being notified about changes.
-				CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), currBusinessGroup);
+				CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), currBusinessGroup);
 	
 				//create some controllers
 				editDetailsController = new BusinessGroupEditDetailsController(ureq, getWindowControl(), businessGroup);
@@ -143,7 +143,6 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				membersController = new BusinessGroupMembersController(ureq, getWindowControl(), toolbarPanel, businessGroup);
 				listenTo(membersController);
 				
-				//fxdiff VCRP-1,2: access control of resources
 				tabbedPane = new TabbedPane("bgTabbs", ureq.getLocale());
 				tabbedPane.addListener(this);
 				setAllTabs(ureq);
@@ -160,6 +159,10 @@ public class BusinessGroupEditController extends BasicController implements Cont
 			alreadyLockedDialogController.activate();
 			putInitialPanel(new Panel("empty"));
 		}
+	}
+	
+	public BusinessGroup getBusinessGroup() {
+		return currBusinessGroup;
 	}
 	
 	/**
@@ -267,10 +270,10 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == collaborationToolsController) {
 			if (event == Event.CHANGED_EVENT) {
+				fireEvent(ureq, event);
 				// notify current active users of this business group
 				BusinessGroupModifiedEvent
 						.fireModifiedGroupEvents(BusinessGroupModifiedEvent.CONFIGURATION_MODIFIED_EVENT, currBusinessGroup, null);
-				fireEvent(ureq, event);
 			}
 		} else if (source == alreadyLockedDialogController) {
 			//closed dialog box either by clicking ok, or closing the box
@@ -281,6 +284,8 @@ public class BusinessGroupEditController extends BasicController implements Cont
 			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				//reload the business group
 				currBusinessGroup = editDetailsController.getGroup();
+				fireEvent(ureq, event);
+				
 				// inform index about change
 				setAllTabs(ureq);
 				// notify current active users of this business group
@@ -307,6 +312,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	/**
 	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(Event event) {
 		if (event instanceof OLATResourceableJustBeforeDeletedEvent) {
 			OLATResourceableJustBeforeDeletedEvent delEvent = (OLATResourceableJustBeforeDeletedEvent) event;
