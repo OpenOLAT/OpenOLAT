@@ -657,10 +657,10 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 
 	@Override
 	public void generateCertificates(List<CertificateInfos> certificateInfos, RepositoryEntry entry,
-			CertificateTemplate template, MailerResult result) {
+			CertificateTemplate template, boolean sendMail) {
 		int count = 0;
 		for(CertificateInfos certificateInfo:certificateInfos) {
-			generateCertificate(certificateInfo, entry, template, result);
+			generateCertificate(certificateInfo, entry, template, sendMail);
 			if(++count % 10 == 0) {
 				dbInstance.commitAndCloseSession();
 			}
@@ -706,14 +706,14 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 
 	@Override
 	public Certificate generateCertificate(CertificateInfos certificateInfos, RepositoryEntry entry,
-			CertificateTemplate template, MailerResult result) {
-		Certificate certificate = persistCertificate(certificateInfos, entry, template);
+			CertificateTemplate template, boolean sendMail) {
+		Certificate certificate = persistCertificate(certificateInfos, entry, template, sendMail);
 		markPublisherNews(null, entry.getOlatResource());
 		return certificate;
 	}
 
 	private Certificate persistCertificate(CertificateInfos certificateInfos, RepositoryEntry entry,
-			CertificateTemplate template) {
+			CertificateTemplate template, boolean sendMail) {
 		OLATResource resource = entry.getOlatResource();
 		Identity identity = certificateInfos.getAssessedIdentity();
 		
@@ -736,7 +736,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		dbInstance.commit();
 		
 		//send message
-		sendJmsCertificateFile(certificate, template, certificateInfos.getScore(), certificateInfos.getPassed());
+		sendJmsCertificateFile(certificate, template, certificateInfos.getScore(), certificateInfos.getPassed(), sendMail);
 
 		return certificate;
 	}
@@ -745,7 +745,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		return velocityEngine;
 	}
 	
-	private void sendJmsCertificateFile(Certificate certificate, CertificateTemplate template, Float score, Boolean passed) {
+	private void sendJmsCertificateFile(Certificate certificate, CertificateTemplate template, Float score, Boolean passed, boolean sendMail) {
 		QueueSender sender;
 		QueueSession session = null;
 		try  {
@@ -756,6 +756,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			}
 			workUnit.setPassed(passed);
 			workUnit.setScore(score);
+			workUnit.setSendMail(sendMail);
 			
 			session = connection.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE );
 			ObjectMessage message = session.createObjectMessage();
