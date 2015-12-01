@@ -160,25 +160,28 @@ public class BusinessGroupMembersController extends BasicController {
 				boolean waitingPublic = dmsForm.isDisplayWaitingListPublic();
 				boolean download = dmsForm.isDownloadList();
 				
+				//changes are committed by the service
 				businessGroup = businessGroupService.updateDisplayMembers(businessGroup,
 						ownersIntern, participantsIntern, waitingIntern,
 						ownersPublic, participantsPublic, waitingPublic,
 						download);
+				fireEvent(ureq, event);
+				
 				// notify current active users of this business group
 				BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.CONFIGURATION_MODIFIED_EVENT, businessGroup, null);
 				// do loggin
 				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CONFIGURATION_CHANGED, getClass());
-				fireEvent(ureq, event);
 			}
 		} else if (source == configForm) {
 			if(event == Event.CHANGED_EVENT) {
 				boolean allow = configForm.isAllowToLeaveBusinessGroup();
 				businessGroup = businessGroupService.updateAllowToLeaveBusinessGroup(businessGroup, allow);
+				fireEvent(ureq, event);
+				
 				// notify current active users of this business group
 				BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.CONFIGURATION_MODIFIED_EVENT, businessGroup, null);
 				// do loggin
 				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CONFIGURATION_CHANGED, getClass());
-				fireEvent(ureq, event);
 			}
 		} else if(source == importMembersWizard) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {

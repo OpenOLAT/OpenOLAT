@@ -104,6 +104,7 @@ public class ChoiceItemController extends BasicController implements ControllerE
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == main) {
 			// olat::: as: improve easy fix since almost all operations change the main vc.
@@ -129,10 +130,13 @@ public class ChoiceItemController extends BasicController implements ControllerE
 				displayMaterialFormController(ureq, editQuestion, restrictedEdit,
 						translate("fieldset.legend.question"));
 			} else if (cmd.equals("editr")) {
-				editResponse = item.getQuestion().getResponses().get(posid);
-				Material responseMat = editResponse.getContent();
-				displayMaterialFormController(ureq, responseMat, restrictedEdit,
-						translate("fieldset.legend.answers"));
+				List<Response> elements = item.getQuestion().getResponses();
+				if(posid >= 0 && posid < elements.size()) {
+					editResponse = elements.get(posid);
+					Material responseMat = editResponse.getContent();
+					displayMaterialFormController(ureq, responseMat, restrictedEdit,
+							translate("fieldset.legend.answers"));
+				}
 			} else if (cmd.equals("addchoice")) {
 				ChoiceQuestion question = (ChoiceQuestion) item.getQuestion();
 				List<Response> choices = question.getResponses();

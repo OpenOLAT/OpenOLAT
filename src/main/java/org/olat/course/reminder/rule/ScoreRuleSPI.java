@@ -19,6 +19,7 @@
  */
 package org.olat.course.reminder.rule;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -26,10 +27,14 @@ import java.util.Map;
 import org.olat.core.id.Identity;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.reminder.manager.ReminderRuleDAO;
 import org.olat.course.reminder.ui.ScoreRuleEditor;
+import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.reminder.FilterRuleSPI;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
@@ -83,7 +88,24 @@ public class ScoreRuleSPI implements FilterRuleSPI {
 			ICourse course = CourseFactory.loadCourse(entry);
 			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
 			
-			Map<Long, Float> scores = helperDao.getScores(entry, courseNode, identities);
+			Map<Long, Float> scores;
+			if(courseNode instanceof STCourseNode) {
+				scores = new HashMap<>();
+				
+				STCourseNode structureNode = (STCourseNode)courseNode;
+				if(structureNode.hasScoreConfigured()) {
+					for(Identity identity:identities) {
+						UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
+						ScoreEvaluation scoreEval = structureNode.getUserScoreEvaluation(uce);
+						Float score = scoreEval.getScore();
+						if(score != null) {
+							scores.put(identity.getKey(), score);
+						}
+					}
+				}
+			} else {
+				scores = helperDao.getScores(entry, courseNode, identities);
+			}
 			
 			for(Iterator<Identity> identityIt=identities.iterator(); identityIt.hasNext(); ) {
 				Identity identity = identityIt.next();

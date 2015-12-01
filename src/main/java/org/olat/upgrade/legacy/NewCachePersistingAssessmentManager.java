@@ -51,7 +51,6 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.event.GenericEventListener;
-import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -892,8 +891,7 @@ public class NewCachePersistingAssessmentManager {
 							template = certificatesManager.getTemplateById(templateId);
 						}
 						CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, passed);
-						MailerResult result = new MailerResult();
-						certificatesManager.generateCertificate(certificateInfos, courseEntry, template, result);
+						certificatesManager.generateCertificate(certificateInfos, courseEntry, template, true);
 					}
 				}
 				

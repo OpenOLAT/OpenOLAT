@@ -30,7 +30,6 @@ import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.ICourse;
@@ -155,9 +154,9 @@ public interface CertificatesManager {
 	
 	public Certificate uploadStandaloneCertificate(Identity identity, Date creationDate, String courseTitle, Long resourceKey, File certificateFile);
 	
-	public void generateCertificates(List<CertificateInfos> identities, RepositoryEntry entry, CertificateTemplate template, MailerResult result);
+	public void generateCertificates(List<CertificateInfos> identities, RepositoryEntry entry, CertificateTemplate template, boolean sendMail);
 
-	public Certificate generateCertificate(CertificateInfos identity, RepositoryEntry entry, CertificateTemplate template, MailerResult result);
+	public Certificate generateCertificate(CertificateInfos identity, RepositoryEntry entry, CertificateTemplate template, boolean sendMail);
 	
 	public void deleteCertificate(Certificate certificate);
 

@@ -47,6 +47,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -234,6 +235,12 @@ public class RestConnection {
 		HttpPut put = new HttpPut(uri);
 		decorateHttpMessage(put,accept, langage, cookie);
 		return put;
+	}
+	
+	public HttpHead createHead(URI uri, String accept, boolean cookie) {
+		HttpHead head = new HttpHead(uri);
+		decorateHttpMessage(head,accept, "en", cookie);
+		return head;
 	}
 	
 	public HttpGet createGet(URI uri, String accept, boolean cookie) {

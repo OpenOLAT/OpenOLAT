@@ -33,7 +33,6 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.util.mail.MailerResult;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessedIdentitiesTableDataModel;
@@ -133,7 +132,6 @@ public class CertificatesWizardController extends BasicController {
 			template = certificatesManager.getTemplateById(templateKey);
 		}
 		
-		MailerResult result = new MailerResult();
-		certificatesManager.generateCertificates(assessedIdentitiesInfos, courseEntry, template, result);
+		certificatesManager.generateCertificates(assessedIdentitiesInfos, courseEntry, template, true);
 	}
 }

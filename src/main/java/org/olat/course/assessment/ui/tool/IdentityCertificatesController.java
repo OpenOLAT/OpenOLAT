@@ -40,7 +40,6 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
-import org.olat.core.util.mail.MailerResult;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.certificate.Certificate;
@@ -220,8 +219,7 @@ public class IdentityCertificatesController extends BasicController implements G
 		Float score = scoreEval == null ? null : scoreEval.getScore();
 		Boolean passed = scoreEval == null ? null : scoreEval.getPassed();
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, passed);
-		MailerResult result = new MailerResult();
-		certificatesManager.generateCertificate(certificateInfos, courseEntry, template, result);
+		certificatesManager.generateCertificate(certificateInfos, courseEntry, template, true);
 		loadList();
 		showInfo("msg.certificate.pending");
 		fireEvent(ureq, Event.CHANGED_EVENT);

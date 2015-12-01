@@ -57,7 +57,6 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.mail.MailerResult;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessedIdentityWrapper;
@@ -336,8 +335,7 @@ public class AssessmentIdentitiesCourseController extends FormBasicController {
 			template = certificatesManager.getTemplateById(templateKey);
 		}
 		
-		MailerResult result = new MailerResult();
-		certificatesManager.generateCertificates(assessedIdentitiesInfos, courseEntry, template, result);
+		certificatesManager.generateCertificates(assessedIdentitiesInfos, courseEntry, template, true);
 	}
 	
 	private void doNext(UserRequest ureq) {

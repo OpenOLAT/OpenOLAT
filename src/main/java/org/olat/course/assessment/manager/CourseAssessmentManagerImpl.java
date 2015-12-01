@@ -31,7 +31,6 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
-import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -292,8 +291,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 					template = certificatesManager.getTemplateById(templateId);
 				}
 				CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, passed);
-				MailerResult result = new MailerResult();
-				certificatesManager.generateCertificate(certificateInfos, courseEntry, template, result);
+				certificatesManager.generateCertificate(certificateInfos, courseEntry, template, true);
 			}
 		}
 	}

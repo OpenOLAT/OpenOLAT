@@ -19,8 +19,6 @@
  */
 package org.olat.group.ui.edit;
 
-import org.olat.collaboration.CollaborationTools;
-import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.collaboration.CollaborationToolsSettingsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -44,8 +42,7 @@ public class BusinessGroupToolsController extends BasicController {
 		super(ureq, wControl);
 		
 		mainVC = createVelocityContainer("tab_bgCollabTools");
-		CollaborationTools ctsm = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
-		toolsController = ctsm.createCollaborationToolsSettingsController(ureq, getWindowControl());
+		toolsController = new CollaborationToolsSettingsController(ureq, getWindowControl(), businessGroup);
 		// we are listening on CollaborationToolsSettingsController events
 		// which are just propagated to our attached controllerlistener...
 		// e.g. the BusinessGroupMainRunController, updating the MenuTree
