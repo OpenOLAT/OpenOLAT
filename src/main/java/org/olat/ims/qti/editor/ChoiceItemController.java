@@ -129,7 +129,8 @@ public class ChoiceItemController extends BasicController implements ControllerE
 				displayMaterialFormController(ureq, editQuestion, restrictedEdit,
 						translate("fieldset.legend.question"));
 			} else if (cmd.equals("editr")) {
-				editResponse = item.getQuestion().getResponses().get(posid);
+				List<Response> responses = item.getQuestion().getResponses();
+				editResponse = responses.get(posid);
 				Material responseMat = editResponse.getContent();
 				displayMaterialFormController(ureq, responseMat, restrictedEdit,
 						translate("fieldset.legend.answers"));

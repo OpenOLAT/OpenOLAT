@@ -27,6 +27,7 @@ import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.HEAD;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -42,8 +43,9 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.mail.MailerResult;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -65,6 +67,46 @@ import org.olat.restapi.support.ObjectFactory;
  */
 @Path("repo/courses/{resourceKey}/certificates")
 public class CertificationWebService {
+	
+	
+	@HEAD
+	@Path("{identityKey}")
+	@Produces({"application/pdf"})
+	public Response getCertificateInfo(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
+			@Context HttpServletRequest request) {
+		if(!isAdmin(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+
+		CertificatesManager certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
+		BaseSecurity baseSecurity = CoreSpringFactory.getImpl(BaseSecurity.class);
+
+		Identity identity = baseSecurity.loadIdentityByKey(identityKey);
+		if(identity == null) {
+			return Response.serverError().status(Response.Status.NOT_FOUND).build();
+		}
+		
+		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", resourceKey);
+		OLATResourceManager resourceManager = CoreSpringFactory.getImpl(OLATResourceManager.class);
+		OLATResource resource = resourceManager.findResourceable(courseOres);
+		if(resource == null) {
+			resource = resourceManager.findResourceById(resourceKey);
+		}
+		if(resource == null) {
+			return Response.serverError().status(Response.Status.NOT_FOUND).build();
+		}
+		
+		Certificate certificate = certificatesManager.getLastCertificate(identity, resource.getKey());
+		if(certificate == null) {
+			return Response.serverError().status(Response.Status.NOT_FOUND).build();
+		}
+
+		VFSLeaf certificateFile = certificatesManager.getCertificateLeaf(certificate);
+		if(certificateFile == null || !certificateFile.exists()) {
+			return Response.serverError().status(Response.Status.NOT_FOUND).build();
+		}
+		return Response.ok().build();
+	}
 
 	/**
 	 * Return the certificate as PDF file.
@@ -138,11 +180,15 @@ public class CertificationWebService {
 		OLATResourceManager resourceManager = CoreSpringFactory.getImpl(OLATResourceManager.class);
 		OLATResource resource = resourceManager.findResourceById(resourceKey);
 		if(resource == null) {
+			resource = resourceManager.findResourceable(resourceKey, "CourseModule");
+		}
+		
+		if(resource == null) {	
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
 		} else {
 			CertificatesManager certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
 			
-			ICourse course = CourseFactory.loadCourse(resource.getResourceableId());
+			ICourse course = CourseFactory.loadCourse(resource);
 			RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 
 			CertificateTemplate template = null;
@@ -151,13 +197,12 @@ public class CertificationWebService {
 				template = certificatesManager.getTemplateById(templateId);
 			}
 			
-			MailerResult result = new MailerResult();
 			CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, passed);
 			if(StringHelper.containsNonWhitespace(creationDate)) {
 				Date date = ObjectFactory.parseDate(creationDate);
 				certificateInfos.setCreationDate(date);
 			}
-			Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, template, result);
+			Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, template, false);
 			if(certificate != null) {
 				return Response.ok().build();
 			}
