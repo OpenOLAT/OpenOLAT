@@ -68,6 +68,7 @@ public class ForumNotificationsHandler extends LogDelegator implements Notificat
 	 * @see org.olat.core.commons.services.notifications.NotificationsHandler#createSubscriptionInfo(org.olat.core.commons.services.notifications.Subscriber,
 	 *      java.util.Locale, java.util.Date)
 	 */
+	@Override
 	public SubscriptionInfo createSubscriptionInfo(final Subscriber subscriber, Locale locale, Date compareDate) {
 		try {
 			Publisher p = subscriber.getPublisher();
