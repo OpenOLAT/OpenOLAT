@@ -206,21 +206,22 @@ public class AssessmentIdentityCourseController extends BasicController {
 		int index = treeOverviewCtrl.getIndexOf(courseNode);
 		int numOfNodes = treeOverviewCtrl.getNumberOfNodes();
 		
-		previousLink = LinkFactory.createToolLink("previouselement","", this, "o_icon_previous");
+		previousLink = LinkFactory.createToolLink("previouselement", translate("previous"), this, "o_icon_previous");
 		previousLink.setTitle(translate("command.previous"));
 		previousLink.setEnabled(index > 1 && index <= numOfNodes);
-		stackPanel.addTool(previousLink, Align.rightEdge, false, "");
+		stackPanel.addTool(previousLink, Align.rightEdge, false);
 
 		courseNodeSelectionLink =  LinkFactory.createToolLink("node.select", "node.select", courseNode.getShortTitle(), this);
 		String courseNodeCssClass = CourseNodeFactory.getInstance()
 				.getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass();
+		courseNodeSelectionLink.setElementCssClass("dropdown-toggle ");
 		courseNodeSelectionLink.setIconLeftCSS("o_icon " + courseNodeCssClass);
 		courseNodeSelectionLink.setIconRightCSS("o_icon o_icon_caret");
-		stackPanel.addTool(courseNodeSelectionLink, Align.rightEdge, false);
+		stackPanel.addTool(courseNodeSelectionLink, Align.rightEdge, false, "o_tool_dropdown dropdown");
 		
-		nextLink = LinkFactory.createToolLink("nextelement","", this, "o_icon_next");
+		nextLink = LinkFactory.createToolLink("nextelement", translate("next"), this, "o_icon_next");
 		nextLink.setTitle(translate("command.next"));
 		nextLink.setEnabled(index > 0 && index < numOfNodes);
-		stackPanel.addTool(nextLink, Align.rightEdge, false, "");
+		stackPanel.addTool(nextLink, Align.rightEdge, false);
 	}
 }

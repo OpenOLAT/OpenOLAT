@@ -45,5 +45,6 @@ public interface AssessmentToolManager {
 	public List<IdentityShort> getShortAssessedIdentities(Identity coach, SearchAssessedIdentityParams params, int maxResults);
 	
 	public List<AssessmentEntry> getAssessmentEntries(Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status);
+	
 
 }

@@ -245,7 +245,9 @@ public class AssessmentIdentitiesCourseNodeController extends FormBasicControlle
 		List<AssessedIdentityCourseElementRow> rows = new ArrayList<>(assessedIdentities.size());
 		for(Identity assessedIdentity:assessedIdentities) {
 			AssessmentEntry entry = entryMap.get(assessedIdentity.getKey());
-			rows.add(new AssessedIdentityCourseElementRow(assessedIdentity, entry, userPropertyHandlers, getLocale()));
+			if(accept(entry, params)) {
+				rows.add(new AssessedIdentityCourseElementRow(assessedIdentity, entry, userPropertyHandlers, getLocale()));
+			}
 		}
 		usersTableModel.setObjects(rows);
 		tableEl.reloadData();
@@ -279,6 +281,27 @@ public class AssessmentIdentitiesCourseNodeController extends FormBasicControlle
 			
 		}
 		flc.contextPut("toolCmpNames", toolCmpNames);
+	}
+	
+	private boolean accept(AssessmentEntry entry, SearchAssessedIdentityParams params) {
+		boolean ok = true;
+		
+		if(params.isPassed() && (entry == null || entry.getPassed() == null || !entry.getPassed().booleanValue())) {
+			ok &= false;
+		}
+		
+		if(params.isFailed() && (entry == null || entry.getPassed() == null || entry.getPassed().booleanValue())) {
+			ok &= false;
+		}
+		
+		if(params.getAssessmentStatus() != null && params.getAssessmentStatus().size() > 0) {
+			if(entry == null || entry.getAssessmentStatus() == null) {
+				ok &= false;
+			} else {
+				ok &= !params.getAssessmentStatus().contains(entry.getAssessmentStatus());
+			}
+		}
+		return ok;
 	}
 	
 	private void fillAlternativeToAssessableIdentityList(AssessmentToolOptions options) {

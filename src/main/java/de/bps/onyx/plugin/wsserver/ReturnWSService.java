@@ -43,6 +43,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.manager.CourseAssessmentManagerImpl;
+import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -214,7 +215,7 @@ public class ReturnWSService {
 
 								ScoreEvaluation scoreEvaluation = new ScoreEvaluation(qtiResultSet.getScore(), qtiResultSet.getIsPassed(), qtiResultSet.getFullyAssessed(),
 										qtiResultSet.getAssessmentID());
-								am.saveScoreEvaluation(courseNode, null, assessedIdentity, scoreEvaluation, userCourseEnvironment, false);
+								am.saveScoreEvaluation((AssessableCourseNode)courseNode, null, assessedIdentity, scoreEvaluation, userCourseEnvironment, false);
 
 							}
 						} else {

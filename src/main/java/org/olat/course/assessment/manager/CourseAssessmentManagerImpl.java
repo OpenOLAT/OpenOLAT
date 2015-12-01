@@ -206,7 +206,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	}
 	
 	@Override
-	public void saveScoreEvaluation(CourseNode courseNode, Identity identity, Identity assessedIdentity,
+	public void saveScoreEvaluation(AssessableCourseNode courseNode, Identity identity, Identity assessedIdentity,
 			ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnv,
 			boolean incrementUserAttempts) {
 		ICourse course = CourseFactory.loadCourse(courseEntry.getOlatResource());
@@ -276,13 +276,11 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 					LoggingResourceable.wrap(identity), 
 					LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiAttempts, "", String.valueOf(attempts)));	
 		}
-				
-		if(courseNode instanceof AssessableCourseNode) {
-			userCourseEnv.getScoreAccounting().scoreInfoChanged((AssessableCourseNode)courseNode, scoreEvaluation);
-			// Update users efficiency statement
-			efficiencyStatementManager.updateUserEfficiencyStatement(userCourseEnv);
-		}
 		
+		userCourseEnv.getScoreAccounting().scoreInfoChanged(courseNode, scoreEvaluation);
+		// Update users efficiency statement
+		efficiencyStatementManager.updateUserEfficiencyStatement(userCourseEnv);
+
 		if(passed != null && passed.booleanValue() && course.getCourseConfig().isAutomaticCertificationEnabled()) {
 			if(certificatesManager.isCertificationAllowed(assessedIdentity, courseEntry)) {
 				CertificateTemplate template = null;

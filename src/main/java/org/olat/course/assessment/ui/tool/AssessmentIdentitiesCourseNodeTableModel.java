@@ -19,16 +19,20 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
  * 
@@ -37,15 +41,51 @@ import org.olat.course.nodes.STCourseNode;
  *
  */
 public class AssessmentIdentitiesCourseNodeTableModel extends DefaultFlexiTableDataModel<AssessedIdentityCourseElementRow>
-	implements SortableFlexiTableDataModel<AssessedIdentityCourseElementRow> {
+	implements SortableFlexiTableDataModel<AssessedIdentityCourseElementRow>, FilterableFlexiTableModel {
 
 	private final AssessableCourseNode courseNode;
+	private List<AssessedIdentityCourseElementRow> backups;
 	
 	public AssessmentIdentitiesCourseNodeTableModel(FlexiTableColumnModel columnModel, AssessableCourseNode courseNode) {
 		super(columnModel);
 		this.courseNode = courseNode;
 	}
-	
+
+	@Override
+	public void filter(String key) {
+		if(StringHelper.containsNonWhitespace(key)) {
+			List<AssessedIdentityCourseElementRow> filteredRows = new ArrayList<>();
+			if("passed".equals(key)) {
+				for(AssessedIdentityCourseElementRow row:getObjects()) {
+					if(row.getPassed() != null && row.getPassed().booleanValue()) {
+						filteredRows.add(row);
+					}
+				}
+			} else if("failed".equals(key)) {
+				for(AssessedIdentityCourseElementRow row:getObjects()) {
+					if(row.getPassed() != null && !row.getPassed().booleanValue()) {
+						filteredRows.add(row);
+					}
+				}
+			} else if(AssessmentEntryStatus.isValueOf(key)) {
+				for(AssessedIdentityCourseElementRow row:getObjects()) {
+					if(row.getAssessmentStatus() != null && key.equals(row.getAssessmentStatus().name())) {
+						filteredRows.add(row);
+					}
+				}
+			}
+			super.setObjects(filteredRows);
+		} else {
+			super.setObjects(backups);
+		}
+	}
+
+	@Override
+	public void setObjects(List<AssessedIdentityCourseElementRow> objects) {
+		backups = objects;
+		super.setObjects(objects);
+	}
+
 	@Override
 	public void sort(SortKey orderBy) {
 		SortableFlexiTableModelDelegate<AssessedIdentityCourseElementRow> sorter

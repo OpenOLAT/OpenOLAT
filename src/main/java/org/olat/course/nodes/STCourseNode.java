@@ -95,7 +95,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author Mike Stock
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
-public class STCourseNode extends AbstractAccessableCourseNode implements AssessableCourseNode {
+public class STCourseNode extends AbstractAccessableCourseNode implements CalculatedAssessableCourseNode {
 
 	private static final long serialVersionUID = -7460670977531082040L;
 	private static final String TYPE = "st";
