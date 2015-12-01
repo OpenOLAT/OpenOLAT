@@ -135,7 +135,6 @@ public class CollaborationToolsSettingsController extends BasicController {
 		// update quota form: only show when enabled
 		if (collabTools.isToolEnabled(CollaborationTools.TOOL_FOLDER)) {
 			vc_collabtools.contextPut("folderToolEnabled", Boolean.TRUE);
-			//fxdiff VCRP-8: collaboration tools folder access control
 			if(ureq.getUserSession().getRoles().isOLATAdmin()) {
 				vc_collabtools.put("quota", quotaCtr.getInitialComponent());
 			}
@@ -255,7 +254,6 @@ public class CollaborationToolsSettingsController extends BasicController {
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(
 					new CalendarGUIModifiedEvent(), OresHelper.lookupType(CalendarManager.class)
 			);
-		//fxdiff VCRP-8: collaboration tools folder access control
 		} else if (source == folderForm) {
 			collabTools.saveFolderAccess(new Long(folderForm.getFolderAccess()));
 		}
@@ -300,7 +298,7 @@ class ChoiceOfToolsForm extends FormBasicController {
 			}
 			theKeys.add(""+i);
 			theValues.add(translate("collabtools.named." + availableTools[i]));
-			theClasses.add(translate("o_sel_" + availableTools[i]));
+			theClasses.add("o_sel_" + availableTools[i]);
 		}
 		
 		toolsKeys = theKeys.toArray(new String[theKeys.size()]);

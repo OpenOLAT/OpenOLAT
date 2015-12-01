@@ -197,8 +197,6 @@ public class GroupPage {
 			OOGraphene.waitBusy(browser);
 			OOGraphene.waitElement(memberMenuItem, 2, browser);
 		}
-		
-		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	

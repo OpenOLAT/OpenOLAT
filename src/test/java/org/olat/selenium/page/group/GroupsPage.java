@@ -73,6 +73,8 @@ public class GroupsPage {
 		WebElement submitButton = browser.findElement(submitBy);
 		submitButton.click();
 		OOGraphene.waitBusy(browser);
+		By groupNameBy = By.xpath("//div[@id='o_main_center_content_inner']//p[contains(text(),'" + name+ "')]");
+		OOGraphene.waitElement(groupNameBy, 2, browser);
 		
 		return new GroupPage(browser);
 	}

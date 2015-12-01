@@ -372,7 +372,6 @@ public class CollaborationTools implements Serializable {
 			return null;
 		}
 
-		//fxdiff VCRP-8: collaboration tools folder access control
 		boolean writeAccess;
 		boolean isOwner = CoreSpringFactory.getImpl(BusinessGroupService.class).hasRoles(identity, businessGroup, GroupRoles.coach.name());
 		if (!(isAdmin || isOwner)) {
@@ -773,7 +772,6 @@ public class CollaborationTools implements Serializable {
 		}
 	}
 	
-	//fxdiff VCRP-8: collaboration tools folder access control
 	public Long lookupFolderAccess() {
 		NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(ores);
 		Property property = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_FOLDER_ACCESS);
@@ -784,7 +782,6 @@ public class CollaborationTools implements Serializable {
 		return property.getLongValue();
 	}
 	
-	//fxdiff VCRP-8: collaboration tools folder access control
 	public void saveFolderAccess(Long folderrAccess) {
 		NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(ores);
 		Property property = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_FOLDER_ACCESS);
@@ -799,7 +796,6 @@ public class CollaborationTools implements Serializable {
 	
 	public class CollabSecCallback implements VFSSecurityCallback {
 		
-		//fxdiff VCRP-8: collaboration tools folder access control
 		private final boolean write;
 		private Quota folderQuota = null;
 		private SubscriptionContext subsContext;

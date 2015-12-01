@@ -224,6 +224,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	@Autowired
 	private CalendarModule calendarModule;
 	@Autowired
+	private InstantMessagingModule imModule;
+	@Autowired
 	private BusinessGroupService businessGroupService;
 
 	/**
@@ -372,8 +374,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	}
 	
 	private boolean isChatAvailable() {
-		return CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled() &&
-				CoreSpringFactory.getImpl(InstantMessagingModule.class).isGroupEnabled() && 
+		return imModule.isEnabled() && imModule.isGroupEnabled() && 
 				CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup).isToolEnabled(CollaborationTools.TOOL_CHAT);
 	}
 	
@@ -443,6 +444,9 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		if (source == bgEditCntrllr) {
 			// changes from the admin controller
 			if (event == Event.CHANGED_EVENT) {
+				businessGroup = bgEditCntrllr.getBusinessGroup();
+				chatAvailable = isChatAvailable();
+				
 				TreeModel trMdl = buildTreeModel();
 				bgTree.setTreeModel(trMdl);
 				bgTree.setSelectedNode(nodeAdmin);
