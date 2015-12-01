@@ -192,6 +192,26 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void loadIdentityShortByKey() {
+		//create a user it
+		String idName = "find-me-short-1-" + UUID.randomUUID().toString();
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser(idName);
+		dbInstance.commitAndCloseSession();
+		
+		//find it
+		IdentityShort foundId = securityManager.loadIdentityShortByKey(id.getKey());
+		Assert.assertNotNull(foundId);
+		Assert.assertEquals(id.getKey(), foundId.getKey());
+		Assert.assertEquals(idName, foundId.getName());
+		Assert.assertNotNull(foundId.getEmail());
+		Assert.assertNotNull(foundId.getFirstName());
+		Assert.assertNotNull(foundId.getLastName());
+		Assert.assertNotNull(foundId.getLastLogin());
+		Assert.assertEquals(id.getUser().getKey(), foundId.getUserKey());
+		Assert.assertTrue(foundId.getStatus() < Identity.STATUS_VISIBLE_LIMIT);
+	}
+	
+	@Test
 	public void testGetSecurityGroupsForIdentity() {
 		// create
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser( "find-sec-" + UUID.randomUUID().toString());

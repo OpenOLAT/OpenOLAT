@@ -105,7 +105,6 @@ public class IdentityImpl extends PersistentObject implements Identity, Identity
 	 * 
 	 * @param name The name to set
 	 */
-	@Override
 	public void setName(String name) {
 		if (name.length() > NAME_MAXLENGTH)
 			throw new AssertException("field name of table o_bs_identity too long");

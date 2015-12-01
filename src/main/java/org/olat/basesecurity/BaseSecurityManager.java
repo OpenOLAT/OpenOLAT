@@ -1023,7 +1023,7 @@ public class BaseSecurityManager implements BaseSecurity {
 			return Collections.emptyList();
 		}
 		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from ").append(IdentityShort.class.getName()).append(" as ident where ident.name in (:names)");
+		sb.append("select ident from bidentityshort as ident where ident.name in (:names)");
 
 		TypedQuery<IdentityShort> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), IdentityShort.class);
@@ -1049,7 +1049,7 @@ public class BaseSecurityManager implements BaseSecurity {
 			return Collections.emptyList();
 		}
 		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from ").append(IdentityShort.class.getName()).append(" as ident where ident.key in (:keys)");
+		sb.append("select ident from bidentityshort as ident where ident.key in (:keys)");
 		
 		TypedQuery<IdentityShort> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), IdentityShort.class);
@@ -1143,7 +1143,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		String[] attributes = new String[]{ "name", "firstName", "lastName", "email" };
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from ").append(IdentityShort.class.getName()).append(" as ident ")
+		sb.append("select ident from bidentityshort as ident ")
 		  .append(" where ident.status<").append(Identity.STATUS_VISIBLE_LIMIT).append(" and (");
 		
 		boolean start = true;
@@ -1181,12 +1181,8 @@ public class BaseSecurityManager implements BaseSecurity {
 
 	@Override
 	public IdentityShort loadIdentityShortByKey(Long identityKey) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select identity from ").append(IdentityShort.class.getName()).append(" as identity ")
-			.append(" where identity.key=:identityKey");
-		
 		List<IdentityShort> idents = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), IdentityShort.class)
+				.createNamedQuery("getIdentityShortById", IdentityShort.class)
 				.setParameter("identityKey", identityKey)
 				.getResultList();
 		if(idents.isEmpty()) {
@@ -1201,7 +1197,7 @@ public class BaseSecurityManager implements BaseSecurity {
 			return Collections.emptyList();
 		}
 		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from ").append(IdentityShort.class.getName()).append(" as ident where ident.key in (:keys)");
+		sb.append("select ident from bidentityshort as ident where ident.key in (:keys)");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), IdentityShort.class)
@@ -1900,7 +1896,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	 */
 	@Override
 	public Identity saveIdentityStatus(Identity identity, Integer status) {
-		Identity reloadedIdentity = loadForUpdate(identity); 
+		IdentityImpl reloadedIdentity = loadForUpdate(identity); 
 		reloadedIdentity.setStatus(status);
 		reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
 		dbInstance.commit();
@@ -1909,7 +1905,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	
 	@Override
 	public Identity setIdentityLastLogin(Identity identity) {
-		Identity reloadedIdentity = loadForUpdate(identity); 
+		IdentityImpl reloadedIdentity = loadForUpdate(identity); 
 		reloadedIdentity.setLastLogin(new Date());
 		reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
 		dbInstance.commit();
@@ -1918,7 +1914,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	
 	@Override
 	public Identity saveIdentityName(Identity identity, String newName) {
-		Identity reloadedIdentity = loadForUpdate(identity); 
+		IdentityImpl reloadedIdentity = loadForUpdate(identity); 
 		reloadedIdentity.setName(newName);
 		reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
 		dbInstance.commit();

@@ -693,7 +693,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 	
 	private Identity getPreviewIdentity() {
-		Identity identity = new TransientIdentity();
+		TransientIdentity identity = new TransientIdentity();
 		identity.setName("username");
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getAllUserPropertyHandlers();
 		for(UserPropertyHandler handler:userPropertyHandlers) {

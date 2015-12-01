@@ -19,11 +19,22 @@
  */
 package org.olat.course.assessment.manager;
 
+import java.util.List;
+import java.util.Set;
+
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.course.assessment.AssessmentToolManager;
+import org.olat.course.assessment.model.AssessedIdentity;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.manager.AssessmentEntryDAO;
+import org.olat.repository.RepositoryEntry;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
+
 
 /**
  * 
@@ -34,12 +45,32 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class AssessmentToolManagerTest extends OlatTestCase {
 
 	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private AssessmentEntryDAO courseNodeAssessmentDao;
+	@Autowired
 	private AssessmentToolManager assessmentToolManager;
 	
 	@Test
 	public void getAssessedIdentities() {
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-1");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = "39486543874";
+
+		AssessmentEntry nodeAssessment = courseNodeAssessmentDao
+				.createCourseNodeAssessment(assessedIdentity, entry, subIdent, entry);
+		Assert.assertNotNull(nodeAssessment);
+		dbInstance.commitAndCloseSession();
 		
-		Assert.assertNotNull(assessmentToolManager);
+		
+		List<AssessedIdentity> ids = ((AssessmentToolManagerImpl)assessmentToolManager).getIdentities();
+		Assert.assertNotNull(ids);
+		for(AssessedIdentity id:ids) {
+			if(id.getKey().equals(assessedIdentity.getKey())) {
+				Set<AssessmentEntry> entries = id.getAssessmentEntries();
+				System.out.println(entries);
+			}
+		}
 		
 	}
 }

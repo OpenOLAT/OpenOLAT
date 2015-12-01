@@ -80,22 +80,9 @@ class EMailIdentity implements Identity {
 	}
 
 	@Override
-	public void setLastLogin(Date loginDate) {/**/
-	}
-
-	@Override
 	public Integer getStatus() {
 		return null;
 	}
-
-	@Override
-	public void setStatus(Integer newStatus) {/**/
-	}
-
-	@Override
-	public void setName(String name) {/**/
-	}
-	
 
 	private class EMailUser implements User, ModifiedInfo {
 
@@ -109,14 +96,17 @@ class EMailIdentity implements Identity {
 			data.put(UserConstants.EMAIL, email);
 		}
 
+		@Override
 		public Long getKey() {
 			return null;
 		}
 
+		@Override
 		public boolean equalsByPersistableKey(Persistable persistable) {
 			return this == persistable;
 		}
 
+		@Override
 		public Date getLastModified() {
 			return null;
 		}
@@ -126,29 +116,36 @@ class EMailIdentity implements Identity {
 			//
 		}
 
+		@Override
 		public Date getCreationDate() {
 			return null;
 		}
 
+		@Override
 		public void setProperty(String propertyName, String propertyValue) {
 			//
 		}
 
+		@Override
 		public void setPreferences(Preferences prefs) {
 			//
 		}
 
+		@Override
 		public String getProperty(String propertyName, Locale locale) {
 			return data.get(propertyName);
 		}
 
+		@Override
 		public void setIdentityEnvironmentAttributes(Map<String, String> identEnvAttribs) {/**/
 		}
 
+		@Override
 		public String getPropertyOrIdentityEnvAttribute(String propertyName, Locale locale) {
 			return data.get(propertyName);
 		}
 
+		@Override
 		public Preferences getPreferences() {
 			return prefs;
 		}

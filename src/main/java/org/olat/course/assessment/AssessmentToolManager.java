@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.id.Identity;
+import org.olat.course.assessment.model.AssessmentEntryRow;
 import org.olat.course.assessment.model.CourseStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -43,6 +44,8 @@ public interface AssessmentToolManager {
 	public List<Identity> getAssessedIdentities(Identity coach, SearchAssessedIdentityParams params);
 	
 	public List<IdentityShort> getShortAssessedIdentities(Identity coach, SearchAssessedIdentityParams params, int maxResults);
+	
+	public List<AssessmentEntryRow> getAssessmentEntryRows(Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status);
 	
 	public List<AssessmentEntry> getAssessmentEntries(Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status);
 	

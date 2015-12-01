@@ -80,11 +80,6 @@ public final class PreviewIdentity implements Identity, User {
 		return "JaneDoe";
 	}
 
-	@Override
-	public void setName(String loginName) {
-		//
-	}
-
 	/**
 	 * @see org.olat.core.id.Identity#getUser()
 	 */
@@ -142,18 +137,8 @@ public final class PreviewIdentity implements Identity, User {
 	}
 
 	@Override
-	public void setLastLogin(Date loginDate) {
-		//
-	}
-
-	@Override
 	public Integer getStatus() {
 		return Identity.STATUS_ACTIV;
-	}
-
-	@Override
-	public void setStatus(Integer newStatus) {
-		//
 	}
 	
 	/**

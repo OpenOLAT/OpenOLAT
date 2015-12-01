@@ -71,23 +71,10 @@ public interface Identity extends CreateInfo, IdentityRef, Persistable {
 	 * @return Last date when the user logged in.
 	 */
 	public Date getLastLogin();
-	
-	/**
-	 * Set a new last login date for the user. 
-	 * @param loginDate  New last-login date.
-	 */
-	public void setLastLogin(Date loginDate);
 
 	/**
 	 * @return Current identity status 
 	 */
 	public Integer getStatus();
-	
-	/**
-	 * Set new status (aktiv,deleted,permanent) of identity.
-	 * @param newStatus  New status
-	 */
-	public void setStatus(Integer newStatus);
 
-	public void setName(String name);
 }

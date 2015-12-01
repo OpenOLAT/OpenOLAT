@@ -65,7 +65,6 @@ public class TransientIdentity implements Identity, User {
 		return login;
 	}
 	
-	@Override
 	public void setName(String name) {
 		this.login = name;
 	}
@@ -97,21 +96,9 @@ public class TransientIdentity implements Identity, User {
 	}
 
 	@Override
-	public void setLastLogin(Date loginDate) {
-		//
-	}
-
-	@Override
 	public Integer getStatus() {
 		return null;
 	}
-
-	@Override
-	public void setStatus(Integer newStatus) {
-		//
-	}
-
-
 
 	@Override
 	public boolean equalsByPersistableKey(Persistable persistable) {

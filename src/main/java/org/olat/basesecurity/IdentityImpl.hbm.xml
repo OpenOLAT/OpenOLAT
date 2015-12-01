@@ -23,22 +23,5 @@
     <many-to-one name="user" column="fk_user_id" class="org.olat.user.UserImpl" fetch="join" unique="true"  cascade="none"/>
 
   </class>
-  
-  
-  <class name="org.olat.basesecurity.IdentityShort" table="o_bs_identity_short_v" mutable="false">
-  	<!-- the default columns -->
-	<id name="key" column="id_id" type="long" unsaved-value="null">
-      <generator class="hilo"/>
-    </id>
-	 
-	<property name="userKey" column="us_id" type="long" />
- 	<property name="lastLogin" column="id_lastlogin" type="timestamp" />
-    <property name="name" column="id_name" type="string" />
-    <property name="status" column="id_status" type="integer" />
 
-    <property name="firstName" column="first_name" type="string" />
-    <property name="lastName" column="last_name" type="string" />
-    <property name="email" column="email" type="string" />
-
-  </class>
 </hibernate-mapping>

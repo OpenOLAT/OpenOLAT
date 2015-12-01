@@ -21,89 +21,93 @@ package org.olat.basesecurity;
 
 import java.util.Date;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.olat.core.id.Persistable;
 
 /**
  * 
  * Description:<br>
- * TODO: srosse Class Description for IdentityShort
+ * This is an immutable version of identity with a limited set of fields.
  * 
  * <P>
  * Initial Date:  14 juil. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-//fxdiff: FXOLAT-219 decrease the load for synching groups
-public class IdentityShort extends PersistentObject implements IdentityNames {
+@Entity(name="bidentityshort")
+@Table(name="o_bs_identity_short_v")
+@NamedQueries({
+	@NamedQuery(name="selectAllIdentitiesShortUnordered", query="select ident from bidentityshort as ident"),
+	@NamedQuery(name="getIdentityShortById", query="select identity from bidentityshort as identity where identity.key=:identityKey")
+	
+})
+public class IdentityShort implements Persistable, IdentityNames {
 
 	private static final long serialVersionUID = -9039644291427632379L;
 	
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@Column(name="id_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+
+	@Column(name="us_id", nullable=true, unique=false, insertable=false, updatable=false)
 	private Long userKey;
-	
+
+	@Column(name="id_name", nullable=true, unique=false, insertable=false, updatable=false)
 	private String name;
+	@Column(name="id_lastlogin", nullable=true, unique=false, insertable=false, updatable=false)
 	private Date lastLogin;
+	@Column(name="id_status", nullable=true, unique=false, insertable=false, updatable=false)
 	private int status;
+	@Column(name="first_name", nullable=true, unique=false, insertable=false, updatable=false)
 	private String firstName;
+	@Column(name="last_name", nullable=true, unique=false, insertable=false, updatable=false)
 	private String lastName;
+	@Column(name="email", nullable=true, unique=false, insertable=false, updatable=false)
 	private String email;
 
-	public IdentityShort() {
-		//
+	@Override
+	public Long getKey() {
+		return key;
 	}
-	
+
 	public Long getUserKey() {
 		return userKey;
 	}
 
-	public void setUserKey(Long userKey) {
-		this.userKey = userKey;
-	}
-
+	@Override
 	public String getName() {
 		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public Date getLastLogin() {
 		return lastLogin;
 	}
 
-	public void setLastLogin(Date lastLogin) {
-		this.lastLogin = lastLogin;
-	}
-
 	public int getStatus() {
 		return status;
 	}
 
-	public void setStatus(int status) {
-		this.status = status;
-	}
-
+	@Override
 	public String getFirstName() {
 		return firstName;
 	}
 
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
-
+	@Override
 	public String getLastName() {
 		return lastName;
 	}
 
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
-	}
-
 	public String getEmail() {
 		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
 	}
 
 	@Override
@@ -126,5 +130,10 @@ public class IdentityShort extends PersistentObject implements IdentityNames {
 			return getKey() != null && getKey().equals(id.getKey());
 		}
 		return false;
+	}
+	
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }

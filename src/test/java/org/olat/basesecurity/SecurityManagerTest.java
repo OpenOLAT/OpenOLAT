@@ -55,7 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class SecurityManagerTest extends OlatTestCase {
 
-	private Identity s1,s2,s3,testAdmin;
+	private IdentityImpl s1,s2,s3,testAdmin;
 	private static String testLogin = "test-login";
 	
 	@Autowired
@@ -259,9 +259,9 @@ public class SecurityManagerTest extends OlatTestCase {
 
 	@Before
 	public void setup() throws Exception {
-		s1 = JunitTestHelper.createAndPersistIdentityAsUser(testLogin);
-		s2 = JunitTestHelper.createAndPersistIdentityAsUser("coop");
-		s3 = JunitTestHelper.createAndPersistIdentityAsAuthor("diesbach");
-		testAdmin = JunitTestHelper.createAndPersistIdentityAsAdmin("testAdmin");
+		s1 = (IdentityImpl)JunitTestHelper.createAndPersistIdentityAsUser(testLogin);
+		s2 = (IdentityImpl)JunitTestHelper.createAndPersistIdentityAsUser("coop");
+		s3 = (IdentityImpl)JunitTestHelper.createAndPersistIdentityAsAuthor("diesbach");
+		testAdmin = (IdentityImpl)JunitTestHelper.createAndPersistIdentityAsAdmin("testAdmin");
 	}
 }

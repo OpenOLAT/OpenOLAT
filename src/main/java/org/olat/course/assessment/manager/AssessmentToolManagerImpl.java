@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment.manager;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.TypedQuery;
@@ -33,6 +34,8 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentToolManager;
+import org.olat.course.assessment.model.AssessedIdentity;
+import org.olat.course.assessment.model.AssessmentEntryRow;
 import org.olat.course.assessment.model.CourseStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.model.UserCourseInfosImpl;
@@ -57,6 +60,15 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	
 	@Autowired
 	private DB dbInstance;
+	
+	public List<AssessedIdentity> getIdentities() {
+		StringBuilder sf = new StringBuilder();
+		sf.append("select ident from asidentity as ident");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sf.toString(), AssessedIdentity.class)
+				.getResultList();
+	}
 	
 	@Override
 	public CourseStatistics getStatistics(Identity coach, SearchAssessedIdentityParams params) {
@@ -246,7 +258,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	public List<IdentityShort> getShortAssessedIdentities(Identity coach, SearchAssessedIdentityParams params, int maxResults) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select ident")
-		  .append(" from ").append(IdentityShort.class.getName()).append(" as ident ")
+		  .append(" from bidentityshort as ident ")
 		  .append(" where ");
 		if(params.isAdmin()) {
 			sb.append(" (ident.key in (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant")
@@ -382,6 +394,90 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				query.setParameter("search" + i, PersistenceHelper.makeFuzzyQueryString(searchArr[i]));
 			}
 		}
+	}
+	
+	@Override
+	public List<AssessmentEntryRow> getAssessmentEntryRows(Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select asident, aentry from asidentity asident");
+		if(params.isFailed() || params.isPassed() || (params.getAssessmentStatus() != null && params.getAssessmentStatus().size() > 0)) {
+			sb.append(" inner join asident.assessmentEntries as aentry ");
+		} else {
+			sb.append(" left join asident.assessmentEntries as aentry ");
+		}
+		sb.append(" on ( aentry.repositoryEntry.key=:repoEntryKey");
+		if(params.getReferenceEntry() != null) {
+			sb.append(" and aentry.referenceEntry.key=:referenceKey");
+		}
+		if(params.getSubIdent() != null) {
+			sb.append(" and aentry.subIdent=:subIdent");
+		}
+		sb.append(")");
+
+		sb.append(" where (asident.key in");
+		if(params.isAdmin()) {
+			sb.append(" (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant")
+	          .append("    where rel.entry.key=:repoEntryKey and rel.group=participant.group")
+	          .append("      and participant.role='").append(GroupRoles.participant.name()).append("'")
+	          .append("  )");
+			if(params.isNonMembers()) {
+				sb.append(" or asident.key in (select aentry.identity.key from assessmententry aentryInvitee")
+				  .append("  where aentryInvitee.repositoryEntry.key=:repoEntryKey")
+				  .append("  and not exists (select membership.identity from repoentrytogroup as rel, bgroupmember as membership")
+		          .append("    where rel.entry.key=:repoEntryKey and rel.group.key=membership.group.key and membership.identity.key=asident.key)")
+		          .append(" )");
+			}
+		} else if(params.isBusinessGroupCoach() || params.isRepositoryEntryCoach()) {
+			sb.append(" (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
+	          .append("    where rel.entry.key=:repoEntryKey")
+	          .append("      and rel.group=coach.group and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey")
+	          .append("      and rel.group=participant.group and participant.role='").append(GroupRoles.participant.name()).append("'")
+	          .append("  )");
+		}
+		sb.append(" )");
+
+		if(params.isFailed()) {
+			sb.append(" aentry.passed=false");
+		}
+		if(params.isPassed()) {
+			sb.append(" aentry.passed=true");
+		}
+		if(params.getAssessmentStatus() != null && params.getAssessmentStatus().size() > 0) {
+			sb.append(" aentry.status in (:status)");
+		}
+		
+		sb.append(" order by asident.name");
+		
+		TypedQuery<Object[]> list = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class)
+			.setParameter("repoEntryKey", params.getEntry().getKey());
+		if(params.getReferenceEntry() != null) {
+			list.setParameter("referenceKey", params.getReferenceEntry().getKey());
+		}
+		if(params.getSubIdent() != null) {
+			list.setParameter("subIdent", params.getSubIdent());
+		}
+		if(!params.isAdmin()) {
+			list.setParameter("identityKey", coach.getKey());
+		}
+		
+		if(params.getAssessmentStatus() != null && params.getAssessmentStatus().size() > 0) {
+			List<String> statusList = new ArrayList<>();
+			for(AssessmentEntryStatus assessmentStatus:params.getAssessmentStatus()) {
+				statusList.add(assessmentStatus.name());
+			}
+			list.setParameter("status", statusList);
+		}
+		
+		List<Object[]> objects = list.getResultList();
+		List<AssessmentEntryRow> rows = new ArrayList<>();
+		for(Object[] object:objects) {
+			Identity identity = (Identity)object[0];
+			AssessmentEntry entry = (AssessmentEntry)object[1];
+			rows.add(new AssessmentEntryRow(identity, entry));
+		}
+		
+		return rows;
 	}
 
 	@Override

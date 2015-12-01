@@ -20,9 +20,7 @@
 package org.olat.course.assessment.ui.tool;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -57,6 +55,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMainController;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
+import org.olat.course.assessment.model.AssessmentEntryRow;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.tool.AssessmentIdentitiesCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.nodes.AssessableCourseNode;
@@ -236,19 +235,16 @@ public class AssessmentIdentitiesCourseNodeController extends FormBasicControlle
 		}
 		params.setBusinessGroupKeys(businessGroupKeys);
 		params.setSearchString(searchString);
-		
-		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(getIdentity(), params);
-		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(getIdentity(), params, null);
-		Map<Long,AssessmentEntry> entryMap = new HashMap<>();
-		assessmentEntries.forEach((entry) -> entryMap.put(entry.getIdentity().getKey(), entry));
 
-		List<AssessedIdentityCourseElementRow> rows = new ArrayList<>(assessedIdentities.size());
-		for(Identity assessedIdentity:assessedIdentities) {
-			AssessmentEntry entry = entryMap.get(assessedIdentity.getKey());
-			if(accept(entry, params)) {
-				rows.add(new AssessedIdentityCourseElementRow(assessedIdentity, entry, userPropertyHandlers, getLocale()));
-			}
+		List<AssessmentEntryRow> quickRows = assessmentToolManager.getAssessmentEntryRows(getIdentity(), params, null);
+
+		List<Identity> assessedIdentities = new ArrayList<>(quickRows.size());
+		List<AssessedIdentityCourseElementRow> rows = new ArrayList<>(quickRows.size());
+		for(AssessmentEntryRow quickRow:quickRows) {
+			assessedIdentities.add(quickRow.getIdentity());
+			rows.add(new AssessedIdentityCourseElementRow(quickRow.getIdentity(), quickRow.getEntry(), userPropertyHandlers, getLocale()));
 		}
+
 		usersTableModel.setObjects(rows);
 		tableEl.reloadData();
 
@@ -306,17 +302,17 @@ public class AssessmentIdentitiesCourseNodeController extends FormBasicControlle
 	
 	private void fillAlternativeToAssessableIdentityList(AssessmentToolOptions options) {
 		List<Group> baseGroups = new ArrayList<>();
-		if((assessmentCallback.canAssessRepositoryEntryMembers() && assessmentCallback.getCoachedGroups().isEmpty())
+		if((assessmentCallback.canAssessRepositoryEntryMembers()
+				&& (assessmentCallback.getCoachedGroups() == null || assessmentCallback.getCoachedGroups().isEmpty()))
 				|| assessmentCallback.canAssessNonMembers()) {
 			baseGroups.add(repositoryService.getDefaultGroup(courseEntry));
 		}
-		if(assessmentCallback.getCoachedGroups().size() > 0) {
+		if(assessmentCallback.getCoachedGroups() != null && assessmentCallback.getCoachedGroups().size() > 0) {
 			for(BusinessGroup coachedGroup:assessmentCallback.getCoachedGroups()) {
 				baseGroups.add(coachedGroup.getBaseGroup());
 			}
 		}
 		options.setAlternativeToIdentities(baseGroups, assessmentCallback.canAssessNonMembers());
-
 	}
 
 	@Override

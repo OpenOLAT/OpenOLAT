@@ -103,11 +103,6 @@ public class UpdateIdentity implements Identity {
 	}
 
 	@Override
-	public void setName(String name) {
-		//
-	}
-
-	@Override
 	public User getUser() {
 		return userWrapper;
 	}
@@ -118,19 +113,9 @@ public class UpdateIdentity implements Identity {
 	}
 
 	@Override
-	public void setLastLogin(Date loginDate) {
-		//
-	}
-
-	@Override
 	public Integer getStatus() {
 		return identity.getStatus();
 	}
-
-	@Override
-	public void setStatus(Integer newStatus) {
-		//
-	}	
 	
 	@Override
 	public int hashCode() {

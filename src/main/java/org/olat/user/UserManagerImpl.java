@@ -440,16 +440,14 @@ public class UserManagerImpl extends UserManager {
 
 	@Override
 	public int warmUp() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from ").append(IdentityShort.class.getName()).append(" as ident");
-		
 		EntityManager em = dbInstance.getCurrentEntityManager();
 		
 		int batchSize = 5000;
-		TypedQuery<IdentityShort> query = em.createQuery(sb.toString(), IdentityShort.class)
+		TypedQuery<IdentityShort> query = em
+				.createNamedQuery("selectAllIdentitiesShortUnordered", IdentityShort.class)
 				.setMaxResults(batchSize);
-		int count = 0;
 		
+		int count = 0;
 		List<IdentityShort> identities;
 		do {
 			identities = query.setFirstResult(count).getResultList();
