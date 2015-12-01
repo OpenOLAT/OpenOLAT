@@ -90,7 +90,7 @@ public class PassedRuleSPI implements FilterRuleSPI {
 				passeds = new HashMap<>();
 				
 				STCourseNode structureNode = (STCourseNode)courseNode;
-				if(structureNode.hasScoreConfigured()) {
+				if(structureNode.hasPassedConfigured()) {
 					for(Identity identity:identities) {
 						UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
 						ScoreEvaluation scoreEval = structureNode.getUserScoreEvaluation(uce);

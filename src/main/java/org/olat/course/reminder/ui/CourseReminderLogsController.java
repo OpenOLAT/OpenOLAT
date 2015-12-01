@@ -146,7 +146,7 @@ public class CourseReminderLogsController extends FormBasicController {
 		updateModel();
 	}
 	
-	private void updateModel() {
+	protected void updateModel() {
 		List<SentReminder> sentReminders = reminderService.getSentReminders(repositoryEntry);
 		List<SentReminderRow> rows = new ArrayList<>(sentReminders.size());
 		

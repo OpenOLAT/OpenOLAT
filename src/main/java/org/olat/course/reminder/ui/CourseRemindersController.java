@@ -137,6 +137,8 @@ public class CourseRemindersController extends BasicController implements Activa
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			reminderLogsCtrl = new CourseReminderLogsController(ureq, bwControl, repositoryEntry, toolbarPanel);
 			listenTo(reminderLogsCtrl);
+		} else {
+			reminderLogsCtrl.updateModel();
 		}
 		mainVC.put("segmentCmp", reminderLogsCtrl.getInitialComponent());	
 		addToHistory(ureq, reminderLogsCtrl);
