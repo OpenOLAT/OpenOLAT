@@ -100,7 +100,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 
 	private static final int PUB_STATE_OK = 0;
 	private static final int PUB_STATE_NOT_OK = 1;
-	private static final int BATCH_SIZE = 100;
+	private static final int BATCH_SIZE = 500;
 	private static final String LATEST_EMAIL_USER_PROP = "noti_latest_email";
 	private final SubscriptionInfo NOSUBSINFO = new NoSubscriptionInfo();
 
@@ -315,14 +315,16 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		return sis;
 	}
 	
+	@Override
 	public void notifyAllSubscribersByEmail() {
 		logAudit("starting notification cronjob to send email", null);
 		WorkThreadInformations.setLongRunningTask("sendNotifications");
 		
 		int counter = 0;
+		int closeConnection = 0;
 		List<Identity> identities;
 		do {
-			identities = securityManager.loadIdentities(counter, BATCH_SIZE);
+			identities = securityManager.loadVisibleIdentities(counter, BATCH_SIZE);
 			for(Identity identity:identities) {
 				if(identity.getName().startsWith("guest_")) {
 					Roles roles = securityManager.getRoles(identity);
@@ -330,8 +332,11 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 						continue;
 					}
 				}
-				
+				closeConnection++;
 				processSubscribersByEmail(identity);
+				if(closeConnection % 20 == 0) {
+					dbInstance.commitAndCloseSession();
+				}
 			}
 			counter += identities.size();
 			dbInstance.commitAndCloseSession();
@@ -343,7 +348,6 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	}
 	
 	private void processSubscribersByEmail(Identity ident) {
-		long start = System.currentTimeMillis();
 		if(ident.getStatus().compareTo(Identity.STATUS_VISIBLE_LIMIT) >= 0) {
 			return;//send only to active user
 		}
@@ -353,6 +357,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			return;
 		}
 
+		long start = System.currentTimeMillis();
 		Date compareDate = getCompareDateFromInterval(userInterval);
 		Property p = propertyManager.findProperty(ident, null, null, null, LATEST_EMAIL_USER_PROP);
 		if(p != null) {
@@ -393,7 +398,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 				subsitem = createSubscriptionItem(sub, locale, SubscriptionInfo.MIME_PLAIN, SubscriptionInfo.MIME_PLAIN, latestEmail);
 			}	else if(latestEmail != null && latestEmail.after(compareDate)) {
 				//already send an email within the user's settings interval
-				veto = true;
+				//veto = true;
 			}
 			if (subsitem != null) {
 				items.add(subsitem);

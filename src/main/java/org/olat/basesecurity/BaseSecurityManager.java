@@ -1203,17 +1203,19 @@ public class BaseSecurityManager implements BaseSecurity {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select ident from ").append(IdentityShort.class.getName()).append(" as ident where ident.key in (:keys)");
 		
-		return DBFactory.getInstance().getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), IdentityShort.class)
 				.setParameter("keys", identityKeys)
 				.getResultList();
 	}
 	
 	@Override
-	public List<Identity> loadIdentities(int firstResult, int maxResults) {
+	public List<Identity> loadVisibleIdentities(int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident order by ident.key");
-		return DBFactory.getInstance().getCurrentEntityManager()
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident ")
+		  .append(" inner join fetch ident.user as user")
+		  .append(" where ident.status<").append(Identity.STATUS_VISIBLE_LIMIT).append(" order by ident.key");
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setFirstResult(firstResult)
 				.setMaxResults(maxResults)
@@ -1225,7 +1227,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select ident.key from ").append(IdentityImpl.class.getName()).append(" as ident")
 		  .append(" where ident.status<").append(Identity.STATUS_VISIBLE_LIMIT).append(" order by ident.key");
-		return DBFactory.getInstance().getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
 				.getResultList();
 	}
