@@ -1077,6 +1077,7 @@ create table o_as_entry (
    a_score float(65,30) default null,
    a_passed bit default null,
    a_status varchar(16) default null,
+   a_details varchar(1024) default null,
    a_fully_assessed bit default null,
    a_assessment_id bigint default null,
    a_completion float(65,30),

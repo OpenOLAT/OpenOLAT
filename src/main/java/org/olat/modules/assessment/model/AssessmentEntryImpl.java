@@ -62,9 +62,6 @@ import org.olat.repository.RepositoryEntry;
 		query="select data from assessmententry data where data.repositoryEntry.key=:repositoryEntryKey and data.identity.key=:identityKey and data.subIdent is null"),
 	@NamedQuery(name="loadAssessmentEntryByRepositoryEntryAndSubIdent",
 		query="select data from assessmententry data where data.repositoryEntry.key=:repositoryEntryKey and data.subIdent=:subIdent")
-	
-	
-	
 })
 public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInfo, AssessmentEntry {
 	
@@ -90,6 +87,8 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	private Boolean passed;
 	@Column(name="a_status", nullable=true, insertable=true, updatable=true)
 	private String status;
+	@Column(name="a_details", nullable=true, insertable=true, updatable=true)
+	private String details;
 
 	@Column(name="a_completion", nullable=true, insertable=true, updatable=true)
 	private Double completion;
@@ -175,6 +174,14 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 		this.passed = passed;
 	}
 	
+	public String getDetails() {
+		return details;
+	}
+
+	public void setDetails(String details) {
+		this.details = details;
+	}
+
 	public String getStatus() {
 		return status;
 	}

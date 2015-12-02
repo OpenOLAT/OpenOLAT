@@ -320,9 +320,6 @@ public class AssessmentEditController extends BasicController {
 			// Update properties in db
 			courseNode.updateUserCoachComment(newCoachComment, userCourseEnvironment);
 		}
-		
-		// Refresh score view
-		userCourseEnvironment.getScoreAccounting().scoreInfoChanged(courseNode, scoreEval);
 	}
 	
 	public void reloadData(UserRequest ureq) {

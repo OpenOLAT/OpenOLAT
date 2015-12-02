@@ -277,7 +277,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 					LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiAttempts, "", String.valueOf(attempts)));	
 		}
 		
-		userCourseEnv.getScoreAccounting().scoreInfoChanged(courseNode, scoreEvaluation);
+		userCourseEnv.getScoreAccounting().evaluateAll();//.scoreInfoChanged(courseNode, scoreEvaluation);
 		// Update users efficiency statement
 		efficiencyStatementManager.updateUserEfficiencyStatement(userCourseEnv);
 

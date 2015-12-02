@@ -56,6 +56,7 @@ import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -166,7 +167,8 @@ public class ScoreAccountingHelper {
 			IdentityEnvironment ienv = new IdentityEnvironment();
 			ienv.setIdentity(identity);
 			UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
-			uce.getScoreAccounting().evaluateAll();
+			ScoreAccounting scoreAccount = uce.getScoreAccounting();
+			scoreAccount.evaluateAll();
 			AssessmentManager am = course.getCourseEnvironment().getAssessmentManager();
 
 			for (AssessableCourseNode acnode:myNodes) {
@@ -176,7 +178,7 @@ public class ScoreAccountingHelper {
 				boolean commentOk = acnode.hasCommentConfigured();
 
 				if (scoreOk || passedOk || commentOk || attemptsOk) {
-					ScoreEvaluation se = uce.getScoreAccounting().getScoreEvaluation(acnode);
+					ScoreEvaluation se = scoreAccount.evalCourseNode(acnode);
 					boolean nodeColumnOk = false;
 					StringBuilder tabs = new StringBuilder();
 

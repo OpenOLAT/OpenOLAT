@@ -590,8 +590,6 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
 		am.saveScoreEvaluation(this, mySelf, assessedIdentity, sceval, userCourseEnv, false);
-	
-		userCourseEnv.getScoreAccounting().scoreInfoChanged(this, sceval);
 	}
 	
 	private void doUpdateAssessmentBySum(UserCourseEnvironment userCourseEnv, Identity assessedIdentity) {
@@ -623,8 +621,6 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
 		am.saveScoreEvaluation(this, mySelf, assessedIdentity, sceval, userCourseEnv, false);
-		
-		userCourseEnv.getScoreAccounting().scoreInfoChanged(this, sceval);
 	}
 
 	@Override

@@ -200,7 +200,6 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 				boolean increment = !attemptsIncremented && finish;
 				ScoreEvaluation sceval = new ScoreEvaluation(new Float(0.0f), Boolean.valueOf(passed));
 				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, increment);
-				userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
 				if(increment) {
 					attemptsIncremented = true;
 				}
@@ -208,7 +207,6 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 				boolean increment = !attemptsIncremented && finish;
 				ScoreEvaluation sceval = scormNode.getUserScoreEvaluation(userCourseEnv);
 				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, increment);
-				userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
 				if(increment) {
 					attemptsIncremented = true;
 				}
@@ -217,7 +215,6 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 			boolean increment = !attemptsIncremented && finish;
 			ScoreEvaluation sceval = new ScoreEvaluation(new Float(0.0f), Boolean.valueOf(passed));
 			scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, false);
-			userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
 			if(increment) {
 				attemptsIncremented = true;
 			}
@@ -258,7 +255,6 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 				boolean increment = !attemptsIncremented && finish;
 				ScoreEvaluation sceval = new ScoreEvaluation(new Float(score), Boolean.valueOf(passed));
 				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, increment);
-				userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
 				if(increment) {
 					attemptsIncremented = true;
 				}
@@ -266,7 +262,6 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 				boolean increment = !attemptsIncremented && finish;
 				ScoreEvaluation sceval = scormNode.getUserScoreEvaluation(userCourseEnv);
 				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, increment);
-				userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
 				if(increment) {
 					attemptsIncremented = true;
 				}
@@ -280,7 +275,6 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 			boolean increment = !attemptsIncremented && finish;
 			ScoreEvaluation sceval = new ScoreEvaluation(new Float(score), Boolean.valueOf(passed));
 			scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, false);
-			userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
 			if(increment) {
 				attemptsIncremented = true;
 			}

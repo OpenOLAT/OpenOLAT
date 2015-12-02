@@ -79,8 +79,7 @@ public class IQPreviewController extends BasicController {
 				boolean passed = score >= (cutValue == null ? 0 : cutValue.floatValue());
 				ScoreEvaluation sceval = new ScoreEvaluation(new Float(score), new Boolean(passed));
 				boolean incrementUserAttempts = true;
-				cn.updateUserScoreEvaluation(sceval, userCourseEnv, ureq.getIdentity(), incrementUserAttempts);
-				userCourseEnv.getScoreAccounting().scoreInfoChanged(cn, sceval);				
+				cn.updateUserScoreEvaluation(sceval, userCourseEnv, ureq.getIdentity(), incrementUserAttempts);				
 				getWindowControl().setInfo(translate("preview.points.set"));
 			}
 		}

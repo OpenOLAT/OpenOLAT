@@ -876,7 +876,7 @@ public class NewCachePersistingAssessmentManager {
 					attempts = incrementNodeAttemptsProperty(courseNode, assessedIdentity, cpm);
 				}
 				if(courseNode instanceof AssessableCourseNode) {
-				  userCourseEnv.getScoreAccounting().scoreInfoChanged((AssessableCourseNode)courseNode, scoreEvaluation);
+				  userCourseEnv.getScoreAccounting().evaluateAll();
 				  // Update users efficiency statement
 				  EfficiencyStatementManager esm =	CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
 				  esm.updateUserEfficiencyStatement(userCourseEnv);
@@ -968,7 +968,7 @@ public class NewCachePersistingAssessmentManager {
 		log.debug("successfully saved node fullyAssessed : " + scoreEvaluation.getFullyAssessed());
 		DBFactory.getInstance().commitAndCloseSession();
 		if (courseNode instanceof AssessableCourseNode) {
-			userCourseEnv.getScoreAccounting().scoreInfoChanged((AssessableCourseNode) courseNode, scoreEvaluation);
+			userCourseEnv.getScoreAccounting().evaluateAll();
 			EfficiencyStatementManager esm = CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
 			esm.updateUserEfficiencyStatement(userCourseEnv);
 		}

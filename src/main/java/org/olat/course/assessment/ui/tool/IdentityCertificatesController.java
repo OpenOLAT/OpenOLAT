@@ -49,6 +49,7 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -208,7 +209,7 @@ public class IdentityCertificatesController extends BasicController implements G
 		UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
 		ScoreAccounting scoreAccounting = assessedUserCourseEnv.getScoreAccounting();
 		scoreAccounting.evaluateAll();
-		ScoreEvaluation scoreEval = scoreAccounting.getScoreEvaluation(rootNode);
+		ScoreEvaluation scoreEval = scoreAccounting.evalCourseNode((AssessableCourseNode)rootNode);
 
 		CertificateTemplate template = null;
 		Long templateKey = course.getCourseConfig().getCertificateTemplate();

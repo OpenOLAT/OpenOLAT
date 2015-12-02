@@ -219,30 +219,8 @@ public class ScoreAccounting {
 		return passed;
 	}
 
-	/**
-	 * Change the score information for the given course node
-	 * @param acn
-	 * @param se
-	 */
-	public void scoreInfoChanged(AssessableCourseNode acn, ScoreEvaluation se) {
-		evaluateAll();
-	}
-
 	private CourseNode findChildByID(String id) {
 		return userCourseEnvironment.getCourseEnvironment().getRunStructure().getNode(id);
-	}
-
-	/**
-	 * @see org.olat.core.util.tree.Visitor#visit(org.olat.core.util.nodes.INode)
-	 */
-	public void visit(INode node) {
-		CourseNode cn = (CourseNode) node;
-		if (cn instanceof AssessableCourseNode) {
-			AssessableCourseNode acn = (AssessableCourseNode) cn;
-			evalCourseNode(acn);
-			// evalCourseNode will cache all infos
-		}
-		// else: non assessable nodes are not interesting here
 	}
 
 	/**

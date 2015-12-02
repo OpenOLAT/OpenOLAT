@@ -828,8 +828,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			saveCustomSettings(ureq);
 		} else if(doSelect(ureq)) {
 			//do select
-		} else {
-			System.out.println("");
 		}
 	}
 	
