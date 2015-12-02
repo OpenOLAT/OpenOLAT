@@ -19,15 +19,11 @@
  */
 package org.olat.course.assessment.manager;
 
-import java.util.List;
-import java.util.Set;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.AssessmentToolManager;
-import org.olat.course.assessment.model.AssessedIdentity;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.repository.RepositoryEntry;
@@ -62,15 +58,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		Assert.assertNotNull(nodeAssessment);
 		dbInstance.commitAndCloseSession();
 		
-		
-		List<AssessedIdentity> ids = ((AssessmentToolManagerImpl)assessmentToolManager).getIdentities();
-		Assert.assertNotNull(ids);
-		for(AssessedIdentity id:ids) {
-			if(id.getKey().equals(assessedIdentity.getKey())) {
-				Set<AssessmentEntry> entries = id.getAssessmentEntries();
-				System.out.println(entries);
-			}
-		}
+
 		
 	}
 }

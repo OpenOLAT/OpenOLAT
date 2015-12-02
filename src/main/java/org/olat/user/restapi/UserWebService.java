@@ -600,7 +600,7 @@ public class UserWebService {
 			}
 			
 			Identity authIdentity = getUserRequest(request).getIdentity();
-			if(!isUserManager(request) && !identity.equalsByPersistableKey(authIdentity)) {
+			if(!isUserManager(request) && !identity.getKey().equals(authIdentity.getKey())) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
 			partsReader = new MultipartReader(request);
