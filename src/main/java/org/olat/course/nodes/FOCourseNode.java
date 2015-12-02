@@ -154,8 +154,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 		boolean guestPostAllowed = false;
 		if(ureq.getUserSession().getRoles().isGuestOnly()) {
 			String config = getModuleConfiguration().getStringValue(FOCourseNodeEditController.GUEST_POST_ALLOWED);
-			guestPostAllowed = CoreSpringFactory.getImpl(ForumModule.class).isAnonymousPostingWithPseudonymEnabled()
-					&& "true".equals(config);
+			guestPostAllowed = "true".equals(config);
 		} else {
 			String config = getModuleConfiguration().getStringValue(FOCourseNodeEditController.PSEUDONYM_POST_ALLOWED);
 			pseudonymPostAllowed = CoreSpringFactory.getImpl(ForumModule.class).isAnonymousPostingWithPseudonymEnabled()

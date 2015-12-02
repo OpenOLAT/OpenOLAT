@@ -68,6 +68,27 @@ public class ForumPage {
 		return new ForumPage(browser);
 	}
 	
+	public ForumPage clickBack() {
+		By backBy = By.cssSelector("a.o_link_back");
+		browser.findElement(backBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public ForumPage userFilter() {
+		By userFilterBy = By.cssSelector("a.o_sel_forum_filter");
+		browser.findElement(userFilterBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public ForumPage selectFilteredUser(String lastName) {
+		By userFilterBy = By.xpath("//table//td//a[text()[contains(.,'" + lastName + "')]]");
+		browser.findElement(userFilterBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
 	/**
 	 * Create a new thread
 	 * 
@@ -75,16 +96,20 @@ public class ForumPage {
 	 * @param content
 	 * @return
 	 */
-	public ForumPage createThread(String title, String content) {
+	public ForumPage createThread(String title, String content, String alias) {
 		By newThreadBy = By.className("o_sel_forum_thread_new");
 		WebElement newThreadButton = browser.findElement(newThreadBy);
 		newThreadButton.click();
 		OOGraphene.waitBusy(browser);
 		
 		//fill the form
-		By titleBy = By.cssSelector("div.modal-content form input[type='text']");
-		WebElement titleEl = browser.findElement(titleBy);
-		titleEl.sendKeys(title);
+		By titleBy = By.cssSelector("div.modal-content form div.o_sel_forum_message_title input[type='text']");
+		browser.findElement(titleBy).sendKeys(title);
+		
+		if(alias != null) {
+			By aliasBy = By.cssSelector("div.modal-content form div.o_sel_forum_message_alias input[type='text']");
+			browser.findElement(aliasBy).sendKeys(alias);
+		}
 		
 		OOGraphene.tinymce(content, browser);
 		
@@ -93,6 +118,13 @@ public class ForumPage {
 		WebElement saveButton = browser.findElement(saveBy);
 		saveButton.click();
 		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public ForumPage assertThreadListOnNumber(String thread, int number) {
+		By threadBy = By.xpath("//table[contains(@class,'table')]//tr[td[text()='" + number + "']]//a[text()='" + thread + "']");
+		browser.findElement(threadBy).click();
+		
 		return this;
 	}
 	
@@ -117,6 +149,20 @@ public class ForumPage {
 		return this;
 	}
 	
+	public ForumPage newMessages() {
+		By newBy = By.cssSelector("a.o_forum_new_messages");
+		browser.findElement(newBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public ForumPage assertOnNewMessages() {
+		By messageBodyBy = By.cssSelector("div.o_forum div.o_forum_message_new");
+		List<WebElement> messages = browser.findElements(messageBodyBy);
+		Assert.assertFalse(messages.isEmpty());
+		return this;
+	}
+	
 	public ForumPage assertMessageBody(String text) {
 		By messageBodyBy = By.className("o_forum_message_body");
 		List<WebElement> messages = browser.findElements(messageBodyBy);
@@ -127,6 +173,13 @@ public class ForumPage {
 			}
 		}
 		Assert.assertTrue(found);
+		return this;
+	}
+	
+	public ForumPage assertOnGuestPseudonym(String alias) {
+		By authorBy = By.xpath("//div[contains(@class,'o_author')][contains(text(),'" + alias + "')]");
+		List<WebElement> authorEls = browser.findElements(authorBy);
+		Assert.assertFalse(authorEls.isEmpty());
 		return this;
 	}
 	

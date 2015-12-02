@@ -196,6 +196,7 @@ public class MessageEditController extends FormBasicController {
 				usePseudonymEl.select(enableKeys[0], true);
 			}
 			pseudonymEl = uifactory.addTextElement("pseudonym", "pseudonym", 128, message.getPseudonym(), formLayout);
+			pseudonymEl.setElementCssClass("o_sel_forum_message_alias");
 
 			if(guestOnly) {
 				usePseudonymEl.setVisible(false);

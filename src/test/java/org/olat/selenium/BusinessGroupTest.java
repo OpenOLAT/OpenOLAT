@@ -206,7 +206,7 @@ public class BusinessGroupTest {
 		String threadBodyMarker = UUID.randomUUID().toString();
 		group
 			.openForum()
-			.createThread("New thread in a group", "Very interessant discussion in a group" + threadBodyMarker)
+			.createThread("New thread in a group", "Very interessant discussion in a group" + threadBodyMarker, null)
 			.assertMessageBody(threadBodyMarker);
 		
 		//check chat @see other selenium test dedicated to this one

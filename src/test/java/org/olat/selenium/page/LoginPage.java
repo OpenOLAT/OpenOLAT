@@ -107,6 +107,16 @@ public class LoginPage {
 	}
 	
 	/**
+	 * Enter OpenOLAT as guest
+	 */
+	public void asGuest() {
+		By guestLinkBy = By.xpath("//a[contains(@href,'menu.guest')]");
+		WebElement guestLink = browser.findElement(guestLinkBy);
+		Graphene.guardHttp(guestLink).click();
+		OOGraphene.waitElement(authXPath, browser);
+	}
+	
+	/**
 	 * Login and accept the disclaimer if there is one.
 	 * 
 	 * @param username

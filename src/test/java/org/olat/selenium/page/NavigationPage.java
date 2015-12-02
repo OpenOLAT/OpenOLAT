@@ -30,6 +30,7 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.group.GroupsPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.CatalogAdminPage;
+import org.olat.selenium.page.repository.CatalogPage;
 import org.olat.selenium.page.user.PortalPage;
 import org.olat.selenium.page.user.UserAdminPage;
 import org.openqa.selenium.By;
@@ -56,6 +57,7 @@ public class NavigationPage {
 	private By myCoursesBy = By.cssSelector("li.o_site_repository > a");
 	private By userManagementBy = By.cssSelector("li.o_site_useradmin > a");
 	private By administrationBy = By.cssSelector("li.o_site_admin > a");
+	private By catalogBy = By.cssSelector("li.o_site_catalog > a");
 	private By catalogAdministrationBy = By.cssSelector("li.o_site_catalog_admin > a");
 	private	By groupsBy = By.cssSelector("li.o_site_groups > a");
 	
@@ -111,6 +113,11 @@ public class NavigationPage {
 	public CatalogAdminPage openCatalogAdministration() {
 		navigate(catalogAdministrationBy);
 		return new CatalogAdminPage(browser);
+	}
+	
+	public CatalogPage openCatalog() {
+		navigate(catalogBy);
+		return new CatalogPage(browser);
 	}
 	
 	public GroupsPage openGroups(WebDriver currentBrowser) {

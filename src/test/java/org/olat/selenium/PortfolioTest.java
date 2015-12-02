@@ -144,7 +144,7 @@ public class PortfolioTest {
 		String threadTitle = "Very interessant thread";
 		ForumPage forum = ForumPage.getCourseForumPage(browser);
 		ArtefactWizardPage artefactWizard = forum
-			.createThread(threadTitle, "With a lot of content")
+			.createThread(threadTitle, "With a lot of content", null)
 			.addAsArtfeact();
 		
 		artefactWizard
