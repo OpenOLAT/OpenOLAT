@@ -68,8 +68,8 @@
 		<org.hibernate.version>4.3.11.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.17.1</com.sun.jersey.version>
 		<jackson.version>1.9.2</jackson.version>
-		<org.mysql.version>5.1.36</org.mysql.version>
-		<org.postgresql.version>9.4-1201-jdbc41</org.postgresql.version>
+		<org.mysql.version>5.1.37</org.mysql.version>
+		<org.postgresql.version>9.4-1206-jdbc42</org.postgresql.version>
 		<org.infinispan.version>6.0.2.Final</org.infinispan.version>
 		<lucene.version>4.8.0</lucene.version>
 		<version.selenium>2.47.1</version.selenium>

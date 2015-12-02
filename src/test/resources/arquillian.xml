@@ -21,6 +21,7 @@
 	<extension qualifier="webdriver">
 		<property name="browser">firefox</property>
 		<property name="dimensions">1024x800</property>
+		<property name="firefoxUserPreferences">src/test/profile/firefox/prefs.js</property>
 	</extension>
 
 </arquillian>
