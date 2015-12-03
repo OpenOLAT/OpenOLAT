@@ -50,7 +50,6 @@ import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration.DeadlineType;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
-import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.portfolio.EPLoggingAction;
@@ -93,7 +92,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 	private StaticTextElement deadlineDateText;
 	
 	public PortfolioCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation ne, PortfolioCourseNode courseNode) {
+			PortfolioCourseNode courseNode) {
 		super(ureq, wControl, "run");
 		
 		this.courseNode = courseNode;

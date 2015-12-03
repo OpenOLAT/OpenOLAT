@@ -731,13 +731,15 @@ public class ForumManager {
 
 		// make sure the message is reloaded if it is not in the hibernate session cache
 		Message reloadedMessage = dbInstance.getCurrentEntityManager().find(MessageImpl.class, m.getKey());
-		// delete all properties of one single message
-		deleteMessageProperties(forumKey, reloadedMessage);
-		dbInstance.getCurrentEntityManager().remove(reloadedMessage);
-		
-		//delete all flags
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Forum.class, forumKey);
-		markingService.getMarkManager().deleteMarks(ores, m.getKey().toString());
+		if(reloadedMessage != null) {
+			// delete all properties of one single message
+			deleteMessageProperties(forumKey, reloadedMessage);
+			dbInstance.getCurrentEntityManager().remove(reloadedMessage);
+			
+			//delete all flags
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(Forum.class, forumKey);
+			markingService.getMarkManager().deleteMarks(ores, m.getKey().toString());
+		}
 		
 		if(log.isDebug()){
 			log.debug("Deleting message ", m.getKey().toString());

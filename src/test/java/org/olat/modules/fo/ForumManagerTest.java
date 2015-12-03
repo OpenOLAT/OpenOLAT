@@ -41,6 +41,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.fo.model.ForumThread;
 import org.olat.modules.fo.model.ForumUserStatistics;
+import org.olat.modules.fo.model.MessageImpl;
 import org.olat.modules.fo.ui.MessagePeekview;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -964,6 +965,34 @@ public class ForumManagerTest extends OlatTestCase {
 		Message reloadedMessageToSplit_2 = forumManager.getMessageById(messageToSplit_1.getKey());
 		Assert.assertEquals(messageToSplit, reloadedMessageToSplit_2.getThreadtop());
 		Assert.assertEquals(messageToSplit, reloadedMessageToSplit_2.getParent());
+	}
+
+	/**
+	 * The test doesn't test directly the method but check
+	 * if the loading mechanism in the method work in 2 different
+	 * cases and if it accept already deleted messages
+	 * 
+	 */
+	@Test
+	public void deleteMessagePropertiesTree_checkFindBehavior() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-10");
+		Forum fo = forumManager.addAForum();
+		dbInstance.commit();
+
+		Message topMessage = forumManager.createMessage(fo, id1, false);
+		topMessage.setTitle("Future deleted message 1");
+		topMessage.setBody("Future deleted  stuff");
+		forumManager.addTopMessage(topMessage);
+		dbInstance.commit();
+		
+		//reload
+		Message reloadedMessage = dbInstance.getCurrentEntityManager().find(MessageImpl.class, topMessage.getKey());
+		Assert.assertNotNull(reloadedMessage);
+		//reload inexistent message
+		Message inexistentMessage = dbInstance.getCurrentEntityManager().find(MessageImpl.class, -23l);
+		Assert.assertNull(inexistentMessage);
+		
+		dbInstance.commitAndCloseSession();
 	}
 	
 	@Test
