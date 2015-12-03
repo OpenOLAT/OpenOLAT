@@ -66,6 +66,61 @@ public class UserAdminPage {
 		return this;
 	}
 	
+	public UserAdminPage openDirectDeleteUser() {
+		By createBy = By.cssSelector(".o_tree li.o_sel_useradmin_direct_delete>div>span.o_tree_link>a");
+		WebElement createMenuItem = browser.findElement(createBy);
+		createMenuItem.click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	/**
+	 * Search a user in the search form of the direct delete
+	 * workflow.
+	 * 
+	 * @param username
+	 * @return
+	 */
+	public UserAdminPage searchUserToDelete(String username) {
+		By createBy = By.cssSelector("fieldset.o_sel_user_search_form div.o_sel_user_search_username input[type='text']");
+		browser.findElement(createBy).sendKeys(username);
+		
+		//search
+		By searchBy = By.cssSelector("fieldset.o_sel_user_search_form a.o_sel_user_search_button");
+		browser.findElement(searchBy).click();
+		OOGraphene.waitBusy(browser);	
+		return this;
+	}
+	
+	/**
+	 * After searching a user, you can select it and delete it.
+	 * 
+	 * @param lastName
+	 * @return
+	 */
+	public UserAdminPage selectAndDeleteUser(String lastName) {
+		By checkBy = By.cssSelector("fieldset.o_sel_usersearch_searchform table input[type='checkbox']");
+		browser.findElement(checkBy).click();
+		
+		//select
+		By selectBy = By.cssSelector("fieldset.o_sel_usersearch_searchform div.o_table_wrapper div.o_table_buttons button.btn.btn-default");
+		browser.findElement(selectBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		//confirm
+		By usernameBy = By.xpath("//div[contains(@class,'modal-dialog')]//p[text()[contains(.,'" + lastName + "')]]");
+		List<WebElement> confirmUserEls = browser.findElements(usernameBy);
+		Assert.assertFalse(confirmUserEls.isEmpty());
+		
+		By buttonsBy = By.cssSelector("div.modal-dialog div.modal-footer a.btn.btn-default");
+		List<WebElement> buttonEls = browser.findElements(buttonsBy);
+		Assert.assertEquals(2, buttonEls.size());
+		buttonEls.get(0).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
+		return this;
+	}
+	
 	public UserAdminPage openImportUsers() {
 		By importBy = By.cssSelector(".o_tree li.o_sel_useradmin_import>div>span.o_tree_link>a");
 		browser.findElement(importBy).click();
@@ -158,6 +213,13 @@ public class UserAdminPage {
 		By userLinksBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr//td//a[text()[contains(.,'" + username + "')]]");
 		List<WebElement> usernameEls = browser.findElements(userLinksBy);
 		Assert.assertFalse(usernameEls.isEmpty());
+		return this;
+	}
+	
+	public UserAdminPage assertNotInUserList(String username) {
+		By userLinksBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr//td//a[text()[contains(.,'" + username + "')]]");
+		List<WebElement> usernameEls = browser.findElements(userLinksBy);
+		Assert.assertTrue(usernameEls.isEmpty());
 		return this;
 	}
 	

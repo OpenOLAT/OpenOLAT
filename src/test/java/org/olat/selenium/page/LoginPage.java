@@ -160,6 +160,32 @@ public class LoginPage {
 	}
 	
 	/**
+	 * The login will not be successful. The method assert
+	 * on the error message.
+	 * 
+	 * @param username
+	 * @param password
+	 * @return
+	 */
+	public LoginPage loginDenied(String username, String password) {
+		//fill login form
+		By usernameId = By.id("o_fiooolat_login_name");
+		WebElement usernameInput = browser.findElement(usernameId);
+		usernameInput.sendKeys(username);
+		By passwordId = By.id("o_fiooolat_login_pass");
+		WebElement passwordInput = browser.findElement(passwordId);
+		passwordInput.sendKeys(password);
+		
+		By loginBy = By.id("o_fiooolat_login_button");
+		browser.findElement(loginBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By errorMessageby = By.cssSelector("div.modal-body.alert.alert-danger");
+		OOGraphene.waitElement(errorMessageby, 2, browser);
+		return this;
+	}
+	
+	/**
 	 * Resume the session, and assert that the resume panel has popped
 	 */
 	public LoginPage resumeWithAssert() {
