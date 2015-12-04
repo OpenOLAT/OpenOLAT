@@ -27,34 +27,82 @@ import static org.olat.upgrade.legacy.NewCachePersistingAssessmentManager.FULLY_
 import static org.olat.upgrade.legacy.NewCachePersistingAssessmentManager.PASSED;
 import static org.olat.upgrade.legacy.NewCachePersistingAssessmentManager.SCORE;
 
+import java.io.File;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.activity.LoggingObject;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.cache.CacheWrapper;
+import org.olat.core.util.io.SystemFileFilter;
+import org.olat.core.util.nodes.INode;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.tree.TreeVisitor;
+import org.olat.core.util.tree.Visitor;
 import org.olat.course.CourseFactory;
+import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.nodes.MSCourseNode;
+import org.olat.course.nodes.PortfolioCourseNode;
+import org.olat.course.nodes.STCourseNode;
+import org.olat.course.nodes.ScormCourseNode;
+import org.olat.course.nodes.TACourseNode;
+import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.Task;
+import org.olat.course.nodes.ta.DropboxController;
+import org.olat.course.nodes.ta.ReturnboxController;
+import org.olat.course.nodes.ta.StatusForm;
+import org.olat.course.nodes.ta.StatusManager;
+import org.olat.course.nodes.ta.TaskController;
+import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.ims.qti.QTIModule;
+import org.olat.ims.qti.QTIResultManager;
+import org.olat.ims.qti.QTIResultSet;
+import org.olat.ims.qti.editor.QTIEditorPackage;
+import org.olat.ims.qti.editor.QTIEditorPackageImpl;
+import org.olat.ims.qti.editor.beecom.objects.Assessment;
+import org.olat.ims.qti.editor.beecom.objects.Item;
+import org.olat.ims.qti.editor.beecom.objects.Section;
+import org.olat.ims.qti.fileresource.TestFileResource;
+import org.olat.ims.qti.process.FilePersister;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryImpl;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.scorm.assessment.CmiData;
+import org.olat.modules.scorm.assessment.ScormAssessmentManager;
+import org.olat.portfolio.manager.EPFrontendManager;
+import org.olat.portfolio.model.structel.PortfolioStructureMap;
+import org.olat.portfolio.model.structel.StructureStatusEnum;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -76,14 +124,22 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 	private static final String ASSESSMENT_DATAS = "ASSESSMENT PROPERTY TABLE";
 	private static final String VERSION = "OLAT_11.0.0";
 
+	private final Map<Long,Boolean> qtiEssayMap = new HashMap<>();
+
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private GTAManager gtaManager;
+	@Autowired
+	private EPFrontendManager ePFMgr;
+	@Autowired
+	private QTIResultManager qtiResultManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
-	@Autowired
-	private RepositoryService repositoryService;
 
 	public OLATUpgrade_11_0_0() {
 		super();
@@ -149,8 +205,12 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 	
 	// select count(*) from o_property where name in ('SCORE','PASSED','ATTEMPTS','COMMENT','COACH_COMMENT','ASSESSMENT_ID','FULLY_ASSESSED');
 	private boolean processCourseAssessmentData(RepositoryEntry courseEntry) {
-		Long courseResourceId = courseEntry.getOlatResource().getResourceableId();
-		
+		final Long courseResourceId = courseEntry.getOlatResource().getResourceableId();
+		final ICourse course = CourseFactory.loadCourse(courseEntry);
+
+		//load all assessable identities
+		List<Identity> assessableIdentities = getAllAssessableIdentities(course, courseEntry);
+
 		//load already migrated data
 		List<AssessmentEntryImpl> currentNodeAssessmentList = loadAssessmentEntries(courseEntry);
 		Map<AssessmentDataKey,AssessmentEntryImpl> curentNodeAssessmentMap = new HashMap<>();
@@ -161,6 +221,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 
 		Map<AssessmentDataKey,AssessmentEntryImpl> nodeAssessmentMap = new HashMap<>();
 		
+		//processed properties
 		List<Property> courseProperties = loadAssessmentProperties(courseEntry);
 		for(Property property:courseProperties) {
 			String propertyCategory = property.getCategory();
@@ -184,13 +245,26 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 							nodeAssessment.setLastModified(property.getLastModified());
 						}
 					} else {
-						nodeAssessment = createAssessmentEntry(property, courseEntry, nodeIdent, courseEntry);
+						nodeAssessment = createAssessmentEntry(property.getIdentity(), property, course, courseEntry, nodeIdent);
 					}
-					copyAssessmentProperty(property, nodeAssessment);
+					copyAssessmentProperty(property, nodeAssessment, course);
 					nodeAssessmentMap.put(key, nodeAssessment);	
 				}
 			}	
 		}
+		
+		//check the transient qti ser
+		CourseNode rootNode = course.getRunStructure().getRootNode();
+		new TreeVisitor(new Visitor() {
+			@Override
+			public void visit(INode node) {
+				if(node instanceof AssessableCourseNode) {
+					processNonPropertiesStates(assessableIdentities, (AssessableCourseNode)node, course, courseEntry, nodeAssessmentMap);
+				}
+			}
+		}, rootNode, true).visitAll();
+		
+		dbInstance.commitAndCloseSession();
 		
 		int count = 0;
 		for(AssessmentEntryImpl courseNodeAssessment:nodeAssessmentMap.values()) {
@@ -201,7 +275,122 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		}
 		dbInstance.commitAndCloseSession();
 		
-		return verifyCourseAssessmentData(courseEntry);
+		boolean allOk = verifyCourseAssessmentData(assessableIdentities, courseEntry);
+		
+		dbInstance.commitAndCloseSession();
+		
+		if(allOk) {
+			List<STCourseNode> nodes = hasAssessableSTCourseNode(course);
+			if(nodes.size() > 0) {
+				System.out.println("Has assessables ST nodes");
+				//processStructureNodes(assessableIdentities, course);
+			}
+		}
+
+		return allOk;
+	}
+	
+	private void processNonPropertiesStates(List<Identity> assessableIdentities, AssessableCourseNode cNode,
+			ICourse course, RepositoryEntry courseEntry, Map<AssessmentDataKey,AssessmentEntryImpl> nodeAssessmentMap) {
+		
+		if(cNode instanceof IQTESTCourseNode) {
+			processNonPropertiesIQTESTStates(assessableIdentities, (IQTESTCourseNode)cNode, course, courseEntry, nodeAssessmentMap);
+		} else if(cNode instanceof TACourseNode) {
+			processNonPropertiesTAStates(assessableIdentities, (TACourseNode)cNode, course, courseEntry, nodeAssessmentMap);
+		}
+	}
+	
+	/**
+	 * Find if someone dropped a file in a Task element without task assignment, or has a returned
+	 * document.
+	 * 
+	 * @param assessableIdentities
+	 * @param tNode
+	 * @param course
+	 * @param courseEntry
+	 * @param nodeAssessmentMap
+	 */
+	private void processNonPropertiesTAStates(List<Identity> assessableIdentities, TACourseNode tNode,
+			ICourse course, RepositoryEntry courseEntry, Map<AssessmentDataKey,AssessmentEntryImpl> nodeAssessmentMap) {
+		
+		for(Identity assessedIdentity:assessableIdentities) {	
+			AssessmentDataKey key = new AssessmentDataKey(assessedIdentity, course.getResourceableId(), tNode.getIdent());
+			
+			AssessmentEntryImpl nodeAssessment;
+			if(!nodeAssessmentMap.containsKey(key)) {
+				nodeAssessment = createAssessmentEntry(assessedIdentity, null, course, courseEntry, tNode.getIdent());
+				nodeAssessmentMap.put(key, nodeAssessment);
+				
+				String dropbox = DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(), tNode) + File.separator + assessedIdentity.getName();
+				OlatRootFolderImpl dropBox = new OlatRootFolderImpl(dropbox, null);
+				if (dropBox.getBasefile().exists() && dropBox.getBasefile().listFiles(SystemFileFilter.FILES_ONLY).length > 0) {
+					nodeAssessment.setAssessmentStatus(AssessmentEntryStatus.inProgress);
+				} else {
+					String returnbox = ReturnboxController.getReturnboxPathRelToFolderRoot(course.getCourseEnvironment(), tNode) + File.separator + assessedIdentity.getName();
+					OlatRootFolderImpl returnBox = new OlatRootFolderImpl(returnbox, null);
+					if (returnBox.getBasefile().exists() && returnBox.getBasefile().listFiles(SystemFileFilter.FILES_ONLY).length > 0) {
+						nodeAssessment.setAssessmentStatus(AssessmentEntryStatus.inProgress);
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Find if someone has started a test without getting a score, passed status...
+	 * 
+	 * @param assessableIdentities
+	 * @param iqNode
+	 * @param course
+	 * @param courseEntry
+	 * @param nodeAssessmentMap
+	 */
+	private void processNonPropertiesIQTESTStates(List<Identity> assessableIdentities, IQTESTCourseNode iqNode,
+			ICourse course, RepositoryEntry courseEntry, Map<AssessmentDataKey,AssessmentEntryImpl> nodeAssessmentMap) {
+		
+		for(Identity assessedIdentity:assessableIdentities) {
+			if(iqTestPersisterExists(assessedIdentity, iqNode, course)) {
+				
+				AssessmentDataKey key = new AssessmentDataKey(assessedIdentity, course.getResourceableId(), iqNode.getIdent());
+				
+				AssessmentEntryImpl nodeAssessment;
+				if(nodeAssessmentMap.containsKey(key)) {
+					nodeAssessment = nodeAssessmentMap.get(key);
+				} else {
+					nodeAssessment = createAssessmentEntry(assessedIdentity, null, course, courseEntry, iqNode.getIdent());
+					nodeAssessmentMap.put(key, nodeAssessment);
+
+					Long courseResourceableId = course.getResourceableId();
+					String resourcePath = courseResourceableId + File.separator + iqNode.getIdent();
+					FilePersister qtiPersister = new FilePersister(assessedIdentity, resourcePath);
+					nodeAssessment.setCreationDate(qtiPersister.getLastModified());
+					nodeAssessment.setLastModified(qtiPersister.getLastModified());
+				}
+				nodeAssessment.setAssessmentStatus(AssessmentEntryStatus.inProgress);
+			}
+		}
+	}
+	
+	private List<STCourseNode> hasAssessableSTCourseNode(ICourse course) {
+		List<STCourseNode> assessableSTNodes = new ArrayList<>();
+		
+		CourseNode rootNode = course.getRunStructure().getRootNode();
+		new TreeVisitor(new Visitor() {
+			@Override
+			public void visit(INode node) {
+				if(node instanceof STCourseNode) {
+					STCourseNode stNode = (STCourseNode)node;
+					ScoreCalculator calculator = stNode.getScoreCalculator();
+					if(StringHelper.containsNonWhitespace(calculator.getPassedExpression())) {
+						assessableSTNodes.add(stNode);
+					} else if(StringHelper.containsNonWhitespace(calculator.getScoreExpression())) {
+						assessableSTNodes.add(stNode);
+					}
+				}
+			}
+		}, rootNode, true).visitAll();
+		
+		return assessableSTNodes;
 	}
 	
 	/**
@@ -211,12 +400,11 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 	 * @param courseEntry
 	 * @return
 	 */
-	private boolean verifyCourseAssessmentData(RepositoryEntry courseEntry) {
+	private boolean verifyCourseAssessmentData(List<Identity> assessableIdentities, RepositoryEntry courseEntry) {
 		//load the cache and fill it with the same amount of datas as in assessment tool
-		ICourse course = CourseFactory.loadCourse(courseEntry.getOlatResource());
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		StaticCacheWrapper cache = new StaticCacheWrapper();
 		NewCachePersistingAssessmentManager assessmentManager = new NewCachePersistingAssessmentManager(course, cache);
-		List<Identity> assessableIdentities = getAllAssessableIdentities(courseEntry);
 		assessmentManager.preloadCache(assessableIdentities);
 		dbInstance.commitAndCloseSession();
 		
@@ -375,7 +563,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 	 * @param entry
 	 * @return
 	 */
-	private List<Identity> getAllAssessableIdentities(RepositoryEntry entry) {
+	private List<Identity> getAllAssessableIdentities(ICourse course, RepositoryEntry entry) {
 		Set<Identity> duplicateKiller = new HashSet<>();
 		List<Identity> assessableIdentities = new ArrayList<>();
 		
@@ -399,7 +587,6 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 			}
 		}
 
-		ICourse course = CourseFactory.loadCourse(entry);
 		List<Identity> assessedUsers = getAllIdentitiesWithCourseAssessmentData(course.getResourceableId());
 		for(Identity assessedUser:assessedUsers) {
 			if(!duplicateKiller.contains(assessedUser)) {
@@ -420,32 +607,247 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 			.append(" and p.identity is not null")
 			.append(" and p.name in ('").append(SCORE).append("','").append(PASSED).append("')");
 
-		return DBFactory.getInstance().getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(query.toString(), Identity.class)
 				.setParameter("resid", resourceId)
 				.getResultList();
 	}
-	
-	private AssessmentEntryImpl createAssessmentEntry(Property property, RepositoryEntry courseEntry,
-			String nodeIdent, RepositoryEntry referenceEntry) {
+
+	private AssessmentEntryImpl createAssessmentEntry(Identity assessedIdentity, Property property, ICourse course, RepositoryEntry courseEntry, String nodeIdent) {
 		AssessmentEntryImpl entry = new AssessmentEntryImpl();
-		entry.setCreationDate(property.getCreationDate());
-		entry.setLastModified(property.getLastModified());
-		entry.setIdentity(property.getIdentity());
+		if(property == null) {
+			entry.setCreationDate(new Date());
+			entry.setLastModified(entry.getCreationDate());
+		} else {
+			entry.setCreationDate(property.getCreationDate());
+			entry.setLastModified(property.getLastModified());
+		}
+		entry.setIdentity(assessedIdentity);
 		entry.setRepositoryEntry(courseEntry);
 		entry.setSubIdent(nodeIdent);
-		entry.setReferenceEntry(referenceEntry);
-		//TODO qti ita/gta -> set status
-		//TODO qti 1.2 -> find status ( test closed?)
-		//TODO portfolio -> map.status (close status -> coach)
-		//TODO ms -> score -> done
-		//TODO lti -> score -> done
-		//TODO SCORM -> score ( state finished?) 
+		entry.setAttempts(new Integer(0));
 		
+
+		CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
+		if(courseNode.needsReferenceToARepositoryEntry()) {
+			RepositoryEntry referenceEntry = courseNode.getReferencedRepositoryEntry();
+			entry.setReferenceEntry(referenceEntry);
+		}
+
+		if(courseNode instanceof GTACourseNode) {
+			processAssessmentPropertyForGTA(assessedIdentity, entry, (GTACourseNode)courseNode, courseEntry);
+		} else if(courseNode instanceof TACourseNode) {
+			processAssessmentPropertyForTA(assessedIdentity, entry, (TACourseNode)courseNode, course);
+		} else if(courseNode instanceof IQTESTCourseNode) {
+			processAssessmentPropertyForIQTEST(assessedIdentity, entry, (IQTESTCourseNode)courseNode, course);
+		} else if(courseNode instanceof PortfolioCourseNode) {
+			processAssessmentPropertyForPortfolio(assessedIdentity, entry, (PortfolioCourseNode)courseNode, course);
+		} else if(courseNode instanceof MSCourseNode) {
+			entry.setAssessmentStatus(AssessmentEntryStatus.inReview);
+		} else if(courseNode instanceof BasicLTICourseNode) {
+			processAssessmentPropertyForBasicLTI(assessedIdentity, entry, (BasicLTICourseNode)courseNode, course);
+		} else if(courseNode instanceof ScormCourseNode) {
+			String username = assessedIdentity.getName();
+			Map<Date, List<CmiData>> rawDatas = ScormAssessmentManager.getInstance()
+					.visitScoDatasMultiResults(username, course.getCourseEnvironment(), (ScormCourseNode)courseNode);
+			if(rawDatas.size() > 0) {
+				entry.setAssessmentStatus(AssessmentEntryStatus.inProgress);
+			} else {
+				entry.setAssessmentStatus(AssessmentEntryStatus.notStarted);
+			}
+		}
 		return entry;
 	}
 
-	private void copyAssessmentProperty(Property property, AssessmentEntry nodeAssessment) {
+	private void processAssessmentPropertyForBasicLTI(Identity assessedIdentity, AssessmentEntryImpl entry, BasicLTICourseNode cNode, ICourse course) {
+		List<LoggingObject> objects = getLoggingObject(assessedIdentity, cNode, course);
+		if(objects.size() > 0) {
+			entry.setAssessmentStatus(AssessmentEntryStatus.inProgress);
+		} else {
+			entry.setAssessmentStatus(AssessmentEntryStatus.notStarted);
+		}
+	}
+	
+	/**
+	 * Use the log of the navigation handler of the course to know if the user
+	 * launched the specified course element.
+	 * 
+	 * @param user
+	 * @param courseNode
+	 * @param course
+	 * @return
+	 */
+	private List<LoggingObject> getLoggingObject(IdentityRef user, CourseNode courseNode, ICourse course) {
+		StringBuilder query = new StringBuilder();
+		query.append("select log from ").append(LoggingObject.class.getName()).append(" log")
+		     .append(" where log.userId=:userId and sourceclass='org.olat.course.run.navigation.NavigationHandler'")
+		     .append(" and parentResType='CourseModule' and parentResIs=:courseId")
+		     .append(" and targetResId=:targetResId")
+		     .append(" and actionVerb='launch' and actionObject='node'");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery("", LoggingObject.class)
+				.setParameter("userId", user.getKey())
+				.setParameter("courseId", course.getResourceableId())
+				.setParameter("targetResId", courseNode.getIdent())
+				.getResultList();
+	}
+	
+	/**
+	 * If a QTI ser is found, the test is in progress. If not, check if some result set is available
+	 * and if the test has essay to set the status as inReview or done.
+	 * 
+	 * @param assessedIdentity
+	 * @param entry
+	 * @param cNode
+	 * @param course
+	 */
+	private void processAssessmentPropertyForIQTEST(Identity assessedIdentity, AssessmentEntryImpl entry, IQTESTCourseNode cNode, ICourse course) {
+		entry.setAssessmentStatus(AssessmentEntryStatus.notStarted);
+		
+		if(iqTestPersisterExists(assessedIdentity, cNode, course)) {
+			entry.setAssessmentStatus(AssessmentEntryStatus.inProgress);
+		} else {
+			RepositoryEntry ref = cNode.getReferencedRepositoryEntry();
+			if(ref != null) {
+				Long courseResourceableId = course.getResourceableId();
+				List<QTIResultSet> resultSets = qtiResultManager.getResultSets(courseResourceableId, cNode.getIdent(), ref.getKey(), assessedIdentity);
+				if(resultSets.size() > 0) {
+					if(checkEssay(ref)) {
+						entry.setAssessmentStatus(AssessmentEntryStatus.inReview);
+					} else {
+						entry.setAssessmentStatus(AssessmentEntryStatus.done);
+					}
+				}
+			}	
+		}
+	}
+	
+	private boolean iqTestPersisterExists(Identity assessedIdentity, IQTESTCourseNode cNode, ICourse course) {
+		Long courseResourceableId = course.getResourceableId();
+		String resourcePath = courseResourceableId + File.separator + cNode.getIdent();
+		FilePersister qtiPersister = new FilePersister(assessedIdentity, resourcePath);
+		return qtiPersister.exists();
+	}
+
+	private boolean checkEssay(RepositoryEntry testEntry) {
+		if(qtiEssayMap.containsKey(testEntry.getKey())) {
+			return qtiEssayMap.get(testEntry.getKey()).booleanValue();
+		}
+		
+		TestFileResource fr = new TestFileResource();
+		fr.overrideResourceableId(testEntry.getOlatResource().getResourceableId());
+		
+		TransientIdentity pseudoIdentity = new TransientIdentity();
+		pseudoIdentity.setName("transient");
+		Translator translator = Util.createPackageTranslator(QTIModule.class, Locale.ENGLISH);
+		QTIEditorPackage qtiPackage = new QTIEditorPackageImpl(pseudoIdentity, fr, null, translator);
+		if(qtiPackage.getQTIDocument() != null && qtiPackage.getQTIDocument().getAssessment() != null) {
+			Assessment ass = qtiPackage.getQTIDocument().getAssessment();
+			//Sections with their Items
+			List<Section> sections = ass.getSections();
+			for (Section section:sections) {
+				List<Item> items = section.getItems();
+				for (Item item:items) {
+					String ident = item.getIdent();
+					if(ident != null && ident.startsWith("QTIEDIT:ESSAY")) {
+						qtiEssayMap.put(testEntry.getKey(), Boolean.TRUE);
+						return true;
+					}
+				}
+			}
+		}
+		qtiEssayMap.put(testEntry.getKey(), Boolean.FALSE);
+		return false;
+	}
+	
+	private void processAssessmentPropertyForPortfolio(Identity assessedIdentity, AssessmentEntryImpl entry, PortfolioCourseNode cNode, ICourse course) {
+		entry.setAssessmentStatus(AssessmentEntryStatus.notStarted);
+		
+		Long courseResId = course.getCourseEnvironment().getCourseResourceableId();
+		RepositoryEntry mapEntry = cNode.getReferencedRepositoryEntry();
+		if(mapEntry != null) {
+			PortfolioStructureMap template = (PortfolioStructureMap) ePFMgr.loadPortfolioStructure(mapEntry.getOlatResource());
+			if(template != null) {
+				OLATResourceable courseOres = OresHelper.createOLATResourceableInstance(CourseModule.class, courseResId);
+				PortfolioStructureMap copy = ePFMgr.loadPortfolioStructureMap(assessedIdentity, template, courseOres, cNode.getIdent(), null);
+				if(copy != null) {
+					String status = copy.getStatus();
+					if(StructureStatusEnum.CLOSED.equals(status)) {
+						entry.setAssessmentStatus(AssessmentEntryStatus.inReview);
+						
+					} else {
+						entry.setAssessmentStatus(AssessmentEntryStatus.inProgress);
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Search first for the status of the task, if not found, see if some documents
+	 * where dropped or returned, in this case, the status is in review, if not
+	 * the status is not started.
+	 * 
+	 * @param assessedIdentity
+	 * @param entry
+	 * @param tNode
+	 * @param course
+	 */
+	private void processAssessmentPropertyForTA(Identity assessedIdentity, AssessmentEntryImpl entry, TACourseNode tNode, ICourse course) {
+		List<Property> samples = course.getCourseEnvironment().getCoursePropertyManager()
+				.findCourseNodeProperties(tNode, assessedIdentity, null, TaskController.PROP_ASSIGNED);
+		if (samples.size() > 0) {
+			String details = samples.get(0).getStringValue();
+			entry.setDetails(details);
+		}
+		
+		Property statusProperty = course.getCourseEnvironment().getCoursePropertyManager()
+				.findCourseNodeProperty(tNode, assessedIdentity, null, StatusManager.PROPERTY_KEY_STATUS);
+		AssessmentEntryStatus assessmentStatus = null;
+		if (statusProperty != null) {
+			String status = statusProperty.getStringValue();
+			if(status != null) {
+				switch(status) {
+					case StatusForm.STATUS_VALUE_NOT_OK: assessmentStatus = AssessmentEntryStatus.inProgress; break;
+					case StatusForm.STATUS_VALUE_OK: assessmentStatus = AssessmentEntryStatus.done; break;
+					case StatusForm.STATUS_VALUE_WORKING_ON: assessmentStatus = AssessmentEntryStatus.inProgress; break;
+					case StatusForm.STATUS_VALUE_UNDEFINED: assessmentStatus = AssessmentEntryStatus.inProgress; break;
+				}
+			}
+		}
+		if(assessmentStatus == null) {
+			String dropbox = DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(), tNode) + File.separator + assessedIdentity.getName();
+			OlatRootFolderImpl dropBox = new OlatRootFolderImpl(dropbox, null);
+			boolean hasDropped = (dropBox.getBasefile().exists() && dropBox.getBasefile().listFiles(SystemFileFilter.FILES_ONLY).length > 0);
+			
+			String returnbox = ReturnboxController.getReturnboxPathRelToFolderRoot(course.getCourseEnvironment(), tNode) + File.separator + assessedIdentity.getName();
+			OlatRootFolderImpl returnBox = new OlatRootFolderImpl(returnbox, null);
+			boolean hasReturned = (returnBox.getBasefile().exists() && returnBox.getBasefile().listFiles(SystemFileFilter.FILES_ONLY).length > 0);
+			
+			if(hasReturned || hasDropped) {
+				assessmentStatus = AssessmentEntryStatus.inReview;
+			} else {
+				assessmentStatus = AssessmentEntryStatus.notStarted;
+			}
+		}
+		entry.setAssessmentStatus(assessmentStatus);
+	}
+	
+	
+	private void processAssessmentPropertyForGTA(Identity assessedIdentity, AssessmentEntryImpl entry, GTACourseNode cNode, RepositoryEntry courseEntry) {
+		List<Task> tasks = gtaManager.getTasks(assessedIdentity, courseEntry, cNode);
+		if(tasks != null && tasks.size() > 0) {
+			Task task = tasks.get(0);
+			AssessmentEntryStatus status = gtaManager.convertToAssessmentEntrystatus(task, cNode);
+			entry.setStatus(status.name());
+			
+			String details = gtaManager.getDetails(assessedIdentity, courseEntry, cNode);
+			entry.setDetails(details);
+		}
+	}
+
+	private void copyAssessmentProperty(Property property, AssessmentEntryImpl nodeAssessment, ICourse course) {
 		String propertyName = property.getName();
 		if (propertyName.equals(ATTEMPTS)) {
 			if(property.getLongValue() != null) {
@@ -455,10 +857,12 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 			if(property.getFloatValue() != null) {
 				BigDecimal score = new BigDecimal(Float.toString(property.getFloatValue().floatValue()));
 				nodeAssessment.setScore(score);
-			}	
+				postCopyPassedScore(nodeAssessment, course);
+			}
 		} else if (propertyName.equals(PASSED)) {
 			if(StringHelper.containsNonWhitespace(property.getStringValue())) {
 				nodeAssessment.setPassed(new Boolean(property.getStringValue()));
+				postCopyPassedScore(nodeAssessment, course);
 			}
 		} else if(propertyName.equals(FULLY_ASSESSED)) {
 			if(StringHelper.containsNonWhitespace(property.getStringValue())) {
@@ -470,6 +874,33 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 			nodeAssessment.setComment(property.getTextValue());
 		} else if(propertyName.equals(COACH_COMMENT)) {
 			nodeAssessment.setCoachComment(property.getTextValue());
+		} else if(propertyName.equals(TaskController.PROP_ASSIGNED)) {
+			nodeAssessment.setDetails(property.getStringValue());
+		}
+	}
+	
+	/**
+	 * Used if a passed or score value was set.
+	 * @param nodeAssessment
+	 * @param course
+	 */
+	private void postCopyPassedScore(AssessmentEntry entry, ICourse course) {
+		String nodeIdent = entry.getSubIdent();
+		CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
+		if(courseNode instanceof GTACourseNode) {
+			//
+		} else if(courseNode instanceof TACourseNode) {
+			entry.setAssessmentStatus(AssessmentEntryStatus.done);
+		} else if(courseNode instanceof IQTESTCourseNode) {
+			//
+		} else if(courseNode instanceof PortfolioCourseNode) {
+			entry.setAssessmentStatus(AssessmentEntryStatus.done);
+		} else if(courseNode instanceof MSCourseNode) {
+			entry.setAssessmentStatus(AssessmentEntryStatus.done);
+		} else if(courseNode instanceof BasicLTICourseNode) {
+			entry.setAssessmentStatus(AssessmentEntryStatus.done);
+		} else if(courseNode instanceof ScormCourseNode) {
+			entry.setAssessmentStatus(AssessmentEntryStatus.done);	
 		}
 	}
 	
@@ -494,7 +925,9 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		  .append(PASSED).append("','")
 		  .append(ASSESSMENT_ID).append("','")
 		  .append(COMMENT).append("','")
-		  .append(COACH_COMMENT)
+		  .append(COACH_COMMENT).append("','")
+		  .append(TaskController.PROP_ASSIGNED).append("','")
+		  .append(StatusManager.PROPERTY_KEY_STATUS).append("','")
 		  .append("')");
 
 		return dbInstance.getCurrentEntityManager()

@@ -33,6 +33,7 @@ import org.olat.course.nodes.gta.ui.SubmitEvent;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -149,6 +150,14 @@ public interface GTAManager {
 	public boolean isTasksInProcess(RepositoryEntryRef entry, GTACourseNode gtaNode);
 	
 	/**
+	 * Convert the status of a task to the status used by the assessment tool.
+	 * @param task
+	 * @param cNode
+	 * @return
+	 */
+	public AssessmentEntryStatus convertToAssessmentEntrystatus(Task task, GTACourseNode cNode);
+	
+	/**
 	 * Are users already processing this task?
 	 * 
 	 * @param entry
@@ -157,6 +166,12 @@ public interface GTAManager {
 	 * @return
 	 */
 	public boolean isTaskInProcess(RepositoryEntryRef entry, GTACourseNode gtaNode, String taskName);
+	
+	/**
+	 * Return the details, a string used by the assessment tool
+	 * @return
+	 */
+	public String getDetails(Identity assessedIdentity, RepositoryEntryRef entry, GTACourseNode cNode);
 	
 	public TaskList createIfNotExists(RepositoryEntry entry, GTACourseNode cNode);
 	

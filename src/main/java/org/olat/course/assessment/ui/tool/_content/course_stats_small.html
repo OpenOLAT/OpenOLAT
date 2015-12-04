@@ -21,7 +21,7 @@
 		</tr>
 		<tr>
 			<th>$r.translate("table.header.scoreAverage")</th>
-			<td>$scoreAverage</td>
+			<td>#if($scoreAverage && !$scoreAverage.isEmpty())$scoreAverage#end</td>
 		</tr>
 		<tr>
 			<th>$r.translate("table.header.numOfPassed")</th>

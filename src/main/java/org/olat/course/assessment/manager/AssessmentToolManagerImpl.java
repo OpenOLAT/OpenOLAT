@@ -162,16 +162,19 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				stats.setParameter("identityKey", coach.getKey());
 			}
 			
-			Object[] result = stats.getSingleResult();
-			Double averageScore = (Double)result[0];
-			Long numOfPassed = (Long)result[1];
-			Long numOfFailed = (Long)result[2];
-			Long numOfNotAttempted = (Long)result[3];
-			
-			entry.setAverageScore(averageScore);
-			entry.setCountPassed(numOfPassed == null ? 0 : numOfPassed.intValue());
-			entry.setCountFailed(numOfFailed == null ? 0 : numOfFailed.intValue());
-			entry.setCountNotAttempted(numOfNotAttempted == null ? 0 : numOfNotAttempted.intValue());
+			List<Object[]> results = stats.getResultList();
+			if(results != null && results.size() > 0) {
+				Object[] result = results.get(0);
+				Double averageScore = (Double)result[0];
+				Long numOfPassed = (Long)result[1];
+				Long numOfFailed = (Long)result[2];
+				Long numOfNotAttempted = (Long)result[3];
+				
+				entry.setAverageScore(averageScore);
+				entry.setCountPassed(numOfPassed == null ? 0 : numOfPassed.intValue());
+				entry.setCountFailed(numOfFailed == null ? 0 : numOfFailed.intValue());
+				entry.setCountNotAttempted(numOfNotAttempted == null ? 0 : numOfNotAttempted.intValue());
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.error("", e);

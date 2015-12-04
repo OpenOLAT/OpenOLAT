@@ -47,10 +47,10 @@ public class StatusForm extends FormBasicController {
 	
 	// This status values will be stored in the db. 
 	// Do not change it, if you have already persistent data.
-	private static final String STATUS_VALUE_NOT_OK     = "not_ok";
-	private static final String STATUS_VALUE_OK         = "ok";
-	private static final String STATUS_VALUE_WORKING_ON = "working_on";
-	private static final String STATUS_VALUE_UNDEFINED  = "undefined";
+	public static final String STATUS_VALUE_NOT_OK     = "not_ok";
+	public static final String STATUS_VALUE_OK         = "ok";
+	public static final String STATUS_VALUE_WORKING_ON = "working_on";
+	public static final String STATUS_VALUE_UNDEFINED  = "undefined";
 	
 	// Keys to access Locale.properties file
 	public static final String  STATUS_LOCALE_PROPERTY_PREFIX = "status.";

@@ -43,6 +43,7 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
@@ -418,6 +419,34 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		boolean coach = roles.contains(GroupRoles.coach.name()) || roles.contains(GroupRoles.owner.name());
 		boolean participant = roles.contains(GroupRoles.participant.name());
 		return new Membership(coach, participant);
+	}
+
+	@Override
+	public String getDetails(Identity assessedIdentity, RepositoryEntryRef entry, GTACourseNode cNode) {
+		String details;
+		if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
+			List<Task> tasks = getTasks(assessedIdentity, entry, cNode);
+			if(tasks == null || tasks.isEmpty()) {
+				details = null;
+			} else {
+				StringBuilder sb = new StringBuilder();
+				for(Task task:tasks) {
+					if(sb.length() > 0) sb.append(", ");
+					if(sb.length() > 64) {
+						sb.append("...");
+						break;
+					}
+					String taskName = task.getTaskName();
+					if(StringHelper.containsNonWhitespace(taskName)) {
+						sb.append(StringHelper.escapeHtml(taskName));
+					}
+				}
+				details = sb.length() == 0 ? null : sb.toString();
+			}
+		} else {
+			details = null;
+		}
+		return details;
 	}
 
 	@Override
@@ -959,11 +988,10 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		syncAssessmentEntry(taskImpl, cNode);
 		return taskImpl;
 	}
-	
-	private void syncAssessmentEntry(TaskImpl taskImpl, GTACourseNode cNode) {
-		if(taskImpl == null || taskImpl.getTaskStatus() == null || cNode == null) return;
-		
-		TaskProcess status = taskImpl.getTaskStatus();
+
+	@Override
+	public AssessmentEntryStatus convertToAssessmentEntrystatus(Task task, GTACourseNode cNode) {
+		TaskProcess status = task.getTaskStatus();
 		TaskProcess firstStep = firstStep(cNode);
 		
 		AssessmentEntryStatus assessmentStatus;
@@ -976,8 +1004,14 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		} else {
 			assessmentStatus = AssessmentEntryStatus.inProgress;
 		}
-
+		return assessmentStatus;
+	}
+	
+	private void syncAssessmentEntry(TaskImpl taskImpl, GTACourseNode cNode) {
+		if(taskImpl == null || taskImpl.getTaskStatus() == null || cNode == null) return;
+		
 		RepositoryEntry courseRepoEntry = taskImpl.getTaskList().getEntry();
+		AssessmentEntryStatus assessmentStatus = convertToAssessmentEntrystatus(taskImpl, cNode);
 		if(GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
 			//update whole group
 			assessmentService.updateAssessmentEntries(taskImpl.getBusinessGroup(), courseRepoEntry, cNode.getIdent(), null, assessmentStatus);
