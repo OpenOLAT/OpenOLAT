@@ -1,78 +1,73 @@
-<div class="o_course_run_scoreinfo">
-	#if ($hasScoreField)
-		<h4>$r.translate("score.title")</h4>
-		<table>
-			<tbody>
-				<tr>
-					<td>
-						$r.translate("score.min"):
-					</td>
-					<td>
-						$scoreMin
-					</td>
-				</tr>
-				<tr>
-					<td>
-						$r.translate("score.max"): 
-					</td>
-					<td>
-						$scoreMax
-					</td>
-				</tr>
-				<tr>
-					<td>			
-						$r.translate("score.yourscore"): 
-					</td>
-					<td>
-						#if($score)		
-							$score
-						#else
-							<div class="o_course_run_scoreinfo_noinfo">$r.translate("score.noscore")</div>
-						#end
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	#end
-	
-	#if ($hasPassedField)
-		<h4>$r.translate("passed.title")</h4>
-		<table>
-			<tbody>	
-			#if ($passedCutValue)
-				<tr>
-					<td>
-						$r.translate("passed.cut"):
-					</td>
-					<td>
-						$passedCutValue
-					</td>
-				</tr>
-			#end
-				<tr>
-					<td>			
-						$r.translate("passed.yourpassed"):
-					</td>
-					<td>
-						#if($hasPassedValue && $passed == true)		
-							<span class="o_state o_passed">$r.translate("map.passed")</span>
-						#elseif($hasPassedValue && $passed == false)		
-							<span class="o_state o_failed"><i class="o_icon o_icon_failed"> </i> $r.translate("map.not.passed")</span>
-						#else
-							<div class="o_course_run_scoreinfo_noinfo">$r.translate("map.not.rated.yet")</div>
-						#end
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	#end
-	
-	#if ($hasCommentField)
-		<h4>$r.translate("map.comment")</h4>
-		#if ($comment)
-			$comment
-		#else
-			<div class="o_course_run_scoreinfo_noinfo">$r.translate("comment.nocomment")</div>
+#if ($hasScoreField || $hasPassedField)
+
+<div class="panel panel-default o_personal">
+  	<div class="panel-heading">
+ 			<h4 class="panel-title">$r.translate("score.title")</h4>
+ 		</div>
+	<table class="table">
+	<tbody>
+		#if ($hasScoreField)
+		<tr class="o_score_config_min">
+			<th>$r.translate("score.min")</th>
+			<td>$scoreMin</td>
+		</tr>
+		<tr class="o_score_config_max">
+			<th>$r.translate("score.max")</th>
+			<td>$scoreMax</td>
+		</tr>
+		<tr class="o_score">
+			<th>$r.translate("score.yourscore")</th>
+			<td>
+			#if($score)		
+				$score
+			#else
+				<div class="o_noinfo">$r.translate("score.noscore")</div>
+			#end				
+			</td> 
+		</tr>
+		#end 
+		
+		#if ($hasPassedField)
+		#if ($passedCutValue)
+		<tr class="o_cutval">
+			<th>$r.translate("passed.cut")</th>
+			<td>$passedCutValue</td>
+		</tr>
 		#end
-	#end
+		<tr class="o_state #if ($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
+			<th>$r.translate("passed.yourpassed")</th>
+			<td>
+			#if($hasPassedValue && $passed)	
+				<i class="o_icon o_icon_passed"></i> $r.translate("map.passed")
+			#elseif($hasPassedValue && !$passed)		
+				<i class="o_icon o_icon_failed"></i> $r.translate("map.not.passed")
+			#else
+				<div class="o_noinfo">$r.translate("map.not.rated.yet")</div>
+			#end
+			</td>
+		</tr>
+		#end
+	</tbody>
+	</table>
 </div>
+#end
+	
+#if ($comment && !$comment.isEmpty())
+<div class="panel panel-default o_comment">
+  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseComment">
+  		<h4 class="panel-title">
+  			<i id="collapseCommentToggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i> $r.translate("map.comment")</h4>
+  	</div>
+	<div id="collapseComment" class="panel-collapse collapse in"><div class="panel-body">$comment</div></div>
+</div>
+<script type="text/javascript">
+	/* <![CDATA[ */
+		jQuery('#collapseComment').on('hide.bs.collapse', function () {
+				jQuery('#collapseCommentToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		})
+		jQuery('#collapseComment').on('show.bs.collapse', function () {
+				jQuery('#collapseCommentToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		})
+	/* ]]> */
+</script>
+#end

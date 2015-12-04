@@ -554,8 +554,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			if(event instanceof LeavingEvent) {
 				doClose(ureq);
 			} else if(event == Event.DONE_EVENT) {
-				popToRoot(ureq).cleanUp();
-				doRun(ureq, reSecurity);
+				popToRoot(ureq);
+				cleanUp();
 			}
 		} else if(closeCtrl == source) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
