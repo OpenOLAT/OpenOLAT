@@ -40,6 +40,7 @@ import org.olat.course.groupsandrights.PersistingCourseGroupManager;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
 
 /**
  * Initial Date: 09.03.2004
@@ -58,11 +59,12 @@ public class CourseEnvironmentImpl implements CourseEnvironment {
 	 * Constructor for the course environment
 	 * 
 	 * @param course The course
+	 * @param resource The OLAT resource
 	 */
-	public CourseEnvironmentImpl(PersistingCourseImpl course) {
+	public CourseEnvironmentImpl(PersistingCourseImpl course, OLATResource resource) {
 		this.course = course;
 		this.propertyManager = PersistingCoursePropertyManager.getInstance(course);
-		this.cgm = PersistingCourseGroupManager.getInstance(course);
+		this.cgm = PersistingCourseGroupManager.getInstance(resource);
 	}
 	
 	public CourseEnvironmentImpl(PersistingCourseImpl course, RepositoryEntry courseEntry) {
@@ -80,13 +82,6 @@ public class CourseEnvironmentImpl implements CourseEnvironment {
 	 */
 	public long getCurrentTimeMillis() {
 		return System.currentTimeMillis();
-	}
-
-	/**
-	 * @see org.olat.course.run.environment.CourseEnvironment#isNoOpMode()
-	 */
-	public boolean isNoOpMode() {
-		return false;
 	}
 
 	/**

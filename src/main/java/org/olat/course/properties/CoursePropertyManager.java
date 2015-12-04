@@ -33,7 +33,6 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
 import org.olat.ims.qti.export.helper.IdentityAnonymizerCallback;
 import org.olat.properties.Property;
-import org.olat.resource.OLATResource;
 
 /**
  * Initial Date:  08.02.2005
@@ -41,8 +40,6 @@ import org.olat.resource.OLATResource;
  * @author Mike Stock
  */
 public interface CoursePropertyManager extends IdentityAnonymizerCallback {
-
-	public OLATResource getCourseResource();
 	
 	/**
 	 * Create a course node property in ram

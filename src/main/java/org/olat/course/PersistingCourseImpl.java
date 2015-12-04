@@ -56,7 +56,6 @@ import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigManager;
 import org.olat.course.config.CourseConfigManagerImpl;
 import org.olat.course.export.CourseEnvironmentMapper;
-import org.olat.course.groupsandrights.PersistingCourseGroupManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNode.Processing;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -123,14 +122,14 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	 * not already exist. Editor and run structures are not yet set. Use load() to
 	 * initialize the editor and run structure from persisted XML structure.
 	 * 
-	 * @param resourceableId
+	 * @param resource The OLAT resource
 	 */
-	PersistingCourseImpl(Long resourceableId) {
-		this.resourceableId = resourceableId;
+	PersistingCourseImpl(OLATResource resource) {
+		this.resourceableId = resource.getResourceableId();
 		// prepare filesystem and set course base path and course folder paths
 		prepareFilesystem();
 		courseConfig = CourseConfigManagerImpl.getInstance().loadConfigFor(this); // load or init defaults
-		courseEnvironment = new CourseEnvironmentImpl(this);
+		courseEnvironment = new CourseEnvironmentImpl(this, resource);
 	}
 	
 	PersistingCourseImpl(RepositoryEntry courseEntry) {
@@ -293,12 +292,13 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		FileUtils.copyFileToDir(new File(fCourseBase, CourseConfigManager.COURSECONFIG_XML), exportDirectory, "course export courseconfig");
 		
 		//export business groups
-		CourseEnvironmentMapper envMapper = PersistingCourseGroupManager.getInstance(this).getBusinessGroupEnvironment();
+		CourseEnvironmentMapper envMapper = getCourseEnvironment().getCourseGroupManager().getBusinessGroupEnvironment();
 		if(backwardsCompatible) {
 			//prevents duplicate names
 			envMapper.avoidDuplicateNames();
 		}
-		PersistingCourseGroupManager.getInstance(this).exportCourseBusinessGroups(fExportedDataDir, envMapper, runtimeDatas, backwardsCompatible);
+	
+		getCourseEnvironment().getCourseGroupManager().exportCourseBusinessGroups(fExportedDataDir, envMapper, runtimeDatas, backwardsCompatible);
 		if(backwardsCompatible) {
 			XStream xstream = CourseXStreamAliases.getReadCourseXStream();
 

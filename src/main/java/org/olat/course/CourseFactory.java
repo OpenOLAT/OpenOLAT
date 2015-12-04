@@ -131,6 +131,7 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
@@ -216,7 +217,7 @@ public class CourseFactory extends BasicManager {
 	public static ICourse createCourse(RepositoryEntry courseEntry,
 			String shortTitle, String longTitle, String learningObjectives) {
 		OLATResource courseResource = courseEntry.getOlatResource();
-		PersistingCourseImpl newCourse = new PersistingCourseImpl(courseResource.getResourceableId());
+		PersistingCourseImpl newCourse = new PersistingCourseImpl(courseResource);
 		// Put new course in course cache    
 		loadedCourses.put(newCourse.getResourceableId(), newCourse);
 		
@@ -284,7 +285,8 @@ public class CourseFactory extends BasicManager {
 		if (course == null) {
 			// o_clusterOK by:ld - load and put in cache in doInSync block to ensure
 			// that no invalidate cache event was missed
-			PersistingCourseImpl theCourse = new PersistingCourseImpl(resourceableId);
+			OLATResource resource = OLATResourceManager.getInstance().findResourceable(resourceableId, "CourseModule");
+			PersistingCourseImpl theCourse = new PersistingCourseImpl(resource);
 			theCourse.load();
 			
 			PersistingCourseImpl cachedCourse = loadedCourses.putIfAbsent(resourceableId, theCourse);
@@ -357,7 +359,7 @@ public class CourseFactory extends BasicManager {
 		// delete all course notifications
 		NotificationsManager.getInstance().deletePublishersOf(res);
 		//delete calendar subscription
-		clearCalenderSubscriptions(res);
+		clearCalenderSubscriptions(res, course);
 		// delete course configuration (not really usefull, the config is in
 		// the course folder which is deleted right after)
 		if(course != null) {
@@ -399,20 +401,23 @@ public class CourseFactory extends BasicManager {
 	 * Checks all learning group calendars and the course calendar for publishers (of subscriptions)
 	 * and sets their state to "1" which indicates that the ressource is deleted.
 	 */
-	private static void clearCalenderSubscriptions(OLATResourceable res) {
+	private static void clearCalenderSubscriptions(OLATResourceable res, ICourse course) {
 		//set Publisher state to 1 (= ressource is deleted) for all calendars of the course
 		CalendarManager calMan = CoreSpringFactory.getImpl(CalendarManager.class);
 		CalendarNotificationManager notificationManager = CoreSpringFactory.getImpl(CalendarNotificationManager.class);
 		NotificationsManager nfm = NotificationsManager.getInstance();
-		CourseGroupManager courseGroupManager = PersistingCourseGroupManager.getInstance(res);
-		List<BusinessGroup> learningGroups = courseGroupManager.getAllBusinessGroups();
-		//all learning and right group calendars
-		for (BusinessGroup bg : learningGroups) {
-			KalendarRenderWrapper calRenderWrapper = calMan.getGroupCalendar(bg);
-			SubscriptionContext subsContext = notificationManager.getSubscriptionContext(calRenderWrapper);
-			Publisher pub = nfm.getPublisher(subsContext);
-			if (pub != null) {
-				pub.setState(1); //int 0 is OK -> all other is not OK
+		
+		if(course != null) {
+			CourseGroupManager courseGroupManager = course.getCourseEnvironment().getCourseGroupManager();
+			List<BusinessGroup> learningGroups = courseGroupManager.getAllBusinessGroups();
+			//all learning and right group calendars
+			for (BusinessGroup bg : learningGroups) {
+				KalendarRenderWrapper calRenderWrapper = calMan.getGroupCalendar(bg);
+				SubscriptionContext subsContext = notificationManager.getSubscriptionContext(calRenderWrapper);
+				Publisher pub = nfm.getPublisher(subsContext);
+				if (pub != null) {
+					pub.setState(1); //int 0 is OK -> all other is not OK
+				}
 			}
 		}
 		//the course calendar
@@ -444,7 +449,7 @@ public class CourseFactory extends BasicManager {
 	 */
 	public static OLATResourceable copyCourse(OLATResourceable sourceRes, OLATResource targetRes) {
 		PersistingCourseImpl sourceCourse = (PersistingCourseImpl)loadCourse(sourceRes);
-		PersistingCourseImpl targetCourse = new PersistingCourseImpl(targetRes.getResourceableId());
+		PersistingCourseImpl targetCourse = new PersistingCourseImpl(targetRes);
 		File fTargetCourseBasePath = targetCourse.getCourseBaseContainer().getBasefile();
 		
 		//close connection before file copy
@@ -533,9 +538,9 @@ public class CourseFactory extends BasicManager {
 	 * @param zipFile
 	 * @return New Course.
 	 */
-	public static ICourse importCourseFromZip(OLATResourceable ores, File zipFile) {
+	public static ICourse importCourseFromZip(OLATResource ores, File zipFile) {
 		// Generate course with filesystem
-		PersistingCourseImpl newCourse = new PersistingCourseImpl(ores.getResourceableId());
+		PersistingCourseImpl newCourse = new PersistingCourseImpl(ores);
 		CourseConfigManagerImpl.getInstance().deleteConfigOf(newCourse);
 		
 		// Unzip course strucure in new course
@@ -736,7 +741,7 @@ public class CourseFactory extends BasicManager {
 			};
 		}, course.getResourceableId(), exportDirectory.getPath(), null, null, aLogV, uLogV, sLogV, charset, null, null);
 
-		PersistingCourseGroupManager.getInstance(course).archiveCourseGroups(exportDirectory);
+		course.getCourseEnvironment().getCourseGroupManager().archiveCourseGroups(exportDirectory);
 		
 		CoreSpringFactory.getImpl(ChatLogHelper.class).archive(course, exportDirectory);
 		

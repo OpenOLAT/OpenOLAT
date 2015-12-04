@@ -80,13 +80,6 @@ final class PreviewCourseEnvironment implements CourseEnvironment {
 	}
 
 	/**
-	 * @see org.olat.course.run.environment.CourseEnvironment#isNoOpMode()
-	 */
-	public boolean isNoOpMode() {
-		return false;
-	}
-
-	/**
 	 * @see org.olat.course.run.environment.CourseEnvironment#getCourseGroupManager()
 	 */
 	public CourseGroupManager getCourseGroupManager() {

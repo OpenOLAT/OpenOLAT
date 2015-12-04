@@ -44,8 +44,6 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
 import org.olat.properties.NarrowedPropertyManager;
 import org.olat.properties.Property;
-import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
 
 /**
  * Initial Date: May 5, 2004
@@ -80,10 +78,6 @@ public class PersistingCoursePropertyManager implements CoursePropertyManager {
 	 */
 	public static PersistingCoursePropertyManager getInstance(OLATResourceable course) {
 		return new PersistingCoursePropertyManager(course);
-	}
-	
-	public OLATResource getCourseResource() {
-		return OLATResourceManager.getInstance().findResourceable(ores);
 	}
 
 	/**
