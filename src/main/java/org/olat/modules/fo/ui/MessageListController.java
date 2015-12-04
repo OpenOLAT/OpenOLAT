@@ -650,9 +650,9 @@ public class MessageListController extends BasicController implements GenericEve
 		}  else if (oneButton == source) {
 			doShowOne(ureq);
 		}  else if (markedButton == source) {
-			doShowMarked();		
+			doShowMarked(ureq);		
 		}  else if (newButton == source) {
-			doShowNew();		
+			doShowNew(ureq);		
 		} else if(stickyButton == source || removeStickyButton == source) {
 			doToogleSticky();
 		} else if (source instanceof Link) {
@@ -736,7 +736,7 @@ public class MessageListController extends BasicController implements GenericEve
 		} else if(messageTableCtrl == source) {
 			if(event instanceof SelectMessageEvent) {
 				SelectMessageEvent sme = (SelectMessageEvent)event;
-				doSelectTheOne(sme.getMessageKey());
+				doSelectTheOne(ureq, sme.getMessageKey());
 			}
 		} else if(moveCtrl == source) {
 			if(event instanceof SelectMessageEvent) {
@@ -1072,7 +1072,10 @@ public class MessageListController extends BasicController implements GenericEve
 		}
 	}
 	
-	private void doSelectTheOne(Long messageKey) {
+	private void doSelectTheOne(UserRequest ureq, Long messageKey) {
+		if(reloadList) {
+			reloadModel(ureq, null);
+		}
 		updateButtons(oneButton);
 		mainVC.contextPut("mode", "one");
 		mainVC.contextPut("threadMode", Boolean.FALSE);
@@ -1090,7 +1093,11 @@ public class MessageListController extends BasicController implements GenericEve
 		}
 	}
 	
-	protected void doShowMarked() {
+	protected void doShowMarked(UserRequest ureq) {
+		if(reloadList) {
+			reloadModel(ureq, null);
+		}
+		
 		updateButtons(markedButton);
 		mainVC.contextPut("threadMode", Boolean.FALSE);
 		mainVC.contextPut("mode", "marked");
@@ -1111,7 +1118,11 @@ public class MessageListController extends BasicController implements GenericEve
 		mainVC.contextPut("messages", views);
 	}
 	
-	protected void doShowNew() {
+	protected void doShowNew(UserRequest ureq) {
+		if(reloadList) {
+			reloadModel(ureq, null);
+		}
+		
 		updateButtons(newButton);
 		mainVC.contextPut("threadMode", Boolean.FALSE);
 		mainVC.contextPut("mode", "new");

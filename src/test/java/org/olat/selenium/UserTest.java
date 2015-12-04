@@ -493,6 +493,67 @@ public class UserTest {
 	}
 	
 	/**
+	 * Test if deleted user cannot login anymore. An administrator
+	 * create a user. This user log in and log out. The administrator
+	 * use the direct delete workflow in user management to delete
+	 * it.<br>
+	 * The user try to log in again, unsuccessfully. The
+	 * administrator doesn't find it anymore in the user
+	 * search of the user management tab.
+	 * 
+	 */
+	@Test
+	@RunAsClient
+	public void deleteUser(@InitialPage LoginPage loginPage,
+			@Drone @User WebDriver userBrowser) {
+		//login
+		loginPage
+			.assertOnLoginPage()
+			.loginAs("administrator", "openolat")
+			.resume();
+		
+		String uuid = UUID.randomUUID().toString();
+		String username = "miku-" + uuid;
+		String lastName = "Hatsune" + uuid;
+		UserVO userVo = UserAdminPage.createUserVO(username, "Miku", lastName, "miku-" + uuid + "@openolat.com", "miku01");
+		UserAdminPage userAdminPage = navBar
+			.openUserManagement()
+			.openCreateUser()
+			.fillUserForm(userVo)
+			.assertOnUserEditView(username);
+		
+		//user log in
+		LoginPage userLoginPage = LoginPage.getLoginPage(userBrowser, deploymentUrl);
+		//tools
+		userLoginPage
+			.loginAs(username, "miku01")
+			.resume()
+			.assertLoggedIn(userVo);
+		//log out
+		new UserToolsPage(userBrowser).logout();
+		
+		//admin delete
+		userAdminPage
+			.openDirectDeleteUser()
+			.searchUserToDelete(username)
+			.selectAndDeleteUser(lastName);
+		
+		//user try the login
+		userLoginPage = LoginPage.getLoginPage(userBrowser, deploymentUrl);
+		userLoginPage
+			.loginDenied(username, "miku01");
+		//assert on error message
+		By errorMessageby = By.cssSelector("div.modal-body.alert.alert-danger");
+		OOGraphene.waitElement(errorMessageby, 2, userBrowser);
+
+		// administrator search the deleted user
+		userAdminPage
+			.openSearchUser()
+			.searchByUsername(username)
+			.assertNotInUserList(username);
+	}
+	
+	/**
 	 * Import 2 new users and check if the first can log in.
 	 * 
 	 * @param loginPage

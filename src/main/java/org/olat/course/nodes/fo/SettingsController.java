@@ -58,11 +58,13 @@ public class SettingsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("settings.title");
+		formLayout.setElementCssClass("o_sel_course_forum_settings");
 		
 		if(forumModule.isAnonymousPostingWithPseudonymEnabled()) {
 			String[] allowPseudonymValues = new String[] { translate("allow.pseudonym.post") };
 			allowPseudonymEl = uifactory.addCheckboxesHorizontal("allow.pseudonym", formLayout,
 					allowKeys, allowPseudonymValues);
+			allowPseudonymEl.setElementCssClass("o_sel_course_forum_allow_pseudo");
 			allowPseudonymEl.setLabel(null, null);
 			allowPseudonymEl.addActionListener(FormEvent.ONCHANGE);
 			
@@ -74,6 +76,7 @@ public class SettingsController extends FormBasicController {
 		String[] allowGuestValues = new String[] { translate("allow.guest.post") };
 		allowGuestEl = uifactory.addCheckboxesHorizontal("allow.guest", formLayout,
 				allowKeys, allowGuestValues);
+		allowGuestEl.setElementCssClass("o_sel_course_forum_allow_guest");
 		allowGuestEl.setLabel(null, null);
 		allowGuestEl.addActionListener(FormEvent.ONCHANGE);
 		if("true".equals(foNode.getModuleConfiguration().getStringValue(FOCourseNodeEditController.GUEST_POST_ALLOWED))) {

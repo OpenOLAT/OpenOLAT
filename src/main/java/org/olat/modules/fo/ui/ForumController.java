@@ -189,10 +189,7 @@ public class ForumController extends BasicController implements GenericEventList
 	@Override
 	public void event(Event event) {
 		if(event instanceof ForumChangedEvent) {
-			ForumChangedEvent fce = (ForumChangedEvent)event;
-			if(fce.getMessageKey() == null) {
-				reloadThreadList = true;
-			}
+			reloadThreadList = true;
 		}
 	}
 
@@ -280,7 +277,7 @@ public class ForumController extends BasicController implements GenericEventList
 		viewCtrl = new MessageListController(ureq, bbwControl, forum, focallback);
 		viewCtrl.loadThread(ureq, thread);
 		viewCtrl.scrollTo(scrollTo);
-		viewCtrl.doShowMarked();
+		viewCtrl.doShowMarked(ureq);
 		listenTo(viewCtrl);
 		putContent(viewCtrl);
 		addToHistory(ureq, viewCtrl);
@@ -297,7 +294,7 @@ public class ForumController extends BasicController implements GenericEventList
 		viewCtrl = new MessageListController(ureq, bbwControl, forum, focallback);
 		viewCtrl.loadThread(ureq, thread);
 		viewCtrl.scrollTo(scrollTo);
-		viewCtrl.doShowNew();
+		viewCtrl.doShowNew(ureq);
 		listenTo(viewCtrl);
 		putContent(viewCtrl);
 		addToHistory(ureq, viewCtrl);

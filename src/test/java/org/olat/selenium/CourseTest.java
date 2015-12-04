@@ -51,6 +51,7 @@ import org.olat.selenium.page.course.AssessmentCEConfigurationPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseWizardPage;
+import org.olat.selenium.page.course.ForumCEPage;
 import org.olat.selenium.page.course.InfoMessageCEPage;
 import org.olat.selenium.page.course.MembersPage;
 import org.olat.selenium.page.course.PublisherPageFragment;
@@ -1146,7 +1147,7 @@ public class CourseTest {
 	 */
 	@Test
 	@RunAsClient
-	public void forum_concurrent(@InitialPage LoginPage loginPage,
+	public void forumConcurrent(@InitialPage LoginPage loginPage,
 			@Drone @Participant WebDriver kanuBrowser,
 			@Drone @Student WebDriver reiBrowser)
 	throws IOException, URISyntaxException {
@@ -1182,7 +1183,7 @@ public class CourseTest {
 		ForumPage authorForum = ForumPage
 			.getCourseForumPage(browser);
 		authorForum
-			.createThread("The best anime ever", "What is the best anime ever?");
+			.createThread("The best anime ever", "What is the best anime ever?", null);
 		
 		//First user go to the course
 		LoginPage kanuLoginPage = LoginPage.getLoginPage(kanuBrowser, deploymentUrl);
@@ -1257,6 +1258,126 @@ public class CourseTest {
 		kanuForum
 			.flatView()
 			.waitMessageBody(reiReply);
+	}
+	
+
+	/**
+	 * An administrator create a category in catalog. It creates a new course
+	 * with a forum open to guests. it publish the course in the
+	 * catalog.<br>
+	 * The guest find the course, create a new thread. The administrator reply
+	 * to the message, the guest to its reply.<br>
+	 * The administrator checks the last message in its new messages, click
+	 * back, use the list of users to see the messages of the guest. It clicks
+	 * back to the threads list and checks the thread has 3 messages.
+	 * 
+	 * @param loginPage
+	 * @param guestBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void forumWithGuest(@InitialPage LoginPage loginPage,
+			@Drone @User WebDriver guestBrowser)
+	throws IOException, URISyntaxException {
+		loginPage
+			.loginAs("administrator", "openolat")
+			.resume();
+		
+		String node1 = "Forums " + UUID.randomUUID();
+		navBar
+			.openCatalogAdministration()
+			.addCatalogNode(node1, "First level of the catalog");
+		
+		//create a course
+		String courseTitle = "Guest FO " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		//go the authoring environment to create a forum
+		String foTitle = "GFO - " + UUID.randomUUID();
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("fo")
+			.nodeTitle(foTitle);
+		//configure for guest
+		ForumCEPage forumConfig = new ForumCEPage(browser);
+		forumConfig
+			.selectConfiguration()
+			.allowGuest();
+		
+		//publish the course
+		courseEditor
+			.publish()
+			.next()
+			.selectAccess(Access.guests)
+			.next()
+			.selectCatalog(true)
+			.selectCategory(null, node1)
+			.next() // -> no problem found
+			.finish();
+		//back in course
+		courseEditor.clickToolbarBack();
+		
+		// guest go to the catalog and find the course
+		LoginPage guestLogin = LoginPage.getLoginPage(guestBrowser, deploymentUrl);
+		guestLogin
+			.asGuest();
+
+		NavigationPage guestNavBar = new NavigationPage(guestBrowser);
+		guestNavBar
+			.openCatalog()
+			.selectCatalogEntry(node1)
+			.select(courseTitle)
+			.start();
+		
+		//go to the forum
+		new CoursePageFragment(guestBrowser)
+			.clickTree()
+			.selectWithTitle(foTitle.substring(0, 20));
+		
+		String guestAlias = "Guest-" + UUID.randomUUID();
+		ForumPage guestForum = ForumPage
+			.getCourseForumPage(guestBrowser)
+			.createThread("Your favorite author", "Name your favorite author", guestAlias);
+		
+		System.out.println();
+		
+		// admin go to the forum
+		new CoursePageFragment(browser)
+			.clickTree()
+			.selectWithTitle(foTitle.substring(0, 20));
+		//admin reply to the thread of guest
+		ForumPage adminForum = ForumPage
+			.getCourseForumPage(browser)
+			.openThread("Your favorite author")
+			.assertOnGuestPseudonym(guestAlias)
+			.newMessages()
+			.assertOnGuestPseudonym(guestAlias)
+			.replyToMessage("Your favorite author", "Huxley is my favorite author", "My favorite author is Huxley");
+		
+		//guest refresh the view and reply to admin
+		guestForum
+			.flatView()
+			.assertMessageBody("Huxley")
+			.replyToMessage("Huxley is my favorite author", " I prefer Orwell", "Orwell is my favorite author");
+
+		//admin see its new messages, see the list of users, select the guest and its messages
+		OOGraphene.waitingALittleLonger();//JMS message need to be delivered
+		adminForum
+			.newMessages()
+			.assertMessageBody("Orwell")
+			.clickBack()
+			.userFilter()
+			.selectFilteredUser(guestAlias)
+			.assertMessageBody("Orwell")
+			.clickBack()
+			.clickBack()
+			.assertThreadListOnNumber("Your favorite author", 3);
 	}
 	
 	/**
