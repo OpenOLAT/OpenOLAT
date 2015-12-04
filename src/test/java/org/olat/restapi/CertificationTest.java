@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.Callable;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -45,6 +46,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.repository.RepositoryEntry;
@@ -80,7 +82,18 @@ public class CertificationTest extends OlatJerseyTestCase {
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, false);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
-
+		
+		//wait until the certificate is created
+		waitForCondition(new Callable<Boolean>() {
+			@Override
+			public Boolean call() throws Exception {
+				Certificate reloadedCertificate = certificatesManager.getCertificateById(certificate.getKey());
+				return CertificateStatus.ok.equals(reloadedCertificate.getStatus());
+			}
+			
+			
+		}, 30000);
+		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 				.path(entry.getOlatResource().getKey().toString())
 				.path("certificates").path(assessedIdentity.getKey().toString()).build();

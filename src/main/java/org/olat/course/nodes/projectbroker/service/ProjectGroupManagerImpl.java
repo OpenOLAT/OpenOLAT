@@ -53,7 +53,6 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -70,8 +69,6 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	private DB dbInstance;
 	@Autowired
 	private BaseSecurity securityManager;
-	@Autowired
-	private RepositoryManager repositoryManager;
 	@Autowired
 	private ProjectBrokerManager projectBrokerManager;
 	@Autowired
@@ -114,7 +111,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 			}
 		} else {
 			logDebug("No group for project-broker exist => create a new one");
-			RepositoryEntry re = repositoryManager.lookupRepositoryEntry(cpm.getCourseResource(), false);
+			RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			accountManagerGroup = businessGroupService.createBusinessGroup(identity, groupName, groupDescription, -1, -1, false, false, re);
 			int i = 2;
 			while (accountManagerGroup == null) {
@@ -188,9 +185,9 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	////////////////////////////
 	// PROJECT GROUP MANAGEMENT
 	////////////////////////////
+	@Override
 	public BusinessGroup createProjectGroupFor(Long projectBrokerId, Identity identity, String groupName, String groupDescription, Long courseId) {
 		CourseGroupManager cgm = CourseFactory.loadCourse(courseId).getCourseEnvironment().getCourseGroupManager();
-		OLATResource resource = cgm.getCourseResource();
 		RepositoryEntry re = cgm.getCourseEntry();
 
 		logDebug("createProjectGroupFor groupName=" + groupName);
@@ -206,7 +203,8 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 		logDebug("Created a new projectGroup=" + projectGroup);
 		return projectGroup;
 	}
-	
+
+	@Override
 	public void deleteProjectGroupFor(Project project) {
 		BusinessGroupService bgs = businessGroupService;
 		bgs.deleteBusinessGroup(project.getProjectGroup());

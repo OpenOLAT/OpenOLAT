@@ -43,7 +43,6 @@ import javax.ws.rs.core.UriBuilder;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -74,28 +73,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MyForumsTest extends OlatJerseyTestCase {
 
-	private static boolean setup;
-	private static ICourse myCourse;
-	private static RepositoryEntry myCourseRe;
-	
+
 	@Autowired
 	private DB dbInstance;
-	
-	@Before
-	public void setUp() throws Exception {
-		super.setUp();
-		
-		if(setup) return;
-		
-		URL courseWithForumsUrl = MyForumsTest.class.getResource("myCourseWS.zip");
-		Assert.assertNotNull(courseWithForumsUrl);
-		File courseWithForums = new File(courseWithForumsUrl.toURI());
-		myCourseRe = CourseFactory.deployCourseFromZIP(courseWithForums, null, 4);	
-		Assert.assertNotNull(myCourseRe);
-		myCourse = CourseFactory.loadCourse(myCourseRe.getOlatResource().getResourceableId());
 
-		setup = true;
-	}
 	
 	/**
 	 * Test retrieve the forum which the user subscribe in a course.
@@ -104,6 +85,13 @@ public class MyForumsTest extends OlatJerseyTestCase {
 	 */
 	@Test
 	public void myForums() throws IOException, URISyntaxException {
+		URL courseWithForumsUrl = MyForumsTest.class.getResource("myCourseWS.zip");
+		Assert.assertNotNull(courseWithForumsUrl);
+		File courseWithForums = new File(courseWithForumsUrl.toURI());
+		RepositoryEntry myCourseRe = CourseFactory.deployCourseFromZIP(courseWithForums, null, 4);	
+		Assert.assertNotNull(myCourseRe);
+		ICourse myCourse = CourseFactory.loadCourse(myCourseRe.getOlatResource().getResourceableId());
+		
 		final Identity id = JunitTestHelper.createAndPersistIdentityAsUser("my-" + UUID.randomUUID().toString());
 		dbInstance.commitAndCloseSession();
 		

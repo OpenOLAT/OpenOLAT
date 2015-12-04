@@ -125,7 +125,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 * @param course The current course
 	 * @return A course group manager that uses persisted data
 	 */
-	public static PersistingCourseGroupManager getInstance(OLATResourceable course) {
+	public static PersistingCourseGroupManager getInstance2(OLATResourceable course) {
 		return new PersistingCourseGroupManager(course);
 	}
 
@@ -387,7 +387,8 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	@Override
 	public CourseEnvironmentMapper importCourseBusinessGroups(File fImportDirectory) {
 		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper();
-		RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(getCourseResource(), true);
+		OLATResource resource = getCourseResource();
+		RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(resource, true);
 		File fGroupXML1 = new File(fImportDirectory, LEARNINGGROUPEXPORT_XML);
 		if(fGroupXML1.exists()) {
 			BusinessGroupEnvironment env = businessGroupService.importGroups(courseRe, fGroupXML1);

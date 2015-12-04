@@ -142,6 +142,9 @@ public class CertificationWebService {
 		}
 
 		VFSLeaf certificateFile = certificatesManager.getCertificateLeaf(certificate);
+		if(certificateFile == null || !certificateFile.exists()) {
+			return Response.serverError().status(Response.Status.NOT_FOUND).build();
+		}
 		return Response.ok(certificateFile.getInputStream()).build();
 	}
 	

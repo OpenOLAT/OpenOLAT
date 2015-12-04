@@ -40,7 +40,6 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.group.BusinessGroup;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
-import org.olat.resource.OLATResource;
 
 /**
  * Initial Date:  08.02.2005
@@ -59,11 +58,6 @@ final class PreviewCoursePropertyManager extends BasicManager implements CourseP
 	 */
 	public PreviewCoursePropertyManager() {
 		//
-	}
-
-	@Override
-	public OLATResource getCourseResource() {
-		return null;
 	}
 
 	/**

@@ -556,6 +556,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		} else if(detailsCtrl == source) {
 			if(event instanceof LeavingEvent) {
 				doClose(ureq);
+			} else if(event == Event.DONE_EVENT) {
+				popToRoot(ureq);
+				cleanUp();
 			}
 		} else if(closeCtrl == source) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -670,7 +673,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected void doDetails(UserRequest ureq) {
 		WindowControl bwControl = getSubWindowControl("Infos");
-		RepositoryEntryDetailsController ctrl = new RepositoryEntryDetailsController(ureq, addToHistory(ureq, bwControl), re);
+		RepositoryEntryDetailsController ctrl = new RepositoryEntryDetailsController(ureq, addToHistory(ureq, bwControl), re, true);
 		listenTo(ctrl);
 		detailsCtrl = pushController(ureq, translate("details.header"), ctrl);
 		currentToolCtr = detailsCtrl;

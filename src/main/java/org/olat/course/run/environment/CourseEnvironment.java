@@ -50,14 +50,6 @@ public interface CourseEnvironment {
 	 * @return The current time in millis
 	 */
 	public long getCurrentTimeMillis();
-	
-	/**
-	 * if true then all ConditionInterpreter functions should return true/1 immediately without e.g. accessing the database. 
-	 * We use this as validating of the syntax before saving it, so that there are only grammatically correct
-	 * expressions which are saved and therefore are evaluated in the run mode later.
-	 * @return true if no op mode
-	 */
-	public boolean isNoOpMode();
 
 	/**
 	 * Get the course group management environment

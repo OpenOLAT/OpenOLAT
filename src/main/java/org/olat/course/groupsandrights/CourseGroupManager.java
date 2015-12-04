@@ -208,6 +208,8 @@ public interface CourseGroupManager {
 	 */
 	public void exportCourseBusinessGroups(File fExportDirectory, CourseEnvironmentMapper env,
 			boolean runtimeDatas, boolean backwardsCompatible);
+	
+	public CourseEnvironmentMapper getBusinessGroupEnvironment();
 
 	/**
 	 * Import course internal groups fa previous export.
@@ -215,6 +217,8 @@ public interface CourseGroupManager {
 	 * @param fImportDirectory
 	 */
 	public CourseEnvironmentMapper importCourseBusinessGroups(File fImportDirectory);
+	
+	public void archiveCourseGroups(File exportDirectory);
 
 	/**
 	 * List with identities being coaches in learning groups of this course. If
@@ -226,8 +230,7 @@ public interface CourseGroupManager {
 	public List<Identity> getCoachesFromBusinessGroups();
 	
 	public List<Identity> getCoachesFromBusinessGroups(List<Long> groupKeys);
-	
-	//fxdiff VCRP-1,2: access control of resources
+
 	public List<Identity> getCoaches();
 
 	/**
@@ -252,9 +255,6 @@ public interface CourseGroupManager {
 	
 	public List<Identity> getParticipantsFromBusinessGroups(List<Long> groupKeys);
 	
-	
-	
-	//fxdiff VCRP-1,2: access control of resources
 	public List<Identity> getParticipants();
 
 	/**
@@ -273,4 +273,5 @@ public interface CourseGroupManager {
 	 * @return A list of all waiting-list groups where this identity is in
 	 */
 	public List<BusinessGroup> getWaitingListGroups(Identity identity);
+
 }

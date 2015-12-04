@@ -52,13 +52,6 @@ public class NoOpCourseEnvironment implements CourseEnvironment {
 	}
 
 	/**
-	 * @see org.olat.course.run.environment.CourseEnvironment#isNoOpMode()
-	 */
-	public boolean isNoOpMode() {
-		return true;
-	}
-
-	/**
 	 * @see org.olat.course.run.environment.CourseEnvironment#getCurrentTimeMillis()
 	 *      This is not implemented in NoOpCourseEnvironment
 	 */

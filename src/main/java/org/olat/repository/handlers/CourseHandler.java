@@ -221,15 +221,11 @@ public class CourseHandler implements RepositoryHandler {
 		if (course == null) {
 			return null;
 		}
-		
-		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		OLATResource courseResource = cgm.getCourseResource();
-		
+
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry re = repositoryService
-				.create(initialAuthor, null, "", displayname, description, courseResource, RepositoryEntry.ACC_OWNERS);
+				.create(initialAuthor, null, "", displayname, description, newCourseResource, RepositoryEntry.ACC_OWNERS);
 		DBFactory.getInstance().commit();
-		
 
 		// create empty run structure
 		course = CourseFactory.openCourseEditSession(course.getResourceableId());
@@ -248,7 +244,7 @@ public class CourseHandler implements RepositoryHandler {
 		}
 
 		// create group management / import groups
-		cgm = course.getCourseEnvironment().getCourseGroupManager();
+		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		File fImportBaseDirectory = course.getCourseExportDataDir().getBasefile();
 		CourseEnvironmentMapper envMapper = cgm.importCourseBusinessGroups(fImportBaseDirectory);
 		envMapper.setAuthor(initialAuthor);
@@ -414,7 +410,7 @@ public class CourseHandler implements RepositoryHandler {
 		//transaction copied
 		ICourse sourceCourse = CourseFactory.loadCourse(source);
 		CourseGroupManager sourceCgm = sourceCourse.getCourseEnvironment().getCourseGroupManager();
-		CourseEnvironmentMapper env = PersistingCourseGroupManager.getInstance(sourceCourse).getBusinessGroupEnvironment();
+		CourseEnvironmentMapper env = PersistingCourseGroupManager.getInstance(sourceResource).getBusinessGroupEnvironment();
 			
 		File fExportDir = new File(WebappHelper.getTmpDir(), UUID.randomUUID().toString());
 		fExportDir.mkdirs();

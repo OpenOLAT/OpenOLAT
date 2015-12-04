@@ -285,7 +285,6 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 		throw new AssertException("unsupported");
 	}
 	
-	//fxdiff VCRP-1,2: access control of resources
 	@Override
 	public List<Identity> getCoaches() {
 		throw new AssertException("unsupported");
@@ -293,6 +292,11 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 
 	@Override
 	public List<Identity> getParticipants() {
+		throw new AssertException("unsupported");
+	}
+
+	@Override
+	public CourseEnvironmentMapper getBusinessGroupEnvironment() {
 		throw new AssertException("unsupported");
 	}
 
@@ -305,6 +309,11 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	@Override
 	public CourseEnvironmentMapper importCourseBusinessGroups(File fImportDirectory) {
 		throw new AssertException("unsupported");
+	}
+
+	@Override
+	public void archiveCourseGroups(File exportDirectory) {
+		//
 	}
 
 	@Override

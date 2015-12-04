@@ -502,7 +502,7 @@ public class RepositoryEntryListController extends FormBasicController
 			
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Infos", 0l);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			detailsCtrl = new RepositoryEntryDetailsController(ureq, bwControl, row);
+			detailsCtrl = new RepositoryEntryDetailsController(ureq, bwControl, row, false);
 			listenTo(detailsCtrl);
 			addToHistory(ureq, detailsCtrl);
 			

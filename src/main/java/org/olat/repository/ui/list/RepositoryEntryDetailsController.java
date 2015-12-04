@@ -79,7 +79,6 @@ import org.olat.login.LoginModule;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -120,6 +119,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	protected RepositoryEntry entry;
 	protected RepositoryEntryRow row;
 	private Integer index;
+	private final boolean inRuntime;
 
 	@Autowired
 	private LoginModule loginModule;
@@ -155,30 +155,25 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	private String baseUrl;
 	private final boolean guestOnly;
 	
-	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntryRow row) {
-		this(ureq, wControl);
+	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntryRow row, boolean inRuntime) {
+		this(ureq, wControl, inRuntime);
 		this.row = row;
 		entry = repositoryService.loadByKey(row.getKey());
 		initForm(ureq);
 	}
 	
-	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntryRef ref) {
-		this(ureq, wControl);
-		entry = repositoryService.loadByKey(ref.getKey());
-		initForm(ureq);
-	}
-	
-	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
-		this(ureq, wControl);
+	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean inRuntime) {
+		this(ureq, wControl, inRuntime);
 		this.entry = entry;
 		initForm(ureq);
 	}
 	
-	private RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl) {
+	private RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, boolean inRuntime) {
 		super(ureq, wControl, Util.getPackageVelocityRoot(RepositoryEntryDetailsController.class) + "/details.html");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RestapiAdminController.class, getLocale(), getTranslator()));
 		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
+		this.inRuntime = inRuntime;
 
 		OLATResourceable ores = OresHelper.createOLATResourceableType("MyCoursesSite");
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
@@ -598,12 +593,16 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	}
 	
 	protected void doStart(UserRequest ureq) {
-		try {
-			String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
-			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
-		} catch (CorruptedCourseException e) {
-			logError("Course corrupted: " + entry.getKey() + " (" + entry.getOlatResource().getResourceableId() + ")", e);
-			showError("cif.error.corrupted");
+		if(inRuntime) {
+			fireEvent(ureq, Event.DONE_EVENT);
+		} else {
+			try {
+				String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
+				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			} catch (CorruptedCourseException e) {
+				logError("Course corrupted: " + entry.getKey() + " (" + entry.getOlatResource().getResourceableId() + ")", e);
+				showError("cif.error.corrupted");
+			}
 		}
 	}
 	
