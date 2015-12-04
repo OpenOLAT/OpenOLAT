@@ -49,6 +49,7 @@ import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.activity.LoggingObject;
@@ -63,6 +64,7 @@ import org.olat.core.util.tree.Visitor;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -81,6 +83,7 @@ import org.olat.course.nodes.ta.StatusForm;
 import org.olat.course.nodes.ta.StatusManager;
 import org.olat.course.nodes.ta.TaskController;
 import org.olat.course.run.scoring.ScoreCalculator;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -105,6 +108,7 @@ import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.portfolio.model.structel.StructureStatusEnum;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
@@ -191,6 +195,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 			do {
 				courses = repositoryManager.genericANDQueryWithRolesRestriction(params, counter, 50, true);
 				for(RepositoryEntry course:courses) {
+					convertUserEfficiencyStatemen(course);
 					allOk &= processCourseAssessmentData(course); 
 				}
 				counter += courses.size();
@@ -203,6 +208,44 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		return allOk;
 	}
 	
+	private void convertUserEfficiencyStatemen(RepositoryEntry courseEntry) {
+		final ICourse course = CourseFactory.loadCourse(courseEntry);
+		CourseNode rootNode = course.getRunStructure().getRootNode();
+		Set<Long> identityKeys = new HashSet<>(loadIdentityKeyOfAssessmentEntries(courseEntry, rootNode.getIdent()));
+
+		int count = 0;
+		List<UserEfficiencyStatementLight> statements = getUserEfficiencyStatements(courseEntry);
+		for(UserEfficiencyStatementLight statement:statements) {
+			Identity identity = statement.getIdentity();
+			if(!identityKeys.contains(identity.getKey())) {
+				AssessmentEntry entry = createAssessmentEntry(identity, null, course, courseEntry, rootNode.getIdent());
+				if(statement.getScore() != null) {
+					entry.setScore(new BigDecimal(statement.getScore().floatValue()));
+				}
+				if(statement.getPassed() != null) {
+					entry.setPassed(statement.getPassed());
+				}
+				dbInstance.getCurrentEntityManager().persist(entry);
+				if(count++ % 25 == 0) {
+					dbInstance.commitAndCloseSession();
+				}
+			}
+		}
+		dbInstance.commitAndCloseSession();
+	}
+	
+	public List<UserEfficiencyStatementLight> getUserEfficiencyStatements(RepositoryEntryRef courseRepoEntry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select statement from ").append(UserEfficiencyStatementLight.class.getName()).append(" as statement ")
+		  .append(" inner join fetch statement.identity as ident")
+		  .append(" where statement.courseRepoKey=:repoKey");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), UserEfficiencyStatementLight.class)
+				.setParameter("repoKey", courseRepoEntry.getKey())
+				.getResultList();
+	}
+	
 	// select count(*) from o_property where name in ('SCORE','PASSED','ATTEMPTS','COMMENT','COACH_COMMENT','ASSESSMENT_ID','FULLY_ASSESSED');
 	private boolean processCourseAssessmentData(RepositoryEntry courseEntry) {
 		final Long courseResourceId = courseEntry.getOlatResource().getResourceableId();
@@ -211,46 +254,47 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		//load all assessable identities
 		List<Identity> assessableIdentities = getAllAssessableIdentities(course, courseEntry);
 
-		//load already migrated data
-		List<AssessmentEntryImpl> currentNodeAssessmentList = loadAssessmentEntries(courseEntry);
 		Map<AssessmentDataKey,AssessmentEntryImpl> curentNodeAssessmentMap = new HashMap<>();
-		for(AssessmentEntryImpl currentNodeAssessment:currentNodeAssessmentList) {
-			AssessmentDataKey key = new AssessmentDataKey(currentNodeAssessment.getIdentity(), courseResourceId, currentNodeAssessment.getSubIdent());
-			curentNodeAssessmentMap.put(key, currentNodeAssessment);
+		{//load already migrated data
+			List<AssessmentEntryImpl> currentNodeAssessmentList = loadAssessmentEntries(courseEntry);
+			for(AssessmentEntryImpl currentNodeAssessment:currentNodeAssessmentList) {
+				AssessmentDataKey key = new AssessmentDataKey(currentNodeAssessment.getIdentity().getKey(), courseResourceId, currentNodeAssessment.getSubIdent());
+				curentNodeAssessmentMap.put(key, currentNodeAssessment);
+			}
 		}
 
 		Map<AssessmentDataKey,AssessmentEntryImpl> nodeAssessmentMap = new HashMap<>();
-		
-		//processed properties
-		List<Property> courseProperties = loadAssessmentProperties(courseEntry);
-		for(Property property:courseProperties) {
-			String propertyCategory = property.getCategory();
-			if(StringHelper.containsNonWhitespace(propertyCategory)) {
-				int nodeIdentIndex = propertyCategory.indexOf("::");
-				if(nodeIdentIndex > 0) {
-					String nodeIdent = propertyCategory.substring(propertyCategory.indexOf("::") + 2);
-					AssessmentDataKey key = new AssessmentDataKey(property.getIdentity(), property.getResourceTypeId(), nodeIdent);
-					if(curentNodeAssessmentMap.containsKey(key)) {
-						continue;
-					}
-					
-					AssessmentEntryImpl nodeAssessment;
-					if(nodeAssessmentMap.containsKey(key)) {
-						nodeAssessment = nodeAssessmentMap.get(key);
-						if(nodeAssessment.getCreationDate().after(property.getCreationDate())) {
-							nodeAssessment.setCreationDate(property.getCreationDate());
+		{//processed properties
+			List<Property> courseProperties = loadAssessmentProperties(courseEntry);
+			for(Property property:courseProperties) {
+				String propertyCategory = property.getCategory();
+				if(StringHelper.containsNonWhitespace(propertyCategory)) {
+					int nodeIdentIndex = propertyCategory.indexOf("::");
+					if(nodeIdentIndex > 0) {
+						String nodeIdent = propertyCategory.substring(propertyCategory.indexOf("::") + 2);
+						AssessmentDataKey key = new AssessmentDataKey(property.getIdentity(), property.getResourceTypeId(), nodeIdent);
+						if(curentNodeAssessmentMap.containsKey(key)) {
+							continue;
 						}
 						
-						if(nodeAssessment.getLastModified().before(property.getLastModified())) {
-							nodeAssessment.setLastModified(property.getLastModified());
+						AssessmentEntryImpl nodeAssessment;
+						if(nodeAssessmentMap.containsKey(key)) {
+							nodeAssessment = nodeAssessmentMap.get(key);
+							if(nodeAssessment.getCreationDate().after(property.getCreationDate())) {
+								nodeAssessment.setCreationDate(property.getCreationDate());
+							}
+							
+							if(nodeAssessment.getLastModified().before(property.getLastModified())) {
+								nodeAssessment.setLastModified(property.getLastModified());
+							}
+						} else {
+							nodeAssessment = createAssessmentEntry(property.getIdentity(), property, course, courseEntry, nodeIdent);
 						}
-					} else {
-						nodeAssessment = createAssessmentEntry(property.getIdentity(), property, course, courseEntry, nodeIdent);
+						copyAssessmentProperty(property, nodeAssessment, course);
+						nodeAssessmentMap.put(key, nodeAssessment);	
 					}
-					copyAssessmentProperty(property, nodeAssessment, course);
-					nodeAssessmentMap.put(key, nodeAssessment);	
-				}
-			}	
+				}	
+			}
 		}
 		
 		//check the transient qti ser
@@ -282,8 +326,13 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		if(allOk) {
 			List<STCourseNode> nodes = hasAssessableSTCourseNode(course);
 			if(nodes.size() > 0) {
-				System.out.println("Has assessables ST nodes");
-				//processStructureNodes(assessableIdentities, course);
+				log.info("Has assessables ST nodes");
+				for(Identity identity:assessableIdentities) {
+					IdentityEnvironment identityEnv = new IdentityEnvironment(identity, null);
+					UserCourseEnvironmentImpl userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
+					userCourseEnv.getScoreAccounting().evaluateAll(true);
+					dbInstance.commit();
+				}
 			}
 		}
 
@@ -402,7 +451,9 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 	 */
 	private boolean verifyCourseAssessmentData(List<Identity> assessableIdentities, RepositoryEntry courseEntry) {
 		//load the cache and fill it with the same amount of datas as in assessment tool
-		ICourse course = CourseFactory.loadCourse(courseEntry);
+		final ICourse course = CourseFactory.loadCourse(courseEntry);
+		final Long courseResourceableId = course.getResourceableId();
+		
 		StaticCacheWrapper cache = new StaticCacheWrapper();
 		NewCachePersistingAssessmentManager assessmentManager = new NewCachePersistingAssessmentManager(course, cache);
 		assessmentManager.preloadCache(assessableIdentities);
@@ -440,7 +491,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 					String nodeIdent = key.substring(0, index);
 					String dataType = key.substring(index + 1);
 					
-					AssessmentDataKey assessmentDataKey = new AssessmentDataKey(identityKey, course.getResourceableId(), nodeIdent);
+					AssessmentDataKey assessmentDataKey = new AssessmentDataKey(identityKey, courseResourceableId, nodeIdent);
 					AssessmentEntryImpl nodeAssessment = nodeAssessmentMap.get(assessmentDataKey);
 					allOk &= compareProperty(dataType, data.getValue(), nodeAssessment, courseEntry, nodeIdent, identityKey);
 				}
@@ -511,7 +562,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		}
 		
 		boolean allOk = true;
-		if(node != null) {
+		if(node instanceof AssessableCourseNode && !(node instanceof STCourseNode)) {
 			Identity assessedIdentity = entry.getIdentity();
 			
 			Integer attempts = assessmentManager.getNodeAttempts(node, assessedIdentity);
@@ -909,6 +960,15 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb, AssessmentEntryImpl.class)
 				.setParameter("courseEntryKey", courseEntry.getKey())
+				.getResultList();
+	}
+	
+	private List<Long> loadIdentityKeyOfAssessmentEntries(RepositoryEntry courseEntry, String subIdent) {
+		String sb = "select data.identity.key from assessmententry data where data.repositoryEntry.key=:courseEntryKey and data.subIdent=:subIdent";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb, Long.class)
+				.setParameter("courseEntryKey", courseEntry.getKey())
+				.setParameter("subIdent", subIdent)
 				.getResultList();
 	}
 	

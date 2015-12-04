@@ -19,6 +19,8 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.List;
+
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -31,10 +33,11 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentForm;
 import org.olat.course.assessment.OpenSubDetailsEvent;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -53,7 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentIdentityCourseNodeController extends BasicController {
+public class AssessmentIdentityCourseNodeController extends BasicController implements AssessedIdentityController {
 	
 	private final TooledStackedPanel stackPanel;
 	private final VelocityContainer identityAssessmentVC;
@@ -96,6 +99,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController {
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
 		UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
+		assessedUserCourseEnv.getScoreAccounting().evaluateAll();
 
 		// Add the assessment details form
 		if(courseNode instanceof AssessableCourseNode) {
@@ -116,6 +120,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController {
 		putInitialPanel(identityAssessmentVC);
 	}
 	
+	@Override
 	public Identity getAssessedIdentity() {
 		return assessedIdentity;
 	}
@@ -126,6 +131,11 @@ public class AssessmentIdentityCourseNodeController extends BasicController {
 
 	@Override
 	protected void doDispose() {
+		//
+	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//
 	}
 
@@ -145,6 +155,8 @@ public class AssessmentIdentityCourseNodeController extends BasicController {
 				listenTo(subDetailsController);
 				stackPanel.pushController(translate("sub.details"), subDetailsController);
 			}
+		} else if(assessmentForm == source) {
+			fireEvent(ureq, event);
 		}
 		super.event(ureq, source, event);
 	}

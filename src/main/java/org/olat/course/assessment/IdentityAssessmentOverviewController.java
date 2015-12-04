@@ -237,7 +237,7 @@ public class IdentityAssessmentOverviewController extends BasicController {
 		}
 	}
 
-	private void doIdentityAssessmentOverview(UserRequest ureq) {
+	public void doIdentityAssessmentOverview(UserRequest ureq) {
 		List<AssessmentNodeData> nodesTableList;
 		if (loadNodesFromCourse) {
 			// get list of course node and user data and populate table data model 	

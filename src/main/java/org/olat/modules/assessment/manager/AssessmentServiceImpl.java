@@ -45,6 +45,12 @@ public class AssessmentServiceImpl implements AssessmentService {
 	private DB dbInstance;
 	@Autowired
 	private AssessmentEntryDAO assessmentEntryDao;
+	
+	@Override
+	public AssessmentEntry createAssessmentEntry(Identity assessedIdentity, RepositoryEntry entry, String subIdent,
+			RepositoryEntry referenceEntry, Float score, Boolean passed) {
+		return assessmentEntryDao.createCourseNodeAssessment(assessedIdentity, entry, subIdent, referenceEntry, score, passed);
+	}
 
 	@Override
 	public AssessmentEntry getOrCreateAssessmentEntry(Identity assessedIdentity, RepositoryEntry entry, String subIdent,

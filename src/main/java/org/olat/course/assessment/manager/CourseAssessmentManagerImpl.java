@@ -20,10 +20,12 @@
 package org.olat.course.assessment.manager;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.activity.StringResourceableType;
@@ -35,14 +37,18 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentChangedEvent;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentLoggingAction;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
@@ -96,6 +102,27 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	@Override
 	public List<AssessmentEntry> getAssessmentEntries(BusinessGroup assessedGoup, CourseNode courseNode) {
 		return assessmentService.loadAssessmentEntries(assessedGoup, courseEntry, courseNode.getIdent());
+	}
+
+	@Override
+	public AssessmentEntry createAssessmentEntry(CourseNode courseNode, Identity assessedIdentity, ScoreEvaluation scoreEvaluation) {
+		RepositoryEntry referenceEntry = null;
+		if(courseNode.needsReferenceToARepositoryEntry()) {
+			referenceEntry = courseNode.getReferencedRepositoryEntry();
+		}
+		Float score = null;
+		Boolean passed = null;
+		if(scoreEvaluation != null) {
+			score = scoreEvaluation.getScore();
+			passed = scoreEvaluation.getPassed();
+		}
+		return assessmentService
+				.createAssessmentEntry(assessedIdentity, courseEntry, courseNode.getIdent(), referenceEntry, score, passed);
+	}
+
+	@Override
+	public AssessmentEntry updateAssessmentEntry(AssessmentEntry assessmentEntry) {
+		return assessmentService.updateAssessmentEntry(assessmentEntry);
 	}
 
 	@Override
@@ -209,7 +236,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	public void saveScoreEvaluation(AssessableCourseNode courseNode, Identity identity, Identity assessedIdentity,
 			ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnv,
 			boolean incrementUserAttempts) {
-		ICourse course = CourseFactory.loadCourse(courseEntry.getOlatResource());
+		final ICourse course = CourseFactory.loadCourse(courseEntry);
+		final CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
 		
 		Float score = scoreEvaluation.getScore();
 		Boolean passed = scoreEvaluation.getPassed();
@@ -233,9 +261,14 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			assessmentEntry.setAttempts(attempts);
 		}
 		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
+		DBFactory.getInstance().commit();//commit before sending events
+		//reevalute the tree
+		ScoreAccounting scoreAccounting = userCourseEnv.getScoreAccounting();
+		scoreAccounting.evaluateAll(true);
+		DBFactory.getInstance().commit();//commit before sending events
 		
 		// node log
-		UserNodeAuditManager am = course.getCourseEnvironment().getAuditManager();
+		UserNodeAuditManager am = courseEnv.getAuditManager();
 		am.appendToUserNodeLog(courseNode, identity, assessedIdentity,  "score set to: " + String.valueOf(scoreEvaluation.getScore()));
 		if(scoreEvaluation.getPassed()!=null) {
 			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "passed set to: " + scoreEvaluation.getPassed().toString());
@@ -277,9 +310,13 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 					LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiAttempts, "", String.valueOf(attempts)));	
 		}
 		
-		userCourseEnv.getScoreAccounting().evaluateAll();//.scoreInfoChanged(courseNode, scoreEvaluation);
-		// Update users efficiency statement
-		efficiencyStatementManager.updateUserEfficiencyStatement(userCourseEnv);
+		// write only when enabled for this course
+		if (courseEnv.getCourseConfig().isEfficencyStatementEnabled()) {
+			List<AssessmentNodeData> data = new ArrayList<AssessmentNodeData>(50);
+			AssessmentHelper.getAssessmentNodeDataList(0, courseEnv.getRunStructure().getRootNode(),
+					scoreAccounting, userCourseEnv, true, true, data);
+			efficiencyStatementManager.updateUserEfficiencyStatement(assessedIdentity, courseEnv, data, courseEntry);
+		}
 
 		if(passed != null && passed.booleanValue() && course.getCourseConfig().isAutomaticCertificationEnabled()) {
 			if(certificatesManager.isCertificationAllowed(assessedIdentity, courseEntry)) {

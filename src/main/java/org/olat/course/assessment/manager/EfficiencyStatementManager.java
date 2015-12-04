@@ -37,7 +37,8 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.resource.OresHelper;
@@ -56,6 +57,7 @@ import org.olat.course.assessment.model.UserEfficiencyStatementImpl;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.course.assessment.model.UserEfficiencyStatementStandalone;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -78,7 +80,9 @@ import com.thoughtworks.xstream.XStream;
  * @author gnaegi
  */
 @Service
-public class EfficiencyStatementManager extends BasicManager implements UserDataDeletable {
+public class EfficiencyStatementManager implements UserDataDeletable {
+	
+	private static final OLog log = Tracing.createLoggerFor(EfficiencyStatementManager.class);
 
 	public static final String KEY_ASSESSMENT_NODES = "assessmentNodes";
 	public static final String KEY_COURSE_TITLE = "courseTitle";
@@ -97,10 +101,8 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 	 * @param userCourseEnv
 	 */
 	public void updateUserEfficiencyStatement(UserCourseEnvironment userCourseEnv) {
-		Long courseResId = userCourseEnv.getCourseEnvironment().getCourseResourceableId(); 
-		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance(CourseModule.class, courseResId);
 		RepositoryEntry re = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		updateUserEfficiencyStatement(userCourseEnv, re, courseOres);
+		updateUserEfficiencyStatement(userCourseEnv, re);
 	}
 
 	public UserEfficiencyStatement createUserEfficiencyStatement(Date creationDate, Float score, Boolean passed, Identity identity, OLATResource resource) {
@@ -158,63 +160,69 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 	 * @param repoEntryKey
 	 * @param courseOres
 	 */
-	private void updateUserEfficiencyStatement(final UserCourseEnvironment userCourseEnv, final RepositoryEntry repoEntry, OLATResourceable courseOres) {
+	private void updateUserEfficiencyStatement(final UserCourseEnvironment userCourseEnv, final RepositoryEntry repoEntry) {
     //	o_clusterOK: by ld
 		CourseConfig cc = userCourseEnv.getCourseEnvironment().getCourseConfig();
 		// write only when enabled for this course
 		if (cc.isEfficencyStatementEnabled()) {
 			Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();				
 			List<AssessmentNodeData> assessmentNodeList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnv, true, true);
-			List<Map<String,Object>> assessmentNodes = AssessmentHelper.assessmentNodeDataListToMap(assessmentNodeList);
-					
-			EfficiencyStatement efficiencyStatement = new EfficiencyStatement();
-			efficiencyStatement.setAssessmentNodes(assessmentNodes);
-			efficiencyStatement.setCourseTitle(userCourseEnv.getCourseEnvironment().getCourseTitle());
-			efficiencyStatement.setCourseRepoEntryKey(repoEntry.getKey());
-			String userInfos = userManager.getUserDisplayName(identity);
-			efficiencyStatement.setDisplayableUserInfo(userInfos);
-			efficiencyStatement.setLastUpdated(System.currentTimeMillis());
-							
-			UserEfficiencyStatementImpl efficiencyProperty = getUserEfficiencyStatementFull(repoEntry, identity);
-			if (assessmentNodes != null) {				
-				if (efficiencyProperty == null) {
-					// create new
-					efficiencyProperty = new UserEfficiencyStatementImpl();
-					efficiencyProperty.setIdentity(identity);
-					efficiencyProperty.setCourseRepoKey(repoEntry.getKey());
-					if(repoEntry != null) {
-						efficiencyProperty.setResource(repoEntry.getOlatResource());
-						efficiencyProperty.setCourseRepoKey(repoEntry.getKey());
-					}
-					
-					fillEfficiencyStatement(efficiencyStatement, efficiencyProperty);
-					dbInstance.getCurrentEntityManager().persist(efficiencyProperty);
-					if (isLogDebugEnabled()) {
-						logDebug("creating new efficiency statement property::" + efficiencyProperty.getKey() + " for id::" + identity.getName() + " repoEntry::" + repoEntry.getKey());
-					}				
-				} else {
-					// update existing
-					if (isLogDebugEnabled()) {
-						logDebug("updating efficiency statement property::" + efficiencyProperty.getKey() + " for id::" + identity.getName() + " repoEntry::" + repoEntry.getKey());
-					}	
-					fillEfficiencyStatement(efficiencyStatement, efficiencyProperty);
-					dbInstance.getCurrentEntityManager().merge(efficiencyProperty);
-				}
-			} else {
-				if (efficiencyProperty != null) {
-					// remove existing since now empty efficiency statements
-					if (isLogDebugEnabled()) {
-						logDebug("removing efficiency statement property::" + efficiencyProperty.getKey() + " for id::"	+ identity.getName() + " repoEntry::" + repoEntry.getKey() + " since empty");
-					}
-					dbInstance.getCurrentEntityManager().remove(efficiencyProperty);
-				}
-				// else nothing to create and nothing to delete
-			}					
-			
-			// send modified event to everybody
-			AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_EFFICIENCY_STATEMENT_CHANGED, identity);
-			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, courseOres);
+			updateUserEfficiencyStatement(identity, userCourseEnv.getCourseEnvironment(), assessmentNodeList, repoEntry);
 		}
+	}
+	
+	public void updateUserEfficiencyStatement(Identity assessedIdentity, final CourseEnvironment courseEnv, List<AssessmentNodeData> assessmentNodeList, final RepositoryEntry repoEntry) {
+		List<Map<String,Object>> assessmentNodes = AssessmentHelper.assessmentNodeDataListToMap(assessmentNodeList);
+				
+		EfficiencyStatement efficiencyStatement = new EfficiencyStatement();
+		efficiencyStatement.setAssessmentNodes(assessmentNodes);
+		efficiencyStatement.setCourseTitle(courseEnv.getCourseTitle());
+		efficiencyStatement.setCourseRepoEntryKey(repoEntry.getKey());
+		String userInfos = userManager.getUserDisplayName(assessedIdentity);
+		efficiencyStatement.setDisplayableUserInfo(userInfos);
+		efficiencyStatement.setLastUpdated(System.currentTimeMillis());
+		
+		boolean debug = log.isDebug();
+		UserEfficiencyStatementImpl efficiencyProperty = getUserEfficiencyStatementFull(repoEntry, assessedIdentity);
+		if (assessmentNodes != null) {				
+			if (efficiencyProperty == null) {
+				// create new
+				efficiencyProperty = new UserEfficiencyStatementImpl();
+				efficiencyProperty.setIdentity(assessedIdentity);
+				efficiencyProperty.setCourseRepoKey(repoEntry.getKey());
+				if(repoEntry != null) {
+					efficiencyProperty.setResource(repoEntry.getOlatResource());
+					efficiencyProperty.setCourseRepoKey(repoEntry.getKey());
+				}
+				
+				fillEfficiencyStatement(efficiencyStatement, efficiencyProperty);
+				dbInstance.getCurrentEntityManager().persist(efficiencyProperty);
+				if (debug) {
+					log.debug("creating new efficiency statement property::" + efficiencyProperty.getKey() + " for id::" + assessedIdentity.getName() + " repoEntry::" + repoEntry.getKey());
+				}				
+			} else {
+				// update existing
+				if (debug) {
+					log.debug("updating efficiency statement property::" + efficiencyProperty.getKey() + " for id::" + assessedIdentity.getName() + " repoEntry::" + repoEntry.getKey());
+				}	
+				fillEfficiencyStatement(efficiencyStatement, efficiencyProperty);
+				dbInstance.getCurrentEntityManager().merge(efficiencyProperty);
+			}
+		} else {
+			if (efficiencyProperty != null) {
+				// remove existing since now empty efficiency statements
+				if (debug) {
+					log.debug("removing efficiency statement property::" + efficiencyProperty.getKey() + " for id::"	+ assessedIdentity.getName() + " repoEntry::" + repoEntry.getKey() + " since empty");
+				}
+				dbInstance.getCurrentEntityManager().remove(efficiencyProperty);
+			}
+			// else nothing to create and nothing to delete
+		}					
+		
+		// send modified event to everybody
+		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_EFFICIENCY_STATEMENT_CHANGED, assessedIdentity);
+		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance(CourseModule.class, courseEnv.getCourseResourceableId());
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, courseOres);
 	}
 	
 	public void fillEfficiencyStatement(EfficiencyStatement efficiencyStatement, UserEfficiencyStatementImpl efficiencyProperty) {
@@ -270,7 +278,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 				Boolean passed = (Boolean)nodeData.get(AssessmentHelper.KEY_PASSED);
 				Integer attempts = (Integer)nodeData.get(AssessmentHelper.KEY_ATTEMPTS);
 				String attemptsStr = attempts==null ? null : String.valueOf(attempts.intValue());				
-				logInfo("title: " + title + " score: " + score + " passed: " + passed + " attempts: " + attemptsStr);				
+				log.info("title: " + title + " score: " + score + " passed: " + passed + " attempts: " + attemptsStr);				
 			}
 		}		
 	}
@@ -324,7 +332,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 			}
 			return statement.get(0);
 		} catch (Exception e) {
-			logError("Cannot retrieve efficiency statement: " + courseRepoEntry.getKey() + " from " + identity, e);
+			log.error("Cannot retrieve efficiency statement: " + courseRepoEntry.getKey() + " from " + identity, e);
 			return null;
 		}
 	}
@@ -346,7 +354,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 			}
 			return statement.get(0);
 		} catch (Exception e) {
-			logError("Cannot retrieve efficiency statement: " + resourceKey + " from " + identity, e);
+			log.error("Cannot retrieve efficiency statement: " + resourceKey + " from " + identity, e);
 			return null;
 		}
 	}
@@ -383,7 +391,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 			}
 			return statement.get(0);
 		} catch (Exception e) {
-			logError("Cannot retrieve efficiency statement: " + courseRepo.getKey() + " from " + identity, e);
+			log.error("Cannot retrieve efficiency statement: " + courseRepo.getKey() + " from " + identity, e);
 			return null;
 		}
 	}
@@ -404,7 +412,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 			}
 			return statement.get(0);
 		} catch (Exception e) {
-			logError("Cannot retrieve efficiency statement: " + resourceKey + " from " + identity, e);
+			log.error("Cannot retrieve efficiency statement: " + resourceKey + " from " + identity, e);
 			return null;
 		}
 	}
@@ -424,7 +432,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 			}
 			return (EfficiencyStatement)xstream.fromXML(statement.get(0).getStatementXml());
 		} catch (Exception e) {
-			logError("Cannot retrieve efficiency statement: " + key, e);
+			log.error("Cannot retrieve efficiency statement: " + key, e);
 			return null;
 		}
 	}
@@ -549,7 +557,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 			}
 
 		} catch (Exception e) {
-			logError("findEfficiencyStatements: " + identity, e);
+			log.error("findEfficiencyStatements: " + identity, e);
 		}
 		return efficiencyStatements;
 	}
@@ -566,7 +574,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 					.setParameter("identityKey", identity.getKey())
 					.getResultList();
 		} catch (Exception e) {
-			logError("findEfficiencyStatements: " + identity, e);
+			log.error("findEfficiencyStatements: " + identity, e);
 			return Collections.emptyList();
 		}
 	}
@@ -601,7 +609,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 					.setParameter("repoKey", courseRepoEntryKey)
 					.getResultList();
 		} catch (Exception e) {
-			logError("findIdentitiesWithEfficiencyStatements: " + courseRepoEntryKey, e);
+			log.error("findIdentitiesWithEfficiencyStatements: " + courseRepoEntryKey, e);
 			return Collections.emptyList();
 		}
 	}
@@ -625,7 +633,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 				dbInstance.deleteObject(statement);
 			}
 		} catch (Exception e) {
-			logError("deleteEfficiencyStatementsFromCourse: " + courseRepoEntryKey, e);
+			log.error("deleteEfficiencyStatementsFromCourse: " + courseRepoEntryKey, e);
 		}
 	}
 
@@ -661,7 +669,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 	public void updateEfficiencyStatements(final RepositoryEntry courseEntry, List<Identity> identities) {
 		if (identities.size() > 0) {
 			final ICourse course = CourseFactory.loadCourse(courseEntry);
-			logAudit("Updating efficiency statements for course::" + course.getResourceableId() + ", this might produce temporary heavy load on the CPU");
+			log.audit("Updating efficiency statements for course::" + course.getResourceableId() + ", this might produce temporary heavy load on the CPU");
 
 			// preload cache to speed up things
 			long start = System.currentTimeMillis();
@@ -674,7 +682,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 					public void execute() {					
 						// create temporary user course env
 						UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-						updateUserEfficiencyStatement(uce, courseEntry, course);
+						updateUserEfficiencyStatement(uce, courseEntry);
 					}
 				});
 				if (Thread.interrupted()) {
@@ -682,9 +690,9 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 				}
 			}
 			
-			if (isLogDebugEnabled()) {
+			if (log.isDebug()) {
 				long end = System.currentTimeMillis();
-				logDebug("Updated efficiency statements for course::" + course.getResourceableId() 
+				log.debug("Updated efficiency statements for course::" + course.getResourceableId() 
 					 + "ms; Updating statements: " + (end-start) + "ms; Users: " + identities.size());
 			}
 		}
@@ -704,7 +712,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 		for (Iterator<EfficiencyStatement> iter = efficiencyStatements.iterator(); iter.hasNext();) {
 			deleteEfficiencyStatement(identity, iter.next());
 		}
-		logDebug("All efficiency statements deleted for identity=" + identity);
+		log.debug("All efficiency statements deleted for identity=" + identity);
 	}
 	
 }

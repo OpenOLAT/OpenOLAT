@@ -17,22 +17,32 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes;
+package org.olat.course.assessment.ui.tool;
 
-import org.olat.course.run.scoring.AssessmentEvaluation;
-import org.olat.course.run.scoring.ScoreCalculator;
-import org.olat.modules.assessment.AssessmentEntry;
+import java.util.concurrent.ConcurrentMap;
+
+import org.olat.course.certificate.CertificateLight;
 
 /**
  * 
- * Initial date: 01.12.2015<br>
+ * 
+ * 
+ * Initial date: 04.12.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface CalculatedAssessableCourseNode extends AssessableCourseNode {
+public class CourseToolContainer {
 	
-	public ScoreCalculator getScoreCalculator();
+	private ConcurrentMap<Long, CertificateLight> certificateMap;
+
+	public ConcurrentMap<Long, CertificateLight> getCertificateMap() {
+		return certificateMap;
+	}
+
+	public void setCertificateMap(ConcurrentMap<Long, CertificateLight> certificateMap) {
+		this.certificateMap = certificateMap;
+	}
 	
-	public AssessmentEvaluation getUserScoreEvaluation(AssessmentEntry entry); 
+	
 
 }

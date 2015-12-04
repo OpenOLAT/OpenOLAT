@@ -82,6 +82,16 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 		return Collections.emptyList();
 	}
 
+	@Override
+	public AssessmentEntry createAssessmentEntry(CourseNode courseNode, Identity assessedIdentity, ScoreEvaluation scoreEvaluation) {
+		return null;
+	}
+
+	@Override
+	public AssessmentEntry updateAssessmentEntry(AssessmentEntry assessmentEntry) {
+		return assessmentEntry;
+	}
+
 	/**
 	 * @see org.olat.course.assessment.AssessmentManager#saveNodeAttempts(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.core.id.Identity, java.lang.Integer)
 	 */

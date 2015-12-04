@@ -60,16 +60,18 @@ public class AssessmentIdentitiesCourseTreeController extends BasicController im
 	private final MenuTree menuTree;
 	private final Panel mainPanel;
 	private final TooledStackedPanel stackPanel;
+	private final CourseToolContainer toolContainer;
 	private Controller currentCtrl;
 	
 	private final RepositoryEntry courseEntry;
 	private AssessmentToolSecurityCallback assessmentCallback;
 	
 	public AssessmentIdentitiesCourseTreeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, AssessmentToolSecurityCallback assessmentCallback) {
+			RepositoryEntry courseEntry, CourseToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl);
 		this.courseEntry = courseEntry;
 		this.stackPanel = stackPanel;
+		this.toolContainer = toolContainer;
 		this.assessmentCallback = assessmentCallback;
 
 		ICourse course = CourseFactory.loadCourse(courseEntry);
@@ -119,18 +121,14 @@ public class AssessmentIdentitiesCourseTreeController extends BasicController im
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Node", new Long(courseNode.getIdent()));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-
-		ICourse course = CourseFactory.loadCourse(courseEntry);
-		if(course.getRunStructure().getRootNode().equals(courseNode)) {
-			currentCtrl = new AssessmentIdentitiesCourseController(ureq, bwControl, stackPanel, courseEntry, assessmentCallback);
-		} else if(courseNode instanceof AssessableCourseNode && ((AssessableCourseNode)courseNode).isAssessedBusinessGroups()) {
+		if(courseNode instanceof AssessableCourseNode && ((AssessableCourseNode)courseNode).isAssessedBusinessGroups()) {
 			if(courseNode instanceof GTACourseNode) {
 				CourseEnvironment courseEnv = CourseFactory.loadCourse(courseEntry).getCourseEnvironment();
 				currentCtrl = ((GTACourseNode)courseNode).getCoachedGroupListController(ureq, getWindowControl(), stackPanel,
 						courseEnv, assessmentCallback.isAdmin(), assessmentCallback.getCoachedGroups());
 			}
 		} else {
-			currentCtrl = new AssessmentIdentitiesCourseNodeController(ureq, bwControl, stackPanel, courseEntry, courseNode, assessmentCallback);
+			currentCtrl = new IdentityListCourseNodeController(ureq, bwControl, stackPanel, courseEntry, courseNode, toolContainer, assessmentCallback);
 		}
 		listenTo(currentCtrl);
 		mainPanel.setContent(currentCtrl.getInitialComponent());

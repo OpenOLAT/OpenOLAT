@@ -19,6 +19,8 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.List;
+
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -35,6 +37,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.IdentityAssessmentOverviewController;
@@ -53,7 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentIdentityCourseController extends BasicController {
+public class AssessmentIdentityCourseController extends BasicController implements AssessedIdentityController {
 	
 	private final Identity assessedIdentity;
 	private final RepositoryEntry courseEntry;
@@ -105,13 +109,19 @@ public class AssessmentIdentityCourseController extends BasicController {
 
 		putInitialPanel(identityAssessmentVC);
 	}
-	
+
+	@Override
 	public Identity getAssessedIdentity() {
 		return assessedIdentity;
 	}
 
 	@Override
 	protected void doDispose() {
+		//
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//
 	}
 
@@ -134,6 +144,15 @@ public class AssessmentIdentityCourseController extends BasicController {
 			cleanUp();
 		} else if(courseNodeChooserCalloutCtrl == source) {
 			cleanUp();
+		} else if(currentNodeCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				treeOverviewCtrl.doIdentityAssessmentOverview(ureq);
+				stackPanel.popController(currentNodeCtrl);
+			} else if(event == Event.CHANGED_EVENT) {
+				treeOverviewCtrl.doIdentityAssessmentOverview(ureq);
+			} else if(event == Event.CANCELLED_EVENT) {
+				stackPanel.popController(currentNodeCtrl);
+			}
 		}
 		super.event(ureq, source, event);
 	}

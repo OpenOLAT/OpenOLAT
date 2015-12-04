@@ -37,6 +37,19 @@ public interface AssessmentService {
 	/**
 	 * 
 	 * @param assessedIdentity
+	 * @param entry
+	 * @param subIdent
+	 * @param referenceEntry
+	 * @param score
+	 * @param passed
+	 * @return
+	 */
+	public AssessmentEntry createAssessmentEntry(Identity assessedIdentity, RepositoryEntry entry, String subIdent,
+			RepositoryEntry referenceEntry, Float score, Boolean passed);
+	
+	/**
+	 * 
+	 * @param assessedIdentity
 	 * @param entry The repository entry, the course
 	 * @param subIdent An additional reference for the cours element
 	 * @param referenceEntry The test repository entry 

@@ -77,6 +77,7 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -290,6 +291,11 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 			passed = new Boolean(ci.evaluateCondition(passedExpressionStr));
 		}
 		return new AssessmentEvaluation(score, passed);
+	}
+
+	@Override
+	public AssessmentEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
+		return AssessmentEvaluation.toAssessmentEvalutation(entry, this);
 	}
 
 	/**

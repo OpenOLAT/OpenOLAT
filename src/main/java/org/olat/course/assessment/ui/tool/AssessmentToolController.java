@@ -58,6 +58,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	
 	private Link usersLink, efficiencyStatementsLink, bulkAssessmentLink;
 	private final TooledStackedPanel stackPanel;
+	private final CourseToolContainer toolContainer;
 	
 	private AssessmentCourseOverviewController overviewCtrl;
 	private AssessmentIdentitiesCourseTreeController currentCtl;
@@ -71,7 +72,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		this.courseEntry = courseEntry;
 		this.stackPanel = stackPanel;
 		this.assessmentCallback = assessmentCallback;
-
+		toolContainer = new CourseToolContainer();
 		
 		overviewCtrl = new AssessmentCourseOverviewController(ureq, getWindowControl(), courseEntry, assessmentCallback);
 		listenTo(overviewCtrl);
@@ -152,7 +153,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		addToHistory(ureq, bwControl);
 		AssessmentIdentitiesCourseTreeController treeCtrl = new AssessmentIdentitiesCourseTreeController(ureq, bwControl, stackPanel,
-				courseEntry, assessmentCallback);
+				courseEntry, toolContainer, assessmentCallback);
 		listenTo(treeCtrl);
 		stackPanel.pushController(translate("users"), treeCtrl);
 		currentCtl = treeCtrl;

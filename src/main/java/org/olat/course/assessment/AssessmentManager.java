@@ -195,6 +195,10 @@ public interface AssessmentManager {
 	
 
 	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, Identity assessedIdentity, String referenceSoftKey);
+	
+	public AssessmentEntry createAssessmentEntry(CourseNode courseNode, Identity assessedIdentity, ScoreEvaluation scoreEvaluation);
+	
+	public AssessmentEntry updateAssessmentEntry(AssessmentEntry assessmentEntry);
 
 	public List<AssessmentEntry> getAssessmentEntries(CourseNode courseNode);
 	

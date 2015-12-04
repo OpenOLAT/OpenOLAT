@@ -25,6 +25,7 @@
 
 package org.olat.course.run.scoring;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,11 +36,14 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
+import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.CalculatedAssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PersistentAssessableCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
  * Description:<BR/>
@@ -69,11 +73,15 @@ public class ScoreAccounting {
 	 * Retrieve all the score evaluations for all course nodes
 	 */
 	public void evaluateAll() {
+		evaluateAll(false);
+	}
+	
+	public boolean evaluateAll(boolean update) {
 		Identity identity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		List<AssessmentEntry> entries = userCourseEnvironment.getCourseEnvironment()
 				.getAssessmentManager().getAssessmentEntries(identity);
 
-		AssessableTreeVisitor visitor = new AssessableTreeVisitor(userCourseEnvironment, entries);
+		AssessableTreeVisitor visitor = new AssessableTreeVisitor(entries, update);
 		// collect all assessable nodes and eval 'em
 		CourseNode root = userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode();
 		// breadth first traversal gives an easier order of evaluation for debugging
@@ -81,21 +89,32 @@ public class ScoreAccounting {
 		// the score accoutings local cache hash map will never be used. this can slow down things like 
 		// crazy (course with 10 tests, 300 users and some crazy score and passed calculations will have
 		// 10 time performance differences) 
+
+		cachedScoreEvals.clear();
+		for(AssessmentEntry entry:entries) {
+			String nodeIdent = entry.getSubIdent();
+			CourseNode courseNode = userCourseEnvironment.getCourseEnvironment().getRunStructure().getNode(nodeIdent);
+			if(courseNode instanceof AssessableCourseNode) {
+				AssessableCourseNode acn = (AssessableCourseNode)courseNode;
+				AssessmentEvaluation se = AssessmentEvaluation.toAssessmentEvalutation(entry, acn);
+				cachedScoreEvals.put(acn, se);
+			}
+		}
+		
 		TreeVisitor tv = new TreeVisitor(visitor, root, true); // true=depth first
 		tv.visitAll();
-		cachedScoreEvals.clear();
-		cachedScoreEvals.putAll(visitor.nodeToScoreEvals);
+		return visitor.hasChanges();
 	}
 	
 	private class AssessableTreeVisitor implements Visitor {
 		
+		private final boolean update;
+		private boolean changes = false;
 		private int recursionLevel = 0;
-		private final UserCourseEnvironment userCourseEnv;
 		private final Map<String,AssessmentEntry> identToEntries = new HashMap<>();
-		private final Map<AssessableCourseNode, AssessmentEvaluation> nodeToScoreEvals = new HashMap<>();
 		
-		public AssessableTreeVisitor(UserCourseEnvironment userCourseEnv, List<AssessmentEntry> entries) {
-			this.userCourseEnv = userCourseEnv;
+		public AssessableTreeVisitor(List<AssessmentEntry> entries, boolean update) {
+			this.update = update;
 			for(AssessmentEntry entry:entries) {
 				String ident = entry.getSubIdent();
 				if(identToEntries.containsKey(ident)) {
@@ -107,6 +126,10 @@ public class ScoreAccounting {
 					identToEntries.put(ident, entry);
 				}
 			}
+		}
+		
+		public boolean hasChanges() {
+			return changes;
 		}
 
 		@Override
@@ -122,19 +145,90 @@ public class ScoreAccounting {
 			recursionLevel++;
 			AssessmentEvaluation se = null;
 			if (recursionLevel <= 15) {
-				se = nodeToScoreEvals.get(cn);
+				se = cachedScoreEvals.get(cn);
 				if (se == null) { // result of this node has not been calculated yet, do it
 					AssessmentEntry entry = identToEntries.get(cn.getIdent());
 					if(cn instanceof PersistentAssessableCourseNode) {
 						se = ((PersistentAssessableCourseNode)cn).getUserScoreEvaluation(entry);
+					} else if(cn instanceof CalculatedAssessableCourseNode) {
+						if(update) {
+							se = calculateScoreEvaluation(entry, (CalculatedAssessableCourseNode)cn);
+						} else {
+							se = ((CalculatedAssessableCourseNode)cn).getUserScoreEvaluation(entry);
+						}
 					} else {
-						se = cn.getUserScoreEvaluation(userCourseEnv);
+						se = cn.getUserScoreEvaluation(userCourseEnvironment);
 					}
-					nodeToScoreEvals.put(cn, se);
+					cachedScoreEvals.put(cn, se);
+				} else if(update && cn instanceof CalculatedAssessableCourseNode) {
+					AssessmentEntry entry = identToEntries.get(cn.getIdent());
+					se = calculateScoreEvaluation(entry, (CalculatedAssessableCourseNode)cn);
+					cachedScoreEvals.put(cn, se);
 				}
 			}
 			recursionLevel--;
 			return se;
+		}
+		
+		private AssessmentEvaluation calculateScoreEvaluation(AssessmentEntry entry, CalculatedAssessableCourseNode cNode) {
+			AssessmentEvaluation se;
+			if(cNode.hasScoreConfigured() || cNode.hasPassedConfigured()) {
+				ScoreCalculator scoreCalculator = cNode.getScoreCalculator();
+				String scoreExpressionStr = scoreCalculator.getScoreExpression();
+				String passedExpressionStr = scoreCalculator.getPassedExpression();
+
+				Float score = null;
+				Boolean passed = null;
+				AssessmentEntryStatus assessmentStatus = AssessmentEntryStatus.inProgress;
+				ConditionInterpreter ci = userCourseEnvironment.getConditionInterpreter();
+				if (scoreExpressionStr != null) {
+					score = new Float(ci.evaluateCalculation(scoreExpressionStr));
+				}
+				if (passedExpressionStr != null) {
+					boolean hasPassed = ci.evaluateCondition(passedExpressionStr);
+					if(hasPassed) {
+						passed = Boolean.TRUE;
+						assessmentStatus = AssessmentEntryStatus.done;
+					}
+					//some rules to set -> failed
+				}
+				se = new AssessmentEvaluation(score, passed, null, assessmentStatus, null, null, null, null);
+				
+				if(entry == null) {
+					Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+					userCourseEnvironment.getCourseEnvironment().getAssessmentManager()
+						.createAssessmentEntry(cNode, assessedIdentity, se);
+					changes = true;
+				} else if(!same(se, entry)) {
+					entry.setScore(new BigDecimal(score));
+					entry.setPassed(passed);
+					entry = userCourseEnvironment.getCourseEnvironment().getAssessmentManager().updateAssessmentEntry(entry);
+					identToEntries.put(cNode.getIdent(), entry);
+					changes = true;
+				}
+			} else {
+				se = AssessmentEvaluation.EMPTY_EVAL;
+			}
+			return se;
+		}
+		
+		private boolean same(AssessmentEvaluation se, AssessmentEntry entry) {
+			boolean same = true;
+			
+			if((se.getPassed() == null && entry.getPassed() != null)
+					|| (se.getPassed() != null && entry.getPassed() == null)
+					|| (se.getPassed() != null && !se.getPassed().equals(entry.getPassed()))) {
+				same &= false;
+			}
+			
+			if((se.getScore() == null && entry.getScore() != null)
+					|| (se.getScore() != null && entry.getScore() == null)
+					|| (se.getScore() != null && entry.getScore() != null
+							&& Math.abs(se.getScore().floatValue() - entry.getScore().floatValue()) > 0.00001)) {
+				same &= false;
+			}
+			
+			return same;
 		}
 	}
 

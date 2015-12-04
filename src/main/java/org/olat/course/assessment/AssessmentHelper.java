@@ -401,8 +401,25 @@ public class AssessmentHelper {
 		return data;
 	}
 	
+	/**
+	 * Calculated 
+	 * 
+	 * 
+	 * @param evaluatedScoreAccounting
+	 * @param userCourseEnv
+	 * @param discardEmptyNodes
+	 * @param discardComments
+	 * @return
+	 */
+	public static List<AssessmentNodeData> getAssessmentNodeDataList(ScoreAccounting evaluatedScoreAccounting, UserCourseEnvironment userCourseEnv, boolean discardEmptyNodes, boolean discardComments) {
+		List<AssessmentNodeData> data = new ArrayList<AssessmentNodeData>(50);
+		getAssessmentNodeDataList(0, userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode(),
+				evaluatedScoreAccounting, userCourseEnv, discardEmptyNodes, discardComments, data);
+		return data;
+	}
 	
-	private static int getAssessmentNodeDataList(int recursionLevel, CourseNode courseNode, ScoreAccounting scoreAccounting,
+	
+	public static int getAssessmentNodeDataList(int recursionLevel, CourseNode courseNode, ScoreAccounting scoreAccounting,
 			UserCourseEnvironment userCourseEnv, boolean discardEmptyNodes, boolean discardComments, List<AssessmentNodeData> data) {
 		// 1) Get list of children data using recursion of this method
 		AssessmentNodeData assessmentNodeData = new AssessmentNodeData(recursionLevel, courseNode);

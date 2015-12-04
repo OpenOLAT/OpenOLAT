@@ -21,6 +21,7 @@ package org.olat.course.assessment.ui.tool;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentMap;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
@@ -30,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.util.StringHelper;
+import org.olat.course.certificate.CertificateLight;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -40,15 +42,20 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentIdentitiesCourseNodeTableModel extends DefaultFlexiTableDataModel<AssessedIdentityCourseElementRow>
+public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel<AssessedIdentityCourseElementRow>
 	implements SortableFlexiTableDataModel<AssessedIdentityCourseElementRow>, FilterableFlexiTableModel {
 
 	private final AssessableCourseNode courseNode;
 	private List<AssessedIdentityCourseElementRow> backups;
+	private ConcurrentMap<Long, CertificateLight> certificateMap;
 	
-	public AssessmentIdentitiesCourseNodeTableModel(FlexiTableColumnModel columnModel, AssessableCourseNode courseNode) {
+	public IdentityListCourseNodeTableModel(FlexiTableColumnModel columnModel, AssessableCourseNode courseNode) {
 		super(columnModel);
 		this.courseNode = courseNode;
+	}
+	
+	public void setCertificateMap(ConcurrentMap<Long, CertificateLight> certificateMap) {
+		this.certificateMap = certificateMap;
 	}
 
 	@Override
@@ -122,6 +129,7 @@ public class AssessmentIdentitiesCourseNodeTableModel extends DefaultFlexiTableD
 				case status: return "";
 				case passed: return row.getPassed();
 				case assessmentStatus: return row.getAssessmentStatus();
+				case certificate: return certificateMap.get(row.getIdentityKey());
 				case initialLaunchDate: return row.getCreationDate();
 				case lastScoreUpdate: return row.getLastModified();
 			}
@@ -132,7 +140,7 @@ public class AssessmentIdentitiesCourseNodeTableModel extends DefaultFlexiTableD
 
 	@Override
 	public DefaultFlexiTableDataModel<AssessedIdentityCourseElementRow> createCopyWithEmptyList() {
-		return new AssessmentIdentitiesCourseNodeTableModel(getTableColumnModel(), courseNode);
+		return new IdentityListCourseNodeTableModel(getTableColumnModel(), courseNode);
 	}
 	
 	public enum IdentityCourseElementCols implements FlexiSortableColumnDef {
@@ -144,6 +152,7 @@ public class AssessmentIdentitiesCourseNodeTableModel extends DefaultFlexiTableD
 		status("table.header.status"),
 		passed("table.header.passed"),
 		assessmentStatus("table.header.assessmentStatus"),
+		certificate("table.header.certificate"),
 		initialLaunchDate("table.header.initialLaunchDate"),
 		lastScoreUpdate("table.header.lastScoreDate");
 		

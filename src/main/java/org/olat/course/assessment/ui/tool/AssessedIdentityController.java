@@ -17,22 +17,20 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes;
+package org.olat.course.assessment.ui.tool;
 
-import org.olat.course.run.scoring.AssessmentEvaluation;
-import org.olat.course.run.scoring.ScoreCalculator;
-import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Identity;
 
 /**
  * 
- * Initial date: 01.12.2015<br>
+ * Initial date: 04.12.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface CalculatedAssessableCourseNode extends AssessableCourseNode {
-	
-	public ScoreCalculator getScoreCalculator();
-	
-	public AssessmentEvaluation getUserScoreEvaluation(AssessmentEntry entry); 
+public interface AssessedIdentityController extends Controller, Activateable2 {
 
+	public Identity getAssessedIdentity();
+	
 }
