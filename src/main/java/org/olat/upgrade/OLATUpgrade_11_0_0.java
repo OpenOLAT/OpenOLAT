@@ -126,6 +126,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 	
 	private static final int BATCH_SIZE = 50;
 	private static final String ASSESSMENT_DATAS = "ASSESSMENT PROPERTY TABLE";
+	private static final String EFFICIENCY_STATEMENT_DATAS = "EFFICIENCY STATEMENT TABLE";
 	private static final String VERSION = "OLAT_11.0.0";
 
 	private final Map<Long,Boolean> qtiEssayMap = new HashMap<>();
@@ -170,6 +171,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		}
 		
 		boolean allOk = true;
+		allOk &= upgradeEfficiencyStatementTable(upgradeManager, uhd);
 		allOk &= upgradeAssessmentPropertyTable(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
@@ -178,6 +180,31 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 			log.audit("Finished OLATUpgrade_11_0_0 successfully!");
 		} else {
 			log.audit("OLATUpgrade_11_0_0 not finished, try to restart OpenOLAT!");
+		}
+		return allOk;
+	}
+
+	private boolean upgradeEfficiencyStatementTable(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(EFFICIENCY_STATEMENT_DATAS)) {
+			int counter = 0;
+			final Roles roles = new Roles(true, true, true, true, false, true, false);
+			final SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
+			params.setRoles(roles);
+			params.setResourceTypes(Collections.singletonList("CourseModule"));
+			
+			List<RepositoryEntry> courses;
+			do {
+				courses = repositoryManager.genericANDQueryWithRolesRestriction(params, counter, 50, true);
+				for(RepositoryEntry course:courses) {
+					convertUserEfficiencyStatemen(course);
+				}
+				counter += courses.size();
+				log.audit("Efficiency statement data migration processed: " + courses.size() + ", total processed (" + counter + ")");
+				dbInstance.commitAndCloseSession();
+			} while(courses.size() == BATCH_SIZE);
+			uhd.setBooleanDataValue(EFFICIENCY_STATEMENT_DATAS, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return allOk;
 	}
@@ -195,7 +222,6 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 			do {
 				courses = repositoryManager.genericANDQueryWithRolesRestriction(params, counter, 50, true);
 				for(RepositoryEntry course:courses) {
-					convertUserEfficiencyStatemen(course);
 					allOk &= processCourseAssessmentData(course); 
 				}
 				counter += courses.size();
