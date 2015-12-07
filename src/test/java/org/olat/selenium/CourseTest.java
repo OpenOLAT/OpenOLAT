@@ -19,6 +19,7 @@
  */
 package org.olat.selenium;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -60,12 +61,14 @@ import org.olat.selenium.page.course.PublisherPageFragment.Access;
 import org.olat.selenium.page.forum.ForumPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
+import org.olat.selenium.page.repository.CPPage;
 import org.olat.selenium.page.repository.FeedPage;
 import org.olat.selenium.page.repository.RepositoryAccessPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
 import org.olat.selenium.page.repository.RepositoryAccessPage.UserAccess;
 import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
 import org.olat.test.ArquillianDeployments;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
@@ -1514,5 +1517,93 @@ public class CourseTest {
 			.assertWithTitle(msTitle.substring(0, 20))
 			.assertWithTitle(foTitle.substring(0, 20))
 			.assertWithTitle(infoTitle.substring(0, 20));
+	}
+	
+	/**
+	 * An author creates a CP, changes the name of a page, import 
+	 * an other page, create two pages and delete one, import an
+	 * image...<br>
+	 * A user come to see the CP, check that the deleted page is
+	 * really deleted and that the "Small HTML page" exists and
+	 * can be read.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void createContentPackage(@InitialPage LoginPage loginPage,
+			@Drone @User WebDriver ryomouBrowser)
+			throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a CP
+		String cpTitle = "CP " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCP(cpTitle)
+			.clickToolbarBack();
+		
+		String firstPage = "Page 1 " + UUID.randomUUID();
+		String secondPage = "Seite 2 " + UUID.randomUUID();
+		String thirdPage = "Feuillet 3 " + UUID.randomUUID();
+		String deletedPage = "To delete 4 " + UUID.randomUUID();
+		
+		URL pageUrl = JunitTestHelper.class.getResource("file_resources/page.html");
+		File pageFile = new File(pageUrl.toURI());
+		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1482.JPG");
+		File imageFile = new File(imageUrl.toURI());
+		
+		CPPage cpPage = new CPPage(browser);
+		cpPage
+			.openEditor()
+			//rename page
+			.editMetadata(firstPage)
+			.clickRoot()
+			.newPage(secondPage)
+			.clickRoot()
+			.newPage(deletedPage)
+			.clickRoot()
+			//import a page and change the title
+			.importPage(pageFile)
+			.fillMetadataForm(thirdPage)
+			//import an image without changing the title
+			.importPage(imageFile)
+			.closeMetadataForm()
+			//delete page
+			.selectPage(deletedPage)
+			.deletePage()
+			//close the editor
+			.clickToolbarBack();
+		
+		//set access to registered members
+		cpPage
+			.accessConfiguration()
+			.setUserAccess(UserAccess.registred)
+			.clickToolbarBack();
+		
+		//a user search the content package
+		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		ryomouLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		NavigationPage ryomouNavBar = new NavigationPage(ryomouBrowser);
+		ryomouNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(cpTitle)
+			.select(cpTitle)
+			.start();
+		
+		CPPage ryomouPage = new CPPage(ryomouBrowser);
+		ryomouPage
+			.assertPageDeleted(deletedPage)
+			.assertInIFrame(By.xpath("//h1[text()[contains(.,'Small HTML page')]]"))
+			.selectPage(secondPage)
+			.selectPage(firstPage)
+			.assertInIFrame(By.xpath("//h2[text()[contains(.,'Lorem Ipsum')]]"));
 	}
 }

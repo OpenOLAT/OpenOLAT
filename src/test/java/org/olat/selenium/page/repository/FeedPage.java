@@ -131,6 +131,10 @@ public class FeedPage {
 	}
 	
 	public FeedPage fillPostForm(String title, String summary, String content) {
+		//wait that the popup is available
+		By postFormBy = By.cssSelector("fieldset.o_sel_blog_form");
+		OOGraphene.waitElement(postFormBy, 2, browser);
+
 		By titleBy = By.cssSelector("div.o_sel_blog_title input[type='text']");
 		browser.findElement(titleBy).sendKeys(title);
 		

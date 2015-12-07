@@ -128,6 +128,7 @@ public class GroupPage {
 	
 	public CalendarPage openCalendar() {
 		openMenuItem(calendarTool);
+		OOGraphene.waitElement(CalendarPage.calendarToolbatBy, 2, browser);
 		return new CalendarPage(browser);
 	}
 	

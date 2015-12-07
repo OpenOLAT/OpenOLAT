@@ -111,7 +111,7 @@ public class CPFileImportController extends FormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("cpfileuploadcontroller.form.title");
+		formLayout.setElementCssClass("o_sel_cp_import");
 		setFormDescription("cpfileuploadcontroller.form.description");
 
 		file = uifactory.addFileElement(getWindowControl(), "file", flc);

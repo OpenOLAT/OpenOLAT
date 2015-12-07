@@ -66,9 +66,11 @@ public class CPMetadataEditController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_cp_metadata");
 		// title-field
 		String titleString = page.getTitle();
 		title = uifactory.addTextElement("title", "cpmd.flexi.title", 256, titleString, formLayout);
+		title.setElementCssClass("o_sel_cp_title");
 		title.setDisplaySize(32);
 		title.setMandatory(true);
 		title.setNotEmptyCheck("cpmd.flexi.mustbefilled");
