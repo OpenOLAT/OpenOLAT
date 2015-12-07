@@ -229,6 +229,12 @@ public interface FlexiTableElement extends FormItem {
 	public String getSelectedFilterKey();
 	
 	/**
+	 * Preset the selected filter, but don't trigger sort/filter operation.
+	 * @param key
+	 */
+	public void setSelectedFilterKey(String key);
+	
+	/**
 	 * @return The selected value by the filter, or null if no item is selected
 	 */
 	public String getSelectedFilterValue();

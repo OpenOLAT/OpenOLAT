@@ -5,16 +5,22 @@ $r.contextHelpWithWrapper("Using Course Tools#_bewertungswerkzeug")
 #end
 <p class="o_info">$r.translate("index.intro")</p>
 <div class="row o_block">
-	<div class="col-sm-6">
+	<div class="col-sm-6"><ul class="list-unstyled">
 		#if($r.available("assessed.identities"))
-			$r.render("assessed.identities")
+			<li>$r.render("assessed.identities")</li>
 		#end
-	</div>
-	<div class="col-sm-6">
 		#if($r.available("assessed.groups"))
-			$r.render("assessed.groups")
+			<li>$r.render("assessed.groups")</li>
 		#end
-	</div>
+	</ul></div>
+	<div class="col-sm-6"><ul class="list-unstyled">
+		#if($r.available("passed.identities"))
+			<li>$r.render("passed.identities")</li>
+		#end
+		#if($r.available("failed.identities"))
+			<li>$r.render("failed.identities")</li>
+		#end
+	</ul></div>
 </div>
 <div class="row">
 	<div class="col-sm-6">

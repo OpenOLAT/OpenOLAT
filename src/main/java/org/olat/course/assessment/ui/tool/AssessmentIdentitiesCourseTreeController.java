@@ -102,6 +102,10 @@ public class AssessmentIdentitiesCourseTreeController extends BasicController im
 				doSelectCourseNode(ureq, (CourseNode)rootNode.getUserObject());
 			}
 		}
+		
+		if(currentCtrl instanceof Activateable2) {
+			((Activateable2)currentCtrl).activate(ureq, null, state);
+		}
 	}
 
 	@Override
@@ -110,13 +114,16 @@ public class AssessmentIdentitiesCourseTreeController extends BasicController im
 			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
 				Object uo = menuTree.getSelectedNode().getUserObject();
 				if(uo instanceof CourseNode) {
-					doSelectCourseNode(ureq, (CourseNode)uo);
+					Controller ctrl = doSelectCourseNode(ureq, (CourseNode)uo);
+					if(ctrl instanceof Activateable2) {
+						((Activateable2)ctrl).activate(ureq, null, null);
+					}
 				}
 			}
 		}
 	}
 
-	private void doSelectCourseNode(UserRequest ureq, CourseNode courseNode) {
+	private Controller doSelectCourseNode(UserRequest ureq, CourseNode courseNode) {
 		removeAsListenerAndDispose(currentCtrl);
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Node", new Long(courseNode.getIdent()));
@@ -133,5 +140,6 @@ public class AssessmentIdentitiesCourseTreeController extends BasicController im
 		listenTo(currentCtrl);
 		mainPanel.setContent(currentCtrl.getInitialComponent());
 		addToHistory(ureq, currentCtrl);
+		return currentCtrl;
 	}
 }

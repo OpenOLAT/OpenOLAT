@@ -46,6 +46,8 @@ public class AssessmentCourseStatisticsSmallController extends BasicController {
 	private final RepositoryEntry courseEntry;
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	
+	private int numOfPassed;
+	private int numOfFailed;
 	private int numOfAssessedIdentities;
 	
 	@Autowired
@@ -62,6 +64,14 @@ public class AssessmentCourseStatisticsSmallController extends BasicController {
 		updateStatistics();
 	}
 	
+	public int getNumOfPassed() {
+		return numOfPassed;
+	}
+	
+	public int getNumOfFailed() {
+		return numOfFailed;
+	}
+	
 	public int getNumOfAssessedIdentities() {
 		return numOfAssessedIdentities;
 	}
@@ -73,10 +83,12 @@ public class AssessmentCourseStatisticsSmallController extends BasicController {
 		numOfAssessedIdentities = stats.getNumOfAssessedIdentities();
 		mainVC.contextPut("numOfAssessedIdentities", numOfAssessedIdentities);
 		mainVC.contextPut("scoreAverage", AssessmentHelper.getRoundedScore(stats.getAverageScore()));
-		mainVC.contextPut("numOfPassed", stats.getCountPassed());
+		numOfPassed = stats.getCountPassed();
+		mainVC.contextPut("numOfPassed", numOfPassed);
 		int percentPassed = Math.round(100.0f * ((float)stats.getCountPassed() / (float)stats.getNumOfAssessedIdentities()));
 		mainVC.contextPut("percentPassed", percentPassed);
-		mainVC.contextPut("numOfFailed", stats.getCountFailed());
+		numOfFailed = stats.getCountFailed();
+		mainVC.contextPut("numOfFailed", numOfFailed);
 		int percentFailed = Math.round(100.0f * ((float)stats.getCountFailed() / (float)stats.getNumOfAssessedIdentities()));
 		mainVC.contextPut("percentFailed", percentFailed);
 		

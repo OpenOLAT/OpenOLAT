@@ -113,8 +113,11 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				infos.setParameter("identityKey", coach.getKey());
 			}
 
-			Object[] result = infos.getSingleResult();
-			Long initalLaunch = (Long)result[0];
+			List<Object[]> results = infos.getResultList();
+			Long initalLaunch = null;
+			if(results != null && results.size() > 0) {
+				initalLaunch = (Long)results.get(0)[0];
+			}
 			entry.setInitialLaunch(initalLaunch == null ? 0 : initalLaunch.intValue());
 		} catch (Exception e) {
 			e.printStackTrace();

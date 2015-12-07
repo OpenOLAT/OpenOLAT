@@ -58,12 +58,14 @@ public class AssessmentCourseOverviewController extends BasicController implemen
 	
 	protected static final Event SELECT_USERS_EVENT = new Event("assessment-tool-select-users");
 	protected static final Event SELECT_GROUPS_EVENT = new Event("assessment-tool-select-groups");
+	protected static final Event SELECT_PASSED_EVENT = new Event("assessment-tool-select-passed");
+	protected static final Event SELECT_FAILED_EVENT = new Event("assessment-tool-select-failed");
 	
 	private final VelocityContainer mainVC;
 	private final AssessmentToReviewSmallController toReviewCtrl;
 	private final AssessmentCourseStatisticsSmallController statisticsCtrl;
 
-	private Link assessedIdentitiesLink, assessedGroupsLink;
+	private Link assessedIdentitiesLink, assessedGroupsLink, passedLink, failedLink;
 
 	@Autowired
 	private CertificatesManager certificatesManager;
@@ -118,6 +120,16 @@ public class AssessmentCourseOverviewController extends BasicController implemen
 		assessedIdentitiesLink.setCustomDisplayText(translate("assessment.tool.numOfAssessedIdentities", new String[]{ Integer.toString(numOfAssessedIdentities) }));
 		assessedIdentitiesLink.setIconLeftCSS("o_icon o_icon_user");
 		
+		int numOfPassed = statisticsCtrl.getNumOfPassed();
+		passedLink = LinkFactory.createLink("passed.identities", "passed.identities", getTranslator(), mainVC, this, Link.NONTRANSLATED);
+		passedLink.setCustomDisplayText(translate("assessment.tool.numOfPassed", new String[]{ Integer.toString(numOfPassed) }));
+		passedLink.setIconLeftCSS("o_icon o_icon_user");
+
+		int numOfFailed = statisticsCtrl.getNumOfFailed();
+		failedLink = LinkFactory.createLink("failed.identities", "failed.identities", getTranslator(), mainVC, this, Link.NONTRANSLATED);
+		failedLink.setCustomDisplayText(translate("assessment.tool.numOfFailed", new String[]{ Integer.toString(numOfFailed) }));
+		failedLink.setIconLeftCSS("o_icon o_icon_user");
+		
 		int numOfGroups = 0;
 		if(assessmentCallback.canAssessBusinessGoupMembers()) {
 			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
@@ -155,6 +167,10 @@ public class AssessmentCourseOverviewController extends BasicController implemen
 			fireEvent(ureq, SELECT_USERS_EVENT);
 		} else if(assessedGroupsLink == source) {
 			fireEvent(ureq, SELECT_GROUPS_EVENT);
+		} else if(passedLink == source) {
+			fireEvent(ureq, SELECT_PASSED_EVENT);
+		} else if(failedLink == source) {
+			fireEvent(ureq, SELECT_FAILED_EVENT);
 		}
 	}
 }

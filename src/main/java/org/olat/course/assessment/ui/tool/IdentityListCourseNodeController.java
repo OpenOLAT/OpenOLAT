@@ -51,7 +51,10 @@ import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
@@ -84,7 +87,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class IdentityListCourseNodeController extends FormBasicController {
+public class IdentityListCourseNodeController extends FormBasicController implements Activateable2 {
 
 	private final BusinessGroup group;
 	private final CourseNode courseNode;
@@ -139,7 +142,6 @@ public class IdentityListCourseNodeController extends FormBasicController {
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AssessmentToolConstants.usageIdentifyer, isAdministrativeUser);
 		
 		initForm(ureq);
-		updateModel(ureq, null, null, null);
 	}
 
 	@Override
@@ -256,9 +258,7 @@ public class IdentityListCourseNodeController extends FormBasicController {
 		List<AssessedIdentityCourseElementRow> rows = new ArrayList<>(assessedIdentities.size());
 		for(Identity assessedIdentity:assessedIdentities) {
 			AssessmentEntry entry = entryMap.get(assessedIdentity.getKey());
-			if(accept(entry, params)) {
-				rows.add(new AssessedIdentityCourseElementRow(assessedIdentity, entry, userPropertyHandlers, getLocale()));
-			}
+			rows.add(new AssessedIdentityCourseElementRow(assessedIdentity, entry, userPropertyHandlers, getLocale()));
 		}
 		
 		if(toolContainer.getCertificateMap() == null) {
@@ -271,6 +271,9 @@ public class IdentityListCourseNodeController extends FormBasicController {
 		}
 		usersTableModel.setCertificateMap(toolContainer.getCertificateMap());
 		usersTableModel.setObjects(rows);
+		if(filters != null && filters.size() > 0) {
+			usersTableModel.filter(filters.get(0).getFilter());
+		}
 		tableEl.reloadData();
 
 		List<String> toolCmpNames = new ArrayList<>();
@@ -307,7 +310,7 @@ public class IdentityListCourseNodeController extends FormBasicController {
 	private void updateModel(UserRequest ureq, Identity assessedIdentity) {
 		updateModel(ureq, null, null, null);
 	}
-	
+	/*
 	private boolean accept(AssessmentEntry entry, SearchAssessedIdentityParams params) {
 		boolean ok = true;
 		
@@ -327,7 +330,7 @@ public class IdentityListCourseNodeController extends FormBasicController {
 			}
 		}
 		return ok;
-	}
+	}*/
 	
 	private void fillAlternativeToAssessableIdentityList(AssessmentToolOptions options) {
 		List<Group> baseGroups = new ArrayList<>();
@@ -348,7 +351,21 @@ public class IdentityListCourseNodeController extends FormBasicController {
 	protected void doDispose() {
 		//
 	}
-	
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		String filter = null;
+		if(state instanceof AssessedIdentityListState) {
+			AssessedIdentityListState listState = (AssessedIdentityListState)state;
+			if(StringHelper.containsNonWhitespace(listState.getFilter())) {
+				filter = listState.getFilter();
+			}
+		}
+
+		tableEl.setSelectedFilterKey(filter);
+		updateModel(ureq, null, tableEl.getSelectedFilters(), null);
+	}
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//

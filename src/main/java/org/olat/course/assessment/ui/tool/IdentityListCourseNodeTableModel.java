@@ -63,19 +63,19 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		if(StringHelper.containsNonWhitespace(key)) {
 			List<AssessedIdentityCourseElementRow> filteredRows = new ArrayList<>();
 			if("passed".equals(key)) {
-				for(AssessedIdentityCourseElementRow row:getObjects()) {
+				for(AssessedIdentityCourseElementRow row:backups) {
 					if(row.getPassed() != null && row.getPassed().booleanValue()) {
 						filteredRows.add(row);
 					}
 				}
 			} else if("failed".equals(key)) {
-				for(AssessedIdentityCourseElementRow row:getObjects()) {
+				for(AssessedIdentityCourseElementRow row:backups) {
 					if(row.getPassed() != null && !row.getPassed().booleanValue()) {
 						filteredRows.add(row);
 					}
 				}
 			} else if(AssessmentEntryStatus.isValueOf(key)) {
-				for(AssessedIdentityCourseElementRow row:getObjects()) {
+				for(AssessedIdentityCourseElementRow row:backups) {
 					if(row.getAssessmentStatus() != null && key.equals(row.getAssessmentStatus().name())) {
 						filteredRows.add(row);
 					}

@@ -124,6 +124,10 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		if(overviewCtrl == source) {
 			if(event == AssessmentCourseOverviewController.SELECT_USERS_EVENT) {
 				doSelectUsersView(ureq);
+			} else if(event == AssessmentCourseOverviewController.SELECT_PASSED_EVENT) {
+				doSelectPassedView(ureq);
+			} else if(event == AssessmentCourseOverviewController.SELECT_FAILED_EVENT) {
+				doSelectFailedView(ureq);
 			}
 		}
 		super.event(ureq, source, event);
@@ -158,5 +162,35 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		stackPanel.pushController(translate("users"), treeCtrl);
 		currentCtl = treeCtrl;
 		treeCtrl.activate(ureq, null, null);
+	}
+	
+	private void doSelectPassedView(UserRequest ureq) {
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Passed", 0l);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		addToHistory(ureq, bwControl);
+		AssessmentIdentitiesCourseTreeController treeCtrl = new AssessmentIdentitiesCourseTreeController(ureq, bwControl, stackPanel,
+				courseEntry, toolContainer, assessmentCallback);
+		listenTo(treeCtrl);
+		stackPanel.pushController(translate("users"), treeCtrl);
+		currentCtl = treeCtrl;
+		
+		AssessedIdentityListState state = new AssessedIdentityListState();
+		state.setFilter("passed");
+		treeCtrl.activate(ureq, null, state);
+	}
+	
+	private void doSelectFailedView(UserRequest ureq) {
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("NotPassed", 0l);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		addToHistory(ureq, bwControl);
+		AssessmentIdentitiesCourseTreeController treeCtrl = new AssessmentIdentitiesCourseTreeController(ureq, bwControl, stackPanel,
+				courseEntry, toolContainer, assessmentCallback);
+		listenTo(treeCtrl);
+		stackPanel.pushController(translate("users"), treeCtrl);
+		currentCtl = treeCtrl;
+		
+		AssessedIdentityListState state = new AssessedIdentityListState();
+		state.setFilter("failed");
+		treeCtrl.activate(ureq, null, state);
 	}
 }
