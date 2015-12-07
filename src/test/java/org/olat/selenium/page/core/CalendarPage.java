@@ -36,6 +36,8 @@ import org.openqa.selenium.WebElement;
  */
 public class CalendarPage {
 	
+	public static final By calendarToolbatBy = By.className("o_cal_toptoolbar");
+	
 	@Drone
 	private WebDriver browser;
 	
@@ -47,8 +49,13 @@ public class CalendarPage {
 		this.browser = browser;
 	}
 	
+	/**
+	 * Don't forget that the calendar is a javascript application. You need
+	 * to wait until scripts, css and data are loaded before asserting.
+	 * 
+	 * @return The calendar page
+	 */
 	public CalendarPage assertOnCalendar() {
-		By calendarToolbatBy = By.className("o_cal_toptoolbar");
 		List<WebElement> calendarToolbarsEl = browser.findElements(calendarToolbatBy);
 		Assert.assertFalse(calendarToolbarsEl.isEmpty());
 		return this;

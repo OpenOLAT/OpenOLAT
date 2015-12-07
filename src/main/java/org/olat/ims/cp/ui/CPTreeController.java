@@ -33,7 +33,6 @@ import org.dom4j.Element;
 import org.dom4j.tree.DefaultElement;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -112,24 +111,28 @@ public class CPTreeController extends BasicController {
 		importLink = LinkFactory.createToolLink("cptreecontroller.importlink", "cptreecontroller.importlink",
 				translate("cptreecontroller.importlink_title"), this);
 		importLink.setTooltip(translate("cptreecontroller.importlink_title"));
+		importLink.setElementCssClass("o_sel_cp_import_link");
 		importLink.setIconLeftCSS("o_icon o_icon-lg o_icon_import");
 		toolbar.addTool(importLink, Align.left);
 
 		newLink = LinkFactory.createToolLink("cptreecontroller.newlink", "cptreecontroller.newlink",
 				translate("cptreecontroller.newlink_title"), this);
 		newLink.setTooltip(translate("cptreecontroller.newlink_title"));
+		newLink.setElementCssClass("o_sel_cp_new_link");
 		newLink.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 		toolbar.addTool(newLink, Align.left);
 
 		copyLink = LinkFactory.createToolLink("cptreecontroller.copylink", "cptreecontroller.copylink",
 				translate("cptreecontroller.copylink_title"), this);
 		copyLink.setTooltip(translate("cptreecontroller.copylink_title"));
+		copyLink.setElementCssClass("o_sel_cp_copy_link");
 		copyLink.setIconLeftCSS("o_icon o_icon-lg o_icon_copy");
 		toolbar.addTool(copyLink, Align.left);
 
 		deleteLink = LinkFactory.createToolLink("cptreecontroller.deletelink", "cptreecontroller.deletelink",
 				translate("cptreecontroller.deletelink_title"), this);
 		deleteLink.setTooltip(translate("cptreecontroller.deletelink_title"));
+		deleteLink.setElementCssClass("o_sel_cp_delete_link");
 		deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
 		toolbar.addTool(deleteLink, Align.left);
 	}
@@ -319,8 +322,12 @@ public class CPTreeController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == importLink) {
 			uploadCtr = new CPFileImportController(ureq, getWindowControl(), cp, currentPage);
-			activateModalDialog(uploadCtr);
-
+			listenTo(uploadCtr);
+			String title = translate("cpfileuploadcontroller.form.title");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"),
+					uploadCtr.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
 		} else if (source == newLink) {
 			fireEvent(ureq, new Event("New Page"));
 
@@ -476,16 +483,5 @@ public class CPTreeController extends BasicController {
 	@Override
 	protected void doDispose() {
 		contentVC = null;
-	}
-
-	/**
-	 * @param controller The <code>FormBasicController</code> to be displayed in
-	 *          the modal dialog.
-	 */
-	private void activateModalDialog(FormBasicController controller) {
-		listenTo(controller);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), controller.getInitialComponent());
-		listenTo(cmc);
-		cmc.activate();
 	}
 }
