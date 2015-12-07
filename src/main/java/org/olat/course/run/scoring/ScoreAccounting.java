@@ -181,10 +181,10 @@ public class ScoreAccounting {
 				Boolean passed = null;
 				AssessmentEntryStatus assessmentStatus = AssessmentEntryStatus.inProgress;
 				ConditionInterpreter ci = userCourseEnvironment.getConditionInterpreter();
-				if (scoreExpressionStr != null) {
+				if (cNode.hasScoreConfigured() && scoreExpressionStr != null) {
 					score = new Float(ci.evaluateCalculation(scoreExpressionStr));
 				}
-				if (passedExpressionStr != null) {
+				if (cNode.hasPassedConfigured() && passedExpressionStr != null) {
 					boolean hasPassed = ci.evaluateCondition(passedExpressionStr);
 					if(hasPassed) {
 						passed = Boolean.TRUE;

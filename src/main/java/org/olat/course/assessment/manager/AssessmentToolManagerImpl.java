@@ -72,7 +72,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		entry.setNumOfAssessedIdentities(numOfAssessedIdentites);
 
 		//retrive statistcis about efficicency statements
-		efficiencyStatementsStatistics(coach, params, entry);
+		assessmentEntryStatistics(coach, params, entry);
 		
 		//retrieve statistcs in user course infos
 		userCourseInfosStatistics(coach, params, entry);
@@ -125,28 +125,35 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		}
 	}
 	
-	private void efficiencyStatementsStatistics(Identity coach, SearchAssessedIdentityParams params, CourseStatistics entry) {
+	private void assessmentEntryStatistics(Identity coach, SearchAssessedIdentityParams params, CourseStatistics entry) {
 		RepositoryEntry courseEntry = params.getEntry();
 		try {
 			StringBuilder sf = new StringBuilder();
-			sf.append("select avg(statement.score) as scoreAverage, ")
-			  .append(" sum(case when statement.passed=true then 1 else 0 end) as numOfPassed,")
-			  .append(" sum(case when statement.passed=false then 1 else 0 end) as numOfFailed,")
-			  .append(" sum(case when statement.passed is null then 1 else 0 end) as numOfNotAttempted,")
-			  .append(" sum(statement.key) as numOfStatements,")
+			sf.append("select avg(aentry.score) as scoreAverage, ")
+			  .append(" sum(case when aentry.passed=true then 1 else 0 end) as numOfPassed,")
+			  .append(" sum(case when aentry.passed=false then 1 else 0 end) as numOfFailed,")
+			  .append(" sum(case when aentry.passed is null then 1 else 0 end) as numOfNotAttempted,")
+			  .append(" sum(aentry.key) as numOfStatements,")
 			  .append(" v.key as repoKey")
-			  .append(" from effstatementrepo as statement ")
-			  .append(" inner join statement.repositoryEntry v")
-			  .append(" where v.key=:repoEntryKey and (statement.identity in ");
+			  .append(" from assessmententry aentry ")
+			  .append(" inner join aentry.repositoryEntry v ")
+			  .append(" where v.key=:repoEntryKey and aentry.status is not null and not(aentry.status='").append(AssessmentEntryStatus.notStarted.name()).append("')");
+			if(params.getReferenceEntry() != null) {
+				sf.append(" and aentry.referenceEntry.key=:referenceKey");
+			}
+			if(params.getSubIdent() != null) {
+				sf.append(" and aentry.subIdent=:subIdent");
+			}
+			sf.append(" and (aentry.identity in");
 			if(params.isAdmin()) {
 				sf.append(" (select participant.identity from repoentrytogroup as rel, bgroupmember as participant")
 		          .append("    where rel.entry.key=:repoEntryKey and rel.group=participant.group")
 		          .append("      and participant.role='").append(GroupRoles.participant.name()).append("'")
 		          .append("  )");
 				if(params.isNonMembers()) {
-					sf.append(" or not exists (select membership.identity from repoentrytogroup as rel, bgroupmember as membership")
-			          .append("    where rel.entry.key=:repoEntryKey and rel.group=membership.group and membership.identity=statement.identity")
-			          .append("  )");
+					sf.append(" or aentry.identity not in (select membership.identity from repoentrytogroup as rel, bgroupmember as membership")
+			          .append("    where rel.entry.key=:repoEntryKey and rel.group=membership.group and membership.identity=aentry.identity")
+			          .append(" )");
 				}
 			} else if(params.isBusinessGroupCoach() || params.isRepositoryEntryCoach()) {
 				sf.append(" (select participant.identity from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
@@ -156,13 +163,18 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		          .append("  )");
 			}
 			sf.append(" ) group by v.key");
-			
-			
+
 			TypedQuery<Object[]> stats = dbInstance.getCurrentEntityManager()
 				.createQuery(sf.toString(), Object[].class)
 				.setParameter("repoEntryKey", courseEntry.getKey());
 			if(!params.isAdmin()) {
 				stats.setParameter("identityKey", coach.getKey());
+			}
+			if(params.getReferenceEntry() != null) {
+				stats.setParameter("referenceKey", params.getReferenceEntry());
+			}
+			if(params.getSubIdent() != null) {
+				stats.setParameter("subIdent", params.getSubIdent());
 			}
 			
 			List<Object[]> results = stats.getResultList();
@@ -229,9 +241,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		
 		Long identityKey = appendUserSearchByKey(sb, params.getSearchString());
 		String[] searchArr = appendUserSearchFull(sb, params.getSearchString());
-		
-		System.out.println(sb.toString());
-		
+
 		TypedQuery<T> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), classResult)
 				.setParameter("repoEntryKey", params.getEntry().getKey());
