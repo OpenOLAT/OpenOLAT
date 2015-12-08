@@ -150,6 +150,7 @@ public class ThreadListController extends FormBasicController {
 		threadTable = uifactory.addTableElement(getWindowControl(), "threads", threadTableModel, getTranslator(), formLayout);
 		threadTable.setCustomizeColumns(false);
 		threadTable.setElementCssClass("o_forum");
+		threadTable.setEmtpyTableMessageKey("forum.emtpy");
 	}
 
 	@Override

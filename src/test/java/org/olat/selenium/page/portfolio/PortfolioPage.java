@@ -38,6 +38,8 @@ import org.openqa.selenium.WebElement;
  */
 public class PortfolioPage {
 	
+	public static final By mapBy = By.cssSelector("div.o_eportfolio_map");
+	
 	@Drone
 	private WebDriver browser;
 	
@@ -244,11 +246,11 @@ public class PortfolioPage {
 	}
 	
 	public PortfolioPage openMap(String mapTitle) {
-		By mapBy = By.cssSelector("div.o_eportfolio_maps div.o_map-default");
+		By defaultMapBy = By.cssSelector("div.o_eportfolio_maps div.o_map-default");
 		By headingBy = By.cssSelector("div.panel-heading h4");
 		By openBy = By.className("o_sel_ep_open_map");
 		
-		List<WebElement> mapEls = browser.findElements(mapBy);
+		List<WebElement> mapEls = browser.findElements(defaultMapBy);
 		WebElement mapEl = null;
 		for(WebElement el:mapEls) {
 			WebElement headingEl = el.findElement(headingBy);

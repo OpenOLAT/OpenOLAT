@@ -40,6 +40,8 @@ import org.openqa.selenium.WebElement;
  */
 public class WikiPage {
 	
+	public static final By wikiWrapperBy = By.cssSelector("div.o_wiki_wrapper");
+	
 	@Drone
 	private WebDriver browser;
 	
