@@ -223,6 +223,111 @@ public class CourseTest {
 	}
 	
 	/**
+	 * An author create a course, add a second user as co-author
+	 * of the course, and edit the course.<br>
+	 * The co-author select the course and try to edit it, unsuccessfully.
+	 * It try to edit the course directly from the author list without
+	 * success.<br>
+	 * The author closes the editor and the co-author is allowed to edit.
+	 * The author cannot edit i anymore...
+	 * 
+	 * @param loginPage Login page of the author
+	 * @param coAuthorBrowser the browser for the coauthor
+	 */
+	@Test
+	@RunAsClient
+	public void concurrentEditCourse(@InitialPage LoginPage loginPage,
+			@Drone @Participant WebDriver coAuthorBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO coAuthor = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		//go to authoring
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+		
+		String title = "Concurrent-Edit-" + UUID.randomUUID().toString();
+		//create course
+		authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.course)
+			.fillCreateForm(title)
+			.assertOnGeneralTab()
+			.clickToolbarBack();
+		//add a second owner
+		MembersPage members = new CoursePageFragment(browser)
+			.members();
+		members
+			.addMember()
+			.searchMember(coAuthor, true)
+			.next()
+			.next()
+			.selectRepositoryEntryRole(true, false, false)
+			.next()
+			.finish();
+		//open the editor
+		CoursePageFragment coursePage = members
+			.clickToolbarBack();
+		CourseEditorPageFragment editor = coursePage
+			.edit();
+		
+		//the second author come in
+		LoginPage coAuthroLoginPage = LoginPage.getLoginPage(coAuthorBrowser, deploymentUrl);
+		coAuthroLoginPage
+			.loginAs(coAuthor.getLogin(), coAuthor.getPassword())
+			.resume();
+	
+		//go to authoring
+		NavigationPage coAuthorNavBar = new NavigationPage(coAuthorBrowser);
+		coAuthorNavBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment()
+			.selectResource(title);
+		//try to edit
+		CoursePageFragment coAuthorCourse = new CoursePageFragment(coAuthorBrowser);
+		coAuthorCourse
+			.edit()
+			.assertOnWarning();
+		
+		//retry in list
+		coAuthorNavBar
+			.openAuthoringEnvironment()
+			.editResource(title);
+		new CourseEditorPageFragment(coAuthorBrowser)
+			.assertOnWarning();
+		
+		//author close the course editor
+		editor
+			.clickToolbarBack();
+		coursePage
+			.assertOnCoursePage();
+		
+		//co-author edit the course
+		CourseEditorPageFragment coAuthorEditor = coAuthorCourse
+			.edit()
+			.assertOnEditor();
+		
+		//author try
+		coursePage
+			.edit()
+			.assertOnWarning();
+		
+		//co-author close the editor
+		coAuthorEditor
+			.clickToolbarBack()
+			.assertOnCoursePage();
+		
+		//author reopens the editor
+		coursePage
+			.edit()
+			.assertOnEditor();
+	}
+	
+	/**
 	 * Create a course, create a CP, go the the course editor,
 	 * create a course element of type CP, select the CP which just created,
 	 * close the course editor and check the presence of the CP with the

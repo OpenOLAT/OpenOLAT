@@ -140,4 +140,27 @@ public class GroupsPage {
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
+	
+	public GroupsPage deleteGroup(String name) {
+		By groupNameBy = By.xpath("//table//td[//a[text()[contains(.,'" + name+ "')]]]//a[contains(@href,'bgTblDelete')]");
+		browser.findElement(groupNameBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		//wait confirm dialog
+		By popupBy = By.cssSelector("div.modal-dialog");
+		OOGraphene.waitElement(popupBy, 2, browser);
+		
+		By okBy = By.cssSelector("div.modal-dialog button.btn.btn-primary");
+		browser.findElement(okBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
+		return this;
+	}
+	
+	public GroupsPage assertDeleted(String name) {
+		By groupNameBy = By.xpath("//table//td[//a[text()[contains(.,'" + name+ "')]]]");
+		List<WebElement> groupEls = browser.findElements(groupNameBy);
+		Assert.assertTrue(groupEls.isEmpty());
+		return this;
+	}
 }

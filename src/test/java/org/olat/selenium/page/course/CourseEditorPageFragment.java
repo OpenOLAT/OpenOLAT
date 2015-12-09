@@ -22,7 +22,6 @@ package org.olat.selenium.page.course;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
@@ -31,7 +30,6 @@ import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
 
 /**
  * 
@@ -72,20 +70,31 @@ public class CourseEditorPageFragment {
 		chooseRepoEntriesButtonList.add(choosePortfolioButton);
 	}
 	
-	@Drone
 	private WebDriver browser;
 	
-	@FindBy(className="o_course_editor")
-	private WebElement editor;
+	public CourseEditorPageFragment(WebDriver browser) {
+		this.browser = browser;
+	}
 	
 	public static CourseEditorPageFragment getEditor(WebDriver browser) {
 		OOGraphene.waitElement(editorBy, browser);
-		WebElement main = browser.findElement(By.id("o_main"));
-		return Graphene.createPageFragment(CourseEditorPageFragment.class, main);
+		OOGraphene.closeBlueMessageWindow(browser);
+		return new CourseEditorPageFragment(browser);
 	}
 	
 	public CourseEditorPageFragment assertOnEditor() {
-		Assert.assertTrue(editor.isDisplayed());
+		List<WebElement> editorEls = browser.findElements(editorBy);
+		Assert.assertFalse(editorEls.isEmpty());
+		Assert.assertTrue(editorEls.get(0).isDisplayed());
+		return this;
+	}
+	
+	public CourseEditorPageFragment assertOnWarning() {
+		By warningBy = By.cssSelector("div.modal-dialog div.alert.alert-warning");
+		OOGraphene.waitElement(warningBy, 2, browser);
+		List<WebElement> warningEls = browser.findElements(warningBy);
+		Assert.assertFalse(warningEls.isEmpty());
+		OOGraphene.closeModalDialogWindow(browser);
 		return this;
 	}
 	

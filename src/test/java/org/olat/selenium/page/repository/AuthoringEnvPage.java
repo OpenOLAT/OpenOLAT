@@ -21,7 +21,6 @@ package org.olat.selenium.page.repository;
 
 import java.io.File;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
 import org.olat.selenium.page.course.CourseWizardPage;
@@ -47,8 +46,11 @@ public class AuthoringEnvPage {
 	public static final By createMenuCaretBy = By.cssSelector("a.o_sel_author_create");
 	public static final By createMenuBy = By.cssSelector("ul.o_sel_author_create");
 	
-	@Drone
 	private WebDriver browser;
+	
+	public AuthoringEnvPage(WebDriver browser) {
+		this.browser = browser;
+	}
 	
 	public RepositoryEditDescriptionPage createCP(String title) {
 		return openCreateDropDown()
@@ -166,8 +168,19 @@ public class AuthoringEnvPage {
 		WebElement saveButton = browser.findElement(saveBy);
 		saveButton.click();
 		OOGraphene.waitBusy(browser);
-
 		return this;
+	}
+	
+	public void selectResource(String title) {
+		By selectBy = By.xpath("//div[contains(@class,'o_coursetable')]//a[contains(text(),'" + title + "')]");
+		browser.findElement(selectBy).click();
+		OOGraphene.waitBusy(browser);
+	}
+	
+	public void editResource(String title) {
+		By editBy = By.xpath("//div[contains(@class,'o_coursetable')]//tr[//a[contains(text(),'" + title + "')]]//a[contains(@href,'edit')]");
+		browser.findElement(editBy).click();
+		OOGraphene.waitBusy(browser);
 	}
 	
 	public enum ResourceType {

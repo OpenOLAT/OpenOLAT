@@ -170,9 +170,7 @@ public class CoursePageFragment {
 		browser.findElement(editCourseBy).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.closeBlueMessageWindow(browser);
-
-		WebElement main = browser.findElement(By.id("o_main"));
-		return Graphene.createPageFragment(CourseEditorPageFragment.class, main);
+		return new CourseEditorPageFragment(browser);
 	}
 	
 	/**

@@ -111,8 +111,6 @@ public class MembersPage {
 		WebElement submitButton = browser.findElement(submitBy);
 		submitButton.click();
 		OOGraphene.waitBusy(browser);
-		
-		
 		return this;
 	}
 	
