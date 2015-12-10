@@ -97,6 +97,8 @@ public class RepositoryModule extends AbstractSpringModule {
 		
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(CatalogEntry.class.getSimpleName(),
 				new CatalogContextEntryControllerCreator(this));
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("Catalog",
+				new CatalogContextEntryControllerCreator(this));
 		NewControllerFactory.getInstance().addContextEntryControllerCreator("CatalogAdmin",
 				new SiteContextEntryControllerCreator(CatalogAdminSite.class));
 		

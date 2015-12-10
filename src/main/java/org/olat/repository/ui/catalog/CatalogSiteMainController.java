@@ -81,6 +81,13 @@ public class CatalogSiteMainController extends BasicController implements Activa
 			return;
 		}
 		
+		ContextEntry entry = entries.get(0);
+		String type = entry.getOLATResourceable().getResourceableTypeName();
+		if("Catalog".equalsIgnoreCase(type)) {
+			//remove the Catalog/0
+			entries = entries.subList(1, entries.size());
+		}
+		
 		stackPanel.popUpToRootController(ureq);
 		nodeController.activate(ureq, entries, state);
 	}

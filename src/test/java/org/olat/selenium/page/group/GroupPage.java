@@ -123,6 +123,7 @@ public class GroupPage {
 	
 	public IMPage openChat() {
 		openMenuItem(chatTool);
+		OOGraphene.waitElement(By.cssSelector("a.o_sel_im_open_tool_chat"), 2, browser);
 		return new IMPage(browser);
 	}
 	
@@ -134,34 +135,42 @@ public class GroupPage {
 	
 	public ContactPage openContact() {
 		openMenuItem(contactTool);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_contact_form"), 2, browser);
 		return new ContactPage(browser);
 	}
 	
 	public GroupPage openMembers() {
-		return openMenuItem(membersTool);
+		openMenuItem(membersTool);
+		return this;
 	}
 	
 	public GroupPage openNews() {
-		return openMenuItem(newsTool);
+		openMenuItem(newsTool);
+		OOGraphene.waitElement(By.id("o_msg_info"), 2, browser);
+		return this;
 	}
 	
 	public FolderPage openFolder() {
 		openMenuItem(folderTool);
+		OOGraphene.waitElement(FolderPage.folderBy, 2, browser);
 		return new FolderPage(browser);
 	}
 	
 	public ForumPage openForum() {
 		openMenuItem(forumTool);
+		OOGraphene.waitElement(ForumPage.threadTableBy, 2, browser);
 		return ForumPage.getGroupForumPage(browser);
 	}
 	
 	public WikiPage openWiki() {
 		openMenuItem(wikiTool);
+		OOGraphene.waitElement(WikiPage.wikiWrapperBy, 2, browser);
 		return WikiPage.getGroupWiki(browser);
 	}
 	
 	public PortfolioPage openPortfolio() {
 		openMenuItem(portfolioTool);
+		OOGraphene.waitElement(PortfolioPage.mapBy, 2, browser);
 		return new PortfolioPage(browser);
 	}
 	

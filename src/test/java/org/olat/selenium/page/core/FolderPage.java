@@ -38,6 +38,8 @@ import org.openqa.selenium.WebElement;
  */
 public class FolderPage {
 	
+	public static final By folderBy = By.cssSelector("div.o_briefcase_folder");
+	
 	@Drone
 	private WebDriver browser;
 	

@@ -80,12 +80,9 @@ public class NavigationPage {
 	
 	public AuthoringEnvPage openAuthoringEnvironment() {
 		navigate(authoringEnvTabBy);
-		
 		backToTheTop();
 		OOGraphene.closeBlueMessageWindow(browser);
-		
-		WebElement main = browser.findElement(By.id("o_main"));
-		return Graphene.createPageFragment(AuthoringEnvPage.class, main);
+		return new AuthoringEnvPage(browser);
 	}
 	
 	public PortalPage openPortal() {

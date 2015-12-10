@@ -80,6 +80,35 @@ public class BusinessGroupTest {
 
 	@Page
 	private NavigationPage navBar;
+	
+	/**
+	 * Create a group, search it and delete it.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void createDeleteBusinessGroup(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		//go to groups
+		String groupName = "Delete-1-" + UUID.randomUUID();
+		navBar
+			.openGroups(browser)
+			.createGroup(groupName, "A very little group to delete");
+		
+		//return to group list and delete it
+		navBar
+			.openGroups(browser)
+			.deleteGroup(groupName)
+			.assertDeleted(groupName);
+	}
 
 	/**
 	 * An author create a group, set the visibility to

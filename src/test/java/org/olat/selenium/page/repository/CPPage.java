@@ -50,6 +50,7 @@ public class CPPage {
 		List<WebElement> iframes = browser.findElements(iframeBy);
 		browser = browser.switchTo().frame(iframes.get(0));
 		
+		OOGraphene.waitElement(by, 5, browser);
 		List<WebElement> elements = browser.findElements(by);
 		Assert.assertFalse(elements.isEmpty());
 		

@@ -40,6 +40,8 @@ public class ForumPage {
 
 	private WebDriver browser;
 	
+	public static final By threadTableBy = By.cssSelector("div.o_sel_forum");
+	
 	public ForumPage(WebDriver browser) {
 		this.browser = browser;
 	}
@@ -51,7 +53,7 @@ public class ForumPage {
 	 * @return
 	 */
 	public static ForumPage getCourseForumPage(WebDriver browser) {
-		By forumBy = By.cssSelector("div.o_course_run div.o_forum");
+		By forumBy = By.cssSelector("div.o_course_run div.o_sel_forum");
 		List<WebElement> forumEl = browser.findElements(forumBy);
 		Assert.assertFalse(forumEl.isEmpty());
 	
@@ -62,7 +64,7 @@ public class ForumPage {
 	}
 	
 	public static ForumPage getGroupForumPage(WebDriver browser) {
-		By forumBy = By.cssSelector("div.o_forum");
+		By forumBy = By.cssSelector("div.o_sel_forum");
 		List<WebElement> forumEl = browser.findElements(forumBy);
 		Assert.assertFalse(forumEl.isEmpty());
 		return new ForumPage(browser);
