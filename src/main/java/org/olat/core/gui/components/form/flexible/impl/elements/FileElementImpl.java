@@ -105,6 +105,9 @@ public class FileElementImpl extends FormItemImpl
 	private String i18nErrMimeType;
 	private String[] i18nErrMaxSizeArgs;
 	private String[] i18nErrMimeTypeArgs;
+	
+	private String fileExampleKey;
+	private String[] fileExampleParams;
 
 	private WindowControl wControl;
 	private DialogBoxController dialogCtr;
@@ -194,9 +197,9 @@ public class FileElementImpl extends FormItemImpl
 	}
 
 	private void doConfirmDelete(UserRequest ureq) {
-		Translator translator = Util.createPackageTranslator(FileElementImpl.class, ureq.getLocale(), getTranslator());
-		String title = translator.translate("confirm.delete.file.title");
-		String text = translator.translate("confirm.delete.file");
+		Translator fileTranslator = Util.createPackageTranslator(FileElementImpl.class, ureq.getLocale(), getTranslator());
+		String title = fileTranslator.translate("confirm.delete.file.title");
+		String text = fileTranslator.translate("confirm.delete.file");
 		dialogCtr = DialogBoxUIFactory.createOkCancelDialog(ureq, wControl, title, text);
 		dialogCtr.addControllerListener(this);
 		dialogCtr.activate();
@@ -332,6 +335,23 @@ public class FileElementImpl extends FormItemImpl
 		}
 		// No error, clear errors from previous attempts
 		clearError();
+	}
+
+	@Override
+	public String getExampleText() {
+		if(fileExampleKey != null) {
+			if(fileExampleParams != null) {
+				return translator.translate(fileExampleKey, fileExampleParams);
+			}
+			return translator.translate(fileExampleKey);
+		}
+		return null;
+	}
+	
+	@Override
+	public void setExampleKey(String exampleKey, String[] params) {
+		this.fileExampleKey = exampleKey;
+		this.fileExampleParams = params;
 	}
 
 	@Override
