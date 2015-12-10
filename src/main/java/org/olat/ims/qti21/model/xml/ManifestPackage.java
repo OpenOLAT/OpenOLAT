@@ -19,12 +19,17 @@
  */
 package org.olat.ims.qti21.model.xml;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.UUID;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -130,6 +135,33 @@ public class ManifestPackage {
 			marshaller.marshal(objectFactory.createManifest(manifest), out);
 		} catch (JAXBException e) {
 			log.error("", e);
+		}
+	}
+	
+	public static void write(ManifestType manifest, File manifestFile) {
+        try(OutputStream out = new FileOutputStream(manifestFile)) {
+			JAXBContext context = JAXBContext.newInstance("org.olat.imscp.xml.manifest");
+			Marshaller marshaller = context.createMarshaller();
+			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+			marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "http://www.imsglobal.org/xsd/imscp_v1p1 http://www.imsglobal.org/xsd/qti/qtiv2p1/qtiv2p1_imscpv1p2_v1p0.xsd");
+
+			marshaller.marshal(objectFactory.createManifest(manifest), out);
+		} catch (JAXBException | IOException e) {
+			log.error("", e);
+		}
+	}
+	
+	public static ManifestType read(File manifestFile) {
+        try {
+			JAXBContext context = JAXBContext.newInstance("org.olat.imscp.xml.manifest");
+			Unmarshaller marshaller = context.createUnmarshaller();
+			//marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+			//marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "http://www.imsglobal.org/xsd/imscp_v1p1 http://www.imsglobal.org/xsd/qti/qtiv2p1/qtiv2p1_imscpv1p2_v1p0.xsd");
+
+			return (ManifestType)((JAXBElement<?>)marshaller.unmarshal(manifestFile)).getValue();
+		} catch (JAXBException e) {
+			log.error("", e);
+			return null;
 		}
 	}
 }

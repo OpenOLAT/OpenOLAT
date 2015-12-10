@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.ims.qti21.ui.editor.events.AssessmentSectionEvent;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 
@@ -61,6 +62,10 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("butons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", "save", buttonsCont);
+	}
+	
+	public String getTitle() {
+		return titleEl.getValue();
 	}
 
 	@Override

@@ -55,8 +55,8 @@ public class ManifestPackageTest {
         	tmpDir.mkdirs();
         }
         
-        
-        FileOutputStream out = new FileOutputStream(new File(tmpDir, "imsmanifest.xml"));
+        File manifestFile = new File(tmpDir, "imsmanifest.xml");
+        FileOutputStream out = new FileOutputStream(manifestFile);
         ManifestPackage.write(manifestType, out);
         out.flush();
         out.close(); 
@@ -67,5 +67,9 @@ public class ManifestPackageTest {
         List<ContentPackageResource> tests = summary.getTestResources();
         Assert.assertEquals(1, items.size());
         Assert.assertEquals(1, tests.size());
+        
+        ManifestType reloadManifestType = ManifestPackage.read(manifestFile);
+        Assert.assertNotNull(reloadManifestType);
+        
 	}
 }

@@ -39,8 +39,6 @@ import uk.ac.ed.ph.jqtiplus.group.item.response.processing.ResponseProcessingGro
 import uk.ac.ed.ph.jqtiplus.group.outcome.declaration.OutcomeDeclarationGroup;
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.content.ItemBody;
-import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
-import uk.ac.ed.ph.jqtiplus.node.content.basic.FlowStatic;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.TextRun;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
@@ -363,12 +361,14 @@ public class AssessmentItemFactory {
 		modalFeedback.setVisibilityMode(VisibilityMode.parseVisibilityMode("show"));
 		modalFeedback.getAttributes().getStringAttribute(ModalFeedback.ATTR_TITLE_NAME).setValue(title);
 		
-		List<Block> blocks = new AssessmentBuilderHelper().parseHtml(text);
+		new AssessmentHtmlBuilder().appendHtml(modalFeedback, text);
+		
+		/*List<Block> blocks = new AssessmentHTMLBuilder().parseHtml(text);
 		for(Block block:blocks) {
 			if(block instanceof FlowStatic) {
 				modalFeedback.getFlowStatics().add((FlowStatic)block);
 			}
-		}
+		}*/
 
 		return modalFeedback;
 	}

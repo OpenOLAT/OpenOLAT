@@ -19,30 +19,13 @@
  */
 package org.olat.ims.qti21.ui.editor;
 
-import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.Controller;
+import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 
-import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
-
-/**
- * 
- * Initial date: 03.07.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
- *
- */
-public class AssessmentSectionEvent extends Event {
-
-	private static final long serialVersionUID = 2489279701746043979L;
-	public static final String ASSESSMENT_SECTION_CHANGED = "section-changed";
+public interface AssessmentItemBuilderController extends Controller {
 	
-	private final AssessmentSection section;
+	public void updateFromBuilder();
 	
-	public AssessmentSectionEvent(String cmd, AssessmentSection section) {
-		super(cmd);
-		this.section = section;
-	}
-	
-	public AssessmentSection getSection() {
-		return section;
-	}
+	public AssessmentItemBuilder getBuilder();
 
 }

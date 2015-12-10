@@ -32,6 +32,7 @@ import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.node.test.SectionPart;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
+import uk.ac.ed.ph.jqtiplus.provision.BadResourceException;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
@@ -65,6 +66,10 @@ public class AssessmentTestEditorAndComposerTreeModel extends GenericTreeModel i
 		}
 	}
 	
+	public TreeNode addItem(AssessmentItemRef itemRef, TreeNode section) {
+		return buildRecursively(itemRef, section);
+	}
+	
 	private void buildRecursively(TestPart part, int pos, TreeNode parentNode) {
 		GenericTreeNode partNode = new GenericTreeNode(part.getIdentifier().toString());
 		partNode.setTitle(pos + ". Test part");
@@ -94,17 +99,26 @@ public class AssessmentTestEditorAndComposerTreeModel extends GenericTreeModel i
 		}
 	}
 	
-
-	private void buildRecursively(AssessmentItemRef itemRef, TreeNode parentNode) {
-		GenericTreeNode sectionNode = new GenericTreeNode(itemRef.getIdentifier().toString());
+	private TreeNode buildRecursively(AssessmentItemRef itemRef, TreeNode parentNode) {
+		GenericTreeNode itemNode = new GenericTreeNode(itemRef.getIdentifier().toString());
 		
 		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
-		AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
-		sectionNode.setTitle(assessmentItem.getTitle());
-		sectionNode.setIconCssClass("o_icon o_mi_qtisc");
-		sectionNode.setUserObject(itemRef);
-		parentNode.addChild(sectionNode);
+		BadResourceException ex = resolvedAssessmentItem.getItemLookup().getBadResourceException();
+		if(ex != null) {
+			itemNode.setTitle("ERROR");
+			itemNode.setIconCssClass("o_icon o_icon_error");
+			itemNode.setUserObject(itemRef);
+			parentNode.addChild(itemNode);
+		} else {
+			AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
+			itemNode.setTitle(assessmentItem.getTitle());
+			itemNode.setIconCssClass("o_icon o_mi_qtisc");
+			itemNode.setUserObject(itemRef);
+			parentNode.addChild(itemNode);
+		}
 		
+		
+		return itemNode;
 	}
 
 	@Override

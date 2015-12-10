@@ -17,9 +17,11 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui.editor;
+package org.olat.ims.qti21.ui.editor.events;
 
 import org.olat.core.gui.control.Event;
+
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 
 /**
  * 
@@ -27,14 +29,20 @@ import org.olat.core.gui.control.Event;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentItemEvent extends Event {
-	
-	private static final long serialVersionUID = -1768118856227595311L;
-	
-	public static final AssessmentItemEvent ASSESSMENT_ITEM_CHANGED = new AssessmentItemEvent("changed");
+public class AssessmentSectionEvent extends Event {
 
-	public AssessmentItemEvent(String cmd) {
+	private static final long serialVersionUID = 2489279701746043979L;
+	public static final String ASSESSMENT_SECTION_CHANGED = "section-changed";
+	
+	private final AssessmentSection section;
+	
+	public AssessmentSectionEvent(String cmd, AssessmentSection section) {
 		super(cmd);
+		this.section = section;
+	}
+	
+	public AssessmentSection getSection() {
+		return section;
 	}
 
 }

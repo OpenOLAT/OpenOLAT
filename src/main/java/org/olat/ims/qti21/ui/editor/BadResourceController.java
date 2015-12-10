@@ -19,44 +19,60 @@
  */
 package org.olat.ims.qti21.ui.editor;
 
+import java.io.File;
+import java.net.URI;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.ims.qti21.ui.editor.events.AssessmentTestEvent;
+import org.olat.ims.qti21.model.xml.AssessmentBuilderHelper;
 
-import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
+import uk.ac.ed.ph.jqtiplus.provision.BadResourceException;
 
 /**
  * 
- * Initial date: 22.05.2015<br>
+ * Initial date: 10.12.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentTestPartEditorController extends ItemSessionControlController {
-		
-	public AssessmentTestPartEditorController(UserRequest ureq, WindowControl wControl,
-			TestPart testPart, boolean restrictedEdit) {
-		super(ureq, wControl, testPart, restrictedEdit);
-
+public class BadResourceController extends FormBasicController {
+	
+	private final URI resourceURI;
+	private final File unzippedDirectory;
+	private final BadResourceException resourceException;
+	
+	public BadResourceController(UserRequest ureq, WindowControl wControl,
+			BadResourceException resourceException, File unzippedDirectory, URI resourceURI) {
+		super(ureq, wControl, "bad_resource");
+		this.resourceException = resourceException;
+		this.resourceURI = resourceURI;
+		this.unzippedDirectory = unzippedDirectory;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("assessment.testpart.config");
-		
-		super.initForm(formLayout, listener, ureq);
-		
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("save", "save", buttonsCont);
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+
+			StringBuilder out = new StringBuilder();
+			AssessmentBuilderHelper.extractMessage(resourceException, out);
+			layoutCont.contextPut("message", out.toString());
+			layoutCont.contextPut("directory", unzippedDirectory.toString());
+			layoutCont.contextPut("uri", resourceURI.toASCIIString());
+		}
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		super.formOK(ureq);
-		fireEvent(ureq, AssessmentTestEvent.ASSESSMENT_TEST_CHANGED_EVENT);
+		//
+	}
+
+	@Override
+	protected void doDispose() {
+		//
 	}
 }

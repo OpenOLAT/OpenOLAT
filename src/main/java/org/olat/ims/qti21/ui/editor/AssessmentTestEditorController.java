@@ -29,6 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
+import org.olat.ims.qti21.ui.editor.events.AssessmentTestEvent;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 
@@ -70,6 +71,9 @@ public class AssessmentTestEditorController extends FormBasicController {
 		//
 	}
 
+	public String getTitle() {
+		return titleEl.getValue();
+	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

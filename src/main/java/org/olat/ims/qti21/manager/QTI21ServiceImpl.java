@@ -208,7 +208,8 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	            throw new OLATRuntimeException("Unexpected branch " + assessmentObjectType, null);
 	        }
 	        
-	        ResolvedAssessmentObject<?> cachedResult = assessmentTestsAndItemsCache.putIfAbsent(resourceDirectory, result);
+	        File resourceFile = new File(assessmentObjectSystemId);
+	        ResolvedAssessmentObject<?> cachedResult = assessmentTestsAndItemsCache.putIfAbsent(resourceFile, result);
 	        if(cachedResult != null) {
 	        	result = cachedResult;
 	        }
@@ -229,6 +230,11 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 			return false;
 		}
 
+		return persistAssessmentObject(resourceFile, assessmentObject);
+	}
+
+	@Override
+	public boolean persistAssessmentObject(File resourceFile, AssessmentObject assessmentObject) {
 		try(FileOutputStream out = new FileOutputStream(resourceFile)) {
 			qtiSerializer().serializeJqtiObject(assessmentObject, out);
 			//TODO qti

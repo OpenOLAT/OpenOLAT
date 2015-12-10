@@ -21,10 +21,13 @@ package org.olat.ims.qti21.ui.editor;
 
 import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.UUID;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
@@ -43,17 +46,26 @@ import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.util.Util;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
+import org.olat.ims.qti21.model.xml.ManifestPackage;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
+import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
+import org.olat.ims.qti21.ui.editor.events.AssessmentSectionEvent;
+import org.olat.ims.qti21.ui.editor.events.AssessmentTestEvent;
+import org.olat.ims.qti21.ui.editor.events.AssessmentTestPartEvent;
+import org.olat.imscp.xml.manifest.ManifestType;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.ToolbarAware;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
  * Assessment test editor and composer.
@@ -68,6 +80,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	private final MenuTree menuTree;
 	private final Link saveLink;
+	private final Dropdown addItemTools;
+	private final Link newSectionLink, newSingleChoiceLink;
 	private final TooledStackedPanel toolbar;
 	private final VelocityContainer mainVC;
 
@@ -76,7 +90,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	private final File unzippedDirRoot;
 	private final RepositoryEntry testEntry;
-	private final ResolvedAssessmentTest resolvedAssessmentTest;
+	private ManifestType manifest;
+	private ResolvedAssessmentTest resolvedAssessmentTest;
 	
 	private final boolean restrictedEdit;
 	
@@ -107,10 +122,25 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentObject(unzippedDirRoot);
 		menuTree.setTreeModel(new AssessmentTestEditorAndComposerTreeModel(resolvedAssessmentTest));
 		
+		manifest = ManifestPackage.read(new File(unzippedDirRoot, "imsmanifest.xml"));
+		
 		//default buttons
 		saveLink = LinkFactory.createToolLink("serialize", translate("serialize"), this, "o_icon_save");
 		saveLink.setDomReplacementWrapperRequired(false);
 		
+		//add elements
+		addItemTools = new Dropdown("editTools", "new.elements", false, getTranslator());
+		addItemTools.setIconCSS("o_icon o_icon-fw o_icon_add");
+		toolbar.addTool(addItemTools, Align.left);
+		
+		newSectionLink = LinkFactory.createToolLink("new.section", translate("new.section"), this, "o_mi_qtisection");
+		newSectionLink.setDomReplacementWrapperRequired(false);
+		addItemTools.addComponent(newSectionLink);
+		
+		newSingleChoiceLink = LinkFactory.createToolLink("new.sc", translate("new.sc"), this, "o_mi_qtisc");
+		newSingleChoiceLink.setDomReplacementWrapperRequired(false);
+		addItemTools.addComponent(newSingleChoiceLink);
+
 		// main layout
 		mainVC = createVelocityContainer("assessment_test_composer");
 		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, mainVC, "at" + testEntry.getKey());			
@@ -119,7 +149,11 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
 		
 		// init
-		partEditorFactory(ureq, menuTree.getTreeModel().getRootNode());
+		TreeNode selectedNode = doOpenFirstItem();
+		if(selectedNode == null) {
+			selectedNode = menuTree.getTreeModel().getRootNode();
+		}
+		partEditorFactory(ureq, selectedNode);
 	}
 	
 	@Override
@@ -129,6 +163,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	@Override
 	public void initToolbar() {
+		toolbar.addTool(addItemTools, Align.left);
 		toolbar.addTool(saveLink, Align.left);
 	}
 
@@ -144,11 +179,21 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			if(ate == AssessmentTestEvent.ASSESSMENT_TEST_CHANGED_EVENT) {
 				doSaveAssessmentTest();
 			}
+		} else if(event instanceof AssessmentTestPartEvent) {
+			AssessmentTestPartEvent atpe = (AssessmentTestPartEvent)event;
+			if(atpe == AssessmentTestPartEvent.ASSESSMENT_TEST_PART_CHANGED_EVENT) {
+				doSaveAssessmentTest();
+			}
 		} else if(event instanceof AssessmentSectionEvent) {
 			AssessmentSectionEvent ase = (AssessmentSectionEvent)event;
 			if(AssessmentSectionEvent.ASSESSMENT_SECTION_CHANGED.equals(ase.getCommand())) {
 				doSaveAssessmentTest();
-				doUpdate(ase.getSection());
+				doUpdate(ase.getSection().getIdentifier(), ase.getSection().getTitle());
+			}
+		} else if(event instanceof AssessmentItemEvent) {
+			AssessmentItemEvent aie = (AssessmentItemEvent)event;
+			if(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED.equals(aie.getCommand())) {
+				doUpdate(aie.getAssessmentItemRef().getIdentifier(), aie.getAssessmentItem().getTitle());
 			}
 		}
 		super.event(ureq, source, event);
@@ -168,7 +213,90 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			}
 		} else if(saveLink == source) {
 			doSaveAssessmentTest();
+		} else if(newSectionLink == source) {
+			
+		} else if(newSingleChoiceLink == source) {
+			doNewSingleChoice(ureq, menuTree.getSelectedNode());
 		}
+	}
+	
+	private TreeNode doOpenFirstItem() {
+		TreeNode node = menuTree.getTreeModel().getRootNode();
+		if(node.getChildCount() > 0) {
+			return doOpenFirstItem((TreeNode)node.getChildAt(0));
+		}
+		return node;
+	}
+	
+	private TreeNode doOpenFirstItem(TreeNode node) {
+		if(node.getUserObject() instanceof AssessmentItemRef) {
+			menuTree.setSelectedNode(node);
+			menuTree.open(node);
+			return node;
+		}
+		if(node.getChildCount() > 0) {
+			return doOpenFirstItem((TreeNode)node.getChildAt(0));
+		}
+		return null;
+	}
+	
+	private void doNewSection(UserRequest ureq) {
+		
+	}
+	
+	/**
+	 * The method create a simple single choice, save the assessment item
+	 * and append it to the test, update the manifest file.
+	 * 
+	 * @param ureq
+	 * @param selectedNode
+	 */
+	private void doNewSingleChoice(UserRequest ureq, TreeNode selectedNode) {
+		try {
+			TreeNode sectionNode = getNearestSection(selectedNode);
+			AssessmentSection section = (AssessmentSection)sectionNode.getUserObject();
+			
+			AssessmentItemRef itemRef = new AssessmentItemRef(section);
+			String itemId = "sc" + UUID.randomUUID();
+			itemRef.setIdentifier(Identifier.parseString(itemId));
+			File itemFile = new File(unzippedDirRoot, itemId + ".xml");
+			itemRef.setHref(new URI(itemFile.getName()));
+			section.getSectionParts().add(itemRef);
+			
+			AssessmentItem assessmentItem = AssessmentItemFactory.createSingleChoice();
+			qtiService.persistAssessmentObject(itemFile, assessmentItem);
+			
+			URI testUri = resolvedAssessmentTest.getTestLookup().getSystemId();
+			File testFile = new File(testUri);
+			qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
+
+			ManifestPackage.appendAssessmentItem(itemFile.getName(), manifest);
+			ManifestPackage.write(manifest, new File(unzippedDirRoot, "imsmanifest.xml"));
+			
+			resolvedAssessmentTest = qtiService.loadAndResolveAssessmentObject(unzippedDirRoot);
+			menuTree.setTreeModel(new AssessmentTestEditorAndComposerTreeModel(resolvedAssessmentTest));
+			
+			TreeNode newItemNode = menuTree.getTreeModel().getNodeById(itemId);
+			menuTree.setSelectedNode(newItemNode);
+			menuTree.open(newItemNode);
+
+			partEditorFactory(ureq, newItemNode);
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private TreeNode getNearestSection(TreeNode node) {
+		if(node.getUserObject() instanceof AssessmentSection) {
+			return node;
+		}
+		if(node.getUserObject() instanceof AssessmentItemRef) {
+			return (TreeNode)node.getParent();
+		}
+		if(node.getUserObject() instanceof TestPart) {
+			return (TreeNode)node.getChildAt(0);
+		}
+		return null;
 	}
 	
 	private void doSaveAssessmentTest() {
@@ -177,13 +305,13 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
 	}
 	
-	private void doUpdate(AssessmentSection section) {
+	private void doUpdate(Identifier identifier, String newTitle) {
 		TreeNode node = menuTree.getTreeModel()
-				.getNodeById(section.getIdentifier().toString());
+				.getNodeById(identifier.toString());
 		if(node instanceof GenericTreeNode) {
-			GenericTreeNode sectionNode = (GenericTreeNode)node;
-			if(!section.getTitle().equals(sectionNode.getTitle())) {
-				sectionNode.setTitle(section.getTitle());
+			GenericTreeNode itemNode = (GenericTreeNode)node;
+			if(!newTitle.equals(itemNode.getTitle())) {
+				itemNode.setTitle(newTitle);
 				menuTree.setDirty(true);
 			}
 		}
@@ -212,7 +340,13 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		} else if(uobject instanceof AssessmentItemRef) {
 			AssessmentItemRef itemRef = (AssessmentItemRef)uobject;
 			ResolvedAssessmentItem item = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
-			currentEditorCtrl = new AssessmentItemEditorController(ureq, getWindowControl(), testEntry, item, itemRef, unzippedDirRoot);
+			if(item.getItemLookup().getBadResourceException() != null) {
+				currentEditorCtrl = new BadResourceController(ureq, getWindowControl(),
+						item.getItemLookup().getBadResourceException(), unzippedDirRoot, itemRef.getHref());
+			} else {
+				currentEditorCtrl = new AssessmentItemEditorController(ureq, getWindowControl(), testEntry,
+						item, itemRef, unzippedDirRoot);
+			}
 		}
 		
 		if(currentEditorCtrl != null) {

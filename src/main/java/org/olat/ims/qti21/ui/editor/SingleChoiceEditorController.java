@@ -41,9 +41,8 @@ import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.SingleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
-import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
-import uk.ac.ed.ph.jqtiplus.node.content.basic.FlowStatic;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
@@ -55,7 +54,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SingleChoiceEditorController extends FormBasicController implements EditorController {
+public class SingleChoiceEditorController extends FormBasicController implements AssessmentItemBuilderController {
 
 	private TextElement titleEl;
 	private RichTextElement textEl;
@@ -141,7 +140,7 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	}
 
 	private void wrapAnswer(UserRequest ureq, SimpleChoice choice) {
-		String choiceContent =  itemBuilder.getHelper().toString(choice.getFlowStatics());
+		String choiceContent =  itemBuilder.getHtmlHelper().toString(choice.getFlowStatics());
 		String choiceId = "answer" + count++;
 		RichTextElement choiceEl = uifactory.addRichTextElementForStringData(choiceId, "form.imd.answer", choiceContent, 8, -1, true, null, null,
 				answersCont, ureq.getUserSession(), getWindowControl());
@@ -213,19 +212,22 @@ public class SingleChoiceEditorController extends FormBasicController implements
 			choiceWrapper.setCorrect(correctAnswerIdentifier.equals(choiceWrapper.getIdentifier()));
 			//text
 			String answer = choiceWrapper.getAnswer().getValue();
-			List<Block> blocks = itemBuilder.getHelper().parseHtml(answer);
+			itemBuilder.getHtmlHelper().appendHtml(choice, answer);
+			
+			
+			/*List<Block> blocks = itemBuilder.getHtmlHelper().parseHtml(answer);
 			choice.getFlowStatics().clear();
 			for(Block block:blocks) {
 				if(block instanceof FlowStatic) {
 					choice.getFlowStatics().add((FlowStatic)block);
 				}
-			}
+			}*/
 			
 			choiceList.add(choice);
 		}
 		itemBuilder.setSimpleChoices(choiceList);
 
-		fireEvent(ureq, AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED);
+		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem()));
 	}
 	
 	@Override

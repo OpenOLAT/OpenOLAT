@@ -19,29 +19,13 @@
  */
 package org.olat.ims.qti21.model.xml;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.List;
+import org.xml.sax.SAXParseException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.stream.StreamResult;
-
-import org.olat.core.gui.render.StringOutput;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
-
-import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
-import uk.ac.ed.ph.jqtiplus.exception.QtiModelException;
-import uk.ac.ed.ph.jqtiplus.node.LoadingContext;
-import uk.ac.ed.ph.jqtiplus.node.content.ItemBody;
-import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
-import uk.ac.ed.ph.jqtiplus.node.content.basic.FlowStatic;
-import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
+import uk.ac.ed.ph.jqtiplus.provision.BadResourceException;
+import uk.ac.ed.ph.jqtiplus.reading.QtiModelBuildingError;
+import uk.ac.ed.ph.jqtiplus.reading.QtiXmlInterpretationException;
+import uk.ac.ed.ph.jqtiplus.reading.QtiXmlInterpretationException.InterpretationFailureReason;
+import uk.ac.ed.ph.jqtiplus.xmlutils.XmlParseResult;
 
 /**
  * 
@@ -50,74 +34,54 @@ import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
  *
  */
 public class AssessmentBuilderHelper {
-	
-	private static final OLog log = Tracing.createLoggerFor(AssessmentBuilderHelper.class);
-	
-	private final QtiSerializer qtiSerializer;
-	
-	public AssessmentBuilderHelper() {
-		JqtiExtensionManager jqtiExtensionManager = new JqtiExtensionManager();
-		qtiSerializer = new QtiSerializer(jqtiExtensionManager);
-	}
-	
-	public AssessmentBuilderHelper(QtiSerializer qtiSerializer) {
-		this.qtiSerializer = qtiSerializer;
-	}
-	
-	public String toString(List<FlowStatic> statics) {
-		StringOutput sb = new StringOutput();
-		if(statics != null && statics.size() > 0) {
-			for(FlowStatic flowStatic:statics) {
-				qtiSerializer.serializeJqtiObject(flowStatic, new StreamResult(sb));
-			}
-		}
-		return sb.toString();
-	}
-	
-	public List<Block> parseHtml(String html) {
-		//tinymce bad habits
-		if(html.startsWith("<p>&nbsp;")) {
-			html = html.replace("<p>&nbsp;", "<p>");
-		}
-		Document document = htmlToDOM("<html>" + html + "</html>");
-		LoadingContext context = new HTMLLoadingContext();
+
+	public static void extractMessage(BadResourceException e, StringBuilder out) {
 		
-		ItemBody helper = new ItemBody(null);
-		helper.load(document.getDocumentElement(), context);	
-		return helper.getBlocks();
-	}
-	
-	/**
-	 * This method use the standard XML parser. It's not really
-	 * good but QTIWorks want DOM Level 2 elements.
-	 * 
-	 * @param content
-	 * @return
-	 */
-	private Document htmlToDOM(String content) {
-		try {
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			factory.setValidating(false);
-			factory.setNamespaceAware(true);
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document doc = builder.parse(new ByteArrayInputStream(content.getBytes()));
-			return doc;
-		} catch (ParserConfigurationException | SAXException | IOException e) {
-			log.error("", e);
-			return null;
-		}
-	}
-	
-	private static final class HTMLLoadingContext implements LoadingContext {
-
-		@Override
-		public JqtiExtensionManager getJqtiExtensionManager() {
-			return null;
-		}
-
-		@Override
-		public void modelBuildingError(QtiModelException exception, Node badNode) {
-			//
-		}
+        if(e instanceof QtiXmlInterpretationException) {
+        	QtiXmlInterpretationException qe = (QtiXmlInterpretationException)e;
+        	if(qe.getQtiModelBuildingErrors() != null) {
+	        	for(QtiModelBuildingError error :qe.getQtiModelBuildingErrors()) {
+	        		String localName = error.getElementLocalName();
+	        		String msg = error.getException().getMessage();
+	        		int lineNumber = error.getElementLocation().getLineNumber();
+	        		out.append(lineNumber + " :: " + localName + " :: " + msg + "\n");
+	        	}
+        	}
+        	
+        	if(qe.getInterpretationFailureReason() != null) {
+        		InterpretationFailureReason reason = qe.getInterpretationFailureReason();
+        		out.append("Failure: " + reason + "\n");
+        	}
+        	
+        	if(qe.getXmlParseResult() != null) {
+        		XmlParseResult result = qe.getXmlParseResult();
+        		if(result.getWarnings() != null) {
+        			for(SAXParseException saxex : result.getWarnings()) {
+        				int lineNumber = saxex.getLineNumber();
+        				int columnNumber = saxex.getColumnNumber();
+        				String msg = saxex.getMessage();
+    	        		out.append("Error: " + lineNumber + ":" + columnNumber + " :: " + msg + "\n");
+        			}
+        		}
+        		
+        		if(result.getErrors() != null) {
+        			for(SAXParseException saxex : result.getErrors()) {
+        				int lineNumber = saxex.getLineNumber();
+        				int columnNumber = saxex.getColumnNumber();
+        				String msg = saxex.getMessage();
+    	        		out.append("Error: " + lineNumber + ":" + columnNumber + " :: " + msg + "\n");
+        			}
+        		}
+        		
+        		if(result.getFatalErrors() != null) {
+        			for(SAXParseException saxex : result.getFatalErrors()) {
+        				int lineNumber = saxex.getLineNumber();
+        				int columnNumber = saxex.getColumnNumber();
+        				String msg = saxex.getMessage();
+    	        		out.append("Fatal: " + lineNumber + ":" + columnNumber + " :: " + msg + "\n");
+        			}
+        		}
+        	}
+        }
 	}
 }

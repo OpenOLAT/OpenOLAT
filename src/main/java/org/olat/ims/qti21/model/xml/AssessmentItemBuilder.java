@@ -50,6 +50,7 @@ public abstract class AssessmentItemBuilder {
 
 	protected final AssessmentItem assessmentItem;
 	protected final QtiSerializer qtiSerializer;
+	protected final AssessmentHtmlBuilder htmlHelper;
 	protected final AssessmentBuilderHelper builderHelper;
 	
 	private ScoreBuilder minScoreBuilder;
@@ -62,8 +63,13 @@ public abstract class AssessmentItemBuilder {
 	public AssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
 		this.assessmentItem = assessmentItem;
 		this.qtiSerializer = qtiSerializer;
-		builderHelper = new AssessmentBuilderHelper(qtiSerializer);
+		builderHelper = new AssessmentBuilderHelper();
+		htmlHelper = new AssessmentHtmlBuilder(qtiSerializer);
 		extract();
+	}
+	
+	public AssessmentItem getAssessmentItem() {
+		return assessmentItem;
 	}
 	
 	protected void extract() {
@@ -163,6 +169,10 @@ public abstract class AssessmentItemBuilder {
 	
 	public AssessmentBuilderHelper getHelper() {
 		return builderHelper;
+	}
+	
+	public AssessmentHtmlBuilder getHtmlHelper() {
+		return htmlHelper;
 	}
 
 	public final void build() {

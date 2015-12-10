@@ -29,6 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ScoreBuilder;
 import org.olat.ims.qti21.model.xml.SingleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
 /**
  * 
@@ -36,7 +37,7 @@ import org.olat.ims.qti21.model.xml.SingleChoiceAssessmentItemBuilder;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SingleChoiceScoreController extends FormBasicController implements EditorController {
+public class SingleChoiceScoreController extends FormBasicController implements AssessmentItemBuilderController {
 	
 	private TextElement minScoreEl;
 	private TextElement maxScoreEl;
@@ -81,6 +82,8 @@ public class SingleChoiceScoreController extends FormBasicController implements 
 		Double maxScore = Double.parseDouble(maxScoreValue);
 		itemBuilder.setMaxScore(maxScore);
 		itemBuilder.setMinScore(new Double(0d));
+
+		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem()));
 	}
 
 	@Override

@@ -32,7 +32,6 @@ import org.junit.Test;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
-import org.xml.sax.SAXParseException;
 
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.RubricBlock;
@@ -55,16 +54,12 @@ import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.SetOutcomeValue;
 import uk.ac.ed.ph.jqtiplus.notification.Notification;
 import uk.ac.ed.ph.jqtiplus.provision.BadResourceException;
 import uk.ac.ed.ph.jqtiplus.reading.AssessmentObjectXmlLoader;
-import uk.ac.ed.ph.jqtiplus.reading.QtiModelBuildingError;
-import uk.ac.ed.ph.jqtiplus.reading.QtiXmlInterpretationException;
-import uk.ac.ed.ph.jqtiplus.reading.QtiXmlInterpretationException.InterpretationFailureReason;
 import uk.ac.ed.ph.jqtiplus.reading.QtiXmlReader;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.validation.TestValidationResult;
 import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
-import uk.ac.ed.ph.jqtiplus.xmlutils.XmlParseResult;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 
 /**
@@ -198,53 +193,10 @@ public class AssessmentTestPackageTest {
         }
         
         BadResourceException e = test.getResolvedAssessmentTest().getTestLookup().getBadResourceException();
-        if(e instanceof QtiXmlInterpretationException) {
-        	QtiXmlInterpretationException qe = (QtiXmlInterpretationException)e;
-        	if(qe.getQtiModelBuildingErrors() != null) {
-	        	for(QtiModelBuildingError error :qe.getQtiModelBuildingErrors()) {
-	        		String localName = error.getElementLocalName();
-	        		String msg = error.getException().getMessage();
-	        		int lineNumber = error.getElementLocation().getLineNumber();
-	        		System.out.println(lineNumber + " :: " + localName + " :: " + msg);
-	        	}
-        	}
-        	
-        	if(qe.getInterpretationFailureReason() != null) {
-        		InterpretationFailureReason reason = qe.getInterpretationFailureReason();
-        		System.out.println("Failure: " + reason);
-        	}
-        	
-        	if(qe.getXmlParseResult() != null) {
-        		XmlParseResult result = qe.getXmlParseResult();
-        		if(result.getWarnings() != null) {
-        			for(SAXParseException saxex : result.getWarnings()) {
-        				int lineNumber = saxex.getLineNumber();
-        				int columnNumber = saxex.getColumnNumber();
-        				String msg = saxex.getMessage();
-    	        		System.out.println("Error: " + lineNumber + ":" + columnNumber + " :: " + msg);
-        			}
-        		}
-        		
-        		if(result.getErrors() != null) {
-        			for(SAXParseException saxex : result.getErrors()) {
-        				int lineNumber = saxex.getLineNumber();
-        				int columnNumber = saxex.getColumnNumber();
-        				String msg = saxex.getMessage();
-    	        		System.out.println("Error: " + lineNumber + ":" + columnNumber + " :: " + msg);
-        			}
-        		}
-        		
-        		if(result.getFatalErrors() != null) {
-        			for(SAXParseException saxex : result.getFatalErrors()) {
-        				int lineNumber = saxex.getLineNumber();
-        				int columnNumber = saxex.getColumnNumber();
-        				String msg = saxex.getMessage();
-    	        		System.out.println("Fatal: " + lineNumber + ":" + columnNumber + " :: " + msg);
-        			}
-        		}
-        	}
-        }
-        
+        StringBuilder out = new StringBuilder();
+        AssessmentBuilderHelper.extractMessage(e, out);
+        log.info(out.toString());
+
         Assert.assertTrue(test.getModelValidationErrors().isEmpty());
 	}
 }

@@ -17,15 +17,23 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui.editor;
+package org.olat.ims.qti21.ui.editor.events;
 
-import org.olat.core.gui.control.Controller;
-import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
+import org.olat.core.gui.control.Event;
 
-public interface EditorController extends Controller {
+/**
+ * 
+ * Initial date: 10.12.2015<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public class AssessmentTestPartEvent extends Event {
+
+	private static final long serialVersionUID = 2930881002425927366L;
+	public static final AssessmentTestPartEvent ASSESSMENT_TEST_PART_CHANGED_EVENT = new AssessmentTestPartEvent("changed");
 	
-	public void updateFromBuilder();
-	
-	public AssessmentItemBuilder getBuilder();
+	public AssessmentTestPartEvent(String cmd) {
+		super(cmd);
+	}
 
 }

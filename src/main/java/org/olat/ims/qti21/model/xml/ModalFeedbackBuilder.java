@@ -55,7 +55,7 @@ public class ModalFeedbackBuilder {
 		this.assessmentItem = assessmentItem;
 		this.modalFeedback = modalFeedback;
 		if(modalFeedback != null) {
-			text = new AssessmentBuilderHelper().toString(modalFeedback.getFlowStatics());
+			text = new AssessmentHtmlBuilder().toString(modalFeedback.getFlowStatics());
 			StringAttribute titleAttr = modalFeedback.getAttributes().getStringAttribute(ModalFeedback.ATTR_TITLE_NAME);
 			title = titleAttr == null ? null : titleAttr.getComputedValue();
 			identifier = modalFeedback.getIdentifier();

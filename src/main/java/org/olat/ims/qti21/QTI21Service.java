@@ -35,6 +35,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
+import uk.ac.ed.ph.jqtiplus.node.AssessmentObject;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationRecorder;
 import uk.ac.ed.ph.jqtiplus.reading.QtiXmlReader;
@@ -84,6 +85,8 @@ public interface QTI21Service {
 	public <E extends ResolvedAssessmentObject<?>> E loadAndResolveAssessmentObject(File resourceDirectory);
 	
 	public boolean updateAssesmentObject(File resourceFile, ResolvedAssessmentObject<?> resolvedAssessmentObject);
+	
+	public boolean persistAssessmentObject(File resourceFile, AssessmentObject assessmentObject);
 	
 	
 	public UserTestSession createTestSession(Identity identity, AssessmentEntry assessmentEntry,

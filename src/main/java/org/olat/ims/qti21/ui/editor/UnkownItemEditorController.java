@@ -32,7 +32,7 @@ import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UnkownItemEditorController extends FormBasicController implements EditorController {
+public class UnkownItemEditorController extends FormBasicController implements AssessmentItemBuilderController {
 	
 	public UnkownItemEditorController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);

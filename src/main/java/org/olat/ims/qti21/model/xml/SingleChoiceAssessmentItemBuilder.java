@@ -103,9 +103,12 @@ public class SingleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuild
 		List<Block> blocks = assessmentItem.getItemBody().getBlocks();
 		blocks.clear();
 
+		/*
 		//add question
-		List<Block> questionBlocks = getHelper().parseHtml(question);
+		List<Block> questionBlocks = getHtmlHelper().parseHtml(question);
 		blocks.addAll(questionBlocks);
+		*/
+		getHtmlHelper().appendHtml(assessmentItem.getItemBody(), question);
 		
 		//add interaction
 		ChoiceInteraction singleChoiceInteraction = AssessmentItemFactory

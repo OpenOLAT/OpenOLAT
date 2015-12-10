@@ -33,6 +33,7 @@ import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ModalFeedbackBuilder;
 import org.olat.ims.qti21.model.xml.SingleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
 /**
  * 
@@ -40,7 +41,7 @@ import org.olat.ims.qti21.model.xml.SingleChoiceAssessmentItemBuilder;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FeedbackEditorController extends FormBasicController implements EditorController {
+public class FeedbackEditorController extends FormBasicController implements AssessmentItemBuilderController {
 	
 	private TextElement feedbackCorrectTitleEl, feedbackIncorrectTitleEl;
 	private RichTextElement feedbackCorrectTextEl, feedbackIncorrectTextEl;
@@ -115,7 +116,7 @@ public class FeedbackEditorController extends FormBasicController implements Edi
 			incorrectBuilder.setText(incorrectText);
 		}
 
-		fireEvent(ureq, AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED);
+		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem()));
 	}
 
 	@Override

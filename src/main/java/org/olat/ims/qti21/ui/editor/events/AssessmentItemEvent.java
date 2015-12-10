@@ -17,23 +17,44 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.model.xml;
+package org.olat.ims.qti21.ui.editor.events;
 
-import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
+import org.olat.core.gui.control.Event;
+
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 
 /**
  * 
- * Initial date: 04.06.2015<br>
+ * Initial date: 03.07.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentItemPackage {
+public class AssessmentItemEvent extends Event {
 	
-	public ResolvedAssessmentItem createSingleChoice() {
-		
-		ResolvedAssessmentItem item = new ResolvedAssessmentItem(null, null);
-		return item;
-		
+	private static final long serialVersionUID = -1768118856227595311L;
+	
+	public static final String ASSESSMENT_ITEM_CHANGED = "assessment-item-changed";
+	
+	private AssessmentItem item;
+	private AssessmentItemRef itemRef;
+
+	public AssessmentItemEvent(String cmd, AssessmentItem item) {
+		super(cmd);
+		this.item = item;
+	}
+	
+	public AssessmentItemEvent(String cmd, AssessmentItem item, AssessmentItemRef itemRef) {
+		super(cmd);
+		this.item = item;
+		this.itemRef = itemRef;
 	}
 
+	public AssessmentItem getAssessmentItem() {
+		return item;
+	}
+	
+	public AssessmentItemRef getAssessmentItemRef() {
+		return itemRef;
+	}
 }

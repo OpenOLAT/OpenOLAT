@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui.editor;
+package org.olat.ims.qti21.ui.editor.events;
 
 import org.olat.core.gui.control.Event;
 

@@ -36,6 +36,7 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
+import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
@@ -55,12 +56,13 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
  */
 public class AssessmentItemEditorController extends BasicController {
 
+	private final AssessmentItemRef itemRef;
 	private final ResolvedAssessmentItem resolvedAssessmentItem;
 	
 	private final TabbedPane tabbedPane;
 	private final VelocityContainer mainVC;
 	
-	private EditorController itemEditor, scoreEditor, feedbackEditor;
+	private AssessmentItemBuilderController itemEditor, scoreEditor, feedbackEditor;
 	private AssessmentItemDisplayController displayCtrl;
 	
 	@Autowired
@@ -71,6 +73,7 @@ public class AssessmentItemEditorController extends BasicController {
 	public AssessmentItemEditorController(UserRequest ureq, WindowControl wControl, RepositoryEntry testEntry,
 			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef, File unzippedDirectory) {
 		super(ureq, wControl);
+		this.itemRef = itemRef;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		
 		mainVC = createVelocityContainer("assessment_item_editor");
@@ -87,6 +90,10 @@ public class AssessmentItemEditorController extends BasicController {
 		tabbedPane.addTab("Preview", displayCtrl.getInitialComponent());
 		
 		putInitialPanel(mainVC);
+	}
+	
+	public String getTitle() {
+		return resolvedAssessmentItem.getRootNodeLookup().getRootNodeHolder().getRootNode().getTitle();
 	}
 	
 	@Override
@@ -151,15 +158,19 @@ public class AssessmentItemEditorController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(event instanceof AssessmentItemEvent) {
-			if(event == AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED) {
-				if(source instanceof EditorController) {
-					EditorController editorCtrl = (EditorController)source;
-					AssessmentItemBuilder builder = editorCtrl.getBuilder();
-					if(builder != null) {
-						builder.build();
+			if(event instanceof AssessmentItemEvent) {
+				AssessmentItemEvent aie = (AssessmentItemEvent)event;
+				if(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED.equals(aie.getCommand())) {
+					if(source instanceof AssessmentItemBuilderController) {
+						AssessmentItemBuilderController editorCtrl = (AssessmentItemBuilderController)source;
+						AssessmentItemBuilder builder = editorCtrl.getBuilder();
+						if(builder != null) {
+							builder.build();
+						}
 					}
+					doSaveAssessmentItem();
+					fireEvent(ureq, new AssessmentItemEvent(aie.getCommand(), aie.getAssessmentItem(), itemRef));
 				}
-				doSaveAssessmentItem();
 			}
 		}
 		super.event(ureq, source, event);
