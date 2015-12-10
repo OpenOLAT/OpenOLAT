@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -34,6 +33,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
@@ -59,7 +60,7 @@ public class AssessmentItemEditorController extends BasicController {
 	private final TabbedPane tabbedPane;
 	private final VelocityContainer mainVC;
 	
-	private FormBasicController itemEditor;
+	private EditorController itemEditor, scoreEditor, feedbackEditor;
 	private AssessmentItemDisplayController displayCtrl;
 	
 	@Autowired
@@ -113,9 +114,7 @@ public class AssessmentItemEditorController extends BasicController {
 			}
 			
 			if(choice && !unkown) {
-				itemEditor = new SingleChoiceEditorController(ureq, getWindowControl());
-				listenTo(itemEditor);
-				tabbedPane.addTab("Choice", itemEditor.getInitialComponent());
+				initSingleChoiceEditors(ureq, item);
 			} else if(unkown) {
 				initItemCreatedByUnkownEditor(ureq);
 			}
@@ -129,6 +128,20 @@ public class AssessmentItemEditorController extends BasicController {
 		listenTo(itemEditor);
 		tabbedPane.addTab("Unkown", itemEditor.getInitialComponent());
 	}
+	
+	private void initSingleChoiceEditors(UserRequest ureq, AssessmentItem item) {
+		SingleChoiceAssessmentItemBuilder itemBuilder = new SingleChoiceAssessmentItemBuilder(item, qtiService.qtiSerializer());
+		itemEditor = new SingleChoiceEditorController(ureq, getWindowControl(), itemBuilder);
+		listenTo(itemEditor);
+		scoreEditor = new SingleChoiceScoreController(ureq, getWindowControl(), itemBuilder);
+		listenTo(scoreEditor);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), itemBuilder);
+		listenTo(feedbackEditor);
+		
+		tabbedPane.addTab("Choice", itemEditor.getInitialComponent());
+		tabbedPane.addTab("Score", scoreEditor.getInitialComponent());
+		tabbedPane.addTab("Feedback", feedbackEditor.getInitialComponent());
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
@@ -138,10 +151,16 @@ public class AssessmentItemEditorController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(event instanceof AssessmentItemEvent) {
-			if(event == AssessmentItemEvent.CHANGED_EVENT) {
+			if(event == AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED) {
+				if(source instanceof EditorController) {
+					EditorController editorCtrl = (EditorController)source;
+					AssessmentItemBuilder builder = editorCtrl.getBuilder();
+					if(builder != null) {
+						builder.build();
+					}
+				}
 				doSaveAssessmentItem();
 			}
-			
 		}
 		super.event(ureq, source, event);
 	}

@@ -19,50 +19,13 @@
  */
 package org.olat.ims.qti21.ui.editor;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 
-/**
- * 
- * Initial date: 26.05.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
- *
- */
-public class UnkownItemEditorController extends FormBasicController implements EditorController {
+public interface EditorController extends Controller {
 	
-	public UnkownItemEditorController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
-		
-		initForm(ureq);
-	}
-
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("editor.unkown.title");
-		//
-	}
+	public void updateFromBuilder();
 	
-	@Override
-	public void updateFromBuilder() {
-		//
-	}
+	public AssessmentItemBuilder getBuilder();
 
-	@Override
-	public AssessmentItemBuilder getBuilder() {
-		return null;
-	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		//
-	}
 }

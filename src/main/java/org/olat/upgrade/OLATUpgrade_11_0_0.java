@@ -298,7 +298,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 					int nodeIdentIndex = propertyCategory.indexOf("::");
 					if(nodeIdentIndex > 0) {
 						String nodeIdent = propertyCategory.substring(propertyCategory.indexOf("::") + 2);
-						AssessmentDataKey key = new AssessmentDataKey(property.getIdentity(), property.getResourceTypeId(), nodeIdent);
+						AssessmentDataKey key = new AssessmentDataKey(property.getIdentity().getKey(), property.getResourceTypeId(), nodeIdent);
 						if(curentNodeAssessmentMap.containsKey(key)) {
 							continue;
 						}

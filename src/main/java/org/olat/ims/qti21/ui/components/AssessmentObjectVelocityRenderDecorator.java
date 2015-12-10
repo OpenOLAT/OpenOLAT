@@ -253,9 +253,10 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 			choices = interaction.getSimpleChoices();
 		}
 		
-		return choices.stream()
+		List<SimpleChoice> visibleChoices = choices.stream()
 			.filter((choice) -> isVisible(choice, itemSessionState))
 			.collect(Collectors.toList());
+		return visibleChoices;
 	}
 	
 	public List<SimpleChoice> getVisibleOrderedSimpleChoices(OrderInteraction interaction) {

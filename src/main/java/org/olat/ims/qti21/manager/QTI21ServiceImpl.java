@@ -179,6 +179,10 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
         return new QtiSerializer(jqtiExtensionManager());
     }
     
+    @Override
+    public QtiXmlReader qtiXmlReader() {
+    	return new QtiXmlReader(jqtiExtensionManager());
+    }
     
 	
 	@SuppressWarnings("unchecked")

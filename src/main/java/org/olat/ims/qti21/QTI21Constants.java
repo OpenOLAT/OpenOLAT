@@ -47,6 +47,12 @@ public class QTI21Constants {
 	
 	public static final ComplexReferenceIdentifier MAXSCORE_CLX_IDENTIFIER = ComplexReferenceIdentifier.parseString(MAXSCORE);
 	
+	public static final String MINSCORE = "MINSCORE";
+	
+	public static final Identifier MINSCORE_IDENTIFIER = Identifier.assumedLegal(MINSCORE);
+	
+	public static final ComplexReferenceIdentifier MINSCORE_CLX_IDENTIFIER = ComplexReferenceIdentifier.parseString(MINSCORE);
+	
 	public static final String PASS = "PASS";
 
 	public static final Identifier PASS_IDENTIFIER = Identifier.assumedLegal(PASS);
@@ -55,8 +61,20 @@ public class QTI21Constants {
 	
 	public static final Identifier FEEDBACKBASIC_IDENTIFIER = Identifier.parseString(FEEDBACKBASIC);
 	
-	public static final IdentifierValue CORRECT = new IdentifierValue("correct");
+	public static final String FEEDBACKMODAL = "FEEDBACKMODAL";
 	
-	public static final IdentifierValue INCORRECT = new IdentifierValue("incorrect");
+	public static final Identifier FEEDBACKMODAL_IDENTIFIER = Identifier.parseString(FEEDBACKMODAL);
+	
+	public static final String CORRECT = "correct";
+
+	public static final Identifier CORRECT_IDENTIFIER = Identifier.parseString(CORRECT);
+	
+	public static final IdentifierValue CORRECT_IDENTIFIER_VALUE = new IdentifierValue(CORRECT);
+	
+	public static final String INCORRECT = "incorrect";
+	
+	public static final Identifier INCORRECT_IDENTIFIER = Identifier.parseString(INCORRECT);
+	
+	public static final IdentifierValue INCORRECT_IDENTIFIER_VALUE = new IdentifierValue(INCORRECT);
 
 }

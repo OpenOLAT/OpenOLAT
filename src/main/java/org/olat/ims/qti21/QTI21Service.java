@@ -37,6 +37,7 @@ import org.olat.repository.RepositoryEntryRef;
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationRecorder;
+import uk.ac.ed.ph.jqtiplus.reading.QtiXmlReader;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentObject;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
@@ -58,6 +59,8 @@ public interface QTI21Service {
 	 * @return
 	 */
 	public QtiSerializer qtiSerializer();
+	
+	public QtiXmlReader qtiXmlReader();
 	
 	/**
 	 * The manager for custom extensions to QTI (MathExtensio )
