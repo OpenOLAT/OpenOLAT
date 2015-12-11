@@ -140,6 +140,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.course.run.userview.NodeEvaluation)
 	 */
+	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			final UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		updateModuleConfigDefaults(false);
@@ -195,7 +196,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 			};
 			Controller wrappedCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, spCtr, this, ICON_CSS_CLASS);
 			if(wrappedCtrl instanceof CloneableController) {
-				cont	 = new CloneController(ureq, wControl, (CloneableController)wrappedCtrl, clccc);
+				cont = new CloneController(ureq, wControl, (CloneableController)wrappedCtrl, clccc);
 			} else {
 				throw new AssertException("Need to be a cloneable");
 			}

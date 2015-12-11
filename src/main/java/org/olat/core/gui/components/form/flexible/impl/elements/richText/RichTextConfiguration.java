@@ -150,6 +150,11 @@ public class RichTextConfiguration implements Disposable {
 	
 	private final Locale locale;
 	private TinyConfig tinyConfig;
+	
+	public RichTextConfiguration(Locale locale) {
+		this.locale = locale;
+		tinyConfig = TinyConfig.minimalisticConfig; 
+	}
 
 	/**
 	 * Constructor, only used by RichText element itself. Use
@@ -158,7 +163,7 @@ public class RichTextConfiguration implements Disposable {
 	 * @param domID The ID of the flexi element in the browser DOM
 	 * @param rootFormDispatchId The dispatch ID of the root form that deals with the submit button
 	 */
-	RichTextConfiguration(String domID, String rootFormDispatchId, Locale locale) {
+	public RichTextConfiguration(String domID, String rootFormDispatchId, Locale locale) {
 		this.domID = domID;
 		this.locale = locale;
 		// use exact mode that only applies to this DOM element

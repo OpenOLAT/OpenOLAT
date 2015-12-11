@@ -146,10 +146,9 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 		final CountDownLatch countDown = new CountDownLatch(1);
 		final AtomicBoolean result = new AtomicBoolean(false);
 		
-		new Thread(){
+		new Thread() {
 			@Override
 			public void run() {
-				
 				try {
 					int numOfTry = (timeoutInMilliseconds / 100) + 2;
 					for(int i=0; i<numOfTry; i++) {
@@ -160,10 +159,14 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 						} else {
 							result.set(false);
 						}
+						DBFactory.getInstance().commitAndCloseSession();
+						Thread.sleep(100);
 					}
 				} catch (Exception e) {
 					log.error("", e);
 					result.set(false);
+				} finally {
+					DBFactory.getInstance().closeSession();
 				}
 				countDown.countDown();
 			}
