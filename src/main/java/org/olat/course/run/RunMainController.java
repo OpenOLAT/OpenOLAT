@@ -431,7 +431,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			}
 		} else if(currentNodeController instanceof Activateable2) {
 			((Activateable2)currentNodeController).activate(ureq, entries, state);
-		} else if(currentNodeController != null) {
+		}
+		if(currentNodeController != null) {
 			contentP.setContent(currentNodeController.getInitialComponent());
 		} else {
 			MessageController msgCtrl = MessageUIFactory
