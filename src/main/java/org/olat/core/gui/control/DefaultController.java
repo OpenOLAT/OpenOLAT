@@ -470,10 +470,10 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	}
 	
 	protected WindowControl addToHistory(UserRequest ureq, Controller controller) {
-		WindowControl wControl;
+		WindowControl wControl = null;
 		if(controller instanceof DefaultController) {
 			wControl = ((DefaultController)controller).getWindowControl();
-		} else {
+		} else if(controller != null) {
 			wControl = controller.getWindowControlForDebug();
 		}	
 		BusinessControlFactory.getInstance().addToHistory(ureq, wControl);

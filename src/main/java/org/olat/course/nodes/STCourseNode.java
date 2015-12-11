@@ -138,6 +138,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.course.run.userview.NodeEvaluation)
 	 */
+	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			final UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		updateModuleConfigDefaults(false);
@@ -174,11 +175,12 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 			spCtr.addLoggingResourceable(LoggingResourceable.wrap(this));
 			// create clone wrapper layout, allow popping into second window
 			CloneLayoutControllerCreatorCallback clccc = new CloneLayoutControllerCreatorCallback() {
-				public ControllerCreator createLayoutControllerCreator(final UserRequest ureq, final ControllerCreator contentControllerCreator) {
-					return BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, new ControllerCreator() {
-						@SuppressWarnings("synthetic-access")
+				@Override
+				public ControllerCreator createLayoutControllerCreator(final UserRequest uureq, final ControllerCreator contentControllerCreator) {
+					return BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(uureq, new ControllerCreator() {
+						@Override
 						public Controller createController(UserRequest lureq, WindowControl lwControl) {
-							// wrapp in column layout, popup window needs a layout controller
+							// wrap in column layout, popup window needs a layout controller
 							Controller ctr = contentControllerCreator.createController(lureq, lwControl);
 							LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, ctr);
 							layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), userCourseEnv.getCourseEnvironment()));
@@ -192,7 +194,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 			};
 			Controller wrappedCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, spCtr, this, ICON_CSS_CLASS);
 			if(wrappedCtrl instanceof CloneableController) {
-				cont	 = new CloneController(ureq, wControl, (CloneableController)wrappedCtrl, clccc);
+				cont = new CloneController(ureq, wControl, (CloneableController)wrappedCtrl, clccc);
 			} else {
 				throw new AssertException("Need to be a cloneable");
 			}
