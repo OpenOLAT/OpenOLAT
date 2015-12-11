@@ -67,12 +67,13 @@ public class WikiPage {
 	public WikiPage createPage(String name, String content) {
 		//open the create popover
 		By createBy = By.className("o_sel_wiki_create_page");
+		OOGraphene.waitElement(createBy, 2, browser);
 		WebElement createButton = browser.findElement(createBy);
 		createButton.click();
 		
 		//fill the name of the new page
 		By pageNameBy = By.cssSelector("div.o_callout_content form input[type='text']");
-		OOGraphene.waitElement(pageNameBy, browser);
+		OOGraphene.waitElement(pageNameBy, 2, browser);
 		WebElement pageNameEl = browser.findElement(pageNameBy);
 		pageNameEl.sendKeys(name);
 		//search for it
