@@ -334,25 +334,18 @@ public class FileUploadController extends FormBasicController {
 					// if so, there is alread a error-msg in log (vfsContainer.createChildLeaf)
 					success = false;
 				} else {
-					InputStream in = null;
-					OutputStream out = null;
-					try {
-						in = new FileInputStream(uploadedFile);
-						out = newFile.getOutputStream(false);
+					try(InputStream in = new FileInputStream(uploadedFile);
+						OutputStream out = newFile.getOutputStream(false)) {
 						FileUtils.bcopy(in, out, "uploadTmpFileToDestFile");
 						uploadedFile.delete();
-						
 					} catch (IOException e) {
 						success = false;
-					} finally {
-						FileUtils.closeSafely(in);
-						FileUtils.closeSafely(out);
 					}
 				}
 				
 				if (success) {
 					String filePath = (uploadRelPath == null ? "" : uploadRelPath + "/") + newFile.getName();
-					finishSuccessfullUpload(filePath, ureq);
+					finishSuccessfullUpload(filePath, newFile, ureq);
 					fileInfoMBean.logUpload(newFile.getSize());
 					fireEvent(ureq, Event.DONE_EVENT);										
 				} else {
@@ -671,16 +664,20 @@ public class FileUploadController extends FormBasicController {
 	private void finishUpload(UserRequest ureq) {
 		// in both cases the upload must be finished and notified with a FolderEvent
 		String filePath = (uploadRelPath == null ? "" : uploadRelPath + "/") + newFile.getName();
-		finishSuccessfullUpload(filePath, ureq);
-		fileInfoMBean.logUpload(newFile.getSize());
+		VFSItem item = currentContainer.resolve(filePath);
+		if(item != null) {
+			finishSuccessfullUpload(filePath, item, ureq);
+			fileInfoMBean.logUpload(newFile.getSize());
+		} else {
+			logWarn("Upload with error:" + filePath, null);
+		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
 	/**
 	 * Internal helper to finish the upload and add metadata
 	 */
-	private void finishSuccessfullUpload(String filePath, UserRequest ureq) {
-		VFSItem item = currentContainer.resolve(filePath);
+	private void finishSuccessfullUpload(String filePath, VFSItem item, UserRequest ureq) {
 		if (item instanceof OlatRootFileImpl) {
 			OlatRootFileImpl relPathItem = (OlatRootFileImpl) item;
 			// create meta data
@@ -692,10 +689,14 @@ public class FileUploadController extends FormBasicController {
 			meta.clearThumbnails();//if overwrite an older file
 			meta.write();
 		}
-		ThreadLocalUserActivityLogger.log(FolderLoggingAction.FILE_UPLOADED, getClass(), CoreLoggingResourceable.wrapUploadFile(filePath));
-
-		// Notify listeners about upload
-		fireEvent(ureq, new FolderEvent(FolderEvent.UPLOAD_EVENT, item));
+		
+		if(item == null) {
+			logError("File cannot be uploaded: " + filePath, null);
+		} else {
+			ThreadLocalUserActivityLogger.log(FolderLoggingAction.FILE_UPLOADED, getClass(), CoreLoggingResourceable.wrapUploadFile(filePath));
+			// Notify listeners about upload
+			fireEvent(ureq, new FolderEvent(FolderEvent.UPLOAD_EVENT, item));
+		}
 	}
 
 	/**
