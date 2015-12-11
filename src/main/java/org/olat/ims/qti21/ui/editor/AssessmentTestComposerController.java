@@ -47,6 +47,7 @@ import org.olat.core.util.Util;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
+import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestPackage;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
@@ -59,6 +60,7 @@ import org.olat.repository.ui.RepositoryEntryRuntimeController.ToolbarAware;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.test.AbstractPart;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
@@ -119,9 +121,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 
 		FileResourceManager frm = FileResourceManager.getInstance();
 		unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentObject(unzippedDirRoot);
-		menuTree.setTreeModel(new AssessmentTestEditorAndComposerTreeModel(resolvedAssessmentTest));
-		
+		updateTreeModel();
 		manifest = ManifestPackage.read(new File(unzippedDirRoot, "imsmanifest.xml"));
 		
 		//default buttons
@@ -154,6 +154,11 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			selectedNode = menuTree.getTreeModel().getRootNode();
 		}
 		partEditorFactory(ureq, selectedNode);
+	}
+	
+	private void updateTreeModel() {
+		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentObject(unzippedDirRoot);
+		menuTree.setTreeModel(new AssessmentTestEditorAndComposerTreeModel(resolvedAssessmentTest));
 	}
 	
 	@Override
@@ -214,7 +219,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		} else if(saveLink == source) {
 			doSaveAssessmentTest();
 		} else if(newSectionLink == source) {
-			
+			doNewSection(ureq, menuTree.getSelectedNode());
 		} else if(newSingleChoiceLink == source) {
 			doNewSingleChoice(ureq, menuTree.getSelectedNode());
 		}
@@ -240,8 +245,42 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		return null;
 	}
 	
-	private void doNewSection(UserRequest ureq) {
+	private void doNewSection(UserRequest ureq, TreeNode selectedNode) {
+		AbstractPart parentPart;
+		TreeNode sectionNode = getNearestSection(selectedNode);
+		if(sectionNode != null) {
+			AssessmentSection section = (AssessmentSection)sectionNode.getUserObject();
+			parentPart = section.getParent();
+		} else if(selectedNode.getUserObject() instanceof TestPart) {
+			parentPart = (TestPart)selectedNode.getUserObject();
+		} else {
+			showWarning("error.cannot.create.section");
+			return;
+		}
+
+		AssessmentSection newSection;
+		if(parentPart instanceof TestPart) {
+			newSection = AssessmentTestFactory.createAssessmentSection((TestPart)parentPart);
+		} else if(parentPart instanceof AssessmentSection) {
+			newSection = AssessmentTestFactory.createAssessmentSection((AssessmentSection)parentPart);
+		} else {
+			showWarning("error.cannot.create.section");
+			return;
+		}
+	
+		//save the test
+		URI testUri = resolvedAssessmentTest.getTestLookup().getSystemId();
+		File testFile = new File(testUri);
+		qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
+
+		//reload the test
+		updateTreeModel();
 		
+		TreeNode newSectionNode = menuTree.getTreeModel().getNodeById(newSection.getIdentifier().toString());
+		menuTree.setSelectedNode(newSectionNode);
+		menuTree.open(newSectionNode);
+
+		partEditorFactory(ureq, newSectionNode);
 	}
 	
 	/**
@@ -273,8 +312,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			ManifestPackage.appendAssessmentItem(itemFile.getName(), manifest);
 			ManifestPackage.write(manifest, new File(unzippedDirRoot, "imsmanifest.xml"));
 			
-			resolvedAssessmentTest = qtiService.loadAndResolveAssessmentObject(unzippedDirRoot);
-			menuTree.setTreeModel(new AssessmentTestEditorAndComposerTreeModel(resolvedAssessmentTest));
+			updateTreeModel();
 			
 			TreeNode newItemNode = menuTree.getTreeModel().getNodeById(itemId);
 			menuTree.setSelectedNode(newItemNode);

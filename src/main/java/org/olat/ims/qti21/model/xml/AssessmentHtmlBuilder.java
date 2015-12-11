@@ -31,6 +31,8 @@ import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -40,6 +42,7 @@ import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.exception.QtiModelException;
 import uk.ac.ed.ph.jqtiplus.node.AbstractNode;
 import uk.ac.ed.ph.jqtiplus.node.LoadingContext;
+import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.FlowStatic;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.xmlutils.SimpleDomBuilderHandler;
@@ -67,10 +70,24 @@ public class AssessmentHtmlBuilder {
 		this.qtiSerializer = qtiSerializer;
 	}
 	
-	public String toString(List<FlowStatic> statics) {
+	public boolean containsSomething(String html) {
+		return StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(html));
+	}
+	
+	public String flowStaticString(List<? extends FlowStatic> statics) {
 		StringOutput sb = new StringOutput();
 		if(statics != null && statics.size() > 0) {
 			for(FlowStatic flowStatic:statics) {
+				qtiSerializer.serializeJqtiObject(flowStatic, new StreamResult(sb));
+			}
+		}
+		return sb.toString();
+	}
+	
+	public String blocksString(List<? extends Block> statics) {
+		StringOutput sb = new StringOutput();
+		if(statics != null && statics.size() > 0) {
+			for(Block flowStatic:statics) {
 				qtiSerializer.serializeJqtiObject(flowStatic, new StreamResult(sb));
 			}
 		}

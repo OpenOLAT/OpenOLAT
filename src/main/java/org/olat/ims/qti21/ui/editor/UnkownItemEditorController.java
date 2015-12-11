@@ -24,7 +24,6 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 
 /**
  * 
@@ -32,7 +31,7 @@ import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UnkownItemEditorController extends FormBasicController implements AssessmentItemBuilderController {
+public class UnkownItemEditorController extends FormBasicController {
 	
 	public UnkownItemEditorController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -44,16 +43,6 @@ public class UnkownItemEditorController extends FormBasicController implements A
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("editor.unkown.title");
 		//
-	}
-	
-	@Override
-	public void updateFromBuilder() {
-		//
-	}
-
-	@Override
-	public AssessmentItemBuilder getBuilder() {
-		return null;
 	}
 
 	@Override

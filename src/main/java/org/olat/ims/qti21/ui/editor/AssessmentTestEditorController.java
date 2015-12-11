@@ -20,14 +20,16 @@
 package org.olat.ims.qti21.ui.editor;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.tabbedpane.TabbedPane;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.StringHelper;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
+import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentTestEvent;
 
@@ -39,60 +41,65 @@ import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentTestEditorController extends FormBasicController {
+public class AssessmentTestEditorController extends BasicController {
+
+	private final TabbedPane tabbedPane;
+	private final VelocityContainer mainVC;
 	
-	private TextElement titleEl;
+	private AssessmentTestOptionsEditorController optionsCtrl;
+	private AssessmentTestFeedbackEditorController feedbackCtrl;
 	
 	private final AssessmentTest assessmentTest;
+	private final AssessmentTestBuilder testBuilder;
 	
 	public AssessmentTestEditorController(UserRequest ureq, WindowControl wControl,
 			AssessmentTest assessmentTest) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentTestDisplayController.class, ureq.getLocale()));
 		this.assessmentTest = assessmentTest;
-		initForm(ureq);
-	}
-
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("assessment.test.config");
+		testBuilder = new AssessmentTestBuilder(assessmentTest);
 		
-		String title = assessmentTest.getTitle();
-		titleEl = uifactory.addTextElement("title", "form.metadata.title", 255, title, formLayout);
-		titleEl.setMandatory(true);
+		mainVC = createVelocityContainer("assessment_test_editor");
+		tabbedPane = new TabbedPane("testTabs", getLocale());
+		tabbedPane.addListener(this);
+		mainVC.put("tabbedpane", tabbedPane);
 		
-		
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("butons", getTranslator());
-		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("save", "save", buttonsCont);
+		initTestEditor(ureq);
+		putInitialPanel(mainVC);
 	}
 	
 	@Override
 	protected void doDispose() {
 		//
 	}
-
-	public String getTitle() {
-		return titleEl.getValue();
-	}
-
-	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
-
-		titleEl.clearError();
-		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
+	
+	private void initTestEditor(UserRequest ureq) {
+		if(QTI21Constants.TOOLNAME.equals(assessmentTest.getToolName())) {
+			optionsCtrl = new AssessmentTestOptionsEditorController(ureq, getWindowControl(), assessmentTest, testBuilder);
+			listenTo(optionsCtrl);
+			feedbackCtrl = new AssessmentTestFeedbackEditorController(ureq, getWindowControl(), testBuilder);
+			listenTo(feedbackCtrl);
+			
+			tabbedPane.addTab(translate("assessment.test.config"), optionsCtrl.getInitialComponent());
+			tabbedPane.addTab(translate("form.feedback"), feedbackCtrl.getInitialComponent());
+		} else {
+			Controller ctrl = new UnkownTestEditorController(ureq, getWindowControl());
+			listenTo(ctrl);
+			tabbedPane.addTab("Unkown", ctrl.getInitialComponent());
 		}
-		
-		return allOk & super.validateFormLogic(ureq);
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
-		String title = titleEl.getValue();
-		assessmentTest.setTitle(title);
-		
-		fireEvent(ureq, AssessmentTestEvent.ASSESSMENT_TEST_CHANGED_EVENT);
+	protected void event(UserRequest ureq, Component source, Event event) {
+		//
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(optionsCtrl == source || feedbackCtrl == source) {
+			if(AssessmentTestEvent.ASSESSMENT_TEST_CHANGED_EVENT.equals(event)) {
+				testBuilder.build();
+				fireEvent(ureq, event);
+			}
+		}
 	}
 }

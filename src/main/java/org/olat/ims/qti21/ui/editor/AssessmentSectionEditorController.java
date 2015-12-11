@@ -19,16 +19,27 @@
  */
 package org.olat.ims.qti21.ui.editor;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
 import org.olat.ims.qti21.ui.editor.events.AssessmentSectionEvent;
 
+import uk.ac.ed.ph.jqtiplus.node.content.variable.RubricBlock;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
+import uk.ac.ed.ph.jqtiplus.node.test.Ordering;
+import uk.ac.ed.ph.jqtiplus.node.test.Selection;
+import uk.ac.ed.ph.jqtiplus.node.test.View;
 
 /**
  * 
@@ -39,13 +50,21 @@ import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 public class AssessmentSectionEditorController extends ItemSessionControlController {
 
 	private TextElement titleEl;
+	private TextElement randomSelectedEl;
+	private SingleSelection shuffleEl, visibleEl;
+	private List<RichTextElement> rubricEls = new ArrayList<>();
+	
 	private final AssessmentSection section;
+	private final AssessmentHtmlBuilder htmlBuilder;
+	
+	private int counter = 0;
+	private static final String[] yesnoKeys = new String[]{ "y", "n"};
 	
 	public AssessmentSectionEditorController(UserRequest ureq, WindowControl wControl,
 			AssessmentSection section, boolean restrictedEdit) {
 		super(ureq, wControl, section, restrictedEdit);
 		this.section = section;
-		
+		htmlBuilder = new AssessmentHtmlBuilder();
 		initForm(ureq);
 	}
 
@@ -57,7 +76,45 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 		titleEl = uifactory.addTextElement("title", "form.metadata.title", 255, title, formLayout);
 		titleEl.setMandatory(true);
 		
+		if(section.getRubricBlocks().isEmpty()) {
+			RichTextElement rubricEl = uifactory.addRichTextElementForStringData("rubric" + counter++, "form.imd.rubric", "", 8, -1, true, null, null,
+					formLayout, ureq.getUserSession(), getWindowControl());
+			rubricEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
+			rubricEls.add(rubricEl);
+			
+		} else {
+			for(RubricBlock rubricBlock:section.getRubricBlocks()) {
+				String rubric = htmlBuilder.blocksString(rubricBlock.getBlocks());
+				RichTextElement rubricEl = uifactory.addRichTextElementForStringData("rubric" + counter++, "form.imd.rubric", rubric, 8, -1, true, null, null,
+						formLayout, ureq.getUserSession(), getWindowControl());
+				rubricEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
+				rubricEl.setUserObject(rubricBlock);
+				rubricEls.add(rubricEl);
+			}
+		}
+		
 		super.initForm(formLayout, listener, ureq);
+		
+		//shuffle
+		String[] yesnoValues = new String[]{ translate("yes"), translate("no") };
+		shuffleEl = uifactory.addRadiosHorizontal("shuffle", "form.section.shuffle", formLayout, yesnoKeys, yesnoValues);
+		if (section.getOrdering() != null && section.getOrdering().getShuffle()) {
+			shuffleEl.select("y", true);
+		} else {
+			shuffleEl.select("n", true);
+		}
+		
+		String num = section.getSelection() != null ? Integer.toString(section.getSelection().getSelect()) : "";
+		randomSelectedEl = uifactory.addTextElement("selectionPre", "form.section.selection_pre", 255, num, formLayout);
+		randomSelectedEl.setHelpText(translate("form.section.selection_pre.hover"));
+		
+		//visible
+		visibleEl = uifactory.addRadiosHorizontal("visible", "form.section.visible", formLayout, yesnoKeys, yesnoValues);
+		if (section.getVisible()) {
+			visibleEl.select("y", true);
+		} else {
+			visibleEl.select("n", true);
+		}
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("butons", getTranslator());
 		formLayout.add(buttonsCont);
@@ -83,14 +140,76 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 			allOk &= false;
 		}
 		
+		randomSelectedEl.clearError();
+		if(StringHelper.containsNonWhitespace(randomSelectedEl.getValue())) {
+			if(StringHelper.isLong(randomSelectedEl.getValue())) {
+				try {
+					Integer.parseInt(randomSelectedEl.getValue());
+				} catch (Exception e) {
+					randomSelectedEl.setErrorKey("form.error.nointeger", null);
+					allOk &= false;
+				}
+			} else {
+				randomSelectedEl.setErrorKey("form.error.nointeger", null);
+				allOk &= false;
+			}
+		}
+
 		return allOk & super.validateFormLogic(ureq);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		section.setTitle(titleEl.getValue());
-		
 		super.formOK(ureq);
+		
+		//rubrics
+		List<RubricBlock> rubricBlocks = new ArrayList<>();
+		for(RichTextElement rubricEl:rubricEls) {
+			String rubric = rubricEl.getValue();
+			if(htmlBuilder.containsSomething(rubric)) {
+				RubricBlock rubricBlock = (RubricBlock)rubricEl.getUserObject();
+				if(rubricBlock != null) {
+					rubricBlock = new RubricBlock(section);
+					rubricBlock.setViews(Collections.singletonList(View.CANDIDATE));
+				}
+				rubricBlock.getBlocks().clear();
+				htmlBuilder.appendHtml(rubricBlock, rubric);
+				rubricBlocks.add(rubricBlock);
+			}
+		}
+		section.getRubricBlocks().clear();
+		section.getRubricBlocks().addAll(rubricBlocks);
+		
+		//shuffle
+		boolean shuffle = (shuffleEl.isOneSelected() && shuffleEl.isSelected(0));
+		if(shuffle) {
+			if(section.getOrdering() == null) {
+				section.setOrdering(new Ordering(section));
+			}
+			section.getOrdering().setShuffle(shuffle);
+		} else {
+			section.setOrdering(null);
+		}
+		
+		//number of selected questions
+		Integer randomSelection = null;
+		if(StringHelper.containsNonWhitespace(randomSelectedEl.getValue())) {
+			randomSelection = new Integer(randomSelectedEl.getValue());
+		}
+		if(randomSelection == null) {
+			section.setSelection(null);
+		} else {
+			if(section.getSelection() == null) {
+				section.setSelection(new Selection(section));
+			}
+			section.getSelection().setSelect(randomSelection);
+		}
+		
+		//visible
+		boolean visible = visibleEl.isOneSelected() && visibleEl.isSelected(0);
+		section.setVisible(visible);
+
 		fireEvent(ureq, new AssessmentSectionEvent(AssessmentSectionEvent.ASSESSMENT_SECTION_CHANGED, section));
 	}
 }

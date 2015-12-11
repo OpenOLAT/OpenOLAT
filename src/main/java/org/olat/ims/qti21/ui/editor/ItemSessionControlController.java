@@ -42,7 +42,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 
 	private static final String[] yesnoKeys = new String[] { "y", "n" };
 
-	private SingleSelection allowCommentEl;
+	private SingleSelection allowCommentEl, showSolutionEl;
 	
 	private final boolean restrictedEdit;
 	private final AbstractPart part;
@@ -67,6 +67,15 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		} else {
 			allowCommentEl.select(yesnoKeys[1], false);
 		}
+	
+		showSolutionEl = uifactory.addRadiosHorizontal("item.session.control.show.solution", formLayout, yesnoKeys, yesnoValues);
+		showSolutionEl.addActionListener(FormEvent.ONCHANGE);
+		showSolutionEl.setEnabled(!restrictedEdit);
+		if(itemSessionControl != null && itemSessionControl.getShowSolution() != null && itemSessionControl.getShowSolution().booleanValue()) {
+			showSolutionEl.select(yesnoKeys[0], true);
+		} else {
+			showSolutionEl.select(yesnoKeys[1], false);
+		}
 	}
 
 	@Override
@@ -83,6 +92,12 @@ public abstract class ItemSessionControlController extends FormBasicController {
 			allowCommentEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
+		
+		showSolutionEl.clearError();
+		if(!showSolutionEl.isOneSelected()) {
+			showSolutionEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
 
 		return allOk & super.validateFormLogic(ureq);
 	}
@@ -95,6 +110,12 @@ public abstract class ItemSessionControlController extends FormBasicController {
 			checkNotNull(itemSessionControl).setAllowComment(Boolean.TRUE);
 		} else if(itemSessionControl != null) {
 			itemSessionControl.setAllowComment(Boolean.FALSE);
+		}
+		
+		if(showSolutionEl.isOneSelected() && showSolutionEl.isSelected(0)) {
+			checkNotNull(itemSessionControl).setShowSolution(Boolean.TRUE);
+		} else if(itemSessionControl != null) {
+			itemSessionControl.setShowSolution(Boolean.FALSE);
 		}
 	}
 	

@@ -21,11 +21,13 @@ package org.olat.ims.qti21.ui.editor;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.ims.qti21.ui.editor.events.AssessmentTestEvent;
 
+import uk.ac.ed.ph.jqtiplus.node.test.NavigationMode;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 
 /**
@@ -35,11 +37,19 @@ import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
  *
  */
 public class AssessmentTestPartEditorController extends ItemSessionControlController {
+	
+	private SingleSelection navigationModeEl;
+	
+	private final TestPart testPart;
+	
+	private static final String[] navigationKeys = new String[]{
+			NavigationMode.LINEAR.name(), NavigationMode.NONLINEAR.name()
+	};
 		
 	public AssessmentTestPartEditorController(UserRequest ureq, WindowControl wControl,
 			TestPart testPart, boolean restrictedEdit) {
 		super(ureq, wControl, testPart, restrictedEdit);
-
+		this.testPart = testPart;
 		initForm(ureq);
 	}
 
@@ -49,14 +59,38 @@ public class AssessmentTestPartEditorController extends ItemSessionControlContro
 		
 		super.initForm(formLayout, listener, ureq);
 		
+		String[] navigationValues = new String[] {
+				translate("form.testPart.navigationMode.linear"), translate("form.testPart.navigationMode.nonlinear")
+		};
+		String mode = testPart.getNavigationMode() == null ? NavigationMode.LINEAR.name() : testPart.getNavigationMode().name();
+		navigationModeEl = uifactory.addRadiosHorizontal("shuffle", "form.section.shuffle", formLayout, navigationKeys, navigationValues);
+		navigationModeEl.select(mode, true);
+
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", "save", buttonsCont);
 	}
 
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+
+		
+		return allOk &= super.validateFormLogic(ureq);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		super.formOK(ureq);
+		
+		// navigation mode
+		if(navigationModeEl.isOneSelected() && navigationModeEl.isSelected(0)) {
+			testPart.setNavigationMode(NavigationMode.LINEAR);
+		} else {
+			testPart.setNavigationMode(NavigationMode.NONLINEAR);
+		}
+
 		fireEvent(ureq, AssessmentTestEvent.ASSESSMENT_TEST_CHANGED_EVENT);
 	}
 }

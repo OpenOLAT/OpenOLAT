@@ -30,7 +30,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
-import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ModalFeedbackBuilder;
 import org.olat.ims.qti21.model.xml.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
@@ -41,7 +40,7 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FeedbackEditorController extends FormBasicController implements AssessmentItemBuilderController {
+public class FeedbackEditorController extends FormBasicController {
 	
 	private TextElement feedbackCorrectTitleEl, feedbackIncorrectTitleEl;
 	private RichTextElement feedbackCorrectTextEl, feedbackIncorrectTextEl;
@@ -52,16 +51,6 @@ public class FeedbackEditorController extends FormBasicController implements Ass
 		super(ureq, wControl);
 		this.itemBuilder = itemBuilder;
 		initForm(ureq);
-	}
-
-	@Override
-	public void updateFromBuilder() {
-		//
-	}
-
-	@Override
-	public AssessmentItemBuilder getBuilder() {
-		return itemBuilder;
 	}
 
 	@Override
@@ -111,7 +100,10 @@ public class FeedbackEditorController extends FormBasicController implements Ass
 		String incorrectTitle = feedbackIncorrectTitleEl.getValue();
 		String incorrectText = feedbackIncorrectTextEl.getValue();
 		if(StringHelper.containsNonWhitespace(correctTitle)) {
-			ModalFeedbackBuilder incorrectBuilder = (ModalFeedbackBuilder)feedbackIncorrectTitleEl.getUserObject();
+			ModalFeedbackBuilder incorrectBuilder = itemBuilder.getIncorrectFeedback();
+			if(incorrectBuilder == null) {
+				incorrectBuilder = itemBuilder.createIncorrectFeedback();
+			}
 			incorrectBuilder.setTitle(incorrectTitle);
 			incorrectBuilder.setText(incorrectText);
 		}

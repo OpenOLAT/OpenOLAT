@@ -26,7 +26,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ScoreBuilder;
 import org.olat.ims.qti21.model.xml.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
@@ -37,7 +36,7 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SingleChoiceScoreController extends FormBasicController implements AssessmentItemBuilderController {
+public class SingleChoiceScoreController extends FormBasicController {
 	
 	private TextElement minScoreEl;
 	private TextElement maxScoreEl;
@@ -64,16 +63,6 @@ public class SingleChoiceScoreController extends FormBasicController implements 
 		buttonsContainer.setRootForm(mainForm);
 		formLayout.add(buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
-	}
-	
-	@Override
-	public void updateFromBuilder() {
-		
-	}
-	
-	@Override
-	public AssessmentItemBuilder getBuilder() {
-		return itemBuilder;
 	}
 
 	@Override

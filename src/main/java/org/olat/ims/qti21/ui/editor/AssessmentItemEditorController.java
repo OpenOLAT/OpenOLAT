@@ -62,8 +62,10 @@ public class AssessmentItemEditorController extends BasicController {
 	private final TabbedPane tabbedPane;
 	private final VelocityContainer mainVC;
 	
-	private AssessmentItemBuilderController itemEditor, scoreEditor, feedbackEditor;
+	private Controller itemEditor, scoreEditor, feedbackEditor;
 	private AssessmentItemDisplayController displayCtrl;
+	
+	private AssessmentItemBuilder itemBuilder;
 	
 	@Autowired
 	private QTI21Service qtiService;
@@ -121,7 +123,7 @@ public class AssessmentItemEditorController extends BasicController {
 			}
 			
 			if(choice && !unkown) {
-				initSingleChoiceEditors(ureq, item);
+				itemBuilder = initSingleChoiceEditors(ureq, item);
 			} else if(unkown) {
 				initItemCreatedByUnkownEditor(ureq);
 			}
@@ -136,18 +138,19 @@ public class AssessmentItemEditorController extends BasicController {
 		tabbedPane.addTab("Unkown", itemEditor.getInitialComponent());
 	}
 	
-	private void initSingleChoiceEditors(UserRequest ureq, AssessmentItem item) {
-		SingleChoiceAssessmentItemBuilder itemBuilder = new SingleChoiceAssessmentItemBuilder(item, qtiService.qtiSerializer());
-		itemEditor = new SingleChoiceEditorController(ureq, getWindowControl(), itemBuilder);
+	private AssessmentItemBuilder initSingleChoiceEditors(UserRequest ureq, AssessmentItem item) {
+		SingleChoiceAssessmentItemBuilder scItemBuilder = new SingleChoiceAssessmentItemBuilder(item, qtiService.qtiSerializer());
+		itemEditor = new SingleChoiceEditorController(ureq, getWindowControl(), scItemBuilder);
 		listenTo(itemEditor);
-		scoreEditor = new SingleChoiceScoreController(ureq, getWindowControl(), itemBuilder);
+		scoreEditor = new SingleChoiceScoreController(ureq, getWindowControl(), scItemBuilder);
 		listenTo(scoreEditor);
-		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), itemBuilder);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), scItemBuilder);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab("Choice", itemEditor.getInitialComponent());
 		tabbedPane.addTab("Score", scoreEditor.getInitialComponent());
 		tabbedPane.addTab("Feedback", feedbackEditor.getInitialComponent());
+		return scItemBuilder;
 	}
 
 	@Override
@@ -161,14 +164,7 @@ public class AssessmentItemEditorController extends BasicController {
 			if(event instanceof AssessmentItemEvent) {
 				AssessmentItemEvent aie = (AssessmentItemEvent)event;
 				if(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED.equals(aie.getCommand())) {
-					if(source instanceof AssessmentItemBuilderController) {
-						AssessmentItemBuilderController editorCtrl = (AssessmentItemBuilderController)source;
-						AssessmentItemBuilder builder = editorCtrl.getBuilder();
-						if(builder != null) {
-							builder.build();
-						}
-					}
-					doSaveAssessmentItem();
+					doBuildAndSaveAssessmentItem();
 					fireEvent(ureq, new AssessmentItemEvent(aie.getCommand(), aie.getAssessmentItem(), itemRef));
 				}
 			}
@@ -176,7 +172,10 @@ public class AssessmentItemEditorController extends BasicController {
 		super.event(ureq, source, event);
 	}
 
-	private void doSaveAssessmentItem() {
+	private void doBuildAndSaveAssessmentItem() {
+		if(itemBuilder != null) {
+			itemBuilder.build();
+		}
 		URI itemUri = resolvedAssessmentItem.getItemLookup().getSystemId();
 		File itemFile = new File(itemUri);
 		qtiService.updateAssesmentObject(itemFile, resolvedAssessmentItem);

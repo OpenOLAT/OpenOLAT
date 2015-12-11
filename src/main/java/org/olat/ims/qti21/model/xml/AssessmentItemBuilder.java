@@ -158,12 +158,15 @@ public abstract class AssessmentItemBuilder {
 	
 	public ModalFeedbackBuilder createCorrectFeedback() {
 		correctFeedback = new ModalFeedbackBuilder(assessmentItem, null);
-		
-		
 		return correctFeedback;
 	}
 	
 	public ModalFeedbackBuilder getIncorrectFeedback() {
+		return incorrectFeedback;
+	}
+	
+	public ModalFeedbackBuilder createIncorrectFeedback() {
+		incorrectFeedback = new ModalFeedbackBuilder(assessmentItem, null);
 		return incorrectFeedback;
 	}
 	

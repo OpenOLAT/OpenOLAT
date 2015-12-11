@@ -38,7 +38,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.model.IdentifierGenerator;
-import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
@@ -54,25 +53,24 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SingleChoiceEditorController extends FormBasicController implements AssessmentItemBuilderController {
+public class SingleChoiceEditorController extends FormBasicController {
 
 	private TextElement titleEl;
 	private RichTextElement textEl;
+	private SingleSelection shuffleEl;
 	private FormLayoutContainer answersCont;
 	private final List<SimpleChoiceWrapper> choiceWrappers = new ArrayList<>();
 	
 	private int count = 0;
 	private final SingleChoiceAssessmentItemBuilder itemBuilder;
+	
+	private static final String[] yesnoKeys = new String[]{ "y", "n"};
 
 	public SingleChoiceEditorController(UserRequest ureq, WindowControl wControl, SingleChoiceAssessmentItemBuilder itemBuilder) {
 		super(ureq, wControl, "simple_choices_editor");
 		this.itemBuilder = itemBuilder;
 		initForm(ureq);
 	}
-	
-	private SingleSelection shuffleEl;
-	
-	private static final String[] yesnoKeys = new String[]{ "y", "n"};
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -128,19 +126,9 @@ public class SingleChoiceEditorController extends FormBasicController implements
 		formLayout.add("buttons", buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
 	}
-	
-	@Override
-	public void updateFromBuilder() {
-		
-	}
-	
-	@Override
-	public AssessmentItemBuilder getBuilder() {
-		return itemBuilder;
-	}
 
 	private void wrapAnswer(UserRequest ureq, SimpleChoice choice) {
-		String choiceContent =  itemBuilder.getHtmlHelper().toString(choice.getFlowStatics());
+		String choiceContent =  itemBuilder.getHtmlHelper().flowStaticString(choice.getFlowStatics());
 		String choiceId = "answer" + count++;
 		RichTextElement choiceEl = uifactory.addRichTextElementForStringData(choiceId, "form.imd.answer", choiceContent, 8, -1, true, null, null,
 				answersCont, ureq.getUserSession(), getWindowControl());

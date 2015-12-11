@@ -23,62 +23,59 @@ import java.util.List;
 
 import org.olat.ims.qti21.QTI21Constants;
 
-import uk.ac.ed.ph.jqtiplus.attribute.value.StringAttribute;
 import uk.ac.ed.ph.jqtiplus.node.expression.Expression;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
-import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
-import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
-import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseCondition;
-import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseIf;
-import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseRule;
-import uk.ac.ed.ph.jqtiplus.node.item.response.processing.SetOutcomeValue;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
+import uk.ac.ed.ph.jqtiplus.node.test.TestFeedback;
+import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeCondition;
+import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeIf;
+import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeRule;
+import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.SetOutcomeValue;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
 import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 
 /**
  * 
- * Initial date: 09.12.2015<br>
+ * Initial date: 11.12.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ModalFeedbackBuilder {
+public class TestFeedbackBuilder {
 	
-	private final ModalFeedback modalFeedback;
-	private final AssessmentItem assessmentItem;
+	private final TestFeedback testFeedback;
+	private final AssessmentTest assessmentTest;
 	
 	private String title;
 	private String text;
 	private Identifier identifier;
 	
-	public ModalFeedbackBuilder(AssessmentItem assessmentItem, ModalFeedback modalFeedback) {
-		this.assessmentItem = assessmentItem;
-		this.modalFeedback = modalFeedback;
-		if(modalFeedback != null) {
-			text = new AssessmentHtmlBuilder().flowStaticString(modalFeedback.getFlowStatics());
-			StringAttribute titleAttr = modalFeedback.getAttributes().getStringAttribute(ModalFeedback.ATTR_TITLE_NAME);
-			title = titleAttr == null ? null : titleAttr.getComputedValue();
-			identifier = modalFeedback.getIdentifier();
-			
+	public TestFeedbackBuilder(AssessmentTest assessmentTest, TestFeedback testFeedback) {
+		this.assessmentTest = assessmentTest;
+		this.testFeedback = testFeedback;
+		if(testFeedback != null) {
+			text = new AssessmentHtmlBuilder().flowStaticString(testFeedback.getChildren());
+			title = testFeedback.getTitle();
+			identifier = testFeedback.getOutcomeValue();
 		}
 	}
 	
 	public Identifier getModalFeedbackIdentifier() {
-		return modalFeedback.getIdentifier();
+		return testFeedback.getOutcomeValue();
 	}
 	
-	public ResponseRule getResponseRule() {
-		ResponseRule feedbackRule = findFeedbackRule(modalFeedback.getIdentifier());
+	public OutcomeRule getResponseRule() {
+		OutcomeRule feedbackRule = findFeedbackRule(testFeedback.getOutcomeValue());
 		return feedbackRule;
 	}
 	
-	public boolean isCorrectRule() {
-		ResponseRule feedbackRule = findFeedbackRule(modalFeedback.getIdentifier());
+	public boolean isPassedRule() {
+		OutcomeRule feedbackRule = findFeedbackRule(testFeedback.getOutcomeValue());
 		return findFeedbackRule(feedbackRule, QTI21Constants.CORRECT_IDENTIFIER);
 	}
 	
-	public boolean isIncorrectRule() {
-		ResponseRule feedbackRule = findFeedbackRule(modalFeedback.getIdentifier());
+	public boolean isFailedRule() {
+		OutcomeRule feedbackRule = findFeedbackRule(testFeedback.getOutcomeValue());
 		return findFeedbackRule(feedbackRule, QTI21Constants.INCORRECT_IDENTIFIER);
 	}
 	
@@ -106,26 +103,26 @@ public class ModalFeedbackBuilder {
 		this.identifier = identifier;
 	}
 
-	private ResponseRule findFeedbackRule(Identifier feedbackIdentifier) {
-		List<ResponseRule> responseRules = assessmentItem.getResponseProcessing().getResponseRules();
-		for(ResponseRule responseRule:responseRules) {
-			if(responseRule instanceof ResponseCondition) {
-				if(findFeedbackRuleInSetOutcomeVariable(responseRule, feedbackIdentifier)) {
-					return responseRule;
+	private OutcomeRule findFeedbackRule(Identifier feedbackIdentifier) {
+		List<OutcomeRule> outcomeRules = assessmentTest.getOutcomeProcessing().getOutcomeRules();
+		for(OutcomeRule outcomeRule:outcomeRules) {
+			if(outcomeRule instanceof OutcomeCondition) {
+				if(findFeedbackRuleInSetOutcomeVariable(outcomeRule, feedbackIdentifier)) {
+					return outcomeRule;
 				}
 			}
 		}
 		return null;
 	}
 	
-	private boolean findFeedbackRuleInSetOutcomeVariable(ResponseRule responseRule, Identifier feedbackIdentifier) {
-		if(responseRule instanceof ResponseCondition) {
-			ResponseCondition responseCondition = (ResponseCondition)responseRule;
-			ResponseIf responseIf = responseCondition.getResponseIf();
-			List<ResponseRule> ifResponseRules = responseIf.getResponseRules();
-			for(ResponseRule ifResponseRule:ifResponseRules) {
-				if(ifResponseRule instanceof SetOutcomeValue) {
-					SetOutcomeValue setOutcomeValue = (SetOutcomeValue)ifResponseRule;
+	private boolean findFeedbackRuleInSetOutcomeVariable(OutcomeRule responseRule, Identifier feedbackIdentifier) {
+		if(responseRule instanceof OutcomeCondition) {
+			OutcomeCondition outcomeCondition = (OutcomeCondition)responseRule;
+			OutcomeIf outcomeIf = outcomeCondition.getOutcomeIf();
+			List<OutcomeRule> ifOutcomeRules = outcomeIf.getOutcomeRules();
+			for(OutcomeRule ifOutcomeRule:ifOutcomeRules) {
+				if(ifOutcomeRule instanceof SetOutcomeValue) {
+					SetOutcomeValue setOutcomeValue = (SetOutcomeValue)ifOutcomeRule;
 					if(findFeedbackRuleInExpression(setOutcomeValue.getExpression(), feedbackIdentifier)) {
 						return true;
 					}
@@ -135,11 +132,11 @@ public class ModalFeedbackBuilder {
 		return false;
 	}
 	
-	private boolean findFeedbackRule(ResponseRule responseRule, Identifier id) {
-		if(responseRule instanceof ResponseCondition) {
-			ResponseCondition responseCondition = (ResponseCondition)responseRule;
-			ResponseIf responseIf = responseCondition.getResponseIf();
-			List<Expression> expressions = responseIf.getExpressions();
+	private boolean findFeedbackRule(OutcomeRule outcomeRule, Identifier id) {
+		if(outcomeRule instanceof OutcomeCondition) {
+			OutcomeCondition outcomeCondition = (OutcomeCondition)outcomeRule;
+			OutcomeIf outcomeIf = outcomeCondition.getOutcomeIf();
+			List<Expression> expressions = outcomeIf.getExpressions();
 			if(findFeedbackRuleInExpression(expressions, id)) {
 				return true;
 			}
