@@ -46,7 +46,8 @@ public class CPPage {
 	}
 	
 	public CPPage assertInIFrame(By by) {
-		By iframeBy = By.xpath("//iframe");
+		By iframeBy = By.xpath("//div[contains(@class,'o_iframedisplay')]//iframe");
+		OOGraphene.waitElement(iframeBy, 2, browser);
 		List<WebElement> iframes = browser.findElements(iframeBy);
 		browser = browser.switchTo().frame(iframes.get(0));
 		

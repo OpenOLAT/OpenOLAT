@@ -37,7 +37,7 @@ import org.openqa.selenium.WebElement;
  */
 public class MenuTreePageFragment {
 	
-	private static final By treeBy = By.className("o_tree");
+	public static final By treeBy = By.className("o_tree");
 	
 	private final  WebDriver browser;
 
