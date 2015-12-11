@@ -363,6 +363,10 @@ public class HTMLEditorController extends FormBasicController {
 	 * @return
 	 */
 	public RichTextConfiguration getRichTextConfiguration() {
+		if(htmlElement == null) {
+			//if the file is too big, 
+			return new RichTextConfiguration(getLocale());
+		}
 		return htmlElement.getEditorConfiguration();
 	}
 
