@@ -20,9 +20,11 @@
 package org.olat.ims.qti21.model.xml;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.model.IdentifierGenerator;
 
 import uk.ac.ed.ph.jqtiplus.node.expression.Expression;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
@@ -48,6 +50,7 @@ import uk.ac.ed.ph.jqtiplus.value.FloatValue;
 public class AssessmentTestBuilder {
 	
 	private final AssessmentTest assessmentTest;
+	private final AssessmentHtmlBuilder htmlBuilder;
 	
 	private Double cutValue;
 	private OutcomeCondition cutValueRule;
@@ -61,6 +64,7 @@ public class AssessmentTestBuilder {
 	
 	public AssessmentTestBuilder(AssessmentTest assessmentTest) {
 		this.assessmentTest = assessmentTest;
+		htmlBuilder = new AssessmentHtmlBuilder();
 		extract();
 	}
 	
@@ -111,6 +115,10 @@ public class AssessmentTestBuilder {
 	}
 	
 	private boolean findSetOutcomeValue(OutcomeConditionChild outcomeConditionChild, Identifier identifier) {
+		if(outcomeConditionChild == null
+				|| outcomeConditionChild.getOutcomeRules() == null
+				|| outcomeConditionChild.getOutcomeRules().isEmpty()) return false;
+		
 		List<OutcomeRule> outcomeRules = outcomeConditionChild.getOutcomeRules();
 		for(OutcomeRule outcomeRule:outcomeRules) {
 			SetOutcomeValue setOutcomeValue = (SetOutcomeValue)outcomeRule;
@@ -157,8 +165,8 @@ public class AssessmentTestBuilder {
 	}
 	
 	public TestFeedbackBuilder createPassedFeedback() {
-		failedFeedback = new TestFeedbackBuilder(assessmentTest, null);
-		return failedFeedback;
+		passedFeedback = new TestFeedbackBuilder(assessmentTest, null);
+		return passedFeedback;
 	}
 	
 	public TestFeedbackBuilder getFailedFeedback() {
@@ -177,6 +185,7 @@ public class AssessmentTestBuilder {
 		buildScore(maxScore);
 		buildTestScore();
 		buildCutValue();
+		buildFeedback();
 	}
 	
 	private void buildScore(Double maxScore) {
@@ -280,5 +289,52 @@ public class AssessmentTestBuilder {
 			assessmentTest.getOutcomeDeclarations().remove(cutValueRule);
 		}
 	}
+	
+	private void buildFeedback() {
+		//remove outcome rules
+		List<OutcomeRule> outcomeRules = assessmentTest.getOutcomeProcessing().getOutcomeRules();
+		for(Iterator<OutcomeRule> outcomeRuleIt=outcomeRules.iterator(); outcomeRuleIt.hasNext(); ) {
+			OutcomeRule outcomeRule = outcomeRuleIt.next();
+			if(outcomeRule instanceof OutcomeCondition) {
+				OutcomeCondition outcomeCondition = (OutcomeCondition)outcomeRule;
+				if(outcomeCondition.getOutcomeIf() != null && outcomeCondition.getOutcomeIf().getOutcomeRules().size() == 1) {
+					OutcomeRule outcomeValue = outcomeCondition.getOutcomeIf().getOutcomeRules().get(0);
+					if(outcomeValue instanceof SetOutcomeValue) {
+						SetOutcomeValue setOutcomeValue = (SetOutcomeValue)outcomeValue;
+						if(QTI21Constants.FEEDBACKMODAL_IDENTIFIER.equals(setOutcomeValue.getIdentifier())) {
+							outcomeRuleIt.remove();
+						}	
+					}
+				}
+			}
+		}
 
+		if(passedFeedback != null) {
+			buildFeedback(passedFeedback, true);
+		}
+		
+		if(failedFeedback != null) {
+			buildFeedback(failedFeedback, false);
+		}
+	}
+	
+	private void buildFeedback(TestFeedbackBuilder feedbackBuilder, boolean passed) {
+		if(htmlBuilder.containsSomething(feedbackBuilder.getText())) {
+			TestFeedback testFeedback;
+			if(feedbackBuilder.getTestFeedback() == null) {
+				testFeedback = AssessmentTestFactory
+						.createTestFeedbackModal(assessmentTest, IdentifierGenerator.newAsIdentifier() , feedbackBuilder.getTitle(), feedbackBuilder.getText());
+				assessmentTest.getTestFeedbacks().add(testFeedback);
+			} else {
+				testFeedback = feedbackBuilder.getTestFeedback();
+				testFeedback.setTitle(feedbackBuilder.getTitle());
+				htmlBuilder.appendHtml(testFeedback, feedbackBuilder.getText());
+			}
+			OutcomeCondition outcomeCondition = AssessmentTestFactory
+					.createTestFeedbackModalCondition(assessmentTest, passed, testFeedback.getOutcomeValue());
+			assessmentTest.getOutcomeProcessing().getOutcomeRules().add(outcomeCondition);
+		} else if(feedbackBuilder.getTestFeedback() != null) {
+			assessmentTest.getTestFeedbacks().remove(feedbackBuilder.getTestFeedback());
+		}
+	}
 }

@@ -30,7 +30,11 @@ import org.olat.ims.qti21.model.IdentifierGenerator;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.RubricBlock;
 import uk.ac.ed.ph.jqtiplus.node.expression.ExpressionParent;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
+import uk.ac.ed.ph.jqtiplus.node.expression.general.Variable;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.And;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Gte;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Match;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Multiple;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Sum;
 import uk.ac.ed.ph.jqtiplus.node.expression.outcome.TestVariables;
 import uk.ac.ed.ph.jqtiplus.node.outcome.declaration.OutcomeDeclaration;
@@ -44,18 +48,23 @@ import uk.ac.ed.ph.jqtiplus.node.test.ItemSessionControl;
 import uk.ac.ed.ph.jqtiplus.node.test.NavigationMode;
 import uk.ac.ed.ph.jqtiplus.node.test.Ordering;
 import uk.ac.ed.ph.jqtiplus.node.test.SubmissionMode;
+import uk.ac.ed.ph.jqtiplus.node.test.TestFeedback;
+import uk.ac.ed.ph.jqtiplus.node.test.TestFeedbackAccess;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 import uk.ac.ed.ph.jqtiplus.node.test.View;
+import uk.ac.ed.ph.jqtiplus.node.test.VisibilityMode;
 import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeCondition;
 import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeElse;
 import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeIf;
 import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeProcessing;
 import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.SetOutcomeValue;
+import uk.ac.ed.ph.jqtiplus.types.ComplexReferenceIdentifier;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.BooleanValue;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 import uk.ac.ed.ph.jqtiplus.value.FloatValue;
+import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
 
 /**
  * 
@@ -299,6 +308,88 @@ public class AssessmentTestFactory {
 		section.getRubricBlocks().add(rubricBlock);
 		
 		return section;
+	}
+	
+	/*
+	<testFeedback identifier="Feedback952020414" outcomeIdentifier="FEEDBACKMODAL" showHide="show" access="atEnd" title="Correct answer">
+		<p>This is the correct answer</p>
+	</testFeedback>
+	 */
+	public final static TestFeedback createTestFeedbackModal(AssessmentTest assessmentTest, Identifier identifier, String title, String text) {
+		TestFeedback testFeedback = new TestFeedback(assessmentTest);
+		testFeedback.setOutcomeValue(identifier);
+		testFeedback.setOutcomeIdentifier(QTI21Constants.FEEDBACKMODAL_IDENTIFIER);
+		testFeedback.setVisibilityMode(VisibilityMode.SHOW_IF_MATCH);
+		testFeedback.setTestFeedbackAccess(TestFeedbackAccess.AT_END);
+		testFeedback.setTitle(title);
+		
+		new AssessmentHtmlBuilder().appendHtml(testFeedback, text);
+		
+		return testFeedback;
+	}
+	/*
+	<outcomeCondition>
+		<outcomeIf>
+			<and>
+				<match>
+					<baseValue baseType="boolean">
+						false
+					</baseValue>
+					<variable identifier="PASS" />
+				</match>
+			</and>
+			<setOutcomeValue identifier="FEEDBACKMODAL">
+				<multiple>
+					<variable identifier="FEEDBACKMODAL" />
+					<baseValue baseType="identifier">
+						Feedback1757237693
+					</baseValue>
+				</multiple>
+			</setOutcomeValue>
+		</outcomeIf>
+	</outcomeCondition>
+	 */
+	public final static OutcomeCondition createTestFeedbackModalCondition(AssessmentTest assessmentTest, boolean condition, Identifier feedbackIdentifier) {
+		OutcomeCondition outcomeCondition = new OutcomeCondition(assessmentTest);
+		OutcomeIf outcomeIf = new OutcomeIf(outcomeCondition);
+		outcomeCondition.setOutcomeIf(outcomeIf);
+		
+		{//condition
+			And and = new And(outcomeIf);
+			outcomeIf.getExpressions().add(and);
+			
+			Match match = new Match(and);
+			and.getExpressions().add(match);
+			
+			BaseValue feedbackVal = new BaseValue(match);
+			feedbackVal.setBaseTypeAttrValue(BaseType.BOOLEAN);
+			feedbackVal.setSingleValue(condition ? BooleanValue.TRUE : BooleanValue.FALSE);
+			match.getExpressions().add(feedbackVal);
+			
+			Variable variable = new Variable(match);
+			variable.setIdentifier(ComplexReferenceIdentifier.parseString(QTI21Constants.PASS));
+			match.getExpressions().add(variable);
+		}
+		
+		{//outcome
+			SetOutcomeValue setOutcomeValue = new SetOutcomeValue(outcomeIf);
+			setOutcomeValue.setIdentifier(QTI21Constants.FEEDBACKMODAL_IDENTIFIER);
+			outcomeIf.getOutcomeRules().add(setOutcomeValue);
+			
+			Multiple multiple = new Multiple(setOutcomeValue);
+			setOutcomeValue.getExpressions().add(multiple);
+			
+			Variable variable = new Variable(multiple);
+			variable.setIdentifier(ComplexReferenceIdentifier.parseString(QTI21Constants.FEEDBACKMODAL));
+			multiple.getExpressions().add(variable);
+			
+			BaseValue feedbackVal = new BaseValue(multiple);
+			feedbackVal.setBaseTypeAttrValue(BaseType.IDENTIFIER);
+			feedbackVal.setSingleValue(new IdentifierValue(feedbackIdentifier));
+			multiple.getExpressions().add(feedbackVal);
+		}
+		
+		return outcomeCondition;
 	}
 
 }

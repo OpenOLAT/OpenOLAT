@@ -57,6 +57,8 @@ public class QTI21Constants {
 
 	public static final Identifier PASS_IDENTIFIER = Identifier.assumedLegal(PASS);
 	
+	public static final ComplexReferenceIdentifier PASS_CLX_IDENTIFIER = ComplexReferenceIdentifier.parseString(PASS);
+	
 	public static final String FEEDBACKBASIC = "FEEDBACKBASIC";
 	
 	public static final Identifier FEEDBACKBASIC_IDENTIFIER = Identifier.parseString(FEEDBACKBASIC);

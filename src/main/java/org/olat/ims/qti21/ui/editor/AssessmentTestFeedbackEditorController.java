@@ -96,14 +96,14 @@ public class AssessmentTestFeedbackEditorController extends FormBasicController 
 		}
 		
 		String failedTitle = feedbackFailedTitleEl.getValue();
-		String fialedText = feedbackFailedTextEl.getValue();
-		if(StringHelper.containsNonWhitespace(passedTitle)) {
-			TestFeedbackBuilder failedBuilder = testBuilder.getPassedFeedback();
+		String failedText = feedbackFailedTextEl.getValue();
+		if(StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(failedText))) {
+			TestFeedbackBuilder failedBuilder = testBuilder.getFailedFeedback();
 			if(failedBuilder == null) {
 				failedBuilder = testBuilder.createFailedFeedback();
 			}
 			failedBuilder.setTitle(failedTitle);
-			failedBuilder.setText(fialedText);
+			failedBuilder.setText(failedText);
 		}
 		
 		fireEvent(ureq, AssessmentTestEvent.ASSESSMENT_TEST_CHANGED_EVENT);

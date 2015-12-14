@@ -25,13 +25,18 @@ import org.olat.ims.qti21.QTI21Constants;
 
 import uk.ac.ed.ph.jqtiplus.node.expression.Expression;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
+import uk.ac.ed.ph.jqtiplus.node.expression.general.Variable;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.And;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Match;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.node.test.TestFeedback;
 import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeCondition;
 import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeIf;
 import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeRule;
 import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.SetOutcomeValue;
+import uk.ac.ed.ph.jqtiplus.types.ComplexReferenceIdentifier;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.value.BooleanValue;
 import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
 import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 
@@ -60,6 +65,10 @@ public class TestFeedbackBuilder {
 		}
 	}
 	
+	public TestFeedback getTestFeedback() {
+		return testFeedback;
+	}
+	
 	public Identifier getModalFeedbackIdentifier() {
 		return testFeedback.getOutcomeValue();
 	}
@@ -71,12 +80,12 @@ public class TestFeedbackBuilder {
 	
 	public boolean isPassedRule() {
 		OutcomeRule feedbackRule = findFeedbackRule(testFeedback.getOutcomeValue());
-		return findFeedbackRule(feedbackRule, QTI21Constants.CORRECT_IDENTIFIER);
+		return findFeedbackMatch(feedbackRule, true, QTI21Constants.PASS_CLX_IDENTIFIER);
 	}
 	
 	public boolean isFailedRule() {
 		OutcomeRule feedbackRule = findFeedbackRule(testFeedback.getOutcomeValue());
-		return findFeedbackRule(feedbackRule, QTI21Constants.INCORRECT_IDENTIFIER);
+		return findFeedbackMatch(feedbackRule, false, QTI21Constants.PASS_CLX_IDENTIFIER);
 	}
 	
 	public String getTitle() {
@@ -132,23 +141,51 @@ public class TestFeedbackBuilder {
 		return false;
 	}
 	
-	private boolean findFeedbackRule(OutcomeRule outcomeRule, Identifier id) {
+	private boolean findFeedbackMatch(OutcomeRule outcomeRule, boolean pass, ComplexReferenceIdentifier id) {
 		if(outcomeRule instanceof OutcomeCondition) {
 			OutcomeCondition outcomeCondition = (OutcomeCondition)outcomeRule;
 			OutcomeIf outcomeIf = outcomeCondition.getOutcomeIf();
-			List<Expression> expressions = outcomeIf.getExpressions();
-			if(findFeedbackRuleInExpression(expressions, id)) {
-				return true;
+			if(outcomeIf != null && outcomeIf.getExpressions().size() == 1) {
+				Expression mustBeAnd = outcomeIf.getExpressions().get(0);
+				if(mustBeAnd instanceof And && mustBeAnd.getExpressions().size() == 1) {
+					Expression mustBeMatch = mustBeAnd.getExpressions().get(0);
+					if(mustBeMatch instanceof Match && mustBeMatch.getExpressions().size() == 2) {
+						return findFeedbackMatch((Match)mustBeMatch, pass, id);
+					}
+				}
 			}
 		}
 		return false;
 	}
+	
+	private boolean findFeedbackMatch(Match match, boolean pass, ComplexReferenceIdentifier id) {
+		Expression firstExpression = match.getExpressions().get(0);
+		Expression secondExpression = match.getExpressions().get(1);
+		if(findBaseValue(firstExpression, pass) && findVariable(secondExpression, id)) {
+			return true;
+		}
+		if(findBaseValue(secondExpression, pass) && findVariable(firstExpression, id)) {
+			return true;
+		}
+		return false;
+	}
 
-	private boolean findFeedbackRuleInExpression(List<Expression> expressions, Identifier feedbackIdentifier) {
-		for(Expression expression:expressions) {
-			if(findFeedbackRuleInExpression(expression, feedbackIdentifier)) {
-				return true;
+	private boolean findBaseValue(Expression expression, boolean value) {
+		if(expression instanceof BaseValue) {
+			BaseValue bValue = (BaseValue)expression;
+			SingleValue sValue = bValue.getSingleValue();
+			if(sValue instanceof BooleanValue) {
+				BooleanValue booleanValue = (BooleanValue)sValue;
+				return booleanValue.booleanValue() == value;
 			}
+		}
+		return false;
+	}
+	
+	private boolean findVariable(Expression expression, ComplexReferenceIdentifier variableIdentifier) {
+		if(expression instanceof Variable) {
+			Variable variable = (Variable)expression;
+			return variable.getIdentifier() != null && variable.getIdentifier().equals(variableIdentifier);
 		}
 		return false;
 	}
