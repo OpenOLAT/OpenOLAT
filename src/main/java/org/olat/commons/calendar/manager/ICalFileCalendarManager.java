@@ -756,7 +756,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 			if("true".equals(value)) {
 				value = "all";
 			}
-			CalendarManagedFlag[] values = CalendarManagedFlag.toEnum(managed.getValue());
+			CalendarManagedFlag[] values = CalendarManagedFlag.toEnum(value);
 			calEvent.setManagedFlags(values);
 		}
 		Property externalId = event.getProperty(ICAL_X_OLAT_EXTERNAL_ID);
