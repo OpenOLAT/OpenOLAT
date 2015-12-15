@@ -46,7 +46,11 @@ public class MembersCourseNodeEditController extends ActivateableTabbableDefault
 	//Config keys
 	public static final String CONFIG_KEY_SHOWOWNER = "showOwner";
 	public static final String CONFIG_KEY_SHOWCOACHES = "showCoaches";
-	public static final String CONFIG_KEY_SHOWPARTICIPANTS	 = "showParticpants";
+	public static final String CONFIG_KEY_SHOWPARTICIPANTS = "showParticpants";
+	
+	public static final String CONFIG_KEY_EMAIL_FUNCTION = "emailFunction";
+	public static final String EMAIL_FUNCTION_ALL = "all";
+	public static final String EMAIL_FUNCTION_COACH_ADMIN = "coachAndAdmin";
 
 	private static final String[] paneKeys = {PANE_TAB_MEMBERSCONFIG};
 

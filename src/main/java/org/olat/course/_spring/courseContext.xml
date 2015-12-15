@@ -17,7 +17,6 @@
 	<import resource="classpath:/org/olat/course/nodes/_spring/buildingblockContext.xml"/>
 	<import resource="classpath:/org/olat/course/nodes/basiclti/_spring/basicLtiContext.xml"/>
 	<import resource="classpath:/org/olat/course/nodes/info/_spring/infoMessageContext.xml"/>
-	<import resource="classpath:/org/olat/course/nodes/members/_spring/membersCourseContext.xml"/>
 	<import resource="classpath:/org/olat/course/nodes/openmeetings/_spring/buildingblockContext.xml"/>
 	<import resource="classpath:/org/olat/course/nodes/portfolio/_spring/portfolioBBContext.xml"/>
 	<import resource="classpath:/org/olat/course/nodes/vitero/_spring/buildingblockContext.xml"/>

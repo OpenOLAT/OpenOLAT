@@ -19,6 +19,13 @@
  */
 package org.olat.course.nodes.members;
 
+import static org.olat.course.nodes.members.MembersCourseNodeEditController.CONFIG_KEY_EMAIL_FUNCTION;
+import static org.olat.course.nodes.members.MembersCourseNodeEditController.CONFIG_KEY_SHOWCOACHES;
+import static org.olat.course.nodes.members.MembersCourseNodeEditController.CONFIG_KEY_SHOWOWNER;
+import static org.olat.course.nodes.members.MembersCourseNodeEditController.CONFIG_KEY_SHOWPARTICIPANTS;
+import static org.olat.course.nodes.members.MembersCourseNodeEditController.EMAIL_FUNCTION_ALL;
+import static org.olat.course.nodes.members.MembersCourseNodeEditController.EMAIL_FUNCTION_COACH_ADMIN;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -30,7 +37,6 @@ import java.util.Set;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -53,16 +59,16 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.resource.OLATResource;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -75,11 +81,8 @@ import org.olat.user.UserManager;
  */
 public class MembersCourseNodeRunController extends FormBasicController {
 
-	private final RepositoryManager rm ;
-	private final UserManager userManager;
-	private final BaseSecurity securityManager;
-	private final RepositoryService repositoryService;
-	private final UserCourseEnvironment userCourseEnv;
+	
+	private final CourseEnvironment courseEnv;
 	private final DisplayPortraitManager portraitManager;
 	private final String avatarBaseURL;
 	
@@ -93,45 +96,66 @@ public class MembersCourseNodeRunController extends FormBasicController {
 	private List<FormLink> coachesLinks;
 	private List<FormLink> participantsLinks;
 
+	private final boolean canEmail;
 	private final boolean showOwners;
 	private final boolean showCoaches;
 	private final boolean showParticipants;
 
 	private ContactFormController emailController;
 	private CloseableModalController cmc;
+	
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private RepositoryService repositoryService;
 
 	public MembersCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, ModuleConfiguration config) {
 		super(ureq, wControl, "members");
 
-		this.userCourseEnv = userCourseEnv;
+		courseEnv = userCourseEnv.getCourseEnvironment();
 		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new UserAvatarMapper(true));
-		
-		rm = RepositoryManager.getInstance();
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
-		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
-		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		portraitManager = DisplayPortraitManager.getInstance();
 
-		showOwners = config.getBooleanSafe(MembersCourseNodeEditController.CONFIG_KEY_SHOWOWNER);
-		showCoaches = config.getBooleanSafe(MembersCourseNodeEditController.CONFIG_KEY_SHOWCOACHES);
-		showParticipants = config.getBooleanSafe(MembersCourseNodeEditController.CONFIG_KEY_SHOWPARTICIPANTS);
+		showOwners = config.getBooleanSafe(CONFIG_KEY_SHOWOWNER);
+		showCoaches = config.getBooleanSafe(CONFIG_KEY_SHOWCOACHES);
+		showParticipants = config.getBooleanSafe(CONFIG_KEY_SHOWPARTICIPANTS);
+		
+		String emailFct = config.getStringValue(CONFIG_KEY_EMAIL_FUNCTION, EMAIL_FUNCTION_COACH_ADMIN);
+		canEmail = EMAIL_FUNCTION_ALL.equals(emailFct) || userCourseEnv.isAdmin() || userCourseEnv.isCoach();
+
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		List<Identity> owners = getOwners();
-		CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		List<Identity> coaches = new ArrayList<Identity>(cgm.getCoachesFromBusinessGroups());
-		coaches.addAll(cgm.getCoaches());
-		List<Identity> participants = new ArrayList<Identity>(cgm.getParticipantsFromBusinessGroups());
-		participants.addAll(cgm.getParticipants());
+		List<Identity> owners;
+		if(showOwners) {
+			owners = getOwners();
+		} else {
+			owners = Collections.emptyList();
+		}
+		
+		List<Identity> coaches = new ArrayList<>();
+		if(showCoaches) {
+			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
+			coaches.addAll(cgm.getCoachesFromBusinessGroups());
+			coaches.addAll(cgm.getCoaches());
+		}
+		
+		List<Identity> participants = new ArrayList<>();
+		if(showParticipants) {
+			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
+			participants.addAll(cgm.getParticipantsFromBusinessGroups());
+			participants.addAll(cgm.getParticipants());
+		}
+
 		Comparator<Identity> idComparator = new IdentityComparator();
 		Collections.sort(owners, idComparator);
 		Collections.sort(coaches, idComparator);
 		Collections.sort(participants, idComparator);
 		
-		boolean canEmail =  canEmail(owners, coaches);
 		if(canEmail) {
 			ownersEmailLink = uifactory.addFormLink("owners-email", "members.email.title", null, formLayout, Link.BUTTON_XSMALL);
 			ownersEmailLink.setIconLeftCSS("o_icon o_icon_mail");
@@ -162,24 +186,8 @@ public class MembersCourseNodeRunController extends FormBasicController {
 	}
 	
 	private List<Identity> getOwners() {
-		OLATResource resource = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource();
-		RepositoryEntry courseRepositoryEntry = rm.lookupRepositoryEntry(resource, true);
+		RepositoryEntry courseRepositoryEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 		return repositoryService.getMembers(courseRepositoryEntry, GroupRoles.owner.name());
-	}
-	
-	private boolean canEmail(List<Identity> owners, List<Identity> coaches) {
-		for(Identity owner:owners) {
-			if(owner.equalsByPersistableKey(getIdentity())) {
-				return true;
-			}
-		}
-		
-		for(Identity coach:coaches) {
-			if(coach.equalsByPersistableKey(getIdentity())) {
-				return true;
-			}
-		}
-		return false;
 	}
 	
 	private List<FormLink> initFormMemberList(String name, List<Identity> ids, Set<Long> duplicateCatcher, FormItemContainer formLayout, boolean withEmail) {
@@ -238,8 +246,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 			portraitCssClass = DisplayPortraitManager.DUMMY_BIG_CSS_CLASS;
 		}
 		String fullname = userManager.getUserDisplayName(identity);
-		Member member = new Member(identity.getKey(), firstname, lastname, fullname, rsrc != null, portraitCssClass);
-		return member;
+		return new Member(identity.getKey(), firstname, lastname, fullname, rsrc != null, portraitCssClass);
 	}
 	
 	@Override
@@ -261,33 +268,33 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		} else if (emailLinks.contains(source)) {
 			FormLink emailLink = (FormLink)source;
 			Member member = (Member)emailLink.getUserObject();
-			ContactList memberList = new ContactList(translate("members.to", new String[]{member.getFullName(), userCourseEnv.getCourseEnvironment().getCourseTitle()}));
+			ContactList memberList = new ContactList(translate("members.to", new String[]{member.getFullName(), courseEnv.getCourseTitle()}));
 			Identity identity = securityManager.loadIdentityByKey(member.getKey());
 			memberList.add(identity);
 			sendEmailToMember(memberList, ureq);
 		} else if (source == ownersEmailLink) {
-			ContactList ownerList = new ContactList(translate("owners.to", new String[]{userCourseEnv.getCourseEnvironment().getCourseTitle()}));
+			ContactList ownerList = new ContactList(translate("owners.to", new String[]{ courseEnv.getCourseTitle() }));
 			ownerList.addAllIdentites(getOwners());
 			sendEmailToMember(ownerList, ureq);
 		} else if (source == coachesEmailLink) {
-			ContactList coachList = new ContactList(translate("coaches.to", new String[]{userCourseEnv.getCourseEnvironment().getCourseTitle()}));
+			ContactList coachList = new ContactList(translate("coaches.to", new String[]{ courseEnv.getCourseTitle() }));
 			Set<Long> sendToWhatYouSee = new HashSet<>();
 			for(FormLink coachLink:coachesLinks) {
 				Member member = (Member)coachLink.getUserObject();
 				sendToWhatYouSee.add(member.getKey());
 			}
-			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
+			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
 			avoidInvisibleMember(cgm.getCoachesFromBusinessGroups(), coachList, sendToWhatYouSee);
 			avoidInvisibleMember(cgm.getCoaches(), coachList, sendToWhatYouSee);
 			sendEmailToMember(coachList, ureq);
 		} else if (source == participantsEmailLink) {
-			ContactList participantList = new ContactList(translate("participants.to", new String[]{userCourseEnv.getCourseEnvironment().getCourseTitle()}));
+			ContactList participantList = new ContactList(translate("participants.to", new String[]{ courseEnv.getCourseTitle() }));
 			Set<Long> sendToWhatYouSee = new HashSet<>();
 			for(FormLink participantLink:participantsLinks) {
 				Member member = (Member)participantLink.getUserObject();
 				sendToWhatYouSee.add(member.getKey());
 			}
-			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
+			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
 			avoidInvisibleMember(cgm.getParticipantsFromBusinessGroups(), participantList, sendToWhatYouSee);
 			avoidInvisibleMember(cgm.getParticipants(), participantList, sendToWhatYouSee);
 			sendEmailToMember(participantList, ureq);
