@@ -172,6 +172,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 		displayname,
 		authors,
 		author,
+		location,
 		access,
 		ac,
 		creationDate,

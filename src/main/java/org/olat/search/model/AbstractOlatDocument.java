@@ -65,6 +65,8 @@ public abstract class AbstractOlatDocument implements Serializable {
 	public  static final String RESOURCEURL_MD5_FIELD_NAME = "resourceurlmd";
 
 	public  static final String AUTHOR_FIELD_NAME = "author";
+	
+	public  static final String LOCATION_FIELD_NAME = "location";
 
 	public  static final String CREATED_FIELD_NAME = "created";
 
@@ -90,6 +92,7 @@ public abstract class AbstractOlatDocument implements Serializable {
 		fields.add(FILETYPE_FIELD_NAME);
 		fields.add(RESOURCEURL_FIELD_NAME);
 		fields.add(AUTHOR_FIELD_NAME);
+		fields.add(LOCATION_FIELD_NAME);
 		fields.add(CREATED_FIELD_NAME);
 		fields.add(CHANGED_FIELD_NAME);
 		fields.add(TIME_STAMP_NAME);
@@ -111,9 +114,10 @@ public abstract class AbstractOlatDocument implements Serializable {
 	/** JumpInUrl to E.g. 'Group:123456:Forum:342556:Message:223344'. */ 
 	private String resourceUrl = "";
 	private String author = "";
-	private Date   createdDate = null;
-	private Date   lastChange = null;
-	private Date   timestamp = null;
+	private String location = "";
+	private Date createdDate;
+	private Date lastChange;
+	private Date timestamp;
 	/** Various metadata, most likely doublin core **/
 	protected Map<String, List<String>> metadata = null;
 	/* e.g. Course */
@@ -138,6 +142,7 @@ public abstract class AbstractOlatDocument implements Serializable {
 		fileType = document.get(FILETYPE_FIELD_NAME);
 		resourceUrl = document.get(RESOURCEURL_FIELD_NAME);
 		author = document.get(AUTHOR_FIELD_NAME);
+		location = document.get(LOCATION_FIELD_NAME);
 		reservedTo = document.get(RESERVED_TO);
 		try {
 			String f = document.get(CREATED_FIELD_NAME);
@@ -191,6 +196,17 @@ public abstract class AbstractOlatDocument implements Serializable {
 	 */
 	public void setAuthor(String author) {
 		this.author = author;
+	}
+	
+	public String getLocation() {
+		if (location == null) {
+			return ""; // Do not return null
+		}
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
 	}
 
 	/**

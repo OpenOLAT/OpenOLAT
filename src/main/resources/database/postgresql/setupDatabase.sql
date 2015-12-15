@@ -306,6 +306,7 @@ create table o_repositoryentry (
    resourcename varchar(100) not null,
    authors varchar(2048),
    mainlanguage varchar(255),
+   location varchar(255),
    objectives varchar(2048),
    requirements varchar(2048),
    credits varchar(2048),

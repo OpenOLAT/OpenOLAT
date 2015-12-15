@@ -323,6 +323,10 @@ public class RepositoryEntryAuthorQueries {
 					sb.append(" order by lower(v.initialAuthor)");
 					appendAsc(sb, asc).append(", lower(v.displayname) asc");	
 					break;
+				case location:
+					sb.append(" order by lower(v.location)");
+					appendAsc(sb, asc).append(", lower(v.displayname) asc");	
+					break;
 				case access:
 					if(asc) {
 						sb.append(" order by v.access asc, lower(v.displayname) asc");

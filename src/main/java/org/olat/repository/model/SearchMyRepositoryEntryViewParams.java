@@ -197,6 +197,7 @@ public class SearchMyRepositoryEntryViewParams {
 		title,
 		lifecycle,
 		author,
+		location,
 		creationDate,
 		lastModified,
 		rating,

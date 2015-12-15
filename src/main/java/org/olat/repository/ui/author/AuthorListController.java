@@ -252,6 +252,8 @@ public class AuthorListController extends FormBasicController implements Activat
 				true, OrderBy.displayname.name(), renderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.authors.i18nKey(), Cols.authors.ordinal(),
 				true, OrderBy.authors.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.location.i18nKey(), Cols.location.ordinal(),
+				true, OrderBy.location.name()));
 		if(repositoryModule.isManagedRepositoryEntries()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.externalId.i18nKey(), Cols.externalId.ordinal(),
 					true, OrderBy.externalId.name()));

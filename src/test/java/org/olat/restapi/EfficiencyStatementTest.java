@@ -67,7 +67,7 @@ public class EfficiencyStatementTest extends OlatJerseyTestCase {
 		// create a standalone efficiency statement
 		Identity admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("eff-1");
-		ICourse course = CoursesWebService.createEmptyCourse(admin, "courses1", "courses1 long name", null, null, RepositoryEntry.ACC_OWNERS, false, null, null, null, null);
+		ICourse course = CoursesWebService.createEmptyCourse(admin, "courses1", "courses1 long name", null, null, RepositoryEntry.ACC_OWNERS, false, null, null, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		OLATResource resource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();

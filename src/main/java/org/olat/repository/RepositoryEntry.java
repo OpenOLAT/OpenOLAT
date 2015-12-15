@@ -136,6 +136,8 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 
 	@Column(name="mainlanguage", nullable=true, insertable=true, updatable=true)
 	private String mainLanguage;
+	@Column(name="location", nullable=true, insertable=true, updatable=true)
+	private String location;
 	@Column(name="objectives", nullable=true, insertable=true, updatable=true)
 	private String objectives;
 	@Column(name="requirements", nullable=true, insertable=true, updatable=true)
@@ -236,6 +238,14 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 
 	public void setMainLanguage(String mainLanguage) {
 		this.mainLanguage = mainLanguage;
+	}
+
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
 	}
 
 	public String getObjectives() {

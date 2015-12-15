@@ -745,8 +745,8 @@ public class RepositoryManager extends BasicManager {
 	 */
 	public RepositoryEntry setDescriptionAndName(final RepositoryEntry re,
 			String displayName, String externalRef, String authors, String description,
-			String objectives, String requirements, String credits,
-			String mainLanguage, String expenditureOfWork, RepositoryEntryLifecycle cycle) {
+			String objectives, String requirements, String credits, String mainLanguage,
+			String location, String expenditureOfWork, RepositoryEntryLifecycle cycle) {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
 		reloadedRe.setDisplayname(displayName);
 		reloadedRe.setAuthors(authors);
@@ -757,6 +757,7 @@ public class RepositoryManager extends BasicManager {
 		reloadedRe.setCredits(credits);
 		reloadedRe.setMainLanguage(mainLanguage);
 		reloadedRe.setExpenditureOfWork(expenditureOfWork);
+		reloadedRe.setLocation(location);
 
 		RepositoryEntryLifecycle cycleToDelete = null;
 		RepositoryEntryLifecycle currentCycle = reloadedRe.getLifecycle();

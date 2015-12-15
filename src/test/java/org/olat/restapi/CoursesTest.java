@@ -103,11 +103,11 @@ public class CoursesTest extends OlatJerseyTestCase {
 		try {
 			// create course and persist as OLATResourceImpl
 			admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
-			course1 = CoursesWebService.createEmptyCourse(admin, "courses1", "courses1 long name", null, null, RepositoryEntry.ACC_OWNERS, false, null, null, null, null);
+			course1 = CoursesWebService.createEmptyCourse(admin, "courses1", "courses1 long name", null, null, RepositoryEntry.ACC_OWNERS, false, null, null, null, null, null, null);
 			
 			externalId = UUID.randomUUID().toString();
 			externalRef = UUID.randomUUID().toString();
-			course2 = CoursesWebService.createEmptyCourse(admin, "courses2", "courses2 long name", null, null, RepositoryEntry.ACC_OWNERS, false, externalId, externalRef, "all", null);
+			course2 = CoursesWebService.createEmptyCourse(admin, "courses2", "courses2 long name", null, null, RepositoryEntry.ACC_OWNERS, false, null, null, externalId, externalRef, "all", null);
 			
 			dbInstance.commitAndCloseSession();
 			
@@ -115,7 +115,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 			re2 = repositoryManager.lookupRepositoryEntry(course2, false);
 
 			externalId3 = UUID.randomUUID().toString();
-			course3 = CoursesWebService.createEmptyCourse(admin, "courses3", "courses3 long name", null, null, RepositoryEntry.ACC_OWNERS, false, externalId3, null, "all", null);
+			course3 = CoursesWebService.createEmptyCourse(admin, "courses3", "courses3 long name", null, null, RepositoryEntry.ACC_OWNERS, false, null, null, externalId3, null, "all", null);
 			re3 = repositoryManager.lookupRepositoryEntry(course3, false);
 			RepositoryEntryLifecycle lifecycle3 = reLifecycleDao.create("course3 lifecycle", UUID.randomUUID().toString(), true, new Date(), new Date());
 			dbInstance.commit();

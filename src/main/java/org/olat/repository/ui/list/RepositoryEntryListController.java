@@ -179,7 +179,9 @@ public class RepositoryEntryListController extends FormBasicController
 				true, OrderBy.lifecycleStart.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.lifecycleEnd.i18nKey(), Cols.lifecycleEnd.ordinal(),
 				true, OrderBy.lifecycleEnd.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,Cols.details.i18nKey(), Cols.details.ordinal(), false, null));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.location.i18nKey(), Cols.location.ordinal(),
+				true, OrderBy.location.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.details.i18nKey(), Cols.details.ordinal(), false, null));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.start.i18nKey(), Cols.start.ordinal()));
 		if(repositoryModule.isRatingEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.ratings.i18nKey(), Cols.ratings.ordinal(),

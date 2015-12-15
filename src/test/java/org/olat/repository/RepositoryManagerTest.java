@@ -1196,7 +1196,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		
 		String newName = "Brand new name";
 		String newDesc = "Brand new description";
-		re = repositoryManager.setDescriptionAndName(re, newName, null, null, newDesc, null, null, null, null, null, publicCycle);
+		re = repositoryManager.setDescriptionAndName(re, newName, null, null, newDesc, null, null, null, null, null, null, publicCycle);
 		Assert.assertNotNull(re);
 		
 		dbInstance.commitAndCloseSession();

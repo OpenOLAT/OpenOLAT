@@ -95,7 +95,8 @@ public class OlatDocument extends AbstractOlatDocument {
 			document.add(new StringField(CSS_ICON,getCssIcon(), Field.Store.YES));
 		}
 		document.add(new StringField(FILETYPE_FIELD_NAME,getFileType(), Field.Store.YES));
-		document.add(createTextField(AUTHOR_FIELD_NAME,getAuthor(), 2));
+		document.add(createTextField(AUTHOR_FIELD_NAME, getAuthor(), 2));
+		document.add(createTextField(LOCATION_FIELD_NAME, getLocation(), 2));
     
 		try {
 			if(getCreatedDate() != null) {
@@ -150,7 +151,11 @@ public class OlatDocument extends AbstractOlatDocument {
 	 * @return
 	 */
 	protected static Field createTextField(String fieldName, String content, float boost) {
-		TextField field = new TextField(fieldName,content, Field.Store.YES);
+		if(fieldName.equals(LOCATION_FIELD_NAME) && StringHelper.containsNonWhitespace(content)) {
+			System.out.println("");
+		}
+		
+		TextField field = new TextField(fieldName, content, Field.Store.YES);
 		field.setBoost(boost);
 		return field;
 	}

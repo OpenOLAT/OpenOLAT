@@ -51,9 +51,9 @@ import org.olat.resource.accesscontrol.manager.ACReservationDAO;
  */
 
 public class ProjectImpl extends PersistentObject implements Project {
-	/**
-	 * 
-	 */
+
+	private static final OLog log = Tracing.createLoggerFor(ProjectImpl.class);
+	
 	private static final long serialVersionUID = 1L;
 
 	private static final String CUSTOMFIELD_KEY = "customfield_";
@@ -61,7 +61,6 @@ public class ProjectImpl extends PersistentObject implements Project {
 	private static final String EVENT_START = "event_start";
 	private static final String EVENT_END   = "event_end";
 
-	private OLog log = Tracing.createLoggerFor(this.getClass());
 	
 	private String        title;
 	private String        description;

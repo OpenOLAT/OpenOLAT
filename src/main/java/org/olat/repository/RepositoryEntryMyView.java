@@ -47,6 +47,8 @@ public interface RepositoryEntryMyView extends OLATResourceable {
 	
 	public String getAuthors();
 	
+	public String getLocation();
+	
 	public boolean isMembersOnly();
 	
 	public OLATResource getOlatResource();

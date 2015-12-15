@@ -82,6 +82,7 @@ public class RepositoryEntryDocumentFactory {
 		oDocument.setParentContextType(searchResourceContext.getParentContextType());
 		oDocument.setParentContextName(searchResourceContext.getParentContextName());
 		oDocument.setAuthor(re.getAuthors());
+		oDocument.setLocation(re.getLocation());
 		
 		//add specific fields
 		Document document = oDocument.getLuceneDocument();

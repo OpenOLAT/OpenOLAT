@@ -3,6 +3,8 @@ alter table o_message add column pseudonym varchar(255);
 alter table o_message add column guest bit default 0;
 
 
+alter table o_repositoryEntry add column location varchar(255) default null;
+
 
 create table o_cal_use_config (
    id bigint not null,
