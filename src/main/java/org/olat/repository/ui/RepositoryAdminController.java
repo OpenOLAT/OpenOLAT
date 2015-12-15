@@ -23,11 +23,14 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
+import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,38 +42,67 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class RepositoryAdminController extends FormBasicController {
-	
-	private MultipleSelectionElement myCourseSearchEl, commentEl, ratingEl;
+
 	private static final String[] keys = {"on"};
+	private static final String[] leaveKeys = {
+			RepositoryEntryAllowToLeaveOptions.atAnyTime.name(),
+			RepositoryEntryAllowToLeaveOptions.afterEndDate.name(),
+			RepositoryEntryAllowToLeaveOptions.never.name()
+	};
+	
+	private SingleSelection leaveEl;
+	private MultipleSelectionElement myCourseSearchEl, commentEl, ratingEl;
 	
 	@Autowired
 	private RepositoryModule repositoryModule;
 	
 	public RepositoryAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("repository.admin.title");
+		FormLayoutContainer searchCont = FormLayoutContainer.createDefaultFormLayout("search", getTranslator());
+		searchCont.setFormTitle(translate("repository.admin.title"));
+		formLayout.add(searchCont);
+		searchCont.setRootForm(mainForm);
 
 		boolean searchEnabled = repositoryModule.isMyCoursesSearchEnabled();
 		String[] values = new String[] { translate("on") };
-		myCourseSearchEl = uifactory.addCheckboxesHorizontal("my.course.search.enabled", formLayout, keys, values);
-		myCourseSearchEl.addActionListener(FormEvent.ONCLICK);
+		myCourseSearchEl = uifactory.addCheckboxesHorizontal("my.course.search.enabled", searchCont, keys, values);
+		myCourseSearchEl.addActionListener(FormEvent.ONCHANGE);
 		myCourseSearchEl.select(keys[0], searchEnabled);
 		
 		boolean commentEnabled = repositoryModule.isCommentEnabled();
-		commentEl = uifactory.addCheckboxesHorizontal("my.course.comment.enabled", formLayout, keys, values);
-		commentEl.addActionListener(FormEvent.ONCLICK);
+		commentEl = uifactory.addCheckboxesHorizontal("my.course.comment.enabled", searchCont, keys, values);
+		commentEl.addActionListener(FormEvent.ONCHANGE);
 		commentEl.select(keys[0], commentEnabled);
 		
-		boolean ratingEnabled = repositoryModule.isCommentEnabled();
-		ratingEl = uifactory.addCheckboxesHorizontal("my.course.rating.enabled", formLayout, keys, values);
-		ratingEl.addActionListener(FormEvent.ONCLICK);
+		boolean ratingEnabled = repositoryModule.isRatingEnabled();
+		ratingEl = uifactory.addCheckboxesHorizontal("my.course.rating.enabled", searchCont, keys, values);
+		ratingEl.addActionListener(FormEvent.ONCHANGE);
 		ratingEl.select(keys[0], ratingEnabled);
+		
+		FormLayoutContainer leaveCont = FormLayoutContainer.createDefaultFormLayout("leave", getTranslator());
+		leaveCont.setFormTitle(translate("repository.admin.leave.title"));
+		formLayout.add(leaveCont);
+		leaveCont.setRootForm(mainForm);
+		
+		String[] leaveValues = new String[] {
+				translate("rentry.leave.atanytime"),
+				translate("rentry.leave.afterenddate"),
+				translate("rentry.leave.never")
+		};
+		leaveEl = uifactory.addDropdownSingleselect("leave.courses", "repository.admin.leave.label", leaveCont, leaveKeys, leaveValues, null);
+		leaveEl.addActionListener(FormEvent.ONCHANGE);
+		RepositoryEntryAllowToLeaveOptions leaveOption = repositoryModule.getAllowToLeaveDefaultOption();
+		if(leaveOption != null) {
+			leaveEl.select(leaveOption.name(), true);
+		} else {
+			leaveEl.select(RepositoryEntryAllowToLeaveOptions.atAnyTime.name(), true);
+		}
 	}
 	
 	@Override
@@ -91,6 +123,11 @@ public class RepositoryAdminController extends FormBasicController {
 		} else if(ratingEl == source) {
 			boolean on = !ratingEl.getSelectedKeys().isEmpty();
 			repositoryModule.setRatingEnabled(on);
+			getWindowControl().setInfo("saved");
+		} else if(leaveEl == source) {
+			String selectedOption = leaveEl.getSelectedKey();
+			RepositoryEntryAllowToLeaveOptions option = RepositoryEntryAllowToLeaveOptions.valueOf(selectedOption);
+			repositoryModule.setAllowToLeaveDefaultOption(option);
 			getWindowControl().setInfo("saved");
 		}
 	}

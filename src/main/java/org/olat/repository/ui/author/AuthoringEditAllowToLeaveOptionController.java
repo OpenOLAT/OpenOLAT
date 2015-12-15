@@ -30,7 +30,9 @@ import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -49,6 +51,8 @@ public class AuthoringEditAllowToLeaveOptionController extends FormBasicControll
 	private SingleSelection leaveEl;
 	
 	private RepositoryEntry entry;
+	@Autowired
+	private RepositoryModule repositoryModule;
 	
 	public AuthoringEditAllowToLeaveOptionController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl);
@@ -80,7 +84,8 @@ public class AuthoringEditAllowToLeaveOptionController extends FormBasicControll
 			if(managedLeaving) {
 				leaveEl.select(RepositoryEntryAllowToLeaveOptions.never.name(), true);
 			} else {
-				leaveEl.select(RepositoryEntryAllowToLeaveOptions.atAnyTime.name(), true);
+				RepositoryEntryAllowToLeaveOptions defaultOption = repositoryModule.getAllowToLeaveDefaultOption();
+				leaveEl.select(defaultOption.name(), true);
 			}
 		}
 		leaveEl.setEnabled(!managedLeaving);

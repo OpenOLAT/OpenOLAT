@@ -65,6 +65,7 @@ import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -119,6 +120,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 	@Autowired
+	private RepositoryModule repositoryModule;
+	@Autowired
 	private OLATResourceManager resourceManager;
 	@Autowired
 	private CertificatesManager certificatesManager;
@@ -166,7 +169,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 		re.setDisplayname(displayname);
 		re.setResourcename(StringHelper.containsNonWhitespace(resourceName) ? resourceName : "-");
 		re.setDescription(description == null ? "" : description);
-		re.setAllowToLeaveOption(RepositoryEntryAllowToLeaveOptions.atAnyTime);
+		re.setAllowToLeaveOption(repositoryModule.getAllowToLeaveDefaultOption());
 		if(resource == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", CodeHelper.getForeverUniqueID());
 			resource = resourceManager.createAndPersistOLATResourceInstance(ores);
