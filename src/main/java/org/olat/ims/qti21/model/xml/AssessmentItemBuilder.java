@@ -56,8 +56,8 @@ public abstract class AssessmentItemBuilder {
 	private ScoreBuilder minScoreBuilder;
 	private ScoreBuilder maxScoreBuilder;
 	
-	private ModalFeedbackBuilder correctFeedback;
-	private ModalFeedbackBuilder incorrectFeedback;
+	protected ModalFeedbackBuilder correctFeedback;
+	protected ModalFeedbackBuilder incorrectFeedback;
 	private List<ModalFeedbackBuilder> additionalFeedbacks = new ArrayList<>();
 	
 	public AssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {

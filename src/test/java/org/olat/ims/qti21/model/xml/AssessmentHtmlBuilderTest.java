@@ -32,7 +32,10 @@ import org.olat.core.logging.Tracing;
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.node.content.ItemBody;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
+import uk.ac.ed.ph.jqtiplus.node.content.basic.TextRun;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 
 /**
@@ -47,6 +50,20 @@ import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 public class AssessmentHtmlBuilderTest {
 	
 	private static final OLog log = Tracing.createLoggerFor(AssessmentHtmlBuilderTest.class);
+	
+	@Test
+	public void serializer() {
+		AssessmentItem item = new AssessmentItem();
+		SimpleChoice helper = new SimpleChoice(item);
+		P p = new P(helper);
+		TextRun text = new TextRun(p, "Hello world");
+		p.getInlines().add(text);
+		helper.getFlowStatics().add(p);
+		
+		String content = new AssessmentHtmlBuilder().flowStaticString(helper.getFlowStatics());
+		System.out.println(content);
+	}
+	
 
 	@Test
 	public void filter() {

@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
+import org.olat.ims.qti21.model.xml.items.SingleChoiceAssessmentItemBuilder;
 
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;

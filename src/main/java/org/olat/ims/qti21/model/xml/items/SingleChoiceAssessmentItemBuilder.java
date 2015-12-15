@@ -17,18 +17,21 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.model.xml;
+package org.olat.ims.qti21.model.xml.items;
 
 import java.util.List;
 
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Correct;
+import uk.ac.ed.ph.jqtiplus.node.expression.general.MapResponse;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Variable;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.IsNull;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Match;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Not;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Sum;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
@@ -81,7 +84,8 @@ public class SingleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuild
 			}
 		}
 	}
-	
+
+	@Override
 	public boolean isCorrect(SimpleChoice choice) {
 		return correctAnswer != null && correctAnswer.equals(choice.getIdentifier());
 	}
@@ -94,6 +98,9 @@ public class SingleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuild
 	protected void buildResponseDeclaration() {
 		ResponseDeclaration responseDeclaration = AssessmentItemFactory
 				.createSingleChoiceCorrectResponseDeclaration(assessmentItem, responseIdentifier, correctAnswer);
+		if(scoreEvaluation == ScoreEvaluation.perAnswer) {
+			AssessmentItemFactory.appendMapping(responseDeclaration, scoreMapping);
+		}
 		assessmentItem.getResponseDeclarations().add(responseDeclaration);
 	}
 	
@@ -103,11 +110,7 @@ public class SingleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuild
 		List<Block> blocks = assessmentItem.getItemBody().getBlocks();
 		blocks.clear();
 
-		/*
 		//add question
-		List<Block> questionBlocks = getHtmlHelper().parseHtml(question);
-		blocks.addAll(questionBlocks);
-		*/
 		getHtmlHelper().appendHtml(assessmentItem.getItemBody(), question);
 		
 		//add interaction
@@ -123,6 +126,14 @@ public class SingleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuild
 	protected void buildMainScoreRule(List<ResponseRule> responseRules) {
 		ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
 		responseRules.add(0, rule);
+		if(scoreEvaluation == ScoreEvaluation.perAnswer) {
+			buildMainScoreRulePerAnswer(rule);
+		} else {
+			buildMainScoreRuleAllCorrectAnswers(rule);
+		}
+	}
+
+	private void buildMainScoreRuleAllCorrectAnswers(ResponseCondition rule) {
 		/*
 			<responseIf>
 				<isNull>
@@ -242,6 +253,73 @@ public class SingleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuild
 			incorrectFeedbackVal.setSingleValue(QTI21Constants.INCORRECT_IDENTIFIER_VALUE);
 			incorrectFeedbackVar.setExpression(incorrectFeedbackVal);
 			responseElse.getResponseRules().add(incorrectFeedbackVar);
+		}
+	}
+	
+
+	private void buildMainScoreRulePerAnswer(ResponseCondition rule) {
+		/*
+		<responseCondition>
+			<responseIf>
+				<not>
+					<isNull>
+						<variable identifier="RESPONSE_1" />
+					</isNull>
+				</not>
+				<setOutcomeValue identifier="SCORE">
+					<sum>
+						<variable identifier="SCORE" /><mapResponse identifier="RESPONSE_1" />
+					</sum>
+				</setOutcomeValue>
+				<setOutcomeValue identifier="FEEDBACKBASIC">
+					<baseValue baseType="identifier">
+						incorrect
+					</baseValue>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		 */
+		ResponseIf responseIf = new ResponseIf(rule);
+		rule.setResponseIf(responseIf);
+		
+		Not not = new Not(responseIf);
+		responseIf.getExpressions().add(not);
+		
+		IsNull isNull = new IsNull(not);
+		not.getExpressions().add(isNull);
+		
+		Variable responseVar = new Variable(isNull);
+		ComplexReferenceIdentifier choiceResponseIdentifier
+			= ComplexReferenceIdentifier.parseString(choiceInteraction.getResponseIdentifier().toString());
+		responseVar.setIdentifier(choiceResponseIdentifier);
+		isNull.getExpressions().add(responseVar);
+		
+		{// outcome score
+			SetOutcomeValue scoreOutcome = new SetOutcomeValue(responseIf);
+			scoreOutcome.setIdentifier(QTI21Constants.SCORE_IDENTIFIER);
+			responseIf.getResponseRules().add(scoreOutcome);
+			
+			Sum sum = new Sum(scoreOutcome);
+			scoreOutcome.getExpressions().add(sum);
+			
+			Variable scoreVar = new Variable(sum);
+			scoreVar.setIdentifier(QTI21Constants.SCORE_CLX_IDENTIFIER);
+			sum.getExpressions().add(scoreVar);
+			
+			MapResponse mapResponse = new MapResponse(sum);
+			mapResponse.setIdentifier(choiceInteraction.getResponseIdentifier());
+			sum.getExpressions().add(mapResponse);
+		}
+		
+		{//outcome feedback
+			SetOutcomeValue incorrectOutcomeValue = new SetOutcomeValue(responseIf);
+			incorrectOutcomeValue.setIdentifier(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
+			responseIf.getResponseRules().add(incorrectOutcomeValue);
+			
+			BaseValue incorrectValue = new BaseValue(incorrectOutcomeValue);
+			incorrectValue.setBaseTypeAttrValue(BaseType.IDENTIFIER);
+			incorrectValue.setSingleValue(QTI21Constants.INCORRECT_IDENTIFIER_VALUE);
+			incorrectOutcomeValue.setExpression(incorrectValue);
 		}
 	}
 }

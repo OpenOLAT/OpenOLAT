@@ -52,6 +52,7 @@ import uk.ac.ed.ph.jqtiplus.node.expression.operator.Match;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Sum;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
+import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
@@ -117,8 +118,6 @@ public class AssessmentItemPackageTest {
 		assessmentItem.setAdaptive(Boolean.FALSE);
 		assessmentItem.setTimeDependent(Boolean.FALSE);
 		NodeGroupList nodeGroups = assessmentItem.getNodeGroups();
-		
-		
 		
 		Identifier deBroglieId = Identifier.parseString("id" + UUID.randomUUID().toString());
 		Identifier maxPlanckId = Identifier.parseString("id" + UUID.randomUUID().toString());
@@ -307,6 +306,11 @@ public class AssessmentItemPackageTest {
 
 		responseProcessing.getResponseRules().add(rule);
 		
+		ModalFeedback modalFeedback = AssessmentItemFactory
+				.createModalFeedback(assessmentItem, Identifier.parseString("Feedback22"), "Hello", "<p>hello world</p>");
+		
+		assessmentItem.getModalFeedbacks().add(modalFeedback);
+		
 		return assessmentItem;
 	}	
 		
@@ -321,10 +325,10 @@ public class AssessmentItemPackageTest {
 		qtiSerializer.serializeJqtiObject(assessmentItem, System.out);
 		System.out.println("\n-------------");
 		
-		File outputFile = new File("/Users/srosse/Desktop/QTI/generated_item.xml");
+		File outputFile = new File("/HotCoffee/QTI/generated_item.xml");
 		if(outputFile.exists()) {
 			outputFile.delete();
-			outputFile = new File("/Users/srosse/Desktop/QTI/generated_item.xml");
+			outputFile = new File("/HotCoffee/QTI/generated_item.xml");
 		}
 		try(FileOutputStream out = new FileOutputStream(outputFile)) {
 			qtiSerializer.serializeJqtiObject(assessmentItem, out);	

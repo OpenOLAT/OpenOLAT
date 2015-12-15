@@ -30,8 +30,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ModalFeedbackBuilder;
-import org.olat.ims.qti21.model.xml.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
 /**
@@ -45,9 +45,9 @@ public class FeedbackEditorController extends FormBasicController {
 	private TextElement feedbackCorrectTitleEl, feedbackIncorrectTitleEl;
 	private RichTextElement feedbackCorrectTextEl, feedbackIncorrectTextEl;
 
-	private SingleChoiceAssessmentItemBuilder itemBuilder;
+	private AssessmentItemBuilder itemBuilder;
 	
-	public FeedbackEditorController(UserRequest ureq, WindowControl wControl, SingleChoiceAssessmentItemBuilder itemBuilder) {
+	public FeedbackEditorController(UserRequest ureq, WindowControl wControl, AssessmentItemBuilder itemBuilder) {
 		super(ureq, wControl);
 		this.itemBuilder = itemBuilder;
 		initForm(ureq);

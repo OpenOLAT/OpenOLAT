@@ -63,6 +63,8 @@ public class QTI21Constants {
 	
 	public static final Identifier FEEDBACKBASIC_IDENTIFIER = Identifier.parseString(FEEDBACKBASIC);
 	
+	public static final ComplexReferenceIdentifier FEEDBACKBASIC_CLX_IDENTIFIER = ComplexReferenceIdentifier.parseString(FEEDBACKBASIC);
+	
 	public static final String FEEDBACKMODAL = "FEEDBACKMODAL";
 	
 	public static final Identifier FEEDBACKMODAL_IDENTIFIER = Identifier.parseString(FEEDBACKMODAL);
@@ -78,5 +80,11 @@ public class QTI21Constants {
 	public static final Identifier INCORRECT_IDENTIFIER = Identifier.parseString(INCORRECT);
 	
 	public static final IdentifierValue INCORRECT_IDENTIFIER_VALUE = new IdentifierValue(INCORRECT);
+	
+	public static final String EMPTY = "empty";
+	
+	public static final Identifier EMPTY_IDENTIFIER = Identifier.parseString(EMPTY);
+	
+	public static final IdentifierValue EMPTY_IDENTIFIER_VALUE = new IdentifierValue(EMPTY);
 
 }

@@ -26,6 +26,7 @@ import static org.olat.ims.qti21.QTI21Constants.SCORE_IDENTIFIER;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.helpers.Settings;
 import org.olat.ims.qti21.QTI21Constants;
@@ -56,6 +57,8 @@ import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
+import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
+import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.Mapping;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseCondition;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseElse;
@@ -162,11 +165,50 @@ public class AssessmentItemFactory {
 		CorrectResponse correctResponse = new CorrectResponse(responseDeclaration);
 		responseDeclaration.setCorrectResponse(correctResponse);
 		
+		appendIdentifierValue(correctResponse, correctResponseId);
+		return responseDeclaration;
+	}
+	
+	public static ResponseDeclaration createMultipleChoiceCorrectResponseDeclaration(AssessmentItem assessmentItem, Identifier declarationId, List<Identifier> correctResponseIds) {
+		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
+		responseDeclaration.setIdentifier(declarationId);
+		responseDeclaration.setCardinality(Cardinality.MULTIPLE);
+		responseDeclaration.setBaseType(BaseType.IDENTIFIER);
+
+		CorrectResponse correctResponse = new CorrectResponse(responseDeclaration);
+		responseDeclaration.setCorrectResponse(correctResponse);
+		
+		for(Identifier correctResponseId:correctResponseIds) {
+			appendIdentifierValue(correctResponse, correctResponseId);
+		}
+		return responseDeclaration;
+	}
+	
+	private static void appendIdentifierValue(CorrectResponse correctResponse, Identifier correctResponseId) {
 		FieldValue fieldValue = new FieldValue(correctResponse);
 		IdentifierValue identifierValue = new IdentifierValue(correctResponseId);
 		fieldValue.setSingleValue(identifierValue);
 		correctResponse.getFieldValues().add(fieldValue);
-		return responseDeclaration;
+	}
+	
+	/*
+	<mapping defaultValue="0">
+		<mapEntry mapKey="idd072fa37-f4c3-4532-a2fb-4458fa23e919" mappedValue="2.0" />
+		<mapEntry mapKey="ide18af420-393e-43dc-b194-7af94663b576" mappedValue="-0.5" />
+		<mapEntry mapKey="id72eb2dda-4053-45ba-a9f8-cc101f3e3987" mappedValue="2.0" />
+	</mapping>
+	 */
+	public static Mapping appendMapping(ResponseDeclaration responseDeclaration, Map<Identifier,Double> map) {
+		Mapping mapping = new Mapping(responseDeclaration);
+		mapping.setDefaultValue(0d);
+		responseDeclaration.setMapping(mapping);
+		for(Map.Entry<Identifier, Double> entry:map.entrySet()) {
+			MapEntry mapEntry = new MapEntry(mapping);
+			mapEntry.setMapKey(new IdentifierValue(entry.getKey()));
+			mapEntry.setMappedValue(entry.getValue());
+			mapping.getMapEntries().add(mapEntry);
+		}
+		return mapping;
 	}
 	
 	public static OutcomeDeclaration createOutcomeDeclarationForScore(AssessmentItem assessmentItem) {
@@ -337,6 +379,20 @@ public class AssessmentItemFactory {
 	public static ChoiceInteraction createSingleChoiceInteraction(AssessmentItem assessmentItem, Identifier responseDeclarationId) {
 		ChoiceInteraction choiceInteraction = new ChoiceInteraction(assessmentItem.getItemBody());
 		choiceInteraction.setMaxChoices(1);
+		choiceInteraction.setShuffle(true);
+		choiceInteraction.setResponseIdentifier(responseDeclarationId);
+		
+		PromptGroup prompts = new PromptGroup(choiceInteraction);
+		choiceInteraction.getNodeGroups().add(prompts);
+		
+		SimpleChoiceGroup singleChoices = new SimpleChoiceGroup(choiceInteraction);
+		choiceInteraction.getNodeGroups().add(singleChoices);
+		return choiceInteraction;
+	}
+	
+	public static ChoiceInteraction createMultipleChoiceInteraction(AssessmentItem assessmentItem, Identifier responseDeclarationId) {
+		ChoiceInteraction choiceInteraction = new ChoiceInteraction(assessmentItem.getItemBody());
+		choiceInteraction.setMaxChoices(0);
 		choiceInteraction.setShuffle(true);
 		choiceInteraction.setResponseIdentifier(responseDeclarationId);
 		

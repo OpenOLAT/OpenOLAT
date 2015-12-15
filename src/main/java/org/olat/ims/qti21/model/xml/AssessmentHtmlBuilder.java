@@ -81,7 +81,7 @@ public class AssessmentHtmlBuilder {
 				qtiSerializer.serializeJqtiObject(flowStatic, new StreamResult(sb));
 			}
 		}
-		return sb.toString();
+		return cleanUpNamespaces(sb);
 	}
 	
 	public String blocksString(List<? extends Block> statics) {
@@ -91,17 +91,29 @@ public class AssessmentHtmlBuilder {
 				qtiSerializer.serializeJqtiObject(flowStatic, new StreamResult(sb));
 			}
 		}
-		return sb.toString();
+		
+		return cleanUpNamespaces(sb);
+	}
+	
+	private String cleanUpNamespaces(StringOutput sb) {
+		String content = sb.toString();
+		content = content.replace(" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"", "");
+		content = content.replace("\n   xmlns=\"http://www.imsglobal.org/xsd/imsqti_v2p1\"", "");
+		content = content.replace("\n   xsi:schemaLocation=\"http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/imsqti_v2p1.xsd\"", "");
+		return content.trim();
 	}
 	
 	public void appendHtml(AbstractNode parent, String htmlFragment) {
-		//tinymce bad habits
-		if(htmlFragment.startsWith("<p>&nbsp;")) {
-			htmlFragment = htmlFragment.replace("<p>&nbsp;", "<p>");
+		if(StringHelper.containsNonWhitespace(htmlFragment)) {
+			htmlFragment = htmlFragment.trim();
+			//tinymce bad habits
+			if(htmlFragment.startsWith("<p>&nbsp;")) {
+				htmlFragment = htmlFragment.replace("<p>&nbsp;", "<p>");
+			}
+			//wrap around <html> to have a root element
+			Document document = filter("<html>" + htmlFragment + "</html>");
+			parent.getNodeGroups().load(document.getDocumentElement(), new HTMLLoadingContext());
 		}
-		//wrap around <html> to have a root element
-		Document document = filter("<html>" + htmlFragment + "</html>");
-		parent.getNodeGroups().load(document.getDocumentElement(), new HTMLLoadingContext());
 	}
 
 	private Document filter(String content) {

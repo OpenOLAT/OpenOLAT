@@ -1,0 +1,16 @@
+<table class="table">
+	<thead><tr>
+		<th>$r.translate("form.score.answer.correct")</th>
+		<th>$r.translate("form.score.answer.summary")</th>
+		<th>$r.translate("form.score.answer.points")</th>
+	</tr></thead>
+	<tbody>
+	#foreach($choice in $choices)
+	<tr>
+		<td>#if(${choice.isCorrect()}) <i class="o_icon o_icon-lg o_icon_check_on"> </i> #end</td>
+		<td>$choice.summary</td>
+		<td>$r.render($choice.getPointsEl().getComponent().getComponentName())</td>
+	</tr>
+	#end
+	</tbody>
+</table>

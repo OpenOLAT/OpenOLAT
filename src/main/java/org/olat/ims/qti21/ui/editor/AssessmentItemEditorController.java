@@ -34,7 +34,8 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.SingleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.items.MultipleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.items.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -47,6 +48,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
+import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 
 /**
  * 
@@ -123,7 +125,7 @@ public class AssessmentItemEditorController extends BasicController {
 			}
 			
 			if(choice && !unkown) {
-				itemBuilder = initSingleChoiceEditors(ureq, item);
+				itemBuilder = initChoiceEditors(ureq, item);
 			} else if(unkown) {
 				initItemCreatedByUnkownEditor(ureq);
 			}
@@ -138,19 +140,51 @@ public class AssessmentItemEditorController extends BasicController {
 		tabbedPane.addTab("Unkown", itemEditor.getInitialComponent());
 	}
 	
+
+	private AssessmentItemBuilder initChoiceEditors(UserRequest ureq, AssessmentItem item) {
+		if(item.getResponseDeclarations().size() == 1) {
+			Cardinality cardinalty = item.getResponseDeclarations().get(0).getCardinality();
+			if(cardinalty.isSingle()) {
+				return initSingleChoiceEditors(ureq, item);
+			} else if(cardinalty.isMultiple()) {
+				return initMultipleChoiceEditors(ureq, item);
+			} else {
+				initItemCreatedByUnkownEditor(ureq);
+			}
+		} else {
+			initItemCreatedByUnkownEditor(ureq);
+		}
+		return null;
+	}
+	
 	private AssessmentItemBuilder initSingleChoiceEditors(UserRequest ureq, AssessmentItem item) {
 		SingleChoiceAssessmentItemBuilder scItemBuilder = new SingleChoiceAssessmentItemBuilder(item, qtiService.qtiSerializer());
 		itemEditor = new SingleChoiceEditorController(ureq, getWindowControl(), scItemBuilder);
 		listenTo(itemEditor);
-		scoreEditor = new SingleChoiceScoreController(ureq, getWindowControl(), scItemBuilder);
+		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), scItemBuilder);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), scItemBuilder);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab("Choice", itemEditor.getInitialComponent());
-		tabbedPane.addTab("Score", scoreEditor.getInitialComponent());
-		tabbedPane.addTab("Feedback", feedbackEditor.getInitialComponent());
+		tabbedPane.addTab(translate("form.choice"), itemEditor.getInitialComponent());
+		tabbedPane.addTab(translate("form.score"), scoreEditor.getInitialComponent());
+		tabbedPane.addTab(translate("form.feedback"), feedbackEditor.getInitialComponent());
 		return scItemBuilder;
+	}
+	
+	private AssessmentItemBuilder initMultipleChoiceEditors(UserRequest ureq, AssessmentItem item) {
+		MultipleChoiceAssessmentItemBuilder mcItemBuilder = new MultipleChoiceAssessmentItemBuilder(item, qtiService.qtiSerializer());
+		itemEditor = new MultipleChoiceEditorController(ureq, getWindowControl(), mcItemBuilder);
+		listenTo(itemEditor);
+		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), mcItemBuilder);
+		listenTo(scoreEditor);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), mcItemBuilder);
+		listenTo(feedbackEditor);
+		
+		tabbedPane.addTab(translate("form.choice"), itemEditor.getInitialComponent());
+		tabbedPane.addTab(translate("form.score"), scoreEditor.getInitialComponent());
+		tabbedPane.addTab(translate("form.feedback"), feedbackEditor.getInitialComponent());
+		return mcItemBuilder;
 	}
 
 	@Override
