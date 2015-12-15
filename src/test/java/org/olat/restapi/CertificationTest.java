@@ -32,6 +32,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
@@ -90,8 +91,6 @@ public class CertificationTest extends OlatJerseyTestCase {
 				Certificate reloadedCertificate = certificatesManager.getCertificateById(certificate.getKey());
 				return CertificateStatus.ok.equals(reloadedCertificate.getStatus());
 			}
-			
-			
 		}, 30000);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
@@ -258,6 +257,53 @@ public class CertificationTest extends OlatJerseyTestCase {
 		VFSLeaf certificateLeaf = certificatesManager.getCertificateLeaf(certificate);
 		Assert.assertNotNull(certificateLeaf);
 		Assert.assertEquals(certificateFile.length(), certificateLeaf.getSize());
+	}
+	
+	@Test
+	public void deleteCertificate() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-15");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("cert-5");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+
+		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, true);
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, false);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(certificate);
+		
+		//wait until certificate is generated
+		waitForCondition(new Callable<Boolean>() {
+			@Override
+			public Boolean call() throws Exception {
+				Certificate reloadedCertificate = certificatesManager.getCertificateById(certificate.getKey());
+				return CertificateStatus.ok.equals(reloadedCertificate.getStatus());
+			}
+		}, 30000);
+		
+		// check that there is a real certificate with its file
+		Certificate reloadedCertificate = certificatesManager.getCertificateById(certificate.getKey());
+		VFSLeaf certificateFile = certificatesManager.getCertificateLeaf(reloadedCertificate);
+		Assert.assertNotNull(certificateFile);
+		Assert.assertTrue(certificateFile.exists());
+		
+		//delete the certificate
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(entry.getOlatResource().getKey().toString())
+				.path("certificates").path(assessedIdentity.getKey().toString()).build();
+		HttpDelete method = conn.createDelete(uri, MediaType.APPLICATION_JSON);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+
+		conn.shutdown();
+		
+		//check that the file and the database record are deleted
+		VFSLeaf deletedFile = certificatesManager.getCertificateLeaf(reloadedCertificate);
+		Assert.assertNull(deletedFile);
+		Certificate deletedCertificate = certificatesManager.getCertificateById(certificate.getKey());
+		Assert.assertNull(deletedCertificate);
 	}
 	
 	private Date createDate(int year, int month, int day) {
