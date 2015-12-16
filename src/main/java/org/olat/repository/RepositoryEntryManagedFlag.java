@@ -42,6 +42,7 @@ public enum RepositoryEntryManagedFlag {
       objectives(details,all),
       requirements(details,all),
       credits(details,all),
+      location(details,all),
     settings(all),//max num of participants...
       access(settings,all),
       chat(settings,all),

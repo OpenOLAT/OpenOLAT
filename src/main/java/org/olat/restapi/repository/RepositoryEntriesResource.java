@@ -120,7 +120,6 @@ public class RepositoryEntriesResource {
 			Roles roles = getRoles(httpRequest);
 			Identity identity = getIdentity(httpRequest);
 
-			//fxdiff VCRP-1,2: access control of resources
 			SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, roles);
 			List<RepositoryEntry> coursRepos = RepositoryManager.getInstance().genericANDQueryWithRolesRestriction(params, 0, -1, false);
 			
@@ -212,11 +211,11 @@ public class RepositoryEntriesResource {
 	/**
 	 * Search for repository entries, possible search attributes are name, author and type
 	 * @response.representation.mediaType multipart/form-data
-   * @response.representation.doc Search for repository entries
+	 * @response.representation.doc Search for repository entries
 	 * @response.representation.200.qname {http://www.example.com}repositoryEntryVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc Search for repository entries
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_REPOENTRYVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc Search for repository entries
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_REPOENTRYVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @param type Filter by the file resource type of the repository entry
 	 * @param author Filter by the author's username
@@ -276,18 +275,18 @@ public class RepositoryEntriesResource {
 	
 	/**
 	 * Import a resource in the repository
-   * @response.representation.mediaType multipart/form-data
-   * @response.representation.doc The file, its name and the resourcename
+	 * @response.representation.mediaType multipart/form-data
+	 * @response.representation.doc The file, its name and the resourcename
 	 * @response.representation.200.qname {http://www.example.com}repositoryEntryVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc Import the resource and return the repository entry
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_REPOENTRYVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc Import the resource and return the repository entry
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_REPOENTRYVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @param filename The name of the imported file
+	 * @param filename The name of the imported file
 	 * @param file The file input stream
-   * @param resourcename The name of the resource
-   * @param displayname The display name
-   * @param softkey The soft key (can be null)
+	 * @param resourcename The name of the resource
+	 * @param displayname The display name
+	 * @param softkey The soft key (can be null)
 	 * @param request The HTTP request
 	 * @return
 	 */

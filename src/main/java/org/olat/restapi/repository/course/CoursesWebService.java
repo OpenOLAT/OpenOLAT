@@ -104,9 +104,9 @@ public class CoursesWebService {
 	
 	/**
 	 * The version of the Course Web Service
-   * @response.representation.200.mediaType text/plain
-   * @response.representation.200.doc The version of this specific Web Service
-   * @response.representation.200.example 1.0
+	 * @response.representation.200.mediaType text/plain
+	 * @response.representation.200.doc The version of this specific Web Service
+	 * @response.representation.200.example 1.0
 	 * @return
 	 */
 	@GET
@@ -207,15 +207,15 @@ public class CoursesWebService {
 	/**
 	 * Creates an empty course, or a copy from a course if the parameter copyFrom is set.
 	 * @response.representation.200.qname {http://www.example.com}courseVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The metadatas of the created course
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSEVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The metadatas of the created course
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSEVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @param shortTitle The short title
-   * @param title The title
-   * @param sharedFolderSoftKey The repository entry key of a shared folder (optional)
-   * @param copyFrom The cours key to make a copy from (optional)
-   * @param request The HTTP request
+	 * @param shortTitle The short title
+	 * @param title The title
+	 * @param sharedFolderSoftKey The repository entry key of a shared folder (optional)
+	 * @param copyFrom The cours key to make a copy from (optional)
+	 * @param request The HTTP request
 	 * @return It returns the id of the newly created Course
 	 */
 	@PUT
@@ -224,6 +224,7 @@ public class CoursesWebService {
 			@QueryParam("displayName") String displayName, @QueryParam("softKey") String softKey,
 			@QueryParam("access") Integer access, @QueryParam("membersOnly") Boolean membersOnly, 
 			@QueryParam("externalId") String externalId, @QueryParam("externalRef") String externalRef,
+			@QueryParam("authors") String authors, @QueryParam("location") String location,
 			@QueryParam("managedFlags") String managedFlags, @QueryParam("sharedFolderSoftKey") String sharedFolderSoftKey,
 			@QueryParam("copyFrom") Long copyFrom,
 			@Context HttpServletRequest request) {
@@ -242,9 +243,9 @@ public class CoursesWebService {
 		ICourse course;
 		UserRequest ureq = getUserRequest(request);
 		if(copyFrom != null) {
-			course = copyCourse(copyFrom, ureq, shortTitle, title, displayName, softKey, accessInt, membersOnlyBool, externalId, externalRef, managedFlags, configVO);
+			course = copyCourse(copyFrom, ureq, shortTitle, title, displayName, softKey, accessInt, membersOnlyBool, authors, location, externalId, externalRef, managedFlags, configVO);
 		} else {
-			course = createEmptyCourse(ureq.getIdentity(), shortTitle, title, displayName, softKey, accessInt, membersOnlyBool, externalId, externalRef, managedFlags, configVO);
+			course = createEmptyCourse(ureq.getIdentity(), shortTitle, title, displayName, softKey, accessInt, membersOnlyBool, authors, location, externalId, externalRef, managedFlags, configVO);
 		}
 		CourseVO vo = ObjectFactory.get(course);
 		return Response.ok(vo).build();
@@ -275,6 +276,7 @@ public class CoursesWebService {
 		ICourse course = createEmptyCourse(ureq.getIdentity(),
 				courseVo.getTitle(), courseVo.getTitle(), courseVo.getTitle(),
 				courseVo.getSoftKey(), RepositoryEntry.ACC_OWNERS, false,
+				courseVo.getAuthors(), courseVo.getLocation(),
 				courseVo.getExternalId(), courseVo.getExternalRef(), courseVo.getManagedFlags(),
 				configVO);
 		CourseVO vo = ObjectFactory.get(course);
@@ -383,8 +385,8 @@ public class CoursesWebService {
 	}
 	
 	private static ICourse copyCourse(Long copyFrom, UserRequest ureq, String shortTitle, String longTitle, String displayName,
-			String softKey, int access, boolean membersOnly, String externalId, String externalRef, String managedFlags,
-			CourseConfigVO courseConfigVO) {
+			String softKey, int access, boolean membersOnly, String authors, String location, String externalId, String externalRef,
+			String managedFlags, CourseConfigVO courseConfigVO) {
 
 		//String learningObjectives = name + " (Example of creating a new course)";
 		
@@ -437,6 +439,12 @@ public class CoursesWebService {
 			if(StringHelper.containsNonWhitespace(externalRef)) {
 				preparedEntry.setExternalRef(externalRef);
 			}
+			if(StringHelper.containsNonWhitespace(authors)) {
+				preparedEntry.setAuthors(authors);
+			}
+			if(StringHelper.containsNonWhitespace(location)) {
+				preparedEntry.setLocation(location);
+			}
 			if(StringHelper.containsNonWhitespace(managedFlags)) {
 				preparedEntry.setManagedFlagsString(managedFlags);
 			}
@@ -470,7 +478,7 @@ public class CoursesWebService {
 	 * @return
 	 */
 	public static ICourse createEmptyCourse(Identity initialAuthor, String shortTitle, String longTitle, CourseConfigVO courseConfigVO) {
-		return createEmptyCourse(initialAuthor, shortTitle, longTitle, shortTitle, null, RepositoryEntry.ACC_OWNERS, false, null, null, null, courseConfigVO);
+		return createEmptyCourse(initialAuthor, shortTitle, longTitle, shortTitle, null, RepositoryEntry.ACC_OWNERS, false, null, null, null, null, null, courseConfigVO);
 	}
 	
 	/**
@@ -486,7 +494,8 @@ public class CoursesWebService {
 	 * @return
 	 */
 	public static ICourse createEmptyCourse(Identity initialAuthor, String shortTitle, String longTitle, String reDisplayName,
-			String softKey, int access, boolean membersOnly, String externalId, String externalRef, String managedFlags, CourseConfigVO courseConfigVO) {
+			String softKey, int access, boolean membersOnly, String authors, String location,
+			String externalId, String externalRef, String managedFlags, CourseConfigVO courseConfigVO) {
 		
 		String learningObjectives = shortTitle + " (Example of creating a new course)";
 		if(!StringHelper.containsNonWhitespace(reDisplayName)) {
@@ -501,6 +510,8 @@ public class CoursesWebService {
 			if(StringHelper.containsNonWhitespace(softKey) && softKey.length() <= 30) {
 				addedEntry.setSoftkey(softKey);
 			}
+			addedEntry.setLocation(location);
+			addedEntry.setAuthors(authors);
 			addedEntry.setExternalId(externalId);
 			addedEntry.setExternalRef(externalRef);
 			addedEntry.setManagedFlagsString(managedFlags);

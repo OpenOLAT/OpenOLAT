@@ -94,7 +94,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	private static final int movieUploadlimitKB = 102400;
 
 	private FileElement fileUpload, movieUpload;
-	private TextElement externalRef, displayName, authors, expenditureOfWork, language;
+	private TextElement externalRef, displayName, authors, expenditureOfWork, language, location;
 	private RichTextElement description, objectives, requirements, credits;
 	private SingleSelection dateTypesEl, publicDatesEl;
 	private DateChooser startDateEl, endDateEl;
@@ -191,6 +191,9 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		authors.setDisplaySize(60);
 		
 		language = uifactory.addTextElement("cif.mainLanguage", "cif.mainLanguage", 16, repositoryEntry.getMainLanguage(), descCont);
+		
+		location = uifactory.addTextElement("cif.location", "cif.location", 16, repositoryEntry.getLocation(), descCont);
+		location.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.location));
 		
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
 		mediaContainer = handler.getMediaContainer(repositoryEntry);
@@ -373,6 +376,8 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			displayName.clearError();
 		}
 
+		allOk &= validateTextElement(language, 255);
+		allOk &= validateTextElement(location, 255);
 		allOk &= validateTextElement(objectives, 2000);
 		allOk &= validateTextElement(requirements, 2000);
 		allOk &= validateTextElement(credits, 2000);
@@ -537,12 +542,16 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			String exp = expenditureOfWork.getValue().trim();
 			repositoryEntry.setExpenditureOfWork(exp);
 		}
+		if(location != null) {
+			String loc = location.getValue().trim();
+			repositoryEntry.setLocation(loc);
+		}
 		
 		repositoryEntry = repositoryManager.setDescriptionAndName(repositoryEntry,
 				repositoryEntry.getDisplayname(), repositoryEntry.getExternalRef(), repositoryEntry.getAuthors(),
 				repositoryEntry.getDescription(), repositoryEntry.getObjectives(), repositoryEntry.getRequirements(),
-				repositoryEntry.getCredits(), repositoryEntry.getMainLanguage(), repositoryEntry.getExpenditureOfWork(),
-				repositoryEntry.getLifecycle());
+				repositoryEntry.getCredits(), repositoryEntry.getMainLanguage(), repositoryEntry.getLocation(),
+				repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle());
 		
 		
 		fireEvent(ureq, Event.CHANGED_EVENT);

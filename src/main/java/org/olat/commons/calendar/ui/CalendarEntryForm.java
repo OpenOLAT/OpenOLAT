@@ -325,8 +325,6 @@ public class CalendarEntryForm extends FormBasicController {
 		
 		String description = event.getDescription();
 		descriptionEl = uifactory.addTextAreaElement("description", "cal.form.description", -1, 3, 40, true, description, formLayout);
-		descriptionEl.setMandatory(true);
-		descriptionEl.setNotEmptyCheck("cal.form.error.mandatory");
 		descriptionEl.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.subject));
 		
 		String location = fb ? translate("cal.form.location.hidden") : event.getLocation();

@@ -124,13 +124,20 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 			config.setBooleanEntry(MembersCourseNodeEditController.CONFIG_KEY_SHOWOWNER, false);
 			config.setBooleanEntry(MembersCourseNodeEditController.CONFIG_KEY_SHOWCOACHES, true);
 			config.setBooleanEntry(MembersCourseNodeEditController.CONFIG_KEY_SHOWPARTICIPANTS, true);
-			config.setConfigurationVersion(2);
-		}else if(version < 2){
-			//update old config versions
-			config.setBooleanEntry(MembersCourseNodeEditController.CONFIG_KEY_SHOWOWNER, true);
-			config.setBooleanEntry(MembersCourseNodeEditController.CONFIG_KEY_SHOWCOACHES, true);
-			config.setBooleanEntry(MembersCourseNodeEditController.CONFIG_KEY_SHOWPARTICIPANTS, true);
-			config.setConfigurationVersion(2);
+			config.setStringValue(MembersCourseNodeEditController.CONFIG_KEY_EMAIL_FUNCTION, MembersCourseNodeEditController.EMAIL_FUNCTION_COACH_ADMIN);
+			config.setConfigurationVersion(3);
+		} else {
+			if(version < 2) {
+				//update old config versions
+				config.setBooleanEntry(MembersCourseNodeEditController.CONFIG_KEY_SHOWOWNER, true);
+				config.setBooleanEntry(MembersCourseNodeEditController.CONFIG_KEY_SHOWCOACHES, true);
+				config.setBooleanEntry(MembersCourseNodeEditController.CONFIG_KEY_SHOWPARTICIPANTS, true);
+				config.setConfigurationVersion(2);
+			}
+			if(version < 3) {
+				config.setStringValue(MembersCourseNodeEditController.CONFIG_KEY_EMAIL_FUNCTION, MembersCourseNodeEditController.EMAIL_FUNCTION_COACH_ADMIN);
+				config.setConfigurationVersion(3);
+			}
 		}
 	}
 }

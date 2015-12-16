@@ -117,6 +117,11 @@
 	<bean id="co" class="org.olat.course.nodes.co.COCourseNodeConfiguration" scope="prototype">
 		<property name="order" value="190" />
 	</bean>
+	
+	<bean id="membersCourseNodeConf" class="org.olat.course.nodes.members.MembersCourseNodeConfiguration" scope="prototype">
+		<property name="enabled" value="${course.node.members.enabled}" />
+		<property name="order"   value="195" />
+	</bean>
 		
 	<bean id="cal" class="org.olat.course.nodes.cal.CalCourseNodeConfiguration" scope="prototype">
 		<property name="order" value="200" />

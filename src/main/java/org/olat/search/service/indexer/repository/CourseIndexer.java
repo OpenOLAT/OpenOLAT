@@ -37,16 +37,17 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.StartupException;
 import org.olat.core.util.nodes.INode;
+import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.navigation.NavigationHandler;
-import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryManager;
@@ -73,9 +74,7 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 		this.repositoryManager = repositoryManager;
 	}
 
-	/**
-	 * 
-	 */
+	@Override
 	public String getSupportedTypeName() {	
 		return CourseModule.getCourseTypeName(); 
 	}
@@ -96,6 +95,8 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 			parentResourceContext.setParentContextType(TYPE);
 			parentResourceContext.setParentContextName(course.getCourseTitle());
 			doIndexCourse( parentResourceContext, course,  course.getRunStructure().getRootNode(), indexWriter);			
+		} catch(CorruptedCourseException ex) {
+			logWarn("Can not index repositoryEntry (" + repositoryEntry.getKey() + ")", ex);
 		} catch (Exception ex) {
 			logWarn("Can not index repositoryEntry=" + repositoryEntry,ex);
 		}

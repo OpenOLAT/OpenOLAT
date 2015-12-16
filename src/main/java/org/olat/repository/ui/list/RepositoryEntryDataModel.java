@@ -69,6 +69,7 @@ class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposito
 			case mark: return item.getMarkLink();
 			case select: return item.getSelectLink();
 			case start: return item.getStartLink();
+			case location: return item.getLocation();
 			case details: return item.getDetailsLink();
 			case ratings: return item.getRatingFormItem();
 			case comments: return item.getCommentsLink();
@@ -85,6 +86,7 @@ class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposito
 		lifecycleSoftkey("table.header.lifecycle.softkey"),
 		lifecycleStart("table.header.lifecycle.start"),
 		lifecycleEnd("table.header.lifecycle.end"),
+		location("table.header.location"),
 		details("table.header.details"),
 		select("table.header.details"),
 		start("table.header.start"),

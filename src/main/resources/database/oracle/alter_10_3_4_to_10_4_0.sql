@@ -3,6 +3,8 @@ alter table o_message add pseudonym varchar2(255 char);
 alter table o_message add guest number default 0 not null;
 
 
+alter table o_repositoryEntry add location varchar2(255 char) default null;
+
 
 create table o_cal_use_config (
    id number(20) not null,

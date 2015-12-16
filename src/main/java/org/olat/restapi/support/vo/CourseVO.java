@@ -22,6 +22,7 @@ package org.olat.restapi.support.vo;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -38,13 +39,23 @@ public class CourseVO {
 	
 	private Long key;
 	private String softKey;
+	private String displayName;
 	private Long repoEntryKey;
+	@XmlAttribute(name="authors",required=false)
+	private String authors;
+	@XmlAttribute(name="location",required=false)
+	private String location;
 	private String externalId;
 	private String externalRef;
 	private String managedFlags;
+	
+	private Long olatResourceKey;
+	private Long olatResourceId;
+	private String olatResourceTypeName;
+	
 	private String title;
-	private String displayName;
 	private String editorRootNodeId;
+	
 	private RepositoryEntryLifecycleVO lifecycle;
 	
 	public CourseVO() {
@@ -75,6 +86,22 @@ public class CourseVO {
 		this.repoEntryKey = repoEntryKey;
 	}
 
+	public String getAuthors() {
+		return authors;
+	}
+
+	public void setAuthors(String authors) {
+		this.authors = authors;
+	}
+
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
+	}
+
 	public String getExternalId() {
 		return externalId;
 	}
@@ -97,6 +124,30 @@ public class CourseVO {
 
 	public void setManagedFlags(String managedFlags) {
 		this.managedFlags = managedFlags;
+	}
+
+	public Long getOlatResourceKey() {
+		return olatResourceKey;
+	}
+
+	public void setOlatResourceKey(Long olatResourceKey) {
+		this.olatResourceKey = olatResourceKey;
+	}
+
+	public Long getOlatResourceId() {
+		return olatResourceId;
+	}
+
+	public void setOlatResourceId(Long olatResourceId) {
+		this.olatResourceId = olatResourceId;
+	}
+
+	public String getOlatResourceTypeName() {
+		return olatResourceTypeName;
+	}
+
+	public void setOlatResourceTypeName(String olatResourceTypeName) {
+		this.olatResourceTypeName = olatResourceTypeName;
 	}
 
 	public String getTitle() {

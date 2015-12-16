@@ -35,32 +35,33 @@ import org.olat.resource.OLATResource;
  */
 public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 
-	private Long key;
+	private final Long key;
 	
-	private Date creationDate;
+	private final Date creationDate;
 	
-	private String displayname;
-	private String description;
-	private String author;
-	private String authors;
+	private final String displayname;
+	private final String description;
+	private final String author;
+	private final String authors;
+	private final String location;
 	
-	private String softkey;
-	private String externalId;
-	private String externalRef;
-	private RepositoryEntryManagedFlag[] managedFlags;
+	private final String softkey;
+	private final String externalId;
+	private final String externalRef;
+	private final RepositoryEntryManagedFlag[] managedFlags;
 	
-	private boolean membersOnly;
-	private int access;
-	private int statusCode;
+	private final boolean membersOnly;
+	private final int access;
+	private final int statusCode;
 	
-	private Date lastUsage;
+	private final Date lastUsage;
 	
-	private OLATResource olatResource;
-	private RepositoryEntryLifecycle lifecycle;
+	private final OLATResource olatResource;
+	private final RepositoryEntryLifecycle lifecycle;
 	
-	private boolean marked;
+	private final boolean marked;
 	
-	private long offers;
+	private final long offers;
 	
 	public RepositoryEntryAuthorImpl(RepositoryEntry re, boolean marked, long offers) {
 		key = re.getKey();
@@ -70,6 +71,7 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 		description = re.getDescription();
 		author = re.getInitialAuthor();
 		authors = re.getAuthors();
+		location = re.getLocation();
 		
 		softkey = re.getSoftkey();
 		externalId = re.getExternalId();
@@ -155,6 +157,11 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	@Override
 	public String getAuthors() {
 		return authors;
+	}
+
+	@Override
+	public String getLocation() {
+		return location;
 	}
 
 	@Override

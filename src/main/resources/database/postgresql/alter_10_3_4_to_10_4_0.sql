@@ -3,6 +3,7 @@ alter table o_message add column pseudonym varchar(255);
 alter table o_message add column guest bool not null default false;
 
 
+alter table o_repositoryEntry add column location varchar(255) default null;
 
 
 create table o_cal_use_config (

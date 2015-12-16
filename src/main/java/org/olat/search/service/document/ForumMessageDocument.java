@@ -26,8 +26,7 @@
 package org.olat.search.service.document;
 
 import org.apache.lucene.document.Document;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.fo.Message;
 import org.olat.search.model.OlatDocument;
@@ -40,7 +39,6 @@ import org.olat.search.service.SearchResourceContext;
 public class ForumMessageDocument extends OlatDocument {
 
 	private static final long serialVersionUID = -1668747274393652050L;
-	private static final OLog log = Tracing.createLoggerFor(ForumMessageDocument.class);
 
   //Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
@@ -56,7 +54,12 @@ public class ForumMessageDocument extends OlatDocument {
 		forumMessageDocument.setTitle(message.getTitle());
 		String msgContent = FilterFactory.getHtmlTagAndDescapingFilter().filter(message.getBody());
 		forumMessageDocument.setContent(msgContent);
-		forumMessageDocument.setAuthor(message.getCreator().getName());
+		if(StringHelper.containsNonWhitespace(message.getPseudonym())) {
+			forumMessageDocument.setAuthor(message.getPseudonym());
+		} else if(message.getCreator() != null) {
+			forumMessageDocument.setAuthor(message.getCreator().getName());
+		}
+		
 		forumMessageDocument.setCreatedDate(message.getCreationDate());
 		forumMessageDocument.setLastChange(message.getLastModified());
 		forumMessageDocument.setResourceUrl(searchResourceContext.getResourceUrl());
@@ -69,13 +72,6 @@ public class ForumMessageDocument extends OlatDocument {
 		forumMessageDocument.setCssIcon("o_fo_icon");
 		forumMessageDocument.setParentContextType(searchResourceContext.getParentContextType());
 		forumMessageDocument.setParentContextName(searchResourceContext.getParentContextName());
-
-		// TODO: chg: What is with message attributes ?
-		// ?? Identity modifier = message.getModifier();
-		// ?? message.getParent();
-		// ?? message.getThreadtop();
-		
-		if (log.isDebug()) log.debug(forumMessageDocument.toString());
 		return forumMessageDocument.getLuceneDocument();
 	}
 }

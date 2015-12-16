@@ -210,7 +210,7 @@ public class RepositoryEntryImportExport {
 				repositoryProperties.getAuthors(), repositoryProperties.getDescription(),
 				repositoryProperties.getObjectives(), repositoryProperties.getRequirements(),
 				repositoryProperties.getCredits(), repositoryProperties.getMainLanguage(),
-				repositoryProperties.getExpenditureOfWork(), null);
+				repositoryProperties.getLocation(), repositoryProperties.getExpenditureOfWork(), null);
 	}
 
 	/**
@@ -357,6 +357,7 @@ public class RepositoryEntryImportExport {
 		private String requirements;
 		private String credits;
 		private String expenditureOfWork;
+		private String location;
 		
 		private String movieName;
 		private String imageName;
@@ -459,6 +460,14 @@ public class RepositoryEntryImportExport {
 
 		public void setMainLanguage(String mainLanguage) {
 			this.mainLanguage = mainLanguage;
+		}
+
+		public String getLocation() {
+			return location;
+		}
+
+		public void setLocation(String location) {
+			this.location = location;
 		}
 
 		public String getObjectives() {

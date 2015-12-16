@@ -504,6 +504,10 @@ public class RepositoryEntryMyCourseQueries {
 					sb.append(" order by lower(v.authors)");
 					appendAsc(sb, asc).append(" nulls last");
 					break;
+				case location:
+					sb.append(" order by lower(v.location)");
+					appendAsc(sb, asc).append(" nulls last");
+					break;	
 				case creationDate:
 					sb.append(" order by v.creationDate ");
 					appendAsc(sb, asc).append(", lower(v.displayname) asc");

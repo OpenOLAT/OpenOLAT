@@ -43,7 +43,7 @@ public interface SearchMetadataFieldsProvider {
 	 * 
 	 * @return
 	 */
-	public abstract List<String> getAdvancedSearchableFields();
+	public List<String> getAdvancedSearchableFields();
 
 	/**
 	 * Get all metadata fields that are used in the google-like fuzzy search
@@ -51,7 +51,7 @@ public interface SearchMetadataFieldsProvider {
 	 * 
 	 * @return
 	 */
-	public abstract List<String> getMultiFieldSearchFields();
+	public List<String> getMultiFieldSearchFields();
 
 	/**
 	 * Create a translator that can translate the fields for the GUI

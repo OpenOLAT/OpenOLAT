@@ -522,6 +522,8 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 			logDebug("find no projectBroker in the cache => create a new one projectBrokerId=" + projectBrokerId);
 			StringBuilder sb = new StringBuilder();
 			sb.append("select distinct project from ").append(ProjectImpl.class.getName()).append(" as project ")
+			  .append(" left join fetch project.projectGroup pGroup")
+			  .append(" left join fetch pGroup.baseGroup bGroup")
 			  .append(" where project.projectBroker.key=:projectBrokerKey");
 
 			List<Project> projectList = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Project.class)

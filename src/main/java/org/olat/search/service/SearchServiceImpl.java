@@ -113,7 +113,8 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 	private String fields[] = {
 			AbstractOlatDocument.TITLE_FIELD_NAME, AbstractOlatDocument.DESCRIPTION_FIELD_NAME,
 			AbstractOlatDocument.CONTENT_FIELD_NAME, AbstractOlatDocument.AUTHOR_FIELD_NAME,
-			AbstractOlatDocument.DOCUMENTTYPE_FIELD_NAME, AbstractOlatDocument.FILETYPE_FIELD_NAME,
+			AbstractOlatDocument.LOCATION_FIELD_NAME, AbstractOlatDocument.DOCUMENTTYPE_FIELD_NAME,
+			AbstractOlatDocument.FILETYPE_FIELD_NAME,
 			QItemDocument.TAXONOMIC_PATH_FIELD, QItemDocument.TAXONOMIC_FIELD, 
 			QItemDocument.IDENTIFIER_FIELD, QItemDocument.MASTER_IDENTIFIER_FIELD,
 			QItemDocument.KEYWORDS_FIELD,

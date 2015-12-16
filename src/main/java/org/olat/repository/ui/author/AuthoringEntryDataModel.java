@@ -80,6 +80,7 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 			case externalRef: return item.getExternalRef();
 			case author: return item.getAuthor();
 			case authors: return item.getAuthors();
+			case location: return item.getLocation();
 			case access: return item;
 			case creationDate: return item.getCreationDate();
 			case lastUsage: return item.getLastUsage();
@@ -119,6 +120,7 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		displayName("cif.displayname"),
 		author("table.header.author"),
 		authors("table.header.authors"),
+		location("table.header.location"),
 		access("table.header.access"),
 		creationDate("table.header.date"),
 		lastUsage("table.header.lastusage"),

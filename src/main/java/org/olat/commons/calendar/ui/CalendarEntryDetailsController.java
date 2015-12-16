@@ -172,6 +172,7 @@ public class CalendarEntryDetailsController extends BasicController {
 		}
 	}
 
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == deleteYesNoController) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
@@ -279,7 +280,8 @@ public class CalendarEntryDetailsController extends BasicController {
 			}
 		}
 	}
-	
+
+	@Override
 	protected void doDispose() {
 		//
 	}
@@ -287,5 +289,4 @@ public class CalendarEntryDetailsController extends BasicController {
 	public KalendarEvent getKalendarEvent() {
 		return kalendarEvent;
 	}
-
 }

@@ -47,6 +47,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	private final String displayname;
 	private final String description;
 	private final String authors;
+	private final String location;
 	private final boolean membersOnly;
 	private final int access;
 	private final int statusCode;
@@ -77,6 +78,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 		displayname = re.getDisplayname();
 		description = re.getDescription();
 		authors = re.getAuthors();
+		location = re.getLocation();
 		membersOnly = re.isMembersOnly();
 		access = re.getAccess();
 		statusCode = re.getStatusCode();
@@ -176,6 +178,11 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	@Override
 	public String getAuthors() {
 		return authors;
+	}
+
+	@Override
+	public String getLocation() {
+		return location;
 	}
 
 	@Override

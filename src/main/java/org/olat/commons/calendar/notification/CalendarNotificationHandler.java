@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.CalendarController;
@@ -93,7 +94,7 @@ public class CalendarNotificationHandler implements NotificationsHandler {
 			String type = p.getSubidentifier();
 
 			try {
-				Translator translator = Util.createPackageTranslator(this.getClass(), locale);
+				Translator translator = Util.createPackageTranslator(CalendarModule.class, locale);
 				
 				String calType = null;
 				String title = null;

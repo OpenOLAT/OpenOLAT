@@ -26,6 +26,7 @@ import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
 import javax.ws.rs.POST;
@@ -146,6 +147,41 @@ public class CertificationWebService {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
 		}
 		return Response.ok(certificateFile.getInputStream()).build();
+	}
+	
+	@DELETE
+	@Path("{identityKey}")
+	public Response deleteCertificateInfo(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
+			@Context HttpServletRequest request) {
+		if(!isAdmin(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+
+		CertificatesManager certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
+		BaseSecurity baseSecurity = CoreSpringFactory.getImpl(BaseSecurity.class);
+
+		Identity identity = baseSecurity.loadIdentityByKey(identityKey);
+		if(identity == null) {
+			return Response.serverError().status(Response.Status.NOT_FOUND).build();
+		}
+		
+		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", resourceKey);
+		OLATResourceManager resourceManager = CoreSpringFactory.getImpl(OLATResourceManager.class);
+		OLATResource resource = resourceManager.findResourceable(courseOres);
+		if(resource == null) {
+			resource = resourceManager.findResourceById(resourceKey);
+		}
+		if(resource == null) {
+			return Response.serverError().status(Response.Status.NOT_FOUND).build();
+		}
+		
+		Certificate certificate = certificatesManager.getLastCertificate(identity, resource.getKey());
+		if(certificate == null) {
+			return Response.serverError().status(Response.Status.NOT_FOUND).build();
+		}
+		
+		certificatesManager.deleteCertificate(certificate);
+		return Response.ok().build();
 	}
 	
 	/**

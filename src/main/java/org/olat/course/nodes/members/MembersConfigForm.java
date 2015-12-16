@@ -20,10 +20,13 @@
 
 package org.olat.course.nodes.members;
 
+import static org.olat.course.nodes.members.MembersCourseNodeEditController.*;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
@@ -43,11 +46,13 @@ public class MembersConfigForm extends FormBasicController {
 
 	private static final String[] onKeys = new String[] { "on" };
 	private static final String[] onValues = new String[] { "" };
+	private static final String[] emailFctKeys = new String[]{ EMAIL_FUNCTION_ALL, EMAIL_FUNCTION_COACH_ADMIN };
 
-	private ModuleConfiguration config;
+	private final ModuleConfiguration config;
 	private MultipleSelectionElement showOwners;
 	private MultipleSelectionElement showCoaches;
 	private MultipleSelectionElement showParticipants;
+	private SingleSelection emailFunctionEl;
 
 	/**
 	 * Form constructor
@@ -63,37 +68,25 @@ public class MembersConfigForm extends FormBasicController {
 			ModuleConfiguration config) {
 		super(ureq, wControl);
 		this.config = config;
-
 		initForm(ureq);
-		this.validateFormLogic(ureq);
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.Form#validate(org.olat.core.gui.UserRequest)
-	 */
-	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		return true;
 	}
 
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source,
-			FormEvent event) {
-		config.setBooleanEntry(
-				MembersCourseNodeEditController.CONFIG_KEY_SHOWOWNER,
-				showOwners.isSelected(0));
-		config.setBooleanEntry(
-				MembersCourseNodeEditController.CONFIG_KEY_SHOWCOACHES,
-				showCoaches.isSelected(0));
-		config.setBooleanEntry(
-				MembersCourseNodeEditController.CONFIG_KEY_SHOWPARTICIPANTS,
-				showParticipants.isSelected(0));
-		updateCheckboxes();
-		fireEvent(ureq, Event.CHANGED_EVENT);
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(showOwners == source || showCoaches == source || showParticipants == source) {
+			config.setBooleanEntry(CONFIG_KEY_SHOWOWNER, showOwners.isSelected(0));
+			config.setBooleanEntry(CONFIG_KEY_SHOWCOACHES, showCoaches.isSelected(0));
+			config.setBooleanEntry(CONFIG_KEY_SHOWPARTICIPANTS, showParticipants.isSelected(0));
+			updateCheckboxes();
+			fireEvent(ureq, Event.CHANGED_EVENT);
+		} else if(emailFunctionEl == source && emailFunctionEl.isOneSelected()) {
+			if(emailFunctionEl.isSelected(0)) {
+				config.setStringValue(CONFIG_KEY_EMAIL_FUNCTION, EMAIL_FUNCTION_ALL);
+			} else {
+				config.setStringValue(CONFIG_KEY_EMAIL_FUNCTION, EMAIL_FUNCTION_COACH_ADMIN);
+			}
+			fireEvent(ureq, Event.CHANGED_EVENT);
+		}
 	}
 
 	@Override
@@ -105,16 +98,13 @@ public class MembersConfigForm extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener,
 			UserRequest ureq) {
 		// set Formtitle and infobar
-		this.setFormTitle("pane.tab.membersconfig");
-		this.setFormInfo("members.info");
-		this.setFormContextHelp("Communication and Collaboration#_teilnehmerliste");
+		setFormTitle("pane.tab.membersconfig");
+		setFormInfo("members.info");
+		setFormContextHelp("Communication and Collaboration#_teilnehmerliste");
 		// Read Configuration
-		boolean showOwnerConfig = config
-				.getBooleanSafe(MembersCourseNodeEditController.CONFIG_KEY_SHOWOWNER);
-		boolean showCoachesConfig = config
-				.getBooleanSafe(MembersCourseNodeEditController.CONFIG_KEY_SHOWCOACHES);
-		boolean showParticipantsConfig = config
-				.getBooleanSafe(MembersCourseNodeEditController.CONFIG_KEY_SHOWPARTICIPANTS);
+		boolean showOwnerConfig = config.getBooleanSafe(CONFIG_KEY_SHOWOWNER);
+		boolean showCoachesConfig = config.getBooleanSafe(CONFIG_KEY_SHOWCOACHES);
+		boolean showParticipantsConfig = config.getBooleanSafe(CONFIG_KEY_SHOWPARTICIPANTS);
 		// Generate Checkboxes
 		showOwners = uifactory.addCheckboxesHorizontal("members.owners", formLayout, onKeys, onValues);
 		showCoaches = uifactory.addCheckboxesHorizontal("members.coaches", formLayout, onKeys, onValues);
@@ -126,6 +116,19 @@ public class MembersConfigForm extends FormBasicController {
 		showOwners.select("on", showOwnerConfig);
 		showCoaches.select("on", showCoachesConfig);
 		showParticipants.select("on", showParticipantsConfig);
+		
+		String[] emailFctValues = new String[]{
+				translate("email.function.all"), translate("email.function.coachAndAdmin")
+		};
+		emailFunctionEl = uifactory.addRadiosVertical("emails", "email.function", formLayout, emailFctKeys, emailFctValues);
+		emailFunctionEl.addActionListener(FormEvent.ONCLICK);
+		String emailFct =  config.getStringValue(CONFIG_KEY_EMAIL_FUNCTION, EMAIL_FUNCTION_COACH_ADMIN);
+		if(MembersCourseNodeEditController.EMAIL_FUNCTION_COACH_ADMIN.equals(emailFct)) {
+			emailFunctionEl.select(EMAIL_FUNCTION_COACH_ADMIN, true);
+		} else if(MembersCourseNodeEditController.EMAIL_FUNCTION_ALL.equals(emailFct)) {
+			emailFunctionEl.select(EMAIL_FUNCTION_ALL, true);
+		}
+		
 		updateCheckboxes();
 	}
 
