@@ -1151,6 +1151,9 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 * @param defaultNotificationInterval
 	 */
 	public void setDefaultNotificationInterval(String defaultNotificationInterval) {
+		if (defaultNotificationInterval != null) {
+			defaultNotificationInterval = defaultNotificationInterval.trim();
+		}
 		this.defaultNotificationInterval = defaultNotificationInterval;
 	}
 

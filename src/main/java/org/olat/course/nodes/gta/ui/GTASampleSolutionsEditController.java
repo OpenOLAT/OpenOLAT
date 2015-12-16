@@ -27,6 +27,8 @@ import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -48,7 +50,9 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.model.Solution;
 import org.olat.course.nodes.gta.model.SolutionList;
 import org.olat.course.nodes.gta.ui.SolutionTableModel.SolCols;
@@ -77,15 +81,22 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 	private final SolutionList solutions;
 	private final File solutionDir;
 	private final VFSContainer solutionContainer;
+	private final SubscriptionContext subscriptionContext;
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private GTAManager gtaManager;
+	@Autowired
+	private NotificationsManager notificationsManager;
 	
 	public GTASampleSolutionsEditController(UserRequest ureq, WindowControl wControl,
-			ModuleConfiguration config, File solutionDir, VFSContainer solutionContainer) {
+			GTACourseNode gtaNode, CourseEditorEnv courseEditorEnv, File solutionDir, VFSContainer solutionContainer) {
 		super(ureq, wControl, "edit_solution_list");
 		this.solutionDir = solutionDir;
 		this.solutionContainer = solutionContainer;
+		subscriptionContext = gtaManager.getSubscriptionContext(courseEditorEnv, gtaNode);
+		ModuleConfiguration config = gtaNode.getModuleConfiguration();
 		if(config.get(GTACourseNode.GTASK_SOLUTIONS) == null) {
 			solutions = new SolutionList();
 			config.set(GTACourseNode.GTASK_SOLUTIONS, solutions);
@@ -156,6 +167,7 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 				solutions.getSolutions().add(newSolution);
 				fireEvent(ureq, Event.DONE_EVENT);
 				updateModel();
+				notificationsManager.markPublisherNews(subscriptionContext, null, false);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -163,6 +175,7 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 			if(event == Event.DONE_EVENT) {
 				fireEvent(ureq, Event.DONE_EVENT);
 				updateModel();
+				notificationsManager.markPublisherNews(subscriptionContext, null, false);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -175,15 +188,18 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 				solutions.getSolutions().add(newSolution);
 				doCreateSolutionEditor(ureq, newSolution);
 				updateModel();
+				notificationsManager.markPublisherNews(subscriptionContext, null, false);
 			}
 		} else if(newSolutionEditorCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				updateModel();
 				fireEvent(ureq, Event.DONE_EVENT);
+				notificationsManager.markPublisherNews(subscriptionContext, null, false);
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if(editSolutionEditorCtrl == source) {
+			notificationsManager.markPublisherNews(subscriptionContext, null, false);
 			cmc.deactivate();
 			cleanUp();
 		} else if(cmc == source) {

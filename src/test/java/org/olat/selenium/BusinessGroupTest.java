@@ -35,11 +35,13 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
+import org.olat.selenium.page.ScreenshotTestRule;
 import org.olat.selenium.page.Student;
 import org.olat.selenium.page.User;
 import org.olat.selenium.page.core.IMPage;
@@ -76,11 +78,12 @@ public class BusinessGroupTest {
 	@Drone
 	private WebDriver browser;
 	@ArquillianResource
-	private URL deploymentUrl;	
-
+	private URL deploymentUrl;
 	@Page
 	private NavigationPage navBar;
-	
+	@Rule
+    public ScreenshotTestRule screenshotTestRule = new ScreenshotTestRule();
+
 	/**
 	 * Create a group, search it and delete it.
 	 * 
@@ -92,6 +95,8 @@ public class BusinessGroupTest {
 	@RunAsClient
 	public void createDeleteBusinessGroup(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage
 			.loginAs(author.getLogin(), author.getPassword())
@@ -126,6 +131,7 @@ public class BusinessGroupTest {
 	public void groupMembersVisibility(@InitialPage LoginPage loginPage,
 			@Drone @Participant WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser, participantBrowser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("Selena");
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Aoi");
@@ -184,6 +190,7 @@ public class BusinessGroupTest {
 	@RunAsClient
 	public void collaborativeTools(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("Selena");
 		
@@ -285,6 +292,7 @@ public class BusinessGroupTest {
 			@Drone @Participant WebDriver participantBrowser,
 			@Drone @Student WebDriver studentBrowser)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser, participantBrowser, studentBrowser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("Selena");
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
@@ -382,6 +390,7 @@ public class BusinessGroupTest {
 			@Drone @Participant WebDriver kanuBrowser,
 			@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser, kanuBrowser, ryomouBrowser);
 
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
@@ -491,6 +500,7 @@ public class BusinessGroupTest {
 			@Drone @Participant WebDriver reiBrowser,
 			@Drone @Student WebDriver kanuBrowser)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser, ryomouBrowser, reiBrowser, kanuBrowser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
@@ -604,6 +614,7 @@ public class BusinessGroupTest {
 	public void enrollmentWithMultiEnrollment(@InitialPage LoginPage authorLoginPage,
 			@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser, ryomouBrowser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
@@ -707,6 +718,7 @@ public class BusinessGroupTest {
 			@Drone @Participant WebDriver reiBrowser,
 			@Drone @Student WebDriver kanuBrowser)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser, ryomouBrowser, reiBrowser, kanuBrowser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
@@ -839,6 +851,7 @@ public class BusinessGroupTest {
 			@Drone @Participant WebDriver reiBrowser,
 			@Drone @Student WebDriver kanuBrowser)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser, ryomouBrowser, reiBrowser, kanuBrowser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");

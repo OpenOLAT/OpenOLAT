@@ -27,6 +27,7 @@ import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.model.Membership;
 import org.olat.course.nodes.gta.ui.SubmitEvent;
@@ -88,8 +89,21 @@ public interface GTAManager {
 
 	public VFSContainer getSolutionsContainer(CourseEnvironment courseEnv, GTACourseNode cNode);
 	
-	
+	/**
+	 * Create a subscription context.
+	 * @param courseEnv The course environment
+	 * @param cNode The course element
+	 * @return The subscription context for this course and course element.
+	 */
 	public SubscriptionContext getSubscriptionContext(CourseEnvironment courseEnv, GTACourseNode cNode);
+	
+	/**
+	 * Create a subscription context.
+	 * @param courseEnv The course environment
+	 * @param cNode The course element
+	 * @return The subscription context for this course and course element.
+	 */
+	public SubscriptionContext getSubscriptionContext(CourseEditorEnv courseEnv, GTACourseNode cNode);
 	
 	public PublisherData getPublisherData(CourseEnvironment courseEnv, GTACourseNode cNode);
 	

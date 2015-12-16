@@ -23,6 +23,8 @@ import java.io.File;
 
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -100,9 +102,12 @@ public class GTAAssignmentEditController extends FormBasicController {
 	private final GTACourseNode gtaNode;
 	private final ModuleConfiguration config;
 	private final CourseEditorEnv courseEditorEnv;
+	private final SubscriptionContext subscriptionContext;
 	
 	@Autowired
 	private GTAManager gtaManager;
+	@Autowired
+	private NotificationsManager notificationsManager;
 	
 	public GTAAssignmentEditController(UserRequest ureq, WindowControl wControl,
 			GTACourseNode gtaNode, ModuleConfiguration config, CourseEditorEnv courseEditorEnv,
@@ -114,6 +119,7 @@ public class GTAAssignmentEditController extends FormBasicController {
 		
 		this.tasksFolder = tasksFolder;
 		this.tasksContainer = tasksContainer;
+		subscriptionContext = gtaManager.getSubscriptionContext(courseEditorEnv, gtaNode);
 		
 		if(config.get(GTACourseNode.GTASK_TASKS) == null) {
 			taskList = new TaskDefinitionList();
@@ -231,6 +237,7 @@ public class GTAAssignmentEditController extends FormBasicController {
 				taskList.getTasks().add(newTask);
 				fireEvent(ureq, Event.DONE_EVENT);
 				updateModel();
+				notificationsManager.markPublisherNews(subscriptionContext, null, false);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -240,6 +247,7 @@ public class GTAAssignmentEditController extends FormBasicController {
 				fireEvent(ureq, Event.DONE_EVENT);
 				taskDefTableEl.reloadData();
 				doFinishReplacementOfTask(editTaskCtrl.getFilenameToReplace(), editTaskCtrl.getTask());
+				notificationsManager.markPublisherNews(subscriptionContext, null, false);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -257,6 +265,7 @@ public class GTAAssignmentEditController extends FormBasicController {
 			if(event == Event.DONE_EVENT) {
 				updateModel();
 				fireEvent(ureq, Event.DONE_EVENT);
+				notificationsManager.markPublisherNews(subscriptionContext, null, false);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -264,6 +273,7 @@ public class GTAAssignmentEditController extends FormBasicController {
 			if(event == Event.DONE_EVENT) {
 				updateModel();
 				fireEvent(ureq, Event.DONE_EVENT);
+				notificationsManager.markPublisherNews(subscriptionContext, null, false);
 			}
 			cmc.deactivate();
 			cleanUp();

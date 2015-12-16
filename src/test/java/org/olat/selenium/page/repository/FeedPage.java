@@ -41,13 +41,11 @@ public class FeedPage {
 
 	public static final By newExternalFeedBy = By.className("o_feed");
 	
-
-	private WebDriver browser;
+	private final WebDriver browser;
 	
 	public FeedPage(WebDriver browser) {
 		this.browser = browser;
 	}
-	
 	
 	public static FeedPage getFeedPage(WebDriver browser) {
 		OOGraphene.waitElement(feedBy, browser);
@@ -98,8 +96,11 @@ public class FeedPage {
 	private FeedPage newExternalFeed(By configureExternalButton, String url) {
 		browser.findElement(configureExternalButton).click();
 		OOGraphene.waitBusy(browser);
+		By popupBy = By.cssSelector("div.modal-dialog");
+		OOGraphene.waitElement(popupBy, 5, browser);
+		
 		//fill the URL input field
-		By urlField = By.xpath("(//div[contains(@class,'modal-body')]//form//input[@type='text'])[2]");
+		By urlField = By.cssSelector("div.modal-dialog div.o_sel_feed_url input[type='text']");
 		WebElement urlEl = browser.findElement(urlField);
 		urlEl.sendKeys(url);
 		

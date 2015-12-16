@@ -38,12 +38,14 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.selenium.page.Administrator;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
+import org.olat.selenium.page.ScreenshotTestRule;
 import org.olat.selenium.page.Student;
 import org.olat.selenium.page.User;
 import org.olat.selenium.page.core.BookingPage;
@@ -93,9 +95,10 @@ public class CourseTest {
 	private WebDriver browser;
 	@ArquillianResource
 	private URL deploymentUrl;
-	
 	@Page
 	private NavigationPage navBar;
+	@Rule
+    public ScreenshotTestRule screenshotTestRule = new ScreenshotTestRule();
 	
 	/**
 	 * An author create a course, jump to it, open the editor
@@ -110,6 +113,8 @@ public class CourseTest {
 	@RunAsClient
 	public void createCourse(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage.loginAs(author.getLogin(), author.getPassword());
 		
@@ -180,6 +185,8 @@ public class CourseTest {
 	@RunAsClient
 	public void createCourse_withWizard(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage.loginAs(author.getLogin(), author.getPassword());
 		
@@ -239,6 +246,8 @@ public class CourseTest {
 	public void concurrentEditCourse(@InitialPage LoginPage loginPage,
 			@Drone @Participant WebDriver coAuthorBrowser)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser, coAuthorBrowser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO coAuthor = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage
@@ -341,6 +350,8 @@ public class CourseTest {
 	@RunAsClient
 	public void createCourseWithCP(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage.loginAs(author.getLogin(), author.getPassword());
 		
@@ -403,6 +414,8 @@ public class CourseTest {
 	@RunAsClient
 	public void createCourseWithWiki(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage.loginAs(author.getLogin(), author.getPassword());
 		
@@ -464,6 +477,8 @@ public class CourseTest {
 	@RunAsClient
 	public void createCourseWithWiki_createInCourseEditor(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage.loginAs(author.getLogin(), author.getPassword());
 		
@@ -509,6 +524,8 @@ public class CourseTest {
 	@RunAsClient
 	public void createCourseWithQTITest(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage.loginAs(author.getLogin(), author.getPassword());
 		
@@ -562,6 +579,8 @@ public class CourseTest {
 	@RunAsClient
 	public void createCourseWithPodcast_externalFeed(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage.loginAs(author.getLogin(), author.getPassword());
 		
@@ -612,6 +631,8 @@ public class CourseTest {
 	@RunAsClient
 	public void createCourseWithBlog_externalFeed(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage.loginAs(author.getLogin(), author.getPassword());
 		
@@ -674,6 +695,7 @@ public class CourseTest {
 			@Drone @Participant WebDriver participantDrone,
 			@Drone @Administrator WebDriver administratorDrone)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser, participantDrone, administratorDrone);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
@@ -777,6 +799,8 @@ public class CourseTest {
 	public void catalogRoundTrip(@Drone @Administrator WebDriver adminBrowser,
 			@Drone @User WebDriver userBrowser)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser, adminBrowser, userBrowser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		
@@ -856,6 +880,8 @@ public class CourseTest {
 	@RunAsClient
 	public void createCourseWithInfoMessages(@InitialPage LoginPage authorLoginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
@@ -960,6 +986,8 @@ public class CourseTest {
 	public void courseBooking(@InitialPage LoginPage loginPage,
 			@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser, ryomouBrowser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage.loginAs(author.getLogin(), author.getPassword());
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
@@ -1043,6 +1071,8 @@ public class CourseTest {
 	@RunAsClient
 	public void courseReminders(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage.loginAs(author.getLogin(), author.getPassword());
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
@@ -1138,6 +1168,8 @@ public class CourseTest {
 			@Drone @Participant WebDriver kanuBrowser,
 			@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser, kanuBrowser, ryomouBrowser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
@@ -1259,6 +1291,8 @@ public class CourseTest {
 			@Drone @Participant WebDriver kanuBrowser,
 			@Drone @Student WebDriver reiBrowser)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser, kanuBrowser, reiBrowser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
@@ -1389,6 +1423,8 @@ public class CourseTest {
 	public void forumWithGuest(@InitialPage LoginPage loginPage,
 			@Drone @User WebDriver guestBrowser)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser, guestBrowser);
+		
 		loginPage
 			.loginAs("administrator", "openolat")
 			.resume();
@@ -1507,6 +1543,8 @@ public class CourseTest {
 	public void courseAccessRules(@InitialPage LoginPage loginPage,
 			@Drone @Student WebDriver reiBrowser)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser, reiBrowser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("rei");
 		loginPage.loginAs(author.getLogin(), author.getPassword());
@@ -1641,6 +1679,8 @@ public class CourseTest {
 	public void createContentPackage(@InitialPage LoginPage loginPage,
 			@Drone @User WebDriver ryomouBrowser)
 			throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser, ryomouBrowser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		loginPage.loginAs(author.getLogin(), author.getPassword());
