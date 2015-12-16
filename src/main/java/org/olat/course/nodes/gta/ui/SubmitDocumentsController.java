@@ -33,6 +33,8 @@ import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -61,7 +63,9 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,20 +95,26 @@ class SubmitDocumentsController extends FormBasicController {
 	private final File documentsDir;
 	private final VFSContainer documentsContainer;
 	private final ModuleConfiguration config;
+	private final SubscriptionContext subscriptionContext;
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private GTAManager gtaManager;
+	@Autowired
+	private NotificationsManager notificationsManager;
 	
 	public SubmitDocumentsController(UserRequest ureq, WindowControl wControl, Task assignedTask,
-			File documentsDir, VFSContainer documentsContainer, int maxDocs, ModuleConfiguration config,
-			String docI18nKey) {
+			File documentsDir, VFSContainer documentsContainer, int maxDocs, GTACourseNode cNode,
+			CourseEnvironment courseEnv, String docI18nKey) {
 		super(ureq, wControl, "documents");
 		this.assignedTask = assignedTask;
 		this.documentsDir = documentsDir;
 		this.documentsContainer = documentsContainer;
 		this.maxDocs = maxDocs;
 		this.docI18nKey = docI18nKey;
-		this.config = config;
+		this.config = cNode.getModuleConfiguration();
+		subscriptionContext = gtaManager.getSubscriptionContext(courseEnv, cNode);
 		initForm(ureq);
 		updateModel();
 	}
@@ -209,6 +219,7 @@ class SubmitDocumentsController extends FormBasicController {
 				String filename = document.getFile().getName();
 				doDelete(document);
 				fireEvent(ureq, new SubmitEvent(SubmitEvent.DELETE, filename));
+				notificationsManager.markPublisherNews(subscriptionContext, null, false);
 			}
 			cleanUp();
 		} else if(uploadCtrl == source) {
@@ -216,6 +227,7 @@ class SubmitDocumentsController extends FormBasicController {
 				String filename = uploadCtrl.getUploadedFilename();
 				doUpload(ureq, uploadCtrl.getUploadedFile(), filename);
 				fireEvent(ureq, new SubmitEvent(SubmitEvent.UPLOAD, filename));
+				notificationsManager.markPublisherNews(subscriptionContext, null, false);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -224,6 +236,7 @@ class SubmitDocumentsController extends FormBasicController {
 				String filename = replaceCtrl.getUploadedFilename();
 				doReplace(ureq, replaceCtrl.getSolution(), replaceCtrl.getUploadedFile(), filename);
 				fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, filename));
+				notificationsManager.markPublisherNews(subscriptionContext, null, false);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -239,14 +252,16 @@ class SubmitDocumentsController extends FormBasicController {
 		} else if(newDocumentEditorCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				updateModel();
-				fireEvent(ureq, new SubmitEvent(SubmitEvent.CREATE, newDocumentEditorCtrl.getFilename()));	
+				fireEvent(ureq, new SubmitEvent(SubmitEvent.CREATE, newDocumentEditorCtrl.getFilename()));
+				notificationsManager.markPublisherNews(subscriptionContext, null, false);
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if(editDocumentEditorCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				updateModel();
-				fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, editDocumentEditorCtrl.getFilename()));	
+				fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, editDocumentEditorCtrl.getFilename()));
+				notificationsManager.markPublisherNews(subscriptionContext, null, false);
 			}
 			cmc.deactivate();
 			cleanUp();

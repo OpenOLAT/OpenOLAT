@@ -116,7 +116,8 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		manualAssessmentCtrl = new MSEditFormController(ureq, getWindowControl(), config);
 		listenTo(manualAssessmentCtrl);
 		//solutions
-		solutionsCtrl = new GTASampleSolutionsEditController(ureq, getWindowControl(), config, solutionsDir, solutionsContainer);
+		solutionsCtrl = new GTASampleSolutionsEditController(ureq, getWindowControl(), gtaNode, euce.getCourseEditorEnv(),
+				solutionsDir, solutionsContainer);
 		listenTo(solutionsCtrl);
 	}
 	

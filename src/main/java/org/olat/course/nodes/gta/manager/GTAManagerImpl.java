@@ -46,6 +46,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
 import org.olat.course.nodes.gta.AssignmentResponse.Status;
@@ -286,14 +287,18 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	public PublisherData getPublisherData(CourseEnvironment courseEnv, GTACourseNode cNode) {
 		RepositoryEntry re = courseEnv.getCourseGroupManager().getCourseEntry();
 		String businessPath = "[RepositoryEntry:" + re.getKey() + "][CourseNode:" + cNode.getIdent() + "]";
-		PublisherData publisherData = new PublisherData("GroupTask", "", businessPath);
-		return publisherData;
+		return new PublisherData("GroupTask", "", businessPath);
 	}
 
 	@Override
 	public SubscriptionContext getSubscriptionContext(CourseEnvironment courseEnv, GTACourseNode cNode) {
-		SubscriptionContext sc = new SubscriptionContext("CourseModule", courseEnv.getCourseResourceableId(), cNode.getIdent());
-		return sc;
+		return new SubscriptionContext("CourseModule", courseEnv.getCourseResourceableId(), cNode.getIdent());
+	}
+
+	@Override
+	public SubscriptionContext getSubscriptionContext(CourseEditorEnv courseEnv, GTACourseNode cNode) {
+		Long courseResourceableId = courseEnv.getCourseGroupManager().getCourseResource().getResourceableId();
+		return new SubscriptionContext("CourseModule", courseResourceableId, cNode.getIdent());
 	}
 
 	@Override
