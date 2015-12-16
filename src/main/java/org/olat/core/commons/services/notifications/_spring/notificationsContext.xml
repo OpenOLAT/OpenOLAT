@@ -42,7 +42,7 @@
 			Must also be in the list of notificationIntervals above. 
 		-->
 		<property name="defaultNotificationInterval">
-			<value>daily</value>
+			<value>${notification.interval.default}</value>
 		</property>
 	</bean>
 	
