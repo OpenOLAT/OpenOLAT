@@ -35,11 +35,13 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
+import org.olat.selenium.page.ScreenshotTestRule;
 import org.olat.selenium.page.Student;
 import org.olat.selenium.page.User;
 import org.olat.selenium.page.course.CoursePageFragment;
@@ -83,6 +85,8 @@ public class UserTest {
 	private UserToolsPage userTools;
 	@Page
 	private NavigationPage navBar;
+	@Rule
+    public ScreenshotTestRule screenshotTestRule = new ScreenshotTestRule();
 	
 	/**
 	 * Set the resume preferences to automatically resume the session,
@@ -194,6 +198,8 @@ public class UserTest {
 	@RunAsClient
 	public void resumeDisabled(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		loginPage
 			.loginAs(user.getLogin(), user.getPassword())
@@ -234,6 +240,8 @@ public class UserTest {
 	@RunAsClient
 	public void userSwitchLanguageSwitchToEnglish(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		loginPage
 			.loginAs(user.getLogin(), user.getPassword())
@@ -292,6 +300,8 @@ public class UserTest {
 	@RunAsClient
 	public void userChangeItsPassword(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		loginPage
 			.loginAs(user.getLogin(), user.getPassword())
@@ -324,6 +334,8 @@ public class UserTest {
 	@RunAsClient
 	public void userResetItsPreferences(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		loginPage
 			.loginAs(user.getLogin(), user.getPassword())
@@ -352,6 +364,8 @@ public class UserTest {
 	@RunAsClient
 	public void portletDeactivateActivate(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		loginPage
 			.loginAs(user.getLogin(), user.getPassword());
@@ -386,6 +400,8 @@ public class UserTest {
 	@RunAsClient
 	public void movePortletToTheTop(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		loginPage
 			.loginAs(user.getLogin(), user.getPassword());
@@ -426,6 +442,8 @@ public class UserTest {
 	@RunAsClient
 	public void browserBack(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		Assume.assumeTrue(browser instanceof FirefoxDriver);
 		
 		loginPage
@@ -461,6 +479,8 @@ public class UserTest {
 	public void createUser(@InitialPage LoginPage loginPage,
 			@Drone @User WebDriver userBrowser)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser, userBrowser);
+		
 		//login
 		loginPage
 			.assertOnLoginPage()
@@ -506,6 +526,8 @@ public class UserTest {
 	@RunAsClient
 	public void deleteUser(@InitialPage LoginPage loginPage,
 			@Drone @User WebDriver userBrowser) {
+		screenshotTestRule.setBrowsers(browser, userBrowser);
+		
 		//login
 		loginPage
 			.assertOnLoginPage()
@@ -566,6 +588,8 @@ public class UserTest {
 	public void importUsers(@InitialPage LoginPage loginPage,
 			@Drone @User WebDriver userBrowser)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser, userBrowser);
+		
 		//login
 		loginPage
 			.assertOnLoginPage()
@@ -619,6 +643,7 @@ public class UserTest {
 			@Drone @User WebDriver existingUserBrowser,
 			@Drone @Student WebDriver newUserBrowser)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser, existingUserBrowser, newUserBrowser);
 
 		UserVO user1 = new UserRestClient(deploymentUrl)
 			.createRandomUser("tsukune");

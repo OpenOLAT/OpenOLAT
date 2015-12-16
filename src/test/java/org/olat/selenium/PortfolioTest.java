@@ -35,10 +35,12 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
+import org.olat.selenium.page.ScreenshotTestRule;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.forum.ForumPage;
@@ -72,11 +74,12 @@ public class PortfolioTest {
 	private WebDriver browser;
 	@ArquillianResource
 	private URL deploymentUrl;
-
-	@Page
-	private UserToolsPage userTools;
 	@Page
 	private NavigationPage navBar;
+	@Page
+	private UserToolsPage userTools;
+	@Rule
+    public ScreenshotTestRule screenshotTestRule = new ScreenshotTestRule();
 
 	/**
 	 * Create a course with a forum, publish it.
@@ -92,6 +95,8 @@ public class PortfolioTest {
 	@RunAsClient
 	public void collectForumArtefactInCourse(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage
 			.loginAs(author.getLogin(), author.getPassword())
@@ -179,6 +184,8 @@ public class PortfolioTest {
 	@RunAsClient
 	public void collectWikiArtefactInWikiResource(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage
 			.loginAs(author.getLogin(), author.getPassword())
@@ -259,6 +266,8 @@ public class PortfolioTest {
 	@RunAsClient
 	public void collectBlogPostInCourse(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage
 			.loginAs(author.getLogin(), author.getPassword())
@@ -355,6 +364,8 @@ public class PortfolioTest {
 	@RunAsClient
 	public void addTextArtefact(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage
 			.loginAs(author.getLogin(), author.getPassword())
@@ -420,6 +431,8 @@ public class PortfolioTest {
 	@RunAsClient
 	public void addTextArtefact_withinMap(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage
 			.loginAs(author.getLogin(), author.getPassword())
@@ -484,6 +497,8 @@ public class PortfolioTest {
 	@RunAsClient
 	public void addLearningJournal(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage
 			.loginAs(author.getLogin(), author.getPassword())
@@ -562,6 +577,8 @@ public class PortfolioTest {
 	@RunAsClient
 	public void addLearningJournal_withinMap(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage
 			.loginAs(author.getLogin(), author.getPassword())
@@ -638,6 +655,8 @@ public class PortfolioTest {
 	@RunAsClient
 	public void addFileArtefact(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		//File upload only work with Firefox
 		Assume.assumeTrue(browser instanceof FirefoxDriver);
 		
@@ -712,6 +731,8 @@ public class PortfolioTest {
 	@RunAsClient
 	public void addFileArtefact_withinMap(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		//File upload only work with Firefox
 		Assume.assumeTrue(browser instanceof FirefoxDriver);
 		
@@ -787,6 +808,8 @@ public class PortfolioTest {
 	@RunAsClient
 	public void createPortfolioTemplate_inCourse(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
+		screenshotTestRule.setBrowsers(browser);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage
 			.loginAs(author.getLogin(), author.getPassword())
