@@ -65,6 +65,10 @@ public class RestSecurityHelper {
 		return ureq.getIdentity();
 	}
 	
+	public static Identity getIdentity(Long identityKey) {
+		return BaseSecurityManager.getInstance().loadIdentityByKey(identityKey);
+	}
+	
 	public static boolean isUserManager(HttpServletRequest request) {
 		try {
 			Roles roles = getRoles(request);

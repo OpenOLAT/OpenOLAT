@@ -685,7 +685,7 @@ public class RepositoryEntryResource {
 		int count = 0;
 		UserVO[] ownerVOs = new UserVO[identities.size()];
 		for(Identity identity:identities) {
-			ownerVOs[count++] = UserVOFactory.get(identity);
+			ownerVOs[count++] = UserVOFactory.get(identity, true, true);
 		}
 		return Response.ok(ownerVOs).build();
 	}
