@@ -24,6 +24,8 @@
 */
 package org.olat.core.commons.modules.bc.meta;
 
+import java.util.Date;
+
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -68,10 +70,14 @@ public interface MetaInfo {
 	public boolean delete();
 	
 	/**
-	 * fxdiff:
 	 * @return the unique id of the file or create one if it previously not exists
 	 */
 	public String getUUID();
+	
+	/**
+	 * @return The last modification date of the metadata
+	 */
+	public Date getMetaLastModified();
 
 	/**
 	 * @return name of the initial author (OLAT user name)

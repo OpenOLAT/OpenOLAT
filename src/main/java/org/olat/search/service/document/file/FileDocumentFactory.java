@@ -32,6 +32,8 @@ import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.modules.bc.meta.MetaInfo;
+import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalImpl;
@@ -110,9 +112,16 @@ public class FileDocumentFactory {
 				if(indexedDoc != null) {
 					String timestamp = indexedDoc.get(AbstractOlatDocument.TIME_STAMP_NAME);
 					if(timestamp != null) {
-						Date lastMod = DateTools.stringToDate(timestamp);
-						Date lastMod2 = new Date(leaf.getLastModified());
-						if(lastMod2.compareTo(lastMod) < 0) {
+						Date indexLastModification = DateTools.stringToDate(timestamp);
+						Date docLastModificationDate = new Date(leaf.getLastModified());
+						if(leaf instanceof MetaTagged) {
+							MetaInfo metaInfo = ((MetaTagged)leaf).getMetaInfo();
+							Date metaDate = metaInfo.getMetaLastModified();
+							if(metaDate != null && metaDate.after(docLastModificationDate)) {
+								docLastModificationDate = metaDate;
+							}
+						}
+						if(docLastModificationDate.compareTo(indexLastModification) < 0) {
 							return indexedDoc;
 						}
 					}

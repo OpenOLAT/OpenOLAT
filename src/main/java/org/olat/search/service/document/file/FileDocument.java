@@ -26,6 +26,7 @@
 package org.olat.search.service.document.file;
 
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.Date;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
@@ -63,7 +64,7 @@ public abstract class FileDocument extends OlatDocument {
 			// document-type in context is set => get from there
 			setDocumentType(leafResourceContext.getDocumentType());
 		} else {
-  		setDocumentType(TYPE);
+			setDocumentType(TYPE);
 		}
 
 		FileContent content = readContent(leaf);
@@ -85,23 +86,22 @@ public abstract class FileDocument extends OlatDocument {
 			title.append(metaTitle).append(" ( ");
 		}
 		title.append(leaf.getName());
-		if(metaTitle != null) title.append(" )");
+		if(metaTitle != null) {
+			title.append(" )");
+		}
 		setTitle(title.toString());
 
 		String metaDesc = (meta == null ? null : meta.getComment());
 		if (leafResourceContext.getDescription() != null && !leafResourceContext.getDescription().equals("")) {
 			// Title in context is set => get from there
 			setDescription(leafResourceContext.getDescription() + (metaDesc == null ? "" : " " + metaDesc));
-		} else {
-      //		 no description this.setDescription();
-			if (metaDesc != null) this.setDescription(metaDesc);
+		} else if (metaDesc != null) {
+			setDescription(metaDesc);
 		}
 		setParentContextType(leafResourceContext.getParentContextType());
 		setParentContextName(leafResourceContext.getParentContextName());
-		// Add the content itself
 		setContent(content.getContent());
-		
-		
+
 		// Add other metadata from meta info
 		if (meta != null) {
 			addMetadata(SimpleDublinCoreMetadataFieldsProvider.DC_DESCRIPTION, meta.getComment());			
@@ -109,23 +109,49 @@ public abstract class FileDocument extends OlatDocument {
 			// Date is 2009 200902 or 20090228
 			String[] pubDateArray = meta.getPublicationDate();
 			if (pubDateArray != null) {
-				String pubDate = null;
-				if (pubDateArray.length == 1) pubDate = meta.getPublicationDate()[0];
-				if (pubDateArray.length == 2) pubDate = meta.getPublicationDate()[0]+meta.getPublicationDate()[1];
-				if (pubDateArray.length == 3) pubDate = meta.getPublicationDate()[0]+meta.getPublicationDate()[1]+meta.getPublicationDate()[2];
-				addMetadata(SimpleDublinCoreMetadataFieldsProvider.DC_DATE, pubDate);							
+				StringBuilder pubDate = new StringBuilder();
+				for(String d:pubDateArray) {
+					if(d != null) {
+						pubDate.append(d);
+					}
+				}
+				addMetadata(SimpleDublinCoreMetadataFieldsProvider.DC_DATE, pubDate.toString());
+				
+				Date publicationDate = getDateFromPublicationDateArray(pubDateArray);
+				if(publicationDate != null) {
+					setPublicationDate(publicationDate);
+				}
 			}
-			addMetadata(SimpleDublinCoreMetadataFieldsProvider.DC_PUBLISHER, meta.getPublisher());	
-			addMetadata(SimpleDublinCoreMetadataFieldsProvider.DC_SOURCE, meta.getSource());	
-			addMetadata(SimpleDublinCoreMetadataFieldsProvider.DC_SOURCE, meta.getUrl());	
+			addMetadata(SimpleDublinCoreMetadataFieldsProvider.DC_PUBLISHER, meta.getPublisher());
+			addMetadata(SimpleDublinCoreMetadataFieldsProvider.DC_SOURCE, meta.getSource());
+			addMetadata(SimpleDublinCoreMetadataFieldsProvider.DC_SOURCE, meta.getUrl());
 			// use creator and author as olat author 
 			setAuthor((meta.getCreator() == null ? meta.getAuthor() : meta.getAuthor() + " " + meta.getCreator()));
-			addMetadata(SimpleDublinCoreMetadataFieldsProvider.DC_CREATOR, meta.getCreator());				
+			addMetadata(SimpleDublinCoreMetadataFieldsProvider.DC_CREATOR, meta.getCreator());
 		}
 		// Add file type
 		String mimeType = WebappHelper.getMimeType(leaf.getName());
-		addMetadata(SimpleDublinCoreMetadataFieldsProvider.DC_FORMAT, mimeType);		
-		
+		addMetadata(SimpleDublinCoreMetadataFieldsProvider.DC_FORMAT, mimeType);
+	}
+	
+	private Date getDateFromPublicationDateArray(String[] pubDateArray) {
+		try {
+			Calendar cal = Calendar.getInstance();
+			cal.clear();
+			if(pubDateArray.length > 0 && pubDateArray[0] != null) {
+				cal.set(Calendar.YEAR, Integer.parseInt(pubDateArray[0]));
+			}
+			if(pubDateArray.length > 1 && pubDateArray[1] != null) {
+				cal.set(Calendar.MONTH, Integer.parseInt(pubDateArray[1]));
+			}
+			if(pubDateArray.length > 2 && pubDateArray[2] != null) {
+				cal.set(Calendar.DATE, Integer.parseInt(pubDateArray[2]));
+			}
+			return cal.getTime();
+		} catch (NumberFormatException e) {
+			// can happen
+			return null;
+		}
 	}
 	
 	abstract protected FileContent readContent(VFSLeaf leaf) throws IOException, DocumentException, DocumentAccessException;

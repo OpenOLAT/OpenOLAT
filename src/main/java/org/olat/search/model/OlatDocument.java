@@ -85,40 +85,23 @@ public class OlatDocument extends AbstractOlatDocument {
 		if(getId() != null) {
 			document.add(new StringField(DB_ID_NAME, getId().toString(), Field.Store.YES));
 		}
-		document.add(createTextField(TITLE_FIELD_NAME,getTitle(), 4));
-		document.add(createTextField(DESCRIPTION_FIELD_NAME,getDescription(), 2));
+		document.add(createTextField(TITLE_FIELD_NAME, getTitle(), 4));
+		document.add(createTextField(DESCRIPTION_FIELD_NAME, getDescription(), 2));
 		document.add(createTextField(CONTENT_FIELD_NAME, getContent(), 0.5f));
 		document.add(new StringField(RESOURCEURL_FIELD_NAME, getResourceUrl(), Field.Store.YES));
 		document.add(new StringField(RESOURCEURL_MD5_FIELD_NAME, Encoder.md5hash(getResourceUrl()), Field.Store.YES));
-		document.add(new StringField(DOCUMENTTYPE_FIELD_NAME,getDocumentType(), Field.Store.YES));
+		document.add(new StringField(DOCUMENTTYPE_FIELD_NAME, getDocumentType(), Field.Store.YES));
 		if(getCssIcon() != null) {
 			document.add(new StringField(CSS_ICON,getCssIcon(), Field.Store.YES));
 		}
-		document.add(new StringField(FILETYPE_FIELD_NAME,getFileType(), Field.Store.YES));
+		document.add(new StringField(FILETYPE_FIELD_NAME, getFileType(), Field.Store.YES));
 		document.add(createTextField(AUTHOR_FIELD_NAME, getAuthor(), 2));
 		document.add(createTextField(LOCATION_FIELD_NAME, getLocation(), 2));
     
-		try {
-			if(getCreatedDate() != null) {
-				document.add(createDayField(CREATED_FIELD_NAME, getCreatedDate()));
-			}
-		} catch (Exception ex) {
-			// No createdDate set => does not add field
-		}
-		try {
-			if (getLastChange() != null) {
-				document.add(createDayField(CHANGED_FIELD_NAME, getLastChange()));
-			}
-		} catch (Exception ex) {
-			// No changedDate set => does not add field
-		}
-		try {
-			if (getTimestamp() != null) {
-				document.add(createMillisecondField(TIME_STAMP_NAME, getTimestamp()));
-			}
-		} catch (Exception ex) {
-			// No changedDate set => does not add field
-		}
+		appendDayField(document, CREATED_FIELD_NAME, getCreatedDate());
+		appendDayField(document, CHANGED_FIELD_NAME, getLastChange());
+		appendDayField(document, PUBLICATION_DATE_FIELD_NAME, getPublicationDate());
+		appendDayField(document, TIME_STAMP_NAME, getTimestamp());
     
 		// Add various metadata
 		if (metadata != null) {
@@ -142,6 +125,16 @@ public class OlatDocument extends AbstractOlatDocument {
 		}
 		return document;
 	}
+	
+	protected void appendDayField(Document document, String fieldName, Date date) {
+		if (date != null) {
+			try {
+				document.add(createDayField(fieldName, date));
+			} catch (Exception e) {
+				//say nothing
+			}
+		}
+	}
 
 	/**
 	 * Create a field which is indexed, tokenized and stored
@@ -151,10 +144,6 @@ public class OlatDocument extends AbstractOlatDocument {
 	 * @return
 	 */
 	protected static Field createTextField(String fieldName, String content, float boost) {
-		if(fieldName.equals(LOCATION_FIELD_NAME) && StringHelper.containsNonWhitespace(content)) {
-			System.out.println("");
-		}
-		
 		TextField field = new TextField(fieldName, content, Field.Store.YES);
 		field.setBoost(boost);
 		return field;

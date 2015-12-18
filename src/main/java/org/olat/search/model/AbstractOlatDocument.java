@@ -26,6 +26,7 @@
 package org.olat.search.model;
 
 import java.io.Serializable;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -48,31 +49,33 @@ public abstract class AbstractOlatDocument implements Serializable {
 	private static final long serialVersionUID = 3477625468662703214L;
 
 	// Field names
-	public  static final String DB_ID_NAME = "key";
+	public static final String DB_ID_NAME = "key";
 	
-	public  static final String TITLE_FIELD_NAME = "title";
+	public static final String TITLE_FIELD_NAME = "title";
 
-	public  static final String DESCRIPTION_FIELD_NAME = "description";
+	public static final String DESCRIPTION_FIELD_NAME = "description";
 
-	public  static final String CONTENT_FIELD_NAME = "content";
+	public static final String CONTENT_FIELD_NAME = "content";
 
-	public  static final String DOCUMENTTYPE_FIELD_NAME = "documenttype";
+	public static final String DOCUMENTTYPE_FIELD_NAME = "documenttype";
 
-	public  static final String FILETYPE_FIELD_NAME = "filetype";
+	public static final String FILETYPE_FIELD_NAME = "filetype";
 
-	public  static final String RESOURCEURL_FIELD_NAME = "resourceurl";
+	public static final String RESOURCEURL_FIELD_NAME = "resourceurl";
 	
-	public  static final String RESOURCEURL_MD5_FIELD_NAME = "resourceurlmd";
+	public static final String RESOURCEURL_MD5_FIELD_NAME = "resourceurlmd";
 
-	public  static final String AUTHOR_FIELD_NAME = "author";
+	public static final String AUTHOR_FIELD_NAME = "author";
 	
-	public  static final String LOCATION_FIELD_NAME = "location";
+	public static final String LOCATION_FIELD_NAME = "location";
 
-	public  static final String CREATED_FIELD_NAME = "created";
+	public static final String CREATED_FIELD_NAME = "created";
 
-	public  static final String CHANGED_FIELD_NAME = "changed";
+	public static final String CHANGED_FIELD_NAME = "changed";
+	
+	public static final String PUBLICATION_DATE_FIELD_NAME = "pubdate";
 
-	public  static final String TIME_STAMP_NAME = "timestamp";
+	public static final String TIME_STAMP_NAME = "timestamp";
 
 	public static final String PARENT_CONTEXT_TYPE_FIELD_NAME = "parentcontexttype";
 
@@ -95,6 +98,7 @@ public abstract class AbstractOlatDocument implements Serializable {
 		fields.add(LOCATION_FIELD_NAME);
 		fields.add(CREATED_FIELD_NAME);
 		fields.add(CHANGED_FIELD_NAME);
+		fields.add(PUBLICATION_DATE_FIELD_NAME);
 		fields.add(TIME_STAMP_NAME);
 		fields.add(PARENT_CONTEXT_TYPE_FIELD_NAME);
 		fields.add(PARENT_CONTEXT_NAME_FIELD_NAME);
@@ -104,7 +108,7 @@ public abstract class AbstractOlatDocument implements Serializable {
 	}
 
 	
-  // Lucene Attributes
+	// Lucene Attributes
 	private Long id;
 	private String title = "";
 	protected String description = "";
@@ -117,9 +121,10 @@ public abstract class AbstractOlatDocument implements Serializable {
 	private String location = "";
 	private Date createdDate;
 	private Date lastChange;
+	private Date publicationDate;
 	private Date timestamp;
-	/** Various metadata, most likely doublin core **/
-	protected Map<String, List<String>> metadata = null;
+	/** Various metadata, most likely dublin core **/
+	protected Map<String, List<String>> metadata;
 	/* e.g. Course */
 	private String parentContextType = "";
 	/* e.g. Course-name */
@@ -144,33 +149,25 @@ public abstract class AbstractOlatDocument implements Serializable {
 		author = document.get(AUTHOR_FIELD_NAME);
 		location = document.get(LOCATION_FIELD_NAME);
 		reservedTo = document.get(RESERVED_TO);
-		try {
-			String f = document.get(CREATED_FIELD_NAME);
-			if(StringHelper.containsNonWhitespace(f)) {
-				createdDate  = DateTools.stringToDate(f);
-			}
-		} catch (Exception e) {
-			//can happen
-		}
-		try {
-			String f = document.get(CHANGED_FIELD_NAME);
-			if(StringHelper.containsNonWhitespace(f)) {
-				lastChange   = DateTools.stringToDate(f);
-			}
-		} catch (Exception e) {
-			//can happen
-		}
-		try {
-			String f = document.get(TIME_STAMP_NAME);
-			if(StringHelper.containsNonWhitespace(f)) {
-				timestamp   = DateTools.stringToDate(f);
-			}
-		} catch (Exception e) {
-			//can happen
-		}
+		createdDate = toDate(document, CREATED_FIELD_NAME);
+		lastChange = toDate(document, CHANGED_FIELD_NAME);
+		publicationDate = toDate(document, PUBLICATION_DATE_FIELD_NAME);
+		timestamp = toDate(document, TIME_STAMP_NAME);
 		parentContextType = document.get(PARENT_CONTEXT_TYPE_FIELD_NAME);
 		parentContextName = document.get(PARENT_CONTEXT_NAME_FIELD_NAME);
 		cssIcon = document.get(CSS_ICON);
+	}
+	
+	private Date toDate(Document document, String fieldName) {
+		try {
+			String f = document.get(fieldName);
+			if(StringHelper.containsNonWhitespace(f)) {
+				return DateTools.stringToDate(f);
+			}
+		} catch (ParseException e) {
+			//can happen
+		}
+		return null;
 	}
 
 	public Long getId() {
@@ -271,6 +268,14 @@ public abstract class AbstractOlatDocument implements Serializable {
 		this.lastChange = lastChange;
 	}
 
+	public Date getPublicationDate() {
+		return publicationDate;
+	}
+
+	public void setPublicationDate(Date publicationDate) {
+		this.publicationDate = publicationDate;
+	}
+
 	/**
 	 * @return Returns the resourceUrl.
 	 */
@@ -342,7 +347,7 @@ public abstract class AbstractOlatDocument implements Serializable {
 		List<String> values = metadata.get(key);
 		if (values == null) {
 			// this meta key has never been added so far
-			values = new ArrayList<String>();
+			values = new ArrayList<String>(1);
 			metadata.put(key, values);
 		}
 		values.add(value);

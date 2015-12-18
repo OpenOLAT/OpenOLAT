@@ -216,6 +216,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_sort:before { content: $fa-var-sort;}
 .o_icon_sort_asc:before { content: $fa-var-sort-asc;}
 .o_icon_sort_desc:before { content: $fa-var-sort-desc;}
+.o_icon_sort_amount_asc:before { content: $fa-var-sort-amount-asc;}
+.o_icon_sort_amount_desc:before { content: $fa-var-sort-amount-desc;}
 .o_icon_sort_menu:before { content: $fa-var-sort-amount-asc;}
 .o_icon_start:before { content: $fa-var-chevron-right; }
 .o_icon_status_available:before { content: $fa-var-circle; color: $o-im-status-available-color; }
