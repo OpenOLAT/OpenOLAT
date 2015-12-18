@@ -1781,7 +1781,12 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			boolean ownedById, boolean attendedById, RepositoryEntryRef resource) {
 		return businessGroupRelationDAO.isIdentityInBusinessGroup(identity, groupKey, ownedById, attendedById, resource);
 	}
-	
+
+	@Override
+	public List<Identity> getIdentitiesWithRole(String role) {
+		return businessGroupRelationDAO.getIdentitiesWithRole(role);
+	}
+
 	@Override
 	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile,
 			BusinessGroupEnvironment env, boolean runtimeDatas, boolean backwardsCompatible) {

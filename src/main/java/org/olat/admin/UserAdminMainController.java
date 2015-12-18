@@ -36,9 +36,10 @@ import org.olat.admin.user.UsermanagerUserSearchController;
 import org.olat.admin.user.delete.DirectDeleteController;
 import org.olat.admin.user.delete.TabbedPaneController;
 import org.olat.admin.user.imp.UserImportController;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Constants;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.PermissionOnResourceable;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
@@ -75,6 +76,8 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.group.BusinessGroupService;
+import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,6 +112,12 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	private LockResult lock;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
 	/**
 	 * Constructor of the home main controller
@@ -216,7 +225,6 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 				if (contentCtr instanceof UsermanagerUserSearchController) {
 					UsermanagerUserSearchController userSearchCtr = (UsermanagerUserSearchController) contentCtr;
 					userSearchCtr.reloadFoundIdentity();
-					//fxdiff BAKS-7 Resume function
 					addToHistory(ureq, userSearchCtr);
 				}
 				content.setContent(contentCtr.getInitialComponent());
@@ -230,7 +238,6 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		
 		if (uobject instanceof GenericActionExtension) {
 			GenericActionExtension ae = (GenericActionExtension) uobject;
-			//fxdiff BAKS-7 Resume function
 			TreeNode node = ((GenericTreeModel)olatMenuTree.getTreeModel()).findNodeByUserObject(uobject);
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("AE", new Long(node.getPosition()));
 			WindowControl bwControl = addToHistory(ureq, ores, null);
@@ -238,7 +245,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		}	
-		//fxdiff BAKS-7 Resume function
+
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(uobject.toString(), 0l);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 
@@ -318,7 +325,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		}
 		else if (uobject.equals("admingroup")) {
 			activatePaneInDetailView = "";
-			SecurityGroup[] secGroup = {BaseSecurityManager.getInstance().findSecurityGroupByName(Constants.GROUP_ADMIN)};
+			SecurityGroup[] secGroup = {securityManager.findSecurityGroupByName(Constants.GROUP_ADMIN)};
 			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
 			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
@@ -326,7 +333,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		}
 		else if (uobject.equals("authorgroup")) {
 			activatePaneInDetailView = "edit.uroles";
-			SecurityGroup[] secGroup = {BaseSecurityManager.getInstance().findSecurityGroupByName(Constants.GROUP_AUTHORS)};
+			SecurityGroup[] secGroup = {securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS)};
 			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
 			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
@@ -339,8 +346,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			UsermanagerUserSearchController myCtr = new UsermanagerUserSearchController(ureq, bwControl,null, permissions, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
 			addToHistory(ureq, bwControl);
 			// now subtract users that are in the author group to get the co-authors
-			SecurityGroup[] secGroup = {BaseSecurityManager.getInstance().findSecurityGroupByName(Constants.GROUP_AUTHORS)};
-			List<Identity> identitiesFromAuthorGroup = BaseSecurityManager.getInstance().getVisibleIdentitiesByPowerSearch(null, null, true, secGroup , null, null, null, null);
+			SecurityGroup[] secGroup = {securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS)};
+			List<Identity> identitiesFromAuthorGroup = securityManager.getVisibleIdentitiesByPowerSearch(null, null, true, secGroup , null, null, null, null);
 			myCtr.removeIdentitiesFromSearchResult(ureq, identitiesFromAuthorGroup);
 			contentCtr = myCtr;
 			listenTo(contentCtr);
@@ -356,15 +363,31 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		}
 		else if (uobject.equals("groupmanagergroup")) {
 			activatePaneInDetailView = "edit.uroles";
-			SecurityGroup[] secGroup = {BaseSecurityManager.getInstance().findSecurityGroupByName(Constants.GROUP_GROUPMANAGERS)};
+			SecurityGroup[] secGroup = {securityManager.findSecurityGroupByName(Constants.GROUP_GROUPMANAGERS)};
 			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			addToHistory(ureq, bwControl);
+			listenTo(contentCtr);
+			return contentCtr.getInitialComponent();
+		}
+		if (uobject.equals("coursecoach")) {
+			activatePaneInDetailView = "edit.uroles";
+			List<Identity> coaches = repositoryService.getIdentitiesWithRole(GroupRoles.coach.name());
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, coaches, Identity.STATUS_VISIBLE_LIMIT, true);
+			addToHistory(ureq, bwControl);
+			listenTo(contentCtr);
+			return contentCtr.getInitialComponent();
+		}
+		if (uobject.equals("groupcoach")) {
+			activatePaneInDetailView = "edit.uroles";
+			List<Identity> coaches = businessGroupService.getIdentitiesWithRole(GroupRoles.coach.name());
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, coaches, Identity.STATUS_VISIBLE_LIMIT, true);
 			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		}
 		else if (uobject.equals("usermanagergroup")) {
 			activatePaneInDetailView = "edit.uroles";
-			SecurityGroup[] secGroup = {BaseSecurityManager.getInstance().findSecurityGroupByName(Constants.GROUP_USERMANAGERS)};
+			SecurityGroup[] secGroup = {securityManager.findSecurityGroupByName(Constants.GROUP_USERMANAGERS)};
 			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
 			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
@@ -372,7 +395,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		}
 		else if (uobject.equals("usergroup")) {
 			activatePaneInDetailView = "edit.uroles";
-			SecurityGroup[] secGroup = {BaseSecurityManager.getInstance().findSecurityGroupByName(Constants.GROUP_OLATUSERS)};
+			SecurityGroup[] secGroup = {securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS)};
 			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
 			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
@@ -380,7 +403,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		}		
 		else if (uobject.equals("anonymousgroup")) {
 			activatePaneInDetailView = "edit.uroles";
-			SecurityGroup[] secGroup = {BaseSecurityManager.getInstance().findSecurityGroupByName(Constants.GROUP_ANONYMOUS)};
+			SecurityGroup[] secGroup = {securityManager.findSecurityGroupByName(Constants.GROUP_ANONYMOUS)};
 			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
 			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
@@ -388,7 +411,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		}
 		else if (uobject.equals("userswithoutgroup")) {
 			activatePaneInDetailView = "edit.withoutgroup";
-			List<Identity> usersWithoutGroup = BaseSecurityManager.getInstance().findIdentitiesWithoutBusinessGroup(Identity.STATUS_VISIBLE_LIMIT);
+			List<Identity> usersWithoutGroup = securityManager.findIdentitiesWithoutBusinessGroup(Identity.STATUS_VISIBLE_LIMIT);
 			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, usersWithoutGroup, null, true, true);
 			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
@@ -620,7 +643,19 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			gtnChild.setTitle(translator.translate("menu.groupmanagergroup"));
 			gtnChild.setUserObject("groupmanagergroup");
 			gtnChild.setAltText(translator.translate("menu.groupmanagergroup.alt"));
-			gtn3.addChild(gtnChild);		
+			gtn3.addChild(gtnChild);
+			
+			gtnChild = new GenericTreeNode();		
+			gtnChild.setTitle(translator.translate("menu.coursecoach"));
+			gtnChild.setUserObject("coursecoach");
+			gtnChild.setAltText(translator.translate("menu.coursecoach.alt"));
+			gtn3.addChild(gtnChild);
+			
+			gtnChild = new GenericTreeNode();		
+			gtnChild.setTitle(translator.translate("menu.groupcoach"));
+			gtnChild.setUserObject("groupcoach");
+			gtnChild.setAltText(translator.translate("menu.groupcoach.alt"));
+			gtn3.addChild(gtnChild);
 		}
 
 		// admin group and user manager group always restricted to admins

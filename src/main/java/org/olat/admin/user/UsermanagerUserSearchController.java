@@ -140,6 +140,8 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private BaseSecurity securityManager;
 
 	/**
 	 * Constructor to trigger the user search workflow using a generic search form
@@ -193,7 +195,6 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		super(ureq, wControl);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 
-		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 
 		mailVC = createVelocityContainer("usermanagerMail");
@@ -206,8 +207,39 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		userListVC.contextPut("showBackButton", Boolean.FALSE);
 		userListVC.contextPut("showTitle", Boolean.TRUE);
 
-		identitiesList = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(null, null, true, searchGroups, searchPermissionOnResources, searchAuthProviders,
+		identitiesList = securityManager.getIdentitiesByPowerSearch(null, null, true, searchGroups, searchPermissionOnResources, searchAuthProviders,
 				searchCreatedAfter, searchCreatedBefore, null, null, status);
+
+		initUserListCtr(ureq, identitiesList, status);
+		userListVC.put("userlist", tableCtr.getInitialComponent());
+		userListVC.contextPut("emptyList", (identitiesList.size() == 0 ? Boolean.TRUE : Boolean.FALSE));
+
+		panel = putInitialPanel(userListVC);
+	}
+	
+	/**
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param identitiesList
+	 * @param status
+	 * @param showEmailButton
+	 */
+	public UsermanagerUserSearchController(UserRequest ureq, WindowControl wControl, List<Identity> identitiesList, Integer status, boolean showEmailButton) {
+		super(ureq, wControl);
+		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+
+		mailVC = createVelocityContainer("usermanagerMail");
+
+		backFromMail = LinkFactory.createLinkBack(mailVC, this);
+
+		userListVC = createVelocityContainer("usermanagerUserlist");
+		this.showEmailButton = showEmailButton;
+
+		userListVC.contextPut("showBackButton", Boolean.FALSE);
+		userListVC.contextPut("showTitle", Boolean.TRUE);
 
 		initUserListCtr(ureq, identitiesList, status);
 		userListVC.put("userlist", tableCtr.getInitialComponent());
@@ -231,7 +263,6 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		super(ureq, wControl);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
-		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 
 		mailVC = createVelocityContainer("usermanagerMail");
@@ -251,13 +282,11 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		panel = putInitialPanel(userListVC);
 	}
 	
-	//fxdiff BAKS-7 Resume function
 	public WindowControl getTableControl() {
 		return tableCtr == null ? null : tableCtr.getWindowControlForDebug();
 	}
 
 	@Override
-	//fxdiff BAKS-7 Resume function
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(state instanceof StateMapped) {
 			StateMapped searchState = (StateMapped)state;
@@ -305,6 +334,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	 *      org.olat.core.gui.components.Component,
 	 *      org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 
 		if (source == backFromMail) {

@@ -260,6 +260,20 @@ public class RepositoryEntryRelationDAO {
 		return count == null ? 0 : count.intValue();
 	}
 	
+	public List<Identity> getIdentitiesWithRole(String role) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct members.identity from ").append(RepositoryEntry.class.getName()).append(" as v")
+		  .append(" inner join v.groups as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as members")
+		  .append(" where members.role=:role");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("role", role)
+				.getResultList();
+	}
+	
 	public Date getEnrollmentDate(RepositoryEntryRef re, IdentityRef identity, String... roles) {
 		if(re == null || identity == null) return null;
 		
@@ -337,7 +351,6 @@ public class RepositoryEntryRelationDAO {
 	
 	
 	public List<Long> getAuthorKeys(RepositoryEntryRef re) {
-		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select members.identity.key from ").append(RepositoryEntry.class.getName()).append(" as v")
 		  .append(" inner join v.groups as relGroup on relGroup.defaultGroup=true")

@@ -820,6 +820,25 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		Assert.assertTrue(ids.contains(id3.getKey()));
 	}
 	
+	@Test
+	public void getIdentitiesWithRole() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-1");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-1");
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "to-group-1", "to-group-1-desc", -1, -1, false, false, false, false, false);
+		businessGroupRelationDao.addRole(id1, group, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(id2, group, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(id3, group, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//load the identities
+		List<Identity> coaches = businessGroupRelationDao.getIdentitiesWithRole(GroupRoles.coach.name());
+		Assert.assertNotNull(coaches);
+		Assert.assertTrue(coaches.contains(id1));
+		Assert.assertTrue(coaches.contains(id2));
+		Assert.assertFalse(coaches.contains(id3));
+	}
+	
 	
 	
 }
