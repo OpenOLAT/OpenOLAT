@@ -220,6 +220,7 @@ public abstract class GTAAbstractController extends BasicController {
 			task = gtaManager.nextStep(task, gtaNode);
 		}
 		
+		nodeLog();
 		collapsedContents(task);
 	}
 	
@@ -455,6 +456,10 @@ public abstract class GTAAbstractController extends BasicController {
 	}
 	
 	protected Task stepGrading(@SuppressWarnings("unused") UserRequest ureq, Task assignedTask) {
+		return assignedTask;
+	}
+	
+	protected void nodeLog() {
 		if(businessGroupTask) {
 			String groupLog = courseEnv.getAuditManager().getUserNodeLog(gtaNode, assessedGroup);
 			if(StringHelper.containsNonWhitespace(groupLog)) {
@@ -470,7 +475,6 @@ public abstract class GTAAbstractController extends BasicController {
 				mainVC.contextRemove("userLog");
 			}
 		}
-		return assignedTask;
 	}
 	
 	protected void doUpdateAttempts() {
