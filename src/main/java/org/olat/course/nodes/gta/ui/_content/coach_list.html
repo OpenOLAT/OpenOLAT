@@ -1,23 +1,25 @@
 $r.render("entries")
-<ul class="list-unstyled small">
-	<li><i class="o_icon o_icon-fw o_icon_info"> </i>: $r.translate("process.action.explanation")</li>
-	#if($assignmentEnabled)
-	<li><strong>$r.translate("process.assignment")</strong>: $r.translate("process.assignment.explanation")</li>
-	#end
-	#if($submitEnabled)
-	<li><strong>$r.translate("process.submission")</strong>: $r.translate("process.submission.explanation")</li>
-	#end
-	#if($reviewAndCorrectionEnabled)
-	<li><strong>$r.translate("process.review")</strong>: $r.translate("process.review.explanation")</li>
-		#if($revisionEnabled)
-		<li><strong>$r.translate("process.revision")</strong>: $r.translate("process.revision.explanation")</li>
+<div class="clearfix">$r.contextHelpWithWrapper("Assessment#_task_coachview")
+	<ul class="list-unstyled small">
+		<li><i class="o_icon o_icon-fw o_icon_info"> </i>: $r.translate("process.action.explanation")</li>
+		#if($assignmentEnabled)
+		<li><strong>$r.translate("process.assignment")</strong>: $r.translate("process.assignment.explanation")</li>
 		#end
-	<li><strong>$r.translate("process.correction")</strong>: $r.translate("process.correction.explanation")</li>
-	#end
-	#if($solutionEnabled)
-	<li><strong>$r.translate("process.solution")</strong>: $r.translate("process.solution.explanation")</li>
-	#end
-	#if($gradingEnabled)
-	<li><strong>$r.translate("process.grading")</strong>: $r.translate("process.grading.explanation")</li>
-	#end
-</ul>
+		#if($submitEnabled)
+		<li><strong>$r.translate("process.submission")</strong>: $r.translate("process.submission.explanation")</li>
+		#end
+		#if($reviewAndCorrectionEnabled)
+		<li><strong>$r.translate("process.review")</strong>: $r.translate("process.review.explanation")</li>
+			#if($revisionEnabled)
+			<li><strong>$r.translate("process.revision")</strong>: $r.translate("process.revision.explanation")</li>
+			#end
+		<li><strong>$r.translate("process.correction")</strong>: $r.translate("process.correction.explanation")</li>
+		#end
+		#if($solutionEnabled)
+		<li><strong>$r.translate("process.solution")</strong>: $r.translate("process.solution.explanation")</li>
+		#end
+		#if($gradingEnabled)
+		<li><strong>$r.translate("process.grading")</strong>: $r.translate("process.grading.explanation")</li>
+		#end
+	</ul>
+</div>
