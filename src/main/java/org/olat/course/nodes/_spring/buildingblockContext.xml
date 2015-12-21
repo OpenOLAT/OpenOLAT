@@ -40,10 +40,12 @@
 	</bean>
 
 	<bean id="cp" class="org.olat.course.nodes.cp.CPCourseNodeConfiguration" scope="prototype" >
+		<property name="enabled" value="${course.node.cp.enabled}" />
 		<property name="order" value="40" />
 	</bean>
 	
 	<bean id="scorm" class="org.olat.course.nodes.scorm.ScormCourseNodeConfiguration" scope="prototype">
+		<property name="enabled" value="${course.node.scorm.enabled}" />
 		<property name="order" value="50" />
 	</bean>	
 	
@@ -56,14 +58,17 @@
 	</bean>
 
 	<bean id="podcast" class="org.olat.course.nodes.feed.podcast.PodcastCourseNodeConfiguration" scope="prototype">
+		<property name="enabled" value="${course.node.podcast.enabled}" />
 		<property name="order" value="70" />
 	</bean>
 	
 	<bean id="blog" class="org.olat.course.nodes.feed.blog.BlogCourseNodeConfiguration" scope="prototype">
+		<property name="enabled" value="${course.node.blog.enabled}" />
 		<property name="order" value="80" />
 	</bean>
 
 	<bean id="dialog" class="org.olat.course.nodes.dialog.DialogCourseNodeConfiguration" scope="prototype">
+		<property name="enabled" value="${course.node.dialog.enabled}" />
 		<property name="order" value="100" />
 	</bean>
 	
@@ -95,26 +100,32 @@
 	</bean>
 			
 	<bean id="projectbroker" class="org.olat.course.nodes.projectbroker.ProjectBrokerNodeConfiguration" scope="prototype">
+		<property name="enabled" value="${course.node.projectbroker.enabled}" />
 		<property name="order" value="181" />
 	</bean>
 
 	<bean id="iqtest" class="org.olat.course.nodes.iq.IQTESTCourseNodeConfiguration" scope="prototype" depends-on="qtiResultManager">
+		<property name="enabled" value="${course.node.test.enabled}" />
 		<property name="order" value="150" />
 	</bean>
 	
 	<bean id="iqself" class="org.olat.course.nodes.iq.IQSELFCourseNodeConfiguration" scope="prototype">
+		<property name="enabled" value="${course.node.selfttest.enabled}" />
 		<property name="order" value="160" />
 	</bean>
 	
 	<bean id="iqsurv" class="org.olat.course.nodes.iq.IQSURVCourseNodeConfiguration" scope="prototype">
+		<property name="enabled" value="${course.node.survey.enabled}" />
 		<property name="order" value="170" />
 	</bean>
 	
 	<bean id="en" class="org.olat.course.nodes.en.ENCourseNodeConfiguration" scope="prototype">
+		<property name="enabled" value="${course.node.en.enabled}" />
 		<property name="order" value="180" />
 	</bean>
 
 	<bean id="co" class="org.olat.course.nodes.co.COCourseNodeConfiguration" scope="prototype">
+		<property name="enabled" value="${course.node.co.enabled}" />
 		<property name="order" value="190" />
 	</bean>
 	
@@ -128,6 +139,7 @@
 	</bean>
 	
 	<bean id="checklist" class="org.olat.course.nodes.cl.CheckListCourseNodeConfiguration" scope="prototype" >
+		<property name="enabled" value="${course.node.modern.checklist.enabled}" />
 		<property name="order" value="210" />
 	</bean>
 	
