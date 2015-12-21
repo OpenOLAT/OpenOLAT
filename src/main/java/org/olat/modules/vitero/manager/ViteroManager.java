@@ -1132,7 +1132,7 @@ public class ViteroManager implements UserDataDeletable {
 		return vBooking;
 	}
 	
-	public ViteroStatus updateVmsBooking(BusinessGroup group, OLATResourceable ores, String subIdentifier, ViteroBooking vBooking)
+	public ViteroStatus updateVmsBooking(ViteroBooking vBooking)
 	throws VmsNotAvailableException {
 		try {
 			UpdateBookingRequest updateRequest = new UpdateBookingRequest();

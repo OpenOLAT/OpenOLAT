@@ -258,6 +258,9 @@ public class CoursesWebService {
 		} else {
 			course = createEmptyCourse(id, shortTitle, title, displayName, softKey, accessInt, membersOnlyBool, authors, location, externalId, externalRef, managedFlags, configVO);
 		}
+		if(course == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
 		CourseVO vo = ObjectFactory.get(course);
 		return Response.ok(vo).build();
 	}
@@ -405,6 +408,9 @@ public class CoursesWebService {
 		RepositoryEntry src = RepositoryManager.getInstance().lookupRepositoryEntry(originalOresTrans, false);
 		if(src == null) {
 			src = RepositoryManager.getInstance().lookupRepositoryEntry(copyFrom, false);
+		}
+		if(src == null) {
+			return null;
 		}
 		OLATResource originalOres = OLATResourceManager.getInstance().findResourceable(src.getOlatResource());
 		boolean isAlreadyLocked = RepositoryHandlerFactory.getInstance().getRepositoryHandler(src).isLocked(originalOres);

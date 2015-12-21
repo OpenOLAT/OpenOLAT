@@ -52,6 +52,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
@@ -426,6 +427,52 @@ public class CoursesTest extends OlatJerseyTestCase {
 		assertNotNull(re.getOlatResource());
 		assertEquals("Very small course", re.getDisplayname());
 		assertEquals(softKey, re.getSoftkey());
+	}
+	
+	@Test
+	public void testCopyCourse() throws IOException, URISyntaxException {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author-5");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Assert.assertNotNull(entry);
+
+		conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.queryParam("shortTitle", "Course copy")
+				.queryParam("title", "Course copy")
+				.queryParam("initialAuthor", author.getKey().toString())
+				.queryParam("copyFrom", entry.getKey().toString())
+				.build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		
+		CourseVO vo = conn.parse(response, CourseVO.class);
+		assertNotNull(vo);
+		assertNotNull(vo.getRepoEntryKey());
+		assertNotNull(vo.getKey());
+	}
+	
+	@Test
+	public void testCopyCourse_unkownCourse() throws IOException, URISyntaxException {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author-5");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Assert.assertNotNull(entry);
+
+		conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.queryParam("shortTitle", "Course copy")
+				.queryParam("title", "Course copy")
+				.queryParam("initialAuthor", author.getKey().toString())
+				.queryParam("copyFrom", "-2")
+				.build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 404);
+		EntityUtils.consume(response.getEntity());
 	}
 	
 	protected List<CourseVO> parseCourseArray(InputStream body) {

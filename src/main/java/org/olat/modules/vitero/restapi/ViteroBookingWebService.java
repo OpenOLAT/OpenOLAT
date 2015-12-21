@@ -38,7 +38,6 @@ import javax.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.SearchIdentityParams;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
@@ -92,8 +91,6 @@ public class ViteroBookingWebService {
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getRooms() {
-		ViteroManager viteroManager = CoreSpringFactory.getImpl(ViteroManager.class);
-		
 		try {
 			List<ViteroBooking> bookings = viteroManager.getBookings(null, ores, subIdentifier);
 			ViteroBookingVO[] bookingVos = new ViteroBookingVO[bookings.size()];
@@ -158,7 +155,7 @@ public class ViteroBookingWebService {
 			
 			ViteroStatus status;
 			if(booking.getBookingId() > 0) {
-				status = viteroManager.updateVmsBooking(null, ores, subIdentifier, vBooking);
+				status = viteroManager.updateVmsBooking(vBooking);
 			} else {
 				status = viteroManager.createBooking(null, ores, subIdentifier, vBooking);
 			}

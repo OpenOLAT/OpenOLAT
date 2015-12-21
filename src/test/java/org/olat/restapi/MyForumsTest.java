@@ -88,9 +88,10 @@ public class MyForumsTest extends OlatJerseyTestCase {
 		URL courseWithForumsUrl = MyForumsTest.class.getResource("myCourseWS.zip");
 		Assert.assertNotNull(courseWithForumsUrl);
 		File courseWithForums = new File(courseWithForumsUrl.toURI());
-		RepositoryEntry myCourseRe = CourseFactory.deployCourseFromZIP(courseWithForums, null, 4);	
+		String softKey = UUID.randomUUID().toString().replace("_", "");
+		RepositoryEntry myCourseRe = CourseFactory.deployCourseFromZIP(courseWithForums, softKey, 4);	
 		Assert.assertNotNull(myCourseRe);
-		ICourse myCourse = CourseFactory.loadCourse(myCourseRe.getOlatResource().getResourceableId());
+		ICourse myCourse = CourseFactory.loadCourse(myCourseRe);
 		
 		final Identity id = JunitTestHelper.createAndPersistIdentityAsUser("my-" + UUID.randomUUID().toString());
 		dbInstance.commitAndCloseSession();
