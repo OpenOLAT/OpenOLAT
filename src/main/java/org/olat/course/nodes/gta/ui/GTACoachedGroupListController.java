@@ -28,7 +28,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -52,13 +51,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GTACoachedGroupListController extends FormBasicController {
+public class GTACoachedGroupListController extends GTACoachedListController {
 	
 	private FlexiTableElement tableEl;
 	private CoachGroupsTableModel tableModel;
 	
-	private final GTACourseNode gtaNode;
-	private final CourseEnvironment courseEnv;
 	private final List<BusinessGroup> coachedGroups;
 	
 	@Autowired
@@ -66,9 +63,7 @@ public class GTACoachedGroupListController extends FormBasicController {
 	
 	public GTACoachedGroupListController(UserRequest ureq, WindowControl wControl,
 			CourseEnvironment courseEnv, GTACourseNode gtaNode, List<BusinessGroup> coachedGroups) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
-		this.gtaNode = gtaNode;
-		this.courseEnv = courseEnv;
+		super(ureq, wControl, courseEnv, gtaNode);
 		this.coachedGroups = coachedGroups;
 		initForm(ureq);
 		updateModel();
@@ -76,6 +71,8 @@ public class GTACoachedGroupListController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		super.initForm(formLayout, listener, ureq);
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.name.i18nKey(), CGCols.name.ordinal(),
 				true,  CGCols.name.name()));

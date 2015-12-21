@@ -123,7 +123,7 @@ public class GTACoachedParticipantGradingController extends BasicController {
 	}
 	
 	private void doGraded() {
-		//assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.graded);
+		//assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.grading);
 	}
 
 	private void doOpenAssessmentForm(UserRequest ureq) {
