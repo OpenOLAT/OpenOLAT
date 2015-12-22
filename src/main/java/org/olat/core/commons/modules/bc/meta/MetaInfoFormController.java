@@ -226,16 +226,19 @@ public class MetaInfoFormController extends FormBasicController {
 		city = uifactory.addTextElement("city", "mf.city", -1, cityVal, formLayout);
 
 		// publish date
-		FormLayoutContainer publicationDate = FormLayoutContainer.createHorizontalFormLayout("publicationDateLayout", getTranslator());
+		String datePage = velocity_root + "/date.html";
+		FormLayoutContainer publicationDate = FormLayoutContainer.createCustomFormLayout("publicationDateLayout", getTranslator(), datePage);
 		publicationDate.setLabel("mf.publishDate", null);
 		formLayout.add(publicationDate);
 
 		String[] pubDate = (meta != null ? meta.getPublicationDate() : new String[] { "", "" });
 		publicationMonth = uifactory.addTextElement("publicationMonth", "mf.month", 2, StringHelper.escapeHtml(pubDate[1]), publicationDate);
+		publicationMonth.setDomReplacementWrapperRequired(false);
 		publicationMonth.setMaxLength(2);
 		publicationMonth.setDisplaySize(2);
 
 		publicationYear = uifactory.addTextElement("publicationYear", "mf.year", 4, StringHelper.escapeHtml(pubDate[0]), publicationDate);
+		publicationYear.setDomReplacementWrapperRequired(false);
 		publicationYear.setMaxLength(4);
 		publicationYear.setDisplaySize(4);
 

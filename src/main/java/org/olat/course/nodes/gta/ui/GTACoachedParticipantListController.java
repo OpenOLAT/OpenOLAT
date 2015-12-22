@@ -32,7 +32,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
@@ -52,7 +51,6 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.nodes.gta.ui.CoachParticipantsTableModel.CGCols;
-import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
@@ -70,13 +68,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GTACoachedParticipantListController extends FormBasicController {
+public class GTACoachedParticipantListController extends GTACoachedListController {
 	
 	private FlexiTableElement tableEl;
 	private CoachParticipantsTableModel tableModel;
 
-	private final GTACourseNode gtaNode;
-	private final CourseEnvironment courseEnv;
+
 	private List<UserPropertiesRow> assessableIdentities;
 	
 	private final boolean isAdministrativeUser;
@@ -95,7 +92,7 @@ public class GTACoachedParticipantListController extends FormBasicController {
 	
 	public GTACoachedParticipantListController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, GTACourseNode gtaNode) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+		super(ureq, wControl, userCourseEnv.getCourseEnvironment(), gtaNode);
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -104,9 +101,7 @@ public class GTACoachedParticipantListController extends FormBasicController {
 		
 		CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
 		UserCourseEnvironmentImpl coachCourseEnv = (UserCourseEnvironmentImpl)userCourseEnv;
-		courseEnv = userCourseEnv.getCourseEnvironment();
-		this.gtaNode = gtaNode;
-		
+
 		boolean admin = userCourseEnv.isAdmin();
 
 		Set<Identity> duplicateKiller = new HashSet<>();
@@ -138,6 +133,7 @@ public class GTACoachedParticipantListController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		super.initForm(formLayout, listener, ureq);
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(isAdministrativeUser) {

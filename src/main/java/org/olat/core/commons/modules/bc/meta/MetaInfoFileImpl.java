@@ -610,7 +610,20 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	/**
 	 * @return Last modified timestamp
 	 */
-	public long getLastModified() { return originFile.lastModified(); }
+	@Override
+	public long getLastModified() {
+		return originFile.lastModified();
+	}
+	
+	/**
+	 * @return The last modification date of the metadata
+	 */
+	@Override
+	public Date getMetaLastModified() {
+		if(metaFile == null) return null;
+		long lastModified = metaFile.lastModified();
+		return lastModified > 0 ? new Date(lastModified) : null;
+	}
 
 	/**
 	 * @return size of file

@@ -507,15 +507,6 @@ public class GTAParticipantController extends GTAAbstractController {
 	protected Task stepGrading(UserRequest ureq, Task assignedTask) {
 		assignedTask = super.stepGrading(ureq, assignedTask);
 		
-		if(businessGroupTask) {
-			String userLog = courseEnv.getAuditManager().getUserNodeLog(gtaNode, getIdentity());
-			if(StringHelper.containsNonWhitespace(userLog)) {
-				mainVC.contextPut("userLog", userLog);
-			} else {
-				mainVC.contextRemove("userLog");
-			}
-		}
-		
 		String infoTextUser = config.getStringValue(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
 	    if(StringHelper.containsNonWhitespace(infoTextUser)) {
 	    	mainVC.contextPut("gradingInfoTextUser", StringHelper.xssScan(infoTextUser));
@@ -553,6 +544,20 @@ public class GTAParticipantController extends GTAAbstractController {
 		return assignedTask;
 	}
 	
+	@Override
+	protected void nodeLog() {
+		if(businessGroupTask) {
+			String userLog = courseEnv.getAuditManager().getUserNodeLog(gtaNode, getIdentity());
+			if(StringHelper.containsNonWhitespace(userLog)) {
+				mainVC.contextPut("userLog", userLog);
+			} else {
+				mainVC.contextRemove("userLog");
+			}
+		} else {
+			super.nodeLog();
+		}
+	}
+
 	private TaskDefinition getTaskDefinition(Task task) {
 		if(task == null) return null;
 		

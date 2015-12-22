@@ -365,6 +365,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				}
 			}
 			eventCalloutCtr.deactivate();
+			cleanUp();
 		} else if(source == cmc) {
 			calendarEl.getComponent().setDirty(true);
 			cleanUp();
@@ -417,6 +418,10 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			} else if(event instanceof CalendarGUISettingEvent) {
 				calendarEl.setCalendars(calendarWrappers);
 			}
+		} else if(eventCalloutCtr == source) {
+			cleanUp();
+		} else if(eventDetailsCtr == source) {
+			
 		}
 		
 		if (calendarEl.getComponent().isDirty()) {
@@ -437,8 +442,12 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(configurationCtrl);
+		removeAsListenerAndDispose(eventCalloutCtr);
+		removeAsListenerAndDispose(eventDetailsCtr);
 		removeAsListenerAndDispose(editController);
 		removeAsListenerAndDispose(cmc);
+		eventCalloutCtr = null;
+		eventDetailsCtr = null;
 		configurationCtrl = null;
 		editController = null;
 		cmc = null;
@@ -509,6 +518,8 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	}
 	
 	private void doPrintEventCallout(UserRequest ureq, String targetDomId) {
+		if(eventCalloutCtr != null && printCtrl != null) return;
+		
 		removeAsListenerAndDispose(eventCalloutCtr);
 		removeAsListenerAndDispose(printCtrl);
 		
@@ -523,6 +534,8 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	}
 	
 	private void doOpenEventCallout(UserRequest ureq, KalendarEvent calEvent, KalendarRenderWrapper calWrapper, String targetDomId) {
+		if(eventCalloutCtr != null && eventDetailsCtr != null) return;
+		
 		removeAsListenerAndDispose(eventCalloutCtr);
 		removeAsListenerAndDispose(eventDetailsCtr);
 		

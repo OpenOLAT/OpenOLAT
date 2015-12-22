@@ -60,15 +60,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class UserVOFactory {
 	
-	//TODO give a direct access
 	public static final String[] keys = new String[] { "male", "female", "-" };
-	
-	/* EntityTag for Idenetiy is complex to compute. Every UserProperty is saved separately.
-	public static EntityTag computeEtag(Identity identity) {
-		int version = ((IdentityImpl)identity).getVersion();
-		Long key = identity.getKey();
-		return new EntityTag("Identity-" + key + "-" + version);
-	}*/
 	
 	public static UserVO get(Identity identity) {
 		return get(identity, I18nModule.getDefaultLocale(), false, false, false);
@@ -93,6 +85,7 @@ public class UserVOFactory {
 		if(identity != null) {
 			userVO.setLogin(identity.getName());
 		}
+		userVO.setExternalId(identity.getExternalId());
 		userVO.setFirstName(user.getProperty(UserConstants.FIRSTNAME, null));
 		userVO.setLastName(user.getProperty(UserConstants.LASTNAME, null));
 		userVO.setEmail(user.getProperty(UserConstants.EMAIL, null));

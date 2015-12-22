@@ -119,8 +119,8 @@ public class DBMailRecipient extends PersistentObject {
 			return true;
 		}
 		if(obj instanceof DBMailRecipient) {
-			DBMailRecipient recipient = (DBMailRecipient)obj;
-			return getKey() != null && getKey().equals(recipient.getKey());
+			DBMailRecipient mailRecipient = (DBMailRecipient)obj;
+			return getKey() != null && getKey().equals(mailRecipient.getKey());
 		}
 		return false;
 	}

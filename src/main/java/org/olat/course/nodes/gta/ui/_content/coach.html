@@ -151,18 +151,6 @@
 		#if($r.available("grading"))
 			$r.render("grading")
 		#end
-			#if($userLog || $groupLog)
-			<div class="o_box">
-			    #o_togglebox_start("o_course_run_log" $r.translate("log.title"))
-				#if($groupLog)
-			    <pre class="small">$groupLog</pre>
-			    #end
-			    #if($userLog)
-			    <pre class="small">$userLog</pre>
-			    #end
-			    #o_togglebox_end()
-			</div>
-			#end
 		</div>
 	</div>
 	<script type='text/javascript'>/* <![CDATA[ */
@@ -173,5 +161,16 @@
 		})
 	/* ]]> */</script>
 #end
-
 </div>
+#if($userLog || $groupLog)
+<div class="o_box">
+    #o_togglebox_start("o_course_run_log" $r.translate("log.title"))
+	#if($groupLog)
+    <pre class="small">$groupLog</pre>
+    #end
+    #if($userLog)
+    <pre class="small">$userLog</pre>
+    #end
+    #o_togglebox_end()
+</div>
+#end

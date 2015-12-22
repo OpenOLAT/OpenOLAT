@@ -193,17 +193,17 @@ public class ViteroModule extends AbstractOLATModule implements ConfigOnOff {
 	}
 	
 	public void setVmsURI(URI uri) {
-		String host = uri.getHost();
-		setBaseUrl(host);
-		int port = uri.getPort();
-		setPort(port);
-		String path = uri.getPath();
-		if(StringHelper.containsNonWhitespace(path) && path.startsWith("/")) {
-			path = path.substring(1, path.length());
+		String vmsHost = uri.getHost();
+		setBaseUrl(vmsHost);
+		int vmsPort = uri.getPort();
+		setPort(vmsPort);
+		String vmsPath = uri.getPath();
+		if(StringHelper.containsNonWhitespace(vmsPath) && vmsPath.startsWith("/")) {
+			vmsPath = vmsPath.substring(1, vmsPath.length());
 		}
-		setContextPath(path);
-		String scheme = uri.getScheme();
-		setProtocol(scheme);
+		setContextPath(vmsPath);
+		String vmsScheme = uri.getScheme();
+		setProtocol(vmsScheme);
 	}
 
 	public boolean isEnabled() {

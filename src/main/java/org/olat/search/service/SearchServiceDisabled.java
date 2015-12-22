@@ -116,14 +116,16 @@ public class SearchServiceDisabled implements SearchService {
 	}
 
 	@Override
-	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles, int firstResult, int maxResults, boolean doHighlighting)
+	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles,
+			int firstResult, int maxResults, boolean doHighlighting)
 			throws ServiceNotAvailableException, ParseException, QueryException {
 		log.error("call doSearch on disabled search service");
 		throw new ServiceNotAvailableException("call doSearch on disabled search service");
 	}
 
 	@Override
-	public List<Long> doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles, int firstResult, int maxReturns, SortKey... orderBy)
+	public List<Long> doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles,
+			int firstResult, int maxReturns, SortKey... orderBy)
 			throws ServiceNotAvailableException, ParseException, QueryException {
 		log.error("call doSearch on disabled search service");
 		throw new ServiceNotAvailableException("call doSearch on disabled search service");

@@ -419,6 +419,19 @@ public class BusinessGroupRelationDAO {
 		Number count = query.getSingleResult();
 		return count.intValue() > 0;
 	}
+	
+	public List<Identity> getIdentitiesWithRole(String role) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct bmember.identity from businessgroup bgi")
+		  .append(" inner join bgi.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as bmember")
+		  .append(" where bmember.role=:role");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("role", role)
+				.getResultList();
+	}
 
 	public List<Identity> getMembersOf(RepositoryEntryRef resource, boolean coach, boolean participant) {
 		String[] roles;

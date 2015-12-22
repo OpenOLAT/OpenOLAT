@@ -89,12 +89,12 @@ public class MailTemplateForm extends FormBasicController {
 
 	/**
 	 * Update the given templates with the values entered in the form
-	 * @param template 
+	 * @param mailTemplate 
 	 */
-	public void updateTemplateFromForm(MailTemplate template) {
-		template.setSubjectTemplate(subjectElem.getValue());
-		template.setBodyTemplate(bodyElem.getValue());
-		template.setCpfrom(ccSender.isVisible() && ccSender.isSelected(0));
+	public void updateTemplateFromForm(MailTemplate mailTemplate) {
+		mailTemplate.setSubjectTemplate(subjectElem.getValue());
+		mailTemplate.setBodyTemplate(bodyElem.getValue());
+		mailTemplate.setCpfrom(ccSender.isVisible() && ccSender.isSelected(0));
 	}
 
 	@Override

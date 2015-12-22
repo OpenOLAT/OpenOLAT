@@ -601,6 +601,15 @@ public interface BusinessGroupService {
 	 * @return
 	 */
 	public boolean isIdentityInBusinessGroup(Identity identity, Long groupKey, boolean ownedById, boolean attendedById, RepositoryEntryRef resource);
+	
+	/**
+	 * Return all identities with the specified role linked to
+	 * a business group.
+	 * 
+	 * @param role
+	 * @return
+	 */
+	public List<Identity> getIdentitiesWithRole(String role);
 
 	
 	//export - import

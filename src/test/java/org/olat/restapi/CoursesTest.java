@@ -52,6 +52,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
@@ -59,19 +60,24 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.CourseVOes;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -92,6 +98,8 @@ public class CoursesTest extends OlatJerseyTestCase {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryEntryLifecycleDAO reLifecycleDao;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 
 	/**
 	 * SetUp is called before each test.
@@ -303,9 +311,82 @@ public class CoursesTest extends OlatJerseyTestCase {
 		assertNotNull(course);
 		assertEquals("course3", course.getTitle());
 		//check repository entry
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(course.getRepoEntryKey());
+		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(course.getRepoEntryKey());
 		assertNotNull(re);
 		assertNotNull(re.getOlatResource());
+	}
+	
+	@Test
+	public void testCreateEmpty_withoutAuthorCourse() throws IOException, URISyntaxException {
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+			.queryParam("shortTitle", "Course without author")
+			.queryParam("title", "Course without author")
+			.queryParam("setAuthor", "false").build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		CourseVO courseVo = conn.parse(response, CourseVO.class);
+		Assert.assertNotNull(courseVo);
+		Assert.assertEquals("Course without author", courseVo.getTitle());
+		
+		// load repository entry
+		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(courseVo.getRepoEntryKey());
+		Assert.assertNotNull(re);
+		Assert.assertNotNull(re.getOlatResource());
+		Assert.assertEquals("Course without author", re.getDisplayname());
+		
+		// load the course
+		ICourse course = CourseFactory.loadCourse(re.getOlatResource().getResourceableId());
+		Assert.assertNotNull(course);
+		Assert.assertEquals("Course without author", course.getCourseTitle());
+		Assert.assertEquals(re, course.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
+		
+		// check the list of owners
+		List<Identity> owners = repositoryEntryRelationDao.getMembers(re, RepositoryEntryRelationType.both, GroupRoles.owner.name());
+		Assert.assertNotNull(owners);
+		Assert.assertTrue(owners.isEmpty());
+	}
+	
+	@Test
+	public void testCreateEmpty_withInitialAuthor() throws IOException, URISyntaxException {
+		Identity adhocAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("adhoc-author");
+		dbInstance.commit();
+
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+			.queryParam("shortTitle", "Course without author")
+			.queryParam("title", "Course without author")
+			.queryParam("initialAuthor", adhocAuthor.getKey().toString())
+			.build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		CourseVO courseVo = conn.parse(response, CourseVO.class);
+		Assert.assertNotNull(courseVo);
+		Assert.assertEquals("Course without author", courseVo.getTitle());
+		
+		// load repository entry
+		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(courseVo.getRepoEntryKey());
+		Assert.assertNotNull(re);
+		Assert.assertNotNull(re.getOlatResource());
+		Assert.assertEquals("Course without author", re.getDisplayname());
+		
+		// load the course
+		ICourse course = CourseFactory.loadCourse(re.getOlatResource().getResourceableId());
+		Assert.assertNotNull(course);
+		Assert.assertEquals("Course without author", course.getCourseTitle());
+		Assert.assertEquals(re, course.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
+		
+		// check the list of owners
+		List<Identity> owners = repositoryEntryRelationDao.getMembers(re, RepositoryEntryRelationType.both, GroupRoles.owner.name());
+		Assert.assertNotNull(owners);
+		Assert.assertEquals(1, owners.size());
+		Assert.assertEquals(adhocAuthor, owners.get(0));
 	}
 	
 	@Test
@@ -346,6 +427,52 @@ public class CoursesTest extends OlatJerseyTestCase {
 		assertNotNull(re.getOlatResource());
 		assertEquals("Very small course", re.getDisplayname());
 		assertEquals(softKey, re.getSoftkey());
+	}
+	
+	@Test
+	public void testCopyCourse() throws IOException, URISyntaxException {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author-5");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Assert.assertNotNull(entry);
+
+		conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.queryParam("shortTitle", "Course copy")
+				.queryParam("title", "Course copy")
+				.queryParam("initialAuthor", author.getKey().toString())
+				.queryParam("copyFrom", entry.getKey().toString())
+				.build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		
+		CourseVO vo = conn.parse(response, CourseVO.class);
+		assertNotNull(vo);
+		assertNotNull(vo.getRepoEntryKey());
+		assertNotNull(vo.getKey());
+	}
+	
+	@Test
+	public void testCopyCourse_unkownCourse() throws IOException, URISyntaxException {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author-5");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Assert.assertNotNull(entry);
+
+		conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.queryParam("shortTitle", "Course copy")
+				.queryParam("title", "Course copy")
+				.queryParam("initialAuthor", author.getKey().toString())
+				.queryParam("copyFrom", "-2")
+				.build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 404);
+		EntityUtils.consume(response.getEntity());
 	}
 	
 	protected List<CourseVO> parseCourseArray(InputStream body) {

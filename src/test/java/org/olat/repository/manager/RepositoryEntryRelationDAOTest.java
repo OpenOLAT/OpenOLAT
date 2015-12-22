@@ -390,6 +390,31 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getIdentitiesWithRole() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("id-role-1-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("id-role-2-");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("id-role-3-");
+		Identity id4 = JunitTestHelper.createAndPersistIdentityAsRndUser("id-role-4-");
+		
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(id2, re, GroupRoles.participant.name());
+
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "get relations", "tg", null, null, false, false, re);
+	    businessGroupRelationDao.addRole(id3, group, GroupRoles.coach.name());
+	    businessGroupRelationDao.addRole(id4, group, GroupRoles.participant.name());
+	    businessGroupService.addResourceTo(group, re);
+	    dbInstance.commitAndCloseSession();
+
+	    List<Identity> relations = repositoryEntryRelationDao.getIdentitiesWithRole(GroupRoles.coach.name());
+	    Assert.assertNotNull(relations);
+	    Assert.assertTrue(relations.contains(id1));
+	    Assert.assertFalse(relations.contains(id2));
+	    Assert.assertTrue(relations.contains(id3));
+	    Assert.assertFalse(relations.contains(id4));
+	}
+	
+	@Test
 	public void removeMembers() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("re-member-rm-1-" + UUID.randomUUID().toString());
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("re-member-rm-2-" + UUID.randomUUID().toString());

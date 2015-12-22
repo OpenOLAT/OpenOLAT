@@ -167,6 +167,16 @@ public interface RepositoryService {
 	public List<Identity> getMembers(RepositoryEntryRef re, String... roles);
 	
 	/**
+	 * Return all the identities the specified role linked to a repository
+	 * entry.
+	 * 
+	 * 
+	 * @param rolle
+	 * @return
+	 */
+	public List<Identity> getIdentitiesWithRole(String role);
+	
+	/**
 	 * Get the role in the specified resource, business group are included in
 	 * the query.
 	 * 
