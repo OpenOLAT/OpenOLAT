@@ -94,6 +94,7 @@ public class GroupOverviewController extends BasicController {
 
 	public GroupOverviewController(UserRequest ureq, WindowControl control, Identity identity, Boolean canStartGroups) {
 		super(ureq, control, Util.createPackageTranslator(BusinessGroupTableModelWithType.class, ureq.getLocale()));
+		setTranslator(Util.createPackageTranslator(BGRoleCellRenderer.class, getLocale(), getTranslator()));
 		
 		this.identity = identity;
 		groupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
