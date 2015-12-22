@@ -78,6 +78,7 @@ import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.olat.user.restapi.UserVO;
+import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class CourseTest extends OlatJerseyTestCase {
@@ -232,7 +233,7 @@ public class CourseTest extends OlatJerseyTestCase {
 		List<String> courseType = new ArrayList<String>();
 		courseType.add(CourseModule.getCourseTypeName());
 		Roles roles = new Roles(true, true, true, true, false, true, false);
-		//fxdiff VCRP-1,2: access control of resources
+
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters("*", "*", "*", courseType, null, roles, "");
 		List<RepositoryEntry> repoEntries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, true);
 		assertNotNull(repoEntries);
@@ -243,29 +244,68 @@ public class CourseTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testAddAuthor() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+	public void addAuthor() throws IOException, URISyntaxException {
+		Assert.assertTrue(conn.login("administrator", "openolat"));
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course1.getResourceableId() + "/authors/" + auth0.getKey()).build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
 
 		//is auth0 author
 		SecurityGroup authorGroup = securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS);
 		boolean isAuthor = securityManager.isIdentityInSecurityGroup(auth0, authorGroup);
 		dbInstance.intermediateCommit();
-		assertTrue(isAuthor);
+		Assert.assertTrue(isAuthor);
 		
 		//is auth0 owner
 		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(course1, true);
 		boolean isOwner = repositoryService.hasRole(auth0, repositoryEntry, GroupRoles.owner.name());
 		dbInstance.intermediateCommit();
-		assertTrue(isOwner);
+		Assert.assertTrue(isOwner);
 	}
 	
 	@Test
-	public void testGetAuthors() throws IOException, URISyntaxException {
+	public void addAuthors() throws IOException, URISyntaxException {
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		ICourse course = CoursesWebService.createEmptyCourse(admin, "course1", "course1 long name", null);
+		Identity author1 = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-auth-1");
+		Identity author2 = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-auth-2");
+		dbInstance.commitAndCloseSession();
+		
+		UserVO[] newAuthors = new UserVO[2];
+		newAuthors[0] = UserVOFactory.get(author1);
+		newAuthors[1] = UserVOFactory.get(author2);
+
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(course.getResourceableId().toString()).path("authors").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, newAuthors);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+
+		//is auth0 author
+		SecurityGroup authorGroup = securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS);
+		boolean isAuthor1 = securityManager.isIdentityInSecurityGroup(author1, authorGroup);
+		boolean isAuthor2 = securityManager.isIdentityInSecurityGroup(author2, authorGroup);
+		dbInstance.commit();
+		Assert.assertTrue(isAuthor1);
+		Assert.assertTrue(isAuthor2);
+		
+		//is auth0 owner
+		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(course, true);
+		boolean isOwner1 = repositoryService.hasRole(author1, repositoryEntry, GroupRoles.owner.name());
+		boolean isOwner2 = repositoryService.hasRole(author2, repositoryEntry, GroupRoles.owner.name());
+		dbInstance.commit();
+		Assert.assertTrue(isOwner1);
+		Assert.assertTrue(isOwner2);
+	}
+	
+	@Test
+	public void getAuthors() throws IOException, URISyntaxException {
 		//make auth1 and auth2 authors
 		SecurityGroup authorGroup = securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS);
 		if(!securityManager.isIdentityInSecurityGroup(auth1, authorGroup)) {
@@ -299,7 +339,7 @@ public class CourseTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testRemoveAuthor() throws IOException, URISyntaxException {
+	public void removeAuthor() throws IOException, URISyntaxException {
 		//make auth1 and auth2 authors
 		SecurityGroup authorGroup = securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS);
 		if(!securityManager.isIdentityInSecurityGroup(auth1, authorGroup)) {
@@ -342,7 +382,7 @@ public class CourseTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetTutors() throws IOException, URISyntaxException {
+	public void getTutors() throws IOException, URISyntaxException {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("Course-coach");
 		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(course1, true);
 		repositoryService.addRole(coach, repositoryEntry, GroupRoles.coach.name());
@@ -369,7 +409,7 @@ public class CourseTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testAddCoach() throws IOException, URISyntaxException {
+	public void addCoach() throws IOException, URISyntaxException {
 		assertTrue(conn.login("administrator", "openolat"));
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course1.getResourceableId() + "/tutors/" + auth1.getKey()).build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
@@ -383,9 +423,40 @@ public class CourseTest extends OlatJerseyTestCase {
 		dbInstance.intermediateCommit();
 		assertTrue(isTutor);
 	}
+
+	@Test
+	public void addCoaches() throws IOException, URISyntaxException {
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		ICourse course = CoursesWebService.createEmptyCourse(admin, "course1", "course1 long name", null);
+		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-coach-1");
+		Identity coach2 = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-coach-2");
+		dbInstance.commitAndCloseSession();
+		
+		//add the 2 participants to the course
+		UserVO[] newCoaches = new UserVO[2];
+		newCoaches[0] = UserVOFactory.get(coach1);
+		newCoaches[1] = UserVOFactory.get(coach2);
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(course.getResourceableId().toString()).path("tutors").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, newCoaches);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+
+		//is auth0 coach/tutor
+		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(course, true);
+		boolean isTutor1 = repositoryService.hasRole(coach1, repositoryEntry, GroupRoles.coach.name());
+		boolean isTutor2 = repositoryService.hasRole(coach2, repositoryEntry, GroupRoles.coach.name());
+		dbInstance.commit();
+		Assert.assertTrue(isTutor1);
+		Assert.assertTrue(isTutor2);
+	}
+	
 	
 	@Test
-	public void testGetParticipants() throws IOException, URISyntaxException {
+	public void getParticipants() throws IOException, URISyntaxException {
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Course-participant");
 		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(course1, true);
 		repositoryService.addRole(participant, repositoryEntry, GroupRoles.participant.name());
@@ -412,7 +483,7 @@ public class CourseTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testAddParticipant() throws IOException, URISyntaxException {
+	public void addParticipant() throws IOException, URISyntaxException {
 		assertTrue(conn.login("administrator", "openolat"));
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course1.getResourceableId() + "/participants/" + auth2.getKey()).build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
@@ -423,8 +494,38 @@ public class CourseTest extends OlatJerseyTestCase {
 		//is auth2 participant
 		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(course1, true);
 		boolean isParticipant = repositoryService.hasRole(auth2, repositoryEntry, GroupRoles.participant.name());
-		dbInstance.intermediateCommit();
-		assertTrue(isParticipant);
+		dbInstance.commit();
+		Assert.assertTrue(isParticipant);
+	}
+	
+	@Test
+	public void addParticipants() throws IOException, URISyntaxException {
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		ICourse course = CoursesWebService.createEmptyCourse(admin, "course1", "course1 long name", null);
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-part-1");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-part-2");
+		dbInstance.commitAndCloseSession();
+		
+		//add the 2 participants to the course
+		UserVO[] newParticipants = new UserVO[2];
+		newParticipants[0] = UserVOFactory.get(participant1);
+		newParticipants[1] = UserVOFactory.get(participant2);
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(course.getResourceableId().toString()).path("participants").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, newParticipants);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		//check that they are course members
+		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(course, true);
+		boolean isParticipant1 = repositoryService.hasRole(participant1, repositoryEntry, GroupRoles.participant.name());
+		boolean isParticipant2 = repositoryService.hasRole(participant2, repositoryEntry, GroupRoles.participant.name());
+		dbInstance.commit();
+		Assert.assertTrue(isParticipant1);
+		Assert.assertTrue(isParticipant2);
 	}
 	
 	protected List<UserVO> parseUserArray(InputStream body) {

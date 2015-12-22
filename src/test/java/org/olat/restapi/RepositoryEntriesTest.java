@@ -78,6 +78,7 @@ import org.olat.restapi.support.vo.RepositoryEntryVOes;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.olat.user.restapi.UserVO;
+import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -87,6 +88,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	
 	private static final OLog log = Tracing.createLoggerFor(RepositoryEntriesTest.class);
+	private static final Roles ADMIN_ROLES = new Roles(true, false, false, false, false, false, false);
 
 	@Autowired
 	private BaseSecurity securityManager;
@@ -451,7 +453,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetOwners() throws IOException, URISyntaxException {
+	public void getOwners() throws IOException, URISyntaxException {
 		Identity owner1 = JunitTestHelper.createAndPersistIdentityAsAuthor("author-1-" + UUID.randomUUID().toString());
 		Identity owner2 = JunitTestHelper.createAndPersistIdentityAsAuthor("author-2-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -485,7 +487,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testAddOwners() throws IOException, URISyntaxException {
+	public void addOwner() throws IOException, URISyntaxException {
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsAuthor("author-3-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
@@ -513,7 +515,40 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testRemoveOwner() throws IOException, URISyntaxException {
+	public void addOwners() throws IOException, URISyntaxException {
+		Identity owner1 = JunitTestHelper.createAndPersistIdentityAsRndUser("author-3b-");
+		Identity owner2 = JunitTestHelper.createAndPersistIdentityAsRndUser("author-3c-");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+
+		//add an owner
+		UserVO[] newOwners = new UserVO[2];
+		newOwners[0] = UserVOFactory.get(owner1);
+		newOwners[1] = UserVOFactory.get(owner2);
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("entries").path(re.getKey().toString()).path("owners").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, newOwners);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+
+		conn.shutdown();
+		
+		//check
+		List<Identity> owners = repositoryService.getMembers(re, GroupRoles.owner.name());
+		Assert.assertNotNull(owners);
+		Assert.assertEquals(2, owners.size());
+		Assert.assertTrue(owners.contains(owner1));
+		Assert.assertTrue(owners.contains(owner2));
+	}
+	
+	@Test
+	public void removeOwner() throws IOException, URISyntaxException {
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsAuthor("author-4-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryManager.addOwners(owner, new IdentitiesAddEvent(owner), re);
@@ -538,10 +573,8 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		Assert.assertFalse(owners.contains(owner));
 	}
 	
-	private static final Roles ADMIN_ROLES = new Roles(true, false, false, false, false, false, false);
-	
 	@Test
-	public void testGetCoaches() throws IOException, URISyntaxException {
+	public void getCoaches() throws IOException, URISyntaxException {
 		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsAuthor("coach-1-" + UUID.randomUUID().toString());
 		Identity coach2 = JunitTestHelper.createAndPersistIdentityAsAuthor("coach-2-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -575,7 +608,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testAddCoach() throws IOException, URISyntaxException {
+	public void addCoach() throws IOException, URISyntaxException {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsAuthor("coach-3-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
@@ -603,7 +636,40 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testRemoveCoach() throws IOException, URISyntaxException {
+	public void addCoaches() throws IOException, URISyntaxException {
+		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-3b-");
+		Identity coach2 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-3c-");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+
+		//add an owner
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		
+		UserVO[] newCoaches = new UserVO[2];
+		newCoaches[0] = UserVOFactory.get(coach1);
+		newCoaches[1] = UserVOFactory.get(coach2);
+		
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("entries").path(re.getKey().toString()).path("coaches").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, newCoaches);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+
+		conn.shutdown();
+		
+		//check
+		List<Identity> coaches = repositoryService.getMembers(re, GroupRoles.coach.name());
+		Assert.assertNotNull(coaches);
+		Assert.assertEquals(2, coaches.size());
+		Assert.assertTrue(coaches.contains(coach1));
+		Assert.assertTrue(coaches.contains(coach2));
+	}
+	
+	@Test
+	public void removeCoach() throws IOException, URISyntaxException {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsAuthor("coach-4-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryManager.addTutors(coach, ADMIN_ROLES, new IdentitiesAddEvent(coach), re, null);
@@ -629,7 +695,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetParticipants() throws IOException, URISyntaxException {
+	public void getParticipants() throws IOException, URISyntaxException {
 		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsAuthor("participant-1-" + UUID.randomUUID().toString());
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsAuthor("participant-2-" + UUID.randomUUID().toString());
 		Roles part1Roles = securityManager.getRoles(participant1);
@@ -663,7 +729,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testAddParticipants() throws IOException, URISyntaxException {
+	public void addParticipant() throws IOException, URISyntaxException {
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsAuthor("participant-3-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
@@ -688,6 +754,41 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		Assert.assertNotNull(participants);
 		Assert.assertEquals(1, participants.size());
 		Assert.assertTrue(participants.contains(participant));
+	}
+	
+	@Test
+	public void addParticipants() throws IOException, URISyntaxException {
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-3b-");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-3c-");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+
+		//add an owner
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+
+		//add the 2 participants to the course
+		UserVO[] newParticipants = new UserVO[2];
+		newParticipants[0] = UserVOFactory.get(participant1);
+		newParticipants[1] = UserVOFactory.get(participant2);
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries")
+				.path(re.getKey().toString()).path("participants").build();
+		
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, newParticipants);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+
+		conn.shutdown();
+		
+		//check
+		List<Identity> participants = repositoryService.getMembers(re, GroupRoles.participant.name());
+		Assert.assertNotNull(participants);
+		Assert.assertEquals(2, participants.size());
+		Assert.assertTrue(participants.contains(participant1));
+		Assert.assertTrue(participants.contains(participant2));
 	}
 	
 	@Test
