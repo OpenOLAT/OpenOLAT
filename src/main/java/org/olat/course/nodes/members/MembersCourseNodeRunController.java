@@ -89,14 +89,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MembersCourseNodeRunController extends FormBasicController {
 
-	
 	private final CourseEnvironment courseEnv;
 	private final DisplayPortraitManager portraitManager;
 	private final String avatarBaseURL;
 	
-	private FormLink ownersEmailLink;
-	private FormLink coachesEmailLink;
-	private FormLink participantsEmailLink;
+	private FormLink allEmailLink;
 	
 	private List<Member> ownerList;
 	private List<Member> coachList;
@@ -108,6 +105,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 	private final boolean showParticipants;
 	private final boolean chatEnabled;
 
+	private MembersMailController mailCtrl;
 	private ContactFormController emailController;
 	private CloseableModalController cmc;
 	
@@ -173,16 +171,8 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		Collections.sort(participants, idComparator);
 		
 		if(canEmail) {
-			ownersEmailLink = uifactory.addFormLink("owners-email", "members.email.title", null, formLayout, Link.BUTTON_XSMALL);
-			ownersEmailLink.setIconLeftCSS("o_icon o_icon_mail");
-			coachesEmailLink = uifactory.addFormLink("coaches-email", "members.email.title", null, formLayout, Link.BUTTON_XSMALL);
-			coachesEmailLink.setIconLeftCSS("o_icon o_icon_mail");
-			participantsEmailLink = uifactory.addFormLink("participants-email", "members.email.title", null, formLayout, Link.BUTTON_XSMALL);
-			participantsEmailLink.setIconLeftCSS("o_icon o_icon_mail");
-			
-			formLayout.add("owners-email", ownersEmailLink);
-			formLayout.add("coaches-email", coachesEmailLink);
-			formLayout.add("participants-email", participantsEmailLink);
+			allEmailLink = uifactory.addFormLink("email", "members.email.title", null, formLayout, Link.BUTTON);
+			allEmailLink.setIconLeftCSS("o_icon o_icon_mail");
 		}
 
 		Set<Long> duplicateCatcher = new HashSet<Long>();
@@ -330,30 +320,8 @@ public class MembersCourseNodeRunController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == ownersEmailLink) {
-			ContactList owners = new ContactList(translate("owners.to", new String[]{ courseEnv.getCourseTitle() }));
-			owners.addAllIdentites(getOwners());
-			doSendEmailToMember(owners, ureq);
-		} else if (source == coachesEmailLink) {
-			ContactList coaches = new ContactList(translate("coaches.to", new String[]{ courseEnv.getCourseTitle() }));
-			Set<Long> sendToWhatYouSee = new HashSet<>();
-			for(Member coach:coachList) {
-				sendToWhatYouSee.add(coach.getKey());
-			}
-			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
-			avoidInvisibleMember(cgm.getCoachesFromBusinessGroups(), coaches, sendToWhatYouSee);
-			avoidInvisibleMember(cgm.getCoaches(), coaches, sendToWhatYouSee);
-			doSendEmailToMember(coaches, ureq);
-		} else if (source == participantsEmailLink) {
-			ContactList participants = new ContactList(translate("participants.to", new String[]{ courseEnv.getCourseTitle() }));
-			Set<Long> sendToWhatYouSee = new HashSet<>();
-			for(Member participant:participantList) {
-				sendToWhatYouSee.add(participant.getKey());
-			}
-			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
-			avoidInvisibleMember(cgm.getParticipantsFromBusinessGroups(), participants, sendToWhatYouSee);
-			avoidInvisibleMember(cgm.getParticipants(), participants, sendToWhatYouSee);
-			doSendEmailToMember(participants, ureq);
+		if(source == allEmailLink) {
+			doEmail(ureq);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			Object uobject = link.getUserObject();
@@ -372,29 +340,42 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void avoidInvisibleMember(List<Identity> members, ContactList contactList, Set<Long> sendToWhatYouSee) {
-		for(Identity member:members) {
-			if(sendToWhatYouSee.contains(member.getKey())) {
-				contactList.add(member);
-			}
-		}
-	}
-	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == cmc) {
-			removeAsListenerAndDispose(emailController);
-			removeAsListenerAndDispose(cmc);
-			emailController = null;
-			cmc = null;
+			cleanUp();
 		} else if (source == emailController) {
 			cmc.deactivate();
-			removeAsListenerAndDispose(emailController);
-			removeAsListenerAndDispose(cmc);
-			emailController = null;
-			cmc = null;
+			cleanUp();
+		} else if(source == mailCtrl) {
+			cmc.deactivate();
+			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(emailController);
+		removeAsListenerAndDispose(mailCtrl);
+		removeAsListenerAndDispose(cmc);
+		emailController = null;
+		mailCtrl = null;
+		cmc = null;
+	}
+	
+	protected void doEmail(UserRequest ureq) {
+		if(mailCtrl != null || cmc != null) return;
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(mailCtrl);
+		
+		mailCtrl = new MembersMailController(ureq, getWindowControl(), courseEnv, ownerList, coachList, participantList);
+		listenTo(mailCtrl);
+		
+		String title = translate("members.email.title");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), mailCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		
+		cmc.activate();	
 	}
 	
 	protected void doOpenChat(Member member, UserRequest ureq) {
@@ -412,6 +393,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 
 	protected void doSendEmailToMember(ContactList contactList, UserRequest ureq) {
 		if (contactList.getEmailsAsStrings().size() > 0) {
+			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(emailController);
 			
 			ContactMessage cmsg = new ContactMessage(ureq.getIdentity());
@@ -420,12 +402,10 @@ public class MembersCourseNodeRunController extends FormBasicController {
 			emailController = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
 			listenTo(emailController);
 			
-			removeAsListenerAndDispose(cmc);
 			String title = translate("members.email.title");
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), emailController.getInitialComponent(), true, title);
 			listenTo(cmc);
-			
-			cmc.activate();			
+			cmc.activate();
 		}
 	}
 	
@@ -434,101 +414,6 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		BusinessControl bc = BusinessControlFactory.getInstance().createFromString(url);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 		NewControllerFactory.getInstance().launch(ureq, bwControl);
-	}
-	
-	public static class Member {
-		private final String firstName;
-		private final String lastName;
-		private final String fullName;
-		private final Long key;
-		private boolean portrait;
-		private String portraitCssClass;
-		
-		private FormLink emailLink;
-		private FormLink chatLink;
-		private FormLink idLink;
-		
-		public Member(Long key, String firstName, String lastName, String fullName, boolean portrait, String portraitCssClass) {
-			this.firstName = firstName;
-			this.lastName = lastName;
-			this.fullName = fullName;
-			this.key = key;
-			this.portrait = portrait;
-			this.portraitCssClass = portraitCssClass;
-		}
-
-		public String getFirstName() {
-			return firstName;
-		}
-
-		public String getLastName() {
-			return lastName;
-		}
-		
-		public String getPortraitCssClass() {
-			return portraitCssClass;
-		}
-		
-		public boolean isPortraitAvailable() {
-			return portrait; 
-		}
-
-		public FormLink getIdLink() {
-			return idLink;
-		}
-
-		public void setIdLink(FormLink idLink) {
-			this.idLink = idLink;
-		}
-
-		public FormLink getEmailLink() {
-			return emailLink;
-		}
-		
-		public String getEmailComponentName() {
-			return emailLink == null ? null : emailLink.getComponent().getComponentName();
-		}
-
-		public void setEmailLink(FormLink emailLink) {
-			this.emailLink = emailLink;
-		}
-
-		public FormLink getChatLink() {
-			return chatLink;
-		}
-		
-		public String getChatComponentName() {
-			return chatLink == null ? null : chatLink.getComponent().getComponentName();
-		}
-
-		public void setChatLink(FormLink chatLink) {
-			this.chatLink = chatLink;
-		}
-
-		public String getFullName() {
-			return fullName;
-		}
-
-		public Long getKey() {
-			return key;
-		}
-		
-		@Override
-		public int hashCode() {
-			return key.hashCode();
-		}
-		
-		@Override
-		public boolean equals(Object obj) {
-			if(this == obj) {
-				return true;
-			}
-			if(obj instanceof Member) {
-				Member member = (Member)obj;
-				return key != null && key.equals(member.key);
-			}
-			return false;
-		}
 	}
 	
 	public static class IdentityComparator implements Comparator<Identity> {

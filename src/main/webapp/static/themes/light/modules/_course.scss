@@ -168,6 +168,14 @@
 			}
 		}
 	}
+	
+	.o_cmember a.o_mail {
+		display: none;
+	}
+		
+	.o_cmember:hover a.o_mail {
+		display: inline;
+	}
 }
 
 

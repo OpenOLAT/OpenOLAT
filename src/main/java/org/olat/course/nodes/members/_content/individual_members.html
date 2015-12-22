@@ -1,0 +1,8 @@
+<div class="input-group">
+	<span class="form-control">
+	#foreach ($member in $selectedMembers)
+		<span class="tag label label-info">$member.fullName $r.render(${member.getRemoveComponentName()})</span> 
+	#end
+	</span>
+	<span class="input-group-addon">$r.render("add.member")</span>
+</div>

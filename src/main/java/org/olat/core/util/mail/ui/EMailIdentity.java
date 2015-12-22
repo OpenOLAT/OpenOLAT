@@ -31,7 +31,7 @@ import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 
-class EMailIdentity implements Identity {
+public class EMailIdentity implements Identity {
 
 	private static final long serialVersionUID = -2899896628137672419L;
 	private final String email;
