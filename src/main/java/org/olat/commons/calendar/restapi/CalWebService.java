@@ -144,9 +144,9 @@ public class CalWebService {
 	@Path("events")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response putEventsByCalendar(EventVOes eventArray, @Context HttpServletRequest httpRequest) {
+	public Response putEventsByCalendar(EventVO[] eventArray, @Context HttpServletRequest httpRequest) {
 		List<EventVO> events = new ArrayList<>();
-		for(EventVO event:eventArray.getEvents()) {
+		for(EventVO event:eventArray) {
 			events.add(event);
 		}
 		return addEventsByCalendar(events, httpRequest);
@@ -165,9 +165,9 @@ public class CalWebService {
 	@Path("events")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response postEventsByCalendar(EventVOes eventArray, @Context HttpServletRequest httpRequest) {
+	public Response postEventsByCalendar(EventVO[] eventArray, @Context HttpServletRequest httpRequest) {
 		List<EventVO> events = new ArrayList<>();
-		for(EventVO event:eventArray.getEvents()) {
+		for(EventVO event:eventArray) {
 			events.add(event);
 		}
 		return addEventsByCalendar(events, httpRequest);

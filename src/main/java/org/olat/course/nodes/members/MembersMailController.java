@@ -111,8 +111,7 @@ public class MembersMailController extends FormBasicController {
 	
 	public MembersMailController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
 			List<Member> ownerList, List<Member> coachList, List<Member> participantList) {
-		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(MailHelper.class, getLocale(), getTranslator()));
+		super(ureq, wControl, Util.createPackageTranslator(MailHelper.class, ureq.getLocale()));
 		
 		this.courseEnv = courseEnv;
 		this.ownerList = ownerList;
@@ -128,7 +127,7 @@ public class MembersMailController extends FormBasicController {
 		if(StringHelper.containsNonWhitespace(fullName)) {
 			fullName = "[" + fullName + "]";
 		}
-		TextElement fromEl = uifactory.addTextElement("from", "mail.from", 255, fullName, formLayout);
+		TextElement fromEl = uifactory.addTextElement("from", "email.from", 255, fullName, formLayout);
 		fromEl.setEnabled(false);
 		
 		uifactory.addSpacerElement("space-1", formLayout, false);
@@ -179,6 +178,7 @@ public class MembersMailController extends FormBasicController {
 		externalEl.addActionListener(FormEvent.ONCHANGE);
 		
 		externalAddressesEl = uifactory.addTextAreaElement("contact.external.list", null, 4096, 3, 60, false, "", formLayout);
+		externalAddressesEl.setExampleKey("contact.external.list.example", null);
 		externalAddressesEl.setVisible(false);
 
 		uifactory.addSpacerElement("space-2", formLayout, false);

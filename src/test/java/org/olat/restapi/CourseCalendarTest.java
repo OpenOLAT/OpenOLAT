@@ -58,7 +58,6 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.restapi.EventVO;
-import org.olat.commons.calendar.restapi.EventVOes;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
@@ -211,13 +210,11 @@ public class CourseCalendarTest extends OlatJerseyTestCase {
 		EventVO[] newEvents = new EventVO[2];
 		newEvents[0] = event1;
 		newEvents[1] = event2;
-		EventVOes newEventVOes = new EventVOes();
-		newEventVOes.setEvents(newEvents);
 
 		URI eventUri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 				.path(course.getResourceableId().toString()).path("calendar").path("events").build();
 		HttpPut putEventMethod = conn.createPut(eventUri, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(putEventMethod, newEventVOes);
+		conn.addJsonEntity(putEventMethod, newEvents);
 		HttpResponse putEventResponse = conn.execute(putEventMethod);
 		assertEquals(200, putEventResponse.getStatusLine().getStatusCode());
 		EntityUtils.consume(putEventResponse.getEntity());
