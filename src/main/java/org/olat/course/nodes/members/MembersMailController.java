@@ -162,10 +162,10 @@ public class MembersMailController extends FormBasicController {
 
 			String attachmentPage = velocity_root + "/individual_members.html";
 			individualMemberCont = FormLayoutContainer.createCustomFormLayout("contact.individual.list", getTranslator(), attachmentPage);
+			formLayout.add(individualMemberCont);
 			individualMemberCont.setRootForm(mainForm);
 			individualMemberCont.setVisible(false);
 			individualMemberCont.contextPut("selectedMembers", selectedMembers);
-			formLayout.add(individualMemberCont);
 			
 			addMemberButton = uifactory.addFormLink("add.member", "add", "", "", individualMemberCont, Link.NONTRANSLATED);
 			addMemberButton.setIconLeftCSS("o_icon o_icon-lg o_icon_table_large");
@@ -309,30 +309,35 @@ public class MembersMailController extends FormBasicController {
 		selectMemberCtrl = null;
 		cmc = null;
 	}
-	
+
 	private void doAddSelectedMembers(List<Member> moreSelectedMembers) {
 		if(moreSelectedMembers == null || moreSelectedMembers.isEmpty()) return;
 		
+		for(Member selectedMember:selectedMembers) {
+			if(selectedMember.getRemoveLink() != null) {
+				individualMemberCont.remove(selectedMember.getRemoveLink());
+			}
+		}
+		selectedMembers.clear();
+		
 		for(Member member:moreSelectedMembers) {
 			if(selectedMembers.contains(member)) continue;
-			
-			if(member.getRemoveLink() == null) {
-				FormLink removeLink = uifactory.addFormLink("remove_" + (++counter), "remove", "", null, individualMemberCont, Link.NONTRANSLATED);
-				removeLink.setUserObject(member);
-				removeLink.setIconLeftCSS("o_icon o_icon_remove");
-				individualMemberCont.add(removeLink);
-				individualMemberCont.add("remove_" + (++counter), removeLink);
-				member.setRemoveLink(removeLink);
-			} else {
-				individualMemberCont.add(member.getRemoveLink());
-				individualMemberCont.add(member.getRemoveComponentName(), member.getRemoveLink());	
-			}
+
+			String removeLinkName = "remove_" + (++counter);
+			FormLink removeLink = uifactory.addFormLink(removeLinkName, "remove", "", null, individualMemberCont, Link.NONTRANSLATED);
+			removeLink.setUserObject(member);
+			removeLink.setIconLeftCSS("o_icon o_icon_remove");
+			individualMemberCont.add(removeLink);
+			member.setRemoveLink(removeLink);
 			selectedMembers.add(member);
 		}
 	}
 	
 	private void doRemoveIndividualMember(Member member) {
 		selectedMembers.remove(member);
+		if(member.getRemoveLink() != null) {
+			individualMemberCont.remove(member.getRemoveLink());
+		}
 		individualMemberCont.setDirty(true);
 	}
 
