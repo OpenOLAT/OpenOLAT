@@ -38,6 +38,7 @@ import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -900,12 +901,19 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 
 	@Override
 	public boolean addEventTo(final Kalendar cal, final KalendarEvent kalendarEvent) {
+		return addEventTo(cal, Collections.singletonList(kalendarEvent));
+  }
+	
+	@Override
+	public boolean addEventTo(final Kalendar cal, final List<KalendarEvent> kalendarEvents) {
 		OLATResourceable calOres = getOresHelperFor(cal);
 		Boolean persistSuccessful = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( calOres, new SyncerCallback<Boolean>() {
 			@Override
 			public Boolean execute() {
 				Kalendar loadedCal = getCalendarFromCache(cal.getType(),cal.getCalendarID());
-				loadedCal.addEvent(kalendarEvent);
+				for(KalendarEvent kalendarEvent:kalendarEvents) {
+					loadedCal.addEvent(kalendarEvent);
+				}
 				boolean successfullyPersist = persistCalendar(loadedCal);
 				return new Boolean(successfullyPersist);
 			}
@@ -913,7 +921,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		// inform all controller about calendar change for reload
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new CalendarGUIModifiedEvent(cal), OresHelper.lookupType(CalendarManager.class));
 		return persistSuccessful.booleanValue();
-  }
+	}
 
 	/**
 	 * @see org.olat.commons.calendar.CalendarManager#removeEventFrom(org.olat.commons.calendar.model.Kalendar, org.olat.commons.calendar.model.KalendarEvent)
@@ -949,8 +957,28 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		});
 		return updatedSuccessful.booleanValue();
     }
-    
-    /**
+
+    @Override
+	public boolean updateEventsFrom(Kalendar cal, List<KalendarEvent> kalendarEvents) {
+		final OLATResourceable calOres = getOresHelperFor(cal);
+		Boolean updatedSuccessful = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( calOres, new SyncerCallback<Boolean>() {
+			@Override
+			public Boolean execute() {
+				Kalendar loadedCal = getCalendarFromCache(cal.getType(), cal.getCalendarID());
+				for(KalendarEvent kalendarEvent:kalendarEvents) {
+					loadedCal.removeEvent(kalendarEvent); // remove old event
+					loadedCal.addEvent(kalendarEvent); // add changed event
+				}
+				boolean successfullyPersist = persistCalendar(loadedCal);
+				// inform all controller about calendar change for reload
+				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new CalendarGUIModifiedEvent(cal), OresHelper.lookupType(CalendarManager.class));
+				return successfullyPersist;
+			}
+		});
+		return updatedSuccessful.booleanValue();
+	}
+
+	/**
 	 * @see org.olat.commons.calendar.CalendarManager#updateEventFrom(org.olat.commons.calendar.model.Kalendar, org.olat.commons.calendar.model.KalendarEvent)
 	 */
 	@Override

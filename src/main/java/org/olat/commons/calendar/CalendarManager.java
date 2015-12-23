@@ -266,6 +266,15 @@ public interface CalendarManager {
 	 * @return true if success
 	 */
 	public boolean addEventTo(Kalendar cal, KalendarEvent kalendarEvent);
+	
+	/**
+	 * Add a list of events to a given calendar and save it.
+	 * 
+	 * @param cal
+	 * @param kalendarEvents
+	 * @return
+	 */
+	public boolean addEventTo(Kalendar cal, List<KalendarEvent> kalendarEvents);
 
 	/**
 	 * Remove an event from given calendar and save calendar.
@@ -282,6 +291,15 @@ public interface CalendarManager {
 	 * @return true if success
 	 */
 	public boolean updateEventFrom(Kalendar cal, KalendarEvent kalendarEvent);
+	
+	/**
+	 * Update a list of events fron a given calendar and save it.
+	 * 
+	 * @param cal
+	 * @param kalendarEvent
+	 * @return
+	 */
+	public boolean updateEventsFrom(Kalendar cal, List<KalendarEvent> kalendarEvents);
 	
 	/**
 	 * Update an event of given calendar and save calendar. Use this method if the Kalendar is already in a doInSync.

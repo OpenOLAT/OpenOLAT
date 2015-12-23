@@ -351,13 +351,18 @@ public class MembersMailController extends FormBasicController {
 		if(participantEl != null && participantEl.isAtLeastSelected(1)) {
 			participants = null;
 		}
-		selectMemberCtrl = new SelectMembersController(ureq, getWindowControl(), owners, coaches, participants);
-		listenTo(selectMemberCtrl);
 		
-		String title = translate("select.members");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), selectMemberCtrl.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
+		if(owners == null || coaches == null && participants == null) {
+			showWarning("already.all.selected");
+		} else {
+			selectMemberCtrl = new SelectMembersController(ureq, getWindowControl(), selectedMembers, owners, coaches, participants);
+			listenTo(selectMemberCtrl);
+			
+			String title = translate("select.members");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), selectMemberCtrl.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 	
 	private void doDeleteAttachment(Attachment attachment) {

@@ -373,7 +373,7 @@ public class CalendarTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testPutCalendarEvents() throws IOException, URISyntaxException {
+	public void putCalendarEvent() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(id2.getName(), "A6B7C8"));
 		
@@ -397,7 +397,7 @@ public class CalendarTest extends OlatJerseyTestCase {
 		event.setSubject(subject);
 
 		URI eventUri = UriBuilder.fromUri(getContextURI()).path("users").path(id2.getKey().toString())
-				.path("calendars").path(calendar.getId()).path("events").build();
+				.path("calendars").path(calendar.getId()).path("event").build();
 		HttpPut putEventMethod = conn.createPut(eventUri, MediaType.APPLICATION_JSON, true);
 		conn.addJsonEntity(putEventMethod, event);
 		HttpResponse putEventResponse = conn.execute(putEventMethod);
@@ -420,7 +420,7 @@ public class CalendarTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testPutCalendarEvents_notAuthorized() throws IOException, URISyntaxException {
+	public void putCalendarEvents_notAuthorized() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(id2.getName(), "A6B7C8"));
 		
@@ -443,7 +443,7 @@ public class CalendarTest extends OlatJerseyTestCase {
 		event.setSubject(subject);
 
 		URI eventUri = UriBuilder.fromUri(getContextURI()).path("users").path(id2.getKey().toString())
-				.path("calendars").path(calendarCourse_1.getId()).path("events").build();
+				.path("calendars").path(calendarCourse_1.getId()).path("event").build();
 		HttpPut putEventMethod = conn.createPut(eventUri, MediaType.APPLICATION_JSON, true);
 		conn.addJsonEntity(putEventMethod, event);
 		HttpResponse putEventResponse = conn.execute(putEventMethod);
@@ -477,15 +477,12 @@ public class CalendarTest extends OlatJerseyTestCase {
 		event.setSubject(subject);
 
 		URI eventUri = UriBuilder.fromUri(getContextURI()).path("users").path(id2.getKey().toString())
-				.path("calendars").path(calendar.getId()).path("events").build();
+				.path("calendars").path(calendar.getId()).path("event").build();
 		HttpPost postEventMethod = conn.createPost(eventUri, MediaType.APPLICATION_JSON);
 		conn.addJsonEntity(postEventMethod, event);
 		HttpResponse postEventResponse = conn.execute(postEventMethod);
 		assertEquals(200, postEventResponse.getStatusLine().getStatusCode());
-		
-		EventVO newEvent = conn.parse(postEventResponse, EventVO.class);
-		Assert.assertNotNull(newEvent);
-		
+
 		//check if the event is saved
 		KalendarRenderWrapper calendarWrapper = calendarManager.getCourseCalendar(course2);
 		Collection<KalendarEvent> savedEvents = calendarWrapper.getKalendar().getEvents();
@@ -525,7 +522,7 @@ public class CalendarTest extends OlatJerseyTestCase {
 		event.setSubject(subject);
 
 		URI eventUri = UriBuilder.fromUri(getContextURI()).path("users").path(id2.getKey().toString())
-				.path("calendars").path(calendar.getId()).path("events").build();
+				.path("calendars").path(calendar.getId()).path("event").build();
 		HttpPut putEventMethod = conn.createPut(eventUri, MediaType.APPLICATION_JSON, true);
 		conn.addJsonEntity(putEventMethod, event);
 		HttpResponse putEventResponse = conn.execute(putEventMethod);

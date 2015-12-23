@@ -41,16 +41,17 @@ import org.olat.core.gui.control.WindowControl;
 public class SelectMembersController extends FormBasicController {
 
 	private MultipleSelectionElement ownerEl, coachEl, participantEl;
-	private final List<Member> ownerList, coachList, participantList;
+	private final List<Member> ownerList, coachList, participantList, preSelectedMembers;
 	
 	private List<Member> selectedMembers = new ArrayList<>();
 	
-	public SelectMembersController(UserRequest ureq, WindowControl wControl,
+	public SelectMembersController(UserRequest ureq, WindowControl wControl, List<Member> preSelectedMembers,
 			List<Member> ownerList, List<Member> coachList, List<Member> participantList) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.ownerList = ownerList;
 		this.coachList = coachList;
 		this.participantList = participantList;
+		this.preSelectedMembers = preSelectedMembers;
 		initForm(ureq);
 	}
 	
@@ -81,11 +82,22 @@ public class SelectMembersController extends FormBasicController {
 	private MultipleSelectionElement makeSelection(String name, List<Member> members, FormItemContainer formLayout) {
 		String[] keys = new String[members.size()];
 		String[] values = new String[members.size()];
+		
+		List<String> preSelectedOptions = new ArrayList<>();
 		for(int i=members.size(); i-->0; ) {
-			keys[i] = members.get(i).getKey().toString();
-			values[i] = members.get(i).getFullName();
+			Member member = members.get(i);
+			String optionKey = member.getKey().toString();
+			keys[i] = optionKey;
+			values[i] = member.getFullName();
+			if(preSelectedMembers.contains(member)) {
+				preSelectedOptions.add(optionKey);
+			}
 		}
-		return uifactory.addCheckboxesVertical(name, name, formLayout, keys, values, 2);
+		MultipleSelectionElement selectionEl = uifactory.addCheckboxesVertical(name, name, formLayout, keys, values, 2);
+		for(String preSelectedOption:preSelectedOptions) {
+			selectionEl.select(preSelectedOption, true);
+		}
+		return selectionEl;
 	}
 	
 	@Override
