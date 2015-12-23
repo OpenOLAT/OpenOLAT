@@ -124,6 +124,17 @@ public class CloseableModalController extends DefaultController {
 		setInitialComponent(myContent);
 	}
 	
+	/**
+	 * Suppress the form warning on close. This can be used for selection
+	 * popup.
+	 * 
+	 */
+	public void suppressDirtyFormWarningOnClose() {
+		if(closeIcon != null) {
+			closeIcon.setSuppressDirtyFormWarning(true);
+		}
+	}
+	
 	public void setCustomCSS(String className){
 		myContent.contextPut("cssClass", className);
 	}

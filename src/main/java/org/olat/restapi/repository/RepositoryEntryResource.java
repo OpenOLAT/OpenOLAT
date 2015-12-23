@@ -30,6 +30,7 @@ import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
 import static org.olat.restapi.security.RestSecurityHelper.isAuthorEditor;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -210,7 +211,30 @@ public class RepositoryEntryResource {
 			repositoryManager.addOwners(ureq.getIdentity(), iae, repoEntry);
 			return Response.ok().build();
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Trying to add an owner to a repository entry", e);
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+	
+	@PUT
+	@Path("owners")
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response addOwners(UserVO[] owners, @PathParam("repoEntryKey") String repoEntryKey,
+			@Context HttpServletRequest request) {
+		try {
+			RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
+			if(repoEntry == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			} else if(!isAuthorEditor(repoEntry, request)) {
+				return Response.serverError().status(Status.UNAUTHORIZED).build();
+			}
+			
+			List<Identity> identityToAdd = loadIdentities(owners);
+			UserRequest ureq = RestSecurityHelper.getUserRequest(request);
+			IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
+			repositoryManager.addOwners(ureq.getIdentity(), iae, repoEntry);
+			return Response.ok().build();
+		} catch (Exception e) {
 			log.error("Trying to add an owner to a repository entry", e);
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 		}
@@ -302,6 +326,30 @@ public class RepositoryEntryResource {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
 
+			UserRequest ureq = RestSecurityHelper.getUserRequest(request);
+			IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
+			repositoryManager.addTutors(ureq.getIdentity(), ureq.getUserSession().getRoles(), iae, repoEntry, null);
+			return Response.ok().build();
+		} catch (Exception e) {
+			log.error("Trying to add a coach to a repository entry", e);
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+
+	@PUT
+	@Path("coaches")
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response addCoach(UserVO[] coaches, @PathParam("repoEntryKey") String repoEntryKey,
+			@Context HttpServletRequest request) {
+		try {
+			RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
+			if(repoEntry == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			} else if(!isAuthorEditor(repoEntry, request)) {
+				return Response.serverError().status(Status.UNAUTHORIZED).build();
+			}
+			
+			List<Identity> identityToAdd = loadIdentities(coaches);
 			UserRequest ureq = RestSecurityHelper.getUserRequest(request);
 			IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
 			repositoryManager.addTutors(ureq.getIdentity(), ureq.getUserSession().getRoles(), iae, repoEntry, null);
@@ -406,6 +454,38 @@ public class RepositoryEntryResource {
 			log.error("Trying to add a participant to a repository entry", e);
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 		}
+	}
+	
+	@PUT
+	@Path("participants")
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response addParticipants(UserVO[] participants, @PathParam("repoEntryKey") String repoEntryKey,
+			@Context HttpServletRequest request) {
+		try {
+			RepositoryEntry repoEntry = lookupRepositoryEntry(repoEntryKey);
+			if(repoEntry == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			} else if(!isAuthorEditor(repoEntry, request)) {
+				return Response.serverError().status(Status.UNAUTHORIZED).build();
+			}
+			
+			List<Identity> participantList = loadIdentities(participants);
+			UserRequest ureq = RestSecurityHelper.getUserRequest(request);
+			IdentitiesAddEvent iae = new IdentitiesAddEvent(participantList);
+			repositoryManager.addParticipants(ureq.getIdentity(), ureq.getUserSession().getRoles(), iae, repoEntry, null);
+			return Response.ok().build();
+		} catch (Exception e) {
+			log.error("Trying to add a participant to a repository entry", e);
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+	
+	private List<Identity> loadIdentities(UserVO[] users) {
+		List<Long> identityKeys = new ArrayList<>();
+		for(UserVO user:users) {
+			identityKeys.add(user.getKey());
+		}
+		return securityManager.loadIdentityByKeys(identityKeys);
 	}
 	
 	/**

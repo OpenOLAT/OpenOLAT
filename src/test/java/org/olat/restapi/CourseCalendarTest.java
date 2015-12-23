@@ -54,6 +54,7 @@ import org.codehaus.jackson.type.TypeReference;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.restapi.EventVO;
@@ -125,7 +126,7 @@ public class CourseCalendarTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetCalendarEvents()
+	public void getCalendarEvents()
 	throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(auth1.getName(), "A6B7C8"));
@@ -143,7 +144,7 @@ public class CourseCalendarTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testPutCalendarEvent() throws IOException, URISyntaxException {
+	public void putCalendarEvent() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(auth1.getName(), "A6B7C8"));
 
@@ -157,7 +158,7 @@ public class CourseCalendarTest extends OlatJerseyTestCase {
 		event.setSubject(subject);
 
 		URI eventUri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
-				.path(course1.getResourceableId().toString()).path("calendar").path("events").build();
+				.path(course1.getResourceableId().toString()).path("calendar").path("event").build();
 		HttpPut putEventMethod = conn.createPut(eventUri, MediaType.APPLICATION_JSON, true);
 		conn.addJsonEntity(putEventMethod, event);
 		HttpResponse putEventResponse = conn.execute(putEventMethod);
@@ -180,7 +181,65 @@ public class CourseCalendarTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testDeleteCalendarEvent() throws IOException, URISyntaxException {
+	public void putCalendarEvents() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		Identity admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
+
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		CourseConfigVO config = new CourseConfigVO();
+		config.setCalendar(Boolean.TRUE);
+		ICourse course = CoursesWebService.createEmptyCourse(admin, "Course with calendar", "Course with calendar", config);
+		dbInstance.commitAndCloseSession();
+		
+		//create an event
+		EventVO event1 = new EventVO();
+		Calendar cal = Calendar.getInstance();
+		event1.setBegin(cal.getTime());
+		cal.add(Calendar.HOUR_OF_DAY, 1);
+		event1.setEnd(cal.getTime());
+		String subject1 = UUID.randomUUID().toString();
+		event1.setSubject(subject1);
+
+		EventVO event2 = new EventVO();
+		event2.setBegin(cal.getTime());
+		cal.add(Calendar.HOUR_OF_DAY, 1);
+		event2.setEnd(cal.getTime());
+		String subject2 = UUID.randomUUID().toString();
+		event2.setSubject(subject2);
+		
+		EventVO[] newEvents = new EventVO[2];
+		newEvents[0] = event1;
+		newEvents[1] = event2;
+
+		URI eventUri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(course.getResourceableId().toString()).path("calendar").path("events").build();
+		HttpPut putEventMethod = conn.createPut(eventUri, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(putEventMethod, newEvents);
+		HttpResponse putEventResponse = conn.execute(putEventMethod);
+		assertEquals(200, putEventResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(putEventResponse.getEntity());
+		
+		//check if the event is saved
+		KalendarRenderWrapper calendarWrapper = calendarManager.getCourseCalendar(course);
+		Collection<KalendarEvent> savedEvents = calendarWrapper.getKalendar().getEvents();
+		
+		boolean found1 = false;
+		boolean found2 = false;
+		for(KalendarEvent savedEvent:savedEvents) {
+			if(subject1.equals(savedEvent.getSubject())) {
+				found1 = true;
+			} else if(subject2.equals(savedEvent.getSubject())) {
+				found2 = true;
+			}
+		}
+		Assert.assertTrue(found1);
+		Assert.assertTrue(found2);
+
+		conn.shutdown();
+	}
+	
+	@Test
+	public void deleteCalendarEvent() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(auth1.getName(), "A6B7C8"));
 		

@@ -416,7 +416,7 @@ public class ForumTest extends OlatJerseyTestCase {
 
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString()).build();
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
-    conn.addJsonEntity(method, vo);
+		conn.addJsonEntity(method, vo);
 		method.addHeader("Accept-Language", "en");
 		
 		HttpResponse response = conn.execute(method);

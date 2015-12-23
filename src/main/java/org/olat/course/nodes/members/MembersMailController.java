@@ -111,8 +111,7 @@ public class MembersMailController extends FormBasicController {
 	
 	public MembersMailController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
 			List<Member> ownerList, List<Member> coachList, List<Member> participantList) {
-		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(MailHelper.class, getLocale(), getTranslator()));
+		super(ureq, wControl, Util.createPackageTranslator(MailHelper.class, ureq.getLocale()));
 		
 		this.courseEnv = courseEnv;
 		this.ownerList = ownerList;
@@ -128,7 +127,7 @@ public class MembersMailController extends FormBasicController {
 		if(StringHelper.containsNonWhitespace(fullName)) {
 			fullName = "[" + fullName + "]";
 		}
-		TextElement fromEl = uifactory.addTextElement("from", "mail.from", 255, fullName, formLayout);
+		TextElement fromEl = uifactory.addTextElement("from", "email.from", 255, fullName, formLayout);
 		fromEl.setEnabled(false);
 		
 		uifactory.addSpacerElement("space-1", formLayout, false);
@@ -163,10 +162,10 @@ public class MembersMailController extends FormBasicController {
 
 			String attachmentPage = velocity_root + "/individual_members.html";
 			individualMemberCont = FormLayoutContainer.createCustomFormLayout("contact.individual.list", getTranslator(), attachmentPage);
+			formLayout.add(individualMemberCont);
 			individualMemberCont.setRootForm(mainForm);
 			individualMemberCont.setVisible(false);
 			individualMemberCont.contextPut("selectedMembers", selectedMembers);
-			formLayout.add(individualMemberCont);
 			
 			addMemberButton = uifactory.addFormLink("add.member", "add", "", "", individualMemberCont, Link.NONTRANSLATED);
 			addMemberButton.setIconLeftCSS("o_icon o_icon-lg o_icon_table_large");
@@ -179,6 +178,7 @@ public class MembersMailController extends FormBasicController {
 		externalEl.addActionListener(FormEvent.ONCHANGE);
 		
 		externalAddressesEl = uifactory.addTextAreaElement("contact.external.list", null, 4096, 3, 60, false, "", formLayout);
+		externalAddressesEl.setExampleKey("contact.external.list.example", null);
 		externalAddressesEl.setVisible(false);
 
 		uifactory.addSpacerElement("space-2", formLayout, false);
@@ -237,8 +237,8 @@ public class MembersMailController extends FormBasicController {
 			String value = externalAddressesEl.getValue();
 			StringBuilder errors = new StringBuilder();
 			if(StringHelper.containsNonWhitespace(value)) {
-				for(StringTokenizer tokenizer= new StringTokenizer(value, ",\n", false); tokenizer.hasMoreTokens(); ) {
-					String email = tokenizer.nextToken();
+				for(StringTokenizer tokenizer= new StringTokenizer(value, ",\r\n", false); tokenizer.hasMoreTokens(); ) {
+					String email = tokenizer.nextToken().trim();
 					if(!MailHelper.isValidEmailAddress(email)) {
 						if(errors.length() > 0) errors.append(", ");
 						errors.append(email);
@@ -309,30 +309,35 @@ public class MembersMailController extends FormBasicController {
 		selectMemberCtrl = null;
 		cmc = null;
 	}
-	
+
 	private void doAddSelectedMembers(List<Member> moreSelectedMembers) {
 		if(moreSelectedMembers == null || moreSelectedMembers.isEmpty()) return;
 		
+		for(Member selectedMember:selectedMembers) {
+			if(selectedMember.getRemoveLink() != null) {
+				individualMemberCont.remove(selectedMember.getRemoveLink());
+			}
+		}
+		selectedMembers.clear();
+		
 		for(Member member:moreSelectedMembers) {
 			if(selectedMembers.contains(member)) continue;
-			
-			if(member.getRemoveLink() == null) {
-				FormLink removeLink = uifactory.addFormLink("remove_" + (++counter), "remove", "", null, individualMemberCont, Link.NONTRANSLATED);
-				removeLink.setUserObject(member);
-				removeLink.setIconLeftCSS("o_icon o_icon_remove");
-				individualMemberCont.add(removeLink);
-				individualMemberCont.add("remove_" + (++counter), removeLink);
-				member.setRemoveLink(removeLink);
-			} else {
-				individualMemberCont.add(member.getRemoveLink());
-				individualMemberCont.add(member.getRemoveComponentName(), member.getRemoveLink());	
-			}
+
+			String removeLinkName = "remove_" + (++counter);
+			FormLink removeLink = uifactory.addFormLink(removeLinkName, "remove", "", null, individualMemberCont, Link.NONTRANSLATED);
+			removeLink.setUserObject(member);
+			removeLink.setIconLeftCSS("o_icon o_icon_remove");
+			individualMemberCont.add(removeLink);
+			member.setRemoveLink(removeLink);
 			selectedMembers.add(member);
 		}
 	}
 	
 	private void doRemoveIndividualMember(Member member) {
 		selectedMembers.remove(member);
+		if(member.getRemoveLink() != null) {
+			individualMemberCont.remove(member.getRemoveLink());
+		}
 		individualMemberCont.setDirty(true);
 	}
 
@@ -351,13 +356,19 @@ public class MembersMailController extends FormBasicController {
 		if(participantEl != null && participantEl.isAtLeastSelected(1)) {
 			participants = null;
 		}
-		selectMemberCtrl = new SelectMembersController(ureq, getWindowControl(), owners, coaches, participants);
-		listenTo(selectMemberCtrl);
 		
-		String title = translate("select.members");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), selectMemberCtrl.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
+		if(owners == null || coaches == null && participants == null) {
+			showWarning("already.all.selected");
+		} else {
+			selectMemberCtrl = new SelectMembersController(ureq, getWindowControl(), selectedMembers, owners, coaches, participants);
+			listenTo(selectMemberCtrl);
+			
+			String title = translate("select.members");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), selectMemberCtrl.getInitialComponent(), true, title);
+			cmc.suppressDirtyFormWarningOnClose();
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 	
 	private void doDeleteAttachment(Attachment attachment) {
@@ -439,15 +450,13 @@ public class MembersMailController extends FormBasicController {
 		if(externalEl != null && externalEl.isAtLeastSelected(1)) {
 			String value = externalAddressesEl.getValue();
 			if(StringHelper.containsNonWhitespace(value)) {
-				for(StringTokenizer tokenizer= new StringTokenizer(value, ",\n", false); tokenizer.hasMoreTokens(); ) {
-					String email = tokenizer.nextToken();
+				for(StringTokenizer tokenizer= new StringTokenizer(value, ",\r\n", false); tokenizer.hasMoreTokens(); ) {
+					String email = tokenizer.nextToken().trim();
 					contactList.add(new EMailIdentity(email, getLocale()));
 				}
 			}
 		}
-		
-		
-		
+
 		doSendEmailToMember(ureq, contactList);
 	}
 	
