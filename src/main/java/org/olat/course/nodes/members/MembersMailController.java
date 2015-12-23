@@ -237,8 +237,8 @@ public class MembersMailController extends FormBasicController {
 			String value = externalAddressesEl.getValue();
 			StringBuilder errors = new StringBuilder();
 			if(StringHelper.containsNonWhitespace(value)) {
-				for(StringTokenizer tokenizer= new StringTokenizer(value, ",\n", false); tokenizer.hasMoreTokens(); ) {
-					String email = tokenizer.nextToken();
+				for(StringTokenizer tokenizer= new StringTokenizer(value, ",\r\n", false); tokenizer.hasMoreTokens(); ) {
+					String email = tokenizer.nextToken().trim();
 					if(!MailHelper.isValidEmailAddress(email)) {
 						if(errors.length() > 0) errors.append(", ");
 						errors.append(email);
@@ -445,15 +445,13 @@ public class MembersMailController extends FormBasicController {
 		if(externalEl != null && externalEl.isAtLeastSelected(1)) {
 			String value = externalAddressesEl.getValue();
 			if(StringHelper.containsNonWhitespace(value)) {
-				for(StringTokenizer tokenizer= new StringTokenizer(value, ",\n", false); tokenizer.hasMoreTokens(); ) {
-					String email = tokenizer.nextToken();
+				for(StringTokenizer tokenizer= new StringTokenizer(value, ",\r\n", false); tokenizer.hasMoreTokens(); ) {
+					String email = tokenizer.nextToken().trim();
 					contactList.add(new EMailIdentity(email, getLocale()));
 				}
 			}
 		}
-		
-		
-		
+
 		doSendEmailToMember(ureq, contactList);
 	}
 	
