@@ -360,6 +360,7 @@ public class MembersMailController extends FormBasicController {
 			
 			String title = translate("select.members");
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), selectMemberCtrl.getInitialComponent(), true, title);
+			cmc.suppressDirtyFormWarningOnClose();
 			listenTo(cmc);
 			cmc.activate();
 		}
