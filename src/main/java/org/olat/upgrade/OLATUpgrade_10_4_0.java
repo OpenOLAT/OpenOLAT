@@ -140,7 +140,7 @@ public class OLATUpgrade_10_4_0 extends OLATUpgrade {
 			uhd.setBooleanDataValue(CALENDAR_TOKENS, true);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
-		return false;
+		return true;
 	}
 	
 	private void processCalendarProperty(Property property) {
@@ -195,10 +195,10 @@ public class OLATUpgrade_10_4_0 extends OLATUpgrade {
 				log.audit("Calendar GUI properties processed: " + properties.size() + ", total processed (" + counter + ")");
 				dbInstance.commitAndCloseSession();
 			} while(properties.size() == BATCH_SIZE);
-			uhd.setBooleanDataValue(CALENDAR_USER_CONFIGS, false);
+			uhd.setBooleanDataValue(CALENDAR_USER_CONFIGS, true);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
-		return false;
+		return true;
 	}
 	
 	private List<Property> getUserGUIProperties(int firstResult, int maxResult) {
@@ -277,7 +277,7 @@ public class OLATUpgrade_10_4_0 extends OLATUpgrade {
 			uhd.setBooleanDataValue(IMPORTED_CALENDARS, true);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
-		return false;
+		return true;
 	}
 	
 	private void processImportedCalendars(Property property) {
@@ -335,7 +335,7 @@ public class OLATUpgrade_10_4_0 extends OLATUpgrade {
 			uhd.setBooleanDataValue(IMPORTED_CALENDARS_URL, true);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
-		return false;
+		return true;
 	}
 	
 	private void processImportedCalendarsTo(Property property) {

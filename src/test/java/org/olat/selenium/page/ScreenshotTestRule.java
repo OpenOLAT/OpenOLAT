@@ -27,6 +27,8 @@ import java.util.List;
 import org.junit.rules.MethodRule;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
@@ -42,6 +44,8 @@ import org.openqa.selenium.remote.RemoteWebDriver;
  *
  */
 public class  ScreenshotTestRule implements MethodRule {
+	
+	private static final OLog log = Tracing.createLoggerFor(ScreenshotTestRule.class);
 	
 	private List<WebDriver> browserList;
 	
@@ -70,37 +74,41 @@ public class  ScreenshotTestRule implements MethodRule {
                 }
             }
 
-            public void captureScreenshot(String fileName, Throwable t) {
+            private void captureScreenshot(String fileName, Throwable t) {
             	List<WebDriver> toShootList = new ArrayList<>();
             	if(t instanceof WebDriverException) {
             		WebDriverException driverException = (WebDriverException)t;
             		String infos = driverException.getAdditionalInformation();
             		for(WebDriver browser:browserList) {
             			if(browser instanceof RemoteWebDriver) {
-            				String sessionId = ((RemoteWebDriver)browser).getSessionId().toString();
-            				if(infos.contains(sessionId)) {
-            					toShootList.add(browser);
-            				}
+            				try {
+								String sessionId = ((RemoteWebDriver)browser).getSessionId().toString();
+								if(infos.contains(sessionId)) {
+									toShootList.add(browser);
+								}
+							} catch (IllegalStateException e) {
+								log.error("", e);
+							}
             			}
             		}
             	} 
             	if(toShootList.isEmpty()) {
             		toShootList.addAll(browserList);
             	}
-            	
-                try {
-                	int count = 0;
-                	for(WebDriver browser:toShootList) {
-	                	if(browser instanceof TakesScreenshot) {
-		                    new File("target/surefire-reports/").mkdirs(); // Insure directory is there
-		                    FileOutputStream out = new FileOutputStream("target/surefire-reports/screenshot-" + fileName + "_" + (count++)+ ".png");
-		                    out.write(((TakesScreenshot) browser).getScreenshotAs(OutputType.BYTES));
-		                    out.close();
-                		}
-                	}
-                } catch (Exception e) {
-                    // No need to crash the tests if the screenshot fails
-                }
+
+            	int count = 0;
+            	for(WebDriver browser:toShootList) {
+                	if(browser instanceof TakesScreenshot) {
+	                    try {
+							new File("target/surefire-reports/").mkdirs(); // Insure directory is there
+							FileOutputStream out = new FileOutputStream("target/surefire-reports/screenshot-" + fileName + "_" + (count++)+ ".png");
+							out.write(((TakesScreenshot) browser).getScreenshotAs(OutputType.BYTES));
+							out.close();
+						} catch (Exception e) {
+							log.error("", e);
+						}
+            		}
+            	}
             }
         };
     }
