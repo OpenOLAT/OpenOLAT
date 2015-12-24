@@ -423,7 +423,14 @@ public class VFSManager extends BasicManager {
 	 * @return String representing an absolute path for this container
 	 */
 	public static String getRealPath(VFSContainer container) {
-		String realPath = null;
+		File file = getRealFile(container);
+		if(file == null)
+			return null;
+		return file.getPath();
+	}
+
+	public static File getRealFile(VFSContainer container) {
+		File realFile = null;
 		LocalFolderImpl localFolder = null;
 		if (container instanceof NamedContainerImpl)  {
 			container = ((NamedContainerImpl)container).getDelegate();
@@ -433,9 +440,9 @@ public class VFSManager extends BasicManager {
 		}
 		if (container != null && container instanceof LocalFolderImpl) {
 			localFolder = (LocalFolderImpl) container;
-			realPath = localFolder.getBasefile().getPath();
-		}		
-		return realPath;
+			realFile = localFolder.getBasefile();
+		}
+		return realFile;
 	}
 	
 	/**

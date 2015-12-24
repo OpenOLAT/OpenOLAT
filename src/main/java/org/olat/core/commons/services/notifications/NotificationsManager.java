@@ -331,5 +331,10 @@ public abstract class NotificationsManager extends BasicManager {
 	 * @return the default notification interval
 	 */
 	public abstract String getDefaultNotificationInterval();
-		
+
+	/**
+	 * @param subscriptionContext
+	 * @param publisherData new data to write
+	 */
+	public abstract void updatePublisherData(SubscriptionContext subscriptionContext, PublisherData publisherData);
 }

@@ -644,7 +644,17 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		if (res.size() != 1) throw new AssertException("only one subscriber per person and publisher!!");
 		return res.get(0);
 	}
-	
+
+	@Override
+	public void updatePublisherData(SubscriptionContext subsContext, PublisherData data){
+		Publisher publisher= getPublisherForUpdate(subsContext);
+		if(publisher != null){
+			publisher.setData(data.getData());
+			dbInstance.getCurrentEntityManager().merge(publisher);
+			dbInstance.commit();
+		}
+	}
+
 	private Publisher getPublisherForUpdate(SubscriptionContext subsContext) {
 		Publisher pub = getPublisher(subsContext);
 		if(pub != null && pub.getKey() != null) {

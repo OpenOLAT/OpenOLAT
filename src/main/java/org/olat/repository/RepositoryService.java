@@ -61,6 +61,18 @@ public interface RepositoryService {
 	
 	public List<RepositoryEntry> loadByResourceKeys(Collection<Long> keys);
 	
+	/**
+	 * @param repositoryEntryKey The key of the repository entry
+	 * @return The olat resource of the repository entry
+	 */
+	public OLATResource loadRepositoryEntryResource(Long repositoryEntryKey);
+	
+	/**
+	 * @param softkey The soft key of the repository entry
+	 * @return The olat resource of the repository entry
+	 */
+	public OLATResource loadRepositoryEntryResourceBySoftKey(String softkey);
+	
 	public VFSLeaf getIntroductionImage(RepositoryEntry re);
 
 	public VFSLeaf getIntroductionMovie(RepositoryEntry re);

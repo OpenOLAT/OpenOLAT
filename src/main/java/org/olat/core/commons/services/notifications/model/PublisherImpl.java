@@ -82,7 +82,7 @@ public class PublisherImpl implements Publisher, CreateInfo, Persistable  {
 	@Column(name="businesspath", nullable=true, insertable=true, updatable=false)
 	private String businessPath;
 	// any additional data (depending on type)
-	@Column(name="data", nullable=true, insertable=true, updatable=false)
+	@Column(name="data", nullable=true, insertable=true, updatable=true)
 	private String data; 
 	// 0 = ok
 	@Column(name="state", nullable=false, insertable=true, updatable=false)

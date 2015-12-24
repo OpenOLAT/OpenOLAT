@@ -265,6 +265,16 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 
 	@Override
+	public OLATResource loadRepositoryEntryResource(Long repositoryEntryKey) {
+		return repositoryEntryDAO.loadRepositoryEntryResource(repositoryEntryKey);
+	}
+
+	@Override
+	public OLATResource loadRepositoryEntryResourceBySoftKey(String softkey) {
+		return repositoryEntryDAO.loadRepositoryEntryResourceBySoftKey(softkey);
+	}
+
+	@Override
 	public VFSLeaf getIntroductionImage(RepositoryEntry re) {
 		VFSContainer repositoryHome = new LocalFolderImpl(new File(FolderConfig.getCanonicalRepositoryHome()));
 		String imageName = re.getResourceableId() + ".jpg";

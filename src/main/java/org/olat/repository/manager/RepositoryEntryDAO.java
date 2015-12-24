@@ -28,6 +28,7 @@ import javax.persistence.TypedQuery;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -122,5 +123,36 @@ public class RepositoryEntryDAO {
 				.setFirstResult(firstResult)
 				.setMaxResults(maxResults)
 				.getResultList();
+	}
+	
+	public OLATResource loadRepositoryEntryResource(Long key) {
+		if (key == null) return null;
+		String query = "select v.olatResource from repositoryentry as v  where v.key=:repoKey";
+		
+		List<OLATResource> entries = dbInstance.getCurrentEntityManager()
+				.createQuery(query, OLATResource.class)
+				.setParameter("repoKey", key)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getResultList();
+		if(entries.isEmpty()) {
+			return null;
+		}
+		return entries.get(0);
+	}
+	
+	public OLATResource loadRepositoryEntryResourceBySoftKey(String softkey) {
+		if(softkey == null || "sf.notconfigured".equals(softkey)) {
+			return null;
+		}
+		String query = "select v.olatResource from repositoryentry as v where v.softkey=:softkey";
+		List<OLATResource> entries = dbInstance.getCurrentEntityManager()
+				.createQuery(query, OLATResource.class)
+				.setParameter("softkey", softkey)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getResultList();
+		if(entries.isEmpty()) {
+			return null;
+		}
+		return entries.get(0);
 	}
 }
