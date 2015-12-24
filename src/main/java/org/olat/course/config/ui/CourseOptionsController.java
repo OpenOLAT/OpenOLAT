@@ -38,6 +38,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -53,8 +55,12 @@ import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigEvent;
 import org.olat.course.config.CourseConfigEvent.CourseConfigType;
+import org.olat.course.nodes.BCCourseNode;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.bc.BCCourseNodeEditController;
 import org.olat.fileresource.types.GlossaryResource;
 import org.olat.fileresource.types.SharedFolderFileResource;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.glossary.GlossaryManager;
 import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntry;
@@ -100,7 +106,8 @@ public class CourseOptionsController extends FormBasicController {
 	private ReferenceManager referenceManager;
 	@Autowired
 	private RepositoryManager repositoryService;
-	
+	private DialogBoxController folderRefRemoveWarnBox, folderRefAddWarnBox;
+
 	/**
 	 * @param name
 	 * @param chatEnabled
@@ -251,6 +258,19 @@ public class CourseOptionsController extends FormBasicController {
 			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
+		} else if(source == folderRefRemoveWarnBox) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				doRemoveSharedFolder();
+				setSaveButtonDirty();
+			}
+		} else if(source == folderRefAddWarnBox) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				folderSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, SharedFolderFileResource.TYPE_NAME, translate("select"));
+				listenTo(folderSearchCtr);
+				cmc = new CloseableModalController(getWindowControl(), translate("close"), folderSearchCtr.getInitialComponent());
+				listenTo(cmc);
+				cmc.activate();
+			}
 		}
 	}
 	
@@ -275,14 +295,18 @@ public class CourseOptionsController extends FormBasicController {
 			doRemoveGlossary();
 			setSaveButtonDirty();
 		} else if (source == addFolderCommand) {
-			folderSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, SharedFolderFileResource.TYPE_NAME, translate("select"));			
-			listenTo(folderSearchCtr);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), folderSearchCtr.getInitialComponent());
-			listenTo(cmc);
-			cmc.activate();
+			if(checkForFolderNodesAdd(ureq)  ){
+				folderSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, SharedFolderFileResource.TYPE_NAME, translate("select"));
+				listenTo(folderSearchCtr);
+				cmc = new CloseableModalController(getWindowControl(), translate("close"), folderSearchCtr.getInitialComponent());
+				listenTo(cmc);
+				cmc.activate();
+			}
 		} else if (source == removeFolderCommand) {
-			doRemoveSharedFolder();
-			setSaveButtonDirty();
+			if(checkForFolderNodesRemove(ureq)){
+				doRemoveSharedFolder();
+				setSaveButtonDirty();
+			}
 		} else if (source instanceof SelectionElement) {
 			setSaveButtonDirty();
 		} else if(saveButton == source) {
@@ -295,7 +319,46 @@ public class CourseOptionsController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		doSave(ureq);
 	}
-	
+
+	private boolean checkForFolderNodesAdd(UserRequest ureq) {
+		OLATResourceable courseOres = entry.getOlatResource();
+		ICourse course = CourseFactory.loadCourse(courseOres.getResourceableId());
+		CourseNode rootNode = course.getCourseEnvironment().getRunStructure().getRootNode();
+		for(int i =0; i < rootNode.getChildCount();i++){
+			if(rootNode.getChildAt(i) instanceof BCCourseNode){
+				BCCourseNode bcNode = (BCCourseNode) rootNode.getChildAt(i);
+				ModuleConfiguration bcConfig = bcNode.getModuleConfiguration();
+				if(!bcConfig.getBooleanSafe(BCCourseNodeEditController.CONFIG_AUTO_FOLDER)){
+					if(bcConfig.getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH).startsWith("/_sharedfolder/")){
+						folderRefAddWarnBox = activateYesNoDialog(ureq, translate("warning.folderRef.title"),	"<div class=\"o_error\">"+translate("warning.folderRefAdd")+"</div>", folderRefAddWarnBox);
+						folderRefAddWarnBox.setCssClass("o_icon_warn");
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+
+	private boolean checkForFolderNodesRemove(UserRequest ureq) {
+		OLATResourceable courseOres = entry.getOlatResource();
+		ICourse course = CourseFactory.loadCourse(courseOres.getResourceableId());
+		CourseNode rootNode = course.getCourseEnvironment().getRunStructure().getRootNode();
+		for(int i =0; i < rootNode.getChildCount();i++){
+			if(rootNode.getChildAt(i) instanceof BCCourseNode){
+				BCCourseNode bcNode = (BCCourseNode) rootNode.getChildAt(i);
+				ModuleConfiguration bcConfig = bcNode.getModuleConfiguration();
+				if(!bcConfig.getBooleanSafe(BCCourseNodeEditController.CONFIG_AUTO_FOLDER)){
+					if(bcConfig.getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH).startsWith("/_sharedfolder/")){
+						folderRefRemoveWarnBox = activateYesNoDialog(ureq, translate("warning.folderRef.title"),	"<div class=\"o_error\">"+translate("warning.folderRef")+"</div>", folderRefRemoveWarnBox);
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+
 	private void setSaveButtonDirty() {
 		if(saveButton != null) {
 			saveButton.setCustomEnabledLinkCSS("btn btn-primary o_button_dirty");

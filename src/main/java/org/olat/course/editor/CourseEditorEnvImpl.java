@@ -41,16 +41,21 @@ import org._3pq.jgrapht.alg.CycleDetector;
 import org._3pq.jgrapht.edge.EdgeFactories;
 import org._3pq.jgrapht.edge.EdgeFactories.DirectedEdgeFactory;
 import org._3pq.jgrapht.graph.DefaultDirectedGraph;
+import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.interpreter.ConditionErrorMessage;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
+import org.olat.course.nodes.bc.BCCourseNodeEditController;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.group.area.BGArea;
@@ -310,9 +315,50 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 		for (int i = a.length - 1; i >= 0; i--) {
 			all2gether.addAll(statusDescs.get(a[i]));
 		}
+
+
+		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
+		if(course!= null){
+			if(course.getCourseConfig().getSharedFolderSoftkey().equals("sf.notconfigured")){
+				INode rootNode = course.getEditorTreeModel().getRootNode();
+				List<StatusDescription> descriptions = new ArrayList<StatusDescription>();
+				descriptions = checkFolderNodes(rootNode, course, descriptions);
+				if(!descriptions.isEmpty()){
+					all2gether.addAll(descriptions);
+				}
+			}
+		}
+
+
+
 		StatusDescription[] retVal = new StatusDescription[all2gether.size()];
 		retVal = all2gether.toArray(retVal);
 		return retVal;
+	}
+
+	private List<StatusDescription> checkFolderNodes(INode rootNode, ICourse course, List<StatusDescription> descriptions){
+		List<StatusDescription> descriptionsI = descriptions;
+		Visitor visitor = new Visitor() {
+			public void visit(INode node) {
+				CourseEditorTreeNode courseNode = (CourseEditorTreeNode) course.getEditorTreeModel().getNodeById(node.getIdent());
+				if(!courseNode.isDeleted() && courseNode.getCourseNode() instanceof BCCourseNode){
+					BCCourseNode bcNode = (BCCourseNode) courseNode.getCourseNode();
+					if (bcNode.isSharedFolder()) {
+						String translPackage = Util.getPackageName(BCCourseNodeEditController.class);
+						StatusDescription status = new StatusDescription(StatusDescription.ERROR, "warning.no.sharedfolder", "warning.no.sharedfolder", null, translPackage);
+						status.setDescriptionForUnit(bcNode.getIdent());
+						// set which pane is affected by error
+						status.setActivateableViewIdentifier(BCCourseNodeEditController.PANE_TAB_FOLDER);
+						descriptionsI.add(status);
+					}
+				}
+			}
+		};
+
+		TreeVisitor v = new TreeVisitor(visitor, rootNode, false);
+		v.visitAll();
+
+		return descriptionsI;
 	}
 
 	public List<String> getReferencingNodeIdsFor(String ident) {
