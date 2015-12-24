@@ -19,6 +19,7 @@
  */
 package org.olat.course;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.webdav.servlets.RequestUtil;
 import org.olat.core.gui.components.tree.GenericTreeModel;
@@ -45,7 +46,9 @@ import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
+import org.olat.resource.OLATResource;
 
 /**
  *
@@ -88,10 +91,10 @@ public class MergedCourseContainer extends MergeSource {
 			OlatRootFolderImpl sharedFolder = null;
 			String sfSoftkey = persistingCourse.getCourseConfig().getSharedFolderSoftkey();
 			if (StringHelper.containsNonWhitespace(sfSoftkey) && !CourseConfig.VALUE_EMPTY_SHAREDFOLDER_SOFTKEY.equals(sfSoftkey)) {
-				RepositoryManager rm = RepositoryManager.getInstance();
-				RepositoryEntry re = rm.lookupRepositoryEntryBySoftkey(sfSoftkey, false);
-				if (re != null) {
-					sharedFolder = SharedFolderManager.getInstance().getSharedFolder(re.getOlatResource());
+				OLATResource sharedResource = CoreSpringFactory.getImpl(RepositoryService.class)
+						.loadRepositoryEntryResourceBySoftKey(sfSoftkey);
+				if (sharedResource != null) {
+					sharedFolder = SharedFolderManager.getInstance().getSharedFolder(sharedResource);
 					if (sharedFolder != null) {
 						sharedFolder.setLocalSecurityCallback(new ReadOnlyCallback());
 						//add local course folder's children as read/write source and any sharedfolder as subfolder
@@ -150,10 +153,10 @@ public class MergedCourseContainer extends MergeSource {
 							OlatRootFolderImpl sharedFolder = null;
 							String sfSoftkey = course.getCourseConfig().getSharedFolderSoftkey();
 							if (StringHelper.containsNonWhitespace(sfSoftkey) && !CourseConfig.VALUE_EMPTY_SHAREDFOLDER_SOFTKEY.equals(sfSoftkey)) {
-								RepositoryManager rm = RepositoryManager.getInstance();
-								RepositoryEntry re = rm.lookupRepositoryEntryBySoftkey(sfSoftkey, false);
-								if (re != null) {
-									sharedFolder = SharedFolderManager.getInstance().getSharedFolder(re.getOlatResource());
+								OLATResource sharedResource = CoreSpringFactory.getImpl(RepositoryService.class)
+										.loadRepositoryEntryResourceBySoftKey(sfSoftkey);
+								if (sharedResource != null) {
+									sharedFolder = SharedFolderManager.getInstance().getSharedFolder(sharedResource);
 									VFSContainer courseBase = sharedFolder;
 									sharedFolder.setLocalSecurityCallback(new ReadOnlyCallback());
 									subpath = subpath.replaceFirst("/_sharedfolder", "");

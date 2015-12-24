@@ -30,6 +30,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.resource.OLATResource;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -153,5 +154,31 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 		Assert.assertNotNull(allRes);
 		Assert.assertFalse(allRes.isEmpty());
 		Assert.assertTrue(allRes.size() < 26);
+	}
+	
+	@Test
+	public void loadRepositoryEntryResource() {
+		RepositoryEntry re = repositoryService.create("Rei Ayanami", "-", "Repository entry DAO Test 5", "", null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(re);
+		Assert.assertNotNull(re.getSoftkey());
+		Assert.assertNotNull(re.getOlatResource());
+		
+		OLATResource loadedResource = repositoryEntryDao.loadRepositoryEntryResource(re.getKey());
+		Assert.assertNotNull(loadedResource);
+		Assert.assertEquals(re.getOlatResource(), loadedResource);
+	}
+	
+	@Test
+	public void loadRepositoryEntryResourceBySoftKey() {
+		RepositoryEntry re = repositoryService.create("Rei Ayanami", "-", "Repository entry DAO Test 5", "", null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(re);
+		Assert.assertNotNull(re.getSoftkey());
+		Assert.assertNotNull(re.getOlatResource());
+		
+		OLATResource loadedResource = repositoryEntryDao.loadRepositoryEntryResourceBySoftKey(re.getSoftkey());
+		Assert.assertNotNull(loadedResource);
+		Assert.assertEquals(re.getOlatResource(), loadedResource);
 	}
 }
