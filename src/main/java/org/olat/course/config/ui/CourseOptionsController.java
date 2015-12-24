@@ -49,7 +49,10 @@ import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.tree.TreeVisitor;
+import org.olat.core.util.tree.Visitor;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
@@ -57,10 +60,9 @@ import org.olat.course.config.CourseConfigEvent;
 import org.olat.course.config.CourseConfigEvent.CourseConfigType;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.bc.BCCourseNodeEditController;
+import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.fileresource.types.GlossaryResource;
 import org.olat.fileresource.types.SharedFolderFileResource;
-import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.glossary.GlossaryManager;
 import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntry;
@@ -95,7 +97,8 @@ public class CourseOptionsController extends FormBasicController {
 	private final boolean editable;
 	private CourseConfig courseConfig;
 	private final RepositoryEntry entry;
-	
+	private boolean hasFolderNode = false;
+
 
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController glossarySearchCtr, folderSearchCtr;
@@ -324,18 +327,10 @@ public class CourseOptionsController extends FormBasicController {
 		OLATResourceable courseOres = entry.getOlatResource();
 		ICourse course = CourseFactory.loadCourse(courseOres.getResourceableId());
 		CourseNode rootNode = course.getCourseEnvironment().getRunStructure().getRootNode();
-		for(int i =0; i < rootNode.getChildCount();i++){
-			if(rootNode.getChildAt(i) instanceof BCCourseNode){
-				BCCourseNode bcNode = (BCCourseNode) rootNode.getChildAt(i);
-				ModuleConfiguration bcConfig = bcNode.getModuleConfiguration();
-				if(!bcConfig.getBooleanSafe(BCCourseNodeEditController.CONFIG_AUTO_FOLDER)){
-					if(bcConfig.getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH).startsWith("/_sharedfolder/")){
-						folderRefAddWarnBox = activateYesNoDialog(ureq, translate("warning.folderRef.title"),	"<div class=\"o_error\">"+translate("warning.folderRefAdd")+"</div>", folderRefAddWarnBox);
-						folderRefAddWarnBox.setCssClass("o_icon_warn");
-						return false;
-					}
-				}
-			}
+		if(checkFolderNodes(rootNode, course)&& folderNameEl.getUserObject() != null){
+			folderRefAddWarnBox = activateYesNoDialog(ureq, translate("warning.folderRef.title"),	"<div class=\"o_error\">"+translate("warning.folderRefAdd")+"</div>", folderRefAddWarnBox);
+			folderRefAddWarnBox.setCssClass("o_icon_warn");
+			return false;
 		}
 		return true;
 	}
@@ -344,19 +339,32 @@ public class CourseOptionsController extends FormBasicController {
 		OLATResourceable courseOres = entry.getOlatResource();
 		ICourse course = CourseFactory.loadCourse(courseOres.getResourceableId());
 		CourseNode rootNode = course.getCourseEnvironment().getRunStructure().getRootNode();
-		for(int i =0; i < rootNode.getChildCount();i++){
-			if(rootNode.getChildAt(i) instanceof BCCourseNode){
-				BCCourseNode bcNode = (BCCourseNode) rootNode.getChildAt(i);
-				ModuleConfiguration bcConfig = bcNode.getModuleConfiguration();
-				if(!bcConfig.getBooleanSafe(BCCourseNodeEditController.CONFIG_AUTO_FOLDER)){
-					if(bcConfig.getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH).startsWith("/_sharedfolder/")){
-						folderRefRemoveWarnBox = activateYesNoDialog(ureq, translate("warning.folderRef.title"),	"<div class=\"o_error\">"+translate("warning.folderRef")+"</div>", folderRefRemoveWarnBox);
-						return false;
+
+		if(checkFolderNodes(rootNode, course)){
+			folderRefRemoveWarnBox = activateYesNoDialog(ureq, translate("warning.folderRef.title"),	"<div class=\"o_error\">"+translate("warning.folderRef")+"</div>", folderRefRemoveWarnBox);
+			return false;
+		}else{
+			return true;
+		}
+	}
+
+	private boolean checkFolderNodes(INode rootNode, ICourse course){
+		hasFolderNode = false;
+		Visitor visitor = new Visitor() {
+			public void visit(INode node) {
+				CourseEditorTreeNode courseNode = (CourseEditorTreeNode) course.getEditorTreeModel().getNodeById(node.getIdent());
+				if(!courseNode.isDeleted() && courseNode.getCourseNode() instanceof BCCourseNode){
+					BCCourseNode bcNode = (BCCourseNode) courseNode.getCourseNode();
+					if (bcNode.isSharedFolder()) {
+						hasFolderNode = true;
 					}
 				}
 			}
-		}
-		return true;
+		};
+
+		TreeVisitor v = new TreeVisitor(visitor, rootNode, false);
+		v.visitAll();
+		return hasFolderNode;
 	}
 
 	private void setSaveButtonDirty() {
