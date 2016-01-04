@@ -199,7 +199,9 @@ public class CoursesWebService {
 	@Path("{courseId}")
 	public CourseWebService getCourse(@PathParam("courseId") Long courseId) {
 		ICourse course = loadCourse(courseId);
-		if(course == null) return null;
+		if(course == null) {
+			return null;
+		}
 		OLATResource ores = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
 		return new CourseWebService(ores, course);
 	}
