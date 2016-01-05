@@ -73,55 +73,60 @@ public class MergedCourseContainer extends MergeSource {
 	
 	@Override
 	protected void init() {
-		super.init();
 		ICourse course = CourseFactory.loadCourse(courseId);
 		if(course instanceof PersistingCourseImpl) {
-			PersistingCourseImpl persistingCourse = (PersistingCourseImpl)course;
-			if(identityEnv == null || identityEnv.getRoles().isOLATAdmin()) {
+			init((PersistingCourseImpl)course);
+		}
+	}
+	
+	protected void init(PersistingCourseImpl persistingCourse) {
+		super.init();
+
+		if(identityEnv == null || identityEnv.getRoles().isOLATAdmin()) {
+			addContainersChildren(persistingCourse.getIsolatedCourseFolder(), true);
+		} else {
+			RepositoryEntry re = persistingCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			RepositoryEntrySecurity reSecurity = RepositoryManager.getInstance()
+					.isAllowed(identityEnv.getIdentity(), identityEnv.getRoles(), re);
+			if(reSecurity.isEntryAdmin()) {
 				addContainersChildren(persistingCourse.getIsolatedCourseFolder(), true);
-			} else {
-				RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-				RepositoryEntrySecurity reSecurity = RepositoryManager.getInstance()
-						.isAllowed(identityEnv.getIdentity(), identityEnv.getRoles(), re);
-				if(reSecurity.isEntryAdmin()) {
-					addContainersChildren(persistingCourse.getIsolatedCourseFolder(), true);
+			}
+		}
+			
+		// grab any shared folder that is configured
+		OlatRootFolderImpl sharedFolder = null;
+		String sfSoftkey = persistingCourse.getCourseConfig().getSharedFolderSoftkey();
+		if (StringHelper.containsNonWhitespace(sfSoftkey) && !CourseConfig.VALUE_EMPTY_SHAREDFOLDER_SOFTKEY.equals(sfSoftkey)) {
+			OLATResource sharedResource = CoreSpringFactory.getImpl(RepositoryService.class)
+					.loadRepositoryEntryResourceBySoftKey(sfSoftkey);
+			if (sharedResource != null) {
+				sharedFolder = SharedFolderManager.getInstance().getSharedFolder(sharedResource);
+				if (sharedFolder != null) {
+					sharedFolder.setLocalSecurityCallback(new ReadOnlyCallback());
+					//add local course folder's children as read/write source and any sharedfolder as subfolder
+					addContainer(new NamedContainerImpl("_sharedfolder", sharedFolder));
 				}
 			}
-			// grab any shared folder that is configured
-			OlatRootFolderImpl sharedFolder = null;
-			String sfSoftkey = persistingCourse.getCourseConfig().getSharedFolderSoftkey();
-			if (StringHelper.containsNonWhitespace(sfSoftkey) && !CourseConfig.VALUE_EMPTY_SHAREDFOLDER_SOFTKEY.equals(sfSoftkey)) {
-				OLATResource sharedResource = CoreSpringFactory.getImpl(RepositoryService.class)
-						.loadRepositoryEntryResourceBySoftKey(sfSoftkey);
-				if (sharedResource != null) {
-					sharedFolder = SharedFolderManager.getInstance().getSharedFolder(sharedResource);
-					if (sharedFolder != null) {
-						sharedFolder.setLocalSecurityCallback(new ReadOnlyCallback());
-						//add local course folder's children as read/write source and any sharedfolder as subfolder
-						addContainer(new NamedContainerImpl("_sharedfolder", sharedFolder));
-					}
-				}
-			}
+		}
 			
-			// add all course building blocks of type BC to a virtual folder
-			MergeSource nodesContainer = new MergeSource(null, "_courseelementdata");
-			if(identityEnv == null) {
-				CourseNode rootNode = course.getRunStructure().getRootNode();
-				addFolderBuildingBlocks(persistingCourse, nodesContainer, rootNode);
-			} else {
-				TreeEvaluation treeEval = new TreeEvaluation();
-				GenericTreeModel treeModel = new GenericTreeModel();
-				UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
-				CourseNode rootCn = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
-				NodeEvaluation rootNodeEval = rootCn.eval(userCourseEnv.getConditionInterpreter(), treeEval, new VisibleTreeFilter());
-				TreeNode treeRoot = rootNodeEval.getTreeNode();
-				treeModel.setRootNode(treeRoot);
-				addFolderBuildingBlocks(persistingCourse, nodesContainer, treeRoot);
-			}
-			
-			if (nodesContainer.getItems().size() > 0) {
-				addContainer(nodesContainer);
-			}
+		// add all course building blocks of type BC to a virtual folder
+		MergeSource nodesContainer = new MergeSource(null, "_courseelementdata");
+		if(identityEnv == null) {
+			CourseNode rootNode = persistingCourse.getRunStructure().getRootNode();
+			addFolderBuildingBlocks(persistingCourse, nodesContainer, rootNode);
+		} else {
+			TreeEvaluation treeEval = new TreeEvaluation();
+			GenericTreeModel treeModel = new GenericTreeModel();
+			UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, persistingCourse.getCourseEnvironment());
+			CourseNode rootCn = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
+			NodeEvaluation rootNodeEval = rootCn.eval(userCourseEnv.getConditionInterpreter(), treeEval, new VisibleTreeFilter());
+			TreeNode treeRoot = rootNodeEval.getTreeNode();
+			treeModel.setRootNode(treeRoot);
+			addFolderBuildingBlocks(persistingCourse, nodesContainer, treeRoot);
+		}
+		
+		if (nodesContainer.getItems().size() > 0) {
+			addContainer(nodesContainer);
 		}
 	}
 	

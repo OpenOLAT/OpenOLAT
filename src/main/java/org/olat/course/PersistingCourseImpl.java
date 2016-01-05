@@ -159,6 +159,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	/**
 	 * @see org.olat.course.ICourse#getCourseBasePath()
 	 */
+	@Override
 	public OlatRootFolderImpl getCourseBaseContainer() {
 		return courseRootContainer;
 	}
@@ -179,7 +180,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	public VFSContainer getCourseFolderContainer() {
 		// add local course folder's children as read/write source and any sharedfolder as subfolder
 		MergedCourseContainer courseFolderContainer = new MergedCourseContainer(resourceableId, getCourseTitle());
-		courseFolderContainer.init();
+		courseFolderContainer.init(this);
 		return courseFolderContainer;
 	}
 
@@ -187,7 +188,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	public VFSContainer getCourseFolderContainer(IdentityEnvironment identityEnv) {
 		// add local course folder's children as read/write source and any sharedfolder as subfolder
 		MergedCourseContainer courseFolderContainer = new MergedCourseContainer(resourceableId, getCourseTitle(), identityEnv);
-		courseFolderContainer.init();
+		courseFolderContainer.init(this);
 		return courseFolderContainer;
 	}
 	
@@ -202,6 +203,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	/**
 	 * @see org.olat.course.ICourse#getCourseTitle()
 	 */
+	@Override
 	public String getCourseTitle() {	
 		if (courseTitle == null) {
 			synchronized (courseTitleSyncObj) { //o_clusterOK by:ld/se

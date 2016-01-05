@@ -34,7 +34,6 @@ import org.olat.commons.calendar.model.ImportedCalendar;
 import org.olat.commons.calendar.model.ImportedToCalendar;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
@@ -62,6 +61,8 @@ public class OLATUpgrade_10_4_0 extends OLATUpgrade {
 	
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 	static {
+		xstream.ignoreUnknownElements();
+		xstream.alias("org.olat.preferences.DbPrefs", UpgradePreferences.class);
 		xstream.alias("org.olat.core.util.prefs.db.DbPrefs", UpgradePreferences.class);
 		xstream.alias("org.olat.commons.calendar.model.KalendarConfig", KalendarConfig.class);
 	}
@@ -78,8 +79,6 @@ public class OLATUpgrade_10_4_0 extends OLATUpgrade {
 	private ImportedToCalendarDAO importedToCalendarDao;
 	@Autowired
 	private CalendarUserConfigurationDAO calendarUserConfigurationDao;
-	
-
 	
 	public OLATUpgrade_10_4_0() {
 		super();
@@ -171,7 +170,7 @@ public class OLATUpgrade_10_4_0 extends OLATUpgrade {
 		  .append(" where v.category='icalAuthToken' and v.name='authToken'")
 		  .append(" order by v.key");
 		
-		return DBFactory.getInstance().getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Property.class)
 				.setFirstResult(firstResult)
 				.setMaxResults(maxResult)
@@ -208,26 +207,31 @@ public class OLATUpgrade_10_4_0 extends OLATUpgrade {
 		  .append(" where v.name='v2guipreferences'")
 		  .append(" order by v.key");
 		
-		return DBFactory.getInstance().getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Property.class)
 				.setFirstResult(firstResult)
 				.setMaxResults(maxResult)
 				.getResultList();
-		
 	}
 	
 	private void processCalendarGUIProperty(Property property) {
 		String text = property.getTextValue();
 		if(StringHelper.containsNonWhitespace(text)) {
-			UpgradePreferences prefs = (UpgradePreferences)xstream.fromXML(text);
-			Map<String,Object> preferenceMap = prefs.getPreferences();
-			for(Map.Entry<String,Object> entry:preferenceMap.entrySet()) {
-				String key = entry.getKey();
-				if(key.startsWith(KALENDAR_GUI_MARKER)) {
-					String calendarId = key.substring(KALENDAR_GUI_MARKER.length(), key.length());
-					KalendarConfig config = (KalendarConfig)entry.getValue();
-					processKalendarConfig(property.getIdentity(), calendarId, config);
+			try {
+				UpgradePreferences prefs = (UpgradePreferences)xstream.fromXML(text);
+				if(prefs != null) {
+					Map<String,Object> preferenceMap = prefs.getPreferences();
+					for(Map.Entry<String,Object> entry:preferenceMap.entrySet()) {
+						String key = entry.getKey();
+						if(key.startsWith(KALENDAR_GUI_MARKER)) {
+							String calendarId = key.substring(KALENDAR_GUI_MARKER.length(), key.length());
+							KalendarConfig config = (KalendarConfig)entry.getValue();
+							processKalendarConfig(property.getIdentity(), calendarId, config);
+						}
+					}
 				}
+			} catch (Exception e) {
+				log.warn("Cannot read the preferences", e);
 			}
 		}
 	}
@@ -310,7 +314,7 @@ public class OLATUpgrade_10_4_0 extends OLATUpgrade {
 		  .append(" where v.category='Imported-Calendar'")
 		  .append(" order by v.key");
 		
-		return DBFactory.getInstance().getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Property.class)
 				.setFirstResult(firstResult)
 				.setMaxResults(maxResult)
@@ -374,7 +378,7 @@ public class OLATUpgrade_10_4_0 extends OLATUpgrade {
 		  .append(" where v.category='Imported-Calendar-To'")
 		  .append(" order by v.key");
 		
-		return DBFactory.getInstance().getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Property.class)
 				.setFirstResult(firstResult)
 				.setMaxResults(maxResult)
