@@ -120,6 +120,25 @@ public class CoursePageFragment {
 	}
 	
 	/**
+	 * Wait until the restart button appears or make an error.
+	 * 
+	 * @return
+	 */
+	public CoursePageFragment assertOnRestart() {
+		By restartBy = By.cssSelector("a.btn.o_sel_course_restart");
+		OOGraphene.waitElement(restartBy, 10, browser);
+		return this;
+	}
+	
+	public CoursePageFragment clickRestart() {
+		By restartBy = By.cssSelector("a.btn.o_sel_course_restart");
+		browser.findElement(restartBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitElement(courseRun, 5, browser);
+		return this;
+	}
+	
+	/**
 	 * Click the first element of the menu tree
 	 * @return
 	 */
