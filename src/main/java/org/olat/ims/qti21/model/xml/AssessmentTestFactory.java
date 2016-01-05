@@ -21,7 +21,9 @@ package org.olat.ims.qti21.model.xml;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import org.olat.core.helpers.Settings;
 import org.olat.ims.qti21.QTI21Constants;
@@ -82,7 +84,7 @@ public class AssessmentTestFactory {
 	 */
 	public static AssessmentTest createAssessmentTest(String title) {
 		AssessmentTest assessmentTest = new AssessmentTest();
-		assessmentTest.setIdentifier(IdentifierGenerator.newAsString());
+		assessmentTest.setIdentifier(IdentifierGenerator.newAsString("test"));
 		assessmentTest.setTitle(title);
 		assessmentTest.setToolName(QTI21Constants.TOOLNAME);
 		assessmentTest.setToolVersion(Settings.getVersion());
@@ -253,14 +255,14 @@ public class AssessmentTestFactory {
 	public static void appendAssessmentItem(AssessmentSection section, String itemFilename)
 	throws URISyntaxException {
 		AssessmentItemRef item = new AssessmentItemRef(section);
-		item.setIdentifier(IdentifierGenerator.newAsIdentifier());
+		item.setIdentifier(IdentifierGenerator.newAsIdentifier("ai"));
 		item.setHref(new URI(itemFilename));
 		section.getSectionParts().add(item);
 	}
 	
 	public static TestPart createTestPart(AssessmentTest assessmentTest) {
 		TestPart part = new TestPart(assessmentTest);
-		part.setIdentifier(IdentifierGenerator.newAsIdentifier());
+		part.setIdentifier(IdentifierGenerator.newAsIdentifier("tp"));
 		part.setNavigationMode(NavigationMode.NONLINEAR);
 		part.setSubmissionMode(SubmissionMode.INDIVIDUAL);
 		assessmentTest.getTestParts().add(part);
@@ -290,7 +292,7 @@ public class AssessmentTestFactory {
 		section.setFixed(Boolean.TRUE);
 		section.setVisible(Boolean.TRUE);
 		section.setTitle("New section");
-		section.setIdentifier(IdentifierGenerator.newAsIdentifier());
+		section.setIdentifier(IdentifierGenerator.newAsIdentifier("sect"));
 		if(part instanceof TestPart) {
 			((TestPart)part).getAssessmentSections().add(section);
 		} else if(part instanceof AssessmentSection) {
@@ -308,6 +310,22 @@ public class AssessmentTestFactory {
 		section.getRubricBlocks().add(rubricBlock);
 		
 		return section;
+	}
+	
+	/*
+	<outcomeDeclaration identifier="FEEDBACKMODAL" cardinality="multiple" baseType="identifier" view="testConstructor" />
+	*/
+	public final static OutcomeDeclaration createTestFeedbackModalOutcomeDeclaration(AssessmentTest assessmentTest) {
+		OutcomeDeclaration feedbackOutcomeDeclaration = new OutcomeDeclaration(assessmentTest);
+		feedbackOutcomeDeclaration.setIdentifier(QTI21Constants.FEEDBACKMODAL_IDENTIFIER);
+		feedbackOutcomeDeclaration.setCardinality(Cardinality.MULTIPLE);
+		feedbackOutcomeDeclaration.setBaseType(BaseType.IDENTIFIER);
+		
+		List<View> views = new ArrayList<>();
+		views.add(View.TEST_CONSTRUCTOR);
+		feedbackOutcomeDeclaration.setViews(views);
+		
+		return feedbackOutcomeDeclaration;
 	}
 	
 	/*

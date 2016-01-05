@@ -134,6 +134,7 @@ public class SingleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuild
 	}
 
 	private void buildMainScoreRuleAllCorrectAnswers(ResponseCondition rule) {
+		ensureFeedbackBasicOutcomeDeclaration();
 		/*
 			<responseIf>
 				<isNull>
@@ -258,6 +259,7 @@ public class SingleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuild
 	
 
 	private void buildMainScoreRulePerAnswer(ResponseCondition rule) {
+		ensureFeedbackBasicOutcomeDeclaration();
 		/*
 		<responseCondition>
 			<responseIf>

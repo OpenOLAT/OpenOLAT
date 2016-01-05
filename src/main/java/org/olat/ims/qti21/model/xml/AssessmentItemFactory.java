@@ -90,7 +90,7 @@ public class AssessmentItemFactory {
 	public static AssessmentItem createSingleChoice() {
 		
 		AssessmentItem assessmentItem = new AssessmentItem();
-		assessmentItem.setIdentifier(IdentifierGenerator.newAsString());
+		assessmentItem.setIdentifier(IdentifierGenerator.newAsString("item"));
 		assessmentItem.setTitle("Single choice");
 		assessmentItem.setToolName(QTI21Constants.TOOLNAME);
 		assessmentItem.setToolVersion(Settings.getVersion());
@@ -100,7 +100,7 @@ public class AssessmentItemFactory {
 		NodeGroupList nodeGroups = assessmentItem.getNodeGroups();
 
 		Identifier responseDeclarationId = Identifier.assumedLegal("RESPONSE_1");
-		Identifier correctResponseId = IdentifierGenerator.newAsIdentifier();
+		Identifier correctResponseId = IdentifierGenerator.newAsIdentifier("sc");
 		//define correct answer
 		ResponseDeclaration responseDeclaration = createSingleChoiceCorrectResponseDeclaration(assessmentItem, responseDeclarationId, correctResponseId);
 		nodeGroups.getResponseDeclarationGroup().getResponseDeclarations().add(responseDeclaration);

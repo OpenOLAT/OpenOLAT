@@ -209,9 +209,7 @@ public abstract class AssessmentItemBuilder {
 	protected void buildModalFeedback(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
 		//add feedbackbasic and feedbackmodal outcomes
 		if(correctFeedback != null || incorrectFeedback != null || additionalFeedbacks.size() > 0) {
-			OutcomeDeclaration basicOutcomeDeclaration = AssessmentItemFactory
-					.createOutcomeDeclarationForFeedbackBasic(assessmentItem);
-			outcomeDeclarations.add(basicOutcomeDeclaration);	
+			ensureFeedbackBasicOutcomeDeclaration();
 			
 			OutcomeDeclaration modalOutcomeDeclaration = AssessmentItemFactory
 					.createOutcomeDeclarationForFeedbackModal(assessmentItem);
@@ -242,6 +240,15 @@ public abstract class AssessmentItemBuilder {
 			ResponseCondition feedbackCondition = AssessmentItemFactory
 					.createModalFeedbackBasicRule(assessmentItem.getResponseProcessing(), incorrectFeedback.getIdentifier(), QTI21Constants.INCORRECT);
 			responseRules.add(feedbackCondition);
+		}
+	}
+	
+	protected void ensureFeedbackBasicOutcomeDeclaration() {
+		OutcomeDeclaration feedbackBasicDeclaration = assessmentItem.getOutcomeDeclaration(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
+		if(feedbackBasicDeclaration == null) {
+			feedbackBasicDeclaration = AssessmentItemFactory
+					.createOutcomeDeclarationForFeedbackBasic(assessmentItem);
+			assessmentItem.getOutcomeDeclarations().add(feedbackBasicDeclaration);	
 		}
 	}
 	

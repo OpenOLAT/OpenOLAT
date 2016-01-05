@@ -308,6 +308,16 @@ public class AssessmentTestBuilder {
 				}
 			}
 		}
+		
+		//set the feedbackmodal outcome declaration if needed
+		if(passedFeedback != null || failedFeedback != null) {
+			OutcomeDeclaration outcomeDeclaration = assessmentTest.getOutcomeDeclaration(QTI21Constants.FEEDBACKMODAL_IDENTIFIER);
+			if(outcomeDeclaration == null) {
+				OutcomeDeclaration feedbackModalOutcomeDeclaration = AssessmentTestFactory
+						.createTestFeedbackModalOutcomeDeclaration(assessmentTest);
+				assessmentTest.getOutcomeDeclarations().add(feedbackModalOutcomeDeclaration);
+			}
+		}
 
 		if(passedFeedback != null) {
 			buildFeedback(passedFeedback, true);
@@ -323,7 +333,7 @@ public class AssessmentTestBuilder {
 			TestFeedback testFeedback;
 			if(feedbackBuilder.getTestFeedback() == null) {
 				testFeedback = AssessmentTestFactory
-						.createTestFeedbackModal(assessmentTest, IdentifierGenerator.newAsIdentifier() , feedbackBuilder.getTitle(), feedbackBuilder.getText());
+						.createTestFeedbackModal(assessmentTest, IdentifierGenerator.newAsIdentifier("fm") , feedbackBuilder.getTitle(), feedbackBuilder.getText());
 				assessmentTest.getTestFeedbacks().add(testFeedback);
 			} else {
 				testFeedback = feedbackBuilder.getTestFeedback();

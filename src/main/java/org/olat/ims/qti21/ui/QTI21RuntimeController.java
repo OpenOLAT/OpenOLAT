@@ -22,6 +22,7 @@ package org.olat.ims.qti21.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.control.Event;
@@ -47,15 +48,27 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 	
-	private Link assessmentLink, testStatisticLink;
+	private Link assessmentLink, testStatisticLink, qtiOptionsLink;
 	
+	private QTI21OptionsController optionsCtrl;
 	private AssessmentOverviewController assessmentToolCtrl;
 	private QTI21AssessmentTestStatisticsController statsToolCtr;
 
-	
 	public QTI21RuntimeController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
 		super(ureq, wControl, re, reSecurity, runtimeControllerCreator);
+	}
+	
+	@Override
+	protected void initSettingsTools(Dropdown settingsDropdown) {
+		super.initSettingsTools(settingsDropdown);
+		if (reSecurity.isEntryAdmin()) {
+			settingsDropdown.addComponent(new Spacer(""));
+
+			qtiOptionsLink = LinkFactory.createToolLink("options", translate("tab.options"), this, "o_sel_repo_options");
+			qtiOptionsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_options");
+			settingsDropdown.addComponent(qtiOptionsLink);
+		}
 	}
 	
 	@Override
@@ -98,8 +111,26 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 			doAssessmentTestStatistics(ureq);
 		} else if(assessmentLink == source) {
 			doAssessmentTool(ureq);
-		} 
+		} else if(qtiOptionsLink == source) {
+			doQtiOptions(ureq);
+		}
 		super.event(ureq, source, event);
+	}
+	
+	private Activateable2 doQtiOptions(UserRequest ureq) {
+		OLATResourceable ores = OresHelper.createOLATResourceableType("Options");
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl swControl = addToHistory(ureq, ores, null);
+		
+		if (reSecurity.isEntryAdmin()) {
+			QTI21OptionsController ctrl = new QTI21OptionsController(ureq, swControl, getRepositoryEntry());
+			listenTo(ctrl);
+			optionsCtrl = pushController(ureq, "Options", ctrl);
+			currentToolCtr = optionsCtrl;
+			setActiveTool(qtiOptionsLink);
+			return optionsCtrl;
+		}
+		return null;
 	}
 	
 	private Activateable2 doAssessmentTestStatistics(UserRequest ureq) {
@@ -127,8 +158,7 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 			AssessmentToolSecurityCallback secCallback
 				= new AssessmentToolSecurityCallback(reSecurity.isEntryAdmin(), reSecurity.isEntryAdmin(),
 						reSecurity.isCourseCoach(), reSecurity.isGroupCoach(), null);
-			
-			
+
 			AssessmentOverviewController ctrl = new AssessmentOverviewController(ureq, swControl, toolbarPanel,
 					getRepositoryEntry(), secCallback);
 			listenTo(ctrl);

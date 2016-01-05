@@ -232,7 +232,7 @@ public class MultipleChoiceEditorController extends FormBasicController {
 	private void doAddSimpleChoice(UserRequest ureq) {
 		ChoiceInteraction interaction = itemBuilder.getChoiceInteraction();
 		SimpleChoice newChoice = new SimpleChoice(interaction);
-		newChoice.setIdentifier(IdentifierGenerator.newAsIdentifier());
+		newChoice.setIdentifier(IdentifierGenerator.newAsIdentifier("mc"));
 		P firstChoiceText = AssessmentItemFactory.getParagraph(newChoice, "New answer");
 		newChoice.getFlowStatics().add(firstChoiceText);
 		

@@ -82,7 +82,7 @@ public class ManifestPackage {
 	}
 	
 	public static void appendAssessmentTest(String testFileName, ManifestType manifest) {  
-		String testId = IdentifierGenerator.newAsString();
+		String testId = IdentifierGenerator.newAsString("test");
 		
         ResourceType testResourceType = objectFactory.createResourceType();
         testResourceType.setIdentifier(testId);
@@ -108,7 +108,7 @@ public class ManifestPackage {
 	}
 	
 	public static void appendAssessmentItem(String itemFileName, ManifestType manifest) {
-		String itemId = IdentifierGenerator.newAsString();
+		String itemId = IdentifierGenerator.newAsString("item");
 
         ResourceType itemResourceType = objectFactory.createResourceType();
         itemResourceType.setIdentifier(itemId);

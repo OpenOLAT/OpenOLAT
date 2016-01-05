@@ -38,6 +38,14 @@ public class IdentifierGenerator {
 		return "oo".concat(UUID.randomUUID().toString().replace("-", "").substring(2));
 	}
 	
+	public static final String newAsString(String prefix) {
+		return prefix.concat(UUID.randomUUID().toString().replace("-", "").substring(prefix.length()));
+	}
+	
+	public static final Identifier newAsIdentifier(String prefix) {
+		return Identifier.parseString(newAsString(prefix));
+	}
+	
 	public static final Identifier newAsIdentifier() {
 		return Identifier.parseString(newAsString());
 	}

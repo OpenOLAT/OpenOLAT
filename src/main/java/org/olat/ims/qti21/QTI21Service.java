@@ -55,6 +55,8 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltStylesheetManager;
  */
 public interface QTI21Service {
 	
+	public static final String PACKAGE_CONFIG_FILE_NAME = "QTI21PackageConfig.xml";
+	
 	/**
 	 * New QTI serializer
 	 * @return
@@ -87,6 +89,16 @@ public interface QTI21Service {
 	public boolean updateAssesmentObject(File resourceFile, ResolvedAssessmentObject<?> resolvedAssessmentObject);
 	
 	public boolean persistAssessmentObject(File resourceFile, AssessmentObject assessmentObject);
+	
+	/**
+	 * Set some extra options for the QTI package.
+	 * 
+	 * @param testEntry
+	 * @return
+	 */
+	public QTI21DeliveryOptions getDeliveryOptions(RepositoryEntry testEntry);
+	
+	public void setDeliveryOptions(RepositoryEntry testEntry, QTI21DeliveryOptions options);
 	
 	
 	public UserTestSession createTestSession(Identity identity, AssessmentEntry assessmentEntry,

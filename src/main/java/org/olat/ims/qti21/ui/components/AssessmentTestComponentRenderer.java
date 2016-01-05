@@ -19,7 +19,7 @@
  */
 package org.olat.ims.qti21.ui.components;
 
-import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.contentAsString;
+import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.*;
 
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -402,11 +402,11 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		 // Show 'atEnd' testPart feedback 
 		TestPlanNode currentTestPartNode = component.getCurrentTestPartNode();
 		TestPart currentTestPart = component.getTestPart(currentTestPartNode.getIdentifier());
-		renderTestFeebacks(sb, currentTestPart.getTestFeedbacks(), component, TestFeedbackAccess.AT_END);
+		renderTestFeebacks(sb, currentTestPart.getTestFeedbacks(), component, TestFeedbackAccess.AT_END, translator);
 
 		//Show 'atEnd' test feedback f there's only 1 testPart
 		if(!component.hasMultipleTestParts()) {
-			renderTestFeebacks(sb, component.getAssessmentTest().getTestFeedbacks(), component, TestFeedbackAccess.AT_END);
+			renderTestFeebacks(sb, component.getAssessmentTest().getTestFeedbacks(), component, TestFeedbackAccess.AT_END, translator);
 		}
 		
 		//test part review
@@ -513,26 +513,31 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		}
 	}
 	
-	private void renderTestFeebacks(StringOutput sb,List<TestFeedback> testFeedbacks, AssessmentTestComponent component, TestFeedbackAccess access) {
+	private void renderTestFeebacks(StringOutput sb, List<TestFeedback> testFeedbacks, AssessmentTestComponent component, TestFeedbackAccess access, Translator translator) {
 		for(TestFeedback testFeedback:testFeedbacks) {
 			if(testFeedback.getTestFeedbackAccess() == access) {
-				renderTestFeeback(sb, component, testFeedback);
+				renderTestFeeback(sb, component, testFeedback, translator);
 			}
 		}
 	}
 	
-	private void renderTestFeeback(StringOutput sb, AssessmentTestComponent component, TestFeedback testFeedback) {
+	private void renderTestFeeback(StringOutput sb, AssessmentTestComponent component, TestFeedback testFeedback, Translator translator) {
 		//<xsl:variable name="identifierMatch" select="boolean(qw:value-contains(qw:get-test-outcome-value(@outcomeIdentifier), @identifier))" as="xs:boolean"/>
 		Identifier outcomeIdentifier = testFeedback.getOutcomeIdentifier();
 		Value outcomeValue = component.getTestSessionController().getTestSessionState().getOutcomeValue(outcomeIdentifier);
-		//TODO qti check what is @identifier
-		boolean identifierMatch = (outcomeValue != null && outcomeValue.toString().equals(testFeedback.getOutcomeValue().toString()));		
-		
+		boolean identifierMatch = valueContains(outcomeValue, testFeedback.getOutcomeValue());
 		//<xsl:if test="($identifierMatch and @showHide='show') or (not($identifierMatch) and @showHide='hide')">
 		if((identifierMatch && testFeedback.getVisibilityMode() == VisibilityMode.SHOW_IF_MATCH)
 				|| (!identifierMatch && testFeedback.getVisibilityMode() == VisibilityMode.HIDE_IF_MATCH)) {
-			sb.append("<h2>Feedback</h2>");
+			sb.append("<h2>");
+			if(StringHelper.containsNonWhitespace(testFeedback.getTitle())) {
+				sb.append(testFeedback.getTitle());
+			} else {
+				sb.append(translator.translate("assessment.test.modal.feedback"));
+			}
+			sb.append("</h2>");
 			
+			testFeedback.getTitle();
 			final QtiSerializer serializer = CoreSpringFactory.getImpl(QTI21Service.class).qtiSerializer();
 			//TODO QTI flow: need to handle url, feedbackBlock... -->
 			testFeedback.getChildren().forEach((flow) -> sb.append(serializer.serializeJqtiObject(flow)));

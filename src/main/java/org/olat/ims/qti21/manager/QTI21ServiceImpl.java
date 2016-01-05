@@ -46,10 +46,13 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.xml.XStreamHelper;
+import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21ContentPackage;
+import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.UserTestSession;
@@ -65,6 +68,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
+
+import com.thoughtworks.xstream.XStream;
 
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionPackage;
@@ -113,6 +118,11 @@ import uk.ac.ed.ph.qtiworks.mathassess.MathAssessExtensionPackage;
 public class QTI21ServiceImpl implements QTI21Service, InitializingBean, DisposableBean {
 	
 	private static final OLog log = Tracing.createLoggerFor(QTI21ServiceImpl.class);
+	
+	private static XStream configXstream = XStreamHelper.createXStreamInstance();
+	static {
+		configXstream.alias("deliveryOptions", QTI21DeliveryOptions.class);
+	}
 	
 	@Autowired
 	private EventDAO eventDao;
@@ -183,8 +193,42 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
     public QtiXmlReader qtiXmlReader() {
     	return new QtiXmlReader(jqtiExtensionManager());
     }
-    
 	
+	@Override
+	public QTI21DeliveryOptions getDeliveryOptions(RepositoryEntry testEntry) {
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File reFolder = frm.getFileResourceRoot(testEntry.getOlatResource());
+		File configXml = new File(reFolder, PACKAGE_CONFIG_FILE_NAME);
+		
+		QTI21DeliveryOptions config;
+		if(configXml.exists()) {
+			config = (QTI21DeliveryOptions)configXstream.fromXML(configXml);
+		} else {
+			//set default config
+			config = new QTI21DeliveryOptions();
+			setDeliveryOptions(testEntry, config);
+		}
+		return config;
+	}
+
+	@Override
+	public void setDeliveryOptions(RepositoryEntry testEntry, QTI21DeliveryOptions options) {
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File reFolder = frm.getFileResourceRoot(testEntry.getOlatResource());
+		File configXml = new File(reFolder, PACKAGE_CONFIG_FILE_NAME);
+		if(options == null) {
+			if(configXml.exists()) {
+				configXml.delete();
+			}
+		} else {
+			try (OutputStream out = new FileOutputStream(configXml)) {
+				configXstream.toXML(options, out);
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		}
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public ResolvedAssessmentObject<?> loadAndResolveAssessmentObject(File resourceDirectory) {

@@ -67,7 +67,7 @@ public class AssessmentHtmlBuilderTest {
 
 	@Test
 	public void filter() {
-		String content = "<html><p>Test \u00EA<strong><span><img = src='img.jpg'></span></strong></p><p>Test 2</p></html>";
+		String content = "<html><p>Test \u00EA<strong><span><img src='img.jpg'></span></strong></p><p>Test 2</p></html>";
 
 		AssessmentItem item = new AssessmentItem();
 		ItemBody helper = new ItemBody(item);

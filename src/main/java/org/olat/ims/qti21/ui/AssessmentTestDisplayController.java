@@ -51,6 +51,7 @@ import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.OutcomesListener;
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.UserTestSession;
 import org.olat.ims.qti21.model.CandidateItemEventType;
@@ -147,7 +148,14 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		
 		assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), entry, subIdent, testEntry);
 		
-		UserTestSession lastSession = qtiService.getResumableTestSession(getIdentity(), entry, subIdent, testEntry);
+		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(testEntry);
+		boolean allowResume = deliveryOptions != null && deliveryOptions.getEnableSuspend() != null
+				&& deliveryOptions.getEnableSuspend().booleanValue();
+		
+		UserTestSession lastSession = null;
+		if(allowResume) {
+			lastSession = qtiService.getResumableTestSession(getIdentity(), entry, subIdent, testEntry);
+		}
 		if(lastSession == null) {
 			candidateSession = qtiService.createTestSession(getIdentity(), assessmentEntry, entry, subIdent, testEntry, false);
 			testSessionController = enterSession(ureq);
@@ -236,7 +244,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				processSelectItem(ureq, qe.getSubCommand());
 				break;
 			case finishItem:
-				processFinish(ureq);
+				processFinishLinearItem(ureq);
 				break;
 			case reviewItem:
 				processReviewItem(ureq, qe.getSubCommand());
@@ -356,7 +364,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	
 	//public CandidateSession finishLinearItem(final CandidateSessionContext candidateSessionContext)
     // throws CandidateException {
-	private void processFinish(UserRequest ureq) {
+	private void processFinishLinearItem(UserRequest ureq) {
 		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
         TestSessionState testSessionState = testSessionController.getTestSessionState();
 		
