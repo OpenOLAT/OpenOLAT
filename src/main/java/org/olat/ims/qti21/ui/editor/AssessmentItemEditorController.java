@@ -34,10 +34,14 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.items.KPrimChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.items.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.items.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
+import org.olat.ims.qti21.ui.editor.items.KPrimChoiceEditorController;
+import org.olat.ims.qti21.ui.editor.items.MultipleChoiceEditorController;
+import org.olat.ims.qti21.ui.editor.items.SingleChoiceEditorController;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
@@ -46,6 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
+import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
@@ -143,11 +148,17 @@ public class AssessmentItemEditorController extends BasicController {
 
 	private AssessmentItemBuilder initChoiceEditors(UserRequest ureq, AssessmentItem item) {
 		if(item.getResponseDeclarations().size() == 1) {
-			Cardinality cardinalty = item.getResponseDeclarations().get(0).getCardinality();
+			ResponseDeclaration responseDeclaration = item.getResponseDeclarations().get(0);
+			String responseIdentifier = responseDeclaration.getIdentifier().toString();
+			Cardinality cardinalty = responseDeclaration.getCardinality();
 			if(cardinalty.isSingle()) {
 				return initSingleChoiceEditors(ureq, item);
 			} else if(cardinalty.isMultiple()) {
-				return initMultipleChoiceEditors(ureq, item);
+				if(responseIdentifier.startsWith("KPRIM_")) {
+					return initKPrimChoiceEditors(ureq, item);
+				} else {
+					return initMultipleChoiceEditors(ureq, item);
+				}
 			} else {
 				initItemCreatedByUnkownEditor(ureq);
 			}
@@ -185,6 +196,21 @@ public class AssessmentItemEditorController extends BasicController {
 		tabbedPane.addTab(translate("form.score"), scoreEditor.getInitialComponent());
 		tabbedPane.addTab(translate("form.feedback"), feedbackEditor.getInitialComponent());
 		return mcItemBuilder;
+	}
+	
+	private AssessmentItemBuilder initKPrimChoiceEditors(UserRequest ureq, AssessmentItem item) {
+		KPrimChoiceAssessmentItemBuilder kprimItemBuilder = new KPrimChoiceAssessmentItemBuilder(item, qtiService.qtiSerializer());
+		itemEditor = new KPrimChoiceEditorController(ureq, getWindowControl(), kprimItemBuilder);
+		listenTo(itemEditor);
+		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), kprimItemBuilder);
+		listenTo(scoreEditor);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), kprimItemBuilder);
+		listenTo(feedbackEditor);
+		
+		tabbedPane.addTab(translate("form.choice"), itemEditor.getInitialComponent());
+		tabbedPane.addTab(translate("form.score"), scoreEditor.getInitialComponent());
+		tabbedPane.addTab(translate("form.feedback"), feedbackEditor.getInitialComponent());
+		return kprimItemBuilder;
 	}
 
 	@Override

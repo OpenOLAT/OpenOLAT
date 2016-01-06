@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui.editor;
+package org.olat.ims.qti21.ui.editor.items;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,12 +37,12 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
-import org.olat.ims.qti21.model.IdentifierGenerator;
+import org.olat.core.util.Util;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
-import org.olat.ims.qti21.model.xml.items.MultipleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.items.SingleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
-import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
@@ -53,7 +53,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MultipleChoiceEditorController extends FormBasicController {
+public class SingleChoiceEditorController extends FormBasicController {
 
 	private TextElement titleEl;
 	private RichTextElement textEl;
@@ -62,12 +62,13 @@ public class MultipleChoiceEditorController extends FormBasicController {
 	private final List<SimpleChoiceWrapper> choiceWrappers = new ArrayList<>();
 	
 	private int count = 0;
-	private final MultipleChoiceAssessmentItemBuilder itemBuilder;
+	private final SingleChoiceAssessmentItemBuilder itemBuilder;
 	
 	private static final String[] yesnoKeys = new String[]{ "y", "n"};
 
-	public MultipleChoiceEditorController(UserRequest ureq, WindowControl wControl, MultipleChoiceAssessmentItemBuilder itemBuilder) {
+	public SingleChoiceEditorController(UserRequest ureq, WindowControl wControl, SingleChoiceAssessmentItemBuilder itemBuilder) {
 		super(ureq, wControl, "simple_choices_editor");
+		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
 		initForm(ureq);
 	}
@@ -102,7 +103,7 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		}
 
 		//responses
-		String page = velocity_root + "/multiple_choices.html";
+		String page = velocity_root + "/simple_choices.html";
 		answersCont = FormLayoutContainer.createCustomFormLayout("answers", getTranslator(), page);
 		answersCont.setRootForm(mainForm);
 		formLayout.add(answersCont);
@@ -186,12 +187,9 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		itemBuilder.setQuestion(questionText);
 		
 		//correct response
-		String[] correctAnswers = ureq.getHttpReq().getParameterValues("correct");
-		List<Identifier> correctAnswerList = new ArrayList<>();
-		for(String correctAnswer:correctAnswers) {
-			correctAnswerList.add(Identifier.parseString(correctAnswer));
-		}
-		itemBuilder.setCorrectAnswers(correctAnswerList);
+		String correctAnswer = ureq.getParameter("correct");
+		Identifier correctAnswerIdentifier = Identifier.parseString(correctAnswer);
+		itemBuilder.setCorrectAnswer(correctAnswerIdentifier);
 		
 		//shuffle
 		itemBuilder.setShuffle(shuffleEl.isOneSelected() && shuffleEl.isSelected(0));
@@ -200,7 +198,7 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		List<SimpleChoice> choiceList = new ArrayList<>();
 		for(SimpleChoiceWrapper choiceWrapper:choiceWrappers) {
 			SimpleChoice choice = choiceWrapper.getSimpleChoice();
-			choiceWrapper.setCorrect(itemBuilder.isCorrect(choiceWrapper.getSimpleChoice()));
+			choiceWrapper.setCorrect(correctAnswerIdentifier.equals(choiceWrapper.getIdentifier()));
 			//text
 			String answer = choiceWrapper.getAnswer().getValue();
 			itemBuilder.getHtmlHelper().appendHtml(choice, answer);
@@ -231,11 +229,7 @@ public class MultipleChoiceEditorController extends FormBasicController {
 	
 	private void doAddSimpleChoice(UserRequest ureq) {
 		ChoiceInteraction interaction = itemBuilder.getChoiceInteraction();
-		SimpleChoice newChoice = new SimpleChoice(interaction);
-		newChoice.setIdentifier(IdentifierGenerator.newAsIdentifier("mc"));
-		P firstChoiceText = AssessmentItemFactory.getParagraph(newChoice, "New answer");
-		newChoice.getFlowStatics().add(firstChoiceText);
-		
+		SimpleChoice newChoice = AssessmentItemFactory.createSimpleChoice(interaction, "sc");
 		wrapAnswer(ureq, newChoice);
 		flc.setDirty(true);
 	}

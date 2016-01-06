@@ -19,12 +19,19 @@
  */
 package org.olat.ims.qti21.model.xml.items;
 
+
+import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.*;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 
+import uk.ac.ed.ph.jqtiplus.group.NodeGroupList;
+import uk.ac.ed.ph.jqtiplus.node.content.ItemBody;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Correct;
@@ -43,6 +50,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseCondition;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseElse;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseElseIf;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseIf;
+import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseProcessing;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseRule;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.SetOutcomeValue;
 import uk.ac.ed.ph.jqtiplus.node.shared.FieldValue;
@@ -66,8 +74,40 @@ public class MultipleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBui
 	
 	private List<Identifier> correctAnswers;
 	
+	public MultipleChoiceAssessmentItemBuilder(QtiSerializer qtiSerializer) {
+		super(createAssessmentItem(), qtiSerializer);
+	}
+	
 	public MultipleChoiceAssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
 		super(assessmentItem, qtiSerializer);
+	}
+	
+	private static AssessmentItem createAssessmentItem() {
+		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem("Multiple choice");
+		
+		NodeGroupList nodeGroups = assessmentItem.getNodeGroups();
+
+		Identifier responseDeclarationId = Identifier.assumedLegal("RESPONSE_1");
+		Identifier correctResponseId = IdentifierGenerator.newAsIdentifier("mc");
+		//define correct answer
+		ResponseDeclaration responseDeclaration = createMultipleChoiceCorrectResponseDeclaration(assessmentItem, responseDeclarationId,
+				Collections.singletonList(correctResponseId));
+		nodeGroups.getResponseDeclarationGroup().getResponseDeclarations().add(responseDeclaration);
+		
+		//outcomes
+		appendDefaultOutcomeDeclarations(assessmentItem);
+		
+		//the single choice interaction
+		ItemBody itemBody = appendDefaultItemBody(assessmentItem);
+		ChoiceInteraction choiceInteraction = appendChoiceInteraction(itemBody, responseDeclarationId, 1, true);
+		
+		appendSimpleChoice(choiceInteraction, "mc");
+
+		//response processing
+		ResponseProcessing responseProcessing = createResponseProcessing(assessmentItem, responseDeclarationId);
+		assessmentItem.getNodeGroups().getResponseProcessingGroup().setResponseProcessing(responseProcessing);
+		
+		return assessmentItem;
 	}
 	
 	@Override

@@ -36,7 +36,6 @@ import uk.ac.ed.ph.jqtiplus.group.NodeGroupList;
 import uk.ac.ed.ph.jqtiplus.group.item.ItemBodyGroup;
 import uk.ac.ed.ph.jqtiplus.group.item.interaction.PromptGroup;
 import uk.ac.ed.ph.jqtiplus.group.item.interaction.choice.SimpleChoiceGroup;
-import uk.ac.ed.ph.jqtiplus.group.item.response.processing.ResponseProcessingGroup;
 import uk.ac.ed.ph.jqtiplus.group.outcome.declaration.OutcomeDeclarationGroup;
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.content.ItemBody;
@@ -88,72 +87,84 @@ import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
 public class AssessmentItemFactory {
 	
 	public static AssessmentItem createSingleChoice() {
+		AssessmentItem assessmentItem = createAssessmentItem("Single choice");
+
+		//define correct answer
+		Identifier responseDeclarationId = Identifier.assumedLegal("RESPONSE_1");
+		Identifier correctResponseId = IdentifierGenerator.newAsIdentifier("sc");
+		ResponseDeclaration responseDeclaration = createSingleChoiceCorrectResponseDeclaration(assessmentItem, responseDeclarationId, correctResponseId);
+		assessmentItem.getNodeGroups().getResponseDeclarationGroup().getResponseDeclarations().add(responseDeclaration);
 		
+		//outcomes
+		appendDefaultOutcomeDeclarations(assessmentItem);
+		
+		//the single choice interaction
+		ItemBody itemBody = appendDefaultItemBody(assessmentItem);
+		ChoiceInteraction choiceInteraction = appendChoiceInteraction(itemBody, responseDeclarationId, 1, true);
+		appendSimpleChoice(choiceInteraction, "sc");
+
+		//response processing
+		ResponseProcessing responseProcessing = createResponseProcessing(assessmentItem, responseDeclarationId);
+		assessmentItem.getNodeGroups().getResponseProcessingGroup().setResponseProcessing(responseProcessing);
+		return assessmentItem;
+	}
+	
+	public static AssessmentItem createAssessmentItem(String defaultTitle) {
 		AssessmentItem assessmentItem = new AssessmentItem();
 		assessmentItem.setIdentifier(IdentifierGenerator.newAsString("item"));
-		assessmentItem.setTitle("Single choice");
+		assessmentItem.setTitle(defaultTitle);
 		assessmentItem.setToolName(QTI21Constants.TOOLNAME);
 		assessmentItem.setToolVersion(Settings.getVersion());
 		assessmentItem.setAdaptive(Boolean.FALSE);
 		assessmentItem.setTimeDependent(Boolean.FALSE);
-		
+		return assessmentItem;
+	}
+	
+	public static ItemBody appendDefaultItemBody(AssessmentItem assessmentItem) {
 		NodeGroupList nodeGroups = assessmentItem.getNodeGroups();
+		//the single choice interaction
+		ItemBodyGroup itemBodyGroup = nodeGroups.getItemBodyGroup();
+		ItemBody itemBody = new ItemBody(assessmentItem);
+		itemBodyGroup.setItemBody(itemBody);
 
-		Identifier responseDeclarationId = Identifier.assumedLegal("RESPONSE_1");
-		Identifier correctResponseId = IdentifierGenerator.newAsIdentifier("sc");
-		//define correct answer
-		ResponseDeclaration responseDeclaration = createSingleChoiceCorrectResponseDeclaration(assessmentItem, responseDeclarationId, correctResponseId);
-		nodeGroups.getResponseDeclarationGroup().getResponseDeclarations().add(responseDeclaration);
-		
+		P question = getParagraph(itemBody, "");
+		itemBody.getBlocks().add(question);
+		return itemBody;
+	}
+	
+	/**
+	 * Append the default outcome declaration for score, max score and feedback basic.
+	 * 
+	 * @param assessmentItem
+	 */
+	public static void appendDefaultOutcomeDeclarations(AssessmentItem assessmentItem) {
+		NodeGroupList nodeGroups = assessmentItem.getNodeGroups();
 		//outcomes
 		OutcomeDeclarationGroup outcomeDeclarations = nodeGroups.getOutcomeDeclarationGroup();
-
 		//outcome score
 		OutcomeDeclaration scoreOutcomeDeclaration = createOutcomeDeclarationForScore(assessmentItem);
 		outcomeDeclarations.getOutcomeDeclarations().add(scoreOutcomeDeclaration);
-
 		// outcome max score
 		OutcomeDeclaration maxScoreOutcomeDeclaration = createOutcomeDeclarationForMaxScore(assessmentItem, 1.0d);
 		outcomeDeclarations.getOutcomeDeclarations().add(maxScoreOutcomeDeclaration);
-
 		// outcome feedback
 		OutcomeDeclaration feedbackOutcomeDeclaration = createOutcomeDeclarationForFeedbackBasic(assessmentItem);
 		outcomeDeclarations.getOutcomeDeclarations().add(feedbackOutcomeDeclaration);
-		
-		//the single choice interaction
-		ItemBodyGroup itemBodyGroup = nodeGroups.getItemBodyGroup();
-		itemBodyGroup.setItemBody(new ItemBody(assessmentItem));
-		
-		ItemBody itemBody = itemBodyGroup.getItemBody();
-		
-		P question = getParagraph(itemBody, "");
-		itemBodyGroup.getItemBody().getBlocks().add(question);
-		
+	}
+	
+	public static ChoiceInteraction appendChoiceInteraction(ItemBody itemBody, Identifier responseDeclarationId, int maxChoices, boolean shuffle) {
 		ChoiceInteraction choiceInteraction = new ChoiceInteraction(itemBody);
-		choiceInteraction.setMaxChoices(1);
-		choiceInteraction.setShuffle(true);
+		choiceInteraction.setMaxChoices(maxChoices);
+		choiceInteraction.setShuffle(shuffle);
 		choiceInteraction.setResponseIdentifier(responseDeclarationId);
-		itemBodyGroup.getItemBody().getBlocks().add(choiceInteraction);
+		itemBody.getBlocks().add(choiceInteraction);
 		
 		PromptGroup prompts = new PromptGroup(choiceInteraction);
 		choiceInteraction.getNodeGroups().add(prompts);
 		
 		SimpleChoiceGroup singleChoices = new SimpleChoiceGroup(choiceInteraction);
 		choiceInteraction.getNodeGroups().add(singleChoices);
-
-		SimpleChoice firstChoice = new SimpleChoice(choiceInteraction);
-		firstChoice.setIdentifier(correctResponseId);
-		P firstChoiceText = getParagraph(firstChoice, "New answer");
-		firstChoice.getFlowStatics().add(firstChoiceText);
-		singleChoices.getSimpleChoices().add(firstChoice);
-		
-
-		//response processing
-		ResponseProcessingGroup responsesProcessing = nodeGroups.getResponseProcessingGroup();
-		ResponseProcessing responseProcessing = createResponseProcessing(assessmentItem, responseDeclarationId);
-		responsesProcessing.setResponseProcessing(responseProcessing);
-		
-		return assessmentItem;
+		return choiceInteraction;
 	}
 	
 	public static ResponseDeclaration createSingleChoiceCorrectResponseDeclaration(AssessmentItem assessmentItem, Identifier declarationId, Identifier correctResponseId) {
@@ -182,6 +193,20 @@ public class AssessmentItemFactory {
 			appendIdentifierValue(correctResponse, correctResponseId);
 		}
 		return responseDeclaration;
+	}
+	
+	public static SimpleChoice createSimpleChoice(ChoiceInteraction choiceInteraction, String prefix) {
+		SimpleChoice newChoice = new SimpleChoice(choiceInteraction);
+		newChoice.setIdentifier(IdentifierGenerator.newAsIdentifier(prefix));
+		P firstChoiceText = AssessmentItemFactory.getParagraph(newChoice, "New answer");
+		newChoice.getFlowStatics().add(firstChoiceText);
+		return newChoice;
+	}
+	
+	public static SimpleChoice appendSimpleChoice(ChoiceInteraction choiceInteraction, String prefix) {
+		SimpleChoice newChoice = createSimpleChoice(choiceInteraction, prefix);
+		choiceInteraction.getNodeGroups().getSimpleChoiceGroup().getSimpleChoices().add(newChoice);
+		return newChoice;
 	}
 	
 	private static void appendIdentifierValue(CorrectResponse correctResponse, Identifier correctResponseId) {
