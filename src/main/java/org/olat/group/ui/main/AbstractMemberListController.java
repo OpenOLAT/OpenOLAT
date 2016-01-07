@@ -37,11 +37,13 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -209,7 +211,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		initColumns(columnsModel);
+		SortKey defaultSortKey = initColumns(columnsModel);
 		
 		memberListModel = new MemberListTableModel(columnsModel, imModule.isOnlineStatusEnabled());
 		membersTable = uifactory.addTableElement(getWindowControl(), "memberList", memberListModel, 20, false, getTranslator(), formLayout);
@@ -220,6 +222,12 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		membersTable.setExportEnabled(true);
 		membersTable.setSelectAllEnable(true);
 		membersTable.setElementCssClass("o_sel_member_list");
+		
+		if(defaultSortKey != null) {
+			FlexiTableSortOptions options = new FlexiTableSortOptions();
+			options.setDefaultOrderBy(defaultSortKey);
+			membersTable.setSortSettings(options);
+		}
 
 		if(!globallyManaged) {
 			editButton = uifactory.addFormLink("edit.members", formLayout, Link.BUTTON);
@@ -252,7 +260,9 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		//
 	}
 	
-	protected void initColumns(FlexiTableColumnModel columnsModel) {
+	private SortKey initColumns(FlexiTableColumnModel columnsModel) {
+		SortKey defaultSortKey = null;
+		
 		if(chatEnabled) {
 			DefaultFlexiColumnModel chatCol = new DefaultFlexiColumnModel(Cols.online.i18n(), Cols.online.ordinal());
 			chatCol.setExportable(false);
@@ -262,6 +272,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			FlexiCellRenderer renderer = new StaticFlexiCellRenderer(TABLE_ACTION_EDIT, new TextFlexiCellRenderer());
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.username.i18n(), Cols.username.ordinal(), TABLE_ACTION_EDIT,
 					true, Cols.username.name(), renderer));
+			defaultSortKey = new SortKey(Cols.username.name(), true);
 		}
 		
 		int colPos = USER_PROPS_OFFSET;
@@ -281,6 +292,10 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			}
 			columnsModel.addFlexiColumnModel(col);
 			colPos++;
+			
+			if(defaultSortKey == null) {
+				defaultSortKey = new SortKey(propName, true);
+			}
 		}
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.firstTime.i18n(), Cols.firstTime.ordinal(), true, Cols.firstTime.name()));
@@ -298,6 +313,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(Cols.tools.i18n(), Cols.tools.ordinal());
 		toolsCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(toolsCol);
+		return defaultSortKey;
 	}
 
 	@Override

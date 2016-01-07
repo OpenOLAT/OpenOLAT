@@ -237,13 +237,13 @@
 <!--
       mysql  :  select businesspath,date(creationdate) day, count(*) cnt from o_loggingtable group by businesspath,day
  -->
-	<bean id="statisticUpdateConfig_test" class="org.olat.course.statistic.StatisticUpdateConfig" >
+	<bean id="statisticUpdateConfig_test" class="org.olat.course.statistic.StatisticUpdateConfig" lazy-init="true">
 		<property name="updaters">
 			<list />
 		</property>
 	</bean>
 
- 	<bean id="statisticUpdateConfig_mysql" class="org.olat.course.statistic.StatisticUpdateConfig">
+ 	<bean id="statisticUpdateConfig_mysql" class="org.olat.course.statistic.StatisticUpdateConfig" lazy-init="true">
  		<property name="updaters">
 			<list>
 				<bean class="org.olat.course.statistic.MySQLTempStatTableCreator" >
@@ -266,7 +266,7 @@
 		</property>
 	</bean> 
 	
-				<bean class="org.olat.course.statistic.StatisticUpdater" id="DailyStatisticUpdater_mysql">
+				<bean class="org.olat.course.statistic.StatisticUpdater" id="DailyStatisticUpdater_mysql" lazy-init="true">
 					<property name="loggingName" value="DailyStatisticUpdater"/>
 					<property name="jdbcTemplate" ref="statisticsMysqlJdbcTemplate" />
 					<property name="updateSQL">
@@ -417,7 +417,7 @@
       mysql  :  select businesspath,date(creationdate) day, count(*) cnt from o_loggingtable group by businesspath,day
       
  	-->
-	<bean id="statisticUpdateConfig_postgresql" class="org.olat.course.statistic.StatisticUpdateConfig">
+	<bean id="statisticUpdateConfig_postgresql" class="org.olat.course.statistic.StatisticUpdateConfig" lazy-init="true">
 		<property name="updaters">
 			<list>
 				<bean class="org.olat.course.statistic.StatisticUpdater" >
@@ -514,7 +514,7 @@
 		</property>
 	</bean>
 	
-	<bean id="statisticUpdateConfig_oracle" class="org.olat.course.statistic.StatisticUpdateConfig">
+	<bean id="statisticUpdateConfig_oracle" class="org.olat.course.statistic.StatisticUpdateConfig" lazy-init="true">
 		<property name="updaters">
 			<list>
 				<bean class="org.olat.course.statistic.StatisticUpdater" id="LastUpdatedUpdater_oracle">

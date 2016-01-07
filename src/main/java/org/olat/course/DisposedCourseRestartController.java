@@ -69,6 +69,7 @@ public class DisposedCourseRestartController extends BasicController {
 		super(ureq, wControl);
 		initialContent = createVelocityContainer("disposedcourserestart");
 		restartLink = LinkFactory.createButton("course.disposed.command.restart", initialContent, this);
+		restartLink.setElementCssClass("o_sel_course_restart");
 		this.courseRepositoryEntry = courseRepositoryEntry;
 		panel = putInitialPanel(initialContent);
 	}
