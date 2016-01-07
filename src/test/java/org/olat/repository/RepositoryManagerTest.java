@@ -1161,6 +1161,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		String newName = "Brand new name";
 		String newDesc = "Brand new description";
 		String newAuthors = "Me and only me";
+		String newLocation = "Far away";
 		String newExternalId = "Brand - ext";
 		String newExternalRef = "Brand - ref";
 		String newManagedFlags = RepositoryEntryManagedFlag.access.name();
@@ -1168,7 +1169,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		RepositoryEntryLifecycle newCycle
 			= lifecycleDao.create("New cycle 1", "New cycle soft 1", false, new Date(), new Date());
 		
-		re = repositoryManager.setDescriptionAndName(re, newName, newDesc, newAuthors, newExternalId, newExternalRef, newManagedFlags, newCycle);
+		re = repositoryManager.setDescriptionAndName(re, newName, newDesc, newLocation, newAuthors, newExternalId, newExternalRef, newManagedFlags, newCycle);
 		Assert.assertNotNull(re);
 		
 		dbInstance.commitAndCloseSession();
@@ -1176,6 +1177,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		RepositoryEntry reloaded = repositoryManager.lookupRepositoryEntry(re.getKey());
 		Assert.assertNotNull(reloaded);
 		Assert.assertEquals("Me and only me", reloaded.getAuthors());
+		Assert.assertEquals("Far away", reloaded.getLocation());
 		Assert.assertEquals("Brand new name", reloaded.getDisplayname());
 		Assert.assertEquals("Brand new description", reloaded.getDescription());
 		Assert.assertEquals("Brand - ext", reloaded.getExternalId());

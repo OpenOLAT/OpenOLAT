@@ -102,7 +102,7 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		String externalId = UUID.randomUUID().toString();
 		String externalRef = UUID.randomUUID().toString();
-		re = repositoryManager.setDescriptionAndName(re, null, null, null, externalId, externalRef, null, null);
+		re = repositoryManager.setDescriptionAndName(re, null, null, null, null, externalId, externalRef, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		//by primary key
