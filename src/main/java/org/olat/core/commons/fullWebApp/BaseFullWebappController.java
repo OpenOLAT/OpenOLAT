@@ -237,6 +237,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
     		listenTo(assessmentGuardCtrl);
     		assessmentGuardCtrl.getInitialComponent();
     		lockStatus = LockStatus.popup;
+    		//as security remove all 
+    		removeRedirects(usess);
     	} else {
     		// present an overlay with configured afterlogin-controllers or nothing if none configured.
     		// presented only once per session.
@@ -276,6 +278,20 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			.registerFor(this, getIdentity(), AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 		// register for global sticky message changed events
 		GlobalStickyMessage.registerForGlobalStickyMessage(this, getIdentity());	
+	}
+	
+	/**
+	 * Remove all possible redirect commands in session.
+	 * 
+	 * @param usess
+	 */
+	private void removeRedirects(UserSession usess) {
+   		usess.removeEntry("AuthDispatcher:entryUrl");
+    	usess.removeEntry("AuthDispatcher:businessPath");
+    	usess.removeEntry("redirect-bc");
+    	usess.removeEntryFromNonClearedStore("AuthDispatcher:entryUrl");
+    	usess.removeEntryFromNonClearedStore("AuthDispatcher:businessPath");
+    	usess.removeEntryFromNonClearedStore("redirect-bc");
 	}
 	
 	private void initializeBase(UserRequest ureq, WindowManager winman, ComponentCollection mainPanel) {
