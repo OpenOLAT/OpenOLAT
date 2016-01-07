@@ -170,7 +170,7 @@ public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 		String description = "Description_testIncrementLaunchCounterSetDescription";
 		log.info("RepositoryManagerTest: call setDescriptionAndName");
 		long t3 = System.nanoTime();
-		repositoryManager.setDescriptionAndName(repositoryEntryT1, displayName, description, null, null, null, null, null);
+		repositoryManager.setDescriptionAndName(repositoryEntryT1, displayName, description, null, null, null, null, null, null);
 		long t4 = System.nanoTime();
 		log.info("RepositoryManagerTest: call setDescriptionAndName DONE");
 		log.info("RepositoryManagerTest: increments take=" + (t2 - t1) + " setDescription take=" + (t4 -t3) );
@@ -271,7 +271,7 @@ public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 						if (i % 25 == 0 ) {
 							String displayName = "DisplayName" + i;
 							String description = "Description" + i;
-							re = repositoryManager.setDescriptionAndName(re, displayName, description, null, null, null, null, null);
+							re = repositoryManager.setDescriptionAndName(re, displayName, description, null, null, null, null, null, null);
 							assertEquals("Wrong displayName value", displayName, re.getDisplayname());
 							assertEquals("Wrong description value", description, re.getDescription());
 						}
