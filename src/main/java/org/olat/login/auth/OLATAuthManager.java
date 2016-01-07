@@ -75,7 +75,7 @@ import com.thoughtworks.xstream.XStream;
 @Service("olatAuthenticationSpi")
 public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 	
-	private static OLog log = Tracing.createLoggerFor(OLATAuthenticationController.class);
+	private static OLog log = Tracing.createLoggerFor(OLATAuthManager.class);
 	
 	@Autowired
 	private UserManager userManager;
