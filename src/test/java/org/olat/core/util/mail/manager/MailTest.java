@@ -26,8 +26,6 @@
 package org.olat.core.util.mail.manager;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -45,7 +43,6 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
-import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
@@ -91,42 +88,6 @@ public class MailTest extends OlatTestCase {
 		id6 = JunitTestHelper.createAndPersistIdentityAsUser("six");
 	}
 
-	/**
-	 * Simple helper to test valid email addresses
-	 * @param mailAddress
-	 */
-	private void isValid(String mailAddress) {
-		assertTrue(MailHelper.isValidEmailAddress(mailAddress));
-	}
-	/**
-	 * Simple helper to test invalid email addresses
-	 * @param mailAddress
-	 */
-	private void isInvalid(String mailAddress) {
-		assertFalse(MailHelper.isValidEmailAddress(mailAddress));
-	}
-
-	/**
-	 * Test the email addres validator
-	 */
-	@Test public void testValidEmailAddresses() {
-		// valid addresses
-		isValid("gnaegi@frentix.com");
-		isValid("login@w.pl");
-		// invalid addresses
-		isInvalid(null);
-		isInvalid("");
-		isInvalid("gnägi@frentix.com");
-		isInvalid("gnaegi @ frentix.com");
-		isInvalid("gnaegi@frentix_com");
-		isInvalid("gnaegi");
-		isInvalid("g@g");
-		// valid addresses but disable in OLAT because this is not what we want users to enter as mail addresses
-		isInvalid("\"Florian Gnaegi\" <gnaegi@frentix.com>"); 
-		isInvalid("someone@[192.168.1.100]"); 
-	}
-
-	
 	/**
 	 * this is more a playground method to understand the evaluate method than a
 	 * rela testcase

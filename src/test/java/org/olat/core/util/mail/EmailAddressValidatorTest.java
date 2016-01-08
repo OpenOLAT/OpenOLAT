@@ -23,7 +23,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.olat.core.util.mail.EmailAddressValidator;
 
 /**
  * Description:<br>
@@ -47,6 +46,7 @@ public class EmailAddressValidatorTest {
 		Assert.assertTrue(EmailAddressValidator.isValidEmailAddress("contakt@umläüte.biz"));
 		Assert.assertTrue(EmailAddressValidator.isValidEmailAddress("dont.knwo.what.it@means.中国"));
 		Assert.assertTrue(EmailAddressValidator.isValidEmailAddress("dont.knwo@in.рф"));
+		Assert.assertTrue(EmailAddressValidator.isValidEmailAddress("gnägi@frentix.com"));
 		
 		// wrong stuff
 		Assert.assertFalse(EmailAddressValidator.isValidEmailAddress(null));
@@ -54,9 +54,16 @@ public class EmailAddressValidatorTest {
 		Assert.assertFalse(EmailAddressValidator.isValidEmailAddress("asdf"));
 		Assert.assertFalse(EmailAddressValidator.isValidEmailAddress("asdf@.."));		
 		Assert.assertFalse(EmailAddressValidator.isValidEmailAddress("wrong email @ address dot com"));
+		Assert.assertFalse(EmailAddressValidator.isValidEmailAddress("wrong.email@address_dot_com"));
 		Assert.assertFalse(EmailAddressValidator.isValidEmailAddress("email @with.blank"));
 		Assert.assertFalse(EmailAddressValidator.isValidEmailAddress("great.domain.com"));
 		Assert.assertFalse(EmailAddressValidator.isValidEmailAddress("some.thing@"));
-		
+		Assert.assertFalse(EmailAddressValidator.isValidEmailAddress("gnaegi"));
+		Assert.assertFalse(EmailAddressValidator.isValidEmailAddress("g@g"));
+
+		// valid addresses but disable in OLAT because this is not what we want users to enter as mail addresses
+		Assert.assertFalse(EmailAddressValidator.isValidEmailAddress("\"Florian Gnaegi\" <gnaegi@frentix.com>")); 
+		// Validates true by library. Don't know what this would be usefull for. Not needed by OpenOLAT
+		Assert.assertTrue(EmailAddressValidator.isValidEmailAddress("someone@[192.168.1.100]")); 		
 	}
 }
