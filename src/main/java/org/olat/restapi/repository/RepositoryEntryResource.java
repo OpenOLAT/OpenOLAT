@@ -620,7 +620,7 @@ public class RepositoryEntryResource {
     	}
     }
 
-    RepositoryEntry reloaded = repositoryManager.setDescriptionAndName(re, vo.getDisplayname(), null,
+    RepositoryEntry reloaded = repositoryManager.setDescriptionAndName(re, vo.getDisplayname(), vo.getDescription(),
     		vo.getLocation(), vo.getAuthors(), vo.getExternalId(), vo.getExternalRef(), vo.getManagedFlags(),
     		lifecycle);
     RepositoryEntryVO rvo = ObjectFactory.get(reloaded);

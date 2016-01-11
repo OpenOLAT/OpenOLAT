@@ -103,7 +103,7 @@ class FormWrapperContainerRenderer implements ComponentRenderer {
 			sb.append("\" ");
 			//check if ready to accept a new request
 			if(iframePostEnabled) {
-				sb.append(" onsubmit=\"o_XHRSubmit('").append(formC.getFormName()).append("');\" ");
+				sb.append(" onsubmit=\"return o_XHRSubmit('").append(formC.getFormName()).append("');\" ");
 			} else {
 				sb.append(" onsubmit=\"if(o_info.linkbusy) return false; else o_beforeserver(); return true;\" ");
 			}
