@@ -31,6 +31,7 @@ import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 
 import uk.ac.ed.ph.jqtiplus.group.NodeGroupList;
+import uk.ac.ed.ph.jqtiplus.node.content.ItemBody;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Correct;
@@ -49,6 +50,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseCondition;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseElse;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseElseIf;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseIf;
+import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseProcessing;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseRule;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.SetOutcomeValue;
 import uk.ac.ed.ph.jqtiplus.node.shared.FieldValue;
@@ -94,6 +96,18 @@ public class KPrimChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuilde
 		
 		appendDefaultOutcomeDeclarations(assessmentItem);
 		
+		//the single choice interaction
+		ItemBody itemBody = appendDefaultItemBody(assessmentItem);
+		ChoiceInteraction choiceInteraction = appendChoiceInteraction(itemBody, responseDeclarationId, 1, true);
+		
+		appendSimpleChoice(choiceInteraction, "kprim");
+		appendSimpleChoice(choiceInteraction, "kprim");
+		appendSimpleChoice(choiceInteraction, "kprim");
+		appendSimpleChoice(choiceInteraction, "kprim");
+		
+		//response processing
+		ResponseProcessing responseProcessing = createResponseProcessing(assessmentItem, responseDeclarationId);
+		assessmentItem.getNodeGroups().getResponseProcessingGroup().setResponseProcessing(responseProcessing);
 		
 		return assessmentItem;
 	}

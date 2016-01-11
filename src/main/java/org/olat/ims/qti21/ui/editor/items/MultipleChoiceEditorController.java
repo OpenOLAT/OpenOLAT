@@ -77,7 +77,7 @@ public class MultipleChoiceEditorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("editor.sc.title");
+		setFormTitle("editor.mc.title");
 		
 		FormLayoutContainer metadata = FormLayoutContainer.createDefaultFormLayout("metadata", getTranslator());
 		metadata.setRootForm(mainForm);
@@ -97,7 +97,7 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		
 		//shuffle
 		String[] yesnoValues = new String[]{ translate("yes"), translate("no") };
-		shuffleEl = uifactory.addRadiosHorizontal("shuffle", "form.imd.shuffle", formLayout, yesnoKeys, yesnoValues);
+		shuffleEl = uifactory.addRadiosHorizontal("shuffle", "form.imd.shuffle", metadata, yesnoKeys, yesnoValues);
 		if (itemBuilder.isShuffle()) {
 			shuffleEl.select("y", true);
 		} else {

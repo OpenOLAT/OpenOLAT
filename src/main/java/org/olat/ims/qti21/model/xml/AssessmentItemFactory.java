@@ -55,6 +55,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.Mapping;
@@ -150,6 +151,20 @@ public class AssessmentItemFactory {
 		// outcome feedback
 		OutcomeDeclaration feedbackOutcomeDeclaration = createOutcomeDeclarationForFeedbackBasic(assessmentItem);
 		outcomeDeclarations.getOutcomeDeclarations().add(feedbackOutcomeDeclaration);
+	}
+	
+	public static ExtendedTextInteraction appendExtendedTextInteraction(ItemBody itemBody, Identifier responseDeclarationId) {
+		ExtendedTextInteraction textInteraction = new ExtendedTextInteraction(itemBody);
+		textInteraction.setResponseIdentifier(responseDeclarationId);
+		return textInteraction;
+	}
+	
+	public static ResponseDeclaration createExtendedTextResponseDeclaration(AssessmentItem assessmentItem, Identifier declarationId) {
+		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
+		responseDeclaration.setIdentifier(declarationId);
+		responseDeclaration.setCardinality(Cardinality.SINGLE);
+		responseDeclaration.setBaseType(BaseType.STRING);
+		return responseDeclaration;
 	}
 	
 	public static ChoiceInteraction appendChoiceInteraction(ItemBody itemBody, Identifier responseDeclarationId, int maxChoices, boolean shuffle) {

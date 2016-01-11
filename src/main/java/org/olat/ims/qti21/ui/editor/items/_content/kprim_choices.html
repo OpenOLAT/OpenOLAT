@@ -1,7 +1,8 @@
 <fieldset class="o_form">
 
 <div class="form-group #if($f.hasError($item)) has-feedback has-error #end clearfix">
-	<div class="col-sm-2"><strong>[Correct]</strong></div>
+	<div class="col-sm-1"><strong>[+]</strong></div>
+	<div class="col-sm-1"><strong>[-]</strong></div>
 	<div class="col-sm-8"><strong>[Answer]</strong></div>
 	<div class="col-sm-2"><strong>[Actions]</strong></div>
 </div>
@@ -9,8 +10,11 @@
 #foreach($choice in $choices)
 
 <div class="form-group #if($f.hasError($item)) has-feedback has-error #end clearfix">
-	<div class="col-sm-2">
-		<input type="checkbox" name="correct" value="${choice.getIdentifierString()}" #if(${choice.isCorrect()}) checked #end/>
+	<div class="col-sm-1">
+		<input type="radio" name="${choice.getIdentifierString()}" value="correct" #if(${choice.isCorrect()}) checked #end/>
+	</div>
+	<div class="col-sm-1">
+		<input type="radio" name="${choice.getIdentifierString()}" value="wrong" #if(!${choice.isCorrect()}) checked #end/>
 	</div>
 	<div class="col-sm-8">
 		$r.render(${choice.getAnswer().getComponent().getComponentName()})
@@ -19,12 +23,6 @@
 		#end
 	</div>
 	<div class="col-sm-2">
-		#if($r.available(${choice.getRemove().getComponent().getComponentName()}) && $r.visible(${choice.getRemove().getComponent().getComponentName()}))
-			$r.render(${choice.getRemove().getComponent().getComponentName()})
-		#end
-		#if($r.available(${choice.getAdd().getComponent().getComponentName()}) && $r.visible(${choice.getAdd().getComponent().getComponentName()}))
-			$r.render(${choice.getAdd().getComponent().getComponentName()})
-		#end
 		#if($r.available(${choice.getUp().getComponent().getComponentName()}) && $r.visible(${choice.getUp().getComponent().getComponentName()}))
 			$r.render(${choice.getUp().getComponent().getComponentName()})
 		#end

@@ -95,7 +95,7 @@ public class SingleChoiceEditorController extends FormBasicController {
 		
 		//shuffle
 		String[] yesnoValues = new String[]{ translate("yes"), translate("no") };
-		shuffleEl = uifactory.addRadiosHorizontal("shuffle", "form.imd.shuffle", formLayout, yesnoKeys, yesnoValues);
+		shuffleEl = uifactory.addRadiosHorizontal("shuffle", "form.imd.shuffle", metadata, yesnoKeys, yesnoValues);
 		if (itemBuilder.isShuffle()) {
 			shuffleEl.select("y", true);
 		} else {
