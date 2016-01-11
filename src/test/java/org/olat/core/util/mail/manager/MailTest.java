@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.velocity.VelocityContext;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
@@ -43,12 +44,14 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
+
 	
 /**
  * Description:<br>
@@ -87,7 +90,26 @@ public class MailTest extends OlatTestCase {
 		id4 = JunitTestHelper.createAndPersistIdentityAsUser("four");
 		id6 = JunitTestHelper.createAndPersistIdentityAsUser("six");
 	}
-
+	
+	@Test
+	public void testValidEmailAddresses() {
+		Assert.assertTrue(MailHelper.isValidEmailAddress("gnaegi@frentix.com"));
+		Assert.assertTrue(MailHelper.isValidEmailAddress("login@w.pl"));
+		Assert.assertTrue(MailHelper.isValidEmailAddress("christian.reichel@on-point.consulting"));
+		Assert.assertTrue(MailHelper.isValidEmailAddress("gnägi@frentix.com"));
+		Assert.assertTrue(MailHelper.isValidEmailAddress("someone@[192.168.1.100]"));
+	}
+	
+	@Test
+	public void testInvalidEmailAddresses() {
+		Assert.assertFalse(MailHelper.isValidEmailAddress(null));
+		Assert.assertFalse(MailHelper.isValidEmailAddress(""));
+		Assert.assertFalse(MailHelper.isValidEmailAddress("gnaegi @ frentix.com"));
+		Assert.assertFalse(MailHelper.isValidEmailAddress("gnaegi@frentix_com"));
+		Assert.assertFalse(MailHelper.isValidEmailAddress("\"Florian Gnaegi\" <gnaegi@frentix.com>"));
+		Assert.assertFalse(MailHelper.isValidEmailAddress("g@g"));
+	}
+	
 	/**
 	 * this is more a playground method to understand the evaluate method than a
 	 * rela testcase
