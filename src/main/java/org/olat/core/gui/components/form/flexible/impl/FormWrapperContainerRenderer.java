@@ -87,7 +87,6 @@ class FormWrapperContainerRenderer implements ComponentRenderer {
 				FormJSHelper.appendRenderInstructions(sb, args[0], acceptedInstructions);
 			}
 			
-
 			sb.append(" method=\"post\"");
 			// Set encoding to multipart only if multipart data is available to reduce 
 			// transfer and parameter extracing overhead

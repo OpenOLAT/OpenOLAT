@@ -225,8 +225,8 @@ public class CoursesWebService {
 	@PUT
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response createEmptyCourse(@QueryParam("shortTitle") String shortTitle, @QueryParam("title") String title,
-			@QueryParam("displayName") String displayName, @QueryParam("softKey") String softKey,
-			@QueryParam("access") Integer access, @QueryParam("membersOnly") Boolean membersOnly, 
+			@QueryParam("displayName") String displayName, @QueryParam("description") String description,
+			@QueryParam("softKey") String softKey, @QueryParam("access") Integer access, @QueryParam("membersOnly") Boolean membersOnly, 
 			@QueryParam("externalId") String externalId, @QueryParam("externalRef") String externalRef,
 			@QueryParam("authors") String authors, @QueryParam("location") String location,
 			@QueryParam("managedFlags") String managedFlags, @QueryParam("sharedFolderSoftKey") String sharedFolderSoftKey,
@@ -256,9 +256,9 @@ public class CoursesWebService {
 			}
 		}
 		if(copyFrom != null) {
-			course = copyCourse(copyFrom, ureq, id, shortTitle, title, displayName, softKey, accessInt, membersOnlyBool, authors, location, externalId, externalRef, managedFlags, configVO);
+			course = copyCourse(copyFrom, ureq, id, shortTitle, title, displayName, description, softKey, accessInt, membersOnlyBool, authors, location, externalId, externalRef, managedFlags, configVO);
 		} else {
-			course = createEmptyCourse(id, shortTitle, title, displayName, softKey, accessInt, membersOnlyBool, authors, location, externalId, externalRef, managedFlags, configVO);
+			course = createEmptyCourse(id, shortTitle, title, displayName, description, softKey, accessInt, membersOnlyBool, authors, location, externalId, externalRef, managedFlags, configVO);
 		}
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -290,7 +290,7 @@ public class CoursesWebService {
 
 		CourseConfigVO configVO = new CourseConfigVO();
 		ICourse course = createEmptyCourse(ureq.getIdentity(),
-				courseVo.getTitle(), courseVo.getTitle(), courseVo.getTitle(),
+				courseVo.getTitle(), courseVo.getTitle(), courseVo.getTitle(), courseVo.getDescription(),
 				courseVo.getSoftKey(), RepositoryEntry.ACC_OWNERS, false,
 				courseVo.getAuthors(), courseVo.getLocation(),
 				courseVo.getExternalId(), courseVo.getExternalRef(), courseVo.getManagedFlags(),
@@ -401,7 +401,7 @@ public class CoursesWebService {
 	}
 	
 	private static ICourse copyCourse(Long copyFrom, UserRequest ureq, Identity initialAuthor, String shortTitle, String longTitle, String displayName,
-			String softKey, int access, boolean membersOnly, String authors, String location, String externalId, String externalRef,
+			String description, String softKey, int access, boolean membersOnly, String authors, String location, String externalId, String externalRef,
 			String managedFlags, CourseConfigVO courseConfigVO) {
 
 		//String learningObjectives = name + " (Example of creating a new course)";
@@ -428,7 +428,10 @@ public class CoursesWebService {
 			
 			//create new repo entry
 			String name;
-			String description = src.getDescription();
+			if(description == null || description.trim().length() == 0) {
+				description = src.getDescription();
+			}
+			
 			if (courseConfigVO != null && StringHelper.containsNonWhitespace(displayName)) {
 				name = displayName;
 			} else {
@@ -497,7 +500,7 @@ public class CoursesWebService {
 	 * @return
 	 */
 	public static ICourse createEmptyCourse(Identity initialAuthor, String shortTitle, String longTitle, CourseConfigVO courseConfigVO) {
-		return createEmptyCourse(initialAuthor, shortTitle, longTitle, shortTitle, null, RepositoryEntry.ACC_OWNERS, false, null, null, null, null, null, courseConfigVO);
+		return createEmptyCourse(initialAuthor, shortTitle, longTitle, shortTitle, null, null, RepositoryEntry.ACC_OWNERS, false, null, null, null, null, null, courseConfigVO);
 	}
 	
 	/**
@@ -513,7 +516,7 @@ public class CoursesWebService {
 	 * @return
 	 */
 	public static ICourse createEmptyCourse(Identity initialAuthor, String shortTitle, String longTitle, String reDisplayName,
-			String softKey, int access, boolean membersOnly, String authors, String location,
+			String description, String softKey, int access, boolean membersOnly, String authors, String location,
 			String externalId, String externalRef, String managedFlags, CourseConfigVO courseConfigVO) {
 		
 		String learningObjectives = shortTitle + " (Example of creating a new course)";
@@ -534,6 +537,7 @@ public class CoursesWebService {
 			addedEntry.setExternalId(externalId);
 			addedEntry.setExternalRef(externalRef);
 			addedEntry.setManagedFlagsString(managedFlags);
+			addedEntry.setDescription(description);
 			if(RepositoryEntryManagedFlag.isManaged(addedEntry, RepositoryEntryManagedFlag.membersmanagement)) {
 				addedEntry.setAllowToLeaveOption(RepositoryEntryAllowToLeaveOptions.never);
 			} else {

@@ -686,7 +686,6 @@ function clearAfterAjaxIframeCall() {
 		// the ajax channel, e.g. error message from apache or no response from server
 		// Call afterserver to remove busy icon clear the linkbusy flag
 		o_afterserver();
-		showMessageBox('info', o_info.i18n_noresponse_title, o_info.i18n_noresponse, undefined);
 	}
 }
 
@@ -1174,6 +1173,10 @@ function o_XHRSubmit(formNam) {
 	var form = jQuery('#' + formNam);
 	var enctype = form.attr('enctype');
 	if(enctype && enctype.indexOf("multipart") == 0) {
+		var iframeName = "openolat-submit-" + ("" + Math.random()).substr(2);
+		var iframe = o_createIFrame(iframeName);
+		document.body.appendChild(iframe);
+		form.attr('target', iframe.name);
 		return true;
 	} else {
 		var data = form.serializeArray();

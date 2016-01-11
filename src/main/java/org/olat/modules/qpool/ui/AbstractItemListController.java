@@ -152,7 +152,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("details", translate("details"), "select-item"));
 		
 		model = new QuestionItemDataModel(columnsModel, this, getTranslator());
-		itemsTable = uifactory.addTableElement(getWindowControl(), "items", model, 50, true, getTranslator(), formLayout);
+		itemsTable = uifactory.addTableElement(getWindowControl(), "items", model, 50, false, getTranslator(), formLayout);
 		itemsTable.setWrapperSelector("qitems");
 		itemsTable.setSelectAllEnable(true);
 		itemsTable.setMultiSelect(true);
@@ -164,8 +164,13 @@ public abstract class AbstractItemListController extends FormBasicController
 		
 		VelocityContainer detailsVC = createVelocityContainer("item_list_details");
 		itemsTable.setDetailsRenderer(detailsVC, this);
-
+		
+		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
+		sortOptions.setDefaultOrderBy(new SortKey(OrderBy.title.name(), true));
+		itemsTable.setSortSettings(sortOptions);
 		initButtons(ureq, formLayout);
+		
+		itemsTable.reloadData();
 	}
 	
 	protected abstract void initButtons(UserRequest ureq, FormItemContainer formLayout);
