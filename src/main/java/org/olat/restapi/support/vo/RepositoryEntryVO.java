@@ -41,6 +41,7 @@ public class RepositoryEntryVO {
 	private String softkey;
 	private String resourcename;
 	private String displayname;
+	private String description;
 	@XmlAttribute(name="authors",required=false)
 	private String authors;
 	@XmlAttribute(name="location",required=false)
@@ -93,6 +94,14 @@ public class RepositoryEntryVO {
 		this.displayname = displayname;
 	}
 	
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
 	public String getAuthors() {
 		return authors;
 	}

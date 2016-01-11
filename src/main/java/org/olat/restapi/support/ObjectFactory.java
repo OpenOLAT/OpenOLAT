@@ -158,6 +158,7 @@ public class ObjectFactory {
 		vo.setSoftkey(entry.getSoftkey());
 		vo.setResourcename(entry.getResourcename());
 		vo.setDisplayname(entry.getDisplayname());
+		vo.setDescription(entry.getDescription());
 		vo.setAuthors(entry.getAuthors());
 		vo.setLocation(entry.getLocation());
 		vo.setResourceableId(entry.getResourceableId());
@@ -187,6 +188,7 @@ public class ObjectFactory {
 		CourseVO vo = new CourseVO();
 		vo.setKey(course.getResourceableId());
 		vo.setDisplayName(re.getDisplayname());
+		vo.setDescription(re.getDescription());
 		vo.setTitle(course.getCourseTitle());
 		vo.setEditorRootNodeId(course.getEditorTreeModel().getRootNode().getIdent());
 		vo.setSoftKey(re.getSoftkey());
