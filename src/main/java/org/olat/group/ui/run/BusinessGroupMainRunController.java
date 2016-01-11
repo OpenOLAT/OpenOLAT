@@ -915,7 +915,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			if (nodeForum != null) {
 				doForum(ureq).activate(ureq, entries, ce.getTransientState());
 				bgTree.setSelectedNode(nodeForum);
-			} else { // not enabled
+			} else if(mainPanel != null) { // not enabled
 				String text = translate("warn.forumnotavailable");
 				Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
 				listenTo(mc); // cleanup on dispose
@@ -925,7 +925,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			if (nodeFolder != null) {
 				doFolder(ureq).activate(ureq, entries, ce.getTransientState());
 				bgTree.setSelectedNode(nodeFolder);
-			} else { // not enabled
+			} else if(mainPanel != null) { // not enabled
 				String text = translate("warn.foldernotavailable");				
 				Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
 				listenTo(mc); // cleanup on dispose
@@ -935,7 +935,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			if (nodeWiki != null) {
 				doWiki(ureq).activate(ureq, entries, ce.getTransientState());
 				bgTree.setSelectedNode(nodeWiki);
-			} else { // not enabled
+			} else if(mainPanel != null) { // not enabled
 				String text = translate("warn.wikinotavailable");
 				Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
 				listenTo(mc); // cleanup on dispose
@@ -945,7 +945,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			if (nodeCal != null) {
 				doCalendar(ureq).activate(ureq, entries, ce.getTransientState());
 				bgTree.setSelectedNode(nodeCal);
-			} else { // not enabled
+			} else if(mainPanel != null) { // not enabled
 				String text = translate("warn.calnotavailable");
 				Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
 				listenTo(mc); // cleanup on dispose
@@ -955,7 +955,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			if (nodePortfolio != null) {
 				doPortfolio(ureq).activate(ureq, entries, ce.getTransientState());
 				bgTree.setSelectedNode(nodePortfolio);
-			} else { // not enabled
+			} else if(mainPanel != null) { // not enabled
 				String text = translate("warn.portfolionotavailable");
 				Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
 				listenTo(mc); // cleanup on dispose
@@ -965,7 +965,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			if (nodeOpenMeetings != null) {
 				doOpenMeetings(ureq);
 				bgTree.setSelectedNode(nodeOpenMeetings);
-			} else { // not enabled
+			} else if(mainPanel != null) { // not enabled
 				String text = translate("warn.portfolionotavailable");
 				Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
 				listenTo(mc); // cleanup on dispose

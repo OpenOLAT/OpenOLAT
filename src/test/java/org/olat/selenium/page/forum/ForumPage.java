@@ -100,12 +100,12 @@ public class ForumPage {
 	 */
 	public ForumPage createThread(String title, String content, String alias) {
 		By newThreadBy = By.className("o_sel_forum_thread_new");
-		WebElement newThreadButton = browser.findElement(newThreadBy);
-		newThreadButton.click();
+		browser.findElement(newThreadBy).click();
 		OOGraphene.waitBusy(browser);
 		
 		//fill the form
 		By titleBy = By.cssSelector("div.modal-content form div.o_sel_forum_message_title input[type='text']");
+		OOGraphene.waitElement(titleBy, 5, browser);
 		browser.findElement(titleBy).sendKeys(title);
 		
 		if(alias != null) {
@@ -132,6 +132,7 @@ public class ForumPage {
 	
 	public ForumPage openThread(String title) {
 		By threadBy = By.xpath("//table[contains(@class,'table')]//tr//a[text()='" + title + "']");
+		OOGraphene.waitElement(threadBy, 5, browser);
 		browser.findElement(threadBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;

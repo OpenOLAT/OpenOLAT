@@ -177,7 +177,8 @@ public class PortfolioPage {
 		WebElement saveButton = browser.findElement(saveBy);
 		Assert.assertTrue(saveButton.isDisplayed());
 		saveButton.click();
-		OOGraphene.waitElement(By.className("o_eportfolio_map"), browser);
+		By mapBy = By.className("o_eportfolio_map");
+		OOGraphene.waitElement(mapBy, 5, browser);
 		return this;
 	}
 	

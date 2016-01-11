@@ -26,8 +26,6 @@
 package org.olat.core.util.mail.manager;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -37,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.velocity.VelocityContext;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
@@ -52,6 +51,7 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
+
 	
 /**
  * Description:<br>
@@ -90,42 +90,25 @@ public class MailTest extends OlatTestCase {
 		id4 = JunitTestHelper.createAndPersistIdentityAsUser("four");
 		id6 = JunitTestHelper.createAndPersistIdentityAsUser("six");
 	}
-
-	/**
-	 * Simple helper to test valid email addresses
-	 * @param mailAddress
-	 */
-	private void isValid(String mailAddress) {
-		assertTrue(MailHelper.isValidEmailAddress(mailAddress));
+	
+	@Test
+	public void testValidEmailAddresses() {
+		Assert.assertTrue(MailHelper.isValidEmailAddress("gnaegi@frentix.com"));
+		Assert.assertTrue(MailHelper.isValidEmailAddress("login@w.pl"));
+		Assert.assertTrue(MailHelper.isValidEmailAddress("christian.reichel@on-point.consulting"));
+		Assert.assertTrue(MailHelper.isValidEmailAddress("gnägi@frentix.com"));
+		Assert.assertTrue(MailHelper.isValidEmailAddress("someone@[192.168.1.100]"));
 	}
-	/**
-	 * Simple helper to test invalid email addresses
-	 * @param mailAddress
-	 */
-	private void isInvalid(String mailAddress) {
-		assertFalse(MailHelper.isValidEmailAddress(mailAddress));
+	
+	@Test
+	public void testInvalidEmailAddresses() {
+		Assert.assertFalse(MailHelper.isValidEmailAddress(null));
+		Assert.assertFalse(MailHelper.isValidEmailAddress(""));
+		Assert.assertFalse(MailHelper.isValidEmailAddress("gnaegi @ frentix.com"));
+		Assert.assertFalse(MailHelper.isValidEmailAddress("gnaegi@frentix_com"));
+		Assert.assertFalse(MailHelper.isValidEmailAddress("\"Florian Gnaegi\" <gnaegi@frentix.com>"));
+		Assert.assertFalse(MailHelper.isValidEmailAddress("g@g"));
 	}
-
-	/**
-	 * Test the email addres validator
-	 */
-	@Test public void testValidEmailAddresses() {
-		// valid addresses
-		isValid("gnaegi@frentix.com");
-		isValid("login@w.pl");
-		// invalid addresses
-		isInvalid(null);
-		isInvalid("");
-		isInvalid("gnägi@frentix.com");
-		isInvalid("gnaegi @ frentix.com");
-		isInvalid("gnaegi@frentix_com");
-		isInvalid("gnaegi");
-		isInvalid("g@g");
-		// valid addresses but disable in OLAT because this is not what we want users to enter as mail addresses
-		isInvalid("\"Florian Gnaegi\" <gnaegi@frentix.com>"); 
-		isInvalid("someone@[192.168.1.100]"); 
-	}
-
 	
 	/**
 	 * this is more a playground method to understand the evaluate method than a
