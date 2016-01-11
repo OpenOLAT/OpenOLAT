@@ -1712,6 +1712,26 @@
 			<version>3.2.1</version>
 		</dependency>
 		<dependency>
+			<!-- Used by email address validator -->
+			<groupId>commons-validator</groupId>
+			<artifactId>commons-validator</artifactId>
+			<version>1.5.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>commons-digester</groupId>
+					<artifactId>commons-digester</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>commons-beanutils</groupId>
+					<artifactId>commons-beanutils</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
 			<!-- Used by at least commons-fileupload, webdriver -->
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>

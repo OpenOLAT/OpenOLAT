@@ -209,6 +209,8 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 */
 	@Override
 	public List<Subscriber> getSubscribers(IdentityRef identity, List<String> types) {
+		if(identity == null) return Collections.emptyList();
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select sub from notisub as sub ")
 		  .append("inner join fetch sub.publisher as publisher ")
@@ -235,6 +237,8 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 */
 	@Override
 	public List<Subscriber> getSubscribers(IdentityRef identity, long resId) {
+		if(identity == null) return Collections.emptyList();
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select sub from notisub as sub ")
 		  .append("inner join fetch sub.publisher as publisher ")
@@ -254,6 +258,8 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 */
 	@Override
 	public List<Subscriber> getValidSubscribers(Identity identity) {
+		if(identity == null) return Collections.emptyList();
+		
 		StringBuilder q = new StringBuilder();
 		q.append("select sub from notisub sub ")
 		 .append(" inner join fetch sub.publisher as pub ")

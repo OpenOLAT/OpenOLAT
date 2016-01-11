@@ -40,7 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Christian Guretzki
  */
 public class EmailCheckPerformanceTest extends OlatTestCase {
-	private static final String TEST_DOMAIN = "@test.test";
+	private static final String TEST_DOMAIN = "@testtest.com";
 
 	private static final String USERNAME_CONSTANT = "email-test";
 
