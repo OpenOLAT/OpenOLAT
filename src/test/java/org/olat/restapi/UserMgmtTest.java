@@ -53,6 +53,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
@@ -1363,6 +1364,43 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		}
 		
 		conn.shutdown();
+	}
+	
+	@Test
+	public void testPortrait_HEAD() throws IOException, URISyntaxException {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("portrait-1");
+		Identity idWithoutPortrait = JunitTestHelper.createAndPersistIdentityAsRndUser("portrait-2");
+		
+		URL portraitUrl = UserMgmtTest.class.getResource("portrait.jpg");
+		Assert.assertNotNull(portraitUrl);
+		File portrait = new File(portraitUrl.toURI());
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login(id.getName(), "A6B7C8"));
+		
+		//upload portrait
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("users").path(id.getKey().toString()).path("portrait").build();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+		conn.addMultipart(method, "portrait.jpg", portrait);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		//check 200
+		URI headRequest = UriBuilder.fromUri(getContextURI())
+				.path("users").path(id.getKey().toString()).path("portrait").build();
+		HttpHead headMethod = conn.createHead(headRequest, MediaType.APPLICATION_OCTET_STREAM, true);
+		HttpResponse headResponse = conn.execute(headMethod);
+		assertEquals(200, headResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(headResponse.getEntity());
+		
+		//check 404
+		URI headNoRequest = UriBuilder.fromUri(getContextURI())
+				.path("users").path(idWithoutPortrait.getKey().toString()).path("portrait").build();
+		HttpHead headNoMethod = conn.createHead(headNoRequest, MediaType.APPLICATION_OCTET_STREAM, true);
+		HttpResponse headNoResponse = conn.execute(headNoMethod);
+		assertEquals(404, headNoResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(headNoResponse.getEntity());
 	}
 	
 	protected List<UserVO> parseUserArray(InputStream body) {

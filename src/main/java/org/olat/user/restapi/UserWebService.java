@@ -43,6 +43,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.HEAD;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -546,7 +547,38 @@ public class UserWebService {
 	 * Retrieves the portrait of an user
 	 * @response.representation.200.mediaType application/octet-stream
 	 * @response.representation.200.doc The portrait as image
-   * @response.representation.404.doc The identity or the portrait not found
+	 * @response.representation.404.doc The identity or the portrait not found
+	 * @param identityKey The identity key of the user being searched
+	 * @param request The REST request
+	 * @return The image
+	 */
+	@HEAD
+	@Path("{identityKey}/portrait")
+	@Produces({"image/jpeg","image/jpg",MediaType.APPLICATION_OCTET_STREAM})
+	public Response getPortraitHead(@PathParam("identityKey") Long identityKey, @Context Request request) {
+		try {
+			IdentityShort identity = BaseSecurityManager.getInstance().loadIdentityShortByKey(identityKey);
+			if(identity == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			}
+			
+			File portrait = DisplayPortraitManager.getInstance().getBigPortrait(identity.getName());
+			if(portrait == null || !portrait.exists()) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			}
+
+			Date lastModified = new Date(portrait.lastModified());
+			return Response.ok().lastModified(lastModified).build();
+		} catch (Throwable e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Retrieves the portrait of an user
+	 * @response.representation.200.mediaType application/octet-stream
+	 * @response.representation.200.doc The portrait as image
+	 * @response.representation.404.doc The identity or the portrait not found
 	 * @param identityKey The identity key of the user being searched
 	 * @param request The REST request
 	 * @return The image
@@ -581,8 +613,8 @@ public class UserWebService {
 	 * Upload the portrait of an user
 	 * @response.representation.200.mediaType application/octet-stream
 	 * @response.representation.200.doc The portrait as image
-   * @response.representation.401.doc Not authorized
-   * @response.representation.404.doc The identity or the portrait not found
+	 * @response.representation.401.doc Not authorized
+	 * @response.representation.404.doc The identity or the portrait not found
 	 * @param identityKey The user key identifier of the user being searched
 	 * @param file The image
 	 * @param request The REST request
@@ -752,7 +784,7 @@ public class UserWebService {
 		if(!StringHelper.containsNonWhitespace(value) && um.isMandatoryUserProperty(PROPERTY_HANDLER_IDENTIFIER, userPropertyHandler)) {
 			Translator translator = new PackageTranslator("org.olat.core", locale);
 			String translation = translator.translate("new.form.mandatory");
-			errors.add(new ErrorVO("org.olat.core", "new.form.mandatory", translation));
+			errors.add(new ErrorVO("org.olat.core:new.form.mandatory:" + userPropertyHandler.getName(), translation));
 			return false;
 		}
 		
