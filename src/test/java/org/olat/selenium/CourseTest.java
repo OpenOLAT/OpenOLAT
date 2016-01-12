@@ -585,14 +585,14 @@ public class CourseTest {
 		loginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//create a course
-		String courseTitle = "Course-With-Podcast-" + UUID.randomUUID().toString();
+		String courseTitle = "Course-With-Podcast-" + UUID.randomUUID();
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
 			.clickToolbarBack();
 		
 		String podcastNodeTitle = "Podcats-1";
-		String podcastTitle = "Podcast - " + UUID.randomUUID().toString();
+		String podcastTitle = "Podcast - " + UUID.randomUUID();
 		
 		//create a course element of type CP with the CP that we create above
 		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
@@ -622,8 +622,10 @@ public class CourseTest {
 		FeedPage feed = FeedPage.getFeedPage(browser);
 		feed.newExternalPodcast("http://pod.drs.ch/rock_special_mpx.xml");
 
-		//check only that the "episodes" title is visibel
-		WebElement episodeH4 = browser.findElement(By.cssSelector("div.o_podcast_episodes>h4.o_title"));
+		//check only that the "episodes" title is visible
+		By episodeTitleby = By.cssSelector("div.o_podcast_episodes>h4.o_title");
+		OOGraphene.waitElement(episodeTitleby, 5, browser);
+		WebElement episodeH4 = browser.findElement(episodeTitleby);
 		Assert.assertNotNull(episodeH4);
 	}
 	
@@ -675,7 +677,9 @@ public class CourseTest {
 		feed.newExternalBlog("http://www.openolat.com/feed/");
 
 		//check only that the subscription link is visible
-		WebElement subscriptionLink = browser.findElement(By.cssSelector("div.o_subscription>a"));
+		By subscriptionBy = By.cssSelector("div.o_subscription>a");
+		OOGraphene.waitElement(subscriptionBy, 10, browser);
+		WebElement subscriptionLink = browser.findElement(subscriptionBy);
 		Assert.assertTrue(subscriptionLink.isDisplayed());
 	}
 

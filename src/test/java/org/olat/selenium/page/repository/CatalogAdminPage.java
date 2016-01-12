@@ -72,9 +72,10 @@ public class CatalogAdminPage {
 		
 		//save
 		By saveBy = By.cssSelector(".o_sel_catalog_add_category_popup .o_sel_catalog_entry_form_buttons button.btn-primary");
-		WebElement saveButton = browser.findElement(saveBy);
-		saveButton.click();
+		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
+		By nodeTitleBy = By.xpath("//div[contains(@class,'o_meta')]//h4[contains(@class,'o_title')]//a/span[contains(text(),'" + title + "')]");
+		OOGraphene.waitElement(nodeTitleBy, 5, browser);
 		return this;
 	}
 	
