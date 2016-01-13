@@ -1220,7 +1220,7 @@ function o_XHRSubmitMultipart(formNam) {
 }
 
 function o_createIFrame(iframeName) {
-	var $iframe = jQuery('<iframe name="'+iframeName+'" id="'+iframeName+'" src="about:blank" style="position: absolute; top: -9999px; left: -9999px;" onload="clearAfterAjaxIframeCall();">');
+	var $iframe = jQuery('<iframe name="'+iframeName+'" id="'+iframeName+'" src="about:blank" style="position: absolute; top: -9999px; left: -9999px;"></iframe>');
 	return $iframe[0];
 }
 
