@@ -240,16 +240,22 @@ public class ForumController extends BasicController implements GenericEventList
 	
 	private void doProcessSelectEvent(UserRequest ureq, SelectMessageEvent sme) {
 		Message thread = fm.getMessageById(sme.getMessageKey());
-		Message scrollTo = null;
-		if(sme.getScrollToMessageKey() != null) {
-			scrollTo = fm.getMessageById(sme.getScrollToMessageKey());
-		}
-		if(SelectMessageEvent.SELECT_THREAD.equals(sme.getCommand())) {
-			doThreadView(ureq, thread, scrollTo);
-		} else if(SelectMessageEvent.SELECT_MARKED.equals(sme.getCommand())) {
-			doMarkedView(ureq, thread, scrollTo);
-		} else if(SelectMessageEvent.SELECT_NEW.equals(sme.getCommand())) {
-			doNewView(ureq, thread, scrollTo);
+		if(thread == null) {
+			logError("Thread doesn't exists: " + sme.getMessageKey(), new Exception());
+			reloadThreadList = true;
+			doThreadList(ureq);
+		} else {
+			Message scrollTo = null;
+			if(sme.getScrollToMessageKey() != null) {
+				scrollTo = fm.getMessageById(sme.getScrollToMessageKey());
+			}
+			if(SelectMessageEvent.SELECT_THREAD.equals(sme.getCommand())) {
+				doThreadView(ureq, thread, scrollTo);
+			} else if(SelectMessageEvent.SELECT_MARKED.equals(sme.getCommand())) {
+				doMarkedView(ureq, thread, scrollTo);
+			} else if(SelectMessageEvent.SELECT_NEW.equals(sme.getCommand())) {
+				doNewView(ureq, thread, scrollTo);
+			}
 		}
 	}
 	
