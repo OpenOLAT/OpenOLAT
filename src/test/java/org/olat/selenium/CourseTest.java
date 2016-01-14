@@ -38,14 +38,12 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.selenium.page.Administrator;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
-import org.olat.selenium.page.ScreenshotTestRule;
 import org.olat.selenium.page.Student;
 import org.olat.selenium.page.User;
 import org.olat.selenium.page.core.BookingPage;
@@ -58,15 +56,15 @@ import org.olat.selenium.page.course.ForumCEPage;
 import org.olat.selenium.page.course.InfoMessageCEPage;
 import org.olat.selenium.page.course.MembersPage;
 import org.olat.selenium.page.course.PublisherPageFragment;
-import org.olat.selenium.page.course.RemindersPage;
 import org.olat.selenium.page.course.PublisherPageFragment.Access;
+import org.olat.selenium.page.course.RemindersPage;
 import org.olat.selenium.page.forum.ForumPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
+import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
 import org.olat.selenium.page.repository.CPPage;
 import org.olat.selenium.page.repository.FeedPage;
 import org.olat.selenium.page.repository.RepositoryAccessPage;
-import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
 import org.olat.selenium.page.repository.RepositoryAccessPage.UserAccess;
 import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
 import org.olat.test.ArquillianDeployments;
@@ -97,8 +95,6 @@ public class CourseTest {
 	private URL deploymentUrl;
 	@Page
 	private NavigationPage navBar;
-	@Rule
-    public ScreenshotTestRule screenshotTestRule = new ScreenshotTestRule();
 	
 	/**
 	 * An author create a course, jump to it, open the editor
@@ -113,7 +109,6 @@ public class CourseTest {
 	@RunAsClient
 	public void createCourse(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
-		screenshotTestRule.setBrowsers(browser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage.loginAs(author.getLogin(), author.getPassword());
@@ -185,7 +180,6 @@ public class CourseTest {
 	@RunAsClient
 	public void createCourse_withWizard(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
-		screenshotTestRule.setBrowsers(browser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage.loginAs(author.getLogin(), author.getPassword());
@@ -246,7 +240,6 @@ public class CourseTest {
 	public void concurrentEditCourse(@InitialPage LoginPage loginPage,
 			@Drone @Participant WebDriver coAuthorBrowser)
 	throws IOException, URISyntaxException {
-		screenshotTestRule.setBrowsers(browser, coAuthorBrowser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO coAuthor = new UserRestClient(deploymentUrl).createAuthor();
@@ -337,6 +330,153 @@ public class CourseTest {
 	}
 	
 	/**
+	 * An author create a course, a user see it.<br>
+	 * The author change the course and publish it. The user
+	 * must see a warning if the same node as been modified.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void concurrentVisitAndPublish(@InitialPage LoginPage loginPage,
+			@Drone @User WebDriver ryomouBrowser)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		
+		//create a course
+		String courseTitle = "Course to publish-" + UUID.randomUUID().toString();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		//open course editor
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment editor = course
+			.assertOnCoursePage()
+			.assertOnTitle(courseTitle)
+			.openToolsMenu()
+			.edit();
+		
+		//create a course element of type info messages
+		String firstNodeTitle = "First node";
+		String secondNodeTitle = "Second node";
+		editor
+			.assertOnEditor()
+			.createNode("info")
+			.nodeTitle(firstNodeTitle)
+			.createNode("st")
+			.nodeTitle(secondNodeTitle)
+			.publish()
+			.quickPublish(Access.users);
+		
+		// The user opens the course
+		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		ryomouLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		NavigationPage ryomouNavBar = new NavigationPage(ryomouBrowser);
+		ryomouNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(courseTitle)
+			.select(courseTitle)
+			.start();
+		CoursePageFragment ryomouCourse = new CoursePageFragment(ryomouBrowser);
+		MenuTreePageFragment ryomouCourseTree = ryomouCourse
+			.clickTree()
+			.selectWithTitle(firstNodeTitle);
+		
+		//The author make a change on node 2
+		String changedNodeTitlev2 = "Changed 2 title";
+		course = editor
+			.selectNode(secondNodeTitle)
+			.nodeTitle(changedNodeTitlev2)
+			.autoPublish();
+		
+		//The user click the first node and the changed second node
+		ryomouCourseTree
+			.selectWithTitle(firstNodeTitle)
+			.selectWithTitle(changedNodeTitlev2);
+		ryomouCourse
+			.assertOnTitle(changedNodeTitlev2);
+		
+		//The author changed the second node
+		String changedNodeTitlev3 = "Changed 3 title";
+		course = course.edit()
+			.selectNode(changedNodeTitlev2)
+			.nodeTitle(changedNodeTitlev3)
+			.autoPublish();
+		
+		//The user wait the message
+		ryomouCourse
+			.assertOnRestart()
+			.clickRestart();
+		ryomouCourseTree
+			.selectWithTitle(changedNodeTitlev3);
+		ryomouCourse
+			.assertOnTitle(changedNodeTitlev3);
+	}
+	
+	/**
+	 * Test that renaming the root node is reflected after
+	 * publishing.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseRename(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course to rename-" + UUID.randomUUID().toString();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		//open course editor
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment editor = course
+			.assertOnCoursePage()
+			.assertOnTitle(courseTitle)
+			.openToolsMenu()
+			.edit();
+		
+		//create a course element of type info messages
+		course = editor
+			.assertOnEditor()
+			.createNode("info")
+			.autoPublish();
+		//check that the root node has the name of the repository entry
+		course
+			.assertOnTitle(courseTitle);
+		
+		//rename the root node
+		String newCourseName = "Renamed course";
+		course = course
+			.edit()
+			.selectRoot()
+			.nodeTitle(newCourseName)
+			.autoPublish();
+		
+		//assert the changed name
+		course
+			.assertOnTitle(newCourseName);
+	}
+	
+	/**
 	 * Create a course, create a CP, go the the course editor,
 	 * create a course element of type CP, select the CP which just created,
 	 * close the course editor and check the presence of the CP with the
@@ -350,7 +490,6 @@ public class CourseTest {
 	@RunAsClient
 	public void createCourseWithCP(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
-		screenshotTestRule.setBrowsers(browser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage.loginAs(author.getLogin(), author.getPassword());
@@ -414,7 +553,6 @@ public class CourseTest {
 	@RunAsClient
 	public void createCourseWithWiki(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
-		screenshotTestRule.setBrowsers(browser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage.loginAs(author.getLogin(), author.getPassword());
@@ -477,7 +615,6 @@ public class CourseTest {
 	@RunAsClient
 	public void createCourseWithWiki_createInCourseEditor(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
-		screenshotTestRule.setBrowsers(browser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage.loginAs(author.getLogin(), author.getPassword());
@@ -524,7 +661,6 @@ public class CourseTest {
 	@RunAsClient
 	public void createCourseWithQTITest(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
-		screenshotTestRule.setBrowsers(browser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage.loginAs(author.getLogin(), author.getPassword());
@@ -579,7 +715,6 @@ public class CourseTest {
 	@RunAsClient
 	public void createCourseWithPodcast_externalFeed(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
-		screenshotTestRule.setBrowsers(browser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage.loginAs(author.getLogin(), author.getPassword());
@@ -633,7 +768,6 @@ public class CourseTest {
 	@RunAsClient
 	public void createCourseWithBlog_externalFeed(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
-		screenshotTestRule.setBrowsers(browser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage.loginAs(author.getLogin(), author.getPassword());
@@ -699,7 +833,6 @@ public class CourseTest {
 			@Drone @Participant WebDriver participantDrone,
 			@Drone @Administrator WebDriver administratorDrone)
 	throws IOException, URISyntaxException {
-		screenshotTestRule.setBrowsers(browser, participantDrone, administratorDrone);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
@@ -803,7 +936,6 @@ public class CourseTest {
 	public void catalogRoundTrip(@Drone @Administrator WebDriver adminBrowser,
 			@Drone @User WebDriver userBrowser)
 	throws IOException, URISyntaxException {
-		screenshotTestRule.setBrowsers(browser, adminBrowser, userBrowser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
@@ -884,7 +1016,6 @@ public class CourseTest {
 	@RunAsClient
 	public void createCourseWithInfoMessages(@InitialPage LoginPage authorLoginPage)
 	throws IOException, URISyntaxException {
-		screenshotTestRule.setBrowsers(browser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
@@ -990,7 +1121,6 @@ public class CourseTest {
 	public void courseBooking(@InitialPage LoginPage loginPage,
 			@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
-		screenshotTestRule.setBrowsers(browser, ryomouBrowser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage.loginAs(author.getLogin(), author.getPassword());
@@ -1075,7 +1205,6 @@ public class CourseTest {
 	@RunAsClient
 	public void courseReminders(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
-		screenshotTestRule.setBrowsers(browser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage.loginAs(author.getLogin(), author.getPassword());
@@ -1172,7 +1301,6 @@ public class CourseTest {
 			@Drone @Participant WebDriver kanuBrowser,
 			@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
-		screenshotTestRule.setBrowsers(browser, kanuBrowser, ryomouBrowser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
@@ -1295,7 +1423,6 @@ public class CourseTest {
 			@Drone @Participant WebDriver kanuBrowser,
 			@Drone @Student WebDriver reiBrowser)
 	throws IOException, URISyntaxException {
-		screenshotTestRule.setBrowsers(browser, kanuBrowser, reiBrowser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
@@ -1427,7 +1554,6 @@ public class CourseTest {
 	public void forumWithGuest(@InitialPage LoginPage loginPage,
 			@Drone @User WebDriver guestBrowser)
 	throws IOException, URISyntaxException {
-		screenshotTestRule.setBrowsers(browser, guestBrowser);
 		
 		loginPage
 			.loginAs("administrator", "openolat")
@@ -1547,7 +1673,6 @@ public class CourseTest {
 	public void courseAccessRules(@InitialPage LoginPage loginPage,
 			@Drone @Student WebDriver reiBrowser)
 	throws IOException, URISyntaxException {
-		screenshotTestRule.setBrowsers(browser, reiBrowser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("rei");
@@ -1683,7 +1808,6 @@ public class CourseTest {
 	public void createContentPackage(@InitialPage LoginPage loginPage,
 			@Drone @User WebDriver ryomouBrowser)
 			throws IOException, URISyntaxException {
-		screenshotTestRule.setBrowsers(browser, ryomouBrowser);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
