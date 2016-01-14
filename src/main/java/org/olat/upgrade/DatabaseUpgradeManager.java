@@ -249,31 +249,43 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 	protected void initUpgradesHistories() {
 		File upgradesDir = new File(WebappHelper.getUserDataRoot(), SYSTEM_DIR);
 		upgradesDir.mkdirs();
-		File upgradesHistoriesFile = new File(upgradesDir, INSTALLED_UPGRADES_XML);
-		if (upgradesHistoriesFile.exists()) {
-			upgradesHistories = (Map<String, UpgradeHistoryData>) XStreamHelper.readObject(upgradesHistoriesFile);
-		}
-		if (upgradesHistories == null) {
-			upgradesHistories = new HashMap<String, UpgradeHistoryData>();
-		}
-		transferToDBUpgrade(upgradesDir, upgradesHistories);
-	}
-	
-	private void transferToDBUpgrade(File upgradesDir, Map<String, UpgradeHistoryData> dbUpgradeHistory) {
-		File stdUpgradesHistoriesFile = new File(upgradesDir, "installed_upgrades.xml");
-		if (stdUpgradesHistoriesFile.exists()) {
-			Set<String> versions = new HashSet<String>();
-			for(OLATUpgrade upgrade:upgradesDefinitions.getUpgrades()) {
-				versions.add(upgrade.getVersion());
-			}
 
-			Map<String, UpgradeHistoryData> stdUpgradesHistories = (Map<String, UpgradeHistoryData>) XStreamHelper.readObject(stdUpgradesHistoriesFile);
-			for(Map.Entry<String, UpgradeHistoryData> entry: stdUpgradesHistories.entrySet()) {
-				String version = entry.getKey();
-				UpgradeHistoryData data = entry.getValue();
-				boolean updated = data.getBooleanDataValue("Database update");
-				if(versions.contains(version) && updated && !dbUpgradeHistory.containsKey(version)) {
-					dbUpgradeHistory.put(version, data);
+		File upgradesHistoriesFile = new File(upgradesDir, INSTALLED_UPGRADES_XML);
+		File stdUpgradesHistoriesFile = new File(upgradesDir, "installed_upgrades.xml");
+		
+		boolean newInstance = !upgradesHistoriesFile.exists() && !stdUpgradesHistoriesFile.exists();
+		if(newInstance) {
+			upgradesHistories = new HashMap<String, UpgradeHistoryData>();
+			// Fill the history
+			for(OLATUpgrade upgrade:upgrades) {
+				UpgradeHistoryData uhd = new UpgradeHistoryData();
+				uhd.setBooleanDataValue(OLATUpgrade.TASK_DP_UPGRADE, true);
+				uhd.setInstallationComplete(true);
+				setUpgradesHistory(uhd, upgrade.getVersion());
+			}
+			logInfo("This looks like a new install, will not do any database upgrades.");
+		} else {
+			if (upgradesHistoriesFile.exists()) {
+				upgradesHistories = (Map<String, UpgradeHistoryData>) XStreamHelper.readObject(upgradesHistoriesFile);
+			}
+			if (upgradesHistories == null) {
+				upgradesHistories = new HashMap<String, UpgradeHistoryData>();
+			}
+			
+			if (stdUpgradesHistoriesFile.exists()) {
+				Set<String> versions = new HashSet<String>();
+				for(OLATUpgrade upgrade:upgradesDefinitions.getUpgrades()) {
+					versions.add(upgrade.getVersion());
+				}
+
+				Map<String, UpgradeHistoryData> stdUpgradesHistories = (Map<String, UpgradeHistoryData>) XStreamHelper.readObject(stdUpgradesHistoriesFile);
+				for(Map.Entry<String, UpgradeHistoryData> entry: stdUpgradesHistories.entrySet()) {
+					String version = entry.getKey();
+					UpgradeHistoryData data = entry.getValue();
+					boolean updated = data.getBooleanDataValue("Database update");
+					if(versions.contains(version) && updated && !upgradesHistories.containsKey(version)) {
+						upgradesHistories.put(version, data);
+					}
 				}
 			}
 		}
