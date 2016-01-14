@@ -28,6 +28,8 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.ims.qti21.UserTestSession;
 import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.jpa.CandidateEvent;
@@ -50,6 +52,8 @@ import uk.ac.ed.ph.jqtiplus.value.Value;
  *
  */
 public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRenderer {
+	
+	private static final OLog log = Tracing.createLoggerFor(AssessmentItemComponentRenderer.class);
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
@@ -148,7 +152,8 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
              * In this case, the best we can do for the candidate is to 'explode' the session.
              * See bug #49.
              */
-            //handleExplosion(e, candidateSession);
+        	e.printStackTrace();
+        	log.error("", e);
             renderExploded(sb);
         }
     }

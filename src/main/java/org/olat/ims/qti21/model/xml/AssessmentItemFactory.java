@@ -56,7 +56,10 @@ import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleMatchSet;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.Mapping;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
@@ -76,6 +79,7 @@ import uk.ac.ed.ph.jqtiplus.types.ComplexReferenceIdentifier;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
+import uk.ac.ed.ph.jqtiplus.value.DirectedPairValue;
 import uk.ac.ed.ph.jqtiplus.value.FloatValue;
 import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
 
@@ -97,7 +101,7 @@ public class AssessmentItemFactory {
 		assessmentItem.getNodeGroups().getResponseDeclarationGroup().getResponseDeclarations().add(responseDeclaration);
 		
 		//outcomes
-		appendDefaultOutcomeDeclarations(assessmentItem);
+		appendDefaultOutcomeDeclarations(assessmentItem, 1.0d);
 		
 		//the single choice interaction
 		ItemBody itemBody = appendDefaultItemBody(assessmentItem);
@@ -138,7 +142,7 @@ public class AssessmentItemFactory {
 	 * 
 	 * @param assessmentItem
 	 */
-	public static void appendDefaultOutcomeDeclarations(AssessmentItem assessmentItem) {
+	public static void appendDefaultOutcomeDeclarations(AssessmentItem assessmentItem, double maxScore) {
 		NodeGroupList nodeGroups = assessmentItem.getNodeGroups();
 		//outcomes
 		OutcomeDeclarationGroup outcomeDeclarations = nodeGroups.getOutcomeDeclarationGroup();
@@ -146,8 +150,11 @@ public class AssessmentItemFactory {
 		OutcomeDeclaration scoreOutcomeDeclaration = createOutcomeDeclarationForScore(assessmentItem);
 		outcomeDeclarations.getOutcomeDeclarations().add(scoreOutcomeDeclaration);
 		// outcome max score
-		OutcomeDeclaration maxScoreOutcomeDeclaration = createOutcomeDeclarationForMaxScore(assessmentItem, 1.0d);
+		OutcomeDeclaration maxScoreOutcomeDeclaration = createOutcomeDeclarationForMaxScore(assessmentItem, maxScore);
 		outcomeDeclarations.getOutcomeDeclarations().add(maxScoreOutcomeDeclaration);
+		// outcome min score
+		OutcomeDeclaration minScoreOutcomeDeclaration = createOutcomeDeclarationForMinScore(assessmentItem, 0.0d);
+		outcomeDeclarations.getOutcomeDeclarations().add(minScoreOutcomeDeclaration);
 		// outcome feedback
 		OutcomeDeclaration feedbackOutcomeDeclaration = createOutcomeDeclarationForFeedbackBasic(assessmentItem);
 		outcomeDeclarations.getOutcomeDeclarations().add(feedbackOutcomeDeclaration);
@@ -164,6 +171,97 @@ public class AssessmentItemFactory {
 		responseDeclaration.setIdentifier(declarationId);
 		responseDeclaration.setCardinality(Cardinality.SINGLE);
 		responseDeclaration.setBaseType(BaseType.STRING);
+		return responseDeclaration;
+	}
+	
+	public static MatchInteraction appendMatchInteractionForKPrim(ItemBody itemBody, Identifier responseDeclarationId) {
+		MatchInteraction matchInteraction = new MatchInteraction(itemBody);
+		matchInteraction.setResponseIdentifier(responseDeclarationId);
+		matchInteraction.setMaxAssociations(4);
+		matchInteraction.setShuffle(false);
+		itemBody.getBlocks().add(matchInteraction);
+		
+		PromptGroup prompts = new PromptGroup(matchInteraction);
+		matchInteraction.getNodeGroups().add(prompts);
+		
+		SimpleMatchSet questionMatchSet = new SimpleMatchSet(matchInteraction);
+		matchInteraction.getSimpleMatchSets().add(questionMatchSet);
+		
+		String[] classic = new String[]{ "a", "b", "c", "d" };
+		for(int i=0; i<4; i++) {
+			SimpleAssociableChoice correctChoice = new SimpleAssociableChoice(questionMatchSet);
+			correctChoice.setMatchMax(1);
+			correctChoice.setIdentifier(IdentifierGenerator.newNumberAsIdentifier(classic[i]));
+			P question = getParagraph(correctChoice, "New answer " + classic[i]);
+			correctChoice.getFlowStatics().add(question);
+			questionMatchSet.getSimpleAssociableChoices().add(correctChoice);
+		}
+		
+		SimpleMatchSet correctWrongMatchSet = new SimpleMatchSet(matchInteraction);
+		matchInteraction.getSimpleMatchSets().add(correctWrongMatchSet);
+		
+		SimpleAssociableChoice correctChoice = new SimpleAssociableChoice(correctWrongMatchSet);
+		correctChoice.setMatchMax(4);
+		correctChoice.setFixed(Boolean.TRUE);
+		correctChoice.setIdentifier(QTI21Constants.CORRECT_IDENTIFIER);
+		correctChoice.getFlowStatics().add(new TextRun(correctChoice, "+"));
+		correctWrongMatchSet.getSimpleAssociableChoices().add(correctChoice);
+
+		SimpleAssociableChoice wrongChoice = new SimpleAssociableChoice(correctWrongMatchSet);
+		wrongChoice.setMatchMax(4);
+		wrongChoice.setFixed(Boolean.TRUE);
+		wrongChoice.setIdentifier(QTI21Constants.WRONG_IDENTIFIER);
+		wrongChoice.getFlowStatics().add(new TextRun(correctChoice, "-"));
+		correctWrongMatchSet.getSimpleAssociableChoices().add(wrongChoice);
+		
+		return matchInteraction;
+	}
+	
+	public static ResponseDeclaration createKPrimResponseDeclaration(AssessmentItem assessmentItem, Identifier declarationId,
+			Map<Identifier,Identifier> associations, double maxScore) {
+		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
+		responseDeclaration.setIdentifier(declarationId);
+		responseDeclaration.setCardinality(Cardinality.MULTIPLE);
+		responseDeclaration.setBaseType(BaseType.DIRECTED_PAIR);
+		return appendAssociationKPrimResponseDeclaration(responseDeclaration, associations, maxScore);
+	}
+	
+	public static ResponseDeclaration appendAssociationKPrimResponseDeclaration(ResponseDeclaration responseDeclaration,
+			Map<Identifier,Identifier> associations, double maxScore) {
+		responseDeclaration.setCardinality(Cardinality.MULTIPLE);
+		responseDeclaration.setBaseType(BaseType.DIRECTED_PAIR);
+
+		//correct response
+		CorrectResponse correctResponse = new CorrectResponse(responseDeclaration);
+		responseDeclaration.setCorrectResponse(correctResponse);
+		for(Map.Entry<Identifier,Identifier> association:associations.entrySet()) {
+			Identifier choiceId = association.getKey();
+			Identifier correctwrongId = association.getValue();
+
+			DirectedPairValue dpValue = new DirectedPairValue(choiceId, correctwrongId);
+			FieldValue fValue = new FieldValue(correctResponse, dpValue);
+			correctResponse.getFieldValues().add(fValue);
+		}
+		
+		double mappedValue = maxScore;
+		if(associations.size() > 0) {
+			mappedValue = maxScore / associations.size();
+		}
+		
+		// mapping
+		Mapping mapping = new Mapping(responseDeclaration);
+		mapping.setDefaultValue(-mappedValue);
+		responseDeclaration.setMapping(mapping);
+		for(Map.Entry<Identifier,Identifier> association:associations.entrySet()) {
+			Identifier choiceId = association.getKey();
+			Identifier correctwrongId = association.getValue();
+			
+			MapEntry mapEntry = new MapEntry(mapping);
+			mapEntry.setMapKey(new DirectedPairValue(choiceId, correctwrongId));
+			mapEntry.setMappedValue(mappedValue);
+			mapping.getMapEntries().add(mapEntry);
+		}
+		
 		return responseDeclaration;
 	}
 	

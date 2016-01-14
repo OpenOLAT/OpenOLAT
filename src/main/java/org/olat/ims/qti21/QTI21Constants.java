@@ -80,6 +80,12 @@ public class QTI21Constants {
 	public static final Identifier INCORRECT_IDENTIFIER = Identifier.parseString(INCORRECT);
 	
 	public static final IdentifierValue INCORRECT_IDENTIFIER_VALUE = new IdentifierValue(INCORRECT);
+
+	public static final String WRONG = "wrong";
+	
+	public static final Identifier WRONG_IDENTIFIER = Identifier.parseString(WRONG);
+	
+	public static final IdentifierValue WRONG_IDENTIFIER_VALUE = new IdentifierValue(WRONG);
 	
 	public static final String EMPTY = "empty";
 	

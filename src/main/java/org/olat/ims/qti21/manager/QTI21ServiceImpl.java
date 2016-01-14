@@ -79,6 +79,7 @@ import uk.ac.ed.ph.jqtiplus.node.AssessmentObjectType;
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.result.AbstractResult;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
+import uk.ac.ed.ph.jqtiplus.node.result.ItemResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemVariable;
 import uk.ac.ed.ph.jqtiplus.node.result.OutcomeVariable;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationRecorder;
@@ -530,7 +531,28 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	@Override
 	public void recordItemAssessmentResult(UserTestSession candidateSession, AssessmentResult assessmentResult) {
 		//do nothing for the mmoment
+		List<ItemResult> itemResults = assessmentResult.getItemResults();
+		for(ItemResult itemResult:itemResults) {
+			for (final ItemVariable itemVariable : itemResult.getItemVariables()) {
+	            if (itemVariable instanceof OutcomeVariable) {
+	                
+	                OutcomeVariable outcomeVariable = (OutcomeVariable)itemVariable;
+	            	Identifier identifier = outcomeVariable.getIdentifier();
+	            	if(QtiConstants.VARIABLE_DURATION_IDENTIFIER.equals(identifier)) {
+	            		log.audit(candidateSession.getKey() + " :: " + itemVariable.getIdentifier() + " - " + stringifyQtiValue(itemVariable.getComputedValue()));
+	            	} else  if(QTI21Constants.SCORE_IDENTIFIER.equals(identifier)) {
+	            		Value value = itemVariable.getComputedValue();
+	            		if(value instanceof NumberValue) {
+	            			double score = ((NumberValue)value).doubleValue();
+	            			candidateSession.setScore(new BigDecimal(Double.toString(score)));
+	            			System.out.println("Score: " + score);
+	            		}
+	            	}
+	            }
+	        }
+		}
 	}
+	
 
 	@Override
 	public String importFileSubmission(UserTestSession candidateSession, MultipartFileInfos multipartFile) {

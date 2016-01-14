@@ -37,11 +37,13 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.xml.items.KPrimChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
+import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
@@ -59,7 +61,7 @@ public class KPrimChoiceEditorController extends FormBasicController {
 	private RichTextElement textEl;
 	private SingleSelection shuffleEl;
 	private FormLayoutContainer answersCont;
-	private final List<SimpleChoiceWrapper> choiceWrappers = new ArrayList<>();
+	private final List<KprimWrapper> choiceWrappers = new ArrayList<>();
 
 	private int count = 0;
 	private final KPrimChoiceAssessmentItemBuilder itemBuilder;
@@ -107,10 +109,10 @@ public class KPrimChoiceEditorController extends FormBasicController {
 		formLayout.add(answersCont);
 		formLayout.add("answers", answersCont);
 
-		ChoiceInteraction interaction = itemBuilder.getChoiceInteraction();
+		MatchInteraction interaction = itemBuilder.getMatchInteraction();
 		if(interaction != null) {
-			List<SimpleChoice> choices = itemBuilder.getSimpleChoices();
-			for(SimpleChoice choice:choices) {
+			List<SimpleAssociableChoice> choices = itemBuilder.getKprimChoices();
+			for(SimpleAssociableChoice choice:choices) {
 				wrapAnswer(ureq, choice);
 			}
 		}
@@ -125,7 +127,7 @@ public class KPrimChoiceEditorController extends FormBasicController {
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
 	}
 	
-	private void wrapAnswer(UserRequest ureq, SimpleChoice choice) {
+	private void wrapAnswer(UserRequest ureq, SimpleAssociableChoice choice) {
 		String choiceContent =  itemBuilder.getHtmlHelper().flowStaticString(choice.getFlowStatics());
 		String choiceId = "answer" + count++;
 		RichTextElement choiceEl = uifactory.addRichTextElementForStringData(choiceId, "form.imd.answer", choiceContent, 8, -1, true, null, null,
@@ -143,8 +145,9 @@ public class KPrimChoiceEditorController extends FormBasicController {
 		answersCont.add(downLink);
 		answersCont.add("down-".concat(choiceId), downLink);
 		
-		boolean correct = itemBuilder.isCorrect(choice);
-		choiceWrappers.add(new SimpleChoiceWrapper(choice, correct, choiceEl, upLink, downLink));
+		boolean correct = itemBuilder.isCorrect(choice.getIdentifier());
+		boolean wrong = itemBuilder.isWrong(choice.getIdentifier());
+		choiceWrappers.add(new KprimWrapper(choice, correct, wrong, choiceEl, upLink, downLink));
 	}
 	
 	@Override
@@ -154,7 +157,40 @@ public class KPrimChoiceEditorController extends FormBasicController {
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//
+		//title
+		itemBuilder.setTitle(titleEl.getValue());
+		//question
+		String questionText = textEl.getValue();
+		itemBuilder.setQuestion(questionText);
+		
+		
+		//shuffle
+		itemBuilder.setShuffle(shuffleEl.isOneSelected() && shuffleEl.isSelected(0));
+		
+		//update kprims
+		List<SimpleAssociableChoice> choiceList = new ArrayList<>();
+		for(KprimWrapper choiceWrapper:choiceWrappers) {
+			SimpleAssociableChoice choice = choiceWrapper.getSimpleChoice();
+			String answer = choiceWrapper.getAnswer().getValue();
+			itemBuilder.getHtmlHelper().appendHtml(choice, answer);
+			choiceList.add(choice);
+		}
+		
+		//set associations
+		for(KprimWrapper choiceWrapper:choiceWrappers) {
+			SimpleAssociableChoice choice = choiceWrapper.getSimpleChoice();
+			Identifier choiceIdentifier = choice.getIdentifier();
+			String association = ureq.getHttpReq().getParameter(choiceIdentifier.toString());
+			if("correct".equals(association)) {
+				itemBuilder.setAssociation(choiceIdentifier, QTI21Constants.CORRECT_IDENTIFIER);
+			} else if("wrong".equals(association)) {
+				itemBuilder.setAssociation(choiceIdentifier, QTI21Constants.WRONG_IDENTIFIER);
+			}
+			choiceWrapper.setCorrect(itemBuilder.isCorrect(choiceIdentifier));
+			choiceWrapper.setWrong(itemBuilder.isWrong(choiceIdentifier));
+		}
+
+		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem()));
 	}
 
 	@Override
@@ -163,15 +199,15 @@ public class KPrimChoiceEditorController extends FormBasicController {
 			FormLink button = (FormLink)source;
 			String cmd = button.getCmd();
 			if("up".equals(cmd)) {
-				doMoveSimpleChoiceUp((SimpleChoiceWrapper)button.getUserObject());
+				doMoveSimpleChoiceUp((KprimWrapper)button.getUserObject());
 			} else if("down".equals(cmd)) {
-				doMoveSimpleChoiceDown((SimpleChoiceWrapper)button.getUserObject());
+				doMoveSimpleChoiceDown((KprimWrapper)button.getUserObject());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
-	private void doMoveSimpleChoiceUp(SimpleChoiceWrapper choiceWrapper) {
+	private void doMoveSimpleChoiceUp(KprimWrapper choiceWrapper) {
 		int index = choiceWrappers.indexOf(choiceWrapper) - 1;
 		if(index >= 0 && index < choiceWrappers.size()) {
 			choiceWrappers.remove(choiceWrapper);
@@ -181,7 +217,7 @@ public class KPrimChoiceEditorController extends FormBasicController {
 		flc.setDirty(true);
 	}
 	
-	private void doMoveSimpleChoiceDown(SimpleChoiceWrapper choiceWrapper) {
+	private void doMoveSimpleChoiceDown(KprimWrapper choiceWrapper) {
 		int index = choiceWrappers.indexOf(choiceWrapper) + 1;
 		if(index > 0 && index < choiceWrappers.size()) {
 			choiceWrappers.remove(choiceWrapper);
@@ -194,26 +230,28 @@ public class KPrimChoiceEditorController extends FormBasicController {
 	private void recalculateUpDownLinks() {
 		int numOfChoices = choiceWrappers.size();
 		for(int i=0; i<numOfChoices; i++) {
-			SimpleChoiceWrapper choiceWrapper = choiceWrappers.get(i);
+			KprimWrapper choiceWrapper = choiceWrappers.get(i);
 			choiceWrapper.getUp().setEnabled(i != 0);
 			choiceWrapper.getDown().setEnabled(i < (numOfChoices - 1));
 		}
 	}
 
 
-	public static final class SimpleChoiceWrapper {
+	public static final class KprimWrapper {
 		
-		private final SimpleChoice choice;
+		private final SimpleAssociableChoice choice;
 		private final RichTextElement answerEl;
 		private final FormLink upLink, downLink;
 		
 		private boolean correct;
+		private boolean wrong;
 		private final Identifier choiceIdentifier;
 		
-		public SimpleChoiceWrapper(SimpleChoice choice, boolean correct, RichTextElement answerEl,
+		public KprimWrapper(SimpleAssociableChoice choice, boolean correct, boolean wrong, RichTextElement answerEl,
 				FormLink upLink, FormLink downLink) {
 			this.choice = choice;
 			this.correct = correct;
+			this.wrong = wrong;
 			this.choiceIdentifier = choice.getIdentifier();
 			this.answerEl = answerEl;
 			answerEl.setUserObject(this);
@@ -239,7 +277,15 @@ public class KPrimChoiceEditorController extends FormBasicController {
 			this.correct = correct;
 		}
 		
-		public SimpleChoice getSimpleChoice() {
+		public boolean isWrong() {
+			return wrong;
+		}
+		
+		public void setWrong(boolean wrong) {
+			this.wrong = wrong;
+		}
+		
+		public SimpleAssociableChoice getSimpleChoice() {
 			return choice;
 		}
 		

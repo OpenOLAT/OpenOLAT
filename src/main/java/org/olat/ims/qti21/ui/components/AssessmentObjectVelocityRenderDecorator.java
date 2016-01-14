@@ -213,27 +213,35 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	}
 	
 	public List<SimpleAssociableChoice> getVisibleOrderedChoices(MatchInteraction interaction, int pos) {
-		List<SimpleAssociableChoice> choices;
-		if(interaction.getShuffle()) {
-			List<Identifier> choiceOrders = itemSessionState.getShuffledInteractionChoiceOrder(interaction.getResponseIdentifier());
-			Map<Identifier,SimpleAssociableChoice> idTochoice = new HashMap<>();
-			
-			List<SimpleAssociableChoice> allChoices = interaction.getSimpleMatchSets().get(pos).getSimpleAssociableChoices();
-			for(SimpleAssociableChoice allChoice:allChoices) {
-				idTochoice.put(allChoice.getIdentifier(), allChoice);
+		try {
+			List<SimpleAssociableChoice> choices;
+			if(interaction.getShuffle()) {
+				List<Identifier> choiceOrders = itemSessionState.getShuffledInteractionChoiceOrder(interaction.getResponseIdentifier());
+				Map<Identifier,SimpleAssociableChoice> idTochoice = new HashMap<>();
+				
+				List<SimpleAssociableChoice> allChoices = interaction.getSimpleMatchSets().get(pos).getSimpleAssociableChoices();
+				for(SimpleAssociableChoice allChoice:allChoices) {
+					idTochoice.put(allChoice.getIdentifier(), allChoice);
+				}
+				
+				choices = new ArrayList<>();
+				for(Identifier choiceOrder:choiceOrders) {
+					SimpleAssociableChoice choice = idTochoice.get(choiceOrder);
+					if(choice != null) {
+						choices.add(choice);
+					}
+				}
+			} else {
+				choices = interaction.getSimpleMatchSets().get(pos).getSimpleAssociableChoices();
 			}
 			
-			choices = new ArrayList<>();
-			for(Identifier choiceOrder:choiceOrders) {
-				choices.add(idTochoice.get(choiceOrder));
-			}
-		} else {
-			choices = interaction.getSimpleMatchSets().get(pos).getSimpleAssociableChoices();
+			return choices.stream()
+					.filter((choice) -> isVisible(choice, itemSessionState))
+					.collect(Collectors.toList());
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
 		}
-		
-		return choices.stream()
-				.filter((choice) -> isVisible(choice, itemSessionState))
-				.collect(Collectors.toList());
 	}
 	
 	//<xsl:apply-templates select="qw:get-visible-ordered-choices(., qti:simpleChoice)"/>

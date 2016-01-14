@@ -95,7 +95,7 @@ public class MultipleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBui
 		nodeGroups.getResponseDeclarationGroup().getResponseDeclarations().add(responseDeclaration);
 		
 		//outcomes
-		appendDefaultOutcomeDeclarations(assessmentItem);
+		appendDefaultOutcomeDeclarations(assessmentItem, 1.0d);
 		
 		//the single choice interaction
 		ItemBody itemBody = appendDefaultItemBody(assessmentItem);

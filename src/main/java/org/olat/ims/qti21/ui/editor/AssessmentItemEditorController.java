@@ -50,6 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
@@ -117,21 +118,28 @@ public class AssessmentItemEditorController extends BasicController {
 			List<Interaction> interactions = item.getItemBody().findInteractions();
 			
 			boolean choice = false;
+			boolean match = false;
 			boolean unkown = false;
 			
 			if(interactions != null && interactions.size() > 0) {
 				for(Interaction interaction: interactions) {
 					if(interaction instanceof ChoiceInteraction) {
 						choice = true;
+					} else if(interaction instanceof MatchInteraction) {
+						match = true;
 					} else {
 						unkown = true;
 					}	
 				}	
 			}
 			
-			if(choice && !unkown) {
+			if(choice && !unkown && !match) {
 				itemBuilder = initChoiceEditors(ureq, item);
+			} else if(!choice && !unkown && match) {
+				itemBuilder = initMatchEditors(ureq, item);
 			} else if(unkown) {
+				initItemCreatedByUnkownEditor(ureq);
+			} else {
 				initItemCreatedByUnkownEditor(ureq);
 			}
 		} else {
@@ -145,20 +153,34 @@ public class AssessmentItemEditorController extends BasicController {
 		tabbedPane.addTab("Unkown", itemEditor.getInitialComponent());
 	}
 	
-
-	private AssessmentItemBuilder initChoiceEditors(UserRequest ureq, AssessmentItem item) {
+	private AssessmentItemBuilder initMatchEditors(UserRequest ureq, AssessmentItem item) {
 		if(item.getResponseDeclarations().size() == 1) {
 			ResponseDeclaration responseDeclaration = item.getResponseDeclarations().get(0);
 			String responseIdentifier = responseDeclaration.getIdentifier().toString();
 			Cardinality cardinalty = responseDeclaration.getCardinality();
-			if(cardinalty.isSingle()) {
-				return initSingleChoiceEditors(ureq, item);
-			} else if(cardinalty.isMultiple()) {
+			if(cardinalty.isMultiple()) {
 				if(responseIdentifier.startsWith("KPRIM_")) {
 					return initKPrimChoiceEditors(ureq, item);
 				} else {
-					return initMultipleChoiceEditors(ureq, item);
+					initItemCreatedByUnkownEditor(ureq);
 				}
+			} else {
+				initItemCreatedByUnkownEditor(ureq);
+			}
+		} else {
+			initItemCreatedByUnkownEditor(ureq);
+		}
+		return null;
+	}
+
+	private AssessmentItemBuilder initChoiceEditors(UserRequest ureq, AssessmentItem item) {
+		if(item.getResponseDeclarations().size() == 1) {
+			ResponseDeclaration responseDeclaration = item.getResponseDeclarations().get(0);
+			Cardinality cardinalty = responseDeclaration.getCardinality();
+			if(cardinalty.isSingle()) {
+				return initSingleChoiceEditors(ureq, item);
+			} else if(cardinalty.isMultiple()) {
+				return initMultipleChoiceEditors(ureq, item);
 			} else {
 				initItemCreatedByUnkownEditor(ureq);
 			}
@@ -202,7 +224,7 @@ public class AssessmentItemEditorController extends BasicController {
 		KPrimChoiceAssessmentItemBuilder kprimItemBuilder = new KPrimChoiceAssessmentItemBuilder(item, qtiService.qtiSerializer());
 		itemEditor = new KPrimChoiceEditorController(ureq, getWindowControl(), kprimItemBuilder);
 		listenTo(itemEditor);
-		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), kprimItemBuilder);
+		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), kprimItemBuilder);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), kprimItemBuilder);
 		listenTo(feedbackEditor);

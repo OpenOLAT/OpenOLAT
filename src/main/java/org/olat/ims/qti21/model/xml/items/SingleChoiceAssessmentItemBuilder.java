@@ -91,7 +91,7 @@ public class SingleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuild
 		assessmentItem.getNodeGroups().getResponseDeclarationGroup().getResponseDeclarations().add(responseDeclaration);
 		
 		//outcomes
-		appendDefaultOutcomeDeclarations(assessmentItem);
+		appendDefaultOutcomeDeclarations(assessmentItem, 1.0d);
 		
 		//the single choice interaction
 		ItemBody itemBody = appendDefaultItemBody(assessmentItem);

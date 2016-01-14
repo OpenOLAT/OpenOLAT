@@ -21,6 +21,8 @@ package org.olat.ims.qti21.model;
 
 import java.util.UUID;
 
+import org.olat.core.util.CodeHelper;
+
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
@@ -44,6 +46,11 @@ public class IdentifierGenerator {
 	
 	public static final Identifier newAsIdentifier(String prefix) {
 		return Identifier.parseString(newAsString(prefix));
+	}
+	
+	public static final Identifier newNumberAsIdentifier(String prefix) {
+		long number = CodeHelper.getForeverUniqueID();
+		return Identifier.parseString(prefix + Long.toString(number));
 	}
 	
 	public static final Identifier newAsIdentifier() {
