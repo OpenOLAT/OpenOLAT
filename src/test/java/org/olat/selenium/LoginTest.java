@@ -31,13 +31,11 @@ import org.jboss.arquillian.graphene.page.InitialPage;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
-import org.olat.selenium.page.ScreenshotTestRule;
 import org.olat.selenium.page.Student;
 import org.olat.selenium.page.core.AdministrationMessagesPage;
 import org.olat.test.ArquillianDeployments;
@@ -63,8 +61,6 @@ public class LoginTest {
 	private WebDriver browser;
 	@ArquillianResource
 	private URL deploymentUrl;
-	@Rule
-    public ScreenshotTestRule screenshotTestRule = new ScreenshotTestRule();
 
 	/**
 	 * Test if the dmz can be loaded.
@@ -73,7 +69,6 @@ public class LoginTest {
 	@Test
 	@RunAsClient
 	public void loadIndex(@InitialPage LoginPage loginPage) {
-		screenshotTestRule.setBrowsers(browser);
 		//check that the login page, or dmz is loaded
 		loginPage.assertOnLoginPage();
 	}
@@ -86,7 +81,6 @@ public class LoginTest {
 	@Test
 	@RunAsClient
 	public void loginAsAdministrator(@InitialPage LoginPage loginPage) {
-		screenshotTestRule.setBrowsers(browser);
 		//load dmz
 		loginPage.assertOnLoginPage();
 		//login as administrator
@@ -107,7 +101,6 @@ public class LoginTest {
 	@RunAsClient
 	public void loginAsNewUser(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
-		screenshotTestRule.setBrowsers(browser);
 		//create a random user
 		UserRestClient userClient = new UserRestClient(deploymentUrl);
 		UserVO user = userClient.createRandomUser();
@@ -137,7 +130,6 @@ public class LoginTest {
 			@Drone @Participant WebDriver reiBrowser,
 			@Drone @Student WebDriver kanuBrowser)
 	throws IOException, URISyntaxException {
-		screenshotTestRule.setBrowsers(browser, reiBrowser, kanuBrowser);
 		
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");

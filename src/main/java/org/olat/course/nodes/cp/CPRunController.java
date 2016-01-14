@@ -203,8 +203,9 @@ public class CPRunController extends BasicController implements ControllerEventL
 		if ( (nodecmd != null) && !nodecmd.equals("") ) {
  		  activateFirstPage = false; 
 		}
+		boolean showNavigation = !config.getBooleanSafe(NodeEditController.CONFIG_COMPONENT_MENU);
 		cpDispC = CPUIFactory.getInstance().createContentOnlyCPDisplayController(ureq, getWindowControl(), new LocalFolderImpl(cpRoot),
-				activateFirstPage, false, deliveryOptions, nodecmd, courseResource, cpNode.getIdent());
+				activateFirstPage, showNavigation, deliveryOptions, nodecmd, courseResource, cpNode.getIdent());
 		cpDispC.setContentEncoding(deliveryOptions.getContentEncoding());
 		cpDispC.setJSEncoding(deliveryOptions.getJavascriptEncoding());
 		cpDispC.addControllerListener(this);

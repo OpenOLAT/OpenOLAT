@@ -215,7 +215,6 @@ public class AuthenticatedDispatcher implements Dispatcher {
 					// valid uri for dispatching (has timestamp, componentid and windowid)
 					processValidDispatchURI(ureq, usess, request, response);
 				} else {
-					
 					final String origUri = request.getRequestURI();
 					String restPart = origUri.substring(uriPrefix.length());
 					try {
@@ -225,7 +224,10 @@ public class AuthenticatedDispatcher implements Dispatcher {
 					}
 					
 					String[] split = restPart.split("/");
-					if (split.length > 0 && split.length % 2 == 0) {
+					if(restPart.startsWith("repo/go")) {
+						businessPath = convertJumpInURL(restPart, ureq);
+						processBusinessPath(businessPath, ureq, usess);
+					} else if (split.length > 0 && split.length % 2 == 0) {
 						businessPath = BusinessControlFactory.getInstance().formatFromURI(restPart);
 						processBusinessPath(businessPath, ureq, usess);
 					} else {
@@ -255,6 +257,27 @@ public class AuthenticatedDispatcher implements Dispatcher {
 				log.debug("Perf-Test: durationExecute=" + durationExecute);
 			}
 		}
+	}
+	
+	/**
+	 * http://localhost:8080/olat/auth/repo/go?rid=819242&amp;par=77013818723561
+	 * @param requestPart
+	 * @param ureq
+	 * @return
+	 */
+	private String convertJumpInURL(String requestPart, UserRequest ureq) {
+		String repoId = ureq.getParameter("rid");
+		String businessPath = "[RepositoryEntry:" + repoId + "]";
+		String par = ureq.getParameter("par");
+		if(StringHelper.containsNonWhitespace(par) && StringHelper.isLong(par)) {
+			try {
+				Long parLong = Long.parseLong(par);
+				businessPath += "[Part:" + parLong + "]";
+			} catch(NumberFormatException e) {
+				//it can happen
+			}
+		}
+		return businessPath;				
 	}
 	
 	private void processValidDispatchURI(UserRequest ureq, UserSession usess, HttpServletRequest request, HttpServletResponse response) {

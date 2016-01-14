@@ -117,9 +117,10 @@ public class ForumPage {
 		
 		//save
 		By saveBy = By.cssSelector("div.modal-content form button.btn-primary");
-		WebElement saveButton = browser.findElement(saveBy);
-		saveButton.click();
+		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
+		By messageTitleBy = By.xpath("//div[contains(@class,'o_forum_message')][//h4[contains(text(),'" + title + "')]]");
+		OOGraphene.waitElement(messageTitleBy, 5, browser);
 		return this;
 	}
 	
@@ -220,8 +221,8 @@ public class ForumPage {
 	 */
 	public ArtefactWizardPage addAsArtfeact() {
 		By addAsArtefactBy = By.className("o_eportfolio_add");
-		WebElement addAsArtefactButton = browser.findElement(addAsArtefactBy);
-		addAsArtefactButton.click();
+		OOGraphene.waitElement(addAsArtefactBy, 5, browser);
+		browser.findElement(addAsArtefactBy).click();
 		OOGraphene.waitBusy(browser);
 		return ArtefactWizardPage.getWizard(browser);
 	}

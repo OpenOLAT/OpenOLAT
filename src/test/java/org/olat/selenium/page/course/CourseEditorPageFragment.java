@@ -77,12 +77,13 @@ public class CourseEditorPageFragment {
 	}
 	
 	public static CourseEditorPageFragment getEditor(WebDriver browser) {
-		OOGraphene.waitElement(editorBy, browser);
+		OOGraphene.waitElement(editorBy, 5, browser);
 		OOGraphene.closeBlueMessageWindow(browser);
 		return new CourseEditorPageFragment(browser);
 	}
 	
 	public CourseEditorPageFragment assertOnEditor() {
+		OOGraphene.waitElement(editorBy, 5, browser);
 		List<WebElement> editorEls = browser.findElements(editorBy);
 		Assert.assertFalse(editorEls.isEmpty());
 		Assert.assertTrue(editorEls.get(0).isDisplayed());

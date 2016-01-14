@@ -43,6 +43,11 @@ public class ErrorVO {
 		//make jaxb happy
 	}
 	
+	public ErrorVO(String code, String translation) {
+		this.code = code;
+		this.translation = translation;
+	}
+	
 	public ErrorVO(String pack, String code, String translation) {
 		this.code = pack + ":" + code;
 		this.translation = translation;

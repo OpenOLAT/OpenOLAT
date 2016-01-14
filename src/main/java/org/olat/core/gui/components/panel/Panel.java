@@ -26,7 +26,8 @@ import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 
 /**
  * 
@@ -34,7 +35,9 @@ import org.olat.core.logging.AssertException;
  *
  */
 public class Panel extends AbstractComponent implements ComponentCollection {
+	
 	private static final ComponentRenderer RENDERER = new PanelRenderer();
+	private static final OLog log = Tracing.createLoggerFor(Panel.class);
 
 	private Component curContent;
 	/**
@@ -50,8 +53,9 @@ public class Panel extends AbstractComponent implements ComponentCollection {
 	 * delegate
 	 * @param ureq
 	 */
+	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
-		throw new AssertException("a panel should never dispatch a request (unless it has droppables, which it has not), ureq = "+ureq);
+		log.error("a panel should never dispatch a request (unless it has droppables, which it has not), ureq = " + ureq, null);
 	}
 
 	/**

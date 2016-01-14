@@ -34,6 +34,8 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.IOUtils;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -605,6 +607,10 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 		//clean up database
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		gtaManager.deleteTaskList(entry, this);
+		
+		//clean subscription
+		SubscriptionContext subscriptionContext = gtaManager.getSubscriptionContext(course.getCourseEnvironment(), this);
+		NotificationsManager.getInstance().delete(subscriptionContext);
 	}
 
 	@Override

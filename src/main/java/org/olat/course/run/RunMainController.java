@@ -799,7 +799,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		
 		ContextEntry firstEntry = entries.get(0);
 		String type = firstEntry.getOLATResourceable().getResourceableTypeName();
-		if("CourseNode".equalsIgnoreCase(type)) {
+		if("CourseNode".equalsIgnoreCase(type) || "Part".equalsIgnoreCase(type)) {
 			CourseNode cn = course.getRunStructure().getNode(firstEntry.getOLATResourceable().getResourceableId().toString());
 			if(currentCourseNode == null || !currentCourseNode.equals(cn)) {
 				getWindowControl().makeFlat();

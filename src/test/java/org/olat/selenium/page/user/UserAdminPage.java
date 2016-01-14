@@ -83,6 +83,7 @@ public class UserAdminPage {
 	 */
 	public UserAdminPage searchUserToDelete(String username) {
 		By createBy = By.cssSelector("fieldset.o_sel_user_search_form div.o_sel_user_search_username input[type='text']");
+		OOGraphene.waitElement(createBy, 5, browser);
 		browser.findElement(createBy).sendKeys(username);
 		
 		//search
