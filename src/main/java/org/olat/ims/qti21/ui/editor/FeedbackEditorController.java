@@ -42,13 +42,18 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
  */
 public class FeedbackEditorController extends FormBasicController {
 	
-	private TextElement feedbackCorrectTitleEl, feedbackIncorrectTitleEl;
-	private RichTextElement feedbackCorrectTextEl, feedbackIncorrectTextEl;
+	private TextElement feedbackCorrectTitleEl, feedbackIncorrectTitleEl, feedbackEmptyTitleEl;
+	private RichTextElement feedbackCorrectTextEl, feedbackIncorrectTextEl, feedbackEmptyTextEl;
 
+	private final boolean empty, correct, incorrect;
 	private AssessmentItemBuilder itemBuilder;
 	
-	public FeedbackEditorController(UserRequest ureq, WindowControl wControl, AssessmentItemBuilder itemBuilder) {
+	public FeedbackEditorController(UserRequest ureq, WindowControl wControl, AssessmentItemBuilder itemBuilder,
+			boolean empty, boolean correct, boolean incorrect) {
 		super(ureq, wControl);
+		this.empty = empty;
+		this.correct = correct;
+		this.incorrect = incorrect;
 		this.itemBuilder = itemBuilder;
 		initForm(ureq);
 	}
@@ -56,26 +61,42 @@ public class FeedbackEditorController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//correct feedback
-		ModalFeedbackBuilder correctFeedback = itemBuilder.getCorrectFeedback();
-		String correctTitle = correctFeedback == null ? "" : correctFeedback.getTitle();
-		feedbackCorrectTitleEl = uifactory.addTextElement("correctTitle", "form.imd.correct.title", -1, correctTitle, formLayout);
-		feedbackCorrectTitleEl.setUserObject(correctFeedback);
-		String correctText = correctFeedback == null ? "" : correctFeedback.getText();
-		feedbackCorrectTextEl = uifactory.addRichTextElementForStringData("correctText", "form.imd.correct.text", correctText, 8, -1, true, null, null,
-				formLayout, ureq.getUserSession(), getWindowControl());
-		RichTextConfiguration richTextConfig = feedbackCorrectTextEl.getEditorConfiguration();
-		richTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
+		if(correct) {
+			ModalFeedbackBuilder correctFeedback = itemBuilder.getCorrectFeedback();
+			String correctTitle = correctFeedback == null ? "" : correctFeedback.getTitle();
+			feedbackCorrectTitleEl = uifactory.addTextElement("correctTitle", "form.imd.correct.title", -1, correctTitle, formLayout);
+			feedbackCorrectTitleEl.setUserObject(correctFeedback);
+			String correctText = correctFeedback == null ? "" : correctFeedback.getText();
+			feedbackCorrectTextEl = uifactory.addRichTextElementForStringData("correctText", "form.imd.correct.text", correctText, 8, -1, true, null, null,
+					formLayout, ureq.getUserSession(), getWindowControl());
+			RichTextConfiguration richTextConfig = feedbackCorrectTextEl.getEditorConfiguration();
+			richTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
+		}
+		
+		if(empty) {
+			ModalFeedbackBuilder emptyFeedback = itemBuilder.getEmptyFeedback();
+			String emptyTitle = emptyFeedback == null ? "" : emptyFeedback.getTitle();
+			feedbackEmptyTitleEl = uifactory.addTextElement("emptyTitle", "form.imd.empty.title", -1, emptyTitle, formLayout);
+			feedbackEmptyTitleEl.setUserObject(emptyFeedback);
+			String emptyText = emptyFeedback == null ? "" : emptyFeedback.getText();
+			feedbackEmptyTextEl = uifactory.addRichTextElementForStringData("emptyText", "form.imd.empty.text", emptyText, 8, -1, true, null, null,
+					formLayout, ureq.getUserSession(), getWindowControl());
+			RichTextConfiguration richTextConfig = feedbackEmptyTextEl.getEditorConfiguration();
+			richTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
+		}
 
 		//incorrect feedback
-		ModalFeedbackBuilder incorrectFeedback = itemBuilder.getIncorrectFeedback();
-		String incorrectTitle = incorrectFeedback == null ? "" : incorrectFeedback.getTitle();
-		feedbackIncorrectTitleEl = uifactory.addTextElement("incorrectTitle", "form.imd.incorrect.title", -1, incorrectTitle, formLayout);
-		feedbackIncorrectTitleEl.setUserObject(incorrectFeedback);
-		String incorrectText = incorrectFeedback == null ? "" : incorrectFeedback.getText();
-		feedbackIncorrectTextEl = uifactory.addRichTextElementForStringData("incorrectText", "form.imd.incorrect.text", incorrectText, 8, -1, true, null, null,
-				formLayout, ureq.getUserSession(), getWindowControl());
-		RichTextConfiguration richTextConfig2 = feedbackIncorrectTextEl.getEditorConfiguration();
-		richTextConfig2.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
+		if(incorrect) {
+			ModalFeedbackBuilder incorrectFeedback = itemBuilder.getIncorrectFeedback();
+			String incorrectTitle = incorrectFeedback == null ? "" : incorrectFeedback.getTitle();
+			feedbackIncorrectTitleEl = uifactory.addTextElement("incorrectTitle", "form.imd.incorrect.title", -1, incorrectTitle, formLayout);
+			feedbackIncorrectTitleEl.setUserObject(incorrectFeedback);
+			String incorrectText = incorrectFeedback == null ? "" : incorrectFeedback.getText();
+			feedbackIncorrectTextEl = uifactory.addRichTextElementForStringData("incorrectText", "form.imd.incorrect.text", incorrectText, 8, -1, true, null, null,
+					formLayout, ureq.getUserSession(), getWindowControl());
+			RichTextConfiguration richTextConfig2 = feedbackIncorrectTextEl.getEditorConfiguration();
+			richTextConfig2.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
+		}
 	
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -86,30 +107,60 @@ public class FeedbackEditorController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		String correctTitle = feedbackCorrectTitleEl.getValue();
-		String correctText = feedbackCorrectTextEl.getValue();
-		if(StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(correctText))) {
-			ModalFeedbackBuilder correctBuilder = itemBuilder.getCorrectFeedback();
-			if(correctBuilder == null) {
-				correctBuilder = itemBuilder.createCorrectFeedback();
+		if(correct) {
+			String correctTitle = feedbackCorrectTitleEl.getValue();
+			String correctText = feedbackCorrectTextEl.getValue();
+			if(StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(correctText))) {
+				ModalFeedbackBuilder correctBuilder = itemBuilder.getCorrectFeedback();
+				if(correctBuilder == null) {
+					correctBuilder = itemBuilder.createCorrectFeedback();
+				}
+				correctBuilder.setTitle(correctTitle);
+				correctBuilder.setText(correctText);
+			} else {
+				itemBuilder.removeCorrectFeedback();
 			}
-			correctBuilder.setTitle(correctTitle);
-			correctBuilder.setText(correctText);
+		} else {
+			itemBuilder.removeCorrectFeedback();
 		}
 		
-		String incorrectTitle = feedbackIncorrectTitleEl.getValue();
-		String incorrectText = feedbackIncorrectTextEl.getValue();
-		if(StringHelper.containsNonWhitespace(correctTitle)) {
-			ModalFeedbackBuilder incorrectBuilder = itemBuilder.getIncorrectFeedback();
-			if(incorrectBuilder == null) {
-				incorrectBuilder = itemBuilder.createIncorrectFeedback();
+		if(empty) {
+			String emptyTitle = feedbackEmptyTitleEl.getValue();
+			String emptyText = feedbackEmptyTextEl.getValue();
+			if(StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(emptyText))) {
+				ModalFeedbackBuilder emptyBuilder = itemBuilder.getEmptyFeedback();
+				if(emptyBuilder == null) {
+					emptyBuilder = itemBuilder.createEmptyFeedback();
+				}
+				emptyBuilder.setTitle(emptyTitle);
+				emptyBuilder.setText(emptyText);
+			} else {
+				itemBuilder.removeEmptyFeedback();
 			}
-			incorrectBuilder.setTitle(incorrectTitle);
-			incorrectBuilder.setText(incorrectText);
+		} else {
+			itemBuilder.removeEmptyFeedback();	
+		}
+		
+		if(incorrect) {
+			String incorrectTitle = feedbackIncorrectTitleEl.getValue();
+			String incorrectText = feedbackIncorrectTextEl.getValue();
+			if(StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(incorrectText))) {
+				ModalFeedbackBuilder incorrectBuilder = itemBuilder.getIncorrectFeedback();
+				if(incorrectBuilder == null) {
+					incorrectBuilder = itemBuilder.createIncorrectFeedback();
+				}
+				incorrectBuilder.setTitle(incorrectTitle);
+				incorrectBuilder.setText(incorrectText);
+			} else {
+				itemBuilder.removeIncorrectFeedback();
+			}
+		} else {
+			itemBuilder.removeIncorrectFeedback();
 		}
 
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem()));
 	}
+	
 
 	@Override
 	protected void doDispose() {

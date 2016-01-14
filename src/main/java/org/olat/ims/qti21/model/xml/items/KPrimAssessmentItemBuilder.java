@@ -74,7 +74,7 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class KPrimChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
+public class KPrimAssessmentItemBuilder extends AssessmentItemBuilder {
 
 	private boolean shuffle;
 	private String question;
@@ -82,11 +82,11 @@ public class KPrimChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
 	private MatchInteraction matchInteraction;
 	private Map<Identifier,Identifier> associations;
 	
-	public KPrimChoiceAssessmentItemBuilder(QtiSerializer qtiSerializer) {
+	public KPrimAssessmentItemBuilder(QtiSerializer qtiSerializer) {
 		super(createAssessmentItem(), qtiSerializer);
 	}
 	
-	public KPrimChoiceAssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
+	public KPrimAssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
 		super(assessmentItem, qtiSerializer);
 	}
 	

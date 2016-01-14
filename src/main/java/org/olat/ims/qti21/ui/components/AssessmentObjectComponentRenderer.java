@@ -650,8 +650,8 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		
 		ResponseData responseInput = getResponseInput(itemSessionState, interaction.getResponseIdentifier());
 		ResponseDeclaration responseDeclaration = getResponseDeclaration(assessmentItem, interaction.getResponseIdentifier());
-		Cardinality cardinality = responseDeclaration.getCardinality();
-		if(cardinality.isRecord() || cardinality.isSingle()) {
+		Cardinality cardinality = responseDeclaration == null ? null : responseDeclaration.getCardinality();
+		if(cardinality != null && (cardinality.isRecord() || cardinality.isSingle())) {
 			String responseInputString = extractSingleCardinalityResponseInput(responseInput);
 			renderExtendedTextBox(renderer, sb, component, assessmentItem, itemSessionState, interaction, responseInputString, false);
 		} else {

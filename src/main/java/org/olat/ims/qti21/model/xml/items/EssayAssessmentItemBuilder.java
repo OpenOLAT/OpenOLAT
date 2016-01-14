@@ -11,18 +11,27 @@ import java.util.List;
 import javax.xml.transform.stream.StreamResult;
 
 import org.olat.core.gui.render.StringOutput;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 
 import uk.ac.ed.ph.jqtiplus.node.content.ItemBody;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
+import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
+import uk.ac.ed.ph.jqtiplus.node.expression.general.Variable;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.IsNull;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
+import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseCondition;
+import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseIf;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseProcessing;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseRule;
+import uk.ac.ed.ph.jqtiplus.node.item.response.processing.SetOutcomeValue;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
+import uk.ac.ed.ph.jqtiplus.types.ComplexReferenceIdentifier;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.value.BaseType;
 
 /**
  * 
@@ -33,7 +42,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
 public class EssayAssessmentItemBuilder extends AssessmentItemBuilder {
 
 	private String question;
-	private Identifier responseIdentifier;
+	protected Identifier responseIdentifier;
 	private ExtendedTextInteraction extendedTextInteraction;
 	
 	public EssayAssessmentItemBuilder(QtiSerializer qtiSerializer) {
@@ -93,8 +102,47 @@ public class EssayAssessmentItemBuilder extends AssessmentItemBuilder {
 		this.question = html;
 	}
 	
+	public Integer getExpectedLength() {
+		return extendedTextInteraction.getExpectedLength();
+	}
+	
+	public void setExpectedLength(Integer length) {
+		extendedTextInteraction.setExpectedLength(length);
+	}
+	
+	public Integer getExpectedLines() {
+		return extendedTextInteraction.getExpectedLines();
+	}
+	
+	public void setExpectedLines(Integer lines) {
+		extendedTextInteraction.setExpectedLines(lines);
+	}
+	
 	public ExtendedTextInteraction getExtendedTextInteraction() {
 		return extendedTextInteraction;
+	}
+	
+	public Integer getMinStrings() {
+		return extendedTextInteraction.getMinStrings();
+	}
+	
+	public void setMinStrings(Integer minStrings) {
+		extendedTextInteraction.setMinStrings(minStrings);
+	}
+	
+	public Integer getMaxStrings() {
+		return extendedTextInteraction.getMaxStrings();
+	}
+	
+	public void setMaxStrings(Integer maxStrings) {
+		extendedTextInteraction.setMaxStrings(maxStrings);
+	}
+	
+	@Override
+	protected void buildResponseDeclaration() {
+		ResponseDeclaration responseDeclaration =
+				createExtendedTextResponseDeclaration(assessmentItem, responseIdentifier);
+		assessmentItem.getResponseDeclarations().add(responseDeclaration);
 	}
 	
 	@Override
@@ -112,7 +160,47 @@ public class EssayAssessmentItemBuilder extends AssessmentItemBuilder {
 
 	@Override
 	protected void buildMainScoreRule(List<ResponseRule> responseRules) {
-		//
+		ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
+		responseRules.add(0, rule);
+		buildMainEssayFeedbackRule(rule);
+	}
+
+	private void buildMainEssayFeedbackRule(ResponseCondition rule) {
+		/*
+		 <responseCondition>
+			<responseIf>
+				<isNull>
+					<variable identifier="RESPONSE_1" />
+				</isNull>
+				<setOutcomeValue identifier="FEEDBACKBASIC">
+					<baseValue baseType="identifier">
+						empty
+					</baseValue>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		 */
+
+		ResponseIf responseIf = new ResponseIf(rule);
+		rule.setResponseIf(responseIf);
+		
+		{
+			IsNull isNull = new IsNull(responseIf);
+			responseIf.getExpressions().add(isNull);
+			
+			Variable variable = new Variable(isNull);
+			variable.setIdentifier(ComplexReferenceIdentifier.parseString(responseIdentifier.toString()));
+			isNull.getExpressions().add(variable);
+			
+			SetOutcomeValue incorrectOutcomeValue = new SetOutcomeValue(responseIf);
+			incorrectOutcomeValue.setIdentifier(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
+			responseIf.getResponseRules().add(incorrectOutcomeValue);
+			
+			BaseValue incorrectValue = new BaseValue(incorrectOutcomeValue);
+			incorrectValue.setBaseTypeAttrValue(BaseType.IDENTIFIER);
+			incorrectValue.setSingleValue(QTI21Constants.EMPTY_IDENTIFIER_VALUE);
+			incorrectOutcomeValue.setExpression(incorrectValue);
+		}
 	}
 
 }

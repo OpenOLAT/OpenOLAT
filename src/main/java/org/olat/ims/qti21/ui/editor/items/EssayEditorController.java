@@ -2,9 +2,18 @@ package org.olat.ims.qti21.ui.editor.items;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.ims.qti21.model.xml.items.EssayAssessmentItemBuilder;
+import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
+import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
 /**
  * 
@@ -14,19 +23,53 @@ import org.olat.core.gui.control.WindowControl;
  */
 public class EssayEditorController extends FormBasicController {
 	
-	public EssayEditorController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+	private TextElement titleEl;
+	private TextElement widthEl, heightEl, minWordsEl, maxWordsEl;
+	private RichTextElement textEl;
+	
+	private final EssayAssessmentItemBuilder itemBuilder;
+	
+	public EssayEditorController(UserRequest ureq, WindowControl wControl, EssayAssessmentItemBuilder itemBuilder) {
+		super(ureq, wControl, "essay");
+		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
+		this.itemBuilder = itemBuilder;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		//
-	}
+		FormLayoutContainer metadata = FormLayoutContainer.createDefaultFormLayout("metadata", getTranslator());
+		metadata.setRootForm(mainForm);
+		formLayout.add(metadata);
+		formLayout.add("metadata", metadata);
 
-	@Override
-	protected void formOK(UserRequest ureq) {
-		//
+		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), metadata);
+		titleEl.setMandatory(true);
+		
+		String description = itemBuilder.getQuestion();
+		textEl = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", description, 8, -1, true, null, null,
+				metadata, ureq.getUserSession(), getWindowControl());
+		RichTextConfiguration richTextConfig = textEl.getEditorConfiguration();
+		richTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
+		
+		//width (expectedLength), height (expectedLines)
+		String expectedLength = getValue(itemBuilder.getExpectedLength());
+		widthEl = uifactory.addTextElement("cols", "essay.columns", -1, expectedLength, metadata);
+		String expectedLines = getValue(itemBuilder.getExpectedLines());
+		heightEl = uifactory.addTextElement("rows", "essay.rows", -1, expectedLines, metadata);
+
+		//words count min. max. (maxStrings)
+		String minStrings = getValue(itemBuilder.getMinStrings());
+		minWordsEl = uifactory.addTextElement("min.strings", "essay.min.strings", -1, minStrings, metadata);
+		String maxStrings = getValue(itemBuilder.getMaxStrings());
+		maxWordsEl = uifactory.addTextElement("max.strings", "essay.max.strings", -1, maxStrings, metadata);
+		
+		// Submit Button
+		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonsContainer.setRootForm(mainForm);
+		formLayout.add(buttonsContainer);
+		formLayout.add("buttons", buttonsContainer);
+		uifactory.addFormSubmitButton("submit", buttonsContainer);
 	}
 
 	@Override
@@ -34,6 +77,65 @@ public class EssayEditorController extends FormBasicController {
 		//
 	}
 	
+	private String getValue(Integer integer) {
+		return integer == null ? "" : integer.toString();
+	}
 	
+	public Integer getValue(TextElement integerEl) {
+		String val = integerEl.getValue();
+		Integer integer = null;
+		if(StringHelper.isLong(val)) {
+			return Integer.parseInt(val);
+		}
+		return integer;
+	}
 
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+
+		titleEl.clearError();
+		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
+			titleEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+
+		allOk &= validateInteger(widthEl);
+		allOk &= validateInteger(heightEl);
+		allOk &= validateInteger(minWordsEl);
+		allOk &= validateInteger(maxWordsEl);
+		return allOk & super.validateFormLogic(ureq);
+	}
+	
+	private boolean validateInteger(TextElement integerEl) {
+		boolean allOk = true;
+		
+		integerEl.clearError();
+		if(StringHelper.containsNonWhitespace(integerEl.getValue())) {
+			if(!StringHelper.isLong(integerEl.getValue())) {
+				integerEl.setErrorKey("error.integer", null);
+				allOk &= false;
+			}
+		}
+		
+		return allOk;
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//title
+		itemBuilder.setTitle(titleEl.getValue());
+		//question
+		String questionText = textEl.getValue();
+		itemBuilder.setQuestion(questionText);
+		
+		//width and height
+		itemBuilder.setExpectedLength(getValue(widthEl));
+		itemBuilder.setExpectedLines(getValue(heightEl));
+		//min. max. words
+		itemBuilder.setMinStrings(getValue(minWordsEl));
+		itemBuilder.setMaxStrings(getValue(maxWordsEl));
+		
+		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem()));
+	}
 }

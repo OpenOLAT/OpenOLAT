@@ -163,6 +163,7 @@ public class AssessmentItemFactory {
 	public static ExtendedTextInteraction appendExtendedTextInteraction(ItemBody itemBody, Identifier responseDeclarationId) {
 		ExtendedTextInteraction textInteraction = new ExtendedTextInteraction(itemBody);
 		textInteraction.setResponseIdentifier(responseDeclarationId);
+		itemBody.getBlocks().add(textInteraction);
 		return textInteraction;
 	}
 	

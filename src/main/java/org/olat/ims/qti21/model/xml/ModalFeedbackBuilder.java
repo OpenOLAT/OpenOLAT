@@ -22,6 +22,7 @@ package org.olat.ims.qti21.model.xml;
 import java.util.List;
 
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.model.IdentifierGenerator;
 
 import uk.ac.ed.ph.jqtiplus.attribute.value.StringAttribute;
 import uk.ac.ed.ph.jqtiplus.node.expression.Expression;
@@ -59,7 +60,8 @@ public class ModalFeedbackBuilder {
 			StringAttribute titleAttr = modalFeedback.getAttributes().getStringAttribute(ModalFeedback.ATTR_TITLE_NAME);
 			title = titleAttr == null ? null : titleAttr.getComputedValue();
 			identifier = modalFeedback.getIdentifier();
-			
+		} else {
+			identifier = IdentifierGenerator.newNumberAsIdentifier("Feedback");
 		}
 	}
 	
@@ -80,6 +82,11 @@ public class ModalFeedbackBuilder {
 	public boolean isIncorrectRule() {
 		ResponseRule feedbackRule = findFeedbackRule(modalFeedback.getIdentifier());
 		return findFeedbackRule(feedbackRule, QTI21Constants.INCORRECT_IDENTIFIER);
+	}
+	
+	public boolean isEmptyRule() {
+		ResponseRule feedbackRule = findFeedbackRule(modalFeedback.getIdentifier());
+		return findFeedbackRule(feedbackRule, QTI21Constants.EMPTY_IDENTIFIER);
 	}
 	
 	public String getTitle() {

@@ -55,7 +55,8 @@ public abstract class AssessmentItemBuilder {
 	
 	private ScoreBuilder minScoreBuilder;
 	private ScoreBuilder maxScoreBuilder;
-	
+
+	protected ModalFeedbackBuilder emptyFeedback;
 	protected ModalFeedbackBuilder correctFeedback;
 	protected ModalFeedbackBuilder incorrectFeedback;
 	private List<ModalFeedbackBuilder> additionalFeedbacks = new ArrayList<>();
@@ -114,6 +115,8 @@ public abstract class AssessmentItemBuilder {
 				correctFeedback = feedbackBuilder;
 			} else if(feedbackBuilder.isIncorrectRule()) {
 				incorrectFeedback = feedbackBuilder;
+			} else if(feedbackBuilder.isEmptyRule()) {
+				emptyFeedback = feedbackBuilder;
 			} else {
 				additionalFeedbacks.add(feedbackBuilder);
 			}
@@ -161,6 +164,22 @@ public abstract class AssessmentItemBuilder {
 		return correctFeedback;
 	}
 	
+	public void removeCorrectFeedback() {
+		correctFeedback = null;
+	}
+	
+	public ModalFeedbackBuilder getEmptyFeedback() {
+		return emptyFeedback;
+	}
+	
+	public ModalFeedbackBuilder createEmptyFeedback() {
+		emptyFeedback = new ModalFeedbackBuilder(assessmentItem, null);
+		return emptyFeedback;
+	}
+	public void removeEmptyFeedback() {
+		emptyFeedback = null;
+	}
+	
 	public ModalFeedbackBuilder getIncorrectFeedback() {
 		return incorrectFeedback;
 	}
@@ -168,6 +187,10 @@ public abstract class AssessmentItemBuilder {
 	public ModalFeedbackBuilder createIncorrectFeedback() {
 		incorrectFeedback = new ModalFeedbackBuilder(assessmentItem, null);
 		return incorrectFeedback;
+	}
+	
+	public void removeIncorrectFeedback() {
+		incorrectFeedback = null;
 	}
 	
 	public AssessmentBuilderHelper getHelper() {
@@ -208,7 +231,8 @@ public abstract class AssessmentItemBuilder {
 	
 	protected void buildModalFeedback(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
 		//add feedbackbasic and feedbackmodal outcomes
-		if(correctFeedback != null || incorrectFeedback != null || additionalFeedbacks.size() > 0) {
+		if(correctFeedback != null || incorrectFeedback != null || emptyFeedback != null
+				|| additionalFeedbacks.size() > 0) {
 			ensureFeedbackBasicOutcomeDeclaration();
 			
 			OutcomeDeclaration modalOutcomeDeclaration = AssessmentItemFactory
@@ -228,6 +252,17 @@ public abstract class AssessmentItemBuilder {
 			
 			ResponseCondition feedbackCondition = AssessmentItemFactory
 					.createModalFeedbackBasicRule(assessmentItem.getResponseProcessing(), correctFeedback.getIdentifier(), QTI21Constants.CORRECT);
+			responseRules.add(feedbackCondition);
+		}
+		
+		if(emptyFeedback != null) {
+			ModalFeedback emptyModalFeedback = AssessmentItemFactory
+					.createModalFeedback(assessmentItem, emptyFeedback.getIdentifier(),
+							emptyFeedback.getTitle(), emptyFeedback.getText());
+			modalFeedbacks.add(emptyModalFeedback);
+			
+			ResponseCondition feedbackCondition = AssessmentItemFactory
+					.createModalFeedbackBasicRule(assessmentItem.getResponseProcessing(), emptyFeedback.getIdentifier(), QTI21Constants.EMPTY);
 			responseRules.add(feedbackCondition);
 		}
 		

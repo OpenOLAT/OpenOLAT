@@ -34,12 +34,14 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.items.KPrimChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.items.EssayAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.items.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.items.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.items.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
-import org.olat.ims.qti21.ui.editor.items.KPrimChoiceEditorController;
+import org.olat.ims.qti21.ui.editor.items.EssayEditorController;
+import org.olat.ims.qti21.ui.editor.items.KPrimEditorController;
 import org.olat.ims.qti21.ui.editor.items.MultipleChoiceEditorController;
 import org.olat.ims.qti21.ui.editor.items.SingleChoiceEditorController;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -49,6 +51,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
@@ -119,6 +122,7 @@ public class AssessmentItemEditorController extends BasicController {
 			
 			boolean choice = false;
 			boolean match = false;
+			boolean essay = false;
 			boolean unkown = false;
 			
 			if(interactions != null && interactions.size() > 0) {
@@ -127,18 +131,22 @@ public class AssessmentItemEditorController extends BasicController {
 						choice = true;
 					} else if(interaction instanceof MatchInteraction) {
 						match = true;
+					} else if(interaction instanceof ExtendedTextInteraction) {
+						essay = true;
 					} else {
 						unkown = true;
 					}	
 				}	
 			}
 			
-			if(choice && !unkown && !match) {
-				itemBuilder = initChoiceEditors(ureq, item);
-			} else if(!choice && !unkown && match) {
-				itemBuilder = initMatchEditors(ureq, item);
-			} else if(unkown) {
+			if(unkown) {
 				initItemCreatedByUnkownEditor(ureq);
+			} else if(choice && !match && !essay && !unkown) {
+				itemBuilder = initChoiceEditors(ureq, item);
+			} else if(!choice && match && !essay && !unkown) {
+				itemBuilder = initMatchEditors(ureq, item);
+			} else if(!choice && !match && essay && !unkown) {
+				itemBuilder = initEssayEditors(ureq, item);
 			} else {
 				initItemCreatedByUnkownEditor(ureq);
 			}
@@ -196,7 +204,7 @@ public class AssessmentItemEditorController extends BasicController {
 		listenTo(itemEditor);
 		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), scItemBuilder);
 		listenTo(scoreEditor);
-		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), scItemBuilder);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), scItemBuilder, false, true, true);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.choice"), itemEditor.getInitialComponent());
@@ -211,7 +219,7 @@ public class AssessmentItemEditorController extends BasicController {
 		listenTo(itemEditor);
 		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), mcItemBuilder);
 		listenTo(scoreEditor);
-		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), mcItemBuilder);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), mcItemBuilder, false, true, true);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.choice"), itemEditor.getInitialComponent());
@@ -221,18 +229,33 @@ public class AssessmentItemEditorController extends BasicController {
 	}
 	
 	private AssessmentItemBuilder initKPrimChoiceEditors(UserRequest ureq, AssessmentItem item) {
-		KPrimChoiceAssessmentItemBuilder kprimItemBuilder = new KPrimChoiceAssessmentItemBuilder(item, qtiService.qtiSerializer());
-		itemEditor = new KPrimChoiceEditorController(ureq, getWindowControl(), kprimItemBuilder);
+		KPrimAssessmentItemBuilder kprimItemBuilder = new KPrimAssessmentItemBuilder(item, qtiService.qtiSerializer());
+		itemEditor = new KPrimEditorController(ureq, getWindowControl(), kprimItemBuilder);
 		listenTo(itemEditor);
 		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), kprimItemBuilder);
 		listenTo(scoreEditor);
-		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), kprimItemBuilder);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), kprimItemBuilder, false, true, true);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.choice"), itemEditor.getInitialComponent());
 		tabbedPane.addTab(translate("form.score"), scoreEditor.getInitialComponent());
 		tabbedPane.addTab(translate("form.feedback"), feedbackEditor.getInitialComponent());
 		return kprimItemBuilder;
+	}
+	
+	private AssessmentItemBuilder initEssayEditors(UserRequest ureq, AssessmentItem item) {
+		EssayAssessmentItemBuilder essayItemBuilder = new EssayAssessmentItemBuilder(item, qtiService.qtiSerializer());
+		itemEditor = new EssayEditorController(ureq, getWindowControl(), essayItemBuilder);
+		listenTo(itemEditor);
+		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), essayItemBuilder);
+		listenTo(scoreEditor);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), essayItemBuilder, true, false, false);
+		listenTo(feedbackEditor);
+		
+		tabbedPane.addTab(translate("form.choice"), itemEditor.getInitialComponent());
+		tabbedPane.addTab(translate("form.score"), scoreEditor.getInitialComponent());
+		tabbedPane.addTab(translate("form.feedback"), feedbackEditor.getInitialComponent());
+		return essayItemBuilder;
 	}
 
 	@Override

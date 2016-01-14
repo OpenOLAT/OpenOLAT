@@ -49,7 +49,8 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestPackage;
-import org.olat.ims.qti21.model.xml.items.KPrimChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.items.EssayAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.items.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.items.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.items.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
@@ -86,7 +87,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private final MenuTree menuTree;
 	private final Link saveLink;
 	private final Dropdown addItemTools;
-	private final Link newSectionLink, newSingleChoiceLink, newMultipleChoiceLink, newKPrimChoiceLink;
+	private final Link newSectionLink, newSingleChoiceLink, newMultipleChoiceLink, newKPrimLink, newEssayLink;
 	private final TooledStackedPanel toolbar;
 	private final VelocityContainer mainVC;
 
@@ -140,17 +141,19 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		newSectionLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newSectionLink);
 		
-		//choices
+		//items
 		newSingleChoiceLink = LinkFactory.createToolLink("new.sc", translate("new.sc"), this, "o_mi_qtisc");
 		newSingleChoiceLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newSingleChoiceLink);
 		newMultipleChoiceLink = LinkFactory.createToolLink("new.mc", translate("new.mc"), this, "o_mi_qtimc");
 		newMultipleChoiceLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newMultipleChoiceLink);
-		newKPrimChoiceLink = LinkFactory.createToolLink("new.kprim", translate("new.kprim"), this, "o_mi_qtikprim");
-		newKPrimChoiceLink.setDomReplacementWrapperRequired(false);
-		addItemTools.addComponent(newKPrimChoiceLink);
-		
+		newKPrimLink = LinkFactory.createToolLink("new.kprim", translate("new.kprim"), this, "o_mi_qtikprim");
+		newKPrimLink.setDomReplacementWrapperRequired(false);
+		addItemTools.addComponent(newKPrimLink);
+		newEssayLink = LinkFactory.createToolLink("new.essay", translate("new.essay"), this, "o_mi_qtiessay");
+		newEssayLink.setDomReplacementWrapperRequired(false);
+		addItemTools.addComponent(newEssayLink);
 
 		// main layout
 		mainVC = createVelocityContainer("assessment_test_composer");
@@ -235,8 +238,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new SingleChoiceAssessmentItemBuilder(qtiService.qtiSerializer()));
 		} else if(newMultipleChoiceLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new MultipleChoiceAssessmentItemBuilder(qtiService.qtiSerializer()));
-		} else if(newKPrimChoiceLink == source) {
-			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new KPrimChoiceAssessmentItemBuilder(qtiService.qtiSerializer()));
+		} else if(newKPrimLink == source) {
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new KPrimAssessmentItemBuilder(qtiService.qtiSerializer()));
+		} else if(newEssayLink == source) {
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new EssayAssessmentItemBuilder(qtiService.qtiSerializer()));
 		}
 	}
 	

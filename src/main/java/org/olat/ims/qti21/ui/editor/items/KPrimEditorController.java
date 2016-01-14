@@ -38,7 +38,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.QTI21Constants;
-import org.olat.ims.qti21.model.xml.items.KPrimChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.items.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
@@ -53,7 +53,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class KPrimChoiceEditorController extends FormBasicController {
+public class KPrimEditorController extends FormBasicController {
 	
 	private static final String[] yesnoKeys = new String[]{ "y", "n"};
 	
@@ -64,9 +64,9 @@ public class KPrimChoiceEditorController extends FormBasicController {
 	private final List<KprimWrapper> choiceWrappers = new ArrayList<>();
 
 	private int count = 0;
-	private final KPrimChoiceAssessmentItemBuilder itemBuilder;
+	private final KPrimAssessmentItemBuilder itemBuilder;
 	
-	public KPrimChoiceEditorController(UserRequest ureq, WindowControl wControl, KPrimChoiceAssessmentItemBuilder itemBuilder) {
+	public KPrimEditorController(UserRequest ureq, WindowControl wControl, KPrimAssessmentItemBuilder itemBuilder) {
 		super(ureq, wControl, "simple_choices_editor");
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
@@ -75,8 +75,6 @@ public class KPrimChoiceEditorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("editor.kprim.title");
-		
 		FormLayoutContainer metadata = FormLayoutContainer.createDefaultFormLayout("metadata", getTranslator());
 		metadata.setRootForm(mainForm);
 		formLayout.add(metadata);
