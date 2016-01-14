@@ -61,6 +61,8 @@ public class GroupsPage {
 		WebElement createButton = browser.findElement(createBy);
 		createButton.click();
 		OOGraphene.waitBusy(browser);
+		By popupBy = By.cssSelector("div.modal-content fieldset.o_sel_group_edit_group_form");
+		OOGraphene.waitElement(popupBy, 5, browser);
 		
 		//fill the form
 		By nameBy = By.cssSelector(".o_sel_group_edit_title input[type='text']");

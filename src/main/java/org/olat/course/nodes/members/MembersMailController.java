@@ -357,7 +357,7 @@ public class MembersMailController extends FormBasicController {
 			participants = null;
 		}
 		
-		if(owners == null || coaches == null && participants == null) {
+		if(owners == null && coaches == null && participants == null) {
 			showWarning("already.all.selected");
 		} else {
 			selectMemberCtrl = new SelectMembersController(ureq, getWindowControl(), selectedMembers, owners, coaches, participants);
