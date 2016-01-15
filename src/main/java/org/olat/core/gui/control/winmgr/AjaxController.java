@@ -71,6 +71,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -267,7 +268,9 @@ public class AjaxController extends DefaultController {
 		}
 	}
 	
-	public void pushJSONAndClear(UserRequest ureq, Writer writer) throws IOException {
+	public void pushJSONAndClear(UserRequest ureq, Writer writer2) throws IOException {
+		
+		StringOutput writer = new StringOutput();
 		synchronized (windowcommands) { //o_clusterOK by:fj
 			// handle all windowcommands now, create json
 			writer.append("{\"cmds\":[");
@@ -285,12 +288,15 @@ public class AjaxController extends DefaultController {
 			writer.append("}");
 			windowcommands.clear();
 		}
+		System.out.println(writer.toString());
+		writer2.append(writer.toString());
 	}
 	
 	private void appendBusinessPathInfos(UserRequest ureq, Writer writer) throws IOException {
 		ChiefController ctrl = wboImpl.getChiefController();
 		String documentTitle = ctrl == null ? "" : ctrl.getWindowTitle();
-		writer.append(",\"documentTitle\":\"").append(documentTitle).append("\"");
+		StringBuilder docTitle = Formatter.escapeDoubleQuotesWithBackslash(documentTitle);
+		writer.append(",\"documentTitle\":\"").append(docTitle).append("\"");
 		
 		StringBuilder bc = new StringBuilder(128);
 		HistoryPoint p = ureq.getUserSession().getLastHistoryPoint();
@@ -311,7 +317,8 @@ public class AjaxController extends DefaultController {
 			writer.append("{\"w\":\"").append(winId)
 			      .append("\",\"cmd\":").append(Integer.toString(c.getCommand()))
 			      .append(",\"cda\":");
-			c.getSubJSON().write(writer);	
+			c.getSubJSON().write(writer);
+			c.getSubJSON().toString(2);
 			writer.append("}");
 		} catch (JSONException e) {
 			throw new AssertException("json exception:", e);
