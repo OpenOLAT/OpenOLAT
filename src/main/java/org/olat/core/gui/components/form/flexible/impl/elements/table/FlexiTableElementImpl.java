@@ -1258,7 +1258,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		try {
 			Integer row = new Integer(rowStr);
 			if(multiSelectedIndex.contains(row)) {
-				multiSelectedIndex.remove(row);
+				if(multiSelectedIndex.remove(row) & allSelectedNeedLoadOfWholeModel) {
+					allSelectedNeedLoadOfWholeModel = false;
+				}
 			} else {
 				multiSelectedIndex.add(row);
 			}	
