@@ -40,6 +40,8 @@ import org.olat.course.nodes.MembersCourseNode;
  */
 public class MembersCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 	
+	private boolean deduplicateList;
+	
 	private MembersCourseNodeConfiguration() {
 		super();
 	}
@@ -69,5 +71,13 @@ public class MembersCourseNodeConfiguration extends AbstractCourseNodeConfigurat
 	@Override
 	public String getIconCSSClass() {
 		return "o_cmembers_icon";
+	}
+
+	public boolean isDeduplicateList() {
+		return deduplicateList;
+	}
+
+	public void setDeduplicateList(boolean deduplicateList) {
+		this.deduplicateList = deduplicateList;
 	}
 }
