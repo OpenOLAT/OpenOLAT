@@ -168,7 +168,7 @@ public class MergedCourseContainer extends MergeSource {
 									rootFolder = (VFSContainer) courseBase.resolve(subpath);
 								}
 							}
-						}else{
+						} else {
 							VFSContainer courseBase = course.getCourseBaseContainer();
 							rootFolder = (VFSContainer) courseBase.resolve("/coursefolder"+subpath);
 						}
@@ -179,7 +179,7 @@ public class MergedCourseContainer extends MergeSource {
 					}
 
 					boolean canDownload = nodeEval.isCapabilityAccessible("download");
-					if(canDownload) {
+					if(canDownload && rootFolder != null) {
 						if(nodeEval.isCapabilityAccessible("upload")) {
 							//inherit the security callback from the course as for author
 						} else {
@@ -290,13 +290,13 @@ public class MergedCourseContainer extends MergeSource {
 				}
 
  				if(rootFolder != null){
-				// Create a container for this node content and wrap it with a merge source which is attached to tree
-				VFSContainer nodeContentContainer = new NamedContainerImpl(folderName, rootFolder);
-				courseNodeContainer = new MergeSource(nodesContainer, folderName);
-				courseNodeContainer.addContainersChildren(nodeContentContainer, true);
-				nodesContainer.addContainer(courseNodeContainer);	
-				// Do recursion for all children
-				addFolderBuildingBlocks(course, courseNodeContainer, child);
+ 					// Create a container for this node content and wrap it with a merge source which is attached to tree
+ 					VFSContainer nodeContentContainer = new NamedContainerImpl(folderName, rootFolder);
+ 					courseNodeContainer = new MergeSource(nodesContainer, folderName);
+ 					courseNodeContainer.addContainersChildren(nodeContentContainer, true);
+ 					nodesContainer.addContainer(courseNodeContainer);	
+ 					// Do recursion for all children
+ 					addFolderBuildingBlocks(course, courseNodeContainer, child);
  				}
 			} else {
 				// For non-folder course nodes, add merge source (no files to show) ...

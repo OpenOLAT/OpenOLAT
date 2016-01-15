@@ -80,8 +80,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ForumController extends BasicController implements GenericEventListener, Activateable2 {
 
-	protected static final String GUI_PREFS_THREADVIEW_KEY = "forum.threadview.enabled";
-
 	private VelocityContainer forumPanel;
 
 	private ThreadListController threadListCtrl;
@@ -267,6 +265,7 @@ public class ForumController extends BasicController implements GenericEventList
 		viewCtrl = new MessageListController(ureq, bwControl, forum, focallback);
 		viewCtrl.loadThread(ureq, thread);
 		viewCtrl.scrollTo(scrollTo);
+		viewCtrl.doShowBySettings(ureq);
 		listenTo(viewCtrl);
 		putContent(viewCtrl);
 		addToHistory(ureq, viewCtrl);

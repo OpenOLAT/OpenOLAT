@@ -111,7 +111,6 @@ public class FolderIndexerWorker implements Callable<Boolean> {
 			if (docFactory.isFileSupported(leaf)) {
 				String myFilePath = fPath + "/" + leaf.getName();
 				leafResourceContext.setFilePath(myFilePath);
-				//fxdiff FXOLAT-97: high CPU load tracker
 				WorkThreadInformations.setInfoFiles(myFilePath, leaf);
 				WorkThreadInformations.set("Index VFSLeaf=" + myFilePath + " at " + leafResourceContext.getResourceUrl());
 				Document document = docFactory.createDocument(leafResourceContext, leaf);

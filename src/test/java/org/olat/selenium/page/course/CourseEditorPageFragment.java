@@ -59,6 +59,7 @@ public class CourseEditorPageFragment {
 	public static final By changeNodeToolsMenu = By.cssSelector("ul.o_sel_course_editor_change_node");
 	public static final By changeNodeToolsMenuCaret = By.cssSelector("a.o_sel_course_editor_change_node");
 	
+	public static final By tabNavTabsBy = By.cssSelector("ul.nav.nav-tabs");
 	
 	public static final List<By> chooseRepoEntriesButtonList = new ArrayList<>();
 	static {
@@ -155,6 +156,7 @@ public class CourseEditorPageFragment {
 		for(WebElement tabLink:tabLinks) {
 			tabLink.click();
 			OOGraphene.waitBusy(browser);
+			OOGraphene.waitElement(tabNavTabsBy, 5, browser);
 			List<WebElement> chooseRepoEntry = browser.findElements(tabBy);
 			if(chooseRepoEntry.size() > 0) {
 				found = true;

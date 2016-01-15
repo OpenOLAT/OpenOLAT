@@ -32,7 +32,6 @@ import org.olat.core.util.prefs.Preferences;
 
 /**
  * Description:<br>
- * TODO: Felix Class Description for RamPreferences
  * 
  * <P>
  * Initial Date:  13.10.2006 <br>
@@ -45,8 +44,14 @@ public class RamPreferences implements Preferences {
 	/**
 	 * @see org.olat.core.util.prefs.Preferences#get(java.lang.Class, java.lang.String)
 	 */
+	@Override
 	public Object get(Class<?> attributedClass, String key) {
 		return store.get(getCompoundKey(attributedClass, key));
+	}
+
+	@Override
+	public Object get(String attributedClass, String key) {
+		return store.get(attributedClass + ":" + key);
 	}
 
 	/**
@@ -68,10 +73,16 @@ public class RamPreferences implements Preferences {
 	/**
 	 * @see org.olat.core.util.prefs.Preferences#putAndSave(java.lang.Class, java.lang.String, java.lang.Object)
 	 */
+	@Override
 	public void putAndSave(Class<?> attributedClass, String key, Object value) {
 		put(attributedClass, key, value);
 		save();
+	}
 
+	@Override
+	public void putAndSave(String attributedClass, String key, Object value) {
+		store.put(attributedClass + ":" + key, value);
+		save();
 	}
 
 	/**

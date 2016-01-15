@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
+import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
@@ -48,6 +49,7 @@ public class CalendarWSHelper {
 	protected static void transfer(EventVO event, KalendarEvent kalEvent) {
 		kalEvent.setDescription(event.getDescription());
 		kalEvent.setLocation(event.getLocation());
+		kalEvent.setManagedFlags(CalendarManagedFlag.toEnum(event.getManagedFlags()));
 		kalEvent.setAllDayEvent(event.isAllDayEvent());
 	}
 	

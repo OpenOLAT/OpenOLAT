@@ -43,6 +43,14 @@ public interface Preferences {
 	 * @return the object
 	 */
 	public Object get(Class<?> attributedClass, String key);
+	
+	/**
+	 * 
+	 * @param attributedClass
+	 * @param key
+	 * @return
+	 */
+	public Object get(String attributedClass, String key);
 
 	/**
 	 * @param attributedClass
@@ -69,8 +77,15 @@ public interface Preferences {
 	 * @param value
 	 */
 	public void putAndSave(Class<?> attributedClass, String key, Object value);
-
-	//FIXME fj: remove method is missing
+	
+	/**
+	 * Convenience method: as put, followed by a save()
+	 * 
+	 * @param attributedClass
+	 * @param key
+	 * @param value
+	 */
+	public void putAndSave(String attributedClass, String key, Object value);
 	
 	/**
 	 * to commit several put's
