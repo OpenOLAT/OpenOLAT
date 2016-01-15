@@ -268,9 +268,7 @@ public class AjaxController extends DefaultController {
 		}
 	}
 	
-	public void pushJSONAndClear(UserRequest ureq, Writer writer2) throws IOException {
-		
-		StringOutput writer = new StringOutput();
+	public void pushJSONAndClear(UserRequest ureq, Writer writer) throws IOException {
 		synchronized (windowcommands) { //o_clusterOK by:fj
 			// handle all windowcommands now, create json
 			writer.append("{\"cmds\":[");
@@ -288,8 +286,6 @@ public class AjaxController extends DefaultController {
 			writer.append("}");
 			windowcommands.clear();
 		}
-		System.out.println(writer.toString());
-		writer2.append(writer.toString());
 	}
 	
 	private void appendBusinessPathInfos(UserRequest ureq, Writer writer) throws IOException {
