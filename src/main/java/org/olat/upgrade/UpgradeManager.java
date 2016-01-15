@@ -173,14 +173,13 @@ public abstract class UpgradeManager extends BasicManager implements Initializab
 	/**
 	 * create fake upgrade data as this is a new installation
 	 */
-	private void createUpgradeData() {
+	protected void createUpgradeData() {
 		for (OLATUpgrade upgrade: upgrades) {
 			UpgradeHistoryData uhd = new UpgradeHistoryData();
 			uhd.setInstallationComplete(true);
 			uhd.setBooleanDataValue(OLATUpgrade.TASK_DP_UPGRADE, true);
 			setUpgradesHistory(uhd, upgrade.getVersion());
 		}
-		
 	}
 
 	/**
