@@ -39,6 +39,7 @@ import org.olat.core.commons.services.thumbnail.ThumbnailSPI;
 import org.olat.core.commons.services.video.spi.FLVParser;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.ims.cp.ui.VFSCPNamedItem;
@@ -115,6 +116,9 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 		FinalSize size = null;
 		if(file instanceof LocalFileImpl && thumbnailFile instanceof LocalFileImpl) {
 			try {
+				WorkThreadInformations.setInfoFiles(null, file);
+				WorkThreadInformations.set("Generate thumbnail (video) VFSLeaf=" + file);
+				
 				File baseFile = ((LocalFileImpl)file).getBasefile();
 				File scaledImage = ((LocalFileImpl)thumbnailFile).getBasefile();
 				BufferedImage frame = FrameGrab.getFrame(baseFile, 20);
@@ -126,6 +130,8 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 			//ArrayIndexOutOfBoundsException
 			} catch (Exception | AssertionError e) {
 				log.error("", e);
+			} finally {
+				WorkThreadInformations.unset();
 			}
 		}
 		return size;
