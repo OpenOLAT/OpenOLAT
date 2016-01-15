@@ -65,6 +65,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -102,6 +103,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class MessageListController extends BasicController implements GenericEventListener {
 
 	protected static final String USER_PROPS_ID = ForumUserListController.class.getCanonicalName();
+	
+	protected static final String VIEWMODE_THREAD = "thread";
+	protected static final String VIEWMODE_FLAT = "flat";
+	protected static final String VIEWMODE_MESSAGE = "message";
+	private static final String GUI_PREFS_VIEWMODE_KEY = "forum.threadview.mode";
+	private static final String GUI_PREFS_VIEWMODE_CLASS = "org.olat.modules.fo.ForumThreadViewModeController";
 	
 	private final VelocityContainer mainVC;
 
@@ -645,10 +652,13 @@ public class MessageListController extends BasicController implements GenericEve
 			doShowThread();
 		} else if (allButton == source) {
 			doShowAll(ureq);
+			saveViewSettings(ureq, VIEWMODE_THREAD);
 		} else if (allFlatButton == source) {
 			doShowAllFlat(ureq);
+			saveViewSettings(ureq, VIEWMODE_FLAT);
 		}  else if (oneButton == source) {
 			doShowOne(ureq);
+			saveViewSettings(ureq, VIEWMODE_MESSAGE);
 		}  else if (markedButton == source) {
 			doShowMarked(ureq);		
 		}  else if (newButton == source) {
@@ -1035,6 +1045,16 @@ public class MessageListController extends BasicController implements GenericEve
 		}
 	}
 	
+	protected void doShowBySettings(UserRequest ureq) {
+		String viewSettings = getViewSettings(ureq);
+		switch(viewSettings) {
+			case VIEWMODE_THREAD: doShowAll(ureq); break;
+			case VIEWMODE_FLAT: doShowAllFlat(ureq); break;
+			case VIEWMODE_MESSAGE: doShowOne(ureq); break;
+			default: doShowAll(ureq);
+		}
+	}
+	
 	private void doShowAll(UserRequest ureq) {
 		if(reloadList) {
 			reloadModel(ureq, null);
@@ -1070,6 +1090,20 @@ public class MessageListController extends BasicController implements GenericEve
 			messageTableCtrl.setSelectView(oneView.get(0));
 			messageTableCtrl.loadMessages(new ArrayList<>(backupViews));
 		}
+	}
+	
+	private String getViewSettings(UserRequest ureq) {
+		Preferences prefs = ureq.getUserSession().getGuiPreferences();
+		Object setting = prefs.get(GUI_PREFS_VIEWMODE_CLASS, GUI_PREFS_VIEWMODE_KEY);
+		if(VIEWMODE_THREAD.equals(setting) || VIEWMODE_FLAT.equals(setting) || VIEWMODE_MESSAGE.equals(setting)) {
+			return (String)setting;
+		}
+		return VIEWMODE_THREAD;
+	}
+
+	private void saveViewSettings(UserRequest ureq, String viewMode) {
+		Preferences prefs = ureq.getUserSession().getGuiPreferences();
+		prefs.putAndSave(GUI_PREFS_VIEWMODE_CLASS, GUI_PREFS_VIEWMODE_KEY, viewMode);
 	}
 	
 	private void doSelectTheOne(UserRequest ureq, Long messageKey) {

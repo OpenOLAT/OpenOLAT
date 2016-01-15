@@ -83,8 +83,14 @@ public class DbPrefs implements Preferences, Serializable {
 	 * @param key
 	 * @return Object
 	 */
+	@Override
 	public Object get(Class<?> attributedClass, String key) {
 		return prefstore.get(attributedClass.getName()+"::"+key);
+	}
+
+	@Override
+	public Object get(String attributedClass, String key) {
+		return prefstore.get(attributedClass + "::" + key);
 	}
 
 	/**
@@ -100,10 +106,15 @@ public class DbPrefs implements Preferences, Serializable {
 	 * @param attributedClass
 	 * @param key
 	 * @param value
-	 * TODO: make value not object, but basetypemap or such?
 	 */
+	@Override
 	public void put(Class<?> attributedClass, String key, Object value) {
 		prefstore.put(attributedClass.getName()+"::"+key, value);
+	}
+
+	@Override
+	public void putAndSave(String attributedClass, String key, Object value) {
+		prefstore.put(attributedClass + "::" + key, value);
 	}
 
 	/**
