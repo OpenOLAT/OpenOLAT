@@ -86,6 +86,8 @@ import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
 import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.ui.QTI12PullTestsToolController;
 import org.olat.ims.qti.statistics.ui.QTI12StatisticsToolController;
+import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
+import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.iq.IQSecurityCallback;
@@ -223,9 +225,17 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		
 		Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", courseId);
+		
+		RepositoryEntry qtiTestEntry = getReferencedRepositoryEntry();
+		if(ImsQTI21Resource.TYPE_NAME.equals(qtiTestEntry.getOlatResource().getResourceableTypeName())) {
+			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(qtiTestEntry, courseEntry, getIdent());
+			return new QTI21StatisticResourceResult(qtiTestEntry, courseEntry, this, searchParams);
+		}
+		
 		QTIStatisticSearchParams searchParams = new QTIStatisticSearchParams(courseOres.getResourceableId(), getIdent());
 		searchParams.setLimitToGroups(options.getParticipantsGroups());
-		return new QTIStatisticResourceResult(courseOres, this, searchParams);
+		return new QTIStatisticResourceResult(courseOres, this, qtiTestEntry, searchParams);
 	}
 	
 	@Override

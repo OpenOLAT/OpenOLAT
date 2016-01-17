@@ -171,7 +171,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		/* Handle immediate end of test session */
         if (testSessionController.getTestSessionState() != null && testSessionController.getTestSessionState().isEnded()) {
         	AssessmentResult assessmentResult = null;
-            qtiService.finishTestSession(candidateSession, assessmentResult, ureq.getRequestTimestamp());
+            qtiService.finishTestSession(candidateSession, testSessionController.getTestSessionState(), assessmentResult, ureq.getRequestTimestamp());
         	mainVC = createVelocityContainer("end");
         } else {
         	mainVC = createVelocityContainer("run");
@@ -319,7 +319,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         }
 
         /* Record current result state */
-        computeAndRecordTestAssessmentResult(ureq, false);
+        computeAndRecordTestAssessmentResult(ureq, testSessionState, false);
 
         /* Record and log event */
         final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession,
@@ -353,7 +353,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         }
 
         /* Record current result state */
-        computeAndRecordTestAssessmentResult(ureq, false);
+        computeAndRecordTestAssessmentResult(ureq, testSessionState, false);
 
         /* Record and log event */
         CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession,
@@ -388,12 +388,13 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	    //boolean terminated = nextItemNode == null && testSessionController.findNextEnterableTestPart() == null; 
 
 	    // Record current result state
-	    final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(ureq, false);
+	    final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(ureq, testSessionState, false);
 
 	    /* If we ended the testPart and there are now no more available testParts, then finish the session now */
 	    if (nextItemNode==null && testSessionController.findNextEnterableTestPart()==null) {
-	    	candidateSession = qtiService.finishTestSession(candidateSession, assessmentResult, requestTimestamp);
+	    	candidateSession = qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult, requestTimestamp);
 	    }
+
 
 	    // Record and log event 
 	    final CandidateTestEventType eventType = nextItemNode!=null ? CandidateTestEventType.FINISH_ITEM : CandidateTestEventType.FINISH_FINAL_ITEM;
@@ -485,7 +486,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         
         
         /* Record current result state */
-        computeAndRecordTestAssessmentResult(ureq, false);
+        computeAndRecordTestAssessmentResult(ureq, testSessionState, false);
 
         /* Save any change to session state */
         candidateSession = qtiService.updateTestSession(candidateSession);
@@ -549,7 +550,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         boolean terminated = isTerminated();
 
         /* Record current result state */
-        computeAndRecordTestAssessmentResult(ureq, terminated);
+        computeAndRecordTestAssessmentResult(ureq, testSessionState, terminated);
 
         /* Record and log event */
         final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession,
@@ -606,7 +607,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         candidateSession = qtiService.updateTestSession(candidateSession);
 
         /* Record current result state (final) */
-        computeAndRecordTestAssessmentResult(ureq, true);
+        computeAndRecordTestAssessmentResult(ureq, testSessionState, true);
 
         /* Record and log event */
         final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession,
@@ -661,11 +662,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
         boolean ended = testSessionState.isEnded();
 
         /* Record current result state */
-        final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(ureq, ended);
+        final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(ureq, testSessionState, ended);
 
         /* Handle immediate end of test session */
         if (ended) {
-            qtiService.finishTestSession(candidateSession, assessmentResult, timestamp);
+            qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult, timestamp);
         }
         
         return testSessionController;
@@ -725,9 +726,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
         return result;
     }
 	
-	private AssessmentResult computeAndRecordTestAssessmentResult(UserRequest ureq, boolean submit) {
+	private AssessmentResult computeAndRecordTestAssessmentResult(UserRequest ureq, TestSessionState testSessionState, boolean submit) {
 		AssessmentResult assessmentResult = computeTestAssessmentResult(ureq, candidateSession);
-		qtiService.recordTestAssessmentResult(candidateSession, assessmentResult);
+		qtiService.recordTestAssessmentResult(candidateSession, testSessionState, assessmentResult);
 		processOutcomeVariables(assessmentResult.getTestResult(), submit);
 		return assessmentResult;
 	}

@@ -121,9 +121,9 @@ public interface QTI21Service {
 	 */
 	public List<UserTestSession> getUserTestSessions(RepositoryEntryRef courseEntry, String subIdent, IdentityRef identity);
 	
-	public UserTestSession recordTestAssessmentResult(UserTestSession candidateSession, AssessmentResult assessmentResult);
+	public UserTestSession recordTestAssessmentResult(UserTestSession candidateSession, TestSessionState testSessionState, AssessmentResult assessmentResult);
 	
-	public UserTestSession finishTestSession(UserTestSession candidateSession, AssessmentResult assessmentResul, Date timestamp);
+	public UserTestSession finishTestSession(UserTestSession candidateSession, TestSessionState testSessionState, AssessmentResult assessmentResul, Date timestamp);
 	
 	public CandidateEvent recordCandidateTestEvent(UserTestSession candidateSession, CandidateTestEventType textEventType,
 			TestSessionState testSessionState, NotificationRecorder notificationRecorder);

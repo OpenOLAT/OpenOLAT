@@ -89,9 +89,11 @@ public class BarSeries {
 	}
 	
 	public static final boolean hasNotNullDatas(double[] values) {
-		for(double value:values) {
-			if(value > 0.00001d) {
-				return true;
+		if(values != null && values.length > 0) {
+			for(double value:values) {
+				if(value > 0.00001d) {
+					return true;
+				}
 			}
 		}
 		return false;

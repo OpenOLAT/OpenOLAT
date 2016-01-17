@@ -31,18 +31,31 @@ import org.olat.repository.RepositoryEntry;
  *
  */
 public class QTI21StatisticSearchParams {
-	
-	private final RepositoryEntry entry;
+
+	private final String nodeIdent;
+	private final RepositoryEntry courseEntry;
+	private final RepositoryEntry testEntry;
 
 	private List<Group> limitToGroups;
 	private boolean mayViewAllUsersAssessments;
 	
-	public QTI21StatisticSearchParams(RepositoryEntry entry) {
-		this.entry = entry;
+	public QTI21StatisticSearchParams(RepositoryEntry testEntry, RepositoryEntry courseEntry, String nodeIdent) {
+		this.nodeIdent = nodeIdent;
+		this.courseEntry = courseEntry;
+		this.testEntry = testEntry;
+	}
+	
+	public RepositoryEntry getTestEntry() {
+		return testEntry;
+	}
+	
+	
+	public RepositoryEntry getCourseEntry() {
+		return courseEntry;
 	}
 
-	public RepositoryEntry getEntry() {
-		return entry;
+	public String getNodeIdent() {
+		return nodeIdent;
 	}
 
 	public List<Group> getLimitToGroups() {

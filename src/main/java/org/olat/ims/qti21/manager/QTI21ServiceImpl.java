@@ -355,19 +355,22 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	}
 
 	@Override
-	public UserTestSession recordTestAssessmentResult(UserTestSession candidateSession, AssessmentResult assessmentResult) {
+	public UserTestSession recordTestAssessmentResult(UserTestSession candidateSession, TestSessionState testSessionState, AssessmentResult assessmentResult) {
 		// First record full result XML to filesystem
         storeAssessmentResultFile(candidateSession, assessmentResult);
-
         // Then record test outcome variables to DB
         recordOutcomeVariables(candidateSession, assessmentResult.getTestResult());
+        // Set duration
+        candidateSession.setDuration(testSessionState.getDurationAccumulated());
         return testSessionDao.update(candidateSession);
 	}
 
 	@Override
-	public UserTestSession finishTestSession(UserTestSession candidateSession, AssessmentResult assessmentResul, Date timestamp) {
+	public UserTestSession finishTestSession(UserTestSession candidateSession, TestSessionState testSessionState, AssessmentResult assessmentResul, Date timestamp) {
 		/* Mark session as finished */
         candidateSession.setFinishTime(timestamp);
+        // Set duration
+        candidateSession.setDuration(testSessionState.getDurationAccumulated());
 
         /* Also nullify LIS result info for session. These will be updated later, if pre-conditions match for sending the result back */
         //candidateSession.setLisOutcomeReportingStatus(null);

@@ -1268,6 +1268,7 @@ create table o_qti_assessment_session (
    q_author_mode bit not null default 0,
    q_finish_time datetime,
    q_termination_time datetime,
+   q_duration bigint,
    q_score float(65,30) default null,
    q_passed bit default null, 
    q_storage varchar(32),

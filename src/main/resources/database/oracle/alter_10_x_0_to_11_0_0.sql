@@ -6,6 +6,7 @@ create table o_qti_assessment_session (
    q_author_mode number default 0 not null,
    q_finish_time date,
    q_termination_time date,
+   q_duration number(20),
    q_storage varchar2(32 char),
    fk_identity number(20) not null,
    fk_entry number(20) not null,

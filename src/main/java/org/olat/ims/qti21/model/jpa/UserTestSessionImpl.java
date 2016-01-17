@@ -134,6 +134,9 @@ public class UserTestSessionImpl implements UserTestSession, Persistable {
     @Column(name="q_termination_time", nullable=true, insertable=true, updatable=true)
     private Date terminationTime;
     
+    @Column(name="q_duration", nullable=true, insertable=true, updatable=true)
+    private Long duration;
+    
     @Column(name="q_passed", nullable=true, insertable=true, updatable=true)
     private Boolean passed;
 
@@ -223,6 +226,7 @@ public class UserTestSessionImpl implements UserTestSession, Persistable {
 		this.authorMode = authorMode;
 	}
 
+	@Override
 	public boolean isExploded() {
 		return exploded;
 	}
@@ -231,6 +235,7 @@ public class UserTestSessionImpl implements UserTestSession, Persistable {
 		this.exploded = exploded;
 	}
 
+	@Override
 	public String getStorage() {
 		return storage;
 	}
@@ -239,36 +244,54 @@ public class UserTestSessionImpl implements UserTestSession, Persistable {
 		this.storage = storage;
 	}
 
+	@Override
 	public Date getFinishTime() {
 		return finishTime;
 	}
 
+	@Override
 	public void setFinishTime(Date finishTime) {
 		this.finishTime = finishTime;
 	}
 
+	@Override
 	public Date getTerminationTime() {
 		return terminationTime;
 	}
 
+	@Override
 	public void setTerminationTime(Date terminationTime) {
 		this.terminationTime = terminationTime;
 	}
 
+	@Override
 	public Boolean getPassed() {
 		return passed;
 	}
 
+	@Override
 	public void setPassed(Boolean passed) {
 		this.passed = passed;
 	}
 
+	@Override
 	public BigDecimal getScore() {
 		return score;
 	}
 
+	@Override
 	public void setScore(BigDecimal score) {
 		this.score = score;
+	}
+
+	@Override
+	public Long getDuration() {
+		return duration;
+	}
+
+	@Override
+	public void setDuration(Long duration) {
+		this.duration = duration;
 	}
 
 	@Override

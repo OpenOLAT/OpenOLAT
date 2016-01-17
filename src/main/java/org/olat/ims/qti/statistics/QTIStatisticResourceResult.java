@@ -42,7 +42,6 @@ import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.nodes.TitledWrapperHelper;
 import org.olat.course.statistic.StatisticResourceNode;
 import org.olat.course.statistic.StatisticResourceResult;
-import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.objects.QTIDocument;
 import org.olat.ims.qti.editor.beecom.objects.Section;
@@ -54,7 +53,6 @@ import org.olat.ims.qti.statistics.model.StatisticAssessment;
 import org.olat.ims.qti.statistics.ui.QTI12AssessmentStatisticsController;
 import org.olat.ims.qti.statistics.ui.QTI12ItemStatisticsController;
 import org.olat.ims.qti.statistics.ui.QTI21OnyxAssessmentStatisticsController;
-import org.olat.ims.qti21.ui.statistics.QTI21AssessmentTestStatisticsController;
 import org.olat.repository.RepositoryEntry;
 
 import de.bps.onyx.plugin.OnyxModule;
@@ -78,17 +76,16 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 	
 	private QTIType type;
 	
-	public QTIStatisticResourceResult(OLATResourceable courseOres, QTICourseNode courseNode, QTIStatisticSearchParams searchParams) {
+	public QTIStatisticResourceResult(OLATResourceable courseOres, QTICourseNode courseNode,
+			RepositoryEntry testEntry, QTIStatisticSearchParams searchParams) {
 		this.courseNode = courseNode;
 		this.searchParams = searchParams;
 		this.courseOres = OresHelper.clone(courseOres);
 		qtiStatisticsManager = CoreSpringFactory.getImpl(QTIStatisticsManager.class);
 
-		qtiRepositoryEntry = courseNode.getReferencedRepositoryEntry();
+		qtiRepositoryEntry = testEntry;
 		if(OnyxModule.isOnyxTest(qtiRepositoryEntry.getOlatResource())) {
 			type = QTIType.onyx;
-		} else if(ImsQTI21Resource.TYPE_NAME.equals(qtiRepositoryEntry.getOlatResource().getResourceableTypeName())) {
-			type = QTIType.qtiworks;
 		} else {
 			resolver = new ImsRepositoryResolver(qtiRepositoryEntry);
 			Document doc = resolver.getQTIDocument();
@@ -150,10 +147,6 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 			subTreeModel = new GenericTreeModel();
 			StatisticResourceNode rootTreeNode = new StatisticResourceNode(courseNode, this);
 			subTreeModel.setRootNode(rootTreeNode);
-		} else if(type == QTIType.qtiworks) {
-			subTreeModel = new GenericTreeModel();
-			StatisticResourceNode rootTreeNode = new StatisticResourceNode(courseNode, this);
-			subTreeModel.setRootNode(rootTreeNode);
 		} else if(qtiDocument == null) {
 			subTreeModel = null;
 		} else {
@@ -193,8 +186,6 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 		Controller ctrl;
 		if (type == QTIType.onyx){
 			ctrl = new QTI21OnyxAssessmentStatisticsController(ureq, wControl, this, printMode);
-		} else if(type == QTIType.qtiworks) {
-			ctrl = new QTI21AssessmentTestStatisticsController(ureq, wControl, this, printMode);
 		} else {
 			ctrl = new QTI12AssessmentStatisticsController(ureq, wControl, stackPanel, this, printMode);
 		}

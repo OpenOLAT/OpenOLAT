@@ -46,8 +46,11 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 	private DB dbInstance;
 	
 	private StringBuilder decorateRSet(StringBuilder sb, QTI21StatisticSearchParams searchParams) {
-		sb.append(" where asession.repositoryEntry.key=:repositoryEntryKey")
-		  .append(" and asession.lastModified = (select max(a2session.lastModified) from qtiassessmentsession a2session")
+		sb.append(" where asession.testEntry.key=:testEntryKey");
+		if(searchParams.getCourseEntry() != null) {
+			sb.append(" and asession.repositoryEntry.key=:repositoryEntryKey and asession.subIdent=:subIdent");
+		}
+		sb.append(" and asession.lastModified = (select max(a2session.lastModified) from qtiassessmentsession a2session")
 		  .append("   where a2session.identity=asession.identity and a2session.repositoryEntry=asession.repositoryEntry")
 		  .append(" )");
 		
@@ -66,7 +69,11 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 	}
 	
 	private void decorateRSetQuery(TypedQuery<?> query, QTI21StatisticSearchParams searchParams) {
-		query.setParameter("repositoryEntryKey", searchParams.getEntry().getKey());
+		query.setParameter("testEntryKey", searchParams.getTestEntry().getKey());
+		if(searchParams.getCourseEntry() != null) {
+			query.setParameter("repositoryEntryKey", searchParams.getCourseEntry().getKey());
+			query.setParameter("subIdent", searchParams.getNodeIdent());
+		}
 		if(searchParams.getLimitToGroups() != null && searchParams.getLimitToGroups().size() > 0) {
 			query.setParameter("baseGroups", searchParams.getLimitToGroups());
 		}
@@ -75,7 +82,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 	@Override
 	public StatisticAssessment getAssessmentStatistics(QTI21StatisticSearchParams searchParams) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select asession.score, asession.passed from qtiassessmentsession asession ");
+		sb.append("select asession.score, asession.passed, asession.duration from qtiassessmentsession asession ");
 		decorateRSet(sb, searchParams);
 		sb.append(" order by asession.key asc");
 

@@ -36,7 +36,8 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
+import org.olat.course.nodes.QTICourseNode;
+import org.olat.course.nodes.iq.IQEditController;
 import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.model.StatisticAssessment;
 import org.olat.ims.qti21.QTI21StatisticsManager;
@@ -53,16 +54,25 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	
 	private final VelocityContainer mainVC;
 	
+	private QTIType type;
+	private QTICourseNode courseNode;
+	
 	@Autowired
 	private QTI21StatisticsManager statisticsManager;
 
 	public QTI21AssessmentTestStatisticsController(UserRequest ureq, WindowControl wControl,
-			QTIStatisticResourceResult resourceResult, boolean printMode) {
+			QTI21StatisticResourceResult resourceResult, boolean printMode) {
 		super(ureq, wControl);
+		
+		courseNode = resourceResult.getTestCourseNode();
+		type = resourceResult.getType();
+		
 
 		mainVC = createVelocityContainer("statistics_assessment_test");
 		mainVC.put("loadd3js", new StatisticsComponent("d3loader"));
 		mainVC.contextPut("printMode", new Boolean(printMode));
+		mainVC.contextPut("courseId", resourceResult.getCourseEntry().getKey());
+		mainVC.contextPut("testId", resourceResult.getTestEntry().getKey());
 		putInitialPanel(mainVC);
 
 		StatisticAssessment stats = resourceResult.getQTIStatisticAssessment();
@@ -72,15 +82,16 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	}
 	
 	public QTI21AssessmentTestStatisticsController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry entry, boolean printMode) {
+			RepositoryEntry testEntry, boolean printMode) {
 		super(ureq, wControl);
 
 		mainVC = createVelocityContainer("statistics_assessment_test");
 		mainVC.put("loadd3js", new StatisticsComponent("d3loader"));
 		mainVC.contextPut("printMode", new Boolean(printMode));
+		mainVC.contextPut("testId", testEntry.getKey());
 		putInitialPanel(mainVC);
 		
-		QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(entry);
+		QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(testEntry, null, null);
 		StatisticAssessment stats = statisticsManager.getAssessmentStatistics(searchParams);
 		initScoreHistogram(stats);
 		//initDurationHistogram(stats);
@@ -90,6 +101,37 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	private Float getMaxScoreSetting(QTICourseNode testNode) {
+		Float maxScoreSetting = null;
+		if(QTIType.qtiworks.equals(type)) {
+			Object maxScoreObj = testNode == null ? null : testNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_MAXSCORE);
+			if (maxScoreObj instanceof Float) {
+				maxScoreSetting = (Float)maxScoreObj;
+			} else {
+				// try to calculate max
+				float max = 0;
+				/*for (Item item: items) {
+					if(item.getQuestion() != null) {
+						max += item.getQuestion().getMaxValue();
+					}
+				}*/
+				maxScoreSetting = max > 0 ? max : null;
+			}
+		}
+		return maxScoreSetting;
+	}
+	
+	private Float getCutValueSetting(QTICourseNode testNode) {
+		Float cutValueSetting = null;
+		if(QTIType.qtiworks.equals(type)) {
+			Object cutScoreObj = testNode == null ? null : testNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_CUTVALUE);
+			if (cutScoreObj instanceof Float) {
+				cutValueSetting = (Float)cutScoreObj;
+			}
+		}
+		return cutValueSetting;
 	}
 
 	private void initCourseNodeInformation(StatisticAssessment stats) {
@@ -107,6 +149,12 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 		
 		String duration = duration(stats.getAverageDuration());
 		mainVC.contextPut("averageDuration", duration);
+		
+		Float maxScore = getMaxScoreSetting(courseNode);
+		mainVC.contextPut("maxScore", maxScore == null ? "-" : format(maxScore));
+		Float cutValue = getCutValueSetting(courseNode);
+		mainVC.contextPut("cutScore", cutValue == null ? "-" : format(cutValue));
+		
 	}
 
 	private void initScoreHistogram(StatisticAssessment stats) {

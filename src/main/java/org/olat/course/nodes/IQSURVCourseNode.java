@@ -64,6 +64,7 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
+import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.export.QTIExportFormatter;
 import org.olat.ims.qti.export.QTIExportFormatterCSVType3;
@@ -74,6 +75,8 @@ import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
 import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
 import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.ui.QTI12StatisticsToolController;
+import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
+import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
@@ -178,11 +181,18 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 		
 		Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", courseId);
+
+		RepositoryEntry qtiSurveyEntry = getReferencedRepositoryEntry();
+		if(ImsQTI21Resource.TYPE_NAME.equals(qtiSurveyEntry.getOlatResource().getResourceableTypeName())) {
+			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(qtiSurveyEntry, courseEntry, getIdent());
+			searchParams.setLimitToGroups(options.getParticipantsGroups());
+			return new QTI21StatisticResourceResult(qtiSurveyEntry, courseEntry, this, searchParams);
+		}
+		
 		QTIStatisticSearchParams searchParams = new QTIStatisticSearchParams(courseOres.getResourceableId(), getIdent());
 		searchParams.setLimitToGroups(options.getParticipantsGroups());
-
-		QTIStatisticResourceResult result = new QTIStatisticResourceResult(courseOres, this, searchParams);
-		return result;
+		return new QTIStatisticResourceResult(courseOres, this, qtiSurveyEntry, searchParams);
 	}
 	
 	@Override

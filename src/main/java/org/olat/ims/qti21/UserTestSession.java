@@ -51,6 +51,10 @@ public interface UserTestSession extends CreateInfo, ModifiedInfo {
 
 	public void setScore(BigDecimal score);
 	
+	public Long getDuration();
+	
+	public void setDuration(Long duration);
+	
 	public boolean isExploded();
 	
 	public String getStorage();

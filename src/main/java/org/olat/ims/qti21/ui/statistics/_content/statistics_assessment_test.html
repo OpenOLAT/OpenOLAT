@@ -1,8 +1,21 @@
 <div class="panel panel-default">
 	<div class="panel-heading"><h4>$r.translate("fig.title")</h4></div>	  	
 	<table class="table"><tbody>
+		<tr><th>$r.translate("fig.courseId")</th>
+			<td>$courseId</td>
+			<th>#if($type == "survey") $r.translate("fig.surveyId") #else $r.translate("fig.testId") #end</th>
+			<td>$testId</td></tr>
 		<tr><th>$r.translate("fig.participants")</th>
 			<td>$numOfParticipants</td>
+			<th>$r.translate("fig.passed")</th>
+			<td>$numOfPassed</td></tr>
+		<tr><th>$r.translate("fig.failed")</th>
+			<td>$numOfFailed</td>
+			<th>$r.translate("chart.maxscore")</th>
+			<td>$maxScore</td></tr>
+		<tr>
+			<th>$r.translate("chart.cutscore")</th>
+			<td>$cutScore</td>
 			<th>$r.translate("fig.avg")</th>
 			<td>$average</td></tr>
 		<tr><th>$r.translate("fig.span")</th>

@@ -38,6 +38,7 @@ create table o_qti_assessment_session (
    q_author_mode bool default false,
    q_finish_time timestamp,
    q_termination_time timestamp,
+   q_duration int8,
    q_score decimal default null,
    q_passed bool default null,
    q_storage varchar(32),
