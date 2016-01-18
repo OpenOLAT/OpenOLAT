@@ -60,7 +60,7 @@ public class RepositoryEntryImageMapper implements Mapper {
 				MetaInfo info = ((MetaTagged) image).getMetaInfo();
 				if(info != null) {
 					//121 is needed to fill the div
-					VFSLeaf thumbnail = info.getThumbnail(180, 121, true);
+					VFSLeaf thumbnail = info.getThumbnail(180, 120, true);
 					if(thumbnail != null) {
 						resource = new VFSMediaResource(thumbnail);
 					}
