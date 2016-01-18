@@ -131,6 +131,7 @@
 	
 	<bean id="membersCourseNodeConf" class="org.olat.course.nodes.members.MembersCourseNodeConfiguration" scope="prototype">
 		<property name="enabled" value="${course.node.members.enabled}" />
+		<property name="deduplicateList" value="${course.node.members.deduplicate.list}" />
 		<property name="order"   value="195" />
 	</bean>
 		

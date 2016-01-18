@@ -90,6 +90,8 @@ public class CourseDBEntryImpl extends PersistentObject implements CourseDBEntry
 			return getLongValue();
 		} else if (getFloatValue() != null) {
 			return getFloatValue();
+		} else if (getTextValue() != null) {
+			return getTextValue();
 		}
 		return null;
 	}
@@ -101,7 +103,17 @@ public class CourseDBEntryImpl extends PersistentObject implements CourseDBEntry
 		} else if (value instanceof Float) {
 			setFloatValue((Float)value);
 		} else if (value instanceof String) {
-			setStringValue((String)value);
+			if (((String) value).length() <= 255) {
+				// db field for string value limited to 255
+				// reset text value to null for updating of previously long text to short strings
+				setStringValue((String)value);				
+				setTextValue(null);
+			} else {
+				// fallback to text for oversized strings
+				// reset string value to null for updating of previously short strings to long texts
+				setStringValue(null);
+				setTextValue((String)value);				
+			}
 		}
 	}
 

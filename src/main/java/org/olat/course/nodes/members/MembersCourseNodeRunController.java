@@ -62,6 +62,7 @@ import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.instantMessaging.InstantMessagingModule;
@@ -110,6 +111,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 	private CloseableModalController cmc;
 	
 	private int count = 0;
+	private final boolean deduplicateList;
 	
 	@Autowired
 	private UserManager userManager;
@@ -135,6 +137,9 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		showCoaches = config.getBooleanSafe(CONFIG_KEY_SHOWCOACHES);
 		showParticipants = config.getBooleanSafe(CONFIG_KEY_SHOWPARTICIPANTS);
 		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled();
+		
+		MembersCourseNodeConfiguration nodeConfig = (MembersCourseNodeConfiguration)CourseNodeFactory.getInstance().getCourseNodeConfiguration("cmembers");
+		deduplicateList = nodeConfig.isDeduplicateList();
 		
 		String emailFct = config.getStringValue(CONFIG_KEY_EMAIL_FUNCTION, EMAIL_FUNCTION_COACH_ADMIN);
 		canEmail = EMAIL_FUNCTION_ALL.equals(emailFct) || userCourseEnv.isAdmin() || userCourseEnv.isCoach();
@@ -175,7 +180,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 			allEmailLink.setIconLeftCSS("o_icon o_icon_mail");
 		}
 
-		Set<Long> duplicateCatcher = new HashSet<Long>();
+		Set<Long> duplicateCatcher = deduplicateList ? new HashSet<Long>() : null;
 		ownerList = initFormMemberList("owners", owners, duplicateCatcher, formLayout, canEmail);
 		coachList = initFormMemberList("coaches", coaches, duplicateCatcher, formLayout, canEmail);
 		participantList = initFormMemberList("participants", participants, duplicateCatcher, formLayout, canEmail);
@@ -212,7 +217,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 	protected List<Member> createMemberLinks(List<Identity> identities, Set<Long> duplicateCatcher, FormLayoutContainer formLayout, boolean withEmail) {
 		List<Member> members = new ArrayList<>();
 		for(Identity identity:identities) {
-			if(duplicateCatcher.contains(identity.getKey())) continue;
+			if(duplicateCatcher != null && duplicateCatcher.contains(identity.getKey())) continue;
 			
 			Member member = createMember(identity);
 			members.add(member);
@@ -242,7 +247,9 @@ public class MembersCourseNodeRunController extends FormBasicController {
 				member.setChatLink(chatLink);
 			}
 			
-			duplicateCatcher.add(identity.getKey());
+			if(duplicateCatcher != null) {
+				duplicateCatcher.add(identity.getKey());
+			}
 		}
 		
 		if(chatEnabled) {

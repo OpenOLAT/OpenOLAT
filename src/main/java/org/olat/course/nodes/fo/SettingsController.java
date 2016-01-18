@@ -58,6 +58,7 @@ public class SettingsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("settings.title");
+		setFormContextHelp("Communication and Collaboration#_forumkonfig");
 		formLayout.setElementCssClass("o_sel_course_forum_settings");
 		
 		if(forumModule.isAnonymousPostingWithPseudonymEnabled()) {
