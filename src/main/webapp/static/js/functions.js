@@ -1362,7 +1362,11 @@ function o_pushState(historyPointId, title, url) {
 		var data = new Object();
 		data['businessPath'] = url;
 		data['historyPointId'] = historyPointId;
-		o_info.businessPath=url;
+		
+		if(url != null && !(url.lastIndexOf("http", 0) === 0) && !(url.lastIndexOf("https", 0) === 0)) {
+			url = o_info.serverUri + url;
+		}
+		o_info.businessPath = url;
 		o_shareActiveSocialUrl();
 		if(window.history && !(typeof window.history === "undefined") && window.history.pushState) {
 			window.history.pushState(data, title, url);
