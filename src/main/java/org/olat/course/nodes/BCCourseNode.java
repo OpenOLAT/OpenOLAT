@@ -73,8 +73,6 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
-import org.olat.resource.references.ReferenceManager;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -84,8 +82,6 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	private static final long serialVersionUID = 6887400715976544402L;
 	private static final String PACKAGE_BC = Util.getPackageName(BCCourseNodeRunController.class);
 	private static final String TYPE = "bc";
-	@Autowired
-	private ReferenceManager referenceManager;
 
 	/**
 	 * Condition.getCondition() == null means no precondition, always accessible
@@ -145,24 +141,25 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			NodeEvaluation ne) {
 		if (ne.isAtLeastOneAccessible()) {
+			updateModuleConfigDefaults(false);
+			
 			// Create a folder peekview controller that shows the latest two entries
-			String path ="";
 			VFSContainer rootFolder = null;
-			if(getModuleConfiguration().getBooleanSafe(BCCourseNodeEditController.CONFIG_AUTO_FOLDER)){
-				path = getFoldernodePathRelToFolderBase(userCourseEnv.getCourseEnvironment(), this);
-				rootFolder = new OlatRootFolderImpl(path, null);
-			}else{
-				VFSItem pathItem = userCourseEnv.getCourseEnvironment().getCourseFolderContainer().resolve(getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH));
-				if(pathItem == null){
-					return super.createPeekViewRunController(ureq, wControl, userCourseEnv, ne);
-				}
-				if(pathItem instanceof VFSContainer){
-					rootFolder = (VFSContainer) pathItem;
+			if(getModuleConfiguration().getBooleanSafe(BCCourseNodeEditController.CONFIG_AUTO_FOLDER)) {
+				rootFolder = getNodeFolderContainer(this, userCourseEnv.getCourseEnvironment());
+			} else {
+				String subPath = getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH, "");
+				VFSItem item = userCourseEnv.getCourseEnvironment().getCourseFolderContainer().resolve(subPath);
+				if(item instanceof VFSContainer) {
+					rootFolder = (VFSContainer)item;
 				}
 			}
+			
+			if(rootFolder == null) {
+				return super.createPeekViewRunController(ureq, wControl, userCourseEnv, ne);
+			}
 			rootFolder.setDefaultItemFilter(new SystemItemFilter());
-			Controller peekViewController = new BCPeekviewController(ureq, wControl, rootFolder, getIdent(), 4);
-			return peekViewController;
+			return new BCPeekviewController(ureq, wControl, rootFolder, getIdent(), 4);
 		} else {
 			// use standard peekview
 			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, ne);
