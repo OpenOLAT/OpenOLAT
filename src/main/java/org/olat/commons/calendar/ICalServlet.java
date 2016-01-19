@@ -43,6 +43,7 @@ import org.olat.commons.calendar.model.CalendarUserConfiguration;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.i18n.I18nManager;
@@ -233,17 +234,21 @@ public class ICalServlet extends HttpServlet {
 	}
 	
 	private void outputCalendar(CalendarFileInfos fileInfos, Writer out) throws IOException {
-		CalendarManager calendarManager = CoreSpringFactory.getImpl(CalendarManager.class);
-		Calendar calendar = calendarManager.readCalendar(fileInfos.getCalendarFile());
-		updateUrlProperties(calendar);
-		
-		String prefix = fileInfos.getType() + "-" + fileInfos.getCalendarId() + "-";
-		updateUUID(calendar, prefix);
-		
-		ComponentList events = calendar.getComponents();
-		for (final Iterator<?> i = events.iterator(); i.hasNext();) {
-			String event = i.next().toString();
-			out.write(event);
+		try {
+			CalendarManager calendarManager = CoreSpringFactory.getImpl(CalendarManager.class);
+			Calendar calendar = calendarManager.readCalendar(fileInfos.getCalendarFile());
+			updateUrlProperties(calendar);
+			
+			String prefix = fileInfos.getType() + "-" + fileInfos.getCalendarId() + "-";
+			updateUUID(calendar, prefix);
+			
+			ComponentList events = calendar.getComponents();
+			for (final Iterator<?> i = events.iterator(); i.hasNext();) {
+				String event = i.next().toString();
+				out.write(event);
+			}
+		} catch (IOException | OLATRuntimeException e) {
+			log.error("", e);
 		}
 	}
 	
