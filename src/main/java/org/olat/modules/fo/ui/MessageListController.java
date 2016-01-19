@@ -83,6 +83,8 @@ import org.olat.modules.fo.Status;
 import org.olat.modules.fo.archiver.formatters.ForumDownloadResource;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.fo.ui.MessageEditController.EditMode;
+import org.olat.modules.fo.ui.events.DeleteMessageEvent;
+import org.olat.modules.fo.ui.events.DeleteThreadEvent;
 import org.olat.modules.fo.ui.events.SelectMessageEvent;
 import org.olat.portfolio.EPUIFactory;
 import org.olat.portfolio.manager.EPFrontendManager;
@@ -731,13 +733,16 @@ public class MessageListController extends BasicController implements GenericEve
 		if (source == confirmDeleteCtrl) {
 			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				MessageView deletedMessage = (MessageView)confirmDeleteCtrl.getUserObject();
-				doDeleteMessage(deletedMessage);
-				reloadModelAfterDelete(ureq, deletedMessage);
+				doDeleteMessage(ureq, deletedMessage);
+				
 			}
 		} else if(editMessageCtrl == source) {
 			// edit done -> save 
 			Message message = editMessageCtrl.getMessage();
 			if(message != null) {
+				if(thread != null && thread.getKey().equals(message.getKey())) {
+					thread = message;
+				}
 				reloadModel(ureq, message);
 			} else {
 				showInfo("header.cannoteditmessage");
@@ -864,22 +869,39 @@ public class MessageListController extends BasicController implements GenericEve
 		}
 	}
 	
-	private void doDeleteMessage(MessageView message) { 
+	private void doDeleteMessage(UserRequest ureq, MessageView message) { 
 		boolean userIsMsgCreator = message.isAuthor();
 		if (foCallback.mayDeleteMessageAsModerator()
 				|| (userIsMsgCreator && forumManager.countMessageChildren(message.getKey()) == 0)) {
 			Message reloadedMessage = forumManager.getMessageById(message.getKey());
+			
+			
 			if(reloadedMessage != null) {
-				boolean hasParent = reloadedMessage.getParent() != null;
-				forumManager.deleteMessageTree(forum.getKey(), reloadedMessage);
-				showInfo("deleteok");
-				// do logging
-				if(hasParent) {
+				//this delete the topic / thread
+				if(reloadedMessage.getParent() == null) {
+					forumManager.deleteMessageTree(forum.getKey(), reloadedMessage);
+					//delete topics
 					ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_MESSAGE_DELETE, getClass(),
 							LoggingResourceable.wrap(reloadedMessage));
+					//back to thread list
+					fireEvent(ureq, new DeleteThreadEvent());
+					ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.DELETED_THREAD, reloadedMessage.getKey(), reloadedMessage.getKey(), getIdentity());
+					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, forum);	
 				} else {
+					Message threadTop = reloadedMessage.getThreadtop();
+					forumManager.deleteMessageTree(forum.getKey(), reloadedMessage);
+					threadTop = forumManager.updateMessage(threadTop, true);
+					if(thread != null) {
+						thread = threadTop;//update with the fresh version
+					}
+					showInfo("deleteok");
 					ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_THREAD_DELETE, getClass(),
-							LoggingResourceable.wrap(reloadedMessage));
+						LoggingResourceable.wrap(reloadedMessage));
+					//reload
+					reloadModelAfterDelete(ureq, message);
+					fireEvent(ureq, new DeleteMessageEvent());
+					ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.DELETED_MESSAGE, threadTop.getKey(), message.getKey(), getIdentity());
+					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, forum);	
 				}
 			}
 		} else {

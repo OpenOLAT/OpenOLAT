@@ -51,6 +51,8 @@ import org.olat.modules.fo.ForumChangedEvent;
 import org.olat.modules.fo.Message;
 import org.olat.modules.fo.Status;
 import org.olat.modules.fo.manager.ForumManager;
+import org.olat.modules.fo.ui.events.DeleteMessageEvent;
+import org.olat.modules.fo.ui.events.DeleteThreadEvent;
 import org.olat.modules.fo.ui.events.SelectMessageEvent;
 import org.olat.modules.fo.ui.events.SelectUserEvent;
 import org.olat.modules.fo.ui.events.SelectUserListEvent;
@@ -207,6 +209,11 @@ public class ForumController extends BasicController implements GenericEventList
 		} else if(viewCtrl == source) {
 			if(event == Event.BACK_EVENT) {
 				doThreadList(ureq);
+			} else if(event instanceof DeleteThreadEvent) {
+				reloadThreadList = true;
+				doThreadList(ureq);
+			} else if(event instanceof DeleteMessageEvent) {
+				reloadThreadList = true;
 			} else if(event instanceof SelectMessageEvent) {
 				doProcessSelectEvent(ureq, (SelectMessageEvent)event);
 			}
