@@ -2137,7 +2137,7 @@ public class RepositoryManager extends BasicManager {
 		if(re == null) return Collections.emptyList();
 
 		StringBuilder sb = new StringBuilder(); 
-		sb.append("select membership.identity.key, membership.lastModified, membership.role ")
+		sb.append("select membership.identity.key, membership.creationDate, membership.lastModified, membership.role ")
 		  .append(" from ").append(RepositoryEntry.class.getName()).append(" as v ")
 		  .append(" inner join v.groups as relGroup on relGroup.defaultGroup=true")
 		  .append(" inner join relGroup.group as baseGroup")
@@ -2153,7 +2153,8 @@ public class RepositoryManager extends BasicManager {
 		for(Object[] membership:members) {
 			Long identityKey = (Long)membership[0];
 			Date lastModified = (Date)membership[1];
-			Object role = membership[2];
+			Date creationDate = (Date)membership[2];
+			Object role = membership[3];
 			
 			RepositoryEntryMembership mb = memberships.get(identityKey);
 			if(mb == null) {
@@ -2162,6 +2163,7 @@ public class RepositoryManager extends BasicManager {
 				mb.setRepoKey(re.getKey());
 				memberships.put(identityKey, mb);
 			}
+			mb.setCreationDate(creationDate);
 			mb.setLastModified(lastModified);
 			
 			if(GroupRoles.participant.name().equals(role)) {

@@ -260,7 +260,14 @@ public class MessageListController extends BasicController implements GenericEve
 		reloadList = false;
 		if(loadMode == LoadMode.thread) {
 			loadThread(ureq, thread);
-			scrollTo(message);
+			String settings = doShowBySettings(ureq);
+			if(VIEWMODE_MESSAGE.equals(settings)) {
+				if(message != null && message.getKey() != null) {
+					doSelectTheOne(ureq, message.getKey());
+				}
+			} else {
+				scrollTo(message);
+			}
 		} else if(message != null) {
 			MessageView view = loadView(ureq, message);
 			backupViews.add(view);
@@ -282,6 +289,7 @@ public class MessageListController extends BasicController implements GenericEve
 	private void reloadModelAfterDelete(UserRequest ureq, MessageView message) {
 		if(loadMode == LoadMode.thread) {
 			loadThread(ureq, thread);
+			doShowBySettings(ureq);
 		} else if(message != null) {
 			for(MessageView msg:backupViews) {
 				if(msg.getKey().equals(message.getKey())) {
@@ -1045,7 +1053,7 @@ public class MessageListController extends BasicController implements GenericEve
 		}
 	}
 	
-	protected void doShowBySettings(UserRequest ureq) {
+	protected String doShowBySettings(UserRequest ureq) {
 		String viewSettings = getViewSettings(ureq);
 		switch(viewSettings) {
 			case VIEWMODE_THREAD: doShowAll(ureq); break;
@@ -1053,6 +1061,7 @@ public class MessageListController extends BasicController implements GenericEve
 			case VIEWMODE_MESSAGE: doShowOne(ureq); break;
 			default: doShowAll(ureq);
 		}
+		return viewSettings == null ? VIEWMODE_THREAD : viewSettings;
 	}
 	
 	private void doShowAll(UserRequest ureq) {

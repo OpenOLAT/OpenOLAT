@@ -49,7 +49,7 @@ public class ForumThread implements MessageRef {
 		this.key = message.getKey();
 		this.type = message.getStatusCode();
 		this.title = message.getTitle();
-		if(lastModified == null || lastModified.after(message.getLastModified())) {
+		if(lastModified == null || lastModified.before(message.getLastModified())) {
 			this.lastModified = message.getLastModified();
 		} else {
 			this.lastModified = lastModified;
