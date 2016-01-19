@@ -165,6 +165,53 @@ public class CourseTest {
 	}
 	
 	/**
+	 * Check if we can create and open a course with this
+	 * name: It's me, the "course".
+	 * @see https://jira.openolat.org/browse/OO-1839
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void createCourseWithSpecialCharacters(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//go to authoring
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+		
+		String marker = Long.toString(System.currentTimeMillis());
+		String title = "It's me, the \"course\" number " + marker;
+		//create course
+		RepositoryEditDescriptionPage editDescription = authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.course)
+			.fillCreateForm(title)
+			.assertOnGeneralTab();
+		
+		//from description editor, back to the course
+		editDescription
+			.clickToolbarBack();
+		
+		//close the course
+		navBar.closeTab();
+		
+		//select the authoring
+		navBar
+			.openAuthoringEnvironment()
+			.selectResource(marker);
+		
+		new CoursePageFragment(browser)
+			.assertOnCoursePage();
+	}
+	
+	/**
 	 * Create a course, use the course wizard, select all course
 	 * elements and go further with the standard settings.
 	 * 
