@@ -49,6 +49,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
@@ -58,6 +59,8 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.ConsumableBoolean;
 import org.olat.core.util.Formatter;
@@ -102,7 +105,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MessageListController extends BasicController implements GenericEventListener {
+public class MessageListController extends BasicController implements GenericEventListener, Activateable2 {
 
 	protected static final String USER_PROPS_ID = ForumUserListController.class.getCanonicalName();
 	
@@ -632,10 +635,17 @@ public class MessageListController extends BasicController implements GenericEve
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		//
+	}
+
+	@Override
 	public void event(Event event) {
 		if(event instanceof ForumChangedEvent) {
 			ForumChangedEvent fce = (ForumChangedEvent)event;
-			if(ForumChangedEvent.CHANGED_MESSAGE.equals(fce.getCommand()) || ForumChangedEvent.NEW_MESSAGE.equals(fce.getCommand())) {
+			if(ForumChangedEvent.CHANGED_MESSAGE.equals(fce.getCommand())
+					|| ForumChangedEvent.NEW_MESSAGE.equals(fce.getCommand())
+					|| ForumChangedEvent.DELETED_MESSAGE.equals(fce.getCommand()) ) {
 				Long threadtopKey = fce.getThreadtopKey();
 				Long senderId = fce.getSendByIdentityKey();
 				if(thread != null && threadtopKey != null && thread.getKey().equals(threadtopKey)
@@ -915,13 +925,18 @@ public class MessageListController extends BasicController implements GenericEve
 		boolean children = forumManager.countMessageChildren(message.getKey()) > 0;
 		if (foCallback.mayEditMessageAsModerator() || (userIsMsgCreator && !children)) {
 			Message reloadedMessage = forumManager.loadMessage(message.getKey());
-			editMessageCtrl = new MessageEditController(ureq, getWindowControl(), forum, foCallback, reloadedMessage, null, EditMode.edit);
-			listenTo(editMessageCtrl);
-			
-			String title = translate("msg.update");
-			cmc = new CloseableModalController(getWindowControl(), "close", editMessageCtrl.getInitialComponent(), true, title);
-			listenTo(editMessageCtrl);
-			cmc.activate();
+			if(reloadedMessage == null) {
+				showWarning("error.message.deleted");
+				reloadModel(ureq, null);
+			} else {
+				editMessageCtrl = new MessageEditController(ureq, getWindowControl(), forum, foCallback, reloadedMessage, null, EditMode.edit);
+				listenTo(editMessageCtrl);
+				
+				String title = translate("msg.update");
+				cmc = new CloseableModalController(getWindowControl(), "close", editMessageCtrl.getInitialComponent(), true, title);
+				listenTo(editMessageCtrl);
+				cmc.activate();
+			}
 		} else if ((userIsMsgCreator) && (children == true)) {
 			// user is author of the current message but it has already at least
 			// one child
