@@ -603,28 +603,39 @@ public class ItemsController extends BasicController implements Activateable2 {
 						if (!feed.getItems().contains(currentItem)) {
 							// Add the modified item if it is not part of the feed
 							feed = feedManager.addItem(currentItem, mediaFile, feed);
-							createButtonsForItem(ureq, currentItem);
-							createItemLink(currentItem);
-							// Add date component
-							String guid = currentItem.getGuid();
-							if(currentItem.getDate() != null) {
-								DateComponentFactory.createDateComponentWithYear("date." + guid, currentItem.getDate(), vcItems);
+							if(feed == null) {
+								//the item could not be added, is not internal
+								feed = feedManager.getFeed(feedResource);
+								if(!feed.isInternal() && !feed.isExternal() && !feed.hasItems()) {
+									feed = feedManager.updateFeedMode(Boolean.FALSE, feed);
+									feed = feedManager.addItem(currentItem, mediaFile, feed);
+								}
 							}
-							// Add comments and rating
-							createCommentsAndRatingsLink(ureq, feed, currentItem);
-							// add it to the navigation controller
-							naviCtr.add(currentItem);
-							// ... and also to the helper
-							helper.addItem(currentItem);
-							if (feed.getItems() != null && feed.getItems().size() == 1) {
-								// First item added, show feed url (for subscription)
-								fireEvent(ureq, ItemsController.FEED_INFO_IS_DIRTY_EVENT);
-								// Set the base URI of the feed for the current user. All users
-								// have unique URIs.
-								helper.setURIs();
+							
+							if(feed != null) {
+								createButtonsForItem(ureq, currentItem);
+								createItemLink(currentItem);
+								// Add date component
+								String guid = currentItem.getGuid();
+								if(currentItem.getDate() != null) {
+									DateComponentFactory.createDateComponentWithYear("date." + guid, currentItem.getDate(), vcItems);
+								}
+								// Add comments and rating
+								createCommentsAndRatingsLink(ureq, feed, currentItem);
+								// add it to the navigation controller
+								naviCtr.add(currentItem);
+								// ... and also to the helper
+								helper.addItem(currentItem);
+								if (feed.getItems() != null && feed.getItems().size() == 1) {
+									// First item added, show feed url (for subscription)
+									fireEvent(ureq, ItemsController.FEED_INFO_IS_DIRTY_EVENT);
+									// Set the base URI of the feed for the current user. All users
+									// have unique URIs.
+									helper.setURIs();
+								}
+								// do logging
+								ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_ITEM_CREATE, getClass(), LoggingResourceable.wrap(currentItem));
 							}
-							// do logging
-							ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_ITEM_CREATE, getClass(), LoggingResourceable.wrap(currentItem));
 						} else {
 							// Write item file
 							feed = feedManager.updateItem(currentItem, mediaFile, feed);
@@ -700,7 +711,9 @@ public class ItemsController extends BasicController implements Activateable2 {
 		}
 		
 		// Check if someone else added an item, reload everything
-		if (!isSameAllItems(feed.getFilteredItems(callback, ureq.getIdentity()))) {
+		if (feed == null) {
+			//do something
+		} else if(!isSameAllItems(feed.getFilteredItems(callback, getIdentity()))) {
 			resetItems(ureq, feed);
 		}
 	}
