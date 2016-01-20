@@ -25,6 +25,8 @@
 
 package org.olat.course.nodes.en;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
@@ -34,6 +36,7 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
@@ -156,7 +159,12 @@ public class ENEditController extends ActivateableTabbableDefaultController impl
 	 * @return true if module configuration is valid
 	 */
 	public static boolean isConfigValid(ModuleConfiguration moduleConfiguration) {
-		return (moduleConfiguration.get(ENCourseNode.CONFIG_GROUPNAME) != null);
+		String groupNames = (String)moduleConfiguration.get(ENCourseNode.CONFIG_GROUPNAME);
+		String areaNames = (String)moduleConfiguration.get(ENCourseNode.CONFIG_AREANAME);
+		List<Long> groupKeys = moduleConfiguration.getList(ENCourseNode.CONFIG_GROUP_IDS, Long.class);
+		List<Long> areaKeys = moduleConfiguration.getList(ENCourseNode.CONFIG_AREA_IDS, Long.class);
+		return StringHelper.containsNonWhitespace(groupNames) || StringHelper.containsNonWhitespace(areaNames)
+				|| (groupKeys != null && groupKeys.size() > 0) || (areaKeys != null && areaKeys.size() > 0);
 	}
 
 	public String[] getPaneKeys() {

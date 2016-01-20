@@ -568,16 +568,15 @@ public class LTIConfigForm extends FormBasicController {
 		if(isAssessableEl.isAtLeastSelected(1)) {
 			config.setBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD, Boolean.TRUE);
 			
-			String scaleValue = scaleFactorEl.getValue();
-			Float scaleVal = Float.parseFloat(scaleValue);
-			if(scaleVal.floatValue() > 0.0f) {
+			Float scaleVal = getFloat(scaleFactorEl.getValue());
+			if(scaleVal != null && scaleVal.floatValue() > 0.0f) {
 				config.set(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE, scaleVal);
 			} else {
 				config.remove(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE);
 			}
 
 			String cutValue = cutValueEl.getValue();
-			Float cutVal = (StringHelper.containsNonWhitespace(cutValue)) ? Float.parseFloat(cutValue) : null;
+			Float cutVal = getFloat(cutValueEl.getValue());
 			if(cutVal != null && cutVal.floatValue() > 0.0f) {
 				config.setBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_PASSED_FIELD, Boolean.TRUE);
 				config.set(BasicLTICourseNode.CONFIG_KEY_PASSED_CUT_VALUE, cutValue);
@@ -608,6 +607,18 @@ public class LTIConfigForm extends FormBasicController {
 			config.set(BasicLTICourseNode.CONFIG_WIDTH, widthEl.getSelectedKey());
 		}
 		return config;
+	}
+	
+	private Float getFloat(String text) {
+		Float floatValue = null;
+		if(StringHelper.containsNonWhitespace(text)) {
+			try {
+				floatValue = Float.parseFloat(text);
+			} catch(Exception e) {
+				//can happens
+			}
+		}
+		return floatValue;
 	}
 	
 	private String getCustomConfig() {
