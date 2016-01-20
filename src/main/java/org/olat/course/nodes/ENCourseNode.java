@@ -62,7 +62,7 @@ import org.olat.repository.RepositoryEntry;
  * <P>
  * 
  * Initial Date: Sep 8, 2004
- * @author Felix Jost, Florian Gn�gi
+ * @author Felix Jost, Florian Gnaegi
  */
 public class ENCourseNode extends AbstractAccessableCourseNode {
 	private static final String PACKAGE = Util.getPackageName(ENCourseNode.class);
