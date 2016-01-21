@@ -21,7 +21,9 @@ package org.olat.modules.qpool.manager;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.TypedQuery;
 
@@ -84,12 +86,13 @@ public class CollectionDAO {
 	 * @param collection
 	 * @return true if the item is in the collection after the call
 	 */
-	public boolean addItemToCollection(Long itemKey, List<QuestionItemCollection> collections) {
-		QuestionItemImpl lockedItem = questionItemDao.loadForUpdate(itemKey);
+	public boolean addItemToCollection(QuestionItemShort item, List<QuestionItemCollection> collections) {
+		QuestionItemImpl lockedItem = questionItemDao.loadForUpdate(item);
 		if(lockedItem == null) {
 			return false;
 		}
-		for(QuestionItemCollection collection:collections) {
+		Set<QuestionItemCollection> uniqueCollections = new HashSet<>(collections);
+		for(QuestionItemCollection collection:uniqueCollections) {
 			if(!isInCollection(collection, lockedItem)) {
 				CollectionToItem coll2Item = new CollectionToItem();
 				coll2Item.setCreationDate(new Date());
