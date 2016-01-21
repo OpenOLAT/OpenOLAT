@@ -20,6 +20,8 @@
 
 package org.olat.core.commons.services.notifications.restapi;
 
+import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -31,20 +33,31 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationHelper;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
+import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.Subscriber;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.SubscriptionInfo;
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
+import org.olat.core.commons.services.notifications.restapi.vo.PublisherVO;
+import org.olat.core.commons.services.notifications.restapi.vo.SubscriberVO;
 import org.olat.core.commons.services.notifications.restapi.vo.SubscriptionInfoVO;
 import org.olat.core.commons.services.notifications.restapi.vo.SubscriptionListItemVO;
 import org.olat.core.id.Identity;
@@ -52,6 +65,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.restapi.security.RestSecurityHelper;
+import org.olat.user.restapi.UserVO;
 
 /**
  * 
@@ -63,6 +77,80 @@ import org.olat.restapi.security.RestSecurityHelper;
  */
 @Path("notifications")
 public class NotificationsWebService {
+	
+	@GET
+	@Path("subscribers/{ressourceName}/{ressourceId}/{subIdentifier}")
+	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
+	public Response getSubscriber(@PathParam("ressourceName") String ressourceName, @PathParam("ressourceId") Long ressourceId,
+			@PathParam("subIdentifier") String subIdentifier, @Context HttpServletRequest request) {
+		if(!isAdmin(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+
+		NotificationsManager notificationsMgr = NotificationsManager.getInstance();
+		
+		SubscriptionContext subsContext
+			= new SubscriptionContext(ressourceName, ressourceId, subIdentifier);
+
+		Publisher publisher = notificationsMgr.getPublisher(subsContext);
+		if(publisher == null) {
+			return Response.ok().status(Status.NO_CONTENT).build();
+		}
+		
+		List<Subscriber> subscribers = notificationsMgr.getSubscribers(publisher);
+		SubscriberVO[] subscriberVoes = new SubscriberVO[subscribers.size()];
+		int count = 0;
+		for(Subscriber subscriber:subscribers) {
+			SubscriberVO subscriberVO = new SubscriberVO();
+			subscriberVO.setPublisherKey(publisher.getKey());
+			subscriberVO.setSubscriberKey(subscriber.getKey());
+			subscriberVO.setIdentityKey(subscriber.getIdentity().getKey());
+			subscriberVoes[count++] = subscriberVO;
+		}
+		return Response.ok(subscriberVoes).build();
+	}
+	
+
+	@PUT
+	@Path("subscribers")
+	@Consumes({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
+	public Response subscribe(PublisherVO publisherVO, @Context HttpServletRequest request) {
+		if(!isAdmin(request)) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		NotificationsManager notificationsMgr = NotificationsManager.getInstance();
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		
+		SubscriptionContext subscriptionContext
+			= new SubscriptionContext(publisherVO.getResName(), publisherVO.getResId(), publisherVO.getSubidentifier());
+		PublisherData publisherData
+			= new PublisherData(publisherVO.getType(), publisherVO.getData(), publisherVO.getBusinessPath());
+		
+		List<UserVO> userVoes = publisherVO.getUsers();
+		List<Long> identityKeys = new ArrayList<>();
+		for(UserVO userVo:userVoes) {
+			identityKeys.add(userVo.getKey());
+		}
+		List<Identity> identities = securityManager.loadIdentityByKeys(identityKeys);
+		notificationsMgr.subscribe(identities, subscriptionContext, publisherData);
+		return Response.ok().build();
+	}
+	
+	@DELETE
+	@Path("subscribers/{subscriberKey}")
+	@Consumes({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
+	public Response unsubscribe(@PathParam("subscriberKey") Long subscriberKey, @Context HttpServletRequest request) {
+		if(!isAdmin(request)) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		NotificationsManager notificationsMgr = NotificationsManager.getInstance();
+		if(notificationsMgr.deleteSubscriber(subscriberKey)) {
+			return Response.ok().build();
+		}
+		return Response.ok().status(Status.NOT_MODIFIED).build();
+	}
 	
 	/**
 	 * Retrieves the notification of the logged in user.
