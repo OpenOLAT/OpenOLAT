@@ -148,7 +148,6 @@ public class ReadyToDeleteController extends BasicController {
 		if (tdm.getObjects(tmse.getSelection()).size() != 0) {
 			readyToDeleteIdentities = tdm.getObjects(tmse.getSelection());
 			deleteConfirmController = activateOkCancelDialog(ureq, null, translate("readyToDelete.delete.confirm", getUserlistAsString(readyToDeleteIdentities)), deleteConfirmController);
-			return;
 		} else {
 			showWarning("nothing.selected.msg");
 		}
@@ -164,7 +163,7 @@ public class ReadyToDeleteController extends BasicController {
 		for (Iterator<Identity> iter = readyToDeleteIdentities2.iterator(); iter.hasNext();) {
 			 strb.append((iter.next()).getName());
 			 if (iter.hasNext()) {
-				 strb.append(",");
+				 strb.append(", ");
 			 }
 		}
 		return strb.toString();
