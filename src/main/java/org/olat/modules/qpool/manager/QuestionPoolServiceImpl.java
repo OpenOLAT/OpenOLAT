@@ -149,7 +149,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		}
 		
 		for(QuestionItemShort item:items) {
-			questionItemDao.addAuthors(authors, item.getKey());
+			questionItemDao.addAuthors(authors, item);
 		}
 	}
 	
@@ -160,7 +160,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		}
 		
 		for(QuestionItemShort item:items) {
-			questionItemDao.removeAuthors(authors, item.getKey());
+			questionItemDao.removeAuthors(authors, item);
 		}
 	}
 
@@ -537,7 +537,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		}
 		
 		for(QuestionItemShort item:items) {
-			questionItemDao.share(item.getKey(), resources, editable);
+			questionItemDao.share(item, resources, editable);
 		}
 	}
 
@@ -595,7 +595,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		QuestionItemCollection coll = collectionDao.createCollection(collectionName, owner);
 		List<Long> keys = new ArrayList<>(initialItems.size());
 		for(QuestionItemShort item:initialItems) {
-			collectionDao.addItemToCollection(item.getKey(), Collections.singletonList(coll));
+			collectionDao.addItemToCollection(item, Collections.singletonList(coll));
 			keys.add(item.getKey());
 		}
 		lifeIndexer.indexDocument(QItemDocument.TYPE, keys);
@@ -616,7 +616,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	public void addItemToCollection(List<? extends QuestionItemShort> items, List<QuestionItemCollection> collections) {
 		List<Long> keys = new ArrayList<>(items.size());
 		for(QuestionItemShort item:items) {
-			collectionDao.addItemToCollection(item.getKey(), collections);
+			collectionDao.addItemToCollection(item, collections);
 			keys.add(item.getKey());
 		}
 		lifeIndexer.indexDocument(QItemDocument.TYPE, keys);

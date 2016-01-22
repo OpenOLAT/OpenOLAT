@@ -141,8 +141,8 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 3", id);
 		QuestionItem item1 = questionDao.createAndPersist(null, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
 		QuestionItem item2 = questionDao.createAndPersist(null, "NGC 97", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
-		collectionDao.addItemToCollection(item1.getKey(), singletonList(coll));
-		collectionDao.addItemToCollection(item2.getKey(), singletonList(coll));
+		collectionDao.addItemToCollection(item1, singletonList(coll));
+		collectionDao.addItemToCollection(item2, singletonList(coll));
 		dbInstance.commit();//check if it's alright
 		
 		//load the items of the collection
@@ -173,7 +173,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-3-" + UUID.randomUUID().toString());
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 3", id);
 		QuestionItem item = questionDao.createAndPersist(null, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
-		collectionDao.addItemToCollection(item.getKey(), singletonList(coll));
+		collectionDao.addItemToCollection(item, singletonList(coll));
 		dbInstance.commit();//check if it's alright
 		
 		//test order by
@@ -315,7 +315,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		List<OLATResource> resources = new ArrayList<OLATResource>();
 		resources.add(group1.getResource());
 		resources.add(group2.getResource());
-		questionDao.share(item.getKey(), resources, false);
+		questionDao.share(item, resources, false);
 		
 		//retrieve them
 		List<QuestionItemView> sharedItems1 = qItemQueriesDao.getSharedItemByResource(id, group1.getResource(), null, 0, -1);
@@ -340,7 +340,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		//share them
 		List<OLATResource> resources = new ArrayList<OLATResource>();
 		resources.add(group.getResource());
-		questionDao.share(item.getKey(), resources, false);
+		questionDao.share(item, resources, false);
 		dbInstance.commitAndCloseSession();
 		
 		

@@ -38,7 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 public class WebDAVAdminController extends FormBasicController {
 	
 	private MultipleSelectionElement enableModuleEl, enableLinkEl, enableDigestEl, enableTermsFoldersEl,
-			learnersAsParticipantEl, learnersBookmarkEl;
+			learnersAsParticipantEl, learnersBookmarkEl, prependReferenceEl;
 	
 	private final WebDAVModule webDAVModule;
 	
@@ -78,6 +78,11 @@ public class WebDAVAdminController extends FormBasicController {
 		enableTermsFoldersEl.select("xx", webDAVModule.isTermsFoldersEnabled());
 		enableTermsFoldersEl.addActionListener(FormEvent.ONCHANGE);
 		enableTermsFoldersEl.setEnabled(enabled);
+		
+		prependReferenceEl = uifactory.addCheckboxesHorizontal("webdavPrepend", "webdav.prepend.reference", formLayout, new String[]{"xx"}, values);
+		prependReferenceEl.select("xx", webDAVModule.isPrependCourseReferenceToTitle());
+		prependReferenceEl.addActionListener(FormEvent.ONCHANGE);
+		prependReferenceEl.setEnabled(enabled);
 
 		uifactory.addSpacerElement("spacer2", formLayout, false);
 		
@@ -122,6 +127,9 @@ public class WebDAVAdminController extends FormBasicController {
 		} else if(source == learnersBookmarkEl) {
 			boolean enabled = learnersBookmarkEl.isAtLeastSelected(1);
 			webDAVModule.setEnableLearnersBookmarksCourse(enabled);
+		} else if(source == prependReferenceEl) {
+			boolean enabled = prependReferenceEl.isAtLeastSelected(1);
+			webDAVModule.setPrependCourseReferenceToTitle(enabled);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

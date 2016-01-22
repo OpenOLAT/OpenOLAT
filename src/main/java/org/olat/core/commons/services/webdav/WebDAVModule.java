@@ -47,6 +47,7 @@ public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String TERMS_FOLDERS_ENABLED = "webdav.termsfolders.enabled";
 	private static final String LEARNERS_BOOKMARKS_COURSE = "webdav.learners.bookmarks.courses";
 	private static final String LEARNERS_PARTICIPATING_COURSES = "webdav.learners.participating.courses";
+	private static final String PREPEND_COURSE_REFERENCE_TO_TITLE = "webdav.prepend.course.reference.to.title";
 	
 	@Autowired
 	private List<WebDAVProvider> webdavProviders;
@@ -59,6 +60,8 @@ public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 	private boolean digestAuthenticationEnabled;
 	@Value("${webdav.termsfolders.enabled:true}")
 	private boolean termsFoldersEnabled;
+	@Value("${webdav.prepend.course.reference.to.title:false}")
+	private boolean prependCourseReferenceToTitle;
 
 	@Value("${webdav.learners.bookmarks.enabled:true}")
 	private boolean enableLearnersBookmarksCourse;
@@ -100,6 +103,10 @@ public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 		String learnersParticipatingCoursesObj = getStringPropertyValue(LEARNERS_PARTICIPATING_COURSES, true);
 		if(StringHelper.containsNonWhitespace(learnersParticipatingCoursesObj)) {
 			enableLearnersParticipatingCourses = "true".equals(learnersParticipatingCoursesObj);
+		}
+		String prependCourseReferenceToTitleObj = getStringPropertyValue(PREPEND_COURSE_REFERENCE_TO_TITLE, true);
+		if(StringHelper.containsNonWhitespace(prependCourseReferenceToTitleObj)) {
+			prependCourseReferenceToTitle = "true".equals(prependCourseReferenceToTitleObj);
 		}
 	}
 	
@@ -165,6 +172,15 @@ public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setEnableLearnersParticipatingCourses(boolean enabled) {
 		this.enableLearnersParticipatingCourses = enabled;
 		setStringProperty(LEARNERS_PARTICIPATING_COURSES, enabled ? "true" : "false", true);
+	}
+	
+	public boolean isPrependCourseReferenceToTitle() {
+		return prependCourseReferenceToTitle;
+	}
+	
+	public void setPrependCourseReferenceToTitle(boolean enabled) {
+		this.prependCourseReferenceToTitle = enabled;
+		setStringProperty(PREPEND_COURSE_REFERENCE_TO_TITLE, enabled ? "true" : "false", true);
 	}
 
 	/**

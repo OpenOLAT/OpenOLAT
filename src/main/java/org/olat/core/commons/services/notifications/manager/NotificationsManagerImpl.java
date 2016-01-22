@@ -700,6 +700,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 * 
 	 * @param ores
 	 */
+	@Override
 	public void deletePublishersOf(OLATResourceable ores) {
 		String type = ores.getResourceableTypeName();
 		Long id = ores.getResourceableId();
@@ -726,12 +727,8 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 */
 	@Override
 	public Subscriber getSubscriber(Identity identity, Publisher publisher) {
-		StringBuilder q = new StringBuilder();
-		q.append("select sub from notisub as sub ")
-		 .append(" where sub.publisher.key=:publisherKey and sub.identity.key=:identityKey");
-		
 		List<Subscriber> res = dbInstance.getCurrentEntityManager()
-				.createQuery(q.toString(), Subscriber.class)
+				.createNamedQuery("subscribersByPublisherAndIdentity", Subscriber.class)
 				.setParameter("publisherKey", publisher.getKey())
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
@@ -747,9 +744,8 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 */
 	@Override
 	public List<Subscriber> getSubscribers(Publisher publisher) {
-		String q = "select sub notisub sub where sub.publisher = :publisher";
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(q, Subscriber.class)
+				.createNamedQuery("subscribersByPublisher", Subscriber.class)
 				.setParameter("publisher", publisher)
 				.getResultList();
 	}
@@ -760,9 +756,8 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 */
 	@Override
 	public List<Identity> getSubscriberIdentities(Publisher publisher) {
-		String q = "select sub.identity from notisub sub where sub.publisher = :publisher";
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(q, Identity.class)
+				.createNamedQuery("identitySubscribersByPublisher", Identity.class)
 				.setParameter("publisher", publisher)
 				.getResultList();
 	}
@@ -793,6 +788,15 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 */
 	private void deleteSubscriber(Subscriber subscriber) {
 		dbInstance.deleteObject(subscriber);
+	}
+	
+	public boolean deleteSubscriber(Long subscriberKey) {
+		String sb = "delete from notisub sub where sub.key=:subscriberKey";
+		int rows = dbInstance.getCurrentEntityManager()
+				.createQuery(sb)
+				.setParameter("subscriberKey", subscriberKey)
+				.executeUpdate();
+		return rows > 0;
 	}
 
 	/**
@@ -845,6 +849,31 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		}
 		dbInstance.commit();
 	}
+	
+	@Override
+	public void subscribe(List<Identity> identities, SubscriptionContext subscriptionContext,
+			PublisherData publisherData) {
+		if(identities == null || identities.isEmpty()) return;
+		
+		Publisher toUpdate = getPublisherForUpdate(subscriptionContext);
+		if(toUpdate == null) {
+			//create the publisher
+			findOrCreatePublisher(subscriptionContext, publisherData);
+			//lock the publisher
+			toUpdate = getPublisherForUpdate(subscriptionContext);
+		}
+
+		for(Identity identity:identities) {
+			Subscriber s = getSubscriber(identity, toUpdate);
+			if (s == null) {
+				// no subscriber -> create.
+				// s.latestReadDate >= p.latestNewsDate == no news for subscriber when no
+				// news after subscription time
+				doCreateAndPersistSubscriber(toUpdate, identity);
+			}
+		}
+		dbInstance.commit();	
+	}
 
 	/**
 	 * call this method to indicate that there is news for the given
@@ -895,6 +924,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	/**
 	 * @see org.olat.core.commons.services.notifications.NotificationsManager#registerAsListener(org.olat.core.util.event.GenericEventListener, org.olat.core.id.Identity)
 	 */
+	@Override
 	public void registerAsListener(GenericEventListener gel, Identity ident) {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(gel, ident, oresMyself);
 	}
@@ -902,6 +932,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	/**
 	 * @see org.olat.core.commons.services.notifications.NotificationsManager#deregisterAsListener(org.olat.core.util.event.GenericEventListener)
 	 */
+	@Override
 	public void deregisterAsListener(GenericEventListener gel) {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(gel, oresMyself);
 	}
@@ -910,17 +941,33 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 * @param identity
 	 * @param subscriptionContext
 	 */
+	@Override
 	public void unsubscribe(Identity identity, SubscriptionContext subscriptionContext) {
-		// no need to sync, since an identity only has one gui thread / one mouse
 		Publisher p = getPublisherForUpdate(subscriptionContext);
-		// if no publisher yet.
-		//TODO: check race condition: can p be null at all?
 		if (p != null) {
 			Subscriber s = getSubscriber(identity, p);
 			if (s != null) {
 				deleteSubscriber(s);
 			} else {
 				logWarn("could not unsubscribe " + identity.getName() + " from publisher:" + p.getResName() + ","	+ p.getResId() + "," + p.getSubidentifier(), null);
+			}
+		}
+		dbInstance.commit();
+	}
+	
+	@Override
+	public void unsubscribe(List<Identity> identities, SubscriptionContext subscriptionContext) {
+		if(identities == null || identities.isEmpty()) return;
+
+		Publisher p = getPublisherForUpdate(subscriptionContext);
+		if (p != null) {
+			for(Identity identity:identities) {
+				Subscriber s = getSubscriber(identity, p);
+				if (s != null) {
+					deleteSubscriber(s);
+				} else {
+					logWarn("could not unsubscribe " + identity.getName() + " from publisher:" + p.getResName() + ","	+ p.getResId() + "," + p.getSubidentifier(), null);
+				}
 			}
 		}
 		dbInstance.commit();
@@ -979,6 +1026,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 * 
 	 * @param scontext the subscriptioncontext
 	 */
+	@Override
 	public void delete(SubscriptionContext scontext) {
 		Publisher p = getPublisher(scontext);
 		// if none found, no one has subscribed yet and therefore no publisher has

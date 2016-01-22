@@ -629,7 +629,7 @@ public interface BaseSecurity {
 	 * @param newName The new identity name
 	 * @return The reloaded and renamed identity
 	 */
-	public Identity saveIdentityName(Identity identity, String newName);
+	public Identity saveIdentityName(Identity identity, String newName, String newExertnalId);
 	
 	/**
 	 * Set an external id if the identity is managed by an external system.
