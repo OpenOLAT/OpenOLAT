@@ -1917,9 +1917,10 @@ public class BaseSecurityManager implements BaseSecurity {
 	}
 	
 	@Override
-	public Identity saveIdentityName(Identity identity, String newName) {
-		Identity reloadedIdentity = loadForUpdate(identity); 
+	public Identity saveIdentityName(Identity identity, String newName, String newExternalId) {
+		IdentityImpl reloadedIdentity = loadForUpdate(identity); 
 		reloadedIdentity.setName(newName);
+		reloadedIdentity.setExternalId(newExternalId);
 		reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
 		dbInstance.commit();
 		return reloadedIdentity;
