@@ -260,10 +260,6 @@ public class QuestionItemDAO {
 	}
 	
 	public QuestionItemImpl loadForUpdate(QuestionItemShort item) {
-		if(item instanceof QuestionItemImpl) {
-			//remove from the cache
-			dbInstance.getCurrentEntityManager().detach(item);
-		}
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from questionitem item where item.key=:key");
 		QuestionItemImpl lockedItem = dbInstance.getCurrentEntityManager()
