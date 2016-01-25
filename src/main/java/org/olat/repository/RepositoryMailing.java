@@ -119,6 +119,12 @@ public class RepositoryMailing {
 			return;
 		}
 		
+		String email = identity.getUser().getProperty(UserConstants.EMAIL, null);
+		String emailAlt = identity.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
+		if(!StringHelper.containsNonWhitespace(email) && !StringHelper.containsNonWhitespace(emailAlt)) {
+			return;
+		}
+
 		if(mailing == null) {
 			BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 			RepositoryModule repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);

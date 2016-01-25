@@ -71,7 +71,6 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -291,9 +290,8 @@ public class AjaxController extends DefaultController {
 	private void appendBusinessPathInfos(UserRequest ureq, Writer writer) throws IOException {
 		ChiefController ctrl = wboImpl.getChiefController();
 		String documentTitle = ctrl == null ? "" : ctrl.getWindowTitle();
-		StringBuilder docTitle = Formatter.escapeDoubleQuotesWithBackslash(documentTitle);
-		writer.append(",\"documentTitle\":\"").append(docTitle).append("\"");
-		
+		writer.append(",\"documentTitle\":").append(JSONObject.quote(documentTitle));
+
 		StringBuilder bc = new StringBuilder(128);
 		HistoryPoint p = ureq.getUserSession().getLastHistoryPoint();
 		if(p != null && StringHelper.containsNonWhitespace(p.getBusinessPath())) {
@@ -301,8 +299,8 @@ public class AjaxController extends DefaultController {
 			String uriPrefix = wboImpl.getWindow().getUriPrefix();
 			bc.append(uriPrefix)
 			  .append(BusinessControlFactory.getInstance().getAsRestPart(ces, true));
-			writer.append(",\"businessPath\":\"").append(bc).append("\"");
-		    writer.append(",\"historyPointId\":\"").append(p.getUuid()).append("\"");
+			writer.append(",\"businessPath\":").append(JSONObject.quote(bc.toString()));
+		    writer.append(",\"historyPointId\":").append(JSONObject.quote(p.getUuid()));
 		}
 	}
 	
