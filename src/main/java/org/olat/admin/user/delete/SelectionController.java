@@ -225,8 +225,8 @@ public class SelectionController extends BasicController {
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("error.no.user.found"));
 		
-		removeAsListenerAndDispose(tableCtr)		;
-		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), this.propertyHandlerTranslator);
+		removeAsListenerAndDispose(tableCtr);
+		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), propertyHandlerTranslator);
 		listenTo(tableCtr);
 		
 		List<Identity> l = UserDeletionManager.getInstance().getDeletableIdentities(UserDeletionManager.getInstance().getLastLoginDuration());		
