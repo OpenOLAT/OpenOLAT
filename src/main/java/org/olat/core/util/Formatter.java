@@ -358,30 +358,6 @@ public class Formatter {
 	}
 	
 	/**
-	 * Escape " with \" in strings
-	 * @param source
-	 * @return escaped string
-	 */
-	public static StringBuilder escapeDoubleQuotesWithBackslash(String source) {
-		StringBuilder sb = new StringBuilder(300);
-		if (source != null) {
-			int len = source.length();
-			char[] cs = source.toCharArray();
-			for (int i = 0; i < len; i++) {
-				char c = cs[i];
-				switch (c) {
-					case '"':
-						sb.append("\\\"");
-						break;
-					default:
-						sb.append(c);
-				}
-			}
-		}
-		return sb;
-	}
-	
-	/**
 	 * Escape " with \" and ' with \' in strings
 	 * @param source
 	 * @return escaped string
