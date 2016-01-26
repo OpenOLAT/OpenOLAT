@@ -216,7 +216,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 	 * @param feed the current feed object
 	 */
 	private void createEditButtons(UserRequest ureq, Feed feed) {
-		List<Item> items = feed.getItems();
+		List<Item> items = feed.getCopiedListOfItems();
 
 		editButtons = new ArrayList<Link>();
 		deleteButtons = new ArrayList<Link>();
@@ -248,7 +248,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 	 * @param feed
 	 */
 	private void createCommentsAndRatingsLinks(UserRequest ureq, Feed feed) {
-		List<Item> items = feed.getItems();
+		List<Item> items = feed.getCopiedListOfItems();
 		if (items != null) {
 			for (Item item : items) {
 				// Add rating and commenting controller
@@ -289,19 +289,19 @@ public class ItemsController extends BasicController implements Activateable2 {
 	 * @param feed
 	 */
 	private void createDateComponents(Feed feed) {
-		List<Item> items = feed.getItems();
+		List<Item> items = feed.getCopiedListOfItems();
 		if (items != null) {
 			for (Item item : items) {
-					String guid = item.getGuid();
-					if(item.getDate() != null) {
-						DateComponentFactory.createDateComponentWithYear("date." + guid, item.getDate(), vcItems);
-					}
+				String guid = item.getGuid();
+				if(item.getDate() != null) {
+					DateComponentFactory.createDateComponentWithYear("date." + guid, item.getDate(), vcItems);
+				}
 			}			
 		}				
 	}
 	
 	private void createItemLinks(Feed feed) {
-		List<Item> items = feed.getItems();
+		List<Item> items = feed.getCopiedListOfItems();
 		itemLinks = new ArrayList<Link>();
 		if (items != null) {
 			for (Item item : items) {
