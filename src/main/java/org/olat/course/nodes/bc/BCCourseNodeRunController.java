@@ -95,8 +95,9 @@ public class BCCourseNodeRunController extends DefaultController implements Acti
 			target = BCCourseNode.getNodeFolderContainer(courseNode, courseEnv);
 			scallback = new FolderNodeCallback(BCCourseNode.getNodeFolderContainer(courseNode, courseEnv).getRelPath(), ne, isOlatAdmin, isGuestOnly, nodefolderSubContext);
 
-		} else if(courseNode.isSharedFolder()){
-			VFSItem item = courseEnv.getCourseFolderContainer().resolve(courseNode.getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH));
+		} else if(courseNode.isSharedFolder()) {
+			String subpath = courseNode.getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH, "");
+			VFSItem item = courseEnv.getCourseFolderContainer().resolve(subpath);
 			if(item == null){
 				noFolder = true;
 				BCCourseNodeNoFolderForm noFolderForm = new BCCourseNodeNoFolderForm(ureq, getWindowControl());
@@ -107,54 +108,53 @@ public class BCCourseNodeRunController extends DefaultController implements Acti
 			scallback = new FolderNodeReadOnlyCallback(nodefolderSubContext);
 		} else{
 			//create folder automatically if not found
-			VFSContainer item = VFSManager.resolveOrCreateContainerFromPath(courseEnv.getCourseFolderContainer(), courseNode.getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH));
+			String subPath = courseNode.getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH);
+			VFSContainer item = VFSManager.resolveOrCreateContainerFromPath(courseEnv.getCourseFolderContainer(), subPath);
 			if(item == null){
 				noFolder = true;
 				BCCourseNodeNoFolderForm noFolderForm = new BCCourseNodeNoFolderForm(ureq, getWindowControl());
 				setInitialComponent(noFolderForm.getInitialComponent());
-			}else {
-				target = new NamedContainerImpl(courseNode.getShortTitle(), item);;
+			} else {
+				target = new NamedContainerImpl(courseNode.getShortTitle(), item);
 			}
 
 			scallback = new FolderNodeCallback(VFSManager.getRelativeItemPath(target, courseEnv.getCourseFolderContainer(), null), ne, isOlatAdmin, isGuestOnly, nodefolderSubContext);
 		}
-		if(!noFolder){
-		target.setLocalSecurityCallback(scallback);
+		if(!noFolder) {
+			target.setLocalSecurityCallback(scallback);
 
-
-		VFSContainer courseContainer = null;
-		if(scallback.canWrite() && scallback.canCopy()) {
-			Identity identity = ureq.getIdentity();
-			ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
-			RepositoryManager rm = RepositoryManager.getInstance();
-			RepositoryEntry entry = rm.lookupRepositoryEntry(course, true);
-			if (isOlatAdmin || rm.isOwnerOfRepositoryEntry(identity, entry)
-					|| courseEnv.getCourseGroupManager().hasRight(identity, CourseRights.RIGHT_COURSEEDITOR)) {
-				// use course folder as copy source
-				courseContainer = courseEnv.getCourseFolderContainer();
+			VFSContainer courseContainer = null;
+			if(scallback.canWrite() && scallback.canCopy()) {
+				Identity identity = ureq.getIdentity();
+				ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
+				RepositoryManager rm = RepositoryManager.getInstance();
+				RepositoryEntry entry = rm.lookupRepositoryEntry(course, true);
+				if (isOlatAdmin || rm.isOwnerOfRepositoryEntry(identity, entry)
+						|| courseEnv.getCourseGroupManager().hasRight(identity, CourseRights.RIGHT_COURSEEDITOR)) {
+					// use course folder as copy source
+					courseContainer = courseEnv.getCourseFolderContainer();
+				}
 			}
-		}
-
-		OlatNamedContainerImpl olatNamed;
-		if(!courseNode.isSharedFolder()){
-			String realPath = VFSManager.getRealPath(target);
-			String relPath = StringUtils.difference(FolderConfig.getCanonicalRoot(), realPath);
-
-			OlatRootFolderImpl olatRel = new OlatRootFolderImpl(relPath, null);
-			olatNamed = new OlatNamedContainerImpl(target.getName(), olatRel);
-			olatNamed.setLocalSecurityCallback(scallback);
-		}else{
-			String realPath = VFSManager.getRealPath(((NamedContainerImpl)target).getDelegate());
-
-			String relPath = StringUtils.difference(FolderConfig.getCanonicalRoot(), realPath);
-
-			OlatRootFolderImpl olatRel = new OlatRootFolderImpl(relPath, null);
-			olatNamed = new OlatNamedContainerImpl(target.getName(), olatRel);
-			olatNamed.setLocalSecurityCallback(scallback);
-		}
-
-		frc = new FolderRunController(olatNamed, true, true, true, ureq, getWindowControl(), null, null, courseContainer);
-		setInitialComponent(frc.getInitialComponent());
+	
+			OlatNamedContainerImpl olatNamed;
+			if(!courseNode.isSharedFolder()){
+				String realPath = VFSManager.getRealPath(target);
+				String relPath = StringUtils.difference(FolderConfig.getCanonicalRoot(), realPath);
+	
+				OlatRootFolderImpl olatRel = new OlatRootFolderImpl(relPath, null);
+				olatNamed = new OlatNamedContainerImpl(target.getName(), olatRel);
+				olatNamed.setLocalSecurityCallback(scallback);
+			}else{
+				String realPath = VFSManager.getRealPath(((NamedContainerImpl)target).getDelegate());
+				String relPath = StringUtils.difference(FolderConfig.getCanonicalRoot(), realPath);
+	
+				OlatRootFolderImpl olatRel = new OlatRootFolderImpl(relPath, null);
+				olatNamed = new OlatNamedContainerImpl(target.getName(), olatRel);
+				olatNamed.setLocalSecurityCallback(scallback);
+			}
+	
+			frc = new FolderRunController(olatNamed, true, true, true, ureq, getWindowControl(), null, null, courseContainer);
+			setInitialComponent(frc.getInitialComponent());
 		}
 	}
 

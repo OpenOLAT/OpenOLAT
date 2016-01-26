@@ -176,4 +176,11 @@ public class NavigationPage {
 		OOGraphene.closeBlueMessageWindow(browser);
 		return this;
 	}
+	
+	public NavigationPage closeTab() {
+		By closeBy = By.xpath("//li//a[contains(@class,'o_navbar_tab_close')]");
+		browser.findElement(closeBy).click();
+		
+		return this;
+	}
 }

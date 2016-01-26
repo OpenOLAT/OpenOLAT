@@ -161,8 +161,8 @@ public class QuestionItemDAO {
 		return (QuestionItemImpl)dbInstance.getCurrentEntityManager().merge(item);
 	}
 	
-	public void addAuthors(List<Identity> authors, Long itemKey) {
-		QuestionItemImpl lockedItem = loadForUpdate(itemKey);
+	public void addAuthors(List<Identity> authors, QuestionItemShort item) {
+		QuestionItemImpl lockedItem = loadForUpdate(item);
 		SecurityGroup secGroup = lockedItem.getOwnerGroup();
 		for(Identity author:authors) {
 			if(!securityManager.isIdentityInSecurityGroup(author, secGroup)) {
@@ -172,8 +172,8 @@ public class QuestionItemDAO {
 		dbInstance.commit();
 	}
 	
-	public void removeAuthors(List<Identity> authors, Long itemKey) {
-		QuestionItemImpl lockedItem = loadForUpdate(itemKey);
+	public void removeAuthors(List<Identity> authors, QuestionItemShort item) {
+		QuestionItemImpl lockedItem = loadForUpdate(item);
 		SecurityGroup secGroup = lockedItem.getOwnerGroup();
 		for(Identity author:authors) {
 			if(securityManager.isIdentityInSecurityGroup(author, secGroup)) {
@@ -259,15 +259,15 @@ public class QuestionItemDAO {
 		return items;
 	}
 	
-	public QuestionItemImpl loadForUpdate(Long key) {
+	public QuestionItemImpl loadForUpdate(QuestionItemShort item) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from questionitem item where item.key=:key");
-		QuestionItemImpl item = dbInstance.getCurrentEntityManager()
+		QuestionItemImpl lockedItem = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QuestionItemImpl.class)
-				.setParameter("key", key)
+				.setParameter("key", item.getKey())
 				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
 				.getSingleResult();
-		return item;
+		return lockedItem;
 	}
 	
 	public int getNumOfQuestions() {
@@ -289,7 +289,7 @@ public class QuestionItemDAO {
 	}
 	
 	public void share(QuestionItem item, OLATResource resource) {
-		QuestionItem lockedItem = loadForUpdate(item.getKey());
+		QuestionItem lockedItem = loadForUpdate(item);
 		if(!isShared(item, resource)) {
 			EntityManager em = dbInstance.getCurrentEntityManager();
 			ResourceShareImpl share = new ResourceShareImpl();
@@ -301,9 +301,9 @@ public class QuestionItemDAO {
 		dbInstance.commit();//release the lock asap
 	}
 	
-	public void share(Long itemKey, List<OLATResource> resources, boolean editable) {
+	public void share(QuestionItemShort item, List<OLATResource> resources, boolean editable) {
 		EntityManager em = dbInstance.getCurrentEntityManager();
-		QuestionItem lockedItem = loadForUpdate(itemKey);
+		QuestionItem lockedItem = loadForUpdate(item);
 		for(OLATResource resource:resources) {
 			if(!isShared(lockedItem, resource)) {
 				ResourceShareImpl share = new ResourceShareImpl();

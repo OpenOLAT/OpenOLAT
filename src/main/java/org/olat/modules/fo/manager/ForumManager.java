@@ -301,11 +301,11 @@ public class ForumManager {
 		for(Object[] object:objects) {
 			Message msg = (Message)object[0];
 			Number numOfMessagesLong = (Number)object[1];
-			Date lastModifed = (Date)object[2];
+			Date lastModified = (Date)object[2];
 			int numOfMessages = numOfMessagesLong == null ? 1 : numOfMessagesLong.intValue() + 1;
 			String creator = userManager.getUserDisplayName(msg.getCreator());
-			ForumThread thread = new ForumThread(msg, creator, lastModifed, numOfMessages);
-
+			ForumThread thread = new ForumThread(msg, creator, lastModified, numOfMessages);
+			
 			if(identity != null) {
 				Number readMessages = (Number)object[3];
 				int numOfReadMessages = readMessages == null ? 0 : readMessages.intValue();

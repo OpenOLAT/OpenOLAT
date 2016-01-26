@@ -49,6 +49,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
@@ -58,6 +59,8 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.ConsumableBoolean;
 import org.olat.core.util.Formatter;
@@ -83,6 +86,8 @@ import org.olat.modules.fo.Status;
 import org.olat.modules.fo.archiver.formatters.ForumDownloadResource;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.fo.ui.MessageEditController.EditMode;
+import org.olat.modules.fo.ui.events.DeleteMessageEvent;
+import org.olat.modules.fo.ui.events.DeleteThreadEvent;
 import org.olat.modules.fo.ui.events.SelectMessageEvent;
 import org.olat.portfolio.EPUIFactory;
 import org.olat.portfolio.manager.EPFrontendManager;
@@ -100,7 +105,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MessageListController extends BasicController implements GenericEventListener {
+public class MessageListController extends BasicController implements GenericEventListener, Activateable2 {
 
 	protected static final String USER_PROPS_ID = ForumUserListController.class.getCanonicalName();
 	
@@ -260,7 +265,14 @@ public class MessageListController extends BasicController implements GenericEve
 		reloadList = false;
 		if(loadMode == LoadMode.thread) {
 			loadThread(ureq, thread);
-			scrollTo(message);
+			String settings = doShowBySettings(ureq);
+			if(VIEWMODE_MESSAGE.equals(settings)) {
+				if(message != null && message.getKey() != null) {
+					doSelectTheOne(ureq, message.getKey());
+				}
+			} else {
+				scrollTo(message);
+			}
 		} else if(message != null) {
 			MessageView view = loadView(ureq, message);
 			backupViews.add(view);
@@ -282,6 +294,7 @@ public class MessageListController extends BasicController implements GenericEve
 	private void reloadModelAfterDelete(UserRequest ureq, MessageView message) {
 		if(loadMode == LoadMode.thread) {
 			loadThread(ureq, thread);
+			doShowBySettings(ureq);
 		} else if(message != null) {
 			for(MessageView msg:backupViews) {
 				if(msg.getKey().equals(message.getKey())) {
@@ -622,10 +635,17 @@ public class MessageListController extends BasicController implements GenericEve
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		//
+	}
+
+	@Override
 	public void event(Event event) {
 		if(event instanceof ForumChangedEvent) {
 			ForumChangedEvent fce = (ForumChangedEvent)event;
-			if(ForumChangedEvent.CHANGED_MESSAGE.equals(fce.getCommand()) || ForumChangedEvent.NEW_MESSAGE.equals(fce.getCommand())) {
+			if(ForumChangedEvent.CHANGED_MESSAGE.equals(fce.getCommand())
+					|| ForumChangedEvent.NEW_MESSAGE.equals(fce.getCommand())
+					|| ForumChangedEvent.DELETED_MESSAGE.equals(fce.getCommand()) ) {
 				Long threadtopKey = fce.getThreadtopKey();
 				Long senderId = fce.getSendByIdentityKey();
 				if(thread != null && threadtopKey != null && thread.getKey().equals(threadtopKey)
@@ -723,13 +743,16 @@ public class MessageListController extends BasicController implements GenericEve
 		if (source == confirmDeleteCtrl) {
 			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				MessageView deletedMessage = (MessageView)confirmDeleteCtrl.getUserObject();
-				doDeleteMessage(deletedMessage);
-				reloadModelAfterDelete(ureq, deletedMessage);
+				doDeleteMessage(ureq, deletedMessage);
+				
 			}
 		} else if(editMessageCtrl == source) {
 			// edit done -> save 
 			Message message = editMessageCtrl.getMessage();
 			if(message != null) {
+				if(thread != null && thread.getKey().equals(message.getKey())) {
+					thread = message;
+				}
 				reloadModel(ureq, message);
 			} else {
 				showInfo("header.cannoteditmessage");
@@ -856,22 +879,39 @@ public class MessageListController extends BasicController implements GenericEve
 		}
 	}
 	
-	private void doDeleteMessage(MessageView message) { 
+	private void doDeleteMessage(UserRequest ureq, MessageView message) { 
 		boolean userIsMsgCreator = message.isAuthor();
 		if (foCallback.mayDeleteMessageAsModerator()
 				|| (userIsMsgCreator && forumManager.countMessageChildren(message.getKey()) == 0)) {
 			Message reloadedMessage = forumManager.getMessageById(message.getKey());
+			
+			
 			if(reloadedMessage != null) {
-				boolean hasParent = reloadedMessage.getParent() != null;
-				forumManager.deleteMessageTree(forum.getKey(), reloadedMessage);
-				showInfo("deleteok");
-				// do logging
-				if(hasParent) {
+				//this delete the topic / thread
+				if(reloadedMessage.getParent() == null) {
+					forumManager.deleteMessageTree(forum.getKey(), reloadedMessage);
+					//delete topics
 					ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_MESSAGE_DELETE, getClass(),
 							LoggingResourceable.wrap(reloadedMessage));
+					//back to thread list
+					fireEvent(ureq, new DeleteThreadEvent());
+					ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.DELETED_THREAD, reloadedMessage.getKey(), reloadedMessage.getKey(), getIdentity());
+					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, forum);	
 				} else {
+					Message threadTop = reloadedMessage.getThreadtop();
+					forumManager.deleteMessageTree(forum.getKey(), reloadedMessage);
+					threadTop = forumManager.updateMessage(threadTop, true);
+					if(thread != null) {
+						thread = threadTop;//update with the fresh version
+					}
+					showInfo("deleteok");
 					ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_THREAD_DELETE, getClass(),
-							LoggingResourceable.wrap(reloadedMessage));
+						LoggingResourceable.wrap(reloadedMessage));
+					//reload
+					reloadModelAfterDelete(ureq, message);
+					fireEvent(ureq, new DeleteMessageEvent());
+					ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.DELETED_MESSAGE, threadTop.getKey(), message.getKey(), getIdentity());
+					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, forum);	
 				}
 			}
 		} else {
@@ -885,13 +925,18 @@ public class MessageListController extends BasicController implements GenericEve
 		boolean children = forumManager.countMessageChildren(message.getKey()) > 0;
 		if (foCallback.mayEditMessageAsModerator() || (userIsMsgCreator && !children)) {
 			Message reloadedMessage = forumManager.loadMessage(message.getKey());
-			editMessageCtrl = new MessageEditController(ureq, getWindowControl(), forum, foCallback, reloadedMessage, null, EditMode.edit);
-			listenTo(editMessageCtrl);
-			
-			String title = translate("msg.update");
-			cmc = new CloseableModalController(getWindowControl(), "close", editMessageCtrl.getInitialComponent(), true, title);
-			listenTo(editMessageCtrl);
-			cmc.activate();
+			if(reloadedMessage == null) {
+				showWarning("error.message.deleted");
+				reloadModel(ureq, null);
+			} else {
+				editMessageCtrl = new MessageEditController(ureq, getWindowControl(), forum, foCallback, reloadedMessage, null, EditMode.edit);
+				listenTo(editMessageCtrl);
+				
+				String title = translate("msg.update");
+				cmc = new CloseableModalController(getWindowControl(), "close", editMessageCtrl.getInitialComponent(), true, title);
+				listenTo(editMessageCtrl);
+				cmc.activate();
+			}
 		} else if ((userIsMsgCreator) && (children == true)) {
 			// user is author of the current message but it has already at least
 			// one child
@@ -1045,7 +1090,7 @@ public class MessageListController extends BasicController implements GenericEve
 		}
 	}
 	
-	protected void doShowBySettings(UserRequest ureq) {
+	protected String doShowBySettings(UserRequest ureq) {
 		String viewSettings = getViewSettings(ureq);
 		switch(viewSettings) {
 			case VIEWMODE_THREAD: doShowAll(ureq); break;
@@ -1053,6 +1098,7 @@ public class MessageListController extends BasicController implements GenericEve
 			case VIEWMODE_MESSAGE: doShowOne(ureq); break;
 			default: doShowAll(ureq);
 		}
+		return viewSettings == null ? VIEWMODE_THREAD : viewSettings;
 	}
 	
 	private void doShowAll(UserRequest ureq) {

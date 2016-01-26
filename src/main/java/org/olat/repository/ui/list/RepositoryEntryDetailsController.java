@@ -155,10 +155,10 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	private String baseUrl;
 	private final boolean guestOnly;
 	
-	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntryRow row, boolean inRuntime) {
+	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, RepositoryEntryRow row, boolean inRuntime) {
 		this(ureq, wControl, inRuntime);
 		this.row = row;
-		entry = repositoryService.loadByKey(row.getKey());
+		this.entry = entry;
 		initForm(ureq);
 	}
 	

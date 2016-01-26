@@ -149,6 +149,7 @@ public class MergedCourseContainer extends MergeSource {
 				MergeSource courseNodeContainer;
 				if (courseNodeChild instanceof BCCourseNode) {
 					final BCCourseNode bcNode = (BCCourseNode) courseNodeChild;
+					bcNode.updateModuleConfigDefaults(false);
 					// add folder not to merge source. Use name and node id to have unique name
 					VFSContainer rootFolder = null;
 					String subpath = bcNode.getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH);
@@ -245,6 +246,7 @@ public class MergedCourseContainer extends MergeSource {
 			MergeSource courseNodeContainer;
 			if (child instanceof BCCourseNode) {
 				final BCCourseNode bcNode = (BCCourseNode) child;
+				bcNode.updateModuleConfigDefaults(false);
 				// add folder not to merge source. Use name and node id to have unique name
 				String path;
 				VFSContainer rootFolder = null;

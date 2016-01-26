@@ -76,6 +76,7 @@ import org.olat.course.CorruptedCourseException;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
@@ -118,6 +119,8 @@ public class RepositoryEntryListController extends FormBasicController
 	private MapperService mapperService;
 	@Autowired
 	private RepositoryModule repositoryModule;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	private final boolean guestOnly;
 	
@@ -504,12 +507,18 @@ public class RepositoryEntryListController extends FormBasicController
 			
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Infos", 0l);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			detailsCtrl = new RepositoryEntryDetailsController(ureq, bwControl, row, false);
-			listenTo(detailsCtrl);
-			addToHistory(ureq, detailsCtrl);
-			
-			String displayName = row.getDisplayName();
-			stackPanel.pushController(displayName, detailsCtrl);			
+
+			RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
+			if(entry == null) {
+				showWarning("repositoryentry.not.existing");
+			} else {
+				detailsCtrl = new RepositoryEntryDetailsController(ureq, bwControl, entry, row, false);
+				listenTo(detailsCtrl);
+				addToHistory(ureq, detailsCtrl);
+				
+				String displayName = row.getDisplayName();
+				stackPanel.pushController(displayName, detailsCtrl);	
+			}
 		}
 	}
 	

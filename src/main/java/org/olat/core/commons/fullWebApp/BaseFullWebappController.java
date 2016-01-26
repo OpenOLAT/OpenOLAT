@@ -316,6 +316,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 
 		// init with no bookmark (=empty bc)
 		mainVc.contextPut("o_bc", "");
+		mainVc.contextPut("o_serverUri", Settings.createServerURI());
+		
 		
 		// the current language; used e.g. by screenreaders
 		mainVc.contextPut("lang", ureq.getLocale().toString());

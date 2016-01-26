@@ -47,6 +47,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.vitero.ViteroModule;
 import org.olat.modules.vitero.manager.ViteroManager;
 import org.olat.modules.vitero.manager.VmsNotAvailableException;
+import org.olat.modules.vitero.model.ErrorCode;
 import org.olat.modules.vitero.model.GroupRole;
 import org.olat.modules.vitero.model.ViteroBooking;
 import org.olat.modules.vitero.model.ViteroGroupRoles;
@@ -325,6 +326,8 @@ public class ViteroBookingWebService {
 	}
 	
 	private Response handleNotAvailableException() {
-		return Response.serverError().status(Status.SERVICE_UNAVAILABLE).build();
+		ViteroStatus status = new ViteroStatus(ErrorCode.unkown);
+		ViteroErrorVO error = new ViteroErrorVO(status, "vitero server is probable not avalailable at this time");
+		return Response.serverError().entity(error).status(Status.SERVICE_UNAVAILABLE).build();
 	}
 }

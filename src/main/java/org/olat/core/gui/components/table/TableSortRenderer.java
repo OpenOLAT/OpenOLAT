@@ -22,7 +22,6 @@ package org.olat.core.gui.components.table;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
-import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -43,6 +42,7 @@ class TableSortRenderer extends DefaultComponentRenderer {
 		TableSort sorter = (TableSort)source;
 		Table table = sorter.getTable();
 		String id = sorter.getDispatchID();
+		String formName = "tb_ms_" + table.hashCode();
 		
 		sb.append("<div id='o_c").append(id).append("' class='btn-group'>")
 		  .append("<button id='table-button-sorters-").append(id).append("' type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
@@ -59,10 +59,9 @@ class TableSortRenderer extends DefaultComponentRenderer {
 			ColumnDescriptor cd = table.getColumnDescriptor(i);
 			// header either a link or not
 			if (cd.isSortingAllowed()) {
-				sb.append("<li><a ");
-				ubu.buildHrefAndOnclick(sb, false,
-						new NameValuePair(Table.FORM_CMD, Table.COMMAND_SORTBYCOLUMN),
-						new NameValuePair(Table.FORM_PARAM, i))
+				sb.append("<li><a  href=\"javascript:;\" onclick=\"o_XHRSubmit('")
+	              .append(formName).append("','").append(Table.FORM_CMD).append("','").append(Table.COMMAND_SORTBYCOLUMN)
+	              .append("','").append(Table.FORM_PARAM).append("','").append(i).append("'); return false;\"")
 				  .append(" title=\"")
 				  .append(StringEscapeUtils.escapeHtml(translator.translate("row.sort"))).append("\">");
 				

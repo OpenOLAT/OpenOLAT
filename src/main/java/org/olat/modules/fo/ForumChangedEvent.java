@@ -50,6 +50,8 @@ public class ForumChangedEvent extends MultiUserEvent {
 	public static final String STICKY = "sticky";
 	public static final String NEW_MESSAGE = "new-message";
 	public static final String CHANGED_MESSAGE = "changed-message";
+	public static final String DELETED_MESSAGE = "deleted-message";
+	public static final String DELETED_THREAD = "deleted-thread";
 	
 	private Long threadtopKey;
 	private Long messageKey;

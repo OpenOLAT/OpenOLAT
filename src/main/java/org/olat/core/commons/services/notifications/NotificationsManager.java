@@ -133,6 +133,14 @@ public abstract class NotificationsManager extends BasicManager {
 	public abstract Subscriber getSubscriber(Identity identity, Publisher publisher);
 	
 	/**
+	 * Delete the subscriber with the specified primary key.
+	 * 
+	 * @param subscriberKey
+	 * @return True if something was deleted.
+	 */
+	public abstract boolean deleteSubscriber(Long subscriberKey);
+	
+	/**
 	 * Return all subscribers of a publisher
 	 * @param publisher
 	 * @return
@@ -306,6 +314,8 @@ public abstract class NotificationsManager extends BasicManager {
 	 * @param publisherData
 	 */
 	public abstract void subscribe(Identity identity, SubscriptionContext subscriptionContext, PublisherData publisherData);
+	
+	public abstract void subscribe(List<Identity> identities, SubscriptionContext subscriptionContext, PublisherData publisherData);
 
 	public abstract void unsubscribe(Subscriber s);
 	
@@ -316,6 +326,13 @@ public abstract class NotificationsManager extends BasicManager {
 	 * @param subscriptionContext
 	 */
 	public abstract void unsubscribe(Identity identity, SubscriptionContext subscriptionContext);
+	
+	/**
+	 * 
+	 * @param identities
+	 * @param subscriptionContext
+	 */
+	public abstract void unsubscribe(List<Identity> identities, SubscriptionContext subscriptionContext);
 	
 	/**
 	 * @return the handler for the type

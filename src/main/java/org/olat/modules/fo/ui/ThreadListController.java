@@ -31,6 +31,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -146,6 +147,10 @@ public class ThreadListController extends FormBasicController {
 		threadTable.setCustomizeColumns(false);
 		threadTable.setElementCssClass("o_forum");
 		threadTable.setEmtpyTableMessageKey("forum.emtpy");
+		
+		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
+		sortOptions.setDefaultOrderBy(new SortKey(ThreadListCols.lastModified.name(), false));
+		threadTable.setSortSettings(sortOptions);
 	}
 
 	@Override

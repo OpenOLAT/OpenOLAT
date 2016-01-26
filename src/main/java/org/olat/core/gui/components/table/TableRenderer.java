@@ -153,10 +153,6 @@ public class TableRenderer extends DefaultComponentRenderer {
 			      .append("\" class=\"btn btn-default\" onclick=\"o_TableMultiActionEvent('").append(formName).append("','").append(multiSelectActionIdentifer).append("');\"><span>").append(value).append("</span></button> ");
 		}
 		target.append("</div>");
-		// add hidden action command placeholders to the form. these will be manipulated when
-		// the user clicks on a regular link within the table to e.g. re-sort the columns.
-		target.append("<input type=\"hidden\" name=\"cmd\" value=\"\" />")
-		      .append("<input type=\"hidden\" name=\"param\" value=\"\" />");
 	}
 
 	private void appendTablePageing(StringOutput target, Translator translator, Table table, int rows,
@@ -167,9 +163,10 @@ public class TableRenderer extends DefaultComponentRenderer {
 			int maxpageid = (int) Math.ceil(((double) rows / (double) resultsPerPage));
 			target.append("<div class='o_table_pagination'><ul class='pagination'>");
 
-			appendTablePageingBackLink(target, pageid, ajaxEnabled, ubu);
-			addPageNumberLinks(target, pageid, maxpageid, ajaxEnabled, ubu);
-			appendTablePageingNextLink(target, rows, resultsPerPage, pageid, ajaxEnabled,  ubu);
+			String formName = "tb_ms_" + table.hashCode();
+			appendTablePageingBackLink(target, formName, pageid);
+			appendPageNumberLinks(target, formName, pageid, maxpageid, ubu);
+			appendTablePageingNextLink(target, formName, rows, resultsPerPage, pageid);
 			appendTablePageingShowallLink(target, translator, table, ajaxEnabled, ubu);
 			
 			target.append("</ul></div>");
@@ -186,26 +183,26 @@ public class TableRenderer extends DefaultComponentRenderer {
 		}
 	}
 
-	private void appendTablePageingNextLink(StringOutput target, int rows, int resultsPerPage, int pageid, boolean ajaxEnabled, URLBuilder ubu) {
+	private void appendTablePageingNextLink(StringOutput target, String formName, int rows, int resultsPerPage, int pageid) {
 		boolean enabled = ((pageid * resultsPerPage) < rows);
 		target.append("<li").append(" class='disabled'", !enabled).append("><a ");
 		if(enabled) {
-			ubu.buildHrefAndOnclick(target, ajaxEnabled, 
-					new NameValuePair(Table.FORM_CMD,Table.COMMAND_PAGEACTION),
-					new NameValuePair(Table.FORM_PARAM, Table.COMMAND_PAGEACTION_FORWARD));
+			target.append(" href=\"javascript:;\" onclick=\"o_XHRSubmit('")
+	              .append(formName).append("','").append(Table.FORM_CMD).append("','").append(Table.COMMAND_PAGEACTION)
+	              .append("','").append(Table.FORM_PARAM).append("','").append(Table.COMMAND_PAGEACTION_FORWARD).append("'); return false;\"");
 		} else {
 			target.append("href=\"javascript:;\"");
 		}		
 		target.append(">&raquo;").append("</a></li>");
 	}
 
-	private void appendTablePageingBackLink(StringOutput target, int pageid, boolean ajaxEnabled, URLBuilder ubu) {
+	private void appendTablePageingBackLink(StringOutput target, String formName, int pageid) {
 		boolean enabled = pageid > 1;
 		target.append("<li").append(" class='disabled'", !enabled).append("><a ");
 		if(enabled) {
-			ubu.buildHrefAndOnclick(target, ajaxEnabled, 
-					new NameValuePair(Table.FORM_CMD,Table.COMMAND_PAGEACTION),
-					new NameValuePair(Table.FORM_PARAM, Table.COMMAND_PAGEACTION_BACKWARD));
+			target.append(" href=\"javascript:;\" onclick=\"o_XHRSubmit('")
+		          .append(formName).append("','").append(Table.FORM_CMD).append("','").append(Table.COMMAND_PAGEACTION)
+		          .append("','").append(Table.FORM_PARAM).append("','").append(Table.COMMAND_PAGEACTION_BACKWARD).append("'); return false;\"");
 		} else {
 			target.append("href=\"javascript:;\"");
 		}
@@ -376,9 +373,9 @@ public class TableRenderer extends DefaultComponentRenderer {
 	 * @param pageid
 	 * @param maxpageid
 	 */
-	private void addPageNumberLinks(StringOutput target, int pageid, int maxpageid, boolean ajaxEnabled, URLBuilder ubu) {
+	private void appendPageNumberLinks(StringOutput target, String formName, int pageid, int maxpageid, URLBuilder ubu) {
 		if (maxpageid < 12) {
-			addPageNumberLinksForSimpleCase(target, pageid, maxpageid, ajaxEnabled, ubu);
+			addPageNumberLinksForSimpleCase(target, formName, pageid, maxpageid);
 		} else {
 			int powerOf10 = String.valueOf(maxpageid).length() - 1;
 			int maxStepSize = (int) Math.pow(10, powerOf10);
@@ -407,17 +404,16 @@ public class TableRenderer extends DefaultComponentRenderer {
 				}
 				isNear = (i > (pageid - nearleft) && i < (pageid + nearright));
 				if (i == 1 || i == maxpageid || isStep || isNear) {
-					appendPagenNumberLink(target, pageid, i, ajaxEnabled, ubu);
+					appendPagenNumberLink(target, formName, pageid, i);
 				}
 			}
 		}
 	}
 
-	private void appendPagenNumberLink(StringOutput target, int pageid, int i, boolean ajaxEnabled, URLBuilder ubu) {
-		target.append("<li").append(" class='active'", pageid == i).append("><a ");
-		ubu.buildHrefAndOnclick(target, ajaxEnabled,
-				new NameValuePair(Table.FORM_CMD, Table.COMMAND_PAGEACTION),
-				new NameValuePair(Table.FORM_PARAM, i)).append(">")
+	private void appendPagenNumberLink(StringOutput target, String formName, int pageid, int i) {
+		target.append("<li").append(" class='active'", pageid == i).append("><a href=\"#\" onclick=\"o_XHRSubmit('")
+		      .append(formName).append("','").append(Table.FORM_CMD).append("','").append(Table.COMMAND_PAGEACTION)
+		      .append("','").append(Table.FORM_PARAM).append("','").append(i).append("'); return false;\">")
 		      .append(i).append("</a></li>");
 	}
 
@@ -431,9 +427,9 @@ public class TableRenderer extends DefaultComponentRenderer {
 		return newStepSize;
 	}
 
-	private void addPageNumberLinksForSimpleCase(final StringOutput target, int pageid, int maxpageid, boolean ajaxEnabled, URLBuilder ubu) {
+	private void addPageNumberLinksForSimpleCase(StringOutput target, String formName, int pageid, int maxpageid) {
 		for (int i = 1; i <= maxpageid; i++) {
-			appendPagenNumberLink(target, pageid, i, ajaxEnabled, ubu);
+			appendPagenNumberLink(target, formName, pageid, i);
 		}
 	}
 }

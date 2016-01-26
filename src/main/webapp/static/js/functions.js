@@ -1180,6 +1180,18 @@ function o_XHRSubmit(formNam) {
 		return true;
 	} else {
 		var data = form.serializeArray();
+		if(arguments.length > 1) {
+			var argLength = arguments.length;
+			for(var i=1; i<argLength; i=i+2) {
+				if(argLength > i+1) {
+					var argData = new Object();
+					argData["name"] = arguments[i];
+					argData["value"] = arguments[i+1];
+					data[data.length] = argData;
+				}
+			}
+		}
+
 		var targetUrl = form.attr("action");
 		jQuery.ajax(targetUrl,{
 			type:'POST',
@@ -1319,7 +1331,6 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 	return false;
 }
 
-
 //by pass every check and don't wait a response from the response
 //typically used to send GUI settings back to the server
 function o_XHRNFEvent(targetUrl) {
@@ -1362,7 +1373,11 @@ function o_pushState(historyPointId, title, url) {
 		var data = new Object();
 		data['businessPath'] = url;
 		data['historyPointId'] = historyPointId;
-		o_info.businessPath=url;
+		
+		if(url != null && !(url.lastIndexOf("http", 0) === 0) && !(url.lastIndexOf("https", 0) === 0)) {
+			url = o_info.serverUri + url;
+		}
+		o_info.businessPath = url;
 		o_shareActiveSocialUrl();
 		if(window.history && !(typeof window.history === "undefined") && window.history.pushState) {
 			window.history.pushState(data, title, url);
