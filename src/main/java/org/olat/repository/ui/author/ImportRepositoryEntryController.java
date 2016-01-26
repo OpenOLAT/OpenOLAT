@@ -189,10 +189,8 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		}
 		
 		allOk &= validLimitationOnType(handlerForUploadedResources);
-
-		return allOk & handlerForUploadedResources != null
-				& handlerForUploadedResources.size() > 0
-				& super.validateFormLogic(ureq);
+		allOk &= handlerForUploadedResources != null && handlerForUploadedResources.size() > 0;
+		return allOk & super.validateFormLogic(ureq);
 	}
 	
 	private boolean validLimitationOnType(List<ResourceHandler> handlers) {

@@ -39,18 +39,14 @@ import org.olat.core.util.vfs.VFSContainer;
  */
 public class BCCourseNodeEditChooseFolderForm extends BasicController {
 
-
-	private FolderTreeModel treeModel;
-	private MenuTree selectionTree;
-	private VelocityContainer chooseVC;
-	private Link selectLink;
-	private Link cancelLink;
+	private final FolderTreeModel treeModel;
+	private final MenuTree selectionTree;
+	private final Link selectLink, cancelLink;
 	private String subpath;
-
 
 	public BCCourseNodeEditChooseFolderForm(UserRequest ureq, WindowControl wControl, VFSContainer namedContainer) {
 		super(ureq, wControl);
-		chooseVC = createVelocityContainer("chooseFolder");
+		VelocityContainer chooseVC = createVelocityContainer("chooseFolder");
 
 		treeModel = new FolderTreeModel(ureq.getLocale(), namedContainer,  true, false, true, true, new VFSFolderNodeFilter());
 		selectionTree = new MenuTree("stTree");
@@ -66,21 +62,18 @@ public class BCCourseNodeEditChooseFolderForm extends BasicController {
 
 	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub
+		//
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == cancelLink){
-			fireEvent(ureq, event);
-		}
-		if(source == selectionTree){
+			fireEvent(ureq, Event.CANCELLED_EVENT);
+		} else if(source == selectionTree) {
 			TreeEvent te = (TreeEvent)event;
 			subpath = treeModel.getSelectedPath(treeModel.getNodeById(te.getNodeId()));
+		} else if(source == selectLink){
+			fireEvent(ureq, new SelectFolderEvent(subpath));
 		}
-		if(source == selectLink){
-			fireEvent(ureq, new Event(subpath));
-		}
-
 	}
 }

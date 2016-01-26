@@ -195,11 +195,8 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	public boolean isSharedFolder(){
-		if(this.getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH, "").startsWith("/_sharedfolder")){
-			return true;
-		}else{
-			return false;
-		}
+		return getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH, "")
+				.startsWith("/_sharedfolder");
 	}
 
 	/**

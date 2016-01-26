@@ -207,6 +207,17 @@ public class Feed implements OLATResourceable, Serializable {
 	public List<Item> getItems() {
 		return items;
 	}
+	
+	/**
+	 * Return a copy of the list of items, but the items
+	 * are not copied. Use this method to mitigate concurrent
+	 * modifications issues.
+	 * 
+	 * @return
+	 */
+	public List<Item> getCopiedListOfItems() {
+		return items == null ? null : new ArrayList<>(items);
+	}
 
 	/**
 	 * @param identity
