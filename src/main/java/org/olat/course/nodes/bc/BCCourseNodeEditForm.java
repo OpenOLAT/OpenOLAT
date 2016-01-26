@@ -27,7 +27,6 @@ import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -131,8 +130,7 @@ public class BCCourseNodeEditForm extends FormBasicController implements Control
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		// TODO Auto-generated method stub
-
+		//
 	}
 
 	@Override
@@ -169,48 +167,57 @@ public class BCCourseNodeEditForm extends FormBasicController implements Control
 			}
 			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			createFolder.setVisible(folderTargetChoose.isSelected(1));
-		}
-		if(source == createFolder){
+		} else if(source == createFolder){
 			createFolderForm = new BCCourseNodeEditCreateFolderForm(ureq, getWindowControl(), course, node);
 			listenTo(createFolderForm);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), createFolderForm.getInitialComponent());
+
+			String title = translate("chooseFolder");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), createFolderForm.getInitialComponent(), true, title);
+			listenTo(cmc);
 			cmc.activate();
-		}
-		if (source == chooseFolder){
+		} else if (source == chooseFolder){
 			VFSContainer namedContainer = course.getCourseFolderContainer();
 
 			chooseForm = new BCCourseNodeEditChooseFolderForm(ureq, getWindowControl(), namedContainer);
 			listenTo(chooseForm);
 
-			cmc = new CloseableModalController(getWindowControl(), translate("close"),chooseForm.getInitialComponent());
+			String title = translate("createFolder");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), chooseForm.getInitialComponent(), true, title);
+			listenTo(cmc);
 			cmc.activate();
-			return;
 		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == createFolderForm){
-			cmc.deactivate();
-			String subpath = event.getCommand();
-			VFSContainer selectedContainer = (VFSContainer) course.getCourseFolderContainer().resolve(subpath);
-			updatePublisher(selectedContainer);
-			node.getModuleConfiguration().setStringValue(BCCourseNodeEditController.CONFIG_SUBPATH, subpath);
-			subPath.setValue(event.getCommand());
-			if(node.isSharedFolder()){
+			if(Event.CANCELLED_EVENT == event) {
+				cmc.deactivate();
+			} else if(event instanceof SelectFolderEvent) {
+				cmc.deactivate();
+				SelectFolderEvent sfe = (SelectFolderEvent)event;
+				String subpath = sfe.getSubpath();
+				VFSContainer selectedContainer = (VFSContainer) course.getCourseFolderContainer().resolve(subpath);
+				updatePublisher(selectedContainer);
+				node.getModuleConfiguration().setStringValue(BCCourseNodeEditController.CONFIG_SUBPATH, subpath);
+				subPath.setValue(event.getCommand());
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
+			
+			if(node.isSharedFolder()) {
 				sharedFolderInfo.setVisible(true);
-			}else{
+			} else {
 				sharedFolderInfo.setVisible(false);
 			}
-			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-		}
-
-		if(source == chooseForm){
-			if(event.getCommand().equals("cancel")){
+			cleanUp();
+		} else if(source == chooseForm) {
+			if(Event.CANCELLED_EVENT == event){
 				cmc.deactivate();
-			}else{
+			} else if(event instanceof SelectFolderEvent) {
 				cmc.deactivate();
-				String subpath = event.getCommand();
+				
+				SelectFolderEvent sfe = (SelectFolderEvent)event;
+				String subpath = sfe.getSubpath();
 				subPath.setValue(subpath);
 
 				VFSContainer selectedContainer = (VFSContainer) course.getCourseFolderContainer().resolve(subpath);
@@ -218,19 +225,25 @@ public class BCCourseNodeEditForm extends FormBasicController implements Control
 				node.getModuleConfiguration().setStringValue(BCCourseNodeEditController.CONFIG_SUBPATH, subpath);
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
+			
 			if(node.isSharedFolder()){
 				sharedFolderInfo.setVisible(true);
-			}else{
+			} else {
 				sharedFolderInfo.setVisible(false);
 			}
-
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
 		}
 	}
-
-	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-
-		super.event(ureq, source, event);
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(createFolderForm);
+		removeAsListenerAndDispose(chooseForm);
+		removeAsListenerAndDispose(cmc);
+		createFolderForm = null;
+		chooseForm = null;
+		cmc = null;
 	}
 
 	private void updatePublisher(VFSContainer container){
@@ -255,7 +268,7 @@ public class BCCourseNodeEditForm extends FormBasicController implements Control
 	}
 
 	private boolean isSharedfolderNotPresent(){
-		if(node.getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH).startsWith("/_sharedfolder")){
+		if(node.getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH, "").startsWith("/_sharedfolder")){
 			if(course.getCourseEnvironment().getCourseFolderContainer().resolve("/_sharedfolder/") == null){
 				return true;
 			}

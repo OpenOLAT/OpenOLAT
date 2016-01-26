@@ -95,8 +95,9 @@ public class BCCourseNodeRunController extends DefaultController implements Acti
 			target = BCCourseNode.getNodeFolderContainer(courseNode, courseEnv);
 			scallback = new FolderNodeCallback(BCCourseNode.getNodeFolderContainer(courseNode, courseEnv).getRelPath(), ne, isOlatAdmin, isGuestOnly, nodefolderSubContext);
 
-		} else if(courseNode.isSharedFolder()){
-			VFSItem item = courseEnv.getCourseFolderContainer().resolve(courseNode.getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH));
+		} else if(courseNode.isSharedFolder()) {
+			String subpath = courseNode.getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH, "");
+			VFSItem item = courseEnv.getCourseFolderContainer().resolve(subpath);
 			if(item == null){
 				noFolder = true;
 				BCCourseNodeNoFolderForm noFolderForm = new BCCourseNodeNoFolderForm(ureq, getWindowControl());

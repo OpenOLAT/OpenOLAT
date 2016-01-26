@@ -104,11 +104,11 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 		uploaderCondContr = new ConditionEditController(ureq, getWindowControl(),
 				uploadCondition, AssessmentHelper
 						.getAssessableNodes(course.getEditorTreeModel(), bcNode), euce);		
-		this.listenTo(uploaderCondContr);
+		listenTo(uploaderCondContr);
 
-		if(bcNode.getModuleConfiguration().getStringValue(CONFIG_SUBPATH).startsWith("/_sharedfolder")){
+		if(bcNode.getModuleConfiguration().getStringValue(CONFIG_SUBPATH, "").startsWith("/_sharedfolder")){
 			accessabiliryContent.contextPut("uploadable", false);
-		}else{
+		} else {
 			accessabiliryContent.contextPut("uploadable", true);
 		}
 		accessabiliryContent.put("uploadCondition", uploaderCondContr.getInitialComponent());
@@ -138,7 +138,7 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 			if(bcNode.getModuleConfiguration().getBooleanSafe(CONFIG_AUTO_FOLDER)){
 				target = BCCourseNode.getNodeFolderContainer(bcNode, course.getCourseEnvironment());
 			}else{
-				String path = bcNode.getModuleConfiguration().getStringValue(CONFIG_SUBPATH);
+				String path = bcNode.getModuleConfiguration().getStringValue(CONFIG_SUBPATH, "");
 				VFSItem pathItem = course.getCourseFolderContainer().resolve(path);
 				if(pathItem instanceof VFSContainer){
 					target = (VFSContainer) pathItem;
@@ -178,7 +178,7 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 			}
 		}
 		if (source == folderPathChoose){
-			if(bcNode.getModuleConfiguration().getStringValue(CONFIG_SUBPATH).startsWith("/_sharedfolder")){
+			if(bcNode.getModuleConfiguration().getStringValue(CONFIG_SUBPATH, "").startsWith("/_sharedfolder")){
 				accessabiliryContent.contextPut("uploadable", false);
 			}else{
 				accessabiliryContent.contextPut("uploadable", true);
