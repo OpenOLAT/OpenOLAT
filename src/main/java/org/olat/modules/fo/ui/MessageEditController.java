@@ -387,7 +387,8 @@ public class MessageEditController extends FormBasicController {
 			if(foCallback.mayOpenNewThread()) {
 				// save a new thread
 				fm.addTopMessage(message);
-				fm.markAsRead(getIdentity(), forum, message);
+				fm.markNewMessageAsRead(getIdentity(), forum, message);
+				persistTempUploadedFiles(message);
 				// if notification is enabled -> notify the publisher about news
 				notifiySubscription();
 				addLoggingResourceable(LoggingResourceable.wrap(message));
@@ -419,7 +420,7 @@ public class MessageEditController extends FormBasicController {
 			}
 		} else if(editMode == EditMode.reply) { 
 			fm.replyToMessage(message, parentMessage);
-			fm.markAsRead(getIdentity(), forum, message);
+			fm.markNewMessageAsRead(getIdentity(), forum, message);
 			persistTempUploadedFiles(message);
 			notifiySubscription();
 			Long threadTopKey = message.getThreadtop() == null ? null : message.getThreadtop().getKey();

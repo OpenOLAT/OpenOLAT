@@ -946,6 +946,22 @@ public class ForumManager {
 	}
 	
 	/**
+	 * Optimized method to mark newly created messages as read.
+	 * 
+	 * @param identity
+	 * @param forum
+	 * @param msg
+	 */
+	public void markNewMessageAsRead(Identity identity, Forum forum, Message msg) {		
+		//Check if the message was not already deleted
+		ReadMessageImpl readMessage = new ReadMessageImpl();
+		readMessage.setIdentity(identity);
+		readMessage.setMessage(msg);
+		readMessage.setForum(forum);
+		dbInstance.getCurrentEntityManager().persist(readMessage);
+	}
+	
+	/**
 	 * Implementation with one entry per forum message.
 	 * Adds a new entry into the ReadMessage for the input message and identity.
 	 * @param msg
