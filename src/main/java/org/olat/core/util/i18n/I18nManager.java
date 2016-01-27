@@ -1775,27 +1775,31 @@ public class I18nManager extends BasicManager {
 		} else {
 			// Fall back to compiled classes
 			srcPath = WebappHelper.getBuildOutputFolderRoot();
-		} 
-		I18nDirectoriesVisitor srcVisitor = new I18nDirectoriesVisitor(srcPath);
-		FileUtils.visitRecursively(new File(srcPath), srcVisitor);
-		foundBundles = srcVisitor.getBundlesContainingI18nFiles();
-		// 3) For jUnit tests, add also the I18n test dir
-		if (Settings.isJUnitTest()) {
-			Resource testres = new ClassPathResource("olat.local.properties");
-			String jUnitSrcPath = null;
-			try {
-				jUnitSrcPath = testres.getFile().getAbsolutePath();
-			} catch (IOException e) {
-				throw new StartupException("Could not find classpath resource for: test-classes/olat.local.property ", e);
-  			}
-
-
-			I18nDirectoriesVisitor juniSrcVisitor = new I18nDirectoriesVisitor(jUnitSrcPath);
-			FileUtils.visitRecursively(new File(jUnitSrcPath), juniSrcVisitor);
-			foundBundles.addAll(juniSrcVisitor.getBundlesContainingI18nFiles());
 		}
-		// Sort alphabetically
-		Collections.sort(foundBundles);
+		if(StringHelper.containsNonWhitespace(srcPath)) {
+			I18nDirectoriesVisitor srcVisitor = new I18nDirectoriesVisitor(srcPath);
+			FileUtils.visitRecursively(new File(srcPath), srcVisitor);
+			foundBundles = srcVisitor.getBundlesContainingI18nFiles();
+			// 3) For jUnit tests, add also the I18n test dir
+			if (Settings.isJUnitTest()) {
+				Resource testres = new ClassPathResource("olat.local.properties");
+				String jUnitSrcPath = null;
+				try {
+					jUnitSrcPath = testres.getFile().getAbsolutePath();
+				} catch (IOException e) {
+					throw new StartupException("Could not find classpath resource for: test-classes/olat.local.property ", e);
+	  			}
+	
+	
+				I18nDirectoriesVisitor juniSrcVisitor = new I18nDirectoriesVisitor(jUnitSrcPath);
+				FileUtils.visitRecursively(new File(jUnitSrcPath), juniSrcVisitor);
+				foundBundles.addAll(juniSrcVisitor.getBundlesContainingI18nFiles());
+			}
+			// Sort alphabetically
+			Collections.sort(foundBundles);
+		} else {
+			foundBundles = new ArrayList<String>();
+		}
 		return foundBundles;
 	}
 

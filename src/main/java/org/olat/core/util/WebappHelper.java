@@ -263,10 +263,16 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 		try {
 			String resource = "/serviceconfig/olat.properties";
 			Resource res = new ClassPathResource(resource);
-			String path = res.getFile().getParentFile().getParentFile().getAbsolutePath();
-			return path;
+			String protocol = res.getURL().getProtocol();
+			if("file".equals(protocol)) {
+				String path = res.getFile().getParentFile().getParentFile().getAbsolutePath();
+				return path;
+			} else {
+				return null;
+			}
 		} catch (IOException e) {
-			throw new StartupException("could not find classpath resource: 'serviceconfig/olat.properties'", e);
+			log.error("Path to build output is not accessible", e);
+			return null;
 		}
 	}
 

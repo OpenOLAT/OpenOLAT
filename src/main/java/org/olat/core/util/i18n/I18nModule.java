@@ -300,17 +300,35 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 			}
 		}
 
-		File libDir = new File(WebappHelper.getBuildOutputFolderRoot());
-		for (String languageCode : i18nMgr.searchForAvailableLanguages(libDir)) {
-			if (availableLanguages.contains(languageCode)) {
-				logDebug("Skipping duplicate or previously loaded  language::" + languageCode + " found in " + libDir.getAbsolutePath(), null);
-				continue;
+		String folderRoot = WebappHelper.getBuildOutputFolderRoot();
+		if(StringHelper.containsNonWhitespace(folderRoot)) {
+			//started from WEB-INF/classes
+			File libDir = new File(WebappHelper.getBuildOutputFolderRoot());
+			for (String languageCode : i18nMgr.searchForAvailableLanguages(libDir)) {
+				if (availableLanguages.contains(languageCode)) {
+					logDebug("Skipping duplicate or previously loaded  language::" + languageCode + " found in " + libDir.getAbsolutePath(), null);
+					continue;
+				}
+				logDebug("Detected non-translatable language " + languageCode + " in " + libDir.getAbsolutePath(), null);
+				availableLanguages.add(languageCode);
+				// don't add to translatable languages nor to source lookup maps - those
+				// langs are read only
 			}
-			logDebug("Detected non-translatable language " + languageCode + " in " + libDir.getAbsolutePath(), null);
-			availableLanguages.add(languageCode);
-			// don't add to translatable languages nor to source lookup maps - those
-			// langs are read only
+		} else {
+			//started from jar (like weblogic does) -> load from the configuration
+			String enabledLanguagesConfig = getStringPropertyValue(CONFIG_LANGUAGES_ENABLED, false);
+			String[] enabledLanguages = enabledLanguagesConfig.split(",");
+			for (String languageCode : enabledLanguages) {
+				if (availableLanguages.contains(languageCode)) {
+					logWarn("Skipping duplicate or previously loaded  language::" + languageCode + " found in "
+							+ LANG_PACKS_DIRECTORY.getAbsolutePath(), null);
+					continue;
+				}
+				logDebug("Force non-translatable language " + languageCode + " defined from enabledLanguages.", null);
+				availableLanguages.add(languageCode);
+			}
 		}
+		
 		// 4) Add languages from the customizing lang packs
 		for (String languageCode : i18nMgr.searchForAvailableLanguages(LANG_PACKS_DIRECTORY)) {
 			if (availableLanguages.contains(languageCode)) {

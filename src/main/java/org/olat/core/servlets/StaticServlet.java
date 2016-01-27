@@ -129,6 +129,9 @@ public class StaticServlet extends HttpServlet {
 			expiration &= false;
 		} else {
 			staticAbsPath = WebappHelper.getContextRealPath(STATIC_DIR_NAME);
+			if(staticAbsPath == null) {
+				staticAbsPath = WebappHelper.getContextRoot() + STATIC_DIR_NAME;
+			}
 			expiration &= true;
 		}
 
