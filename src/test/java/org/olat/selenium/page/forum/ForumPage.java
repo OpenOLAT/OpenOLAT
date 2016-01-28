@@ -141,6 +141,7 @@ public class ForumPage {
 	
 	public ForumPage openThreadInPeekview(String title) {
 		By threadBy = By.xpath("//div[contains(@class,'o_forum_peekview_message')]//a[span[text()='" + title + "']]");
+		OOGraphene.waitElement(threadBy, 5, browser);
 		browser.findElement(threadBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;

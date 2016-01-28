@@ -159,17 +159,25 @@ public class DialogElementsTableModel extends BaseTableDataModelWithoutFilter<Di
 
 		@Override
 		public void renderValue(StringOutput sb, int row, Renderer renderer) {
-			URLBuilder ubu = renderer.getUrlBuilder();
-			ubu = ubu.createCopyFor(getTable());
-			
-			int sortedRow = table.getSortedRow(row);
-			Object entry = getTable().getTableDataModel().getValueAt(sortedRow, getDataColumn());
-
-			StringOutput link = new StringOutput();
-			ubu.buildURI(link, new String[] { Table.COMMANDLINK_ROWACTION_CLICKED, Table.COMMANDLINK_ROWACTION_ID }, new String[] { String.valueOf(row), DialogElementsController.ACTION_SHOW_FILE }); // url
-			sb.append("<a href=\"javascript:o_openPopUp('").append(link).append(entry.toString()).append("','fileview','600','700','no')\">")
-			  .append(entry.toString())
-			  .append("</a>");
+			if(renderer == null) {//download
+				int sortedRow = table.getSortedRow(row);
+				Object entry = table.getTableDataModel().getValueAt(sortedRow, getDataColumn());
+				if(entry != null) {
+					sb.append(entry.toString());
+				}
+			} else {
+				URLBuilder ubu = renderer.getUrlBuilder();
+				ubu = ubu.createCopyFor(getTable());
+				
+				int sortedRow = table.getSortedRow(row);
+				Object entry = table.getTableDataModel().getValueAt(sortedRow, getDataColumn());
+	
+				StringOutput link = new StringOutput();
+				ubu.buildURI(link, new String[] { Table.COMMANDLINK_ROWACTION_CLICKED, Table.COMMANDLINK_ROWACTION_ID }, new String[] { String.valueOf(row), DialogElementsController.ACTION_SHOW_FILE }); // url
+				sb.append("<a href=\"javascript:o_openPopUp('").append(link).append(entry.toString()).append("','fileview','600','700','no')\">")
+				  .append(entry.toString())
+				  .append("</a>");
+			}
 		}
 	}
 }
