@@ -394,14 +394,10 @@ public class RepositoryManager extends BasicManager {
 	 * @return the repositoryentry displayname or null if not found
 	 */
 	public String lookupDisplayNameByOLATResourceableId(Long resId) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select v.displayname from ").append(RepositoryEntry.class.getName()).append(" v ")
-		  .append(" inner join v.olatResource as ores")
-		  .append(" where ores.resId=:resid");
-		
 		List<String> displaynames = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), String.class)
+				.createNamedQuery("getDisplayNameByOlatResourceRedId", String.class)
 				.setParameter("resid", resId)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();
 
 		if (displaynames.size() > 1) throw new AssertException("Repository lookup returned zero or more than one result: " + displaynames.size());
@@ -416,12 +412,8 @@ public class RepositoryManager extends BasicManager {
 	 * @return the repositoryentry displayname or null if not found
 	 */
 	public String lookupDisplayName(Long reId) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select v.displayname from ").append(RepositoryEntry.class.getName()).append(" v ")
-		  .append(" where v.key=:reKey");
-		
 		List<String> displaynames = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), String.class)
+				.createNamedQuery("getDisplayNameByRepositoryEntryKey", String.class)
 				.setParameter("reKey", reId)
 				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();
