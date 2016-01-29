@@ -70,7 +70,7 @@ public class InfinispanCacher implements Cacher {
 	private void createInfinispanConfiguration(String cacheName) {	
 		Configuration conf = cacheManager.getCacheConfiguration(cacheName);
 		if(conf == null) {
-			int maxEntries = 10000;
+			long maxEntries = 10000;
 			long maxIdle = 900000l;
 			
 			ConfigurationBuilder builder = new ConfigurationBuilder();

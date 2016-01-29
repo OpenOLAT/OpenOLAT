@@ -225,7 +225,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 					
 					String[] split = restPart.split("/");
 					if(restPart.startsWith("repo/go")) {
-						businessPath = convertJumpInURL(restPart, ureq);
+						businessPath = convertJumpInURL(ureq);
 						processBusinessPath(businessPath, ureq, usess);
 					} else if (split.length > 0 && split.length % 2 == 0) {
 						businessPath = BusinessControlFactory.getInstance().formatFromURI(restPart);
@@ -265,7 +265,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 	 * @param ureq
 	 * @return
 	 */
-	private String convertJumpInURL(String requestPart, UserRequest ureq) {
+	private String convertJumpInURL(UserRequest ureq) {
 		String repoId = ureq.getParameter("rid");
 		String businessPath = "[RepositoryEntry:" + repoId + "]";
 		String par = ureq.getParameter("par");
