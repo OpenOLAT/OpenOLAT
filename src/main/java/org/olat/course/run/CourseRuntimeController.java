@@ -1038,14 +1038,18 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(delayedClose == Delayed.members || requestForClose(ureq)) {
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || hasCourseRight(CourseRights.RIGHT_MEMBERMANAGEMENT)) {
 				removeCustomCSS();
-				WindowControl bwControl = getSubWindowControl("MembersMgmt");
-				MembersManagementMainController ctrl = new MembersManagementMainController(ureq, addToHistory(ureq, bwControl), toolbarPanel,
-						getRepositoryEntry(), reSecurity.isEntryAdmin(), hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT),
-						hasCourseRight(CourseRights.RIGHT_MEMBERMANAGEMENT));
-				listenTo(ctrl);
-				membersCtrl = pushController(ureq, translate("command.opensimplegroupmngt"), ctrl);
-				setActiveTool(membersLink);
-				currentToolCtr = membersCtrl;
+				if(currentToolCtr instanceof MembersManagementMainController) {
+					((MembersManagementMainController)currentToolCtr).activate(ureq, null, null);
+				} else {
+					WindowControl bwControl = getSubWindowControl("MembersMgmt");
+					MembersManagementMainController ctrl = new MembersManagementMainController(ureq, addToHistory(ureq, bwControl), toolbarPanel,
+							getRepositoryEntry(), reSecurity.isEntryAdmin(), hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT),
+							hasCourseRight(CourseRights.RIGHT_MEMBERMANAGEMENT));
+					listenTo(ctrl);
+					membersCtrl = pushController(ureq, translate("command.opensimplegroupmngt"), ctrl);
+					setActiveTool(membersLink);
+					currentToolCtr = membersCtrl;
+				}
 			}
 		} else {
 			delayedClose = Delayed.members;
