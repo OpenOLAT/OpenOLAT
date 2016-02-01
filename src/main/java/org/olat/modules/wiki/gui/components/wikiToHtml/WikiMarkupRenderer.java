@@ -93,7 +93,7 @@ public class WikiMarkupRenderer extends DefaultComponentRenderer {
 			uri = URLDecoder.decode(uri, "utf-8");
 			input.setVirtualWiki(uri.substring(1, uri.length()-1));
 			if (iframePostEnabled) {
-				String targetUrl = " onclick='o_XHREvent(jQuery(this).attr(\"href\"),false,true); return false;'";
+				String targetUrl = " onclick=\"o_XHREvent(jQuery(this).attr('href'),false,true); return false;\"";
 				input.setURLTarget(targetUrl);
 			}
 			sb.append("<div style=\"min-height:"+ wikiComp.getMinHeight() +"px\" id=\"");

@@ -35,6 +35,7 @@ function changeAnchorTargets(id) {
 					var pre = href.substr(0, href.indexOf(":1/"));
 					var post = href.substr(href.indexOf(":1/")+3, href.length);
 					anchor.attr("href", pre+":0/"+post);
+					anchor.prop('onclick', null).off('click');
 				}
 			} else if (anchor.attr("class") == "edit" && anchor.attr("title").indexOf("Media:") != -1) { //media file not found
 				href = href.substr(0, href.indexOf("Edit:topic"));
