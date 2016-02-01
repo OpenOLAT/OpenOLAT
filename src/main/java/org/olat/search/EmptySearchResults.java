@@ -47,8 +47,8 @@ public class EmptySearchResults implements SearchResults {
 	}
 	
 	@Override
-	public String getLength() {
-		return "0";
+	public int size() {
+		return 0;
 	}
 
 	@Override
