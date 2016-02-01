@@ -49,6 +49,8 @@ import com.sun.syndication.feed.synd.SyndImageImpl;
  */
 public class RSSFeed extends SyndFeedImpl {
 
+	private static final long serialVersionUID = 4010701266801565756L;
+
 	/**
 	 * Constructor. The identityKey is needed to generate personal URLs for the
 	 * corresponding user.

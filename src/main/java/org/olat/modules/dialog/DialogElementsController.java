@@ -222,7 +222,7 @@ public class DialogElementsController extends BasicController {
 			TableEvent te = (TableEvent) event;
 			String command = te.getActionId();
 			int row = te.getRowId();
-			entry = tableModel.getEntryAt(row);
+			entry = tableModel.getEntryAt(tableCtr.getSortedRow(row));
 			if (command.equals(ACTION_START_FORUM)) {
 				selectedElement = dialogElmsMgr.findDialogElement(coursePropMgr, courseNode, entry.getForumKey());
 				if(selectedElement == null){
