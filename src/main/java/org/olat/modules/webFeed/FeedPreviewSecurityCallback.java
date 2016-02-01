@@ -60,7 +60,6 @@ public class FeedPreviewSecurityCallback implements FeedSecurityCallback {
 	/**
 	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayViewAllDrafts()
 	 */
-	//fxdiff BAKS-18
 	@Override
 	public boolean mayViewAllDrafts() {
 		return false;

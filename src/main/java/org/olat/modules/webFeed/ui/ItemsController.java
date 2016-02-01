@@ -169,9 +169,9 @@ public class ItemsController extends BasicController implements Activateable2 {
 		startpageLink = LinkFactory.createLink("feed.startpage", vcItems, this);
 		startpageLink.setCustomEnabledLinkCSS("o_first_page");
 
-		if (callback.mayEditItems() || callback.mayCreateItems()) {
-			createEditButtons(ureq, feed);
-		}
+		
+		createEditButtons(ureq, feed);
+	
 		// Add item details page link
 		createItemLinks(feed);
 		// Add item user comments link and rating
@@ -218,9 +218,9 @@ public class ItemsController extends BasicController implements Activateable2 {
 	private void createEditButtons(UserRequest ureq, Feed feed) {
 		List<Item> items = feed.getCopiedListOfItems();
 
-		editButtons = new ArrayList<Link>();
-		deleteButtons = new ArrayList<Link>();
-		artefactLinks = new HashMap<Item,Controller>();
+		editButtons = new ArrayList<>();
+		deleteButtons = new ArrayList<>();
+		artefactLinks = new HashMap<>();
 		if (feed.isInternal()) {
 			addItemButton = LinkFactory.createButtonSmall("feed.add.item", vcItems, this);
 			addItemButton.setElementCssClass("o_sel_feed_item_new");
@@ -332,20 +332,32 @@ public class ItemsController extends BasicController implements Activateable2 {
 	 * the items velocity container's context.
 	 */
 	public void makeInternalAndExternalButtons() {
-		makeInternalButton = LinkFactory.createButton("feed.make.internal", vcItems, this);
-		makeExternalButton = LinkFactory.createButton("feed.make.external", vcItems, this);
+		if (callback.mayEditItems() || callback.mayCreateItems()) {
+			makeInternalButton = LinkFactory.createButton("feed.make.internal", vcItems, this);
+			makeExternalButton = LinkFactory.createButton("feed.make.external", vcItems, this);
+		}
 	}
 
 	/**
 	 * @param item
 	 */
 	private void createButtonsForItem(UserRequest ureq, Item item) {
+		boolean author = getIdentity().getKey().equals(item.getAuthorKey());
+		boolean edit = callback.mayEditItems() || author;
+		boolean delete = callback.mayDeleteItems() || author;
+
 		String guid = item.getGuid();
-		Link editButton = LinkFactory.createCustomLink("feed.edit.item." + guid, "feed.edit.item." + guid, "feed.edit.item",
-				Link.BUTTON_SMALL, vcItems, this);
+		String editId = "feed.edit.item.".concat(guid);
+		Link editButton = LinkFactory.createCustomLink(editId, editId, "feed.edit.item", Link.BUTTON_SMALL, vcItems, this);
 		editButton.setElementCssClass("o_sel_feed_item_edit");
-		Link deleteButton = LinkFactory.createCustomLink("delete." + guid, "delete." + guid, "delete", Link.BUTTON_SMALL, vcItems, this);
+		editButton.setEnabled(edit);
+		editButton.setVisible(edit);
+		
+		String deleteId = "delete.".concat(guid);
+		Link deleteButton = LinkFactory.createCustomLink(deleteId, deleteId, "delete", Link.BUTTON_SMALL, vcItems, this);
 		deleteButton.setElementCssClass("o_sel_feed_item_delete");
+		deleteButton.setEnabled(delete);
+		deleteButton.setVisible(delete);
 
 		if(feedResource.isInternal() && getIdentity().getKey() != null && getIdentity().getKey().equals(item.getAuthorKey())) {
 			String businessPath = BusinessControlFactory.getInstance().getAsString(getWindowControl().getBusinessControl());
@@ -353,7 +365,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 			Controller artefactCtrl = EPUIFactory.createArtefactCollectWizzardController(ureq, getWindowControl(), feedResource, businessPath);
 			if(artefactCtrl != null) {
 				artefactLinks.put(item, artefactCtrl);
-				vcItems.put("feed.artefact.item." + guid, artefactCtrl.getInitialComponent());
+				vcItems.put("feed.artefact.item.".concat(guid), artefactCtrl.getInitialComponent());
 			}
 		}
 		
@@ -477,25 +489,19 @@ public class ItemsController extends BasicController implements Activateable2 {
 
 		} else if (source == olderItemsLink) {
 			helper.olderItems();
-			if (callback.mayEditItems() || callback.mayCreateItems()) {
-				createEditButtons(ureq, feed);
-			}
+			createEditButtons(ureq, feed);
 			createCommentsAndRatingsLinks(ureq, feed);
 			vcItems.setDirty(true);
 
 		} else if (source == newerItemsLink) {
 			helper.newerItems();
-			if (callback.mayEditItems() || callback.mayCreateItems()) {
-				createEditButtons(ureq, feed);
-			}
+			createEditButtons(ureq, feed);
 			createCommentsAndRatingsLinks(ureq, feed);
 			vcItems.setDirty(true);
 
 		} else if (source == startpageLink) {
 			helper.startpage();
-			if (callback.mayEditItems() || callback.mayCreateItems()) {
-				createEditButtons(ureq, feed);
-			}
+			createEditButtons(ureq, feed);
 			createCommentsAndRatingsLinks(ureq, feed);
 			vcItems.setDirty(true);
 
