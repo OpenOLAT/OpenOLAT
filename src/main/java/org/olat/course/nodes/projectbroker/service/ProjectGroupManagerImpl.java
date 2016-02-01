@@ -68,6 +68,8 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private ProjectDAO projectDao;
+	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private ProjectBrokerManager projectBrokerManager;
@@ -260,7 +262,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 
 	@Override
 	public BusinessGroupAddResponse acceptCandidates(final List<Identity> identities, final Project project, final Identity actionIdentity, final boolean autoSignOut, final boolean isAcceptSelectionManually) {
-		final Project reloadedProject = (Project) dbInstance.loadObject(project, true);
+		final Project reloadedProject = projectDao.loadProject(project.getKey());
 		final BusinessGroupAddResponse response = new BusinessGroupAddResponse();
 		BusinessGroupAddResponse state = businessGroupService.addParticipants(actionIdentity, null, identities, reloadedProject.getProjectGroup(), null);
 		response.getAddedIdentities().addAll(state.getAddedIdentities());
