@@ -319,8 +319,7 @@ public class AssessmentHelper {
 		// - it is of an assessable course node type
 		boolean hasDisplayableValuesConfigured = false;
 		boolean hasDisplayableUserValues = false;
-		if ( (childrenData.size() > 0 || courseNode instanceof AssessableCourseNode) && !(courseNode instanceof ProjectBrokerCourseNode) ) {
-		  // TODO:cg 04.11.2010 ProjectBroker : no assessment-tool in V1.0 , remove projectbroker completely form assessment-tool gui
+		if (childrenData.size() > 0 || courseNode instanceof AssessableCourseNode) {
 			// Store node and user data in object array. This object array serves as data model for 
 			// the user assessment overview table
 			Map<String,Object> nodeData = new HashMap<String, Object>();
@@ -332,7 +331,10 @@ public class AssessmentHelper {
 			nodeData.put(KEY_TITLE_LONG, courseNode.getLongTitle());
 			nodeData.put(KEY_IDENTIFYER, courseNode.getIdent());
 			
-			if (courseNode instanceof AssessableCourseNode) {
+			if(courseNode instanceof ProjectBrokerCourseNode) {
+				//ProjectBroker : no assessment-tool in V1.0 , remove project broker completely form assessment-tool gui
+				nodeData.put(KEY_SELECTABLE, Boolean.FALSE);
+			} else if (courseNode instanceof AssessableCourseNode) {
 				AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
 				ScoreEvaluation scoreEvaluation = userCourseEnv.getScoreAccounting().getScoreEvaluation(courseNode);
 				// details 
