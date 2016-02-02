@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -56,6 +55,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.CourseNode;
@@ -68,6 +68,7 @@ import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfigurat
 import org.olat.course.nodes.projectbroker.service.ProjectGroupManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.resource.OLATResource;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -86,7 +87,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 	private RichTextElement projectDescription;
 	private IntegerElement maxMembers;
 	private StaticTextElement projectState;
-	FormLayoutContainer stateLayout;
+	private FormLayoutContainer stateLayout;
 	private FileElement attachmentFileName;
 
 	private TextElement projectLeaders;
@@ -111,9 +112,12 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 	private final static String[] values = new String[] { "" };
 	private static final int MAX_MEMBERS_DEFAULT = 1;
 
-	private final ProjectBrokerMailer projectBrokerMailer;
-	private final ProjectGroupManager projectGroupManager;
-	private final ProjectBrokerManager projectBrokerManager;
+	@Autowired
+	private ProjectBrokerMailer projectBrokerMailer;
+	@Autowired
+	private ProjectGroupManager projectGroupManager;
+	@Autowired
+	private ProjectBrokerManager projectBrokerManager;
 
 	/**
 	 * Modules selection form.
@@ -127,12 +131,9 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		this.courseNode = courseNode;
 		this.projectBrokerModuleConfiguration = projectBrokerModuleConfiguration;
 		this.enableCancel = enableCancel;
-		projectBrokerMailer = CoreSpringFactory.getImpl(ProjectBrokerMailer.class);
-		projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
-		projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
-		customfieldElementList = new ArrayList<FormItem>();
-		eventStartElementList = new HashMap<Project.EventType, DateChooser>();
-		eventEndElementList = new HashMap<Project.EventType, DateChooser>();
+		customfieldElementList = new ArrayList<>();
+		eventStartElementList = new HashMap<>();
+		eventEndElementList = new HashMap<>();
 		initForm(ureq);
 	}
 
@@ -343,12 +344,13 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 			projectGroupManager.setProjectGroupMaxMembers(getIdentity(), project.getProjectGroup(), maxMembers.getIntValue());
 			projectChanged = true;
 		}			
-		if (attachmentFileName.getUploadFileName() != null && !attachmentFileName.getUploadFileName().equals("")) {
+		if (StringHelper.containsNonWhitespace(attachmentFileName.getUploadFileName())) {
 			// First call uploadFiles than setAttachedFileName because uploadFiles needs old attachment name 
 			uploadFiles(attachmentFileName);
 			project.setAttachedFileName(attachmentFileName.getUploadFileName());
 			projectChanged = true;
-		} else if (project.getAttachmentFileName() != null && !project.getAttachmentFileName().equals("")) {
+		} else if (StringHelper.containsNonWhitespace(project.getAttachmentFileName())
+				&& attachmentFileName.getInitialFile() == null) {
 			// Attachment file has been removed
 			project.setAttachedFileName("");
 			projectChanged = true;
@@ -396,7 +398,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 				projectBrokerManager.updateProject(project);
 				projectBrokerMailer.sendProjectChangedEmailToParticipants(ureq.getIdentity(), project, this.getTranslator());
 			} else {
-				this.showInfo("info.project.nolonger.exist", project.getTitle());
+				showInfo("info.project.nolonger.exist", project.getTitle());
 			}
 		}
 		fireEvent(ureq, Event.DONE_EVENT);
