@@ -20,6 +20,7 @@
 package org.olat.admin.sysinfo.manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -99,7 +100,7 @@ public class SessionStatsManager implements Sampler {
 	public long getActiveSessions(int numOfSeconds) {
 		long diff = numOfSeconds * 1000;
 		
-		List<UserSession> authUserSessions = new ArrayList<UserSession>(sessionManager.getAuthenticatedUserSessions());
+		Collection<UserSession> authUserSessions = sessionManager.getAuthenticatedUserSessions();
 		long now = System.currentTimeMillis();
 		long counter = 0;
 		for (UserSession usess : authUserSessions) {
