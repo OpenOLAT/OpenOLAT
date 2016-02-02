@@ -1,4 +1,4 @@
-create table o_qti_assessment_session (
+create table o_qti_assessmenttest_session (
    id NUMBER(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
@@ -15,9 +15,9 @@ create table o_qti_assessment_session (
    primary key (id)
 );
 
-alter table o_qti_assessment_session add constraint qti_sess_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
-create index idx_testess_to_repo_entry_idx on o_qti_assessment_session (fk_entry);
-alter table o_qti_assessment_session add constraint qti_sess_to_course_entry_idx foreign key (fk_course) references o_repositoryentry (repositoryentry_id);
-create index idx_qti_sess_to_course_entry_idx on o_qti_assessment_session (fk_course);
-alter table o_qti_assessment_session add constraint qti_sess_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
-create index idx_qti_sess_to_identity_idx on o_qti_assessment_session (fk_identity);
+alter table o_qti_assessmenttest_session add constraint qti_sess_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_testess_to_repo_entry_idx on o_qti_assessmenttest_session (fk_entry);
+alter table o_qti_assessmenttest_session add constraint qti_sess_to_course_entry_idx foreign key (fk_course) references o_repositoryentry (repositoryentry_id);
+create index idx_qti_sess_to_course_entry_idx on o_qti_assessmenttest_session (fk_course);
+alter table o_qti_assessmenttest_session add constraint qti_sess_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_qti_sess_to_identity_idx on o_qti_assessmenttest_session (fk_identity);

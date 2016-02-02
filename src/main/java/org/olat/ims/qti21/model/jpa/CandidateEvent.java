@@ -21,7 +21,7 @@ package org.olat.ims.qti21.model.jpa;
 
 import java.util.Date;
 
-import org.olat.ims.qti21.UserTestSession;
+import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.CandidateTestEventType;
 
@@ -36,7 +36,7 @@ public class CandidateEvent {
 	private Date timestamp;
     private String testItemKey;
 
-	private UserTestSession candidateSession;
+	private AssessmentTestSession candidateSession;
 	
 	private CandidateTestEventType testEventType;
 	private CandidateItemEventType itemEventType;
@@ -77,11 +77,11 @@ public class CandidateEvent {
 		this.testItemKey = testItemKey;
 	}
 
-	public UserTestSession getCandidateSession() {
+	public AssessmentTestSession getCandidateSession() {
 		return candidateSession;
 	}
 
-	public void setCandidateSession(UserTestSession candidateSession) {
+	public void setCandidateSession(AssessmentTestSession candidateSession) {
 		this.candidateSession = candidateSession;
 	}
 	

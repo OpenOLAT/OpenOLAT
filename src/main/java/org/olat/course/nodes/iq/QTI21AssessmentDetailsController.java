@@ -42,7 +42,7 @@ import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.iq.QTI21TestSessionTableModel.TSCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti21.QTI21Service;
-import org.olat.ims.qti21.UserTestSession;
+import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.ui.AssessmentResultController;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,7 +97,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	}
 	
 	private void updateModel() {
-		List<UserTestSession> sessions = qtiService.getUserTestSessions(courseEntry, courseNode.getIdent(), assessedIdentity);
+		List<AssessmentTestSession> sessions = qtiService.getAssessmentTestSessions(courseEntry, courseNode.getIdent(), assessedIdentity);
 		tableModel.setObjects(sessions);
 		tableEl.reset();
 	}
@@ -124,7 +124,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
-				UserTestSession row = tableModel.getObject(se.getIndex());
+				AssessmentTestSession row = tableModel.getObject(se.getIndex());
 				if("result".equals(cmd)) {
 					doOpenResult(ureq, row);
 				}
@@ -138,7 +138,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		//
 	}
 
-	private void doOpenResult(UserRequest ureq, UserTestSession row) {
+	private void doOpenResult(UserRequest ureq, AssessmentTestSession row) {
 		if(resultCtrl != null) return;
 		
 		resultCtrl = new AssessmentResultController(ureq, getWindowControl());

@@ -136,7 +136,9 @@
 		<class>org.olat.instantMessaging.model.InstantMessageNotificationImpl</class>
 		<class>org.olat.ims.qti.statistics.model.QTIStatisticResult</class>
 		<class>org.olat.ims.qti.statistics.model.QTIStatisticResultSet</class>
-		<class>org.olat.ims.qti21.model.jpa.UserTestSessionImpl</class>
+		<class>org.olat.ims.qti21.model.jpa.AssessmentResponseImpl</class>
+		<class>org.olat.ims.qti21.model.jpa.AssessmentItemSessionImpl</class>
+		<class>org.olat.ims.qti21.model.jpa.AssessmentTestSessionImpl</class>
 		<class>org.olat.modules.assessment.model.AssessmentEntryImpl</class>
 		<class>org.olat.modules.fo.model.ForumImpl</class>
 		<class>org.olat.modules.fo.model.MessageImpl</class>

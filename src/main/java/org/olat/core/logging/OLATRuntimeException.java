@@ -86,6 +86,10 @@ public class OLATRuntimeException extends RuntimeException {
 	public OLATRuntimeException(String logMsg, Throwable cause) {
 		this (OLATRuntimeException.class, null, null, null, logMsg, cause);
 	}
+	
+	public OLATRuntimeException(String logMsg) {
+		this (OLATRuntimeException.class, null, null, null, logMsg, null);
+	}
 
 	/**
 	 * Format throwable as HTML fragment.

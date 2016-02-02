@@ -30,7 +30,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.ims.qti21.UserTestSession;
+import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.jpa.CandidateEvent;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
@@ -67,7 +67,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		CandidateSessionContext candidateSessionContext = cmp.getCandidateSessionContext();
 
         /* Create appropriate options that link back to this controller */
-		final UserTestSession candidateSession = candidateSessionContext.getCandidateSession();
+		final AssessmentTestSession candidateSession = candidateSessionContext.getCandidateSession();
         if (candidateSession != null && candidateSession.isExploded()) {
             renderExploded(sb);
         } else if (candidateSessionContext.isTerminated()) {

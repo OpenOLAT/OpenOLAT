@@ -17,22 +17,14 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui;
+package org.olat.ims.qti21.model;
 
-import java.util.Date;
-
-import org.olat.ims.qti21.AssessmentTestSession;
-import org.olat.ims.qti21.model.jpa.CandidateEvent;
-
-public interface CandidateSessionContext {
-	
-	public boolean isTerminated();
-
-	public AssessmentTestSession getCandidateSession();
-	
-	public CandidateEvent getLastEvent();
-	
-	public Date getCurrentRequestTimestamp();
-
+/**
+ * 
+ * Initial date: 29.01.2016<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public class AssessmentFileSubmission {
 
 }

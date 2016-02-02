@@ -23,7 +23,7 @@ import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.ims.qti21.UserTestSession;
+import org.olat.ims.qti21.AssessmentTestSession;
 
 /**
  * 
@@ -31,20 +31,20 @@ import org.olat.ims.qti21.UserTestSession;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21TestSessionTableModel extends DefaultFlexiTableDataModel<UserTestSession> {
+public class QTI21TestSessionTableModel extends DefaultFlexiTableDataModel<AssessmentTestSession> {
 	
 	public QTI21TestSessionTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<UserTestSession> createCopyWithEmptyList() {
+	public DefaultFlexiTableDataModel<AssessmentTestSession> createCopyWithEmptyList() {
 		return new QTI21TestSessionTableModel(getTableColumnModel());
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		UserTestSession session = getObject(row);
+		AssessmentTestSession session = getObject(row);
 		switch(TSCols.values()[col]) {
 			case lastModified: return session.getLastModified();
 			case results: {

@@ -21,14 +21,17 @@ package org.olat.ims.qti21;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.id.Identity;
 import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.CandidateTestEventType;
+import org.olat.ims.qti21.model.ResponseLegality;
 import org.olat.ims.qti21.model.jpa.CandidateEvent;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
@@ -44,6 +47,8 @@ import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.types.ResponseData.ResponseDataType;
 import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltStylesheetCache;
 import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltStylesheetManager;
 
@@ -101,15 +106,15 @@ public interface QTI21Service {
 	public void setDeliveryOptions(RepositoryEntry testEntry, QTI21DeliveryOptions options);
 	
 	
-	public UserTestSession createTestSession(Identity identity, AssessmentEntry assessmentEntry,
+	public AssessmentTestSession createAssessmentTestSession(Identity identity, AssessmentEntry assessmentEntry,
 			RepositoryEntry entry, String subIdent, RepositoryEntry testEntry,
 			boolean authorMode);
 	
-	public UserTestSession getResumableTestSession(Identity identity, RepositoryEntry entry, String subIdent, RepositoryEntry testEntry);
+	public AssessmentTestSession getResumableAssessmentTestSession(Identity identity, RepositoryEntry entry, String subIdent, RepositoryEntry testEntry);
 	
-	public UserTestSession updateTestSession(UserTestSession session);
+	public AssessmentTestSession updateAssessmentTestSession(AssessmentTestSession session);
 	
-	public TestSessionState loadTestSessionState(UserTestSession session);
+	public TestSessionState loadTestSessionState(AssessmentTestSession session);
 	
 	/**
 	 * Retrieve the sessions of a user.
@@ -119,35 +124,44 @@ public interface QTI21Service {
 	 * @param identity
 	 * @return
 	 */
-	public List<UserTestSession> getUserTestSessions(RepositoryEntryRef courseEntry, String subIdent, IdentityRef identity);
+	public List<AssessmentTestSession> getAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent, IdentityRef identity);
 	
-	public UserTestSession recordTestAssessmentResult(UserTestSession candidateSession, TestSessionState testSessionState, AssessmentResult assessmentResult);
+	public AssessmentItemSession getOrCreateAssessmentItemSession(AssessmentTestSession candidateSession, String assessmentItemIdentifier);
 	
-	public UserTestSession finishTestSession(UserTestSession candidateSession, TestSessionState testSessionState, AssessmentResult assessmentResul, Date timestamp);
+	public AssessmentResponse createAssessmentResponse(AssessmentTestSession candidateSession, AssessmentItemSession assessmentItemSession,
+			String responseIdentifier, ResponseLegality legality, ResponseDataType type);
 	
-	public CandidateEvent recordCandidateTestEvent(UserTestSession candidateSession, CandidateTestEventType textEventType,
+	public Map<Identifier, AssessmentResponse> getAssessmentResponses(AssessmentItemSession assessmentItemSession);
+	
+	public void recordTestAssessmentResponses(Collection<AssessmentResponse> responses);
+	
+	public AssessmentTestSession recordTestAssessmentResult(AssessmentTestSession candidateSession, TestSessionState testSessionState, AssessmentResult assessmentResult);
+	
+	public AssessmentTestSession finishTestSession(AssessmentTestSession candidateSession, TestSessionState testSessionState, AssessmentResult assessmentResul, Date timestamp);
+	
+	public CandidateEvent recordCandidateTestEvent(AssessmentTestSession candidateSession, CandidateTestEventType textEventType,
 			TestSessionState testSessionState, NotificationRecorder notificationRecorder);
 
-	public CandidateEvent recordCandidateTestEvent(UserTestSession candidateSession, CandidateTestEventType textEventType,
+	public CandidateEvent recordCandidateTestEvent(AssessmentTestSession candidateSession, CandidateTestEventType textEventType,
 			CandidateItemEventType itemEventType, TestSessionState testSessionState, NotificationRecorder notificationRecorder);
 
-	public CandidateEvent recordCandidateTestEvent(UserTestSession candidateSession, CandidateTestEventType textEventType,
+	public CandidateEvent recordCandidateTestEvent(AssessmentTestSession candidateSession, CandidateTestEventType textEventType,
 			CandidateItemEventType itemEventType, TestPlanNodeKey itemKey, TestSessionState testSessionState, NotificationRecorder notificationRecorder);
 	
 	
 	
 
-	public UserTestSession finishItemSession(UserTestSession candidateSession, AssessmentResult assessmentResul, Date timestamp);
+	public AssessmentTestSession finishItemSession(AssessmentTestSession candidateSession, AssessmentResult assessmentResul, Date timestamp);
 	
 
-	public void recordItemAssessmentResult(UserTestSession candidateSession, AssessmentResult assessmentResult);
+	public void recordItemAssessmentResult(AssessmentTestSession candidateSession, AssessmentResult assessmentResult);
 	
-	public CandidateEvent recordCandidateItemEvent(UserTestSession candidateSession, CandidateItemEventType itemEventType,
+	public CandidateEvent recordCandidateItemEvent(AssessmentTestSession candidateSession, CandidateItemEventType itemEventType,
 			ItemSessionState itemSessionState, NotificationRecorder notificationRecorder);
 	
-	public CandidateEvent recordCandidateItemEvent(UserTestSession candidateSession,
+	public CandidateEvent recordCandidateItemEvent(AssessmentTestSession candidateSession,
             CandidateItemEventType itemEventType, ItemSessionState itemSessionState);
 	
-	public String importFileSubmission(UserTestSession candidateSession, MultipartFileInfos multipartFile);
+	public String importFileSubmission(AssessmentTestSession candidateSession, MultipartFileInfos multipartFile);
 
 }

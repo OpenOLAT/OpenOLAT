@@ -44,7 +44,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.QTI21Service;
-import org.olat.ims.qti21.UserTestSession;
+import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.jpa.CandidateEvent;
 import org.olat.ims.qti21.ui.components.AssessmentItemFormItem;
@@ -90,7 +90,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	
 	private CandidateEvent lastEvent;
 	private Date currentRequestTimestamp;
-	private UserTestSession candidateSession;
+	private AssessmentTestSession candidateSession;
 
 	@Autowired
 	private QTI21Service qtiService;
@@ -104,7 +104,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		this.fUnzippedDirRoot = fUnzippedDirRoot;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		currentRequestTimestamp = ureq.getRequestTimestamp();
-		candidateSession = qtiService.createTestSession(getIdentity(), assessmentEntry, testEntry, itemRef.getIdentifier().toString(), testEntry, authorMode);
+		candidateSession = qtiService.createAssessmentTestSession(getIdentity(), assessmentEntry, testEntry, itemRef.getIdentifier().toString(), testEntry, authorMode);
 		
 		//TODO qti beautify
 		URI assessmentObjectUri = new File(fUnzippedDirRoot, itemRef.getHref().toString()).toURI();
@@ -139,7 +139,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	}
 
 	@Override
-	public UserTestSession getCandidateSession() {
+	public AssessmentTestSession getCandidateSession() {
 		return candidateSession;
 	}
 
@@ -405,7 +405,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		updateSessionFinishedStatus(ureq);
 	}
 	
-    private UserTestSession updateSessionFinishedStatus(UserRequest ureq) {
+    private AssessmentTestSession updateSessionFinishedStatus(UserRequest ureq) {
         /* Record current result state and maybe close session */
         final ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
         final AssessmentResult assessmentResult = computeAndRecordItemAssessmentResult(ureq);
@@ -416,7 +416,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
             if (candidateSession != null && candidateSession.getFinishTime() != null) {
                 /* (Session is being reopened) */
                 candidateSession.setFinishTime(null);
-                candidateSession = qtiService.updateTestSession(candidateSession);
+                candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
             }
         }
         return candidateSession;
@@ -563,7 +563,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 
 	        /* Update session entity */
 	        candidateSession.setTerminationTime(currentTimestamp);
-	        candidateSession = qtiService.updateTestSession(candidateSession);
+	        candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
 
 	        /* Record and log event */
 	        final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession,

@@ -50,8 +50,9 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		if(searchParams.getCourseEntry() != null) {
 			sb.append(" and asession.repositoryEntry.key=:repositoryEntryKey and asession.subIdent=:subIdent");
 		}
-		sb.append(" and asession.lastModified = (select max(a2session.lastModified) from qtiassessmentsession a2session")
-		  .append("   where a2session.identity=asession.identity and a2session.repositoryEntry=asession.repositoryEntry")
+		sb.append(" and asession.lastModified = (select max(a2session.lastModified) from qtiassessmenttestsession a2session")
+		  .append("   where a2session.identity.key=asession.identity.key and a2session.repositoryEntry.key=asession.repositoryEntry.key")
+		  .append("   and a2session.subIdent=asession.subIdent")
 		  .append(" )");
 		
 		if(searchParams.getLimitToGroups() != null && searchParams.getLimitToGroups().size() > 0) {
@@ -82,7 +83,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 	@Override
 	public StatisticAssessment getAssessmentStatistics(QTI21StatisticSearchParams searchParams) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select asession.score, asession.passed, asession.duration from qtiassessmentsession asession ");
+		sb.append("select asession.score, asession.passed, asession.duration from qtiassessmenttestsession asession ");
 		decorateRSet(sb, searchParams);
 		sb.append(" order by asession.key asc");
 

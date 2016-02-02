@@ -39,7 +39,7 @@ import javax.persistence.TemporalType;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
-import org.olat.ims.qti21.UserTestSession;
+import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryImpl;
 import org.olat.repository.RepositoryEntry;
@@ -52,13 +52,13 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="qtiassessmentsession")
-@Table(name="o_qti_assessment_session")
+@Entity(name="qtiassessmenttestsession")
+@Table(name="o_qti_assessmenttest_session")
 @NamedQueries({
-	@NamedQuery(name="loadTestSessionsByUserAndRepositoryEntryAndSubIdent", query="select session from qtiassessmentsession session where session.repositoryEntry.key=:repositoryEntryKey and session.identity.key=:identityKey and session.subIdent=:subIdent")
+	@NamedQuery(name="loadTestSessionsByUserAndRepositoryEntryAndSubIdent", query="select session from qtiassessmenttestsession session where session.repositoryEntry.key=:repositoryEntryKey and session.identity.key=:identityKey and session.subIdent=:subIdent")
 	
 })
-public class UserTestSessionImpl implements UserTestSession, Persistable {
+public class AssessmentTestSessionImpl implements AssessmentTestSession, Persistable {
 
 	private static final long serialVersionUID = -6069133323360142500L;
 
@@ -304,8 +304,8 @@ public class UserTestSessionImpl implements UserTestSession, Persistable {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof UserTestSessionImpl) {
-			UserTestSessionImpl session = (UserTestSessionImpl)obj;
+		if(obj instanceof AssessmentTestSessionImpl) {
+			AssessmentTestSessionImpl session = (AssessmentTestSessionImpl)obj;
 			return getKey() != null && getKey().equals(session.getKey());
 		}
 		return false;

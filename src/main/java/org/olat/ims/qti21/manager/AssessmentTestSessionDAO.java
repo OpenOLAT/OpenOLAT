@@ -27,8 +27,8 @@ import javax.persistence.TypedQuery;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.ims.qti21.UserTestSession;
-import org.olat.ims.qti21.model.jpa.UserTestSessionImpl;
+import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.model.jpa.AssessmentTestSessionImpl;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -42,7 +42,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class SessionDAO {
+public class AssessmentTestSessionDAO {
 	
 	@Autowired
 	private DB dbInstance;
@@ -50,12 +50,12 @@ public class SessionDAO {
 	private QTI21Storage storage;
 	
 
-	public UserTestSession createTestSession(RepositoryEntry testEntry,
+	public AssessmentTestSession createAndPersistTestSession(RepositoryEntry testEntry,
 			RepositoryEntry repositoryEntry, String subIdent,
 			AssessmentEntry assessmentEntry, Identity identity,
 			boolean authorMode) {
 		
-		UserTestSessionImpl testSession = new UserTestSessionImpl();
+		AssessmentTestSessionImpl testSession = new AssessmentTestSessionImpl();
 		Date now = new Date();
 		testSession.setCreationDate(now);
 		testSession.setLastModified(now);
@@ -71,11 +71,11 @@ public class SessionDAO {
 		return testSession;
 	}
 	
-	public UserTestSession getLastTestSession(RepositoryEntryRef testEntry,
+	public AssessmentTestSession getLastTestSession(RepositoryEntryRef testEntry,
 			RepositoryEntryRef entry, String subIdent, IdentityRef identity) {
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select session from qtiassessmentsession session ")
+		sb.append("select session from qtiassessmenttestsession session ")
 		  .append("where session.testEntry.key=:testEntryKey and session.identity.key=:identityKey");
 		if(entry != null) {
 			sb.append(" and session.repositoryEntry.key=:courseEntryKey");
@@ -90,8 +90,8 @@ public class SessionDAO {
 		}
 		sb.append(" order by session.creationDate desc");
 		
-		TypedQuery<UserTestSession> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), UserTestSession.class)
+		TypedQuery<AssessmentTestSession> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentTestSession.class)
 				.setParameter("testEntryKey", testEntry.getKey())
 				.setParameter("identityKey", identity.getKey());
 		if(entry != null) {
@@ -101,22 +101,24 @@ public class SessionDAO {
 			query.setParameter("courseSubIdent", subIdent);
 		}
 		
-		List<UserTestSession> lastSessions = query.setMaxResults(1).getResultList();
+		List<AssessmentTestSession> lastSessions = query.setMaxResults(1).getResultList();
 		return lastSessions == null || lastSessions.isEmpty() ? null : lastSessions.get(0);
 	}
 	
-	public UserTestSession update(UserTestSession testSession) {
-		((UserTestSessionImpl)testSession).setLastModified(new Date());
+	public AssessmentTestSession update(AssessmentTestSession testSession) {
+		((AssessmentTestSessionImpl)testSession).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(testSession);
 	}
 	
-	public List<UserTestSession> getUserTestSessions(RepositoryEntryRef courseEntry, String courseSubIdent, IdentityRef identity) {
+	public List<AssessmentTestSession> getUserTestSessions(RepositoryEntryRef courseEntry, String courseSubIdent, IdentityRef identity) {
 		return dbInstance.getCurrentEntityManager()
-				.createNamedQuery("loadTestSessionsByUserAndRepositoryEntryAndSubIdent", UserTestSession.class)
+				.createNamedQuery("loadTestSessionsByUserAndRepositoryEntryAndSubIdent", AssessmentTestSession.class)
 				.setParameter("repositoryEntryKey", courseEntry.getKey())
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("subIdent", courseSubIdent)
 				.getResultList();
 	}
+	
+	
 
 }

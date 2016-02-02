@@ -45,17 +45,22 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
+import org.olat.ims.qti21.AssessmentItemSession;
+import org.olat.ims.qti21.AssessmentResponse;
+import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.OutcomesListener;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
-import org.olat.ims.qti21.UserTestSession;
+import org.olat.ims.qti21.model.AssessmentFileSubmission;
 import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.CandidateTestEventType;
+import org.olat.ims.qti21.model.ResponseLegality;
 import org.olat.ims.qti21.model.jpa.CandidateEvent;
 import org.olat.ims.qti21.ui.components.AssessmentTestFormItem;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -111,7 +116,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	
 	private CandidateEvent lastEvent;
 	private Date currentRequestTimestamp;
-	private UserTestSession candidateSession;
+	private AssessmentTestSession candidateSession;
 	private AssessmentEntry assessmentEntry;
 	private ResolvedAssessmentTest resolvedAssessmentTest;
 	
@@ -152,12 +157,12 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		boolean allowResume = deliveryOptions != null && deliveryOptions.getEnableSuspend() != null
 				&& deliveryOptions.getEnableSuspend().booleanValue();
 		
-		UserTestSession lastSession = null;
+		AssessmentTestSession lastSession = null;
 		if(allowResume) {
-			lastSession = qtiService.getResumableTestSession(getIdentity(), entry, subIdent, testEntry);
+			lastSession = qtiService.getResumableAssessmentTestSession(getIdentity(), entry, subIdent, testEntry);
 		}
 		if(lastSession == null) {
-			candidateSession = qtiService.createTestSession(getIdentity(), assessmentEntry, entry, subIdent, testEntry, false);
+			candidateSession = qtiService.createAssessmentTestSession(getIdentity(), assessmentEntry, entry, subIdent, testEntry, false);
 			testSessionController = enterSession(ureq);
 		} else {
 			candidateSession = lastSession;
@@ -198,7 +203,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	}
 
 	@Override
-	public UserTestSession getCandidateSession() {
+	public AssessmentTestSession getCandidateSession() {
 		return candidateSession;
 	}
 	
@@ -422,31 +427,68 @@ public class AssessmentTestDisplayController extends BasicController implements 
         //assertSessionNotTerminated(candidateSession);
 
 		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-        TestSessionState testSessionState = testSessionController.getTestSessionState();
+		TestSessionState testSessionState = testSessionController.getTestSessionState();
 		
 		final Map<Identifier, ResponseData> responseDataMap = new HashMap<Identifier, ResponseData>();
-        if (stringResponseMap != null) {
-            for (final Entry<Identifier, StringResponseData> stringResponseEntry : stringResponseMap.entrySet()) {
-                final Identifier identifier = stringResponseEntry.getKey();
-                final StringResponseData stringResponseData = stringResponseEntry.getValue();
-                responseDataMap.put(identifier, stringResponseData);
+		if (stringResponseMap != null) {
+			for (final Entry<Identifier, StringResponseData> stringResponseEntry : stringResponseMap.entrySet()) {
+				final Identifier identifier = stringResponseEntry.getKey();
+				final StringResponseData stringResponseData = stringResponseEntry.getValue();
+				responseDataMap.put(identifier, stringResponseData);
             }
-        }
+		}
         
-       // final Map<Identifier, CandidateFileSubmission> fileSubmissionMap = new HashMap<Identifier, CandidateFileSubmission>();
+		String assessmentItemIdentifier = testSessionState.getCurrentItemKey().getIdentifier().toString();
+		AssessmentItemSession itemSession = qtiService.getOrCreateAssessmentItemSession(candidateSession, assessmentItemIdentifier);
+        
+        Map<Identifier, AssessmentFileSubmission> fileSubmissionMap = new HashMap<Identifier, AssessmentFileSubmission>();
         if (fileResponseMap!=null) {
-            for (final Entry<Identifier, MultipartFileInfos> fileResponseEntry : fileResponseMap.entrySet()) {
-                final Identifier identifier = fileResponseEntry.getKey();
-                final MultipartFileInfos multipartFile = fileResponseEntry.getValue();
+            for (Entry<Identifier, MultipartFileInfos> fileResponseEntry : fileResponseMap.entrySet()) {
+                Identifier identifier = fileResponseEntry.getKey();
+                MultipartFileInfos multipartFile = fileResponseEntry.getValue();
                 if (!multipartFile.isEmpty()) {
-                    //final CandidateFileSubmission fileSubmission = candidateUploadService.importFileSubmission(candidateSession, multipartFile);
                 	String storedFilePath = qtiService.importFileSubmission(candidateSession, multipartFile);
                 	File storedFile = new File(storedFilePath);
                 	final FileResponseData fileResponseData = new FileResponseData(storedFile, multipartFile.getContentType(), multipartFile.getFileName());
                     responseDataMap.put(identifier, fileResponseData);
+                    //final CandidateFileSubmission fileSubmission = candidateUploadService.importFileSubmission(candidateSession, multipartFile);
                     //fileSubmissionMap.put(identifier, fileSubmission);
                 }
             }
+        }
+        
+        Map<Identifier, AssessmentResponse> candidateResponseMap = qtiService.getAssessmentResponses(itemSession);
+        for (Entry<Identifier, ResponseData> responseEntry : responseDataMap.entrySet()) {
+            Identifier responseIdentifier = responseEntry.getKey();
+            ResponseData responseData = responseEntry.getValue();
+            AssessmentResponse candidateItemResponse;
+            if(candidateResponseMap.containsKey(responseIdentifier)) {
+            	candidateItemResponse = candidateResponseMap.get(responseIdentifier);
+            } else {
+            	candidateItemResponse = qtiService
+            		.createAssessmentResponse(candidateSession, itemSession, responseIdentifier.toString(), ResponseLegality.VALID, responseData.getType());
+            }
+		
+            switch (responseData.getType()) {
+                case STRING:
+                	List<String> data = ((StringResponseData) responseData).getResponseData();
+                	StringBuilder sb = new StringBuilder();
+                	for(String str:data) {
+                		sb.append(str);
+                	}
+                	
+                    //(((StringResponseData) responseData).getResponseData());
+                    candidateItemResponse.setStringuifiedResponse(sb.toString());
+                    break;
+
+                case FILE:
+                    //candidateItemResponse.setFileSubmission(fileSubmissionMap.get(responseIdentifier));
+                    //break;
+
+                default:
+                    throw new OLATRuntimeException("Unexpected switch case: " + responseData.getType());
+            }
+            candidateResponseMap.put(responseIdentifier, candidateItemResponse);
         }
         
         boolean allResponsesValid = true;
@@ -479,17 +521,13 @@ public class AssessmentTestDisplayController extends BasicController implements 
         this.lastEvent = candidateEvent;
 
         /* Persist CandidateResponse entities */
-        /*for (final CandidateResponse candidateResponse : candidateResponseMap.values()) {
-            candidateResponse.setCandidateEvent(candidateEvent);
-            candidateResponseDao.persist(candidateResponse);
-        }*/
-        
+        qtiService.recordTestAssessmentResponses(candidateResponseMap.values());
         
         /* Record current result state */
         computeAndRecordTestAssessmentResult(ureq, testSessionState, false);
 
         /* Save any change to session state */
-        candidateSession = qtiService.updateTestSession(candidateSession);
+        candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
 	}
 
 	//public CandidateSession endCurrentTestPart(final CandidateSessionContext candidateSessionContext)
@@ -540,7 +578,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
                 eventType = CandidateTestEventType.EXIT_TEST;
                 testSessionController.exitTest(currentTimestamp);
                 candidateSession.setTerminationTime(currentTimestamp);
-                candidateSession = qtiService.updateTestSession(candidateSession);
+                candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
             }
             else {
                 eventType = CandidateTestEventType.ADVANCE_TEST_PART;
@@ -604,7 +642,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
         /* Update CandidateSession as appropriate */
         candidateSession.setTerminationTime(currentTimestamp);
-        candidateSession = qtiService.updateTestSession(candidateSession);
+        candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
 
         /* Record current result state (final) */
         computeAndRecordTestAssessmentResult(ureq, testSessionState, true);
@@ -764,7 +802,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         }
     }
 	
-    private AssessmentResult computeTestAssessmentResult(UserRequest ureq, final UserTestSession testSession) {
+    private AssessmentResult computeTestAssessmentResult(UserRequest ureq, final AssessmentTestSession testSession) {
     	List<ContextEntry> entries = getWindowControl().getBusinessControl().getEntries();
     	OLATResourceable testSessionOres = OresHelper.createOLATResourceableInstance("TestSession", testSession.getKey());
     	entries.add(BusinessControlFactory.getInstance().createContextEntry(testSessionOres));

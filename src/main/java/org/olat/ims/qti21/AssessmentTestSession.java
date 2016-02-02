@@ -31,7 +31,7 @@ import org.olat.core.id.ModifiedInfo;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface UserTestSession extends CreateInfo, ModifiedInfo {
+public interface AssessmentTestSession extends CreateInfo, ModifiedInfo {
 	
 	public Long getKey();
 	

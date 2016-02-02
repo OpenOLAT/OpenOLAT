@@ -17,29 +17,25 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.manager;
+package org.olat.ims.qti21;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.olat.test.OlatTestCase;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.ModifiedInfo;
 
 /**
  * 
- * Initial date: 20.05.2015<br>
+ * Initial date: 29.01.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class EventDAOTest extends OlatTestCase {
-	
-	@Autowired
-	private EventDAO eventDao;
-	
-	@Test
-	public void createEvent() {
-		Assert.assertNotNull(eventDao);
-		//nothing 
-		//eventDao.create(textEventType, itemEventType, itemKey);
-	}
+public interface AssessmentResponse extends CreateInfo, ModifiedInfo {
 
+	public Long getKey();
+	
+	public String getResponseIdentifier();
+	
+	public String getStringuifiedResponse();
+	
+	public void setStringuifiedResponse(String response);
+	
 }

@@ -19,7 +19,7 @@
  */
 package org.olat.ims.qti21.manager;
 
-import org.olat.ims.qti21.UserTestSession;
+import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.CandidateTestEventType;
 import org.olat.ims.qti21.model.jpa.CandidateEvent;
@@ -36,7 +36,7 @@ import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 @Service
 public class EventDAO {
 	
-	public CandidateEvent create(UserTestSession candidateSession, CandidateTestEventType textEventType,
+	public CandidateEvent create(AssessmentTestSession candidateSession, CandidateTestEventType textEventType,
 			CandidateItemEventType itemEventType, TestPlanNodeKey itemKey) {
 		
 		CandidateEvent event = new CandidateEvent();
@@ -49,7 +49,7 @@ public class EventDAO {
 		return event;
 	}
 
-	public CandidateEvent create(UserTestSession candidateSession, CandidateItemEventType itemEventType) {
+	public CandidateEvent create(AssessmentTestSession candidateSession, CandidateItemEventType itemEventType) {
 		
 		CandidateEvent event = new CandidateEvent();
         event.setCandidateSession(candidateSession);

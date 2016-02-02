@@ -26,9 +26,7 @@ alter table o_as_entry add constraint as_entry_to_entry_idx foreign key (fk_entr
 alter table o_as_entry add constraint as_entry_to_refentry_idx foreign key (fk_reference_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_as_entry_to_id_idx on o_as_entry (a_assessment_id);
 
-
-
-create table o_qti_assessment_session (
+create table o_qti_assessmenttest_session (
    id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
@@ -47,9 +45,44 @@ create table o_qti_assessment_session (
    fk_assessment_entry bigint not null,
    primary key (id)
 );
-alter table o_qti_assessment_session ENGINE = InnoDB;
+alter table o_qti_assessmenttest_session ENGINE = InnoDB;
 
-alter table o_qti_assessment_session add constraint qti_sess_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
-alter table o_qti_assessment_session add constraint qti_sess_to_course_entry_idx foreign key (fk_reference_entry) references o_repositoryentry (repositoryentry_id);
-alter table o_qti_assessment_session add constraint qti_sess_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
-alter table o_qti_assessment_session add constraint qti_sess_to_as_entry_idx foreign key (fk_assessment_entry) references o_as_entry (id);
+alter table o_qti_assessmenttest_session add constraint qti_sess_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_qti_assessmenttest_session add constraint qti_sess_to_course_entry_idx foreign key (fk_reference_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_qti_assessmenttest_session add constraint qti_sess_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+alter table o_qti_assessmenttest_session add constraint qti_sess_to_as_entry_idx foreign key (fk_assessment_entry) references o_as_entry (id);
+
+create table o_qti_assessmentitem_session (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   q_itemidentifier varchar(64) not null,
+   q_duration bigint,
+   q_score decimal default null,
+   q_passed bit default null,
+   q_storage varchar(32),
+   fk_assessmenttest_session bigint not null,
+   primary key (id)
+);
+alter table o_qti_assessmentitem_session ENGINE = InnoDB;
+
+alter table o_qti_assessmentitem_session add constraint qti_itemsess_to_testsess_idx foreign key (fk_assessmenttest_session) references o_qti_assessmenttest_session (id);
+create index idx_item_identifier_idx on o_qti_assessmentitem_session (q_itemidentifier);
+
+create table o_qti_assessment_response (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   q_responseidentifier varchar(64) not null,
+   q_responsedatatype varchar(16) not null,
+   q_responselegality varchar(16) not null,
+   q_stringuifiedresponse mediumtext,
+   fk_assessmentitem_session bigint not null,
+   fk_assessmenttest_session bigint not null,
+   primary key (id)
+);
+alter table o_qti_assessment_response ENGINE = InnoDB;
+
+alter table o_qti_assessment_response add constraint qti_resp_to_testsession_idx foreign key (fk_assessmenttest_session) references o_qti_assessmenttest_session (id);
+alter table o_qti_assessment_response add constraint qti_resp_to_itemsession_idx foreign key (fk_assessmentitem_session) references o_qti_assessmentitem_session (id);
+create index idx_response_identifier_idx on o_qti_assessment_response (q_responseidentifier);
