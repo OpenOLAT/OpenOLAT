@@ -1172,7 +1172,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 	}
 	
 	private void clearPortfolioLink(){
-		content.put("portfolio-link", new Panel("empty"));
+		navigationContent.put("portfolio-link", new Panel("empty"));
 	}
 	
 	private Wiki getWiki(){
