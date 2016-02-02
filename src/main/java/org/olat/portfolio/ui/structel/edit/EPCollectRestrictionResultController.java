@@ -22,6 +22,7 @@ package org.olat.portfolio.ui.structel.edit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -49,11 +50,13 @@ import org.olat.portfolio.ui.filter.PortfolioFilterController;
 public class EPCollectRestrictionResultController extends BasicController {
 	
 	private final VelocityContainer mainVc;
+	private static final AtomicLong restrictionsCounter = new AtomicLong(1l);
 	
 	public EPCollectRestrictionResultController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 
 		mainVc = createVelocityContainer("restrictions_msg");
+		mainVc.contextPut("restrictionId", Long.toString(restrictionsCounter.getAndIncrement()));
 		putInitialPanel(mainVc);
 	}
 

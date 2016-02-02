@@ -478,19 +478,18 @@ public class SearchInputController extends FormBasicController implements Generi
 				searchResults = searchClient.doSearch(query, condQueries, ureq.getIdentity(), ureq.getUserSession().getRoles(), firstResult, maxReturns, true);
 				searchCache.put(getQueryCacheKey(firstResult, query, condQueries), searchResults);
 			}	
-			if ((firstResult == 0 && searchResults.getList().isEmpty())
-					&& !query.endsWith(FUZZY_SEARCH)) {
+			if (firstResult == 0 && searchResults.size() == 0 && !query.endsWith(FUZZY_SEARCH)) {
 				// result-list was empty => first try to find word via spell-checker
-	    	if (doSpellCheck) {
-	    		Set<String> didYouMeansWords = searchClient.spellCheck(searchString);
-		    	if (didYouMeansWords != null && !didYouMeansWords.isEmpty()) {
-		    		setDidYouMeanWords(didYouMeansWords);
+		    	if (doSpellCheck) {
+		    		Set<String> didYouMeansWords = searchClient.spellCheck(searchString);
+			    	if (didYouMeansWords != null && !didYouMeansWords.isEmpty()) {
+			    		setDidYouMeanWords(didYouMeansWords);
+			    	} else {
+			    		searchResults = doFuzzySearch(ureq, searchString, null, parentCtxt, docType, rsrcUrl, firstResult, maxReturns);
+			    	}
 		    	} else {
 		    		searchResults = doFuzzySearch(ureq, searchString, null, parentCtxt, docType, rsrcUrl, firstResult, maxReturns);
 		    	}
-	    	} else {
-	    		searchResults = doFuzzySearch(ureq, searchString, null, parentCtxt, docType, rsrcUrl, firstResult, maxReturns);
-	    	}
 			}
 			
 			if(firstResult == 0 && searchResults.getList().isEmpty()) {

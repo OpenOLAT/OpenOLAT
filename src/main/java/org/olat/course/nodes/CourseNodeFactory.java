@@ -35,6 +35,7 @@ import java.util.Map;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.configuration.PreWarm;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.logging.OLog;
@@ -51,7 +52,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
  * @author Mike Stock
  * @author guido
  */
-public class CourseNodeFactory {
+public class CourseNodeFactory implements PreWarm {
 	
 	private static final OLog log = Tracing.createLoggerFor(CourseNodeFactory.class);
 
@@ -73,6 +74,12 @@ public class CourseNodeFactory {
 		return INSTANCE;
 	}
 
+	@Override
+	public void run() {
+		getAllCourseNodeConfigurations();
+	}
+
+
 	/**
 	 * @return the list of enabled aliases
 	 */
@@ -88,13 +95,18 @@ public class CourseNodeFactory {
 		return alias;
 	}
 
-	private synchronized Map<String,CourseNodeConfiguration> getAllCourseNodeConfigurations() {
+	private Map<String,CourseNodeConfiguration> getAllCourseNodeConfigurations() {
 		if(allCourseNodeConfigurations == null) {
-			allCourseNodeConfigurations = new HashMap<String, CourseNodeConfiguration>();
-			Map<String, CourseNodeConfiguration> courseNodeConfigurationMap = CoreSpringFactory.getBeansOfType(CourseNodeConfiguration.class);
-			Collection<CourseNodeConfiguration> courseNodeConfigurationValues = courseNodeConfigurationMap.values();
-			for (CourseNodeConfiguration courseNodeConfiguration : courseNodeConfigurationValues) {
-				allCourseNodeConfigurations.put(courseNodeConfiguration.getAlias(), courseNodeConfiguration);
+			synchronized(INSTANCE) {
+				if(allCourseNodeConfigurations == null) {
+					Map<String, CourseNodeConfiguration> configurationMap = new HashMap<>();
+					Map<String, CourseNodeConfiguration> courseNodeConfigurationMap = CoreSpringFactory.getBeansOfType(CourseNodeConfiguration.class);
+					Collection<CourseNodeConfiguration> courseNodeConfigurationValues = courseNodeConfigurationMap.values();
+					for (CourseNodeConfiguration courseNodeConfiguration : courseNodeConfigurationValues) {
+						configurationMap.put(courseNodeConfiguration.getAlias(), courseNodeConfiguration);
+					}
+					allCourseNodeConfigurations = Collections.unmodifiableMap(configurationMap);
+				}
 			}
 		}
 		return allCourseNodeConfigurations;

@@ -30,8 +30,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -106,7 +106,7 @@ public class Tracing {
 	private static long __debugRefNum__ = 0;
 	
 	// VM local cache to have one logger object per class
-	private static final Map<Class<?>, OLog> loggerLookupMap = new ConcurrentHashMap<Class<?>, OLog>();
+	private static final ConcurrentMap<Class<?>, OLog> loggerLookupMap = new ConcurrentHashMap<Class<?>, OLog>();
 
 	/**
 	 * per-thread singleton holding the actual HttpServletRequest which is the
@@ -135,16 +135,14 @@ public class Tracing {
 	public static OLog createLoggerFor(Class<?> loggingClass) {
 		// Share logger object to reduce memory footprint
 		OLog logger = loggerLookupMap.get(loggingClass);
-    if (logger == null) {
-      synchronized (loggerLookupMap) {   
-				logger = loggerLookupMap.get(loggingClass);
-				if (logger == null) {
-					logger = new OLogImpl(loggingClass);
-					loggerLookupMap.put(loggingClass, logger);
-				}
-      }
+		if (logger == null) {
+			OLog newLogger = new OLogImpl(loggingClass);
+			logger = loggerLookupMap.putIfAbsent(loggingClass, newLogger);
+			if(logger == null) {
+				logger = newLogger;
+			}
 		}
-    return logger;
+		return logger;
 	}
 	
 	
@@ -169,6 +167,12 @@ public class Tracing {
 		getLogger(callingClass).error(assembleThrowableMessage(ERROR, 'E',refNum, callingClass, logMsg, cause));
 		return refNum;
 	}
+	
+	public static long logError(String logMsg, Throwable cause, Logger logger, Class<?> callingClass) {
+		long refNum = getErrorRefNum();
+		logger.error(assembleThrowableMessage(ERROR, 'E',refNum, callingClass, logMsg, cause));
+		return refNum;
+	}
 
 	/**
 	 * @param callingClass
@@ -191,6 +195,12 @@ public class Tracing {
 	protected static long logWarn(String logMsg, Throwable cause, Class<?> callingClass) {
 		long refNum = getWarnRefNum();
 		getLogger(callingClass).warn(assembleThrowableMessage(WARN, 'W', refNum, callingClass, logMsg, cause));
+		return refNum;
+	}
+	
+	protected static long logWarn(String logMsg, Throwable cause, Logger logger, Class<?> callingClass) {
+		long refNum = getWarnRefNum();
+		logger.warn(assembleThrowableMessage(WARN, 'W', refNum, callingClass, logMsg, cause));
 		return refNum;
 	}
 
@@ -222,6 +232,14 @@ public class Tracing {
 		}
 		return refNum;
 	}
+	
+	protected static long logDebug(String logMsg, String userObj, Logger logger, Class<?> callingClass) {
+		long refNum = getDebugRefNum();
+		if (logger.isDebugEnabled()) {
+			logger.debug(assembleMsg(DEBUG, 'D', refNum, callingClass, userObj, logMsg));
+		}
+		return refNum;
+	}
 
 	/**
 	 * Add debug log entry
@@ -244,6 +262,12 @@ public class Tracing {
 	protected static long logInfo(String logMsg, String userObject, Class<?> callingClass) {
 		long refNum = getInfoRefNum();
 		getLogger(callingClass).info(assembleMsg(INFO, 'I', refNum, callingClass, userObject, logMsg));
+		return refNum;
+	}
+	
+	protected static long logInfo(String logMsg, String userObject, Logger logger, Class<?> callingClass) {
+		long refNum = getInfoRefNum();
+		logger.info(assembleMsg(INFO, 'I', refNum, callingClass, userObject, logMsg));
 		return refNum;
 	}
 
@@ -282,6 +306,12 @@ public class Tracing {
 	protected static long logAudit(String logMsg, String userObj, Class<?> callingClass) {
 		long refNum = getAuditRefNum();
 		getLogger(callingClass).info(assembleMsg(AUDIT, 'A', refNum, callingClass, userObj, logMsg));
+		return refNum;
+	}
+	
+	protected static long logAudit(String logMsg, String userObj, Logger logger, Class<?> callingClass) {
+		long refNum = getAuditRefNum();
+		logger.info(assembleMsg(AUDIT, 'A', refNum, callingClass, userObj, logMsg));
 		return refNum;
 	}
 

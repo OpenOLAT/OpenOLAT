@@ -236,7 +236,7 @@ public class JmsSearchProvider implements MessageListener {
 			SearchResults searchResults = this.doSearch(searchRequest.getQueryString(), searchRequest.getCondQueries(), identity, searchRequest.getRoles(),
 					searchRequest.getFirstResult(), searchRequest.getMaxResults(), searchRequest.isDoHighlighting());
 			if (log_.isDebug()) {
-				log_.debug("searchResults: " + searchResults.getLength());
+				log_.debug("searchResults: " + searchResults.size());
 			}
 			if (searchResults != null) {
 				session = acquireSession();

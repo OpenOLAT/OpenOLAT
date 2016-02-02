@@ -372,8 +372,7 @@ public class CSVToQuestionConverter {
 	private void processPoints(String[] parts) {
 		if(currentItem == null) return;
 		
-		String pointsStr = parts[1];
-		float points = Float.parseFloat(pointsStr);
+		float points = parseFloat(parts[1], 1.0f);
 
 		Question question = currentItem.getItem().getQuestion();
 		int type = question.getType();
@@ -402,7 +401,7 @@ public class CSVToQuestionConverter {
 			Question question = currentItem.getItem().getQuestion();
 			int type = question.getType();
 			if (type == Question.TYPE_MC || type == Question.TYPE_SC) {
-				float point = Float.parseFloat(parts[0]);
+				float point = parseFloat(parts[0], 1.0f);
 				String content = parts[1];
 
 				ChoiceQuestion choice = (ChoiceQuestion)question;
@@ -424,7 +423,7 @@ public class CSVToQuestionConverter {
 					response.setContent(mat);
 					fib.getResponses().add(response);
 				} else {
-					float point = Float.parseFloat(parts[0]);
+					float point = parseFloat(parts[0], 1.0f);
 					String correctBlank = parts[1];
 
 					FIBResponse response = new FIBResponse();
@@ -449,6 +448,18 @@ public class CSVToQuestionConverter {
 		} catch (NumberFormatException e) {
 			log.warn("Cannot parse point for: " + parts[0] + " / " + parts[1], e);
 		}
+	}
+	
+	private float parseFloat(String value, float defaultValue) {
+		float floatValue = defaultValue;
+		
+		if(value != null) {
+			if(value.indexOf(",") >= 0) {
+				value = value.replace(",", ".");
+			}
+			floatValue = Float.parseFloat(value);
+		}
+		return floatValue;
 	}
 	
 	private Material createMaterialWithText(String text) {

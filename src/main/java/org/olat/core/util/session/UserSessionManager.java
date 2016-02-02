@@ -19,14 +19,13 @@
  */
 package org.olat.core.util.session;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.PostConstruct;
@@ -76,10 +75,10 @@ public class UserSessionManager implements GenericEventListener {
 	public static final OLATResourceable ORES_USERSESSION = OresHelper.createOLATResourceableType(UserSession.class);
 	public static final String STORE_KEY_KILLED_EXISTING_SESSION = "killedExistingSession";
 
-  //clusterNOK cache ??
-	private static final Set<UserSession> authUserSessions = new HashSet<UserSession>(2500);
-	private static final Set<Long> userNameToIdentity = new HashSet<Long>(2500);
-	private static final Set<Long> authUsersNamesOtherNodes = new HashSet<Long>(2500);
+	//clusterNOK cache ??
+	private static final Set<UserSession> authUserSessions = ConcurrentHashMap.newKeySet();
+	private static final Set<Long> userNameToIdentity = ConcurrentHashMap.newKeySet();
+	private static final Set<Long> authUsersNamesOtherNodes = ConcurrentHashMap.newKeySet();
 
 	private static final AtomicInteger sessionCountWeb = new AtomicInteger();
 	private static final AtomicInteger sessionCountRest = new AtomicInteger();
@@ -107,14 +106,16 @@ public class UserSessionManager implements GenericEventListener {
 	 * @return associated user session
 	 */
 	public UserSession getUserSession(HttpSession session) {
-		UserSession us;
-		synchronized (session) {//o_clusterOK by:fj
-			us = (UserSession) session.getAttribute(USERSESSIONKEY);
-			if (us == null) {
-				us = new UserSession();
-				session.setAttribute(USERSESSIONKEY, us); // triggers the
-				// valueBoundEvent -> nothing
-				// more to do here
+		UserSession us = (UserSession) session.getAttribute(USERSESSIONKEY);
+		if(us == null) {
+			synchronized (session) {//o_clusterOK by:fj
+				us = (UserSession) session.getAttribute(USERSESSIONKEY);
+				if (us == null) {
+					us = new UserSession();
+					session.setAttribute(USERSESSIONKEY, us); // triggers the
+					// valueBoundEvent -> nothing
+					// more to do here
+				}
 			}
 		}
 		//set a possible changed session timeout interval
@@ -148,15 +149,13 @@ public class UserSessionManager implements GenericEventListener {
 			return null;
 		}
 
-		synchronized (session) {//o_clusterOK by:se
-			UserSession us = (UserSession) session.getAttribute(USERSESSIONKEY);
-			if(us != null && us.isAuthenticated()) {
-				session.setMaxInactiveInterval(sessionModule.getSessionTimeoutAuthenticated());
-			} else {
-				session.setMaxInactiveInterval(sessionModule.getSessionTimeout());
-			}
-			return us;
+		UserSession us = (UserSession) session.getAttribute(USERSESSIONKEY);
+		if(us != null && us.isAuthenticated()) {
+			session.setMaxInactiveInterval(sessionModule.getSessionTimeoutAuthenticated());
+		} else {
+			session.setMaxInactiveInterval(sessionModule.getSessionTimeout());
 		}
+		return us;
 	}
 
   /**
@@ -165,42 +164,27 @@ public class UserSessionManager implements GenericEventListener {
  *         on
  */
 	public boolean isSignedOnIdentity(Long identityKey) {
-		synchronized (authUserSessions) {  //o_clusterOK by:fj
-			return userNameToIdentity.contains(identityKey);
-		}
-	}
-	
-	public List<Long> getAuthenticatedIdentityKey() {
-		synchronized (authUserSessions) {  //o_clusterOK by:fj
-			return new ArrayList<Long>(userNameToIdentity);
-		}
+		return userNameToIdentity.contains(identityKey);
 	}
 	
 	/**
 	 * @return set of authenticated active user sessions
 	 */
 	public Set<UserSession> getAuthenticatedUserSessions() {
-		Set<UserSession> copy;
-		synchronized (authUserSessions) {  //o_clusterOK by:fj
-			copy = new HashSet<UserSession>(authUserSessions);
-		}
-		return copy;
+		return new HashSet<UserSession>(authUserSessions);
 	}
 	
 	public int getNumberOfAuthenticatedUserSessions() {
-		synchronized(authUserSessions) {
-			return authUserSessions.size();
-		}
+		return authUserSessions.size();
 	}
 	
 	/**
+	 * This method returns only the number of local sessions.
+	 * 
 	 * @return Returns the userSessionsCnt (Web, WebDAV, REST) from this VM
 	 */
 	public int getUserSessionsCnt() {
-	  //clusterNOK ?? return only number of locale sessions ?
-		synchronized(authUserSessions) {
-			return authUserSessions.size();
-		}
+		return authUserSessions.size();
 	}
 	
 	/**
@@ -209,10 +193,6 @@ public class UserSessionManager implements GenericEventListener {
 	 */
 	public int getUserSessionWebCounter() {
 		return userSessionCache.size();
-	}
-	
-	public Collection<Long> getUsersOnline() {
-		return userSessionCache.getKeys();
 	}
 	
 	public boolean isOnline(Long identityKey) {
@@ -246,96 +226,93 @@ public class UserSessionManager implements GenericEventListener {
 	/**
 	 * prior to calling this method, all instance vars must be set.
 	 */
-	public synchronized void signOn(UserSession usess) {
-		//   ^^^^^^^^^^^^ Added synchronized to be symmetric with sign off and to
-		//                fix a possible dead-lock see also OLAT-3390
-		
+	public void signOn(UserSession usess) {
 		boolean isDebug = log.isDebug();
-		if(isDebug) log.debug("signOn() START");
-		if (usess.isAuthenticated()) {
-			throw new AssertException("sign on: already signed on!");
-		}
-		
-		IdentityEnvironment identityEnvironment = usess.getIdentityEnvironment();
-		Identity identity = identityEnvironment.getIdentity();
-		if (identity == null) {
-			throw new AssertException("identity is null in identityEnvironment!");
-		}
-		SessionInfo sessionInfo = usess.getSessionInfo();
-		if (sessionInfo == null) {
-			throw new AssertException("sessionInfo was null for identity " + identity);
-		}
-		//String login = identity.getName();
-		usess.setAuthenticated(true);
-
-		if (sessionInfo.isWebDAV()) {
-			// load user prefs
-			usess.reloadPreferences();
-			synchronized (authUserSessions) {  //o_clusterOK by:se
+		// Added synchronized to be symmetric with sign off and to
+		// fix a possible dead-lock see also OLAT-3390
+		synchronized(usess) {
+			if(isDebug) log.debug("signOn() START");
+			if (usess.isAuthenticated()) {
+				throw new AssertException("sign on: already signed on!");
+			}
+			
+			IdentityEnvironment identityEnvironment = usess.getIdentityEnvironment();
+			Identity identity = identityEnvironment.getIdentity();
+			if (identity == null) {
+				throw new AssertException("identity is null in identityEnvironment!");
+			}
+			SessionInfo sessionInfo = usess.getSessionInfo();
+			if (sessionInfo == null) {
+				throw new AssertException("sessionInfo was null for identity " + identity);
+			}
+			usess.setAuthenticated(true);
+	
+			if (sessionInfo.isWebDAV()) {
+				// load user prefs
+				usess.reloadPreferences();
 				// we're only adding this webdav session to the authUserSessions - not to the userNameToIdentity.
 				// userNameToIdentity is only needed for IM which can't do anything with a webdav session
 				authUserSessions.add(usess);
-			}
-			log.audit("Logged on [via webdav]: " + sessionInfo.toString());
-		} else {
-		
-			if(isDebug) {
-				log.debug("signOn() authUsersNamesOtherNodes.contains "+identity.getName() + ": " + authUsersNamesOtherNodes.contains(identity.getKey()));
-			}
-		
-			UserSession invalidatedSession = null;
-			synchronized (authUserSessions) {  //o_clusterOK by:fj
-		    // check if already a session exist for this user
-		    if ( (userNameToIdentity.contains(identity.getKey()) || userSessionCache.containsKey(identity.getKey()) ) 
-		         && !sessionInfo.isWebDAV() && !sessionInfo.isREST() && !usess.getRoles().isGuestOnly()) {
-		        log.info("Loggin-process II: User has already a session => signOffAndClear existing session");
-		        
-		        invalidatedSession = getUserSessionForGui(identity.getKey());
-		        //remove session to be invalidated
-		        //SIDEEFFECT!! to signOffAndClear
-		        //if invalidatedSession is removed from authUserSessions
-		        //signOffAndClear does not remove the identity.getName().toLowerCase() from the userNameToIdentity
-		        //
-		        authUserSessions.remove(invalidatedSession);
-		    }
-		    authUserSessions.add(usess);
+				log.audit("Logged on [via webdav]: " + sessionInfo.toString());
+			} else {	
+				UserSession invalidatedSession = null;
+
+				if(isDebug) {
+					log.debug("signOn() authUsersNamesOtherNodes.contains " + identity.getName() + ": " + authUsersNamesOtherNodes.contains(identity.getKey()));
+				}
+					
+			    // check if already a session exist for this user
+			    if ( (userNameToIdentity.contains(identity.getKey()) || userSessionCache.containsKey(identity.getKey()) ) 
+			         && !sessionInfo.isWebDAV() && !sessionInfo.isREST() && !usess.getRoles().isGuestOnly()) {
+			        log.info("Loggin-process II: User has already a session => signOffAndClear existing session");
+			        
+			        invalidatedSession = getUserSessionForGui(identity.getKey());
+			        //remove session to be invalidated
+			        //SIDEEFFECT!! to signOffAndClear
+			        //if invalidatedSession is removed from authUserSessions
+			        //signOffAndClear does not remove the identity.getName().toLowerCase() from the userNameToIdentity
+			        //
+		        	authUserSessions.remove(invalidatedSession);
+		    	}
+		    	authUserSessions.add(usess);
 				// user can choose upercase letters in identity name, but this has no effect on the
 				// database queries, the login form or the IM account. IM works only with lowercase
 				// characters -> map stores values as such
 				if(isDebug) log.debug("signOn() adding to userNameToIdentity: "+identity.getName().toLowerCase());
 				userNameToIdentity.add(identity.getKey());
 				userSessionCache.put(identity.getKey(), new Integer(Settings.getNodeId()));
-			}
-		
-			//reload user prefs
-			usess.reloadPreferences();
-
-			log.audit("Logged on: " + sessionInfo.toString());
-			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new SignOnOffEvent(identity, true), ORES_USERSESSION);
-
-			// THE FOLLOWING CHECK MUST BE PLACED HERE NOT TO PRODUCE A DEAD-LOCK WITH SIGNOFFANDCLEAR
-			// check if a session from any browser was invalidated (IE has a cookie set per Browserinstance!!)
-			if (invalidatedSession != null || authUsersNamesOtherNodes.contains(identity.getKey())) {
-				// put flag killed-existing-session into session-store to show info-message 'only one session for each user' on user-home screen
-				usess.putEntry(STORE_KEY_KILLED_EXISTING_SESSION, Boolean.TRUE);
-				if(isDebug) log.debug("signOn() removing from authUsersNamesOtherNodes: "+identity.getName());
-				authUsersNamesOtherNodes.remove(identity.getKey());
-				//OLAT-3381 & OLAT-3382
-				if(invalidatedSession != null) {
-					signOffAndClear(invalidatedSession);
+			
+			
+				//reload user prefs
+				usess.reloadPreferences();
+	
+				log.audit("Logged on: " + sessionInfo.toString());
+				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new SignOnOffEvent(identity, true), ORES_USERSESSION);
+	
+				// THE FOLLOWING CHECK MUST BE PLACED HERE NOT TO PRODUCE A DEAD-LOCK WITH SIGNOFFANDCLEAR
+				// check if a session from any browser was invalidated (IE has a cookie set per Browserinstance!!)
+				if (invalidatedSession != null || authUsersNamesOtherNodes.contains(identity.getKey())) {
+					// put flag killed-existing-session into session-store to show info-message 'only one session for each user' on user-home screen
+					usess.putEntry(STORE_KEY_KILLED_EXISTING_SESSION, Boolean.TRUE);
+					if(isDebug) log.debug("signOn() removing from authUsersNamesOtherNodes: "+identity.getName());
+					authUsersNamesOtherNodes.remove(identity.getKey());
+					//OLAT-3381 & OLAT-3382
+					if(invalidatedSession != null) {
+						signOffAndClear(invalidatedSession);
+					}
 				}
+	
+				if(isDebug) log.debug("signOn() END");
 			}
-
-			if(isDebug) log.debug("signOn() END");
-		}
-		
-		// update logged in users counters
-		if (sessionInfo.isREST()) {
-			sessionCountRest.incrementAndGet();
-		} else if (sessionInfo.isWebDAV()) {
-			sessionCountDav.incrementAndGet();
-		} else {
-			sessionCountWeb.incrementAndGet();
+			
+			// update logged in users counters
+			if (sessionInfo.isREST()) {
+				sessionCountRest.incrementAndGet();
+			} else if (sessionInfo.isWebDAV()) {
+				sessionCountDav.incrementAndGet();
+			} else {
+				sessionCountWeb.incrementAndGet();
+			}
 		}
 	}
 	
@@ -385,7 +362,7 @@ public class UserSessionManager implements GenericEventListener {
 	 * node2 catches the sign on event and invalidates the user on node2 "silently", e.g.
 	 * without firing an event.
 	 */
-	public void signOffAndClearWithout(final UserSession usess) {
+	private void signOffAndClearWithout(final UserSession usess) {
 		boolean isDebug = log.isDebug();
 		if(isDebug) log.debug("signOffAndClearWithout() START");
 		
@@ -394,7 +371,6 @@ public class UserSessionManager implements GenericEventListener {
 		final Identity ident = identityEnvironment.getIdentity();
 		if (isDebug) log.debug("UserSession:::logging off: " + sessionInfo);
 
-		//fxdiff BAKS-7 Resume function
 		if(usess.isAuthenticated() && usess.getLastHistoryPoint() != null && !usess.getRoles().isGuestOnly()) {
 			historyManager.persistHistoryPoint(ident, usess.getLastHistoryPoint());
 		}
@@ -403,6 +379,7 @@ public class UserSessionManager implements GenericEventListener {
 		 * use not RunnableWithException, as exceptionHandlng is inside the run
 		 */
 		Runnable run = new Runnable() {
+			@Override
 			public void run() {
 				Object obj = null;
 				try {
@@ -449,20 +426,19 @@ public class UserSessionManager implements GenericEventListener {
 
 		ThreadLocalUserActivityLoggerInstaller.runWithUserActivityLogger(run, UserActivityLoggerImpl.newLoggerForValueUnbound(usess));
 
-		synchronized (authUserSessions) {  //o_clusterOK by:fj
-			if(authUserSessions.remove(usess)){
-				//remove only from identityEnvironment if found in sessions.
-				//see also SIDEEFFECT!! line in signOn(..)
-				Identity previousSignedOn = identityEnvironment.getIdentity();
-				if (previousSignedOn != null) {
-					if(isDebug) log.debug("signOffAndClearWithout() removing from userNameToIdentity: "+previousSignedOn.getName().toLowerCase());
-					userNameToIdentity.remove(previousSignedOn.getKey());
-					userSessionCache.remove(previousSignedOn.getKey());
-				}
-			} else if (isDebug) {
-				log.info("UserSession already removed! for ["+ident+"]");			
+		if(authUserSessions.remove(usess)) {
+			//remove only from identityEnvironment if found in sessions.
+			//see also SIDEEFFECT!! line in signOn(..)
+			Identity previousSignedOn = identityEnvironment.getIdentity();
+			if (previousSignedOn != null) {
+				if(isDebug) log.debug("signOffAndClearWithout() removing from userNameToIdentity: "+previousSignedOn.getName().toLowerCase());
+				userNameToIdentity.remove(previousSignedOn.getKey());
+				userSessionCache.remove(previousSignedOn.getKey());
 			}
+		} else if (isDebug) {
+			log.info("UserSession already removed! for ["+ident+"]");			
 		}
+			
 		// update logged in users counters
 		if (sessionInfo != null) {
 			if (sessionInfo.isREST()) {
@@ -535,9 +511,8 @@ public class UserSessionManager implements GenericEventListener {
 		int invalidateCounter = 0;
 		log.audit("All sessions were invalidated by an administrator");
 		//clusterNOK ?? invalidate only locale sessions ?
-		Set<UserSession> iterCopy = getAuthenticatedUserSessions();
-		for (Iterator<UserSession> iterator = iterCopy.iterator(); iterator.hasNext();) {
-			UserSession userSession = iterator.next();
+		Set<UserSession> userSessions = getAuthenticatedUserSessions();
+		for (UserSession userSession : userSessions) {
 			Roles userRoles = userSession != null ? userSession.getRoles() : null; 
 			if (userRoles != null && !userRoles.isOLATAdmin()) {
 				//do not logout administrators
@@ -566,6 +541,7 @@ public class UserSessionManager implements GenericEventListener {
 		// 1. Copy authUserSessions in sorted TreeMap
 		// This is the Comparator that will be used to sort the TreeSet:
 		Comparator<UserSession> sessionComparator = new Comparator<UserSession>() {
+			@Override
 			public int compare(UserSession o1, UserSession o2) {
 				Long long1 = new Long((o1).getSessionInfo().getLastClickTime());
 				Long long2 = new Long((o2).getSessionInfo().getLastClickTime());
@@ -595,8 +571,7 @@ public class UserSessionManager implements GenericEventListener {
 	 * @param sessionTimeoutInSec
 	 */
 	public void setGlobalSessionTimeout(int sessionTimeoutInSec) {
-		Collection<UserSession> sessionSnapShot = getAuthenticatedUserSessions();
-		for (UserSession session : sessionSnapShot) {
+		authUserSessions.forEach(session -> {
 			try{
 				SessionInfo sessionInfo = session.getSessionInfo();
 				if(sessionInfo != null && sessionInfo.getSession() != null) {
@@ -605,28 +580,29 @@ public class UserSessionManager implements GenericEventListener {
 			} catch(Throwable th){
 				log.error("error setting sesssionTimeout", th);
 			}
-		}
+		});
 	}
 	
 	/**
-	 * Lookup non-webdav, non-REST UserSession for username.
+	 * Lookup non-webdav, non-REST UserSession for identity key.
 	 * @param identityKey
 	 * @return user-session or null when no session was founded. 
 	 */
 	private UserSession getUserSessionForGui(Long identityKey) {
+		UserSession identitySession = null;
 		if(identityKey != null) {
 			//do not call from somewhere else then signOffAndClear!!
-			Collection<UserSession> authUserSessionsCopy = getAuthenticatedUserSessions();
-			for (UserSession userSession : authUserSessionsCopy) {		
+			identitySession = authUserSessions.stream().filter(userSession -> {
 				Identity identity = userSession.getIdentity();
 				if (identity != null && identityKey.equals(identity.getKey())
 						&& userSession.getSessionInfo() != null
 						&& !userSession.getSessionInfo().isWebDAV()
 						&& !userSession.getSessionInfo().isREST()) {
-					return userSession;
+					return true;
 				}
-			}
+				return false;
+			}).findFirst().get();
 		}
-		return null;
+		return identitySession;
 	}
 }

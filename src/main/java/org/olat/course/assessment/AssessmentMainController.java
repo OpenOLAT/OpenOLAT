@@ -409,7 +409,6 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 				} else if (cmd.equals(CMD_USERFOCUS)) {
 					mode = MODE_USERFOCUS;
 					identitiesList = getAllAssessableIdentities();
-					//fxdiff FXOLAT-108: improve results table of tests
 					doUserChooseWithData(ureq, identitiesList, null, null);
 				} else if (cmd.equals(CMD_GROUPFOCUS)) {
 					mode = MODE_GROUPFOCUS;
@@ -1117,8 +1116,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		}
 		
 		boolean hasDisplayableValuesConfigured = false;
-		if ( (childrenData.size() > 0 || courseNode instanceof AssessableCourseNode) && !(courseNode instanceof ProjectBrokerCourseNode) ) {
-			// TODO:cg 04.11.2010 ProjectBroker : no assessment-tool in V1.0 , remove projectbroker completely form assessment-tool gui			// Store node data in hash map. This hash map serves as data model for 
+		if (childrenData.size() > 0 || courseNode instanceof AssessableCourseNode) {
 			// the user assessment overview table. Leave user data empty since not used in
 			// this table. (use only node data)
 			AssessmentNodeData nodeData = new AssessmentNodeData(recursionLevel, courseNode);
@@ -1133,9 +1131,11 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 					nodeData.setOnyx(false);
 				}
 			}
-
 			
-			if (courseNode instanceof AssessableCourseNode) {
+			if(courseNode instanceof ProjectBrokerCourseNode) {
+				//ProjectBroker : no assessment-tool in V1.0 , remove project broker completely form assessment-tool gui
+				nodeData.setSelectable(false);
+			} else if (courseNode instanceof AssessableCourseNode) {
 				AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
 				if ( assessableCourseNode.hasDetails()
 					|| assessableCourseNode.hasAttemptsConfigured()

@@ -106,13 +106,15 @@ public class SearchResultsImpl implements SearchResults {
 	 * 
 	 * @return  Length of result-list.
 	 */
-	public String getLength() {
-		return Integer.toString(resultList.size());
+	@Override
+	public int size() {
+		return resultList == null ? 0 : resultList.size();
 	}
 	
   /**
    * @return List of ResultDocument.
    */
+	@Override
 	public List<ResultDocument> getList() {
 		return resultList;
 	}

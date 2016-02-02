@@ -437,8 +437,11 @@ public class AssessmentHelper {
 		// - it is of an assessable course node type
 		boolean hasDisplayableValuesConfigured = false;
 		boolean hasDisplayableUserValues = false;
-		if ((numOfChildren > 0 || courseNode instanceof AssessableCourseNode) && !(courseNode instanceof ProjectBrokerCourseNode) ) {
-			if (courseNode instanceof AssessableCourseNode) {
+		if (numOfChildren > 0 || courseNode instanceof AssessableCourseNode) {
+			if(courseNode instanceof ProjectBrokerCourseNode) {
+				//ProjectBroker : no assessment-tool in V1.0 , remove project broker completely form assessment-tool gui
+				assessmentNodeData.setSelectable(false);
+			} else  if (courseNode instanceof AssessableCourseNode) {
 				AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
 				AssessmentEvaluation scoreEvaluation = scoreAccounting.evalCourseNode(assessableCourseNode);
 				if(scoreEvaluation != null) {

@@ -36,7 +36,7 @@ import org.olat.search.model.ResultDocument;
 public interface SearchResults extends Serializable {
 	public static final EmptySearchResults EMPTY_SEARCH_RESULTS = new EmptySearchResults();
 	
-	public String getLength();
+	public int size();
 	
 	public List<ResultDocument> getList();
 	

@@ -73,9 +73,15 @@ public class ItemController extends BasicController implements Activateable2 {
 		vcItem.contextPut("helper", helper);
 		vcItem.contextPut("callback", callback);
 		if (feed.isInternal()) {
-			if (editButton != null) vcItem.put("editButton", editButton);
-			if (deleteButton != null) vcItem.put("deleteButton", deleteButton);
-			if (artefactLink != null) vcItem.put("artefactLink", artefactLink.getInitialComponent());
+			if (editButton != null) {
+				vcItem.put("editButton", editButton);
+			}
+			if (deleteButton != null) {
+				vcItem.put("deleteButton", deleteButton);
+			}
+			if (artefactLink != null) {
+				vcItem.put("artefactLink", artefactLink.getInitialComponent());
+			}
 		}
 		backLink = LinkFactory.createLinkBack(vcItem, this);
 		// Add date component
@@ -91,7 +97,7 @@ public class ItemController extends BasicController implements Activateable2 {
 			vcItem.put("commentsAndRating", commentsCtr.getInitialComponent());				
 		}
 		//
-		this.putInitialPanel(vcItem);
+		putInitialPanel(vcItem);
 		// do logging
 		ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_ITEM_READ, getClass(), LoggingResourceable.wrap(item));
 	}
@@ -99,6 +105,7 @@ public class ItemController extends BasicController implements Activateable2 {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose()
 	 */
+	@Override
 	protected void doDispose() {
 	// nothing to do
 	}
@@ -127,5 +134,4 @@ public class ItemController extends BasicController implements Activateable2 {
 			}
 		}		
 	}
-
 }

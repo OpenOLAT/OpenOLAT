@@ -26,6 +26,7 @@
 package org.olat.admin.sysinfo;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.admin.sysinfo.model.UserSessionView;
@@ -112,7 +113,7 @@ public class UserSessionController extends BasicController implements Breadcrumb
 	 * Re-initialize this controller. Fetches sessions again.
 	 */
 	public void reset() {
-		List<UserSession> authUserSessions = new ArrayList<UserSession>(sessionManager.getAuthenticatedUserSessions());
+		Collection<UserSession> authUserSessions = sessionManager.getAuthenticatedUserSessions();
 		List<UserSessionView> authUserSessionViews = new ArrayList<UserSessionView>(authUserSessions.size());
 		for(UserSession authUserSession:authUserSessions) {
 			authUserSessionViews.add(new UserSessionView(authUserSession));
