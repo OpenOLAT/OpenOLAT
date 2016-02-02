@@ -25,6 +25,8 @@
 */ 
 package org.olat.core.logging;
 
+import org.apache.log4j.Logger;
+
 /**
  * Description:<br>
  * Log Impl class, for method details see Tracing.java in the same package
@@ -34,35 +36,38 @@ package org.olat.core.logging;
  * @author Felix Jost, http://www.goodsolutions.ch
  */
 public class OLogImpl implements OLog {
-	Class loggingClazz;
-	OLogImpl(Class clazz) {
-		this.loggingClazz = clazz;
+	private final Class<?> loggingClazz;
+	private final Logger logger;
+	
+	OLogImpl(Class<?> clazz) {
+		loggingClazz = clazz;
+		logger = Tracing.getLogger(clazz); 
 	}
 	
 	public boolean isDebug() {
-		return Tracing.isDebugEnabled(loggingClazz);
+		return logger.isDebugEnabled();
 	}
 	
 	public void error(String logMsg, Throwable cause) {
-		Tracing.logError(logMsg, cause, loggingClazz);
+		Tracing.logError(logMsg, cause, logger, loggingClazz);
 	}
 
 	public void error(String logMsg) {
-		Tracing.logError(logMsg, loggingClazz);
+		Tracing.logError(logMsg, null, logger, loggingClazz);
 	}
 
 	/**
 	 * See package.html for proper usage!
 	 */
 	public void warn(String logMsg, Throwable cause) {
-		Tracing.logWarn(logMsg, cause, loggingClazz);
+		Tracing.logWarn(logMsg, cause, logger, loggingClazz);
 	}
 
 	/**
  	 * See package.html for proper usage!
 	 */
 	public void warn(String logMsg) {
-		Tracing.logWarn(logMsg, loggingClazz);
+		Tracing.logWarn(logMsg, null, logger, loggingClazz);
 	}
 
 	/**
@@ -72,36 +77,36 @@ public class OLogImpl implements OLog {
 	 * 
 	 */
 	public void debug(String logMsg, String userObj) {
-		Tracing.logDebug(logMsg, userObj, loggingClazz);
+		Tracing.logDebug(logMsg, userObj, logger, loggingClazz);
 	}
 
 	/**
 	 * Add debug log entry
 	 */
 	public void debug(String logMsg) {
-		Tracing.logDebug(logMsg, loggingClazz);
+		Tracing.logDebug(logMsg, null, logger, loggingClazz);
 	}
 
 	public void info(String logMsg, String userObject) {
-		Tracing.logInfo(logMsg, userObject, loggingClazz);
+		Tracing.logInfo(logMsg, userObject, logger, loggingClazz);
 	}
 
 	public void info(String logMsg) {
-		Tracing.logInfo(logMsg, loggingClazz);	
+		Tracing.logInfo(logMsg, null, logger, loggingClazz);	
 	}
 
 	/**
 	 * Add audit log entry.
 	 */
 	public void audit(String logMsg) {
-		Tracing.logAudit(logMsg, loggingClazz);
+		Tracing.logAudit(logMsg, null, logger, loggingClazz);
 	}
 
 	/**
 	 * Add audit log entry with a user object. 
 	 */
 	public void audit(String logMsg, String userObj) {
-		Tracing.logAudit(logMsg, userObj, loggingClazz);
+		Tracing.logAudit(logMsg, userObj, logger, loggingClazz);
 	}
 
 }
