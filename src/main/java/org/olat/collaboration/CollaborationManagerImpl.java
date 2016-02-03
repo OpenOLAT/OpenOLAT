@@ -57,12 +57,13 @@ public class CollaborationManagerImpl extends BasicManager implements Collaborat
 	private CalendarManager calendarManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
-	
+
+	@Override
 	public String getFolderRelPath(OLATResourceable ores) {
 		return "/cts/folders/" + ores.getResourceableTypeName() + "/" + ores.getResourceableId();
 	}
 
-	//fxdiff VCRP-8: collaboration tools folder access control
+	@Override
 	public Long lookupFolderAccess(OLATResourceable ores) {
 		StringBuilder query = new StringBuilder();
 		query.append("select prop.longValue from ").append(Property.class.getName()).append(" as prop where ")

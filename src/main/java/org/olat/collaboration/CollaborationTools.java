@@ -864,18 +864,18 @@ public class CollaborationTools implements Serializable {
 	 */
 	public void archive(String archivFilePath) {
 		if (isToolEnabled(CollaborationTools.TOOL_FORUM)) {
-			archiveForum(this.ores, archivFilePath);
+			archiveForum(archivFilePath);
 		}
 		if (isToolEnabled(CollaborationTools.TOOL_WIKI)) {
-			archiveWiki(this.ores, archivFilePath);
+			archiveWiki(archivFilePath);
 		}
 		if (isToolEnabled(CollaborationTools.TOOL_FOLDER)) {
-			archiveFolder(this.ores, archivFilePath);
+			archiveFolder(archivFilePath);
 		}
 	}
 
-	private void archiveForum(OLATResourceable formRes, String archivFilePath) {
-		Property forumKeyProperty = NarrowedPropertyManager.getInstance(formRes).findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_FORUM);
+	private void archiveForum(String archivFilePath) {
+		Property forumKeyProperty = NarrowedPropertyManager.getInstance(ores).findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_FORUM);
 		if (forumKeyProperty != null) {
 			VFSContainer archiveContainer = new LocalFolderImpl(new File(archivFilePath));
 			String archiveForumName = "del_forum_" + forumKeyProperty.getLongValue();
@@ -885,10 +885,10 @@ public class CollaborationTools implements Serializable {
 		}
 	}
 
-	private void archiveWiki(OLATResourceable wikiRes, String archivFilePath) { 
-		VFSContainer wikiContainer = WikiManager.getInstance().getWikiRootContainer(wikiRes);
+	private void archiveWiki(String archivFilePath) { 
+		VFSContainer wikiContainer = WikiManager.getInstance().getWikiRootContainer(ores);
 		VFSLeaf wikiZip = WikiToZipUtils.getWikiAsZip(wikiContainer);
-		String exportFileName = "del_wiki_" + wikiRes.getResourceableId() + ".zip";
+		String exportFileName = "del_wiki_" + ores.getResourceableId() + ".zip";
 		File archiveDir = new File(archivFilePath);
 		if (!archiveDir.exists()) {
 			archiveDir.mkdir();
@@ -898,17 +898,17 @@ public class CollaborationTools implements Serializable {
 		try {
 			FileUtils.bcopy(wikiZip.getInputStream(), new File(fullFilePath), "archive wiki");
 		} catch (FileNotFoundException e) {
-			log.warn("Can not archive wiki repoEntry=" + wikiRes.getResourceableId());
+			log.warn("Can not archive wiki repoEntry=" + ores.getResourceableId());
 		} catch (IOException ioe) {
-			log.warn("Can not archive wiki repoEntry=" + wikiRes.getResourceableId());
+			log.warn("Can not archive wiki repoEntry=" + ores.getResourceableId());
 		}		
 	}
 
-	private void archiveFolder(OLATResourceable folderRes, String archiveFilePath) {
+	private void archiveFolder(String archiveFilePath) {
 		OlatRootFolderImpl folderContainer = new OlatRootFolderImpl(getFolderRelPath(), null);
 		File fFolderRoot = folderContainer.getBasefile();
 		if (fFolderRoot.exists()) {
-			String zipFileName = "del_folder_" + folderRes.getResourceableId() + ".zip";
+			String zipFileName = "del_folder_" + ores.getResourceableId() + ".zip";
 			String fullZipFilePath = archiveFilePath + File.separator + zipFileName;
 			ZipUtil.zipAll(fFolderRoot, new File(fullZipFilePath), true);
 		}
