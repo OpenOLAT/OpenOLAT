@@ -88,6 +88,7 @@ public class UserRequestImpl implements UserRequest {
 	private String uuid;
 	private static int count = 0;
 
+	private final UserSessionManager userSessionMgr;
 
 	/**
 	 * @param uriPrefix
@@ -99,6 +100,7 @@ public class UserRequestImpl implements UserRequest {
 		this.httpResp = httpResp;
 		this.uriPrefix = uriPrefix;
 		isValidDispatchURI = false;
+		userSessionMgr = CoreSpringFactory.getImpl(UserSessionManager.class);
 		params = new HashMap<String,String>(4);
 		dispatchResult = new DispatchResult();
 		parseRequest(httpReq);
@@ -146,7 +148,7 @@ public class UserRequestImpl implements UserRequest {
 	 */
 	@Override
 	public UserSession getUserSession() {
-		UserSession result = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(getHttpReq());
+		UserSession result = userSessionMgr.getUserSession(getHttpReq());
 		if (result == null) {
 			log.warn("getUserSession: null, this="+this, new RuntimeException("getUserSession"));
 		}
