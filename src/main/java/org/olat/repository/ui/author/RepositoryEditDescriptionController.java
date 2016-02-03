@@ -560,9 +560,12 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 				repositoryEntry.getDescription(), repositoryEntry.getObjectives(), repositoryEntry.getRequirements(),
 				repositoryEntry.getCredits(), repositoryEntry.getMainLanguage(), repositoryEntry.getLocation(),
 				repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle());
-		
-		
-		fireEvent(ureq, Event.CHANGED_EVENT);
+		if(repositoryEntry == null) {
+			showWarning("repositoryentry.not.existing");
+			fireEvent(ureq, Event.CLOSE_EVENT);
+		} else {
+			fireEvent(ureq, Event.CHANGED_EVENT);
+		}
 	}
 
 	@Override

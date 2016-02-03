@@ -610,18 +610,20 @@ public class RepositoryManager extends BasicManager {
 
 		StringBuilder query = new StringBuilder();
 		query.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
-				 /*.append(" inner join fetch v.olatResource as ores")*/
 		     .append(" where v.key=:repoKey");
 
-		RepositoryEntry entry = dbInstance.getCurrentEntityManager().createQuery(query.toString(), RepositoryEntry.class)
+		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager().createQuery(query.toString(), RepositoryEntry.class)
 				.setParameter("repoKey", re.getKey())
 				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
-				.getSingleResult();
-		return entry;
+				.getResultList();
+		return entries == null || entries.isEmpty() ? null : entries.get(0);
 	}
 
 	public RepositoryEntry setAccess(final RepositoryEntry re, int access, boolean membersOnly) {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
+		if(reloadedRe == null) {
+			return null;
+		}
 		reloadedRe.setAccess(access);
 		reloadedRe.setMembersOnly(membersOnly);
 		reloadedRe.setLastModified(new Date());
@@ -635,6 +637,9 @@ public class RepositoryManager extends BasicManager {
 			int access, boolean membersOnly,
 			boolean canCopy, boolean canReference, boolean canDownload) {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
+		if(reloadedRe == null) {
+			return null;
+		}
 		//access
 		reloadedRe.setAccess(access);
 		reloadedRe.setMembersOnly(membersOnly);
@@ -658,6 +663,9 @@ public class RepositoryManager extends BasicManager {
 	public RepositoryEntry setLeaveSetting(final RepositoryEntry re,
 			RepositoryEntryAllowToLeaveOptions setting) {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
+		if(reloadedRe == null) {
+			return null;
+		}
 		reloadedRe.setAllowToLeaveOption(setting);
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		updatedRe.getStatistics().getLaunchCounter();
@@ -684,6 +692,10 @@ public class RepositoryManager extends BasicManager {
 			String location, String authors, String externalId, String externalRef, String managedFlags,
 			RepositoryEntryLifecycle cycle) {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
+		if(reloadedRe == null) {
+			return null;
+		}
+		
 		if(StringHelper.containsNonWhitespace(displayName)) {
 			reloadedRe.setDisplayname(displayName);
 		}
@@ -752,6 +764,9 @@ public class RepositoryManager extends BasicManager {
 			String objectives, String requirements, String credits, String mainLanguage,
 			String location, String expenditureOfWork, RepositoryEntryLifecycle cycle) {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
+		if(reloadedRe == null) {
+			return null;
+		}
 		reloadedRe.setDisplayname(displayName);
 		reloadedRe.setAuthors(authors);
 		reloadedRe.setDescription(description);
