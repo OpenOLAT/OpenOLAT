@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '2.3.3'
+				version : '2.3.4'
 			};
 		},
 
@@ -92,11 +92,11 @@
 					setStr(pl, null, 'width');
 					setStr(pl, null, 'height');
 					
-					if ((val = top.tinymce.activeEditor.dom.getAttrib(fe, "width")) != "") {
+					if ((val = ed.dom.getAttrib(fe, "width")) != "") {
 						pl.width = val;
 					}
 					
-					if ((val = top.tinymce.activeEditor.dom.getAttrib(fe, "height")) != "") {
+					if ((val = ed.dom.getAttrib(fe, "height")) != "") {
 						pl.height = val;
 					}
 					
@@ -114,7 +114,7 @@
 			function getNextDomId() {
 				var count = 0;
 				var domIdentity = "olatFlashMovieViewer";
-				var placeHolders = top.tinymce.activeEditor.dom.select("img.mceItemOlatMovieViewer");
+				var placeHolders = ed.dom.select("img.mceItemOlatMovieViewer");
 				do {
 					domIdentity = "olatFlashMovieViewer" + (count++);
 					if(count > 20) {
@@ -186,8 +186,8 @@
 			
 			function _getEmbed(p) {
 				// player configuration
-				var playerOffsetHeight = top.tinymce.activeEditor.getParam("olatmovieviewer_playerOffsetHeight");
-				var playerOffsetWidth = top.tinymce.activeEditor.getParam("olatmovieviewer_playerOffsetWidth");
+				var playerOffsetHeight = ed.getParam("olatmovieviewer_playerOffsetHeight");
+				var playerOffsetWidth = ed.getParam("olatmovieviewer_playerOffsetWidth");
 				var playerWidth = typeof(p.width) != "undefined" ? (parseInt(p.width) + parseInt(playerOffsetWidth))  : '320';
 				var playerHeight = typeof(p.height) != "undefined" ? (parseInt(p.height) + parseInt(playerOffsetHeight))  : '240';
 				var start = typeof(p.starttime) != "undefined" ? p.starttime : "00:00:00.000";
@@ -217,7 +217,7 @@
 				if(p.address != undefined) {
 					if(p.address.indexOf('://') < 0 && ((provider != "rtmp" && provider != "http") ||
 						((provider == "rtmp" || provider == "http") && (streamer == undefined || streamer.length == 0)))) {
-						videoUrl = top.tinymce.activeEditor.documentBaseURI.toAbsolute(p.address);
+						videoUrl = ed.documentBaseURI.toAbsolute(p.address);
 					}
 				}
 				
@@ -328,7 +328,7 @@
 				}
 				
 				var helpButton = coreTranslator().translate('help');
-				var helpLink = top.tinymce.activeEditor.getParam("olatmovieviewer_helpUrl" + o_getMainWin().o_info.locale);
+				var helpLink = ed.getParam("olatmovieviewer_helpUrl" + o_getMainWin().o_info.locale);
 				jQuery(".mce-tabs").append("<span class='o_chelp_wrapper'><a href='" + helpLink + "' class='o_chelp' target='_blank'><i class='mce-ico mce-i-help'> </i> " + helpButton + "</a></span>")
 			}
 			
@@ -361,8 +361,8 @@
 			function getPlayerHtmlNode(editor,p) {
 				var h = '', n, l = '';
 				// player configuration
-				var playerOffsetHeight = top.tinymce.activeEditor.getParam("olatmovieviewer_playerOffsetHeight");
-				var playerOffsetWidth = top.tinymce.activeEditor.getParam("olatmovieviewer_playerOffsetWidth");
+				var playerOffsetHeight = ed.getParam("olatmovieviewer_playerOffsetHeight");
+				var playerOffsetWidth = ed.getParam("olatmovieviewer_playerOffsetWidth");
 				var playerWidth = typeof(p.width) != "undefined" ? (parseInt(p.width) + parseInt(playerOffsetWidth))  : '';
 				var playerHeight = typeof(p.height) != "undefined" ? (parseInt(p.height) + parseInt(playerOffsetHeight))  : '';
 				var starttime = typeof(p.starttime) != "undefined" ? '"' + p.starttime + '"' : 0;
@@ -373,7 +373,7 @@
 				var streamer = typeof(p.streamer) != "undefined" ? '"' + p.streamer + '"' : 'undefined';
 				var domIdentity = typeof(p.domIdentity) != "undefined" ? p.domIdentity : getNextDomId();
 				var poster = typeof(p.poster) != "undefined" ? '"' + p.poster + '"' : 'undefined';
-				var playerScriptUrl = top.tinymce.activeEditor.getParam("olatmovieviewer_playerScript");
+				var playerScriptUrl = ed.getParam("olatmovieviewer_playerScript");
 
 				var h = '<script src="' + playerScriptUrl + '" type="text/javascript"></script>';
 				h += '<script type="text/javascript" defer="defer">';
@@ -445,7 +445,7 @@
 			//fallback for the old movies with settings in comments
 			ed.on('BeforeSetContent',function(e) {
 				if(e.content.indexOf('--omvs::') > 0) {
-					var imgUrl = top.tinymce.activeEditor.getParam("olatmovieviewer_transparentImage");
+					var imgUrl = ed.getParam("olatmovieviewer_transparentImage");
 					e.content = e.content.replace(/\n/gi, "");
 					var widthMatch = e.content.match(/(?:<!--omvs::.*?width:')([0-9]+)(?:'.*?<!--omve-->)/i);
 					var width = ((widthMatch != null) && (widthMatch.length == 2)) ? parseInt(widthMatch[1]) : 320;

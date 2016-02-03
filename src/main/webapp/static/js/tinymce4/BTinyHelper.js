@@ -60,29 +60,33 @@ var BTinyHelper = {
 	// - relative links: media and links relative to the root folder
 	// - relative-absolute links: media that belong to the framework from the static dir
 	// - absolute links: media an links to external sites
-	linkConverter : function (url, node, on_save) {
+	linkConverter : function (url, node, on_save, name) {
 		var orig = url + '';
 		var editor = top.tinymce.activeEditor;
-		var settings = editor.settings;
-		if (!settings.convert_urls || (node && node.nodeName == 'LINK') || url.indexOf('file:') === 0) {
-			// Don't convert link href since thats the CSS files that gets loaded into the editor also skip local file URLs
-		} else if (settings.relative_urls) {
-			// Convert to relative, but only if not a brasato framework URL. Relative links are removed by the XSS filter.
-			if (url.indexOf('/') == 0
-				|| url.indexOf(o_info.uriprefix.replace(/auth/g,'url')) != -1
-				|| (-1 < url.indexOf(o_info.uriprefix) < url.indexOf("/go?"))) {
-				// Don't convert special brasato framework URL that are relative-absolute:
-				// 1) /olat/raw/_noversion_/... or /olat/secstatic/...
-				// 2) http://localhost/olat/classpath/62x/org.olat.core.gui.components.form.flexible.impl.elements.richText/js/tinymce/
-				// 3) http://localhost/olat/url/RepositoryEntry/27361280/ (REST URL and permalinks)
-				// 4) http://localhost/olat/auth/abc/go?xyz (old jump in URL's)
-			} else {
-				// convert to relative path using TinyMCE standard conversion
-				url = editor.documentBaseURI.toRelative(url);
-			}
+		if(editor === undefined) {
+			//do nothing
 		} else {
-			// Convert to absolute
-			url = editor.documentBaseURI.toAbsolute(url, settings.remove_script_host);			
+			var settings = editor.settings;
+			if (!settings.convert_urls || (node && node.nodeName == 'LINK') || url.indexOf('file:') === 0) {
+				// Don't convert link href since thats the CSS files that gets loaded into the editor also skip local file URLs
+			} else if (settings.relative_urls) {
+				// Convert to relative, but only if not a brasato framework URL. Relative links are removed by the XSS filter.
+				if (url.indexOf('/') == 0
+					|| url.indexOf(o_info.uriprefix.replace(/auth/g,'url')) != -1
+					|| (-1 < url.indexOf(o_info.uriprefix) < url.indexOf("/go?"))) {
+					// Don't convert special brasato framework URL that are relative-absolute:
+					// 1) /olat/raw/_noversion_/... or /olat/secstatic/...
+					// 2) http://localhost/olat/classpath/62x/org.olat.core.gui.components.form.flexible.impl.elements.richText/js/tinymce/
+					// 3) http://localhost/olat/url/RepositoryEntry/27361280/ (REST URL and permalinks)
+					// 4) http://localhost/olat/auth/abc/go?xyz (old jump in URL's)
+				} else {
+					// convert to relative path using TinyMCE standard conversion
+					url = editor.documentBaseURI.toRelative(url);
+				}
+			} else {
+				// Convert to absolute
+				url = editor.documentBaseURI.toAbsolute(url, settings.remove_script_host);			
+			}
 		}
 
 		return url;
