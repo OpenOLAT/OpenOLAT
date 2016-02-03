@@ -98,19 +98,13 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		double maxScore = 0.0;
 		double minScore = Double.MAX_VALUE;
 		double[] scores = new double[rawDatas.size()];
+		double[] durationSeconds = new double[rawDatas.size()];
 		
-
+		double minDuration = Double.MAX_VALUE;
+		double maxDuration = 0d;
+		
 		int dataPos = 0;
 		for(Object[] rawData:rawDatas) {
-			Boolean passed = (Boolean)rawData[1];
-			if(passed != null) {
-				if(passed.booleanValue()) {
-					numOfPassed++;
-				} else {
-					numOfFailed++;
-				}
-			}
-			
 			BigDecimal score = (BigDecimal)rawData[0];
 			if(score != null) {
 				double scored = score.doubleValue();
@@ -119,6 +113,24 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 				minScore = Math.min(minScore, scored);
 			}
 			
+			Boolean passed = (Boolean)rawData[1];
+			if(passed != null) {
+				if(passed.booleanValue()) {
+					numOfPassed++;
+				} else {
+					numOfFailed++;
+				}
+			}
+
+			Long duration = (Long)rawData[2];
+			if(duration != null) {
+				double durationd = duration.doubleValue();
+				double durationSecond = Math.round(durationd / 1000d);
+				durationSeconds[dataPos] = durationSecond;
+				totalDuration += durationd;
+				minDuration = Math.min(minDuration, durationSecond);
+				maxDuration = Math.max(maxDuration, durationSecond);
+			}
 			dataPos++;
 		}
 		if (rawDatas.size() == 0) {
@@ -143,6 +155,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		stats.setMedian(statisticsHelper.median());
 		stats.setMode(statisticsHelper.mode());
 		stats.setScores(scores);
+		stats.setDurations(durationSeconds);
 		return stats;
 	}
 

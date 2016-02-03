@@ -1,0 +1,82 @@
+<div class="o_qti_statistics">
+	#if($sectionTitle)
+	<h5>$r.translate("section"): $sectionTitle</h5>
+	#end
+	<h3><i class="o_icon $series.itemCss""> </i> $title</h3>
+	#if ($question && $question != "")
+		<h4>$r.translate("chart.item")</h4>
+		<div class="o_qti_statistics_question clearfix">$question</div>
+	#end
+	
+	<h4>$r.translate("fig.title")</h4>
+	<table class="o_qti_statistics_figures"><tbody>
+		#if($numOfParticipants)
+		<tr><td>$r.translate("fig.participants")</td>
+			<td>$numOfParticipants</td></tr>
+		#end
+		#if($maxScore)
+		<tr><td>$r.translate("chart.maxscore")</td>
+			<td>$maxScore</td></tr>
+		#end
+		#if($rightAnswers)
+		<tr><td>$r.translate("fig.correctanswers")</td>
+			<td>$rightAnswers</td></tr>
+		#end
+		#if($wrongAnswers)
+		<tr><td>$r.translate("fig.wronganswers")</td>
+			<td>$wrongAnswers</td></tr>
+		#end
+		#if($notAnswered)
+		<tr><td>$r.translate("fig.notanswered")</td>
+			<td>$notAnswered</td></tr>
+		#end
+		#if($itemDifficulty)
+		<tr><td>$r.translate("fig.itemdiff")</td>
+			<td>$itemDifficulty</td></tr>
+		#end
+		#if($averageScore)
+		<tr><td>$r.translate("fig.averagescore")</td>
+			<td>$averageScore</td></tr>
+		#end
+		#if($averageDuration)
+		<tr><td>$r.translate("fig.averagedur")</td>
+			<td>$averageDuration</td></tr>
+		#end
+	</tbody></table>
+
+	<h4>$r.translate("chart.responses")</h4>
+	$r.render("questionChart")
+	<ul>
+	#foreach($responseInfo in $series.responseInfos)
+		#if($responseInfo.survey)
+			<li class="o_qti_statistics-survey-item">
+		#elseif($responseInfo.kprim)
+			#if($responseInfo.correct)
+			<li class="o_qti_statistics-kplus">
+			#else
+			<li class="o_qti_statistics-kminus">
+			#end
+		#else
+			#if($responseInfo.correct)
+			<li class="o_qti_statistics-correct">
+			#else
+			<li class="o_qti_statistics-ncorrect">
+			#end
+		#end
+		<strong>$responseInfo.label.</strong> 
+		#if($responseInfo.points) $r.translate("answer.points", $responseInfo.formattedPoints) #end
+		#if($responseInfo.wrongAnswersAvailable)
+			<span class="o_qti_statistics_answer"><strong>$responseInfo.text</strong></span>
+			<p class="o_qti_statistics_wrong_answer">#if($responseInfo.survey)
+			<i>$r.translate("fib.answer")</i>
+			#else
+			<i>$r.translate("fib.wrong.answer")</i>
+			#end
+			$responseInfo.formattedWrongAnswers</p>
+		#else
+			<span class="o_qti_statistics_answer">$responseInfo.text</span>
+		#end
+		 </li>
+	#end 	
+	</ul>
+</div>

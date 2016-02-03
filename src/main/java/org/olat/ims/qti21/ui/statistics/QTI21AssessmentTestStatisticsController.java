@@ -66,7 +66,6 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 		
 		courseNode = resourceResult.getTestCourseNode();
 		type = resourceResult.getType();
-		
 
 		mainVC = createVelocityContainer("statistics_assessment_test");
 		mainVC.put("loadd3js", new StatisticsComponent("d3loader"));
@@ -94,7 +93,7 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 		QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(testEntry, null, null);
 		StatisticAssessment stats = statisticsManager.getAssessmentStatistics(searchParams);
 		initScoreHistogram(stats);
-		//initDurationHistogram(stats);
+		initDurationHistogram(stats);
 		initCourseNodeInformation(stats);
 	}
 	
@@ -154,7 +153,6 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 		mainVC.contextPut("maxScore", maxScore == null ? "-" : format(maxScore));
 		Float cutValue = getCutValueSetting(courseNode);
 		mainVC.contextPut("cutScore", cutValue == null ? "-" : format(cutValue));
-		
 	}
 
 	private void initScoreHistogram(StatisticAssessment stats) {

@@ -57,7 +57,7 @@ public class DefaultD3Component extends AbstractComponent {
 		if(isUseR2D3(ureq)) {
 			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/d3/r2d3.min.js");
 		} else {
-			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/d3/d3.v3.min.js");
+			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/d3/d3.min.js");
 		}
 	}
 	

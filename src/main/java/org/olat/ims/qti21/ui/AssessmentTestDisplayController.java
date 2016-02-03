@@ -57,6 +57,7 @@ import org.olat.ims.qti21.OutcomesListener;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.manager.ResponseFormater;
 import org.olat.ims.qti21.model.AssessmentFileSubmission;
 import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.CandidateTestEventType;
@@ -472,15 +473,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
             switch (responseData.getType()) {
                 case STRING:
                 	List<String> data = ((StringResponseData) responseData).getResponseData();
-                	StringBuilder sb = new StringBuilder();
-                	for(String str:data) {
-                		sb.append(str);
-                	}
-                	
-                    //(((StringResponseData) responseData).getResponseData());
-                    candidateItemResponse.setStringuifiedResponse(sb.toString());
+                	String stringuifiedResponse = ResponseFormater.format(data);
+                    candidateItemResponse.setStringuifiedResponse(stringuifiedResponse);
                     break;
-
                 case FILE:
                     //candidateItemResponse.setFileSubmission(fileSubmissionMap.get(responseIdentifier));
                     //break;

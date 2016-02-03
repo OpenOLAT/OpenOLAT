@@ -51,8 +51,16 @@ public interface AssessmentTestSession extends CreateInfo, ModifiedInfo {
 
 	public void setScore(BigDecimal score);
 	
+	/**
+	 * Return the duration in milliseconds
+	 * @return
+	 */
 	public Long getDuration();
 	
+	/**
+	 * SSet the duration in milliseconds
+	 * @param duration
+	 */
 	public void setDuration(Long duration);
 	
 	public boolean isExploded();

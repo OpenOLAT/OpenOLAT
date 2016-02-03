@@ -19,10 +19,14 @@
  */
 package org.olat.ims.qti21.ui.statistics;
 
+import java.io.File;
+import java.util.List;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
+import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
@@ -33,13 +37,23 @@ import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.nodes.TitledWrapperHelper;
 import org.olat.course.statistic.StatisticResourceNode;
 import org.olat.course.statistic.StatisticResourceResult;
-import org.olat.ims.qti.editor.tree.ItemNode;
-import org.olat.ims.qti.editor.tree.SectionNode;
+import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.model.StatisticAssessment;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.repository.RepositoryEntry;
+
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
+import uk.ac.ed.ph.jqtiplus.node.test.SectionPart;
+import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
+import uk.ac.ed.ph.jqtiplus.provision.BadResourceException;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
 /**
  * 
@@ -56,7 +70,9 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 	private final RepositoryEntry testEntry;
 	private final RepositoryEntry courseEntry;
 	private final QTICourseNode courseNode;
+	private ResolvedAssessmentTest resolvedAssessmentTest;
 	
+	private final QTI21Service qtiService;
 	private final QTI21StatisticsManager qtiStatisticsManager;
 
 	public QTI21StatisticResourceResult(RepositoryEntry testEntry, RepositoryEntry courseEntry,
@@ -67,6 +83,7 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 		this.courseEntry = courseEntry;
 		this.searchParams = searchParams;
 
+		qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
 		qtiStatisticsManager = CoreSpringFactory.getImpl(QTI21StatisticsManager.class);
 	}
 	
@@ -102,7 +119,78 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 		GenericTreeModel subTreeModel = new GenericTreeModel();
 		StatisticResourceNode rootTreeNode = new StatisticResourceNode(courseNode, this);
 		subTreeModel.setRootNode(rootTreeNode);
+		
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
+		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentObject(unzippedDirRoot);
+		
+		AssessmentTest test = resolvedAssessmentTest.getTestLookup().getRootNodeHolder().getRootNode();
+		//list all test parts
+		List<TestPart> parts = test.getChildAbstractParts();
+		int counter = 0;
+		for(TestPart part:parts) {
+			buildRecursively(part, ++counter, rootTreeNode);
+		}
 		return subTreeModel;
+	}
+	
+	private void buildRecursively(TestPart part, int pos, TreeNode parentNode) {
+		GenericTreeNode partNode = new GenericTreeNode(part.getIdentifier().toString());
+		partNode.setTitle(pos + ". Test part");
+		partNode.setIconCssClass("o_icon o_qtiassessment_icon");
+		partNode.setUserObject(part);
+		parentNode.addChild(partNode);
+
+		TreeNode firstItem = null;
+		List<AssessmentSection> sections = part.getAssessmentSections();
+		for(AssessmentSection section:sections) {
+			TreeNode itemNode = buildRecursively(section, partNode);
+			if(firstItem == null) {
+				firstItem = itemNode;
+			}
+		}
+		partNode.setDelegate(firstItem);
+	}
+	
+	private TreeNode buildRecursively(AssessmentSection section, TreeNode parentNode) {
+		GenericTreeNode sectionNode = new GenericTreeNode(section.getIdentifier().toString());
+		sectionNode.setTitle(section.getTitle());
+		sectionNode.setIconCssClass("o_icon o_mi_qtisection");
+		sectionNode.setUserObject(section);
+		parentNode.addChild(sectionNode);
+		
+		TreeNode firstItem = null;
+		for(SectionPart part: section.getSectionParts()) {
+			TreeNode itemNode = null;
+			if(part instanceof AssessmentItemRef) {
+				itemNode = buildRecursively((AssessmentItemRef)part, sectionNode);
+				
+			} else if(part instanceof AssessmentSection) {
+				itemNode = buildRecursively((AssessmentSection) part, sectionNode);
+			}
+			if(firstItem == null) {
+				firstItem = itemNode;
+			}
+		}
+		
+		sectionNode.setDelegate(firstItem);
+		return firstItem;
+	}
+	
+	private TreeNode buildRecursively(AssessmentItemRef itemRef, TreeNode parentNode) {
+		GenericTreeNode itemNode = new GenericTreeNode(itemRef.getIdentifier().toString());
+		
+		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+		BadResourceException ex = resolvedAssessmentItem.getItemLookup().getBadResourceException();
+		if(ex == null) {
+			AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
+			itemNode.setTitle(assessmentItem.getTitle());
+			itemNode.setIconCssClass("o_icon o_mi_qtisc");
+			itemNode.setUserObject(assessmentItem);
+			parentNode.addChild(itemNode);
+		}
+
+		return itemNode;
 	}
 
 	@Override
@@ -114,10 +202,14 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 			TreeNode selectedNode, boolean printMode) {	
 		if(selectedNode instanceof StatisticResourceNode) {
 			return createAssessmentController(ureq, wControl, stackPanel, printMode);
-		} else if(selectedNode instanceof SectionNode) {
-			return createAssessmentController(ureq, wControl, stackPanel, printMode);	
-		} else if(selectedNode instanceof ItemNode) {
-			
+		} else {
+			Object uobject = selectedNode.getUserObject();
+			if(uobject instanceof AssessmentItem) {
+				TreeNode parentNode = (TreeNode)selectedNode.getParent();
+				String sectionTitle = parentNode.getTitle();
+				return createAssessmentItemController(ureq, wControl, stackPanel,
+						(AssessmentItem)uobject, sectionTitle, printMode);
+			}
 		}
 		return null;
 	}
@@ -128,6 +220,13 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 		CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance()
 				.getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType());
 		String iconCssClass = cnConfig.getIconCSSClass();
+		return TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, courseNode, iconCssClass);
+	}
+	
+	private Controller createAssessmentItemController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			AssessmentItem assessmentItem, String sectionTitle, boolean printMode) {
+		Controller ctrl = new QTI21AssessmentItemStatisticsController(ureq, wControl, assessmentItem, sectionTitle, this, printMode);
+		String iconCssClass = "o_mi_qtisc";
 		return TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, courseNode, iconCssClass);
 	}
 }

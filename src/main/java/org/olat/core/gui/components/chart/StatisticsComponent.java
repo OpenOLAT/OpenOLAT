@@ -23,6 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.render.ValidationResult;
+import org.olat.core.helpers.Settings;
 
 /**
  * 
@@ -46,6 +47,10 @@ public class StatisticsComponent extends DefaultD3Component {
 	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		super.validate(ureq, vr);
-		vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/openolat/jquery.statistics.chart.min.js");
+		if(Settings.isDebuging()) {
+			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/openolat/jquery.statistics.chart.js");
+		} else {
+			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/openolat/jquery.statistics.chart.min.js");
+		}
 	}
 }

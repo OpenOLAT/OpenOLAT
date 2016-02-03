@@ -537,7 +537,8 @@
     	var yAxis = d3.svg.axis()
     	  .scale(y)
     	  .orient('right')
-    	  .ticks(y.domain()[1]).tickSubdivide(0);
+    	  .ticks(10)
+    	  .tickSubdivide(0);
     	
     	var y2Axis = d3.svg.axis()
     	  .scale(y2)
@@ -635,8 +636,9 @@
     	var yAxis = d3.svg.axis()
     	  .scale(y)
     	  .orient('right')
-    	  .ticks(y.domain()[1]).tickSubdivide(0);
-    	
+    	  .ticks(10)
+    	  .tickSubdivide(0);
+
     	var y2Axis = d3.svg.axis()
     	  .scale(y2)
     	  .orient('left')
