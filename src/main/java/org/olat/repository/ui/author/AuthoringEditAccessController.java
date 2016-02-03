@@ -118,31 +118,39 @@ public class AuthoringEditAccessController extends BasicController {
 				int numOfBookingConfigs = acCtr.getNumOfBookingConfigurations();
 				entry = repositoryManager.setAccessAndProperties(entry,
 						access, propPupForm.isMembersOnly(),
-						propPupForm.canCopy(), propPupForm.canReference(), propPupForm.canDownload());		
-
-				boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
-				if(access == RepositoryEntry.ACC_USERS || access == RepositoryEntry.ACC_USERS_GUESTS) {
-					if((!managedBookings && acModule.isEnabled()) || numOfBookingConfigs > 0) {
-						editproptabpubVC.put("accesscontrol", acCtr.getInitialComponent());
-						editproptabpubVC.contextPut("isGuestAccess", Boolean.valueOf(access == RepositoryEntry.ACC_USERS_GUESTS));
-					}
+						propPupForm.canCopy(), propPupForm.canReference(), propPupForm.canDownload());
+				if(entry == null) {
+					showWarning("repositoryentry.not.existing");
+					fireEvent(ureq, Event.CLOSE_EVENT);
 				} else {
-					editproptabpubVC.remove(acCtr.getInitialComponent());
+					boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
+					if(access == RepositoryEntry.ACC_USERS || access == RepositoryEntry.ACC_USERS_GUESTS) {
+						if((!managedBookings && acModule.isEnabled()) || numOfBookingConfigs > 0) {
+							editproptabpubVC.put("accesscontrol", acCtr.getInitialComponent());
+							editproptabpubVC.contextPut("isGuestAccess", Boolean.valueOf(access == RepositoryEntry.ACC_USERS_GUESTS));
+						}
+					} else {
+						editproptabpubVC.remove(acCtr.getInitialComponent());
+					}
+					
+					// inform anybody interested about this change
+					MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess);
+					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, entry);			
+					fireEvent(ureq, Event.CHANGED_EVENT);
 				}
-				
-				// inform anybody interested about this change
-				MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess);
-				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, entry);			
-				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if(source == leaveForm) {
 			if (event == Event.DONE_EVENT) {
 				RepositoryEntryAllowToLeaveOptions leaveSetting = leaveForm.getSelectedLeaveSetting();
-				entry = repositoryManager.setLeaveSetting(entry, leaveSetting);	
-
-				MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess);
-				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, entry);	
-				fireEvent(ureq, Event.CHANGED_EVENT);
+				entry = repositoryManager.setLeaveSetting(entry, leaveSetting);
+				if(entry == null) {
+					showWarning("repositoryentry.not.existing");
+					fireEvent(ureq, Event.CLOSE_EVENT);
+				} else {
+					MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess);
+					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, entry);	
+					fireEvent(ureq, Event.CHANGED_EVENT);
+				}
 			}
 		} else if(acCtr == source) {
 			if(event == Event.CHANGED_EVENT) {

@@ -548,10 +548,14 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 					boolean booking = acService.isResourceAccessControled(re.getOlatResource(), null);
 					ordersLink.setVisible(!corrupted && booking);
 				}
+			} else if(event == Event.CLOSE_EVENT) {
+				doClose(ureq);
 			}
 		} else if(descriptionCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
 				refreshRepositoryEntry(descriptionCtrl.getEntry());
+			} else if(event == Event.CLOSE_EVENT) {
+				doClose(ureq);
 			}
 		} else if(detailsCtrl == source) {
 			if(event instanceof LeavingEvent) {

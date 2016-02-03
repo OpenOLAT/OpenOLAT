@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -271,8 +272,9 @@ public class UserSessionManager implements GenericEventListener {
 			        //SIDEEFFECT!! to signOffAndClear
 			        //if invalidatedSession is removed from authUserSessions
 			        //signOffAndClear does not remove the identity.getName().toLowerCase() from the userNameToIdentity
-			        //
-		        	authUserSessions.remove(invalidatedSession);
+			        if(invalidatedSession != null) {
+			        	authUserSessions.remove(invalidatedSession);
+			        }
 		    	}
 		    	authUserSessions.add(usess);
 				// user can choose upercase letters in identity name, but this has no effect on the
@@ -430,7 +432,7 @@ public class UserSessionManager implements GenericEventListener {
 			//remove only from identityEnvironment if found in sessions.
 			//see also SIDEEFFECT!! line in signOn(..)
 			Identity previousSignedOn = identityEnvironment.getIdentity();
-			if (previousSignedOn != null) {
+			if (previousSignedOn != null && previousSignedOn.getKey() != null) {
 				if(isDebug) log.debug("signOffAndClearWithout() removing from userNameToIdentity: "+previousSignedOn.getName().toLowerCase());
 				userNameToIdentity.remove(previousSignedOn.getKey());
 				userSessionCache.remove(previousSignedOn.getKey());
@@ -459,6 +461,7 @@ public class UserSessionManager implements GenericEventListener {
 	 * - WindowManager responsible to dispose controller chain
 	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(Event event) {
 		if(event instanceof SignOnOffEvent) {
 			SignOnOffEvent se = (SignOnOffEvent) event;
@@ -592,7 +595,7 @@ public class UserSessionManager implements GenericEventListener {
 		UserSession identitySession = null;
 		if(identityKey != null) {
 			//do not call from somewhere else then signOffAndClear!!
-			identitySession = authUserSessions.stream().filter(userSession -> {
+			Optional<UserSession> optionalSession = authUserSessions.stream().filter(userSession -> {
 				Identity identity = userSession.getIdentity();
 				if (identity != null && identityKey.equals(identity.getKey())
 						&& userSession.getSessionInfo() != null
@@ -601,7 +604,9 @@ public class UserSessionManager implements GenericEventListener {
 					return true;
 				}
 				return false;
-			}).findFirst().get();
+			}).findFirst();
+			
+			identitySession = optionalSession.isPresent() ? optionalSession.get() : null;
 		}
 		return identitySession;
 	}

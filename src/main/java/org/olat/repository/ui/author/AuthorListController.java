@@ -853,7 +853,9 @@ public class AuthorListController extends FormBasicController implements Activat
 			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(row.getResourceType());
 			if(handler != null) {
 				String businessPath = "[RepositoryEntry:" + row.getKey() + "]";
-				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+				if(!NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl())) {
+					tableEl.reloadData();
+				}
 			}
 		} catch (CorruptedCourseException e) {
 			logError("Course corrupted: " + row.getKey() + " (" + row.getOLATResourceable().getResourceableId() + ")", e);
@@ -868,7 +870,9 @@ public class AuthorListController extends FormBasicController implements Activat
 	
 	private void launchDetails(UserRequest ureq, RepositoryEntryRef ref) {
 		String businessPath = "[RepositoryEntry:" + ref.getKey() + "][Infos:0]";
-		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		if(!NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl())) {
+			tableEl.reloadData();
+		}
 	}
 	
 	private void launchEditDescription(UserRequest ureq, RepositoryEntry re) {
@@ -876,20 +880,26 @@ public class AuthorListController extends FormBasicController implements Activat
 			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(re);
 			if(handler != null) {
 				String businessPath = "[RepositoryEntry:" + re.getKey() + "][EditDescription:0]";
-				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+				if(!NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl())) {
+					tableEl.reloadData();
+				}
 			}
 		}
 	}
 	
 	private void launchEditDescription(UserRequest ureq, RepositoryEntryRef re) {
 		String businessPath = "[RepositoryEntry:" + re.getKey() + "][EditDescription:0]";
-		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		if(!NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl())) {
+			tableEl.reloadData();
+		}
 	}
 	
 	private void launchEditor(UserRequest ureq, AuthoringEntryRow row) {
 		try {
 			String businessPath = "[RepositoryEntry:" + row.getKey() + "][Editor:0]";
-			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			if(!NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl())) {
+				tableEl.reloadData();
+			}
 		} catch (CorruptedCourseException e) {
 			logError("Course corrupted: " + row.getKey() + " (" + row.getOLATResourceable().getResourceableId() + ")", e);
 			showError("cif.error.corrupted");

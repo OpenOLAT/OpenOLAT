@@ -806,6 +806,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			if(event == Event.CHANGED_EVENT) {
 				initToolbar();
 				toolControllerDone(ureq);
+			} else if(event == Event.CLOSE_EVENT) {
+				doClose(ureq);
 			}
 		} else if(source == leaveDialogBox) {
 			if (event.equals(Event.DONE_EVENT)) {
