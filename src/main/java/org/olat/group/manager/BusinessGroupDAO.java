@@ -225,6 +225,7 @@ public class BusinessGroupDAO {
 	}
 	
 	public BusinessGroup loadForUpdate(BusinessGroup group) {
+		long groupKey = group.getKey();
 		StringBuilder sb = new StringBuilder();
 		sb.append("select bgi from businessgroup bgi ")
 			.append(" inner join fetch bgi.resource resource")
@@ -234,7 +235,7 @@ public class BusinessGroupDAO {
 		}
 		List<BusinessGroup> groups = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), BusinessGroup.class)
-				.setParameter("key", group.getKey())
+				.setParameter("key", groupKey)
 				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
 				.getResultList();
 		if(groups.isEmpty()) return null;
