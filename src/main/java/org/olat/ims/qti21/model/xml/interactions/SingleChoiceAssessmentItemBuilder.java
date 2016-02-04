@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.model.xml.items;
+package org.olat.ims.qti21.model.xml.interactions;
 
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendChoiceInteraction;
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendDefaultItemBody;

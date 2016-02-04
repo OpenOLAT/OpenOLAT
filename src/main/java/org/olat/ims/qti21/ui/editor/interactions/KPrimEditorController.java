@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui.editor.items;
+package org.olat.ims.qti21.ui.editor.interactions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +38,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.QTI21Constants;
-import org.olat.ims.qti21.model.xml.items.KPrimAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 

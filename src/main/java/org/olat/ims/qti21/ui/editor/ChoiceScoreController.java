@@ -34,8 +34,8 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
 import org.olat.ims.qti21.model.xml.ScoreBuilder;
-import org.olat.ims.qti21.model.xml.items.ChoiceAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.items.ChoiceAssessmentItemBuilder.ScoreEvaluation;
+import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;

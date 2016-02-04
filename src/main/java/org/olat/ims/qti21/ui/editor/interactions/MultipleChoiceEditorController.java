@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui.editor.items;
+package org.olat.ims.qti21.ui.editor.interactions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,11 +38,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
-import org.olat.ims.qti21.model.xml.items.SingleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
@@ -53,7 +55,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SingleChoiceEditorController extends FormBasicController {
+public class MultipleChoiceEditorController extends FormBasicController {
 
 	private TextElement titleEl;
 	private RichTextElement textEl;
@@ -62,11 +64,11 @@ public class SingleChoiceEditorController extends FormBasicController {
 	private final List<SimpleChoiceWrapper> choiceWrappers = new ArrayList<>();
 	
 	private int count = 0;
-	private final SingleChoiceAssessmentItemBuilder itemBuilder;
+	private final MultipleChoiceAssessmentItemBuilder itemBuilder;
 	
 	private static final String[] yesnoKeys = new String[]{ "y", "n"};
 
-	public SingleChoiceEditorController(UserRequest ureq, WindowControl wControl, SingleChoiceAssessmentItemBuilder itemBuilder) {
+	public MultipleChoiceEditorController(UserRequest ureq, WindowControl wControl, MultipleChoiceAssessmentItemBuilder itemBuilder) {
 		super(ureq, wControl, "simple_choices_editor");
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
@@ -75,7 +77,7 @@ public class SingleChoiceEditorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("editor.sc.title");
+		setFormTitle("editor.mc.title");
 		
 		FormLayoutContainer metadata = FormLayoutContainer.createDefaultFormLayout("metadata", getTranslator());
 		metadata.setRootForm(mainForm);
@@ -103,7 +105,7 @@ public class SingleChoiceEditorController extends FormBasicController {
 		}
 
 		//responses
-		String page = velocity_root + "/simple_choices.html";
+		String page = velocity_root + "/multiple_choices.html";
 		answersCont = FormLayoutContainer.createCustomFormLayout("answers", getTranslator(), page);
 		answersCont.setRootForm(mainForm);
 		formLayout.add(answersCont);
@@ -187,9 +189,12 @@ public class SingleChoiceEditorController extends FormBasicController {
 		itemBuilder.setQuestion(questionText);
 		
 		//correct response
-		String correctAnswer = ureq.getParameter("correct");
-		Identifier correctAnswerIdentifier = Identifier.parseString(correctAnswer);
-		itemBuilder.setCorrectAnswer(correctAnswerIdentifier);
+		String[] correctAnswers = ureq.getHttpReq().getParameterValues("correct");
+		List<Identifier> correctAnswerList = new ArrayList<>();
+		for(String correctAnswer:correctAnswers) {
+			correctAnswerList.add(Identifier.parseString(correctAnswer));
+		}
+		itemBuilder.setCorrectAnswers(correctAnswerList);
 		
 		//shuffle
 		itemBuilder.setShuffle(shuffleEl.isOneSelected() && shuffleEl.isSelected(0));
@@ -198,7 +203,7 @@ public class SingleChoiceEditorController extends FormBasicController {
 		List<SimpleChoice> choiceList = new ArrayList<>();
 		for(SimpleChoiceWrapper choiceWrapper:choiceWrappers) {
 			SimpleChoice choice = choiceWrapper.getSimpleChoice();
-			choiceWrapper.setCorrect(correctAnswerIdentifier.equals(choiceWrapper.getIdentifier()));
+			choiceWrapper.setCorrect(itemBuilder.isCorrect(choiceWrapper.getSimpleChoice()));
 			//text
 			String answer = choiceWrapper.getAnswer().getValue();
 			itemBuilder.getHtmlHelper().appendHtml(choice, answer);
@@ -229,7 +234,11 @@ public class SingleChoiceEditorController extends FormBasicController {
 	
 	private void doAddSimpleChoice(UserRequest ureq) {
 		ChoiceInteraction interaction = itemBuilder.getChoiceInteraction();
-		SimpleChoice newChoice = AssessmentItemFactory.createSimpleChoice(interaction, "sc");
+		SimpleChoice newChoice = new SimpleChoice(interaction);
+		newChoice.setIdentifier(IdentifierGenerator.newAsIdentifier("mc"));
+		P firstChoiceText = AssessmentItemFactory.getParagraph(newChoice, "New answer");
+		newChoice.getFlowStatics().add(firstChoiceText);
+		
 		wrapAnswer(ureq, newChoice);
 		flc.setDirty(true);
 	}
