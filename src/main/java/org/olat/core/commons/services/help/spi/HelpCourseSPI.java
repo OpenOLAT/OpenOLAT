@@ -23,13 +23,13 @@ import java.util.Locale;
 
 import org.olat.admin.user.tools.UserTool;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
+import org.olat.core.commons.services.help.ConfluenceHelper;
 import org.olat.core.commons.services.help.HelpLinkSPI;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -39,10 +39,12 @@ import org.olat.course.CourseFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * Work as pre 10.1 version
- * 
+ * Legacy course help system which uses the old help course when clicking the
+ * manual button. Since the course can not support the context help we use the
+ * confluence context help for context help.
  * 
  * Initial date: 07.01.2015<br>
+ * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
@@ -93,12 +95,15 @@ public class HelpCourseSPI implements HelpLinkSPI  {
 	}
 	
 	@Override
-	public Component getHelpPageLink(UserRequest ureq, String title, String tooltip, String iconCSS, String elementCSS, String page) {
-		return new Panel("HelpCourseSPI.getHelpPageLink() is not supported");
+	public String getURL(Locale locale, String page) {
+		// Fallback to confluence context help
+		return ConfluenceHelper.getURL(locale, page);
 	}
 
 	@Override
-	public String getURL(Locale locale, String module) {
-		return null;
+	public Component getHelpPageLink(UserRequest ureq, String title, String tooltip, String iconCSS, String elementCSS,
+			String page) {
+		// Fallback to confluence context help
+		return ConfluenceHelper.createHelpPageLink(ureq, title, tooltip, iconCSS, elementCSS, page);
 	}
 }
