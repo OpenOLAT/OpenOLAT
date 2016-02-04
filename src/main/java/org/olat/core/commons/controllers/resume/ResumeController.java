@@ -96,7 +96,8 @@ public class ResumeController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source.equals(noButton)){		
+		if(source.equals(noButton)){
+			savePreferences(ureq, "none");			
 			fireEvent (ureq, new Event("no"));
 		} else if(source.equals(landingButton)){		
 			fireEvent (ureq, new Event("landing"));
