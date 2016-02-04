@@ -39,7 +39,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.model.BusinessGroupQueryParams;
 import org.olat.group.model.OpenBusinessGroupRow;
-import org.olat.group.ui.main.BusinessGroupFlexiTableModel.Cols;
+import org.olat.group.ui.main.BusinessGroupListFlexiTableModel.Cols;
 
 /**
  * 

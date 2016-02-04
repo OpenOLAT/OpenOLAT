@@ -37,7 +37,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.group.BusinessGroup;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
@@ -72,6 +71,7 @@ public class CollaborationToolsFactory {
 	 */
 	private CollaborationToolsFactory(CoordinatorManager coordinatorManager) {
 		this.coordinatorManager = coordinatorManager;
+		cache = coordinatorManager.getCoordinator().getCacher().getCache(CollaborationToolsFactory.class.getSimpleName(), "tools");
 		instance = this;
 	}
 
@@ -135,37 +135,33 @@ public class CollaborationToolsFactory {
 	 */
 	public CollaborationTools getOrCreateCollaborationTools(final BusinessGroup ores) {
 		if (ores == null) throw new AssertException("Null is not allowed here, you have to provide an existing ores here!");
+		
 		final String cacheKey = Long.valueOf(ores.getResourceableId()).toString();
+		boolean debug = log.isDebug();
 		//sync operation cluster wide
-	//TODO gsync
-		return coordinatorManager.getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<CollaborationTools>() {
-			
-			public CollaborationTools execute() {
-				if (cache == null) {
-					cache = coordinatorManager.getCoordinator().getCacher().getCache(CollaborationToolsFactory.class.getSimpleName(), "tools");
-				}
-				CollaborationTools collabTools = cache.get(cacheKey);
-				if (collabTools != null) {
-					
-					if (log.isDebug()) log .debug("loading collabTool from cache. Ores: " + ores.getResourceableId());
-					
-					if (collabTools.isDirty()) {
-						if (log.isDebug()) log .debug("CollabTools were in cache but dirty. Creating new ones. Ores: " + ores.getResourceableId());
-						CollaborationTools tools = new CollaborationTools(coordinatorManager, ores);
-						//update forces clusterwide invalidation of this object
-						cache.update(cacheKey, tools);
-						return tools;
-					}
-					
-					return collabTools;
-					
-				}
-				if (log.isDebug()) log .debug("collabTool not in cache. Creating new ones. Ores: " + ores.getResourceableId());
+
+		CollaborationTools collabTools = cache.get(cacheKey);
+		if (collabTools != null) {		
+			if (debug) log .debug("loading collabTool from cache. Ores: " + ores.getResourceableId());		
+			if (collabTools.isDirty()) {
+				if (debug) log .debug("CollabTools were in cache but dirty. Creating new ones. Ores: " + ores.getResourceableId());
 				CollaborationTools tools = new CollaborationTools(coordinatorManager, ores);
-				cache.put(cacheKey, tools);
-				return tools;
+				//update forces clusterwide invalidation of this object
+				cache.update(cacheKey, tools);
+				collabTools = tools;
+			}	
+		} else {
+			if (debug) log .debug("collabTool not in cache. Creating new ones. Ores: " + ores.getResourceableId());
+	
+			CollaborationTools tools = new CollaborationTools(coordinatorManager, ores);
+			CollaborationTools cachedTools = cache.putIfAbsent(cacheKey, tools);
+			if(cachedTools != null) {
+				collabTools = cachedTools;
+			} else {
+				collabTools = tools;
 			}
-		});
+		}
+		return collabTools;
 	}
 	
 	/**

@@ -37,7 +37,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.group.model.BusinessGroupQueryParams;
 import org.olat.group.model.StatisticsBusinessGroupRow;
-import org.olat.group.ui.main.BusinessGroupFlexiTableModel.Cols;
+import org.olat.group.ui.main.BusinessGroupListFlexiTableModel.Cols;
 
 /**
  * Used for the business groups selection popup.

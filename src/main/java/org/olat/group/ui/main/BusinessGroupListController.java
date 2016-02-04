@@ -35,7 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.model.BusinessGroupQueryParams;
 import org.olat.group.model.BusinessGroupRow;
-import org.olat.group.ui.main.BusinessGroupFlexiTableModel.Cols;
+import org.olat.group.ui.main.BusinessGroupListFlexiTableModel.Cols;
 
 /**
  * 
