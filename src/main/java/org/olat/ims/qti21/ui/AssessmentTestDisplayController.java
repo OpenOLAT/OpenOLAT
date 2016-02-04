@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.ui;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.Date;
 import java.util.HashMap;
@@ -73,6 +74,7 @@ import uk.ac.ed.ph.jqtiplus.JqtiPlus;
 import uk.ac.ed.ph.jqtiplus.exception.QtiCandidateStateException;
 import uk.ac.ed.ph.jqtiplus.node.result.AbstractResult;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
+import uk.ac.ed.ph.jqtiplus.node.result.ItemResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemVariable;
 import uk.ac.ed.ph.jqtiplus.node.result.OutcomeVariable;
 import uk.ac.ed.ph.jqtiplus.node.test.SubmissionMode;
@@ -86,6 +88,7 @@ import uk.ac.ed.ph.jqtiplus.running.TestPlanner;
 import uk.ac.ed.ph.jqtiplus.running.TestProcessingInitializer;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionControllerSettings;
+import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlan;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNode;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
@@ -96,6 +99,8 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.types.ResponseData;
 import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
 import uk.ac.ed.ph.jqtiplus.value.BooleanValue;
+import uk.ac.ed.ph.jqtiplus.value.FloatValue;
+import uk.ac.ed.ph.jqtiplus.value.IntegerValue;
 import uk.ac.ed.ph.jqtiplus.value.NumberValue;
 import uk.ac.ed.ph.jqtiplus.value.Value;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
@@ -439,7 +444,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
             }
 		}
         
-		String assessmentItemIdentifier = testSessionState.getCurrentItemKey().getIdentifier().toString();
+		TestPlanNodeKey currentItemKey = testSessionState.getCurrentItemKey();
+		String assessmentItemIdentifier = currentItemKey.getIdentifier().toString();
 		AssessmentItemSession itemSession = qtiService.getOrCreateAssessmentItemSession(candidateSession, assessmentItemIdentifier);
         
         Map<Identifier, AssessmentFileSubmission> fileSubmissionMap = new HashMap<Identifier, AssessmentFileSubmission>();
@@ -514,16 +520,60 @@ public class AssessmentTestDisplayController extends BasicController implements 
                 CandidateTestEventType.ITEM_EVENT, candidateItemEventType, testSessionState, notificationRecorder);
         //candidateAuditLogger.logCandidateEvent(candidateEvent);
         this.lastEvent = candidateEvent;
-
-        /* Persist CandidateResponse entities */
-        qtiService.recordTestAssessmentResponses(candidateResponseMap.values());
+        
+        
+        
+        
         
         /* Record current result state */
-        computeAndRecordTestAssessmentResult(ureq, testSessionState, false);
+        AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(ureq, testSessionState, false);
+        
+        ItemSessionState itemSessionState = testSessionState.getCurrentItemSessionState();
+		long itemDuration = itemSessionState.getDurationAccumulated();
+		itemSession.setDuration(itemDuration);
+		ItemResult itemResult = assessmentResult.getItemResult(assessmentItemIdentifier);
+		processOutcomeVariables_bricolage(itemResult, itemSession);
+        /* Persist CandidateResponse entities */
+        qtiService.recordTestAssessmentResponses(itemSession, candidateResponseMap.values());
+        
+        
+        
 
         /* Save any change to session state */
         candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
 	}
+	
+	private void processOutcomeVariables_bricolage(ItemResult resultNode, AssessmentItemSession itemSession) {
+		BigDecimal score = null;
+		Boolean pass = null;
+		
+        for (final ItemVariable itemVariable : resultNode.getItemVariables()) {
+            if (itemVariable instanceof OutcomeVariable) {
+            	OutcomeVariable outcomeVariable = (OutcomeVariable)itemVariable;
+            	Identifier identifier = outcomeVariable.getIdentifier();
+            	if(QTI21Constants.SCORE_IDENTIFIER.equals(identifier)) {
+            		Value value = itemVariable.getComputedValue();
+            		if(value instanceof FloatValue) {
+            			score = new BigDecimal(((FloatValue)value).doubleValue());
+            		} else if(value instanceof IntegerValue) {
+            			score = new BigDecimal(((IntegerValue)value).intValue());
+            		}
+            	} else if(QTI21Constants.PASS_IDENTIFIER.equals(identifier)) {
+            		Value value = itemVariable.getComputedValue();
+            		if(value instanceof BooleanValue) {
+            			pass = ((BooleanValue)value).booleanValue();
+            		}
+            	}
+            }
+        }
+        
+        if(score != null) {
+        	itemSession.setScore(score);
+        }
+        if(pass != null) {
+        	itemSession.setPassed(pass);
+        }
+    }
 
 	//public CandidateSession endCurrentTestPart(final CandidateSessionContext candidateSessionContext)
 	private void processEndTestPart(UserRequest ureq) {

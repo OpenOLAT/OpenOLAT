@@ -391,8 +391,9 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	}
 
 	@Override
-	public void recordTestAssessmentResponses(Collection<AssessmentResponse> responses) {
+	public void recordTestAssessmentResponses(AssessmentItemSession itemSession, Collection<AssessmentResponse> responses) {
 		testResponseDao.save(responses);
+		itemSessionDao.merge(itemSession);
 	}
 
 	@Override

@@ -21,9 +21,14 @@ package org.olat.ims.qti21.ui.statistics.interactions;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.Util;
+import org.olat.ims.qti21.ui.statistics.QTI21AssessmentItemStatisticsController;
+
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 
 /**
  * 
@@ -31,12 +36,16 @@ import org.olat.core.gui.control.controller.BasicController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SingleChoiceStatisticsController extends BasicController {
+public class UnsupportedInteractionController extends BasicController {
 	
-	public SingleChoiceStatisticsController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+	private final Interaction interaction;
+	
+	public UnsupportedInteractionController(UserRequest ureq, WindowControl wControl, Interaction interaction) {
+		super(ureq, wControl, Util.createPackageTranslator(QTI21AssessmentItemStatisticsController.class, ureq.getLocale()));
 		
-		
+		this.interaction = interaction;
+		VelocityContainer mainVC = createVelocityContainer("unsupported");
+		putInitialPanel(mainVC);
 	}
 
 	@Override
@@ -48,6 +57,4 @@ public class SingleChoiceStatisticsController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-
-
 }

@@ -20,8 +20,15 @@
  */
 package org.olat.ims.qti21;
 
+import java.util.List;
+
 import org.olat.ims.qti.statistics.model.StatisticAssessment;
+import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
+import org.olat.ims.qti21.model.statistics.SimpleChoiceStatistics;
+
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 
 /**
  * 
@@ -52,5 +59,9 @@ public interface QTI21StatisticsManager {
 	public StatisticAssessment getAssessmentStatistics(QTI21StatisticSearchParams searchParams);
 	
 	
+	public StatisticsItem getAssessmentItemStatistics(String itemRefIdent, double maxScore, QTI21StatisticSearchParams searchParams);
+	
+	public List<SimpleChoiceStatistics> getChoiceInteractionStatistics(String itemRefIdent,
+			AssessmentItem assessmentItem, ChoiceInteraction choiceInteraction, QTI21StatisticSearchParams searchParams);
 
 }

@@ -133,7 +133,7 @@ public interface QTI21Service {
 	
 	public Map<Identifier, AssessmentResponse> getAssessmentResponses(AssessmentItemSession assessmentItemSession);
 	
-	public void recordTestAssessmentResponses(Collection<AssessmentResponse> responses);
+	public void recordTestAssessmentResponses(AssessmentItemSession assessmentItemSession, Collection<AssessmentResponse> responses);
 	
 	public AssessmentTestSession recordTestAssessmentResult(AssessmentTestSession candidateSession, TestSessionState testSessionState, AssessmentResult assessmentResult);
 	

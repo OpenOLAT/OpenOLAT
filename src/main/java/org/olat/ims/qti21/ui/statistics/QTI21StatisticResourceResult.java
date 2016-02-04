@@ -186,7 +186,7 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 			AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
 			itemNode.setTitle(assessmentItem.getTitle());
 			itemNode.setIconCssClass("o_icon o_mi_qtisc");
-			itemNode.setUserObject(assessmentItem);
+			itemNode.setUserObject(itemRef);
 			parentNode.addChild(itemNode);
 		}
 
@@ -204,11 +204,11 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 			return createAssessmentController(ureq, wControl, stackPanel, printMode);
 		} else {
 			Object uobject = selectedNode.getUserObject();
-			if(uobject instanceof AssessmentItem) {
+			if(uobject instanceof AssessmentItemRef) {
 				TreeNode parentNode = (TreeNode)selectedNode.getParent();
 				String sectionTitle = parentNode.getTitle();
 				return createAssessmentItemController(ureq, wControl, stackPanel,
-						(AssessmentItem)uobject, sectionTitle, printMode);
+						(AssessmentItemRef)uobject, sectionTitle, printMode);
 			}
 		}
 		return null;
@@ -224,8 +224,10 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 	}
 	
 	private Controller createAssessmentItemController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			AssessmentItem assessmentItem, String sectionTitle, boolean printMode) {
-		Controller ctrl = new QTI21AssessmentItemStatisticsController(ureq, wControl, assessmentItem, sectionTitle, this, printMode);
+			AssessmentItemRef assessmentItemRef, String sectionTitle, boolean printMode) {
+		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(assessmentItemRef);
+		AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
+		Controller ctrl = new QTI21AssessmentItemStatisticsController(ureq, wControl, assessmentItemRef, assessmentItem, sectionTitle, this, printMode);
 		String iconCssClass = "o_mi_qtisc";
 		return TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, courseNode, iconCssClass);
 	}

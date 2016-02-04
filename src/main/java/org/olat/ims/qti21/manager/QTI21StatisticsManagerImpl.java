@@ -21,6 +21,7 @@
 package org.olat.ims.qti21.manager;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.TypedQuery;
@@ -28,10 +29,16 @@ import javax.persistence.TypedQuery;
 import org.olat.core.commons.persistence.DB;
 import org.olat.ims.qti.statistics.manager.Statistics;
 import org.olat.ims.qti.statistics.model.StatisticAssessment;
+import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
+import org.olat.ims.qti21.model.statistics.SimpleChoiceStatistics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 
 /**
  * 
@@ -159,4 +166,110 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		return stats;
 	}
 
+	@Override
+	public StatisticsItem getAssessmentItemStatistics(String itemIdent, double maxScore,
+			QTI21StatisticSearchParams searchParams) {
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select isession.score, count(isession.key), avg(isession.duration) from qtiassessmentitemsession isession ")
+		  .append(" inner join isession.assessmentTestSession asession");
+		decorateRSet(sb, searchParams);
+		sb.append(" and isession.assessmentItemIdentifier=:itemIdent and isession.duration > 0")
+		  .append(" group by isession.score");
+
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class)
+			.setParameter("itemIdent", itemIdent);
+		decorateRSetQuery(query, searchParams);
+		List<Object[]> results = query.getResultList();
+		if(results.isEmpty()) {
+			return new StatisticsItem();
+		}
+
+		int totalResults = 0;
+		double totalScore = 0.0;
+		double totalDuration = 0.0;
+		long numOfCorrectAnswers = 0;
+		long numOfIncorrectAnswers = 0;
+		
+		for(Object[] result:results) {
+			double score = ((Number)result[0]).doubleValue();
+			long numOfResults = ((Number)result[1]).longValue();
+			double averageDuration = ((Number)result[2]).doubleValue();
+			
+			//average
+			totalScore += (score * numOfResults);
+			totalResults += numOfResults;
+			
+			if((maxScore - score) < 0.0001) {
+				numOfCorrectAnswers += numOfResults;
+			} else {
+				numOfIncorrectAnswers += numOfResults;
+			}
+			
+			totalDuration += (averageDuration * numOfResults);
+		}
+
+		double averageScore = totalScore / totalResults;
+		//difficulty (p-value)
+		double difficulty = numOfCorrectAnswers / (double)totalResults;
+		double averageDuration = totalDuration / totalResults;
+		
+		StatisticsItem stats = new StatisticsItem();
+		stats.setAverageDuration(Math.round(averageDuration));
+		stats.setAverageScore(averageScore);
+		stats.setNumOfResults(totalResults);
+		stats.setDifficulty(difficulty);
+		stats.setNumOfCorrectAnswers(numOfCorrectAnswers);
+		stats.setNumOfIncorrectAnswers(numOfIncorrectAnswers);
+		return stats;
+	}
+
+	@Override
+	public List<SimpleChoiceStatistics> getChoiceInteractionStatistics(String itemRefIdent,
+			AssessmentItem assessmentItem, ChoiceInteraction choiceInteraction, QTI21StatisticSearchParams searchParams) {
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select isession.key, aresponse.responseIdentifier, aresponse.stringuifiedResponse, count(aresponse.key) from qtiassessmentresponse aresponse ")
+		  .append(" inner join aresponse.assessmentItemSession isession")
+		  .append(" inner join isession.assessmentTestSession asession");
+		decorateRSet(sb, searchParams);
+		sb.append(" and isession.assessmentItemIdentifier=:itemIdent and aresponse.responseIdentifier=:responseIdentifier and isession.duration > 0")
+		  .append(" group by isession.key, aresponse.responseIdentifier, aresponse.stringuifiedResponse");
+
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("itemIdent", itemRefIdent)
+				.setParameter("responseIdentifier", choiceInteraction.getResponseIdentifier().toString());
+		decorateRSetQuery(query, searchParams);
+		List<Object[]> results = query.getResultList();
+		if(results.isEmpty()) {
+			return new ArrayList<>();
+		}
+		
+		List<SimpleChoice> simpleChoices = choiceInteraction.getSimpleChoices();
+		long[] counts = new long[simpleChoices.size()];
+		for(int i=counts.length; i-->0; ) {
+			counts[i] = 0l;
+		}
+
+		for(Object[] result:results) {
+			Long numOfAnswers = (Long)result[3];
+			if(numOfAnswers != null && numOfAnswers.longValue() > 0) {
+				String stringuifiedResponse = (String)result[2];
+				for(int i=simpleChoices.size(); i-->0; ) {
+					String identifier = simpleChoices.get(i).getIdentifier().toString();
+					if(stringuifiedResponse.contains(identifier)) {
+						counts[i] += numOfAnswers.longValue();
+					}
+				}
+			}
+		}
+
+		List<SimpleChoiceStatistics> choicesStatistics = new ArrayList<>();
+		for(int i=0; i<simpleChoices.size(); i++) {
+			choicesStatistics.add(new SimpleChoiceStatistics(simpleChoices.get(i), counts[i]));
+		}
+		return choicesStatistics;
+	}
 }

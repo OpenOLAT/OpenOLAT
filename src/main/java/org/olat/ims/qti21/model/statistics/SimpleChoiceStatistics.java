@@ -17,32 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21;
+package org.olat.ims.qti21.model.statistics;
 
-import java.math.BigDecimal;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 
 /**
  * 
- * Initial date: 02.02.2016<br>
+ * Initial date: 04.02.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface AssessmentItemSession {
-	
-	public Long getKey();
-	
-	public String getAssessmentItemIdentifier();
-	
-	public Boolean getPassed();
+public class SimpleChoiceStatistics {
 
-	public void setPassed(Boolean passed);
+	private final long count;
+	private final SimpleChoice choice;
 	
-	public Long getDuration();
+	public SimpleChoiceStatistics(SimpleChoice choice, long count) {
+		this.count = count;
+		this.choice = choice;
+	}
 	
-	public void setDuration(Long duration);
+	public long getCount() {
+		return count;
+	}
 	
-	public BigDecimal getScore();
-
-	public void setScore(BigDecimal score);
-
+	public SimpleChoice getChoice() {
+		return choice;
+	}
 }

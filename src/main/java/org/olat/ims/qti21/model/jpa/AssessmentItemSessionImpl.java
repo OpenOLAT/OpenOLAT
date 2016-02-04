@@ -142,8 +142,6 @@ public class AssessmentItemSessionImpl implements AssessmentItemSession, Persist
 		this.assessmentTestSession = assessmentTestSession;
 	}
 	
-	
-	
 	@Override
 	public int hashCode() {
 		return key == null ? -86534687 : key.hashCode();

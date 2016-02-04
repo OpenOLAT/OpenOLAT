@@ -65,4 +65,8 @@ public class AssessmentItemSessionDAO {
 			.getResultList();
 		return itemSessions == null || itemSessions.isEmpty() ? null : itemSessions.get(0);
 	}
+	
+	public AssessmentItemSession merge(AssessmentItemSession itemSession) {
+		return dbInstance.getCurrentEntityManager().merge(itemSession);
+	}
 }
