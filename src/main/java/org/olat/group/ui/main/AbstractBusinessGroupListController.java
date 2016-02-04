@@ -93,7 +93,7 @@ import org.olat.group.model.LeaveOption;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.ui.NewBGController;
-import org.olat.group.ui.main.BusinessGroupFlexiTableModel.Cols;
+import org.olat.group.ui.main.BusinessGroupListFlexiTableModel.Cols;
 import org.olat.group.ui.wizard.BGConfigBusinessGroup;
 import org.olat.group.ui.wizard.BGConfigToolsStep;
 import org.olat.group.ui.wizard.BGCopyBusinessGroup;
@@ -132,7 +132,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	protected static final BusinessGroupMembershipComparator MEMBERSHIP_COMPARATOR = new BusinessGroupMembershipComparator();
 
 	protected FlexiTableElement tableEl;
-	protected AbstractBusinessGroupFlexiTableModel groupTableModel;
+	protected BusinessGroupListFlexiTableModel groupTableModel;
 	protected BusinessGroupQueryParams lastSearchParams;
 	
 	private DialogBoxController leaveDialogBox;
@@ -220,8 +220,8 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	
 	protected abstract FlexiTableColumnModel initColumnModel();
 
-	protected final AbstractBusinessGroupFlexiTableModel initTableModel(FlexiTableColumnModel columnModel) {
-		return new BusinessGroupListFlexiTableModel(columnModel);
+	protected final BusinessGroupListFlexiTableModel initTableModel(FlexiTableColumnModel columnModel) {
+		return new BusinessGroupListFlexiTableModel(columnModel, getLocale());
 	}
 
 	public Object getUserObject() {
