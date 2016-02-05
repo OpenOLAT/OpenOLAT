@@ -218,19 +218,18 @@ public class LTIConfigForm extends FormBasicController {
 		fullURI = getFullURL(proto, host, port, uri, query).toString();
 		
 		sendNameConfig = config.getBooleanEntry(CONFIG_KEY_SENDNAME);
-    if (sendNameConfig == null) sendNameConfig = Boolean.FALSE;
+		if (sendNameConfig == null) sendNameConfig = Boolean.FALSE;
 
 		sendEmailConfig = config.getBooleanEntry(CONFIG_KEY_SENDEMAIL);
-    if (sendEmailConfig == null) sendEmailConfig = Boolean.FALSE;
+		if (sendEmailConfig == null) sendEmailConfig = Boolean.FALSE;
 
-		
 		doDebugConfig = config.getBooleanEntry(CONFIG_KEY_DEBUG);
-    if (doDebugConfig == null) doDebugConfig = Boolean.FALSE;
+		if (doDebugConfig == null) doDebugConfig = Boolean.FALSE;
     
-    Boolean assessable = config.getBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
-    isAssessable = assessable == null ? false : assessable.booleanValue();
+		Boolean assessable = config.getBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
+		isAssessable = assessable == null ? false : assessable.booleanValue();
 
-    initForm(ureq);
+		initForm(ureq);
 	}
 	
 	@Override
@@ -417,15 +416,15 @@ public class LTIConfigForm extends FormBasicController {
 	}
 	
 	private void udpateRoles(MultipleSelectionElement roleEl, String configKey, String defaultRoles) {
-    Object configRoles = config.get(configKey);
-    String roles = defaultRoles;
-    if(configRoles instanceof String) {
-    	roles = (String)configRoles;
-    }
-    String[] roleArr = roles.split(",");
-    for(String role:roleArr) {
-    	roleEl.select(role, true);
-    }
+		Object configRoles = config.get(configKey);
+		String roles = defaultRoles;
+		if(configRoles instanceof String) {
+			roles = (String)configRoles;
+		}
+		String[] roleArr = roles.split(",");
+		for(String role:roleArr) {
+			roleEl.select(role, true);
+		}
 	}
 	
 	private String getRoles(MultipleSelectionElement roleEl) {

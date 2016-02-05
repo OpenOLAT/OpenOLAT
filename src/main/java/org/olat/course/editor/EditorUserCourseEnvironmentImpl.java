@@ -25,6 +25,7 @@
 
 package org.olat.course.editor;
 
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.AssertException;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -51,9 +52,11 @@ public class EditorUserCourseEnvironmentImpl implements UserCourseEnvironment {
 	private ConditionInterpreter ci;
 	private ScoreAccounting sa;
 	private RepositoryEntryLifecycle lifecycle;
+	private final WindowControl windowControl;
 
-	EditorUserCourseEnvironmentImpl(CourseEditorEnv courseEditorEnv){
+	EditorUserCourseEnvironmentImpl(CourseEditorEnv courseEditorEnv, WindowControl windowControl) {
 		this.courseEditorEnv = courseEditorEnv;
+		this.windowControl = windowControl;
 		ci = new ConditionInterpreter(this);
 		courseEditorEnv.setConditionInterpreter(ci);
 		sa = new ScoreAccounting(this);
@@ -71,6 +74,11 @@ public class EditorUserCourseEnvironmentImpl implements UserCourseEnvironment {
 	 */
 	public CourseEditorEnv getCourseEditorEnv() {
 		return courseEditorEnv;
+	}
+
+	@Override
+	public WindowControl getWindowControl() {
+		return windowControl;
 	}
 
 	/**

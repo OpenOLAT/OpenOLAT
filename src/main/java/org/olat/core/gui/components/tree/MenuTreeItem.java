@@ -100,14 +100,14 @@ public class MenuTreeItem extends FormItemImpl {
 	}
 	
 	public boolean isIndeterminate(TreeNode node) {
-		if(treeCmp.isSelected(node) || treeCmp.isOpen(node)) {
+		if(treeCmp.isSelected(node) /* OO-1883 || treeCmp.isOpen(node) */) {
 			return false;
 		}
 		for(int i=node.getChildCount(); i-->0; ) {
 			TreeNode child = (TreeNode)node.getChildAt(i);
-			if(treeCmp.isOpen(child)) {
+			/* OO-1883 if(treeCmp.isOpen(child)) {
 				return false;
-			}
+			}*/
 			if(isSelectRec(child)) {
 				return true;
 			}

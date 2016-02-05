@@ -270,7 +270,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 				repoEntry = cgm.getCourseEntry();
 				CourseEditorEnv cev = new CourseEditorEnvImpl(cetm, cgm, ureq.getLocale());
-				euce = new EditorUserCourseEnvironmentImpl(cev);
+				euce = new EditorUserCourseEnvironmentImpl(cev, getWindowControl());
 				euce.getCourseEditorEnv().setCurrentCourseNodeId(null);
 				
 				menuTree.setTreeModel(cetm);
