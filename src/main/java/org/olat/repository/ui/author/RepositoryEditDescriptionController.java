@@ -385,12 +385,14 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		allOk &= validateTextElement(expenditureOfWork, 225);
 		allOk &= validateTextElement(authors, 2000);
 		
-		publicDatesEl.clearError();
-		if(publicDatesEl.isEnabled() && publicDatesEl.isVisible()) {
-			if(!publicDatesEl.isOneSelected()) {
-				publicDatesEl.setErrorKey("form.legende.mandatory", null);
-				allOk &= false;
-			}	
+		if (publicDatesEl != null) {
+			publicDatesEl.clearError();
+			if(publicDatesEl.isEnabled() && publicDatesEl.isVisible()) {
+				if(!publicDatesEl.isOneSelected()) {
+					publicDatesEl.setErrorKey("form.legende.mandatory", null);
+					allOk &= false;
+				}	
+			}
 		}
 
 		// Ok, passed all checks
