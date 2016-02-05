@@ -206,11 +206,20 @@ public class LTIRunController extends BasicController {
 		final User user = getIdentity().getUser();
 		//user data
 		if (config.getBooleanSafe(LTIConfigForm.CONFIG_KEY_SENDNAME, false)) {
-			userData.put("lastName", user.getProperty(UserConstants.LASTNAME, getLocale()));
-			userData.put("firstName", user.getProperty(UserConstants.FIRSTNAME, getLocale()));
+			String lastName = user.getProperty(UserConstants.LASTNAME, getLocale());
+			if(StringHelper.containsNonWhitespace(lastName)) {
+				userData.put("lastName", lastName);
+			}
+			String firstName = user.getProperty(UserConstants.FIRSTNAME, getLocale());
+			if(StringHelper.containsNonWhitespace(firstName)) {
+				userData.put("firstName", firstName);
+			}
 		}
 		if (config.getBooleanSafe(LTIConfigForm.CONFIG_KEY_SENDEMAIL, false)) {
-			userData.put("email", user.getProperty(UserConstants.EMAIL, getLocale()));
+			String email = user.getProperty(UserConstants.EMAIL, getLocale());
+			if(StringHelper.containsNonWhitespace(email)) {
+				userData.put("email", email);
+			}
 		}
 		// customUserData
 		String custom = (String)config.get(LTIConfigForm.CONFIG_KEY_CUSTOM);

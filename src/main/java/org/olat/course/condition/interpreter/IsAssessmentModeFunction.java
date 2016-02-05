@@ -22,6 +22,8 @@ package org.olat.course.condition.interpreter;
 import java.util.Date;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.control.ChiefController;
+import org.olat.core.id.OLATResourceable;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -57,11 +59,25 @@ public class IsAssessmentModeFunction extends AbstractFunction {
 			// return a valid value to continue with condition evaluation test
 			return defaultValue();
 		}
-
-		AssessmentModeManager assessmentModeMgr = CoreSpringFactory.getImpl(AssessmentModeManager.class);
-		RepositoryEntry entry = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		boolean inAssessment = assessmentModeMgr.isInAssessmentMode(entry, new Date());
-		return inAssessment ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		
+		ChiefController chiefController = getUserCourseEnv().getWindowControl().getWindowBackOffice().getChiefController();
+		if(chiefController == null) {
+			return ConditionInterpreter.INT_FALSE;
+		}
+		OLATResourceable lockedResource = chiefController.getLockResource();
+		if(lockedResource == null) {
+			return ConditionInterpreter.INT_FALSE;
+		}
+		
+		Long resourceableId = getUserCourseEnv().getCourseEnvironment().getCourseResourceableId();
+		if(lockedResource.getResourceableId().equals(resourceableId)) {
+			RepositoryEntry entry = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			AssessmentModeManager assessmentModeMgr = CoreSpringFactory.getImpl(AssessmentModeManager.class);
+			boolean inAssessment = assessmentModeMgr.isInAssessmentMode(entry, new Date());
+			return inAssessment ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		} else {
+			return ConditionInterpreter.INT_FALSE;
+		}
 	}
 
 	@Override

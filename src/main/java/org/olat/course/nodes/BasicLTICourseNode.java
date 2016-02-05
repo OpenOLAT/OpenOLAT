@@ -33,9 +33,13 @@ import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
@@ -116,7 +120,26 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		updateModuleConfigDefaults(false);
-		LTIRunController runCtrl = new LTIRunController(wControl, getModuleConfiguration(), ureq, this, userCourseEnv);
+		
+		Controller runCtrl;
+		Roles roles = ureq.getUserSession().getRoles();
+		if (roles.isGuestOnly()) {
+			ModuleConfiguration config = getModuleConfiguration();
+			boolean assessable = config.getBooleanSafe(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD, false);
+			boolean sendName = config.getBooleanSafe(LTIConfigForm.CONFIG_KEY_SENDNAME, false);
+			boolean sendEmail = config.getBooleanSafe(LTIConfigForm.CONFIG_KEY_SENDEMAIL, false);
+			boolean customValues = StringHelper.containsNonWhitespace(config.getStringValue(LTIConfigForm.CONFIG_KEY_CUSTOM));
+			if(assessable || sendName || sendEmail || customValues) {
+				Translator trans = Util.createPackageTranslator(BasicLTICourseNode.class, ureq.getLocale());
+				String title = trans.translate("guestnoaccess.title");
+				String message = trans.translate("guestnoaccess.message");
+				runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+			} else {
+				runCtrl = new LTIRunController(wControl, getModuleConfiguration(), ureq, this, userCourseEnv);
+			}
+		} else {
+			runCtrl = new LTIRunController(wControl, getModuleConfiguration(), ureq, this, userCourseEnv);
+		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, "o_lti_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}

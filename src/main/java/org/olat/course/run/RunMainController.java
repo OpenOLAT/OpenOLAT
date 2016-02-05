@@ -292,7 +292,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		} else {
 			waitingLists = Collections.emptyList();
 		}
-		return new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment(),
+
+		return new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment(), getWindowControl(),
 				coachedGroups, participatedGroups, waitingLists,
 				reSecurity.isCourseCoach() || reSecurity.isGroupCoach(),
 				reSecurity.isEntryAdmin(),
@@ -498,7 +499,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				
 			  // rebuild up the running structure for this user, after publish;
 				course = CourseFactory.loadCourse(course.getResourceableId());
-				uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment(),
+				uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment(), getWindowControl(),
 						uce.getCoachedGroups(), uce.getParticipatingGroups(), uce.getWaitingLists(),
 						null, null, null);
 				// build score now
