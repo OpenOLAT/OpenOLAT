@@ -32,6 +32,7 @@ import java.util.List;
 import org.olat.basesecurity.Group;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.certificate.CertificatesManager;
@@ -52,8 +53,8 @@ import org.olat.resource.OLATResource;
  *
  */
 public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
-	private IdentityEnvironment identityEnvironment;
-	private CourseEnvironment courseEnvironment;
+	private final IdentityEnvironment identityEnvironment;
+	private final CourseEnvironment courseEnvironment;
 	private ConditionInterpreter conditionInterpreter;
 	private ScoreAccounting scoreAccounting;
 	private RepositoryEntryLifecycle lifecycle;
@@ -62,6 +63,8 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	private List<BusinessGroup> participatingGroups;
 	private List<BusinessGroup> waitingLists;
 	
+	private final WindowControl windowControl;
+	
 	private Boolean coach;
 	private Boolean admin;
 	private Boolean participant;
@@ -69,10 +72,10 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	private Boolean certification;
 	
 	public UserCourseEnvironmentImpl(IdentityEnvironment identityEnvironment, CourseEnvironment courseEnvironment) {
-		this(identityEnvironment, courseEnvironment, null, null, null, null, null, null);
+		this(identityEnvironment, courseEnvironment, null, null, null, null, null, null, null);
 	}
 	
-	public UserCourseEnvironmentImpl(IdentityEnvironment identityEnvironment, CourseEnvironment courseEnvironment,
+	public UserCourseEnvironmentImpl(IdentityEnvironment identityEnvironment, CourseEnvironment courseEnvironment, WindowControl windowControl,
 			List<BusinessGroup> coachedGroups, List<BusinessGroup> participatingGroups, List<BusinessGroup> waitingLists,
 			Boolean coach, Boolean admin, Boolean participant) {
 		this.courseEnvironment = courseEnvironment;
@@ -85,6 +88,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		this.coach = coach;
 		this.admin = admin;
 		this.participant = participant;
+		this.windowControl = windowControl;
 	}
 
 	/**
@@ -98,6 +102,11 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	@Override
 	public IdentityEnvironment getIdentityEnvironment() {
 		return identityEnvironment;
+	}
+
+	@Override
+	public WindowControl getWindowControl() {
+		return windowControl;
 	}
 
 	@Override

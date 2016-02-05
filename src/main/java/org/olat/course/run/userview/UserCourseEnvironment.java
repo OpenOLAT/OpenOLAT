@@ -25,6 +25,7 @@
 
 package org.olat.course.run.userview;
 
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.CourseEditorEnv;
@@ -50,6 +51,13 @@ public interface UserCourseEnvironment {
 	public ConditionInterpreter getConditionInterpreter();
 	
 	public IdentityEnvironment getIdentityEnvironment();
+	
+	/**
+	 * Return a value only if the user has opened the course in
+	 * the GUI. Return null otherwise.
+	 * @return
+	 */
+	public WindowControl getWindowControl();
 	
 	public ScoreAccounting getScoreAccounting();
 	

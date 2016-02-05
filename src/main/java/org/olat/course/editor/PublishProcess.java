@@ -264,7 +264,7 @@ public class PublishProcess {
 		CourseEditorEnv tmpCEV = new CourseEditorEnvImpl(cloneCETM, course.getCourseEnvironment().getCourseGroupManager(), locale);
 		// the resulting object is not needed, but constructor makes
 		// initializations within tmpCEV!! thus important step.
-		new EditorUserCourseEnvironmentImpl(tmpCEV);
+		new EditorUserCourseEnvironmentImpl(tmpCEV, null);
 		//
 		tmpCEV.setCurrentCourseNodeId(cloneCETM.getRootNode().getIdent());
 		tmpCEV.validateCourse();
