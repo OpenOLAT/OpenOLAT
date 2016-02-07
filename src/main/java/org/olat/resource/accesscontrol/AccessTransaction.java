@@ -17,28 +17,27 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
+package org.olat.resource.accesscontrol;
 
-package org.olat.resource.accesscontrol.model;
+import java.util.Date;
 
-import java.util.List;
+import org.olat.resource.accesscontrol.model.AccessMethod;
+import org.olat.resource.accesscontrol.model.AccessTransactionStatus;
 
-/**
- * 
- * Description:<br>
- * TODO: srosse Class Description for OrderPart
- * 
- * <P>
- * Initial Date:  19 avr. 2011 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
- */
-public interface OrderPart {
-	
+public interface AccessTransaction {
+
 	public Long getKey();
-	
-	public List<OrderLine> getOrderLines();
-	
-	public Price getTotal();
 
-	public Price getTotalOrderLines();
-
+	public Date getCreationDate();
+	
+	public AccessTransactionStatus getStatus();
+	
+	public Price getAmount();
+	
+	public Order getOrder();
+	
+	public OrderPart getOrderPart();
+	
+	public AccessMethod getMethod();
+	
 }

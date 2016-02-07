@@ -17,7 +17,6 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-
 package org.olat.resource.accesscontrol.model;
 
 import java.math.BigDecimal;
@@ -25,10 +24,35 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderColumn;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
+import javax.persistence.Version;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
+import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
+import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderPart;
+import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.Price;
 
 /**
  * 
@@ -40,22 +64,86 @@ import org.olat.core.util.StringHelper;
  * Initial Date:  19 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class OrderImpl extends PersistentObject implements Order, ModifiedInfo {
+@Entity(name="acorder")
+@Table(name="o_ac_order")
+public class OrderImpl implements Persistable, Order, ModifiedInfo {
 
 	private static final long serialVersionUID = 2982829081818496553L;
-	private boolean valid;
+	
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@Column(name="order_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	@Version
+	private int version = 0;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
-	private Identity delivery;
+	
+	@Column(name="is_valid", nullable=true, insertable=true, updatable=true)
+	private boolean valid;
+	@Column(name="order_status", nullable=true, insertable=true, updatable=true)
 	private String orderStatus;
 	
-	private Price total;
-	private Price totalOrderLines;
-	private Price discount;
-	
+	@Embedded
+    @AttributeOverrides( {
+    	@AttributeOverride(name="amount", column = @Column(name="total_amount") ),
+    	@AttributeOverride(name="currencyCode", column = @Column(name="total_currency_code") )
+    })
+	private PriceImpl total;
+	@Embedded
+    @AttributeOverrides( {
+    	@AttributeOverride(name="amount", column = @Column(name="total_lines_amount") ),
+    	@AttributeOverride(name="currencyCode", column = @Column(name="total_lines_currency_code") )
+    })
+	private PriceImpl totalOrderLines;
+	@Embedded
+    @AttributeOverrides( {
+    	@AttributeOverride(name="amount", column = @Column(name="discount_amount") ),
+    	@AttributeOverride(name="currencyCode", column = @Column(name="discount_currency_code") )
+    })
+	private PriceImpl discount;
+
+	@Transient
 	private String currencyCode;
+
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_delivery_id", nullable=false, insertable=true, updatable=false)
+	private Identity delivery;
 	
+	@OneToMany(targetEntity=OrderPartImpl.class, fetch=FetchType.LAZY,
+			orphanRemoval=true, cascade={CascadeType.PERSIST, CascadeType.REMOVE})
+	@JoinColumn(name="fk_order_id")
+	@OrderColumn(name="pos")
 	private List<OrderPart> parts;
 	
+	public OrderImpl() {
+		//
+	}
+	
+	@Override
+	public Long getKey() {
+		return key;
+	}
+
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
 	@Override
 	public String getOrderNr() {
 		return getKey() == null ? "" : getKey().toString();
@@ -128,7 +216,7 @@ public class OrderImpl extends PersistentObject implements Order, ModifiedInfo {
 	}
 
 	public void setTotal(Price total) {
-		this.total = total;
+		this.total = (PriceImpl)total;
 	}
 
 	@Override
@@ -137,7 +225,7 @@ public class OrderImpl extends PersistentObject implements Order, ModifiedInfo {
 	}
 
 	public void setTotalOrderLines(Price totalOrderLines) {
-		this.totalOrderLines = totalOrderLines;
+		this.totalOrderLines = (PriceImpl)totalOrderLines;
 	}
 
 	@Override
@@ -146,7 +234,7 @@ public class OrderImpl extends PersistentObject implements Order, ModifiedInfo {
 	}
 
 	public void setDiscount(Price discount) {
-		this.discount = discount;
+		this.discount = (PriceImpl)discount;
 	}
 
 	@Override
@@ -161,6 +249,7 @@ public class OrderImpl extends PersistentObject implements Order, ModifiedInfo {
 		this.parts = parts;
 	}
 	
+	@Override
 	public void recalculate() {
 		totalOrderLines = new PriceImpl(BigDecimal.ZERO, getCurrencyCode());
 		for(OrderPart part : getParts()) {
@@ -187,8 +276,13 @@ public class OrderImpl extends PersistentObject implements Order, ModifiedInfo {
 		}
 		if(obj instanceof OrderImpl) {
 			OrderImpl order = (OrderImpl)obj;
-			return equalsByPersistableKey(order);
+			return getKey() != null && getKey().equals(order.getKey());
 		}
 		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }

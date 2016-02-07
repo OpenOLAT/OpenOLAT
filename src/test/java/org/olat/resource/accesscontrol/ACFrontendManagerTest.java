@@ -34,6 +34,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.CodeHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
@@ -46,8 +47,6 @@ import org.olat.resource.accesscontrol.manager.ACMethodDAO;
 import org.olat.resource.accesscontrol.manager.ACOfferDAO;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.FreeAccessMethod;
-import org.olat.resource.accesscontrol.model.Offer;
-import org.olat.resource.accesscontrol.model.OfferAccess;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -106,8 +105,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		//create and save an offer
 		Offer offer = acService.createOffer(re.getOlatResource(), "TestRepoWorkflow");
 		assertNotNull(offer);
-		acService.save(offer);
-		
+		offer = acService.save(offer);
 		dbInstance.commitAndCloseSession();
 		
 		//retrieve the offer
@@ -128,7 +126,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "Really free", null, null, false, false, null);
 		Offer offer = acService.createOffer(group.getResource(), "FreeGroup");
-		acService.save(offer);	
+		offer = acService.save(offer);	
 		List<AccessMethod> freeMethods = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class);
 		OfferAccess offerAccess = acService.createOfferAccess(offer, freeMethods.get(0));
 		Assert.assertNotNull(offerAccess);
@@ -159,7 +157,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
 		
 		Offer offer = acService.createOffer(group.getResource(), "Free group (waiting)");
-		acService.save(offer);	
+		offer = acService.save(offer);	
 		List<AccessMethod> freeMethods = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class);
 		OfferAccess offerAccess = acService.createOfferAccess(offer, freeMethods.get(0));
 		Assert.assertNotNull(offerAccess);
@@ -187,7 +185,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", new Integer(0), new Integer(10), true, false, null);
 		Offer offer = acService.createOffer(group.getResource(), "Free group (waiting)");
-		acService.save(offer);	
+		offer = acService.save(offer);	
 		List<AccessMethod> freeMethods = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class);
 		OfferAccess offerAccess = acService.createOfferAccess(offer, freeMethods.get(0));
 		Assert.assertNotNull(offerAccess);
@@ -220,7 +218,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
 		
 		Offer offer = acService.createOffer(group.getResource(), "Free group (waiting)");
-		acService.save(offer);	
+		offer = acService.save(offer);	
 		List<AccessMethod> freeMethods = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class);
 		OfferAccess offerAccess = acService.createOfferAccess(offer, freeMethods.get(0));
 		Assert.assertNotNull(offerAccess);
@@ -259,7 +257,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", new Integer(0), new Integer(2), true, false, null);
 		Offer offer = acService.createOffer(group.getResource(), "Free group (waiting)");
-		acService.save(offer);	
+		offer = acService.save(offer);	
 		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(PaypalAccessMethod.class);
 		Assert.assertFalse(methods.isEmpty());
 		OfferAccess offerAccess = acService.createOfferAccess(offer, methods.get(0));
@@ -308,7 +306,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", new Integer(0), new Integer(2), false, false, null);
 		Offer offer = acService.createOffer(group.getResource(), "Free group (waiting)");
-		acService.save(offer);	
+		offer = acService.save(offer);	
 		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(PaypalAccessMethod.class);
 		Assert.assertFalse(methods.isEmpty());
 		OfferAccess offerAccess = acService.createOfferAccess(offer, methods.get(0));
@@ -329,18 +327,43 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		}
 	}
 	
+	@Test
+	public void makeAccessible() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("acc-" + UUID.randomUUID());
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class);
+		AccessMethod method = methods.get(0);
+		
+		RepositoryEntry re = createRepositoryEntry();
+		Assert.assertNotNull(re);
+		
+		//create an offer to buy
+		OLATResource randomOres = re.getOlatResource();
+		Offer offer = acService.createOffer(randomOres, "Test auto access");
+		offer.setAutoBooking(true);
+		OfferAccess link = acService.createOfferAccess(offer, method);
+		offer = acService.save(offer);
+		acService.saveOfferAccess(link);
+		dbInstance.commit();
+	
+		long start = System.nanoTime();
+		AccessResult acResult = acService.isAccessible(re, id, false, true);
+		Assert.assertNotNull(acResult);
+		Assert.assertTrue(acResult.isAccessible());	
+		dbInstance.commit();
+		CodeHelper.printNanoTime(start, "One click");
+	}
 	
 	private RepositoryEntry createRepositoryEntry() {
 		//create a repository entry
 		OLATResourceable resourceable = new TypedResourceable(UUID.randomUUID().toString().replace("-", ""));
 		OLATResource r =  resourceManager.createOLATResourceInstance(resourceable);
-		dbInstance.saveObject(r);
+		dbInstance.getCurrentEntityManager().persist(r);
 
 		// now make a repository entry for this resource
 		RepositoryEntry re = repositoryService.create("Florian Gnägi", "Access controlled by OLAT ",
 				"JunitRE" + UUID.randomUUID().toString().replace("-", ""), "Description", r);
 		re.setAccess(RepositoryEntry.ACC_OWNERS_AUTHORS);
-		repositoryService.update(re);
+		re = repositoryService.update(re);
 		dbInstance.commitAndCloseSession();
 		return re;
 	}

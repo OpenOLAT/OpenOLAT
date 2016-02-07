@@ -19,11 +19,15 @@
  */
 package org.olat.resource.accesscontrol.model;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import javax.persistence.Embeddable;
+
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.resource.accesscontrol.Price;
 
 /**
  * 
@@ -34,8 +38,10 @@ import org.olat.core.logging.Tracing;
  * Initial Date:  23 mai 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class PriceImpl implements Price {
+@Embeddable
+public class PriceImpl implements Price, Serializable {
 	
+	private static final long serialVersionUID = -757711036712675302L;
 	private static final OLog log = Tracing.createLoggerFor(PriceImpl.class);
 	
 	private BigDecimal amount;
@@ -79,7 +85,7 @@ public class PriceImpl implements Price {
 		return false;
 	}
 	
-	public Price add(Price price) {
+	public PriceImpl add(Price price) {
 		//replace with the multi currency manager
 		if(currencyCode != null && price.getCurrencyCode() != null && !currencyCode.equals(price.getCurrencyCode())) {
 			log.warn("Problem: two differents iso currency codes");
@@ -116,7 +122,7 @@ public class PriceImpl implements Price {
 	}
 	
 	@Override
-	public Price clone() {
+	public PriceImpl clone() {
 		PriceImpl clone = new PriceImpl();
 		clone.setAmount(amount);
 		clone.setCurrencyCode(currencyCode);

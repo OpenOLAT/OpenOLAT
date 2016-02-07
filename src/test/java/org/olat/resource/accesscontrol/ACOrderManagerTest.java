@@ -28,26 +28,25 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.CodeHelper;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.manager.ACMethodDAO;
 import org.olat.resource.accesscontrol.manager.ACOfferDAO;
 import org.olat.resource.accesscontrol.manager.ACOrderDAO;
+import org.olat.resource.accesscontrol.manager.ACTransactionDAO;
 import org.olat.resource.accesscontrol.model.AccessMethod;
+import org.olat.resource.accesscontrol.model.AccessTransactionStatus;
 import org.olat.resource.accesscontrol.model.FreeAccessMethod;
-import org.olat.resource.accesscontrol.model.Offer;
-import org.olat.resource.accesscontrol.model.OfferAccess;
-import org.olat.resource.accesscontrol.model.Order;
-import org.olat.resource.accesscontrol.model.OrderLine;
-import org.olat.resource.accesscontrol.model.OrderPart;
-import org.olat.resource.accesscontrol.model.Price;
 import org.olat.resource.accesscontrol.model.PriceImpl;
+import org.olat.resource.accesscontrol.model.RawOrderItem;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -74,6 +73,9 @@ public class ACOrderManagerTest extends OlatTestCase {
 	
 	@Autowired
 	private ACOfferDAO acOfferManager;
+	
+	@Autowired
+	private ACTransactionDAO acTransactionManager;
 	
 	@Autowired
 	private ACService acService;
@@ -115,7 +117,7 @@ public class ACOrderManagerTest extends OlatTestCase {
 		//create an offer to buy
 		OLATResource randomOres = createResource();
 		Offer offer = acService.createOffer(randomOres, "TestSaveOrder");
-		acService.save(offer);
+		offer = acService.save(offer);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -154,15 +156,87 @@ public class ACOrderManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void findOrderItems_1() {
+		//create an offer to buy
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(TokenAccessMethod.class);
+		assertNotNull(methods);
+		assertEquals(1, methods.size());
+		AccessMethod tokenMethod = methods.get(0);
+		
+		OLATResource randomOres = createResource();
+		Offer offer = acService.createOffer(randomOres, "TestSaveOrder");
+		offer = acService.save(offer);
+		
+		dbInstance.commitAndCloseSession();
+		
+		//create and save an order
+		Order order = acOrderManager.createOrder(ident1);
+		OrderPart part = acOrderManager.addOrderPart(order);
+		OrderLine line = acOrderManager.addOrderLine(part, offer);
+		order = acOrderManager.save(order);
+		Assert.assertNotNull(order);
+		Assert.assertNotNull(order.getDelivery());
+		Assert.assertNotNull(line);
+		Assert.assertEquals(ident1, order.getDelivery());
+		
+		dbInstance.commitAndCloseSession();
+		
+		AccessTransaction accessTransaction = acTransactionManager.createTransaction(order, part, tokenMethod);
+		assertNotNull(accessTransaction);
+		acTransactionManager.save(accessTransaction);
+
+		AccessTransaction accessTransaction2 = acTransactionManager.createTransaction(order, part, tokenMethod);
+		assertNotNull(accessTransaction2);
+		acTransactionManager.save(accessTransaction2);
+
+		dbInstance.commitAndCloseSession();
+		acTransactionManager.update(accessTransaction, AccessTransactionStatus.NEW);
+		acTransactionManager.update(accessTransaction2, AccessTransactionStatus.CANCELED);
+
+		long start = System.nanoTime();
+		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null);
+		CodeHelper.printNanoTime(start, "Order itemized");
+		Assert.assertNotNull(items);
+	}
+	
+	@Test
+	public void findOrderItems() {
+		//create an offer to buy
+
+		OLATResource randomOres = createResource();
+		Offer offer = acService.createOffer(randomOres, "TestSaveOrder");
+		offer = acService.save(offer);
+		
+		dbInstance.commitAndCloseSession();
+		
+		//create and save an order
+		Order order = acOrderManager.createOrder(ident1);
+		OrderPart part = acOrderManager.addOrderPart(order);
+		OrderLine line = acOrderManager.addOrderLine(part, offer);
+		order = acOrderManager.save(order);
+		Assert.assertNotNull(order);
+		Assert.assertNotNull(order.getDelivery());
+		Assert.assertNotNull(line);
+		Assert.assertEquals(ident1, order.getDelivery());
+
+		dbInstance.commitAndCloseSession();
+		
+		long start = System.nanoTime();
+		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null);
+		CodeHelper.printNanoTime(start, "Order itemized");
+		Assert.assertNotNull(items);
+	}
+	
+	@Test
 	public void testSaveOneClickOrders() {
 		//create some offers to buy
 		OLATResource randomOres1 = createResource();
 		Offer offer1 = acService.createOffer(randomOres1, "TestSaveOneClickOrders 1");
-		acService.save(offer1);
+		offer1 = acService.save(offer1);
 		
 		OLATResource randomOres2 = createResource();
 		Offer offer2 = acService.createOffer(randomOres2, "TestSaveOneClickOrders 2");
-		acService.save(offer2);
+		offer2 = acService.save(offer2);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -204,18 +278,18 @@ public class ACOrderManagerTest extends OlatTestCase {
 	//make extensiv test on one order
 		//create some offers to buy
 		OLATResource randomOres1 = createResource();
-		Offer offer1 = acService.createOffer(randomOres1, "TestSaveOneClickOrder 1");
-		acService.save(offer1);
+		Offer offer = acService.createOffer(randomOres1, "TestSaveOneClickOrder 1");
+		offer = acService.save(offer);
 
 		dbInstance.commitAndCloseSession();
 		
 		//create a link offer to method
 		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class);
-		assertNotNull(methods);
-		assertEquals(1, methods.size());
+		Assert.assertNotNull(methods);
+		Assert.assertEquals(1, methods.size());
 		AccessMethod method = methods.get(0);
 		
-		OfferAccess access1 = acMethodManager.createOfferAccess(offer1, method);
+		OfferAccess access1 = acMethodManager.createOfferAccess(offer, method);
 		acMethodManager.save(access1);
 
 		dbInstance.commitAndCloseSession();
@@ -228,23 +302,23 @@ public class ACOrderManagerTest extends OlatTestCase {
 		//load order
 		Order retrivedOrder = acOrderManager.loadOrderByKey(order.getKey());
 		
-		assertNotNull(retrivedOrder);
-		assertNotNull(retrivedOrder.getCreationDate());
-		assertNotNull(retrivedOrder.getDelivery());
-		assertNotNull(retrivedOrder.getOrderNr());
-		assertNotNull(retrivedOrder.getParts());
+		Assert.assertNotNull(retrivedOrder);
+		Assert.assertNotNull(retrivedOrder.getCreationDate());
+		Assert.assertNotNull(retrivedOrder.getDelivery());
+		Assert.assertNotNull(retrivedOrder.getOrderNr());
+		Assert.assertNotNull(retrivedOrder.getParts());
 		
-		assertEquals(ident7, retrivedOrder.getDelivery());
-		assertEquals(1, retrivedOrder.getParts().size());
+		Assert.assertEquals(ident7, retrivedOrder.getDelivery());
+		Assert.assertEquals(1, retrivedOrder.getParts().size());
 		
 		OrderPart orderPart = retrivedOrder.getParts().get(0);
-		assertNotNull(orderPart);
-		assertEquals(1, orderPart.getOrderLines().size());
+		Assert.assertNotNull(orderPart);
+		Assert.assertEquals(1, orderPart.getOrderLines().size());
 		
 		OrderLine line = orderPart.getOrderLines().get(0);
-		assertNotNull(line);
-		assertNotNull(line.getOffer());
-		assertEquals(offer1, line.getOffer());
+		Assert.assertNotNull(line);
+		Assert.assertNotNull(line.getOffer());
+		Assert.assertEquals(offer, line.getOffer());
 	}
 	
 	@Test
@@ -255,7 +329,7 @@ public class ACOrderManagerTest extends OlatTestCase {
 		Offer offer1 = acService.createOffer(randomOres1, "TestSaveOneClickOrder 1");
 		Price price1 = new PriceImpl(new BigDecimal("20.00"), "CHF");
 		offer1.setPrice(price1);
-		acService.save(offer1);
+		offer1 = acService.save(offer1);
 
 		dbInstance.commitAndCloseSession();
 		
@@ -308,15 +382,15 @@ public class ACOrderManagerTest extends OlatTestCase {
 		
 		//check order line
 		OrderLine line = orderPart.getOrderLines().get(0);
-		assertNotNull(line);
-		assertNotNull(line.getOffer());
-		assertNotNull(line.getUnitPrice());
-		assertNotNull(line.getTotal());
-		assertEquals(offer1, line.getOffer());
-		assertEquals(price1.getAmount().setScale(2, BigDecimal.ROUND_HALF_EVEN), line.getUnitPrice().getAmount().setScale(2, BigDecimal.ROUND_HALF_EVEN));
-		assertEquals(price1.getCurrencyCode(), line.getUnitPrice().getCurrencyCode());
-		assertEquals(price1.getAmount().setScale(2, BigDecimal.ROUND_HALF_EVEN), line.getTotal().getAmount().setScale(2, BigDecimal.ROUND_HALF_EVEN));
-		assertEquals(price1.getCurrencyCode(), line.getTotal().getCurrencyCode());	
+		Assert.assertNotNull(line);
+		Assert.assertNotNull(line.getOffer());
+		Assert.assertNotNull(line.getUnitPrice());
+		Assert.assertNotNull(line.getTotal());
+		Assert.assertEquals(offer1, line.getOffer());
+		Assert.assertEquals(price1.getAmount().setScale(2, BigDecimal.ROUND_HALF_EVEN), line.getUnitPrice().getAmount().setScale(2, BigDecimal.ROUND_HALF_EVEN));
+		Assert.assertEquals(price1.getCurrencyCode(), line.getUnitPrice().getCurrencyCode());
+		Assert.assertEquals(price1.getAmount().setScale(2, BigDecimal.ROUND_HALF_EVEN), line.getTotal().getAmount().setScale(2, BigDecimal.ROUND_HALF_EVEN));
+		Assert.assertEquals(price1.getCurrencyCode(), line.getTotal().getCurrencyCode());	
 	}
 	
 	@Test
@@ -324,11 +398,11 @@ public class ACOrderManagerTest extends OlatTestCase {
 		//create some offers to buy
 		OLATResource randomOres1 = createResource();
 		Offer offer1 = acService.createOffer(randomOres1, "TestLoadBy 1");
-		acService.save(offer1);
+		offer1 = acService.save(offer1);
 		
 		OLATResource randomOres2 = createResource();
 		Offer offer2 = acService.createOffer(randomOres2, "TestLoadBy 2");
-		acService.save(offer2);
+		offer2 = acService.save(offer2);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -397,7 +471,7 @@ public class ACOrderManagerTest extends OlatTestCase {
 		//create some offers to buy
 		OLATResource randomOres1 = createResource();
 		Offer offer1 = acService.createOffer(randomOres1, "TestDeleteResource 1");
-		acService.save(offer1);
+		offer1 = acService.save(offer1);
 
 		dbInstance.commitAndCloseSession();
 		

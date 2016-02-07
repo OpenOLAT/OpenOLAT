@@ -23,7 +23,7 @@ import java.math.BigDecimal;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.resource.accesscontrol.model.Price;
+import org.olat.resource.accesscontrol.Price;
 
 /**
  * 

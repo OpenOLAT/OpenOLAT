@@ -17,24 +17,25 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.resource.accesscontrol.model;
 
-import java.util.Date;
+package org.olat.resource.accesscontrol;
 
-public interface AccessTransaction {
+/**
+ * 
+ * Description:<br>
+ * The order line for a specific offer.
+ * 
+ * <P>
+ * Initial Date:  19 avr. 2011 <br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ */
+public interface OrderLine {
 
 	public Long getKey();
-
-	public Date getCreationDate();
 	
-	public AccessTransactionStatus getStatus();
+	public Offer getOffer();
 	
-	public Price getAmount();
+	public Price getUnitPrice();
 	
-	public Order getOrder();
-	
-	public OrderPart getOrderPart();
-	
-	public AccessMethod getMethod();
-	
+	public Price getTotal();
 }

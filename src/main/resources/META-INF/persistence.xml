@@ -20,12 +20,6 @@
 		<mapping-file>org/olat/group/area/BGAreaImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/group/area/BGtoAreaRelationImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/OLATResourceImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/resource/accesscontrol/model/Offer.hbm.xml</mapping-file>
-		<mapping-file>org/olat/resource/accesscontrol/model/AccessMethod.hbm.xml</mapping-file>
-		<mapping-file>org/olat/resource/accesscontrol/model/AccessTransaction.hbm.xml</mapping-file>
-		<mapping-file>org/olat/resource/accesscontrol/model/OfferAccess.hbm.xml</mapping-file>
-		<mapping-file>org/olat/resource/accesscontrol/model/Order.hbm.xml</mapping-file>
-		<mapping-file>org/olat/resource/accesscontrol/provider/paypal/model/PaypalAccessMethod.hbm.xml</mapping-file>
 		<mapping-file>org/olat/resource/accesscontrol/provider/paypal/model/PaypalTransaction.hbm.xml</mapping-file>
 		<mapping-file>org/olat/basesecurity/AuthenticationImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/basesecurity/PolicyImpl.hbm.xml</mapping-file>
@@ -125,7 +119,16 @@
 		<class>org.olat.repository.model.RepositoryEntryLightImpl</class>
 		<class>org.olat.repository.model.RepositoryEntryMembership</class>
 		<class>org.olat.resource.references.ReferenceImpl</class>
+		<class>org.olat.resource.accesscontrol.model.OfferImpl</class>
+		<class>org.olat.resource.accesscontrol.model.OrderImpl</class>
+		<class>org.olat.resource.accesscontrol.model.OrderPartImpl</class>
+		<class>org.olat.resource.accesscontrol.model.OrderLineImpl</class>
+		<class>org.olat.resource.accesscontrol.model.OfferAccessImpl</class>
+		<class>org.olat.resource.accesscontrol.model.AccessTransactionImpl</class>
+		<class>org.olat.resource.accesscontrol.model.FreeAccessMethod</class>
+		<class>org.olat.resource.accesscontrol.model.TokenAccessMethod</class>
 		<class>org.olat.resource.accesscontrol.model.ResourceReservationImpl</class>
+		<class>org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod</class>
 		<class>org.olat.instantMessaging.model.InstantMessageImpl</class>
 		<class>org.olat.instantMessaging.model.ImPreferencesImpl</class>
 		<class>org.olat.instantMessaging.model.RosterEntryImpl</class>

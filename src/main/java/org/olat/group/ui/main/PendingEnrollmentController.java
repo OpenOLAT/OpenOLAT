@@ -40,8 +40,8 @@ import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.login.SupportsAfterLoginInterceptor;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.model.ACResourceInfo;
-import org.olat.resource.accesscontrol.model.ResourceReservation;
 
 /**
  * 

@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.ShortName;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -49,11 +48,11 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
-import org.olat.resource.accesscontrol.model.AccessTransaction;
-import org.olat.resource.accesscontrol.model.Order;
-import org.olat.resource.accesscontrol.model.OrderStatus;
-import org.olat.resource.accesscontrol.model.PSPTransaction;
+import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ui.OrdersDataModel.Col;
+import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -73,10 +72,16 @@ public class OrdersAdminController extends BasicController implements Activateab
 	private final TableController tableCtr;
 	private OrdersSearchForm searchForm;
 	private OrderDetailController detailController;
-	
-	private final AccessControlModule acModule;
-	private final ACService acService;
+
 	private final OLATResource resource;
+	
+	@Autowired
+	private AccessControlModule acModule;
+	@Autowired
+	private ACService acService;
+	@Autowired
+	private UserManager userManager;
+	
 	
 	public OrdersAdminController(UserRequest ureq, WindowControl wControl) {
 		this(ureq, wControl, null);
@@ -84,9 +89,6 @@ public class OrdersAdminController extends BasicController implements Activateab
 	
 	public OrdersAdminController(UserRequest ureq, WindowControl wControl, OLATResource resource) {
 		super(ureq, wControl);
-
-		acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
-		acService = CoreSpringFactory.getImpl(ACService.class);
 		this.resource = resource;
 		
 		if(resource == null) {
@@ -96,8 +98,8 @@ public class OrdersAdminController extends BasicController implements Activateab
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setDownloadOffered(true);
-		tableConfig.setPreferencesOffered(true, "Orders");		
-		tableConfig.setTableEmptyMessage(translate("table.order.empty"));
+		//tableConfig.setPreferencesOffered(true, "Orders2");		
+		//tableConfig.setTableEmptyMessage(translate("table.order.empty"));
 		
 		List<ShortName> statusList = new ArrayList<ShortName>();
 		OrderStatusContextShortName allStatus = new OrderStatusContextShortName("-", OrderStatus.values());
@@ -149,19 +151,16 @@ public class OrdersAdminController extends BasicController implements Activateab
 	
 	private void loadModel() {
 		OrderStatusContextShortName filter = (OrderStatusContextShortName)tableCtr.getActiveFilter();
-		List<Order> orders;
-		if(resource == null) {
-			Date from = searchForm.getFrom();
-			Date to = searchForm.getTo();
-			Long orderNr = searchForm.getRefNo();
-			orders = acService.findOrders(null, null, orderNr, from, to, filter.getStatus());
-		} else {
-			orders = acService.findOrders(resource, filter.getStatus());
+		Date from = null;
+		Date to = null;
+		Long orderNr = null;
+		if(searchForm != null) {
+			from = searchForm.getFrom();
+			to = searchForm.getTo();
+			orderNr = searchForm.getRefNo();
 		}
-		List<AccessTransaction> transactions = acService.findAccessTransactions(orders);
-		List<PSPTransaction> pspTransactions = acService.findPSPTransactions(orders);
-		List<OrderTableItem> items = OrdersDataModel.create(orders, transactions, pspTransactions);
-		tableCtr.setTableDataModel(new OrdersDataModel(items, getLocale()));
+		List<OrderTableItem> items = acService.findOrderItems(resource, null, orderNr, from, to, filter.getStatus());
+		tableCtr.setTableDataModel(new OrdersDataModel(items, getLocale(), userManager));
 	}
 	
 	protected void doDispose() {
@@ -215,9 +214,9 @@ public class OrdersAdminController extends BasicController implements Activateab
 	protected void selectOrder(UserRequest ureq, OrderTableItem order) {
 		removeAsListenerAndDispose(detailController);
 		
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Order.class, order.getOrder().getKey());
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Order.class, order.getOrderKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		detailController = new OrderDetailController(ureq, bwControl, order.getOrder(), order.getTransactions());
+		detailController = new OrderDetailController(ureq, bwControl, order.getOrderKey());
 		listenTo(detailController);
 		mainPanel.setContent(detailController.getInitialComponent());
 	}

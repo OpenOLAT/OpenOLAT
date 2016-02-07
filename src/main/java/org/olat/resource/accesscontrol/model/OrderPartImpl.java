@@ -22,9 +22,31 @@ package org.olat.resource.accesscontrol.model;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderColumn;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Version;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.olat.core.id.Persistable;
+import org.olat.resource.accesscontrol.OrderLine;
+import org.olat.resource.accesscontrol.OrderPart;
+import org.olat.resource.accesscontrol.Price;
 
 /**
  * 
@@ -35,22 +57,67 @@ import org.olat.core.commons.persistence.PersistentObject;
  * Initial Date:  19 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class OrderPartImpl extends PersistentObject implements OrderPart {
+@Entity(name="acorderpart")
+@Table(name="o_ac_order_part")
+public class OrderPartImpl implements Persistable, OrderPart {
 
 	private static final long serialVersionUID = -3572049955754185583L;
 	
-	private Price total;
-	private Price totalOrderLines;
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@Column(name="order_part_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	@Version
+	private int version = 0;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+
+	@Embedded
+    @AttributeOverrides( {
+    	@AttributeOverride(name="amount", column = @Column(name="total_amount") ),
+    	@AttributeOverride(name="currencyCode", column = @Column(name="total_currency_code") )
+    })
+	private PriceImpl total;
+	@Embedded
+    @AttributeOverrides( {
+    	@AttributeOverride(name="amount", column = @Column(name="total_lines_amount") ),
+    	@AttributeOverride(name="currencyCode", column = @Column(name="total_lines_currency_code") )
+    })
+	private PriceImpl totalOrderLines;
 	
+	@OneToMany(targetEntity=OrderLineImpl.class, fetch=FetchType.LAZY,
+			orphanRemoval=true, cascade={CascadeType.PERSIST, CascadeType.REMOVE})
+	@JoinColumn(name="fk_order_part_id")
+	@OrderColumn(name="pos")
 	private List<OrderLine> lines;
 	
+	public OrderPartImpl() {
+		//
+	}
+	
+	@Override
+	public Long getKey() {
+		return key;
+	}
+
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
 	@Override
 	public Price getTotal() {
 		return total;
 	}
 
 	public void setTotal(Price total) {
-		this.total = total;
+		this.total = (PriceImpl)total;
 	}
 
 	@Override
@@ -59,9 +126,10 @@ public class OrderPartImpl extends PersistentObject implements OrderPart {
 	}
 
 	public void setTotalOrderLines(Price totalOrderLines) {
-		this.totalOrderLines = totalOrderLines;
+		this.totalOrderLines = (PriceImpl)totalOrderLines;
 	}
 
+	@Override
 	public List<OrderLine> getOrderLines() {
 		if(lines == null) {
 			lines = new ArrayList<OrderLine>();
@@ -93,9 +161,14 @@ public class OrderPartImpl extends PersistentObject implements OrderPart {
 			return true;
 		}
 		if(obj instanceof OrderPartImpl) {
-			OrderPartImpl order = (OrderPartImpl)obj;
-			return equalsByPersistableKey(order);
+			OrderPartImpl orderPart = (OrderPartImpl)obj;
+			return getKey() != null && getKey().equals(orderPart.getKey());
 		}
 		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }

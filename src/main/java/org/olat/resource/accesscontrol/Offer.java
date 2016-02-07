@@ -18,10 +18,11 @@
  * <p>
  */
 
-package org.olat.resource.accesscontrol.model;
+package org.olat.resource.accesscontrol;
 
 import java.util.Date;
 
+import org.olat.core.id.Persistable;
 import org.olat.resource.OLATResource;
 
 /**
@@ -33,9 +34,7 @@ import org.olat.resource.OLATResource;
  * Initial Date:  14 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public interface Offer {
-	
-	public Long getKey();
+public interface Offer extends Persistable {
 	
 	public OLATResource getResource();
 	

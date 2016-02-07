@@ -22,7 +22,23 @@ package org.olat.resource.accesscontrol.model;
 
 import java.util.Date;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Version;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.olat.core.id.Persistable;
+import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.OfferAccess;
 
 /**
  * 
@@ -33,17 +49,58 @@ import org.olat.core.commons.persistence.PersistentObject;
  * Initial Date:  14 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class OfferAccessImpl extends PersistentObject implements OfferAccess {
+
+@Entity(name="acofferaccess")
+@Table(name="o_ac_offer_access")
+public class OfferAccessImpl implements OfferAccess, Persistable {
 
 	private static final long serialVersionUID = 2538200023418491237L;
-	private Offer offer;
-	private AccessMethod method;
+	
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@Column(name="offer_method_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	@Version
+	private int version = 0;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	
+	@Column(name="is_valid", nullable=true, insertable=true, updatable=true)
 	private boolean valid;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="validfrom", nullable=true, insertable=true, updatable=true)
 	private Date validFrom;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="validto", nullable=true, insertable=true, updatable=true)
 	private Date validTo;
+	
+	@ManyToOne(targetEntity=OfferImpl.class,fetch=FetchType.LAZY,optional=false,
+			cascade={CascadeType.MERGE})
+	@JoinColumn(name="fk_offer_id", nullable=false, insertable=true, updatable=false)
+	private Offer offer;
+
+	@ManyToOne(targetEntity=AbstractAccessMethod.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_method_id", nullable=false, insertable=true, updatable=false)
+	private AccessMethod method;
 
 	public OfferAccessImpl() {
 		//
+	}
+	
+	@Override
+	public Long getKey() {
+		return key;
+	}
+
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
 	}
 
 	@Override
@@ -110,7 +167,7 @@ public class OfferAccessImpl extends PersistentObject implements OfferAccess {
 	public int hashCode() {
 		return getKey() == null ? 9191 : getKey().hashCode();
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if(this == obj) {
@@ -118,8 +175,13 @@ public class OfferAccessImpl extends PersistentObject implements OfferAccess {
 		}
 		if(obj instanceof OfferAccessImpl) {
 			OfferAccessImpl o = (OfferAccessImpl)obj;
-			return equalsByPersistableKey(o);
+			return getKey() != null && getKey().equals(o.getKey());
 		}
 		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }

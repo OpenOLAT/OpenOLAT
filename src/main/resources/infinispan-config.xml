@@ -59,15 +59,15 @@
 		<local-cache name="UserManager@username">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<eviction max-entries="20000" strategy="LIRS" />
-			<expiration max-idle="2700000" interval="15000" />
+			<eviction max-entries="200000" strategy="LIRS" />
+			<expiration max-idle="864000000" interval="360000" />
 		</local-cache>
 		
 		<local-cache name="UserManager@userfullname">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<eviction max-entries="20000" strategy="LIRS" />
-			<expiration max-idle="2700000" interval="15000" />
+			<eviction max-entries="200000" strategy="LIRS" />
+			<expiration max-idle="864000000" interval="360000" />
 		</local-cache>
 		
 		<local-cache name="Velocity@templates">

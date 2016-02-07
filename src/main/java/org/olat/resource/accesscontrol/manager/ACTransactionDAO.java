@@ -21,15 +21,16 @@
 package org.olat.resource.accesscontrol.manager;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.resource.accesscontrol.AccessTransaction;
+import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderPart;
 import org.olat.resource.accesscontrol.model.AccessMethod;
-import org.olat.resource.accesscontrol.model.AccessTransaction;
 import org.olat.resource.accesscontrol.model.AccessTransactionImpl;
 import org.olat.resource.accesscontrol.model.AccessTransactionStatus;
-import org.olat.resource.accesscontrol.model.Order;
-import org.olat.resource.accesscontrol.model.OrderPart;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -50,6 +51,7 @@ public class ACTransactionDAO {
 	
 	public AccessTransaction createTransaction(Order order, OrderPart orderPart, AccessMethod method) {
 		AccessTransactionImpl transaction = new AccessTransactionImpl();
+		transaction.setCreationDate(new Date());
 		transaction.setOrder(order);
 		transaction.setOrderPart(orderPart);
 		transaction.setMethod(method);
@@ -58,9 +60,9 @@ public class ACTransactionDAO {
 
 	public AccessTransaction save(AccessTransaction transaction) {
 		if(transaction.getKey() == null) {
-			dbInstance.saveObject(transaction);
+			dbInstance.getCurrentEntityManager().persist(transaction);
 		} else {
-			dbInstance.updateObject(transaction);
+			transaction = dbInstance.getCurrentEntityManager().merge(transaction);
 		}
 		return transaction;
 	}
@@ -72,8 +74,9 @@ public class ACTransactionDAO {
 	
 	public AccessTransaction loadTransactionByKey(Long transactionKey) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select trx from ").append(AccessTransactionImpl.class.getName()).append(" trx")
-			.append(" where trx.key=:transactionKey");
+		sb.append("select trx from actransaction trx")
+		  .append(" inner join fetch trx.method method")
+		  .append(" where trx.key=:transactionKey");
 		
 		List<AccessTransaction> transactions = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AccessTransaction.class)
@@ -83,17 +86,15 @@ public class ACTransactionDAO {
 		return transactions.get(0);
 	}
 	
-	public List<AccessTransaction> loadTransactionsForOrders(List<Order> orders) {
-		if(orders == null || orders.isEmpty()) return Collections.emptyList();
+	public List<AccessTransaction> loadTransactionsForOrder(Order order) {
+		if(order == null || order.getKey() == null) return Collections.emptyList();
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select trx from ").append(AccessTransactionImpl.class.getName()).append(" trx")
-			.append(" where trx.order in (:orders)");
-		
-		List<AccessTransaction> transactions = dbInstance.getCurrentEntityManager()
+		sb.append("select trx from actransaction trx")
+		  .append(" where trx.order.key=:orderKey");
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AccessTransaction.class)
-				.setParameter("orders", orders)
+				.setParameter("orderKey", order.getKey())
 				.getResultList();
-		return transactions;
 	}
 }

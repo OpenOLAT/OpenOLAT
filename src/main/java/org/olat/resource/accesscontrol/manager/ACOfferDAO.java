@@ -33,7 +33,7 @@ import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.resource.OLATResource;
-import org.olat.resource.accesscontrol.model.Offer;
+import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.model.OfferImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,13 +54,13 @@ public class ACOfferDAO {
 	
 	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select offer from ").append(OfferImpl.class.getName()).append(" offer")
-			.append(" inner join offer.resource resource")
+		sb.append("select offer from acoffer offer")
+			.append(" left join fetch offer.resource resource")
 			.append(" where resource.key=:resourceKey")
 			.append(" and offer.valid=").append(valid);
 		if(atDate != null) {
 			sb.append(" and (offer.validFrom is null or offer.validFrom<=:atDate)")
-				.append(" and (offer.validTo is null or offer.validTo>=:atDate)");
+			  .append(" and (offer.validTo is null or offer.validTo>=:atDate)");
 		}
 
 		TypedQuery<Offer> query = dbInstance.getCurrentEntityManager()
@@ -76,8 +76,9 @@ public class ACOfferDAO {
 
 	public Offer loadOfferByKey(Long key) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select offer from ").append(OfferImpl.class.getName()).append(" offer")
-			.append(" where offer.key=:offerKey");
+		sb.append("select offer from acoffer offer")
+		  .append(" left join fetch offer.resource resource")
+		  .append(" where offer.key=:offerKey");
 
 		List<Offer> offers = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Offer.class)
@@ -91,9 +92,9 @@ public class ACOfferDAO {
 		if(resourceKeys == null || resourceKeys.isEmpty()) return Collections.emptySet();
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select offer.resource.key from ").append(OfferImpl.class.getName()).append(" offer")
-			.append(" inner join offer.resource resource")
-			.append(" where resource.key in (:resourceKeys)");
+		sb.append("select offer.resource.key from acoffer offer")
+		  .append(" inner join offer.resource resource")
+		  .append(" where resource.key in (:resourceKeys)");
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class);
 
 		Set<Long> resourceWithOffers = new HashSet<Long>();
@@ -117,6 +118,9 @@ public class ACOfferDAO {
 	
 	public Offer createOffer(OLATResource resource, String resourceName) {
 		OfferImpl offer = new OfferImpl();
+		Date now = new Date();
+		offer.setCreationDate(now);
+		offer.setLastModified(now);
 		offer.setResource(resource);
 		offer.setValid(true);
 		if(resourceName != null && resourceName.length() > 255) {
@@ -139,14 +143,15 @@ public class ACOfferDAO {
 		saveOffer(offer);
 	}
 
-	public void saveOffer(Offer offer) {
+	public Offer saveOffer(Offer offer) {
 		if(offer instanceof OfferImpl) {
 			((OfferImpl)offer).setLastModified(new Date());
 		}
 		if(offer.getKey() == null) {
-			dbInstance.saveObject(offer);
+			dbInstance.getCurrentEntityManager().persist(offer);
 		} else {
-			dbInstance.updateObject(offer);
+			offer = dbInstance.getCurrentEntityManager().merge(offer);
 		}
+		return offer;
 	}
 }

@@ -20,6 +20,9 @@
 
 package org.olat.resource.accesscontrol.model;
 
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+
 import org.olat.resource.accesscontrol.provider.token.TokenAccessHandler;
 
 
@@ -32,6 +35,8 @@ import org.olat.resource.accesscontrol.provider.token.TokenAccessHandler;
  * Initial Date:  18 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+@Entity(name="actokenmethod")
+@DiscriminatorValue(value="token.method")  
 public class TokenAccessMethod extends AbstractAccessMethod {
 
 	private static final long serialVersionUID = -8066110993424490600L;
@@ -53,23 +58,6 @@ public class TokenAccessMethod extends AbstractAccessMethod {
 	
 	@Override
 	public boolean isPaymentMethod() {
-		return false;
-	}
-
-	@Override
-	public int hashCode() {
-		return getKey() == null ? 34688 : getKey().hashCode();
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if(this == obj) {
-			return true;
-		}
-		if(obj instanceof TokenAccessMethod) {
-			TokenAccessMethod method = (TokenAccessMethod)obj;
-			return getKey() != null && getKey().equals(method.getKey());
-		}
 		return false;
 	}
 }

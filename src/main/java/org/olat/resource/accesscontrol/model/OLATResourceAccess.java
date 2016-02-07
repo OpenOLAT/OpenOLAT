@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.Price;
 
 public class OLATResourceAccess {
 	

@@ -21,6 +21,7 @@
 package org.olat.resource.accesscontrol;
 
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.CodeHelper;
 
 /**
  * 
@@ -33,9 +34,11 @@ import org.olat.core.id.OLATResourceable;
  */
 public class TypedResourceable implements OLATResourceable {
 	private final String type;
+	private final Long resId;
 	
 	public TypedResourceable(String type) {
 		this.type = type;
+		resId = CodeHelper.getForeverUniqueID();
 	}
 	
 	@Override
@@ -45,6 +48,6 @@ public class TypedResourceable implements OLATResourceable {
 
 	@Override
 	public Long getResourceableId() {
-		return 0l;
+		return resId;
 	}
 }

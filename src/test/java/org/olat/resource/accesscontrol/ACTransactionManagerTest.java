@@ -23,7 +23,6 @@ package org.olat.resource.accesscontrol;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,11 +38,6 @@ import org.olat.resource.accesscontrol.manager.ACOfferDAO;
 import org.olat.resource.accesscontrol.manager.ACOrderDAO;
 import org.olat.resource.accesscontrol.manager.ACTransactionDAO;
 import org.olat.resource.accesscontrol.model.AccessMethod;
-import org.olat.resource.accesscontrol.model.AccessTransaction;
-import org.olat.resource.accesscontrol.model.Offer;
-import org.olat.resource.accesscontrol.model.Order;
-import org.olat.resource.accesscontrol.model.OrderLine;
-import org.olat.resource.accesscontrol.model.OrderPart;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -112,7 +106,7 @@ public class ACTransactionManagerTest extends OlatTestCase {
 		//create an offer to buy
 		OLATResource randomOres = createResource();
 		Offer offer = acService.createOffer(randomOres, "TestSaveTransaction");
-		acService.save(offer);
+		offer = acService.save(offer);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -145,7 +139,7 @@ public class ACTransactionManagerTest extends OlatTestCase {
 		}
 
 		{//test load by order
-			List<AccessTransaction> retrievedTransactions = acTransactionManager.loadTransactionsForOrders(Collections.singletonList(order));
+			List<AccessTransaction> retrievedTransactions = acTransactionManager.loadTransactionsForOrder(order);
 			assertNotNull(retrievedTransactions);
 			assertEquals(1, retrievedTransactions.size());
 			

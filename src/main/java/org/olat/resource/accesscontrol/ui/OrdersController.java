@@ -23,7 +23,6 @@ package org.olat.resource.accesscontrol.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.ShortName;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -48,11 +47,11 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
-import org.olat.resource.accesscontrol.model.AccessTransaction;
-import org.olat.resource.accesscontrol.model.Order;
-import org.olat.resource.accesscontrol.model.OrderStatus;
-import org.olat.resource.accesscontrol.model.PSPTransaction;
+import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ui.OrdersDataModel.Col;
+import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -72,14 +71,15 @@ public class OrdersController extends BasicController implements Activateable2 {
 	private final TableController tableCtr;
 	private OrderDetailController detailController;
 	
-	private final AccessControlModule acModule;
-	private final ACService acService;
+	@Autowired
+	private AccessControlModule acModule;
+	@Autowired
+	private ACService acService;
+	@Autowired
+	private UserManager userManager;
 	
 	public OrdersController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-
-		acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
-		acService = CoreSpringFactory.getImpl(ACService.class);
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setDownloadOffered(true);
@@ -125,11 +125,8 @@ public class OrdersController extends BasicController implements Activateable2 {
 	
 	private void loadModel() {
 		OrderStatusContextShortName filter = (OrderStatusContextShortName)tableCtr.getActiveFilter();
-		List<Order> orders = acService.findOrders(getIdentity(), filter.getStatus());
-		List<AccessTransaction> transactions = acService.findAccessTransactions(orders);
-		List<PSPTransaction> pspTransactions = acService.findPSPTransactions(orders);
-		List<OrderTableItem> items = OrdersDataModel.create(orders, transactions, pspTransactions);
-		tableCtr.setTableDataModel(new OrdersDataModel(items, getLocale()));
+		List<OrderTableItem> items = acService.findOrderItems(null, getIdentity(), null, null, null, filter.getStatus());
+		tableCtr.setTableDataModel(new OrdersDataModel(items, getLocale(), userManager));
 	}
 	
 	protected void doDispose() {
@@ -173,7 +170,7 @@ public class OrdersController extends BasicController implements Activateable2 {
 		if(Order.class.getSimpleName().equals(type)) {
 			for(int i=tableCtr.getTableDataModel().getRowCount(); i-->0; ) {
 				OrderTableItem order = (OrderTableItem)tableCtr.getTableDataModel().getObject(i);
-				if(order.getOrder().getKey().equals(entry.getOLATResourceable().getResourceableId())) {
+				if(order.getOrderKey().equals(entry.getOLATResourceable().getResourceableId())) {
 					selectOrder(ureq, order);
 					break;
 				}
@@ -184,10 +181,9 @@ public class OrdersController extends BasicController implements Activateable2 {
 	protected void selectOrder(UserRequest ureq, OrderTableItem order) {
 		removeAsListenerAndDispose(detailController);
 
-		//fxdiff BAKS-7 Resume function
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Order.class, order.getOrder().getKey());
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Order.class, order.getOrderKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		detailController = new OrderDetailController(ureq, bwControl, order.getOrder(), order.getTransactions());
+		detailController = new OrderDetailController(ureq, bwControl, order.getOrderKey());
 		listenTo(detailController);
 		mainPanel.setContent(detailController.getInitialComponent());
 	}

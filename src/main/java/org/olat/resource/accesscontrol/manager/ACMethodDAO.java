@@ -30,11 +30,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.Query;
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -45,23 +45,19 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.FrameworkStartedEvent;
 import org.olat.core.util.event.FrameworkStartupEventChannel;
 import org.olat.core.util.event.GenericEventListener;
-import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AbstractAccessMethod;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.AccessMethodSecurityCallback;
-import org.olat.resource.accesscontrol.model.BusinessGroupAccess;
 import org.olat.resource.accesscontrol.model.FreeAccessMethod;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
-import org.olat.resource.accesscontrol.model.Offer;
-import org.olat.resource.accesscontrol.model.OfferAccess;
 import org.olat.resource.accesscontrol.model.OfferAccessImpl;
-import org.olat.resource.accesscontrol.model.Price;
-import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,13 +82,10 @@ public class ACMethodDAO implements GenericEventListener {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private BusinessGroupService businessGroupService;
-	@Autowired
 	private AccessControlModule acModule;
 	
 	@Autowired
 	public ACMethodDAO(CoordinatorManager coordinatorManager) {
-
 		coordinatorManager.getCoordinator().getEventBus().registerFor(this, null, FrameworkStartupEventChannel.getStartupEventChannel());
 	}
 
@@ -108,14 +101,18 @@ public class ACMethodDAO implements GenericEventListener {
 
 	public void enableMethod(Class<? extends AccessMethod> type, boolean enable) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select method from ").append(AbstractAccessMethod.class.getName())
-			.append(" method where method.class=").append(type.getName());
+		sb.append("select method from ").append(type.getName()).append(" method");
 		
-		TypedQuery<AccessMethod> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), AccessMethod.class);
-		List<AccessMethod> methods = query.getResultList();
+		List<AccessMethod> methods = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AccessMethod.class)
+				.getResultList();
 		if(methods.isEmpty() && enable) {
 			try {
-				dbInstance.saveObject(type.newInstance());
+				AccessMethod method = type.newInstance();
+				Date now = new Date();
+				((AbstractAccessMethod)method).setCreationDate(now);
+				((AbstractAccessMethod)method).setLastModified(now);
+				dbInstance.saveObject(method);
 			} catch (InstantiationException e) {
 				log.error("Failed to instantiate an access method", e);
 			} catch (IllegalAccessException e) {
@@ -133,7 +130,7 @@ public class ACMethodDAO implements GenericEventListener {
 
 	public boolean isValidMethodAvailable(OLATResource resource, Date atDate) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select count(access.method) from ").append(OfferAccessImpl.class.getName()).append(" access ")
+		sb.append("select count(access.method) from acofferaccess access ")
 			.append(" inner join access.offer offer")
 			.append(" inner join offer.resource oResource")
 			.append(" where access.valid=true")
@@ -141,7 +138,7 @@ public class ACMethodDAO implements GenericEventListener {
 			.append(" and oResource.key=:resourceKey");
 		if(atDate != null) {
 			sb.append(" and (offer.validFrom is null or offer.validFrom<=:atDate)")
-				.append(" and (offer.validTo is null or offer.validTo>=:atDate)");
+			  .append(" and (offer.validTo is null or offer.validTo>=:atDate)");
 		}
 
 		TypedQuery<Number> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class);
@@ -152,6 +149,14 @@ public class ACMethodDAO implements GenericEventListener {
 
 		Number methods = query.getSingleResult();
 		return methods.intValue() > 0;
+	}
+	
+	public List<AccessMethod> getAllMethods() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select method from ").append(AbstractAccessMethod.class.getName()).append(" method");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AccessMethod.class)
+				.getResultList();
 	}
 
 	public List<AccessMethod> getAvailableMethods(Identity identity, Roles roles) {
@@ -189,100 +194,36 @@ public class ACMethodDAO implements GenericEventListener {
 
 	public List<OfferAccess> getOfferAccess(Offer offer, boolean valid) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select access from ").append(OfferAccessImpl.class.getName()).append(" access")
-			.append(" where access.offer=:offer")
-			.append(" and access.valid=").append(valid);
+		sb.append("select access from acofferaccess access")
+		  .append(" inner join fetch access.offer offer")
+		  .append(" inner join fetch access.method method")
+		  .append(" inner join fetch offer.resource resource")
+		  .append(" where offer.key=:offerKey")
+		  .append(" and access.valid=").append(valid);
 
-		TypedQuery<OfferAccess> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), OfferAccess.class);
-		query.setParameter("offer", offer);
-		
-		List<OfferAccess> methods = query.getResultList();
-		return methods;
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), OfferAccess.class)
+				.setParameter("offerKey", offer.getKey())
+				.getResultList();
 	}
 	
 	public List<OfferAccess> getOfferAccess(Collection<Offer> offers, boolean valid) {
 		if(offers == null || offers.isEmpty()) return Collections.emptyList();
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("select access from ").append(OfferAccessImpl.class.getName()).append(" access")
-			.append(" where access.offer in (:offers)")
-			.append(" and access.valid=").append(valid);
+		sb.append("select access from acofferaccess access")
+		  .append(" inner join fetch access.offer offer")
+		  .append(" inner join fetch access.method method")
+		  .append(" inner join fetch offer.resource resource")
+		  .append(" where offer.key in (:offersKey)")
+		  .append(" and access.valid=:valid");
 		
-
-		TypedQuery<OfferAccess> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), OfferAccess.class);
-		query.setParameter("offers", offers);
-		
-		List<OfferAccess> methods = query.getResultList();
-		return methods;
-	}
-	
-	public List<OfferAccess> getOfferAccessByResource(Collection<Long> resourceKeys, boolean valid, Date atDate) {
-		if(resourceKeys == null || resourceKeys.isEmpty()) return Collections.emptyList();
-
-		StringBuilder sb = new StringBuilder();
-		sb.append("select access from ").append(OfferAccessImpl.class.getName()).append(" access")
-			.append(" inner join access.offer offer")
-			.append(" inner join offer.resource resource")
-			.append(" where resource.key in (:resourceKeys)")
-			.append(" and access.valid=").append(valid)
-			.append(" and offer.valid=").append(valid);
-		if(atDate != null) {
-			sb.append(" and (offer.validFrom is null or offer.validFrom<=:atDate)")
-				.append(" and (offer.validTo is null or offer.validTo>=:atDate)");
-		}
-
-		TypedQuery<OfferAccess> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), OfferAccess.class);
-		query.setParameter("resourceKeys", resourceKeys);
-		if(atDate != null) {
-			query.setParameter("atDate", atDate, TemporalType.TIMESTAMP);
-		}
-		
-		List<OfferAccess> methods = query.getResultList();
-		return methods;
-	}
-	
-	public List<BusinessGroupAccess> getAccessMethodForBusinessGroup(boolean valid, Date atDate) {
-
-		StringBuilder sb = new StringBuilder();
-		sb.append("select access.method, group.key, offer.price from ").append(OfferAccessImpl.class.getName()).append(" access, ")
-			.append(" businessgroup group ")
-			.append(" inner join access.offer offer")
-			.append(" where access.valid=").append(valid)
-			.append(" and offer.valid=").append(valid)
-			.append(" and group.resource.key=offer.resource.key");
-
-		if(atDate != null) {
-			sb.append(" and (offer.validFrom is null or offer.validFrom<=:atDate)")
-				.append(" and (offer.validTo is null or offer.validTo>=:atDate)");
-		}
-
-		Query query = dbInstance.getCurrentEntityManager().createQuery(sb.toString());
-		if(atDate != null) {
-			query.setParameter("atDate", atDate, TemporalType.TIMESTAMP);
-		}
-		
-		@SuppressWarnings("unchecked")
-		List<Object[]> rawResults = query.getResultList();
-		Map<Long,List<PriceMethodBundle>> rawResultsMap = new HashMap<Long,List<PriceMethodBundle>>();
-		for(Object[] rawResult:rawResults) {
-			AccessMethod method = (AccessMethod)rawResult[0];
-			Long groupKey = (Long)rawResult[1];
-			Price price = (Price)rawResult[2];
-			if(!rawResultsMap.containsKey(groupKey)) {
-				rawResultsMap.put(groupKey, new ArrayList<PriceMethodBundle>(3));
-			}
-			rawResultsMap.get(groupKey).add(new PriceMethodBundle(price, method));	
-		}
-		
-		List<BusinessGroup> groups = businessGroupService.loadBusinessGroups(rawResultsMap.keySet());
-		List<BusinessGroupAccess> groupAccess = new ArrayList<BusinessGroupAccess>();
-		for(BusinessGroup group:groups) {
-			List<PriceMethodBundle> methods = rawResultsMap.get(group.getKey());
-			if(methods != null && !methods.isEmpty()) {
-				groupAccess.add(new BusinessGroupAccess(group, methods));
-			}
-		}
-		return groupAccess;
+		List<Long> offersKey = PersistenceHelper.toKeys(offers);
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), OfferAccess.class)
+				.setParameter("offersKey", offersKey)
+				.setParameter("valid", valid)
+				.getResultList();
 	}
 	
 	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys,
@@ -291,7 +232,7 @@ public class ACMethodDAO implements GenericEventListener {
 		final int maxResourcesEntries = 250;//quicker to filter in java, numerous keys in "in" are slow
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select access.method, resource, offer.price from ").append(OfferAccessImpl.class.getName()).append(" access, ")
+		sb.append("select access.method, resource, offer.price from acofferaccess access, ")
 			.append(OLATResourceImpl.class.getName()).append(" resource")
 			.append(" inner join access.offer offer")
 			.append(" inner join offer.resource oResource")
@@ -352,24 +293,25 @@ public class ACMethodDAO implements GenericEventListener {
 			}
 		}
 		
-		List<OLATResourceAccess> groupAccess = new ArrayList<OLATResourceAccess>(rawResultsMap.values());
-		return groupAccess;
+		return new ArrayList<OLATResourceAccess>(rawResultsMap.values());
 	}
 
 	public OfferAccess createOfferAccess(Offer offer, AccessMethod method) {
 		OfferAccessImpl access = new OfferAccessImpl();
+		access.setCreationDate(new Date());
 		access.setOffer(offer);
 		access.setMethod(method);
 		access.setValid(true);
 		return access;
 	}
 	
-	public void save(OfferAccess link) {
+	public OfferAccess save(OfferAccess link) {
 		if(link.getKey() == null) {
-			dbInstance.saveObject(link);
+			dbInstance.getCurrentEntityManager().persist(link);
 		} else {
-			dbInstance.updateObject(link);
+			link = dbInstance.getCurrentEntityManager().merge(link);
 		}
+		return link;
 	}
 	
 	public void delete(OfferAccess link) {
@@ -385,11 +327,11 @@ public class ACMethodDAO implements GenericEventListener {
 	 */
 	protected void activateTokenMethod(boolean enable) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select method from ").append(AbstractAccessMethod.class.getName())
-			.append(" method where method.class=").append(TokenAccessMethod.class.getName());
+		sb.append("select method from actokenmethod method");
 		
-		TypedQuery<AccessMethod> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), AccessMethod.class);
-		List<AccessMethod> methods = query.getResultList();
+		List<AccessMethod> methods = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AccessMethod.class)
+				.getResultList();
 		if(methods.isEmpty() && enable) {
 			dbInstance.saveObject(new TokenAccessMethod());
 		} else {

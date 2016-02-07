@@ -22,8 +22,23 @@ package org.olat.resource.accesscontrol.model;
 
 import java.util.Date;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import javax.persistence.Column;
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.DiscriminatorType;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Version;
+
+import org.hibernate.annotations.GenericGenerator;
 import org.olat.core.id.ModifiedInfo;
+import org.olat.core.id.Persistable;
 
 /**
  * 
@@ -35,16 +50,64 @@ import org.olat.core.id.ModifiedInfo;
  * Initial Date:  18 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public abstract class AbstractAccessMethod extends PersistentObject implements AccessMethod, ModifiedInfo  {
+
+@Entity  
+@Table(name="o_ac_method")  
+@Inheritance(strategy=InheritanceType.SINGLE_TABLE)  
+@DiscriminatorColumn(name="access_method", discriminatorType=DiscriminatorType.STRING)  
+@DiscriminatorValue(value="abstract")  
+public abstract class AbstractAccessMethod implements Persistable, AccessMethod, ModifiedInfo  {
 
 	private static final long serialVersionUID = 5656490927761461774L;
-	private boolean valid = true;
-	private boolean enabled = true;
 	
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@Column(name="method_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	@Version
+	private int version = 0;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
+
+	@Column(name="is_valid", nullable=false, insertable=true, updatable=true)
+	private boolean valid = true;
+	@Column(name="is_enabled", nullable=false, insertable=true, updatable=true)
+	private boolean enabled = true;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="validfrom", nullable=true, insertable=true, updatable=true)
 	private Date validFrom;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="validto", nullable=true, insertable=true, updatable=true)
 	private Date validTo;
 	
+	public AbstractAccessMethod() {
+		//
+	}
+	
+	@Override
+	public Long getKey() {
+		return key;
+	}
+
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
 	@Override
 	public boolean isValid() {
 		return valid;
@@ -90,5 +153,27 @@ public abstract class AbstractAccessMethod extends PersistentObject implements A
 
 	public void setValidTo(Date validTo) {
 		this.validTo = validTo;
+	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 34688 : getKey().hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof AccessMethod) {
+			AccessMethod method = (AccessMethod)obj;
+			return getKey() != null && getKey().equals(method.getKey());
+		}
+		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }

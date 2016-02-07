@@ -20,6 +20,9 @@
 
 package org.olat.resource.accesscontrol.provider.paypal.model;
 
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+
 import org.olat.resource.accesscontrol.model.AbstractAccessMethod;
 import org.olat.resource.accesscontrol.provider.paypal.PaypalAccessHandler;
 
@@ -33,6 +36,8 @@ import org.olat.resource.accesscontrol.provider.paypal.PaypalAccessHandler;
  * Initial Date:  18 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+@Entity(name="acpaypalmethod")
+@DiscriminatorValue(value="paypal.method") 
 public class PaypalAccessMethod extends AbstractAccessMethod {
 	
 	private static final long serialVersionUID = 7682228653442368290L;
@@ -55,22 +60,5 @@ public class PaypalAccessMethod extends AbstractAccessMethod {
 	@Override
 	public boolean isPaymentMethod() {
 		return true;
-	}
-
-	@Override
-	public int hashCode() {
-		return getKey() == null ? 947287 : getKey().hashCode();
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if(this == obj) {
-			return true;
-		}
-		if(obj instanceof PaypalAccessMethod) {
-			PaypalAccessMethod method = (PaypalAccessMethod)obj;
-			return getKey() != null && getKey().equals(method.getKey());
-		}
-		return false;
 	}
 }

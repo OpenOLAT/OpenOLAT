@@ -17,14 +17,38 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.resource.accesscontrol.model;
 
-public enum OrderStatus {
+package org.olat.resource.accesscontrol;
+
+import java.util.Date;
+
+import org.olat.resource.accesscontrol.model.AccessMethod;
+
+
+/**
+ * 
+ * Description:<br>
+ * Link beetwen an offer and a method to access the resource
+ * 
+ * <P>
+ * Initial Date:  18 avr. 2011 <br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ */
+public interface OfferAccess {
 	
-	NEW,
-	PREPAYMENT,
-	PAYED,
-	CANCELED,
-	ERROR,
+	public Long getKey();
+	
+	public boolean isValid();
+	
+	public Offer getOffer();
+	
+	public AccessMethod getMethod();
+	
+	public Date getValidFrom();
 
+	public void setValidFrom(Date validFrom);
+
+	public Date getValidTo();
+
+	public void setValidTo(Date validTo);
 }
