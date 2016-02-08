@@ -140,8 +140,6 @@ public class ImsQTI21Resource extends FileResource {
 	
 	public static class PathResourceLocator implements ResourceLocator {
 		
-		private static final OLog log = Tracing.createLoggerFor(PathResourceLocator.class);
-		
 		private Path root;
 		
 		public PathResourceLocator(Path root) {

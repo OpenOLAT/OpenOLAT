@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -39,6 +38,7 @@ import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.ui.events.QItemCreationCmdEvent;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -54,12 +54,11 @@ public class NewItemOptionsController extends FormBasicController {
 	private SingleSelection typeEl;
 	private Map<String,QItemFactory> keyToFactoryMap = new HashMap<String,QItemFactory>();
 	
-	private final QuestionPoolModule qpoolModule;
+	@Autowired
+	private QuestionPoolModule qpoolModule;
 
 	public NewItemOptionsController(UserRequest ureq, WindowControl wControl) {	
 		super(ureq, wControl);
-		
-		qpoolModule = CoreSpringFactory.getImpl(QuestionPoolModule.class);
 		
 		initForm(ureq);
 	}
