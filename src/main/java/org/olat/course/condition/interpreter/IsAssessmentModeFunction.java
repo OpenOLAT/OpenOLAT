@@ -23,6 +23,7 @@ import java.util.Date;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.control.ChiefController;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.editor.CourseEditorEnv;
@@ -60,7 +61,11 @@ public class IsAssessmentModeFunction extends AbstractFunction {
 			return defaultValue();
 		}
 		
-		ChiefController chiefController = getUserCourseEnv().getWindowControl().getWindowBackOffice().getChiefController();
+		WindowControl wControl = getUserCourseEnv().getWindowControl();
+		if(wControl == null) {
+			return ConditionInterpreter.INT_FALSE;
+		}
+		ChiefController chiefController = wControl.getWindowBackOffice().getChiefController();
 		if(chiefController == null) {
 			return ConditionInterpreter.INT_FALSE;
 		}
