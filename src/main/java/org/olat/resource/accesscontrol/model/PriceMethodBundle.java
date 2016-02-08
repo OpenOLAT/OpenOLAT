@@ -19,6 +19,8 @@
  */
 package org.olat.resource.accesscontrol.model;
 
+import org.olat.resource.accesscontrol.Price;
+
 /**
  * 
  * Description:<br>

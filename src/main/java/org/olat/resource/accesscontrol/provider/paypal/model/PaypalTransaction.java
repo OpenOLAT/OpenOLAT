@@ -24,9 +24,9 @@ import java.util.Date;
 
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.util.StringHelper;
+import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
 import org.olat.resource.accesscontrol.model.PSPTransactionStatus;
-import org.olat.resource.accesscontrol.model.Price;
 
 /**
  * 

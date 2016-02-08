@@ -28,9 +28,9 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
+import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.model.AccessMethod;
-import org.olat.resource.accesscontrol.model.Offer;
-import org.olat.resource.accesscontrol.model.OfferAccess;
 import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 

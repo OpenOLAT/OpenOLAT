@@ -17,41 +17,28 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.resource.accesscontrol.model;
 
-import java.math.BigDecimal;
+package org.olat.resource.accesscontrol;
+
+import java.util.List;
 
 /**
  * 
  * Description:<br>
- * Price interface
+ * TODO: srosse Class Description for OrderPart
  * 
  * <P>
- * Initial Date:  26 mai 2011 <br>
+ * Initial Date:  19 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public interface Price extends Cloneable {
+public interface OrderPart {
 	
-	public BigDecimal getAmount();
+	public Long getKey();
 	
-	public void setAmount(BigDecimal amount);
+	public List<OrderLine> getOrderLines();
 	
-	public String getCurrencyCode();
-	
-	public void setCurrencyCode(String currencyCode);
-	
-	public Price add(Price price);
-	
-	public Price substract(Price price);
-	
-	public Price multiply(int multiplicand);
-	
-	public Price multiply(BigDecimal multiplicand);
-	
-	public Price divide(BigDecimal divisor);
-	
-	public boolean isEmpty();
-	
-	public Price clone();
+	public Price getTotal();
+
+	public Price getTotalOrderLines();
 
 }

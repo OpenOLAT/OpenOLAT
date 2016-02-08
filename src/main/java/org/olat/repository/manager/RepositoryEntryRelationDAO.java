@@ -128,12 +128,12 @@ public class RepositoryEntryRelationDAO {
 		return count == null ? false : count.intValue() > 0;
 	}
 	
-	public void addRole(Identity identity, RepositoryEntry re, String role) {
+	public void addRole(Identity identity, RepositoryEntryRef re, String role) {
 		Group group = getDefaultGroup(re);
 		groupDao.addMembership(group, identity, role);
 	}
 	
-	public int removeRole(IdentityRef identity, RepositoryEntry re, String role) {
+	public int removeRole(IdentityRef identity, RepositoryEntryRef re, String role) {
 		Group group = getDefaultGroup(re);
 		return groupDao.removeMembership(group, identity, role);
 	}

@@ -39,21 +39,21 @@ import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.AccessTransaction;
+import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderLine;
+import org.olat.resource.accesscontrol.OrderPart;
+import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.Price;
+import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACOrderDAO;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.manager.ACTransactionDAO;
 import org.olat.resource.accesscontrol.model.AccessMethod;
-import org.olat.resource.accesscontrol.model.AccessTransaction;
 import org.olat.resource.accesscontrol.model.AccessTransactionStatus;
-import org.olat.resource.accesscontrol.model.Offer;
-import org.olat.resource.accesscontrol.model.OfferAccess;
-import org.olat.resource.accesscontrol.model.Order;
-import org.olat.resource.accesscontrol.model.OrderLine;
-import org.olat.resource.accesscontrol.model.OrderPart;
-import org.olat.resource.accesscontrol.model.OrderStatus;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
-import org.olat.resource.accesscontrol.model.Price;
-import org.olat.resource.accesscontrol.model.ResourceReservation;
 import org.olat.resource.accesscontrol.provider.paypal.PaypalModule;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransaction;
@@ -447,8 +447,7 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 			for(OrderPart part:order.getParts()) {
 				if(part.getKey().equals(trx.getOrderPartId())) {
 					AccessTransaction transaction = transactionManager.createTransaction(order, part, method);
-					transaction = transactionManager.save(transaction);
-					transactionManager.update(transaction, AccessTransactionStatus.ERROR);
+					transaction = transactionManager.update(transaction, AccessTransactionStatus.ERROR);
 					for(OrderLine line:part.getOrderLines()) {
 						acService.denyAccesToResource(identity, line.getOffer());
 						logAudit("Paypal payed access revoked for: " + buildLogMessage(line, method) + " to " + identity, null);
@@ -486,10 +485,10 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 					for(OrderLine line:part.getOrderLines()) {
 						if(acService.allowAccesToResource(identity, line.getOffer())) {
 							logAudit("Paypal payed access granted for: " + buildLogMessage(line, method) + " to " + identity, null);
-							transactionManager.update(transaction, AccessTransactionStatus.SUCCESS);
+							transaction = transactionManager.update(transaction, AccessTransactionStatus.SUCCESS);
 						} else {
 							logError("Paypal payed access refused for: " + buildLogMessage(line, method) + " to " + identity, null);
-							transactionManager.update(transaction, AccessTransactionStatus.ERROR);
+							transaction = transactionManager.update(transaction, AccessTransactionStatus.ERROR);
 						}
 					}
 				}

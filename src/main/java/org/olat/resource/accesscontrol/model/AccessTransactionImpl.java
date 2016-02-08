@@ -19,24 +19,92 @@
  */
 package org.olat.resource.accesscontrol.model;
 
-import org.olat.core.commons.persistence.PersistentObject;
-import org.olat.core.util.StringHelper;
+import java.util.Date;
 
-public class AccessTransactionImpl extends PersistentObject implements AccessTransaction {
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Version;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
+import org.olat.resource.accesscontrol.AccessTransaction;
+import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderPart;
+import org.olat.resource.accesscontrol.Price;
+
+
+@Entity(name="actransaction")
+@Table(name="o_ac_transaction")
+public class AccessTransactionImpl implements Persistable, AccessTransaction {
 
 	private static final long serialVersionUID = -5420630862571680567L;
 	
-	private Price amount;
-	private Order order;
-	private OrderPart orderPart;
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@Column(name="transaction_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	@Version
+	private int version = 0;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
 	
-	private AccessMethod method;
+	@Embedded
+    @AttributeOverrides( {
+    	@AttributeOverride(name="amount", column = @Column(name="amount_amount") ),
+    	@AttributeOverride(name="currencyCode", column = @Column(name="amount_currency_code") )
+    })
+	private PriceImpl amount;
+
+	@Column(name="trx_status", nullable=true, insertable=true, updatable=true)
 	private String statusStr = AccessTransactionStatus.NEW.name();
+	
+	@ManyToOne(targetEntity=OrderImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_order_id", nullable=false, insertable=true, updatable=false)
+	private Order order;
+	@ManyToOne(targetEntity=OrderPartImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_order_part_id", nullable=false, insertable=true, updatable=false)
+	private OrderPart orderPart;
+	@ManyToOne(targetEntity=AbstractAccessMethod.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_method_id", nullable=false, insertable=true, updatable=false)
+	private AccessMethod method;
 	
 	public AccessTransactionImpl(){
 		//
 	}
 	
+	@Override
+	public Long getKey() {
+		return key;
+	}
+
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
 	@Override
 	public AccessMethod getMethod() {
 		return method;
@@ -52,7 +120,7 @@ public class AccessTransactionImpl extends PersistentObject implements AccessTra
 	}
 
 	public void setAmount(Price amount) {
-		this.amount = amount;
+		this.amount = (PriceImpl)amount;
 	}
 
 	@Override
@@ -108,8 +176,13 @@ public class AccessTransactionImpl extends PersistentObject implements AccessTra
 		}
 		if(obj instanceof AccessTransactionImpl) {
 			AccessTransactionImpl accessTransaction = (AccessTransactionImpl)obj;
-			return equalsByPersistableKey(accessTransaction);
+			return key != null && key.equals(accessTransaction.getKey());
 		}
 		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }

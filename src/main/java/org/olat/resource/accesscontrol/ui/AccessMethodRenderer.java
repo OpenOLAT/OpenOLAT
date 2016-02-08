@@ -28,8 +28,9 @@ import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.AccessTransaction;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
-import org.olat.resource.accesscontrol.model.AccessTransaction;
+import org.olat.resource.accesscontrol.model.AccessMethod;
 
 /**
  * 
@@ -56,13 +57,31 @@ public class AccessMethodRenderer implements CustomCellRenderer {
 			Set<String> uniqueType = new HashSet<String>(3);
 			render(sb, transaction, uniqueType, locale);
 		} else if (val instanceof Collection) {
-			@SuppressWarnings("unchecked")
-			Collection<AccessTransaction> transactions = (Collection<AccessTransaction>)val;
+			Collection<?> transactions = (Collection<?>)val;
 			Set<String> uniqueType = new HashSet<String>((transactions.size() * 2) + 1);
-			for(AccessTransaction transaction : transactions) {
-				render(sb, transaction, uniqueType, locale);
+			for(Object transaction : transactions) {
+				if(transaction instanceof AccessTransaction) {
+					render(sb, (AccessTransaction)transaction, uniqueType, locale);	
+				} else if(transaction instanceof AccessMethod) {
+					render(sb, (AccessMethod)transaction, uniqueType, locale);	
+					
+				}
+				
 			}
 		}
+	}
+	
+	private void render(StringOutput sb, AccessMethod method, Set<String> uniqueType, Locale locale) {
+		String type = method.getType();
+		if(uniqueType.contains(type)) return;
+		uniqueType.add(type);
+		
+		AccessMethodHandler handler = acModule.getAccessMethodHandler(type);
+		sb.append("<span class='o_nowrap'><i class='o_icon ");
+		sb.append(method.getMethodCssClass());
+		sb.append("_icon o_icon-lg'> </i> ");
+		sb.append(handler.getMethodName(locale));
+		sb.append("</span>");
 	}
 	
 	private void render(StringOutput sb, AccessTransaction transaction, Set<String> uniqueType, Locale locale) {

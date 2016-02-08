@@ -24,9 +24,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.id.Identity;
-import org.olat.resource.accesscontrol.model.OfferAccess;
-import org.olat.resource.accesscontrol.model.Order;
-import org.olat.resource.accesscontrol.model.OrderPart;
+import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderPart;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransaction;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransactionStatus;

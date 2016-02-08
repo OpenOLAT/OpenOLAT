@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.ShortName;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -61,11 +60,12 @@ import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
-import org.olat.resource.accesscontrol.model.AccessTransaction;
-import org.olat.resource.accesscontrol.model.Order;
-import org.olat.resource.accesscontrol.model.OrderLine;
-import org.olat.resource.accesscontrol.model.OrderPart;
+import org.olat.resource.accesscontrol.AccessTransaction;
+import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderLine;
+import org.olat.resource.accesscontrol.OrderPart;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class OrderDetailController extends FormBasicController {
 	
@@ -80,16 +80,18 @@ public class OrderDetailController extends FormBasicController {
 	private final Order order;
 	private Collection<AccessTransaction> transactions;
 	
-	private final AccessControlModule acModule;
-	private final ACService acService;
+	@Autowired
+	private ACService acService;
+	@Autowired
+	private AccessControlModule acModule;
+	@Autowired
+	private UserManager userManager;
 	
-	public OrderDetailController(UserRequest ureq, WindowControl wControl, Order order, Collection<AccessTransaction> transactions) {
+	public OrderDetailController(UserRequest ureq, WindowControl wControl, Long orderKey) {
 		super(ureq, wControl, "order");
 		
-		this.order = order;
-		this.transactions = transactions;
-		acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
-		acService = CoreSpringFactory.getImpl(ACService.class);
+		order = acService.loadOrderByKey(orderKey);
+		transactions = acService.findAccessTransactions(order);
 		
 		initForm(ureq);
 	}
@@ -132,8 +134,6 @@ public class OrderDetailController extends FormBasicController {
 				selectResourceLink.setCustomEnabledLinkCSS("form-control-static");
 			}
 		}
-		
-		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 
 		User user = order.getDelivery().getUser();
 		String delivery = StringHelper.escapeHtml(userManager.getUserDisplayName(user));
@@ -234,7 +234,7 @@ public class OrderDetailController extends FormBasicController {
 				url = "[RepositoryEntry:" + re.getKey() + "]";
 			}
 			BusinessControl bc = BusinessControlFactory.getInstance().createFromString(url);
-		  WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 			NewControllerFactory.getInstance().launch(ureq, bwControl);
 		}
 		super.formInnerEvent(ureq, source, event);

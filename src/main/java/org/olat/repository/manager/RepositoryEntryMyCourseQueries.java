@@ -51,7 +51,6 @@ import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
 import org.olat.resource.OLATResource;
-import org.olat.resource.accesscontrol.model.OfferImpl;
 import org.olat.user.UserImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -170,7 +169,7 @@ public class RepositoryEntryMyCourseQueries {
 				  .append("   where mark.creator.key=:identityKey and mark.resId=v.key and mark.resName='RepositoryEntry'")
 				  .append(" ) as marks,");
 			}
-			sb.append(" (select count(offer.key) from ").append(OfferImpl.class.getName()).append(" as offer ")
+			sb.append(" (select count(offer.key) from acoffer as offer ")
 			  .append("   where offer.resource=res and offer.valid=true")
 			  //TODO validity
 			  .append(" ) as offers, ");

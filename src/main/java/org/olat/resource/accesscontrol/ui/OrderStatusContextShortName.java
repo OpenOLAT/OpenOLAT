@@ -20,7 +20,7 @@
 package org.olat.resource.accesscontrol.ui;
 
 import org.olat.core.gui.ShortName;
-import org.olat.resource.accesscontrol.model.OrderStatus;
+import org.olat.resource.accesscontrol.OrderStatus;
 
 /**
  * 

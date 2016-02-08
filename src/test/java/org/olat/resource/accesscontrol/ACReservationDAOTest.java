@@ -33,7 +33,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
-import org.olat.resource.accesscontrol.model.ResourceReservation;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.quartz.Scheduler;

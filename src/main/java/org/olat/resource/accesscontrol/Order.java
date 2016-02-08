@@ -18,35 +18,45 @@
  * <p>
  */
 
-package org.olat.resource.accesscontrol.model;
+package org.olat.resource.accesscontrol;
 
 import java.util.Date;
+import java.util.List;
 
+import org.olat.core.id.Identity;
 
 /**
  * 
  * Description:<br>
- * Link beetwen an offer and a method to access the resource
+ * TODO: srosse Class Description for Order
  * 
  * <P>
- * Initial Date:  18 avr. 2011 <br>
+ * Initial Date:  19 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public interface OfferAccess {
+public interface Order {
 	
 	public Long getKey();
 	
+	public String getOrderNr();
+	
 	public boolean isValid();
 	
-	public Offer getOffer();
+	public Date getCreationDate();
 	
-	public AccessMethod getMethod();
+	public OrderStatus getOrderStatus();
 	
-	public Date getValidFrom();
+	public Identity getDelivery();
+	
+	public String getCurrencyCode();
+	
+	public Price getTotal();
 
-	public void setValidFrom(Date validFrom);
+	public Price getTotalOrderLines();
 
-	public Date getValidTo();
-
-	public void setValidTo(Date validTo);
+	public Price getDiscount();
+	
+	public List<OrderPart> getParts();
+	
+	public void recalculate();
 }

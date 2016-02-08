@@ -20,7 +20,28 @@
 
 package org.olat.resource.accesscontrol.model;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import java.util.Date;
+
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Version;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.olat.core.id.Persistable;
+import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.OrderLine;
+import org.olat.resource.accesscontrol.Price;
 
 /**
  * 
@@ -31,14 +52,59 @@ import org.olat.core.commons.persistence.PersistentObject;
  * Initial Date:  19 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class OrderLineImpl extends PersistentObject implements OrderLine {
+@Entity(name="acorderline")
+@Table(name="o_ac_order_line")
+public class OrderLineImpl implements Persistable, OrderLine {
 
 	private static final long serialVersionUID = -2630817206449967033L;
 	
-	private Offer offer;
-	private Price unitPrice;
-	private Price totalPrice;
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@Column(name="order_item_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	@Version
+	private int version = 0;
 	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	
+	@Embedded
+    @AttributeOverrides( {
+    	@AttributeOverride(name="amount", column = @Column(name="unit_price_amount") ),
+    	@AttributeOverride(name="currencyCode", column = @Column(name="unit_price_currency_code") )
+    })
+	private PriceImpl unitPrice;
+	@Embedded
+    @AttributeOverrides( {
+    	@AttributeOverride(name="amount", column = @Column(name="total_amount") ),
+    	@AttributeOverride(name="currencyCode", column = @Column(name="total_currency_code") )
+    })
+	private PriceImpl totalPrice;
+	
+	@ManyToOne(targetEntity=OfferImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_offer_id", nullable=false, insertable=true, updatable=false)
+	private Offer offer;
+	
+	public OrderLineImpl() {
+		//
+	}
+	
+	@Override
+	public Long getKey() {
+		return key;
+	}
+
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
+	@Override
 	public Offer getOffer() {
 		return offer;
 	}
@@ -53,7 +119,7 @@ public class OrderLineImpl extends PersistentObject implements OrderLine {
 	}
 
 	public void setUnitPrice(Price unitPrice) {
-		this.unitPrice = unitPrice;
+		this.unitPrice = (PriceImpl)unitPrice;
 	}
 
 	@Override
@@ -62,7 +128,7 @@ public class OrderLineImpl extends PersistentObject implements OrderLine {
 	}
 
 	public void setTotal(Price totalPrice) {
-		this.totalPrice = totalPrice;
+		this.totalPrice = (PriceImpl)totalPrice;
 	}
 
 	@Override
@@ -76,9 +142,14 @@ public class OrderLineImpl extends PersistentObject implements OrderLine {
 			return true;
 		}
 		if(obj instanceof OrderLineImpl) {
-			OrderLineImpl order = (OrderLineImpl)obj;
-			return equalsByPersistableKey(order);
+			OrderLineImpl orderLine = (OrderLineImpl)obj;
+			return getKey() != null && getKey().equals(orderLine.getKey());
 		}
 		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }

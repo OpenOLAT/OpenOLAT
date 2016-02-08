@@ -47,10 +47,10 @@ import org.olat.core.util.StringHelper;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AccessMethod;
-import org.olat.resource.accesscontrol.model.Offer;
-import org.olat.resource.accesscontrol.model.OfferAccess;
 import org.olat.resource.accesscontrol.model.OfferImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 

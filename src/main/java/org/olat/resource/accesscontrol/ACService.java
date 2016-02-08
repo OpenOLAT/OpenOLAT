@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
@@ -31,15 +32,8 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.model.ACResourceInfo;
 import org.olat.resource.accesscontrol.model.AccessMethod;
-import org.olat.resource.accesscontrol.model.AccessTransaction;
-import org.olat.resource.accesscontrol.model.BusinessGroupAccess;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
-import org.olat.resource.accesscontrol.model.Offer;
-import org.olat.resource.accesscontrol.model.OfferAccess;
-import org.olat.resource.accesscontrol.model.Order;
-import org.olat.resource.accesscontrol.model.OrderStatus;
-import org.olat.resource.accesscontrol.model.PSPTransaction;
-import org.olat.resource.accesscontrol.model.ResourceReservation;
+import org.olat.resource.accesscontrol.ui.OrderTableItem;
 
 /**
  * 
@@ -82,7 +76,7 @@ public interface ACService {
 	
 	public Offer createOffer(OLATResource resource, String resourceName);
 	
-	public void save(Offer offer);
+	public Offer save(Offer offer);
 	
 	public void deleteOffer(Offer offer);
 	
@@ -94,8 +88,6 @@ public interface ACService {
 	public Set<Long> filterResourcesWithAC(Collection<Long> resourceKeys);
 	
 	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate);
-	
-	public List<BusinessGroupAccess> getOfferAccessForBusinessGroup(boolean valid, Date atDate);
 	
 	/**
 	 * 
@@ -115,8 +107,6 @@ public interface ACService {
 	 * @return The list of OfferAccess objects that represent available access methods
 	 */
 	public List<OfferAccess> getAccessMethodForBusinessGroup(BusinessGroup group, boolean valid, Date atDate);
-	
-	public List<OfferAccess> getOfferAccessByResource(Collection<Long> resourceKeys, boolean valid, Date atDate);
 	
 	public OfferAccess saveOfferAccess(OfferAccess link);
 	
@@ -194,16 +184,14 @@ public interface ACService {
 	
 	public List<OfferAccess> getOfferAccess(Offer offer, boolean valid);
 	
+	public Order loadOrderByKey(Long key);
+	
 	public List<Order> findOrders(Identity delivery, OrderStatus... status);
 	
-	public List<AccessTransaction> findAccessTransactions(List<Order> orders);
-	
-	public List<PSPTransaction> findPSPTransactions(List<Order> orders);
-	
-	public List<Order> findOrders(OLATResource resource, Identity delivery, Long orderNr, Date from, Date to, OrderStatus... status);
+	public List<AccessTransaction> findAccessTransactions(Order order);
 	
 	public List<Order> findOrders(OLATResource resource, OrderStatus... status);
-
-
-
+	
+	public List<OrderTableItem> findOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from, Date to, OrderStatus... status);
+	
 }

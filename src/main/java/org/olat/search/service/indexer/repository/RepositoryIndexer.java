@@ -45,7 +45,7 @@ import org.olat.repository.manager.RepositoryEntryDocumentFactory;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
-import org.olat.resource.accesscontrol.model.OfferAccess;
+import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.provider.free.FreeAccessHandler;
 import org.olat.resource.accesscontrol.provider.paypal.PaypalAccessHandler;
 import org.olat.search.SearchModule;

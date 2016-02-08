@@ -55,7 +55,7 @@ import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.model.Offer;
+import org.olat.resource.accesscontrol.Offer;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -886,7 +886,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		//create and save an offer
 		Offer offer = acService.createOffer(group.getResource(), "TestBGWorkflow");
 		assertNotNull(offer);
-		acService.save(offer);
+		offer = acService.save(offer);
 			
 		dbInstance.commitAndCloseSession();
 			
@@ -921,7 +921,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		cal.add(Calendar.HOUR_OF_DAY, 2);
 		offer.setValidTo(cal.getTime());
 		assertNotNull(offer);
-		acService.save(offer);
+		offer = acService.save(offer);
 
 		//create a group with an access control limited by dates in the past
 		BusinessGroup oldGroup = businessGroupDao.createAndPersist(null, "access-grp-3", "access-grp-3-desc", 0, 5, true, false, true, false, false);
@@ -932,7 +932,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		cal.add(Calendar.HOUR_OF_DAY, -5);
 		oldOffer.setValidTo(cal.getTime());
 		assertNotNull(oldOffer);
-		acService.save(oldOffer);
+		oldOffer = acService.save(oldOffer);
 
 		dbInstance.commitAndCloseSession();
 			

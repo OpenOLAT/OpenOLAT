@@ -17,46 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-
-package org.olat.resource.accesscontrol.model;
+package org.olat.resource.accesscontrol;
 
 import java.util.Date;
-import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.core.id.ModifiedInfo;
+import org.olat.resource.OLATResource;
 
 /**
  * 
- * Description:<br>
- * TODO: srosse Class Description for Order
- * 
- * <P>
- * Initial Date:  19 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public interface Order {
+public interface ResourceReservation extends ModifiedInfo {
 	
 	public Long getKey();
 	
-	public String getOrderNr();
-	
-	public boolean isValid();
-	
 	public Date getCreationDate();
 	
-	public OrderStatus getOrderStatus();
+	public Date getExpirationDate();
 	
-	public Identity getDelivery();
+	public String getType();
 	
-	public String getCurrencyCode();
+	public Identity getIdentity();
 	
-	public Price getTotal();
+	public OLATResource getResource();
 
-	public Price getTotalOrderLines();
-
-	public Price getDiscount();
-	
-	public List<OrderPart> getParts();
-	
-	public void recalculate();
 }

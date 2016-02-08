@@ -17,25 +17,14 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
+package org.olat.resource.accesscontrol;
 
-package org.olat.resource.accesscontrol.model;
+public enum OrderStatus {
+	
+	NEW,
+	PREPAYMENT,
+	PAYED,
+	CANCELED,
+	ERROR,
 
-/**
- * 
- * Description:<br>
- * The order line for a specific offer.
- * 
- * <P>
- * Initial Date:  19 avr. 2011 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
- */
-public interface OrderLine {
-
-	public Long getKey();
-	
-	public Offer getOffer();
-	
-	public Price getUnitPrice();
-	
-	public Price getTotal();
 }

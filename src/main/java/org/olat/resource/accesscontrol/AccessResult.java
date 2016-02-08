@@ -23,8 +23,6 @@ package org.olat.resource.accesscontrol;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.resource.accesscontrol.model.OfferAccess;
-
 /**
  * 
  * Description:<br>

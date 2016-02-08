@@ -22,14 +22,16 @@ package org.olat.resource.accesscontrol.ui;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 
-import org.olat.resource.accesscontrol.model.AccessTransaction;
-import org.olat.resource.accesscontrol.model.AccessTransactionStatus;
-import org.olat.resource.accesscontrol.model.Order;
-import org.olat.resource.accesscontrol.model.OrderStatus;
+import org.olat.resource.accesscontrol.AccessTransaction;
+import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.Price;
+import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
-import org.olat.resource.accesscontrol.model.PSPTransactionStatus;
 
 /**
  * 
@@ -44,64 +46,88 @@ public class OrderTableItem {
 	
 	private static final OrderTableItemStatusComparator statusComparator = new OrderTableItemStatusComparator();
 	
-	private final Order order;
 	private final Collection<AccessTransaction> transactions = new HashSet<AccessTransaction>();
 	private final Collection<PSPTransaction> pspTransactions = new HashSet<PSPTransaction>();
 	
+	private final Long orderKey;
+	private final String orderNr;
+	private final Price total;
+	private final Date creationDate;
+	private final OrderStatus orderStatus;
+	private String resourceDisplayname;
+	private Long deliveryKey;
+	
+	private Status status;
+	private List<AccessMethod> methods;
+	
 	public OrderTableItem(Order order) {
-		this.order = order;
+		orderKey = order.getKey();
+		orderNr = order.getOrderNr();
+		orderStatus = order.getOrderStatus();
+		total = order.getTotal();
+		creationDate = order.getCreationDate();
 	}
 	
-	public Order getOrder() {
-		return order;
+	public OrderTableItem(Long orderKey, String orderNr, Price total, Date creationDate,
+			OrderStatus orderStatus, Status status, Long deliveryKey, List<AccessMethod> methods) {
+		this.orderKey = orderKey;
+		this.orderNr = orderNr;
+		this.total = total;
+		this.orderStatus = orderStatus;
+		this.creationDate = creationDate;
+		this.status = status;
+		this.deliveryKey = deliveryKey;
+		this.methods = methods;
 	}
 	
-	public Collection<AccessTransaction> getTransactions() {
+	public Long getOrderKey() {
+		return orderKey;
+	}
+	
+	public Long getDeliveryKey() {
+		return deliveryKey;
+	}
+
+	public Date getCreationDate() {
+		return creationDate;
+	}
+	
+	public String getOrderNr() {
+		return orderNr;
+	}
+	
+	public OrderStatus getOrderStatus() {
+		return orderStatus;	
+	}
+	
+	public Price getTotal() {
+		return total;
+	}
+	
+	public String getResourceDisplayname() {
+		return resourceDisplayname;
+	}
+
+	public void setResourceDisplayname(String resourceDisplayname) {
+		this.resourceDisplayname = resourceDisplayname;
+	}
+	
+	
+
+	public List<AccessMethod> getMethods() {
+		return methods;
+	}
+
+	public Collection<AccessTransaction> getTransactions2() {
 		return transactions;
 	}
 	
-	public Collection<PSPTransaction> getPSPTransactions() {
+	public Collection<PSPTransaction> getPSPTransactions2() {
 		return pspTransactions;
 	}
 	
 	public Status getStatus() {
-		boolean warning = false;
-		boolean error = false;
-		boolean canceled = false;
-		
-		if(getOrder().getOrderStatus() == OrderStatus.CANCELED) {
-			canceled = true;
-		} else if(getOrder().getOrderStatus() == OrderStatus.ERROR) {
-			error = true;
-		} else if(getOrder().getOrderStatus() == OrderStatus.PREPAYMENT) {
-			warning = true;
-		}
-		
-		for(AccessTransaction transaction:getTransactions()) {
-			if(transaction.getStatus() == AccessTransactionStatus.CANCELED) {
-				canceled = true;
-			} else if(transaction.getStatus() == AccessTransactionStatus.ERROR) {
-				error = true;
-			}
-		}
-		
-		for(PSPTransaction transaction:getPSPTransactions()) {
-			if(transaction.getSimplifiedStatus() == PSPTransactionStatus.ERROR) {
-				error = true;
-			} else if(transaction.getSimplifiedStatus() == PSPTransactionStatus.WARNING) {
-				warning = true;
-			}
-		}
-		
-		if(error) {
-			return Status.ERROR;
-		} else if (warning) {
-			return Status.WARNING;
-		} else if(canceled) {
-			return Status.CANCELED;
-		} else {
-			return Status.OK;
-		}	
+		return status;
 	}
 	
 	public int compareStatusTo(OrderTableItem item) {

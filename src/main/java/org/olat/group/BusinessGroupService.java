@@ -48,7 +48,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.resource.OLATResource;
-import org.olat.resource.accesscontrol.model.ResourceReservation;
+import org.olat.resource.accesscontrol.ResourceReservation;
 
 /**
  * 

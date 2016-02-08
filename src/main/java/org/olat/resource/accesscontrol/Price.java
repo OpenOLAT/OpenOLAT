@@ -17,30 +17,41 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.resource.accesscontrol.model;
+package org.olat.resource.accesscontrol;
 
-import java.util.Date;
-
-import org.olat.core.id.Identity;
-import org.olat.core.id.ModifiedInfo;
-import org.olat.resource.OLATResource;
+import java.math.BigDecimal;
 
 /**
  * 
+ * Description:<br>
+ * Price interface
+ * 
+ * <P>
+ * Initial Date:  26 mai 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public interface ResourceReservation extends ModifiedInfo {
+public interface Price extends Cloneable {
 	
-	public Long getKey();
+	public BigDecimal getAmount();
 	
-	public Date getCreationDate();
+	public void setAmount(BigDecimal amount);
 	
-	public Date getExpirationDate();
+	public String getCurrencyCode();
 	
-	public String getType();
+	public void setCurrencyCode(String currencyCode);
 	
-	public Identity getIdentity();
+	public Price add(Price price);
 	
-	public OLATResource getResource();
+	public Price substract(Price price);
+	
+	public Price multiply(int multiplicand);
+	
+	public Price multiply(BigDecimal multiplicand);
+	
+	public Price divide(BigDecimal divisor);
+	
+	public boolean isEmpty();
+	
+	public Price clone();
 
 }

@@ -22,7 +22,7 @@ package org.olat.selenium.page.course;
 import java.util.List;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.jcodec.common.Assert;
+import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.group.GroupPage;
 import org.olat.selenium.page.group.GroupsPage;

@@ -40,9 +40,7 @@ public class UserDisplayNamePreWarm implements PreWarm {
 	public void run() {
 		long start = System.nanoTime();
 		log.info("Start filling the user displayname cache");
-		
 		int numOfNames = UserManager.getInstance().warmUp();
-
 		log.info("Display name cache filled with " + numOfNames + " names in (ms): " + CodeHelper.nanoToMilliTime(start));
 	}
 }

@@ -40,7 +40,6 @@ import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.model.RepositoryEntryAuthorImpl;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
-import org.olat.resource.accesscontrol.model.OfferImpl;
 import org.olat.user.UserImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -125,7 +124,7 @@ public class RepositoryEntryAuthorQueries {
 				  .append(" ) as marks,");
 				needIdentity = true;
 			}
-			sb.append(" (select count(offer.key) from ").append(OfferImpl.class.getName()).append(" as offer ")
+			sb.append(" (select count(offer.key) from acoffer as offer ")
 			  .append("   where offer.resource=res and offer.valid=true")
 			  .append(" ) as offers")
 			  .append(" from repositoryentry as v")

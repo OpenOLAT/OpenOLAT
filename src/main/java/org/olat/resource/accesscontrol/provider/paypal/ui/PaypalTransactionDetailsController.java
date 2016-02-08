@@ -30,7 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
-import org.olat.resource.accesscontrol.model.Price;
+import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransaction;
 import org.olat.resource.accesscontrol.ui.FormController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;

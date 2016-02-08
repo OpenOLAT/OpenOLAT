@@ -42,6 +42,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
+import org.olat.resource.accesscontrol.ResourceReservation;
 
 /**
  * 

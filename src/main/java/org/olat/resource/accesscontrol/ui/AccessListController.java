@@ -33,8 +33,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
-import org.olat.resource.accesscontrol.model.OfferAccess;
 
 /**
  * 

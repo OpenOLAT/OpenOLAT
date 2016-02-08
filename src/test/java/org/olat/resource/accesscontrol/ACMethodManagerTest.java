@@ -43,8 +43,6 @@ import org.olat.resource.accesscontrol.manager.ACMethodDAO;
 import org.olat.resource.accesscontrol.manager.ACOfferDAO;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.FreeAccessMethod;
-import org.olat.resource.accesscontrol.model.Offer;
-import org.olat.resource.accesscontrol.model.OfferAccess;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -139,8 +137,7 @@ public class ACMethodManagerTest extends OlatTestCase {
 		//create a resource and an offer
 		OLATResource randomOres = createResource();
 		Offer offer = acService.createOffer(randomOres, "TestOfferAccess");
-		acService.save(offer);
-		
+		offer = acService.save(offer);
 		dbInstance.commitAndCloseSession();
 		
 		//create a link offer to method
@@ -163,7 +160,7 @@ public class ACMethodManagerTest extends OlatTestCase {
 		assertNotNull(retrievedAccess.getMethod());
 		assertEquals(method, retrievedAccess.getMethod());
 		assertNotNull(retrievedAccess.getOffer());
-		assertEquals(offer, retrievedAccess.getOffer());
+		Assert.assertEquals(offer, retrievedAccess.getOffer());
 	}
 	
 	@Test
@@ -171,15 +168,15 @@ public class ACMethodManagerTest extends OlatTestCase {
 		//create some resources and offers
 		OLATResource randomOres1 = createResource();
 		Offer offer1 = acService.createOffer(randomOres1, "TestSeveralOfferAccess 1");
-		acService.save(offer1);
+		offer1 = acService.save(offer1);
 		
 		OLATResource randomOres2 = createResource();
 		Offer offer2 = acService.createOffer(randomOres2, "TestSeveralOfferAccess 2");
-		acService.save(offer2);
+		offer2 = acService.save(offer2);
 		
 		OLATResource randomOres3 = createResource();
 		Offer offer3 = acService.createOffer(randomOres3, "TestSeveralOfferAccess 3");
-		acService.save(offer3);
+		offer3 = acService.save(offer3);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -270,8 +267,7 @@ public class ACMethodManagerTest extends OlatTestCase {
 		//create some resources and offers
 		OLATResource randomOres1 = createResource();
 		Offer offer = acService.createOffer(randomOres1, "TestDeleteOfferAccess");
-		acService.save(offer);
-
+		offer = acService.save(offer);
 		dbInstance.commitAndCloseSession();
 		
 		//create two link offer to method

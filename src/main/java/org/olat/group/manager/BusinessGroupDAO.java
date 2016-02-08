@@ -57,17 +57,15 @@ import org.olat.group.model.BusinessGroupRow;
 import org.olat.group.model.BusinessGroupToSearch;
 import org.olat.group.model.IdentityGroupKey;
 import org.olat.group.model.OpenBusinessGroupRow;
-import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.model.AccessMethod;
-import org.olat.resource.accesscontrol.model.OfferAccessImpl;
-import org.olat.resource.accesscontrol.model.OfferImpl;
-import org.olat.resource.accesscontrol.model.Price;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -1087,7 +1085,7 @@ public class BusinessGroupDAO {
 			where = PersistenceHelper.appendAnd(sb, where);
 			if(params.getPublicGroups().booleanValue()) {
 				sb.append(" bgi.resource.key in (")
-		         .append("   select offer.resource.key from ").append(OfferImpl.class.getName()).append(" offer ")
+		         .append("   select offer.resource.key from acoffer offer ")
 		         .append("     where offer.valid=true")
 		         .append("     and (offer.validFrom is null or offer.validFrom<=:atDate)")
 				 .append("     and (offer.validTo is null or offer.validTo>=:atDate)")
@@ -1095,7 +1093,7 @@ public class BusinessGroupDAO {
 				
 			} else {
 				sb.append(" bgi.resource.key not in (")
-		          .append("   select offer.resource.key from ").append(OfferImpl.class.getName()).append(" offer ")
+		          .append("   select offer.resource.key from acoffer offer ")
 		          .append("     where offer.valid=true")
 		          .append(" )");
 			}
@@ -1200,7 +1198,7 @@ public class BusinessGroupDAO {
 		
 		//offers
 		StringBuilder so = new StringBuilder();
-		so.append("select access.method, resource.key, offer.price from ").append(OfferAccessImpl.class.getName()).append(" access ")
+		so.append("select access.method, resource.key, offer.price from acofferaccess access ")
 			.append(" inner join access.offer offer")
 			.append(" inner join offer.resource resource");
 		if(resourceKeyToGroup.size() < OFFERS_IN_LIMIT) {

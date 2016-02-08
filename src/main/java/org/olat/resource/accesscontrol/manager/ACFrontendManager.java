@@ -32,17 +32,20 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.EnrollState;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -53,19 +56,22 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.resource.accesscontrol.AccessTransaction;
+import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.ACResourceInfo;
 import org.olat.resource.accesscontrol.model.ACResourceInfoImpl;
 import org.olat.resource.accesscontrol.model.AccessMethod;
-import org.olat.resource.accesscontrol.model.AccessTransaction;
-import org.olat.resource.accesscontrol.model.BusinessGroupAccess;
+import org.olat.resource.accesscontrol.model.AccessTransactionStatus;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
-import org.olat.resource.accesscontrol.model.Offer;
-import org.olat.resource.accesscontrol.model.OfferAccess;
-import org.olat.resource.accesscontrol.model.Order;
-import org.olat.resource.accesscontrol.model.OrderStatus;
-import org.olat.resource.accesscontrol.model.PSPTransaction;
-import org.olat.resource.accesscontrol.model.ResourceReservation;
+import org.olat.resource.accesscontrol.model.PSPTransactionStatus;
+import org.olat.resource.accesscontrol.model.RawOrderItem;
+import org.olat.resource.accesscontrol.ui.OrderTableItem;
+import org.olat.resource.accesscontrol.ui.OrderTableItem.Status;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -250,8 +256,7 @@ public class ACFrontendManager implements ACService {
 		if(resourceTypes.size() == 1) {
 			resourceType = resourceTypes.iterator().next();
 		}
-		List<OLATResourceAccess> resourceWithOffers = methodManager.getAccessMethodForResources(resourceKeys, resourceType, "BusinessGroup", true, new Date());
-		return resourceWithOffers;
+		return methodManager.getAccessMethodForResources(resourceKeys, resourceType, "BusinessGroup", true, new Date());
 	}
 
 	@Override
@@ -270,24 +275,17 @@ public class ACFrontendManager implements ACService {
 		if(resourceTypes.size() == 1) {
 			resourceType = resourceTypes.iterator().next();
 		}
-		List<OLATResourceAccess> resourceWithOffers = methodManager.getAccessMethodForResources(resourceKeys, resourceType, "BusinessGroup", true, new Date());
-		return resourceWithOffers;
+		return methodManager.getAccessMethodForResources(resourceKeys, resourceType, "BusinessGroup", true, new Date());
 	}
 
 	@Override
 	public Set<Long> filterResourcesWithAC(Collection<Long> resourceKeys) {
-		Set<Long> resourceWithOffers = accessManager.filterResourceWithOffer(resourceKeys);
-		return resourceWithOffers;
+		return accessManager.filterResourceWithOffer(resourceKeys);
 	}
 
 	@Override
 	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate) {
 		return accessManager.findOfferByResource(resource, valid, atDate);
-	}
-
-	@Override
-	public List<BusinessGroupAccess> getOfferAccessForBusinessGroup(boolean valid, Date atDate) {
-		return methodManager.getAccessMethodForBusinessGroup(valid, atDate);
 	}
 	
 	/**
@@ -323,20 +321,17 @@ public class ACFrontendManager implements ACService {
 	}
 
 	@Override
-	public List<OfferAccess> getOfferAccessByResource(Collection<Long> resourceKeys, boolean valid, Date atDate) {
-		return methodManager.getOfferAccessByResource(resourceKeys, valid, atDate);
-	}
-
-	@Override
-	public void save(Offer offer) {
-		accessManager.saveOffer(offer);
+	public Offer save(Offer offer) {
+		return accessManager.saveOffer(offer);
 	}
 
 	@Override
 	public OfferAccess saveOfferAccess(OfferAccess link) {
-		accessManager.saveOffer(link.getOffer());
-		methodManager.save(link);
-		return link;
+		//offer access only cascade merge
+		if(link.getOffer().getKey() == null) {
+			accessManager.saveOffer(link.getOffer());
+		}
+		return methodManager.save(link);
 	}
 	
 	@Override
@@ -357,6 +352,7 @@ public class ACFrontendManager implements ACService {
 				Order order = orderManager.saveOneClick(identity, link);
 				AccessTransaction transaction = transactionManager.createTransaction(order, order.getParts().get(0), link.getMethod());
 				transactionManager.save(transaction);
+				dbInstance.commit();
 				log.audit("Access granted to: " + link + " for " + identity);
 				return new AccessResult(true);
 			} else {
@@ -470,7 +466,7 @@ public class ACFrontendManager implements ACService {
 				return result.isFailed() ? Boolean.FALSE : Boolean.TRUE;
 			}
 		} else {
-			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(resource, false);
+			RepositoryEntryRef entry = repositoryManager.lookupRepositoryEntry(resource, false);
 			if(entry != null) {
 				if(!repositoryEntryRelationDao.hasRole(identity, entry, GroupRoles.participant.name())) {
 					repositoryEntryRelationDao.addRole(identity, entry, GroupRoles.participant.name());
@@ -504,7 +500,7 @@ public class ACFrontendManager implements ACService {
 				return true;
 			}
 		} else {
-			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(resource, false);
+			RepositoryEntryRef entry = repositoryManager.lookupRepositoryEntry(resource, false);
 			if(entry != null) {
 				if(repositoryEntryRelationDao.hasRole(identity, entry, GroupRoles.participant.name())) {
 					repositoryEntryRelationDao.removeRole(identity, entry, GroupRoles.participant.name());
@@ -608,29 +604,99 @@ public class ACFrontendManager implements ACService {
 	public List<Order> findOrders(Identity delivery, OrderStatus... status) {
 		return orderManager.findOrdersByDelivery(delivery, status);
 	}
-
+	
 	@Override
-	public List<AccessTransaction> findAccessTransactions(List<Order> orders) {
-		return transactionManager.loadTransactionsForOrders(orders);
+	public List<AccessTransaction> findAccessTransactions(Order order) {
+		return transactionManager.loadTransactionsForOrder(order);
 	}
 
 	@Override
-	public List<PSPTransaction> findPSPTransactions(List<Order> orders) {
-		List<AccessMethodHandler> handlers = accessModule.getMethodHandlers();
-		List<PSPTransaction> transactions = new ArrayList<PSPTransaction>();
-		for(AccessMethodHandler handler:handlers) {
-			transactions.addAll(handler.getPSPTransactions(orders));
-		}
-		return transactions;
-	}
-
-	@Override
-	public List<Order> findOrders(OLATResource resource, Identity delivery, Long orderNr, Date from, Date to, OrderStatus... status) {
-		return orderManager.findOrders(resource, delivery, orderNr, from, to, status);
+	public Order loadOrderByKey(Long key) {
+		return orderManager.loadOrderByKey(key);
 	}
 
 	@Override
 	public List<Order> findOrders(OLATResource resource, OrderStatus... status) {
 		return orderManager.findOrdersByResource(resource, status);
 	}
+
+	@Override
+	public List<OrderTableItem> findOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr,
+			Date from, Date to, OrderStatus... status) {
+		List<AccessMethod> methods = methodManager.getAllMethods();
+		Map<String,AccessMethod> methodMap = new HashMap<>();
+		for(AccessMethod method:methods) {
+			methodMap.put(method.getKey().toString(), method);
+		}
+		
+		List<RawOrderItem> rawOrders = orderManager.findNativeOrderItems(resource, delivery, orderNr, from, to, status);
+		List<OrderTableItem> items = new ArrayList<>(rawOrders.size());
+		for(RawOrderItem rawOrder:rawOrders) {
+			String orderStatusStr = rawOrder.getOrderStatus();
+			OrderStatus orderStatus = OrderStatus.valueOf(orderStatusStr);
+			Status finalStatus = getStatus(orderStatusStr,  rawOrder.getTrxStatus(), rawOrder.getPspTrxStatus());
+			
+			String methodIds = rawOrder.getTrxMethodIds();
+			
+			String[] methodIdArr = methodIds.split(",");
+			
+			List<AccessMethod> orderMethods = new ArrayList<>(2);
+			for(String methodId:methodIdArr) {
+				if(methodMap.containsKey(methodId)) {
+					orderMethods.add(methodMap.get(methodId));
+				}
+			}
+			
+			OrderTableItem item = new OrderTableItem(rawOrder.getOrderKey(), rawOrder.getOrderNr(),
+					rawOrder.getTotal(), rawOrder.getCreationDate(), orderStatus, finalStatus,
+					rawOrder.getDeliveryKey(), orderMethods);
+			item.setResourceDisplayname(rawOrder.getResourceName());
+			
+			items.add(item);
+		}
+		
+		return items;
+	}
+	
+	public Status getStatus(String orderStatus, String trxStatus, String pspTrxStatus) {
+		boolean warning = false;
+		boolean error = false;
+		boolean canceled = false;
+		
+		if(OrderStatus.CANCELED.name().equals(orderStatus)) {
+			canceled = true;
+		} else if(OrderStatus.ERROR.name().equals(orderStatus)) {
+			error = true;
+		} else if(OrderStatus.PREPAYMENT.name().equals(orderStatus)) {
+			warning = true;
+		}
+		
+		if(StringHelper.containsNonWhitespace(trxStatus)) {
+			if(trxStatus.contains(AccessTransactionStatus.CANCELED.name())) {
+				canceled = true;
+			} else if(trxStatus.contains(AccessTransactionStatus.ERROR.name())) {
+				error = true;
+			}
+		}
+		
+		if(StringHelper.containsNonWhitespace(pspTrxStatus)) {
+			if(pspTrxStatus.contains(PSPTransactionStatus.ERROR.name())) {
+				error = true;
+			} else if(pspTrxStatus.contains(PSPTransactionStatus.WARNING.name())) {
+				warning = true;
+			}
+		}
+		
+		if(error) {
+			return Status.ERROR;
+		} else if (warning) {
+			return Status.WARNING;
+		} else if(canceled) {
+			return Status.CANCELED;
+		} else {
+			return Status.OK;
+		}	
+	}
+	
+	
 }

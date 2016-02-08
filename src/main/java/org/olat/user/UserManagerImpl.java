@@ -453,7 +453,9 @@ public class UserManagerImpl extends UserManager {
 			identities = query.setFirstResult(count).getResultList();
 			em.clear();
 			for(IdentityShort identity:identities) {
-				getUserDisplayName(identity);
+				if(identity.getStatus() < Identity.STATUS_DELETED) {
+					getUserDisplayName(identity);
+				}
 			}
 			count += identities.size();
 		} while(identities.size() >= batchSize);

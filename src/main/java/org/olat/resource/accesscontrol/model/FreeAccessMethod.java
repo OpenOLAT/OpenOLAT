@@ -20,6 +20,9 @@
 
 package org.olat.resource.accesscontrol.model;
 
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+
 import org.olat.resource.accesscontrol.provider.free.FreeAccessHandler;
 
 
@@ -32,6 +35,8 @@ import org.olat.resource.accesscontrol.provider.free.FreeAccessHandler;
  * Initial Date:  27 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+@Entity(name="acfreemethod")
+@DiscriminatorValue(value="free.method")  
 public class FreeAccessMethod extends AbstractAccessMethod {
 
 	private static final long serialVersionUID = -6028245920419886453L;
@@ -55,22 +60,4 @@ public class FreeAccessMethod extends AbstractAccessMethod {
 	public boolean isPaymentMethod() {
 		return false;
 	}
-
-	@Override
-	public int hashCode() {
-		return getKey() == null ? 3464 : getKey().hashCode();
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if(this == obj) {
-			return true;
-		}
-		if(obj instanceof FreeAccessMethod) {
-			FreeAccessMethod method = (FreeAccessMethod)obj;
-			return getKey() != null && getKey().equals(method.getKey());
-		}
-		return false;
-	}
-
 }
