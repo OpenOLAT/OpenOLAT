@@ -35,6 +35,8 @@ import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 
 /**
  * Description: <br>
@@ -44,6 +46,7 @@ import org.olat.core.logging.AssertException;
  * @author Felix Jost
  */
 public class SimpleStackedPanel extends AbstractComponent implements StackedPanel {
+	private static final OLog log = Tracing.createLoggerFor(SimpleStackedPanel.class);
 	private static final ComponentRenderer RENDERER = new PanelRenderer();
 
 	private Component curContent;
@@ -62,8 +65,9 @@ public class SimpleStackedPanel extends AbstractComponent implements StackedPane
 	 * delegate
 	 * @param ureq
 	 */
+	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
-		throw new AssertException("a panel should never dispatch a request (unless it has droppables, which it has not), ureq = "+ureq);
+		log.error("a panel should never dispatch a request (unless it has droppables, which it has not), ureq = "+ureq);
 	}
 
 	/**
