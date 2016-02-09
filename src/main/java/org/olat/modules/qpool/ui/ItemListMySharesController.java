@@ -89,15 +89,22 @@ public class ItemListMySharesController extends AbstractItemListController {
         }
 
         myShareEl = uifactory.addDropdownSingleselect("source.selector", "my.list", formLayout,  myShareKeys, myShareValues, null);
+        myShareEl.setDomReplacementWrapperRequired(false);
+        myShareEl.getLabelC().setDomReplaceable(false);
         myShareEl.addActionListener(FormEvent.ONCHANGE);
 		if(myPools.isEmpty() && myGroups.isEmpty()) {
 			myShareEl.setEnabled(false);
 		} else {
             myShareEl.select( myShareKeys[0], true);
-
-            Pool firstPool = myPools.get(0);
-			PoolItemsSource source = new PoolItemsSource(getIdentity(), ureq.getUserSession().getRoles(), firstPool);
-            updateSource(source);
+            if(myPools.size() > 0) {
+            	Pool firstPool = myPools.get(0);
+            	PoolItemsSource source = new PoolItemsSource(getIdentity(), ureq.getUserSession().getRoles(), firstPool);
+            	updateSource(source);
+            } else if(myGroups.size() > 0) {
+            	BusinessGroup firstGroup = myGroups.get(0);
+            	SharedItemsSource source = new SharedItemsSource(firstGroup, getIdentity(), ureq.getUserSession().getRoles(), false);
+    			updateSource(source);
+            }
         }
 	}
 
