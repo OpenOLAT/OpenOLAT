@@ -33,7 +33,8 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.render.ValidationResult;
-import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 
 /**
  * Description:<br>
@@ -45,6 +46,7 @@ import org.olat.core.logging.AssertException;
  * @author Felix Jost, http://www.goodsolutions.ch
  */
 public class OncePanel extends AbstractComponent implements ComponentCollection {
+	private static final OLog log = Tracing.createLoggerFor(OncePanel.class);
 	private static final ComponentRenderer RENDERER = new PanelRenderer();
 
 	private boolean hideOnNextValidate;
@@ -92,7 +94,7 @@ public class OncePanel extends AbstractComponent implements ComponentCollection 
 	
 	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
-		throw new AssertException("a panel should never dispatch a request (unless it has droppables, which it has not), ureq = "+ureq);
+		log.error("a panel should never dispatch a request (unless it has droppables, which it has not), ureq = "+ureq);
 	}
 
 	@Override
