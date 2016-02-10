@@ -25,6 +25,7 @@
 
 package org.olat.ims.qti.process;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -37,9 +38,6 @@ import java.util.Map;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Element;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
-import org.olat.core.util.ObjectCloner;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -77,11 +75,19 @@ import org.olat.ims.resources.IMSEntityResolver;
 /**
  */
 public class QTIHelper {
-	// logging
-	private static final OLog log = Tracing.createLoggerFor(QTIHelper.class);
 
-	
-	private static CacheWrapper<String,Object[]> ehCachLoadedQTIDocs = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(QTIHelper.class.getSimpleName(), "QTI_xml_Documents");
+	private static class QTIDocument {
+		
+		private final Long date;
+		private final byte[] content;
+		
+		public QTIDocument(Long date, byte[] content) {
+			this.date = date;
+			this.content = content;
+		}
+	}
+	private static CacheWrapper<String,QTIDocument> ehCachLoadedQTIDocs = CoordinatorManager.getInstance()
+			.getCoordinator().getCacher().getCache(QTIHelper.class.getSimpleName(), "QTI_xml_Documents");
 	/**
 	 * 
 	 */
@@ -395,60 +401,42 @@ public class QTIHelper {
 	 * @return
 	 */
 	public static Document getDocument(LocalFileImpl pathToXml) {
-
-		boolean isDebugEnabled = log.isDebug();
-		long debugEnabledTime = 0;
-
-		Document doc = null;
 		if (pathToXml == null) {
 			// xml file does not exist!
 			return null;
 		}
+		
+		byte[] doc = null;
 		// get lastmodified to see if the file is newer than the cache entry and we thus need to reload it.
 		Long lmf = Long.valueOf(pathToXml.getLastModified());
 		String key = ((LocalFolderImpl) pathToXml.getParentContainer()).getBasefile().getAbsolutePath();
 
-		// debug info
-		if (isDebugEnabled) {
-			// identify debug info statements which belong together.
-			debugEnabledTime = System.currentTimeMillis();
-			log.debug("[" + debugEnabledTime + "] getDocument(..) for [[" + key + "]]");
-			log.debug("[" + debugEnabledTime + "] file size is " + pathToXml.getSize());
-		}
-		//Object[] tuple = (Object[]) (EHCacheManager.getInstance().get(ehCachLoadedQTIDocs, key));
-		Object[] tuple = (ehCachLoadedQTIDocs.get(key));
-		
-		if (tuple != null && ((Long) tuple[0]).compareTo(lmf) == 0) {
+		QTIDocument tuple = ehCachLoadedQTIDocs.get(key);
+		if (tuple != null && tuple.date.compareTo(lmf) == 0) {
 			// in cache and not modified
-			doc = (Document) tuple[1];
-			if (isDebugEnabled) {
-				log.debug("[" + debugEnabledTime + "] Document comes from EHCache!");
-				log.debug("[" + debugEnabledTime + "] Document approx Mem usage " + ObjectCloner.getObjectSize(doc));
-			}
-
+			doc = tuple.content;
 		} else {
 			// load it: either not in cache anymore or modified in the meantime
-			doc = getDocument(pathToXml.getInputStream());
-			if(doc==null) {
+			doc = getDocumentAsXML(pathToXml.getInputStream());
+			if(doc == null) {
 				//the xml file could not be parsed
-				log.debug("[" + debugEnabledTime + "] Document could not be parsed, return null!");
 				return null;
 			}
-			// add or replace the document in the cache
-			//EHCacheManager.getInstance().putInCache(ehCachLoadedQTIDocs, key, new Object[] { lmf, doc });
 			
-			// we use a putSilent here (no invalidation notifications to other cluster nodes), since
-			// we did not generate new data, but simply asked to reload it. 
-			ehCachLoadedQTIDocs.put(key, new Object[] { lmf, doc });
-			if (isDebugEnabled) {
-				log.debug("[" + debugEnabledTime + "] Document loaded, parsed and put into cache!");
-				log.debug("[" + debugEnabledTime + "] Document approx Mem usage " + ObjectCloner.getObjectSize(doc));
+			if(tuple == null) {
+				QTIDocument cachedTuple = ehCachLoadedQTIDocs.putIfAbsent(key, new QTIDocument(lmf, doc ));
+				if(cachedTuple != null) {
+					doc = cachedTuple.content;
+				}
+			} else {
+				// we use a putSilent here (no invalidation notifications to other cluster nodes), since
+				// we did not generate new data, but simply asked to reload it. 
+				ehCachLoadedQTIDocs.update(key, new QTIDocument(lmf, doc ));
 			}
-
 		}
 		// we do not know if the receiver is destructive -> protect the cached entry
-		// return the uncached doc if it is not chached.
-		return (Document) ObjectCloner.deepCopy(doc);
+		// return a copy of the doc.
+		return getDocument(doc);
 	}
 	
 	public static Document getDocument(Path xmlPath) {
@@ -459,30 +447,22 @@ public class QTIHelper {
 			return null;
 		}
 	}
-
-	/**
-	 * Get a document from InputStream. This method will close the input stream.
-	 * 
-	 * @param is
-	 * @return
-	 */
-	private static Document getDocument(InputStream is) {
-		XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
-		Document doc = null;
+	
+	public static Document getDocument(byte[] xml) {
 		try {
-			doc = xmlParser.parse(is, false);
-			is.close();
-		} catch (Exception e) {
-			// nothing we can do - could be IOException or org.dom4j.DocumentException			
-			doc = null;
-		} finally {
-			try {
-				if (is != null) is.close();
-			} catch (IOException e2) {
-				// we did our best to close the inputstream
-			}
+			XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
+			return xmlParser.parse(new ByteArrayInputStream(xml), false);
+		} catch(Exception e) {
+			return null;
 		}
-		return doc;
 	}
-
+	
+	public static byte[] getDocumentAsXML(InputStream in) {
+		try {
+			XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
+			return xmlParser.parse(in, false).asXML().getBytes();
+		} catch(Exception e) {
+			return null;
+		}
+	}
 }
