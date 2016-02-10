@@ -33,15 +33,23 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.pool.QTI21AssessmentItemFactory.Type;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.modules.qpool.ExportFormatOptions;
@@ -58,11 +66,14 @@ import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
 import org.olat.modules.qpool.manager.TaxonomyLevelDAO;
 import org.olat.modules.qpool.model.DefaultExportFormat;
+import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
+
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 
 /**
  * 
@@ -79,6 +90,9 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private QTI21Service qtiService;
+	
 	@Autowired
 	private QPoolFileStorage qpoolFileStorage;
 	@Autowired
@@ -212,6 +226,28 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	}
 
 	public QuestionItem createItem(Identity identity, Type type, String title, Locale locale) {
-		return null;
+		AssessmentItemBuilder itemBuilder = null;
+		switch(type) {
+			case sc: itemBuilder = new SingleChoiceAssessmentItemBuilder(qtiService.qtiSerializer()); break;
+			case mc: itemBuilder = new MultipleChoiceAssessmentItemBuilder(qtiService.qtiSerializer()); break;
+			case kprim: itemBuilder = new KPrimAssessmentItemBuilder(qtiService.qtiSerializer()); break;
+			//case fib: item = QTIEditHelper.createFIBItem(trans); break;
+			case essay: itemBuilder = new EssayAssessmentItemBuilder(qtiService.qtiSerializer()); break;
+			default: return null;
+		}
+
+		AssessmentItem assessmentItem = itemBuilder.getAssessmentItem();
+		assessmentItem.setLabel(title);
+		assessmentItem.setTitle(title);
+		
+		QTI21ImportProcessor processor = new QTI21ImportProcessor(identity, locale, null, null,
+				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage, dbInstance);
+		QuestionItemImpl qitem = processor.processItem(assessmentItem, "", null, "OpenOLAT", Settings.getVersion(), null);
+
+		VFSContainer baseDir = qpoolFileStorage.getContainer(qitem.getDirectory());
+		VFSLeaf leaf = baseDir.createChildLeaf(qitem.getRootFilename());
+		File itemFile = ((LocalImpl)leaf).getBasefile();
+		qtiService.persistAssessmentObject(itemFile, assessmentItem);
+		return qitem;
 	}
 }

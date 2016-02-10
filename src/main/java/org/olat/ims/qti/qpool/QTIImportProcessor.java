@@ -234,7 +234,7 @@ class QTIImportProcessor {
 		boolean ooFormat = processItemQuestionType(poolItem, ident, itemEl);
 		if(StringHelper.containsNonWhitespace(editor)) {
 			poolItem.setEditor(editor);
-			poolItem.setEditor(editorVersion);
+			poolItem.setEditorVersion(editorVersion);
 		} else if(ooFormat) {
 			poolItem.setEditor("OpenOLAT");
 		}
