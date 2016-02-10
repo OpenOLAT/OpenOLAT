@@ -298,11 +298,11 @@ public class LLEditForm extends FormBasicController {
 	private void addNewFormLink(int index, final LLModel link) {
 		// add link target
 		TextElement lTarget = uifactory.addTextElement("target" + counter, null, -1, link.getTarget(), flc);
+		lTarget.setPlaceholderKey("target.example", null);
 		lTarget.clearError();
 		lTarget.setEnabled(!link.isIntern());
 		lTarget.setDisplaySize(40);
 		lTarget.setMandatory(true);
-		lTarget.setExampleKey("target.example", null);
 		lTarget.setNotEmptyCheck("ll.table.target.error");
 		lTarget.setItemValidatorProvider(new ItemValidatorProvider() {
 			public boolean isValidValue(String value, ValidationError validationError, Locale locale) {
@@ -333,14 +333,14 @@ public class LLEditForm extends FormBasicController {
 		lDescription.setDisplaySize(20);
 		lDescription.setNotEmptyCheck("ll.table.description.error");
 		lDescription.setMandatory(true);
-		lDescription.setExampleKey("ll.table.description", null);
+		lDescription.setPlaceholderKey("ll.table.description", null);
 		lDescription.setUserObject(link);
 		lDescriptionInputList.add(index, lDescription);
 		
 		// add link comment
 		TextElement lComment =uifactory.addTextAreaElement("comment" + counter, null, -1, 2, 50, true, link.getComment(), flc);
+		lComment.setPlaceholderKey("ll.table.comment", null);
 		lComment.setDisplaySize(20);
-		lComment.setExampleKey("ll.table.comment", null);
 		lComment.setUserObject(link);
 		lCommentInputList.add(index, lComment);
 		
