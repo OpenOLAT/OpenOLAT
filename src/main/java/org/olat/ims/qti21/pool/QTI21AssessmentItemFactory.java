@@ -26,7 +26,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
-import org.olat.ims.qti.QTI12EditorController;
 import org.olat.ims.qti21.ui.editor.AssessmentItemEditorController;
 import org.olat.modules.qpool.QItemFactory;
 import org.olat.modules.qpool.QPoolItemEditorController;
@@ -50,11 +49,11 @@ public class QTI21AssessmentItemFactory implements QItemFactory {
 	public String getLabel(Locale locale) {
 		Translator trans = Util.createPackageTranslator(AssessmentItemEditorController.class, locale);
 		switch(type) {
-			case sc: return "QTI 2.1 " + trans.translate("item.type.sc");
-			case mc: return "QTI 2.1 " + trans.translate("item.type.mc");
-			case kprim: return "QTI 2.1 " + trans.translate("item.type.kprim");
+			case sc: return "QTI 2.1 " + trans.translate("new.sc");
+			case mc: return "QTI 2.1 " + trans.translate("new.mc");
+			case kprim: return "QTI 2.1 " + trans.translate("new.kprim");
 			//case fib: return "QTI 2.1 " + trans.translate("item.type.fib");
-			case essay: return "QTI 2.1 " + trans.translate("item.type.essay");
+			case essay: return "QTI 2.1 " + trans.translate("new.essay");
 			default: return type.name();
 		}
 	}
@@ -63,7 +62,7 @@ public class QTI21AssessmentItemFactory implements QItemFactory {
 	public QPoolItemEditorController getEditor(UserRequest ureq, WindowControl wControl, String title) {
 		QTI21QPoolServiceProvider spi = CoreSpringFactory.getImpl(QTI21QPoolServiceProvider.class);
 		QuestionItem newItem = spi.createItem(ureq.getIdentity(), type, title, ureq.getLocale());
-		QTI12EditorController ctrl = new QTI12EditorController(ureq, wControl, newItem);
+		QTI21EditorController ctrl = new QTI21EditorController(ureq, wControl, newItem);
 		return ctrl;
 	}
 	

@@ -21,7 +21,7 @@ package org.olat.ims.qti21.pool;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -61,29 +61,21 @@ public class AssessmentItemFileResourceValidator {
 
 	public boolean validate(String filename, File file) {
 		if(file == null || !file.exists()) return false;
-		
-		InputStream in = null;
-		try {
-			in = new FileInputStream(file);
+
+		try(InputStream in = new FileInputStream(file)) {
 			return validate(filename, in);
-		} catch (FileNotFoundException e) {
+		} catch (IOException e) {
 			return false;
-		} finally {
-			IOUtils.closeQuietly(in);
 		}
 	}
 
 	public boolean validate(String filename, VFSLeaf file) {
 		if(file == null || !file.exists()) return false;
-		
-		InputStream in = null;
-		try {
-			in = file.getInputStream();
+
+		try(InputStream in = file.getInputStream()) {
 			return validate(filename, in);
 		} catch (Exception e) {
 			return false;
-		} finally {
-			IOUtils.closeQuietly(in);
 		}
 	}
 
