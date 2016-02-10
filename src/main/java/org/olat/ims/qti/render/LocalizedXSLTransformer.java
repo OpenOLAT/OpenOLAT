@@ -34,7 +34,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
+import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXSource;
@@ -91,7 +91,7 @@ public class LocalizedXSLTransformer {
 	}
 	
 	private Translator pT;
-	private Transformer transformer;
+	private Templates templates;
 	/**
 	 * <code>RESULTS2HTML</code>
 	 */
@@ -115,13 +115,13 @@ public class LocalizedXSLTransformer {
 	 * @return A localized transformer
 	 */
 	 // cluster_ok only in VM
-	public synchronized static LocalizedXSLTransformer getInstance(Locale locale) {
+	public static LocalizedXSLTransformer getInstance(Locale locale) {
 		LocalizedXSLTransformer instance = instanceHash.get(I18nManager.getInstance().getLocaleKey(locale));
 		if (instance == null) {
 			Translator trans = Util.createPackageTranslator(QTI12ResultDetailsController.class, locale);
 			LocalizedXSLTransformer newInstance = new LocalizedXSLTransformer(trans);
 			instance = instanceHash.putIfAbsent(I18nManager.getInstance().getLocaleKey(locale), newInstance); //see javadoc of ConcurrentHashMap
-			if(instance==null) { //newInstance was put into the map
+			if(instance == null) { //newInstance was put into the map
 				instance = newInstance;
 			}
 		}
@@ -137,7 +137,7 @@ public class LocalizedXSLTransformer {
 	 * @param styleSheetName The stylesheet to use.
 	 * @return Results of XSL transformation
 	 */
-	private StringBuilder render(Element node) {
+	private String render(Element node) {
 		try {
 			Document doc = node.getDocument();
 			if (doc == null) {
@@ -146,14 +146,10 @@ public class LocalizedXSLTransformer {
 			}
 			DocumentSource xmlsource = new DocumentSource(node);
 			
-			//ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			StringWriter sw = new StringWriter();
 			StreamResult result = new StreamResult(sw);
-			synchronized (transformer) {//o_clusterOK by:fj transformer is per vm
-				transformer.transform(xmlsource, result);
-			}
-			String res = sw.toString();
-			return new StringBuilder(res); //.append(result.getOutputStream());
+			templates.newTransformer().transform(xmlsource, result);
+			return sw.toString();
 		} catch (Exception e) {
 			throw new OLATRuntimeException(LocalizedXSLTransformer.class, "Error transforming XML.", e);
 		}
@@ -165,7 +161,7 @@ public class LocalizedXSLTransformer {
 	 * @param doc The <results/>document
 	 * @return transformation results
 	 */
-	public StringBuilder renderResults(Document doc) {
+	public String renderResults(Document doc) {
 		return render(doc.getRootElement());
 	}
 
@@ -190,7 +186,7 @@ public class LocalizedXSLTransformer {
 			reader = XMLReaderFactory.createXMLReader();
 			reader.setEntityResolver(er);
 			Source xsltsource = new SAXSource(reader, new InputSource(new StringReader(replacedOutput)));
-			this.transformer = tfactory.newTransformer(xsltsource);
+			templates = tfactory.newTemplates(xsltsource);
 		} catch (SAXException e) {
 			throw new OLATRuntimeException("Could not initialize transformer!", e);
 		} catch (TransformerConfigurationException e) {
