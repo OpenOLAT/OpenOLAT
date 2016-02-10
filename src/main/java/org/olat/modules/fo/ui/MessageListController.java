@@ -891,7 +891,7 @@ public class MessageListController extends BasicController implements GenericEve
 				if(reloadedMessage.getParent() == null) {
 					forumManager.deleteMessageTree(forum.getKey(), reloadedMessage);
 					//delete topics
-					ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_MESSAGE_DELETE, getClass(),
+					ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_THREAD_DELETE, getClass(),
 							LoggingResourceable.wrap(reloadedMessage));
 					//back to thread list
 					fireEvent(ureq, new DeleteThreadEvent());
@@ -905,7 +905,7 @@ public class MessageListController extends BasicController implements GenericEve
 						thread = threadTop;//update with the fresh version
 					}
 					showInfo("deleteok");
-					ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_THREAD_DELETE, getClass(),
+					ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_MESSAGE_DELETE, getClass(),
 						LoggingResourceable.wrap(reloadedMessage));
 					//reload
 					reloadModelAfterDelete(ureq, message);

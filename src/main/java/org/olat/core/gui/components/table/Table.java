@@ -186,7 +186,10 @@ public class Table extends AbstractComponent {
 	 * @return Column descriptor of currently sorted column
 	 */
 	protected ColumnDescriptor getCurrentlySortedColumnDescriptor() {
-		return getColumnDescriptor(sortColumn);
+		if(columnOrder.size() >= 0 && sortColumn < columnOrder.size()) {
+			return getColumnDescriptor(sortColumn);
+		}
+		return null;
 	}
 
 	/**

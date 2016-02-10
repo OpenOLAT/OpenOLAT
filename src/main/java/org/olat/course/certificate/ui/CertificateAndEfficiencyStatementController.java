@@ -184,7 +184,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			selectCertificate(ureq);
 		}
 		
-		if(statementOwner.equals(ureq.getIdentity())) {
+		if(efficiencyStatement != null && statementOwner.equals(ureq.getIdentity())) {
 			EPArtefactHandler<?> artHandler = portfolioModule.getArtefactHandler(EfficiencyStatementArtefact.ARTEFACT_TYPE);
 			if(portfolioModule.isEnabled() && artHandler != null && artHandler.isEnabled()) {
 				collectArtefactLink = LinkFactory.createCustomLink("collectArtefactLink", "collectartefact", "", Link.NONTRANSLATED, mainVC, this);
@@ -365,7 +365,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			artefact.setAuthor(getIdentity());//only author can create artefact
 			//no business path becouse we cannot launch an efficiency statement
 			artefact.setCollectionDate(new Date());
-			artefact.setTitle(translate("artefact.title", new String[]{efficiencyStatement.getCourseTitle()}));
+			artefact.setTitle(translate("artefact.title", new String[]{ efficiencyStatement.getCourseTitle() }));
 			artHandler.prefillArtefactAccordingToSource(artefact, efficiencyStatement);
 			ePFCollCtrl = new ArtefactWizzardStepsController(ureq, getWindowControl(), artefact, (VFSContainer)null);
 			listenTo(ePFCollCtrl);
