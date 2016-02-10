@@ -43,9 +43,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryLifecycle;
-import org.olat.resource.OLATResource;
 
 /**
  * Initial Date:  Feb 6, 2004
@@ -184,9 +182,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 
 	public RepositoryEntry getCourseRepositoryEntry() {
 		if(courseRepoEntry == null) {
-			CourseGroupManager cgm = courseEnvironment.getCourseGroupManager();
-			OLATResource courseResource = cgm.getCourseResource();
-			courseRepoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
+			courseRepoEntry = courseEnvironment.getCourseGroupManager().getCourseEntry();
 		}
 		return courseRepoEntry;
 	}
