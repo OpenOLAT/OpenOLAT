@@ -479,7 +479,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				doNodeClick(ureq, tev);
 			}
 		} else if (source == coursemain) {
-			if (event.getCommand().equals("activateCourseNode")) {
+			if ("activateCourseNode".equals(event.getCommand())) {
 				// Events from the JS function o_activateCourseNode() - activate the given node id
 				String nodeid = ureq.getParameter("nodeid");
 				if (nodeid != null) {
