@@ -95,6 +95,7 @@ public class VelocityContainer extends Container {
 	/**
 	 * @see org.olat.core.gui.components.Component#dispatchRequest(org.olat.core.gui.UserRequest)
 	 */
+	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
 		// called when a page-link is clicked ($r.renderCommand)
 		String commandString = ureq.getParameter(COMMAND_ID);
