@@ -96,10 +96,17 @@ public class StackedBusinessControl implements BusinessControl {
 		if(contextEntry == null || contextEntry.getOLATResourceable() == null) {
 			return "";
 		}
+		StringBuilder sb = new StringBuilder(64);
+		if(origBusinessControl != null) {
+			sb.append(origBusinessControl.getAsString());
+		}
 		Long key = contextEntry.getOLATResourceable().getResourceableId();
-		String postfix = BusinessControl.START_TAG +contextEntry.getOLATResourceable().getResourceableTypeName() + 
-		(key == null? "":BusinessControl.DELIMITER_TAG+key)+BusinessControl.END_TAG;
-		return origBusinessControl != null ? origBusinessControl.getAsString() +  postfix : postfix;
+		sb.append("[").append(contextEntry.getOLATResourceable().getResourceableTypeName());
+		if(key != null) {
+			sb.append(":").append(key.longValue());
+		}
+		sb.append("]");
+		return sb.toString();
 	}
 
 	@Override

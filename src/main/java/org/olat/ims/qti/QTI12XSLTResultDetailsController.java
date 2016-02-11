@@ -48,7 +48,7 @@ public class QTI12XSLTResultDetailsController extends BasicController {
 			showInfo("error.resreporting.na");
 			return;
 		}
-		StringBuilder resultsHTML = LocalizedXSLTransformer.getInstance(ureq.getLocale()).renderResults(doc);
+		String resultsHTML = LocalizedXSLTransformer.getInstance(ureq.getLocale()).renderResults(doc);
 		details.contextPut("reshtml", resultsHTML);
 		putInitialPanel(details);
 	}

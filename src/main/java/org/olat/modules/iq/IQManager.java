@@ -256,8 +256,7 @@ public class IQManager implements UserDataDeletable {
 			default: // default => Strip nothing 
 				break;
 		}
-		StringBuilder sb = LocalizedXSLTransformer.getInstance(locale).renderResults(docResReporting);
-		return sb.toString();
+		return LocalizedXSLTransformer.getInstance(locale).renderResults(docResReporting);
 	}
 
 	/**

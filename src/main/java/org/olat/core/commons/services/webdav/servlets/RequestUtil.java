@@ -481,14 +481,28 @@ public final class RequestUtil {
      * @return
      */
     public static String normalizeFilename(String filename) {
-    	String nameSanitized = filename/*.replace(" ", "_")*/
-    			.replace("/", "_").replace("\\", "_")
-    			.replace("?", "_").replace("<", "_").replace(">", "_")
-    			.replace("%", "_").replace("\"", "_").replace("'", "_")
-    			.replace(":", "_").replace("*", "_").replace("&", "_")
-    			.replace(".", "_");
-    	String nameNormalized = Normalizer.normalize(nameSanitized, Normalizer.Form.NFC);
-    	return nameNormalized;
+    	StringBuilder sb = new StringBuilder(filename.length());
+    	char[] chars = filename.toCharArray();
+    	int numOfChars = chars.length;
+    	for(int i=0; i<numOfChars; i++) {
+    		char ch = chars[i];
+    		switch(ch) {
+    			case '/': sb.append('_'); break;
+    			case '\\': sb.append('_'); break;
+    			case '?': sb.append('_'); break;
+    			case '<': sb.append('_'); break;
+    			case '>': sb.append('_'); break;
+    			case '%': sb.append('_'); break;
+    			case '"': sb.append('_'); break;
+    			case '\'': sb.append('_'); break;
+    			case ':': sb.append('_'); break;
+    			case '*': sb.append('_'); break;
+    			case '&': sb.append('_'); break;
+    			case '.': sb.append('_'); break;
+    			default: sb.append(ch);
+    		}
+    	}
+    	return Normalizer.normalize(sb, Normalizer.Form.NFC);
     }
 }
 

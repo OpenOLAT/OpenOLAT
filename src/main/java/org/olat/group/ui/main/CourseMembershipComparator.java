@@ -41,21 +41,21 @@ public class CourseMembershipComparator implements Comparator<CourseMembership> 
 			return -1;
 		}
 		
-		if(m1.isRepoTutor() || m1.isGroupTutor()) {
-			if(m2.isRepoTutor() || m2.isGroupTutor()) {
+		if(m1.isGroupTutor()) {
+			if(m2.isGroupTutor()) {
 				return 0;
 			}
 			return 1;
-		} else if(m2.isRepoTutor() || m2.isGroupTutor()) {
+		} else if(m2.isGroupTutor()) {
 			return -1;
 		}
 		
-		if(m1.isRepoParticipant() || m1.isGroupParticipant()) {
-			if(m2.isRepoParticipant() || m2.isGroupParticipant()) {
+		if(m1.isRepoTutor()) {
+			if(m2.isRepoTutor()) {
 				return 0;
 			}
 			return 1;
-		} else if(m2.isRepoParticipant() || m2.isGroupParticipant()) {
+		} else if(m2.isRepoTutor()) {
 			return -1;
 		}
 		
@@ -65,6 +65,24 @@ public class CourseMembershipComparator implements Comparator<CourseMembership> 
 			}
 			return 1;
 		} else if(m2.isGroupWaiting()) {
+			return -1;
+		}
+		
+		if(m1.isGroupParticipant()) {
+			if(m2.isGroupParticipant()) {
+				return 0;
+			}
+			return 1;
+		} else if(m2.isGroupParticipant()) {
+			return -1;
+		}
+		
+		if(m1.isRepoParticipant()) {
+			if(m2.isRepoParticipant()) {
+				return 0;
+			}
+			return 1;
+		} else if(m2.isRepoParticipant()) {
 			return -1;
 		}
 		return 0;

@@ -617,8 +617,11 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	/**
 	 * @see java.lang.Object#toString()
 	 */
+	@Override
 	public String toString() {
-		return "Id: " + getIdent() + ", '" + getShortTitle() + "' " + super.toString();
+		StringBuilder sb = new StringBuilder(64);
+		sb.append("courseNode[id=").append(getIdent()).append(":title=").append(getShortTitle()).append("]");
+		return sb.toString();
 	}
 
 	/**
