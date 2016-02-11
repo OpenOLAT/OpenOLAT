@@ -7,38 +7,39 @@
 	#set( $descrErr = $descr + "_ERROR" )
 	#set( $hasError = "false" )
 
-
-	<div class="o_block_large_bottom row">
-		<div class="col-xs-12 col-md-10 form-inline">
-			#if ($f.hasError($target))
-				$r.render($targetErr)	
-			#end
-			#if ($f.hasError($descr))
-				$r.render($descrErr)	
-			#end
-		
-			<div class="form-group">
-				<label class="sr-only" for="$f.getItemId($lTargetInputList.get($iter).getName())">$r.translate("ll.table.target")</label>
-			  	#if($lCustomMediaButtonList)
-		  		<div class="input-group">
-				 	$r.render($lTargetInputList.get($iter).getName())
-			  		<div class='input-group-addon'>
-						$r.render($lCustomMediaButtonList.get($iter).getName())
-					</div>	
-		  		</div>
-		  		#else 
-				 	$r.render($lTargetInputList.get($iter).getName())
+	<div class="row o_block_bottom">
+		<div class="col-xs-12 col-md-10">
+			<div class="form-inline">
+				#if ($f.hasError($target))
+					$r.render($targetErr)	
 				#end
+				#if ($f.hasError($descr))
+					$r.render($descrErr)	
+				#end
+			
+				<div class="form-group">
+					<label class="sr-only" for="$f.getItemId($lTargetInputList.get($iter).getName())">$r.translate("ll.table.target")</label>
+				  	#if($r.available($lCustomMediaButtonList.get($iter).getName()) && $r.visible($lCustomMediaButtonList.get($iter).getName()))
+			  		<div class="input-group">
+					 	$r.render($lTargetInputList.get($iter).getName())
+				  		<div class='input-group-addon'>
+							$r.render($lCustomMediaButtonList.get($iter).getName())
+						</div>	
+			  		</div>
+			  		#else 
+					 	$r.render($lTargetInputList.get($iter).getName())
+					#end
+				</div>
+				<div class="form-group">
+				  	<label class="sr-only" for="$f.getItemId($lHtmlTargetInputList.get($iter).getName())">$r.translate("ll.table.html_target")</label>
+				  	$r.render($lHtmlTargetInputList.get($iter).getName())
+				</div>
+				<div class="form-group">
+				  	<label class="sr-only" for="$f.getItemId($lDescriptionInputList.get($iter).getName())">$r.translate("ll.table.description")</label>
+				  	$r.render($lDescriptionInputList.get($iter).getName())
+				</div>
 			</div>
-			<div class="form-group">
-			  	<label class="sr-only" for="$f.getItemId($lHtmlTargetInputList.get($iter).getName())">$r.translate("ll.table.html_target")</label>
-			  	$r.render($lHtmlTargetInputList.get($iter).getName())
-			</div>
-			<div class="form-group">
-			  	<label class="sr-only" for="$f.getItemId($lDescriptionInputList.get($iter).getName())">$r.translate("ll.table.description")</label>
-			  	$r.render($lDescriptionInputList.get($iter).getName())
-			</div>
-			<div class="form-group">
+			<div class="o_block">
 			  	<label class="sr-only" for="$f.getItemId($lCommentInputList.get($iter).getName())">$r.translate("ll.table.comment")</label>
 			  	$r.render($lCommentInputList.get($iter).getName())
 			</div>
