@@ -88,7 +88,7 @@ public class LLEditForm extends FormBasicController {
 		super(ureq, wControl, "editForm");
 		this.moduleConfig = moduleConfig;
 		// read existing links from config
-		linkList = new ArrayList<LLModel>((List<LLModel>) moduleConfig.get(LLCourseNode.CONF_LINKLIST));
+		linkList = new ArrayList<LLModel>(moduleConfig.getList(LLCourseNode.CONF_LINKLIST, LLModel.class));
 		// list of all link target text fields
 		lTargetInputList = new ArrayList<TextElement>(linkList.size());
 		// list of all link html target text fields
@@ -347,18 +347,21 @@ public class LLEditForm extends FormBasicController {
 		// add link add action button
 		FormLink addButton = new FormLinkImpl("add" + counter, "add" + counter, "", Link.BUTTON_SMALL + Link.NONTRANSLATED);
 		addButton.setUserObject(link);
+		addButton.setDomReplacementWrapperRequired(false);
 		addButton.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_add");
 		flc.add(addButton);
 		lAddButtonList.add(index, addButton);
 		// add link deletion action button
 		FormLink delButton = new FormLinkImpl("delete" + counter, "delete" + counter, "", Link.BUTTON_SMALL + Link.NONTRANSLATED);
 		delButton.setUserObject(link);
+		delButton.setDomReplacementWrapperRequired(false);
 		delButton.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_delete_item");
 		flc.add(delButton);
 		lDelButtonList.add(index, delButton);
 		// custom media action button
 		FormLink mediaButton = new FormLinkImpl("media" + counter, "media" + counter, "  ", Link.NONTRANSLATED);
 		mediaButton.setIconLeftCSS("o_icon o_icon_browse o_icon-lg");
+		mediaButton.setDomReplacementWrapperRequired(false);
 		mediaButton.setUserObject(link);
 		flc.add(mediaButton);
 		lCustomMediaButtonList.add(index, mediaButton);
