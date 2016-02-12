@@ -57,14 +57,14 @@ public class QTI12PreviewController extends BasicController {
 
 		mainVC = createVelocityContainer("qti_preview");
 		
-		VFSLeaf leaf = qpoolService.getRootFile(qitem);
+		VFSLeaf leaf = qpoolService.getRootLeaf(qitem);
 		if(leaf == null) {
 			//no data to preview
 		} else {
 			Item item = QTIEditHelper.readItemXml(leaf);
 			if(item != null) {
 				Translator translator = Util.createPackageTranslator(QTIEditorPackage.class, getLocale());
-				VFSContainer directory = qpoolService.getRootDirectory(qitem);
+				VFSContainer directory = qpoolService.getRootContainer(qitem);
 				String mapperUrl = registerMapper(ureq, new VFSContainerMapper(directory));
 				previewCtrl = new ItemPreviewController(wControl, item, mapperUrl, translator);
 				listenTo(previewCtrl);

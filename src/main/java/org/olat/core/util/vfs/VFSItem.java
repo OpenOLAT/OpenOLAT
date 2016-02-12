@@ -148,5 +148,6 @@ public interface VFSItem {
 	 * @return
 	 */
 	public boolean isSame(VFSItem vfsItem);
+
 }
 

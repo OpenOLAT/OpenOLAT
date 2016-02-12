@@ -43,6 +43,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Persistable;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -81,7 +82,6 @@ import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionPackage;
 import uk.ac.ed.ph.jqtiplus.QtiConstants;
 import uk.ac.ed.ph.jqtiplus.node.AssessmentObject;
-import uk.ac.ed.ph.jqtiplus.node.AssessmentObjectType;
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.result.AbstractResult;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
@@ -241,35 +241,45 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public ResolvedAssessmentObject<?> loadAndResolveAssessmentObject(File resourceDirectory) {
-		ResolvedAssessmentObject<?> result;
+	public ResolvedAssessmentTest loadAndResolveAssessmentTest(File resourceDirectory) {
+		ResolvedAssessmentTest result;
 		if(assessmentTestsAndItemsCache.containsKey(resourceDirectory)) {
-			return assessmentTestsAndItemsCache.get(resourceDirectory);
+			result = (ResolvedAssessmentTest)assessmentTestsAndItemsCache.get(resourceDirectory);
 		} else {
 			QtiXmlReader qtiXmlReader = new QtiXmlReader(jqtiExtensionManager());
 			ResourceLocator fileResourceLocator = new PathResourceLocator(resourceDirectory.toPath());
-			final ResourceLocator inputResourceLocator = 
+			ResourceLocator inputResourceLocator = 
 	        		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
-	        final URI assessmentObjectSystemId = createAssessmentObjectUri(resourceDirectory);
-	        final AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, inputResourceLocator);
-	        final AssessmentObjectType assessmentObjectType = AssessmentObjectType.ASSESSMENT_TEST;
-	        
-	        if (assessmentObjectType==AssessmentObjectType.ASSESSMENT_ITEM) {
-	            result = assessmentObjectXmlLoader.loadAndResolveAssessmentItem(assessmentObjectSystemId);
-	        } else if (assessmentObjectType==AssessmentObjectType.ASSESSMENT_TEST) {
-	            result = assessmentObjectXmlLoader.loadAndResolveAssessmentTest(assessmentObjectSystemId);
-	        } else {
-	            throw new OLATRuntimeException("Unexpected branch " + assessmentObjectType, null);
-	        }
+	        URI assessmentObjectSystemId = createAssessmentObjectUri(resourceDirectory);
+	        AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, inputResourceLocator);
+	        result = assessmentObjectXmlLoader.loadAndResolveAssessmentTest(assessmentObjectSystemId);
 	        
 	        File resourceFile = new File(assessmentObjectSystemId);
-	        ResolvedAssessmentObject<?> cachedResult = assessmentTestsAndItemsCache.putIfAbsent(resourceFile, result);
+	        ResolvedAssessmentTest cachedResult = (ResolvedAssessmentTest)assessmentTestsAndItemsCache.putIfAbsent(resourceFile, result);
 	        if(cachedResult != null) {
 	        	result = cachedResult;
 	        }
 		}
+        return result;
+	}
+	
+	@Override
+	public ResolvedAssessmentItem loadAndResolveAssessmentItem(URI assessmentObjectSystemId, File resourceDirectory) {
+		QtiXmlReader qtiXmlReader = new QtiXmlReader(jqtiExtensionManager());
+		ResourceLocator fileResourceLocator = new PathResourceLocator(resourceDirectory.toPath());
+		ResourceLocator inputResourceLocator = 
+        		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
+		
+        AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, inputResourceLocator);
+        ResolvedAssessmentItem result = assessmentObjectXmlLoader.loadAndResolveAssessmentItem(assessmentObjectSystemId);
+
+        
+        File resourceFile = new File(assessmentObjectSystemId);
+        ResolvedAssessmentItem cachedResult = (ResolvedAssessmentItem)assessmentTestsAndItemsCache.putIfAbsent(resourceFile, result);
+        if(cachedResult != null) {
+        	result = cachedResult;
+        }
         return result;
 	}
 	
@@ -393,7 +403,9 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	@Override
 	public void recordTestAssessmentResponses(AssessmentItemSession itemSession, Collection<AssessmentResponse> responses) {
 		testResponseDao.save(responses);
-		itemSessionDao.merge(itemSession);
+		if(itemSession instanceof Persistable) {
+			itemSessionDao.merge(itemSession);
+		}
 	}
 
 	@Override
@@ -404,7 +416,11 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
         recordOutcomeVariables(candidateSession, assessmentResult.getTestResult());
         // Set duration
         candidateSession.setDuration(testSessionState.getDurationAccumulated());
-        return testSessionDao.update(candidateSession);
+
+		if(candidateSession instanceof Persistable) {
+			return testSessionDao.update(candidateSession);
+		}
+		return candidateSession;
 	}
 
 	@Override
@@ -417,7 +433,9 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
         /* Also nullify LIS result info for session. These will be updated later, if pre-conditions match for sending the result back */
         //candidateSession.setLisOutcomeReportingStatus(null);
         //candidateSession.setLisScore(null);
-        candidateSession = testSessionDao.update(candidateSession);
+		if(candidateSession instanceof Persistable) {
+			candidateSession = testSessionDao.update(candidateSession);
+		}
 
         /* Finally schedule LTI result return (if appropriate and sane) */
         //maybeScheduleLtiOutcomes(candidateSession, assessmentResult);
@@ -566,8 +584,9 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
         /* Also nullify LIS result info for session. These will be updated later, if pre-conditions match for sending the result back */
         //candidateSession.setLisOutcomeReportingStatus(null);
         //candidateSession.setLisScore(null);
-        candidateSession = testSessionDao.update(candidateSession);
-
+        if(candidateSession instanceof Persistable) {
+        	candidateSession = testSessionDao.update(candidateSession);
+        }
         /* Finally schedule LTI result return (if appropriate and sane) */
         //maybeScheduleLtiOutcomes(candidateSession, assessmentResult);
 		return candidateSession;

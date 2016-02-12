@@ -43,9 +43,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
-import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.CandidateItemEventType;
+import org.olat.ims.qti21.model.InMemoryAssessmentTestSession;
 import org.olat.ims.qti21.model.jpa.CandidateEvent;
 import org.olat.ims.qti21.ui.components.AssessmentItemFormItem;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -96,7 +97,12 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	private QTI21Service qtiService;
 	
 	public AssessmentItemDisplayController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry testEntry, AssessmentEntry assessmentEntry, boolean authorMode,
+			boolean authorMode, ResolvedAssessmentItem resolvedAssessmentItem, File fUnzippedDirRoot) {
+		this(ureq, wControl, null, null, authorMode, false, resolvedAssessmentItem, null, fUnzippedDirRoot);
+	}
+	
+	public AssessmentItemDisplayController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry testEntry, AssessmentEntry assessmentEntry, boolean authorMode, boolean persistent,
 			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef, File fUnzippedDirRoot) {
 		super(ureq, wControl);
 		
@@ -104,11 +110,14 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		this.fUnzippedDirRoot = fUnzippedDirRoot;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		currentRequestTimestamp = ureq.getRequestTimestamp();
-		candidateSession = qtiService.createAssessmentTestSession(getIdentity(), assessmentEntry, testEntry, itemRef.getIdentifier().toString(), testEntry, authorMode);
+		if(persistent) {
+			candidateSession = qtiService.createAssessmentTestSession(getIdentity(), assessmentEntry, testEntry, itemRef.getIdentifier().toString(), testEntry, authorMode);
+		} else {
+			candidateSession = new InMemoryAssessmentTestSession();
+		}
 		
-		//TODO qti beautify
-		URI assessmentObjectUri = new File(fUnzippedDirRoot, itemRef.getHref().toString()).toURI();
-		mapperUri = registerCacheableMapper(null, UUID.randomUUID().toString(), new ResourcesMapper(assessmentObjectUri));
+		File assessmentObjectUri = itemRef == null ? null : new File(fUnzippedDirRoot, itemRef.getHref().toString());
+		mapperUri = registerCacheableMapper(null, UUID.randomUUID().toString(), new ResourcesMapper(assessmentObjectUri.toURI()));
 		
 		itemSessionController = enterSession(ureq);
 		

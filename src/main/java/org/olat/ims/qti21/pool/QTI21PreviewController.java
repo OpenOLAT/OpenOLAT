@@ -17,42 +17,63 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui;
+package org.olat.ims.qti21.pool;
 
-import org.olat.core.CoreSpringFactory;
+import java.io.File;
+import java.net.URI;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.modules.qpool.QuestionItem;
+import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItem;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 /**
  * 
- * Initial date: 27.02.2013<br>
+ * Initial date: 21.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FilePreviewController extends BasicController {
-
+public class QTI21PreviewController extends BasicController {
+	
 	private final VelocityContainer mainVC;
 	
-	public FilePreviewController(UserRequest ureq, WindowControl wControl, QuestionItem qitem) {
+	private AssessmentItemDisplayController previewCtrl;
+	
+	@Autowired
+	private QTI21Service qtiService;
+	@Autowired
+	private QPoolService qpoolService;
+
+	public QTI21PreviewController(UserRequest ureq, WindowControl wControl, QuestionItem qitem, boolean summary) {
 		super(ureq, wControl);
-		QPoolService qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
-		mainVC = createVelocityContainer("file_preview");
+
+		mainVC = createVelocityContainer("qti_preview");
 		
-		VFSLeaf leaf = qpoolService.getRootLeaf(qitem);
-		if(leaf != null) {
-			mainVC.contextPut("filename", leaf.getName());
+		File file = qpoolService.getRootFile(qitem);
+		if(file == null) {
+			//no data to preview
+		} else {
+			File resourceDirectory = qpoolService.getRootDirectory(qitem);
+			URI assessmentItemUri = file.toURI();
+			
+			ResolvedAssessmentItem resolvedAssessmentItem = qtiService
+					.loadAndResolveAssessmentItem(assessmentItemUri, resourceDirectory);
+			previewCtrl = new AssessmentItemDisplayController(ureq, wControl, true, resolvedAssessmentItem, resourceDirectory);
+			listenTo(previewCtrl);
+			mainVC.put("preview", previewCtrl.getInitialComponent());
 		}
 		
 		putInitialPanel(mainVC);
 	}
-
+	
 	@Override
 	protected void doDispose() {
 		//

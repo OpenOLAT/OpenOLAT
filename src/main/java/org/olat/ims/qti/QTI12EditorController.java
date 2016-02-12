@@ -65,13 +65,13 @@ public class QTI12EditorController extends BasicController implements QPoolItemE
 		mainVC = createVelocityContainer("qti_preview");
 		mainPanel = new TabbedPane("tabbedPane", ureq.getLocale());
 		
-		VFSLeaf leaf = qpoolService.getRootFile(qitem);
+		VFSLeaf leaf = qpoolService.getRootLeaf(qitem);
 		if(leaf == null) {
 			//no data to preview
 		} else {
 			Item item = QTIEditHelper.readItemXml(leaf);
 			if(item != null && !item.isAlient()) {
-				VFSContainer directory = qpoolService.getRootDirectory(qitem);
+				VFSContainer directory = qpoolService.getRootContainer(qitem);
 				String mapperUrl = registerMapper(ureq, new VFSContainerMapper(directory));
 				QTIDocument doc = new QTIDocument();
 				QTIEditorPackage qtiPackage = new QTI12ItemEditorPackage(item, doc, mapperUrl, leaf, directory, this);

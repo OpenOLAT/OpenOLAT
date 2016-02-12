@@ -39,6 +39,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -272,7 +273,19 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public VFSLeaf getRootFile(QuestionItem item) {
+	public File getRootFile(QuestionItem item) {
+		VFSLeaf leaf = getRootLeaf(item);
+		return leaf == null ? null : ((LocalImpl)leaf).getBasefile();
+	}
+
+	@Override
+	public File getRootDirectory(QuestionItem item) {
+		VFSContainer container = getRootContainer(item);
+		return container == null ? null : ((LocalImpl)container).getBasefile();
+	}
+
+	@Override
+	public VFSLeaf getRootLeaf(QuestionItem item) {
 		QuestionItemImpl reloadedItem = questionItemDao.loadById(item.getKey());
 		if(reloadedItem == null) {
 			return null;
@@ -291,7 +304,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public VFSContainer getRootDirectory(QuestionItem item) {
+	public VFSContainer getRootContainer(QuestionItem item) {
 		QuestionItemImpl reloadedItem = questionItemDao.loadById(item.getKey());
 		VFSContainer root = qpoolModule.getRootContainer();
 		VFSItem dir = root.resolve(reloadedItem.getDirectory());

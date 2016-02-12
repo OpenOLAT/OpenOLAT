@@ -19,9 +19,12 @@
  */
 package org.olat.modules.qpool.manager;
 
+import java.io.File;
+
 import javax.annotation.PostConstruct;
 
 import org.olat.core.util.vfs.FileStorage;
+import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,5 +62,10 @@ public class QPoolFileStorage {
 
 	public VFSContainer getContainer(String dir) {
 		return fileStorage.getContainer(dir);
+	}
+	
+	public File getDirectory(String dir) {
+		VFSContainer container = fileStorage.getContainer(dir);
+		return ((LocalImpl)container).getBasefile();
 	}
 }

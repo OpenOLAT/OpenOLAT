@@ -99,10 +99,14 @@ public interface QPoolService {
 	public void exportItem(QuestionItemShort item, ZipOutputStream zout, Set<String> names);
 	
 	public List<QuestionItem> importItems(Identity owner, Locale defaultLocale, String filename, File file);
+
+	public File getRootFile(QuestionItem item);
 	
-	public VFSLeaf getRootFile(QuestionItem item);
+	public File getRootDirectory(QuestionItem item);
 	
-	public VFSContainer getRootDirectory(QuestionItem item);
+	public VFSLeaf getRootLeaf(QuestionItem item);
+	
+	public VFSContainer getRootContainer(QuestionItem item);
 	
 	public List<QuestionItem> copyItems(Identity cloner, List<QuestionItemShort> itemsToCopy);
 

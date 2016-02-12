@@ -51,7 +51,7 @@ public class TextPreviewController extends BasicController {
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		mainVC = createVelocityContainer("text_preview");
 		
-		VFSLeaf leaf = qpoolService.getRootFile(qitem);
+		VFSLeaf leaf = qpoolService.getRootLeaf(qitem);
 		if(leaf == null) {
 			//no data to preview
 		} else {

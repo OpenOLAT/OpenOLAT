@@ -37,12 +37,12 @@ public interface Persistable extends Serializable {
 	/**
 	 * @return Persistable object key.
 	 */
-	public abstract Long getKey();
+	public Long getKey();
 
 	/**
 	 * @param persistable The object to compare with
 	 * @return true if the given persistable object has the same object identity 
 	 * in terms on a database level. 
 	 */
-	public abstract boolean equalsByPersistableKey(Persistable persistable);
+	public boolean equalsByPersistableKey(Persistable persistable);
 }

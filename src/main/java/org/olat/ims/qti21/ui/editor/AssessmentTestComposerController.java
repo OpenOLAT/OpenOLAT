@@ -171,7 +171,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	}
 	
 	private void updateTreeModel() {
-		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentObject(unzippedDirRoot);
+		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot);
 		menuTree.setTreeModel(new AssessmentTestEditorAndComposerTreeModel(resolvedAssessmentTest));
 	}
 	

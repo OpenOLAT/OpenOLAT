@@ -98,7 +98,7 @@ public class AssessmentItemEditorController extends BasicController {
 		
 		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), testEntry, null, testEntry);
 		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(),
-				testEntry, assessmentEntry, true, resolvedAssessmentItem, itemRef, unzippedDirectory);
+				testEntry, assessmentEntry, true, true, resolvedAssessmentItem, itemRef, unzippedDirectory);
 		listenTo(displayCtrl);
 		tabbedPane.addTab("Preview", displayCtrl.getInitialComponent());
 		

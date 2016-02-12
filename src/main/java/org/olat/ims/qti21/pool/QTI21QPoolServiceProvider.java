@@ -106,7 +106,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDao;
 	
-	private static final List<ExportFormatOptions> formats = new ArrayList<ExportFormatOptions>(2);
+	private static final List<ExportFormatOptions> formats = new ArrayList<ExportFormatOptions>(4);
 	static {
 		formats.add(DefaultExportFormat.ZIP_EXPORT_FORMAT);
 		formats.add(new DefaultExportFormat(QTI21Constants.QTI_21_FORMAT, Outcome.download, null));
@@ -202,7 +202,6 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		processor.process(item, zout, names);
 	}
 
-
 	@Override
 	public void copyItem(QuestionItemFull original, QuestionItemFull copy) {
 		VFSContainer originalDir = qpoolFileStorage.getContainer(original.getDirectory());
@@ -212,7 +211,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 
 	@Override
 	public Controller getPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean summary) {
-		return null;
+		return new QTI21PreviewController(ureq, wControl, item, summary);
 	}
 
 	@Override
