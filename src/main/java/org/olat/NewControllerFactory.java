@@ -49,8 +49,8 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.TabContext;
-import org.olat.core.logging.AssertException;
-import org.olat.core.logging.LogDelegator;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -67,7 +67,8 @@ import org.olat.repository.RepositoryManager;
  * 
  * @author Felix Jost
  */
-public class NewControllerFactory extends LogDelegator {
+public class NewControllerFactory {
+	private static final OLog log = Tracing.createLoggerFor(NewControllerFactory.class);
 	private static NewControllerFactory INSTANCE = new NewControllerFactory();
 	// map of controller creators, setted by Spring configuration
 	private Map<String, ContextEntryControllerCreator> contextEntryControllerCreators = new HashMap<String, ContextEntryControllerCreator>();
@@ -107,7 +108,7 @@ public class NewControllerFactory extends LogDelegator {
 		ContextEntryControllerCreator oldCreator = contextEntryControllerCreators.get(key);
 		contextEntryControllerCreators.put(key, controllerCreator);
 		// Add config logging to console
-		logInfo("Adding context entry controller creator for key::" + key + " and value::" + controllerCreator.getClass().getCanonicalName() 
+		log.info("Adding context entry controller creator for key::" + key + " and value::" + controllerCreator.getClass().getCanonicalName() 
 				+ (oldCreator == null ? "" : " replaceing existing controller creator ::" + oldCreator.getClass().getCanonicalName()), null);
 	}
 
@@ -189,7 +190,7 @@ public class NewControllerFactory extends LogDelegator {
 		Window window = Windows.getWindows(usess).getWindow(ureq);
 
 		if (window == null) {
-			logDebug("Found no window for jumpin => take WindowBackOffice", null);
+			log.debug("Found no window for jumpin => take WindowBackOffice", null);
 			window = wControl.getWindowBackOffice().getWindow();
 		}
 		DTabs dts = window.getDTabs();
@@ -198,7 +199,7 @@ public class NewControllerFactory extends LogDelegator {
 		// String firstTypeId = ClassToId.getInstance().lookup() BusinessGroup
 		ContextEntryControllerCreator typeHandler = getContextEntryControllerCreator(firstType);
 		if (typeHandler == null) {
-			logWarn("Cannot found an handler for context entry: " + mainCe, null);
+			log.warn("Cannot found an handler for context entry: " + mainCe, null);
 			return false;//simply return and don't throw a red screen
 		}
 		if (!typeHandler.validateContextEntryAndShowError(mainCe, ureq, wControl)){
@@ -221,10 +222,13 @@ public class NewControllerFactory extends LogDelegator {
 		// open in existing site
 		
 		boolean launched = false;
+		boolean assessmentMode = usess.isInAssessmentModeProcess();
 		if (siteClassName != null) {
-			dts.activateStatic(ureq, siteClassName, context.getContext());
-			launched = true;
-		} else {
+			if(!assessmentMode) {
+				dts.activateStatic(ureq, siteClassName, context.getContext());
+				launched = true;
+			}
+		} else if(!assessmentMode || usess.matchLockResource(ores)) {
 			// get current tab or create new tab
 			DTab dt = dts.getDTab(ores);
 			if (dt == null) {
@@ -232,21 +236,13 @@ public class NewControllerFactory extends LogDelegator {
 				usess.addToHistory(ureq, bc);
 
 				Controller launchC = typeHandler.createController(ces, ureq, bwControl);
-				if (launchC == null) {
-					throw new AssertException("ControllerFactory could not create a controller to be launched. Please validate businesspath " 
-							+ bc.getAsString() + " for type " + typeHandler.getClass().getName() + " in advance with validateContextEntryAndShowError().");
-				}
-
-				dt = dts.createDTab(context.getTabResource(), re, launchC, context.getName());
-				if (dt == null) {
-					// user error message is generated in BaseFullWebappController, nothing to do here
-					launched = false;
-				} else {
-					if(dts.addDTab(ureq, dt)) {
+				if (launchC != null) {
+					dt = dts.createDTab(context.getTabResource(), re, launchC, context.getName());
+					if (dt == null) {
+						launched = false;
+					} else if(dts.addDTab(ureq, dt)) {
 						dts.activate(ureq, dt, context.getContext());
 						launched = true;
-					} else {
-						launched = false;
 					}
 				}
 			} else {

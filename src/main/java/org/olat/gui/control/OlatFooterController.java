@@ -48,7 +48,6 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.login.AboutController;
@@ -139,14 +138,14 @@ public class OlatFooterController extends BasicController implements LockableCon
 	}
 
 	@Override
-	public void lockResource(OLATResourceable resource) {
+	public void lock() {
 		if(shareLinkCtr != null) {
 			olatFootervc.remove(shareLinkCtr.getInitialComponent());
 		}
 	}
 
 	@Override
-	public void unlockResource() {
+	public void unlock() {
 		if(shareLinkCtr != null) {
 			olatFootervc.put("shareLink", shareLinkCtr.getInitialComponent());
 		}

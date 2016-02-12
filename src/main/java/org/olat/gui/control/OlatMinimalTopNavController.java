@@ -38,7 +38,6 @@ import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.media.RedirectMediaResource;
-import org.olat.core.id.OLATResourceable;
 
 /**
  * Description:<br>
@@ -66,12 +65,12 @@ public class OlatMinimalTopNavController extends BasicController implements Lock
 	}
 	
 	@Override
-	public void lockResource(OLATResourceable resource) {
+	public void lock() {
 		//
 	}
 	
 	@Override
-	public void unlockResource() {
+	public void unlock() {
 		//
 	}
 
