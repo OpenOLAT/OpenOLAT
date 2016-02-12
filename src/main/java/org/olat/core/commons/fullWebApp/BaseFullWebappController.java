@@ -239,6 +239,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
     		lockStatus = LockStatus.popup;
     		//as security remove all 
     		removeRedirects(usess);
+    		//lock the gui
+    		lockGUI();
     	} else {
     		// present an overlay with configured afterlogin-controllers or nothing if none configured.
     		// presented only once per session.
@@ -614,6 +616,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				}
 
 				doActivateDTab(dt);
+				if(dt.getController() instanceof Activateable2) {
+					((Activateable2)dt.getController()).activate(ureq, null, new ReloadEvent());
+				}
 				if(point != null) {
 					BusinessControlFactory.getInstance().addToHistory(ureq, point);
 				}
@@ -682,6 +687,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			} else if("continue".equals(event.getCommand())) {
 				//unlock session
 				ureq.getUserSession().unlockResource();
+				unlockResource();
+				
 				initializeDefaultSite(ureq);
 				removeAsListenerAndDispose(assessmentGuardCtrl);
 				assessmentGuardCtrl = null;
@@ -1130,8 +1137,23 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		return true;
 	}
 	
+	/**
+	 * Activating a tab is like focusing a new window - we need to adjust the
+	 * guipath since e.g. the button triggering the activation is not
+	 * part of the guipath, but rather the new tab in its initial state.
+	 * in all other cases the "focus of interest" (where the calculation of the
+	 * guipath is started) matches the controller which listens to the
+	 * event caused by a user interaction.
+	 * this is the starting point.
+	 */
 	@Override
 	public void activate(UserRequest ureq, DTab dTab, List<ContextEntry> entries) {
+		UserSession usess = ureq.getUserSession();
+		if((lockStatus != null || usess.isInAssessmentModeProcess())
+				&& !usess.matchLockResource(dTab.getOLATResourceable())) {
+			return;
+		}
+		
 		//update window settings if needed
 		setWindowSettings(getWindowControl().getWindowBackOffice().getWindowSettings());
 
@@ -1139,32 +1161,22 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		// jump here via external link or just open a new tab from e.g. repository
 		if(dTab == null && contentCtrl instanceof Activateable2) {
 			((Activateable2)contentCtrl).activate(ureq, entries, null);
-			return;
+		} else {
+			DTabImpl dtabi = (DTabImpl) dTab;
+			Controller c = dtabi.getController();
+			if (c == null) {
+				throw new AssertException("no controller set yet! " + dTab);
+			}
+			doActivateDTab(dtabi);
+	
+			if(entries != null && !entries.isEmpty() && c instanceof Activateable2) {
+				final Activateable2 activateable = ((Activateable2) c);
+				activateable.activate(ureq, entries, null);
+			}
+			updateBusinessPath(ureq, dtabi);
+			//update the panels after activation
+			setGuiStack(dtabi.getGuiStackHandle());
 		}
-
-		DTabImpl dtabi = (DTabImpl) dTab;
-		Controller c = dtabi.getController();
-		if (c == null) {
-			throw new AssertException("no controller set yet! " + dTab);
-		}
-		doActivateDTab(dtabi);
-
-		if(entries != null && !entries.isEmpty() && c instanceof Activateable2) {
-			final Activateable2 activateable = ((Activateable2) c);
-			activateable.activate(ureq, entries, null);
-		}
-		updateBusinessPath(ureq, dtabi);
-		
-		//update the panels after activation
-		setGuiStack(dtabi.getGuiStackHandle());
-
-		// activating a tab is like focusing a new window - we need to adjust the
-		// guipath since e.g. the button triggering the activation is not
-		// part of the guipath, but rather the new tab in its initial state.
-		// in all other cases the "focus of interest" (where the calculation of the
-		// guipath is started) matches the controller which listens to the
-		// event caused by a user interaction.
-		// this is the starting point.
 	}
 
 	@Override
@@ -1321,38 +1333,48 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	@Override
 	public void lockResource(OLATResourceable resource) {
 		this.lockResource = resource;
+		lockGUI();
+	}
+	
+	private void lockGUI() {
 		if(topnavCtr != null) {
-			topnavCtr.lockResource(resource);
+			topnavCtr.lock();
 		}
 		if(footerCtr != null) {
-			footerCtr.lockResource(resource);
+			footerCtr.lock();
 		}
 		
 		if(userToolsMenuCtrl != null) {
-			userToolsMenuCtrl.lockResource(resource);
+			userToolsMenuCtrl.lock();
 		}
 		
 		for(int i=dtabsControllers.size(); i-->0; ) {
 			DTab tab = dtabs.get(i);
-			if(!lockResource.getResourceableId().equals(tab.getOLATResourceable().getResourceableId())) {
+			if(lockResource == null
+					|| !lockResource.getResourceableId().equals(tab.getOLATResourceable().getResourceableId())) {
+				removeDTab(null, tab);
+			} else if (lockResource != null
+					&& lockResource.getResourceableId().equals(tab.getOLATResourceable().getResourceableId())
+					&& lockStatus != LockStatus.locked) {
 				removeDTab(null, tab);
 			}
 		}
 		navSitesVc.contextPut("visible", Boolean.FALSE);
 		navSitesVc.setDirty(true);
 		navTabsVc.setDirty(true);
+		main.setContent(new Panel("empty-mode"));
 	}
 
 	private void unlockResource() {
 		this.lockResource = null;
 		if(topnavCtr != null) {
-			topnavCtr.unlockResource();
+			topnavCtr.unlock();
 		}
 		if(footerCtr != null) {
-			footerCtr.unlockResource();
+			footerCtr.unlock();
 		}
 		if(userToolsMenuCtrl != null) {
-			userToolsMenuCtrl.unlockResource();
+			userToolsMenuCtrl.unlock();
 		}
 		navSitesVc.contextPut("visible", Boolean.TRUE);
 		navSitesVc.setDirty(true);
@@ -1427,6 +1449,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				listenTo(assessmentGuardCtrl);
 				assessmentGuardCtrl.getInitialComponent();
 				lockStatus = LockStatus.popup;
+				lockGUI();
 				needUpdate = true;
 			} else {
 				needUpdate = false;

@@ -1378,7 +1378,9 @@ function o_pushState(historyPointId, title, url) {
 			url = o_info.serverUri + url;
 		}
 		o_info.businessPath = url;
-		o_shareActiveSocialUrl();
+		if(!(typeof o_shareActiveSocialUrl === "undefined")) {
+			o_shareActiveSocialUrl();	
+		}
 		if(window.history && !(typeof window.history === "undefined") && window.history.pushState) {
 			window.history.pushState(data, title, url);
 		} else {

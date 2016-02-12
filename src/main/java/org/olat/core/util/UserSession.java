@@ -292,6 +292,11 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	public IdentityEnvironment getIdentityEnvironment() {
 		return identityEnvironment;
 	}
+	
+	public boolean isInAssessmentModeProcess() {
+		return lockResource != null || lockMode != null
+				|| (assessmentModes != null && assessmentModes.size() > 0);
+	}
 
 	public OLATResourceable getLockResource() {
 		return lockResource;
@@ -309,6 +314,14 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	public void unlockResource() {
 		lockMode = null;
 		lockResource = null;
+	}
+	
+	public boolean matchLockResource(OLATResourceable ores) {
+		return lockResource != null
+				&& lockResource.getResourceableId() != null
+				&& lockResource.getResourceableId().equals(ores.getResourceableId())
+				&& lockResource.getResourceableTypeName() != null
+				&& lockResource.getResourceableTypeName().equals(ores.getResourceableTypeName());
 	}
 
 	public List<TransientAssessmentMode> getAssessmentModes() {

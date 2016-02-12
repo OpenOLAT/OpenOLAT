@@ -75,6 +75,7 @@ import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentChangedEvent;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.editor.PublishEvent;
@@ -85,6 +86,7 @@ import org.olat.course.run.glossary.CourseGlossaryToolLinkController;
 import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.navigation.NodeClickedRef;
 import org.olat.course.run.userview.AssessmentModeTreeFilter;
+import org.olat.course.run.userview.InvisibleTreeFilter;
 import org.olat.course.run.userview.TreeFilter;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.run.userview.VisibleTreeFilter;
@@ -137,6 +139,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private GlossaryMarkupItemController glossaryMarkerCtr;
 	
 	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
 	private RepositoryService repositoryService;
 	
 	/**
@@ -187,7 +191,14 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		uce.getScoreAccounting().evaluateAll();
 		
 		if(assessmentMode != null && assessmentMode.isRestrictAccessElements()) {
-			treeFilter = new AssessmentModeTreeFilter(assessmentMode, uce.getCourseEnvironment().getRunStructure());
+			Status assessmentStatus = assessmentMode.getStatus();
+			if(assessmentStatus == Status.assessment) {
+				treeFilter = new AssessmentModeTreeFilter(assessmentMode, uce.getCourseEnvironment().getRunStructure());
+			} else if(assessmentStatus == Status.leadtime || assessmentStatus == Status.followup) {
+				treeFilter = new InvisibleTreeFilter();
+			} else {
+				treeFilter = new VisibleTreeFilter();
+			}
 		} else {
 			treeFilter = new VisibleTreeFilter();
 		}
@@ -198,7 +209,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		//set the launch date after the evaluation
 		setLaunchDates();
 
-		if (courseRepositoryEntry != null && RepositoryManager.getInstance().createRepositoryEntryStatus(courseRepositoryEntry.getStatusCode()).isClosed()) {
+		if (courseRepositoryEntry != null && repositoryManager.createRepositoryEntryStatus(courseRepositoryEntry.getStatusCode()).isClosed()) {
 			wControl.setWarning(translate("course.closed"));
 		}
 
@@ -796,7 +807,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) return;
+		if(entries == null || entries.isEmpty()) {
+			return;
+		}
 		
 		ContextEntry firstEntry = entries.get(0);
 		String type = firstEntry.getOLATResourceable().getResourceableTypeName();

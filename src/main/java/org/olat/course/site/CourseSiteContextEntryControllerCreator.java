@@ -37,6 +37,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.course.site.model.CourseSiteConfiguration;
 import org.olat.course.site.model.LanguageConfiguration;
@@ -88,18 +89,19 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 	 * controller if successful.
 	 */
 	private Controller createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
-		if (re == null) return null;
+		if (re == null) {
+			return messageController(ureq, wControl, "repositoryentry.not.existing");
+		}
+		
+		UserSession usess = ureq.getUserSession();
+		if(usess.isInAssessmentModeProcess() && !usess.matchLockResource(re.getOlatResource())) {
+			return null;
+		}
+		
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntrySecurity reSecurity = rm.isAllowed(ureq, re);
 		if (!reSecurity.canLaunch()) {
-			Translator trans = Util.createPackageTranslator(RepositoryService.class, ureq.getLocale());
-			String text = trans.translate("launch.noaccess");
-			Controller c = MessageUIFactory.createInfoMessage(ureq, wControl, null, text);
-			
-			// use on column layout
-			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, c);
-			layoutCtr.addDisposableChildController(c); // dispose content on layout dispose
-			return layoutCtr;
+			return messageController(ureq, wControl, "launch.noaccess");
 		}
 
 		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
@@ -109,7 +111,6 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 		WindowControl bwControl;
 		OLATResourceable businessOres = re;
 		ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(businessOres);
-		//OLAT-5944: check if the current context entry is not already the repository entry to avoid duplicate in the business path
 		if(ce.equals(wControl.getBusinessControl().getCurrentContextEntry())) {
 			bwControl = wControl;
 		} else {
@@ -121,6 +122,17 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 			throw new AssertException("could not create controller for repositoryEntry "+re); 
 		}
 		return ctrl;	
+	}
+	
+	private Controller messageController(UserRequest ureq, WindowControl wControl, String i18nMesageKey) {
+		Translator trans = Util.createPackageTranslator(RepositoryService.class, ureq.getLocale());
+		String text = trans.translate(i18nMesageKey);
+		Controller c = MessageUIFactory.createInfoMessage(ureq, wControl, null, text);
+		
+		// use on column layout
+		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, c);
+		layoutCtr.addDisposableChildController(c); // dispose content on layout dispose
+		return layoutCtr;
 	}
 
 	/**

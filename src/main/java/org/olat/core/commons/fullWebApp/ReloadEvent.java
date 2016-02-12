@@ -19,18 +19,22 @@
  */
 package org.olat.core.commons.fullWebApp;
 
-import org.olat.core.gui.control.Controller;
+import org.olat.core.id.context.StateEntry;
 
 /**
+ * Pass the message
  * 
- * Initial date: 18.12.2014<br>
+ * 
+ * Initial date: 12.02.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface LockableController extends Controller {
-	
-	public void lock();
-	
-	public void unlock();
+public class ReloadEvent implements StateEntry {
 
+	private static final long serialVersionUID = 5633559595202512157L;
+
+	@Override
+	public ReloadEvent clone() {
+		return new ReloadEvent();
+	}
 }

@@ -189,8 +189,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		UserSession session = ureq.getUserSession();
 		
 		if(assessmentLock) {
-			TransientAssessmentMode mode = ureq.getUserSession().getLockMode();
-			this.assessmentMode = assessmentModeMgr.getAssessmentModeById(mode.getModeKey());
+			TransientAssessmentMode mode = session.getLockMode();
+			assessmentMode = assessmentModeMgr.getAssessmentModeById(mode.getModeKey());
 		}
 		
 		if(session != null &&  session.getHistoryStack() != null && session.getHistoryStack().size() >= 2) {
@@ -210,7 +210,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		
 		handler = handlerFactory.getRepositoryHandler(re);
 
-		roles = ureq.getUserSession().getRoles();
+		roles = session.getRoles();
 		isOlatAdmin = roles.isOLATAdmin();
 		isGuestOnly = roles.isGuestOnly();
 		isAuthor = roles.isAuthor();

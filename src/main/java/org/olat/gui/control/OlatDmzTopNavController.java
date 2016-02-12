@@ -43,7 +43,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
-import org.olat.core.id.OLATResourceable;
 import org.olat.login.AboutController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -95,12 +94,12 @@ public class OlatDmzTopNavController extends BasicController implements Lockable
 	}
 
 	@Override
-	public void lockResource(OLATResourceable resource) {
+	public void lock() {
 		//
 	}
 
 	@Override
-	public void unlockResource() {
+	public void unlock() {
 		//
 	}
 
