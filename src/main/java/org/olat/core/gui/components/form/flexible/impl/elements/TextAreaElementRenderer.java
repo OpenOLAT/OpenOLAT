@@ -99,25 +99,28 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 	
 		} else {
 			//read write view
-			sb.append("<textarea id=\"");
-			sb.append(id);
-			sb.append("\" name=\"");
-			sb.append(id);
-			sb.append("\" class='form-control'");
+			sb.append("<textarea id=\"")
+			  .append(id)
+			  .append("\" name=\"")
+			  .append(id)
+			  .append("\" class='form-control'");
 			if (teC.getCols() != -1) {
 				sb.append(" cols=\"").append(teC.getCols()).append("\"");
 			}
 			if (rows != -1) {
 				sb.append(" rows=\"").append(rows).append("\"");
 			}
-			sb.append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()));
-			sb.append(" >");
-			sb.append(value);
-			sb.append("</textarea>");
-			sb.append(FormJSHelper.getJSStartWithVarDeclaration(id));
+			if (te.hasPlaceholder()) {
+				sb.append(" placeholder=\"").append(te.getPlaceholder()).append("\"");
+			}
+			sb.append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()))
+			  .append(" >")
+			  .append(value)
+			  .append("</textarea>")
+			  .append(FormJSHelper.getJSStartWithVarDeclaration(id))
 			//plain textAreas should not propagate the keypress "enter" (keynum = 13) as this would submit the form
-			sb.append(id+".on('keypress', function(event, target){if (13 == event.keyCode) {event.stopPropagation()} })");
-			sb.append(FormJSHelper.getJSEnd());
+			  .append(id+".on('keypress', function(event, target){if (13 == event.keyCode) {event.stopPropagation()} })")
+			  .append(FormJSHelper.getJSEnd());
 		}
 
 		// resize element to fit content

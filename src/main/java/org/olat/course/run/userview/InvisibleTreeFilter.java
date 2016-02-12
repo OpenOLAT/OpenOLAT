@@ -17,20 +17,21 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.fullWebApp;
+package org.olat.course.run.userview;
 
-import org.olat.core.gui.control.Controller;
+import org.olat.course.nodes.CourseNode;
 
 /**
  * 
- * Initial date: 18.12.2014<br>
+ * Initial date: 12.02.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface LockableController extends Controller {
-	
-	public void lock();
-	
-	public void unlock();
+public class InvisibleTreeFilter implements TreeFilter {
+
+	@Override
+	public boolean isVisible(CourseNode node) {
+		return false;
+	}
 
 }

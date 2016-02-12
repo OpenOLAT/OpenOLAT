@@ -33,6 +33,7 @@ import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.StateSite;
+import org.olat.core.util.UserSession;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMode;
@@ -106,6 +107,7 @@ public class CourseSite extends AbstractSiteInstance {
 
 		MainLayoutController c;
 		ICourse course = CourseFactory.loadCourse(entry);
+		UserSession usess = ureq.getUserSession();
 
 		// course-launch-state depending course-settings
 		RepositoryEntrySecurity reSecurity = rm.isAllowed(ureq, entry);
@@ -115,6 +117,8 @@ public class CourseSite extends AbstractSiteInstance {
 			// either check with securityCallback or use access-settings from course-nodes
 			if (siteSecCallback != null) {
 				hasAccess = siteSecCallback.isAllowedToLaunchSite(ureq);
+			} else if(usess.isInAssessmentModeProcess() && !usess.matchLockResource(course)){
+				hasAccess = false;
 			} else {
 				// check within course: accessibility of course root node
 				CourseNode rootNode = course.getRunStructure().getRootNode();
@@ -128,7 +132,7 @@ public class CourseSite extends AbstractSiteInstance {
 		
 		
 		// load course (admins always see content) or alternative controller if course is not launchable
-		if (hasAccess || ureq.getUserSession().getRoles().isOLATAdmin()) {
+		if (hasAccess || usess.getRoles().isOLATAdmin()) {
 			rs.incrementLaunchCounter(entry); 
 			// build up the context path for linked course
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, entry, new StateSite(this), wControl, true);	

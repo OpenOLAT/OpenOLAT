@@ -37,7 +37,6 @@ import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.prefs.Preferences;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -121,12 +120,12 @@ public class UserToolsMenuController extends BasicController implements Lockable
 	}
 	
 	@Override
-	public void lockResource(OLATResourceable resource) {
+	public void lock() {
 		menuVC.contextPut("locked", Boolean.TRUE);
 	}
 
 	@Override
-	public void unlockResource() {
+	public void unlock() {
 		menuVC.contextPut("locked", Boolean.FALSE);	
 	}
 

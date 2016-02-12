@@ -39,7 +39,6 @@ import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
@@ -102,12 +101,12 @@ public class OlatTopNavController extends BasicController implements LockableCon
 	}
 	
 	@Override
-	public void lockResource(OLATResourceable resource) {
+	public void lock() {
 		topNavVC.contextPut("locked", Boolean.TRUE);
 	}
 	
 	@Override
-	public void unlockResource() {
+	public void unlock() {
 		topNavVC.contextPut("locked", Boolean.FALSE);
 	}
 
