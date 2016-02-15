@@ -175,6 +175,12 @@ public class SingleChoiceEditorController extends FormBasicController {
 			allOk &= false;
 		}
 		
+		String correctAnswer = ureq.getParameter("correct");
+		if(!StringHelper.containsNonWhitespace(correctAnswer)) {
+			allOk &= false;
+			textEl.setErrorKey("form.legende.mandatory", null);
+		}
+		
 		return allOk & super.validateFormLogic(ureq);
 	}
 

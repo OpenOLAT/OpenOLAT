@@ -19,14 +19,26 @@
  */
 package org.olat.ims.qti21.pool;
 
+import java.io.File;
+import java.net.URI;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.ui.editor.AssessmentItemEditorController;
+import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.olat.modules.qpool.QPoolItemEditorController;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 
 /**
  * 
@@ -37,13 +49,33 @@ import org.olat.modules.qpool.QuestionItem;
 public class QTI21EditorController extends BasicController implements QPoolItemEditorController {
 	
 	private final VelocityContainer mainVC;
+	private AssessmentItemEditorController editorCtrl;
 	
+	private File resourceFile;
 	private QuestionItem questionItem;
+	
+	@Autowired
+	private QPoolService qpoolService;
+	@Autowired
+	private QTI21Service qtiService;
 	
 	public QTI21EditorController(UserRequest ureq, WindowControl wControl, QuestionItem questionItem) {
 		super(ureq, wControl);
 		this.questionItem = questionItem;
-		mainVC = createVelocityContainer("editor_wrapper");
+		mainVC = createVelocityContainer("pool_editor");
+		
+		File resourceDirectory = qpoolService.getRootDirectory(questionItem);
+		resourceFile = qpoolService.getRootFile(questionItem);
+		URI assessmentItemUri = resourceFile.toURI();
+		
+		ResolvedAssessmentItem resolvedAssessmentItem = qtiService
+				.loadAndResolveAssessmentItem(assessmentItemUri, resourceDirectory);
+		
+		editorCtrl = new AssessmentItemEditorController(ureq, wControl,
+				resolvedAssessmentItem, resourceDirectory, resourceFile);
+		listenTo(editorCtrl);
+		mainVC.put("editor", editorCtrl.getInitialComponent());
+		
 		putInitialPanel(mainVC);
 	}
 	
@@ -55,6 +87,17 @@ public class QTI21EditorController extends BasicController implements QPoolItemE
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == editorCtrl) {
+			if(event instanceof AssessmentItemEvent) {
+				AssessmentItemEvent aie = (AssessmentItemEvent)event;
+				AssessmentItem assessmentItem = aie.getAssessmentItem();
+				qtiService.persistAssessmentObject(resourceFile, assessmentItem);
+			}
+		}
 	}
 
 	@Override

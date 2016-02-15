@@ -83,6 +83,27 @@ public class AssessmentItemEditorController extends BasicController {
 	@Autowired
 	private AssessmentService assessmentService;
 	
+	
+	public AssessmentItemEditorController(UserRequest ureq, WindowControl wControl,
+			ResolvedAssessmentItem resolvedAssessmentItem, File unzippedDirectory, File itemFile) {
+		super(ureq, wControl);
+		this.itemRef = null;
+		this.resolvedAssessmentItem = resolvedAssessmentItem;
+		
+		mainVC = createVelocityContainer("assessment_item_editor");
+		tabbedPane = new TabbedPane("itemTabs", getLocale());
+		tabbedPane.addListener(this);
+		mainVC.put("tabbedpane", tabbedPane);
+
+		initItemEditor(ureq);
+		
+		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(), resolvedAssessmentItem, unzippedDirectory, itemFile);
+		listenTo(displayCtrl);
+		tabbedPane.addTab("Preview", displayCtrl.getInitialComponent());
+		
+		putInitialPanel(mainVC);
+	}
+	
 	public AssessmentItemEditorController(UserRequest ureq, WindowControl wControl, RepositoryEntry testEntry,
 			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef, File unzippedDirectory) {
 		super(ureq, wControl);
@@ -98,7 +119,7 @@ public class AssessmentItemEditorController extends BasicController {
 		
 		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), testEntry, null, testEntry);
 		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(),
-				testEntry, assessmentEntry, true, true, resolvedAssessmentItem, itemRef, unzippedDirectory);
+				testEntry, assessmentEntry, true, resolvedAssessmentItem, itemRef, unzippedDirectory);
 		listenTo(displayCtrl);
 		tabbedPane.addTab("Preview", displayCtrl.getInitialComponent());
 		

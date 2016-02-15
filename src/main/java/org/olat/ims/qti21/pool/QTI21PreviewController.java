@@ -63,10 +63,11 @@ public class QTI21PreviewController extends BasicController {
 		} else {
 			File resourceDirectory = qpoolService.getRootDirectory(qitem);
 			URI assessmentItemUri = file.toURI();
+			File itemFile = qpoolService.getRootFile(qitem);
 			
 			ResolvedAssessmentItem resolvedAssessmentItem = qtiService
 					.loadAndResolveAssessmentItem(assessmentItemUri, resourceDirectory);
-			previewCtrl = new AssessmentItemDisplayController(ureq, wControl, true, resolvedAssessmentItem, resourceDirectory);
+			previewCtrl = new AssessmentItemDisplayController(ureq, wControl, resolvedAssessmentItem, resourceDirectory, itemFile);
 			listenTo(previewCtrl);
 			mainVC.put("preview", previewCtrl.getInitialComponent());
 		}

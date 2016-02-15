@@ -46,12 +46,14 @@ import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.ManifestPackage;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.pool.QTI21AssessmentItemFactory.Type;
 import org.olat.ims.resources.IMSEntityResolver;
+import org.olat.imscp.xml.manifest.ManifestType;
 import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.ExportFormatOptions.Outcome;
 import org.olat.modules.qpool.QItemFactory;
@@ -220,8 +222,9 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	}
 
 	@Override
-	public Controller getEditableController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
-		return null;
+	public Controller getEditableController(UserRequest ureq, WindowControl wControl, QuestionItem qitem) {
+		Controller editorCtrl = new QTI21EditorController(ureq, wControl, qitem);
+		return editorCtrl;
 	}
 
 	public QuestionItem createItem(Identity identity, Type type, String title, Locale locale) {
@@ -247,6 +250,12 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		VFSLeaf leaf = baseDir.createChildLeaf(qitem.getRootFilename());
 		File itemFile = ((LocalImpl)leaf).getBasefile();
 		qtiService.persistAssessmentObject(itemFile, assessmentItem);
+		
+		//create imsmanifest
+		ManifestType manifestType = ManifestPackage.createEmptyManifest();
+        ManifestPackage.appendAssessmentItem(itemFile.getName(), manifestType);	
+        ManifestPackage.write(manifestType, new File(itemFile.getParentFile(), "imsmanifest.xml"));
+		
 		return qitem;
 	}
 }

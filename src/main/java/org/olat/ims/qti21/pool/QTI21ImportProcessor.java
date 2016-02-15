@@ -120,6 +120,4 @@ public class QTI21ImportProcessor {
 		questionItemDao.persist(owner, poolItem);
 		return poolItem;
 	}
-	
-
 }

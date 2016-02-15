@@ -86,7 +86,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	
 	private final String mapperUri;
 	private final File fUnzippedDirRoot;
-	private final AssessmentItemRef itemRef;
+	private final File itemFileRef;
 	private final ResolvedAssessmentItem resolvedAssessmentItem;
 	
 	private CandidateEvent lastEvent;
@@ -96,28 +96,70 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	@Autowired
 	private QTI21Service qtiService;
 	
-	public AssessmentItemDisplayController(UserRequest ureq, WindowControl wControl,
-			boolean authorMode, ResolvedAssessmentItem resolvedAssessmentItem, File fUnzippedDirRoot) {
-		this(ureq, wControl, null, null, authorMode, false, resolvedAssessmentItem, null, fUnzippedDirRoot);
-	}
-	
-	public AssessmentItemDisplayController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry testEntry, AssessmentEntry assessmentEntry, boolean authorMode, boolean persistent,
-			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef, File fUnzippedDirRoot) {
+	/**
+	 * OPen in memory session
+	 * @param ureq
+	 * @param wControl
+	 * @param authorMode
+	 * @param resolvedAssessmentItem
+	 * @param fUnzippedDirRoot
+	 * @param itemFileRef
+	 */
+	public AssessmentItemDisplayController(UserRequest ureq, WindowControl wControl, ResolvedAssessmentItem resolvedAssessmentItem,
+			File fUnzippedDirRoot, File itemFileRef) {
 		super(ureq, wControl);
 		
-		this.itemRef = itemRef;
+		this.itemFileRef = itemFileRef;
 		this.fUnzippedDirRoot = fUnzippedDirRoot;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		currentRequestTimestamp = ureq.getRequestTimestamp();
-		if(persistent) {
-			candidateSession = qtiService.createAssessmentTestSession(getIdentity(), assessmentEntry, testEntry, itemRef.getIdentifier().toString(), testEntry, authorMode);
-		} else {
-			candidateSession = new InMemoryAssessmentTestSession();
-		}
+		candidateSession = new InMemoryAssessmentTestSession();
+		mapperUri = registerCacheableMapper(null, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI()));
 		
-		File assessmentObjectUri = itemRef == null ? null : new File(fUnzippedDirRoot, itemRef.getHref().toString());
-		mapperUri = registerCacheableMapper(null, UUID.randomUUID().toString(), new ResourcesMapper(assessmentObjectUri.toURI()));
+		itemSessionController = enterSession(ureq);
+		
+		if (itemSessionController.getItemSessionState().isEnded()) {
+			mainVC = createVelocityContainer("end");
+		} else {
+			mainVC = createVelocityContainer("run");
+        	initQtiWorks(ureq);
+		}
+		putInitialPanel(mainVC);
+	}
+	
+	public AssessmentItemDisplayController(UserRequest ureq, WindowControl wControl,
+			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef, File fUnzippedDirRoot) {
+		super(ureq, wControl);
+		
+		this.itemFileRef = new File(fUnzippedDirRoot, itemRef.getHref().toString());
+		this.fUnzippedDirRoot = fUnzippedDirRoot;
+		this.resolvedAssessmentItem = resolvedAssessmentItem;
+		currentRequestTimestamp = ureq.getRequestTimestamp();
+		candidateSession = new InMemoryAssessmentTestSession();
+		mapperUri = registerCacheableMapper(null, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI()));
+		
+		itemSessionController = enterSession(ureq);
+		
+		if (itemSessionController.getItemSessionState().isEnded()) {
+			mainVC = createVelocityContainer("end");
+		} else {
+			mainVC = createVelocityContainer("run");
+        	initQtiWorks(ureq);
+		}
+		putInitialPanel(mainVC);
+	}
+	
+	public AssessmentItemDisplayController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry testEntry, AssessmentEntry assessmentEntry, boolean authorMode,
+			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef, File fUnzippedDirRoot) {
+		super(ureq, wControl);
+		
+		this.itemFileRef = new File(fUnzippedDirRoot, itemRef.getHref().toString());
+		this.fUnzippedDirRoot = fUnzippedDirRoot;
+		this.resolvedAssessmentItem = resolvedAssessmentItem;
+		currentRequestTimestamp = ureq.getRequestTimestamp();
+		candidateSession = qtiService.createAssessmentTestSession(getIdentity(), assessmentEntry, testEntry, itemRef.getIdentifier().toString(), testEntry, authorMode);
+		mapperUri = registerCacheableMapper(null, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI()));
 		
 		itemSessionController = enterSession(ureq);
 		
@@ -131,7 +173,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	}
 	
 	private void initQtiWorks(UserRequest ureq) {
-		String filename = itemRef.getHref().toString();
+		String filename = itemFileRef.getName();
 		qtiWorksCtrl = new QtiWorksController(ureq, getWindowControl(), filename);
     	listenTo(qtiWorksCtrl);
     	mainVC.put("qtirun", qtiWorksCtrl.getInitialComponent());
