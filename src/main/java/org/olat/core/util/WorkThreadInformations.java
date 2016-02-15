@@ -21,8 +21,6 @@
 package org.olat.core.util;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -102,20 +100,5 @@ public class WorkThreadInformations {
 		} catch (Exception e) {
 			log.error("Cannot write info message about FolderIndexerWorker: " + filePath, e);
 		}
-	}
-	
-	/**
-	 * The method return an exception if something happens.
-	 * 
-	 * @param filePath
-	 * @throws IOException
-	 */
-	public static void setInfoFiles(String filePath) throws IOException {
-		File file = new File(WebappHelper.getUserDataRoot(), "threadInfos");
-		if(!file.exists()) {
-			file.mkdirs();
-		}
-		File infoFile = new File(file, Thread.currentThread().getName());
-		FileUtils.save(new FileOutputStream(infoFile), filePath, "UTF-8");
 	}
 }

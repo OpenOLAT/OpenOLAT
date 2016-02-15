@@ -19,6 +19,9 @@
  */
 package org.olat.restapi.system;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -35,8 +38,10 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.session.UserSessionManager;
@@ -78,11 +83,12 @@ public class StatusWebservice {
 		
 		//File
 		try {
-			stats.setWriteFile(true);
 			long startFile = System.nanoTime();
-			WorkThreadInformations.setInfoFiles("ping");
+			File infoFile = setInfoFiles("ping");
 			WorkThreadInformations.unset();
 			stats.setWriteFileInMilliseconds(CodeHelper.nanoToMilliTime(startFile));
+			stats.setWriteFile(infoFile.exists());
+			infoFile.delete();
 		} catch (Exception e) {
 			stats.setWriteFile(false);
 			stats.setWriteFileInMilliseconds(-1l);
@@ -135,5 +141,20 @@ public class StatusWebservice {
 
 		return Response.ok(stats).build();
 	}
-
+	
+	/**
+	 * The method return an exception if something happens.
+	 * 
+	 * @param filePath
+	 * @throws IOException
+	 */
+	public static File setInfoFiles(String filePath) throws IOException {
+		File file = new File(WebappHelper.getUserDataRoot(), "threadInfos");
+		if(!file.exists()) {
+			file.mkdirs();
+		}
+		File infoFile = new File(file, Thread.currentThread().getName());
+		FileUtils.save(new FileOutputStream(infoFile), filePath, "UTF-8");
+		return infoFile;
+	}
 }
