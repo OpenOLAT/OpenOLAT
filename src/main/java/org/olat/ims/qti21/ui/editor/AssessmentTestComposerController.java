@@ -20,8 +20,10 @@
 package org.olat.ims.qti21.ui.editor;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.UUID;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -43,8 +45,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.VetoableCloseController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Util;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
@@ -53,12 +57,16 @@ import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.pool.QTI21QPoolServiceProvider;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.olat.ims.qti21.ui.editor.events.AssessmentSectionEvent;
 import org.olat.ims.qti21.ui.editor.events.AssessmentTestEvent;
 import org.olat.ims.qti21.ui.editor.events.AssessmentTestPartEvent;
 import org.olat.imscp.xml.manifest.ManifestType;
+import org.olat.modules.qpool.QuestionItemView;
+import org.olat.modules.qpool.ui.SelectItemController;
+import org.olat.modules.qpool.ui.events.QItemViewEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.ToolbarAware;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,10 +96,13 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private final Link saveLink;
 	private final Dropdown addItemTools;
 	private final Link newSectionLink, newSingleChoiceLink, newMultipleChoiceLink, newKPrimLink, newEssayLink;
+	private final Link importFromPoolLink, importFromTableLink;
 	private final TooledStackedPanel toolbar;
 	private final VelocityContainer mainVC;
 
 	private Controller currentEditorCtrl;
+	private CloseableModalController cmc;
+	private SelectItemController selectQItemCtrl;
 	private final LayoutMain3ColsController columnLayoutCtr;
 	
 	private final File unzippedDirRoot;
@@ -103,6 +114,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	@Autowired
 	private QTI21Service qtiService;
+	@Autowired
+	private QTI21QPoolServiceProvider qti21QPoolServiceProvider;
 	
 	public AssessmentTestComposerController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar,
 			RepositoryEntry testEntry) {
@@ -154,6 +167,16 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		newEssayLink = LinkFactory.createToolLink("new.essay", translate("new.essay"), this, "o_mi_qtiessay");
 		newEssayLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newEssayLink);
+		
+		addItemTools.addComponent(new Dropdown.Spacer("sep-import"));
+		//import
+		importFromPoolLink = LinkFactory.createToolLink("import.pool", translate("tools.import.qpool"), this, "o_mi_qpool_import");
+		importFromPoolLink.setDomReplacementWrapperRequired(false);
+		addItemTools.addComponent(importFromPoolLink);
+		importFromTableLink = LinkFactory.createToolLink("import.table", translate("tools.import.table"), this, "o_mi_table_import");
+		importFromTableLink.setIconLeftCSS("o_icon o_icon_table o_icon-fw");
+		importFromTableLink.setDomReplacementWrapperRequired(false);
+		addItemTools.addComponent(importFromTableLink);
 
 		// main layout
 		mainVC = createVelocityContainer("assessment_test_composer");
@@ -214,8 +237,26 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			if(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED.equals(aie.getCommand())) {
 				doUpdate(aie.getAssessmentItemRef().getIdentifier(), aie.getAssessmentItem().getTitle());
 			}
+		} else if(selectQItemCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+			
+			if(event instanceof QItemViewEvent) {
+				QItemViewEvent e = (QItemViewEvent)event;
+				List<QuestionItemView> items = e.getItemList();
+				doInsert(items);
+			}
+		} else if(cmc == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(selectQItemCtrl);
+		removeAsListenerAndDispose(cmc);
+		selectQItemCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -242,7 +283,63 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new KPrimAssessmentItemBuilder(qtiService.qtiSerializer()));
 		} else if(newEssayLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new EssayAssessmentItemBuilder(qtiService.qtiSerializer()));
+		} else if(importFromPoolLink == source) {
+			doSelectQItem(ureq);
 		}
+	}
+	
+	private void doSelectQItem(UserRequest ureq) {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(selectQItemCtrl);
+		
+		selectQItemCtrl = new SelectItemController(ureq, getWindowControl(), QTI21Constants.QTI_21_FORMAT);
+		listenTo(selectQItemCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), selectQItemCtrl.getInitialComponent(), true, translate("title.add") );
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doInsert(List<QuestionItemView> items) {
+		TreeNode selectedNode = menuTree.getSelectedNode();
+		TreeNode sectionNode = getNearestSection(selectedNode);
+		
+		String firstItemId = null;
+		
+		try {
+			for(QuestionItemView item:items) {
+				AssessmentItem assessmentItem = qti21QPoolServiceProvider.exportToQTIEditor(item, unzippedDirRoot);
+				AssessmentSection section = (AssessmentSection)sectionNode.getUserObject();
+				
+				AssessmentItemRef itemRef = new AssessmentItemRef(section);
+				String itemId = assessmentItem.getIdentifier();
+				if(firstItemId == null) {
+					firstItemId = itemId;
+				}
+				itemRef.setIdentifier(Identifier.parseString(itemId));
+				File itemFile = new File(unzippedDirRoot, itemId + ".xml");
+				itemRef.setHref(new URI(itemFile.getName()));
+				section.getSectionParts().add(itemRef);
+				
+				qtiService.persistAssessmentObject(itemFile, assessmentItem);
+				
+				URI testUri = resolvedAssessmentTest.getTestLookup().getSystemId();
+				File testFile = new File(testUri);
+				qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
+
+				ManifestPackage.appendAssessmentItem(itemFile.getName(), manifest);
+				ManifestPackage.write(manifest, new File(unzippedDirRoot, "imsmanifest.xml"));
+			}
+		} catch (IOException | URISyntaxException e) {
+			showError("error.import.question");
+			logError("", e);
+		}
+		
+		updateTreeModel();
+		
+		TreeNode newItemNode = menuTree.getTreeModel().getNodeById(firstItemId);
+		menuTree.setSelectedNode(newItemNode);
+		menuTree.open(newItemNode);
 	}
 	
 	private TreeNode doOpenFirstItem() {
@@ -340,7 +437,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 
 			partEditorFactory(ureq, newItemNode);
 		} catch (URISyntaxException e) {
-			e.printStackTrace();
+			logError("", e);
 		}
 	}
 	

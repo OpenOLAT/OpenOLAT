@@ -178,7 +178,7 @@ public class SingleChoiceEditorController extends FormBasicController {
 		String correctAnswer = ureq.getParameter("correct");
 		if(!StringHelper.containsNonWhitespace(correctAnswer)) {
 			allOk &= false;
-			textEl.setErrorKey("form.legende.mandatory", null);
+			answersCont.setErrorKey("error.need.correct.answer", null);
 		}
 		
 		return allOk & super.validateFormLogic(ureq);

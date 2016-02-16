@@ -609,7 +609,7 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	            		if(value instanceof NumberValue) {
 	            			double score = ((NumberValue)value).doubleValue();
 	            			candidateSession.setScore(new BigDecimal(Double.toString(score)));
-	            			System.out.println("Score: " + score);
+	            			//System.out.println("Score: " + score);
 	            		}
 	            	}
 	            }

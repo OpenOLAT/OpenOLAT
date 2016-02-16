@@ -177,6 +177,12 @@ public class MultipleChoiceEditorController extends FormBasicController {
 			allOk &= false;
 		}
 		
+		String[] correctAnswers = ureq.getHttpReq().getParameterValues("correct");
+		if(correctAnswers == null || correctAnswers.length == 0) {
+			answersCont.setErrorKey("error.need.correct.answer", null);
+			allOk &= false;
+		}
+		
 		return allOk & super.validateFormLogic(ureq);
 	}
 

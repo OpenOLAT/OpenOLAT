@@ -47,7 +47,7 @@ import org.olat.modules.qpool.model.QuestionItemImpl;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-class QTIMetadataConverter {
+public class QTIMetadataConverter {
 	
 	private Element qtimetadata;
 
@@ -69,7 +69,7 @@ class QTIMetadataConverter {
 		this.educationalContextDao = educationalContextDao;
 	}
 	
-	QTIMetadataConverter(QItemTypeDAO itemTypeDao, QLicenseDAO licenseDao,
+	public QTIMetadataConverter(QItemTypeDAO itemTypeDao, QLicenseDAO licenseDao,
 			TaxonomyLevelDAO taxonomyLevelDao, QEducationalContextDAO educationalContextDao) {
 		this.licenseDao = licenseDao;
 		this.itemTypeDao = itemTypeDao;

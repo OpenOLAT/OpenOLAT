@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.pool;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,13 +46,15 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.QTI21QuestionType;
+import org.olat.ims.qti21.model.QTI21QuestionTypeDetector;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.AssessmentItemMetadata;
 import org.olat.ims.qti21.model.xml.ManifestPackage;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
-import org.olat.ims.qti21.pool.QTI21AssessmentItemFactory.Type;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.imscp.xml.manifest.ManifestType;
 import org.olat.modules.qpool.ExportFormatOptions;
@@ -76,6 +79,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 
 /**
  * 
@@ -149,8 +153,10 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	@Override
 	public List<QItemFactory> getItemfactories() {
 		List<QItemFactory> factories = new ArrayList<QItemFactory>();
-		for(Type type:Type.values()) {
-			factories.add(new QTI21AssessmentItemFactory(type));
+		for(QTI21QuestionType type:QTI21QuestionType.values()) {
+			if(type.hasEditor()) {
+				factories.add(new QTI21AssessmentItemFactory(type));
+			}
 		}
 		return factories;
 	}
@@ -200,7 +206,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 
 	@Override
 	public void exportItem(QuestionItemFull item, ZipOutputStream zout, Set<String> names) {
-		QTI21ExportProcessor processor = new QTI21ExportProcessor(qpoolFileStorage);
+		QTI21ExportProcessor processor = new QTI21ExportProcessor(qtiService, qpoolFileStorage);
 		processor.process(item, zout, names);
 	}
 
@@ -227,7 +233,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		return editorCtrl;
 	}
 
-	public QuestionItem createItem(Identity identity, Type type, String title, Locale locale) {
+	public QuestionItem createItem(Identity identity, QTI21QuestionType type, String title, Locale locale) {
 		AssessmentItemBuilder itemBuilder = null;
 		switch(type) {
 			case sc: itemBuilder = new SingleChoiceAssessmentItemBuilder(qtiService.qtiSerializer()); break;
@@ -242,9 +248,12 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		assessmentItem.setLabel(title);
 		assessmentItem.setTitle(title);
 		
+		AssessmentItemMetadata itemMetadata = new AssessmentItemMetadata();
+		itemMetadata.setQuestionType(type);
+		
 		QTI21ImportProcessor processor = new QTI21ImportProcessor(identity, locale, null, null,
 				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage, dbInstance);
-		QuestionItemImpl qitem = processor.processItem(assessmentItem, "", null, "OpenOLAT", Settings.getVersion(), null);
+		QuestionItemImpl qitem = processor.processItem(assessmentItem, "", null, "OpenOLAT", Settings.getVersion(), itemMetadata);
 
 		VFSContainer baseDir = qpoolFileStorage.getContainer(qitem.getDirectory());
 		VFSLeaf leaf = baseDir.createChildLeaf(qitem.getRootFilename());
@@ -258,4 +267,22 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		
 		return qitem;
 	}
+	
+	/**
+	 * Export to QTI editor an item from the pool. The ident of the item
+	 * is always regenerated as an UUID.
+	 * @param qitem
+	 * @param editorContainer
+	 * @return
+	 */
+	public AssessmentItem exportToQTIEditor(QuestionItemShort qitem, File editorContainer) throws IOException {
+		QTI21ExportProcessor processor = new QTI21ExportProcessor(qtiService, qpoolFileStorage);
+		QuestionItemFull fullItem = questionItemDao.loadById(qitem.getKey());
+		ResolvedAssessmentItem resolvedAssessmentItem = processor.exportToQTIEditor(fullItem, editorContainer);
+		AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().extractAssumingSuccessful();
+		assessmentItem.setIdentifier(QTI21QuestionTypeDetector.generateNewIdentifier(assessmentItem.getIdentifier()));
+		return assessmentItem;
+	}
+	
+
 }

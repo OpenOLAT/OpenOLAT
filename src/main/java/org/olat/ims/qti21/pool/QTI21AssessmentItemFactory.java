@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.ui.editor.AssessmentItemEditorController;
 import org.olat.modules.qpool.QItemFactory;
 import org.olat.modules.qpool.QPoolItemEditorController;
@@ -39,9 +40,9 @@ import org.olat.modules.qpool.QuestionItem;
  */
 public class QTI21AssessmentItemFactory implements QItemFactory {
 	
-	private final Type type;
+	private final QTI21QuestionType type;
 	
-	public QTI21AssessmentItemFactory(Type type) {
+	public QTI21AssessmentItemFactory(QTI21QuestionType type) {
 		this.type = type;
 	}
 
@@ -66,11 +67,4 @@ public class QTI21AssessmentItemFactory implements QItemFactory {
 		return ctrl;
 	}
 	
-	public enum Type {
-		sc,
-		mc,
-		kprim,
-		//fib,
-		essay
-	}
 }

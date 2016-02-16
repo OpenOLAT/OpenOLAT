@@ -26,17 +26,22 @@ import java.util.Locale;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
-import org.olat.ims.qti.questionimport.ItemAndMetadata;
+import org.olat.ims.qti.qpool.QTIMetadataConverter;
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.model.QTI21QuestionType;
+import org.olat.ims.qti21.model.xml.AssessmentItemMetadata;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionType;
+import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.manager.QEducationalContextDAO;
 import org.olat.modules.qpool.manager.QItemTypeDAO;
 import org.olat.modules.qpool.manager.QLicenseDAO;
 import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
 import org.olat.modules.qpool.manager.TaxonomyLevelDAO;
+import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
+import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -53,8 +58,11 @@ public class QTI21ImportProcessor {
 	private final Locale defaultLocale;
 	
 	private final QItemTypeDAO qItemTypeDao;
+	private final QLicenseDAO qLicenseDao;
 	private final QuestionItemDAO questionItemDao;
 	private final QPoolFileStorage qpoolFileStorage;
+	private final TaxonomyLevelDAO taxonomyLevelDao;
+	private final QEducationalContextDAO qEduContextDao;
 	
 	public QTI21ImportProcessor(Identity owner, Locale defaultLocale, String filename, File file,
 			QuestionItemDAO questionItemDao, QItemTypeDAO qItemTypeDao, QEducationalContextDAO qEduContextDao,
@@ -62,9 +70,12 @@ public class QTI21ImportProcessor {
 			DB dbInstance) {
 		this.owner = owner;
 		this.defaultLocale = defaultLocale;
+		this.qLicenseDao = qLicenseDao;
 		this.qItemTypeDao = qItemTypeDao;
+		this.qEduContextDao = qEduContextDao;
 		this.questionItemDao = questionItemDao;
 		this.qpoolFileStorage = qpoolFileStorage;
+		this.taxonomyLevelDao = taxonomyLevelDao;
 	}
 
 	public List<QuestionItem> process() {
@@ -73,7 +84,7 @@ public class QTI21ImportProcessor {
 	
 
 	protected QuestionItemImpl processItem(AssessmentItem assessmentItem, String comment, String originalItemFilename,
-			String editor, String editorVersion, ItemAndMetadata metadata) {
+			String editor, String editorVersion, AssessmentItemMetadata metadata) {
 		//filename
 		String filename;
 		String ident = assessmentItem.getIdentifier();
@@ -106,7 +117,7 @@ public class QTI21ImportProcessor {
 			poolItem.setEditorVersion(editorVersion);
 		}
 		//if question type not found, can be overridden by the metadatas
-		//processItemMetadata(poolItem, itemEl);
+		processItemMetadata(poolItem, metadata);
 		if(poolItem.getType() == null) {
 			QItemType defType = qItemTypeDao.loadByType(QuestionType.UNKOWN.name());
 			poolItem.setType(defType);
@@ -119,5 +130,81 @@ public class QTI21ImportProcessor {
 		}
 		questionItemDao.persist(owner, poolItem);
 		return poolItem;
+	}
+	
+	protected void processItemMetadata(QuestionItemImpl poolItem, AssessmentItemMetadata metadata) {
+		//non heuristic set of question type
+		String typeStr = null;	
+		QTI21QuestionType questionType = metadata.getQuestionType();
+		if(questionType != null && questionType.getPoolQuestionType() != null) {
+			typeStr = questionType.getPoolQuestionType().name();
+		}
+		if(typeStr != null) {
+			QItemType type = qItemTypeDao.loadByType(typeStr);
+			if(type != null) {
+				poolItem.setType(type);
+			}
+		}
+				
+		String coverage = metadata.getCoverage();
+		if(StringHelper.containsNonWhitespace(coverage)) {
+			poolItem.setCoverage(coverage);
+		}
+		
+		String language = metadata.getLanguage();
+		if(StringHelper.containsNonWhitespace(language)) {
+			poolItem.setLanguage(language);
+		}
+		
+		String keywords = metadata.getKeywords();
+		if(StringHelper.containsNonWhitespace(keywords)) {
+			poolItem.setKeywords(keywords);
+		}
+		
+		String taxonomyPath = metadata.getTaxonomyPath();
+		if(StringHelper.containsNonWhitespace(taxonomyPath)) {
+			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qLicenseDao, taxonomyLevelDao, qEduContextDao);
+			TaxonomyLevel taxonomyLevel = converter.toTaxonomy(taxonomyPath);
+			poolItem.setTaxonomyLevel(taxonomyLevel);
+		}
+		
+		String level = metadata.getLevel();
+		if(StringHelper.containsNonWhitespace(level)) {
+			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qLicenseDao, taxonomyLevelDao, qEduContextDao);
+			QEducationalContext educationalContext = converter.toEducationalContext(level);
+			poolItem.setEducationalContext(educationalContext);
+		}
+				
+		String time = metadata.getTypicalLearningTime();
+		if(StringHelper.containsNonWhitespace(time)) {
+			poolItem.setEducationalLearningTime(time);
+		}
+		
+		String editor = metadata.getEditor();
+		if(StringHelper.containsNonWhitespace(editor)) {
+			poolItem.setEditor(editor);
+		}
+		
+		String editorVersion = metadata.getEditorVersion();
+		if(StringHelper.containsNonWhitespace(editorVersion)) {
+			poolItem.setEditorVersion(editorVersion);
+		}
+		
+		int numOfAnswerAlternatives = metadata.getNumOfAnswerAlternatives();
+		if(numOfAnswerAlternatives > 0) {
+			poolItem.setNumOfAnswerAlternatives(numOfAnswerAlternatives);
+		}
+		
+		poolItem.setDifficulty(metadata.getDifficulty());
+		poolItem.setDifferentiation(metadata.getDifferentiation());
+		poolItem.setStdevDifficulty(metadata.getStdevDifficulty());
+		
+		String license = metadata.getLicense();
+		if(StringHelper.containsNonWhitespace(license)) {
+			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qLicenseDao, taxonomyLevelDao, qEduContextDao);
+			QLicense qLicense = converter.toLicense(license);
+			poolItem.setLicense(qLicense);
+		}
+		
 	}
 }

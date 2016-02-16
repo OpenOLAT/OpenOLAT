@@ -21,7 +21,6 @@ package org.olat.ims.qti21.ui.editor;
 
 import java.io.File;
 import java.net.URI;
-import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -31,8 +30,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.QTI21QuestionType;
+import org.olat.ims.qti21.model.QTI21QuestionTypeDetector;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
@@ -50,14 +50,8 @@ import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
-import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
-import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 
 /**
  * 
@@ -136,44 +130,19 @@ public class AssessmentItemEditorController extends BasicController {
 	}
 	
 	private void initItemEditor(UserRequest ureq) {
+		
+		
+		
 		AssessmentItem item = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
-		if(QTI21Constants.TOOLNAME.equals(item.getToolName())) {
-			//we have create this one
-			List<Interaction> interactions = item.getItemBody().findInteractions();
-			
-			boolean choice = false;
-			boolean match = false;
-			boolean essay = false;
-			boolean unkown = false;
-			
-			if(interactions != null && interactions.size() > 0) {
-				for(Interaction interaction: interactions) {
-					if(interaction instanceof ChoiceInteraction) {
-						choice = true;
-					} else if(interaction instanceof MatchInteraction) {
-						match = true;
-					} else if(interaction instanceof ExtendedTextInteraction) {
-						essay = true;
-					} else {
-						unkown = true;
-					}	
-				}	
-			}
-			
-			if(unkown) {
-				initItemCreatedByUnkownEditor(ureq);
-			} else if(choice && !match && !essay && !unkown) {
-				itemBuilder = initChoiceEditors(ureq, item);
-			} else if(!choice && match && !essay && !unkown) {
-				itemBuilder = initMatchEditors(ureq, item);
-			} else if(!choice && !match && essay && !unkown) {
-				itemBuilder = initEssayEditors(ureq, item);
-			} else {
-				initItemCreatedByUnkownEditor(ureq);
-			}
-		} else {
-			initItemCreatedByUnkownEditor(ureq);
+		QTI21QuestionType type = QTI21QuestionTypeDetector.getType(item);
+		switch(type) {
+			case sc: itemBuilder = initSingleChoiceEditors(ureq, item); break;
+			case mc: itemBuilder = initMultipleChoiceEditors(ureq, item); break;
+			case kprim: itemBuilder = initKPrimChoiceEditors(ureq, item); break;
+			case essay: itemBuilder = initEssayEditors(ureq, item); break;
+			default: initItemCreatedByUnkownEditor(ureq); break;
 		}
+
 	}
 	
 	private void initItemCreatedByUnkownEditor(UserRequest ureq) {
@@ -181,44 +150,7 @@ public class AssessmentItemEditorController extends BasicController {
 		listenTo(itemEditor);
 		tabbedPane.addTab("Unkown", itemEditor.getInitialComponent());
 	}
-	
-	private AssessmentItemBuilder initMatchEditors(UserRequest ureq, AssessmentItem item) {
-		if(item.getResponseDeclarations().size() == 1) {
-			ResponseDeclaration responseDeclaration = item.getResponseDeclarations().get(0);
-			String responseIdentifier = responseDeclaration.getIdentifier().toString();
-			Cardinality cardinalty = responseDeclaration.getCardinality();
-			if(cardinalty.isMultiple()) {
-				if(responseIdentifier.startsWith("KPRIM_")) {
-					return initKPrimChoiceEditors(ureq, item);
-				} else {
-					initItemCreatedByUnkownEditor(ureq);
-				}
-			} else {
-				initItemCreatedByUnkownEditor(ureq);
-			}
-		} else {
-			initItemCreatedByUnkownEditor(ureq);
-		}
-		return null;
-	}
 
-	private AssessmentItemBuilder initChoiceEditors(UserRequest ureq, AssessmentItem item) {
-		if(item.getResponseDeclarations().size() == 1) {
-			ResponseDeclaration responseDeclaration = item.getResponseDeclarations().get(0);
-			Cardinality cardinalty = responseDeclaration.getCardinality();
-			if(cardinalty.isSingle()) {
-				return initSingleChoiceEditors(ureq, item);
-			} else if(cardinalty.isMultiple()) {
-				return initMultipleChoiceEditors(ureq, item);
-			} else {
-				initItemCreatedByUnkownEditor(ureq);
-			}
-		} else {
-			initItemCreatedByUnkownEditor(ureq);
-		}
-		return null;
-	}
-	
 	private AssessmentItemBuilder initSingleChoiceEditors(UserRequest ureq, AssessmentItem item) {
 		SingleChoiceAssessmentItemBuilder scItemBuilder = new SingleChoiceAssessmentItemBuilder(item, qtiService.qtiSerializer());
 		itemEditor = new SingleChoiceEditorController(ureq, getWindowControl(), scItemBuilder);

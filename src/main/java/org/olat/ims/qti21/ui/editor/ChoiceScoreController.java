@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
 import org.olat.ims.qti21.model.xml.ScoreBuilder;
@@ -111,6 +112,40 @@ public class ChoiceScoreController extends FormBasicController {
 		buttonsContainer.setRootForm(mainForm);
 		formLayout.add(buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
+	}
+	
+	
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		allOk &= validateDouble(maxScoreEl);
+
+		if(assessmentModeEl.isOneSelected() && assessmentModeEl.isSelected(1)) {
+			for(SimpleChoiceWrapper wrapper:wrappers) {
+				allOk &= validateDouble(wrapper.getPointsEl());
+			}
+		}
+		
+		return allOk & super.validateFormLogic(ureq);
+	}
+	
+	private boolean validateDouble(TextElement el) {
+		boolean allOk = true;
+		
+		String value = el.getValue();
+		if(!StringHelper.containsNonWhitespace(value)) {
+			el.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		} else {
+			try {
+				Double.parseDouble(value);
+			} catch (NumberFormatException e) {
+				el.setErrorKey("error.double", null);
+				allOk &= false;
+			}
+		}
+		return allOk;
 	}
 
 	@Override
