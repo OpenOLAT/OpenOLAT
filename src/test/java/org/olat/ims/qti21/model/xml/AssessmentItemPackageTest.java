@@ -111,7 +111,7 @@ public class AssessmentItemPackageTest {
 	}
 
 
-	protected AssessmentItem createAssessmentItem() {
+	public AssessmentItem createAssessmentItem() {
 		AssessmentItem assessmentItem = new AssessmentItem();
 		assessmentItem.setIdentifier("id" + UUID.randomUUID());
 		assessmentItem.setTitle("Physicists");

@@ -31,6 +31,7 @@ import java.util.Map;
 import org.olat.core.helpers.Settings;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.IdentifierGenerator;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 
 import uk.ac.ed.ph.jqtiplus.group.NodeGroupList;
 import uk.ac.ed.ph.jqtiplus.group.item.ItemBodyGroup;
@@ -92,7 +93,7 @@ import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
 public class AssessmentItemFactory {
 	
 	public static AssessmentItem createSingleChoice() {
-		AssessmentItem assessmentItem = createAssessmentItem("Single choice");
+		AssessmentItem assessmentItem = createAssessmentItem(QTI21QuestionType.sc, "Single choice");
 
 		//define correct answer
 		Identifier responseDeclarationId = Identifier.assumedLegal("RESPONSE_1");
@@ -106,7 +107,7 @@ public class AssessmentItemFactory {
 		//the single choice interaction
 		ItemBody itemBody = appendDefaultItemBody(assessmentItem);
 		ChoiceInteraction choiceInteraction = appendChoiceInteraction(itemBody, responseDeclarationId, 1, true);
-		appendSimpleChoice(choiceInteraction, "sc");
+		appendSimpleChoice(choiceInteraction, "New answer", "sc");
 
 		//response processing
 		ResponseProcessing responseProcessing = createResponseProcessing(assessmentItem, responseDeclarationId);
@@ -114,9 +115,13 @@ public class AssessmentItemFactory {
 		return assessmentItem;
 	}
 	
-	public static AssessmentItem createAssessmentItem(String defaultTitle) {
+	public static AssessmentItem createAssessmentItem(QTI21QuestionType type, String defaultTitle) {
 		AssessmentItem assessmentItem = new AssessmentItem();
-		assessmentItem.setIdentifier(IdentifierGenerator.newAsString("item"));
+		if(type != null) {
+			assessmentItem.setIdentifier(IdentifierGenerator.newAsString(type.getPrefix()));
+		} else {
+			assessmentItem.setIdentifier(IdentifierGenerator.newAsString("item"));
+		}
 		assessmentItem.setTitle(defaultTitle);
 		assessmentItem.setToolName(QTI21Constants.TOOLNAME);
 		assessmentItem.setToolVersion(Settings.getVersion());
@@ -309,16 +314,16 @@ public class AssessmentItemFactory {
 		return responseDeclaration;
 	}
 	
-	public static SimpleChoice createSimpleChoice(ChoiceInteraction choiceInteraction, String prefix) {
+	public static SimpleChoice createSimpleChoice(ChoiceInteraction choiceInteraction, String text, String prefix) {
 		SimpleChoice newChoice = new SimpleChoice(choiceInteraction);
 		newChoice.setIdentifier(IdentifierGenerator.newAsIdentifier(prefix));
-		P firstChoiceText = AssessmentItemFactory.getParagraph(newChoice, "New answer");
+		P firstChoiceText = AssessmentItemFactory.getParagraph(newChoice, text);
 		newChoice.getFlowStatics().add(firstChoiceText);
 		return newChoice;
 	}
 	
-	public static SimpleChoice appendSimpleChoice(ChoiceInteraction choiceInteraction, String prefix) {
-		SimpleChoice newChoice = createSimpleChoice(choiceInteraction, prefix);
+	public static SimpleChoice appendSimpleChoice(ChoiceInteraction choiceInteraction, String text, String prefix) {
+		SimpleChoice newChoice = createSimpleChoice(choiceInteraction, text, prefix);
 		choiceInteraction.getNodeGroups().getSimpleChoiceGroup().getSimpleChoices().add(newChoice);
 		return newChoice;
 	}

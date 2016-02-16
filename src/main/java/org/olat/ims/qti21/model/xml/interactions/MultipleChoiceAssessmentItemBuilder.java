@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.IdentifierGenerator;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 
 import uk.ac.ed.ph.jqtiplus.group.NodeGroupList;
@@ -83,7 +84,7 @@ public class MultipleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBui
 	}
 	
 	private static AssessmentItem createAssessmentItem() {
-		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem("Multiple choice");
+		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.mc, "Multiple choice");
 		
 		NodeGroupList nodeGroups = assessmentItem.getNodeGroups();
 
@@ -101,7 +102,7 @@ public class MultipleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBui
 		ItemBody itemBody = appendDefaultItemBody(assessmentItem);
 		ChoiceInteraction choiceInteraction = appendChoiceInteraction(itemBody, responseDeclarationId, 1, true);
 		
-		appendSimpleChoice(choiceInteraction, "mc");
+		appendSimpleChoice(choiceInteraction, "New answer", "mc");
 
 		//response processing
 		ResponseProcessing responseProcessing = createResponseProcessing(assessmentItem, responseDeclarationId);
@@ -134,6 +135,11 @@ public class MultipleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBui
 			}
 		}
 	}
+	
+	@Override
+	public QTI21QuestionType getQuestionType() {
+		return QTI21QuestionType.mc;
+	}
 
 	@Override
 	public boolean isCorrect(SimpleChoice choice) {
@@ -143,6 +149,10 @@ public class MultipleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBui
 	public void setCorrectAnswers(List<Identifier> identifiers) {
 		correctAnswers.clear();
 		correctAnswers.addAll(identifiers);
+	}
+	
+	public void addCorrectAnswer(Identifier identifier) {
+		correctAnswers.add(identifier);
 	}
 
 	@Override

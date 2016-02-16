@@ -35,6 +35,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.olat.core.gui.render.StringOutput;
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 
@@ -91,7 +92,7 @@ public class KPrimAssessmentItemBuilder extends AssessmentItemBuilder {
 	}
 	
 	private static AssessmentItem createAssessmentItem() {
-		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem("KPrim");
+		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.kprim, "KPrim");
 		
 		NodeGroupList nodeGroups = assessmentItem.getNodeGroups();
 
@@ -163,6 +164,11 @@ public class KPrimAssessmentItemBuilder extends AssessmentItemBuilder {
 			}
 		}
 		question = sb.toString();
+	}
+	
+	@Override
+	public QTI21QuestionType getQuestionType() {
+		return QTI21QuestionType.kprim;
 	}
 	
 	public boolean isShuffle() {

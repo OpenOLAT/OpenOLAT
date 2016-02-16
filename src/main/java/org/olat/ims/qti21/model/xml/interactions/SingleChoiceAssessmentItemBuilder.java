@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.IdentifierGenerator;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 
 import uk.ac.ed.ph.jqtiplus.node.content.ItemBody;
@@ -82,7 +83,7 @@ public class SingleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuild
 	}
 	
 	private static AssessmentItem createAssessmentItem() {
-		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem("Single choice");
+		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.sc, "Single choice");
 
 		//define correct answer
 		Identifier responseDeclarationId = Identifier.assumedLegal("RESPONSE_1");
@@ -97,7 +98,7 @@ public class SingleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuild
 		ItemBody itemBody = appendDefaultItemBody(assessmentItem);
 		ChoiceInteraction choiceInteraction = appendChoiceInteraction(itemBody, responseDeclarationId, 1, true);
 		
-		appendSimpleChoice(choiceInteraction, "sc");
+		appendSimpleChoice(choiceInteraction, "New answer", "sc");
 
 		//response processing
 		ResponseProcessing responseProcessing = createResponseProcessing(assessmentItem, responseDeclarationId);
@@ -121,6 +122,11 @@ public class SingleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuild
 				}
 			}
 		}
+	}
+	
+	@Override
+	public QTI21QuestionType getQuestionType() {
+		return QTI21QuestionType.sc;
 	}
 
 	@Override

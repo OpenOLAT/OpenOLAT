@@ -187,6 +187,13 @@ public abstract class ChoiceAssessmentItemBuilder extends AssessmentItemBuilder 
 		return choices;
 	}
 	
+	public void addSimpleChoice(SimpleChoice choice) {
+		if(choices == null) {
+			choices = new ArrayList<>();
+		}
+		choices.add(choice);
+	}
+	
 	public void setSimpleChoices(List<SimpleChoice> choices) {
 		this.choices = new ArrayList<>(choices);
 	}

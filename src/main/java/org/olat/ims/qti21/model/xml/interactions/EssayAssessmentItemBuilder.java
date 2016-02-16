@@ -31,6 +31,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.olat.core.gui.render.StringOutput;
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 
@@ -73,7 +74,7 @@ public class EssayAssessmentItemBuilder extends AssessmentItemBuilder {
 	}
 	
 	private static AssessmentItem createAssessmentItem() {
-		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem("Essay");
+		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.essay, "Essay");
 		
 		//define the response
 		Identifier responseDeclarationId = Identifier.assumedLegal("RESPONSE_1");
@@ -90,6 +91,11 @@ public class EssayAssessmentItemBuilder extends AssessmentItemBuilder {
 		ResponseProcessing responseProcessing = createResponseProcessing(assessmentItem, responseDeclarationId);
 		assessmentItem.getNodeGroups().getResponseProcessingGroup().setResponseProcessing(responseProcessing);
 		return assessmentItem;
+	}
+	
+	@Override
+	public QTI21QuestionType getQuestionType() {
+		return QTI21QuestionType.essay;
 	}
 	
 	@Override
@@ -112,11 +118,13 @@ public class EssayAssessmentItemBuilder extends AssessmentItemBuilder {
 		}
 		question = sb.toString();
 	}
-	
+
+	@Override
 	public String getQuestion() {
 		return question;
 	}
 	
+	@Override
 	public void setQuestion(String html) {
 		this.question = html;
 	}

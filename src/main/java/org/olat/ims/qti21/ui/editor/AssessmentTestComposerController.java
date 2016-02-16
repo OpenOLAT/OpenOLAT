@@ -46,6 +46,10 @@ import org.olat.core.gui.control.VetoableCloseController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.QTI21Constants;
@@ -58,6 +62,10 @@ import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.pool.QTI21QPoolServiceProvider;
+import org.olat.ims.qti21.questionimport.AssessmentItemAndMetadata;
+import org.olat.ims.qti21.questionimport.AssessmentItemsPackage;
+import org.olat.ims.qti21.questionimport.ImportOptions;
+import org.olat.ims.qti21.questionimport.QImport_1_InputStep;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.olat.ims.qti21.ui.editor.events.AssessmentSectionEvent;
@@ -103,6 +111,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private Controller currentEditorCtrl;
 	private CloseableModalController cmc;
 	private SelectItemController selectQItemCtrl;
+	private StepsMainRunController importTableWizard;
 	private final LayoutMain3ColsController columnLayoutCtr;
 	
 	private final File unzippedDirRoot;
@@ -110,6 +119,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private ManifestType manifest;
 	private ResolvedAssessmentTest resolvedAssessmentTest;
 	
+	private final boolean survey = false;
 	private final boolean restrictedEdit;
 	
 	@Autowired
@@ -244,7 +254,14 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			if(event instanceof QItemViewEvent) {
 				QItemViewEvent e = (QItemViewEvent)event;
 				List<QuestionItemView> items = e.getItemList();
-				doInsert(items);
+				doInsert(ureq, items);
+			}
+		}  else if(importTableWizard == source) {
+			AssessmentItemsPackage importPackage = (AssessmentItemsPackage)importTableWizard.getRunContext().get("importPackage");
+			getWindowControl().pop();
+			cleanUp();
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				doInsert(ureq, importPackage);
 			}
 		} else if(cmc == source) {
 			cleanUp();
@@ -285,6 +302,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new EssayAssessmentItemBuilder(qtiService.qtiSerializer()));
 		} else if(importFromPoolLink == source) {
 			doSelectQItem(ureq);
+		} else if(importFromTableLink == source) {
+			doImportTable(ureq);
 		}
 	}
 	
@@ -300,35 +319,40 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		listenTo(cmc);
 	}
 	
-	private void doInsert(List<QuestionItemView> items) {
+	private void doImportTable(UserRequest ureq) {
+		removeAsListenerAndDispose(importTableWizard);
+
+		final AssessmentItemsPackage importPackage = new AssessmentItemsPackage();
+		final ImportOptions options = new ImportOptions();
+		options.setShuffle(!survey);
+		Step start = new QImport_1_InputStep(ureq, importPackage, options, null);
+		StepRunnerCallback finish = new StepRunnerCallback() {
+			@Override
+			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
+				runContext.put("importPackage", importPackage);
+				return StepsMainRunController.DONE_MODIFIED;
+			}
+		};
+		
+		importTableWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("tools.import.table"), "o_mi_table_import_wizard");
+		listenTo(importTableWizard);
+		getWindowControl().pushAsModalDialog(importTableWizard.getInitialComponent());
+	}
+	
+	private void doInsert(UserRequest ureq, List<QuestionItemView> items) {
 		TreeNode selectedNode = menuTree.getSelectedNode();
 		TreeNode sectionNode = getNearestSection(selectedNode);
 		
 		String firstItemId = null;
-		
 		try {
+			AssessmentSection section = (AssessmentSection)sectionNode.getUserObject();
 			for(QuestionItemView item:items) {
 				AssessmentItem assessmentItem = qti21QPoolServiceProvider.exportToQTIEditor(item, unzippedDirRoot);
-				AssessmentSection section = (AssessmentSection)sectionNode.getUserObject();
-				
-				AssessmentItemRef itemRef = new AssessmentItemRef(section);
-				String itemId = assessmentItem.getIdentifier();
+				String itemId = doInsert(section, assessmentItem);
 				if(firstItemId == null) {
 					firstItemId = itemId;
 				}
-				itemRef.setIdentifier(Identifier.parseString(itemId));
-				File itemFile = new File(unzippedDirRoot, itemId + ".xml");
-				itemRef.setHref(new URI(itemFile.getName()));
-				section.getSectionParts().add(itemRef);
-				
-				qtiService.persistAssessmentObject(itemFile, assessmentItem);
-				
-				URI testUri = resolvedAssessmentTest.getTestLookup().getSystemId();
-				File testFile = new File(testUri);
-				qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
-
-				ManifestPackage.appendAssessmentItem(itemFile.getName(), manifest);
-				ManifestPackage.write(manifest, new File(unzippedDirRoot, "imsmanifest.xml"));
 			}
 		} catch (IOException | URISyntaxException e) {
 			showError("error.import.question");
@@ -340,6 +364,56 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		TreeNode newItemNode = menuTree.getTreeModel().getNodeById(firstItemId);
 		menuTree.setSelectedNode(newItemNode);
 		menuTree.open(newItemNode);
+		partEditorFactory(ureq, newItemNode);
+	}
+
+	private void doInsert(UserRequest ureq, AssessmentItemsPackage importPackage) {
+		TreeNode selectedNode = menuTree.getSelectedNode();
+		TreeNode sectionNode = getNearestSection(selectedNode);
+		
+		String firstItemId = null;
+		try {
+			AssessmentSection section = (AssessmentSection)sectionNode.getUserObject();
+			
+			List<AssessmentItemAndMetadata> itemsAndMetadata = importPackage.getItems();
+			for(AssessmentItemAndMetadata itemAndMetadata:itemsAndMetadata) {
+				AssessmentItem assessmentItem = itemAndMetadata.getItemBuilder().getAssessmentItem();
+				String itemId = doInsert(section, assessmentItem);
+				if(firstItemId == null) {
+					firstItemId = itemId;
+				}
+			}
+		} catch (URISyntaxException e) {
+			showError("error.import.question");
+			logError("", e);
+		}
+		
+		updateTreeModel();
+		
+		TreeNode newItemNode = menuTree.getTreeModel().getNodeById(firstItemId);
+		menuTree.setSelectedNode(newItemNode);
+		menuTree.open(newItemNode);
+		partEditorFactory(ureq, newItemNode);
+	}
+	
+	private String doInsert(AssessmentSection section, AssessmentItem assessmentItem)
+	throws URISyntaxException {
+		AssessmentItemRef itemRef = new AssessmentItemRef(section);
+		String itemId = assessmentItem.getIdentifier();
+		itemRef.setIdentifier(Identifier.parseString(itemId));
+		File itemFile = new File(unzippedDirRoot, itemId + ".xml");
+		itemRef.setHref(new URI(itemFile.getName()));
+		section.getSectionParts().add(itemRef);
+		
+		qtiService.persistAssessmentObject(itemFile, assessmentItem);
+		
+		URI testUri = resolvedAssessmentTest.getTestLookup().getSystemId();
+		File testFile = new File(testUri);
+		qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
+
+		ManifestPackage.appendAssessmentItem(itemFile.getName(), manifest);
+		ManifestPackage.write(manifest, new File(unzippedDirRoot, "imsmanifest.xml"));
+		return itemId;
 	}
 	
 	private TreeNode doOpenFirstItem() {

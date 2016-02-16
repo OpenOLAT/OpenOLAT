@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
@@ -72,6 +73,8 @@ public abstract class AssessmentItemBuilder {
 	public AssessmentItem getAssessmentItem() {
 		return assessmentItem;
 	}
+	
+	public abstract QTI21QuestionType getQuestionType();
 	
 	protected void extract() {
 		extractMinScore();
@@ -130,6 +133,10 @@ public abstract class AssessmentItemBuilder {
 	public void setTitle(String title) {
 		assessmentItem.setTitle(title);
 	}
+	
+	public abstract String getQuestion();
+	
+	public abstract void setQuestion(String question);
 	
 	public ScoreBuilder getMinScoreBuilder() {
 		return minScoreBuilder;

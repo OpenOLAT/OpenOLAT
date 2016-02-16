@@ -235,7 +235,7 @@ public class SingleChoiceEditorController extends FormBasicController {
 	
 	private void doAddSimpleChoice(UserRequest ureq) {
 		ChoiceInteraction interaction = itemBuilder.getChoiceInteraction();
-		SimpleChoice newChoice = AssessmentItemFactory.createSimpleChoice(interaction, "sc");
+		SimpleChoice newChoice = AssessmentItemFactory.createSimpleChoice(interaction, "New answer", "sc");
 		wrapAnswer(ureq, newChoice);
 		flc.setDirty(true);
 	}
