@@ -22,11 +22,8 @@ package org.olat.core.commons.services.notifications.manager;
 
 import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
-import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
 /**
@@ -38,16 +35,14 @@ import org.olat.repository.RepositoryManager;
  * @author srosse, stephane.rosse@frentix.com
  */
 public class NotificationsUpgradeHelper {
-	static OLog log = Tracing.createLoggerFor(NotificationsUpgradeHelper.class);
 
 	public static boolean checkOLATResourceable(Publisher publisher) {
 		Long resId = publisher.getResId();
 		try {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(publisher.getResName(), resId);
 			if(ores == null) return false;
-			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, true);
-			if(re == null) return false;
-			return true;
+			Long reKey = RepositoryManager.getInstance().lookupRepositoryEntryKey(ores, true);
+			return reKey != null;
 		} catch (Exception e) {
 			return false;
 		}
@@ -58,23 +53,10 @@ public class NotificationsUpgradeHelper {
 		try {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, resId);
 			if(ores == null) return false;
-			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, true);
-			if(re == null) return false;
-			return true;
+			Long reKey = RepositoryManager.getInstance().lookupRepositoryEntryKey(ores, true);
+			return reKey != null;
 		} catch (Exception e) {
 			return false;
 		}
-	}
-	
-	public static String getCourseNodePath(Publisher publisher) {
-		String businessPath = null;
-		try {
-			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(OresHelper.createOLATResourceableInstance(CourseModule.class, publisher.getResId()), true);
-			businessPath = "[RepositoryEntry:" + re.getKey() + "][CourseNode:" + publisher.getSubidentifier() + "]";
-		} catch (Exception e) {
-			//if something went wrong...
-			log.warn("error while processing resid: "+publisher.getResId(), e);
-		}
-		return businessPath;
 	}
 }
