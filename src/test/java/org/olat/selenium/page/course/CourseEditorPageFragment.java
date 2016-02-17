@@ -107,6 +107,8 @@ public class CourseEditorPageFragment {
 		By rootNodeBy = By.cssSelector("span.o_tree_link.o_tree_l0>a");
 		browser.findElement(rootNodeBy).click();
 		OOGraphene.waitBusy(browser);
+		By rootNodeActiveBy = By.cssSelector("span.o_tree_link.o_tree_l0.active");
+		OOGraphene.waitElement(rootNodeActiveBy, 5, browser);
 		return this;
 	}
 	
@@ -149,6 +151,10 @@ public class CourseEditorPageFragment {
 	}
 	
 	private CourseEditorPageFragment selectTab(By tabBy) {
+		//make sure the tab bar is loaded
+		By navBarBy = By.cssSelector("ul.o_node_config");
+		OOGraphene.waitElement(navBarBy, 5, browser);
+		
 		List<WebElement> tabLinks = browser.findElements(navBarNodeConfiguration);
 
 		boolean found = false;

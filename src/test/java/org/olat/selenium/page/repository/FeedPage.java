@@ -110,7 +110,7 @@ public class FeedPage {
 		//save the settings
 		By saveButton = By.xpath("//div[contains(@class,'modal-body')]//form//button[contains(@class,'btn-primary')]");
 		browser.findElement(saveButton).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitBusy(browser, 20);
 		return this;
 	}
 	
