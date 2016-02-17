@@ -53,6 +53,11 @@ public class OOGraphene {
 		Graphene.waitModel(browser).pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new BusyPredicate());
 	}
 	
+	public static void waitBusy(WebDriver browser, int timeoutInSeconds) {
+		Graphene.waitModel(browser).withTimeout(timeoutInSeconds, TimeUnit.SECONDS)
+		.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new BusyPredicate());
+	}
+	
 	public static void waitElement(By element, WebDriver browser) {
 		Graphene.waitModel(browser).pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
 	}
