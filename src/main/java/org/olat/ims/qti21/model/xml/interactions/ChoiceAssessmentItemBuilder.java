@@ -197,6 +197,12 @@ public abstract class ChoiceAssessmentItemBuilder extends AssessmentItemBuilder 
 	public void setSimpleChoices(List<SimpleChoice> choices) {
 		this.choices = new ArrayList<>(choices);
 	}
+	
+	public void clearSimpleChoices() {
+		if(choices != null) {
+			choices.clear();;
+		}
+	}
 
 	@Override
 	protected void buildModalFeedback(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {

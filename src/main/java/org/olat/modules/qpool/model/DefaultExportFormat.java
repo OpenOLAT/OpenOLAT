@@ -57,7 +57,7 @@ public class DefaultExportFormat implements ExportFormatOptions {
 	}
 
 	@Override
-	public String getTypeFormat() {
+	public String getResourceTypeFormat() {
 		return typeFormat;
 	}
 

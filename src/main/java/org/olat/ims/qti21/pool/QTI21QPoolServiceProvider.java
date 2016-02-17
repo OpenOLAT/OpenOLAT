@@ -43,7 +43,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.ims.qti.fileresource.TestFileResource;
+import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21QuestionType;
@@ -116,7 +116,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	static {
 		formats.add(DefaultExportFormat.ZIP_EXPORT_FORMAT);
 		formats.add(new DefaultExportFormat(QTI21Constants.QTI_21_FORMAT, Outcome.download, null));
-		formats.add(new DefaultExportFormat(QTI21Constants.QTI_21_FORMAT, Outcome.repository, TestFileResource.TYPE_NAME));
+		formats.add(new DefaultExportFormat(QTI21Constants.QTI_21_FORMAT, Outcome.repository, ImsQTI21Resource.TYPE_NAME));
 	}
 	
 	
@@ -282,6 +282,33 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().extractAssumingSuccessful();
 		assessmentItem.setIdentifier(QTI21QuestionTypeDetector.generateNewIdentifier(assessmentItem.getIdentifier()));
 		return assessmentItem;
+	}
+	
+	public void assembleTest(List<QuestionItemShort> items, ZipOutputStream zout) {
+		List<Long> itemKeys = new ArrayList<Long>();
+		for(QuestionItemShort item:items) {
+			itemKeys.add(item.getKey());
+		}
+
+		List<QuestionItemFull> fullItems = questionItemDao.loadByIds(itemKeys);
+		QTI21ExportProcessor processor = new QTI21ExportProcessor(qtiService, qpoolFileStorage);
+		processor.assembleTest(fullItems, zout);	
+	}
+	
+	public void exportToEditorPackage(File exportDir, List<QuestionItemShort> items) {
+		List<Long> itemKeys = toKeys(items);
+		List<QuestionItemFull> fullItems = questionItemDao.loadByIds(itemKeys);
+
+		QTI21ExportProcessor processor = new QTI21ExportProcessor(qtiService, qpoolFileStorage);
+		processor.assembleTest(fullItems, exportDir);
+	}
+	
+	private List<Long> toKeys(List<? extends QuestionItemShort> items) {
+		List<Long> keys = new ArrayList<Long>(items.size());
+		for(QuestionItemShort item:items) {
+			keys.add(item.getKey());
+		}
+		return keys;
 	}
 	
 

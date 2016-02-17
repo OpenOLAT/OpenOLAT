@@ -748,17 +748,16 @@ public class QuestionListController extends AbstractItemListController implement
 				break;
 			}
 			case repository: {
-				doExportToRepository(ureq, items);
+				doExportToRepository(ureq, items, format.getResourceTypeFormat());
 				break;
 			}
 		}
 	}
 	
-	private void doExportToRepository(UserRequest ureq, List<QuestionItemShort> items) {
+	private void doExportToRepository(UserRequest ureq, List<QuestionItemShort> items, String type) {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(addController);
-		
-		String type = TestFileResource.TYPE_NAME;
+
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
 		addController = new CreateRepositoryEntryController(ureq, getWindowControl(), handler);
 		addController.setCreateObject(new QItemList(items));

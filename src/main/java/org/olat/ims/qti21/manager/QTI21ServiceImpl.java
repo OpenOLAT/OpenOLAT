@@ -243,10 +243,8 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 
 	@Override
 	public ResolvedAssessmentTest loadAndResolveAssessmentTest(File resourceDirectory) {
-		ResolvedAssessmentTest result;
-		if(assessmentTestsAndItemsCache.containsKey(resourceDirectory)) {
-			result = (ResolvedAssessmentTest)assessmentTestsAndItemsCache.get(resourceDirectory);
-		} else {
+		ResolvedAssessmentTest result = (ResolvedAssessmentTest)assessmentTestsAndItemsCache.get(resourceDirectory);
+		if(result == null)  {
 			QtiXmlReader qtiXmlReader = new QtiXmlReader(jqtiExtensionManager());
 			ResourceLocator fileResourceLocator = new PathResourceLocator(resourceDirectory.toPath());
 			ResourceLocator inputResourceLocator = 
@@ -266,20 +264,22 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	
 	@Override
 	public ResolvedAssessmentItem loadAndResolveAssessmentItem(URI assessmentObjectSystemId, File resourceDirectory) {
-		QtiXmlReader qtiXmlReader = new QtiXmlReader(jqtiExtensionManager());
-		ResourceLocator fileResourceLocator = new PathResourceLocator(resourceDirectory.toPath());
-		ResourceLocator inputResourceLocator = 
-        		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
-		
-        AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, inputResourceLocator);
-        ResolvedAssessmentItem result = assessmentObjectXmlLoader.loadAndResolveAssessmentItem(assessmentObjectSystemId);
+		File resourceFile = new File(assessmentObjectSystemId);
+		ResolvedAssessmentItem result = (ResolvedAssessmentItem)assessmentTestsAndItemsCache.get(resourceFile);
+		if(result == null) {
+			QtiXmlReader qtiXmlReader = new QtiXmlReader(jqtiExtensionManager());
+			ResourceLocator fileResourceLocator = new PathResourceLocator(resourceDirectory.toPath());
+			ResourceLocator inputResourceLocator = 
+	        		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
+			
+	        AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, inputResourceLocator);
+	        result = assessmentObjectXmlLoader.loadAndResolveAssessmentItem(assessmentObjectSystemId);
 
-        
-        File resourceFile = new File(assessmentObjectSystemId);
-        ResolvedAssessmentItem cachedResult = (ResolvedAssessmentItem)assessmentTestsAndItemsCache.putIfAbsent(resourceFile, result);
-        if(cachedResult != null) {
-        	result = cachedResult;
-        }
+	        ResolvedAssessmentItem cachedResult = (ResolvedAssessmentItem)assessmentTestsAndItemsCache.putIfAbsent(resourceFile, result);
+	        if(cachedResult != null) {
+	        	result = cachedResult;
+	        }
+		}
         return result;
 	}
 	

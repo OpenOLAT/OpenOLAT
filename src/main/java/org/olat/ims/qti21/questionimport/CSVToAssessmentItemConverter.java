@@ -21,7 +21,6 @@ package org.olat.ims.qti21.questionimport;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.logging.OLog;
@@ -30,10 +29,10 @@ import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder.ScoreEvaluation;
 
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
@@ -45,16 +44,16 @@ import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CSVToQuestionConverter {
+public class CSVToAssessmentItemConverter {
 	
-	private static final OLog log = Tracing.createLoggerFor(CSVToQuestionConverter.class);
+	private static final OLog log = Tracing.createLoggerFor(CSVToAssessmentItemConverter.class);
 
 	private ImportOptions options;
 	private final QtiSerializer qtiSerializer;
 	private AssessmentItemAndMetadata currentItem;
 	private final List<AssessmentItemAndMetadata> items = new ArrayList<>();
 	
-	public CSVToQuestionConverter(ImportOptions options, QtiSerializer qtiSerializer) {
+	public CSVToAssessmentItemConverter(ImportOptions options, QtiSerializer qtiSerializer) {
 		this.options = options;
 		this.qtiSerializer = qtiSerializer;
 	}
@@ -275,7 +274,7 @@ public class CSVToQuestionConverter {
 				}
 				case "mc": {
 					MultipleChoiceAssessmentItemBuilder mcItemBuilder = new MultipleChoiceAssessmentItemBuilder(qtiSerializer);
-					mcItemBuilder.setSimpleChoices(Collections.emptyList());
+					mcItemBuilder.clearSimpleChoices();
 					mcItemBuilder.clearMapping();
 					mcItemBuilder.setShuffle(options.isShuffle());
 					mcItemBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
@@ -284,7 +283,7 @@ public class CSVToQuestionConverter {
 				}
 				case "sc": {
 					SingleChoiceAssessmentItemBuilder scItemBuilder = new SingleChoiceAssessmentItemBuilder(qtiSerializer);
-					scItemBuilder.setSimpleChoices(Collections.emptyList());
+					scItemBuilder.clearSimpleChoices();
 					scItemBuilder.clearMapping();
 					scItemBuilder.setShuffle(options.isShuffle());
 					scItemBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);

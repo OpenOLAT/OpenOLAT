@@ -68,11 +68,13 @@ import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestPackage;
 import org.olat.ims.qti21.model.xml.OnyxToQtiWorksHandler;
+import org.olat.ims.qti21.pool.QTI21QPoolServiceProvider;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.InMemoryOutcomesListener;
 import org.olat.ims.qti21.ui.QTI21RuntimeController;
 import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
 import org.olat.imscp.xml.manifest.ManifestType;
+import org.olat.modules.qpool.model.QItemList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -128,7 +130,13 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 		if(!repositoryDir.exists()) {
 			repositoryDir.mkdirs();
 		}
-		createMinimalAssessmentTest(displayname, repositoryDir);
+		if(createObject instanceof QItemList) {
+			QItemList itemToImport = (QItemList)createObject;
+			QTI21QPoolServiceProvider provider = CoreSpringFactory.getImpl(QTI21QPoolServiceProvider.class);
+			provider.exportToEditorPackage(repositoryDir, itemToImport.getItems());
+		} else {
+			createMinimalAssessmentTest(displayname, repositoryDir);
+		}
 		return re;
 	}
 	

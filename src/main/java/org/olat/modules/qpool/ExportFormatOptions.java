@@ -31,7 +31,11 @@ public interface ExportFormatOptions {
 	
 	public Outcome getOutcome();
 	
-	public String getTypeFormat();
+	/**
+	 * The type of resource (within the repository)
+	 * @return
+	 */
+	public String getResourceTypeFormat();
 	
 	public enum Outcome {
 		download,

@@ -32,17 +32,17 @@ import org.olat.modules.qpool.manager.AbstractExportTestResource;
  *
  */
 public class QTI21ExportTestResource extends AbstractExportTestResource {
+	
+	private final QTI21QPoolServiceProvider qtiPoolServiceProvider;
 
 	public QTI21ExportTestResource(String encoding, List<QuestionItemShort> items,
 			QTI21QPoolServiceProvider qti21qPoolServiceProvider) {
 		super(encoding, items);
+		this.qtiPoolServiceProvider = qti21qPoolServiceProvider;
 	}
 
 	@Override
-	protected void exportTest(List<QuestionItemShort> itesmToExport, ZipOutputStream zout) {
-		//
+	protected void exportTest(List<QuestionItemShort> items, ZipOutputStream zout) {
+		qtiPoolServiceProvider.assembleTest(items, zout);
 	}
-	
-	
-
 }

@@ -107,7 +107,7 @@ public class TextInputController extends StepFormBasicController {
 	
 	private boolean convertInputField() {
 		boolean importDataError = false;
-		CSVToQuestionConverter converter = new CSVToQuestionConverter(options, qtiService.qtiSerializer());
+		CSVToAssessmentItemConverter converter = new CSVToAssessmentItemConverter(options, qtiService.qtiSerializer());
 		converter.parse(inputElement.getValue());
 		parsedItems = converter.getItems();
 		return importDataError;

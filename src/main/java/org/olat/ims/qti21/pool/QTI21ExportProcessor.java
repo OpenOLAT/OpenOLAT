@@ -20,20 +20,33 @@
 package org.olat.ims.qti21.pool;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.ZipUtil;
+import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
+import org.olat.ims.qti21.model.xml.ManifestPackage;
+import org.olat.imscp.xml.manifest.ManifestType;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.manager.QPoolFileStorage;
 
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
+import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 
 /**
  * 
@@ -43,6 +56,8 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
  */
 public class QTI21ExportProcessor {
 	
+	private static final OLog log = Tracing.createLoggerFor(QTI21ExportProcessor.class);
+	
 	private final QTI21Service qtiService;
 	private final QPoolFileStorage qpoolFileStorage;
 
@@ -51,8 +66,16 @@ public class QTI21ExportProcessor {
 		this.qpoolFileStorage = qpoolFileStorage;
 	}
 
-	public void process(QuestionItemFull item, ZipOutputStream zout, Set<String> names) {
-		//
+	public void process(QuestionItemFull qitem, ZipOutputStream zout, Set<String> names) {
+		String dir = qitem.getDirectory();
+		File rootDirectory = qpoolFileStorage.getDirectory(dir);
+
+		String rootDir = "qitem_" + qitem.getKey();
+		File[] items = rootDirectory.listFiles();
+		addMetadata(qitem, rootDirectory, zout);
+		for(File item:items) {
+			ZipUtil.addFileToZip(rootDir + "/" + item.getName(), item, zout);
+		}
 	}
 	
 	public ResolvedAssessmentItem exportToQTIEditor(QuestionItemFull fullItem, File editorContainer)
@@ -85,6 +108,97 @@ public class QTI21ExportProcessor {
 			//enrichWithMetadata(fullItem, itemEl);
 			//collectResources(itemEl, container, materials);
 			materials.addItemEl(assessmentItem);
+		}
+	}
+	
+	public void addMetadata(QuestionItemFull item, File rootDirectory, ZipOutputStream zout) {
+		
+	}
+	
+	public void assembleTest(List<QuestionItemFull> fullItems, File directory) {
+		try {
+			QtiSerializer qtiSerializer = qtiService.qtiSerializer();
+			//imsmanifest
+			ManifestType manifest = ManifestPackage.createEmptyManifest();
+			
+			//assessment test
+			AssessmentTest assessmentTest = AssessmentTestFactory.createAssessmentTest("Assessment test from pool");
+			String assessmentTestFilename = assessmentTest.getIdentifier() + ".xml";
+			ManifestPackage.appendAssessmentTest(assessmentTestFilename, manifest);
+
+			//make a section
+			AssessmentSection section = assessmentTest.getTestParts().get(0).getAssessmentSections().get(0);
+
+			//assessment items
+			for(QuestionItemFull qitem:fullItems) {
+				String rootFilename = qitem.getRootFilename();
+				File resourceDirectory = qpoolFileStorage.getDirectory(qitem.getDirectory());
+				File itemFile = new File(resourceDirectory, rootFilename);
+				String itemFilename = itemFile.getName();
+				
+				//enrichScore(itemEl);
+				//enrichWithMetadata(fullItem, itemEl);
+				//collectResources(itemEl, container, materials);
+				FileUtils.bcopy(itemFile, new File(directory, rootFilename), "");
+				AssessmentTestFactory.appendAssessmentItem(section, itemFilename);
+				ManifestPackage.appendAssessmentItem(itemFilename, manifest);
+			}
+
+			try(FileOutputStream out = new FileOutputStream(new File(directory, assessmentTestFilename))) {
+				qtiSerializer.serializeJqtiObject(assessmentTest, out);	
+			} catch(Exception e) {
+				log.error("", e);
+			}
+			
+	        try(FileOutputStream out = new FileOutputStream(new File(directory, "imsmanifest.xml"))) {
+	        	ManifestPackage.write(manifest, out);
+	        } catch(Exception e) {
+	        	log.error("", e);
+	        }
+		} catch (IOException | URISyntaxException e) {
+			log.error("", e);
+		}
+	}
+	
+	public void assembleTest(List<QuestionItemFull> fullItems, ZipOutputStream zout) {
+		try {
+			QtiSerializer qtiSerializer = qtiService.qtiSerializer();
+			//imsmanifest
+			ManifestType manifest = ManifestPackage.createEmptyManifest();
+			
+			//assessment test
+			AssessmentTest assessmentTest = AssessmentTestFactory.createAssessmentTest("Assessment test from pool");
+			String assessmentTestFilename = assessmentTest.getIdentifier() + ".xml";
+			ManifestPackage.appendAssessmentTest(assessmentTestFilename, manifest);
+
+			//make a section
+			AssessmentSection section = assessmentTest.getTestParts().get(0).getAssessmentSections().get(0);
+
+			//assessment items
+			for(QuestionItemFull qitem:fullItems) {
+				String rootFilename = qitem.getRootFilename();
+				File resourceDirectory = qpoolFileStorage.getDirectory(qitem.getDirectory());
+				File itemFile = new File(resourceDirectory, rootFilename);
+				String itemFilename = itemFile.getName();
+				
+				//enrichScore(itemEl);
+				//enrichWithMetadata(fullItem, itemEl);
+				//collectResources(itemEl, container, materials);
+
+				ZipUtil.addFileToZip(itemFilename, itemFile, zout);
+				AssessmentTestFactory.appendAssessmentItem(section, itemFilename);
+				ManifestPackage.appendAssessmentItem(itemFilename, manifest);
+			}
+
+			zout.putNextEntry(new ZipEntry(assessmentTestFilename));
+			qtiSerializer.serializeJqtiObject(assessmentTest, new ShieldOutputStream(zout));
+			zout.closeEntry();
+
+			zout.putNextEntry(new ZipEntry("imsmanifest.xml"));
+			ManifestPackage.write(manifest, zout);
+			zout.closeEntry();
+		} catch (IOException | URISyntaxException e) {
+			log.error("", e);
 		}
 	}
 
