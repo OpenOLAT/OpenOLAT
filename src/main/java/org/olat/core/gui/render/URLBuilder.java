@@ -159,7 +159,8 @@ public class URLBuilder {
 		buildURI(sb, ajaxEnabled? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL, commands);
 		sb.append("\" onclick=\"");
 		if(ajaxEnabled) {
-			buildXHREvent(sb, urlEnding, dirtyCheck, pushState, commands).append(" return false;");
+			String escapedUrlEnding = StringHelper.escapeJavaScript(urlEnding);
+			buildXHREvent(sb, escapedUrlEnding, dirtyCheck, pushState, commands).append(" return false;");
 		} else if(dirtyCheck) {
 			sb.append("return o2cl();");
 		}
