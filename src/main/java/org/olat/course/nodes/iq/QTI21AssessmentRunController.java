@@ -137,7 +137,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		mainVC.contextPut("passed", scoreEval.getPassed());
 		StringBuilder comment = Formatter.stripTabsAndReturns(courseNode.getUserUserComment(userCourseEnv));
 		mainVC.contextPut("comment", StringHelper.xssScan(comment));
-		mainVC.contextPut("attempts", courseNode.getUserAttempts(userCourseEnv));
+		Integer attempts = courseNode.getUserAttempts(userCourseEnv);
+		mainVC.contextPut("attempts", attempts == null ? new Integer(0) : attempts);
 		
 		UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
 		mainVC.contextPut("log", am.getUserNodeLog(courseNode, identity));

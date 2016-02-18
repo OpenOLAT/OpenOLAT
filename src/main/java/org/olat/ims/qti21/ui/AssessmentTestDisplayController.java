@@ -768,6 +768,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
         
         final TestSessionControllerSettings testSessionControllerSettings = new TestSessionControllerSettings();
         testSessionControllerSettings.setTemplateProcessingLimit(computeTemplateProcessingLimit());
+        
+        testProcessingMap.reduceItemProcessingMapMap(testPlan.getTestPlanNodeList());
 
         /* Create controller and wire up notification recorder */
         final TestSessionController result = new TestSessionController(qtiService.jqtiExtensionManager(),

@@ -107,7 +107,7 @@ public class ImsQTI21Resource extends FileResource {
 			if(cp.hasTest()) {
 				URI test = cp.getTest().toUri();
 				ResourceLocator chainedResourceLocator = createResolvingResourceLocator(resourceLocator);
-				XmlReadResult result = new QtiXmlReader().read(chainedResourceLocator, test, true);
+				XmlReadResult result = new QtiXmlReader().read(chainedResourceLocator, test, true, true);
 				return result != null && result.isSchemaValid();
 			}
 			return false;
@@ -121,7 +121,7 @@ public class ImsQTI21Resource extends FileResource {
 		try {
 			PathResourceLocator resourceLocator = new PathResourceLocator(resource.getParentFile().toPath());
 			ResourceLocator chainedResourceLocator = createResolvingResourceLocator(resourceLocator);
-			XmlReadResult result = new QtiXmlReader().read(chainedResourceLocator, resource.toURI(), true);
+			XmlReadResult result = new QtiXmlReader().read(chainedResourceLocator, resource.toURI(), true, true);
 			return result != null && result.isSchemaValid();
 		} catch (Exception e) {
 			log.error("", e);

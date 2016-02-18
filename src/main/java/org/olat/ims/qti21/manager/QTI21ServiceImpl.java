@@ -49,6 +49,7 @@ import org.olat.core.id.Persistable;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -253,12 +254,15 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
         URI assessmentObjectSystemId = createAssessmentObjectUri(resourceDirectory);
 		File resourceFile = new File(assessmentObjectSystemId);
 		return assessmentTestsCache.computeIfAbsent(resourceFile, file -> {
+			long start = System.nanoTime();
 			QtiXmlReader qtiXmlReader = new QtiXmlReader(jqtiExtensionManager());
 			ResourceLocator fileResourceLocator = new PathResourceLocator(resourceDirectory.toPath());
 			ResourceLocator inputResourceLocator = 
 	        		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
 	        AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, inputResourceLocator);
-	        return assessmentObjectXmlLoader.loadAndResolveAssessmentTest(assessmentObjectSystemId);
+	        ResolvedAssessmentTest resolvedAssessmentTest = assessmentObjectXmlLoader.loadAndResolveAssessmentTest(assessmentObjectSystemId);
+	        CodeHelper.printNanoTime(start, "Load test takes");
+	        return resolvedAssessmentTest;
 		});
 	}
 	
