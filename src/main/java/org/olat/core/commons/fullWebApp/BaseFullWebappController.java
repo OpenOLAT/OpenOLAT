@@ -980,7 +980,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			// Remove tab itself
 			dtabs.remove(delt);
 			dtabToBusinessPath.remove(delt);
-			dtabsLinkNames.remove(dtabIndex);
+			Integer tabId = dtabsLinkNames.remove(dtabIndex);
 			Controller tabCtr = dtabsControllers.get(dtabIndex);
 			dtabsControllers.remove(tabCtr);
 
@@ -992,9 +992,10 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 
 			navTabsVc.setDirty(true);
 			// remove created links for dtab out of container
-			navTabsVc.remove(navTabsVc.getComponent("a" + delt.hashCode()));
-			navTabsVc.remove(navTabsVc.getComponent("ca" + delt.hashCode()));
-			navTabsVc.remove(navTabsVc.getComponent("cp" + delt.hashCode()));
+			navTabsVc.remove(navTabsVc.getComponent("a" + tabId));
+			navTabsVc.remove(navTabsVc.getComponent("c" + tabId));
+			navTabsVc.remove(navTabsVc.getComponent("ca" + tabId));
+			navTabsVc.remove(navTabsVc.getComponent("cp" + tabId));
 			if (delt == curDTab && ureq != null) { // if we close the current tab -> return to the previous
 				popTheTabState(ureq);
 			} // else just remove the dtabs
