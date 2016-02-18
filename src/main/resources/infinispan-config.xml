@@ -49,6 +49,27 @@
 			<expiration max-idle="180000" interval="15000" />
 		</local-cache>
 		
+		<local-cache name="QTIWorks@assessmentItems" statistics="true">
+			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
+			<transaction mode="NONE" auto-commit="true" />
+			<eviction max-entries="1000" strategy="LIRS" />
+			<expiration max-idle="720000" interval="60000" />
+		</local-cache>
+		
+		<local-cache name="QTIWorks@assessmentTests" statistics="true">
+			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
+			<transaction mode="NONE" auto-commit="true" />
+			<eviction max-entries="200" strategy="LIRS" />
+			<expiration max-idle="7200000" interval="120000" />
+		</local-cache>
+		
+		<local-cache name="QTIWorks@ssltStylesheets" statistics="true">
+			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
+			<transaction mode="NONE" auto-commit="true" />
+			<eviction max-entries="200" strategy="NONE" />
+			<expiration max-idle="-1" interval="60000" />
+		</local-cache>
+		
 		<local-cache name="WebDAVManager@webdav" statistics="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
