@@ -38,8 +38,6 @@ import org.openqa.selenium.WebElement;
  */
 public class BookingPage {
 	
-	private static final By tokenIconBy = By.className("o_ac_token_icon");
-	private static final By addMethodLinksBy = By.cssSelector("fieldset.o_ac_configuration ul.dropdown-menu a");
 	
 	private WebDriver browser;
 	
@@ -64,20 +62,19 @@ public class BookingPage {
 	 * @return This page
 	 */
 	public BookingPage addTokenMethod() {
-		return addMethod(tokenIconBy);
+		addMethod("o_ac_token_icon");
+		By popupBy = By.cssSelector("div.modal-dialog");
+		OOGraphene.waitElement(popupBy, 5, browser);
+		return this;
 	}
 	
-	private BookingPage addMethod(By iconBy) {
-		List<WebElement> links = browser.findElements(addMethodLinksBy);
-		WebElement tokenLink = null;
-		for(WebElement link:links) {
-			List<WebElement> icons = link.findElements(iconBy);
-			if(icons.size() > 0) {
-				tokenLink = link;
-			}
-		}
-		Assert.assertNotNull(tokenLink);
-		tokenLink.click();
+	private BookingPage addMethod(String iconClassname) {
+		//wait menu
+		By addMenuBy = By.cssSelector("fieldset.o_ac_configuration ul.dropdown-menu");
+		OOGraphene.waitElement(addMenuBy, 5, browser);
+		By addMethodBy = By.xpath("//fieldset[contains(@class,'o_ac_configuration')]//ul[contains(@class,'dropdown-menu')]//a[//i[contains(@class,'" + iconClassname + "')]]");
+		WebElement methodLink = browser.findElement(addMethodBy);
+		methodLink.click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

@@ -156,7 +156,7 @@ public class SendTokenToUserForm extends FormBasicController {
 		MailBundle bundle = new MailBundle();
 		bundle.setToId(user);
 		bundle.setContent(userTrans.translate("pwchange.subject"), body);
-		MailerResult result = mailManager.sendExternMessage(bundle, null);
+		MailerResult result = mailManager.sendExternMessage(bundle, null, false);
 		if(result.getReturnCode() == 0) {
 			showInfo("email.sent");
 		} else {

@@ -802,11 +802,11 @@ public class CourseTest {
 		Assert.assertEquals(podcastTitle, podcastH2.getText().trim());
 		
 		FeedPage feed = FeedPage.getFeedPage(browser);
-		feed.newExternalPodcast("http://pod.drs.ch/rock_special_mpx.xml");
+		feed.newExternalPodcast("http://podcasts.srf.ch/rock_special_mpx.xml");
 
 		//check only that the "episodes" title is visible
 		By episodeTitleby = By.cssSelector("div.o_podcast_episodes>h4.o_title");
-		OOGraphene.waitElement(episodeTitleby, 5, browser);
+		OOGraphene.waitElement(episodeTitleby, 20, browser);
 		WebElement episodeH4 = browser.findElement(episodeTitleby);
 		Assert.assertNotNull(episodeH4);
 	}
@@ -859,7 +859,7 @@ public class CourseTest {
 
 		//check only that the subscription link is visible
 		By subscriptionBy = By.cssSelector("div.o_subscription>a");
-		OOGraphene.waitElement(subscriptionBy, 10, browser);
+		OOGraphene.waitElement(subscriptionBy, 20, browser);
 		WebElement subscriptionLink = browser.findElement(subscriptionBy);
 		Assert.assertTrue(subscriptionLink.isDisplayed());
 	}

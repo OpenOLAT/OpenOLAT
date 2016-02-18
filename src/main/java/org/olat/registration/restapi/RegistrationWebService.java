@@ -123,15 +123,18 @@ public class RegistrationWebService {
 				tk = rm.createTemporaryKeyByEmail(email, ip, RegistrationManager.REGISTRATION);
 			}
 			String today = DateFormat.getDateInstance(DateFormat.LONG, locale).format(new Date());
-			String body = translator.translate("reg.body",
-					new String[] { serverpath, tk.getRegistrationKey(), I18nManager.getInstance().getLocaleKey(locale) })
-					+ SEPARATOR
-					+ translator.translate("reg.wherefrom", new String [] { serverpath, today, ip });
+			String[] bodyAttrs = new String[] {
+					serverpath,
+					tk.getRegistrationKey(),
+					I18nManager.getInstance().getLocaleKey(locale)
+			};
+			String[] whereFromAttrs = new String [] { serverpath, today, ip };
+			String body = translator.translate("reg.body", bodyAttrs) + SEPARATOR + translator.translate("reg.wherefrom", whereFromAttrs);
 			try {
 				MailBundle bundle = new MailBundle();
 				bundle.setTo(email);
 				bundle.setContent(translator.translate("reg.subject"), body);
-				MailerResult result = mailM.sendExternMessage(bundle, null);
+				MailerResult result = mailM.sendExternMessage(bundle, null, true);
 				if (result.isSuccessful()) {
 					response = Response.ok();
 				} else {

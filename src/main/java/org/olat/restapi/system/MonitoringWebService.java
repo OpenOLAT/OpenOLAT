@@ -49,6 +49,11 @@ public class MonitoringWebService {
 	public MonitoringWebService() {
 		//make Spring happy
 	}
+	
+	@Path("status")
+	public StatusWebservice getStatus() {
+		return new StatusWebservice();
+	}
 
 	@Path("runtime")
 	public RuntimeWebService getCompilationXml() {

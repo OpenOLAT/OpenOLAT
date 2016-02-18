@@ -299,7 +299,7 @@ public class UserBulkChangeManager extends BasicManager {
 		bundle.setToId(identity);
 		bundle.setContent(translator.translate("mailtemplate.login.denied.subject", args),
 			translator.translate("mailtemplate.login.denied.body", args));
-		CoreSpringFactory.getImpl(MailManager.class).sendExternMessage(bundle, null);
+		CoreSpringFactory.getImpl(MailManager.class).sendExternMessage(bundle, null, false);
 	}
 	
 	private String getServerURI() {

@@ -841,9 +841,13 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	}
 	
 	@Override
-	public MailerResult sendExternMessage(MailBundle bundle, MailerResult result) {
-		return sendExternMessage(bundle.getFromId(), bundle.getFrom(), bundle.getToId(), bundle.getTo(), bundle.getCc(), bundle.getContactLists(),
-				bundle.getContent(), result);
+	public MailerResult sendExternMessage(MailBundle bundle, MailerResult result, boolean useTemplate) {
+		MailContent content = bundle.getContent();
+		if(useTemplate) {
+			content = decorateMail(bundle);
+		}
+		return sendExternMessage(bundle.getFromId(), bundle.getFrom(), bundle.getToId(), bundle.getTo(), bundle.getCc(),
+				bundle.getContactLists(), content, result);
 	}
 	
 	

@@ -36,6 +36,7 @@ import org.olat.restapi.system.vo.MemoryStatisticsVO;
 import org.olat.restapi.system.vo.MemoryVO;
 import org.olat.restapi.system.vo.MonitoringInfosVO;
 import org.olat.restapi.system.vo.OpenOLATStatisticsVO;
+import org.olat.restapi.system.vo.StatusVO;
 import org.olat.restapi.system.vo.ReleaseInfosVO;
 import org.olat.restapi.system.vo.RepositoryStatisticsVO;
 import org.olat.restapi.system.vo.RuntimeStatisticsVO;
@@ -58,6 +59,21 @@ import org.olat.test.OlatJerseyTestCase;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class SystemTest extends OlatJerseyTestCase {
+	
+	@Test
+	public void testMonitoringStatus() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI systemUri = conn.getContextURI().path("system").path("monitoring").path("status").build();
+		StatusVO stats = conn.get(systemUri, StatusVO.class);
+		Assert.assertNotNull(stats);
+		Assert.assertTrue(stats.isWriteDb());
+		Assert.assertTrue(stats.isWriteFile());
+		Assert.assertTrue(stats.getConcurrentDispatchThreads() >= 0l);
+		Assert.assertTrue(stats.getSecureAuthenticatedCount() >= 0l);
+		conn.shutdown();
+	}
 	
 	@Test
 	public void testRuntimeStatisticsInfos() throws IOException, URISyntaxException {
