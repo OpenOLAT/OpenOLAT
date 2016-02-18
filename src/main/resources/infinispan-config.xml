@@ -10,14 +10,14 @@
 		<local-cache name="MapperService@mapper" statistics="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<eviction max-entries="10000" strategy="LRU" />
+			<eviction max-entries="10000" strategy="LIRS" />
 			<expiration max-idle="300000" interval="5000" />
 		</local-cache>
 
 		<local-cache name="OpenMeetingsManager@session" statistics="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<eviction max-entries="10000" strategy="LRU" />
+			<eviction max-entries="10000" strategy="LIRS" />
 			<expiration max-idle="300000" interval="5000" />
 		</local-cache>
 		
@@ -31,28 +31,28 @@
 		<local-cache name="CalendarManager@calendar" statistics="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<eviction max-entries="500" strategy="LRU" />
+			<eviction max-entries="500" strategy="LIRS" />
 			<expiration max-idle="900000" interval="5000" />
 		</local-cache>
 		
 		<local-cache name="AssessmentManager@newpersisting" statistics="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<eviction max-entries="20000" strategy="LRU" />
+			<eviction max-entries="20000" strategy="LIRS" />
 			<expiration max-idle="900000" interval="5000" />
 		</local-cache>
 		
 		<local-cache name="QTIHelper@QTI_xml_Documents" statistics="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<eviction max-entries="200" strategy="LRU" />
+			<eviction max-entries="200" strategy="LIRS" />
 			<expiration max-idle="180000" interval="15000" />
 		</local-cache>
 		
 		<local-cache name="WebDAVManager@webdav" statistics="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<eviction max-entries="2013" strategy="LRU" />
+			<eviction max-entries="2013" strategy="LIRS" />
 			<expiration max-idle="900000" interval="5000" />
 		</local-cache>
 		
@@ -73,70 +73,70 @@
 		<local-cache name="Velocity@templates" statistics="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<eviction max-entries="7700" strategy="LRU" />
+			<eviction max-entries="7700" strategy="NONE" />
 			<expiration max-idle="-1" lifespan="-1" interval="-1" />
 		</local-cache>
 		
 		<local-cache name="LoginModule@blockafterfailedattempts" statistics="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<eviction max-entries="10000" strategy="LRU" />
+			<eviction max-entries="10000" strategy="LIRS" />
 			<expiration max-idle="300000" lifespan="300000" interval="5000" />
 		</local-cache>
 		
 		<local-cache name="NotificationHelper@userPropertiesCache" statistics="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<eviction max-entries="2000" strategy="LRU" />
+			<eviction max-entries="2000" strategy="LIRS" />
 			<expiration max-idle="120000" interval="15000" />
 		</local-cache>
 		
 		<local-cache name="GlossaryItemManager@glossary" statistics="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<eviction max-entries="500" strategy="LRU" />
+			<eviction max-entries="500" strategy="LIRS" />
 			<expiration max-idle="3600000" interval="15000" />
 		</local-cache>
 		
 		<local-cache name="WikiManager@wiki" statistics="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<eviction max-entries="500" strategy="LRU" />
+			<eviction max-entries="500" strategy="LIRS" />
 			<expiration max-idle="3600000" interval="15000" />
 		</local-cache>
 		
 		<local-cache name="CollaborationToolsFactory@tools" statistics="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<eviction max-entries="5000" strategy="LRU" />
+			<eviction max-entries="5000" strategy="LIRS" />
 			<expiration max-idle="1800000" interval="15000" />
 		</local-cache>
 		
 		<local-cache name="CourseFactory@courses" statistics="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<eviction max-entries="1000" strategy="LRU" />
+			<eviction max-entries="1000" strategy="LIRS" />
 			<expiration max-idle="3600000" interval="15000" />
 		</local-cache>
 		
 		<local-cache name="ProjectBrokerManager@pb" statistics="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<eviction max-entries="100" strategy="LRU" />
+			<eviction max-entries="100" strategy="LIRS" />
 			<expiration max-idle="3600000" interval="15000" />
 		</local-cache>
 		
 		<local-cache name="FeedManager@feed" statistics="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<eviction max-entries="1000" strategy="LRU" />
+			<eviction max-entries="1000" strategy="LIRS" />
 			<expiration max-idle="900000" interval="15000" />
 		</local-cache>
 		
 		<local-cache name="Path@feed" statistics="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<eviction max-entries="1000" strategy="LRU" />
+			<eviction max-entries="1000" strategy="LIRS" />
 			<expiration max-idle="900000" interval="15000" />
 		</local-cache>
 	</cache-container>
