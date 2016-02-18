@@ -179,7 +179,7 @@ public interface MailManager {
 	 */
 	public MailerResult sendMessage(MailBundle... bundles);
 	
-	public MailerResult sendExternMessage(MailBundle bundle, MailerResult result);
+	public MailerResult sendExternMessage(MailBundle bundle, MailerResult result, boolean useTemplate);
 	
 	public MimeMessage createMimeMessage(Address from, Address[] tos, Address[] ccs, Address[] bccs, String subject, String body,
 			List<File> attachments, MailerResult result);

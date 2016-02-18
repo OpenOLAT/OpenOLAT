@@ -108,7 +108,7 @@ public class CourseCreationMailHelper {
 		MailBundle bundle = new MailBundle();
 		bundle.setToId(ureq.getIdentity());
 		bundle.setContent(subject, body);
-		return CoreSpringFactory.getImpl(MailManager.class).sendExternMessage(bundle, null);
+		return CoreSpringFactory.getImpl(MailManager.class).sendExternMessage(bundle, null, false);
 	}
 
 }

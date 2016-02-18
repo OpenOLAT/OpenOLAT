@@ -42,7 +42,8 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 
@@ -52,6 +53,7 @@ import org.olat.core.util.resource.OresHelper;
  * @author Felix Jost
  */
 public class TabbedPane extends Container implements Activateable2 {
+	private static final OLog log = Tracing.createLoggerFor(TabbedPane.class);
 	private static final ComponentRenderer RENDERER = new TabbedPaneRenderer();
 
 	/**
@@ -78,12 +80,16 @@ public class TabbedPane extends Container implements Activateable2 {
 	/**
 	 * @see org.olat.core.gui.components.Component#dispatchRequest(org.olat.core.gui.UserRequest)
 	 */
+	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
 		// the taid indicates which tab the user clicked
 		String s_taid = ureq.getParameter(PARAM_PANE_ID);
-		int newTaid = Integer.parseInt(s_taid);
-				
-		dispatchRequest(ureq, newTaid);
+		try {
+			int newTaid = Integer.parseInt(s_taid);
+			dispatchRequest(ureq, newTaid);
+		} catch (NumberFormatException e) {
+			log.warn("Not a number: " + s_taid);
+		}
 	}
 
 	/**
@@ -91,11 +97,12 @@ public class TabbedPane extends Container implements Activateable2 {
 	 * @param newTaid
 	 */
 	private void dispatchRequest(UserRequest ureq, int newTaid) {
-		if (!isEnabled(newTaid)) throw new AssertException("tab with id "+newTaid+" is not enabled, but was dispatched");
-		Component oldSelComp = getTabAt(selectedPane);	
-		setSelectedPane(newTaid);
-		Component newSelComp = getTabAt(selectedPane);
-		fireEvent(ureq, new TabbedPaneChangedEvent(oldSelComp, newSelComp));
+		if (isEnabled(newTaid) && newTaid >= 0 && newTaid < getTabCount()) {
+			Component oldSelComp = getTabAt(selectedPane);	
+			setSelectedPane(newTaid);
+			Component newSelComp = getTabAt(selectedPane);
+			fireEvent(ureq, new TabbedPaneChangedEvent(oldSelComp, newSelComp));
+		}
 	}
 	
 	/**
@@ -103,14 +110,14 @@ public class TabbedPane extends Container implements Activateable2 {
 	 * 
 	 * @param selectedPane The selectedPane to set
 	 */
-	public void setSelectedPane(int selectedPane) {
+	public void setSelectedPane(int newSelectedPane) {
 		// get old selected component and remove it from render tree
-		Component oldSelComp = getTabAt(this.selectedPane);
+		Component oldSelComp = getTabAt(selectedPane);
 		remove(oldSelComp);
 		
 		// activate new
-		this.selectedPane = selectedPane;
-		Component newSelComp = getTabAt(selectedPane);
+		selectedPane = newSelectedPane;
+		Component newSelComp = getTabAt(newSelectedPane);
 		super.put("atp", newSelComp); 
 		//setDirty(true); not needed since: line above marks this container automatically dirty
 	}

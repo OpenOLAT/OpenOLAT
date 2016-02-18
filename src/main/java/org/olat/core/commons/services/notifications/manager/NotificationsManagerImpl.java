@@ -550,7 +550,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			MailBundle bundle = new MailBundle();
 			bundle.setToId(to);
 			bundle.setContent(title, plaintext.toString());
-			result = CoreSpringFactory.getImpl(MailManager.class).sendExternMessage(bundle, null);
+			result = CoreSpringFactory.getImpl(MailManager.class).sendExternMessage(bundle, null, false);
 		} catch (Exception e) {
 			// FXOLAT-294 :: sending the mail will throw nullpointer exception if To-Identity has no
 			// valid email-address!, catch it...

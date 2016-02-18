@@ -99,7 +99,7 @@ public class ErrorFeedbackMailer implements Dispatcher {
 				bundle.setFromId(ident);
 				bundle.setTo(WebappHelper.getMailConfig("mailError"));
 				bundle.setContent("Feedback from Error Nr.: " + errorNr, out.toString());
-				mailManager.sendExternMessage(bundle, null);
+				mailManager.sendExternMessage(bundle, null, false);
 			} else {
 				log.error("Try to send a feedback without identity");
 			}
