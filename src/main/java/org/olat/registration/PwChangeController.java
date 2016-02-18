@@ -254,7 +254,7 @@ public class PwChangeController extends BasicController {
 					MailBundle bundle = new MailBundle();
 					bundle.setToId(identity);
 					bundle.setContent(userTrans.translate("pwchange.subject"), body.toString());
-					MailerResult result = mailManager.sendExternMessage(bundle, null);
+					MailerResult result = mailManager.sendExternMessage(bundle, null, false);
 					if(result.getReturnCode() == 0) {
 						getWindowControl().setInfo(translate("email.sent"));
 						// prepare next step
