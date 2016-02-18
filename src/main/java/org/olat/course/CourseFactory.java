@@ -70,7 +70,6 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileUtils;
@@ -147,7 +146,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author Felix Jost
  * @author guido
  */
-public class CourseFactory extends BasicManager {
+public class CourseFactory {
 		
 	private static CacheWrapper<Long,PersistingCourseImpl> loadedCourses;
 	private static ConcurrentMap<Long, ModifyCourseEvent> modifyCourseEvents = new ConcurrentHashMap<Long, ModifyCourseEvent>();
