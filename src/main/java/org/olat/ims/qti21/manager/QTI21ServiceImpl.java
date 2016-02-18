@@ -33,6 +33,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.transform.Transformer;
@@ -146,11 +148,15 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	private QTI21Module qtiModule;
 	@Autowired
 	private CoordinatorManager coordinatorManager;
+	
 
 	private JqtiExtensionManager jqtiExtensionManager;
 	private XsltStylesheetManager xsltStylesheetManager;
 	private InfinispanXsltStylesheetCache xsltStylesheetCache;
-	private CacheWrapper<File,ResolvedAssessmentObject<?>> assessmentTestsAndItemsCache;
+	private CacheWrapper<File,ResolvedAssessmentTest> assessmentTestsCache;
+	private CacheWrapper<File,ResolvedAssessmentItem> assessmentItemsCache;
+	
+	private final ConcurrentMap<String,URI> resourceToTestURI = new ConcurrentHashMap<>();
 	
 	@Autowired
 	public QTI21ServiceImpl(InfinispanXsltStylesheetCache xsltStylesheetCache) {
@@ -171,7 +177,8 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
         
         jqtiExtensionManager.init();
 
-        assessmentTestsAndItemsCache = coordinatorManager.getInstance().getCoordinator().getCacher().getCache("QTIWorks", "assessmentTestsAndItems");
+        assessmentTestsCache = coordinatorManager.getInstance().getCoordinator().getCacher().getCache("QTIWorks", "assessmentTests");
+        assessmentItemsCache = coordinatorManager.getInstance().getCoordinator().getCacher().getCache("QTIWorks", "assessmentItems");
 	}
 
     @Override
@@ -243,44 +250,30 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 
 	@Override
 	public ResolvedAssessmentTest loadAndResolveAssessmentTest(File resourceDirectory) {
-		ResolvedAssessmentTest result = (ResolvedAssessmentTest)assessmentTestsAndItemsCache.get(resourceDirectory);
-		if(result == null)  {
+        URI assessmentObjectSystemId = createAssessmentObjectUri(resourceDirectory);
+		File resourceFile = new File(assessmentObjectSystemId);
+		return assessmentTestsCache.computeIfAbsent(resourceFile, file -> {
 			QtiXmlReader qtiXmlReader = new QtiXmlReader(jqtiExtensionManager());
 			ResourceLocator fileResourceLocator = new PathResourceLocator(resourceDirectory.toPath());
 			ResourceLocator inputResourceLocator = 
 	        		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
-	        URI assessmentObjectSystemId = createAssessmentObjectUri(resourceDirectory);
 	        AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, inputResourceLocator);
-	        result = assessmentObjectXmlLoader.loadAndResolveAssessmentTest(assessmentObjectSystemId);
-	        
-	        File resourceFile = new File(assessmentObjectSystemId);
-	        ResolvedAssessmentTest cachedResult = (ResolvedAssessmentTest)assessmentTestsAndItemsCache.putIfAbsent(resourceFile, result);
-	        if(cachedResult != null) {
-	        	result = cachedResult;
-	        }
-		}
-        return result;
+	        return assessmentObjectXmlLoader.loadAndResolveAssessmentTest(assessmentObjectSystemId);
+		});
 	}
 	
 	@Override
 	public ResolvedAssessmentItem loadAndResolveAssessmentItem(URI assessmentObjectSystemId, File resourceDirectory) {
 		File resourceFile = new File(assessmentObjectSystemId);
-		ResolvedAssessmentItem result = (ResolvedAssessmentItem)assessmentTestsAndItemsCache.get(resourceFile);
-		if(result == null) {
+		return assessmentItemsCache.computeIfAbsent(resourceFile, (file) -> {
 			QtiXmlReader qtiXmlReader = new QtiXmlReader(jqtiExtensionManager());
 			ResourceLocator fileResourceLocator = new PathResourceLocator(resourceDirectory.toPath());
 			ResourceLocator inputResourceLocator = 
 	        		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
 			
 	        AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, inputResourceLocator);
-	        result = assessmentObjectXmlLoader.loadAndResolveAssessmentItem(assessmentObjectSystemId);
-
-	        ResolvedAssessmentItem cachedResult = (ResolvedAssessmentItem)assessmentTestsAndItemsCache.putIfAbsent(resourceFile, result);
-	        if(cachedResult != null) {
-	        	result = cachedResult;
-	        }
-		}
-        return result;
+	       	return assessmentObjectXmlLoader.loadAndResolveAssessmentItem(assessmentObjectSystemId);
+		});
 	}
 	
 	@Override
@@ -304,7 +297,8 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 		try(FileOutputStream out = new FileOutputStream(resourceFile)) {
 			qtiSerializer().serializeJqtiObject(assessmentObject, out);
 			//TODO qti
-			assessmentTestsAndItemsCache.remove(resourceFile);
+			assessmentTestsCache.remove(resourceFile);
+			assessmentItemsCache.remove(resourceFile);
 			return true;
 		} catch(Exception e) {
 			log.error("", e);
@@ -313,16 +307,19 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	}
 
 	@Override
-	public URI createAssessmentObjectUri(File resourceDirectory) {
-		File manifestPath = new File(resourceDirectory, "imsmanifest.xml");
-		QTI21ContentPackage	cp = new QTI21ContentPackage(manifestPath.toPath());
-		try {
-			Path testPath = cp.getTest();
-			return testPath.toUri();
-		} catch (IOException e) {
-			log.error("", e);
-		}
-		return null;
+	public URI createAssessmentObjectUri(final File resourceDirectory) {
+		final String key = resourceDirectory.getAbsolutePath();
+		return resourceToTestURI.computeIfAbsent(key, (directoryAbsolutPath) -> {
+			File manifestPath = new File(resourceDirectory, "imsmanifest.xml");
+			QTI21ContentPackage	cp = new QTI21ContentPackage(manifestPath.toPath());
+			try {
+				Path testPath = cp.getTest();
+				return testPath.toUri();
+			} catch (IOException e) {
+				log.error("", e);
+				return null;
+			}
+		});
 	}
 
 	@Override

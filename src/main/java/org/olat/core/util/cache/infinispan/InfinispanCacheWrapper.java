@@ -28,6 +28,7 @@ package org.olat.core.util.cache.infinispan;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 
 import org.infinispan.Cache;
 import org.olat.core.logging.OLATRuntimeException;
@@ -106,6 +107,11 @@ public class InfinispanCacheWrapper<U,V> implements CacheWrapper<U,V> {
 	@Override
 	public V putIfAbsent(U key, V value) {
 		return cache.putIfAbsent(key, value);
+	}
+
+	@Override
+	public V computeIfAbsent(U key, Function<? super U, ? extends V> mappingFunction) {
+		return cache.computeIfAbsent(key, mappingFunction);
 	}
 
 	@Override

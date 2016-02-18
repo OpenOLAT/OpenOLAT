@@ -64,6 +64,7 @@ import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.IdentifierGenerator;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestPackage;
@@ -146,13 +147,13 @@ public class QTI21AssessmentTestHandler extends FileHandler {
         QTI21Service qti21Service = CoreSpringFactory.getImpl(QTI21Service.class);
 
 		//single choice
-		File itemFile = new File(directory, IdentifierGenerator.newAssessmentTestFilename());
+		File itemFile = new File(directory, IdentifierGenerator.newAsString(QTI21QuestionType.sc.getPrefix()));
 		AssessmentItem assessmentItem = AssessmentItemFactory.createSingleChoice();
 		QtiSerializer qtiSerializer = qti21Service.qtiSerializer();
 		ManifestPackage.appendAssessmentItem(itemFile.getName(), manifestType);	
 		
 		//test
-        File testFile = new File(directory, IdentifierGenerator.newAssessmentItemFilename());
+        File testFile = new File(directory, IdentifierGenerator.newAssessmentTestFilename());
 		AssessmentTest assessmentTest = AssessmentTestFactory.createAssessmentTest(displayName);
         ManifestPackage.appendAssessmentTest(testFile.getName(), manifestType);
         

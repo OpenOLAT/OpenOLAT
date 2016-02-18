@@ -41,6 +41,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.GroupRoles;
@@ -1096,6 +1097,12 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		@Override
 		public HashMap<String, Serializable> putIfAbsent(NewCacheKey key, HashMap<String, Serializable> value) {
 			return map.putIfAbsent(key, value);
+		}
+
+		@Override
+		public HashMap<String, Serializable> computeIfAbsent(NewCacheKey key,
+				Function<? super NewCacheKey, ? extends HashMap<String, Serializable>> mappingFunction) {
+			return map.computeIfAbsent(key, mappingFunction);
 		}
 
 		@Override
