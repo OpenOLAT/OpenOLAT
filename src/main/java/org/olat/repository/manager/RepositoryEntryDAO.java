@@ -155,4 +155,21 @@ public class RepositoryEntryDAO {
 		}
 		return entries.get(0);
 	}
+	
+	public List<RepositoryEntry> getLastUsedRepositoryEntries(String resourceTypeName, int firstResult, int maxResults) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		  .append(" inner join fetch v.olatResource as ores")
+		  .append(" inner join fetch v.statistics as statistics")
+		  .append(" left join fetch v.lifecycle as lifecycle")
+		  .append(" where ores.resName=:resourceTypeName")
+		  .append(" order by statistics.lastUsage desc");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setFirstResult(firstResult)
+				.setMaxResults(maxResults)
+				.setParameter("resourceTypeName", resourceTypeName)
+				.getResultList();
+	}
 }

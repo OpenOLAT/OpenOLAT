@@ -17,56 +17,42 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti;
+package org.olat.course.assessment.manager;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.configuration.PreWarm;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
-import org.olat.ims.qti.fileresource.SurveyFileResource;
-import org.olat.ims.qti.fileresource.TestFileResource;
-import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
+import org.olat.course.CourseFactory;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.manager.RepositoryEntryDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import de.bps.onyx.plugin.OnyxModule;
-
 /**
  * 
- * 
- * 
- * Initial date: 07.04.2015<br>
+ * Initial date: 18.02.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 @Service
-public class QTIPreWarm implements PreWarm {
+public class LastCoursesPreWarm implements PreWarm {
 	
-	private static final OLog log = Tracing.createLoggerFor(QTIPreWarm.class);
+	private static final OLog log = Tracing.createLoggerFor(LastCoursesPreWarm.class);
 	
 	@Autowired
-	private DB dbInstance;
-	@Autowired
-	private OLATResourceManager olatResourceManager;
+	private RepositoryEntryDAO repositoryEntryDao;
 
 	@Override
 	public void run() {
 		long start = System.nanoTime();
-		log.info("Start scanning for QTI resources");
-		
-		List<String> types = new ArrayList<>(2);
-		types.add(TestFileResource.TYPE_NAME);
-		types.add(SurveyFileResource.TYPE_NAME);
-		List<OLATResource> qtiResources = olatResourceManager.findResourceByTypes(types);
-		dbInstance.commitAndCloseSession();
-		for(OLATResource qtiResource:qtiResources) {
-			OnyxModule.isOnyxTest(qtiResource);
+		List<RepositoryEntry> entries = repositoryEntryDao
+				.getLastUsedRepositoryEntries("CourseModule", 0, 100);
+		for(RepositoryEntry entry:entries) {
+			CourseFactory.loadCourse(entry);
 		}
-		log.info(qtiResources.size() + " QTI Resources scanned in (ms): " + CodeHelper.nanoToMilliTime(start));
+		log.info(entries.size() + " Courses preloaded in (ms): " + CodeHelper.nanoToMilliTime(start));
 	}
 }
