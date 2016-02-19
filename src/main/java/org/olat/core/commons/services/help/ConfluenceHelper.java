@@ -118,7 +118,7 @@ public class ConfluenceHelper {
 	 * @param locale
 	 * @return
 	 */
-	private static final String generateSpace(String version, Locale locale) {
+	protected static final String generateSpace(String version, Locale locale) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("/OO");
 

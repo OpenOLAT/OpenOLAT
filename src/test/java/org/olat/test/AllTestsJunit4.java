@@ -85,6 +85,7 @@ import org.junit.runners.Suite;
 	org.olat.commons.coordinate.cluster.jms.JMSTest.class,
 	org.olat.commons.coordinate.cluster.lock.LockTest.class,
 	org.olat.commons.coordinate.CoordinatorTest.class,
+	org.olat.core.commons.services.help.ConfluenceHelperTest.class,
 	org.olat.core.commons.services.help.spi.ConfluenceLinkSPITest.class,
 	org.olat.core.commons.services.webdav.WebDAVCommandsTest.class,
 	org.olat.core.commons.services.webdav.manager.DigestAuthenticationTest.class,
