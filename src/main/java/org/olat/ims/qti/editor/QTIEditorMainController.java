@@ -98,6 +98,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.tree.TreePosition;
 import org.olat.fileresource.types.FileResource;
+import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti.QTIChangeLogMessage;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.ims.qti.QTIResultManager;
@@ -133,6 +134,9 @@ import org.olat.modules.qpool.ui.events.QItemViewEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.ui.author.CreateRepositoryEntryController;
 import org.olat.resource.references.Reference;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -176,6 +180,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private static final String CMD_TOOLS_EXPORT_QPOOL = "cmd.export.qpool";
 	private static final String CMD_TOOLS_EXPORT_DOCX = "cmd.export.docx";
 	private static final String CMD_TOOLS_IMPORT_TABLE = "cmd.import.xls";
+	private static final String CMD_TOOLS_CONVERT_TO_QTI21 = "cmd.convert.qti.21";
 
 	private static final String CMD_EXIT_SAVE = "exit.save";
 	private static final String CMD_EXIT_DISCARD = "exit.discard";
@@ -229,7 +234,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private TooledStackedPanel stackedPanel;
 	private LayoutMain3ColsController columnLayoutCtr;
 	
-	private Link previewLink, exportPoolLink, exportDocLink, importTableLink, closeLink;
+	private Link previewLink, exportPoolLink, convertQTI21Link, exportDocLink, importTableLink, closeLink;
 	private Link addPoolLink, addSectionLink, addSCLink, addMCLink, addFIBLink, addKPrimLink, addEssayLink;
 	private Link deleteLink, moveLink, copyLink;
 
@@ -255,6 +260,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private Link notEditableButton; 
 	private Set<String> deletableMediaFiles;
 	private StepsMainRunController importTableWizard;
+	private CreateRepositoryEntryController createTestController;
 	private InsertNodeController moveCtrl, copyCtrl, insertCtrl;
 
 	@Autowired
@@ -267,6 +273,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private RepositoryService repositoryService;
 	@Autowired
 	private QTIQPoolServiceProvider qtiQpoolServiceProvider;
+	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	public QTIEditorMainController(UserRequest ureq, WindowControl wControl, RepositoryEntry qtiEntry, List<Reference> referencees, FileResource fileResource) {
 		super(ureq, wControl);
@@ -621,6 +629,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			doExportQItem();
 		} else if (exportDocLink == source) {
 			doExportDocx(ureq);
+		} else if (convertQTI21Link == source) {
+			doConvertToQTI21(ureq);
 		} else if (importTableLink == source) {
 			doImportTable(ureq);
 		} else if (addSectionLink == source) {
@@ -1020,6 +1030,20 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		cmc.activate();
 		listenTo(cmc);
 	}
+	
+	private void doConvertToQTI21(UserRequest ureq) {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(selectQItemCtrl);
+
+		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(ImsQTI21Resource.TYPE_NAME);
+		createTestController = new CreateRepositoryEntryController(ureq, getWindowControl(), handler);
+		createTestController.setCreateObject(qtiPackage);
+		listenTo(createTestController);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), selectQItemCtrl.getInitialComponent(), true, translate("title.add") );
+		cmc.activate();
+		listenTo(cmc);
+	}
 
 	private void doExportDocx(UserRequest ureq) {
 		AssessmentNode rootNode = (AssessmentNode)menuTreeModel.getRootNode();
@@ -1124,6 +1148,9 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		exportDocLink = LinkFactory.createToolLink(CMD_TOOLS_EXPORT_DOCX, translate("tools.export.docx"), this, "o_mi_docx_export");
 		exportDocLink.setIconLeftCSS("o_icon o_icon_download");
 		exportTools.addComponent(exportDocLink);
+		convertQTI21Link = LinkFactory.createToolLink(CMD_TOOLS_CONVERT_TO_QTI21, translate("tools.convert.qti21"), this, "o_FileResource-IMSQTI21_icon");
+		convertQTI21Link.setIconLeftCSS("o_icon o_FileResource-IMSQTI21_icon");
+		exportTools.addComponent(convertQTI21Link);
 
 		//add
 		Dropdown addItemTools = new Dropdown("editTools", "tools.add.header", false, getTranslator());

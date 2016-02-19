@@ -42,6 +42,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -62,6 +63,7 @@ import org.olat.fileresource.ZippedDirectoryMediaResource;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.ims.qti.editor.QTIEditorPackage;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
@@ -85,6 +87,7 @@ import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -102,6 +105,13 @@ import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 public class QTI21AssessmentTestHandler extends FileHandler {
 	
 	private static final OLog log = Tracing.createLoggerFor(QTI21AssessmentTestHandler.class);
+	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private QTI21QPoolServiceProvider qpoolServiceProvider;
 
 	@Override
 	public String getSupportedType() {
@@ -122,10 +132,9 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale) {
 		ImsQTI21Resource ores = new ImsQTI21Resource();
 		
-		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(ores);
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		
 		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(re.getOlatResource()), FileResourceManager.ZIPDIR);
 		if(!repositoryDir.exists()) {
@@ -133,8 +142,10 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 		}
 		if(createObject instanceof QItemList) {
 			QItemList itemToImport = (QItemList)createObject;
-			QTI21QPoolServiceProvider provider = CoreSpringFactory.getImpl(QTI21QPoolServiceProvider.class);
-			provider.exportToEditorPackage(repositoryDir, itemToImport.getItems());
+			qpoolServiceProvider.exportToEditorPackage(repositoryDir, itemToImport.getItems());
+		} else if(createObject instanceof QTIEditorPackage) {
+			QTIEditorPackage testToConvert = (QTIEditorPackage)createObject;
+			qpoolServiceProvider.convertFromEditorPackage(re, testToConvert);
 		} else {
 			createMinimalAssessmentTest(displayname, repositoryDir);
 		}

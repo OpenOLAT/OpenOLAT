@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.UUID;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
@@ -54,6 +53,7 @@ import org.olat.core.util.Util;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestPackage;
@@ -451,9 +451,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 
 		AssessmentSection newSection;
 		if(parentPart instanceof TestPart) {
-			newSection = AssessmentTestFactory.createAssessmentSection((TestPart)parentPart);
+			newSection = AssessmentTestFactory.appendAssessmentSection((TestPart)parentPart);
 		} else if(parentPart instanceof AssessmentSection) {
-			newSection = AssessmentTestFactory.createAssessmentSection((AssessmentSection)parentPart);
+			newSection = AssessmentTestFactory.appendAssessmentSection((AssessmentSection)parentPart);
 		} else {
 			showWarning("error.cannot.create.section");
 			return;
@@ -487,7 +487,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			AssessmentSection section = (AssessmentSection)sectionNode.getUserObject();
 			
 			AssessmentItemRef itemRef = new AssessmentItemRef(section);
-			String itemId = "sc" + UUID.randomUUID();
+			String itemId = IdentifierGenerator.newAsString(itemBuilder.getQuestionType().getPrefix());
 			itemRef.setIdentifier(Identifier.parseString(itemId));
 			File itemFile = new File(unzippedDirRoot, itemId + ".xml");
 			itemRef.setHref(new URI(itemFile.getName()));

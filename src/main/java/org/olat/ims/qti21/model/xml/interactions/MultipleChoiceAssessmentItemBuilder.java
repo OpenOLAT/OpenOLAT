@@ -227,7 +227,8 @@ public class MultipleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBui
 			</responseElse>
 		</responseCondition>
 		 */
-		
+		//simple as build with / without feedback
+		ensureFeedbackBasicOutcomeDeclaration();
 		
 		ResponseIf responseIf = new ResponseIf(rule);
 		rule.setResponseIf(responseIf);
@@ -269,7 +270,7 @@ public class MultipleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBui
 		}
 	
 		{//outcome score
-			SetOutcomeValue scoreOutcomeValue = new SetOutcomeValue(responseIf);
+			SetOutcomeValue scoreOutcomeValue = new SetOutcomeValue(responseElseIf);
 			scoreOutcomeValue.setIdentifier(QTI21Constants.SCORE_IDENTIFIER);
 			responseElseIf.getResponseRules().add(scoreOutcomeValue);
 			
@@ -286,9 +287,9 @@ public class MultipleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBui
 		}
 			
 		{//outcome feedback
-			SetOutcomeValue correctOutcomeValue = new SetOutcomeValue(responseIf);
+			SetOutcomeValue correctOutcomeValue = new SetOutcomeValue(responseElseIf);
 			correctOutcomeValue.setIdentifier(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
-			responseIf.getResponseRules().add(correctOutcomeValue);
+			responseElseIf.getResponseRules().add(correctOutcomeValue);
 			
 			BaseValue correctValue = new BaseValue(correctOutcomeValue);
 			correctValue.setBaseTypeAttrValue(BaseType.IDENTIFIER);
@@ -300,9 +301,9 @@ public class MultipleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBui
 		rule.setResponseElse(responseElse);
 		
 		{// outcome feedback
-			SetOutcomeValue incorrectOutcomeValue = new SetOutcomeValue(responseIf);
+			SetOutcomeValue incorrectOutcomeValue = new SetOutcomeValue(responseElse);
 			incorrectOutcomeValue.setIdentifier(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
-			responseIf.getResponseRules().add(incorrectOutcomeValue);
+			responseElse.getResponseRules().add(incorrectOutcomeValue);
 			
 			BaseValue incorrectValue = new BaseValue(incorrectOutcomeValue);
 			incorrectValue.setBaseTypeAttrValue(BaseType.IDENTIFIER);

@@ -115,7 +115,7 @@ public abstract class ChoiceAssessmentItemBuilder extends AssessmentItemBuilder 
 				responseIdentifier = choiceInteraction.getResponseIdentifier();
 				shuffle = choiceInteraction.getShuffle();
 				break;
-			} else {
+			} else if(block != null) {
 				qtiSerializer.serializeJqtiObject(block, new StreamResult(sb));
 			}
 		}

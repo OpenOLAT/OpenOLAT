@@ -36,6 +36,7 @@ import uk.ac.ed.ph.jqtiplus.node.test.TestFeedback;
 import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeCondition;
 import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeConditionChild;
 import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeIf;
+import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeProcessing;
 import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeRule;
 import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.SetOutcomeValue;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
@@ -74,25 +75,27 @@ public class AssessmentTestBuilder {
 	}
 	
 	private void extractRules() {
-		List<OutcomeRule> outcomeRules = assessmentTest.getOutcomeProcessing().getOutcomeRules();
-		for(OutcomeRule outcomeRule:outcomeRules) {
-			// export test score
-			if(outcomeRule instanceof SetOutcomeValue) {
-				SetOutcomeValue setOutcomeValue = (SetOutcomeValue)outcomeRule;
-				if(QTI21Constants.SCORE_IDENTIFIER.equals(setOutcomeValue.getIdentifier())) {
-					testScore = true;
-					testScoreRule = outcomeRule;
+		if(assessmentTest.getOutcomeProcessing() != null) {
+			List<OutcomeRule> outcomeRules = assessmentTest.getOutcomeProcessing().getOutcomeRules();
+			for(OutcomeRule outcomeRule:outcomeRules) {
+				// export test score
+				if(outcomeRule instanceof SetOutcomeValue) {
+					SetOutcomeValue setOutcomeValue = (SetOutcomeValue)outcomeRule;
+					if(QTI21Constants.SCORE_IDENTIFIER.equals(setOutcomeValue.getIdentifier())) {
+						testScore = true;
+						testScoreRule = outcomeRule;
+					}
 				}
-			}
-			
-			// pass rule
-			if(outcomeRule instanceof OutcomeCondition) {
-				OutcomeCondition outcomeCondition = (OutcomeCondition)outcomeRule;
-				boolean findIf = findSetOutcomeValue(outcomeCondition.getOutcomeIf(), QTI21Constants.PASS_IDENTIFIER);
-				boolean findElse = findSetOutcomeValue(outcomeCondition.getOutcomeElse(), QTI21Constants.PASS_IDENTIFIER);
-				if(findIf && findElse) {
-					cutValue = extractCutValue(outcomeCondition.getOutcomeIf());
-					cutValueRule = outcomeCondition;
+				
+				// pass rule
+				if(outcomeRule instanceof OutcomeCondition) {
+					OutcomeCondition outcomeCondition = (OutcomeCondition)outcomeRule;
+					boolean findIf = findSetOutcomeValue(outcomeCondition.getOutcomeIf(), QTI21Constants.PASS_IDENTIFIER);
+					boolean findElse = findSetOutcomeValue(outcomeCondition.getOutcomeElse(), QTI21Constants.PASS_IDENTIFIER);
+					if(findIf && findElse) {
+						cutValue = extractCutValue(outcomeCondition.getOutcomeIf());
+						cutValueRule = outcomeCondition;
+					}
 				}
 			}
 		}
@@ -144,6 +147,10 @@ public class AssessmentTestBuilder {
 		}
 	}
 	
+	public AssessmentTest getAssessmentTest() {
+		return assessmentTest;
+	}
+	
 	public boolean isExportScore() {
 		return testScore;
 	}
@@ -178,15 +185,26 @@ public class AssessmentTestBuilder {
 		return failedFeedback;
 	}
 
-	
-	public void build() {
+	public AssessmentTest build() {
 		Double maxScore = 1.0d;
+		
+		if(assessmentTest.getOutcomeProcessing() == null) {
+			assessmentTest.setOutcomeProcessing(new OutcomeProcessing(assessmentTest));
+		}
 		
 		buildScore(maxScore);
 		buildTestScore();
 		buildCutValue();
 		buildFeedback();
+		
+		//clean up
+		if(assessmentTest.getOutcomeProcessing().getOutcomeRules().isEmpty()) {
+			assessmentTest.setOutcomeProcessing(null);
+		}
+		return assessmentTest;
 	}
+	
+
 	
 	private void buildScore(Double maxScore) {
 		OutcomeDeclaration scoreDeclaration = assessmentTest.getOutcomeDeclaration(QTI21Constants.SCORE_IDENTIFIER);

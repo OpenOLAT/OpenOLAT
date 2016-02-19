@@ -98,7 +98,7 @@ public class AssessmentTestFactory {
 		
 		//test part
 		TestPart part = createTestPart(assessmentTest);
-		createAssessmentSection(part);
+		appendAssessmentSection(part);
 		
 		//outcome processing
 		OutcomeProcessing outcomeProcessing = new OutcomeProcessing(assessmentTest);
@@ -278,15 +278,21 @@ public class AssessmentTestFactory {
 		return part;
 	}
 	
-	public static AssessmentSection createAssessmentSection(TestPart part) {
-		return createAssessmentSectionInternal(part);
+	/**
+	 * create an assessmentSection with an empty rubricBlock for candidate,
+	 * not shuffled but visible and fixed.
+	 * @param part
+	 * @return
+	 */
+	public static AssessmentSection appendAssessmentSection(TestPart part) {
+		return appendAssessmentSectionInternal(part);
 	}
 	
-	public static AssessmentSection createAssessmentSection(AssessmentSection part) {
-		return createAssessmentSectionInternal(part);
+	public static AssessmentSection appendAssessmentSection(AssessmentSection part) {
+		return appendAssessmentSectionInternal(part);
 	}
 	
-	private final static AssessmentSection createAssessmentSectionInternal(AbstractPart part) {
+	private final static AssessmentSection appendAssessmentSectionInternal(AbstractPart part) {
 		// section
 		AssessmentSection section = new AssessmentSection(part);
 		section.setFixed(Boolean.TRUE);

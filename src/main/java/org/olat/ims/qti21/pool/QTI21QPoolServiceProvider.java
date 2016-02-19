@@ -44,6 +44,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
+import org.olat.ims.qti.editor.QTIEditorPackage;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21QuestionType;
@@ -72,6 +73,7 @@ import org.olat.modules.qpool.manager.QuestionItemDAO;
 import org.olat.modules.qpool.manager.TaxonomyLevelDAO;
 import org.olat.modules.qpool.model.DefaultExportFormat;
 import org.olat.modules.qpool.model.QuestionItemImpl;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.xml.sax.InputSource;
@@ -301,6 +303,16 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 
 		QTI21ExportProcessor processor = new QTI21ExportProcessor(qtiService, qpoolFileStorage);
 		processor.assembleTest(fullItems, exportDir);
+	}
+	
+	/**
+	 * Convert from QTI 1.2 to 2.1
+	 * 
+	 * @param qtiEditorPackage
+	 */
+	public void convertFromEditorPackage(RepositoryEntry newEntry, QTIEditorPackage qtiEditorPackage) {
+		qtiEditorPackage.getQTIDocument();
+		
 	}
 	
 	private List<Long> toKeys(List<? extends QuestionItemShort> items) {
