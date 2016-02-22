@@ -1456,11 +1456,18 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 							//            that get triggered in the next two methods to be of ActionType admin
 							//            This is needed to make sure the targetIdentity ends up in the o_loggingtable
 							ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
-							MailPackage subMailing = new MailPackage(false);//doesn0t send these emails but a specific one
+							// Don't send mails for the sub-actions "adding to group" and "remove from waiting list", instead
+							// send a specific "graduate from waiting list" mailing a few lines below
+							MailPackage subMailing = new MailPackage(false);
 							addParticipant(ureqIdentity, null, firstWaitingListIdentity, group, subMailing, events);
 							removeFromWaitingList(ureqIdentity, firstWaitingListIdentity, group, subMailing, events);
 						} finally {
 							ThreadLocalUserActivityLogger.setStickyActionType(formerStickyActionType);
+						}
+
+						// Send mail to let user know he is now in group
+						if (mailing == null) {
+							mailing = new MailPackage(true);
 						}
 
 						BusinessGroupMailing.sendEmail(ureqIdentity, firstWaitingListIdentity, group, MailType.graduateFromWaitingListToParticpant, mailing);				
