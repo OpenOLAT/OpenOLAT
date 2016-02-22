@@ -175,10 +175,12 @@ public abstract class ChoiceAssessmentItemBuilder extends AssessmentItemBuilder 
 	 * 
 	 * @return
 	 */
+	@Override
 	public String getQuestion() {
 		return question;
 	}
 	
+	@Override
 	public void setQuestion(String html) {
 		this.question = html;
 	}

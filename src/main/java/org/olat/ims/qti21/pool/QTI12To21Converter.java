@@ -34,6 +34,8 @@ import org.olat.ims.qti.editor.QTIEditorPackage;
 import org.olat.ims.qti.editor.beecom.objects.Assessment;
 import org.olat.ims.qti.editor.beecom.objects.Control;
 import org.olat.ims.qti.editor.beecom.objects.Duration;
+import org.olat.ims.qti.editor.beecom.objects.EssayQuestion;
+import org.olat.ims.qti.editor.beecom.objects.EssayResponse;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.objects.OutcomesProcessing;
 import org.olat.ims.qti.editor.beecom.objects.QTIDocument;
@@ -60,8 +62,10 @@ import org.olat.imscp.xml.manifest.ManifestType;
 
 import uk.ac.ed.ph.jqtiplus.node.AssessmentObject;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.RubricBlock;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
@@ -183,17 +187,16 @@ public class QTI12To21Converter {
 					break;
 				case Question.TYPE_MC:
 					itemBuilder = convertMultipleChoice(item);
-					break;/*
+					break;
 				case Question.TYPE_KPRIM:
 					itemBuilder = convertKPrim(item);
-					break;
+					break;/*
 				case Question.TYPE_FIB:
 					itemBuilder = convertFIB(item);
-					break;
+					break;*/
 				case Question.TYPE_ESSAY:
 					itemBuilder = convertEssay(item);
 					break;
-					*/
 			}
 
 			if(itemBuilder != null) {
@@ -298,7 +301,31 @@ public class QTI12To21Converter {
 	private AssessmentItemBuilder convertKPrim(Item item) {
 		KPrimAssessmentItemBuilder itemBuilder = new KPrimAssessmentItemBuilder(qtiSerializer);
 		convertItemBasics(item, itemBuilder);
-
+		
+		Question question = item.getQuestion();
+		itemBuilder.setShuffle(question.isShuffle());
+		
+		List<Response> responses = question.getResponses();
+		List<SimpleAssociableChoice> choices = itemBuilder.getKprimChoices();
+		for(int i=0; i<4; i++) {
+			Response response = responses.get(i);
+			SimpleAssociableChoice choice = choices.get(i);
+			
+			String answer = response.getContent().renderAsHtmlForEditor();
+			P firstChoiceText = AssessmentItemFactory.getParagraph(choice, answer);
+			choice.getFlowStatics().clear();
+			choice.getFlowStatics().add(firstChoiceText);
+			
+			if(response.isCorrect()) {
+				itemBuilder.setAssociation(choice.getIdentifier(), QTI21Constants.CORRECT_IDENTIFIER);
+			} else {
+				itemBuilder.setAssociation(choice.getIdentifier(), QTI21Constants.WRONG_IDENTIFIER);	
+			}
+		}
+		
+		double score = question.getMaxValue();
+		itemBuilder.setMinScore(0.0d);
+		itemBuilder.setMaxScore(score);
 		return itemBuilder;
 	}
 	
@@ -313,6 +340,17 @@ public class QTI12To21Converter {
 	private AssessmentItemBuilder convertEssay(Item item) {
 		EssayAssessmentItemBuilder itemBuilder = new EssayAssessmentItemBuilder(qtiSerializer);
 		convertItemBasics(item, itemBuilder);
+		
+		EssayQuestion question = (EssayQuestion)item.getQuestion();
+		EssayResponse response = question.getEssayResponse();
+		int cols = response.getColumns();
+		int rows = response.getRows();
+		itemBuilder.setExpectedLength(cols * rows);
+		itemBuilder.setExpectedLines(rows);
+
+		double score = question.getMaxValue();
+		itemBuilder.setMinScore(0.0d);
+		itemBuilder.setMaxScore(score);
 
 		return itemBuilder;
 	}

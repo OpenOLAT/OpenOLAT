@@ -35,6 +35,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.olat.NewControllerFactory;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.admin.quota.QuotaImpl;
 import org.olat.basesecurity.GroupRoles;
@@ -260,7 +261,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private Link notEditableButton; 
 	private Set<String> deletableMediaFiles;
 	private StepsMainRunController importTableWizard;
-	private CreateRepositoryEntryController createTestController;
+	private CreateRepositoryEntryController createConvertedTestController;
 	private InsertNodeController moveCtrl, copyCtrl, insertCtrl;
 
 	@Autowired
@@ -817,6 +818,15 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				doSelectInsertionPoint(ureq, CMD_TOOLS_ADD_QPOOL, importPackage);
 			}
+		} else if(createConvertedTestController == source) {
+			cmc.deactivate();
+			if(event == Event.DONE_EVENT) {
+				showInfo("test.converted");
+				RepositoryEntry convertedEntry = createConvertedTestController.getAddedEntry();
+				String businessPath = "[RepositoryEntry:" + convertedEntry.getKey() + "]";
+				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			}
+			cleanUp();
 		} else if (source == insertCtrl) { // catch insert operations
 			cmc.deactivate();
 			if(event == Event.DONE_EVENT) {
@@ -856,10 +866,12 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		removeAsListenerAndDispose(insertCtrl);
 		removeAsListenerAndDispose(selectQItemCtrl);
 		removeAsListenerAndDispose(importTableWizard);
+		removeAsListenerAndDispose(createConvertedTestController);
 		cmc = null;
 		insertCtrl = null;
 		selectQItemCtrl = null;
 		importTableWizard = null;
+		createConvertedTestController = null;
 	}
 	
 	private void doSelectInsertionPoint(UserRequest ureq, String cmd, Object userObj) {
@@ -1036,11 +1048,11 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		removeAsListenerAndDispose(selectQItemCtrl);
 
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(ImsQTI21Resource.TYPE_NAME);
-		createTestController = new CreateRepositoryEntryController(ureq, getWindowControl(), handler);
-		createTestController.setCreateObject(qtiPackage);
-		listenTo(createTestController);
+		createConvertedTestController = new CreateRepositoryEntryController(ureq, getWindowControl(), handler);
+		createConvertedTestController.setCreateObject(qtiPackage);
+		listenTo(createConvertedTestController);
 
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), selectQItemCtrl.getInitialComponent(), true, translate("title.add") );
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), createConvertedTestController.getInitialComponent(), true, translate("title.convert.qti21") );
 		cmc.activate();
 		listenTo(cmc);
 	}

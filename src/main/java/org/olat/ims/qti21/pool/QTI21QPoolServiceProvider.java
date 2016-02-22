@@ -22,6 +22,7 @@ package org.olat.ims.qti21.pool;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -73,7 +74,6 @@ import org.olat.modules.qpool.manager.QuestionItemDAO;
 import org.olat.modules.qpool.manager.TaxonomyLevelDAO;
 import org.olat.modules.qpool.model.DefaultExportFormat;
 import org.olat.modules.qpool.model.QuestionItemImpl;
-import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.xml.sax.InputSource;
@@ -310,9 +310,15 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	 * 
 	 * @param qtiEditorPackage
 	 */
-	public void convertFromEditorPackage(RepositoryEntry newEntry, QTIEditorPackage qtiEditorPackage) {
-		qtiEditorPackage.getQTIDocument();
-		
+	public boolean convertFromEditorPackage(QTIEditorPackage qtiEditorPackage, File unzippedDirRoot) {
+		try {
+			QTI12To21Converter converter = new QTI12To21Converter(unzippedDirRoot);
+			converter.convert(qtiEditorPackage);
+			return true;
+		} catch (URISyntaxException e) {
+			log.error("", e);
+			return false;
+		}
 	}
 	
 	private List<Long> toKeys(List<? extends QuestionItemShort> items) {

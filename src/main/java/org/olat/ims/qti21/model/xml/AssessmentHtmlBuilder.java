@@ -107,8 +107,12 @@ public class AssessmentHtmlBuilder {
 		if(StringHelper.containsNonWhitespace(htmlFragment)) {
 			htmlFragment = htmlFragment.trim();
 			//tinymce bad habits
-			if(htmlFragment.startsWith("<p>&nbsp;")) {
-				htmlFragment = htmlFragment.replace("<p>&nbsp;", "<p>");
+			if(StringHelper.isHtml(htmlFragment)) {
+				if(htmlFragment.startsWith("<p>&nbsp;")) {
+					htmlFragment = htmlFragment.replace("<p>&nbsp;", "<p>");
+				}
+			} else {
+				htmlFragment = "<p>" + htmlFragment + "</p>";
 			}
 			//wrap around <html> to have a root element
 			Document document = filter("<html>" + htmlFragment + "</html>");

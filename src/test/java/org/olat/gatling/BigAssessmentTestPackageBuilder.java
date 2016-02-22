@@ -26,6 +26,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -39,6 +40,7 @@ import org.olat.imscp.xml.manifest.ManifestType;
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.RubricBlock;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.node.test.ItemSessionControl;
@@ -46,7 +48,14 @@ import uk.ac.ed.ph.jqtiplus.node.test.Ordering;
 import uk.ac.ed.ph.jqtiplus.node.test.Selection;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 import uk.ac.ed.ph.jqtiplus.node.test.View;
+import uk.ac.ed.ph.jqtiplus.reading.AssessmentObjectXmlLoader;
+import uk.ac.ed.ph.jqtiplus.reading.QtiXmlReader;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
+import uk.ac.ed.ph.jqtiplus.testutils.UnitTestHelper;
+import uk.ac.ed.ph.jqtiplus.xmlutils.locators.FileResourceLocator;
+import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 
 /**
  * 
@@ -136,5 +145,43 @@ public class BigAssessmentTestPackageBuilder {
         } catch(Exception e) {
         	log.error("", e);
         }
+	}
+	
+
+	@Test
+	public void openBigTest_twice() {
+		final long time = openBigTest_sub();
+        System.out.println("Takes (ms): " + (time / 1000000));
+
+		try {
+			System.gc();
+			System.gc();
+
+			Thread.sleep(120000);
+		} catch (final InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public long openBigTest_sub() {
+		final File resourceFile = new File("/HotCoffee/QTI/20160219-180424/testfa908329-ab44-4821-a20d-ca634b6afb06.xml");
+		final QtiXmlReader qtiXmlReader = UnitTestHelper.createUnitTestQtiXmlReader();
+		final ResourceLocator fileResourceLocator = new FileResourceLocator();
+
+		final long start = System.nanoTime();
+        final AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, fileResourceLocator);
+        final ResolvedAssessmentTest resolvedTest = assessmentObjectXmlLoader.loadAndResolveAssessmentTest(resourceFile.toURI());
+        Assert.assertNotNull(resolvedTest);
+        final AssessmentTest test = resolvedTest.getTestLookup().extractIfSuccessful();
+        Assert.assertNotNull(test);
+        final long time = (System.nanoTime() - start);
+
+        final AssessmentItemRef itemRef = resolvedTest.getAssessmentItemRefs().get(0);
+        final ResolvedAssessmentItem resolvedItem = resolvedTest.getResolvedAssessmentItem(itemRef);
+        Assert.assertNotNull(resolvedItem);
+        final AssessmentItem item = resolvedItem.getRootNodeLookup().extractIfSuccessful();
+        Assert.assertNotNull(item);
+        Assert.assertEquals(1, item.getItemBody().findInteractions().size());
+        return time;
 	}
 }

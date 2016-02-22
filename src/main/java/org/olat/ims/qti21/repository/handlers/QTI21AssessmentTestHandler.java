@@ -53,6 +53,7 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.PathUtils.YesMatcher;
@@ -78,6 +79,7 @@ import org.olat.ims.qti21.ui.QTI21RuntimeController;
 import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
 import org.olat.imscp.xml.manifest.ManifestType;
 import org.olat.modules.qpool.model.QItemList;
+import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -108,6 +110,8 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private QTI21Service qtiService;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -145,7 +149,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 			qpoolServiceProvider.exportToEditorPackage(repositoryDir, itemToImport.getItems());
 		} else if(createObject instanceof QTIEditorPackage) {
 			QTIEditorPackage testToConvert = (QTIEditorPackage)createObject;
-			qpoolServiceProvider.convertFromEditorPackage(re, testToConvert);
+			qpoolServiceProvider.convertFromEditorPackage(testToConvert, repositoryDir);
 		} else {
 			createMinimalAssessmentTest(displayname, repositoryDir);
 		}
@@ -357,6 +361,15 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	@Override
 	public boolean isLocked(OLATResourceable ores) {
 		return false;
+	}
+
+	@Override
+	public boolean readyToDelete(RepositoryEntry entry, Identity identity, Roles roles, Locale locale, ErrorList errors) {
+		boolean ready = super.readyToDelete(entry, identity, roles, locale, errors);
+		if(ready) {
+			//update / remove assessment test sessions
+		}
+		return ready;
 	}
 
 	@Override
