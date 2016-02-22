@@ -70,14 +70,13 @@ import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
-import org.olat.ims.qti21.model.xml.ManifestPackage;
+import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.OnyxToQtiWorksHandler;
 import org.olat.ims.qti21.pool.QTI21QPoolServiceProvider;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.InMemoryOutcomesListener;
 import org.olat.ims.qti21.ui.QTI21RuntimeController;
 import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
-import org.olat.imscp.xml.manifest.ManifestType;
 import org.olat.modules.qpool.model.QItemList;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
@@ -157,20 +156,18 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	}
 	
 	public void createMinimalAssessmentTest(String displayName, File directory) {
-        ManifestType manifestType = ManifestPackage.createEmptyManifest();
-        
-        QTI21Service qti21Service = CoreSpringFactory.getImpl(QTI21Service.class);
+        ManifestBuilder manifestBuilder = ManifestBuilder.createAssessmentTestBuilder();
 
 		//single choice
 		File itemFile = new File(directory, IdentifierGenerator.newAsString(QTI21QuestionType.sc.getPrefix()));
 		AssessmentItem assessmentItem = AssessmentItemFactory.createSingleChoice();
-		QtiSerializer qtiSerializer = qti21Service.qtiSerializer();
-		ManifestPackage.appendAssessmentItem(itemFile.getName(), manifestType);	
+		QtiSerializer qtiSerializer = qtiService.qtiSerializer();
+		manifestBuilder.appendAssessmentItem(itemFile.getName());	
 		
 		//test
         File testFile = new File(directory, IdentifierGenerator.newAssessmentTestFilename());
 		AssessmentTest assessmentTest = AssessmentTestFactory.createAssessmentTest(displayName);
-        ManifestPackage.appendAssessmentTest(testFile.getName(), manifestType);
+		manifestBuilder.appendAssessmentTest(testFile.getName());
         
         // item -> test
         try {
@@ -192,11 +189,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 			log.error("", e);
 		}
 
-        try(FileOutputStream out = new FileOutputStream(new File(directory, "imsmanifest.xml"))) {
-        	ManifestPackage.write(manifestType, out);
-        } catch(Exception e) {
-        	log.error("", e);
-        }
+        manifestBuilder.write(new File(directory, "imsmanifest.xml"));
 	}
 
 	@Override

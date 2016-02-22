@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.ui.editor.events;
 
 import org.olat.core.gui.control.Event;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
@@ -38,16 +39,25 @@ public class AssessmentItemEvent extends Event {
 	
 	private AssessmentItem item;
 	private AssessmentItemRef itemRef;
-
+	
+	private QTI21QuestionType questionType;
+	
 	public AssessmentItemEvent(String cmd, AssessmentItem item) {
 		super(cmd);
 		this.item = item;
 	}
+
+	public AssessmentItemEvent(String cmd, AssessmentItem item, QTI21QuestionType questionType) {
+		super(cmd);
+		this.item = item;
+		this.questionType = questionType;
+	}
 	
-	public AssessmentItemEvent(String cmd, AssessmentItem item, AssessmentItemRef itemRef) {
+	public AssessmentItemEvent(String cmd, AssessmentItem item, AssessmentItemRef itemRef, QTI21QuestionType questionType) {
 		super(cmd);
 		this.item = item;
 		this.itemRef = itemRef;
+		this.questionType = questionType;
 	}
 
 	public AssessmentItem getAssessmentItem() {
@@ -56,5 +66,9 @@ public class AssessmentItemEvent extends Event {
 	
 	public AssessmentItemRef getAssessmentItemRef() {
 		return itemRef;
+	}
+	
+	public QTI21QuestionType getQuestionType() {
+		return questionType;
 	}
 }

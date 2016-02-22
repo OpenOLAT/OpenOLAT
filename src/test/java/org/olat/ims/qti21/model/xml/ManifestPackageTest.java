@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.imscp.xml.manifest.ManifestType;
 
 import uk.ac.ed.ph.jqtiplus.utils.contentpackaging.ContentPackageResource;
 import uk.ac.ed.ph.jqtiplus.utils.contentpackaging.ImsManifestException;
@@ -44,9 +43,9 @@ public class ManifestPackageTest {
 	
 	@Test
 	public void makeManifest() throws XmlResourceNotFoundException, ImsManifestException, IOException {
-		ManifestType manifestType = ManifestPackage.createEmptyManifest();
-        String testFilename = ManifestPackage.appendAssessmentTest(manifestType);
-        String itemFilename = ManifestPackage.appendAssessmentItem(manifestType);	
+		ManifestBuilder manifest = ManifestBuilder.createAssessmentTestBuilder();
+        String testFilename = manifest.appendAssessmentTest();
+        String itemFilename = manifest.appendAssessmentItem();	
         Assert.assertNotNull(testFilename);
         Assert.assertNotNull(itemFilename);
         
@@ -57,7 +56,7 @@ public class ManifestPackageTest {
         
         File manifestFile = new File(tmpDir, "imsmanifest.xml");
         FileOutputStream out = new FileOutputStream(manifestFile);
-        ManifestPackage.write(manifestType, out);
+        manifest.write(out);
         out.flush();
         out.close(); 
         
@@ -68,8 +67,8 @@ public class ManifestPackageTest {
         Assert.assertEquals(1, items.size());
         Assert.assertEquals(1, tests.size());
         
-        ManifestType reloadManifestType = ManifestPackage.read(manifestFile);
-        Assert.assertNotNull(reloadManifestType);
+        ManifestBuilder reloadManifest = ManifestBuilder.read(manifestFile);
+        Assert.assertNotNull(reloadManifest);
         
 	}
 }

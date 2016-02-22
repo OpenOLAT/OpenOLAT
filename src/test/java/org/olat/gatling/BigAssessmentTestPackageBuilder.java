@@ -34,8 +34,7 @@ import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
-import org.olat.ims.qti21.model.xml.ManifestPackage;
-import org.olat.imscp.xml.manifest.ManifestType;
+import org.olat.ims.qti21.model.xml.ManifestBuilder;
 
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.RubricBlock;
@@ -77,14 +76,14 @@ public class BigAssessmentTestPackageBuilder {
 		String date = format.format(new Date());
 		File directory = new File("/HotCoffee/qti/" + date + "/");
 		directory.mkdirs();
-		ManifestType manifestType = ManifestPackage.createEmptyManifest();
+		ManifestBuilder manifest = ManifestBuilder.createAssessmentTestBuilder();
 		System.out.println(directory);
         
 
 		//test
         File testFile = new File(directory, IdentifierGenerator.newAssessmentTestFilename());
 		AssessmentTest assessmentTest = AssessmentTestFactory.createAssessmentTest("Big test " + date);
-        ManifestPackage.appendAssessmentTest(testFile.getName(), manifestType);
+		manifest.appendAssessmentTest(testFile.getName());
 
 		TestPart part = assessmentTest.getTestParts().get(0);
 		part.getAssessmentSections().clear();
@@ -124,7 +123,7 @@ public class BigAssessmentTestPackageBuilder {
 				assessmentItem.setTitle((i+1) + "." + (j+1) + ". Question SC");
 				
 				AssessmentTestFactory.appendAssessmentItem(section, itemFile.getName());
-				ManifestPackage.appendAssessmentItem(itemFile.getName(), manifestType);	
+				manifest.appendAssessmentItem(itemFile.getName());	
 				
 				try(FileOutputStream out = new FileOutputStream(itemFile)) {
 					qtiSerializer.serializeJqtiObject(assessmentItem, out);	
@@ -140,11 +139,7 @@ public class BigAssessmentTestPackageBuilder {
 			log.error("", e);
 		}
 		
-		try(FileOutputStream out = new FileOutputStream(new File(directory, "imsmanifest.xml"))) {
-        	ManifestPackage.write(manifestType, out);
-        } catch(Exception e) {
-        	log.error("", e);
-        }
+		manifest.write(new File(directory, "imsmanifest.xml"));
 	}
 	
 

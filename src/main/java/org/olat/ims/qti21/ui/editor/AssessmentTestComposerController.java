@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -54,9 +55,10 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.IdentifierGenerator;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
-import org.olat.ims.qti21.model.xml.ManifestPackage;
+import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
@@ -71,7 +73,7 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.olat.ims.qti21.ui.editor.events.AssessmentSectionEvent;
 import org.olat.ims.qti21.ui.editor.events.AssessmentTestEvent;
 import org.olat.ims.qti21.ui.editor.events.AssessmentTestPartEvent;
-import org.olat.imscp.xml.manifest.ManifestType;
+import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.ui.SelectItemController;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
@@ -80,6 +82,7 @@ import org.olat.repository.ui.RepositoryEntryRuntimeController.ToolbarAware;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.test.AbstractPart;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
@@ -116,7 +119,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	private final File unzippedDirRoot;
 	private final RepositoryEntry testEntry;
-	private ManifestType manifest;
+	private ManifestBuilder manifestBuilder;
 	private ResolvedAssessmentTest resolvedAssessmentTest;
 	
 	private final boolean survey = false;
@@ -149,7 +152,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		FileResourceManager frm = FileResourceManager.getInstance();
 		unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
 		updateTreeModel();
-		manifest = ManifestPackage.read(new File(unzippedDirRoot, "imsmanifest.xml"));
+		manifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
 		
 		//default buttons
 		saveLink = LinkFactory.createToolLink("serialize", translate("serialize"), this, "o_icon_save");
@@ -245,6 +248,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		} else if(event instanceof AssessmentItemEvent) {
 			AssessmentItemEvent aie = (AssessmentItemEvent)event;
 			if(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED.equals(aie.getCommand())) {
+				doUpdateManifest(aie.getAssessmentItemRef(), aie.getAssessmentItem(), aie.getQuestionType());
 				doUpdate(aie.getAssessmentItemRef().getIdentifier(), aie.getAssessmentItem().getTitle());
 			}
 		} else if(selectQItemCtrl == source) {
@@ -411,8 +415,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		File testFile = new File(testUri);
 		qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
 
-		ManifestPackage.appendAssessmentItem(itemFile.getName(), manifest);
-		ManifestPackage.write(manifest, new File(unzippedDirRoot, "imsmanifest.xml"));
+		manifestBuilder.appendAssessmentItem(itemFile.getName());
+		manifestBuilder.write(new File(unzippedDirRoot, "imsmanifest.xml"));
 		return itemId;
 	}
 	
@@ -500,8 +504,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			File testFile = new File(testUri);
 			qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
 
-			ManifestPackage.appendAssessmentItem(itemFile.getName(), manifest);
-			ManifestPackage.write(manifest, new File(unzippedDirRoot, "imsmanifest.xml"));
+			manifestBuilder.appendAssessmentItem(itemFile.getName());
+			manifestBuilder.write(new File(unzippedDirRoot, "imsmanifest.xml"));
 			
 			updateTreeModel();
 			
@@ -532,6 +536,27 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		URI testURI = resolvedAssessmentTest.getTestLookup().getSystemId();
 		File testFile = new File(testURI);
 		qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
+	}
+	
+	private void doUpdateManifest(AssessmentItemRef ref, AssessmentItem item, QTI21QuestionType questionType) {
+		URI itemUri = resolvedAssessmentTest.getResolvedAssessmentItem(ref).getItemLookup().getSystemId();
+		File itemFile = new File(itemUri);
+		String relativePathToManifest = unzippedDirRoot.toPath().relativize(itemFile.toPath()).toString();
+		
+		ResourceType resource = manifestBuilder.getResourceTypeByHref(relativePathToManifest);
+		if(resource != null) {
+			List<Interaction> interactions = item.getItemBody().findInteractions();
+			List<String> interactionNames = new ArrayList<>(interactions.size());
+			for(Interaction interaction:interactions) {
+				String interactionName = interaction.getQtiClassName();
+				interactionNames.add(interactionName);
+			}
+			manifestBuilder.setQtiMetadata(resource, interactionNames);
+			if(questionType != null) {
+				manifestBuilder.setOpenOLATMetadata(resource, questionType.getPrefix());
+			}
+			manifestBuilder.write(new File(unzippedDirRoot, "imsmanifest.xml"));
+		}
 	}
 	
 	private void doUpdate(Identifier identifier, String newTitle) {

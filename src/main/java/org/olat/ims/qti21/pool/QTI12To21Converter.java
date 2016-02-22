@@ -50,7 +50,7 @@ import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
-import org.olat.ims.qti21.model.xml.ManifestPackage;
+import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ModalFeedbackBuilder;
 import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
@@ -58,7 +58,6 @@ import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
-import org.olat.imscp.xml.manifest.ManifestType;
 
 import uk.ac.ed.ph.jqtiplus.node.AssessmentObject;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.RubricBlock;
@@ -92,11 +91,11 @@ public class QTI12To21Converter {
 	private final QtiSerializer qtiSerializer = new QtiSerializer(null);
 	private final AssessmentHtmlBuilder htmlBuilder = new AssessmentHtmlBuilder(qtiSerializer);
 	
-	private final ManifestType manifest;
+	private final ManifestBuilder manifest;
 	
 	public QTI12To21Converter(File unzippedDirRoot) {
 		this.unzippedDirRoot = unzippedDirRoot;
-		manifest = ManifestPackage.createEmptyManifest();
+		manifest = ManifestBuilder.createAssessmentTestBuilder();
 	}
 	
 	public AssessmentTest convert(QTIEditorPackage qtiEditorPackage)
@@ -111,7 +110,7 @@ public class QTI12To21Converter {
 		AssessmentTest assessmentTest = new AssessmentTest();
 		String assessmentTestIdentifier = IdentifierGenerator.newAssessmentTestFilename();
 		File testFile = new File(unzippedDirRoot, assessmentTestIdentifier + ".xml");
-		ManifestPackage.appendAssessmentTest(testFile.getName(), manifest);
+		manifest.appendAssessmentTest(testFile.getName());
 		
 		assessmentTest.setIdentifier(assessmentTestIdentifier);
 		assessmentTest.setTitle(assessment.getTitle());
@@ -153,7 +152,7 @@ public class QTI12To21Converter {
 
 		assessmentTest = assessmentTestBuilder.build();
 		persistAssessmentObject(testFile, assessmentTest);
-		ManifestPackage.write(manifest, new File(unzippedDirRoot, "imsmanifest.xml"));
+		manifest.write(new File(unzippedDirRoot, "imsmanifest.xml"));
 		return assessmentTest;
 	}
 	
@@ -211,7 +210,7 @@ public class QTI12To21Converter {
 				itemRef.setHref(new URI(itemFile.getName()));
 				assessmentSection.getSectionParts().add(itemRef);
 				persistAssessmentObject(itemFile, assessmentItem);
-				ManifestPackage.appendAssessmentItem(itemFile.getName(), manifest);
+				manifest.appendAssessmentItem(itemFile.getName());
 			}
 		}
 	}

@@ -223,7 +223,7 @@ public class AssessmentItemEditorController extends BasicController {
 				AssessmentItemEvent aie = (AssessmentItemEvent)event;
 				if(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED.equals(aie.getCommand())) {
 					doBuildAndSaveAssessmentItem();
-					fireEvent(ureq, new AssessmentItemEvent(aie.getCommand(), aie.getAssessmentItem(), itemRef));
+					fireEvent(ureq, new AssessmentItemEvent(aie.getCommand(), aie.getAssessmentItem(), itemRef, aie.getQuestionType()));
 				}
 			}
 		}

@@ -168,7 +168,7 @@ public class ChoiceScoreController extends FormBasicController {
 			itemBuilder.clearMapping();
 		}
 
-		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem()));
+		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), null));
 	}
 
 	@Override

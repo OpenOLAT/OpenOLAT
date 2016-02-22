@@ -52,13 +52,12 @@ import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.QTI21QuestionTypeDetector;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemMetadata;
-import org.olat.ims.qti21.model.xml.ManifestPackage;
+import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.resources.IMSEntityResolver;
-import org.olat.imscp.xml.manifest.ManifestType;
 import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.ExportFormatOptions.Outcome;
 import org.olat.modules.qpool.QItemFactory;
@@ -263,10 +262,9 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		qtiService.persistAssessmentObject(itemFile, assessmentItem);
 		
 		//create imsmanifest
-		ManifestType manifestType = ManifestPackage.createEmptyManifest();
-        ManifestPackage.appendAssessmentItem(itemFile.getName(), manifestType);	
-        ManifestPackage.write(manifestType, new File(itemFile.getParentFile(), "imsmanifest.xml"));
-		
+		ManifestBuilder manifest = ManifestBuilder.createAssessmentItemBuilder();
+		manifest.appendAssessmentItem(itemFile.getName());	
+		manifest.write(new File(itemFile.getParentFile(), "imsmanifest.xml"));
 		return qitem;
 	}
 	

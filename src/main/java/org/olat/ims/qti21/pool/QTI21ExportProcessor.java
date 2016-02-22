@@ -38,8 +38,7 @@ import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
-import org.olat.ims.qti21.model.xml.ManifestPackage;
-import org.olat.imscp.xml.manifest.ManifestType;
+import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.manager.QPoolFileStorage;
 
@@ -119,12 +118,12 @@ public class QTI21ExportProcessor {
 		try {
 			QtiSerializer qtiSerializer = qtiService.qtiSerializer();
 			//imsmanifest
-			ManifestType manifest = ManifestPackage.createEmptyManifest();
+			ManifestBuilder manifest = ManifestBuilder.createAssessmentTestBuilder();
 			
 			//assessment test
 			AssessmentTest assessmentTest = AssessmentTestFactory.createAssessmentTest("Assessment test from pool");
 			String assessmentTestFilename = assessmentTest.getIdentifier() + ".xml";
-			ManifestPackage.appendAssessmentTest(assessmentTestFilename, manifest);
+			manifest.appendAssessmentTest(assessmentTestFilename);
 
 			//make a section
 			AssessmentSection section = assessmentTest.getTestParts().get(0).getAssessmentSections().get(0);
@@ -141,7 +140,7 @@ public class QTI21ExportProcessor {
 				//collectResources(itemEl, container, materials);
 				FileUtils.bcopy(itemFile, new File(directory, rootFilename), "");
 				AssessmentTestFactory.appendAssessmentItem(section, itemFilename);
-				ManifestPackage.appendAssessmentItem(itemFilename, manifest);
+				manifest.appendAssessmentItem(itemFilename);
 			}
 
 			try(FileOutputStream out = new FileOutputStream(new File(directory, assessmentTestFilename))) {
@@ -149,12 +148,8 @@ public class QTI21ExportProcessor {
 			} catch(Exception e) {
 				log.error("", e);
 			}
-			
-	        try(FileOutputStream out = new FileOutputStream(new File(directory, "imsmanifest.xml"))) {
-	        	ManifestPackage.write(manifest, out);
-	        } catch(Exception e) {
-	        	log.error("", e);
-	        }
+
+	        manifest.write(new File(directory, "imsmanifest.xml"));
 		} catch (IOException | URISyntaxException e) {
 			log.error("", e);
 		}
@@ -164,12 +159,12 @@ public class QTI21ExportProcessor {
 		try {
 			QtiSerializer qtiSerializer = qtiService.qtiSerializer();
 			//imsmanifest
-			ManifestType manifest = ManifestPackage.createEmptyManifest();
+			ManifestBuilder manifest = ManifestBuilder.createAssessmentTestBuilder();
 			
 			//assessment test
 			AssessmentTest assessmentTest = AssessmentTestFactory.createAssessmentTest("Assessment test from pool");
 			String assessmentTestFilename = assessmentTest.getIdentifier() + ".xml";
-			ManifestPackage.appendAssessmentTest(assessmentTestFilename, manifest);
+			manifest.appendAssessmentTest(assessmentTestFilename);
 
 			//make a section
 			AssessmentSection section = assessmentTest.getTestParts().get(0).getAssessmentSections().get(0);
@@ -187,7 +182,7 @@ public class QTI21ExportProcessor {
 
 				ZipUtil.addFileToZip(itemFilename, itemFile, zout);
 				AssessmentTestFactory.appendAssessmentItem(section, itemFilename);
-				ManifestPackage.appendAssessmentItem(itemFilename, manifest);
+				manifest.appendAssessmentItem(itemFilename);
 			}
 
 			zout.putNextEntry(new ZipEntry(assessmentTestFilename));
@@ -195,7 +190,7 @@ public class QTI21ExportProcessor {
 			zout.closeEntry();
 
 			zout.putNextEntry(new ZipEntry("imsmanifest.xml"));
-			ManifestPackage.write(manifest, zout);
+			manifest.write(new ShieldOutputStream(zout));
 			zout.closeEntry();
 		} catch (IOException | URISyntaxException e) {
 			log.error("", e);
