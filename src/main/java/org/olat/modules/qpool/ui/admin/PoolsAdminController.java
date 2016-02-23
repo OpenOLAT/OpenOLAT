@@ -213,8 +213,9 @@ public class PoolsAdminController extends FormBasicController {
 		poolEditCtrl = new PoolEditController(ureq, getWindowControl(), pool);
 		listenTo(poolEditCtrl);
 		
+		String title = pool == null ? translate("create.pool") : translate("edit.pool");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				poolEditCtrl.getInitialComponent(), true, translate("edit.pool"));
+				poolEditCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);	
 	}
