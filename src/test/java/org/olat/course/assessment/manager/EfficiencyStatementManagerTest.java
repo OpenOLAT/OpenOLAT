@@ -19,23 +19,28 @@
  */
 package org.olat.course.assessment.manager;
 
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
+import org.junit.Assert;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.EfficiencyStatementManager;
-import org.olat.course.config.CourseConfig;
+import org.olat.course.assessment.UserEfficiencyStatement;
+import org.olat.course.assessment.model.UserEfficiencyStatementLight;
+import org.olat.modules.coach.CoachingLargeTest;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
-import org.olat.repository.model.SearchRepositoryEntryParameters;
+import org.olat.repository.RepositoryService;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -50,62 +55,113 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private BaseSecurity securityManager;
+	private RepositoryService repositoryService;
 	@Autowired
-	private RepositoryManager repositoryManager;
+	private EfficiencyStatementManager effManager;
+	
+	/**
+	 * Create and reload an efficiency statement.
+	 * 
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void testEfficiencyStatement() throws URISyntaxException {
+		RepositoryEntry re = deployTestcourse();
+		ICourse course = CourseFactory.loadCourse(re);
+		
+		//add some members
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Part-1");
+		repositoryService.addRole(participant, re, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		//make statements
+	    UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 6.0f, true, participant, re.getOlatResource());
+		dbInstance.commitAndCloseSession();
+
+		//load the efficiency statements
+		List<UserEfficiencyStatementLight> statementsLight = effManager.findEfficiencyStatementsLight(participant);
+		Assert.assertNotNull(statementsLight);
+		Assert.assertEquals(1, statementsLight.size());
+		UserEfficiencyStatementLight statementLight = statementsLight.get(0);
+		Assert.assertEquals(statement.getKey(), statementLight.getKey());
+		Assert.assertEquals(participant, statementLight.getIdentity());
+		Assert.assertEquals(statement.getCourseRepoKey(), statementLight.getCourseRepoKey());
+		Assert.assertEquals(re.getKey(), statementLight.getCourseRepoKey());
+		Assert.assertEquals(course.getCourseTitle(), statementLight.getShortTitle());
+		Assert.assertEquals(re.getOlatResource(), statementLight.getResource());
+		Assert.assertEquals(re.getOlatResource().getKey(), statementLight.getArchivedResourceKey());
+		Assert.assertNotNull(statementLight.getCreationDate());
+		Assert.assertNotNull(statementLight.getLastModified());
+		Assert.assertTrue(statementLight.getPassed());
+		Assert.assertEquals(6.0f, statementLight.getScore(), 0.00001);
+	}
+	
 	
 	@Test
-	public void testBigDatas() {
-		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
-		params.setRoles(new Roles(true, false, false, false, false, false, false));
-		params.setResourceTypes(Collections.singletonList("CourseModule"));
-		List<RepositoryEntry> entries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, true);
+	public void deleteUserData() throws URISyntaxException {
+		RepositoryEntry re1 = deployTestcourse();
+		RepositoryEntry re2 = deployTestcourse();
 		
-		List<Identity> loadIdentities = securityManager
-				.getVisibleIdentitiesByPowerSearch(null, null, false, null, null, null, null, null, 0, 10000);
-		EfficiencyStatementManager efficiencyStatementManager = EfficiencyStatementManager.getInstance();
-		
-		int count = 0;
-		for(RepositoryEntry entry:entries) {
-			Long resourceableId = entry.getOlatResource().getResourceableId();
-		
-			try {
-				ICourse course = CourseFactory.loadCourse(resourceableId);			
-				boolean enabled =course.getCourseEnvironment().getCourseConfig().isEfficencyStatementEnabled();
-				if(!enabled) {
-					course = CourseFactory.openCourseEditSession(entry.getOlatResource().getResourceableId());
-					CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
-					courseConfig.setEfficencyStatementIsEnabled(true);
-					CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
-					CourseFactory.saveCourse(course.getResourceableId());
-					CourseFactory.closeCourseEditSession(course.getResourceableId(),true);
-				}
-				DBFactory.getInstance().commitAndCloseSession();
-				
-				try {
-					int fromIndex = (int)(Math.random() * loadIdentities.size() - 1);
-					if(fromIndex < 100) {
-						fromIndex = 100;
-					}
-					List<Identity> assessedIdentities = loadIdentities.subList(fromIndex - 100, fromIndex);
-					//force the storing of the efficiencyStatement - this is usually done only at Learnresource/modify properties/Efficiency statement (ON)
-					efficiencyStatementManager.updateEfficiencyStatements(course, assessedIdentities);
-					
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				DBFactory.getInstance().commitAndCloseSession();
-				DBFactory.getInstance().closeSession();
-			} catch (CorruptedCourseException e) {
-				System.out.println("Error");
-			}
-			
-			if(count++ % 100 == 0) {
-				dbInstance.commitAndCloseSession();
-			}
-		}
-		
+		//add some members
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Del-Part-1");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Del-Part-2");
+		repositoryService.addRole(participant1, re1, GroupRoles.participant.name());
+		repositoryService.addRole(participant2, re1, GroupRoles.participant.name());
+		repositoryService.addRole(participant1, re2, GroupRoles.participant.name());
+		repositoryService.addRole(participant2, re2, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
 
+		//make statements
+	    UserEfficiencyStatement statement1_1 = effManager.createUserEfficiencyStatement(new Date(), 6.0f, true, participant1, re1.getOlatResource());
+	    UserEfficiencyStatement statement1_2 = effManager.createUserEfficiencyStatement(new Date(), 6.0f, true, participant1, re2.getOlatResource());
+	    UserEfficiencyStatement statement2_1 = effManager.createUserEfficiencyStatement(new Date(), 6.0f, true, participant2, re1.getOlatResource());
+	    UserEfficiencyStatement statement2_2 = effManager.createUserEfficiencyStatement(new Date(), 6.0f, true, participant2, re2.getOlatResource());
+		dbInstance.commitAndCloseSession();
+
+		//load the efficiency statements
+		List<UserEfficiencyStatementLight> statementsLight1 = effManager.findEfficiencyStatementsLight(participant1);
+		Assert.assertEquals(2, statementsLight1.size());
+		
+		//delete user 1
+		effManager.deleteUserData(participant1, "deleted");
+		dbInstance.commitAndCloseSession();
+		
+		//check the efficiency statements
+		List<UserEfficiencyStatementLight> deletedStatementsLight1 = effManager.findEfficiencyStatementsLight(participant1);
+		Assert.assertTrue(deletedStatementsLight1.isEmpty());
+		List<UserEfficiencyStatementLight> deletedStatementsLight2 = effManager.findEfficiencyStatementsLight(participant2);
+		Assert.assertEquals(2, deletedStatementsLight2.size());
+		
+		//double check
+		List<Identity> identitesRe1 = effManager.findIdentitiesWithEfficiencyStatements(re1.getKey());
+		Assert.assertEquals(1, identitesRe1.size());
+		Assert.assertTrue(identitesRe1.contains(participant2));
+		List<Identity> identitesRe2 = effManager.findIdentitiesWithEfficiencyStatements(re2.getKey());
+		Assert.assertEquals(1, identitesRe2.size());
+		Assert.assertTrue(identitesRe2.contains(participant2));
+		
+		//triple check
+		List<UserEfficiencyStatementLight> reloadStatemets_1_1 = effManager.findEfficiencyStatementsLight(Collections.<Long>singletonList(statement1_1.getKey()));
+		Assert.assertTrue(reloadStatemets_1_1.isEmpty());
+		List<UserEfficiencyStatementLight> reloadStatemets_1_2 = effManager.findEfficiencyStatementsLight(Collections.<Long>singletonList(statement1_2.getKey()));
+		Assert.assertTrue(reloadStatemets_1_2.isEmpty());
+		List<UserEfficiencyStatementLight> reloadStatemets_2_1 = effManager.findEfficiencyStatementsLight(Collections.<Long>singletonList(statement2_1.getKey()));
+		Assert.assertEquals(1, reloadStatemets_2_1.size());
+		List<UserEfficiencyStatementLight> reloadStatemets_2_2 = effManager.findEfficiencyStatementsLight(Collections.<Long>singletonList(statement2_2.getKey()));
+		Assert.assertEquals(1, reloadStatemets_2_2.size());
+	}
+	
+	private RepositoryEntry deployTestcourse() throws URISyntaxException {
+		//deploy a course
+		URL courseWithForumsUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		File courseWithForums = new File(courseWithForumsUrl.toURI());
+		String softKey = UUID.randomUUID().toString();
+		RepositoryEntry re = CourseFactory.deployCourseFromZIP(courseWithForums, softKey, 4);
+		Assert.assertNotNull(re);
+		dbInstance.commitAndCloseSession();
+		ICourse course = CourseFactory.loadCourse(re);			
+		Assert.assertTrue(course.getCourseEnvironment().getCourseConfig().isEfficencyStatementEnabled());
+		return re;
 	}
 
 }
