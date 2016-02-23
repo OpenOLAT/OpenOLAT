@@ -93,8 +93,12 @@ public class StaticServlet extends HttpServlet {
 			CustomStaticFolderManager folderManager = CoreSpringFactory.getImpl(CustomStaticFolderManager.class);
 			File file = new File(folderManager.getRootFile(), staticRelPath);
 			if(file.exists()) {
-				MediaResource resource = new FileMediaResource(file);
-		    	ServletUtil.serveResource(request, response, resource);
+				if(file.isDirectory()) {
+					response.sendError(HttpServletResponse.SC_FORBIDDEN);
+				} else {
+					MediaResource resource = new FileMediaResource(file);
+		    		ServletUtil.serveResource(request, response, resource);
+				}
 			} else {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND);
 			}
@@ -172,6 +176,9 @@ public class StaticServlet extends HttpServlet {
 		
 		if(notFound) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
+		} else if(staticFile.isDirectory()) {
+			//directory listing is forbidden
+			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 		} else {
 			deliverFile(request, response, staticFile, expiration);
 		}

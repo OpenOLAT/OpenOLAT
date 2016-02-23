@@ -624,7 +624,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 	 * @param courseRepoEntryKey
 	 * @return List of identities
 	 */
-	protected List<Identity> findIdentitiesWithEfficiencyStatements(Long courseRepoEntryKey) {
+	public List<Identity> findIdentitiesWithEfficiencyStatements(Long courseRepoEntryKey) {
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append("select distinct(statement.identity) from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as statement ")
@@ -736,12 +736,21 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 	 * Delete all efficiency-statements for certain identity.
 	 * @param identity  Delete data for this identity.
 	 */
+	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
-		List<EfficiencyStatement> efficiencyStatements = findEfficiencyStatements(identity);
-		for (Iterator<EfficiencyStatement> iter = efficiencyStatements.iterator(); iter.hasNext();) {
-			deleteEfficiencyStatement(identity, iter.next());
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("delete from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as statement ")
+			  .append(" where statement.identity.key=:identityKey");
+
+			int numOfDeletedStatements = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString())
+					.setParameter("identityKey", identity.getKey())
+					.executeUpdate();
+			
+			logDebug(numOfDeletedStatements + " efficiency statements deleted for identity=" + identity);
+		} catch (Exception e) {
+			logError("deleteUserData(EfficiencyStatements): " + identity, e);
 		}
-		logDebug("All efficiency statements deleted for identity=" + identity);
 	}
-	
 }
