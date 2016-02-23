@@ -741,7 +741,7 @@ public class QuestionListController extends AbstractItemListController implement
 		List<QuestionItemShort> items = (List<QuestionItemShort>)runContext.get("itemsToExport");
 		switch(format.getOutcome()) {
 			case download: {
-				MediaResource mr = qpoolService.export(items, format);
+				MediaResource mr = qpoolService.export(items, format, getLocale());
 				if(mr != null) {
 					ureq.getDispatchResult().setResultingMediaResource(mr);
 				}

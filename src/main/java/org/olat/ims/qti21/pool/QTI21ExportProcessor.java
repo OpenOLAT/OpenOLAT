@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -33,12 +34,14 @@ import java.util.zip.ZipOutputStream;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
+import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.manager.QPoolFileStorage;
 
@@ -57,10 +60,12 @@ public class QTI21ExportProcessor {
 	
 	private static final OLog log = Tracing.createLoggerFor(QTI21ExportProcessor.class);
 	
+	private final Locale locale;
 	private final QTI21Service qtiService;
 	private final QPoolFileStorage qpoolFileStorage;
 
-	public QTI21ExportProcessor(QTI21Service qtiService, QPoolFileStorage qpoolFileStorage) {
+	public QTI21ExportProcessor(QTI21Service qtiService, QPoolFileStorage qpoolFileStorage, Locale locale) {
+		this.locale = locale;
 		this.qtiService = qtiService;
 		this.qpoolFileStorage = qpoolFileStorage;
 	}
@@ -136,11 +141,12 @@ public class QTI21ExportProcessor {
 				String itemFilename = itemFile.getName();
 				
 				//enrichScore(itemEl);
-				//enrichWithMetadata(fullItem, itemEl);
 				//collectResources(itemEl, container, materials);
 				FileUtils.bcopy(itemFile, new File(directory, rootFilename), "");
 				AssessmentTestFactory.appendAssessmentItem(section, itemFilename);
 				manifest.appendAssessmentItem(itemFilename);
+				ManifestMetadataBuilder metadata = manifest.getResourceBuilderByHref(itemFilename);
+				enrichWithMetadata(qitem, metadata);
 			}
 
 			try(FileOutputStream out = new FileOutputStream(new File(directory, assessmentTestFilename))) {
@@ -177,12 +183,13 @@ public class QTI21ExportProcessor {
 				String itemFilename = itemFile.getName();
 				
 				//enrichScore(itemEl);
-				//enrichWithMetadata(fullItem, itemEl);
 				//collectResources(itemEl, container, materials);
 
 				ZipUtil.addFileToZip(itemFilename, itemFile, zout);
 				AssessmentTestFactory.appendAssessmentItem(section, itemFilename);
 				manifest.appendAssessmentItem(itemFilename);
+				ManifestMetadataBuilder metadata = manifest.getResourceBuilderByHref(itemFilename);
+				enrichWithMetadata(qitem, metadata);
 			}
 
 			zout.putNextEntry(new ZipEntry(assessmentTestFilename));
@@ -195,6 +202,21 @@ public class QTI21ExportProcessor {
 		} catch (IOException | URISyntaxException e) {
 			log.error("", e);
 		}
+	}
+
+	private void enrichWithMetadata(QuestionItemFull qitem, ManifestMetadataBuilder metadata) {
+		String lang = qitem.getLanguage();
+		if(!StringHelper.containsNonWhitespace(lang)) {
+			lang = locale.getLanguage();
+		}
+		if(StringHelper.containsNonWhitespace(qitem.getTitle())) {
+			metadata.setTitle(qitem.getTitle(), lang);
+		}
+		if(StringHelper.containsNonWhitespace(qitem.getDescription())) {
+			metadata.setDescription(qitem.getDescription(), lang);
+		}
+		
+		
 	}
 
 	private static final class AssessmentItemsAndResources {

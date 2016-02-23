@@ -120,5 +120,15 @@ public class AssessmentTestSessionDAO {
 	}
 	
 	
-
+	public void deleteUserTestSessions(RepositoryEntryRef testEntry) {
+		String q = "select session from qtiassessmenttestsession session where session.testEntry.key=:testEntryKey";
+		List<AssessmentTestSession> sessions = dbInstance.getCurrentEntityManager()
+				.createQuery(q, AssessmentTestSession.class)
+				.setParameter("testEntryKey", testEntry.getKey())
+				.getResultList();
+		for(AssessmentTestSession session:sessions) {
+			dbInstance.getCurrentEntityManager().remove(session);
+		}
+		
+	}
 }

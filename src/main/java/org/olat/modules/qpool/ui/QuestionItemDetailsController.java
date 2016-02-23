@@ -280,7 +280,7 @@ public class QuestionItemDetailsController extends BasicController implements Br
 	}
 	
 	private void doExport(UserRequest ureq, QuestionItemShort item) {
-		ExportQItemResource mr = new ExportQItemResource("UTF-8", item);
+		ExportQItemResource mr = new ExportQItemResource("UTF-8", getLocale(), item);
 		ureq.getDispatchResult().setResultingMediaResource(mr);
 	}
 }

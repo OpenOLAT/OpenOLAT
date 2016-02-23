@@ -30,6 +30,7 @@ import org.olat.ims.qti21.model.QTI21QuestionType;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseCondition;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseProcessing;
@@ -206,6 +207,17 @@ public abstract class AssessmentItemBuilder {
 	
 	public AssessmentHtmlBuilder getHtmlHelper() {
 		return htmlHelper;
+	}
+	
+	public List<String> getInteractionNames() {
+		List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
+		List<String> interactionNames = new ArrayList<>(interactions.size());
+		for(Interaction interaction:interactions) {
+			String interactionName = interaction.getQtiClassName();
+			interactionNames.add(interactionName);
+		}
+		
+		return interactionNames;
 	}
 
 	public final void build() {

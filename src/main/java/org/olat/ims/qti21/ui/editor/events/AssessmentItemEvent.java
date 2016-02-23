@@ -36,6 +36,7 @@ public class AssessmentItemEvent extends Event {
 	private static final long serialVersionUID = -1768118856227595311L;
 	
 	public static final String ASSESSMENT_ITEM_CHANGED = "assessment-item-changed";
+	public static final String ASSESSMENT_ITEM_METADATA_CHANGED = "assessment-item-metadata-changed";
 	
 	private AssessmentItem item;
 	private AssessmentItemRef itemRef;

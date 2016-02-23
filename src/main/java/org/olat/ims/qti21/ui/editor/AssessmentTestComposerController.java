@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -55,10 +54,10 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.IdentifierGenerator;
-import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
+import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
@@ -82,7 +81,6 @@ import org.olat.repository.ui.RepositoryEntryRuntimeController.ToolbarAware;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.test.AbstractPart;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
@@ -244,12 +242,15 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			if(AssessmentSectionEvent.ASSESSMENT_SECTION_CHANGED.equals(ase.getCommand())) {
 				doSaveAssessmentTest();
 				doUpdate(ase.getSection().getIdentifier(), ase.getSection().getTitle());
+				doSaveManifest();
 			}
 		} else if(event instanceof AssessmentItemEvent) {
 			AssessmentItemEvent aie = (AssessmentItemEvent)event;
 			if(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED.equals(aie.getCommand())) {
-				doUpdateManifest(aie.getAssessmentItemRef(), aie.getAssessmentItem(), aie.getQuestionType());
 				doUpdate(aie.getAssessmentItemRef().getIdentifier(), aie.getAssessmentItem().getTitle());
+				doSaveManifest();
+			} else if(AssessmentItemEvent.ASSESSMENT_ITEM_METADATA_CHANGED.equals(aie.getCommand())) {
+				doSaveManifest();
 			}
 		} else if(selectQItemCtrl == source) {
 			cmc.deactivate();
@@ -352,10 +353,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		try {
 			AssessmentSection section = (AssessmentSection)sectionNode.getUserObject();
 			for(QuestionItemView item:items) {
-				AssessmentItem assessmentItem = qti21QPoolServiceProvider.exportToQTIEditor(item, unzippedDirRoot);
-				String itemId = doInsert(section, assessmentItem);
+				AssessmentItem assessmentItem = qti21QPoolServiceProvider.exportToQTIEditor(item, getLocale(), unzippedDirRoot);
+				AssessmentItemRef itemRef = doInsert(section, assessmentItem);
 				if(firstItemId == null) {
-					firstItemId = itemId;
+					firstItemId = itemRef.getIdentifier().toString();
 				}
 			}
 		} catch (IOException | URISyntaxException e) {
@@ -381,16 +382,23 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			
 			List<AssessmentItemAndMetadata> itemsAndMetadata = importPackage.getItems();
 			for(AssessmentItemAndMetadata itemAndMetadata:itemsAndMetadata) {
-				AssessmentItem assessmentItem = itemAndMetadata.getItemBuilder().getAssessmentItem();
-				String itemId = doInsert(section, assessmentItem);
+				AssessmentItemBuilder itemBuilder = itemAndMetadata.getItemBuilder();
+				AssessmentItem assessmentItem = itemBuilder.getAssessmentItem();
+				AssessmentItemRef itemRef = doInsert(section, assessmentItem);
+				ManifestMetadataBuilder metadata = manifestBuilder.getResourceBuilderByHref(itemRef.getHref().toString());
+				metadata.setQtiMetadata(itemBuilder.getInteractionNames());
+				itemAndMetadata.transfer(metadata, getLocale());
 				if(firstItemId == null) {
-					firstItemId = itemId;
+					firstItemId = itemRef.getIdentifier().toString();
 				}
 			}
 		} catch (URISyntaxException e) {
 			showError("error.import.question");
 			logError("", e);
 		}
+		
+		//persist metadata
+		manifestBuilder.write(new File(unzippedDirRoot, "imsmanifest.xml"));
 		
 		updateTreeModel();
 		
@@ -400,7 +408,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		partEditorFactory(ureq, newItemNode);
 	}
 	
-	private String doInsert(AssessmentSection section, AssessmentItem assessmentItem)
+	private AssessmentItemRef doInsert(AssessmentSection section, AssessmentItem assessmentItem)
 	throws URISyntaxException {
 		AssessmentItemRef itemRef = new AssessmentItemRef(section);
 		String itemId = assessmentItem.getIdentifier();
@@ -417,7 +425,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 
 		manifestBuilder.appendAssessmentItem(itemFile.getName());
 		manifestBuilder.write(new File(unzippedDirRoot, "imsmanifest.xml"));
-		return itemId;
+		return itemRef;
 	}
 	
 	private TreeNode doOpenFirstItem() {
@@ -538,25 +546,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
 	}
 	
-	private void doUpdateManifest(AssessmentItemRef ref, AssessmentItem item, QTI21QuestionType questionType) {
-		URI itemUri = resolvedAssessmentTest.getResolvedAssessmentItem(ref).getItemLookup().getSystemId();
-		File itemFile = new File(itemUri);
-		String relativePathToManifest = unzippedDirRoot.toPath().relativize(itemFile.toPath()).toString();
-		
-		ResourceType resource = manifestBuilder.getResourceTypeByHref(relativePathToManifest);
-		if(resource != null) {
-			List<Interaction> interactions = item.getItemBody().findInteractions();
-			List<String> interactionNames = new ArrayList<>(interactions.size());
-			for(Interaction interaction:interactions) {
-				String interactionName = interaction.getQtiClassName();
-				interactionNames.add(interactionName);
-			}
-			manifestBuilder.setQtiMetadata(resource, interactionNames);
-			if(questionType != null) {
-				manifestBuilder.setOpenOLATMetadata(resource, questionType.getPrefix());
-			}
-			manifestBuilder.write(new File(unzippedDirRoot, "imsmanifest.xml"));
-		}
+	private void doSaveManifest() {
+		this.manifestBuilder.write(new File(unzippedDirRoot, "imsmanifest.xml"));
 	}
 	
 	private void doUpdate(Identifier identifier, String newTitle) {
@@ -598,8 +589,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				currentEditorCtrl = new BadResourceController(ureq, getWindowControl(),
 						item.getItemLookup().getBadResourceException(), unzippedDirRoot, itemRef.getHref());
 			} else {
+				ManifestMetadataBuilder metadata = getMetadataBuilder(itemRef);
 				currentEditorCtrl = new AssessmentItemEditorController(ureq, getWindowControl(), testEntry,
-						item, itemRef, unzippedDirRoot);
+						item, itemRef, metadata, unzippedDirRoot);
 			}
 		}
 		
@@ -609,5 +601,13 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		} else {
 			mainVC.put("content", new Panel("empty"));
 		}
+	}
+	
+	private ManifestMetadataBuilder getMetadataBuilder(AssessmentItemRef itemRef) {
+		URI itemUri = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef).getItemLookup().getSystemId();
+		File itemFile = new File(itemUri);
+		String relativePathToManifest = unzippedDirRoot.toPath().relativize(itemFile.toPath()).toString();
+		ResourceType resource = manifestBuilder.getResourceTypeByHref(relativePathToManifest);
+		return manifestBuilder.getMetadataBuilder(resource, true);
 	}
 }

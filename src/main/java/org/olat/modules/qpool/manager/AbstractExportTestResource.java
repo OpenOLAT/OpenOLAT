@@ -22,6 +22,7 @@ package org.olat.modules.qpool.manager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
@@ -44,11 +45,17 @@ public abstract class AbstractExportTestResource implements MediaResource {
 	private static final OLog log = Tracing.createLoggerFor(AbstractExportTestResource.class);
 	
 	private String encoding;
+	private final Locale locale;
 	private final List<QuestionItemShort> items;
 	
-	public AbstractExportTestResource(String encoding, List<QuestionItemShort> items) {
+	public AbstractExportTestResource(String encoding, Locale locale, List<QuestionItemShort> items) {
 		this.encoding = encoding;
+		this.locale = locale;
 		this.items = items;
+	}
+	
+	public Locale getLocale() {
+		return locale;
 	}
 	
 	@Override

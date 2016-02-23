@@ -69,7 +69,7 @@ public interface QPoolSPI {
 	 * Export a test
 	 * @param items
 	 */
-	public MediaResource exportTest(List<QuestionItemShort> items, ExportFormatOptions format);
+	public MediaResource exportTest(List<QuestionItemShort> items, ExportFormatOptions format, Locale locale);
 	
 	/**
 	 * Export the item to the Zip
@@ -77,7 +77,7 @@ public interface QPoolSPI {
 	 * @param zout
 	 * @param names Collection of the file names used in the ZIP
 	 */
-	public void exportItem(QuestionItemFull item, ZipOutputStream zout, Set<String> names);
+	public void exportItem(QuestionItemFull item, ZipOutputStream zout, Locale locale, Set<String> names);
 	
 	/**
 	 * Copy the item attachment...

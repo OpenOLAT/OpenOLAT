@@ -189,25 +189,25 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 
 	@Override
 	public List<QuestionItem> importItems(Identity owner, Locale defaultLocale, String filename, File file) {
-		QTI21ImportProcessor processor = new QTI21ImportProcessor(owner, defaultLocale, filename, file,
-				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage, dbInstance);
-		return processor.process();
+		QTI21ImportProcessor processor = new QTI21ImportProcessor(owner, defaultLocale,
+				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage);
+		return processor.process(file);
 	}
 	
 
 
 	@Override
-	public MediaResource exportTest(List<QuestionItemShort> items, ExportFormatOptions format) {
+	public MediaResource exportTest(List<QuestionItemShort> items, ExportFormatOptions format, Locale locale) {
 		if(QTI21Constants.QTI_21_FORMAT.equals(format.getFormat())) {
-			return new QTI21ExportTestResource("UTF-8", items, this);
+			return new QTI21ExportTestResource("UTF-8", locale, items, this);
 		}
 		
 		return null;
 	}
 
 	@Override
-	public void exportItem(QuestionItemFull item, ZipOutputStream zout, Set<String> names) {
-		QTI21ExportProcessor processor = new QTI21ExportProcessor(qtiService, qpoolFileStorage);
+	public void exportItem(QuestionItemFull item, ZipOutputStream zout, Locale locale, Set<String> names) {
+		QTI21ExportProcessor processor = new QTI21ExportProcessor(qtiService, qpoolFileStorage, locale);
 		processor.process(item, zout, names);
 	}
 
@@ -252,8 +252,8 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		AssessmentItemMetadata itemMetadata = new AssessmentItemMetadata();
 		itemMetadata.setQuestionType(type);
 		
-		QTI21ImportProcessor processor = new QTI21ImportProcessor(identity, locale, null, null,
-				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage, dbInstance);
+		QTI21ImportProcessor processor = new QTI21ImportProcessor(identity, locale, 
+				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage);
 		QuestionItemImpl qitem = processor.processItem(assessmentItem, "", null, "OpenOLAT", Settings.getVersion(), itemMetadata);
 
 		VFSContainer baseDir = qpoolFileStorage.getContainer(qitem.getDirectory());
@@ -275,8 +275,8 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	 * @param editorContainer
 	 * @return
 	 */
-	public AssessmentItem exportToQTIEditor(QuestionItemShort qitem, File editorContainer) throws IOException {
-		QTI21ExportProcessor processor = new QTI21ExportProcessor(qtiService, qpoolFileStorage);
+	public AssessmentItem exportToQTIEditor(QuestionItemShort qitem, Locale locale, File editorContainer) throws IOException {
+		QTI21ExportProcessor processor = new QTI21ExportProcessor(qtiService, qpoolFileStorage, locale);
 		QuestionItemFull fullItem = questionItemDao.loadById(qitem.getKey());
 		ResolvedAssessmentItem resolvedAssessmentItem = processor.exportToQTIEditor(fullItem, editorContainer);
 		AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().extractAssumingSuccessful();
@@ -284,22 +284,22 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		return assessmentItem;
 	}
 	
-	public void assembleTest(List<QuestionItemShort> items, ZipOutputStream zout) {
+	public void assembleTest(List<QuestionItemShort> items, Locale locale, ZipOutputStream zout) {
 		List<Long> itemKeys = new ArrayList<Long>();
 		for(QuestionItemShort item:items) {
 			itemKeys.add(item.getKey());
 		}
 
 		List<QuestionItemFull> fullItems = questionItemDao.loadByIds(itemKeys);
-		QTI21ExportProcessor processor = new QTI21ExportProcessor(qtiService, qpoolFileStorage);
+		QTI21ExportProcessor processor = new QTI21ExportProcessor(qtiService, qpoolFileStorage, locale);
 		processor.assembleTest(fullItems, zout);	
 	}
 	
-	public void exportToEditorPackage(File exportDir, List<QuestionItemShort> items) {
+	public void exportToEditorPackage(File exportDir, List<QuestionItemShort> items, Locale locale) {
 		List<Long> itemKeys = toKeys(items);
 		List<QuestionItemFull> fullItems = questionItemDao.loadByIds(itemKeys);
 
-		QTI21ExportProcessor processor = new QTI21ExportProcessor(qtiService, qpoolFileStorage);
+		QTI21ExportProcessor processor = new QTI21ExportProcessor(qtiService, qpoolFileStorage, locale);
 		processor.assembleTest(fullItems, exportDir);
 	}
 	
@@ -308,9 +308,9 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	 * 
 	 * @param qtiEditorPackage
 	 */
-	public boolean convertFromEditorPackage(QTIEditorPackage qtiEditorPackage, File unzippedDirRoot) {
+	public boolean convertFromEditorPackage(QTIEditorPackage qtiEditorPackage, File unzippedDirRoot, Locale locale) {
 		try {
-			QTI12To21Converter converter = new QTI12To21Converter(unzippedDirRoot);
+			QTI12To21Converter converter = new QTI12To21Converter(unzippedDirRoot, locale);
 			converter.convert(qtiEditorPackage);
 			return true;
 		} catch (URISyntaxException e) {

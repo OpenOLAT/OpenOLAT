@@ -182,7 +182,6 @@ public class ItemFileResourceValidator {
 
 		@Override
 		public void error(SAXParseException exception) throws SAXException {
-			log.warn("Parsing error importing question item in pool: ", exception);
 			error++;
 		}
 

@@ -66,6 +66,7 @@ import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.ims.qti.editor.QTIEditorPackage;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
@@ -115,6 +116,8 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	private RepositoryService repositoryService;
 	@Autowired
 	private QTI21QPoolServiceProvider qpoolServiceProvider;
+	@Autowired
+	private AssessmentTestSessionDAO assessmentTestSessionDao;
 
 	@Override
 	public String getSupportedType() {
@@ -145,10 +148,10 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 		}
 		if(createObject instanceof QItemList) {
 			QItemList itemToImport = (QItemList)createObject;
-			qpoolServiceProvider.exportToEditorPackage(repositoryDir, itemToImport.getItems());
+			qpoolServiceProvider.exportToEditorPackage(repositoryDir, itemToImport.getItems(), locale);
 		} else if(createObject instanceof QTIEditorPackage) {
 			QTIEditorPackage testToConvert = (QTIEditorPackage)createObject;
-			qpoolServiceProvider.convertFromEditorPackage(testToConvert, repositoryDir);
+			qpoolServiceProvider.convertFromEditorPackage(testToConvert, repositoryDir, locale);
 		} else {
 			createMinimalAssessmentTest(displayname, repositoryDir);
 		}
@@ -358,11 +361,14 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 
 	@Override
 	public boolean readyToDelete(RepositoryEntry entry, Identity identity, Roles roles, Locale locale, ErrorList errors) {
-		boolean ready = super.readyToDelete(entry, identity, roles, locale, errors);
-		if(ready) {
-			//update / remove assessment test sessions
-		}
-		return ready;
+		return super.readyToDelete(entry, identity, roles, locale, errors);
+	}
+
+	@Override
+	public boolean cleanupOnDelete(RepositoryEntry entry, OLATResourceable res) {
+		boolean clean = super.cleanupOnDelete(entry, res);
+		assessmentTestSessionDao.deleteUserTestSessions(entry);
+		return clean;
 	}
 
 	@Override

@@ -223,12 +223,12 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 	
 	@Override
-	public MediaResource export(List<QuestionItemShort> items, ExportFormatOptions format) {
+	public MediaResource export(List<QuestionItemShort> items, ExportFormatOptions format, Locale locale) {
 		MediaResource mr = null;
 		if(DefaultExportFormat.ZIP_EXPORT_FORMAT.equals(format)) {
 			List<Long> keys = toKeys(items);
 			List<QuestionItemFull> fullItems = questionItemDao.loadByIds(keys);
-			mr = new ExportQItemsZipResource("UTF-8", fullItems);
+			mr = new ExportQItemsZipResource("UTF-8", locale, fullItems);
 			//make a zip with all items
 		} else {
 			QPoolSPI selectedSp = null;
@@ -241,7 +241,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			}
 			
 			if(selectedSp != null) {
-				mr = selectedSp.exportTest(items, format);
+				mr = selectedSp.exportTest(items, format, locale);
 			}
 		}
 		return mr;
@@ -257,7 +257,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public void exportItem(QuestionItemShort item, ZipOutputStream zout, Set<String> names) {
+	public void exportItem(QuestionItemShort item, ZipOutputStream zout, Locale locale, Set<String> names) {
 		QPoolSPI provider = qpoolModule.getQuestionPoolProvider(item.getFormat());
 		if(provider == null) {
 			log.error("Not found provider for this format: " + item.getFormat());
@@ -268,7 +268,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			} else {
 				fullItem = questionItemDao.loadById(item.getKey());
 			}
-			provider.exportItem(fullItem, zout, names);
+			provider.exportItem(fullItem, zout, locale, names);
 		}
 	}
 

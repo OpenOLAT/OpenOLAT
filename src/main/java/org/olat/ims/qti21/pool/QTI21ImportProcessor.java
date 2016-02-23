@@ -23,7 +23,6 @@ import java.io.File;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti.qpool.QTIMetadataConverter;
@@ -64,10 +63,9 @@ public class QTI21ImportProcessor {
 	private final TaxonomyLevelDAO taxonomyLevelDao;
 	private final QEducationalContextDAO qEduContextDao;
 	
-	public QTI21ImportProcessor(Identity owner, Locale defaultLocale, String filename, File file,
+	public QTI21ImportProcessor(Identity owner, Locale defaultLocale,
 			QuestionItemDAO questionItemDao, QItemTypeDAO qItemTypeDao, QEducationalContextDAO qEduContextDao,
-			TaxonomyLevelDAO taxonomyLevelDao, QLicenseDAO qLicenseDao, QPoolFileStorage qpoolFileStorage,
-			DB dbInstance) {
+			TaxonomyLevelDAO taxonomyLevelDao, QLicenseDAO qLicenseDao, QPoolFileStorage qpoolFileStorage) {
 		this.owner = owner;
 		this.defaultLocale = defaultLocale;
 		this.qLicenseDao = qLicenseDao;
@@ -78,7 +76,14 @@ public class QTI21ImportProcessor {
 		this.taxonomyLevelDao = taxonomyLevelDao;
 	}
 
-	public List<QuestionItem> process() {
+	public List<QuestionItem> process(File file) {
+		
+		//export zip file
+		
+		//metadata copy in question
+		
+		
+		
 		return null;
 	}
 	

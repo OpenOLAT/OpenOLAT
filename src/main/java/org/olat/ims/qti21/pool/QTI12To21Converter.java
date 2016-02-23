@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
@@ -51,6 +52,7 @@ import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
+import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.model.xml.ModalFeedbackBuilder;
 import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
@@ -87,13 +89,15 @@ public class QTI12To21Converter {
 	
 	private static final OLog log = Tracing.createLoggerFor(QTI12To21Converter.class);
 	
+	private final Locale locale;
 	private final File unzippedDirRoot;
 	private final QtiSerializer qtiSerializer = new QtiSerializer(null);
 	private final AssessmentHtmlBuilder htmlBuilder = new AssessmentHtmlBuilder(qtiSerializer);
 	
 	private final ManifestBuilder manifest;
 	
-	public QTI12To21Converter(File unzippedDirRoot) {
+	public QTI12To21Converter(File unzippedDirRoot, Locale locale) {
+		this.locale = locale;
 		this.unzippedDirRoot = unzippedDirRoot;
 		manifest = ManifestBuilder.createAssessmentTestBuilder();
 	}
@@ -210,9 +214,19 @@ public class QTI12To21Converter {
 				itemRef.setHref(new URI(itemFile.getName()));
 				assessmentSection.getSectionParts().add(itemRef);
 				persistAssessmentObject(itemFile, assessmentItem);
-				manifest.appendAssessmentItem(itemFile.getName());
+				appendResourceAndMetadata(item, itemBuilder, itemFile);
 			}
 		}
+	}
+	
+	private void appendResourceAndMetadata(Item item, AssessmentItemBuilder itemBuilder, File itemFile) {
+		manifest.appendAssessmentItem(itemFile.getName());
+		ManifestMetadataBuilder metadata = manifest.getResourceBuilderByHref(itemFile.getName());
+		metadata.setTechnicalFormat(ManifestBuilder.ASSESSMENTITEM_MIMETYPE);
+		metadata.setQtiMetadata(itemBuilder.getInteractionNames());
+		metadata.setOpenOLATMetadata(itemBuilder.getQuestionType().getPrefix());
+		metadata.setTitle(item.getTitle(), locale.getLanguage());
+		metadata.setDescription(item.getObjectives(), locale.getLanguage());
 	}
 	
 	public boolean persistAssessmentObject(File resourceFile, AssessmentObject assessmentObject) {

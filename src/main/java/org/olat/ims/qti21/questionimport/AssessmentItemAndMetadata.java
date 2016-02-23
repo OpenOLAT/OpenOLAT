@@ -20,9 +20,14 @@
 package org.olat.ims.qti21.questionimport;
 
 import java.math.BigDecimal;
+import java.util.Locale;
 
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.ManifestBuilder;
+import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 
 /**
  * 
@@ -33,8 +38,9 @@ import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 public class AssessmentItemAndMetadata {
 	
 	private final AssessmentItemBuilder item;
+	private final QTI21QuestionType questionType;
 	
-	private QTI21QuestionType questionType;
+	private String description;
 	private String language;
 	private String taxonomyPath;
 	private String keywords;
@@ -53,12 +59,21 @@ public class AssessmentItemAndMetadata {
 	
 	public AssessmentItemAndMetadata(AssessmentItemBuilder item) {
 		this.item = item;
+		questionType = item.getQuestionType();
 	}
 
 	public AssessmentItemBuilder getItemBuilder() {
 		return item;
 	}
 	
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
 	public BigDecimal getDifficulty() {
 		return difficulty;
 	}
@@ -181,5 +196,19 @@ public class AssessmentItemAndMetadata {
 
 	public void setHasError(boolean hasError) {
 		this.hasError = hasError;
+	}
+	
+	public void transfer(ManifestMetadataBuilder metadata, Locale locale) {
+		if(questionType != null) {
+			metadata.setOpenOLATMetadata(questionType.getPrefix());
+		}
+		metadata.setTechnicalFormat(ManifestBuilder.ASSESSMENTITEM_MIMETYPE);
+		if(StringHelper.containsNonWhitespace(item.getTitle())) {
+			metadata.setTitle(item.getTitle(), locale.getLanguage());
+		}
+		if(StringHelper.containsNonWhitespace(description)) {
+			String cleanedDescription = FilterFactory.getHtmlTagsFilter().filter(description);
+			metadata.setDescription(cleanedDescription, locale.getLanguage());
+		}
 	}
 }

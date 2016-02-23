@@ -97,7 +97,7 @@ public class CSVToAssessmentItemConverter {
 			case "titel":
 			case "title": processTitle(parts); break;
 			case "beschreibung":
-			case "description": break;
+			case "description": processDescription(parts); break;
 			case "frage":
 			case "question": processQuestion(parts); break;
 			case "punkte":
@@ -128,6 +128,15 @@ public class CSVToAssessmentItemConverter {
 			case "lizenz":
 			case "license": processLicense(parts); break;
 			default: processChoice(parts);
+		}
+	}
+	
+	private void processDescription(String[] parts) {
+		if(currentItem == null || parts.length < 2) return;
+		
+		String description = parts[1];
+		if(StringHelper.containsNonWhitespace(description)) {
+			currentItem.setDescription(description);
 		}
 	}
 

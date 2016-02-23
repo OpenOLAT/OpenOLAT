@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.zip.ZipOutputStream;
 
@@ -48,10 +49,12 @@ public class ExportQItemsZipResource implements MediaResource {
 	private static final OLog log = Tracing.createLoggerFor(ExportQItemsZipResource.class);
 	
 	private String encoding;
+	private final Locale locale;
 	private final List<QuestionItemFull> items;
 	
-	public ExportQItemsZipResource(String encoding, List<QuestionItemFull> items) {
+	public ExportQItemsZipResource(String encoding, Locale locale, List<QuestionItemFull> items) {
 		this.encoding = encoding;
+		this.locale = locale;
 		this.items = items;
 	}
 	
@@ -101,7 +104,7 @@ public class ExportQItemsZipResource implements MediaResource {
 			Set<String> names = new HashSet<String>();
 			QPoolService qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 			for(QuestionItemFull item:items) {
-				qpoolService.exportItem(item, zout, names);
+				qpoolService.exportItem(item, zout, locale, names);
 			}
 		} catch (IOException e) {
 			log.error("", e);

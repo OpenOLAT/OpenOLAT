@@ -34,6 +34,8 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.QTI21QuestionTypeDetector;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.ManifestBuilder;
+import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
@@ -67,10 +69,12 @@ public class AssessmentItemEditorController extends BasicController {
 	private final TabbedPane tabbedPane;
 	private final VelocityContainer mainVC;
 	
-	private Controller itemEditor, scoreEditor, feedbackEditor;
+	private MetadataEditorController metadataEditor;
 	private AssessmentItemDisplayController displayCtrl;
+	private Controller itemEditor, scoreEditor, feedbackEditor;
 	
 	private AssessmentItemBuilder itemBuilder;
+	private ManifestMetadataBuilder metadataBuilder;
 	
 	@Autowired
 	private QTI21Service qtiService;
@@ -99,9 +103,11 @@ public class AssessmentItemEditorController extends BasicController {
 	}
 	
 	public AssessmentItemEditorController(UserRequest ureq, WindowControl wControl, RepositoryEntry testEntry,
-			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef, File unzippedDirectory) {
+			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef, ManifestMetadataBuilder metadataBuilder,
+			File unzippedDirectory) {
 		super(ureq, wControl);
 		this.itemRef = itemRef;
+		this.metadataBuilder = metadataBuilder;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		
 		mainVC = createVelocityContainer("assessment_item_editor");
@@ -130,10 +136,8 @@ public class AssessmentItemEditorController extends BasicController {
 	}
 	
 	private void initItemEditor(UserRequest ureq) {
-		
-		
-		
 		AssessmentItem item = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
+		
 		QTI21QuestionType type = QTI21QuestionTypeDetector.getType(item);
 		switch(type) {
 			case sc: itemBuilder = initSingleChoiceEditors(ureq, item); break;
@@ -142,7 +146,12 @@ public class AssessmentItemEditorController extends BasicController {
 			case essay: itemBuilder = initEssayEditors(ureq, item); break;
 			default: initItemCreatedByUnkownEditor(ureq); break;
 		}
-
+		
+		if(metadataBuilder != null) {
+			metadataEditor = new MetadataEditorController(ureq, getWindowControl(), metadataBuilder);
+			listenTo(metadataEditor);
+			tabbedPane.addTab(translate("form.metadata"), metadataEditor.getInitialComponent());
+		}
 	}
 	
 	private void initItemCreatedByUnkownEditor(UserRequest ureq) {
@@ -223,19 +232,40 @@ public class AssessmentItemEditorController extends BasicController {
 				AssessmentItemEvent aie = (AssessmentItemEvent)event;
 				if(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED.equals(aie.getCommand())) {
 					doBuildAndSaveAssessmentItem();
+					doBuildAndCommitMetadata();
 					fireEvent(ureq, new AssessmentItemEvent(aie.getCommand(), aie.getAssessmentItem(), itemRef, aie.getQuestionType()));
 				}
+			}
+		} else if(metadataEditor == source) {
+			if(event == Event.CHANGED_EVENT) {
+				doBuildAndCommitMetadata();
+				AssessmentItem item = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
+				fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_METADATA_CHANGED, item, itemRef, null));
 			}
 		}
 		super.event(ureq, source, event);
 	}
 
 	private void doBuildAndSaveAssessmentItem() {
+		//update assessment item file
 		if(itemBuilder != null) {
 			itemBuilder.build();
 		}
 		URI itemUri = resolvedAssessmentItem.getItemLookup().getSystemId();
 		File itemFile = new File(itemUri);
 		qtiService.updateAssesmentObject(itemFile, resolvedAssessmentItem);
+	}
+
+	private void doBuildAndCommitMetadata() {
+		if(metadataBuilder == null) return;
+		
+		//update manifest
+		metadataBuilder.setTechnicalFormat(ManifestBuilder.ASSESSMENTITEM_MIMETYPE);		
+		metadataBuilder.setQtiMetadata(itemBuilder.getInteractionNames());
+		if(itemBuilder != null) {
+			metadataBuilder.setOpenOLATMetadata(itemBuilder.getQuestionType().getPrefix());
+		} else {
+			metadataBuilder.setOpenOLATMetadata(QTI21QuestionType.unkown.getPrefix());
+		}
 	}
 }

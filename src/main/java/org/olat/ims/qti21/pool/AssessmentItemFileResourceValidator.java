@@ -27,25 +27,21 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.io.IOUtils;
-import org.dom4j.Document;
-import org.dom4j.DocumentType;
-import org.dom4j.io.SAXReader;
-import org.dom4j.io.SAXValidator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.io.ShieldInputStream;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.ims.resources.IMSEntityResolver;
 import org.xml.sax.Attributes;
 import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
+
+import uk.ac.ed.ph.jqtiplus.xmlutils.XmlFactories;
 
 /**
  * 
@@ -90,7 +86,7 @@ public class AssessmentItemFileResourceValidator {
 			try {
 				ZipEntry oEntr = oZip.getNextEntry();
 				while (oEntr != null) {
-					if (!oEntr.isDirectory()) {
+					if (!oEntr.isDirectory() && !"imsmanifest.xml".equals(oEntr.getName())) {
 						if(validateXml(new ShieldInputStream(oZip))) {
 							valid = true;
 						}
@@ -109,53 +105,19 @@ public class AssessmentItemFileResourceValidator {
 		
 		return valid;
 	}
-	
-	private boolean validateXml(InputStream in) {
-		boolean valid = false;
-		Document doc = readDocument(in);
-		if(doc != null) {
-			DocumentType docType = doc.getDocType();
-			if(docType == null) {
-				doc.addDocType("questestinterop", null, "ims_qtiasiv1p2p1.dtd");
-			}
-			valid = validateDocument(doc);
-		}
-		return valid;
-	}
-	
-	private Document readDocument(InputStream in) {
-		try {
-			SAXReader reader = new SAXReader();
-			reader.setEntityResolver(new IMSEntityResolver());
-			reader.setValidation(false);
-			return reader.read(in, "");
-		} catch (Exception e) {
-			return null;
-		}
-	}
-	
-	private boolean validateDocument(Document in) {
-		try {
-			SAXParserFactory factory = SAXParserFactory.newInstance();
-			factory.setValidating(true);
-			factory.setNamespaceAware(true);
-			
-			SimpleErrorHandler errorHandler = new SimpleErrorHandler();
-			ItemContentHandler contentHandler = new ItemContentHandler();
-			
-			SAXParser parser = factory.newSAXParser();
-			XMLReader reader = parser.getXMLReader();
-			reader.setEntityResolver(new IMSEntityResolver());
-			reader.setErrorHandler(errorHandler);
-			reader.setContentHandler(contentHandler);
 
-			SAXValidator validator = new SAXValidator(reader);
-			validator.validate(in);
-			
-			return errorHandler.isValid() && contentHandler.isItem();
-		} catch (ParserConfigurationException e) {
-			return false;
-		} catch (SAXException e) {
+	private boolean validateXml(InputStream in) {
+		try {
+			XMLReader reader = XmlFactories.newSAXParser().getXMLReader();
+
+			SimpleErrorHandler errorHandler = new SimpleErrorHandler();
+			reader.setErrorHandler(errorHandler);
+			AssessmentItemContentHandler contentHandler = new AssessmentItemContentHandler();
+			reader.setContentHandler(contentHandler);
+			reader.parse(new InputSource(in));
+
+			return errorHandler.isValid() && contentHandler.isAssessmentItem();
+		} catch (ParserConfigurationException | SAXException e) {
 			return false;
 		} catch (Exception e) {
 			return false;
@@ -176,7 +138,6 @@ public class AssessmentItemFileResourceValidator {
 
 		@Override
 		public void error(SAXParseException exception) throws SAXException {
-			log.warn("Parsing error importing question item in pool: ", exception);
 			error++;
 		}
 
@@ -186,32 +147,18 @@ public class AssessmentItemFileResourceValidator {
 		}
 	}
 	
-	private static class ItemContentHandler extends DefaultHandler {
-		private boolean interop;
-		private boolean item;
+	private static class AssessmentItemContentHandler extends DefaultHandler {
+		private boolean assessmentItem;
 		
-		public boolean isItem() {
-			return item;
+		public boolean isAssessmentItem() {
+			return assessmentItem;
 		}
 
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes)
 		throws SAXException {	
-			
-			if("questestinterop".equals(qName)) {
-				interop = true;
-			} else if("item".equals(localName) || "item".equals(qName)) {
-				if(interop) {
-					item = true;
-				}
-			}
-		}
-
-		@Override
-		public void endElement(String uri, String localName, String qName)
-		throws SAXException {
-			if("questestinterop".equals(qName)) {
-				interop = false;
+			if("assessmentItem".equals(qName)) {
+				assessmentItem = true;
 			}
 		}
 	}

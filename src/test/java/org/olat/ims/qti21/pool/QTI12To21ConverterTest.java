@@ -22,6 +22,7 @@ package org.olat.ims.qti21.pool;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.util.Locale;
 
 import org.dom4j.Document;
 import org.junit.Test;
@@ -47,7 +48,7 @@ public class QTI12To21ConverterTest {
 		QTIDocument doc = loadDocument("qti12_4questiontypes.xml");
 		File exportDir = new File("/HotCoffee/QTI/today/");
 		exportDir.mkdirs();
-		QTI12To21Converter converter = new QTI12To21Converter(exportDir);
+		QTI12To21Converter converter = new QTI12To21Converter(exportDir, Locale.ENGLISH);
 		
 		converter.convert(doc);
 		

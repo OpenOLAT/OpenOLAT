@@ -22,6 +22,7 @@ package org.olat.modules.qpool.manager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import java.util.zip.ZipOutputStream;
 
@@ -47,10 +48,12 @@ public class ExportQItemResource implements MediaResource {
 	private static final OLog log = Tracing.createLoggerFor(ExportQItemResource.class);
 	
 	private String encoding;
+	private final Locale locale;
 	private final QuestionItemShort item;
 	
-	public ExportQItemResource(String encoding, QuestionItemShort item) {
+	public ExportQItemResource(String encoding, Locale locale, QuestionItemShort item) {
 		this.encoding = encoding;
+		this.locale = locale;
 		this.item = item;
 	}
 	
@@ -99,7 +102,7 @@ public class ExportQItemResource implements MediaResource {
 			zout.setLevel(9);
 			Set<String> names = new HashSet<String>();
 			QPoolService qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
-			qpoolService.exportItem(item, zout, names);
+			qpoolService.exportItem(item, zout, locale, names);
 		} catch (IOException e) {
 			log.error("", e);
 		} finally {

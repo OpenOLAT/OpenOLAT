@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.pool;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.modules.qpool.QuestionItemShort;
@@ -35,14 +36,14 @@ public class QTI21ExportTestResource extends AbstractExportTestResource {
 	
 	private final QTI21QPoolServiceProvider qtiPoolServiceProvider;
 
-	public QTI21ExportTestResource(String encoding, List<QuestionItemShort> items,
+	public QTI21ExportTestResource(String encoding, Locale locale, List<QuestionItemShort> items,
 			QTI21QPoolServiceProvider qti21qPoolServiceProvider) {
-		super(encoding, items);
+		super(encoding, locale, items);
 		this.qtiPoolServiceProvider = qti21qPoolServiceProvider;
 	}
 
 	@Override
 	protected void exportTest(List<QuestionItemShort> items, ZipOutputStream zout) {
-		qtiPoolServiceProvider.assembleTest(items, zout);
+		qtiPoolServiceProvider.assembleTest(items, getLocale(), zout);
 	}
 }

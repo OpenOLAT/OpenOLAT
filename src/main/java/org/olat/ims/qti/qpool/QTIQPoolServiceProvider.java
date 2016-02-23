@@ -313,9 +313,9 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 	}
 
 	@Override
-	public MediaResource exportTest(List<QuestionItemShort> items, ExportFormatOptions format) {
+	public MediaResource exportTest(List<QuestionItemShort> items, ExportFormatOptions format, Locale locale) {
 		if(QTIConstants.QTI_12_FORMAT.equals(format.getFormat())) {
-			return new QTIExportTestResource("UTF-8", items, this);
+			return new QTIExportTestResource("UTF-8", locale, items, this);
 		}else if(DefaultExportFormat.DOCX_EXPORT_FORMAT.getFormat().equals(format.getFormat())) {
 			return new QTIPoolWordExport(items, I18nModule.getDefaultLocale(), "UTF-8", questionItemDao, qpoolFileStorage);
 		}
@@ -324,7 +324,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 	}
 
 	@Override
-	public void exportItem(QuestionItemFull item, ZipOutputStream zout, Set<String> names) {
+	public void exportItem(QuestionItemFull item, ZipOutputStream zout, Locale locale, Set<String> names) {
 		QTIExportProcessor processor = new QTIExportProcessor(qpoolFileStorage);
 		processor.process(item, zout, names);
 	}

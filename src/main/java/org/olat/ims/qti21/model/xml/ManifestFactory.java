@@ -17,34 +17,17 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti.qpool;
-
-import java.util.List;
-import java.util.Locale;
-import java.util.zip.ZipOutputStream;
-
-import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.manager.AbstractExportTestResource;
+package org.olat.ims.qti21.model.xml;
 
 /**
  * 
- * Initial date: 17.04.2013<br>
+ * Initial date: 23.02.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTIExportTestResource extends AbstractExportTestResource {
+public class ManifestFactory {
 	
-	private final QTIQPoolServiceProvider provider;
-
-	public QTIExportTestResource(String encoding, Locale locale, List<QuestionItemShort> items, QTIQPoolServiceProvider provider) {
-		super(encoding, locale, items);
-		this.provider = provider;
-	}
-
-	@Override
-	protected void exportTest(List<QuestionItemShort> items, ZipOutputStream zout) {
-		provider.assembleTest(items, zout);
-	}
+	
 	
 	
 

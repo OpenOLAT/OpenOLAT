@@ -143,12 +143,12 @@ public abstract class AbstractQPoolServiceProvider implements QPoolSPI {
 	}
 
 	@Override
-	public MediaResource exportTest(List<QuestionItemShort> items, ExportFormatOptions format) {
+	public MediaResource exportTest(List<QuestionItemShort> items, ExportFormatOptions format, Locale locale) {
 		return null;//Zip are made by qpool service
 	}
 
 	@Override
-	public void exportItem(QuestionItemFull item, ZipOutputStream zout, Set<String> names) {
+	public void exportItem(QuestionItemFull item, ZipOutputStream zout, Locale locale, Set<String> names) {
 		String directory = item.getDirectory();
 		VFSContainer itemDir = getFileStorage().getContainer(directory);
 		VFSItem file = itemDir.resolve(item.getRootFilename());

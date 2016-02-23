@@ -44,8 +44,6 @@ import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.imscp.xml.manifest.ResourcesType;
 import org.olat.imsmd.xml.manifest.LomType;
 import org.olat.imsmd.xml.manifest.TechnicalType;
-import org.olat.imsqti.xml.manifest.QTIMetadataType;
-import org.olat.oo.xml.manifest.OpenOLATMetadataType;
 
 /**
  * manifest
@@ -64,16 +62,16 @@ public class ManifestBuilder {
 	
 	private static final OLog log = Tracing.createLoggerFor(ManifestBuilder.class);
 	
-	public static final String SCHEMA_LOCATIONS = "http://www.imsglobal.org/xsd/imscp_v1p1 http://www.imsglobal.org/xsd/imscp_v1p2.xsd http://www.imsglobal.org/xsd/imsmd_v1p2 http://www.imsglobal.org/xsd/imsmd_v1p2p4.xsd http://www.imsglobal.org/xsd/imsqti_metadata_v2p1 http://www.imsglobal.org/xsd/qti/qtiv2p1/imsqti_metadata_v2p1.xsd";
-
+	protected static final org.olat.oo.xml.manifest.ObjectFactory ooObjectFactory = new org.olat.oo.xml.manifest.ObjectFactory();
+	protected static final org.olat.imscp.xml.manifest.ObjectFactory cpObjectFactory = new org.olat.imscp.xml.manifest.ObjectFactory();
+	protected static final org.olat.imsmd.xml.manifest.ObjectFactory mdObjectFactory = new org.olat.imsmd.xml.manifest.ObjectFactory();
+	protected static final org.olat.imsqti.xml.manifest.ObjectFactory qtiObjectFactory = new org.olat.imsqti.xml.manifest.ObjectFactory();
+	
 	public static final String ASSESSMENTTEST_MIMETYPE = "text/x-imsqti-test-xml";
 	public static final String ASSESSMENTITEM_MIMETYPE = "text/x-imsqti-item-xml";
 	
-	private static final org.olat.oo.xml.manifest.ObjectFactory ooObjectFactory = new org.olat.oo.xml.manifest.ObjectFactory();
-	private static final org.olat.imscp.xml.manifest.ObjectFactory cpObjectFactory = new org.olat.imscp.xml.manifest.ObjectFactory();
-	private static final org.olat.imsmd.xml.manifest.ObjectFactory mdObjectFactory = new org.olat.imsmd.xml.manifest.ObjectFactory();
-	private static final org.olat.imsqti.xml.manifest.ObjectFactory qtiObjectFactory = new org.olat.imsqti.xml.manifest.ObjectFactory();
-	
+	public static final String SCHEMA_LOCATIONS = "http://www.imsglobal.org/xsd/imscp_v1p1 http://www.imsglobal.org/xsd/imscp_v1p2.xsd http://www.imsglobal.org/xsd/imsmd_v1p2 http://www.imsglobal.org/xsd/imsmd_v1p2p4.xsd http://www.imsglobal.org/xsd/imsqti_metadata_v2p1 http://www.imsglobal.org/xsd/qti/qtiv2p1/imsqti_metadata_v2p1.xsd";
+
 	private static JAXBContext context;
 	static {
 		try {
@@ -177,96 +175,20 @@ public class ManifestBuilder {
 	public String appendAssessmentItem() {
 		String itemId = "id" + UUID.randomUUID().toString();
         String itemFileName = itemId + ".xml";
-		ResourceType itemResourceType = appendAssessmentItem(itemId, itemFileName);
-        appendFile(itemResourceType, itemFileName);
+		appendAssessmentItem(itemId, itemFileName);
 		return itemFileName;
 	}
 	
 	public String appendAssessmentItem(String itemFileName) {
 		String itemId = IdentifierGenerator.newAsString("item");
-		ResourceType itemResourceType = appendAssessmentItem(itemId, itemFileName);
-        appendFile(itemResourceType, itemFileName);
+		appendAssessmentItem(itemId, itemFileName);
         return itemFileName;
 	}
 	
-	
-	public void setOpenOLATMetadata(ResourceType resource, String questionType) {
-		OpenOLATMetadataType qtiMetadata = getOpenOLATMetadata(resource, true);
-		qtiMetadata.setQuestionType(questionType);
-	}
-	
-	/**
-	 * Return the openolat metadata if it exists or, if specified, create
-	 * one and append it to the metadata of the resource.
-	 * 
-	 * @param resource The resource with the metadata
-	 * @param create True create the qtiMetadata
-	 * @return
-	 */
-	public OpenOLATMetadataType getOpenOLATMetadata(ResourceType resource, boolean create) {
-		MetadataType metadata = getMetadataTypeByResource(resource, create);
-		if(metadata == null) return null;
-
-		List<Object> anyMetadataList = metadata.getAny();
-		OpenOLATMetadataType ooMetadata = null;
-		for(Object anyMetadata:anyMetadataList) {
-			if(anyMetadata instanceof JAXBElement<?>
-				&& ((JAXBElement<?>)anyMetadata).getValue() instanceof OpenOLATMetadataType) {
-				ooMetadata = (OpenOLATMetadataType)((JAXBElement<?>)anyMetadata).getValue();
-			}
-		}
-		
-		if(ooMetadata == null && create) {
-			ooMetadata = ooObjectFactory.createOpenOLATMetadataType();
-			metadata.getAny().add(ooObjectFactory.createOoMetadata(ooMetadata));
-		}
-		return ooMetadata;
-	}
-	
-	public void setQtiMetadata(ResourceType resource, List<String> interactions) {
-		QTIMetadataType qtiMetadata = getQtiMetadata(resource, true);
-		
-		qtiMetadata.getInteractionType().clear();
-		for(String interaction:interactions) {
-			qtiMetadata.getInteractionType().add(interaction);
-		}
-	}
-	
-	/**
-	 * Return the qti metadata if it exists or if specified, create
-	 * one and append it to the metadata of the resource.
-	 * 
-	 * @param resource The resource with the metadata
-	 * @param create True create the qtiMetadata
-	 * @return
-	 */
-	public QTIMetadataType getQtiMetadata(ResourceType resource, boolean create) {
-		MetadataType metadata = getMetadataTypeByResource(resource, create);
-		if(metadata == null) return null;
-
-		List<Object> anyMetadataList = metadata.getAny();
-		QTIMetadataType qtiMetadata = null;
-		for(Object anyMetadata:anyMetadataList) {
-			if(anyMetadata instanceof JAXBElement<?>
-				&& ((JAXBElement<?>)anyMetadata).getValue() instanceof QTIMetadataType) {
-				qtiMetadata = (QTIMetadataType)((JAXBElement<?>)anyMetadata).getValue();
-			}
-		}
-		
-		if(qtiMetadata == null && create) {
-			qtiMetadata = qtiObjectFactory.createQTIMetadataType();
-			metadata.getAny().add(qtiObjectFactory.createQtiMetadata(qtiMetadata));
-		}
-		return qtiMetadata;
-	}
-	
-	private MetadataType getMetadataTypeByResource(ResourceType resource, boolean create) {
-		MetadataType metadata = resource.getMetadata();
-		if(metadata == null && create) {
-			metadata = cpObjectFactory.createMetadataType();
-			resource.setMetadata(metadata);
-		}
-		return metadata;
+	public ManifestMetadataBuilder getResourceBuilderByIdentifier(String resourceId) {
+		ResourceType resourceType = getResourceTypeByIdentifier(resourceId);
+		MetadataType metadata = getMetadata(resourceType);
+		return metadata == null ? null : new ManifestMetadataBuilder(metadata);
 	}
 	
 	public ResourceType getResourceTypeByIdentifier(String resourceId) {
@@ -277,6 +199,22 @@ public class ManifestBuilder {
 			}
 		}
 		return null;
+	}
+	
+	public ManifestMetadataBuilder getResourceBuilderByHref(String href) {
+		ResourceType resourceType = getResourceTypeByHref(href);
+		MetadataType metadata = getMetadata(resourceType);
+		return metadata == null ? null : new ManifestMetadataBuilder(metadata);
+	}
+	
+	public MetadataType getMetadata(ResourceType resourceType) {
+		if(resourceType == null) return null;
+		MetadataType metadata = resourceType.getMetadata();
+		if(metadata == null) {
+			metadata = cpObjectFactory.createMetadataType();
+			resourceType.setMetadata(metadata);
+		}
+		return metadata;
 	}
 	
 	public ResourceType getResourceTypeByHref(String href) {
@@ -312,6 +250,21 @@ public class ManifestBuilder {
 		FileType itemFileType = cpObjectFactory.createFileType();
         itemFileType.setHref(href);
         resource.getFile().add(itemFileType);
+	}
+	
+	public ManifestMetadataBuilder getMetadataBuilder(ResourceType resource, boolean create) {
+		MetadataType metadata = getMetadataType(resource, create);
+		return metadata == null ? null : new ManifestMetadataBuilder(metadata);
+		
+	}
+	
+	public MetadataType getMetadataType(ResourceType resource, boolean create) {
+		MetadataType metadata = resource.getMetadata();
+		if(metadata == null && create) {
+			metadata = cpObjectFactory.createMetadataType();
+			resource.setMetadata(metadata);
+		}
+		return metadata;
 	}
 	
 	public void build() {

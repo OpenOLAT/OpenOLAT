@@ -88,7 +88,7 @@ public interface QPoolService {
 	public void removeAuthors(List<Identity> authors, List<QuestionItemShort> items);
 	
 	//import / export
-	public MediaResource export(List<QuestionItemShort> items, ExportFormatOptions format);
+	public MediaResource export(List<QuestionItemShort> items, ExportFormatOptions format, Locale locale);
 	
 	/**
 	 * 
@@ -96,7 +96,7 @@ public interface QPoolService {
 	 * @param zout
 	 * @param names Collection of the names used in the ZIP dd
 	 */
-	public void exportItem(QuestionItemShort item, ZipOutputStream zout, Set<String> names);
+	public void exportItem(QuestionItemShort item, ZipOutputStream zout, Locale locale, Set<String> names);
 	
 	public List<QuestionItem> importItems(Identity owner, Locale defaultLocale, String filename, File file);
 
