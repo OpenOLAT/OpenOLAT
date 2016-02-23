@@ -34,6 +34,8 @@ import org.olat.core.id.Identity;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public interface UserEfficiencyStatement {
+	
+	public Long getKey();
 
 	public Identity getIdentity();
 	

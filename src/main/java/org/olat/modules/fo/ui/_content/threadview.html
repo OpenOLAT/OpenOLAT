@@ -94,7 +94,7 @@
 					$r.translate("anonymous.poster")
 				#elseif($r.available("vc_${message.key}"))
 					$r.render("vc_${message.key}")
-				#else							
+				#else
 					$r.escapeHtml($message.creatorFirstname) $r.escapeHtml($message.creatorLastname)
 				#end
 			</div>

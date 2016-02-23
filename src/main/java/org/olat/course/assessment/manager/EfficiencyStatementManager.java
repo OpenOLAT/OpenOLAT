@@ -707,12 +707,21 @@ public class EfficiencyStatementManager implements UserDataDeletable {
 	 * Delete all efficiency-statements for certain identity.
 	 * @param identity  Delete data for this identity.
 	 */
+	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
-		List<EfficiencyStatement> efficiencyStatements = findEfficiencyStatements(identity);
-		for (Iterator<EfficiencyStatement> iter = efficiencyStatements.iterator(); iter.hasNext();) {
-			deleteEfficiencyStatement(identity, iter.next());
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("delete from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as statement ")
+			  .append(" where statement.identity.key=:identityKey");
+
+			int numOfDeletedStatements = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString())
+					.setParameter("identityKey", identity.getKey())
+					.executeUpdate();
+			
+			if(log.isDebug()) log.debug(numOfDeletedStatements + " efficiency statements deleted for identity=" + identity);
+		} catch (Exception e) {
+			log.error("deleteUserData(EfficiencyStatements): " + identity, e);
 		}
-		log.debug("All efficiency statements deleted for identity=" + identity);
 	}
-	
 }
