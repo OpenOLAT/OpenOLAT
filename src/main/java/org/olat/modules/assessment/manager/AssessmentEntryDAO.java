@@ -183,11 +183,14 @@ public class AssessmentEntryDAO {
 				.setParameter("groupKey", assessedGroup.getKey())
 				.setParameter("subIdent", subIdent)
 				.getResultList();
-
 	}
 	
-
-	
-	
-
+	public int deleteEntryForReferenceEntry(RepositoryEntry entry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from assessmententry data where data.referenceEntry.key=:referenceKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("referenceKey", entry.getKey())
+				.executeUpdate();
+	}
 }
