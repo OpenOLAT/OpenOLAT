@@ -1,12 +1,22 @@
 <div class="o_forum">
 	<div class="o_forum_message o_block_large_bottom">
 		<div class="o_forum_message_header clearfix">
-			#if(!$guestOnly && $r.available("portrait"))
-				$r.render("portrait")
-			#end			
+			#if(!$guestOnly)
+				#if($message.guest || ($message.pseudonym && !${message.pseudonym.isEmpty()}))
+				 	<div class="o_portrait"><div class="o_portrait_image"><img src="$r.staticLink("images/transparent.gif")" class="o_portrait_avatar o_portrait_anonymous" /></div></div>
+				#elseif($r.available("portrait"))
+					$r.render("portrait")
+				#end
+			#end		
 			<h4 class="o_forum_message_title">$r.escapeHtml($message.getTitle())</h4>
 			<div class="o_author">
-				$r.escapeHtml($identity.getUser().getProperty("firstName", $locale)) $r.escapeHtml($identity.getUser().getProperty("lastName", $locale))
+				#if($message.pseudonym && !${message.pseudonym.isEmpty()})
+					$r.escapeHtml($message.pseudonym)
+				#elseif($message.guest)
+					$r.translate("anonymous.poster")
+				#else
+					$r.escapeHtml($identity.getUser().getProperty("firstName", $locale)) $r.escapeHtml($identity.getUser().getProperty("lastName", $locale))
+				#end
 			</div>
 			<div class="o_date">$r.formatDateAndTime($message.getCreationDate())</div>
 		</div>
