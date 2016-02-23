@@ -761,6 +761,11 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
+	public boolean deleteLicense(QLicense license) {
+		return qpoolLicenseDao.delete(license);
+	}
+
+	@Override
 	public List<TaxonomyLevel> getTaxonomyLevels() {
 		return taxonomyLevelDao.loadAllLevels();
 	}

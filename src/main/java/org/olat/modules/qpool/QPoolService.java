@@ -202,5 +202,7 @@ public interface QPoolService {
 	
 	public QLicense updateLicense(QLicense license);
 	
+	public boolean deleteLicense(QLicense license);
+	
 	
 }
