@@ -27,10 +27,14 @@ package org.olat.search.service.document.file;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Writer;
 import java.util.Iterator;
 
 import org.apache.lucene.document.Document;
+import org.apache.poi.hwpf.HWPFOldDocument;
+import org.apache.poi.hwpf.OldWordFileFormatException;
+import org.apache.poi.hwpf.extractor.Word6Extractor;
 import org.apache.poi.hwpf.extractor.WordExtractor;
 import org.apache.poi.poifs.filesystem.DocumentEntry;
 import org.apache.poi.poifs.filesystem.Entry;
@@ -71,10 +75,8 @@ public class WordDocument extends FileDocument {
 	@Override
 	protected FileContent readContent(VFSLeaf leaf) throws IOException,
 			DocumentException {
-		BufferedInputStream bis = null;
 		LimitedContentWriter sb = new LimitedContentWriter((int)leaf.getSize(), FileDocumentFactory.getMaxFileSize());
-		try {
-			bis = new BufferedInputStream(leaf.getInputStream());
+		try(InputStream bis = new BufferedInputStream(leaf.getInputStream())) {
 			POIFSFileSystem filesystem = new POIFSFileSystem(bis);
 			Iterator<?> entries = filesystem.getRoot().getEntries();
 			while (entries.hasNext()) {
@@ -83,7 +85,7 @@ public class WordDocument extends FileDocument {
 				if (!(entry instanceof DocumentEntry)) {
 					// Skip directory entries
 				} else if ("WordDocument".equals(name)) {
-					collectWordDocument(filesystem, sb);
+					collectWordDocument(leaf, filesystem, sb);
 				}
 			}
 			return new FileContent(sb.toString());
@@ -91,18 +93,27 @@ public class WordDocument extends FileDocument {
 			log.warn("could not read in word document: " + leaf
 					+ " please check, that this is not an docx/rtf/html file!");
 			throw new DocumentException(e.getMessage());
-		} finally {
-			if (bis != null) {
-				bis.close();
-			}
 		}
 	}
 
-	private void collectWordDocument(POIFSFileSystem filesystem, Writer sb) throws IOException {
+	private void collectWordDocument(VFSLeaf leaf, POIFSFileSystem filesystem, Writer sb) throws IOException {
 		try(WordExtractor extractor = new WordExtractor(filesystem)) {
 			addTextIfAny(sb, extractor.getTextFromPieces());
+		} catch(OldWordFileFormatException ex) {
+			collectOldWordDocument(leaf, sb);
 		} catch(Exception e) {
-			log.error("", e);
+			log.error("Cannot read word document: " + leaf, e);
+		}
+	}
+	
+	private void collectOldWordDocument(VFSLeaf leaf, Writer sb) throws IOException {
+		try(InputStream bis = new BufferedInputStream(leaf.getInputStream())) {
+            POIFSFileSystem pfs = new POIFSFileSystem(bis);
+            HWPFOldDocument doc = new HWPFOldDocument(pfs);
+            Word6Extractor docExtractor = new Word6Extractor(doc);
+            addTextIfAny(sb, docExtractor.getText());
+		} catch(Exception e) {
+			log.error("Cannot read old word document: " + leaf, e);
 		}
 	}
 
