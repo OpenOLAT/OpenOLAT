@@ -135,8 +135,8 @@ public class QLicensesAdminController extends FormBasicController {
 			cleanUp();
 		} else if(source == confirmDeleteCtrl) {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
-				QLicense type = (QLicense)confirmDeleteCtrl.getUserObject();
-				doDelete(ureq, type);
+				QLicense license = (QLicense)confirmDeleteCtrl.getUserObject();
+				doDelete(license);
 			}
 		} else if(source == cmc) {
 			cleanUp();
@@ -163,9 +163,13 @@ public class QLicensesAdminController extends FormBasicController {
 		confirmDeleteCtrl.setUserObject(type);
 	}
 	
-	private void doDelete(UserRequest ureq, QLicense type) {
-		//qpoolService.deldeletePool(pool);
-		reloadModel();
+	private void doDelete(QLicense license) {
+		if(qpoolService.deleteLicense(license)) {
+			reloadModel();
+			showInfo("item.license.deleted");
+		} else {
+			showError("item.license.notdeleted");
+		}
 	}
 	
 	private void doEdit(UserRequest ureq, QLicense license) {

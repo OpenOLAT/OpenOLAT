@@ -171,7 +171,7 @@ public class FloatingResizableDialogController extends BasicController {
 	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (event.getCommand().equals("geometry")) {
+		if ("geometry".equals(event.getCommand())) {
 			String p = ureq.getParameter("p");	
 			if (p != null) {
 				try {
@@ -201,7 +201,7 @@ public class FloatingResizableDialogController extends BasicController {
 				wrapper.setDirty(dirt);
 			}		
 		} else if (source == wrapper) {
-			if (event.getCommand().equals("close")) {
+			if ("close".equals(event.getCommand())) {
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		}

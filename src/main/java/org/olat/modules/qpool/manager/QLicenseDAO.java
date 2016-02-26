@@ -121,11 +121,26 @@ public class QLicenseDAO implements ApplicationListener<ContextRefreshedEvent> {
 	
 	public boolean delete(QLicense license) {
 		QLicense reloadLicense = loadById(license.getKey());
-		if(reloadLicense.isDeletable()) {
-			dbInstance.getCurrentEntityManager().remove(reloadLicense);
-			return true;
+		if(reloadLicense != null && reloadLicense.isDeletable()) {
+			int used = countItemUsing(reloadLicense);
+			if(used == 0) {
+				dbInstance.getCurrentEntityManager().remove(reloadLicense);
+				return true;
+			}
+			return false;
 		}
 		return false;
+	}
+	
+	public int countItemUsing(QLicense license) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(item) from questionitem item where item.license.key=:licenseKey");
+		List<Number> count = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Number.class)
+			.setParameter("licenseKey", license.getKey())
+			.getResultList();
+		
+		return count == null || count.isEmpty() || count.get(0) == null ? 0 : count.get(0).intValue();
 	}
 	
 	public List<QLicense> getLicenses() {

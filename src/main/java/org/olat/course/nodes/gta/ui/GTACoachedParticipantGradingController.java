@@ -127,6 +127,8 @@ public class GTACoachedParticipantGradingController extends BasicController {
 	}
 
 	private void doOpenAssessmentForm(UserRequest ureq) {
+		if(assessmentForm != null) return;//already open
+		
 		ICourse course = CourseFactory.loadCourse(courseOres);
 		UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
 		AssessedIdentityWrapper assessedIdentityWrapper = AssessmentHelper.wrapIdentity(uce, null, gtaNode);

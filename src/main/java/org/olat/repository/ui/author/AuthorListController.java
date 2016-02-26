@@ -703,25 +703,33 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private void doConfirmCopy(UserRequest ureq, List<AuthoringEntryRow> rows) {
+		boolean deleted = false;
 		Roles roles = ureq.getUserSession().getRoles();
 		List<AuthoringEntryRow> copyableRows = new ArrayList<>(rows.size());
 		for(AuthoringEntryRow row:rows) {
 			RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
-			boolean isInstitutionalResourceManager = repositoryManager.isInstitutionalRessourceManagerFor(getIdentity(), roles, row);
-			boolean isOwner = roles.isOLATAdmin()
-					|| repositoryService.hasRole(ureq.getIdentity(), row, GroupRoles.owner.name())
-					|| isInstitutionalResourceManager;
-
-			boolean isAuthor = roles.isOLATAdmin() || roles.isAuthor() || isInstitutionalResourceManager;
-			
-			boolean copyManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.copy);
-			boolean canCopy = (isAuthor || isOwner) && (entry.getCanCopy() || isOwner) && !copyManaged;
-			if(canCopy) {
-				copyableRows.add(row);
+			if(entry == null) {
+				deleted = true;
+			} else {
+				boolean isInstitutionalResourceManager = repositoryManager.isInstitutionalRessourceManagerFor(getIdentity(), roles, row);
+				boolean isOwner = roles.isOLATAdmin()
+						|| repositoryService.hasRole(ureq.getIdentity(), row, GroupRoles.owner.name())
+						|| isInstitutionalResourceManager;
+	
+				boolean isAuthor = roles.isOLATAdmin() || roles.isAuthor() || isInstitutionalResourceManager;
+				
+				boolean copyManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.copy);
+				boolean canCopy = (isAuthor || isOwner) && (entry.getCanCopy() || isOwner) && !copyManaged;
+				if(canCopy) {
+					copyableRows.add(row);
+				}
 			}
 		}
 		
-		if(copyableRows.isEmpty()) {
+		if(deleted) {
+			showWarning("repositoryentry.not.existing");
+			tableEl.reloadData();
+		} else if(copyableRows.isEmpty()) {
 			showWarning("bulk.update.nothing.selected");
 		} else {
 			StringBuilder sb = new StringBuilder();
