@@ -33,9 +33,9 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -117,17 +117,28 @@ public class AssessmentHtmlBuilder {
 			} else {
 				htmlFragment = "<p>" + htmlFragment + "</p>";
 			}
-			//wrap around <html> to have a root element
+			//wrap around <html> to have a root element for neko
 			Document document = filter("<html>" + htmlFragment + "</html>");
 			Element docElement = document.getDocumentElement();
-			Node pEl = docElement.getFirstChild();
-			NamedNodeMap attrs = pEl.getAttributes();
-			for(int i=0; i<attrs.getLength(); i++) {
-				Node attr = attrs.item(i);
-				System.out.println(attr);
-			}
-			
+			cleanUpNamespaces(docElement);
 			parent.getNodeGroups().load(docElement, new HTMLLoadingContext());
+		}
+	}
+	
+	private void cleanUpNamespaces(Element element) {
+		Attr xsiattr = element.getAttributeNode("xmlns:xsi");
+		if(xsiattr != null && "http://www.w3.org/2001/XMLSchema-instance".equals(xsiattr.getValue())) {
+			element.removeAttribute("xmlns:xsi");
+		}
+		Attr attr = element.getAttributeNode("xmlns");
+		if(attr != null && "http://www.imsglobal.org/xsd/imsqti_v2p1".equals(attr.getValue())) {
+			element.removeAttribute("xmlns");
+		}
+		
+		for(Node child=element.getFirstChild(); child != null; child = child.getNextSibling()) {
+			if(child instanceof Element) {
+				cleanUpNamespaces((Element)child);
+			}
 		}
 	}
 
@@ -136,6 +147,7 @@ public class AssessmentHtmlBuilder {
 			SAXParser parser = new SAXParser();
 			parser.setProperty("http://cyberneko.org/html/properties/names/elems", "lower");
 			parser.setFeature("http://cyberneko.org/html/features/balance-tags/document-fragment", true);
+			parser.setProperty("http://cyberneko.org/html/properties/default-encoding", "UTF-8");
 			
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder = factory.newDocumentBuilder();
@@ -156,6 +168,16 @@ public class AssessmentHtmlBuilder {
 		}
 	}
 	
+	/**
+	 * Convert:<br>
+	 * <ul>
+	 * 		<li>textentryinteraction -> camel cased textEntryInteraction</li>
+	 * </ul>
+	 * 
+	 * Initial date: 26.02.2016<br>
+	 * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+	 *
+	 */
 	private static class HtmlToDomBuilderHandler extends SimpleDomBuilderHandler {
 		
 		public HtmlToDomBuilderHandler(Document document) {
@@ -170,9 +192,27 @@ public class AssessmentHtmlBuilder {
 			}
 			super.startElement(uri, localName, qName, attributes);
 		}
+
+		@Override
+		public void endElement(String uri, String localName, String qName) {
+			if("textentryinteraction".equals(localName)) {
+				localName = qName = "textEntryInteraction";
+			}
+			super.endElement(uri, localName, qName);
+		}
 	}
 	
-
+	/**
+	 * Convert:<br>
+	 * <ul>
+	 * 		<li>responseidentifier -> camel cased responseIdentifier</li>
+	 * 		<li>and other attributes of textEntryInteraction</li>
+	 * </ul>
+	 * 
+	 * Initial date: 26.02.2016<br>
+	 * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+	 *
+	 */
 	private static class AttributesDelegate implements Attributes {
 		
 		private final Attributes attributes;
@@ -181,10 +221,12 @@ public class AssessmentHtmlBuilder {
 			this.attributes = attributes;
 		}
 
+		@Override
 		public int getLength() {
 			return attributes.getLength();
 		}
 
+		@Override
 		public String getURI(int index) {
 			return attributes.getURI(index);
 		}
@@ -192,48 +234,64 @@ public class AssessmentHtmlBuilder {
 		@Override
 		public String getLocalName(int index) {
 			String localName = attributes.getLocalName(index);
-			if("responseidentifier".equals(localName)) {
-				localName = "responseIdentifier";
-			}
-			return localName;
+			return translateAttributeName(localName);
 		}
 
+		@Override
 		public String getQName(int index) {
 			String qName = attributes.getQName(index);
-			if("responseidentifier".equals(qName)) {
-				qName = "responseIdentifier";
+			return translateAttributeName(qName);
+		}
+		
+		private final String translateAttributeName(String attrName) {
+			if(attrName != null) {
+				switch(attrName) {
+					case "responseidentifier": return "responseIdentifier";
+					case "placeholdertext": return "placeholderText";
+					case "expectedlength": return "expectedLength";
+					case "patternmask": return "patternMask";
+					default: return attrName;
+				}
 			}
-			return qName;
+			return attrName;
 		}
 
+		@Override
 		public String getType(int index) {
 			return attributes.getType(index);
 		}
 
+		@Override
 		public String getValue(int index) {
 			return attributes.getValue(index);
 		}
 
+		@Override
 		public int getIndex(String uri, String localName) {
 			return attributes.getIndex(uri, localName);
 		}
 
+		@Override
 		public int getIndex(String qName) {
 			return attributes.getIndex(qName.toLowerCase());
 		}
 
+		@Override
 		public String getType(String uri, String localName) {
 			return attributes.getType(uri, localName);
 		}
 
+		@Override
 		public String getType(String qName) {
 			return attributes.getType(qName);
 		}
 
+		@Override
 		public String getValue(String uri, String localName) {
 			return attributes.getValue(uri, localName);
 		}
 
+		@Override
 		public String getValue(String qName) {
 			return attributes.getValue(qName);
 		}

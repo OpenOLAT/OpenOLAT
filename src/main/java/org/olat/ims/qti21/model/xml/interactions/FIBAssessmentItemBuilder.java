@@ -194,6 +194,8 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 									alternative.setScore(mapEntry.getMappedValue());
 									alternatives.add(alternative);
 									mappedScore += mapEntry.getMappedValue();
+								} else if(alt.equals(solution)) {
+									textEntry.setScore(mapEntry.getMappedValue());
 								}
 							}
 							

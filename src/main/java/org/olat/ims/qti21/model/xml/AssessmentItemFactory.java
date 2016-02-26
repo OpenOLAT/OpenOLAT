@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.helpers.Settings;
+import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
@@ -180,7 +181,7 @@ public class AssessmentItemFactory {
 	}
 	
 	public static ResponseDeclaration createTextEntryResponseDeclaration(AssessmentItem assessmentItem,
-			Identifier declarationId, String response, Double maxScore, boolean caseSensitive,
+			Identifier declarationId, String response, Double score, boolean caseSensitive,
 			List<TextEntryAlternative> alternatives) {
 		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
 		responseDeclaration.setIdentifier(declarationId);
@@ -200,7 +201,7 @@ public class AssessmentItemFactory {
 		{//map correct response
 			MapEntry mapEntry = new MapEntry(mapping);
 			mapEntry.setMapKey(new StringValue(response));
-			mapEntry.setMappedValue(maxScore);
+			mapEntry.setMappedValue(score);
 			mapEntry.setCaseSensitive(new Boolean(caseSensitive));
 			mapping.getMapEntries().add(mapEntry);
 		}
@@ -208,11 +209,13 @@ public class AssessmentItemFactory {
 		//map alternatives
 		if(alternatives != null && alternatives.size() > 0) {
 			for(TextEntryAlternative alternative:alternatives) {
-				MapEntry mapEntry = new MapEntry(mapping);
-				mapEntry.setMapKey(new StringValue(alternative.getAlternative()));
-				mapEntry.setMappedValue(maxScore);
-				mapEntry.setCaseSensitive(new Boolean(caseSensitive));
-				mapping.getMapEntries().add(mapEntry);
+				if(StringHelper.containsNonWhitespace(alternative.getAlternative())) {
+					MapEntry mapEntry = new MapEntry(mapping);
+					mapEntry.setMapKey(new StringValue(alternative.getAlternative()));
+					mapEntry.setMappedValue(score);
+					mapEntry.setCaseSensitive(new Boolean(caseSensitive));
+					mapping.getMapEntries().add(mapEntry);
+				}
 			}
 		}
 		
