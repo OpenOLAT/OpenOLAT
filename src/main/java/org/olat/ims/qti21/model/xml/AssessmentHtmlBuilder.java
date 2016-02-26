@@ -34,7 +34,10 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -116,7 +119,15 @@ public class AssessmentHtmlBuilder {
 			}
 			//wrap around <html> to have a root element
 			Document document = filter("<html>" + htmlFragment + "</html>");
-			parent.getNodeGroups().load(document.getDocumentElement(), new HTMLLoadingContext());
+			Element docElement = document.getDocumentElement();
+			Node pEl = docElement.getFirstChild();
+			NamedNodeMap attrs = pEl.getAttributes();
+			for(int i=0; i<attrs.getLength(); i++) {
+				Node attr = attrs.item(i);
+				System.out.println(attr);
+			}
+			
+			parent.getNodeGroups().load(docElement, new HTMLLoadingContext());
 		}
 	}
 
@@ -129,7 +140,7 @@ public class AssessmentHtmlBuilder {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document document = builder.newDocument();
-			SimpleDomBuilderHandler contentHandler = new SimpleDomBuilderHandler(document);
+			HtmlToDomBuilderHandler contentHandler = new HtmlToDomBuilderHandler(document);
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(new ByteArrayInputStream(content.getBytes())));
 			return document;
@@ -142,6 +153,89 @@ public class AssessmentHtmlBuilder {
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
+		}
+	}
+	
+	private static class HtmlToDomBuilderHandler extends SimpleDomBuilderHandler {
+		
+		public HtmlToDomBuilderHandler(Document document) {
+			super(document);
+		}
+
+		@Override
+		public void startElement(String uri, String localName, String qName, Attributes attributes) {
+			if("textentryinteraction".equals(localName)) {
+				localName = qName = "textEntryInteraction";
+				attributes = new AttributesDelegate(attributes);
+			}
+			super.startElement(uri, localName, qName, attributes);
+		}
+	}
+	
+
+	private static class AttributesDelegate implements Attributes {
+		
+		private final Attributes attributes;
+		
+		public AttributesDelegate(Attributes attributes) {
+			this.attributes = attributes;
+		}
+
+		public int getLength() {
+			return attributes.getLength();
+		}
+
+		public String getURI(int index) {
+			return attributes.getURI(index);
+		}
+
+		@Override
+		public String getLocalName(int index) {
+			String localName = attributes.getLocalName(index);
+			if("responseidentifier".equals(localName)) {
+				localName = "responseIdentifier";
+			}
+			return localName;
+		}
+
+		public String getQName(int index) {
+			String qName = attributes.getQName(index);
+			if("responseidentifier".equals(qName)) {
+				qName = "responseIdentifier";
+			}
+			return qName;
+		}
+
+		public String getType(int index) {
+			return attributes.getType(index);
+		}
+
+		public String getValue(int index) {
+			return attributes.getValue(index);
+		}
+
+		public int getIndex(String uri, String localName) {
+			return attributes.getIndex(uri, localName);
+		}
+
+		public int getIndex(String qName) {
+			return attributes.getIndex(qName.toLowerCase());
+		}
+
+		public String getType(String uri, String localName) {
+			return attributes.getType(uri, localName);
+		}
+
+		public String getType(String qName) {
+			return attributes.getType(qName);
+		}
+
+		public String getValue(String uri, String localName) {
+			return attributes.getValue(uri, localName);
+		}
+
+		public String getValue(String qName) {
+			return attributes.getValue(qName);
 		}
 	}
 	

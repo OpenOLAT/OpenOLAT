@@ -48,6 +48,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseIf;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseProcessing;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseRule;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.SetOutcomeValue;
+import uk.ac.ed.ph.jqtiplus.node.outcome.declaration.OutcomeDeclaration;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.types.ComplexReferenceIdentifier;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
@@ -186,7 +187,7 @@ public class EssayAssessmentItemBuilder extends AssessmentItemBuilder {
 	}
 
 	@Override
-	protected void buildMainScoreRule(List<ResponseRule> responseRules) {
+	protected void buildMainScoreRule(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
 		ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
 		responseRules.add(0, rule);
 		buildMainEssayFeedbackRule(rule);

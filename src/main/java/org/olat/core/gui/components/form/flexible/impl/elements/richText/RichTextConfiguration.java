@@ -98,7 +98,8 @@ public class RichTextConfiguration implements Disposable {
 	private static final String TABFOCUS_SETTINGS_PREV_NEXT = ":prev,:next";
 	// Valid elements
 	private static final String EXTENDED_VALID_ELEMENTS = "extended_valid_elements";
-	private static final String EXTENDED_VALID_ELEMENTS_VALUE_FULL = "script[src|type|defer],form[*],input[*],a[*],p[*],#comment[*],img[*],iframe[*],map[*],area[*]";
+	private static final String EXTENDED_VALID_ELEMENTS_VALUE_FULL = "script[src|type|defer],form[*],input[*],a[*],p[*],#comment[*],img[*],iframe[*],map[*],area[*],textEntryInteraction[*]";
+	private static final String CUSTOM_ELEMENTS = "textEntryInteraction";
 	private static final String INVALID_ELEMENTS = "invalid_elements";
 	private static final String INVALID_ELEMENTS_FORM_MINIMALISTIC_VALUE_UNSAVE = "iframe,script,@[on*],object,embed";
 	private static final String INVALID_ELEMENTS_FORM_SIMPLE_VALUE_UNSAVE = "iframe,script,@[on*],object,embed";
@@ -649,6 +650,12 @@ public class RichTextConfiguration implements Disposable {
 	
 	public void enableCode() {
 		tinyConfig = tinyConfig.enableCode();
+	}
+	
+	public void enableQTITools() {
+		tinyConfig = tinyConfig.enableQTITools();
+		setQuotedConfigValue("custom_elements", "~textentryinteraction,~textEntryInteraction");
+		setQuotedConfigValue("extended_valid_elements", "textentryinteraction[*]");
 	}
 
 	/**

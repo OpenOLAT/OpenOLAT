@@ -61,6 +61,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseIf;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseProcessing;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseRule;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.SetOutcomeValue;
+import uk.ac.ed.ph.jqtiplus.node.outcome.declaration.OutcomeDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.shared.FieldValue;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.types.ComplexReferenceIdentifier;
@@ -246,7 +247,7 @@ public class KPrimAssessmentItemBuilder extends AssessmentItemBuilder {
 	}
 
 	@Override
-	protected void buildMainScoreRule(List<ResponseRule> responseRules) {
+	protected void buildMainScoreRule(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
 		ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
 		responseRules.add(0, rule);
 		buildMainKPrimScoreRule(rule);

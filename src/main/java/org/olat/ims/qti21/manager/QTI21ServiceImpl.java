@@ -49,7 +49,6 @@ import org.olat.core.id.Persistable;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -250,18 +249,16 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	}
 
 	@Override
-	public ResolvedAssessmentTest loadAndResolveAssessmentTest(File resourceDirectory) {
+	public ResolvedAssessmentTest loadAndResolveAssessmentTest(File resourceDirectory, boolean debugInfo) {
         URI assessmentObjectSystemId = createAssessmentObjectUri(resourceDirectory);
 		File resourceFile = new File(assessmentObjectSystemId);
 		return assessmentTestsCache.computeIfAbsent(resourceFile, file -> {
 			QtiXmlReader qtiXmlReader = new QtiXmlReader(jqtiExtensionManager());
-			long start = System.nanoTime();
 			ResourceLocator fileResourceLocator = new PathResourceLocator(resourceDirectory.toPath());
 			ResourceLocator inputResourceLocator = 
 	        		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
 	        AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, inputResourceLocator);
 	        ResolvedAssessmentTest resolvedAssessmentTest = assessmentObjectXmlLoader.loadAndResolveAssessmentTest(assessmentObjectSystemId);
-	        CodeHelper.printNanoTime(start, "Load test");
 	        return resolvedAssessmentTest;
 		});
 	}
@@ -456,6 +453,7 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
             		if(value instanceof NumberValue) {
             			double score = ((NumberValue)value).doubleValue();
             			candidateSession.setScore(new BigDecimal(Double.toString(score)));
+            			System.out.println("Score: " + score);
             		}
             	} else if(QTI21Constants.PASS_IDENTIFIER.equals(identifier)) {
             		Value value = itemVariable.getComputedValue();

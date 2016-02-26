@@ -56,6 +56,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.PathUtils.YesMatcher;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.course.assessment.AssessmentMode;
@@ -310,7 +311,12 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	
 	@Override
 	public RepositoryEntry copy(Identity author, RepositoryEntry source, RepositoryEntry target) {
-		return null;
+		File sourceRootFile = FileResourceManager.getInstance().getFileResourceRootImpl(source.getOlatResource()).getBasefile();
+		File targetRootDir = FileResourceManager.getInstance().getFileResourceRootImpl(target.getOlatResource()).getBasefile();
+		File sourceDir = new File(sourceRootFile, FileResourceManager.ZIPDIR);
+		File targetDir = new File(targetRootDir, FileResourceManager.ZIPDIR);
+		FileUtils.copyDirContentsToDir(sourceDir, targetDir, false, "Copy");
+		return target;
 	}
 
 	@Override

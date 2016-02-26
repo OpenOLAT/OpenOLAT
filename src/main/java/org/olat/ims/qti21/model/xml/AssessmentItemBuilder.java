@@ -235,7 +235,7 @@ public abstract class AssessmentItemBuilder {
 		buildItemBody();
 		buildModalFeedback(outcomeDeclarations, responseRules);
 		buildScores(outcomeDeclarations, responseRules);
-		buildMainScoreRule(responseRules);
+		buildMainScoreRule(outcomeDeclarations, responseRules);
 	}
 	
 	protected void buildResponseDeclaration() {
@@ -246,7 +246,7 @@ public abstract class AssessmentItemBuilder {
 		//
 	}
 	
-	protected abstract void buildMainScoreRule(List<ResponseRule> responseRules);
+	protected abstract void buildMainScoreRule(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules);
 	
 	protected void buildModalFeedback(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
 		//add feedbackbasic and feedbackmodal outcomes

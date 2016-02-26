@@ -26,6 +26,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -104,6 +105,10 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		
 		// Read write view
 		renderTextarea(sb, domID, teC);
+		
+		Form form = te.getRootForm();
+		configurations.append("ffxhrevent: { formNam:\"").append(form.getFormName()).append("\", dispIdField:\"").append(form.getDispatchFieldId()).append("\",")
+		 .append(" dispId:\"").append(teC.getFormDispatchId()).append("\", eventIdField:\"").append(form.getEventFieldId()).append("\"}\n");
 		
 		sb.append("<script type='text/javascript'>/* <![CDATA[ */\n");
 		//file browser url

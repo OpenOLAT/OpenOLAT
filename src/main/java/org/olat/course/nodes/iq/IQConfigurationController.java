@@ -534,7 +534,7 @@ public class IQConfigurationController extends BasicController {
 	private boolean needManualCorrectionQTI21(RepositoryEntry re) {
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File fUnzippedDirRoot = frm.unzipFileResource(re.getOlatResource());
-		ResolvedAssessmentTest resolvedAssessmentTest = qti21service.loadAndResolveAssessmentTest(fUnzippedDirRoot);
+		ResolvedAssessmentTest resolvedAssessmentTest = qti21service.loadAndResolveAssessmentTest(fUnzippedDirRoot, false);
 		AssessmentTest test = resolvedAssessmentTest.getTestLookup().getRootNodeHolder().getRootNode();
 		
 		boolean needManualCorrection = false; 

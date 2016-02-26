@@ -122,7 +122,7 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 		
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot);
+		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false);
 		
 		AssessmentTest test = resolvedAssessmentTest.getTestLookup().getRootNodeHolder().getRootNode();
 		//list all test parts

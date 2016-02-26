@@ -210,5 +210,20 @@ public class AssessmentItemAndMetadata {
 			String cleanedDescription = FilterFactory.getHtmlTagsFilter().filter(description);
 			metadata.setDescription(cleanedDescription, locale.getLanguage());
 		}
+		
+		/*
+		private String taxonomyPath;
+		private String keywords;
+		private String coverage;
+		private String level;
+		private String typicalLearningTime;
+		private String license;
+		private String editor;
+		private String editorVersion;
+		private int numOfAnswerAlternatives;
+		private BigDecimal difficulty;
+		private BigDecimal differentiation;
+		private BigDecimal stdevDifficulty;
+		*/
 	}
 }

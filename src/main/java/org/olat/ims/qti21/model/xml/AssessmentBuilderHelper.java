@@ -36,15 +36,18 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.XmlParseResult;
 public class AssessmentBuilderHelper {
 
 	public static void extractMessage(BadResourceException e, StringBuilder out) {
-		
         if(e instanceof QtiXmlInterpretationException) {
         	QtiXmlInterpretationException qe = (QtiXmlInterpretationException)e;
         	if(qe.getQtiModelBuildingErrors() != null) {
 	        	for(QtiModelBuildingError error :qe.getQtiModelBuildingErrors()) {
 	        		String localName = error.getElementLocalName();
 	        		String msg = error.getException().getMessage();
-	        		int lineNumber = error.getElementLocation().getLineNumber();
-	        		out.append(lineNumber + " :: " + localName + " :: " + msg + "\n");
+	        		if(error.getElementLocation() != null) {
+	        			int lineNumber = error.getElementLocation().getLineNumber();
+	        			out.append(lineNumber + " :: " + localName + " :: " + msg + "\n");
+	        		} else {
+	        			out.append(localName + " :: " + msg + "\n");
+	        		}
 	        	}
         	}
         	

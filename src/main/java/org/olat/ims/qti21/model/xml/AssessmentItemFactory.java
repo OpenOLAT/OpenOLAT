@@ -32,6 +32,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntryAlternative;
 
 import uk.ac.ed.ph.jqtiplus.group.NodeGroupList;
 import uk.ac.ed.ph.jqtiplus.group.item.ItemBodyGroup;
@@ -58,6 +59,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleMatchSet;
@@ -83,6 +85,7 @@ import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 import uk.ac.ed.ph.jqtiplus.value.DirectedPairValue;
 import uk.ac.ed.ph.jqtiplus.value.FloatValue;
 import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
+import uk.ac.ed.ph.jqtiplus.value.StringValue;
 
 /**
  * 
@@ -163,6 +166,84 @@ public class AssessmentItemFactory {
 		// outcome feedback
 		OutcomeDeclaration feedbackOutcomeDeclaration = createOutcomeDeclarationForFeedbackBasic(assessmentItem);
 		outcomeDeclarations.getOutcomeDeclarations().add(feedbackOutcomeDeclaration);
+	}
+	
+	public static TextEntryInteraction appendTextEntryInteraction(ItemBody itemBody, Identifier responseDeclarationId) {
+		P paragraph = new P(itemBody);
+		TextRun text = new TextRun(paragraph, "New text");
+		paragraph.getInlines().add(text);
+		TextEntryInteraction textInteraction = new TextEntryInteraction(paragraph);
+		textInteraction.setResponseIdentifier(responseDeclarationId);
+		paragraph.getInlines().add(textInteraction);
+		itemBody.getBlocks().add(paragraph);
+		return textInteraction;
+	}
+	
+	public static ResponseDeclaration createTextEntryResponseDeclaration(AssessmentItem assessmentItem,
+			Identifier declarationId, String response, Double maxScore, boolean caseSensitive,
+			List<TextEntryAlternative> alternatives) {
+		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
+		responseDeclaration.setIdentifier(declarationId);
+		responseDeclaration.setCardinality(Cardinality.SINGLE);
+		responseDeclaration.setBaseType(BaseType.STRING);
+		
+		//correct response
+		CorrectResponse correctResponse = new CorrectResponse(responseDeclaration);
+		responseDeclaration.setCorrectResponse(correctResponse);
+		appendStringValue(correctResponse, response);
+
+		// mapping
+		Mapping mapping = new Mapping(responseDeclaration);
+		mapping.setDefaultValue(0.0d);
+		responseDeclaration.setMapping(mapping);
+
+		{//map correct response
+			MapEntry mapEntry = new MapEntry(mapping);
+			mapEntry.setMapKey(new StringValue(response));
+			mapEntry.setMappedValue(maxScore);
+			mapEntry.setCaseSensitive(new Boolean(caseSensitive));
+			mapping.getMapEntries().add(mapEntry);
+		}
+		
+		//map alternatives
+		if(alternatives != null && alternatives.size() > 0) {
+			for(TextEntryAlternative alternative:alternatives) {
+				MapEntry mapEntry = new MapEntry(mapping);
+				mapEntry.setMapKey(new StringValue(alternative.getAlternative()));
+				mapEntry.setMappedValue(maxScore);
+				mapEntry.setCaseSensitive(new Boolean(caseSensitive));
+				mapping.getMapEntries().add(mapEntry);
+			}
+		}
+		
+		return responseDeclaration;
+	}
+	
+	/**
+	 * For the all answers get the point
+	 * @param assessmentItem
+	 * @param declarationId
+	 * @param response
+	 * @param alternatives
+	 * @return
+	 */
+	public static ResponseDeclaration createTextEntryResponseDeclaration(AssessmentItem assessmentItem,
+			Identifier declarationId, String response, List<TextEntryAlternative> alternatives) {
+		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
+		responseDeclaration.setIdentifier(declarationId);
+		responseDeclaration.setCardinality(Cardinality.SINGLE);
+		responseDeclaration.setBaseType(BaseType.STRING);
+		
+		//correct response
+		CorrectResponse correctResponse = new CorrectResponse(responseDeclaration);
+		responseDeclaration.setCorrectResponse(correctResponse);
+		appendStringValue(correctResponse, response);
+		if(alternatives != null) {
+			for(TextEntryAlternative alternative:alternatives) {
+				appendStringValue(correctResponse, alternative.getAlternative());
+			}
+		}
+		return responseDeclaration;
 	}
 	
 	public static ExtendedTextInteraction appendExtendedTextInteraction(ItemBody itemBody, Identifier responseDeclarationId) {
@@ -335,6 +416,13 @@ public class AssessmentItemFactory {
 		correctResponse.getFieldValues().add(fieldValue);
 	}
 	
+	private static void appendStringValue(CorrectResponse correctResponse, String response) {
+		FieldValue fieldValue = new FieldValue(correctResponse);
+		StringValue identifierValue = new StringValue(response);
+		fieldValue.setSingleValue(identifierValue);
+		correctResponse.getFieldValues().add(fieldValue);
+	}
+	
 	/*
 	<mapping defaultValue="0">
 		<mapEntry mapKey="idd072fa37-f4c3-4532-a2fb-4458fa23e919" mappedValue="2.0" />
@@ -358,6 +446,29 @@ public class AssessmentItemFactory {
 	public static OutcomeDeclaration createOutcomeDeclarationForScore(AssessmentItem assessmentItem) {
 		OutcomeDeclaration scoreOutcomeDeclaration = new OutcomeDeclaration(assessmentItem);
 		scoreOutcomeDeclaration.setIdentifier(QTI21Constants.SCORE_IDENTIFIER);
+		scoreOutcomeDeclaration.setCardinality(Cardinality.SINGLE);
+		scoreOutcomeDeclaration.setBaseType(BaseType.FLOAT);
+
+		DefaultValue scoreDefaultVal = new DefaultValue(scoreOutcomeDeclaration);
+		scoreOutcomeDeclaration.setDefaultValue(scoreDefaultVal);
+		
+		FieldValue scoreDefaultFieldVal = new FieldValue(scoreDefaultVal, FloatValue.ZERO);
+		scoreDefaultVal.getFieldValues().add(scoreDefaultFieldVal);
+		
+		return scoreOutcomeDeclaration;
+	}
+	/*
+	<outcomeDeclaration identifier="SCORE_RESPONSE_2" cardinality="single" baseType="float" view="testConstructor">
+		<defaultValue>
+			<value>
+				0
+			</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	*/
+	public static OutcomeDeclaration createOutcomeDeclarationForScoreResponse(AssessmentItem assessmentItem, String scoreIdentifier) {
+		OutcomeDeclaration scoreOutcomeDeclaration = new OutcomeDeclaration(assessmentItem);
+		scoreOutcomeDeclaration.setIdentifier(Identifier.parseString(scoreIdentifier));
 		scoreOutcomeDeclaration.setCardinality(Cardinality.SINGLE);
 		scoreOutcomeDeclaration.setBaseType(BaseType.FLOAT);
 

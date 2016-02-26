@@ -28,6 +28,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 
@@ -65,6 +66,7 @@ public class QTI21QuestionTypeDetector {
 			
 			boolean choice = false;
 			boolean match = false;
+			boolean textEntry = false;
 			boolean essay = false;
 			boolean unkown = false;
 			
@@ -76,6 +78,8 @@ public class QTI21QuestionTypeDetector {
 						match = true;
 					} else if(interaction instanceof ExtendedTextInteraction) {
 						essay = true;
+					} else if(interaction instanceof TextEntryInteraction) {
+						textEntry = true;
 					} else {
 						unkown = true;
 					}	
@@ -84,11 +88,13 @@ public class QTI21QuestionTypeDetector {
 			
 			if(unkown) {
 				return QTI21QuestionType.unkown;
-			} else if(choice && !match && !essay && !unkown) {
+			} else if(choice && !match && !textEntry && !essay && !unkown) {
 				return getTypeOfChoice(item);
-			} else if(!choice && match && !essay && !unkown) {
+			} else if(!choice && match && !textEntry && !essay && !unkown) {
 				return getTypeOfMatch(item);
-			} else if(!choice && !match && essay && !unkown) {
+			} else if(!choice && !match && textEntry && !essay && !unkown) {
+				return QTI21QuestionType.fib;
+			} else if(!choice && !match && !textEntry && essay && !unkown) {
 				return QTI21QuestionType.essay;
 			} else {
 				return QTI21QuestionType.unkown;

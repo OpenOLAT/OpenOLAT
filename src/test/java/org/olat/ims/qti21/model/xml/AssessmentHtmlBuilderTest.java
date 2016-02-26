@@ -35,6 +35,8 @@ import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.TextRun;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 
@@ -64,6 +66,23 @@ public class AssessmentHtmlBuilderTest {
 		System.out.println(content);
 	}
 	
+	
+	@Test
+	public void filter_alt() {
+		String content = "<p>Test <textEntryInteraction responseIdentifier=\"RESPONSE_1\"/> </p>";
+
+		AssessmentItem item = new AssessmentItem();
+		ItemBody helper = new ItemBody(item);
+		new AssessmentHtmlBuilder().appendHtml(helper, content);
+
+		List<Interaction> interactions = helper.findInteractions();
+		Assert.assertNotNull(interactions);
+		Assert.assertEquals(1, interactions.size());
+		Interaction interaction = interactions.get(0);
+		Assert.assertTrue(interaction instanceof TextEntryInteraction);
+		Assert.assertNotNull(interaction.getResponseIdentifier());
+		Assert.assertEquals("RESPONSE_1", interaction.getResponseIdentifier().toString());
+	}
 
 	@Test
 	public void filter() {

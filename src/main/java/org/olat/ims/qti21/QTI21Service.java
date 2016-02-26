@@ -98,7 +98,7 @@ public interface QTI21Service {
 	 * @param resourceDirectory
 	 * @return
 	 */
-	public ResolvedAssessmentTest loadAndResolveAssessmentTest(File resourceDirectory);
+	public ResolvedAssessmentTest loadAndResolveAssessmentTest(File resourceDirectory, boolean debugInfo);
 	
 	public ResolvedAssessmentItem loadAndResolveAssessmentItem(URI assessmentObjectSystemId, File resourceDirectory);
 	

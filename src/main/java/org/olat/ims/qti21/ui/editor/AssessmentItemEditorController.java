@@ -37,12 +37,15 @@ import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.olat.ims.qti21.ui.editor.interactions.EssayEditorController;
+import org.olat.ims.qti21.ui.editor.interactions.FIBEditorController;
+import org.olat.ims.qti21.ui.editor.interactions.FIBScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.KPrimEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.MultipleChoiceEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.SingleChoiceEditorController;
@@ -142,6 +145,7 @@ public class AssessmentItemEditorController extends BasicController {
 		switch(type) {
 			case sc: itemBuilder = initSingleChoiceEditors(ureq, item); break;
 			case mc: itemBuilder = initMultipleChoiceEditors(ureq, item); break;
+			case fib: itemBuilder = initFIBEditors(ureq, item); break;
 			case kprim: itemBuilder = initKPrimChoiceEditors(ureq, item); break;
 			case essay: itemBuilder = initEssayEditors(ureq, item); break;
 			default: initItemCreatedByUnkownEditor(ureq); break;
@@ -195,6 +199,21 @@ public class AssessmentItemEditorController extends BasicController {
 		itemEditor = new KPrimEditorController(ureq, getWindowControl(), kprimItemBuilder);
 		listenTo(itemEditor);
 		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), kprimItemBuilder);
+		listenTo(scoreEditor);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), kprimItemBuilder, false, true, true);
+		listenTo(feedbackEditor);
+		
+		tabbedPane.addTab(translate("form.choice"), itemEditor.getInitialComponent());
+		tabbedPane.addTab(translate("form.score"), scoreEditor.getInitialComponent());
+		tabbedPane.addTab(translate("form.feedback"), feedbackEditor.getInitialComponent());
+		return kprimItemBuilder;
+	}
+	
+	private AssessmentItemBuilder initFIBEditors(UserRequest ureq, AssessmentItem item) {
+		FIBAssessmentItemBuilder kprimItemBuilder = new FIBAssessmentItemBuilder(item, qtiService.qtiSerializer());
+		itemEditor = new FIBEditorController(ureq, getWindowControl(), kprimItemBuilder);
+		listenTo(itemEditor);
+		scoreEditor = new FIBScoreController(ureq, getWindowControl(), kprimItemBuilder);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), kprimItemBuilder, false, true, true);
 		listenTo(feedbackEditor);

@@ -1352,9 +1352,7 @@ function o_XHRNFEvent(targetUrl) {
 		success: function(data, textStatus, jqXHR) {
 			//ok
 		},
-		error: function(jqXHR, textStatus, errorThrown) {
-			if(window.console) console.log('Error status', textStatus);
-		}
+		error: o_onXHRError
 	})
 }
 
@@ -1364,7 +1362,8 @@ function o_onXHRError(jqXHR, textStatus, errorThrown) {
 		var msg = o_info.oo_noresponse.replace("reload.html", window.document.location.href);
 		showMessageBox('error', o_info.oo_noresponse_title, msg, undefined);
 	} else if(window.console) {
-		console.log('Error status', textStatus, errorThrown, jqXHR.responseText);
+		console.log('Error status 2', textStatus, errorThrown, jqXHR.responseText);
+		console.log(jqXHR);
 	}
 }
 

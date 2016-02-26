@@ -59,6 +59,7 @@ import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
@@ -104,7 +105,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private final MenuTree menuTree;
 	private final Link saveLink;
 	private final Dropdown addItemTools;
-	private final Link newSectionLink, newSingleChoiceLink, newMultipleChoiceLink, newKPrimLink, newEssayLink;
+	private final Link newSectionLink, newSingleChoiceLink, newMultipleChoiceLink, newKPrimLink,
+		newFIBLink, newEssayLink;
 	private final Link importFromPoolLink, importFromTableLink;
 	private final TooledStackedPanel toolbar;
 	private final VelocityContainer mainVC;
@@ -175,6 +177,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		newKPrimLink = LinkFactory.createToolLink("new.kprim", translate("new.kprim"), this, "o_mi_qtikprim");
 		newKPrimLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newKPrimLink);
+		
+		newFIBLink = LinkFactory.createToolLink("new.fib", translate("new.fib"), this, "o_mi_qtifib");
+		newFIBLink.setDomReplacementWrapperRequired(false);
+		addItemTools.addComponent(newFIBLink);
 		newEssayLink = LinkFactory.createToolLink("new.essay", translate("new.essay"), this, "o_mi_qtiessay");
 		newEssayLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newEssayLink);
@@ -205,7 +211,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	}
 	
 	private void updateTreeModel() {
-		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot);
+		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, true);
 		menuTree.setTreeModel(new AssessmentTestEditorAndComposerTreeModel(resolvedAssessmentTest));
 	}
 	
@@ -303,6 +309,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new MultipleChoiceAssessmentItemBuilder(qtiService.qtiSerializer()));
 		} else if(newKPrimLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new KPrimAssessmentItemBuilder(qtiService.qtiSerializer()));
+		} else if(newFIBLink == source) {
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new FIBAssessmentItemBuilder(qtiService.qtiSerializer()));
 		} else if(newEssayLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new EssayAssessmentItemBuilder(qtiService.qtiSerializer()));
 		} else if(importFromPoolLink == source) {
