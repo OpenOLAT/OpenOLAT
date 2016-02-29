@@ -74,8 +74,17 @@ public class NekoHTMLScanner {
 
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes) {
-			if(!tagFound && StringHelper.containsNonWhitespace(localName)) {
+			if(!tagFound && StringHelper.containsNonWhitespace(localName) && isTagAllowed(localName)) {
 				tagFound = true;
+			}
+		}
+		
+		private boolean isTagAllowed(String localName) {
+			switch(localName) {
+				case "textEntryInteraction": return false;
+				case "textentryinteraction": return false;
+				case "TEXTENTRYINTERACTION": return false;
+				default: return true;
 			}
 		}
 	}

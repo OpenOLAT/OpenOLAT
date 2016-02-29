@@ -35,7 +35,6 @@ import java.util.Map;
 import javax.xml.transform.stream.StreamResult;
 
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
@@ -48,10 +47,7 @@ import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.MapResponse;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Variable;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.And;
-import uk.ac.ed.ph.jqtiplus.node.expression.operator.IsNull;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Match;
-import uk.ac.ed.ph.jqtiplus.node.expression.operator.Not;
-import uk.ac.ed.ph.jqtiplus.node.expression.operator.Or;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Sum;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
@@ -62,7 +58,6 @@ import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.Mapping;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseCondition;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseElse;
-import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseElseIf;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseIf;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseProcessing;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseRule;
@@ -179,7 +174,6 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 
 				Mapping mapping = responseDeclaration.getMapping();
 				if(mapping != null) {
-					
 					boolean caseSensitive = true;
 					List<TextEntryAlternative> alternatives = new ArrayList<>();
 					if(mapping != null) {
@@ -246,8 +240,23 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		return responseIdentifierToTextEntry.get(responseIdentifier);
 	}
 	
+	public void clearTextEntries() {
+		responseIdentifierToTextEntry.clear();
+	}
+	
 	public List<TextEntry> getTextEntries() {
 		return new ArrayList<>(responseIdentifierToTextEntry.values());
+	}
+	
+	public String generateResponseIdentifier() {
+		for(int i=1; i<9999; i++) {
+			String responseIdentifier = "RESPONSE_" + i;
+			if(!responseIdentifierToTextEntry.containsKey(responseIdentifier)) {
+				return responseIdentifier;
+			}
+		}
+		return null;
+		
 	}
 	
 	public TextEntry createTextEntry(String responseIdentifier) {
@@ -279,7 +288,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 
 			for(Map.Entry<String, TextEntry> textEntryEntry:responseIdentifierToTextEntry.entrySet()) {
 				TextEntry textEntry = textEntryEntry.getValue();
-				if(StringHelper.containsNonWhitespace(textEntry.getSolution())) {
+				if(textEntry.getSolution() != null) {
 					ResponseDeclaration responseDeclaration = createTextEntryResponseDeclaration(assessmentItem,
 							textEntry.getResponseIdentifier(), textEntry.getSolution(),
 							textEntry.getScore(), textEntry.isCaseSensitive(),
@@ -290,7 +299,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		} else {
 			for(Map.Entry<String, TextEntry> textEntryEntry:responseIdentifierToTextEntry.entrySet()) {
 				TextEntry textEntry = textEntryEntry.getValue();
-				if(StringHelper.containsNonWhitespace(textEntry.getSolution())) {
+				if(textEntry.getSolution() != null) {
 					ResponseDeclaration responseDeclaration = createTextEntryResponseDeclaration(assessmentItem,
 							textEntry.getResponseIdentifier(), textEntry.getSolution(),
 							-1.0, textEntry.isCaseSensitive(),
@@ -377,7 +386,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		// add condition
 		ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
 		responseRules.add(0, rule);
-		
+		/*
 		{//missing responses
 			ResponseIf responseIf = new ResponseIf(rule);
 			rule.setResponseIf(responseIf);
@@ -405,11 +414,12 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 				incorrectValue.setSingleValue(QTI21Constants.INCORRECT_IDENTIFIER_VALUE);
 				incorrectOutcomeValue.setExpression(incorrectValue);
 			}
-		}
+		}*/
 		
 		{// match all
-			ResponseElseIf responseElseIf = new ResponseElseIf(rule);
-			rule.getResponseElseIfs().add(responseElseIf);
+			ResponseIf responseElseIf = new ResponseIf(rule);
+			rule.setResponseIf(responseElseIf);
+			//rule.getResponseElseIfs().add(responseElseIf);
 			
 			And and = new And(responseElseIf);
 			responseElseIf.setExpression(and);
@@ -495,7 +505,25 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 			</responseIf>
 		</responseCondition>
 		*/
+
 		int count = 0;
+		
+		for(Map.Entry<String, TextEntry> textEntryEntry:responseIdentifierToTextEntry.entrySet()) {
+			TextEntry textEntry = textEntryEntry.getValue();
+			String scoreIdentifier = "SCORE_" + textEntry.getResponseIdentifier().toString();
+
+			{//outcome mapResonse
+				SetOutcomeValue mapOutcomeValue = new SetOutcomeValue(assessmentItem.getResponseProcessing());
+				responseRules.add(count++, mapOutcomeValue);
+				mapOutcomeValue.setIdentifier(Identifier.parseString(scoreIdentifier));
+				
+				MapResponse mapResponse = new MapResponse(mapOutcomeValue);
+				mapResponse.setIdentifier(textEntry.getResponseIdentifier());
+				mapOutcomeValue.setExpression(mapResponse);
+			}
+		}
+		
+		/*
 		for(Map.Entry<String, TextEntry> textEntryEntry:responseIdentifierToTextEntry.entrySet()) {
 			TextEntry textEntry = textEntryEntry.getValue();
 			String scoreIdentifier = "SCORE_" + textEntry.getResponseIdentifier().toString();
@@ -537,7 +565,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 				incorrectValue.setSingleValue(QTI21Constants.EMPTY_IDENTIFIER_VALUE);
 				incorrectOutcomeValue.setExpression(incorrectValue);
 			}
-		}
+		}*/
 
 		/*
 		<setOutcomeValue identifier="SCORE">
@@ -666,6 +694,16 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 
 		public void setAlternatives(List<TextEntryAlternative> alternatives) {
 			this.alternatives = alternatives;
+		}
+		
+		public void addAlterantive(String alternative, double points) {
+			if(alternatives == null) {
+				alternatives = new ArrayList<>();
+			}
+			TextEntryAlternative alt = new TextEntryAlternative();
+			alt.setAlternative(alternative);
+			alt.setScore(points);
+			alternatives.add(alt);
 		}
 		
 		public void stringToAlternatives(String string) {

@@ -31,6 +31,7 @@ import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
 
@@ -83,7 +84,7 @@ public class CSVToAssessmentItemConverter {
 		}
 		
 		if(currentItem != null) {
-			currentItem.getItemBuilder().build();
+			build();
 			items.add(currentItem);
 			currentItem = null;
 		}
@@ -269,7 +270,9 @@ public class CSVToAssessmentItemConverter {
 	
 	private void processType(String[] parts) {
 		if(currentItem != null) {
+			build();
 			items.add(currentItem);
+			currentItem = null;
 		}
 		
 		if(parts.length > 1) {
@@ -278,6 +281,9 @@ public class CSVToAssessmentItemConverter {
 			switch(type) {
 				case "fib": {
 					FIBAssessmentItemBuilder fibItemBuilder = new FIBAssessmentItemBuilder(qtiSerializer);
+					fibItemBuilder.setQuestion("");
+					fibItemBuilder.clearTextEntries();
+					fibItemBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
 					itemBuilder = fibItemBuilder;
 					break;
 				}
@@ -310,6 +316,17 @@ public class CSVToAssessmentItemConverter {
 				log.warn("Question type not supported: " + type);
 				currentItem = null;
 			}
+		}
+	}
+	
+	private void build() {
+		if(currentItem != null) {
+			String question = currentItem.getItemBuilder().getQuestion();
+			if(!StringHelper.isHtml(question)) {
+				question = "<p>" + question + "</p>";
+			}
+			currentItem.getItemBuilder().setQuestion(question);
+			currentItem.getItemBuilder().build();
 		}
 	}
 	
@@ -412,35 +429,46 @@ public class CSVToAssessmentItemConverter {
 				FIBAssessmentItemBuilder fibBuilder = (FIBAssessmentItemBuilder)itemBuilder;
 				if("text".equals(firstPart) || "texte".equals(firstPart)) {
 					String text = parts[1];
-					
-					//fibBuilder.getResponses().add(response);
+					if(StringHelper.containsNonWhitespace(fibBuilder.getQuestion())) {
+						fibBuilder.setQuestion(fibBuilder.getQuestion() + " " + text);
+					} else {
+						fibBuilder.setQuestion(text);
+					}	
 				} else {
-					float point = parseFloat(parts[0], 1.0f);
+					double score = parseFloat(parts[0], 1.0f);
 					String correctBlank = parts[1];
-					/*
-					FIBResponse response = new FIBResponse();
-					response.setType(FIBResponse.TYPE_BLANK);
-					response.setCorrectBlank(correctBlank);
-					response.setPoints(point);
-					
+					String responseId = fibBuilder.generateResponseIdentifier();
+					TextEntry textEntry = fibBuilder.createTextEntry(responseId);
+					parseAlternatives(correctBlank, score, textEntry);
 					if(parts.length > 2) {
 						String sizes = parts[2];
 						String[] sizeArr = sizes.split(",");
 						if(sizeArr.length >= 2) {
 							int size = Integer.parseInt(sizeArr[0]);
-							int maxLength = Integer.parseInt(sizeArr[1]);
-							response.setSize(size);
-							response.setMaxLength(maxLength);
+							//int maxLength = Integer.parseInt(sizeArr[1]);
+							textEntry.setExpectedLength(size);
 						}	
 					}
 					
-					//fibBuilder.getResponses().add(response);
-					 
-					 */
+					String entry = " <textEntryInteraction responseIdentifier=\"" + responseId + "\"/>";
+					fibBuilder.setQuestion(fibBuilder.getQuestion() + " " + entry);
 				}
 			}
 		} catch (NumberFormatException e) {
 			log.warn("Cannot parse point for: " + parts[0] + " / " + parts[1], e);
+		}
+	}
+	
+	private void parseAlternatives(String value, double score, TextEntry textEntry) {
+		String[] values = value.split(";");
+		if(values.length > 0) {
+			textEntry.setSolution(values[0]);
+			textEntry.setScore(score);
+		}
+		if(values.length > 1) {
+			for(int i=1; i<values.length; i++) {
+				textEntry.addAlterantive(values[i], score);
+			}
 		}
 	}
 	
