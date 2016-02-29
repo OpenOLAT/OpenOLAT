@@ -46,18 +46,18 @@ public class SkypePropertyHandler extends Generic127CharTextPropertyHandler {
 		String skypeid = getUserProperty(user, locale);
 		if (StringHelper.containsNonWhitespace(skypeid)) {
 			skypeid = StringHelper.escapeHtml(skypeid);
-			StringBuffer sb = new StringBuffer();
-			sb.append("<script type=\"text/javascript\" src=\"http://download.skype.com/share/skypebuttons/js/skypeCheck.js\"></script>");
-			sb.append("<img src=\"http://mystatus.skype.com/smallicon/");
-			sb.append(skypeid);
-			sb.append("\" style=\"border: none; position:relative; top:1px; margin-right:2px;\" width=\"10\" height=\"10\" alt=\"My status\" />");
-			sb.append("<a href=\"skype:");
-			sb.append(skypeid);
-			sb.append("?call\">");
-			sb.append(skypeid);
-			sb.append("</a>");
-			String htmlFragment = sb.toString();
-			return htmlFragment;
+			StringBuilder sb = new StringBuilder();
+			sb.append("<script type=\"text/javascript\" src=\"https://secure.skypeassets.com/i/scom/js/skype-uri.js\"></script>")
+			  .append("<span>s_rosse</span> <div id=\"SkypeButton_Call_").append(skypeid).append("_1\" class=\"o_skype_button\">")
+			  .append("<script type=\"text/javascript\">\n")
+			  .append("Skype.ui({\n")
+			  .append(" \"name\": \"dropdown\",")
+			  .append(" \"element\": \"SkypeButton_Call_").append(skypeid).append("_1\",")
+			  .append(" \"participants\": [\"").append(skypeid).append("\"]")
+			  .append("});")
+			  .append("</script>")
+			  .append("</div>");
+			return sb.toString();
 		}
 		return null;
 	}
