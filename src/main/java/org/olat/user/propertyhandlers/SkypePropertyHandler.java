@@ -47,14 +47,15 @@ public class SkypePropertyHandler extends Generic127CharTextPropertyHandler {
 		if (StringHelper.containsNonWhitespace(skypeid)) {
 			skypeid = StringHelper.escapeHtml(skypeid);
 			StringBuilder sb = new StringBuilder();
-			sb.append("<script type=\"text/javascript\" src=\"https://secure.skypeassets.com/i/scom/js/skype-uri.js\"></script>")
-			  .append("<span>s_rosse</span> <div id=\"SkypeButton_Call_").append(skypeid).append("_1\" class=\"o_skype_button\">")
+			sb.append("<span>s_rosse</span> <div id=\"SkypeButton_Call_").append(skypeid).append("_1\" class=\"o_skype_button\">")
 			  .append("<script type=\"text/javascript\">\n")
+			  .append("try{ jQuery.getScript('https://secure.skypeassets.com/i/scom/js/skype-uri.js', function() {\n")
 			  .append("Skype.ui({\n")
 			  .append(" \"name\": \"dropdown\",")
 			  .append(" \"element\": \"SkypeButton_Call_").append(skypeid).append("_1\",")
 			  .append(" \"participants\": [\"").append(skypeid).append("\"]")
 			  .append("});")
+			  .append("});} catch(e) {}")
 			  .append("</script>")
 			  .append("</div>");
 			return sb.toString();
