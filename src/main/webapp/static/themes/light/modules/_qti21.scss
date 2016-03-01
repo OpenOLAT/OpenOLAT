@@ -1,0 +1,453 @@
+ul.sessionControl {
+	list-style: none;
+	margin: 1em;
+	text-align: center;
+  
+	li {
+		display: inline;
+		padding: 0.2em;
+	}
+}
+
+.association {
+	margin: 20px 20px 20px 40px;
+	background: transparent url('#{$o-images-path}association_bg.png') repeat-x center center;
+}
+
+.o_associate_item {
+	padding: 5px;
+}
+
+.association_box {
+	background-color: white;
+}
+
+#o_qti_run_title {
+	 margin: 0 15px 0 15px;
+}
+
+.o_info.o_assessmentsection_rubrics {
+	margin:0;
+}
+
+.o_assessmentitem{
+	h1 {
+		margin-bottom: 0;
+	}
+
+	.itemStatus {
+		float: right;
+		display: block;
+		padding: 0.3em;
+		border-radius: 0.5em;
+		color: white;
+		font-size: 0.8em;
+	}
+	
+	div.badResponse, span.badResponse {
+		color: red;
+		font-weight: bold;
+	}
+	
+	input.badResponse {
+  		border: 1px solid red;
+	}
+	
+	.infoControl{
+		input {
+			margin-right: 0.5em;
+		}
+
+		.infoControlContent {
+  			display: none;
+		}
+	}
+	
+	.sliderInteraction {
+		margin: 1em;
+		.sliderVertical .sliderValue {
+			margin: 1em 0;
+		}
+		.sliderVertical .sliderWidget {
+			height: 200px;
+		}
+		.sliderHorizontal .sliderValue {
+			text-align: center;
+		}
+	}
+	
+	div.orderInteraction {
+		div.highlight {
+			border: 1px solid red;
+		}
+
+		div.box {
+			background-color: #eeeeee;
+		}
+
+		div.box span.info {
+			margin-left: 1em;
+			color: #666666;
+			font-style: italic;
+			font-size: smaller;
+		}
+
+		div.box.horizontal {
+  			margin: 0.5em 0;
+			width: 100%;
+		}
+
+		ul.horizontal {
+			float: left;
+			margin: 0 1em;
+			padding: 1em 0;
+			width: 100%;
+		}
+
+		div.box.vertical {
+			margin: 1em 0;
+			width: 49%;
+		}
+
+		div.box.vertical.source {
+			float: left;
+		}
+
+		div.box.vertical.target {
+			float: right;
+		}
+
+		ul.vertical {
+			margin: 0 1em;
+			padding: 1em 0;
+			width: auto;
+		}
+
+		ul {
+			list-style-type: none;
+			margin: 0;
+			padding: 0;
+			width: 60%;
+			
+			li {
+				margin: 0 3px 3px 3px;
+				padding: 0.4em;
+				padding-left: 1.5em;
+				font-size: 1em;
+				
+				span.ui-icon {
+					position: absolute;
+					margin-left: -1.3em;
+				}
+			}
+		}
+
+		ul.horizontal li {
+			float: left;
+			width: auto;
+		}
+
+		br {
+			clear: both;
+		}
+	}
+
+	.hottext {
+		font-weight: bold;
+	}
+
+	.gap {
+		font-weight: bold;
+		border: 1px dashed #000;
+	}
+}
+
+.itemStatus.ended {
+  background-color: #999999;
+}
+
+.itemStatus.invalid {
+  background-color: red;
+}
+
+.itemStatus.answered {
+  background-color: blue;
+}
+
+.itemStatus.notAnswered {
+  background-color: #ff9900;
+}
+
+.itemStatus.notPresented {
+	background-color: green;
+}
+
+.itemStatus.review {
+	background-color: #f52887;
+}
+
+.itemStatus.reviewNotAllowed, .itemStatus.reviewInvalid, .itemStatus.reviewNotAnswered, .itemStatus.reviewNotSeen {
+	background-color: #f52887;
+	opacity: 0.5;
+}
+
+.itemPrompt {
+	margin: 1.5em 0;
+	font-style: italic;
+	color: #666666;
+}
+
+#itemBody {
+	margin: 1em 0;
+}
+
+tr.choiceinteraction {
+	td.control {
+		padding: 0.5em;
+	}
+	
+	td.choiceInteraction {
+		padding: 0.5em;
+	}
+}
+
+
+/* MathEntryInteraction styling for MathAssess */
+.o_assessmentitem .mathEntryInteraction {
+	border: 1px solid #ddedfc;
+	background-color: #edf1f6;
+	background: linear-gradient(to top, #edf1f6 0%, #f6f9fb 100%);
+	border-radius: 0.4em;
+	padding: 1em;
+	margin: 0.5em 0;
+	
+	.inputPanel {
+		line-height: 1em;
+		text-align: left;
+		
+		a {
+			display: block;
+			float: left;
+			padding: 0;
+			margin: 2px 0;
+			height: 1em;
+			width: 18px;
+			background: url(../images/help.png) center no-repeat;
+		}
+		a:hover {
+			cursor: help;
+			background-color: transparent !important;
+		}
+		
+		input {
+			margin: 0;
+			padding: 0;
+		}
+	}
+	
+	.previewPanel {
+		text-align: center;
+	}
+}
+
+.o_assessmentitem .mathEntryInteraction.horizontal {
+	min-height: 5em;
+	width: 40em;
+	
+	.inputPanel {
+		width: 45%;
+		float: left;
+		margin: 2em 0;
+	}
+	
+	.previewPanel {
+		width: 50%;
+		margin-left: 40%;
+	}
+}
+
+.o_assessmentitem .mathEntryInteraction.vertical {
+	min-height: 6em;
+	.inputPanel {
+		padding: 0 5em;
+	}
+	
+	.inputPanel:before {
+		content: 'Input Maths: ';
+	}
+	
+	.previewPanel {
+		margin-top: 2em;
+		min-height: 4em;
+	}
+}
+
+.o_assessmentitem {
+	div.upConversionAjaxControlMessage {
+		width: auto;
+		text-align: center;
+		display: inline;
+		padding: 0.5em 0 0.5em 20px;
+	}
+
+	div.waiting {
+		background: url(../images/spinner.gif) no-repeat center left;
+	}
+
+	div.success {
+		background: url(../images/accept.png) no-repeat center left;
+	}
+
+	div.failure {
+		background: url(../images/cancel.png) no-repeat center left;
+	}
+
+	div.error {
+		background: url(../images/exclamation.png) no-repeat center left;
+	}
+
+	div.upConversionAjaxControlError {
+	}
+
+	div.upConversionAjaxControlPreview {
+		margin: 0.5em 0;
+		font-size: 110%;
+	}
+}
+
+/* Help for Math Input */
+
+.o_assessmentitem table.inputHelp {
+	border-collapse: collapse;
+	width: 100%;
+	font-size: 90%;
+	
+	th {
+		border: 1px solid #999999;
+		padding: 0.2em 0.5em;
+			background-color: #cad8e5;
+	}
+
+	td {
+		color: #999999;
+		border: 1px solid #999999;
+		padding: 0.2em 0.5em;
+	}
+
+	kbd {
+		color: black;
+		font-size: 100%;
+		line-height: 100%;
+	}
+
+	.longComma {
+		margin-right: 0.5em;
+	}
+}
+
+/* Candidate comment */
+.candidateComment {
+	padding: 0;
+	margin: 2em 0;
+	border: none;
+	
+	legend {
+	
+	}
+	
+	textarea {
+		display: block;
+	}
+}
+
+ul.o_testpartnavigation {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	
+	li.o_assessmentsection {
+		border: 1px solid #eeeeee;
+		border-radius: 0.5em;
+		padding: 0 1em 0.5em 1em;
+		margin: 0 0 0.5em 0;
+		
+		header {
+			margin: 0 0 1em 0;
+		}
+		
+		header div.rubric {
+			font-style: italic;
+		}
+		
+		ul.o_testpartnavigation_inner {
+			list-style: none;
+			padding: 0;
+			margin: 0;
+		}
+	}
+	
+	li.o_assessmentitem {
+		padding: 0.1em 0;
+		
+		a {
+			padding: 0;
+			text-decoration: none;
+		}
+		
+		span {
+			vertical-align: middle;
+		}
+		
+		.itemStatus {
+			display: inline;
+			float: none;
+			margin: 0.2em;
+			padding: 0.4em;
+			border-radius: 0.3em;
+			margin-left: 1em;
+		}
+	}
+	
+	.o_assessmentitem .questionTitle {
+		margin-right: 1em;
+	}
+}
+
+
+/* Test Item Presentation */
+ul.testPartDrilldown {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	
+	li.o_assessmentsection {
+		border: 1px solid #eeeeee;
+		border-radius: 0.5em;
+		padding: 0 1em 0.5em 1em;
+		
+		header {
+			margin: 0 0 1em 0;
+			
+			div.rubric {
+				font-style: italic;
+			}
+		}
+		
+		ul.testPartDrilldownInner {
+			list-style: none;
+			padding: 0;
+			margin: 0;
+		}
+	}
+	
+	li.currentItem {
+		border: 1px solid #eeeeee;
+		border-radius: 0.5em;
+		padding: 0 1em;
+		margin-top: 1em;
+	}
+}
+
+.testItemControl {
+	margin-top: 0.5em;
+}

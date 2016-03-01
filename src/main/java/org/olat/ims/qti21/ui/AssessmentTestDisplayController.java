@@ -34,8 +34,11 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -65,6 +68,7 @@ import org.olat.ims.qti21.model.CandidateTestEventType;
 import org.olat.ims.qti21.model.ResponseLegality;
 import org.olat.ims.qti21.model.jpa.CandidateEvent;
 import org.olat.ims.qti21.ui.components.AssessmentTestFormItem;
+import org.olat.ims.qti21.ui.components.AssessmentTreeFormItem;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
@@ -77,6 +81,7 @@ import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemVariable;
 import uk.ac.ed.ph.jqtiplus.node.result.OutcomeVariable;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.node.test.SubmissionMode;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationLevel;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationRecorder;
@@ -89,6 +94,7 @@ import uk.ac.ed.ph.jqtiplus.running.TestProcessingInitializer;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionControllerSettings;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
+import uk.ac.ed.ph.jqtiplus.state.TestPartSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlan;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNode;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
@@ -909,11 +915,15 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 *
 	 */
 	private class QtiWorksController extends AbstractQtiWorksController {
-		
+
+		private FormLink endButton;
 		private AssessmentTestFormItem qtiEl;
+		private AssessmentTreeFormItem qtiTreeEl;
+		
+		private final QtiWorksStatus qtiWorksStatus = new QtiWorksStatus();
 		
 		public QtiWorksController(UserRequest ureq, WindowControl wControl) {
-			super(ureq, wControl);
+			super(ureq, wControl, "at_run");
 			initForm(ureq);
 		}
 
@@ -926,6 +936,14 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			qtiEl = new AssessmentTestFormItem("qtirun", submit);
 			qtiEl.setResolvedAssessmentTest(resolvedAssessmentTest);
 			formLayout.add("qtirun", qtiEl);
+			
+			qtiTreeEl = new AssessmentTreeFormItem("qtitree", qtiEl.getComponent(), submit);
+			qtiTreeEl.setResolvedAssessmentTest(resolvedAssessmentTest);
+			formLayout.add("qtitree", qtiTreeEl);
+			
+			String endName = qtiEl.getComponent().hasMultipleTestParts()
+					? "assessment.test.end.testPart" : "assessment.test.end.test";
+			endButton = uifactory.addFormLink("endTest", endName, null, formLayout, Link.BUTTON);
 
 			ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
 			final ResourceLocator inputResourceLocator = 
@@ -935,6 +953,24 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			qtiEl.setAssessmentObjectUri(qtiService.createAssessmentObjectUri(fUnzippedDirRoot));
 			qtiEl.setCandidateSessionContext(AssessmentTestDisplayController.this);
 			qtiEl.setMapperUri(mapperUri);
+			qtiEl.setRenderNavigation(false);
+			
+			qtiTreeEl.setResourceLocator(inputResourceLocator);
+			qtiTreeEl.setTestSessionController(testSessionController);
+			qtiTreeEl.setAssessmentObjectUri(qtiService.createAssessmentObjectUri(fUnzippedDirRoot));
+			qtiTreeEl.setCandidateSessionContext(AssessmentTestDisplayController.this);
+			qtiTreeEl.setMapperUri(mapperUri);
+			
+			if(formLayout instanceof FormLayoutContainer) {
+				FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+				AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractAssumingSuccessful();
+				layoutCont.contextPut("title", assessmentTest.getTitle());
+				layoutCont.contextPut("qtiWorksStatus", qtiWorksStatus);
+				
+				JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/jquery/ui/jquery-ui-1.11.4.custom.resize.min.js" }, null);
+				layoutCont.put("js", js);
+			}
+			updateButtons();
 		}
 
 		@Override
@@ -944,15 +980,18 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
 		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-			if(source == qtiEl) {
+			if(endButton == source) {
+				doEndOrAdvance(ureq);
+			} else if(source == qtiEl || source == qtiTreeEl) {
 				if(event instanceof QTIWorksAssessmentTestEvent) {
 					fireEvent(ureq, event);
 				}
 			} else if(source instanceof FormLink) {
 				FormLink formLink = (FormLink)source;
-				processResponse(ureq, formLink);	
+				processResponse(ureq, formLink);
 			}
 			super.formInnerEvent(ureq, source, event);
+			updateButtons();
 		}
 
 		@Override
@@ -960,6 +999,40 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				Map<Identifier, StringResponseData> stringResponseMap, Map<Identifier, MultipartFileInfos> fileResponseMap,
 				String comment) {
 			fireEvent(ureq, new QTIWorksAssessmentTestEvent(QTIWorksAssessmentTestEvent.Event.response, stringResponseMap, fileResponseMap, comment, source));
+		}
+		
+		private void doEndOrAdvance(UserRequest ureq) {
+			TestSessionState testSessionState = testSessionController.getTestSessionState();
+			CandidateSessionContext candidateSessionContext = AssessmentTestDisplayController.this;
+			if(!candidateSessionContext.isTerminated() && !testSessionState.isExited()
+					&& testSessionController.mayEndCurrentTestPart()) {
+				final TestPlanNodeKey currentTestPartKey = testSessionState.getCurrentTestPartKey();
+				final TestPartSessionState currentTestPartSessionState = testSessionState.getTestPartSessionStates().get(currentTestPartKey);
+				if(currentTestPartSessionState.isEnded()) {
+					fireEvent(ureq, new QTIWorksAssessmentTestEvent(QTIWorksAssessmentTestEvent.Event.advanceTestPart, endButton));
+				} else {
+					fireEvent(ureq, new QTIWorksAssessmentTestEvent(QTIWorksAssessmentTestEvent.Event.endTestPart, endButton));
+				}
+			}
+		}
+		
+		private void updateButtons() {
+			TestSessionState testSessionState = testSessionController.getTestSessionState();
+			CandidateSessionContext candidateSessionContext = AssessmentTestDisplayController.this;
+			boolean enabled = !candidateSessionContext.isTerminated() && !testSessionState.isExited()
+					&& testSessionController.mayEndCurrentTestPart();
+			
+			endButton.setEnabled(enabled);
+		}
+	}
+	
+	public class QtiWorksStatus {
+		
+		public boolean mayEndCurrentTestPart() {
+			TestSessionState testSessionState = testSessionController.getTestSessionState();
+			CandidateSessionContext candidateSessionContext = AssessmentTestDisplayController.this;
+			return !candidateSessionContext.isTerminated() && !testSessionState.isExited()
+					&& testSessionController.mayEndCurrentTestPart();
 		}
 	}
 }

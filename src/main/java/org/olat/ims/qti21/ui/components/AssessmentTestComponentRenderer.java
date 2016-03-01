@@ -19,12 +19,14 @@
  */
 package org.olat.ims.qti21.ui.components;
 
-import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.*;
+import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.contentAsString;
+import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.valueContains;
 
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -48,8 +50,8 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.StringHelper;
-import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.CandidateTestEventType;
 import org.olat.ims.qti21.model.jpa.CandidateEvent;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
@@ -211,7 +213,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
         String key = itemRefKey.toString();
 
         /* We finally do the transform on the _item_ (NB!) */
-        sb.append("<div class='qtiworks assessmentItem assessmentTest'>");
+        sb.append("<div class='qtiworks o_assessmentitem o_assessmenttest'>");
 
 		//test part feedback 'during'
 		//test feedback 'during'
@@ -219,11 +221,8 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		final EffectiveItemSessionControl effectiveItemSessionControl = itemRefNode.getEffectiveItemSessionControl();
 		renderer.setCandidateCommentAllowed(effectiveItemSessionControl.isAllowComment());
 		
-		for(TestPlanNode parentNode=itemRefNode.getParent(); parentNode.getParent() != null; parentNode = parentNode.getParent()) {
-			if(StringHelper.containsNonWhitespace(parentNode.getSectionPartTitle())) {
-				sb.append("<h2>").append(parentNode.getSectionPartTitle()).append("</h2>");
-			}
-		}
+		//write section rubric
+		renderSectionRubrics(renderer, sb, component, itemRefNode, ubu, translator);
 
 		// test part -> section -> item
 		renderTestItemBody(renderer, sb, component, itemRefNode, ubu, translator, options);
@@ -272,6 +271,56 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		sb.append("</div>");// end assessmentItem
 	}
 	
+	private void renderSectionRubrics(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode itemRefNode, URLBuilder ubu, Translator translator) {
+		boolean writeRubrics = false;
+		boolean writeTitles = false;
+		List<AssessmentSection> sectionParentLine = new ArrayList<>();
+		for(TestPlanNode parentNode=itemRefNode.getParent(); parentNode.getParent() != null; parentNode = parentNode.getParent()) {
+			AssessmentSection selectedSection = component.getAssessmentSection(parentNode.getIdentifier());
+			if(selectedSection != null && selectedSection.getVisible()) {
+				sectionParentLine.add(selectedSection);
+				if(selectedSection.getRubricBlocks().size() > 0) {
+					writeRubrics = true;
+				}
+				if(StringHelper.containsNonWhitespace(selectedSection.getTitle())) {
+					writeTitles = true;
+				}
+			}
+		}
+		
+		if(writeRubrics) {
+			sb.append("<div class='o_info o_assessmentsection_rubrics'>");
+			//write the titles first
+			if(writeTitles) {
+				sb.append("<h4>");
+				for(int i=0; i<sectionParentLine.size(); i++) {
+					if(i == 1) {
+						sb.append("<small>");
+					} else if(i > 1) {
+						sb.append(" / ");
+					}
+					sb.append(sectionParentLine.get(i).getTitle());
+				}
+				
+				if(sectionParentLine.size() > 1) {
+					sb.append("</small>");
+				}
+				sb.append("</h4>");
+			}
+			
+
+			for(int i=sectionParentLine.size(); i-->0; ) {
+				AssessmentSection selectedSection = sectionParentLine.get(i);
+				for(RubricBlock rubricBlock:selectedSection.getRubricBlocks()) {
+					sb.append("<div class='rubric'>");//@view (candidate)
+					rubricBlock.getBlocks().forEach((block) -> renderBlock(renderer, sb, component, null, null, block, ubu, translator));
+					sb.append("</div>");
+				}
+			}
+			sb.append("</div>");
+		}
+	}
+	
 	private void renderTestItemBody(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode itemNode,
 			URLBuilder ubu, Translator translator, RenderingRequest options) {
 		final ItemSessionState itemSessionState = component.getItemSessionState(itemNode.getKey());
@@ -282,9 +331,9 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		final AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 
 		//title + status
-		sb.append("<h1 class='itemTitle'>");
+		sb.append("<h3 class='itemTitle'>");
 		renderItemStatus(sb, itemSessionState, options);
-		sb.append(itemNode.getSectionPartTitle()).append("</h1>");
+		sb.append(itemNode.getSectionPartTitle()).append("</h3>");
 		sb.append("<div id='itemBody'>");
 
 		//render itemBody
@@ -395,7 +444,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	
 	private void renderTestPartFeedback(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component,
 			URLBuilder ubu, Translator translator) {
-        sb.append("<div class='qtiworks assessmentTest testFeedback'>")
+        sb.append("<div class='qtiworks o_assessmenttest testFeedback'>")
 		  .append("<h1>");
 		if(component.hasMultipleTestParts()) {
 			sb.append("Test part");
@@ -451,7 +500,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		if(hasReviewableItems) {
 			sb.append("<h2>Review your responses</h2>");
 			sb.append("<p>You may review your responses to some (or all) questions. These are listed below.</p>");
-			sb.append("<ul class='testPartNavigation'>");
+			sb.append("<ul class='o_testpartnavigation'>");
 			
 			node.getChildren().forEach((childNode)
 				-> renderReview(renderer, sb, component, childNode, ubu, translator));
@@ -468,12 +517,12 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		TestPart currentTestPart = component.getTestPart(component.getCurrentTestPartNode().getIdentifier());
 		//<xsl:if test="$currentTestPart/@navigationMode='nonlinear' or exists($assessmentSessionSessionState/@entryTime)">
 		if(currentTestPart.getNavigationMode() == NavigationMode.NONLINEAR || assessmentSessionSessionState.getEntryTime() != null) {
-			sb.append("<li class='assessmentSection'>")
+			sb.append("<li class='o_assessmentsection'>")
 			  .append("<header><h2>")
 			  .append(sectionNode.getSectionPartTitle()).append("</h2>");
 			renderAssessmentSectionRubrickBlock(renderer, sb, component, sectionNode, ubu, translator);
 			sb.append("</header>");
-			sb.append("<ul class='testPartNavigationInner list-unstyled'>");
+			sb.append("<ul class='o_testpartnavigation_inner list-unstyled'>");
 			
 			sectionNode.getChildren().forEach((childNode)
 					-> renderReview(renderer, sb, component, childNode, ubu, translator));
@@ -493,7 +542,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		TestPart currentTestPart = component.getTestPart(component.getCurrentTestPartNode().getIdentifier());
 		if(currentTestPart.getNavigationMode() == NavigationMode.NONLINEAR || itemSessionState.getEntryTime() != null) {
 			
-			sb.append("<li class='assessmentItem'>");
+			sb.append("<li class='o_assessmentitem'>");
 			sb.append("<button type='button' onclick=\"");
 			String key = itemNode.getKey().toString();
 			sb.append(FormJSHelper.getXHRFnCallFor(component.getQtiItem(), true, true,
@@ -550,43 +599,47 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	}
 	
 	private void renderNavigation(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, URLBuilder ubu, Translator translator) {
-		sb.append("<div id='o_qti_menu' class='qtiworks assessmentTest testPartNavigation'>");
-		
-		//title
-		boolean multiPartTest = component.hasMultipleTestParts();
-		String title = multiPartTest ?
-				translator.translate("assessment.test.nav.title.multiPartTestMenu") : translator.translate("assessment.test.nav.title.questionMenu");
-		sb.append("<h1>").append(title).append(" Question Menu</h1>");
-		
-		//part, sections and item refs
-		sb.append("<ul class='testPartNavigation list-unstyled'>");
-		component.getCurrentTestPartNode().getChildren().forEach((node)
-				-> renderNavigation(renderer, sb, component, node, ubu, translator));
-		sb.append("</ul>");
-		
-		// test controls
-		TestSessionController testSessionController = component.getTestSessionController();
-		boolean allowedToEndTestPart = testSessionController.mayEndCurrentTestPart();
-		
-		sb.append("<div class='o_button_group'>");
-		sb.append("<button type='button' onclick=\"");
-		if(allowedToEndTestPart) {
-			Form form = component.getQtiItem().getRootForm();
-			String dispatchId = component.getQtiItem().getFormDispatchId();
-			sb.append(FormJSHelper.getXHRFnCallFor(form, dispatchId, 1, true, true,
-					new NameValuePair("cid", Event.endTestPart.name())));
+		if(component.isRenderNavigation()) {
+			sb.append("<div id='o_qti_menu' class='qtiworks o_assessmenttest o_testpartnavigation'>");
+			
+			//title
+			boolean multiPartTest = component.hasMultipleTestParts();
+			String title = multiPartTest ?
+					translator.translate("assessment.test.nav.title.multiPartTestMenu") : translator.translate("assessment.test.nav.title.questionMenu");
+			sb.append("<h1>").append(title).append(" Question Menu</h1>");
+			
+			//part, sections and item refs
+			sb.append("<ul class='o_testpartnavigation list-unstyled'>");
+			component.getCurrentTestPartNode().getChildren().forEach((node)
+					-> renderNavigation(renderer, sb, component, node, ubu, translator));
+			sb.append("</ul>");
+			
+			// test controls
+			TestSessionController testSessionController = component.getTestSessionController();
+			boolean allowedToEndTestPart = testSessionController.mayEndCurrentTestPart();
+			
+			sb.append("<div class='o_button_group'>");
+			sb.append("<button type='button' onclick=\"");
+			if(allowedToEndTestPart) {
+				Form form = component.getQtiItem().getRootForm();
+				String dispatchId = component.getQtiItem().getFormDispatchId();
+				sb.append(FormJSHelper.getXHRFnCallFor(form, dispatchId, 1, true, true,
+						new NameValuePair("cid", Event.endTestPart.name())));
+			} else {
+				sb.append("javascript:");
+			}
+			String endTestTitle = multiPartTest ?
+					translator.translate("assessment.test.end.testPart") : translator.translate("assessment.test.end.test");
+			sb.append(";\" class='btn btn-default o_sel_end_testpart'").append(" disabled", !allowedToEndTestPart).append("><span>")
+			  .append(endTestTitle).append("</span>");
+	
+			sb.append("</button>");
+			sb.append("</div></div>");
 		} else {
-			sb.append("javascript:");
+			
+			sb.append("Bouhouhou");
+			
 		}
-		String endTestTitle = multiPartTest ?
-				translator.translate("assessment.test.end.testPart") : translator.translate("assessment.test.end.test");
-		sb.append(";\" class='btn btn-default o_sel_end_testpart'").append(" disabled", !allowedToEndTestPart).append("><span>")
-		  .append(endTestTitle).append("</span>");
-
-		sb.append("</button>");
-		sb.append("</div>");
-
-		sb.append("</div>");
 	}
 	
 	private void renderNavigation(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode node,
@@ -600,11 +653,11 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	
 	private void renderNavigationAssessmentSection(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode sectionNode,
 			URLBuilder ubu, Translator translator) {
-		sb.append("<li class='assessmentSection o_qti_menu_item'>")
+		sb.append("<li class='o_assessmentsection o_qti_menu_item'>")
 		  .append("<header><h2>").append(sectionNode.getSectionPartTitle()).append("</h2>");
 		renderAssessmentSectionRubrickBlock(renderer, sb, component, sectionNode, ubu, translator);
 
-		sb.append("</header><ul class='testPartNavigationInner list-unstyled'>");
+		sb.append("</header><ul class='o_testpartnavigation_inner list-unstyled'>");
 		sectionNode.getChildren().forEach((child)
 				-> renderNavigation(renderer, sb, component, child, ubu, translator));
 		sb.append("</ul></li>");
@@ -624,7 +677,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	
 	private void renderNavigationAssessmentItem(StringOutput sb, AssessmentTestComponent component, TestPlanNode itemNode, Translator translator) {
 		String key = itemNode.getKey().toString();
-		sb.append("<li class='assessmentItem'>");
+		sb.append("<li class='o_assessmentitem'>");
 		sb.append("<button type='button' onclick=\"");
 		
 		Form form = component.getQtiItem().getRootForm();

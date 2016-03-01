@@ -58,6 +58,14 @@ public class AssessmentTestFormItem extends AssessmentObjectFormItem {
 	public AssessmentTestComponent getComponent() {
 		return component;
 	}
+	
+	public boolean isRenderNavigation() {
+		return component.isRenderNavigation();
+	}
+
+	public void setRenderNavigation(boolean renderNavigation) {
+		component.setRenderNavigation(renderNavigation);
+	}
 
 	public ResolvedAssessmentTest getResolvedAssessmentTest() {
 		return component.getResolvedAssessmentTest();
@@ -94,9 +102,13 @@ public class AssessmentTestFormItem extends AssessmentObjectFormItem {
 			if(StringHelper.containsNonWhitespace(cmd)) {
 				switch(QTIWorksAssessmentTestEvent.Event.valueOf(cmd)) {
 					case selectItem: {
-						String selectedItem = ureq.getParameter("item");
-						event = new QTIWorksAssessmentTestEvent(selectItem, selectedItem, this);
-						break;
+						if(isRenderNavigation()) {
+							String selectedItem = ureq.getParameter("item");
+							event = new QTIWorksAssessmentTestEvent(selectItem, selectedItem, this);
+							break;
+						} else {
+							return;//not it's job
+						}
 					}
 					case nextItem: {
 						event = new QTIWorksAssessmentTestEvent(nextItem, this);

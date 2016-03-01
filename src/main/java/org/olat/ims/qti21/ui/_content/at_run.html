@@ -1,42 +1,33 @@
-<div id="o_main" class="$mainCssClasses row">
-#if($existsCol1 && $r.visible("col1"))
-	<div id="o_main_left" style="$!col1CustomCSSStyles">
-		<div id="o_main_left_content" class="clearfix"> 
-			$r.render("col1")	
+<div id="o_qti_run" class="row">
+	<div id="o_qti_run_title" class="o_header_with_buttons">
+		<h3>$r.escapeHtml($title)</h3>
+		<div class="o_button_group o_button_group_right">
+		#if(${qtiWorksStatus.mayEndCurrentTestPart()} && $r.available("endTest") && $r.visible("endTest"))
+			$r.render("endTest")
+		#end
 		</div>
+	</div>
+	<div id="o_main_left" style="">
+		<div id="o_main_left_content" class="clearfix">$r.render("qtitree")</div>
 		<div id="o_main_left_toggle" class="hidden-print">
-		  <span class="sr-only">Toggle content menu</span>
-		  <i class="o_icon o_icon_menuhandel"></i>
+			<span class="sr-only">Toggle content menu</span>
+			<i class="o_icon o_icon_menuhandel"></i>
 		</div>
 	</div>
-#end
-#if($existsCol2 && $r.visible("col2"))	
-	<div id="o_main_right" style="$!col2CustomCSSStyles">
-		<div id="o_main_right_content" class="clearfix"> 
-			$r.render("col2")
+	<div id="o_main_center">
+		<a id="o_content"></a>
+		<div id="o_main_center_content" class="clearfix o_scrollblock">
+	       	<div id="o_main_center_content_inner">$r.render("qtirun")</div>
 		</div>
 	</div>
-#end
-#if($existsCol3 && $r.visible("col3"))	
-	<div id="o_main_center"> ## style="$!col3CustomCSSStyles1 $!col3CustomCSSStyles2">
-		<a id="o_content"></a> 
-		<div id="o_main_center_content" class="clearfix o_scrollblock">			          
-	       	<div id="o_main_center_content_inner">
-				$r.render("col3")		
-			</div>
-		</div>
-	</div>
-#end
 </div>
-#if(($existsCol1 && $r.visible("col1")) || ($existsCol2 && $r.visible("col2")))
 <script type="text/javascript">
 /* <![CDATA[ */
 jQuery().ready(function() {
 	// Main vertical splitter, anchored to the browser window
-#if($existsCol1 && $r.visible("col1"))
 	jQuery("#o_main_left").resizable({
         handles: 'e',
-        containment: '#o_main',
+        containment: '#o_qti_run',
 	    grid: [o_info.emPxFactor, 10000],
 	    stop: function() {
 	    	var leftCol = jQuery('#o_main_left');
@@ -131,22 +122,6 @@ jQuery().ready(function() {
 		// same breakpoint as bootstrap screen-md, opacity detect IE8
 		o_undockMenu(0);
 	}
-#end
-
-#if($existsCol2 && $r.visible("col2"))		
-	jQuery("#o_main_right").resizable({
-        handles: 'w',
-        containment: '#o_main',
-	    grid: [o_info.emPxFactor, 10000],
-	    stop: function() {
-	    	var rightCol = jQuery('#o_main_right');
-			var newEmWidth = Math.round(rightCol.width() / o_info.emPxFactor);
-			rightCol.width(newEmWidth + 'em');
-			jQuery.post('$r.commandURI("saveCol2Width")' + newEmWidth);
-	    }
-	});
-#end
 });
 /* ]]> */
 </script>
-#end

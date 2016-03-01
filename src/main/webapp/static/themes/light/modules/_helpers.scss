@@ -86,7 +86,7 @@
 .o_header_with_buttons {
 	@include clearfix();
 	@extend %o_block_bottom;
-	h1, h3, h4 {
+	h1, h2, h3, h4 {
 		display: inline-block;
 	}
 	.o_button_group {

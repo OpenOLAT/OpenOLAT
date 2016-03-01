@@ -638,7 +638,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		private final String filename;
 		
 		public QtiWorksController(UserRequest ureq, WindowControl wControl, String filename) {
-			super(ureq, wControl);
+			super(ureq, wControl, "ff_run");
 			this.filename = filename;
 			initForm(ureq);
 		}

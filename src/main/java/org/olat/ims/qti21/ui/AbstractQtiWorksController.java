@@ -45,8 +45,8 @@ import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
  */
 public abstract class AbstractQtiWorksController extends FormBasicController {
 		
-	public AbstractQtiWorksController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "ff_run");
+	public AbstractQtiWorksController(UserRequest ureq, WindowControl wControl, String pageName) {
+		super(ureq, wControl, pageName);
 	}
 
 	@Override

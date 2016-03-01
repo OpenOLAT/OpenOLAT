@@ -60,7 +60,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 			Translator translator, RenderResult renderResult, String[] args) {
 
 		AssessmentItemComponent cmp = (AssessmentItemComponent)source;
-		sb.append("<div class='qtiworks assessmentItem'>");
+		sb.append("<div class='qtiworks o_assessmentitem'>");
 
 		ItemSessionController itemSessionController = cmp.getItemSessionController();
 		
