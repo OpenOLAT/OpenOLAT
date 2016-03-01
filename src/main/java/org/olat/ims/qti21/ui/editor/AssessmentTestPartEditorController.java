@@ -63,7 +63,7 @@ public class AssessmentTestPartEditorController extends ItemSessionControlContro
 				translate("form.testPart.navigationMode.linear"), translate("form.testPart.navigationMode.nonlinear")
 		};
 		String mode = testPart.getNavigationMode() == null ? NavigationMode.LINEAR.name() : testPart.getNavigationMode().name();
-		navigationModeEl = uifactory.addRadiosHorizontal("shuffle", "form.section.shuffle", formLayout, navigationKeys, navigationValues);
+		navigationModeEl = uifactory.addRadiosHorizontal("navigationMode", "form.testPart.navigationMode", formLayout, navigationKeys, navigationValues);
 		navigationModeEl.select(mode, true);
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -75,7 +75,11 @@ public class AssessmentTestPartEditorController extends ItemSessionControlContro
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
-
+		navigationModeEl.clearError();
+		if(!navigationModeEl.isOneSelected()) {
+			navigationModeEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
 		
 		return allOk &= super.validateFormLogic(ureq);
 	}
