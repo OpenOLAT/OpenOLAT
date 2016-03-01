@@ -167,7 +167,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
         ManifestBuilder manifestBuilder = ManifestBuilder.createAssessmentTestBuilder();
 
 		//single choice
-		File itemFile = new File(directory, IdentifierGenerator.newAsString(QTI21QuestionType.sc.getPrefix()));
+		File itemFile = new File(directory, IdentifierGenerator.newAsString(QTI21QuestionType.sc.getPrefix()) + ".xml");
 		AssessmentItem assessmentItem = AssessmentItemFactory.createSingleChoice();
 		QtiSerializer qtiSerializer = qtiService.qtiSerializer();
 		manifestBuilder.appendAssessmentItem(itemFile.getName());	
