@@ -88,6 +88,7 @@ import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.fo.ui.MessageEditController.EditMode;
 import org.olat.modules.fo.ui.events.DeleteMessageEvent;
 import org.olat.modules.fo.ui.events.DeleteThreadEvent;
+import org.olat.modules.fo.ui.events.ErrorEditMessage;
 import org.olat.modules.fo.ui.events.SelectMessageEvent;
 import org.olat.portfolio.EPUIFactory;
 import org.olat.portfolio.manager.EPFrontendManager;
@@ -748,22 +749,30 @@ public class MessageListController extends BasicController implements GenericEve
 			}
 		} else if(editMessageCtrl == source) {
 			// edit done -> save 
-			Message message = editMessageCtrl.getMessage();
-			if(message != null) {
-				if(thread != null && thread.getKey().equals(message.getKey())) {
-					thread = message;
-				}
-				reloadModel(ureq, message);
+			if(event instanceof  ErrorEditMessage) {
+				handleEditError(ureq);
 			} else {
-				showInfo("header.cannoteditmessage");
+				Message message = editMessageCtrl.getMessage();
+				if(message != null) {
+					if(thread != null && thread.getKey().equals(message.getKey())) {
+						thread = message;
+					}
+					reloadModel(ureq, message);
+				} else {
+					showInfo("header.cannoteditmessage");
+				}
 			}
 			cmc.deactivate();
 		} else if(replyMessageCtrl == source) {
-			Message reply = replyMessageCtrl.getMessage();
-			if(reply != null) {	
-				reloadModel(ureq, reply);
+			if(event instanceof  ErrorEditMessage) {
+				handleEditError(ureq);
 			} else {
-			  	showInfo("header.cannotsavemessage");
+				Message reply = replyMessageCtrl.getMessage();
+				if(reply != null) {	
+					reloadModel(ureq, reply);
+				} else {
+				  	showInfo("header.cannotsavemessage");
+				}
 			}
 			cmc.deactivate();
 		} else if(messageTableCtrl == source) {
@@ -795,6 +804,19 @@ public class MessageListController extends BasicController implements GenericEve
 		replyMessageCtrl = null;
 		editMessageCtrl = null;
 		cmc = null;
+	}
+	
+	private void handleEditError(UserRequest ureq) {
+		if(thread == null) {
+			fireEvent(ureq, Event.BACK_EVENT);
+			showWarning("error.message.deleted");
+		} else if(forumManager.existsMessageById(thread.getKey())) {
+			reloadModel(ureq, null);
+			showWarning("error.message.deleted");
+		} else {
+			fireEvent(ureq, Event.BACK_EVENT);
+			showWarning("error.message.deleted");
+		}
 	}
 
 	private void doReply(UserRequest ureq, MessageView parent, boolean quote) {

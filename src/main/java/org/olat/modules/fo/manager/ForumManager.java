@@ -321,6 +321,19 @@ public class ForumManager {
 		return threadList;
 	}
 	
+	public boolean existsMessageById(Long messageKey) {
+		StringBuilder query = new StringBuilder();
+		query.append("select msg.key from fomessage as msg")
+		     .append(" where msg.key=:messageKey");
+		
+		List<Long> messages = dbInstance.getCurrentEntityManager()
+				.createQuery(query.toString(), Long.class)
+				.setParameter("messageKey", messageKey)
+				.getResultList();
+		return messages == null || messages.isEmpty() || messages.get(0) == null
+				? false : messages.get(0).longValue() > -1;
+	}
+	
 	public Message getMessageById(Long messageKey) {
 		StringBuilder query = new StringBuilder();
 		query.append("select msg from fomessage as msg")
