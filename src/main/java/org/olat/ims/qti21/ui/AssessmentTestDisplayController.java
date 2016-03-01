@@ -254,6 +254,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			case selectItem:
 				processSelectItem(ureq, qe.getSubCommand());
 				break;
+			case nextItem:
+				processNextItem(ureq);
+				break;
 			case finishItem:
 				processFinishLinearItem(ureq);
 				break;
@@ -305,12 +308,19 @@ public class AssessmentTestDisplayController extends BasicController implements 
         testSessionController.selectItemNonlinear(requestTimestamp, nodeKey);
 	}
 	
+	private void processNextItem(UserRequest ureq) {
+		Date requestTimestamp = ureq.getRequestTimestamp();
+        if(testSessionController.hasFollowingNonLinearItem()) {
+        	testSessionController.selectFollowingItemNonLinear(requestTimestamp);
+        }
+	}
+	
 	private void processReviewItem(UserRequest ureq, String key) {
 		TestPlanNodeKey itemKey = TestPlanNodeKey.fromString(key);
         //Assert.notNull(itemKey, "itemKey");
 
 		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-        TestSessionState testSessionState = testSessionController.getTestSessionState();
+		TestSessionState testSessionState = testSessionController.getTestSessionState();
 
         /* Make sure caller may do this */
         //assertSessionNotTerminated(candidateSession);

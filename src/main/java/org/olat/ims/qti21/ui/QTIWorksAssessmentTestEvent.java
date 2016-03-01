@@ -47,6 +47,7 @@ public class QTIWorksAssessmentTestEvent extends FormEvent {
 		response("response", "response"),//OK
 		testPartNavigation("test-part-navigation", "test-part-navigation"),//OK
 		selectItem("select-item", "select-item/"),//OK
+		nextItem("next-item", "next-item/"),
 		finishItem("finish-item", "finish-item"),//impl
 		reviewTestPart("review-test-part", "review-test-part"),//impl
 		reviewItem("review-item", "review-item/"),//impl

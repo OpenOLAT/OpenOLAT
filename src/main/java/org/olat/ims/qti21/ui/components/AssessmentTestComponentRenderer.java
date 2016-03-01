@@ -235,6 +235,11 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			String title = translator.translate("assessment.test.nextQuestion");
 			renderControl(sb, component, title, "o_sel_next_question", new NameValuePair("cid", Event.finishItem.name()));
 		}
+		//nextItem
+		if(options.isNextItemAllowed() && testSessionController.hasFollowingNonLinearItem()) {
+			String title = translator.translate("assessment.test.nextQuestion");
+			renderControl(sb, component, title, "o_sel_next_question", new NameValuePair("cid", Event.nextItem.name()));
+		}
 		//testPartNavigationAllowed"
 		if(options.isTestPartNavigationAllowed()) {
 			String title = translator.translate("assessment.test.questionMenu");
@@ -705,15 +710,17 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
     	private boolean solutionMode;
     	private boolean testPartNavigationAllowed;
     	private boolean advanceTestItemAllowed;
+    	private boolean nextItemAllowed;
     	private boolean endTestPartAllowed;
 
     	
     	private RenderingRequest(boolean reviewMode, boolean solutionMode, boolean testPartNavigationAllowed,
-    			boolean advanceTestItemAllowed, boolean endTestPartAllowed) {
+    			boolean advanceTestItemAllowed, boolean nextItemAllowed, boolean endTestPartAllowed) {
     		this.reviewMode = reviewMode;
     		this.solutionMode = solutionMode;
     		this.testPartNavigationAllowed = testPartNavigationAllowed;
     		this.advanceTestItemAllowed = advanceTestItemAllowed;
+    		this.nextItemAllowed = nextItemAllowed;
     		this.endTestPartAllowed = endTestPartAllowed;
     	}
 
@@ -732,28 +739,33 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		public boolean isAdvanceTestItemAllowed() {
 			return advanceTestItemAllowed;
 		}
+		
+		public boolean isNextItemAllowed() {
+			return nextItemAllowed;
+		}
 
 		public boolean isEndTestPartAllowed() {
 			return endTestPartAllowed;
 		}
     	
     	public static RenderingRequest getItemSolution() {
-    		return new RenderingRequest(true, true, false, false, false);
+    		return new RenderingRequest(true, true, false, false, false, false);
     	}
     	
     	public static RenderingRequest getItemReview() {
-    		return new RenderingRequest(true, false, false, false, false);
+    		return new RenderingRequest(true, false, false, false, false, false);
     	}
     	
     	public static RenderingRequest getItem(TestSessionController testSessionController) {
     		final TestPart currentTestPart = testSessionController.getCurrentTestPart();
             final NavigationMode navigationMode = currentTestPart.getNavigationMode();
           
+            boolean nextItemAllowed = navigationMode == NavigationMode.NONLINEAR;
             boolean advanceTestItemAllowed = navigationMode == NavigationMode.LINEAR && testSessionController.mayAdvanceItemLinear();
             boolean testPartNavigationAllowed = navigationMode == NavigationMode.NONLINEAR;
             boolean endTestPartAllowed = navigationMode == NavigationMode.LINEAR && testSessionController.mayEndCurrentTestPart();
 
-            return new RenderingRequest(false, false, testPartNavigationAllowed, advanceTestItemAllowed, endTestPartAllowed);
+            return new RenderingRequest(false, false, testPartNavigationAllowed, advanceTestItemAllowed, nextItemAllowed, endTestPartAllowed);
     	}
     }
 
