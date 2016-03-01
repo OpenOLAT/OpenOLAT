@@ -27,6 +27,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.persistence.PersistenceException;
+
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -52,6 +54,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
@@ -70,6 +73,7 @@ import org.olat.modules.fo.ForumChangedEvent;
 import org.olat.modules.fo.ForumLoggingAction;
 import org.olat.modules.fo.Message;
 import org.olat.modules.fo.manager.ForumManager;
+import org.olat.modules.fo.ui.events.ErrorEditMessage;
 import org.olat.user.DisplayPortraitController;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -363,6 +367,17 @@ public class MessageEditController extends FormBasicController {
 	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
+		try {
+			commitMessage(ureq);
+			fireEvent(ureq, Event.DONE_EVENT);
+		} catch(DBRuntimeException | PersistenceException e) {
+			DBFactory.getInstance().rollback();
+			logError("", e);
+			fireEvent(ureq, new ErrorEditMessage());
+		}
+	}
+	
+	private void commitMessage(UserRequest ureq) {
 		// if msg exist -> persist uploads directly to final dest
 		if (message.getKey() != null) {
 			message = fm.loadMessage(message.getKey());
@@ -432,8 +447,6 @@ public class MessageEditController extends FormBasicController {
 			ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_REPLY_MESSAGE_CREATE, getClass(),
 					LoggingResourceable.wrap(message));
 		}
-		
-		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	
 	private void notifiySubscription() {
