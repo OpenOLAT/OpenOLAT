@@ -41,6 +41,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
+import org.olat.core.gui.control.generic.messages.MessageController;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
@@ -208,7 +210,9 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 			}
 		} else if (source == chooseScormRunMode) {
 			doLaunch(ureq, true);
-			scormDispC.activate();
+			if(scormDispC != null) {
+				scormDispC.activate();
+			}
 		}
 	}
 
@@ -244,6 +248,13 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		startPage.contextPut("isassessable", Boolean.valueOf(isAssessable));
 		main.setContent(startPage);
 	}
+	
+	private void doSetMissingResourcesWarning(UserRequest ureq) {
+		String text = translate("error.cprepoentrymissing.user");
+		MessageController missingCtrl = MessageUIFactory.createWarnMessage(ureq, getWindowControl(), null, text);
+		listenTo(missingCtrl);
+		main.setContent(missingCtrl.getInitialComponent());
+	}
 
 	private void doLaunch(UserRequest ureq, boolean doActivate) {
 		ureq.getUserSession().getSingleUserEventCenter()
@@ -254,16 +265,21 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 			// instance
 			// of this controller.
 			// need to be strict when launching -> "true"
-			RepositoryEntry re = ScormEditController.getScormCPReference(config, true);
-			if (re == null)
-				throw new AssertException("configurationkey 'CONFIG_KEY_REPOSITORY_SOFTKEY' of BB CP was missing");
+			RepositoryEntry re = ScormEditController.getScormCPReference(config, false);
+			if (re == null) {
+				doSetMissingResourcesWarning(ureq);
+				return;
+			}
 			cpRoot = FileResourceManager.getInstance().unzipFileResource(re.getOlatResource());
 			addLoggingResourceable(LoggingResourceable.wrapScormRepositoryEntry(re));
 			// should always exist because references cannot be deleted as long
 			// as
 			// nodes reference them
-			if (cpRoot == null)
-				throw new AssertException("file of repository entry " + re.getKey() + " was missing");
+			if (cpRoot == null) {
+				doSetMissingResourcesWarning(ureq);
+				logError("File of repository entry " + re.getKey() + " was missing", null);
+				return;
+			}
 		}
 		// else cpRoot is already set (save some db access if the user opens /
 		// closes / reopens the cp from the same CPRuncontroller instance)
