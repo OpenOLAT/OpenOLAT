@@ -187,14 +187,18 @@ public class HomeCalendarManager implements PersonalCalendarManager {
 			Map<CalendarKey,CalendarUserConfiguration> configMap) {
 		// get the personal calendar
 		if(calendarModule.isEnablePersonalCalendar()) {
-			KalendarRenderWrapper calendarWrapper = calendarManager.getPersonalCalendar(identity);
-			calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
-			calendarWrapper.setPrivateEventsVisible(true);
-			CalendarUserConfiguration config = configMap.get(calendarWrapper.getCalendarKey());
-			if (config != null) {
-				calendarWrapper.setConfiguration(config);
+			try {
+				KalendarRenderWrapper calendarWrapper = calendarManager.getPersonalCalendar(identity);
+				calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
+				calendarWrapper.setPrivateEventsVisible(true);
+				CalendarUserConfiguration config = configMap.get(calendarWrapper.getCalendarKey());
+				if (config != null) {
+					calendarWrapper.setConfiguration(config);
+				}
+				calendars.add(calendarWrapper);
+			} catch (Exception e) {
+				log.error("Cannot read personal calendar of: " + identity, e);
 			}
-			calendars.add(calendarWrapper);
 		}
 	}
 	
@@ -262,6 +266,9 @@ public class HomeCalendarManager implements PersonalCalendarManager {
 				} catch (CorruptedCourseException e) {
 					OLATResource olatResource = courseEntry.getOlatResource();
 					log.error("Corrupted course: " + olatResource.getResourceableTypeName() + " :: " + courseResourceableID, null);
+				} catch (Exception e) {
+					OLATResource olatResource = courseEntry.getOlatResource();
+					log.error("Cannor read calendar of course: " + olatResource.getResourceableTypeName() + " :: " + courseResourceableID, null);
 				}
 			}
 		}
@@ -331,27 +338,31 @@ public class HomeCalendarManager implements PersonalCalendarManager {
 		
 		Map<Long,Long> groupKeyToAccess = CoreSpringFactory.getImpl(CollaborationManager.class).lookupCalendarAccess(groups);
 		for (BusinessGroup bGroup:groups) {
-			KalendarRenderWrapper groupCalendarWrapper = calendarManager.getGroupCalendar(bGroup);
-			groupCalendarWrapper.setPrivateEventsVisible(true);
-			// set calendar access
-			int iCalAccess = CollaborationTools.CALENDAR_ACCESS_OWNERS;
-			Long lCalAccess = groupKeyToAccess.get(bGroup.getKey());
-			if (lCalAccess != null) {
-				iCalAccess = lCalAccess.intValue();
-			}
-			if (iCalAccess == CollaborationTools.CALENDAR_ACCESS_OWNERS && !isOwner) {
-				groupCalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
-			} else {
-				groupCalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
-			}
-			CalendarUserConfiguration config = configMap.get(groupCalendarWrapper.getCalendarKey());
-			if (config != null) {
-				groupCalendarWrapper.setConfiguration(config);
-			}
-			if(isOwner || isParticipant) {
+			try {
+				KalendarRenderWrapper groupCalendarWrapper = calendarManager.getGroupCalendar(bGroup);
 				groupCalendarWrapper.setPrivateEventsVisible(true);
+				// set calendar access
+				int iCalAccess = CollaborationTools.CALENDAR_ACCESS_OWNERS;
+				Long lCalAccess = groupKeyToAccess.get(bGroup.getKey());
+				if (lCalAccess != null) {
+					iCalAccess = lCalAccess.intValue();
+				}
+				if (iCalAccess == CollaborationTools.CALENDAR_ACCESS_OWNERS && !isOwner) {
+					groupCalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
+				} else {
+					groupCalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
+				}
+				CalendarUserConfiguration config = configMap.get(groupCalendarWrapper.getCalendarKey());
+				if (config != null) {
+					groupCalendarWrapper.setConfiguration(config);
+				}
+				if(isOwner || isParticipant) {
+					groupCalendarWrapper.setPrivateEventsVisible(true);
+				}
+				calendars.add(groupCalendarWrapper);
+			} catch (Exception e) {
+				log.error("Cannot read calendar of group: " + bGroup, e);
 			}
-			calendars.add(groupCalendarWrapper);
 		}
 	}
 	

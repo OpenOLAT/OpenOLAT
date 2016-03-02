@@ -622,7 +622,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		removeAsListenerAndDispose(editController);
 		
 		KalendarRenderWrapper calendarWrapper = calendarEl.getCalendar(addEvent.getCalendarID());
-		List<KalendarRenderWrapper> copyCalendarWrappers = new ArrayList<KalendarRenderWrapper>(calendarWrappers);
+		List<KalendarRenderWrapper> copyCalendarWrappers = new ArrayList<>(calendarWrappers);
 		
 		boolean isReadOnly = calendarWrapper == null ? true : calendarWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY;
 		for(KalendarRenderWrapper copyCalendarWrapper:copyCalendarWrappers) {
