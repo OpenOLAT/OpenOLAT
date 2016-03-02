@@ -82,7 +82,4 @@ public class LayoutMain3ColsConfig {
 	public void setCol2WidthEM(int col2WidthEM) {
 		this.col2WidthEM = col2WidthEM;
 	}
-
-
-	
 }
