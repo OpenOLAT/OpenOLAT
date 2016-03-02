@@ -112,7 +112,14 @@ public class HomeCalendarManager implements PersonalCalendarManager {
 			SearchBusinessGroupParams groupParams = new SearchBusinessGroupParams(identity, true, true);
 			groupParams.addTools(CollaborationTools.TOOL_CALENDAR);
 			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(groupParams, null, 0, -1);
+			Set<BusinessGroup> resourceSet = new HashSet<>();
 			for(BusinessGroup group:groups) {
+				if(resourceSet.contains(group)) {
+					continue;
+				} else {
+					resourceSet.add(group);
+				}
+				
 				String calendarId = group.getKey().toString();
 				CalendarKey key = new CalendarKey(calendarId, CalendarManager.TYPE_GROUP);
 				CalendarUserConfiguration calendarConfig = configMap.get(key);
@@ -127,8 +134,15 @@ public class HomeCalendarManager implements PersonalCalendarManager {
 		
 		if(calendarModule.isEnableCourseElementCalendar() || calendarModule.isEnableCourseToolCalendar()) {
 			List<Object[]> resources =  getCourses(identity);
+			Set<RepositoryEntry> resourceSet = new HashSet<>();
 			for(Object[] resource:resources) {
 				RepositoryEntry courseEntry = (RepositoryEntry)resource[0];
+				if(resourceSet.contains(courseEntry)) {
+					continue;
+				} else {
+					resourceSet.add(courseEntry);
+				}
+				
 				String calendarId = courseEntry.getOlatResource().getResourceableId().toString();
 				CalendarKey key = new CalendarKey(calendarId, CalendarManager.TYPE_COURSE);
 				CalendarUserConfiguration calendarConfig = configMap.get(key);
