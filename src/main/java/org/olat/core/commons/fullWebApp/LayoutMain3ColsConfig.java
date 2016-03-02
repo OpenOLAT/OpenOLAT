@@ -31,7 +31,7 @@ package org.olat.core.commons.fullWebApp;
 
 public class LayoutMain3ColsConfig {
 	// default values for column width in EM
-	private volatile static int col1WidthEmDefault = 14, col2WidthEmDefault = 12;
+	private static final int col1WidthEmDefault = 14, col2WidthEmDefault = 12;
 	// specific configured width
 	private int col1WidthEM;
 	private int col2WidthEM;
@@ -82,24 +82,4 @@ public class LayoutMain3ColsConfig {
 	public void setCol2WidthEM(int col2WidthEM) {
 		this.col2WidthEM = col2WidthEM;
 	}
-
-	/**
-	 * Spring setter method to change the default width of column one
-	 * 
-	 * @param col1WidthEmDefaultConfiguration
-	 */
-	public void setCol1WidthEmDefault(int col1WidthEmDefaultConfiguration) {
-		col1WidthEmDefault = col1WidthEmDefaultConfiguration;
-	}
-
-	/**
-	 * Spring setter method to change the default width of column two
-	 * 
-	 * @param col2WidthEmDefaultConfiguration
-	 */
-	public void setCol2WidthEmDefault(int col2WidthEmDefaultConfiguration) {
-		col2WidthEmDefault = col2WidthEmDefaultConfiguration;
-	}
-
-	
 }
