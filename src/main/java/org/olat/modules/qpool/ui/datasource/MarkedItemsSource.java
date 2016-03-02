@@ -58,6 +58,7 @@ public class MarkedItemsSource extends DefaultItemsSource {
 			String businessPath = "[QuestionItem:" + item.getResourceableId() + "]";
 			markManager.setMark(item, identity, null, businessPath);
 		}
+		qpoolService.index(items);
 		return items.size();
 	}
 
