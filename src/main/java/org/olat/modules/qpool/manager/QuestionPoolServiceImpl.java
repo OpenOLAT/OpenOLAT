@@ -188,7 +188,18 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		lifeIndexer.indexDocument(QItemDocument.TYPE, mergedItem.getKey());
 		return mergedItem;
 	}
-	
+
+	@Override
+	public void index(List<? extends QuestionItemShort> items) {
+		if(items == null || items.isEmpty()) return;
+		
+		List<Long> keys = new ArrayList<>();
+		for(QuestionItemShort item:items) {
+			keys.add(item.getKey());
+		}
+		lifeIndexer.indexDocument(QItemDocument.TYPE, keys);
+	}
+
 	@Override
 	public List<QuestionItem> copyItems(Identity owner, List<QuestionItemShort> itemsToCopy) {
 		List<QuestionItem> copies = new ArrayList<QuestionItem>();
@@ -552,6 +563,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		for(QuestionItemShort item:items) {
 			questionItemDao.share(item, resources, editable);
 		}
+		index(items);
 	}
 
 	@Override

@@ -139,7 +139,7 @@ public interface QPoolService {
 	public ResultInfos<QuestionItemView> getSharedItemByResource(OLATResource resource, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
 	
 	public List<QuestionItem2Resource> getSharedResourceInfosByItem(QuestionItem item);
-	
+
 	//list
 	public QuestionItemCollection createCollection(Identity owner, String collectionName, List<QuestionItemShort> initialItems);
 	
@@ -157,6 +157,11 @@ public interface QPoolService {
 	
 	public ResultInfos<QuestionItemView> getItemsOfCollection(QuestionItemCollection collection, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
 
+	/**
+	 * Send the message to index this list of items.
+	 * @param items
+	 */
+	public void index(List<? extends QuestionItemShort> items);
 	
 	//study field admin
 	public List<TaxonomyLevel> getTaxonomyLevels();
