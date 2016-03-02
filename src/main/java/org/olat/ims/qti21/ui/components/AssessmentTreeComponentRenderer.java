@@ -36,6 +36,8 @@ import org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event;
 
 import uk.ac.ed.ph.jqtiplus.node.content.variable.PrintedVariable;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.test.NavigationMode;
+import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNode;
@@ -83,18 +85,15 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
         }
     }
 	
-	private void renderNavigation(AssessmentRenderer renderer, StringOutput sb, AssessmentTreeComponent component, URLBuilder ubu, Translator translator) {
-		sb.append("<div id='o_qti_menu' class='qtiworks o_assessmenttest o_testpartnavigation'>");
-
+	private void renderNavigation(AssessmentRenderer renderer, StringOutput sb,
+			AssessmentTreeComponent component, URLBuilder ubu, Translator translator) {
+		sb.append("<div id='o_qti_menu' class='qtiworks o_assessmenttest o_testpartnavigation'>")
 		//part, sections and item refs
-		sb.append("<ul class='o_testpartnavigation list-unstyled'>");
+		  .append("<ul class='o_testpartnavigation list-unstyled'>");
 		component.getCurrentTestPartNode().getChildren().forEach((node)
 				-> renderNavigation(renderer, sb, component, node, ubu, translator));
-		sb.append("</ul>");
-		
-		
-
-		sb.append("</div>");
+		sb.append("</ul>")
+		 .append("</div>");
 	}
 	
 	private void renderNavigation(AssessmentRenderer renderer, StringOutput sb, AssessmentTreeComponent component, TestPlanNode node,
@@ -119,15 +118,23 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 	}
 	
 	private void renderNavigationAssessmentItem(StringOutput sb, AssessmentTreeComponent component, TestPlanNode itemNode, Translator translator) {
-		String key = itemNode.getKey().toString();
-		sb.append("<li class='o_assessmentitem'>")
-		  .append("<a href='#' onclick=\"");
+		TestPart currentTestPart = component.getTestSessionController().getCurrentTestPart();
+		boolean enable = currentTestPart == null
+				|| currentTestPart.getNavigationMode() == NavigationMode.NONLINEAR;
 		
-		Form form = component.getQtiItem().getRootForm();
-		String dispatchId = component.getQtiItem().getFormDispatchId();
-		sb.append(FormJSHelper.getXHRFnCallFor(form, dispatchId, 1, true, true,
-				new NameValuePair("cid", Event.selectItem.name()), new NameValuePair("item", key)))
-		  .append(";\" class=''><span class='questionTitle'>")
+		String key = itemNode.getKey().toString();
+		sb.append("<li class='o_assessmentitem'>");
+		if(enable) {
+			Form form = component.getQtiItem().getRootForm();
+			String dispatchId = component.getQtiItem().getFormDispatchId();
+			sb.append("<a href='#' onclick=\"")
+			  .append(FormJSHelper.getXHRFnCallFor(form, dispatchId, 1, true, true,
+					new NameValuePair("cid", Event.selectItem.name()), new NameValuePair("item", key)))
+			  .append(";\" class=''>");
+		} else {
+			sb.append("<span class='o_assessmentitem_nav_disabled'>");
+		}
+		sb.append("<span class='questionTitle'>")
 		  .append(itemNode.getSectionPartTitle()).append("</span>");
 		
 		ItemSessionState itemSessionState = component.getItemSessionState(itemNode.getKey());
@@ -144,8 +151,13 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 			sb.append("<span class='itemStatus notPresented'>").append(translator.translate("assessment.item.status.notSeen")).append("</span>");
 		}
 		
-		sb.append("</a>")
-		  .append("</li>");
+		if(enable) {
+			sb.append("</a>");
+		} else {
+			sb.append("</span>");
+		}
+		
+		sb.append("</li>");
 	}
 	
 	@Override

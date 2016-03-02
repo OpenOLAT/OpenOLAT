@@ -82,7 +82,9 @@ import uk.ac.ed.ph.jqtiplus.node.result.ItemResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemVariable;
 import uk.ac.ed.ph.jqtiplus.node.result.OutcomeVariable;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
+import uk.ac.ed.ph.jqtiplus.node.test.NavigationMode;
 import uk.ac.ed.ph.jqtiplus.node.test.SubmissionMode;
+import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationLevel;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationRecorder;
 import uk.ac.ed.ph.jqtiplus.provision.BadResourceException;
@@ -199,7 +201,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	}
 	
 	private void initQtiWorks(UserRequest ureq) {
-		qtiWorksCtrl = new QtiWorksController(ureq, getWindowControl());
+		qtiWorksCtrl = new QtiWorksController(ureq, getWindowControl(), false);
     	listenTo(qtiWorksCtrl);
     	mainVC.put("qtirun", qtiWorksCtrl.getInitialComponent());
 	}
@@ -432,7 +434,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	
 	private void processTestPartNavigation(UserRequest ureq) {
 		final Date requestTimestamp = ureq.getRequestTimestamp();
-        testSessionController.selectItemNonlinear(requestTimestamp, null);
+        TestPlanNode nextNode = testSessionController.selectItemNonlinear(requestTimestamp, null);
+        if(nextNode == null) {
+        	System.out.println();
+        }
 	}
 	
 	//public CandidateSession handleResponses(final CandidateSessionContext candidateSessionContext,
@@ -766,6 +771,15 @@ public class AssessmentTestDisplayController extends BasicController implements 
         /* Handle immediate end of test session */
         if (ended) {
             qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult, timestamp);
+        } else {
+        	TestPart currentTestPart = testSessionController.getCurrentTestPart();
+        	if(currentTestPart.getNavigationMode() == NavigationMode.NONLINEAR) {
+        		//go to the first assessment item
+        		if(testSessionController.hasFollowingNonLinearItem()) {
+        			testSessionController.selectFollowingItemNonLinear(currentRequestTimestamp);
+        			//
+        		}
+        	}
         }
         
         return testSessionController;
@@ -916,14 +930,16 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 */
 	private class QtiWorksController extends AbstractQtiWorksController {
 
-		private FormLink endButton;
+		private FormLink endTestPartButton, closeTestButton, cancelTestButton;
 		private AssessmentTestFormItem qtiEl;
 		private AssessmentTreeFormItem qtiTreeEl;
 		
+		private final boolean allowCancel;
 		private final QtiWorksStatus qtiWorksStatus = new QtiWorksStatus();
 		
-		public QtiWorksController(UserRequest ureq, WindowControl wControl) {
+		public QtiWorksController(UserRequest ureq, WindowControl wControl, boolean allowCancel) {
 			super(ureq, wControl, "at_run");
+			this.allowCancel = allowCancel;
 			initForm(ureq);
 		}
 
@@ -943,7 +959,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			
 			String endName = qtiEl.getComponent().hasMultipleTestParts()
 					? "assessment.test.end.testPart" : "assessment.test.end.test";
-			endButton = uifactory.addFormLink("endTest", endName, null, formLayout, Link.BUTTON);
+			endTestPartButton = uifactory.addFormLink("endTest", endName, null, formLayout, Link.BUTTON);
+			closeTestButton = uifactory.addFormLink("closeTest", "assessment.test.close.test", null, formLayout, Link.BUTTON);
+			if(allowCancel) {
+				cancelTestButton = uifactory.addFormLink("cancelTest", "cancel", null, formLayout, Link.BUTTON);
+			}
 
 			ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
 			final ResourceLocator inputResourceLocator = 
@@ -980,8 +1000,12 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
 		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-			if(endButton == source) {
-				doEndOrAdvance(ureq);
+			if(endTestPartButton == source) {
+				doEndTestPart(ureq);
+			} else if(closeTestButton == source) {
+				doCloseTest(ureq);
+			} else if(cancelTestButton == source) {
+				doCancelTest(ureq);
 			} else if(source == qtiEl || source == qtiTreeEl) {
 				if(event instanceof QTIWorksAssessmentTestEvent) {
 					fireEvent(ureq, event);
@@ -1001,7 +1025,20 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			fireEvent(ureq, new QTIWorksAssessmentTestEvent(QTIWorksAssessmentTestEvent.Event.response, stringResponseMap, fileResponseMap, comment, source));
 		}
 		
-		private void doEndOrAdvance(UserRequest ureq) {
+		private void doEndTestPart(UserRequest ureq) {
+			TestSessionState testSessionState = testSessionController.getTestSessionState();
+			CandidateSessionContext candidateSessionContext = AssessmentTestDisplayController.this;
+			if(!candidateSessionContext.isTerminated() && !testSessionState.isExited()
+					&& testSessionController.mayEndCurrentTestPart()) {
+				final TestPlanNodeKey currentTestPartKey = testSessionState.getCurrentTestPartKey();
+				final TestPartSessionState currentTestPartSessionState = testSessionState.getTestPartSessionStates().get(currentTestPartKey);
+				if(!currentTestPartSessionState.isEnded()) {
+					fireEvent(ureq, new QTIWorksAssessmentTestEvent(QTIWorksAssessmentTestEvent.Event.endTestPart, endTestPartButton));
+				}
+			}
+		}
+		
+		private void doCloseTest(UserRequest ureq) {
 			TestSessionState testSessionState = testSessionController.getTestSessionState();
 			CandidateSessionContext candidateSessionContext = AssessmentTestDisplayController.this;
 			if(!candidateSessionContext.isTerminated() && !testSessionState.isExited()
@@ -1009,11 +1046,13 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				final TestPlanNodeKey currentTestPartKey = testSessionState.getCurrentTestPartKey();
 				final TestPartSessionState currentTestPartSessionState = testSessionState.getTestPartSessionStates().get(currentTestPartKey);
 				if(currentTestPartSessionState.isEnded()) {
-					fireEvent(ureq, new QTIWorksAssessmentTestEvent(QTIWorksAssessmentTestEvent.Event.advanceTestPart, endButton));
-				} else {
-					fireEvent(ureq, new QTIWorksAssessmentTestEvent(QTIWorksAssessmentTestEvent.Event.endTestPart, endButton));
+					fireEvent(ureq, new QTIWorksAssessmentTestEvent(QTIWorksAssessmentTestEvent.Event.advanceTestPart, closeTestButton));
 				}
 			}
+		}
+		
+		private void doCancelTest(UserRequest ureq) {
+			
 		}
 		
 		private void updateButtons() {
@@ -1022,7 +1061,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			boolean enabled = !candidateSessionContext.isTerminated() && !testSessionState.isExited()
 					&& testSessionController.mayEndCurrentTestPart();
 			
-			endButton.setEnabled(enabled);
+			//endTestPartButton.setEnabled(enabled);
+			
+			//closeTestButton.setEnabled(enabled);
 		}
 	}
 	
@@ -1033,6 +1074,20 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			CandidateSessionContext candidateSessionContext = AssessmentTestDisplayController.this;
 			return !candidateSessionContext.isTerminated() && !testSessionState.isExited()
 					&& testSessionController.mayEndCurrentTestPart();
+		}
+		
+		public boolean mayCloseTest() {
+			TestSessionState testSessionState = testSessionController.getTestSessionState();
+			CandidateSessionContext candidateSessionContext = AssessmentTestDisplayController.this;
+			if(!candidateSessionContext.isTerminated() && !testSessionState.isExited()
+					&& testSessionController.mayEndCurrentTestPart()) {
+				final TestPlanNodeKey currentTestPartKey = testSessionState.getCurrentTestPartKey();
+				final TestPartSessionState currentTestPartSessionState = testSessionState.getTestPartSessionStates().get(currentTestPartKey);
+				if(currentTestPartSessionState.isEnded()) {
+					return true;
+				}
+			}
+			return false;
 		}
 	}
 }

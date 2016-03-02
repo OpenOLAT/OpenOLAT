@@ -280,7 +280,11 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			if(selectedSection != null && selectedSection.getVisible()) {
 				sectionParentLine.add(selectedSection);
 				if(selectedSection.getRubricBlocks().size() > 0) {
-					writeRubrics = true;
+					for(RubricBlock rubric:selectedSection.getRubricBlocks()) {
+						if(rubric.getBlocks().size() > 0) {
+							writeRubrics = true;
+						}
+					}
 				}
 				if(StringHelper.containsNonWhitespace(selectedSection.getTitle())) {
 					writeTitles = true;
