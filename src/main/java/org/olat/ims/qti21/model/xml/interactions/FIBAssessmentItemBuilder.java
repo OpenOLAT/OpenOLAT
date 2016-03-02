@@ -143,6 +143,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 	
 	private void extractTextEntrySettingsFromResponseDeclaration() {
 		double mappedScore = 0.0d;
+		int countAlternatives = 0;
 		
 		for(Map.Entry<String, TextEntry> textEntryEntry:responseIdentifierToTextEntry.entrySet()) {
 			TextEntry textEntry = textEntryEntry.getValue();
@@ -187,10 +188,11 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 									alternative.setAlternative(alt);
 									alternative.setScore(mapEntry.getMappedValue());
 									alternatives.add(alternative);
-									mappedScore += mapEntry.getMappedValue();
 								} else if(alt.equals(solution)) {
 									textEntry.setScore(mapEntry.getMappedValue());
 								}
+								countAlternatives++;
+								mappedScore += mapEntry.getMappedValue();
 							}
 							
 							caseSensitive &= mapEntry.getCaseSensitive();
@@ -202,7 +204,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 			}
 		}
 		
-		boolean hasMapping = mappedScore > (-1.0 * responseIdentifierToTextEntry.size());
+		boolean hasMapping = Math.abs(mappedScore - (-1.0 * countAlternatives)) > 0.0001;
 		scoreEvaluation = hasMapping ? ScoreEvaluation.perAnswer : ScoreEvaluation.allCorrectAnswers;
 	}
 	

@@ -30,7 +30,6 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.zip.ZipOutputStream;
 
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -54,6 +53,7 @@ import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemMetadata;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
@@ -95,8 +95,6 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	
 	public static final String QTI_12_OO_TEST = "OpenOLAT Test";
 
-	@Autowired
-	private DB dbInstance;
 	@Autowired
 	private QTI21Service qtiService;
 	
@@ -240,7 +238,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 			case sc: itemBuilder = new SingleChoiceAssessmentItemBuilder(qtiService.qtiSerializer()); break;
 			case mc: itemBuilder = new MultipleChoiceAssessmentItemBuilder(qtiService.qtiSerializer()); break;
 			case kprim: itemBuilder = new KPrimAssessmentItemBuilder(qtiService.qtiSerializer()); break;
-			//case fib: item = QTIEditHelper.createFIBItem(trans); break;
+			case fib: itemBuilder = new FIBAssessmentItemBuilder(qtiService.qtiSerializer()); break;
 			case essay: itemBuilder = new EssayAssessmentItemBuilder(qtiService.qtiSerializer()); break;
 			default: return null;
 		}

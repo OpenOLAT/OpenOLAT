@@ -53,7 +53,7 @@ public class QTI21AssessmentItemFactory implements QItemFactory {
 			case sc: return "QTI 2.1 " + trans.translate("new.sc");
 			case mc: return "QTI 2.1 " + trans.translate("new.mc");
 			case kprim: return "QTI 2.1 " + trans.translate("new.kprim");
-			//case fib: return "QTI 2.1 " + trans.translate("item.type.fib");
+			case fib: return "QTI 2.1 " + trans.translate("new.fib");
 			case essay: return "QTI 2.1 " + trans.translate("new.essay");
 			default: return type.name();
 		}

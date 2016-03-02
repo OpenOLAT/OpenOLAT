@@ -37,7 +37,9 @@ import org.olat.ims.qti.editor.beecom.objects.Control;
 import org.olat.ims.qti.editor.beecom.objects.Duration;
 import org.olat.ims.qti.editor.beecom.objects.EssayQuestion;
 import org.olat.ims.qti.editor.beecom.objects.EssayResponse;
+import org.olat.ims.qti.editor.beecom.objects.FIBResponse;
 import org.olat.ims.qti.editor.beecom.objects.Item;
+import org.olat.ims.qti.editor.beecom.objects.Material;
 import org.olat.ims.qti.editor.beecom.objects.OutcomesProcessing;
 import org.olat.ims.qti.editor.beecom.objects.QTIDocument;
 import org.olat.ims.qti.editor.beecom.objects.Question;
@@ -57,6 +59,7 @@ import org.olat.ims.qti21.model.xml.ModalFeedbackBuilder;
 import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
@@ -133,6 +136,14 @@ public class QTI12To21Converter {
 		}
 
 		AssessmentTestBuilder assessmentTestBuilder = new AssessmentTestBuilder(assessmentTest);
+		assessmentTestBuilder.setExportScore(true);
+
+		//root
+		List<Section> sections = assessment.getSections();
+		for(Section section:sections) {
+			convert(section, testPart);
+		}
+		
 		//this are lost in QTI 2.1
 		//assessment.getSelection_ordering().getOrderType();
 		//assessment.getSelection_ordering().getSelectionNumber();
@@ -146,12 +157,6 @@ public class QTI12To21Converter {
 					log.error("Cannot parse cut value: " + cutValue, e);
 				}
 			}
-		}
-
-		//root
-		List<Section> sections = assessment.getSections();
-		for(Section section:sections) {
-			convert(section, testPart);
 		}
 
 		assessmentTest = assessmentTestBuilder.build();
@@ -193,10 +198,10 @@ public class QTI12To21Converter {
 					break;
 				case Question.TYPE_KPRIM:
 					itemBuilder = convertKPrim(item);
-					break;/*
+					break;
 				case Question.TYPE_FIB:
 					itemBuilder = convertFIB(item);
-					break;*/
+					break;
 				case Question.TYPE_ESSAY:
 					itemBuilder = convertEssay(item);
 					break;
@@ -210,12 +215,43 @@ public class QTI12To21Converter {
 				AssessmentItemRef itemRef = new AssessmentItemRef(assessmentSection);
 				String itemId = IdentifierGenerator.newAsString(itemBuilder.getQuestionType().getPrefix());
 				itemRef.setIdentifier(Identifier.parseString(itemId));
+				convertItemBasics(item, itemRef);
 				File itemFile = new File(unzippedDirRoot, itemId + ".xml");
 				itemRef.setHref(new URI(itemFile.getName()));
 				assessmentSection.getSectionParts().add(itemRef);
 				persistAssessmentObject(itemFile, assessmentItem);
 				appendResourceAndMetadata(item, itemBuilder, itemFile);
 			}
+		}
+	}
+	
+	private void convertItemBasics(Item item, AssessmentItemRef itemRef) {
+		if(item.getMaxattempts() > 0) {
+			ItemSessionControl itemSessionControl = itemRef.getItemSessionControl();
+			if(itemSessionControl == null) {
+				itemSessionControl = new ItemSessionControl(itemRef);
+				itemRef.setItemSessionControl(itemSessionControl);
+			}
+			
+			itemSessionControl.setMaxAttempts(item.getMaxattempts());
+		}
+		if(item.getDuration() != null && item.getDuration().isSet()) {
+			TimeLimits timeLimits = itemRef.getTimeLimits();
+			if(timeLimits == null) {
+				timeLimits = new TimeLimits(itemRef);
+				itemRef.setTimeLimits(timeLimits);
+			}
+			
+			timeLimits.setMinimum(0.0d);
+			
+			double max = 0.0d;
+			if(item.getDuration().getMin() > 0) {
+				max += item.getDuration().getMin() * 60d;
+			}
+			if(item.getDuration().getSec() > 0) {
+				max += item.getDuration().getSec();
+			}
+			timeLimits.setMaximum(max);
 		}
 	}
 	
@@ -344,10 +380,65 @@ public class QTI12To21Converter {
 	
 	private AssessmentItemBuilder convertFIB(Item item) {
 		FIBAssessmentItemBuilder itemBuilder = new FIBAssessmentItemBuilder(qtiSerializer);
+		itemBuilder.setQuestion("");
+		itemBuilder.clearTextEntries();
 		convertItemBasics(item, itemBuilder);
+		
+		Question question = item.getQuestion();
+		boolean singleCorrect = question.isSingleCorrect();
+		if(singleCorrect) {
+			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.allCorrectAnswers);
+		} else {
+			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
+		}
+		itemBuilder.getMinScoreBuilder().setScore(new Double(question.getMinValue()));
+		itemBuilder.getMaxScoreBuilder().setScore(new Double(question.getMaxValue()));
 
-
+		List<Response> responses = question.getResponses();
+		StringBuilder sb = new StringBuilder();
+		for(Response response:responses) {
+			if(response instanceof FIBResponse) {
+				FIBResponse gap = (FIBResponse)response;
+				if(FIBResponse.TYPE_BLANK.equals(gap.getType())) {
+					String responseId = itemBuilder.generateResponseIdentifier();
+					TextEntry entry = itemBuilder.createTextEntry(responseId);
+					entry.setCaseSensitive("Yes".equals(gap.getCaseSensitive()));
+					if(gap.getMaxLength() > 0) {
+						entry.setExpectedLength(gap.getMaxLength());
+					} else if(gap.getSize() > 0) {
+						entry.setExpectedLength(gap.getSize());
+					}
+					parseAlternatives(gap.getCorrectBlank(), gap.getPoints(), entry);
+					
+					String entryString = " <textEntryInteraction responseIdentifier=\"" + responseId + "\"/>";
+					sb.append(entryString);
+				} else if(FIBResponse.TYPE_CONTENT.equals(gap.getType())) {
+					Material text = gap.getContent();
+					String htmltext = text.renderAsHtmlForEditor();
+					sb.append(htmltext);
+				}
+			}
+		}
+		
+		String fib = sb.toString();
+		if(!fib.startsWith("<p") && !fib.startsWith("<div")) {
+			fib = "<p>" + fib + "</p>";
+		}
+		itemBuilder.setQuestion(fib);
 		return itemBuilder;
+	}
+	
+	private void parseAlternatives(String value, double score, TextEntry textEntry) {
+		String[] values = value.split(";");
+		if(values.length > 0) {
+			textEntry.setSolution(values[0]);
+			textEntry.setScore(score);
+		}
+		if(values.length > 1) {
+			for(int i=1; i<values.length; i++) {
+				textEntry.addAlterantive(values[i], score);
+			}
+		}
 	}
 	
 	private AssessmentItemBuilder convertEssay(Item item) {
@@ -375,14 +466,6 @@ public class QTI12To21Converter {
 		}
 		if(StringHelper.containsNonWhitespace(item.getLabel())) {
 			assessmentItem.setLabel(item.getLabel());
-		}
-		if(StringHelper.containsNonWhitespace(item.getObjectives())) {
-			//metadata description item.getObjectives()
-		}
-
-		if(item.getMaxattempts() > 0
-				|| (item.getDuration() != null && item.getDuration().isSet())) {
-			//not supported
 		}
 		
 		Question question = item.getQuestion();

@@ -31,7 +31,7 @@ public enum QTI21QuestionType {
 	sc(true, "sc", QuestionType.SC),
 	mc(true, "mc", QuestionType.MC),
 	kprim(true, "kprim", QuestionType.KPRIM),
-	fib(false, "fib", QuestionType.FIB),
+	fib(true, "fib", QuestionType.FIB),
 	essay(true, "essay", QuestionType.ESSAY),
 	unkown(false, null, null);
 	
