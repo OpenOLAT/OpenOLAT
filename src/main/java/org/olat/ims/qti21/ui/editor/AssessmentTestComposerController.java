@@ -38,6 +38,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
+import org.olat.core.gui.components.tree.TreeDropEvent;
 import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -321,7 +322,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 					TreeNode selectedNode = menuTree.getTreeModel()
 							.getNodeById(te.getNodeId());
 					partEditorFactory(ureq, selectedNode);
-				}
+				} 
+			} else if(event.getCommand().equals(MenuTree.COMMAND_TREENODE_DROP)) {
+				TreeDropEvent tde = (TreeDropEvent) event;
+				doDrop(ureq, tde.getDroppedNodeId(), tde.getTargetNodeId(), tde.isAsChild());
 			}
 		} else if(newSectionLink == source) {
 			doNewSection(ureq, menuTree.getSelectedNode());
@@ -356,6 +360,106 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), selectQItemCtrl.getInitialComponent(), true, translate("title.add") );
 		cmc.activate();
 		listenTo(cmc);
+	}
+	
+	private void doDrop(UserRequest ureq, String droppedNodeId, String targetnodeId, boolean asChild) {
+		TreeNode droppedNode = menuTree.getTreeModel().getNodeById(droppedNodeId);
+		TreeNode targetNode = menuTree.getTreeModel().getNodeById(targetnodeId);
+		if(droppedNode == null || targetNode == null) return;
+		
+		Object droppedObject = droppedNode.getUserObject();
+		Object targetObject = targetNode.getUserObject();
+		if(droppedObject == null || targetObject == null || droppedObject == targetObject) return;
+		
+		if(asChild) {
+			if(droppedObject instanceof AssessmentItemRef
+					&& (targetObject instanceof AssessmentSection || targetObject instanceof AssessmentItemRef)) {
+				AssessmentItemRef droppedItemRef = (AssessmentItemRef)droppedObject;
+				droppedItemRef.getParentSection().getSectionParts().remove(droppedItemRef);
+				if(targetObject instanceof AssessmentSection) {
+					AssessmentSection targetSection = (AssessmentSection)targetObject;
+					targetSection.getSectionParts().add(droppedItemRef);
+				} else if(targetObject instanceof AssessmentItemRef) {
+					AssessmentItemRef targetItemRef = (AssessmentItemRef)targetObject;
+					AssessmentSection targetSection = targetItemRef.getParentSection();
+					int pos = targetSection.getChildAbstractParts().indexOf(targetItemRef);
+					targetSection.getChildAbstractParts().add(pos, droppedItemRef);
+				}
+				
+			} else if(droppedObject instanceof AssessmentSection
+					&& (targetObject instanceof AssessmentSection || targetObject instanceof TestPart)) {
+				AssessmentSection droppedSection = (AssessmentSection)droppedObject;
+				if(droppedSection.getParentSection() != null) {
+					droppedSection.getParentSection().getSectionParts().remove(droppedSection);
+				} else {
+					droppedSection.getParent().getChildAbstractParts().remove(droppedSection);
+				}
+				if(targetObject instanceof AssessmentSection) {
+					AssessmentSection targetSection = (AssessmentSection)targetObject;
+					targetSection.getChildAbstractParts().add(droppedSection);
+				} else if(targetObject instanceof TestPart) {
+					TestPart targetTestPart = (TestPart)targetObject;
+					targetTestPart.getAssessmentSections().add(droppedSection);
+				}
+			}
+		} else {
+			if(droppedObject instanceof AssessmentItemRef && targetObject instanceof AssessmentItemRef) {
+				AssessmentItemRef droppedItemRef = (AssessmentItemRef)droppedObject;
+				droppedItemRef.getParentSection().getSectionParts().remove(droppedItemRef);
+				AssessmentItemRef targetItemRef = (AssessmentItemRef)targetObject;
+				AssessmentSection targetSection = targetItemRef.getParentSection();
+				int pos = targetSection.getChildAbstractParts().indexOf(targetItemRef) + 1;
+				if(pos < 0) {
+					targetSection.getChildAbstractParts().add(droppedItemRef);
+				} else if(pos >= targetSection.getChildAbstractParts().size()) {
+					targetSection.getChildAbstractParts().add(droppedItemRef);
+				} else {
+					targetSection.getChildAbstractParts().add(pos, droppedItemRef);
+				}
+				
+			} else if(droppedObject instanceof AssessmentSection
+					&& targetObject instanceof AssessmentSection) {
+				AssessmentSection droppedSection = (AssessmentSection)droppedObject;
+				
+				
+				if(droppedSection.getParentSection() != null) {
+					droppedSection.getParentSection().getSectionParts().remove(droppedSection);
+				} else {
+					droppedSection.getParent().getChildAbstractParts().remove(droppedSection);
+				}
+
+				AssessmentSection targetSection = (AssessmentSection)targetObject;
+				if(targetSection.getParentSection() != null) {
+					AssessmentSection targetParentSection = targetSection.getParentSection();
+					int pos = targetParentSection.getChildAbstractParts().indexOf(targetSection) + 1;
+					if(pos >= targetParentSection.getChildAbstractParts().size()) {	
+						targetParentSection.getChildAbstractParts().add(droppedSection);
+					} else {
+						targetParentSection.getChildAbstractParts().add(pos, droppedSection);
+					}
+				} else if(targetSection.getParent() instanceof TestPart) {
+					TestPart targetTestPart = (TestPart)targetSection.getParent();
+					int pos = targetTestPart.getChildAbstractParts().indexOf(targetSection) + 1;
+					if(pos >= targetTestPart.getChildAbstractParts().size()) {	
+						targetTestPart.getChildAbstractParts().add(droppedSection);
+					} else {
+						targetTestPart.getChildAbstractParts().add(pos, droppedSection);
+					}
+				}
+			}
+		}
+		
+		//quickly saved the assessment test with wrong parent
+		doSaveAssessmentTest();
+		//reload a clean instance
+		updateTreeModel();
+		
+		TreeNode droppedItemNode = menuTree.getTreeModel().getNodeById(droppedNode.getIdent());
+		if(droppedItemNode != null) {
+			menuTree.setSelectedNode(droppedItemNode);
+			menuTree.open(droppedItemNode);
+			partEditorFactory(ureq, droppedItemNode);
+		}
 	}
 	
 	private void doImportTable(UserRequest ureq) {

@@ -43,6 +43,7 @@ import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBui
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
+import org.olat.ims.qti21.ui.editor.interactions.ChoiceScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.EssayEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.FIBEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.FIBScoreController;
@@ -168,7 +169,7 @@ public class AssessmentItemEditorController extends BasicController {
 		SingleChoiceAssessmentItemBuilder scItemBuilder = new SingleChoiceAssessmentItemBuilder(item, qtiService.qtiSerializer());
 		itemEditor = new SingleChoiceEditorController(ureq, getWindowControl(), scItemBuilder);
 		listenTo(itemEditor);
-		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), scItemBuilder);
+		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), scItemBuilder, itemRef);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), scItemBuilder, false, true, true);
 		listenTo(feedbackEditor);
@@ -183,7 +184,7 @@ public class AssessmentItemEditorController extends BasicController {
 		MultipleChoiceAssessmentItemBuilder mcItemBuilder = new MultipleChoiceAssessmentItemBuilder(item, qtiService.qtiSerializer());
 		itemEditor = new MultipleChoiceEditorController(ureq, getWindowControl(), mcItemBuilder);
 		listenTo(itemEditor);
-		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), mcItemBuilder);
+		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), mcItemBuilder, itemRef);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), mcItemBuilder, false, true, true);
 		listenTo(feedbackEditor);
@@ -198,7 +199,7 @@ public class AssessmentItemEditorController extends BasicController {
 		KPrimAssessmentItemBuilder kprimItemBuilder = new KPrimAssessmentItemBuilder(item, qtiService.qtiSerializer());
 		itemEditor = new KPrimEditorController(ureq, getWindowControl(), kprimItemBuilder);
 		listenTo(itemEditor);
-		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), kprimItemBuilder);
+		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), kprimItemBuilder, itemRef);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), kprimItemBuilder, false, true, true);
 		listenTo(feedbackEditor);
@@ -213,7 +214,7 @@ public class AssessmentItemEditorController extends BasicController {
 		FIBAssessmentItemBuilder kprimItemBuilder = new FIBAssessmentItemBuilder(item, qtiService.qtiSerializer());
 		itemEditor = new FIBEditorController(ureq, getWindowControl(), kprimItemBuilder);
 		listenTo(itemEditor);
-		scoreEditor = new FIBScoreController(ureq, getWindowControl(), kprimItemBuilder);
+		scoreEditor = new FIBScoreController(ureq, getWindowControl(), kprimItemBuilder, itemRef);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), kprimItemBuilder, false, true, true);
 		listenTo(feedbackEditor);
@@ -228,7 +229,7 @@ public class AssessmentItemEditorController extends BasicController {
 		EssayAssessmentItemBuilder essayItemBuilder = new EssayAssessmentItemBuilder(item, qtiService.qtiSerializer());
 		itemEditor = new EssayEditorController(ureq, getWindowControl(), essayItemBuilder);
 		listenTo(itemEditor);
-		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), essayItemBuilder);
+		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), essayItemBuilder, itemRef);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), essayItemBuilder, true, false, false);
 		listenTo(feedbackEditor);

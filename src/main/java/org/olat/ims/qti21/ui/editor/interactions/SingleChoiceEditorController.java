@@ -76,8 +76,6 @@ public class SingleChoiceEditorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("editor.sc.title");
-		
 		FormLayoutContainer metadata = FormLayoutContainer.createDefaultFormLayout("metadata", getTranslator());
 		metadata.setRootForm(mainForm);
 		formLayout.add(metadata);

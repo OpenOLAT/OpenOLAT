@@ -22,13 +22,15 @@ package org.olat.ims.qti21.ui.editor;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ScoreBuilder;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
+import org.olat.ims.qti21.ui.editor.interactions.AssessmentItemRefEditorController;
+
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 
 /**
  * Can only set the max. score
@@ -38,21 +40,23 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MinimalScoreController extends FormBasicController {
+public class MinimalScoreController extends AssessmentItemRefEditorController {
 	
 	private TextElement minScoreEl;
 	private TextElement maxScoreEl;
 	
 	private AssessmentItemBuilder itemBuilder;
 	
-	public MinimalScoreController(UserRequest ureq, WindowControl wControl, AssessmentItemBuilder itemBuilder) {
-		super(ureq, wControl);
+	public MinimalScoreController(UserRequest ureq, WindowControl wControl, AssessmentItemBuilder itemBuilder,
+			AssessmentItemRef itemRef) {
+		super(ureq, wControl, itemRef);
 		this.itemBuilder = itemBuilder;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		super.initForm(formLayout, listener, ureq);
 		minScoreEl = uifactory.addTextElement("min.score", "min.score", 8, "0.0", formLayout);
 		minScoreEl.setEnabled(false);
 		

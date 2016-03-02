@@ -127,14 +127,15 @@ public class AssessmentTestEditorAndComposerTreeModel extends GenericTreeModel i
 
 	@Override
 	public boolean isNodeDroppable(TreeNode node) {
-		return false;
+		if(node == null) return false;
+		Object uobject = node.getUserObject();
+		return uobject instanceof AssessmentSection || uobject instanceof TestPart || uobject instanceof AssessmentItemRef;
 	}
 
 	@Override
 	public boolean isNodeDraggable(TreeNode node) {
-		return false;
+		if(node == null) return false;
+		Object uobject = node.getUserObject();
+		return uobject instanceof AssessmentSection || uobject instanceof AssessmentItemRef;
 	}
-	
-	
-
 }

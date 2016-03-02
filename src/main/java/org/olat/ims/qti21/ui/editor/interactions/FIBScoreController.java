@@ -27,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
@@ -41,13 +40,15 @@ import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEn
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
+
 /**
  * 
  * Initial date: 25.02.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FIBScoreController extends FormBasicController {
+public class FIBScoreController extends AssessmentItemRefEditorController {
 	
 	private static final String[] modeKeys = new String[]{
 			ScoreEvaluation.allCorrectAnswers.name(), ScoreEvaluation.perAnswer.name()
@@ -61,11 +62,11 @@ public class FIBScoreController extends FormBasicController {
 	private FIBAssessmentItemBuilder itemBuilder;
 	private final List<TextEntryWrapper> wrappers = new ArrayList<>();
 	
-	
 	private int counter = 0;
 	
-	public FIBScoreController(UserRequest ureq, WindowControl wControl,  FIBAssessmentItemBuilder itemBuilder) {
-		super(ureq, wControl);
+	public FIBScoreController(UserRequest ureq, WindowControl wControl, FIBAssessmentItemBuilder itemBuilder,
+			AssessmentItemRef itemRef) {
+		super(ureq, wControl, itemRef);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
 		initForm(ureq);
@@ -73,6 +74,7 @@ public class FIBScoreController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		super.initForm(formLayout, listener, ureq);
 		minScoreEl = uifactory.addTextElement("min.score", "min.score", 8, "0.0", formLayout);
 		minScoreEl.setEnabled(false);
 		

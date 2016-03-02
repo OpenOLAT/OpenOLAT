@@ -17,29 +17,33 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui.editor;
+package org.olat.ims.qti21.ui.editor.interactions;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
 import org.olat.ims.qti21.model.xml.ScoreBuilder;
 import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder.ScoreEvaluation;
+import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 
 /**
  * 
@@ -47,7 +51,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ChoiceScoreController extends FormBasicController {
+public class ChoiceScoreController extends AssessmentItemRefEditorController {
 	
 	private static final String[] modeKeys = new String[]{
 			ScoreEvaluation.allCorrectAnswers.name(), ScoreEvaluation.perAnswer.name()
@@ -56,20 +60,24 @@ public class ChoiceScoreController extends FormBasicController {
 	private TextElement minScoreEl;
 	private TextElement maxScoreEl;
 	private SingleSelection assessmentModeEl;
+	private FormLayoutContainer scoreCont;
 	private final List<SimpleChoiceWrapper> wrappers = new ArrayList<>();
 	
 	private ChoiceAssessmentItemBuilder itemBuilder;
 	
 	private int counter = 0;
 	
-	public ChoiceScoreController(UserRequest ureq, WindowControl wControl, ChoiceAssessmentItemBuilder itemBuilder) {
-		super(ureq, wControl);
+	public ChoiceScoreController(UserRequest ureq, WindowControl wControl, ChoiceAssessmentItemBuilder itemBuilder, AssessmentItemRef itemRef) {
+		super(ureq, wControl, itemRef);
+		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		super.initForm(formLayout, listener, ureq);
+		
 		minScoreEl = uifactory.addTextElement("min.score", "min.score", 8, "0.0", formLayout);
 		minScoreEl.setEnabled(false);
 		
@@ -89,7 +97,7 @@ public class ChoiceScoreController extends FormBasicController {
 		}
 		
 		String scorePage = velocity_root + "/choices_score.html";
-		FormLayoutContainer scoreCont = FormLayoutContainer.createCustomFormLayout("scores", getTranslator(), scorePage);
+		scoreCont = FormLayoutContainer.createCustomFormLayout("scores", getTranslator(), scorePage);
 		formLayout.add(scoreCont);
 		scoreCont.setLabel(null, null);
 		
@@ -106,6 +114,7 @@ public class ChoiceScoreController extends FormBasicController {
 			wrappers.add(new SimpleChoiceWrapper(choice, pointEl));
 		}
 		scoreCont.contextPut("choices", wrappers);
+		scoreCont.setVisible(assessmentModeEl.isSelected(1));
 
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -114,8 +123,6 @@ public class ChoiceScoreController extends FormBasicController {
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
 	}
 	
-	
-
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
@@ -149,7 +156,16 @@ public class ChoiceScoreController extends FormBasicController {
 	}
 
 	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(assessmentModeEl.isOneSelected()) {
+			scoreCont.setVisible(assessmentModeEl.isSelected(1));
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
+		super.formOK(ureq);
 		String maxScoreValue = maxScoreEl.getValue();
 		Double maxScore = Double.parseDouble(maxScoreValue);
 		itemBuilder.setMaxScore(maxScore);
