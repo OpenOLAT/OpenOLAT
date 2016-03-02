@@ -289,7 +289,6 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 		} else {
 			return false;
 		}
-
 		return persistAssessmentObject(resourceFile, assessmentObject);
 	}
 

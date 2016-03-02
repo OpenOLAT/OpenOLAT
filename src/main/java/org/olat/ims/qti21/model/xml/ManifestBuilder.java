@@ -259,12 +259,18 @@ public class ManifestBuilder {
 	}
 	
 	public MetadataType getMetadataType(ResourceType resource, boolean create) {
+		if(resource == null) return null;
+		
 		MetadataType metadata = resource.getMetadata();
 		if(metadata == null && create) {
 			metadata = cpObjectFactory.createMetadataType();
 			resource.setMetadata(metadata);
 		}
 		return metadata;
+	}
+	
+	public void remove(ResourceType resource) {
+		manifest.getResources().getResource().remove(resource);
 	}
 	
 	public void build() {

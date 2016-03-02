@@ -159,17 +159,17 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	private static final String velocity_root = Util.getPackageVelocityRoot(AssessmentObjectComponentRenderer.class);
 	private static final URI ctopXsltUri = URI.create("classpath:/org/olat/ims/qti21/ui/components/_content/ctop.xsl");
 	
-	protected void renderItemStatus(StringOutput sb, ItemSessionState itemSessionState) {
+	protected void renderItemStatus(StringOutput sb, ItemSessionState itemSessionState, Translator translator) {
 		if(itemSessionState.getEndTime() != null) {
-			sb.append("<span class='itemStatus ended'>Finished</span>");
+			sb.append("<span class='o_assessmentitem_status ended'>").append(translator.translate("assessment.item.status.finished")).append("</span>");
 		} else if(!(itemSessionState.getUnboundResponseIdentifiers().isEmpty() && itemSessionState.getInvalidResponseIdentifiers().isEmpty())) {
-			sb.append("<span class='itemStatus invalid'>Needs Attention</span>");
+			sb.append("<span class='o_assessmentitem_status invalid'>").append(translator.translate("assessment.item.status.needsAttention")).append("</span>");
 		} else if(itemSessionState.isResponded() || itemSessionState.getUncommittedResponseValues().size() > 0) {
-			sb.append("<span class='itemStatus answered'>Answered</span>");
+			sb.append("<span class='o_assessmentitem_status answered'>").append(translator.translate("assessment.item.status.answered")).append("</span>");
 		} else if(itemSessionState.getEntryTime() != null) {
-			sb.append("<span class='itemStatus notAnswered'>Not Answered</span>");
+			sb.append("<span class='o_assessmentitem_status notAnswered'>").append(translator.translate("assessment.item.status.notAnswered")).append("</span>");
 		} else {
-			sb.append("<span class='itemStatus notPresented'>Not Seen</span>");
+			sb.append("<span class='o_assessmentitem_status notPresented'>").append(translator.translate("assessment.item.status.notSeen")).append("</span>");
 		}
 	}
 	
@@ -444,10 +444,10 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	}
 	
 	private void renderComment(StringOutput sb, String comment, boolean disabled, Translator translator) {
-		sb.append("<fieldset class='candidateComment'>")
+		sb.append("<fieldset class='o_candidatecomment'>")
 		  .append("<legend>").append(translator.translate("assessment.comment.legend")).append("</legend>")
 		  .append("<input name='qtiworks_comment_presented' type='hidden' value='true' />")
-		  .append("<textarea name='qtiworks_comment'").append(" disabled=\"disabled\"", disabled).append(">");
+		  .append("<textarea name='qtiworks_comment'").append(" disabled=\"disabled\"", disabled).append(" rows='4' class='form-control'>");
 		if(StringHelper.containsNonWhitespace(comment)) {
 			sb.append(comment);
 		}

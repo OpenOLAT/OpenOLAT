@@ -59,8 +59,10 @@ public class BadResourceController extends FormBasicController {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 
 			StringBuilder out = new StringBuilder();
-			AssessmentBuilderHelper.extractMessage(resourceException, out);
-			layoutCont.contextPut("message", out.toString());
+			if(resourceException != null) {
+				AssessmentBuilderHelper.extractMessage(resourceException, out);
+				layoutCont.contextPut("message", out.toString());
+			}
 			layoutCont.contextPut("directory", unzippedDirectory.toString());
 			layoutCont.contextPut("uri", resourceURI.toASCIIString());
 		}

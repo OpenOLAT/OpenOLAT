@@ -101,23 +101,27 @@ public class AssessmentTestEditorAndComposerTreeModel extends GenericTreeModel i
 	
 	private TreeNode buildRecursively(AssessmentItemRef itemRef, TreeNode parentNode) {
 		GenericTreeNode itemNode = new GenericTreeNode(itemRef.getIdentifier().toString());
-		
 		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
-		BadResourceException ex = resolvedAssessmentItem.getItemLookup().getBadResourceException();
-		if(ex != null) {
-			itemNode.setTitle("ERROR");
+		if(resolvedAssessmentItem == null || resolvedAssessmentItem.getItemLookup() == null) {
+			itemNode.setTitle("ERROR - Not found");
 			itemNode.setIconCssClass("o_icon o_icon_error");
 			itemNode.setUserObject(itemRef);
 			parentNode.addChild(itemNode);
 		} else {
-			AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
-			itemNode.setTitle(assessmentItem.getTitle());
-			itemNode.setIconCssClass("o_icon o_mi_qtisc");
-			itemNode.setUserObject(itemRef);
-			parentNode.addChild(itemNode);
+			BadResourceException ex = resolvedAssessmentItem.getItemLookup().getBadResourceException();
+			if(ex != null) {
+				itemNode.setTitle("ERROR");
+				itemNode.setIconCssClass("o_icon o_icon_error");
+				itemNode.setUserObject(itemRef);
+				parentNode.addChild(itemNode);
+			} else {
+				AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
+				itemNode.setTitle(assessmentItem.getTitle());
+				itemNode.setIconCssClass("o_icon o_mi_qtisc");
+				itemNode.setUserObject(itemRef);
+				parentNode.addChild(itemNode);
+			}
 		}
-		
-		
 		return itemNode;
 	}
 

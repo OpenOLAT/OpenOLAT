@@ -165,7 +165,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 
 		//title + status
 		sb.append("<h1 class='itemTitle'>");
-		renderItemStatus(renderer, sb, itemSessionState);
+		renderItemStatus(renderer, sb, itemSessionState, translator);
 		sb.append(assessmentItem.getTitle()).append("</h1>");
 		sb.append("<div id='itemBody'>");
 		
@@ -194,11 +194,11 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		}
 	}
     
-	private void renderItemStatus(AssessmentRenderer renderer, StringOutput sb, ItemSessionState itemSessionState) {
+	private void renderItemStatus(AssessmentRenderer renderer, StringOutput sb, ItemSessionState itemSessionState, Translator translator) {
 		if(renderer.isSolutionMode()) {
-			sb.append("<span class='itemStatus review'>Model Solution</span>");
+			sb.append("<span class='o_assessmentitem_status review'>").append(translator.translate("assessment.item.status.modelSolution")).append("</span>");
 		} else {
-			super.renderItemStatus(sb, itemSessionState);
+			super.renderItemStatus(sb, itemSessionState, translator);
 		}
 	}
 	

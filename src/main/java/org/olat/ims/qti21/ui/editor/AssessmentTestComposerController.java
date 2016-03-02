@@ -20,7 +20,9 @@
 package org.olat.ims.qti21.ui.editor;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -45,6 +47,8 @@ import org.olat.core.gui.control.VetoableCloseController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
@@ -54,6 +58,8 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.IdentifierGenerator;
+import org.olat.ims.qti21.model.QTI21QuestionType;
+import org.olat.ims.qti21.model.QTI21QuestionTypeDetector;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
@@ -86,9 +92,11 @@ import uk.ac.ed.ph.jqtiplus.node.test.AbstractPart;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
+import uk.ac.ed.ph.jqtiplus.node.test.SectionPart;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
+import uk.ac.ed.ph.jqtiplus.resolution.RootNodeLookup;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
@@ -103,17 +111,18 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	
 	private final MenuTree menuTree;
-	private final Link saveLink;
-	private final Dropdown addItemTools;
+	private final Dropdown addItemTools, changeItemTools;
 	private final Link newSectionLink, newSingleChoiceLink, newMultipleChoiceLink, newKPrimLink,
 		newFIBLink, newEssayLink;
 	private final Link importFromPoolLink, importFromTableLink;
+	private final Link deleteLink, copyLink;
 	private final TooledStackedPanel toolbar;
 	private final VelocityContainer mainVC;
 
 	private Controller currentEditorCtrl;
 	private CloseableModalController cmc;
 	private SelectItemController selectQItemCtrl;
+	private DialogBoxController confirmDeleteCtrl;
 	private StepsMainRunController importTableWizard;
 	private final LayoutMain3ColsController columnLayoutCtr;
 	
@@ -154,10 +163,6 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		updateTreeModel();
 		manifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
 		
-		//default buttons
-		saveLink = LinkFactory.createToolLink("serialize", translate("serialize"), this, "o_icon_save");
-		saveLink.setDomReplacementWrapperRequired(false);
-		
 		//add elements
 		addItemTools = new Dropdown("editTools", "new.elements", false, getTranslator());
 		addItemTools.setIconCSS("o_icon o_icon-fw o_icon_add");
@@ -194,7 +199,19 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		importFromTableLink.setIconLeftCSS("o_icon o_icon_table o_icon-fw");
 		importFromTableLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(importFromTableLink);
-
+		
+		//changes
+		changeItemTools = new Dropdown("changeTools", "change.elements", false, getTranslator());
+		changeItemTools.setIconCSS("o_icon o_icon-fw o_icon_customize");
+		toolbar.addTool(changeItemTools, Align.left);
+		
+		deleteLink = LinkFactory.createToolLink("import.pool", translate("tools.change.delete"), this, "o_icon_delete_item");
+		deleteLink.setDomReplacementWrapperRequired(false);
+		changeItemTools.addComponent(deleteLink);
+		copyLink = LinkFactory.createToolLink("import.table", translate("tools.change.copy"), this, "o_icon_copy");
+		copyLink.setDomReplacementWrapperRequired(false);
+		changeItemTools.addComponent(copyLink);
+		
 		// main layout
 		mainVC = createVelocityContainer("assessment_test_composer");
 		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, mainVC, "at" + testEntry.getKey());			
@@ -223,7 +240,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	@Override
 	public void initToolbar() {
 		toolbar.addTool(addItemTools, Align.left);
-		toolbar.addTool(saveLink, Align.left);
+		toolbar.addTool(changeItemTools, Align.left);
 	}
 
 	@Override
@@ -274,6 +291,11 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				doInsert(ureq, importPackage);
 			}
+		} else if(confirmDeleteCtrl == source) {
+			if (DialogBoxUIFactory.isYesEvent(event)) { // yes, delete
+				doDelete(ureq, (TreeNode)confirmDeleteCtrl.getUserObject());
+			}
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -281,8 +303,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(selectQItemCtrl);
 		removeAsListenerAndDispose(cmc);
+		confirmDeleteCtrl = null;
 		selectQItemCtrl = null;
 		cmc = null;
 	}
@@ -299,8 +323,6 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 					partEditorFactory(ureq, selectedNode);
 				}
 			}
-		} else if(saveLink == source) {
-			doSaveAssessmentTest();
 		} else if(newSectionLink == source) {
 			doNewSection(ureq, menuTree.getSelectedNode());
 		} else if(newSingleChoiceLink == source) {
@@ -317,6 +339,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			doSelectQItem(ureq);
 		} else if(importFromTableLink == source) {
 			doImportTable(ureq);
+		} else if(deleteLink == source) {
+			doConfirmDelete(ureq);
+		} else if(copyLink == source) {
+			doCopy(ureq);
 		}
 	}
 	
@@ -593,7 +619,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		} else if(uobject instanceof AssessmentItemRef) {
 			AssessmentItemRef itemRef = (AssessmentItemRef)uobject;
 			ResolvedAssessmentItem item = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
-			if(item.getItemLookup().getBadResourceException() != null) {
+			if(item == null || item.getItemLookup() == null) {
+				currentEditorCtrl = new BadResourceController(ureq, getWindowControl(),
+						null, unzippedDirRoot, itemRef.getHref());
+			} else if(item.getItemLookup().getBadResourceException() != null) {
 				currentEditorCtrl = new BadResourceController(ureq, getWindowControl(),
 						item.getItemLookup().getBadResourceException(), unzippedDirRoot, itemRef.getHref());
 			} else {
@@ -603,6 +632,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			}
 		}
 		
+		deleteLink.setEnabled(uobject instanceof AssessmentSection || uobject instanceof AssessmentItemRef);
+		copyLink.setEnabled(uobject instanceof AssessmentItemRef);
+		
 		if(currentEditorCtrl != null) {
 			listenTo(currentEditorCtrl);
 			mainVC.put("content", currentEditorCtrl.getInitialComponent());
@@ -611,11 +643,162 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		}
 	}
 	
-	private ManifestMetadataBuilder getMetadataBuilder(AssessmentItemRef itemRef) {
-		URI itemUri = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef).getItemLookup().getSystemId();
+	private void doCopy(UserRequest ureq) {
+		TreeNode selectedNode = menuTree.getSelectedNode();
+		if(selectedNode == null || !(selectedNode.getUserObject() instanceof AssessmentItemRef)) return;
+
+		AssessmentItemRef itemRefToCopy = (AssessmentItemRef)selectedNode.getUserObject();
+		AssessmentSection section = itemRefToCopy.getParentSection();
+		
+		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRefToCopy);
+		AssessmentItem originalAssessmentItem = resolvedAssessmentItem.getItemLookup().extractIfSuccessful();
+		QTI21QuestionType type = QTI21QuestionTypeDetector.getType(originalAssessmentItem);
+
+		File itemFile = null;
+		try {
+			AssessmentItemRef itemRef = new AssessmentItemRef(section);
+			String itemId = IdentifierGenerator.newAsString(type.getPrefix());
+			itemRef.setIdentifier(Identifier.parseString(itemId));
+			itemFile = new File(unzippedDirRoot, itemId + ".xml");
+			itemRef.setHref(new URI(itemFile.getName()));
+			
+			
+			try(OutputStream out = new FileOutputStream(itemFile)) {
+				//make the copy
+				qtiService.qtiSerializer().serializeJqtiObject(originalAssessmentItem, out);
+				
+				//change identifier and title
+				ResolvedAssessmentItem resolvedCopyItem = qtiService.loadAndResolveAssessmentItem(itemFile.toURI(), unzippedDirRoot);
+				AssessmentItem copiedAssessmentItem = resolvedCopyItem.getRootNodeLookup().extractIfSuccessful();
+				copiedAssessmentItem.setIdentifier(IdentifierGenerator.newAsString(type.getPrefix()));
+				copiedAssessmentItem.setTitle(originalAssessmentItem.getTitle() + " (Copy)");
+				qtiService.updateAssesmentObject(itemFile, resolvedCopyItem);
+				
+				//add to section
+				section.getSectionParts().add(itemRef);
+				
+				URI testUri = resolvedAssessmentTest.getTestLookup().getSystemId();
+				File testFile = new File(testUri);
+				qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
+
+				manifestBuilder.appendAssessmentItem(itemFile.getName());
+				manifestBuilder.write(new File(unzippedDirRoot, "imsmanifest.xml"));
+			} catch (Exception e) {
+				logError("", e);
+			}
+
+			updateTreeModel();
+			
+			TreeNode newItemNode = menuTree.getTreeModel().getNodeById(itemId);
+			menuTree.setSelectedNode(newItemNode);
+			menuTree.open(newItemNode);
+			partEditorFactory(ureq, newItemNode);
+		} catch (URISyntaxException e) {
+			logError("", e);
+		}
+	}
+	
+	private void doConfirmDelete(UserRequest ureq) {
+		if(confirmDeleteCtrl != null) return;
+		
+		TreeNode selectedNode = menuTree.getSelectedNode();
+		Object uobject = selectedNode.getUserObject();
+		if(uobject instanceof AssessmentTest) {
+			showWarning("error.cannot.delete");
+		} else if(uobject instanceof TestPart) {
+			showWarning("error.cannot.delete");
+		} else {
+			String msg;
+			if(uobject instanceof AssessmentSection) {
+				msg = translate("delete.section", selectedNode.getTitle());
+			} else if(uobject instanceof AssessmentItemRef) {
+				msg = translate("delete.item", selectedNode.getTitle());
+			} else {
+				showError("error.cannot.delete");
+				return;
+			}
+
+			confirmDeleteCtrl = activateYesNoDialog(ureq, translate("tools.change.delete"), msg, confirmDeleteCtrl);
+			confirmDeleteCtrl.setUserObject(selectedNode);
+		}
+	}
+	
+	private void doDelete(UserRequest ureq, TreeNode selectedNode) {
+		Object uobject = selectedNode.getUserObject();
+		if(uobject instanceof AssessmentSection) {
+			doDeleteAssessmentSection((AssessmentSection)uobject);
+		} else if(uobject instanceof AssessmentItemRef) {
+			doDeleteAssessmentItemRef((AssessmentItemRef)uobject);
+		} else {
+			return;//cannot delete test or test part
+		}
+		
+		URI testUri = resolvedAssessmentTest.getTestLookup().getSystemId();
+		File testFile = new File(testUri);
+		qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
+		manifestBuilder.write(new File(unzippedDirRoot, "imsmanifest.xml"));
+		updateTreeModel();
+
+		if(selectedNode != null && selectedNode.getParent() != null) {
+			TreeNode parentNode = (TreeNode)selectedNode.getParent();
+			menuTree.setSelectedNode(parentNode);
+			menuTree.open(parentNode);
+			partEditorFactory(ureq, parentNode);
+		}
+	}
+	
+	private void doDeleteAssessmentItemRef(AssessmentItemRef itemRef) {
+		ResourceType resource = getResourceType(itemRef);
+		if(resource != null) {
+			manifestBuilder.remove(resource);
+		}
+		
+		boolean deleted = false;
+		boolean removed = itemRef.getParentSection().getSectionParts().remove(itemRef);
+		
+		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+		if(resolvedAssessmentItem != null) {
+			RootNodeLookup<AssessmentItem> rootNode = resolvedAssessmentItem.getItemLookup();
+			if(rootNode != null) {
+				URI itemUri = rootNode.getSystemId();
+				File itemFile = new File(itemUri);
+				deleted = itemFile.delete();
+			}
+		}
+		
+		logAudit(removed + " " + deleted + " removed item ref", null);
+	}
+	
+	private void doDeleteAssessmentSection(AssessmentSection assessmentSection) {
+		for(SectionPart part:assessmentSection.getSectionParts()) {
+			if(part instanceof AssessmentItemRef) {
+				doDeleteAssessmentItemRef((AssessmentItemRef)part);
+			} else if(part instanceof AssessmentSection) {
+				doDeleteAssessmentSection((AssessmentSection)part);
+			}
+		}
+		
+		if(assessmentSection.getParentSection() != null) {
+			assessmentSection.getParentSection().getSectionParts().remove(assessmentSection);
+		} else {
+			assessmentSection.getParent().getChildAbstractParts().remove(assessmentSection);
+		}
+	}
+
+	private ResourceType getResourceType(AssessmentItemRef itemRef) {
+		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+		if(resolvedAssessmentItem == null) return null;
+		RootNodeLookup<AssessmentItem> rootNode = resolvedAssessmentItem.getItemLookup();
+		if(rootNode == null) return null;
+		
+		URI itemUri = rootNode.getSystemId();
 		File itemFile = new File(itemUri);
 		String relativePathToManifest = unzippedDirRoot.toPath().relativize(itemFile.toPath()).toString();
-		ResourceType resource = manifestBuilder.getResourceTypeByHref(relativePathToManifest);
+		return manifestBuilder.getResourceTypeByHref(relativePathToManifest);
+	}
+	
+	private ManifestMetadataBuilder getMetadataBuilder(AssessmentItemRef itemRef) {
+		ResourceType resource = getResourceType(itemRef);
 		return manifestBuilder.getMetadataBuilder(resource, true);
 	}
 }

@@ -139,16 +139,16 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 		
 		ItemSessionState itemSessionState = component.getItemSessionState(itemNode.getKey());
 		if(itemSessionState.getEndTime() != null) {
-			sb.append("<span class='itemStatus ended'>Finished</span>");
+			sb.append("<span class='o_assessmentitem_status ended'>").append(translator.translate("assessment.item.status.finished")).append("</span>");
 		} else if(itemSessionState.getUnboundResponseIdentifiers().size() > 0
 				|| itemSessionState.getInvalidResponseIdentifiers().size() > 0) {
-			sb.append("<span class='itemStatus invalid'>Needs Attention</span>");
+			sb.append("<span class='o_assessmentitem_status invalid'>").append(translator.translate("assessment.item.status.needsAttention")).append("</span>");
 		} else if(itemSessionState.isResponded() || itemSessionState.hasUncommittedResponseValues()) {
-			sb.append("<span class='itemStatus answered'>Answered</span>");
+			sb.append("<span class='o_assessmentitem_status answered'>").append(translator.translate("assessment.item.status.answered")).append("</span>");
 		} else if(itemSessionState.getEntryTime() != null) {
-			sb.append("<span class='itemStatus notAnswered'>Not Answered</span>");
+			sb.append("<span class='o_assessmentitem_status notAnswered'>").append(translator.translate("assessment.item.status.notAnswered")).append("</span>");
 		} else {
-			sb.append("<span class='itemStatus notPresented'>").append(translator.translate("assessment.item.status.notSeen")).append("</span>");
+			sb.append("<span class='o_assessmentitem_status notPresented'>").append(translator.translate("assessment.item.status.notSeen")).append("</span>");
 		}
 		
 		if(enable) {

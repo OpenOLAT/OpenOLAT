@@ -336,7 +336,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 
 		//title + status
 		sb.append("<h3 class='itemTitle'>");
-		renderItemStatus(sb, itemSessionState, options);
+		renderItemStatus(sb, itemSessionState, translator, options);
 		sb.append(itemNode.getSectionPartTitle()).append("</h3>");
 		sb.append("<div id='itemBody'>");
 
@@ -361,7 +361,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		}
 	}
 	
-	private void renderItemStatus(StringOutput sb, ItemSessionState itemSessionState, RenderingRequest options) {
+	private void renderItemStatus(StringOutput sb, ItemSessionState itemSessionState, Translator translator, RenderingRequest options) {
 		if(options.isSolutionMode()) {
 			sb.append("<span class='itemStatus review'>Model Solution</span>");
 		} else if(options.isReviewMode()) {
@@ -375,7 +375,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 				sb.append("<span class='itemStatus reviewNotSeen'>Review (Not Seen)</span>");
 			}
 		} else {
-			super.renderItemStatus(sb, itemSessionState);
+			super.renderItemStatus(sb, itemSessionState, translator);
 		}
 	}
 	

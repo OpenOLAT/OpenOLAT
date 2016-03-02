@@ -35,7 +35,7 @@ ul.sessionControl {
 		margin-bottom: 0;
 	}
 
-	.itemStatus {
+	.o_assessmentitem_status {
 		float: right;
 		display: block;
 		padding: 0.3em;
@@ -162,31 +162,31 @@ ul.sessionControl {
 	}
 }
 
-.itemStatus.ended {
+.o_assessmentitem_status.ended {
   background-color: #999999;
 }
 
-.itemStatus.invalid {
+.o_assessmentitem_status.invalid {
   background-color: red;
 }
 
-.itemStatus.answered {
+.o_assessmentitem_status.answered {
   background-color: blue;
 }
 
-.itemStatus.notAnswered {
+.o_assessmentitem_status.notAnswered {
   background-color: #ff9900;
 }
 
-.itemStatus.notPresented {
+.o_assessmentitem_status.notPresented {
 	background-color: green;
 }
 
-.itemStatus.review {
+.o_assessmentitem_status.review {
 	background-color: #f52887;
 }
 
-.itemStatus.reviewNotAllowed, .itemStatus.reviewInvalid, .itemStatus.reviewNotAnswered, .itemStatus.reviewNotSeen {
+.o_assessmentitem_status.reviewNotAllowed, .o_assessmentitem_status.reviewInvalid, .o_assessmentitem_status.reviewNotAnswered, .o_assessmentitem_status.reviewNotSeen {
 	background-color: #f52887;
 	opacity: 0.5;
 }
@@ -346,7 +346,7 @@ tr.choiceinteraction {
 }
 
 /* Candidate comment */
-.candidateComment {
+.o_candidatecomment {
 	padding: 0;
 	margin: 2em 0;
 	border: none;
