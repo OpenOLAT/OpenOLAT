@@ -40,6 +40,7 @@ import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.ui.statistics.interactions.ChoiceInteractionStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.KPrimStatisticsController;
+import org.olat.ims.qti21.ui.statistics.interactions.TextEntryInteractionsStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.UnsupportedInteractionController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -114,7 +115,11 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 		}
 		
 		if(textEntryInteractions.size() > 0) {
-			
+			Controller interactionCtrl = new TextEntryInteractionsStatisticsController(ureq, getWindowControl(), itemRef, item, textEntryInteractions, resourceResult);
+			listenTo(interactionCtrl);
+			String componentId = "interaction" + counter++;
+			mainVC.put(componentId, interactionCtrl.getInitialComponent());
+			interactionIds.add(componentId);
 		}
 		
 		return interactionIds;

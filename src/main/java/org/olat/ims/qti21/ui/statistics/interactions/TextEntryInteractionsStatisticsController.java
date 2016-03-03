@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.ui.statistics.interactions;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -30,24 +31,19 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
-import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.ui.ResponseInfos;
 import org.olat.ims.qti.statistics.ui.Series;
 import org.olat.ims.qti21.QTI21StatisticsManager;
-import org.olat.ims.qti21.model.statistics.KPrimStatistics;
-import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
+import org.olat.ims.qti21.model.statistics.TextEntryInteractionStatistics;
 import org.olat.ims.qti21.ui.statistics.QTI21AssessmentItemStatisticsController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.SeriesFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleMatchSet;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
-import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
  * 
@@ -55,29 +51,27 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class KPrimStatisticsController extends BasicController {
+public class TextEntryInteractionsStatisticsController extends BasicController {
 	
-	private final MatchInteraction interaction;
 	private final AssessmentItemRef itemRef;
 	private final AssessmentItem assessmentItem;
+	private final List<TextEntryInteraction> interactions;
 	private final QTI21StatisticResourceResult resourceResult;
-	private final AssessmentHtmlBuilder assessmentHtmlBuilder;
 	
 	@Autowired
 	private QTI21StatisticsManager qtiStatisticsManager;
 	
-	public KPrimStatisticsController(UserRequest ureq, WindowControl wControl,
-			AssessmentItemRef itemRef, AssessmentItem assessmentItem, MatchInteraction interaction,
+	public TextEntryInteractionsStatisticsController(UserRequest ureq, WindowControl wControl,
+			AssessmentItemRef itemRef, AssessmentItem assessmentItem, List<TextEntryInteraction> interactions,
 			QTI21StatisticResourceResult resourceResult) {
 		super(ureq, wControl, Util.createPackageTranslator(QTI21AssessmentItemStatisticsController.class, ureq.getLocale()));
-		this.interaction = interaction;
+		this.interactions = interactions;
 		this.itemRef = itemRef;
 		this.assessmentItem = assessmentItem;
 		this.resourceResult = resourceResult;
-		assessmentHtmlBuilder = new AssessmentHtmlBuilder();
-		
-		VelocityContainer mainVC = createVelocityContainer("kprim_interaction");
-		Series series = getKPrim();
+
+		VelocityContainer mainVC = createVelocityContainer("fib_interaction");
+		Series series = getFIB();
 		VelocityContainer vc = createVelocityContainer("hbar_item");
 		vc.contextPut("series", series);
 		mainVC.put("questionChart", vc);
@@ -96,52 +90,42 @@ public class KPrimStatisticsController extends BasicController {
 		
 	}
 	
-	public Series getKPrim() {
-		List<KPrimStatistics> statisticResponses = qtiStatisticsManager
-				.getKPrimStatistics(itemRef.getIdentifier().toString(), assessmentItem, interaction, resourceResult.getSearchParams());
+	private Series getFIB() {
+		List<TextEntryInteractionStatistics> processedAnswers = qtiStatisticsManager
+				.getTextEntryInteractionsStatistic(itemRef.getIdentifier().toString(), assessmentItem, interactions, resourceResult.getSearchParams());
 
-		//TODO String mediaBaseURL = resourceResult.getMediaBaseURL();
 		boolean survey = QTIType.survey.equals(resourceResult.getType());
 		int numOfParticipants = resourceResult.getQTIStatisticAssessment().getNumOfParticipants();
-		List<SimpleMatchSet> matchSets = interaction.getSimpleMatchSets();
-		SimpleMatchSet fourMatchSet = matchSets.get(0);
 
 		int i = 0;
-		BarSeries d1 = new BarSeries("bar_green", "green", translate("answer.correct"));
-		BarSeries d2 = new BarSeries("bar_red", "red", translate("answer.false"));
-		BarSeries d3 = new BarSeries("bar_grey", "grey", translate("answer.noanswer"));
-
+		String cssColor = survey ? "bar_default" : "bar_green";
+		String color = survey ? null : "green";
+		BarSeries d1 = new BarSeries(cssColor, color, null);
 		List<ResponseInfos> responseInfos = new ArrayList<>();
-		for (KPrimStatistics statisticResponse:statisticResponses) {
-			Identifier choiceIdentifier = statisticResponse.getChoiceIdentifier();
-			
-			boolean correctRight = statisticResponse.isCorrectRight();
-			double right = statisticResponse.getNumOfCorrect();
-			double wrong = statisticResponse.getNumOfIncorrect();
-			double notanswered = numOfParticipants - right - wrong;
-
+		for (TextEntryInteractionStatistics entry : processedAnswers) {
 			String label = Integer.toString(++i);
-			d1.add(right, label);
-			d2.add(wrong, label);
-			d3.add(notanswered, label);
+			String answerString = entry.getCorrectResponse();
+			d1.add(entry.getNumOfCorrect(), label, cssColor);
 			
-			String text = "";
-			for(SimpleAssociableChoice choice:fourMatchSet.getSimpleAssociableChoices()) {
-				if(choice.getIdentifier().equals(choiceIdentifier)) {
-					String textFlow = assessmentHtmlBuilder.flowStaticString(choice.getFlowStatics());
-					text = FilterFactory.getHtmlTagAndDescapingFilter().filter(textFlow);
+			StringBuilder text = new StringBuilder();
+			text.append(answerString);
+			if(entry.getAlternatives().size() > 1) {
+				text.append(" [");
+				for(int j=1; j<entry.getAlternatives().size(); j++) {
+					if(j > 1) text.append(", ");
+					text.append(entry.getAlternatives().get(j));
 				}
+				text.append("]");
 			}
-			responseInfos.add(new ResponseInfos(label, text, null, correctRight, survey, true));
+			
+			Float score = entry.getPoints() == null ? null : entry.getPoints().floatValue();
+			responseInfos.add(new ResponseInfos(label, text.toString(), entry.getWrongAnswers(), score, true, survey, false));
 		}
 		
-		List<BarSeries> serieList = new ArrayList<>(3);
-		serieList.add(d1);
-		serieList.add(d2);
-		serieList.add(d3);
-		Series series = new Series(serieList, responseInfos, numOfParticipants, !survey);
-		series.setChartType(survey ? SeriesFactory.BAR_ANSWERED : SeriesFactory.BAR_CORRECT_WRONG_NOT);
-		series.setItemCss("o_mi_qtikprim");
+		List<BarSeries> serieList = Collections.singletonList(d1);
+		Series series = new Series(serieList, responseInfos, numOfParticipants, false);
+		series.setChartType(SeriesFactory.BAR_ANSWERED);
+		series.setItemCss("o_mi_qtifib");
 		return series;
 	}
 }

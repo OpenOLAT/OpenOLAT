@@ -22,8 +22,10 @@ package org.olat.ims.qti21.manager;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.TypedQuery;
@@ -37,19 +39,24 @@ import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.model.statistics.KPrimStatistics;
 import org.olat.ims.qti21.model.statistics.SimpleChoiceStatistics;
+import org.olat.ims.qti21.model.statistics.TextEntryInteractionStatistics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleMatchSet;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.DirectedPairValue;
 import uk.ac.ed.ph.jqtiplus.value.SingleValue;
+import uk.ac.ed.ph.jqtiplus.value.StringValue;
 
 /**
  * 
@@ -318,6 +325,75 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			kprimPoints.add(new KPrimStatistics(choice.getIdentifier(), isCorrectRight, numCorrect, numIncorrect, numUnanswered));
 		}
 		return kprimPoints;
+	}
+	
+	@Override
+	public List<TextEntryInteractionStatistics> getTextEntryInteractionsStatistic(String itemRefIdent, AssessmentItem item, List<TextEntryInteraction> interactions,
+			QTI21StatisticSearchParams searchParams) {
+
+		List<TextEntryInteractionStatistics> options = new ArrayList<>();
+		Map<String, TextEntryInteractionStatistics> optionMap = new HashMap<>();
+
+		for(TextEntryInteraction interaction:interactions) {
+			Identifier responseIdentifier = interaction.getResponseIdentifier();
+			ResponseDeclaration responseDeclaration = item.getResponseDeclaration(responseIdentifier);
+			
+			if(responseDeclaration.hasBaseType(BaseType.STRING)) {
+				String correctResponse = null;
+				boolean caseSensitive = true;
+				double points = Double.NaN;
+				List<String> alternatives = new ArrayList<>();
+
+				List<MapEntry> mapEntries = responseDeclaration.getMapping().getMapEntries();
+				for(MapEntry mapEntry:mapEntries) {
+					SingleValue mapKey = mapEntry.getMapKey();
+					if(mapKey instanceof StringValue) {
+						String value = ((StringValue)mapKey).stringValue();
+						if(correctResponse == null) {
+							correctResponse = value;
+							points = mapEntry.getMappedValue();
+						} else {
+							alternatives.add(value);
+						}
+					}
+					
+					caseSensitive &= mapEntry.getCaseSensitive();
+				}
+
+				if(points == -1.0d) {
+					points = 0.0d;//all score
+				}
+
+				TextEntryInteractionStatistics stats
+					= new TextEntryInteractionStatistics(responseIdentifier, caseSensitive, correctResponse, alternatives, points);
+				optionMap.put(responseIdentifier.toString(), stats);
+				options.add(stats);
+			}
+		}
+		
+		for(TextEntryInteraction interaction:interactions) {
+			String responseIdentifier = interaction.getResponseIdentifier().toString();
+			List<RawData> datas = getRawDatas(itemRefIdent, responseIdentifier, searchParams);
+			for(RawData data:datas) {
+				Long count = data.getCount();
+				if(count != null && count.longValue() > 0) {
+					TextEntryInteractionStatistics stats = optionMap.get(responseIdentifier);
+					String response = data.getStringuifiedResponse();
+					if(response != null && response.length() >= 2 && response.startsWith("[") && response.endsWith("]")) {
+						response = response.substring(1, response.length() - 1);
+					}
+					
+					if(stats.matchResponse(response)) {
+						stats.addCorrect(count.longValue());
+					} else {
+						stats.addIncorrect(count.longValue());
+						stats.addWrongResponses(response);
+					}
+				}
+			}
+		}
+
+		return options;
 	}
 	
 	private List<RawData> getRawDatas(String itemRefIdent, String responseIdentifier, QTI21StatisticSearchParams searchParams) {
