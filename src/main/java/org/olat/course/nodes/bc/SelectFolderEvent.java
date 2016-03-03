@@ -22,7 +22,7 @@ package org.olat.course.nodes.bc;
 import org.olat.core.gui.control.Event;
 
 /**
- * 
+ *
  * Initial date: 26.01.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
@@ -31,9 +31,9 @@ public class SelectFolderEvent extends Event {
 
 	private static final long serialVersionUID = -181496177465081875L;
 	private String subpath;
-	
+
 	public SelectFolderEvent(String subpath) {
-		super("select-folder");
+		super(subpath);
 		this.subpath = subpath;
 	}
 
