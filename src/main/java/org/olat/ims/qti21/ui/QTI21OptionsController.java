@@ -48,7 +48,7 @@ public class QTI21OptionsController extends FormBasicController implements Activ
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] onValues = new String[]{ "" };
 	
-	private MultipleSelectionElement enableSuspendEl;
+	private MultipleSelectionElement enableSuspendEl, displayQuestionProgressEl, displayScoreProgressEl;
 	
 	private final RepositoryEntry testEntry;
 	private final QTI21DeliveryOptions deliveryOptions;
@@ -66,6 +66,16 @@ public class QTI21OptionsController extends FormBasicController implements Activ
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("tab.options");
+		
+		displayQuestionProgressEl = uifactory.addCheckboxesHorizontal("questionProgress", "qti.form.questionprogress", formLayout, onKeys, onValues);
+		if(deliveryOptions.getDisplayQuestionProgress() != null && deliveryOptions.getDisplayQuestionProgress().booleanValue()) {
+			displayQuestionProgressEl.select(onKeys[0], true);
+		}
+		
+		displayScoreProgressEl = uifactory.addCheckboxesHorizontal("scoreProgress", "qti.form.scoreprogress", formLayout, onKeys, onValues);
+		if(deliveryOptions.getDisplayScoreProgress() != null && deliveryOptions.getDisplayScoreProgress().booleanValue()) {
+			displayScoreProgressEl.select(onKeys[0], true);
+		}
 		
 		enableSuspendEl = uifactory.addCheckboxesHorizontal("suspend", "qti.form.enablesuspend", formLayout, onKeys, onValues);
 		if(deliveryOptions.getEnableSuspend() != null && deliveryOptions.getEnableSuspend().booleanValue()) {
@@ -95,6 +105,19 @@ public class QTI21OptionsController extends FormBasicController implements Activ
 		} else {
 			deliveryOptions.setEnableSuspend(Boolean.FALSE);
 		}
+		
+		if(displayQuestionProgressEl.isAtLeastSelected(1)) {
+			deliveryOptions.setDisplayQuestionProgress(Boolean.TRUE);
+		} else {
+			deliveryOptions.setDisplayQuestionProgress(Boolean.FALSE);
+		}
+		
+		if(displayScoreProgressEl.isAtLeastSelected(1)) {
+			deliveryOptions.setDisplayScoreProgress(Boolean.TRUE);
+		} else {
+			deliveryOptions.setDisplayScoreProgress(Boolean.FALSE);
+		}
+		
 		qtiService.setDeliveryOptions(testEntry, deliveryOptions);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

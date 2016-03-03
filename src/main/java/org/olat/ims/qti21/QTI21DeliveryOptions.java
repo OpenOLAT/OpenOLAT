@@ -30,6 +30,8 @@ package org.olat.ims.qti21;
 public class QTI21DeliveryOptions {
 
 	private Boolean enableSuspend;
+	private Boolean displayScoreProgress;
+	private Boolean displayQuestionProgress;
 
 	public Boolean getEnableSuspend() {
 		return enableSuspend;
@@ -38,4 +40,24 @@ public class QTI21DeliveryOptions {
 	public void setEnableSuspend(Boolean enableSuspend) {
 		this.enableSuspend = enableSuspend;
 	}
+
+	public Boolean getDisplayScoreProgress() {
+		return displayScoreProgress;
+	}
+
+	public void setDisplayScoreProgress(Boolean displayScoreProgress) {
+		this.displayScoreProgress = displayScoreProgress;
+	}
+
+	public Boolean getDisplayQuestionProgress() {
+		return displayQuestionProgress;
+	}
+
+	public void setDisplayQuestionProgress(Boolean displayQuestionProgress) {
+		this.displayQuestionProgress = displayQuestionProgress;
+	}
+	
+	
+	
+	
 }

@@ -79,6 +79,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTex
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.tree.MenuTreeItem;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.control.WindowBackOffice;
@@ -1123,6 +1124,20 @@ public class FormUIFactory {
 
 	public MemoryElement addMemoryView(String name, String i18nLabel, MemoryType type, FormItemContainer formLayout) {
 		MemoryElementImpl fte = new MemoryElementImpl(name, type);
+		setLabelIfNotNull(i18nLabel, fte);
+		formLayout.add(fte);
+		return fte;
+	}
+	
+	public ProgressBarItem addProgressBar(String name, String i18nLabel, FormItemContainer formLayout) {
+		ProgressBarItem fte = new ProgressBarItem(name);
+		setLabelIfNotNull(i18nLabel, fte);
+		formLayout.add(fte);
+		return fte;
+	}
+	
+	public ProgressBarItem addProgressBar(String name, String i18nLabel, int width, float actual, float max, String unitLabel, FormItemContainer formLayout) {
+		ProgressBarItem fte = new ProgressBarItem(name, width, actual, max, unitLabel);
 		setLabelIfNotNull(i18nLabel, fte);
 		formLayout.add(fte);
 		return fte;

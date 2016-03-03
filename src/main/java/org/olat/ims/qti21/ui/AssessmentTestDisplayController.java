@@ -22,9 +22,12 @@ package org.olat.ims.qti21.ui;
 import java.io.File;
 import java.math.BigDecimal;
 import java.net.URI;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -39,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -91,6 +95,7 @@ import uk.ac.ed.ph.jqtiplus.provision.BadResourceException;
 import uk.ac.ed.ph.jqtiplus.reading.QtiModelBuildingError;
 import uk.ac.ed.ph.jqtiplus.reading.QtiXmlInterpretationException;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
+import uk.ac.ed.ph.jqtiplus.running.TestPlanVisitor;
 import uk.ac.ed.ph.jqtiplus.running.TestPlanner;
 import uk.ac.ed.ph.jqtiplus.running.TestProcessingInitializer;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
@@ -99,6 +104,7 @@ import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPartSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlan;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNode;
+import uk.ac.ed.ph.jqtiplus.state.TestPlanNode.TestNodeType;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 import uk.ac.ed.ph.jqtiplus.state.TestProcessingMap;
 import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
@@ -123,6 +129,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	
 	private final File fUnzippedDirRoot;
 	private final String mapperUri;
+	private final QTI21DeliveryOptions deliveryOptions;
 	
 	private VelocityContainer mainVC;
 	private QtiWorksController qtiWorksCtrl;
@@ -167,10 +174,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		
 		assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), entry, subIdent, testEntry);
 		
-		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(testEntry);
-		boolean allowResume = deliveryOptions != null && deliveryOptions.getEnableSuspend() != null
+		deliveryOptions = qtiService.getDeliveryOptions(testEntry);
+		boolean allowResume = deliveryOptions.getEnableSuspend() != null
 				&& deliveryOptions.getEnableSuspend().booleanValue();
-		
+
 		AssessmentTestSession lastSession = null;
 		if(allowResume) {
 			lastSession = qtiService.getResumableAssessmentTestSession(getIdentity(), entry, subIdent, testEntry);
@@ -201,7 +208,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	}
 	
 	private void initQtiWorks(UserRequest ureq) {
-		qtiWorksCtrl = new QtiWorksController(ureq, getWindowControl(), false);
+		qtiWorksCtrl = new QtiWorksController(ureq, getWindowControl(), true);
     	listenTo(qtiWorksCtrl);
     	mainVC.put("qtirun", qtiWorksCtrl.getInitialComponent());
 	}
@@ -933,13 +940,18 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		private FormLink endTestPartButton, closeTestButton, cancelTestButton;
 		private AssessmentTestFormItem qtiEl;
 		private AssessmentTreeFormItem qtiTreeEl;
+		private ProgressBarItem scoreProgress, questionProgress;
 		
-		private final boolean allowCancel;
+		private final boolean allowCancel, displayQuestionProgress, displayScoreProgress;
 		private final QtiWorksStatus qtiWorksStatus = new QtiWorksStatus();
 		
 		public QtiWorksController(UserRequest ureq, WindowControl wControl, boolean allowCancel) {
 			super(ureq, wControl, "at_run");
 			this.allowCancel = allowCancel;
+			displayScoreProgress = deliveryOptions.getDisplayScoreProgress() != null
+					&& deliveryOptions.getDisplayScoreProgress().booleanValue();
+			displayQuestionProgress = deliveryOptions.getDisplayQuestionProgress() != null
+					&& deliveryOptions.getDisplayQuestionProgress().booleanValue();;
 			initForm(ureq);
 		}
 
@@ -989,13 +1001,28 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				
 				JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/jquery/ui/jquery-ui-1.11.4.custom.resize.min.js" }, null);
 				layoutCont.put("js", js);
+				
+				layoutCont.contextPut("displayScoreProgress", displayScoreProgress);
+				layoutCont.contextPut("displayQuestionProgress", displayQuestionProgress);
+				
+				if(displayScoreProgress) {
+					scoreProgress = uifactory.addProgressBar("scoreProgress", null, 250, 0, 0, "", formLayout);
+					formLayout.add("", scoreProgress);
+				}
+				
+				if(displayQuestionProgress) {
+					questionProgress = uifactory.addProgressBar("questionProgress", null, 250, 0, 0, "", formLayout);
+					formLayout.add("questionProgress", questionProgress);
+				}
 			}
-			updateButtons();
+
+			updateGUI();
 		}
 
 		@Override
 		protected void formOK(UserRequest ureq) {
 			processResponse(ureq, qtiEl.getSubmitButton());
+			updateGUI();
 		}
 
 		@Override
@@ -1015,7 +1042,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				processResponse(ureq, formLink);
 			}
 			super.formInnerEvent(ureq, source, event);
-			updateButtons();
+			updateGUI();
 		}
 
 		@Override
@@ -1055,7 +1082,12 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			
 		}
 		
-		private void updateButtons() {
+		private void updateGUI() {
+			//updateButtons();
+			updateQtiWorksStatus();
+		}
+		
+		/*private void updateButtons() {
 			TestSessionState testSessionState = testSessionController.getTestSessionState();
 			CandidateSessionContext candidateSessionContext = AssessmentTestDisplayController.this;
 			boolean enabled = !candidateSessionContext.isTerminated() && !testSessionState.isExited()
@@ -1064,10 +1096,144 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			//endTestPartButton.setEnabled(enabled);
 			
 			//closeTestButton.setEnabled(enabled);
+		}*/
+		
+		private void updateQtiWorksStatus() {
+			if(displayQuestionProgress || displayScoreProgress) {
+
+				TestPlanInfos testPlanInfos = new TestPlanInfos();
+				testSessionController.visitTestPlan(testPlanInfos);
+				
+				if(displayQuestionProgress) {
+					questionProgress.setMax(testPlanInfos.getNumOfItems());
+					questionProgress.setActual(testPlanInfos.getNumOfAnsweredItems());
+					qtiWorksStatus.setNumOfItems(testPlanInfos.getNumOfItems());
+					qtiWorksStatus.setNumOfAnsweredItems(testPlanInfos.getNumOfAnsweredItems());
+				}
+				
+				if(displayScoreProgress) {
+					double score = testPlanInfos.getScore();
+					double maxScore = testPlanInfos.getMaxScore();
+					
+					// real assessment test score overwrite
+					Value assessmentTestScoreValue = testSessionController.getTestSessionState()
+						.getOutcomeValue(QTI21Constants.SCORE_IDENTIFIER);
+					if(assessmentTestScoreValue instanceof FloatValue) {
+						score = ((FloatValue)assessmentTestScoreValue).doubleValue();
+					}
+					Value assessmentTestMaxScoreValue = testSessionController.getTestSessionState()
+							.getOutcomeValue(QTI21Constants.MAXSCORE_IDENTIFIER);
+					if(assessmentTestMaxScoreValue instanceof FloatValue) {
+						maxScore = ((FloatValue)assessmentTestMaxScoreValue).doubleValue();
+					}
+					
+					qtiWorksStatus.setScore(score);
+					qtiWorksStatus.setMaxScore(maxScore);
+					scoreProgress.setActual((float)score);
+					scoreProgress.setMax((float)maxScore);
+				}
+			}
+		}
+	}
+	
+	public class TestPlanInfos implements TestPlanVisitor {
+		
+		private int numOfItems = 0;
+		private int numOfAnsweredItems = 0;
+		
+		private double score = 0.0d;
+		private double maxScore = 0.0d;
+		
+		@Override
+		public void visit(TestPlanNode testPlanNode) {
+			final TestNodeType type = testPlanNode.getTestNodeType();
+			if(type == TestNodeType.ASSESSMENT_ITEM_REF) {
+				numOfItems++;
+				
+				ItemSessionState state = testSessionController.getTestSessionState()
+						.getItemSessionStates().get(testPlanNode.getKey());
+				if(state != null && state.isResponded()) {
+					numOfAnsweredItems++;
+				}
+				
+				Value maxScoreValue = state.getOutcomeValue(QTI21Constants.MAXSCORE_IDENTIFIER);
+				if(maxScoreValue instanceof FloatValue) {
+					maxScore += ((FloatValue)maxScoreValue).doubleValue();
+				}
+				Value scoreValue = state.getOutcomeValue(QTI21Constants.SCORE_IDENTIFIER);
+				if(scoreValue instanceof FloatValue) {
+					score += ((FloatValue)scoreValue).doubleValue();
+				}
+			}
+		}
+		
+		public int getNumOfItems() {
+			return numOfItems;
+		}
+		
+		public int getNumOfAnsweredItems() {
+			return numOfAnsweredItems;
+		}
+		
+		public double getMaxScore() {
+			return maxScore;
+		}
+		
+		public double getScore() {
+			return score;
 		}
 	}
 	
 	public class QtiWorksStatus {
+
+		private final DecimalFormat scoreFormat = new DecimalFormat("#0.###", new DecimalFormatSymbols(Locale.ENGLISH));
+		
+		private int numOfItems;
+		private int numOfAnsweredItems;
+		
+		private double score;
+		private double maxScore;
+
+
+		public boolean isSurvey() {
+			return false;
+		}
+		
+		public String getScore() {
+			return scoreFormat.format(score);
+		}
+		
+		public void setScore(double score) {
+			this.score = score;
+		}
+		
+		public boolean hasMaxScore() {
+			return true;
+		}
+		
+		public String getMaxScore() {
+			return scoreFormat.format(maxScore);
+		}
+		
+		public void setMaxScore(double maxScore) {
+			this.maxScore = maxScore;
+		}
+		
+		public String getNumberOfAnsweredQuestions() {
+			return numOfAnsweredItems <= 0 ? "0" : Integer.toString(numOfAnsweredItems);
+		}
+		
+		public void setNumOfItems(int numOfItems) {
+			this.numOfItems = numOfItems;
+		}
+		
+		public String getNumberOfQuestions() {
+			return numOfItems <= 0 ? "0" : Integer.toString(numOfItems);
+		}
+		
+		public void setNumOfAnsweredItems(int numOfAnsweredItems) {
+			this.numOfAnsweredItems = numOfAnsweredItems;
+		}
 		
 		public boolean mayEndCurrentTestPart() {
 			TestSessionState testSessionState = testSessionController.getTestSessionState();
