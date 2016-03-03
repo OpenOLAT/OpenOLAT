@@ -44,13 +44,14 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 public class EssayEditorController extends FormBasicController {
 	
 	private TextElement titleEl;
+	private TextElement placeholderEl;
 	private TextElement widthEl, heightEl, minWordsEl, maxWordsEl;
 	private RichTextElement textEl;
 	
 	private final EssayAssessmentItemBuilder itemBuilder;
 	
 	public EssayEditorController(UserRequest ureq, WindowControl wControl, EssayAssessmentItemBuilder itemBuilder) {
-		super(ureq, wControl, "essay");
+		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
 		initForm(ureq);
@@ -58,37 +59,34 @@ public class EssayEditorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer metadata = FormLayoutContainer.createDefaultFormLayout("metadata", getTranslator());
-		metadata.setRootForm(mainForm);
-		formLayout.add(metadata);
-		formLayout.add("metadata", metadata);
-
-		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), metadata);
+		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), formLayout);
 		titleEl.setMandatory(true);
 		
 		String description = itemBuilder.getQuestion();
 		textEl = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", description, 8, -1, true, null, null,
-				metadata, ureq.getUserSession(), getWindowControl());
+				formLayout, ureq.getUserSession(), getWindowControl());
 		RichTextConfiguration richTextConfig = textEl.getEditorConfiguration();
 		richTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
 		
+		String placeholder = itemBuilder.getPlaceholder();
+		placeholderEl = uifactory.addTextElement("placeholder", "fib.placeholder", 256, placeholder, formLayout);
+		
 		//width (expectedLength), height (expectedLines)
 		String expectedLength = getValue(itemBuilder.getExpectedLength());
-		widthEl = uifactory.addTextElement("cols", "essay.columns", -1, expectedLength, metadata);
+		widthEl = uifactory.addTextElement("cols", "essay.columns", -1, expectedLength, formLayout);
 		String expectedLines = getValue(itemBuilder.getExpectedLines());
-		heightEl = uifactory.addTextElement("rows", "essay.rows", -1, expectedLines, metadata);
+		heightEl = uifactory.addTextElement("rows", "essay.rows", -1, expectedLines, formLayout);
 
 		//words count min. max. (maxStrings)
 		String minStrings = getValue(itemBuilder.getMinStrings());
-		minWordsEl = uifactory.addTextElement("min.strings", "essay.min.strings", -1, minStrings, metadata);
+		minWordsEl = uifactory.addTextElement("min.strings", "essay.min.strings", -1, minStrings, formLayout);
 		String maxStrings = getValue(itemBuilder.getMaxStrings());
-		maxWordsEl = uifactory.addTextElement("max.strings", "essay.max.strings", -1, maxStrings, metadata);
-		
+		maxWordsEl = uifactory.addTextElement("max.strings", "essay.max.strings", -1, maxStrings, formLayout);
+
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
 		formLayout.add(buttonsContainer);
-		formLayout.add("buttons", buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
 	}
 
@@ -149,6 +147,7 @@ public class EssayEditorController extends FormBasicController {
 		String questionText = textEl.getValue();
 		itemBuilder.setQuestion(questionText);
 		
+		itemBuilder.setPlaceholder(placeholderEl.getValue());
 		//width and height
 		itemBuilder.setExpectedLength(getValue(widthEl));
 		itemBuilder.setExpectedLines(getValue(heightEl));

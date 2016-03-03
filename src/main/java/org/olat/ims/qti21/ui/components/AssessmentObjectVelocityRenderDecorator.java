@@ -51,10 +51,12 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.GraphicAssociateInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.GraphicGapMatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.GraphicOrderInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.InlineChoiceInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.OrderInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Prompt;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.SliderInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.StringInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.GapChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.GapImg;
@@ -521,6 +523,16 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	public String renderExtendedTextBox(ExtendedTextInteraction interaction) {
 		avc.getHTMLRendererSingleton()
 			.renderExtendedTextBox(renderer, target, avc, assessmentItem, itemSessionState, interaction);
+		return "";
+	}
+	
+	public String placeholder(Interaction interaction) {
+		if(interaction instanceof StringInteraction) {
+			StringInteraction tei = (StringInteraction)interaction;
+			if(StringHelper.containsNonWhitespace(tei.getPlaceholderText())) {
+				target.append(" placeholder=\"").append(StringHelper.escapeHtml(tei.getPlaceholderText())).append("\"");
+			}
+		}
 		return "";
 	}
 	

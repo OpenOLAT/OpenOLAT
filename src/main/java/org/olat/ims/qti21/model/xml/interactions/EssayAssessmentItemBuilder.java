@@ -30,6 +30,7 @@ import java.util.List;
 import javax.xml.transform.stream.StreamResult;
 
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
@@ -128,6 +129,18 @@ public class EssayAssessmentItemBuilder extends AssessmentItemBuilder {
 	@Override
 	public void setQuestion(String html) {
 		this.question = html;
+	}
+	
+	public String getPlaceholder() {
+		return extendedTextInteraction.getPlaceholderText();
+	}
+	
+	public void setPlaceholder(String placeholder) {
+		if(StringHelper.containsNonWhitespace(placeholder)) {
+			extendedTextInteraction.setPlaceholderText(placeholder);
+		} else {
+			extendedTextInteraction.setPlaceholderText(null);
+		}
 	}
 	
 	public Integer getExpectedLength() {
