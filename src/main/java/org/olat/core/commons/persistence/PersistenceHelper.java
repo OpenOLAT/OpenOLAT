@@ -377,4 +377,16 @@ public class PersistenceHelper {
 		}
 		return keys;
 	}
+	
+	public static Long extractLong(Object[] results, int pos) {
+		if(results == null || pos >= results.length) return null;
+		Object obj = results[pos];
+		return obj == null ? null : ((Number)obj).longValue();
+	}
+	
+	public static String extractString(Object[] results, int pos) {
+		if(results == null || pos >= results.length ) return null;
+		Object obj = results[pos];
+		return obj == null ? null : (obj instanceof String ? (String)obj : obj.toString());
+	}
 }

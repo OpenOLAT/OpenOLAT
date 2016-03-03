@@ -39,12 +39,16 @@ import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.ui.statistics.interactions.ChoiceInteractionStatisticsController;
+import org.olat.ims.qti21.ui.statistics.interactions.KPrimStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.UnsupportedInteractionController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.EndAttemptInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 
 /**
@@ -86,18 +90,34 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 		mainVC.contextPut("printMode", new Boolean(printMode));
 		
 		StatisticsItem itemStats = initItemStatistics();
-		
+		List<String> interactionIds = initInteractionControllers(ureq, itemStats);
+		mainVC.contextPut("interactionIds", interactionIds);
+		putInitialPanel(mainVC);
+	}
+	
+	private List<String> initInteractionControllers(UserRequest ureq, StatisticsItem itemStats) {
 		List<Interaction> interactions = item.getItemBody().findInteractions();
 		List<String> interactionIds = new ArrayList<>(interactions.size());
 		int counter = 0;
+		List<TextEntryInteraction> textEntryInteractions = new ArrayList<>();
 		for(Interaction interaction:interactions) {
-			Component cmp = interactionControllerFactory(ureq, interaction, itemStats);
-			String componentId = "interaction" + counter++;
-			mainVC.put(componentId, cmp);
-			interactionIds.add(componentId);
+			if(interaction instanceof TextEntryInteraction) {
+				textEntryInteractions.add((TextEntryInteraction)interaction);
+			} else if(interaction instanceof EndAttemptInteraction) {
+				continue;
+			} else {
+				Component cmp = interactionControllerFactory(ureq, interaction, itemStats);
+				String componentId = "interaction" + counter++;
+				mainVC.put(componentId, cmp);
+				interactionIds.add(componentId);
+			}
 		}
-		mainVC.contextPut("interactionIds", interactionIds);
-		putInitialPanel(mainVC);
+		
+		if(textEntryInteractions.size() > 0) {
+			
+		}
+		
+		return interactionIds;
 	}
 	
 	private Component interactionControllerFactory(UserRequest ureq, Interaction interaction, StatisticsItem itemStats) {
@@ -106,6 +126,12 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 		if(interaction instanceof ChoiceInteraction) {
 			interactionCtrl = new ChoiceInteractionStatisticsController(ureq, getWindowControl(),
 					itemRef, item, (ChoiceInteraction)interaction, itemStats, resourceResult);
+		} else if(interaction instanceof MatchInteraction) {
+			String responseIdentifier = interaction.getResponseIdentifier().toString();
+			if(responseIdentifier.startsWith("KPRIM_")) {
+				interactionCtrl = new KPrimStatisticsController(ureq, getWindowControl(),
+						itemRef, item, (MatchInteraction)interaction, resourceResult);
+			}
 		}
 
 		if(interactionCtrl == null) {

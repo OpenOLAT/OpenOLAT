@@ -22,23 +22,34 @@ package org.olat.ims.qti21.manager;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.ims.qti.statistics.manager.Statistics;
 import org.olat.ims.qti.statistics.model.StatisticAssessment;
 import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
+import org.olat.ims.qti21.model.statistics.KPrimStatistics;
 import org.olat.ims.qti21.model.statistics.SimpleChoiceStatistics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleMatchSet;
+import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
+import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
+import uk.ac.ed.ph.jqtiplus.value.DirectedPairValue;
+import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 
 /**
  * 
@@ -228,24 +239,8 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 	@Override
 	public List<SimpleChoiceStatistics> getChoiceInteractionStatistics(String itemRefIdent,
 			AssessmentItem assessmentItem, ChoiceInteraction choiceInteraction, QTI21StatisticSearchParams searchParams) {
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("select isession.key, aresponse.responseIdentifier, aresponse.stringuifiedResponse, count(aresponse.key) from qtiassessmentresponse aresponse ")
-		  .append(" inner join aresponse.assessmentItemSession isession")
-		  .append(" inner join isession.assessmentTestSession asession");
-		decorateRSet(sb, searchParams);
-		sb.append(" and isession.assessmentItemIdentifier=:itemIdent and aresponse.responseIdentifier=:responseIdentifier and isession.duration > 0")
-		  .append(" group by isession.key, aresponse.responseIdentifier, aresponse.stringuifiedResponse");
 
-		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Object[].class)
-				.setParameter("itemIdent", itemRefIdent)
-				.setParameter("responseIdentifier", choiceInteraction.getResponseIdentifier().toString());
-		decorateRSetQuery(query, searchParams);
-		List<Object[]> results = query.getResultList();
-		if(results.isEmpty()) {
-			return new ArrayList<>();
-		}
+		List<RawData> results = getRawDatas(itemRefIdent, choiceInteraction.getResponseIdentifier().toString(), searchParams);
 		
 		List<SimpleChoice> simpleChoices = choiceInteraction.getSimpleChoices();
 		long[] counts = new long[simpleChoices.size()];
@@ -253,10 +248,10 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			counts[i] = 0l;
 		}
 
-		for(Object[] result:results) {
-			Long numOfAnswers = (Long)result[3];
+		for(RawData result:results) {
+			Long numOfAnswers = result.getCount();;
 			if(numOfAnswers != null && numOfAnswers.longValue() > 0) {
-				String stringuifiedResponse = (String)result[2];
+				String stringuifiedResponse = result.getStringuifiedResponse();
 				for(int i=simpleChoices.size(); i-->0; ) {
 					String identifier = simpleChoices.get(i).getIdentifier().toString();
 					if(stringuifiedResponse.contains(identifier)) {
@@ -271,5 +266,117 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			choicesStatistics.add(new SimpleChoiceStatistics(simpleChoices.get(i), counts[i]));
 		}
 		return choicesStatistics;
+	}
+	
+	//stringuifiedResponse: [a93247453265982 correct][b93247453265983 correct][c93247453265984 correct][d93247453265985 correct]
+	@Override
+	public List<KPrimStatistics> getKPrimStatistics(String itemRefIdent, AssessmentItem item, MatchInteraction interaction,
+			QTI21StatisticSearchParams searchParams) {
+		List<RawData> rawDatas = getRawDatas(itemRefIdent, interaction.getResponseIdentifier().toString(), searchParams);
+		List<SimpleMatchSet> matchSets = interaction.getSimpleMatchSets();
+		List<KPrimStatistics> kprimPoints = new ArrayList<>();
+		
+		SimpleMatchSet fourMatchSet = matchSets.get(0);
+		ResponseDeclaration responseDeclaration = item.getResponseDeclaration(interaction.getResponseIdentifier());
+		
+		//readable responses
+		Set<String> rightResponses = new HashSet<>();
+		List<MapEntry> mapEntries = responseDeclaration.getMapping().getMapEntries();
+		for(MapEntry mapEntry:mapEntries) {
+			SingleValue mapKey = mapEntry.getMapKey();
+			if(mapKey instanceof DirectedPairValue) {
+				DirectedPairValue pairValue = (DirectedPairValue)mapKey;
+				String source = pairValue.sourceValue().toString();
+				String destination = pairValue.destValue().toString();
+				rightResponses.add("[" + source + " " + destination + "]");
+			}
+		}
+		
+		for(SimpleAssociableChoice choice:fourMatchSet.getSimpleAssociableChoices()) {
+			String choiceIdentifier = choice.getIdentifier().toString();
+			String markerCorrect = "[" + choiceIdentifier + " correct]";
+			String markerWrong = "[" + choiceIdentifier + " wrong]";
+			
+			boolean isCorrectRight = rightResponses.contains(markerCorrect);
+			String rightFlag = isCorrectRight ? markerCorrect : markerWrong;
+			String wrongFlag = isCorrectRight ? markerWrong : markerCorrect;
+
+			long numCorrect = 0;
+			long numIncorrect = 0;
+			long numUnanswered = 0;
+			for(RawData rawData:rawDatas) {
+				String response = rawData.getStringuifiedResponse();
+				if(response.indexOf(rightFlag) >= 0) {
+					numCorrect += rawData.getCount();
+				} else if(response.indexOf(wrongFlag) >= 0) {
+					numIncorrect += rawData.getCount();
+				} else {
+					numUnanswered += rawData.getCount();
+				}
+			}
+
+			kprimPoints.add(new KPrimStatistics(choice.getIdentifier(), isCorrectRight, numCorrect, numIncorrect, numUnanswered));
+		}
+		return kprimPoints;
+	}
+	
+	private List<RawData> getRawDatas(String itemRefIdent, String responseIdentifier, QTI21StatisticSearchParams searchParams) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select isession.key, aresponse.responseIdentifier, aresponse.stringuifiedResponse, count(aresponse.key) from qtiassessmentresponse aresponse ")
+		  .append(" inner join aresponse.assessmentItemSession isession")
+		  .append(" inner join isession.assessmentTestSession asession");
+		decorateRSet(sb, searchParams);
+		sb.append(" and isession.assessmentItemIdentifier=:itemIdent and aresponse.responseIdentifier=:responseIdentifier and isession.duration > 0")
+		  .append(" group by isession.key, aresponse.responseIdentifier, aresponse.stringuifiedResponse");
+
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("itemIdent", itemRefIdent)
+				.setParameter("responseIdentifier", responseIdentifier);
+		decorateRSetQuery(query, searchParams);
+		List<Object[]> results = query.getResultList();
+		if(results.isEmpty()) {
+			return new ArrayList<>();
+		}
+		
+		List<RawData> datas = new ArrayList<>(results.size());
+		for(Object[] result:results) {
+			Long itemSessionKey = PersistenceHelper.extractLong(result, 0);
+			String stringuifiedResponse = PersistenceHelper.extractString(result, 2);
+			Long count = PersistenceHelper.extractLong(result, 3);
+			datas.add(new RawData(itemSessionKey, responseIdentifier, stringuifiedResponse, count));
+		}
+		return datas;
+	}
+	
+	public static class RawData {
+		
+		private final Long itemSessionKey;
+		private final String responseIdentifier;
+		private final String stringuifiedResponse;
+		private final Long count;
+		
+		public RawData(Long itemSessionKey, String responseIdentifier, String stringuifiedResponse, Long count) {
+			this.itemSessionKey = itemSessionKey;
+			this.responseIdentifier = responseIdentifier;
+			this.stringuifiedResponse = stringuifiedResponse;
+			this.count = count;
+		}
+
+		public Long getItemSessionKey() {
+			return itemSessionKey;
+		}
+
+		public String getResponseIdentifier() {
+			return responseIdentifier;
+		}
+
+		public String getStringuifiedResponse() {
+			return stringuifiedResponse;
+		}
+
+		public Long getCount() {
+			return count;
+		}
 	}
 }

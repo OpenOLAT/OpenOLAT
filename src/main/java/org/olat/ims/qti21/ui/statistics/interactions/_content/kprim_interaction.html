@@ -1,0 +1,15 @@
+<div class="o_qti_statistics_interaction">
+	<h4>$r.translate("chart.responses")</h4>
+	$r.render("questionChart")
+	<ul>
+	#foreach($responseInfo in $series.responseInfos)
+		#if($responseInfo.correct)
+			<li class="o_qti_statistics-kplus">
+		#else
+			<li class="o_qti_statistics-kminus">
+		#end
+			<strong>$responseInfo.label</strong> <span class="o_qti_statistics_answer">$responseInfo.text</span>
+		 </li>
+	#end
+	</ul>
+</div>

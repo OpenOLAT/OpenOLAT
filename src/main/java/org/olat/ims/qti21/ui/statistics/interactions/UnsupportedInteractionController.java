@@ -37,14 +37,11 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
  *
  */
 public class UnsupportedInteractionController extends BasicController {
-	
-	private final Interaction interaction;
-	
+
 	public UnsupportedInteractionController(UserRequest ureq, WindowControl wControl, Interaction interaction) {
 		super(ureq, wControl, Util.createPackageTranslator(QTI21AssessmentItemStatisticsController.class, ureq.getLocale()));
-		
-		this.interaction = interaction;
 		VelocityContainer mainVC = createVelocityContainer("unsupported");
+		mainVC.contextPut("interactionType", interaction.getQtiClassName());
 		putInitialPanel(mainVC);
 	}
 

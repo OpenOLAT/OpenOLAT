@@ -89,7 +89,7 @@ public class ChoiceInteractionStatisticsController extends BasicController {
 		if(isMultipleChoice()) {
 			series = getMultipleChoice(itemStats);
 		} else {
-			series = getSingleChoice(itemStats);
+			series = getSingleChoice();
 		}
 		VelocityContainer vc = createVelocityContainer("hbar_item");
 		vc.contextPut("series", series);
@@ -153,7 +153,7 @@ public class ChoiceInteractionStatisticsController extends BasicController {
 		return correctAnswers;
 	}
 	
-	private Series getSingleChoice(StatisticsItem itemStats) {
+	private Series getSingleChoice() {
 		List<SimpleChoiceStatistics> statisticResponses = qtiStatisticsManager
 				.getChoiceInteractionStatistics(itemRef.getIdentifier().toString(), assessmentItem, interaction, resourceResult.getSearchParams());
 	
