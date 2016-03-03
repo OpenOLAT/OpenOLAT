@@ -10,6 +10,10 @@ td.o_qti_item_kprim_input, th.o_qti_item_kprim_input {
 	}
 }
 
+td.o_qti_item_kprim_text {
+	width: 80%;
+}
+
 /* space in menu between sections */
 div.o_qti_menu_section, div.o_qti_menu_section_clickable, div.o_qti_menu_section_active {
 	margin-top: $padding-large-vertical;

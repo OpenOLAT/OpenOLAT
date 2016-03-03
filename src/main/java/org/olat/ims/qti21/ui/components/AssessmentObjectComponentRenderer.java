@@ -552,10 +552,21 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	}
 	
 	private String getInteractionTemplate(QtiNode interaction) {
-		String interactionName = interaction.getClass().getSimpleName();
+		String interactionName;
+		switch(interaction.getQtiClassName()) {
+			case "matchInteraction": {
+				MatchInteraction matchInteraction = (MatchInteraction)interaction;
+				interactionName = interaction.getQtiClassName();
+				if(matchInteraction.getResponseIdentifier().toString().startsWith("KPRIM_")) {
+					interactionName += "_kprim";
+				}
+				break;
+			}
+			default: interactionName = interaction.getQtiClassName(); break;
+		}
+
 		String templateName = interactionName.substring(0, 1).toLowerCase().concat(interactionName.substring(1));
-		String page = velocity_root + "/" + templateName + ".html";
-		return page;
+		return velocity_root + "/" + templateName + ".html";
 	}
 	
 	/*
