@@ -11,6 +11,9 @@
 		#if($r.available("cancelTest") && $r.visible("cancelTest"))
 			$r.render("cancelTest")
 		#end
+		#if($r.available("suspendTest") && $r.visible("suspendTest"))
+			$r.render("suspendTest")
+		#end
 		</div>
 	</div>
 	

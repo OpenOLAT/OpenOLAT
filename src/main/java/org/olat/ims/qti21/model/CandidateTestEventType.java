@@ -105,6 +105,9 @@ public enum CandidateTestEventType {
 
     /** Solution of a particular item (in review state) */
     SOLUTION_ITEM,
+    
+    
+    SUSPEND,
 
     ;
 

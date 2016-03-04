@@ -97,6 +97,8 @@ import uk.ac.ed.ph.jqtiplus.provision.BadResourceException;
 import uk.ac.ed.ph.jqtiplus.reading.QtiModelBuildingError;
 import uk.ac.ed.ph.jqtiplus.reading.QtiXmlInterpretationException;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
+import uk.ac.ed.ph.jqtiplus.running.ItemProcessingContext;
+import uk.ac.ed.ph.jqtiplus.running.ItemSessionController;
 import uk.ac.ed.ph.jqtiplus.running.TestPlanVisitor;
 import uk.ac.ed.ph.jqtiplus.running.TestPlanner;
 import uk.ac.ed.ph.jqtiplus.running.TestProcessingInitializer;
@@ -235,7 +237,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	
 	@Override
 	protected void doDispose() {
-		//
+		suspendAssessmentTest();
 	}
 
 	@Override
@@ -303,6 +305,50 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private void doSuspend() {
 		VelocityContainer suspendedVC = createVelocityContainer("suspended");
 		mainPanel.setContent(suspendedVC);
+		suspendAssessmentTest();
+	}
+	
+	private boolean resumeAssessmentTest() {
+		return false;
+	}
+
+	/**
+	 * It suspend the current item
+	 * @return
+	 */
+	private boolean suspendAssessmentTest() {
+		if(!allowResume || testSessionController == null
+				|| testSessionController.getTestSessionState() == null
+				|| testSessionController.getTestSessionState().isEnded()
+				|| testSessionController.getTestSessionState().isExited()) {
+			return false;
+		}
+		
+		TestSessionState testSessionState = testSessionController.getTestSessionState();
+		TestPlanNodeKey currentItemKey = testSessionState.getCurrentItemKey();
+		if(currentItemKey == null) {
+			return false;
+		}
+		TestPlanNode currentItemNode = testSessionState.getTestPlan().getNode(currentItemKey);
+
+		ItemProcessingContext itemProcessingContext = testSessionController.getItemProcessingContext(currentItemNode);
+		ItemSessionState itemSessionState = itemProcessingContext.getItemSessionState();
+		if(itemProcessingContext instanceof ItemSessionController
+				&& !itemSessionState.isEnded()
+				&& !itemSessionState.isExited()
+				&& itemSessionState.isOpen()
+				&& !itemSessionState.isSuspended()) {
+			ItemSessionController itemSessionController = (ItemSessionController)itemProcessingContext;
+			itemSessionController.suspendItemSession(new Date());
+			
+			NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+			final CandidateEvent candidateEvent = qtiService.recordCandidateTestEvent(candidateSession,
+	                CandidateTestEventType.SUSPEND, null, testSessionState, notificationRecorder);
+	        //candidateAuditLogger.logCandidateEvent(candidateEvent);
+	        this.lastEvent = candidateEvent;
+			return true;
+		}
+		return false;
 	}
 	
 	private void doConfirmCancel(UserRequest ureq) {
@@ -899,7 +945,22 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	
 	private TestSessionController resumeSession() {
         final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-		return createTestSessionController(notificationRecorder);
+        TestSessionController controller =  createTestSessionController(notificationRecorder);
+       
+        TestSessionState testSessionState = controller.getTestSessionState();
+		TestPlanNodeKey currentItemKey = testSessionState.getCurrentItemKey();
+		if(currentItemKey != null) {
+			TestPlanNode currentItemNode = testSessionState.getTestPlan().getNode(currentItemKey);
+			ItemProcessingContext itemProcessingContext = controller.getItemProcessingContext(currentItemNode);
+			ItemSessionState itemSessionState = itemProcessingContext.getItemSessionState();
+			if(itemProcessingContext instanceof ItemSessionController
+					&& itemSessionState.isSuspended()) {
+				ItemSessionController itemSessionController = (ItemSessionController)itemProcessingContext;
+				itemSessionController.unsuspendItemSession(new Date());
+			}
+		}
+		
+        return controller;
 	}
 	
 	private TestSessionController createTestSessionController(NotificationRecorder notificationRecorder) {
