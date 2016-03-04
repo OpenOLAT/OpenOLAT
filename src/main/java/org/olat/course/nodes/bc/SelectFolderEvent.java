@@ -33,7 +33,7 @@ public class SelectFolderEvent extends Event {
 	private String subpath;
 
 	public SelectFolderEvent(String subpath) {
-		super(subpath);
+		super("select-folder");
 		this.subpath = subpath;
 	}
 

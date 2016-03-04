@@ -200,7 +200,7 @@ public class BCCourseNodeEditForm extends FormBasicController implements Control
 				VFSContainer selectedContainer = (VFSContainer) course.getCourseFolderContainer().resolve(subpath);
 				updatePublisher(selectedContainer);
 				node.getModuleConfiguration().setStringValue(BCCourseNodeEditController.CONFIG_SUBPATH, subpath);
-				subPath.setValue(event.getCommand());
+				subPath.setValue(subpath);
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 			
