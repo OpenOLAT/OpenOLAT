@@ -210,6 +210,7 @@ public class CertificatePhantomWorker {
 	
 	private void fillCertificationInfos(VelocityContext context) {
 		Formatter format = Formatter.getInstance(locale);
+		context.put("dateFormatter", format);
 
 		if(dateCertification == null) {
 			context.put("dateCertification", "");
@@ -218,6 +219,7 @@ public class CertificatePhantomWorker {
 			context.put("dateCertification", formattedDateCertification);
 			String formattedDateCertificationLong= format.formatDateLong(dateCertification);
 			context.put("dateCertificationLong", formattedDateCertificationLong);
+			context.put("dateCertificationRaw", dateCertification);
 		}
 		
 		if(dateFirstCertification == null) {
@@ -227,6 +229,7 @@ public class CertificatePhantomWorker {
 			context.put("dateFirstCertification", formattedDateFirstCertification);
 			String formattedDateFirstCertificationLong = format.formatDate(dateFirstCertification);
 			context.put("dateFirstCertificationLong", formattedDateFirstCertificationLong);
+			context.put("dateFirstCertificationRaw", dateFirstCertification);
 		}
 	}
 	
