@@ -65,6 +65,9 @@ public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 
 	@Value("${webdav.learners.bookmarks.enabled:true}")
 	private boolean enableLearnersBookmarksCourse;
+	/**
+	 * Enable courses in WebDAV for participants and coaches
+	 */
 	@Value("${webdav.learners.participatingCourses.enabled:true}")
 	private boolean enableLearnersParticipatingCourses;
 	

@@ -19,6 +19,9 @@
  */
 package org.olat.core.util;
 
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -56,4 +59,25 @@ public class FormatterTest {
 		String ugly = "guido/\\:? .|*\"\"<><guidoöäü";
 		Assert.assertEquals("guido%2F%5C%3A%3F+.%7C*%22%22%3C%3E%3Cguido%C3%B6%C3%A4%C3%BC", Formatter.makeStringFilesystemSave(ugly));
 	}
+
+	@Test
+	public void testDateRelative() {
+		//zero to add
+		Formatter formatter = Formatter.getInstance(Locale.GERMAN);
+		Date base = new GregorianCalendar(1935, 2, 29).getTime();
+		Assert.assertEquals(formatter.formatDate(base), formatter.formatDateRelative(base, 0,0,0));
+		//add 3 years in the past
+		Date basePlusThreeY = new GregorianCalendar(1938, 2, 29).getTime();
+		Assert.assertEquals(formatter.formatDate(basePlusThreeY), formatter.formatDateRelative(base, 0,0,3));
+		//add 5 days at 29 feb (leap year)
+		base = new GregorianCalendar(2016, 1, 29).getTime();
+		Date basePlusFiveD = new GregorianCalendar(2016, 2, 5).getTime();
+		Assert.assertEquals(formatter.formatDate(basePlusFiveD), formatter.formatDateRelative(base, 5,0,0));
+		//add three moth
+		base = new GregorianCalendar(2016, 4, 15).getTime();
+		Date baseThreeM = new GregorianCalendar(2016, 7, 15).getTime();
+		Assert.assertEquals(formatter.formatDate(baseThreeM), formatter.formatDateRelative(base, 0,3,0));
+	}
+
+
 }

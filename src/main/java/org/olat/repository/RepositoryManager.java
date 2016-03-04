@@ -1886,6 +1886,36 @@ public class RepositoryManager extends BasicManager {
 		return repoEntries;
 	}
 	
+	/**
+	 * Gets all learning resources where the user is in a learning group as participant.
+	 * @param identity
+	 * @return list of RepositoryEntries
+	 */
+	public List<RepositoryEntry> getLearningResourcesAsParticipantAndCoach(Identity identity, String type) {
+		StringBuilder sb = new StringBuilder(1200);
+		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		  .append(" inner join fetch v.olatResource as res ")
+		  .append(" inner join fetch v.statistics as statistics")
+		  .append(" left join fetch v.lifecycle as lifecycle")
+		  .append(" inner join v.groups as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
+		  .append(" and membership.identity.key=:identityKey and membership.role in('").append(GroupRoles.participant.name()).append("','").append(GroupRoles.coach.name()).append("')");
+		if(StringHelper.containsNonWhitespace(type)) {
+			sb.append(" and res.resName=:resourceType");
+		}
+
+		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setParameter("identityKey", identity.getKey());
+
+		if(StringHelper.containsNonWhitespace(type)) {
+			query.setParameter("resourceType", type);
+		}
+		return query.getResultList();
+	}
+	
 	public List<RepositoryEntry> getLearningResourcesAsBookmark(Identity identity, Roles roles, String type, int firstResult, int maxResults, RepositoryEntryOrder... orderby) {
 		if(roles.isGuestOnly()) {
 			return Collections.emptyList();
