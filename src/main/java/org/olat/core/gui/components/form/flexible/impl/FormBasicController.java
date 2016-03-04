@@ -403,7 +403,7 @@ public abstract class FormBasicController extends BasicController {
 				 * evaluate normal inner form events
 				 */
 				FormItem fiSrc = fe.getFormItemSource();
-				propagateDirtinessToContainer(fiSrc);
+				propagateDirtinessToContainer(fiSrc, fe);
 				//
 				formInnerEvent(ureq, fiSrc, fe);
 				// no need to set container dirty, up to controller code if something is dirty
@@ -411,7 +411,7 @@ public abstract class FormBasicController extends BasicController {
 		}
 	}
 	
-	protected void propagateDirtinessToContainer(FormItem fiSrc) {
+	protected void propagateDirtinessToContainer(FormItem fiSrc, @SuppressWarnings("unused") FormEvent fe) {
 		// check for InlineElments remove as the tag library has been replaced
 		if(fiSrc instanceof InlineElement){
 			if(!((InlineElement) fiSrc).isInlineEditingElement()){ //OO-137

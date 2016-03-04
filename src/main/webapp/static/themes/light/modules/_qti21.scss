@@ -37,12 +37,30 @@ ul.sessionControl {
 		margin-bottom: 0;
 	}
 
+	.o_assessmentitem_attempts {
+		float: right;
+		display: block;
+		padding: 0.3em;
+		border-radius: 0.5em;
+		border: 1px #eeeeee solid;
+		color: black;
+		font-size: 0.7em;
+	}
+	
 	.o_assessmentitem_status {
 		float: right;
 		display: block;
 		padding: 0.3em;
 		border-radius: 0.5em;
+		border-width: 1px;
 		color: white;
+		font-size: 0.8em;
+	}
+	
+	.o_assessmentitem_marks {
+		float: right;
+		display: block;
+		padding: 0.3em;
 		font-size: 0.8em;
 	}
 	

@@ -502,7 +502,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	}
 	
 	@Override
-	protected void propagateDirtinessToContainer(FormItem fiSrc) {
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
 		//
 	}
 	

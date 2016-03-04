@@ -155,8 +155,8 @@ public class AssessmentTestFormItem extends AssessmentObjectFormItem {
 			} 
 			if(event != null) {
 				getRootForm().fireFormEvent(ureq, event);
+				component.setDirty(true);
 			}
-			component.setDirty(true);
 		}
 	}
 

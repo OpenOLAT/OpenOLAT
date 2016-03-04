@@ -108,7 +108,28 @@ public class FormJSHelper {
 		  .append(form.getEventFieldId()).append("','")
 		  .append(FormEvent.ON_DOTDOTDOT[actionIndex])
 		  .append("',").append(dirtyCheck)
-		  .append(",").append(pushState).append("");
+		  .append(",").append(pushState);
+
+		if(pairs != null && pairs.length > 0) {
+			for(NameValuePair pair:pairs) {
+				sb.append(",'").append(pair.getName()).append("','").append(pair.getValue()).append("'");
+			}
+		}
+
+		sb.append(")");
+		IOUtils.closeQuietly(sb);
+		return sb.toString();
+	}
+	
+	public static String getXHRNFFnCallFor(Form form, String id, int actionIndex, NameValuePair... pairs) {
+		StringOutput sb = new StringOutput(128);
+		sb.append("o_ffXHRNFEvent('")
+		  .append(form.getFormName()).append("','")
+		  .append(form.getDispatchFieldId()).append("','")
+		  .append(id).append("','")
+		  .append(form.getEventFieldId()).append("','")
+		  .append(FormEvent.ON_DOTDOTDOT[actionIndex])
+		  .append("'");
 
 		if(pairs != null && pairs.length > 0) {
 			for(NameValuePair pair:pairs) {

@@ -336,7 +336,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 
 		//title + status
 		sb.append("<h3 class='itemTitle'>");
-		renderItemStatus(sb, itemSessionState, translator, options);
+		renderItemStatus(sb, itemSessionState, options, translator);
 		sb.append(itemNode.getSectionPartTitle()).append("</h3>");
 		sb.append("<div id='itemBody'>");
 
@@ -358,24 +358,6 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		// Display active modal feedback (only after responseProcessing)
 		if(component.isItemFeedbackAllowed(itemNode, assessmentItem, options)) {
 			renderTestItemModalFeedback(renderer, sb, component, assessmentItem, itemSessionState, ubu, translator);
-		}
-	}
-	
-	private void renderItemStatus(StringOutput sb, ItemSessionState itemSessionState, Translator translator, RenderingRequest options) {
-		if(options.isSolutionMode()) {
-			sb.append("<span class='itemStatus review'>Model Solution</span>");
-		} else if(options.isReviewMode()) {
-			if(!(itemSessionState.getUnboundResponseIdentifiers().isEmpty() && itemSessionState.getInvalidResponseIdentifiers().isEmpty())) {
-				sb.append("<span class='itemStatus reviewInvalid'>Review (Invalid Answer)</span>");
-			} else if(itemSessionState.isResponded()) {
-				sb.append("<span class='itemStatus review'>Review</span>");
-			} else if(itemSessionState.getEntryTime() != null) {
-				sb.append("<span class='itemStatus reviewNotAnswered'>Review (Not Answered)</span>");
-			} else {
-				sb.append("<span class='itemStatus reviewNotSeen'>Review (Not Seen)</span>");
-			}
-		} else {
-			super.renderItemStatus(sb, itemSessionState, translator);
 		}
 	}
 	
@@ -760,70 +742,4 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			this.itemSessionState = itemSessionState;
 		}
     }
-    
-    public static class RenderingRequest {
-    	
-    	private boolean reviewMode;
-    	private boolean solutionMode;
-    	private boolean testPartNavigationAllowed;
-    	private boolean advanceTestItemAllowed;
-    	private boolean nextItemAllowed;
-    	private boolean endTestPartAllowed;
-
-    	
-    	private RenderingRequest(boolean reviewMode, boolean solutionMode, boolean testPartNavigationAllowed,
-    			boolean advanceTestItemAllowed, boolean nextItemAllowed, boolean endTestPartAllowed) {
-    		this.reviewMode = reviewMode;
-    		this.solutionMode = solutionMode;
-    		this.testPartNavigationAllowed = testPartNavigationAllowed;
-    		this.advanceTestItemAllowed = advanceTestItemAllowed;
-    		this.nextItemAllowed = nextItemAllowed;
-    		this.endTestPartAllowed = endTestPartAllowed;
-    	}
-
-		public boolean isReviewMode() {
-			return reviewMode;
-		}
-
-		public boolean isSolutionMode() {
-			return solutionMode;
-		}
-
-		public boolean isTestPartNavigationAllowed() {
-			return testPartNavigationAllowed;
-		}
-
-		public boolean isAdvanceTestItemAllowed() {
-			return advanceTestItemAllowed;
-		}
-		
-		public boolean isNextItemAllowed() {
-			return nextItemAllowed;
-		}
-
-		public boolean isEndTestPartAllowed() {
-			return endTestPartAllowed;
-		}
-    	
-    	public static RenderingRequest getItemSolution() {
-    		return new RenderingRequest(true, true, false, false, false, false);
-    	}
-    	
-    	public static RenderingRequest getItemReview() {
-    		return new RenderingRequest(true, false, false, false, false, false);
-    	}
-    	
-    	public static RenderingRequest getItem(TestSessionController testSessionController) {
-    		final TestPart currentTestPart = testSessionController.getCurrentTestPart();
-            final NavigationMode navigationMode = currentTestPart.getNavigationMode();
-          
-            boolean nextItemAllowed = navigationMode == NavigationMode.NONLINEAR;
-            boolean advanceTestItemAllowed = navigationMode == NavigationMode.LINEAR && testSessionController.mayAdvanceItemLinear();
-            boolean testPartNavigationAllowed = navigationMode == NavigationMode.NONLINEAR;
-            boolean endTestPartAllowed = navigationMode == NavigationMode.LINEAR && testSessionController.mayEndCurrentTestPart();
-
-            return new RenderingRequest(false, false, testPartNavigationAllowed, advanceTestItemAllowed, nextItemAllowed, endTestPartAllowed);
-    	}
-    }
-
 }

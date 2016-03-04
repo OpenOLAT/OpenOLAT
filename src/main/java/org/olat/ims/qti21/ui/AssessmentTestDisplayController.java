@@ -60,6 +60,7 @@ import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentResponse;
+import org.olat.ims.qti21.AssessmentTestMarks;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.OutcomesListener;
 import org.olat.ims.qti21.QTI21Constants;
@@ -140,6 +141,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private AssessmentTestSession candidateSession;
 	private AssessmentEntry assessmentEntry;
 	private ResolvedAssessmentTest resolvedAssessmentTest;
+	private AssessmentTestMarks marks;
+	
+	private RepositoryEntry testEntry;
+	private RepositoryEntry entry;
+	private String subIdent;
 	
 	private OutcomesListener outcomesListener;
 
@@ -161,6 +167,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			RepositoryEntry testEntry, RepositoryEntry entry, String subIdent) {
 		super(ureq, wControl);
 
+		this.entry = entry;
+		this.subIdent = subIdent;
+		this.testEntry = testEntry;
 		this.outcomesListener = listener;
 		
 		FileResourceManager frm = FileResourceManager.getInstance();
@@ -173,6 +182,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		
 		assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), entry, subIdent, testEntry);
+		marks = qtiService.getMarks(getIdentity(), entry, subIdent, testEntry);
 		
 		deliveryOptions = qtiService.getDeliveryOptions(testEntry);
 		boolean allowResume = deliveryOptions.getEnableSuspend() != null
@@ -314,9 +324,34 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			case authorview:
 				logError("QtiWorks event authorview not implemented", null);
 				break;
+			case mark:
+				toogleMark(qe.getSubCommand());
+				break;
 		}
 	}
 	
+	private void toogleMark(String itemRef) {
+		if(marks == null) {
+			marks = qtiService.createMarks(getIdentity(), entry, subIdent, testEntry, itemRef);
+		} else {
+			String currentMarks = marks.getMarks();
+			if(currentMarks == null) {
+				marks.setMarks(itemRef);
+			} else if(currentMarks.indexOf(itemRef) >= 0) {
+				marks.setMarks(currentMarks.replace(itemRef, ""));
+			} else {
+				marks.setMarks(currentMarks + " " + itemRef);
+			}
+			marks = qtiService.updateMarks(marks);
+		}
+	}
+	
+	@Override
+	public boolean isMarked(String itemKey) {
+		if(marks == null || marks.getMarks() == null) return false;
+		return marks.getMarks().indexOf(itemKey) >= 0;
+	}
+
 	private void processSelectItem(UserRequest ureq, String key) {
 		TestPlanNodeKey nodeKey = TestPlanNodeKey.fromString(key);
 		Date requestTimestamp = ureq.getRequestTimestamp();
@@ -1043,6 +1078,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			}
 			super.formInnerEvent(ureq, source, event);
 			updateGUI();
+		}
+		
+		@Override
+		protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
+			//super.propagateDirtinessToContainer(fiSrc, fe);
 		}
 
 		@Override

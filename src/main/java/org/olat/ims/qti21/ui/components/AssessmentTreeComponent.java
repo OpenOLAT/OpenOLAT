@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti21.ui.components;
 
+import org.olat.core.gui.UserRequest;
+
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
@@ -89,6 +91,11 @@ public class AssessmentTreeComponent extends AssessmentObjectComponent {
 	public ItemSessionState getItemSessionState(TestPlanNodeKey nodeKey) {
 		TestSessionState sessionState = getTestSessionController().getTestSessionState();
 		return sessionState.getItemSessionStates().get(nodeKey);
+	}
+
+	@Override
+	protected void doDispatchRequest(UserRequest ureq) {
+		super.doDispatchRequest(ureq);
 	}
 
 	@Override

@@ -24,6 +24,12 @@ import java.util.Date;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.model.jpa.CandidateEvent;
 
+/**
+ * 
+ * Initial date: 04.03.2016<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
 public interface CandidateSessionContext {
 	
 	public boolean isTerminated();
@@ -33,6 +39,8 @@ public interface CandidateSessionContext {
 	public CandidateEvent getLastEvent();
 	
 	public Date getCurrentRequestTimestamp();
+	
+	public boolean isMarked(String itemKey);
 
 
 }

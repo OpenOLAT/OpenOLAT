@@ -136,6 +136,9 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.content.Hottext;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.content.PositionObjectStage;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.shared.VariableDeclaration;
+import uk.ac.ed.ph.jqtiplus.node.test.NavigationMode;
+import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
+import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.types.ResponseData;
@@ -159,8 +162,20 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	private static final String velocity_root = Util.getPackageVelocityRoot(AssessmentObjectComponentRenderer.class);
 	private static final URI ctopXsltUri = URI.create("classpath:/org/olat/ims/qti21/ui/components/_content/ctop.xsl");
 	
-	protected void renderItemStatus(StringOutput sb, ItemSessionState itemSessionState, Translator translator) {
-		if(itemSessionState.getEndTime() != null) {
+	protected void renderItemStatus(StringOutput sb, ItemSessionState itemSessionState, RenderingRequest options, Translator translator) {
+		if(options != null && options.isSolutionMode()) {
+			sb.append("<span class='o_assessmentitem_status review'>Model Solution</span>");
+		} else if(options != null && options.isReviewMode()) {
+			if(!(itemSessionState.getUnboundResponseIdentifiers().isEmpty() && itemSessionState.getInvalidResponseIdentifiers().isEmpty())) {
+				sb.append("<span class='o_assessmentitem_status reviewInvalid'>Review (Invalid Answer)</span>");
+			} else if(itemSessionState.isResponded()) {
+				sb.append("<span class='o_assessmentitem_status review'>Review</span>");
+			} else if(itemSessionState.getEntryTime() != null) {
+				sb.append("<span class='o_assessmentitem_status reviewNotAnswered'>Review (Not Answered)</span>");
+			} else {
+				sb.append("<span class='o_assessmentitem_status reviewNotSeen'>Review (Not Seen)</span>");
+			}
+		} else if(itemSessionState.getEndTime() != null) {
 			sb.append("<span class='o_assessmentitem_status ended'>").append(translator.translate("assessment.item.status.finished")).append("</span>");
 		} else if(!(itemSessionState.getUnboundResponseIdentifiers().isEmpty() && itemSessionState.getInvalidResponseIdentifiers().isEmpty())) {
 			sb.append("<span class='o_assessmentitem_status invalid'>").append(translator.translate("assessment.item.status.needsAttention")).append("</span>");
@@ -1053,4 +1068,69 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
             throw new OLATRuntimeException("Unexpected Exception running rendering XML pipeline", e);
         }
 	}
+	
+    public static class RenderingRequest {
+    	
+    	private boolean reviewMode;
+    	private boolean solutionMode;
+    	private boolean testPartNavigationAllowed;
+    	private boolean advanceTestItemAllowed;
+    	private boolean nextItemAllowed;
+    	private boolean endTestPartAllowed;
+
+    	
+    	private RenderingRequest(boolean reviewMode, boolean solutionMode, boolean testPartNavigationAllowed,
+    			boolean advanceTestItemAllowed, boolean nextItemAllowed, boolean endTestPartAllowed) {
+    		this.reviewMode = reviewMode;
+    		this.solutionMode = solutionMode;
+    		this.testPartNavigationAllowed = testPartNavigationAllowed;
+    		this.advanceTestItemAllowed = advanceTestItemAllowed;
+    		this.nextItemAllowed = nextItemAllowed;
+    		this.endTestPartAllowed = endTestPartAllowed;
+    	}
+
+		public boolean isReviewMode() {
+			return reviewMode;
+		}
+
+		public boolean isSolutionMode() {
+			return solutionMode;
+		}
+
+		public boolean isTestPartNavigationAllowed() {
+			return testPartNavigationAllowed;
+		}
+
+		public boolean isAdvanceTestItemAllowed() {
+			return advanceTestItemAllowed;
+		}
+		
+		public boolean isNextItemAllowed() {
+			return nextItemAllowed;
+		}
+
+		public boolean isEndTestPartAllowed() {
+			return endTestPartAllowed;
+		}
+    	
+    	public static RenderingRequest getItemSolution() {
+    		return new RenderingRequest(true, true, false, false, false, false);
+    	}
+    	
+    	public static RenderingRequest getItemReview() {
+    		return new RenderingRequest(true, false, false, false, false, false);
+    	}
+    	
+    	public static RenderingRequest getItem(TestSessionController testSessionController) {
+    		final TestPart currentTestPart = testSessionController.getCurrentTestPart();
+            final NavigationMode navigationMode = currentTestPart.getNavigationMode();
+          
+            boolean nextItemAllowed = navigationMode == NavigationMode.NONLINEAR;
+            boolean advanceTestItemAllowed = navigationMode == NavigationMode.LINEAR && testSessionController.mayAdvanceItemLinear();
+            boolean testPartNavigationAllowed = navigationMode == NavigationMode.NONLINEAR;
+            boolean endTestPartAllowed = navigationMode == NavigationMode.LINEAR && testSessionController.mayEndCurrentTestPart();
+
+            return new RenderingRequest(false, false, testPartNavigationAllowed, advanceTestItemAllowed, nextItemAllowed, endTestPartAllowed);
+    	}
+    }
 }

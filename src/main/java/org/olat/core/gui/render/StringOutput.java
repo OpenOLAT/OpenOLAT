@@ -80,6 +80,15 @@ public class StringOutput extends Writer {
 		return this;
 	}
 	
+	public StringOutput append(String valTrue, String valFalse, boolean val) {
+		if(val) {
+			sb.append(valTrue);
+		} else {
+			sb.append(valFalse);
+		}
+		return this;
+	}
+	
 	/**
 	 * @param val
 	 * @return Itself

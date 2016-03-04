@@ -54,7 +54,8 @@ public class QTIWorksAssessmentTestEvent extends FormEvent {
 		itemSolution("item-solution", "item-solution/"),
 		endTestPart("end-test-part", "end-test-part"),//OK
 		advanceTestPart("advance-test-part", "advance-test-part"),//OK
-		exitTest("exit-test", "exit-test");//impl
+		exitTest("exit-test", "exit-test"),//impl
+		mark("mark", "mark");
 		
 		private final String path;
 		private final String event;

@@ -198,7 +198,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		if(renderer.isSolutionMode()) {
 			sb.append("<span class='o_assessmentitem_status review'>").append(translator.translate("assessment.item.status.modelSolution")).append("</span>");
 		} else {
-			super.renderItemStatus(sb, itemSessionState, translator);
+			super.renderItemStatus(sb, itemSessionState, null, translator);
 		}
 	}
 	

@@ -134,7 +134,7 @@ public class FIBEditorController extends FormBasicController {
 	}
 
 	@Override
-	protected void propagateDirtinessToContainer(FormItem fiSrc) {
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
 		//
 	}
 

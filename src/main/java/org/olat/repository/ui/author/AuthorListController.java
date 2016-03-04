@@ -540,7 +540,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 
 	@Override
-	protected void propagateDirtinessToContainer(FormItem fiSrc) {
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
 		//do not update the 
 	}
 	

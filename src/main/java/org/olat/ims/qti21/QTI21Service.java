@@ -126,6 +126,12 @@ public interface QTI21Service {
 	public AssessmentTestSession updateAssessmentTestSession(AssessmentTestSession session);
 	
 	public TestSessionState loadTestSessionState(AssessmentTestSession session);
+
+	public AssessmentTestMarks createMarks(Identity identity, RepositoryEntry entry, String subIdent, RepositoryEntry testEntry, String marks);
+	
+	public AssessmentTestMarks getMarks(Identity identity, RepositoryEntry entry, String subIdent, RepositoryEntry testEntry);
+	
+	public AssessmentTestMarks updateMarks(AssessmentTestMarks marks);
 	
 	/**
 	 * Retrieve the sessions of a user.

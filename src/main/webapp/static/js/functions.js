@@ -1286,6 +1286,31 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 	})
 }
 
+function o_ffXHRNFEvent(formNam, dispIdField, dispId, eventIdField, eventInt) {
+	var data = new Object();
+	data['dispatchuri'] = dispId;
+	data['dispatchevent'] = eventInt;
+	if(arguments.length > 7) {
+		var argLength = arguments.length;
+		for(var i=7; i<argLength; i=i+2) {
+			if(argLength > i+1) {
+				data[arguments[i]] = arguments[i+1];
+			}
+		}
+	}
+	
+	var targetUrl = jQuery('#' + formNam).attr("action");
+	jQuery.ajax(targetUrl,{
+		type:'POST',
+		data: data,
+		cache: false,
+		dataType: 'json',
+		success: function(data, textStatus, jqXHR) {
+			//no response
+		}
+	})
+}
+
 function o_XHREvent(targetUrl, dirtyCheck, push) {
 	if(dirtyCheck) {
 		if(!o2cl()) return false;
@@ -1387,6 +1412,15 @@ function o_pushState(historyPointId, title, url) {
 		}
 	} catch(e) {
 		if(window.console) console.log(e, url);
+	}
+}
+
+function o_toggleMark(el) {
+	var current = jQuery('i', el).attr('class');
+	if(current.indexOf('o_icon_bookmark_add') >= 0) {
+		jQuery('i', el).removeClass('o_icon_bookmark_add').addClass('o_icon_bookmark');
+	} else {
+		jQuery('i', el).removeClass('o_icon_bookmark').addClass('o_icon_bookmark_add');
 	}
 }
 

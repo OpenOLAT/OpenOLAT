@@ -205,6 +205,11 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	}
 
 	@Override
+	public boolean isMarked(String itemKey) {
+		return false;
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		//

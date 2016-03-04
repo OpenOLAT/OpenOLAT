@@ -19,6 +19,7 @@
  */
 package org.olat.ims.qti21.ui.components;
 
+import static org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event.mark;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event.selectItem;
 
 import org.olat.core.gui.UserRequest;
@@ -84,13 +85,24 @@ public class AssessmentTreeFormItem extends AssessmentObjectFormItem {
 		if(uri == null) {
 			QTIWorksAssessmentTestEvent event = null;
 			String cmd = ureq.getParameter("cid");
-			if(StringHelper.containsNonWhitespace(cmd) &&
-					QTIWorksAssessmentTestEvent.Event.valueOf(cmd) == selectItem) {
-				String selectedItem = ureq.getParameter("item");
-				event = new QTIWorksAssessmentTestEvent(selectItem, selectedItem, this);
-				getRootForm().fireFormEvent(ureq, event);
-				component.setDirty(true);
-				testComponent.setDirty(true);
+			if(StringHelper.containsNonWhitespace(cmd)) {
+				switch(QTIWorksAssessmentTestEvent.Event.valueOf(cmd)) {
+					case selectItem: {
+						String selectedItem = ureq.getParameter("item");
+						event = new QTIWorksAssessmentTestEvent(selectItem, selectedItem, this);
+						getRootForm().fireFormEvent(ureq, event);
+						component.setDirty(true);
+						testComponent.setDirty(true);
+						break;
+					}
+					case mark: {
+						String selectedItem = ureq.getParameter("item");
+						event = new QTIWorksAssessmentTestEvent(mark, selectedItem, this);
+						getRootForm().fireFormEvent(ureq, event);
+						break;
+					}
+					default: break;
+				}
 			}
 		}
 	}

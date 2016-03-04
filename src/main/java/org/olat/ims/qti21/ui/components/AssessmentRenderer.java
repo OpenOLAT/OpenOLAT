@@ -21,6 +21,7 @@ package org.olat.ims.qti21.ui.components;
 
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.URLBuilder;
 
 /**
  * 
@@ -60,6 +61,10 @@ public class AssessmentRenderer {
 	
 	public Renderer getRenderer() {
 		return renderer;
+	}
+	
+	public URLBuilder getUrlBuilder() {
+		return renderer.getUrlBuilder();
 	}
 
 	public GlobalSettings getGlobalSettings() {

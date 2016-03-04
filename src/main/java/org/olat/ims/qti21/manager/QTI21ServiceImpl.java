@@ -58,6 +58,7 @@ import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentResponse;
+import org.olat.ims.qti21.AssessmentTestMarks;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21ContentPackage;
@@ -142,6 +143,8 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	private AssessmentItemSessionDAO itemSessionDao;
 	@Autowired
 	private AssessmentResponseDAO testResponseDao;
+	@Autowired
+	private AssessmentTestMarksDAO testMarksDao;
 	@Autowired
 	private QTI21Storage storage;
 	@Autowired
@@ -370,6 +373,21 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
         }
         return null;
     }
+
+	@Override
+	public AssessmentTestMarks getMarks(Identity identity, RepositoryEntry entry, String subIdent, RepositoryEntry testEntry) {
+		return testMarksDao.loadTestMarks(testEntry, entry, subIdent, identity);
+	}
+	
+	@Override
+	public AssessmentTestMarks createMarks(Identity identity, RepositoryEntry entry, String subIdent, RepositoryEntry testEntry, String marks) {
+		return testMarksDao.createAndPersistTestMarks(testEntry, entry, subIdent, identity, marks);
+	}
+
+	@Override
+	public AssessmentTestMarks updateMarks(AssessmentTestMarks marks) {
+		return testMarksDao.merge(marks);
+	}
 
 	@Override
 	public AssessmentItemSession getOrCreateAssessmentItemSession(AssessmentTestSession assessmentTestSession, String assessmentItemIdentifier) {

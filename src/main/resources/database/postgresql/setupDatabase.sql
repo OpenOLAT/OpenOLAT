@@ -1304,6 +1304,18 @@ create table o_qti_assessment_response (
    primary key (id)
 );
 
+create table o_qti_assessment_marks (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   q_marks text default null,
+   fk_reference_entry int8 not null,
+   fk_entry int8,
+   q_subident varchar(64),
+   fk_identity int8 not null,
+   primary key (id)
+);
+
 -- question item
 create table o_qp_pool (
    id int8 not null,
@@ -2173,6 +2185,13 @@ create index idx_resp_to_testsession_idx on o_qti_assessment_response (fk_assess
 alter table o_qti_assessment_response add constraint qti_resp_to_itemsession_idx foreign key (fk_assessmentitem_session) references o_qti_assessmentitem_session (id);
 create index idx_resp_to_itemsession_idx on o_qti_assessment_response (fk_assessmentitem_session);
 create index idx_response_identifier_idx on o_qti_assessment_response (q_responseidentifier);
+
+alter table o_qti_assessment_marks add constraint qti_marks_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_marks_to_repo_entry_idx on o_qti_assessment_marks (fk_entry);
+alter table o_qti_assessment_marks add constraint qti_marks_to_course_entry_idx foreign key (fk_reference_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_qti_marks_to_course_entry_idx on o_qti_assessment_marks (fk_reference_entry);
+alter table o_qti_assessment_marks add constraint qti_marks_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_qti_marks_to_identity_idx on o_qti_assessment_marks (fk_identity);
 
 -- question pool
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);

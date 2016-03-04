@@ -21,7 +21,7 @@ package org.olat.ims.qti21.ui.components;
 
 import java.util.List;
 
-import org.olat.ims.qti21.ui.components.AssessmentTestComponentRenderer.RenderingRequest;
+import org.olat.ims.qti21.ui.components.AssessmentObjectComponentRenderer.RenderingRequest;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;

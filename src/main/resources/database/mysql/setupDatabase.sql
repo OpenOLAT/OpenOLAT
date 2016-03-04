@@ -1306,6 +1306,18 @@ create table o_qti_assessment_response (
    primary key (id)
 );
 
+create table o_qti_assessment_marks (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   q_marks mediumtext default null,
+   fk_reference_entry bigint not null,
+   fk_entry bigint,
+   q_subident varchar(64),
+   fk_identity bigint not null,
+   primary key (id)
+);
+
 -- question item
 create table o_qp_pool (
    id bigint not null,
@@ -1817,6 +1829,7 @@ alter table o_mapper ENGINE = InnoDB;
 alter table o_qti_assessmenttest_session ENGINE = InnoDB;
 alter table o_qti_assessmentitem_session ENGINE = InnoDB;
 alter table o_qti_assessment_response ENGINE = InnoDB;
+alter table o_qti_assessment_marks ENGINE = InnoDB;
 alter table o_qp_pool ENGINE = InnoDB;
 alter table o_qp_taxonomy_level ENGINE = InnoDB;
 alter table o_qp_item ENGINE = InnoDB;
@@ -2170,6 +2183,10 @@ create index idx_item_identifier_idx on o_qti_assessmentitem_session (q_itemiden
 alter table o_qti_assessment_response add constraint qti_resp_to_testsession_idx foreign key (fk_assessmenttest_session) references o_qti_assessmenttest_session (id);
 alter table o_qti_assessment_response add constraint qti_resp_to_itemsession_idx foreign key (fk_assessmentitem_session) references o_qti_assessmentitem_session (id);
 create index idx_response_identifier_idx on o_qti_assessment_response (q_responseidentifier);
+
+alter table o_qti_assessment_marks add constraint qti_marks_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_qti_assessment_marks add constraint qti_marks_to_course_entry_idx foreign key (fk_reference_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_qti_assessment_marks add constraint qti_marks_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 
 -- question pool
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);
