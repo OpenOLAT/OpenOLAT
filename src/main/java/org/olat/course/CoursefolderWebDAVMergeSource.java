@@ -78,10 +78,10 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 		List<RepositoryEntry> editorEntries = repositoryManager.queryByOwner(getIdentity(), "CourseModule");
 		appendCourses(editorEntries, true, containers, useTerms, terms, noTermContainer, prependReference, duplicates);
 		
-		//add courses as participant
+		//add courses as participant and coaches
 		if(webDAVModule.isEnableLearnersParticipatingCourses()) {
-			List<RepositoryEntry> participantEntries = repositoryManager.getLearningResourcesAsStudent(getIdentity(), "CourseModule", 0, -1);
-			appendCourses(participantEntries, false, containers, useTerms, terms, noTermContainer, prependReference, duplicates);
+			List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsParticipantAndCoach(getIdentity(), "CourseModule");
+			appendCourses(entries, false, containers, useTerms, terms, noTermContainer, prependReference, duplicates);
 		}
 		
 		//add bookmarked courses
