@@ -54,6 +54,8 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti21.OutcomesListener;
+import org.olat.ims.qti21.QTI21DeliveryOptions;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.QTI21Event;
 import org.olat.instantMessaging.InstantMessagingService;
@@ -61,6 +63,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -87,9 +90,13 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private AssessmentTestDisplayController displayCtrl;
 	private LayoutMain3ColsController displayContainerController;
 	
+	@Autowired
+	private QTI21Service qtiService;
+	
 	public QTI21AssessmentRunController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, IQTESTCourseNode courseNode) {
 		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
+		setTranslator(Util.createPackageTranslator(AssessmentTestDisplayController.class, getLocale(), getTranslator()));
 		
 		this.courseNode = courseNode;
 		this.userCourseEnv = userCourseEnv;
@@ -207,7 +214,15 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == displayCtrl) {
-			if(event instanceof QTI21Event) {
+			if(event == Event.CANCELLED_EVENT) {
+				doExitAssessment(ureq, event);
+				exposeResults(ureq);
+				showInfo("assessment.test.cancelled");
+			} else if("suspend".equals(event.getCommand())) {
+				doExitAssessment(ureq, event);
+				exposeResults(ureq);
+				showInfo("assessment.test.suspended");
+			} else if(event instanceof QTI21Event) {
 				QTI21Event qe = (QTI21Event)event;
 				if(QTI21Event.EXIT.equals(qe.getCommand())) {
 					doExitAssessment(ureq, event);
@@ -225,9 +240,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		
-		RepositoryEntry assessmentEntry = courseNode.getReferencedRepositoryEntry();
+		RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
 		RepositoryEntry courseRe = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		displayCtrl = new AssessmentTestDisplayController(ureq, bwControl, this, assessmentEntry, courseRe, courseNode.getIdent());
+		QTI21DeliveryOptions options = getDeliveryOptions(testEntry);
+		displayCtrl = new AssessmentTestDisplayController(ureq, bwControl, this, testEntry, courseRe, courseNode.getIdent(), options);
 		listenTo(displayCtrl);
 		if(displayCtrl.isTerminated()) {
 			//do nothing
@@ -261,6 +277,28 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		}
 	}
 	
+	private QTI21DeliveryOptions getDeliveryOptions(RepositoryEntry testEntry) {
+		QTI21DeliveryOptions testOptions = qtiService.getDeliveryOptions(testEntry);
+		QTI21DeliveryOptions deliveryOptions = testOptions.clone();
+		deliveryOptions.setShowTitles(mergeBoolean(config.getBooleanEntry(IQEditController.CONFIG_KEY_QUESTIONTITLE), testOptions.isShowTitles()));
+		deliveryOptions.setPersonalNotes(mergeBoolean(config.getBooleanEntry(IQEditController.CONFIG_KEY_MEMO), testOptions.isPersonalNotes()));
+		deliveryOptions.setEnableCancel(mergeBoolean(config.getBooleanEntry(IQEditController.CONFIG_KEY_ENABLECANCEL), testOptions.isEnableCancel()));
+		deliveryOptions.setEnableSuspend(mergeBoolean(config.getBooleanEntry(IQEditController.CONFIG_KEY_ENABLESUSPEND), testOptions.isEnableSuspend()));
+		deliveryOptions.setDisplayQuestionProgress(mergeBoolean(config.getBooleanEntry(IQEditController.CONFIG_KEY_QUESTIONPROGRESS), testOptions.isDisplayQuestionProgress()));
+		deliveryOptions.setDisplayScoreProgress(mergeBoolean(config.getBooleanEntry(IQEditController.CONFIG_KEY_SCOREPROGRESS), testOptions.isDisplayScoreProgress()));
+		return deliveryOptions;
+	}
+	
+	private boolean mergeBoolean(Boolean conf, boolean options) {
+		if(conf != null) return conf.booleanValue();
+		return options;
+	}
+	
+	/**
+	 * Remove the runtime from the GUI stack only.
+	 * @param ureq
+	 * @param event
+	 */
 	private void doExitAssessment(UserRequest ureq, Event event) {
 		if(displayContainerController != null) {
 			displayContainerController.deactivate(ureq);

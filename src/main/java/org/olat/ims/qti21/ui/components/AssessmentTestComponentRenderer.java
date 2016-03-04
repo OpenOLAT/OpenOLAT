@@ -219,8 +219,9 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		//test feedback 'during'
 		TestPlanNode itemRefNode = testSessionState.getTestPlan().getNode(itemRefKey);
 		final EffectiveItemSessionControl effectiveItemSessionControl = itemRefNode.getEffectiveItemSessionControl();
-		renderer.setCandidateCommentAllowed(effectiveItemSessionControl.isAllowComment());
-		
+		final boolean allowComments = effectiveItemSessionControl.isAllowComment() && component.isPersonalNotes();
+		renderer.setCandidateCommentAllowed(allowComments);
+
 		//write section rubric
 		renderSectionRubrics(renderer, sb, component, itemRefNode, ubu, translator);
 
@@ -337,8 +338,9 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		//title + status
 		sb.append("<h3 class='itemTitle'>");
 		renderItemStatus(sb, itemSessionState, options, translator);
-		sb.append(itemNode.getSectionPartTitle()).append("</h3>");
-		sb.append("<div id='itemBody'>");
+		sb.append(itemNode.getSectionPartTitle(), component.isShowTitles())
+		  .append("</h3>")
+		  .append("<div id='itemBody'>");
 
 		//render itemBody
 		assessmentItem.getItemBody().getBlocks().forEach((block)

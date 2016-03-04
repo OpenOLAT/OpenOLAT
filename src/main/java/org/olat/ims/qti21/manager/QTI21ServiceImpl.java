@@ -227,7 +227,7 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 			config = (QTI21DeliveryOptions)configXstream.fromXML(configXml);
 		} else {
 			//set default config
-			config = new QTI21DeliveryOptions();
+			config = QTI21DeliveryOptions.defaultSettings();
 			setDeliveryOptions(testEntry, config);
 		}
 		return config;

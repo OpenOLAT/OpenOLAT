@@ -66,6 +66,7 @@ import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.ims.qti.editor.QTIEditorPackage;
+import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.ims.qti21.model.IdentifierGenerator;
@@ -338,7 +339,8 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
 							RepositoryEntry entry, RepositoryEntrySecurity repoSecurity, AssessmentMode mode) {
 						InMemoryOutcomesListener listener = new InMemoryOutcomesListener();
-						return new AssessmentTestDisplayController(uureq, wwControl, listener, entry, entry, null);
+						QTI21DeliveryOptions options = qtiService.getDeliveryOptions(entry);
+						return new AssessmentTestDisplayController(uureq, wwControl, listener, entry, entry, null, options);
 					}
 				});
 	}

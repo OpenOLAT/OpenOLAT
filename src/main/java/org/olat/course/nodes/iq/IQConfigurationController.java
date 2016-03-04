@@ -78,6 +78,7 @@ import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.QTIHelper;
+import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.iq.IQManager;
@@ -256,7 +257,8 @@ public class IQConfigurationController extends BasicController {
 			myContent.put("iqeditform", mod12ConfigForm.getInitialComponent());
 		} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
 			boolean needManualCorrection = needManualCorrectionQTI21(re);
-			mod21ConfigForm = new QTI21EditForm(ureq, getWindowControl(), moduleConfiguration, needManualCorrection);
+			QTI21DeliveryOptions deliveryOptions =  qti21service.getDeliveryOptions(re);
+			mod21ConfigForm = new QTI21EditForm(ureq, getWindowControl(), moduleConfiguration, deliveryOptions, needManualCorrection);
 			listenTo(mod21ConfigForm);
 			myContent.put("iqeditform", mod21ConfigForm.getInitialComponent());
 		} else if(OnyxModule.isOnyxTest(re.getOlatResource())) {
@@ -550,7 +552,7 @@ public class IQConfigurationController extends BasicController {
 		}
 		return needManualCorrection;
 	}
-	
+
 	private boolean needManualCorrectionQTI21(AssessmentSection section, ResolvedAssessmentTest resolvedAssessmentTest) {
 		for(SectionPart part: section.getSectionParts()) {
 			if(part instanceof AssessmentItemRef) {

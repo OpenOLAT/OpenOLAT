@@ -29,40 +29,82 @@ package org.olat.ims.qti21;
  */
 public class QTI21DeliveryOptions {
 
-	private Boolean enableCancel;
-	private Boolean enableSuspend;
-	private Boolean displayScoreProgress;
-	private Boolean displayQuestionProgress;
+	private boolean enableCancel;
+	private boolean enableSuspend;
+	private boolean displayScoreProgress;
+	private boolean displayQuestionProgress;
+	
+	private boolean showTitles;
+	private boolean personalNotes;
 
-	public Boolean getEnableCancel() {
+	public boolean isEnableCancel() {
 		return enableCancel;
 	}
 
-	public void setEnableCancel(Boolean enableCancel) {
+	public void setEnableCancel(boolean enableCancel) {
 		this.enableCancel = enableCancel;
 	}
 
-	public Boolean getEnableSuspend() {
+	public boolean isEnableSuspend() {
 		return enableSuspend;
 	}
 
-	public void setEnableSuspend(Boolean enableSuspend) {
+	public void setEnableSuspend(boolean enableSuspend) {
 		this.enableSuspend = enableSuspend;
 	}
 
-	public Boolean getDisplayScoreProgress() {
+	public boolean isDisplayScoreProgress() {
 		return displayScoreProgress;
 	}
 
-	public void setDisplayScoreProgress(Boolean displayScoreProgress) {
+	public void setDisplayScoreProgress(boolean displayScoreProgress) {
 		this.displayScoreProgress = displayScoreProgress;
 	}
 
-	public Boolean getDisplayQuestionProgress() {
+	public boolean isDisplayQuestionProgress() {
 		return displayQuestionProgress;
 	}
 
-	public void setDisplayQuestionProgress(Boolean displayQuestionProgress) {
+	public void setDisplayQuestionProgress(boolean displayQuestionProgress) {
 		this.displayQuestionProgress = displayQuestionProgress;
+	}
+	
+	public boolean isShowTitles() {
+		return showTitles;
+	}
+
+	public void setShowTitles(boolean showTitles) {
+		this.showTitles = showTitles;
+	}
+
+	public boolean isPersonalNotes() {
+		return personalNotes;
+	}
+
+	public void setPersonalNotes(boolean personalNotes) {
+		this.personalNotes = personalNotes;
+	}
+	
+	public static final QTI21DeliveryOptions defaultSettings() {
+		QTI21DeliveryOptions defaultSettings = new QTI21DeliveryOptions();
+		defaultSettings.enableCancel = false;
+		defaultSettings.enableSuspend = false;
+		defaultSettings.displayScoreProgress = false;
+		defaultSettings.displayQuestionProgress = false;
+		defaultSettings.showTitles = true;
+		defaultSettings.personalNotes = false;
+		return defaultSettings;
+	}
+
+	@Override
+	public QTI21DeliveryOptions clone() {
+		QTI21DeliveryOptions clone = new QTI21DeliveryOptions();
+		clone.enableCancel = enableCancel;
+		clone.enableSuspend = enableSuspend;
+		clone.displayScoreProgress = displayScoreProgress;
+		clone.displayQuestionProgress = displayQuestionProgress;
+		clone.showTitles = showTitles;
+		clone.personalNotes = personalNotes;
+		return clone;
 	}
 }

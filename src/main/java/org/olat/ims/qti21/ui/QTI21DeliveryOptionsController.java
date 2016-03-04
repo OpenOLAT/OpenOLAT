@@ -48,7 +48,10 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] onValues = new String[]{ "" };
 	
-	private MultipleSelectionElement enableCancelEl, enableSuspendEl, displayQuestionProgressEl, displayScoreProgressEl;
+	private MultipleSelectionElement enableCancelEl, enableSuspendEl;
+	private MultipleSelectionElement displayQuestionProgressEl, displayScoreProgressEl;
+	private MultipleSelectionElement showTitlesEl;
+	private MultipleSelectionElement personalNotesEl;
 	
 	private final RepositoryEntry testEntry;
 	private final QTI21DeliveryOptions deliveryOptions;
@@ -59,7 +62,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	public QTI21DeliveryOptionsController(UserRequest ureq, WindowControl wControl, RepositoryEntry testEntry) {
 		super(ureq, wControl);
 		this.testEntry = testEntry;
-		this.deliveryOptions = qtiService.getDeliveryOptions(testEntry);
+		deliveryOptions = qtiService.getDeliveryOptions(testEntry);
 		initForm(ureq);
 	}
 
@@ -67,23 +70,33 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("tab.options");
 		
+		showTitlesEl = uifactory.addCheckboxesHorizontal("showTitles", "qti.form.questiontitle", formLayout, onKeys, onValues);
+		if(deliveryOptions.isShowTitles()) {
+			showTitlesEl.select(onKeys[0], true);
+		}
+		
+		personalNotesEl = uifactory.addCheckboxesHorizontal("personalNotes", "qti.form.auto.memofield", formLayout, onKeys, onValues);
+		if(deliveryOptions.isPersonalNotes()) {
+			personalNotesEl.select(onKeys[0], true);
+		}
+		
 		displayQuestionProgressEl = uifactory.addCheckboxesHorizontal("questionProgress", "qti.form.questionprogress", formLayout, onKeys, onValues);
-		if(deliveryOptions.getDisplayQuestionProgress() != null && deliveryOptions.getDisplayQuestionProgress().booleanValue()) {
+		if(deliveryOptions.isDisplayQuestionProgress()) {
 			displayQuestionProgressEl.select(onKeys[0], true);
 		}
 		
 		displayScoreProgressEl = uifactory.addCheckboxesHorizontal("scoreProgress", "qti.form.scoreprogress", formLayout, onKeys, onValues);
-		if(deliveryOptions.getDisplayScoreProgress() != null && deliveryOptions.getDisplayScoreProgress().booleanValue()) {
+		if(deliveryOptions.isDisplayScoreProgress()) {
 			displayScoreProgressEl.select(onKeys[0], true);
 		}
 		
 		enableSuspendEl = uifactory.addCheckboxesHorizontal("suspend", "qti.form.enablesuspend", formLayout, onKeys, onValues);
-		if(deliveryOptions.getEnableSuspend() != null && deliveryOptions.getEnableSuspend().booleanValue()) {
+		if(deliveryOptions.isEnableSuspend()) {
 			enableSuspendEl.select(onKeys[0], true);
 		}
 		
 		enableCancelEl = uifactory.addCheckboxesHorizontal("cancel", "qti.form.enablecancel", formLayout, onKeys, onValues);
-		if(deliveryOptions.getEnableCancel() != null && deliveryOptions.getEnableCancel().booleanValue()) {
+		if(deliveryOptions.isEnableCancel()) {
 			enableCancelEl.select(onKeys[0], true);
 		}
 		
@@ -105,30 +118,12 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if(enableCancelEl.isAtLeastSelected(1)) {
-			deliveryOptions.setEnableCancel(Boolean.TRUE);
-		} else {
-			deliveryOptions.setEnableCancel(Boolean.FALSE);
-		}
-		
-		if(enableSuspendEl.isAtLeastSelected(1)) {
-			deliveryOptions.setEnableSuspend(Boolean.TRUE);
-		} else {
-			deliveryOptions.setEnableSuspend(Boolean.FALSE);
-		}
-		
-		if(displayQuestionProgressEl.isAtLeastSelected(1)) {
-			deliveryOptions.setDisplayQuestionProgress(Boolean.TRUE);
-		} else {
-			deliveryOptions.setDisplayQuestionProgress(Boolean.FALSE);
-		}
-		
-		if(displayScoreProgressEl.isAtLeastSelected(1)) {
-			deliveryOptions.setDisplayScoreProgress(Boolean.TRUE);
-		} else {
-			deliveryOptions.setDisplayScoreProgress(Boolean.FALSE);
-		}
-		
+		deliveryOptions.setShowTitles(showTitlesEl.isAtLeastSelected(1));
+		deliveryOptions.setPersonalNotes(personalNotesEl.isAtLeastSelected(1));
+		deliveryOptions.setEnableCancel(enableCancelEl.isAtLeastSelected(1));
+		deliveryOptions.setEnableSuspend(enableSuspendEl.isAtLeastSelected(1));
+		deliveryOptions.setDisplayQuestionProgress(displayQuestionProgressEl.isAtLeastSelected(1));
+		deliveryOptions.setDisplayScoreProgress(displayScoreProgressEl.isAtLeastSelected(1));
 		qtiService.setDeliveryOptions(testEntry, deliveryOptions);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

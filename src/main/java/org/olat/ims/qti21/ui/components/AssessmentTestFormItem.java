@@ -66,6 +66,22 @@ public class AssessmentTestFormItem extends AssessmentObjectFormItem {
 	public void setRenderNavigation(boolean renderNavigation) {
 		component.setRenderNavigation(renderNavigation);
 	}
+	
+	public boolean getShowTitles() {
+		return component.isShowTitles();
+	}
+	
+	public void setShowTitles(boolean showTitles) {
+		component.setShowTitles(showTitles);
+	}
+	
+	public boolean getPersonalNotes() {
+		return component.isPersonalNotes();
+	}
+	
+	public void setPersonalNotes(boolean personalNotes) {
+		component.setPersonalNotes(personalNotes);
+	}
 
 	public ResolvedAssessmentTest getResolvedAssessmentTest() {
 		return component.getResolvedAssessmentTest();

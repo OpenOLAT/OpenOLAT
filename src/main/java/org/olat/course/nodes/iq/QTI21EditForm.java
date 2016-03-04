@@ -21,12 +21,14 @@ package org.olat.course.nodes.iq;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.modules.ModuleConfiguration;
 
 /**
@@ -37,19 +39,29 @@ import org.olat.modules.ModuleConfiguration;
  */
 public class QTI21EditForm extends FormBasicController {
 	
+	private static final String[] onKeys = new String[]{ "on" };
+	private static final String[] onValues = new String[]{ "" };
 
 	private SelectionElement fullWindowEl;
 	private SingleSelection correctionModeEl;
+	private MultipleSelectionElement showTitlesEl;
+	private MultipleSelectionElement personalNotesEl;
+	private MultipleSelectionElement enableCancelEl, enableSuspendEl;
+	private MultipleSelectionElement displayQuestionProgressEl, displayScoreProgressEl;
 	
-	private final ModuleConfiguration modConfig;
+
 	private final boolean needManulCorrection;
+	private final ModuleConfiguration modConfig;
+	private final QTI21DeliveryOptions deliveryOptions;
 	
 	private static final String[] correctionModeKeys = new String[]{ "auto", "manual" };
 	
-	public QTI21EditForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig, boolean needManulCorrection) {
+	public QTI21EditForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig,
+			QTI21DeliveryOptions deliveryOptions, boolean needManulCorrection) {
 		super(ureq, wControl);
 		
 		this.modConfig = modConfig;
+		this.deliveryOptions = (deliveryOptions == null ? new QTI21DeliveryOptions() : deliveryOptions);
 		this.needManulCorrection = needManulCorrection;
 		
 		initForm(ureq);
@@ -81,8 +93,49 @@ public class QTI21EditForm extends FormBasicController {
 		boolean fullWindow = modConfig.getBooleanSafe(IQEditController.CONFIG_FULLWINDOW);
 		fullWindowEl = uifactory.addCheckboxesHorizontal("fullwindow", "qti.form.fullwindow", formLayout, new String[]{"x"}, new String[]{""});
 		fullWindowEl.select("x", fullWindow);
+
+		boolean showTitles = mergeBoolean(modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_QUESTIONTITLE), deliveryOptions.isDisplayQuestionProgress());
+		showTitlesEl = uifactory.addCheckboxesHorizontal("showTitles", "qti.form.questiontitle", formLayout, onKeys, onValues);
+		if(showTitles) {
+			showTitlesEl.select(onKeys[0], true);
+		}
+
+		boolean personalNotes = mergeBoolean(modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_MEMO), deliveryOptions.isDisplayQuestionProgress());
+		personalNotesEl = uifactory.addCheckboxesHorizontal("personalNotes", "qti.form.auto.memofield", formLayout, onKeys, onValues);
+		if(personalNotes) {
+			personalNotesEl.select(onKeys[0], true);
+		}
+
+		boolean questionProgress = mergeBoolean(modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_QUESTIONPROGRESS), deliveryOptions.isDisplayQuestionProgress());
+		displayQuestionProgressEl = uifactory.addCheckboxesHorizontal("questionProgress", "qti.form.questionprogress", formLayout, onKeys, onValues);
+		if(questionProgress) {
+			displayQuestionProgressEl.select(onKeys[0], true);
+		}
+		
+		boolean questionScore = mergeBoolean(modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_SCOREPROGRESS), deliveryOptions.isDisplayScoreProgress());
+		displayScoreProgressEl = uifactory.addCheckboxesHorizontal("scoreProgress", "qti.form.scoreprogress", formLayout, onKeys, onValues);
+		if(questionScore) {
+			displayScoreProgressEl.select(onKeys[0], true);
+		}
+
+		boolean enableSuspend = mergeBoolean(modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_ENABLESUSPEND), deliveryOptions.isEnableSuspend());
+		enableSuspendEl = uifactory.addCheckboxesHorizontal("suspend", "qti.form.enablesuspend", formLayout, onKeys, onValues);
+		if(enableSuspend) {
+			enableSuspendEl.select(onKeys[0], true);
+		}
+
+		boolean enableCancel = mergeBoolean(modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_ENABLECANCEL), deliveryOptions.isEnableCancel());
+		enableCancelEl = uifactory.addCheckboxesHorizontal("cancel", "qti.form.enablecancel", formLayout, onKeys, onValues);
+		if(enableCancel) {
+			enableCancelEl.select(onKeys[0], true);
+		}
 		
 		uifactory.addFormSubmitButton("submit", formLayout);
+	}
+	
+	private boolean mergeBoolean(Boolean config, boolean options) {
+		if(config != null) return config.booleanValue();
+		return options;
 	}
 	
 	@Override
@@ -96,6 +149,12 @@ public class QTI21EditForm extends FormBasicController {
 		if(correctionModeEl.isOneSelected()) {
 			modConfig.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, correctionModeEl.getSelectedKey());
 		}
+		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_QUESTIONTITLE, showTitlesEl.isSelected(0));
+		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_MEMO, personalNotesEl.isSelected(0));
+		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_ENABLECANCEL, enableCancelEl.isSelected(0));
+		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_ENABLESUSPEND, enableSuspendEl.isSelected(0));
+		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_QUESTIONPROGRESS, displayQuestionProgressEl.isSelected(0));
+		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_SCOREPROGRESS, displayScoreProgressEl.isSelected(0));
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 }

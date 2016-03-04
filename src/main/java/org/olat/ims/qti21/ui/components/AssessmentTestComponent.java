@@ -50,6 +50,8 @@ public class AssessmentTestComponent extends AssessmentObjectComponent  {
 	private ResolvedAssessmentTest resolvedAssessmentTest;
 	
 	private boolean renderNavigation;
+	private boolean showTitles;
+	private boolean personalNotes;
 	private final AssessmentTestFormItem qtiItem;
 	
 	public AssessmentTestComponent(String name, AssessmentTestFormItem qtiItem) {
@@ -67,6 +69,22 @@ public class AssessmentTestComponent extends AssessmentObjectComponent  {
 
 	public void setRenderNavigation(boolean renderNavigation) {
 		this.renderNavigation = renderNavigation;
+	}
+
+	public boolean isShowTitles() {
+		return showTitles;
+	}
+
+	public void setShowTitles(boolean showTitles) {
+		this.showTitles = showTitles;
+	}
+
+	public boolean isPersonalNotes() {
+		return personalNotes;
+	}
+
+	public void setPersonalNotes(boolean personalNotes) {
+		this.personalNotes = personalNotes;
 	}
 
 	public TestSessionController getTestSessionController() {

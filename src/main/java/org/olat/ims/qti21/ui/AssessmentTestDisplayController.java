@@ -162,8 +162,6 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	@Autowired
 	private AssessmentService assessmentService;
 	
-	private final boolean allowResume;
-	
 	/**
 	 * 
 	 * @param ureq
@@ -174,13 +172,14 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 * @param subIdent The course node identifier (mandatory only if in a course is used)
 	 */
 	public AssessmentTestDisplayController(UserRequest ureq, WindowControl wControl, OutcomesListener listener,
-			RepositoryEntry testEntry, RepositoryEntry entry, String subIdent) {
+			RepositoryEntry testEntry, RepositoryEntry entry, String subIdent, QTI21DeliveryOptions deliveryOptions) {
 		super(ureq, wControl);
 
 		this.entry = entry;
 		this.subIdent = subIdent;
 		this.testEntry = testEntry;
 		this.outcomesListener = listener;
+		this.deliveryOptions = deliveryOptions;
 		
 		FileResourceManager frm = FileResourceManager.getInstance();
 		fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
@@ -193,13 +192,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		
 		assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), entry, subIdent, testEntry);
 		marks = qtiService.getMarks(getIdentity(), entry, subIdent, testEntry);
-		
-		deliveryOptions = qtiService.getDeliveryOptions(testEntry);
-		allowResume = deliveryOptions.getEnableSuspend() != null
-				&& deliveryOptions.getEnableSuspend().booleanValue();
 
 		AssessmentTestSession lastSession = null;
-		if(allowResume) {
+		if(deliveryOptions.isEnableSuspend()) {
 			lastSession = qtiService.getResumableAssessmentTestSession(getIdentity(), entry, subIdent, testEntry);
 		}
 		if(lastSession == null) {
@@ -228,9 +223,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	}
 	
 	private void initQtiWorks(UserRequest ureq) {
-		boolean allowCancel = deliveryOptions.getEnableCancel() != null
-				&& deliveryOptions.getEnableCancel().booleanValue();
-		qtiWorksCtrl = new QtiWorksController(ureq, getWindowControl(), allowCancel, allowResume);
+		qtiWorksCtrl = new QtiWorksController(ureq, getWindowControl());
     	listenTo(qtiWorksCtrl);
     	mainVC.put("qtirun", qtiWorksCtrl.getInitialComponent());
 	}
@@ -274,11 +267,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			mainVC.setDirty(true);
 		} else if(confirmCancelDialog == source) {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
-				doCancel();
+				doCancel(ureq);
 			}
 		}  else if(confirmSuspendDialog == source) {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
-				doSuspend();
+				doSuspend(ureq);
 			}
 		} else if(qtiWorksCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {
@@ -302,14 +295,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		confirmSuspendDialog = activateOkCancelDialog(ureq, title, text, confirmSuspendDialog);
 	}
 	
-	private void doSuspend() {
+	private void doSuspend(UserRequest ureq) {
 		VelocityContainer suspendedVC = createVelocityContainer("suspended");
 		mainPanel.setContent(suspendedVC);
 		suspendAssessmentTest();
-	}
-	
-	private boolean resumeAssessmentTest() {
-		return false;
+		fireEvent(ureq, new Event("suspend"));
 	}
 
 	/**
@@ -317,7 +307,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 * @return
 	 */
 	private boolean suspendAssessmentTest() {
-		if(!allowResume || testSessionController == null
+		if(!deliveryOptions.isEnableSuspend() || testSessionController == null
 				|| testSessionController.getTestSessionState() == null
 				|| testSessionController.getTestSessionState().isEnded()
 				|| testSessionController.getTestSessionState().isExited()) {
@@ -357,12 +347,12 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		confirmCancelDialog = activateOkCancelDialog(ureq, title, text, confirmCancelDialog);
 	}
 	
-	private void doCancel() {
+	private void doCancel(UserRequest ureq) {
 		VelocityContainer cancelledVC = createVelocityContainer("cancelled");
 		mainPanel.setContent(cancelledVC);
 		TestSessionState testSessionState = testSessionController.getTestSessionState();
 		qtiService.cancelTestSession(candidateSession, testSessionState);
-		//delete database object, file submissions...
+		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
 	private void processQTIEvent(UserRequest ureq, QTIWorksAssessmentTestEvent qe) {
@@ -1078,23 +1068,15 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 */
 	private class QtiWorksController extends AbstractQtiWorksController {
 
-		private FormLink endTestPartButton, closeTestButton, cancelTestButton, suspendTestButton;
 		private AssessmentTestFormItem qtiEl;
 		private AssessmentTreeFormItem qtiTreeEl;
 		private ProgressBarItem scoreProgress, questionProgress;
+		private FormLink endTestPartButton, closeTestButton, cancelTestButton, suspendTestButton;
 		
-		private final boolean allowCancel, allowSuspend;
-		private final boolean displayQuestionProgress, displayScoreProgress;
 		private final QtiWorksStatus qtiWorksStatus = new QtiWorksStatus();
 		
-		public QtiWorksController(UserRequest ureq, WindowControl wControl, boolean allowCancel, boolean allowSuspend) {
+		public QtiWorksController(UserRequest ureq, WindowControl wControl) {
 			super(ureq, wControl, "at_run");
-			this.allowCancel = allowCancel;
-			this.allowSuspend = allowSuspend;
-			displayScoreProgress = deliveryOptions.getDisplayScoreProgress() != null
-					&& deliveryOptions.getDisplayScoreProgress().booleanValue();
-			displayQuestionProgress = deliveryOptions.getDisplayQuestionProgress() != null
-					&& deliveryOptions.getDisplayQuestionProgress().booleanValue();;
 			initForm(ureq);
 		}
 
@@ -1116,10 +1098,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 					? "assessment.test.end.testPart" : "assessment.test.end.test";
 			endTestPartButton = uifactory.addFormLink("endTest", endName, null, formLayout, Link.BUTTON);
 			closeTestButton = uifactory.addFormLink("closeTest", "assessment.test.close.test", null, formLayout, Link.BUTTON);
-			if(allowCancel) {
+			if(deliveryOptions.isEnableCancel()) {
 				cancelTestButton = uifactory.addFormLink("cancelTest", "cancel.test", null, formLayout, Link.BUTTON);
 			}
-			if(allowSuspend) {
+			if(deliveryOptions.isEnableSuspend()) {
 				suspendTestButton = uifactory.addFormLink("suspendTest", "suspend.test", null, formLayout, Link.BUTTON);
 			}
 
@@ -1132,6 +1114,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			qtiEl.setCandidateSessionContext(AssessmentTestDisplayController.this);
 			qtiEl.setMapperUri(mapperUri);
 			qtiEl.setRenderNavigation(false);
+			qtiEl.setPersonalNotes(deliveryOptions.isPersonalNotes());
+			qtiEl.setShowTitles(deliveryOptions.isShowTitles());
 			
 			qtiTreeEl.setResourceLocator(inputResourceLocator);
 			qtiTreeEl.setTestSessionController(testSessionController);
@@ -1148,15 +1132,15 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/jquery/ui/jquery-ui-1.11.4.custom.resize.min.js" }, null);
 				layoutCont.put("js", js);
 				
-				layoutCont.contextPut("displayScoreProgress", displayScoreProgress);
-				layoutCont.contextPut("displayQuestionProgress", displayQuestionProgress);
+				layoutCont.contextPut("displayScoreProgress", deliveryOptions.isDisplayScoreProgress());
+				layoutCont.contextPut("displayQuestionProgress", deliveryOptions.isDisplayQuestionProgress());
 				
-				if(displayScoreProgress) {
+				if(deliveryOptions.isDisplayScoreProgress()) {
 					scoreProgress = uifactory.addProgressBar("scoreProgress", null, 250, 0, 0, "", formLayout);
 					formLayout.add("", scoreProgress);
 				}
 				
-				if(displayQuestionProgress) {
+				if(deliveryOptions.isDisplayQuestionProgress()) {
 					questionProgress = uifactory.addProgressBar("questionProgress", null, 250, 0, 0, "", formLayout);
 					formLayout.add("questionProgress", questionProgress);
 				}
@@ -1256,19 +1240,19 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		}*/
 		
 		private void updateQtiWorksStatus() {
-			if(displayQuestionProgress || displayScoreProgress) {
+			if(deliveryOptions.isDisplayQuestionProgress() || deliveryOptions.isDisplayScoreProgress()) {
 
 				TestPlanInfos testPlanInfos = new TestPlanInfos();
 				testSessionController.visitTestPlan(testPlanInfos);
 				
-				if(displayQuestionProgress) {
+				if(deliveryOptions.isDisplayQuestionProgress()) {
 					questionProgress.setMax(testPlanInfos.getNumOfItems());
 					questionProgress.setActual(testPlanInfos.getNumOfAnsweredItems());
 					qtiWorksStatus.setNumOfItems(testPlanInfos.getNumOfItems());
 					qtiWorksStatus.setNumOfAnsweredItems(testPlanInfos.getNumOfAnsweredItems());
 				}
 				
-				if(displayScoreProgress) {
+				if(deliveryOptions.isDisplayScoreProgress()) {
 					double score = testPlanInfos.getScore();
 					double maxScore = testPlanInfos.getMaxScore();
 					

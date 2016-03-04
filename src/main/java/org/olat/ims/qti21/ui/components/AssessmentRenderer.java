@@ -40,6 +40,7 @@ public class AssessmentRenderer {
 	private boolean softResetAllowed;
 	private boolean solutionAllowed;
 	private boolean candidateCommentAllowed;
+	private boolean showTitles;
 	
 	public AssessmentRenderer(Renderer renderer) {
 		this.renderer = renderer;
@@ -56,6 +57,7 @@ public class AssessmentRenderer {
 		clone.setSoftResetAllowed(softResetAllowed);
 		clone.setSolutionAllowed(solutionAllowed);
 		clone.setCandidateCommentAllowed(candidateCommentAllowed);
+		clone.setShowTitles(showTitles);
 		return clone;
 	}
 	
@@ -133,6 +135,14 @@ public class AssessmentRenderer {
 
 	public void setCandidateCommentAllowed(boolean candidateCommentAllowed) {
 		this.candidateCommentAllowed = candidateCommentAllowed;
+	}
+
+	public boolean isShowTitles() {
+		return showTitles;
+	}
+
+	public void setShowTitles(boolean showTitles) {
+		this.showTitles = showTitles;
 	}
 
 	public void setRenderer(Renderer renderer) {
