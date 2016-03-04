@@ -329,6 +329,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(run != null) {
 			addCustomCSS(ureq);
 			run.toolCtrDone(ureq);
+			currentToolCtr = null;
 		}
 	}
 	

@@ -32,6 +32,10 @@ import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -130,6 +134,21 @@ public class Formatter {
 		synchronized (shortDateFormat) {
 			return shortDateFormat.format(date);
 		}
+	}
+
+	/**
+	 * adds the given period in day/month/years to the baseLineDate and formats it in a short format, e.g. 05.12.2015 or 12/05/2015
+	 *
+	 * @param baseLineDate the date
+	 * @return a String with the formatted date
+	 */
+	public String formatDateRelative(Date baseLineDate, int days, int months, int years) {
+		if (baseLineDate == null) return null;
+		LocalDate date = LocalDateTime.ofInstant(baseLineDate.toInstant(),ZoneId.systemDefault()).toLocalDate();
+		Period period = Period.of(years, months, days);
+		LocalDate relativeDate = date.plus(period);
+		Date result = Date.from(relativeDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+		return formatDate(result);
 	}
 
 	/**
