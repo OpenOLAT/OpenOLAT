@@ -156,6 +156,8 @@ public interface QTI21Service {
 	
 	public AssessmentTestSession finishTestSession(AssessmentTestSession candidateSession, TestSessionState testSessionState, AssessmentResult assessmentResul, Date timestamp);
 	
+	public void cancelTestSession(AssessmentTestSession candidateSession, TestSessionState testSessionState);
+	
 	public CandidateEvent recordCandidateTestEvent(AssessmentTestSession candidateSession, CandidateTestEventType textEventType,
 			TestSessionState testSessionState, NotificationRecorder notificationRecorder);
 

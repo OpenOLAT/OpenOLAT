@@ -43,12 +43,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21OptionsController extends FormBasicController implements Activateable2 {
+public class QTI21DeliveryOptionsController extends FormBasicController implements Activateable2 {
 	
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] onValues = new String[]{ "" };
 	
-	private MultipleSelectionElement enableSuspendEl, displayQuestionProgressEl, displayScoreProgressEl;
+	private MultipleSelectionElement enableCancelEl, enableSuspendEl, displayQuestionProgressEl, displayScoreProgressEl;
 	
 	private final RepositoryEntry testEntry;
 	private final QTI21DeliveryOptions deliveryOptions;
@@ -56,7 +56,7 @@ public class QTI21OptionsController extends FormBasicController implements Activ
 	@Autowired
 	private QTI21Service qtiService;
 	
-	public QTI21OptionsController(UserRequest ureq, WindowControl wControl, RepositoryEntry testEntry) {
+	public QTI21DeliveryOptionsController(UserRequest ureq, WindowControl wControl, RepositoryEntry testEntry) {
 		super(ureq, wControl);
 		this.testEntry = testEntry;
 		this.deliveryOptions = qtiService.getDeliveryOptions(testEntry);
@@ -82,6 +82,11 @@ public class QTI21OptionsController extends FormBasicController implements Activ
 			enableSuspendEl.select(onKeys[0], true);
 		}
 		
+		enableCancelEl = uifactory.addCheckboxesHorizontal("cancel", "qti.form.enablecancel", formLayout, onKeys, onValues);
+		if(deliveryOptions.getEnableCancel() != null && deliveryOptions.getEnableCancel().booleanValue()) {
+			enableCancelEl.select(onKeys[0], true);
+		}
+		
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsLayout.setRootForm(mainForm);
 		formLayout.add(buttonsLayout);
@@ -100,6 +105,12 @@ public class QTI21OptionsController extends FormBasicController implements Activ
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if(enableCancelEl.isAtLeastSelected(1)) {
+			deliveryOptions.setEnableCancel(Boolean.TRUE);
+		} else {
+			deliveryOptions.setEnableCancel(Boolean.FALSE);
+		}
+		
 		if(enableSuspendEl.isAtLeastSelected(1)) {
 			deliveryOptions.setEnableSuspend(Boolean.TRUE);
 		} else {

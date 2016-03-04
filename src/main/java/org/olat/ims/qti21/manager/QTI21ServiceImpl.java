@@ -456,6 +456,26 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
         //maybeScheduleLtiOutcomes(candidateSession, assessmentResult);
         return candidateSession;
 	}
+
+	/**
+	 * Cancel delete the test session, related items session and their responses, the
+	 * assessment result file, the test plan file.
+	 * 
+	 */
+	@Override
+	public void cancelTestSession(AssessmentTestSession candidateSession, TestSessionState testSessionState) {
+		final File myStore = storage.getDirectory(candidateSession.getStorage());
+        final File sessionState = new File(myStore, "testSessionState.xml");
+        final File resultFile = getAssessmentResultFile(candidateSession);
+
+		testSessionDao.deleteTestSession(candidateSession);
+		if(sessionState != null && sessionState.exists()) {
+			sessionState.delete();
+		}
+		if(resultFile != null && resultFile.exists()) {
+			resultFile.delete();
+		}
+	}
 	
     private void recordOutcomeVariables(AssessmentTestSession candidateSession, AbstractResult resultNode) {
         for (final ItemVariable itemVariable : resultNode.getItemVariables()) {

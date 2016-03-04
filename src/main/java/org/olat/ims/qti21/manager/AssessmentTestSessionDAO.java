@@ -119,6 +119,28 @@ public class AssessmentTestSessionDAO {
 				.getResultList();
 	}
 	
+	public int deleteTestSession(AssessmentTestSession testSession) {
+		StringBuilder responseSb  = new StringBuilder();
+		responseSb.append("delete from qtiassessmentresponse response where response.assessmentTestSession.key=:sessionKey");
+		int responses = dbInstance.getCurrentEntityManager()
+				.createQuery(responseSb.toString())
+				.setParameter("sessionKey", testSession.getKey())
+				.executeUpdate();
+		
+		StringBuilder itemSb  = new StringBuilder();
+		itemSb.append("delete from qtiassessmentitemsession itemSession where itemSession.assessmentTestSession.key=:sessionKey");
+		int itemSessions = dbInstance.getCurrentEntityManager()
+				.createQuery(itemSb.toString())
+				.setParameter("sessionKey", testSession.getKey())
+				.executeUpdate();
+		
+		String q = "delete from qtiassessmenttestsession session where session.key=:sessionKey";
+		int sessions = dbInstance.getCurrentEntityManager()
+				.createQuery(q)
+				.setParameter("sessionKey", testSession.getKey())
+				.executeUpdate();
+		return itemSessions + sessions + responses;
+	}
 	
 	public int deleteUserTestSessions(RepositoryEntryRef testEntry) {
 		StringBuilder responseSb  = new StringBuilder();

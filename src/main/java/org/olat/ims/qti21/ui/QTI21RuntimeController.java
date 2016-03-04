@@ -50,7 +50,7 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 	
 	private Link assessmentLink, testStatisticLink, qtiOptionsLink;
 	
-	private QTI21OptionsController optionsCtrl;
+	private QTI21DeliveryOptionsController optionsCtrl;
 	private AssessmentOverviewController assessmentToolCtrl;
 	private QTI21AssessmentTestStatisticsController statsToolCtr;
 
@@ -123,7 +123,7 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 		WindowControl swControl = addToHistory(ureq, ores, null);
 		
 		if (reSecurity.isEntryAdmin()) {
-			QTI21OptionsController ctrl = new QTI21OptionsController(ureq, swControl, getRepositoryEntry());
+			QTI21DeliveryOptionsController ctrl = new QTI21DeliveryOptionsController(ureq, swControl, getRepositoryEntry());
 			listenTo(ctrl);
 			optionsCtrl = pushController(ureq, "Options", ctrl);
 			currentToolCtr = optionsCtrl;

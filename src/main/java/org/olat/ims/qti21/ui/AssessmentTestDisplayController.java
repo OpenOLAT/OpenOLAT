@@ -42,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -133,8 +134,13 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private final QTI21DeliveryOptions deliveryOptions;
 	
 	private VelocityContainer mainVC;
+	private final StackedPanel mainPanel;
 	private QtiWorksController qtiWorksCtrl;
 	private TestSessionController testSessionController;
+
+	private DialogBoxController advanceTestPartDialog;
+	private DialogBoxController confirmCancelDialog;
+	private DialogBoxController confirmSuspendDialog;
 	
 	private CandidateEvent lastEvent;
 	private Date currentRequestTimestamp;
@@ -153,6 +159,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private QTI21Service qtiService;
 	@Autowired
 	private AssessmentService assessmentService;
+	
+	private final boolean allowResume;
 	
 	/**
 	 * 
@@ -185,7 +193,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		marks = qtiService.getMarks(getIdentity(), entry, subIdent, testEntry);
 		
 		deliveryOptions = qtiService.getDeliveryOptions(testEntry);
-		boolean allowResume = deliveryOptions.getEnableSuspend() != null
+		allowResume = deliveryOptions.getEnableSuspend() != null
 				&& deliveryOptions.getEnableSuspend().booleanValue();
 
 		AssessmentTestSession lastSession = null;
@@ -214,11 +222,13 @@ public class AssessmentTestDisplayController extends BasicController implements 
         	initQtiWorks(ureq);
         }
         
-        putInitialPanel(mainVC);
+        mainPanel = putInitialPanel(mainVC);
 	}
 	
 	private void initQtiWorks(UserRequest ureq) {
-		qtiWorksCtrl = new QtiWorksController(ureq, getWindowControl(), true);
+		boolean allowCancel = deliveryOptions.getEnableCancel() != null
+				&& deliveryOptions.getEnableCancel().booleanValue();
+		qtiWorksCtrl = new QtiWorksController(ureq, getWindowControl(), allowCancel, allowResume);
     	listenTo(qtiWorksCtrl);
     	mainVC.put("qtirun", qtiWorksCtrl.getInitialComponent());
 	}
@@ -260,8 +270,20 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				processAdvanceTestPart(ureq);
 			}
 			mainVC.setDirty(true);
+		} else if(confirmCancelDialog == source) {
+			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				doCancel();
+			}
+		}  else if(confirmSuspendDialog == source) {
+			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				doSuspend();
+			}
 		} else if(qtiWorksCtrl == source) {
-			if(event instanceof QTIWorksAssessmentTestEvent) {
+			if(event == Event.CANCELLED_EVENT) {
+				doConfirmCancel(ureq);
+			} else if("suspend".equals(event.getCommand())) {
+				doConfirmSuspend(ureq);
+			} else if(event instanceof QTIWorksAssessmentTestEvent) {
 				processQTIEvent(ureq, (QTIWorksAssessmentTestEvent)event);
 			}
 		}
@@ -270,6 +292,31 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
 	private void doExitTest(UserRequest ureq) {
 		fireEvent(ureq, new QTI21Event(QTI21Event.EXIT));
+	}
+	
+	private void doConfirmSuspend(UserRequest ureq) {
+		String title = translate("suspend.test");
+		String text = translate("confirm.suspend.test");
+		confirmSuspendDialog = activateOkCancelDialog(ureq, title, text, confirmSuspendDialog);
+	}
+	
+	private void doSuspend() {
+		VelocityContainer suspendedVC = createVelocityContainer("suspended");
+		mainPanel.setContent(suspendedVC);
+	}
+	
+	private void doConfirmCancel(UserRequest ureq) {
+		String title = translate("cancel.test");
+		String text = translate("confirm.cancel.test");
+		confirmCancelDialog = activateOkCancelDialog(ureq, title, text, confirmCancelDialog);
+	}
+	
+	private void doCancel() {
+		VelocityContainer cancelledVC = createVelocityContainer("cancelled");
+		mainPanel.setContent(cancelledVC);
+		TestSessionState testSessionState = testSessionController.getTestSessionState();
+		qtiService.cancelTestSession(candidateSession, testSessionState);
+		//delete database object, file submissions...
 	}
 
 	private void processQTIEvent(UserRequest ureq, QTIWorksAssessmentTestEvent qe) {
@@ -645,8 +692,6 @@ public class AssessmentTestDisplayController extends BasicController implements 
         testSessionController.endCurrentTestPart(requestTimestamp);
 	}
 	
-	private DialogBoxController advanceTestPartDialog;
-	
 	private void confirmAdvanceTestPart(UserRequest ureq) {
 		String title = translate("confirm.advance.testpart.title");
 		String text = translate("confirm.advance.testpart.text");
@@ -972,17 +1017,19 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 */
 	private class QtiWorksController extends AbstractQtiWorksController {
 
-		private FormLink endTestPartButton, closeTestButton, cancelTestButton;
+		private FormLink endTestPartButton, closeTestButton, cancelTestButton, suspendTestButton;
 		private AssessmentTestFormItem qtiEl;
 		private AssessmentTreeFormItem qtiTreeEl;
 		private ProgressBarItem scoreProgress, questionProgress;
 		
-		private final boolean allowCancel, displayQuestionProgress, displayScoreProgress;
+		private final boolean allowCancel, allowSuspend;
+		private final boolean displayQuestionProgress, displayScoreProgress;
 		private final QtiWorksStatus qtiWorksStatus = new QtiWorksStatus();
 		
-		public QtiWorksController(UserRequest ureq, WindowControl wControl, boolean allowCancel) {
+		public QtiWorksController(UserRequest ureq, WindowControl wControl, boolean allowCancel, boolean allowSuspend) {
 			super(ureq, wControl, "at_run");
 			this.allowCancel = allowCancel;
+			this.allowSuspend = allowSuspend;
 			displayScoreProgress = deliveryOptions.getDisplayScoreProgress() != null
 					&& deliveryOptions.getDisplayScoreProgress().booleanValue();
 			displayQuestionProgress = deliveryOptions.getDisplayQuestionProgress() != null
@@ -1009,7 +1056,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			endTestPartButton = uifactory.addFormLink("endTest", endName, null, formLayout, Link.BUTTON);
 			closeTestButton = uifactory.addFormLink("closeTest", "assessment.test.close.test", null, formLayout, Link.BUTTON);
 			if(allowCancel) {
-				cancelTestButton = uifactory.addFormLink("cancelTest", "cancel", null, formLayout, Link.BUTTON);
+				cancelTestButton = uifactory.addFormLink("cancelTest", "cancel.test", null, formLayout, Link.BUTTON);
+			}
+			if(allowSuspend) {
+				suspendTestButton = uifactory.addFormLink("suspendTest", "suspend.test", null, formLayout, Link.BUTTON);
 			}
 
 			ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
@@ -1068,6 +1118,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				doCloseTest(ureq);
 			} else if(cancelTestButton == source) {
 				doCancelTest(ureq);
+			} else if(suspendTestButton == source) {
+				doSuspendTest(ureq);
 			} else if(source == qtiEl || source == qtiTreeEl) {
 				if(event instanceof QTIWorksAssessmentTestEvent) {
 					fireEvent(ureq, event);
@@ -1119,7 +1171,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		}
 		
 		private void doCancelTest(UserRequest ureq) {
-			
+			fireEvent(ureq, Event.CANCELLED_EVENT);
+		}
+		
+		private void doSuspendTest(UserRequest ureq) {
+			fireEvent(ureq, new Event("suspend"));
 		}
 		
 		private void updateGUI() {
