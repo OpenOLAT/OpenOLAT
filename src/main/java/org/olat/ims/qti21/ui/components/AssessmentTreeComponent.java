@@ -23,6 +23,7 @@ import org.olat.core.gui.UserRequest;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
+import uk.ac.ed.ph.jqtiplus.running.ItemProcessingContext;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNode;
@@ -91,6 +92,11 @@ public class AssessmentTreeComponent extends AssessmentObjectComponent {
 	public ItemSessionState getItemSessionState(TestPlanNodeKey nodeKey) {
 		TestSessionState sessionState = getTestSessionController().getTestSessionState();
 		return sessionState.getItemSessionStates().get(nodeKey);
+	}
+	
+	public ItemProcessingContext getItemSessionState(TestPlanNode itemRefNode) {
+		ItemProcessingContext itemProcessingContext = getTestSessionController().getItemProcessingContext(itemRefNode);
+		return itemProcessingContext;
 	}
 
 	@Override

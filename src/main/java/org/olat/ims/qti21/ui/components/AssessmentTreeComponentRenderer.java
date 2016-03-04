@@ -28,6 +28,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.model.CandidateTestEventType;
 import org.olat.ims.qti21.model.jpa.CandidateEvent;
@@ -38,6 +39,8 @@ import uk.ac.ed.ph.jqtiplus.node.content.variable.PrintedVariable;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.test.NavigationMode;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
+import uk.ac.ed.ph.jqtiplus.running.ItemProcessingContext;
+import uk.ac.ed.ph.jqtiplus.running.ItemSessionController;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNode;
@@ -157,16 +160,32 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 		}
 		sb.append("<span class='questionTitle'>").append(itemNode.getSectionPartTitle()).append("</span>");
 
-		ItemSessionState itemSessionState = component.getItemSessionState(itemNode.getKey());
+
+		ItemProcessingContext itemProcessingContext = component.getItemSessionState(itemNode);
+		ItemSessionState itemSessionState = itemProcessingContext.getItemSessionState();;
 		if(enable) {
 			sb.append("</a>");
 		} else {
 			sb.append("</span>");
 		}
-		
+
 		//attempts
 		int numOfAttempts = itemSessionState.getNumAttempts();
-		sb.append("<span class='o_assessmentitem_attempts'>").append(numOfAttempts).append("</span>");
+		int maxAttempts = 0;
+		if(itemProcessingContext instanceof ItemSessionController) {
+			ItemSessionController itemSessionController = (ItemSessionController)itemProcessingContext;
+			maxAttempts = itemSessionController.getItemSessionControllerSettings().getMaxAttempts();
+		}
+		
+		sb.append("<span class='o_assessmentitem_attempts'");
+		if(maxAttempts > 0) {
+			String title = translator.translate("attemptsleft", new String[] { Integer.toString((maxAttempts - numOfAttempts)) });
+			sb.append(" title=\"").append(StringHelper.escapeHtml(title)).append("\">")
+			  .append("<i class='o_icon o_icon_attempt_limit'> </i> ");
+		} else {
+			sb.append(">");
+		}
+		sb.append(numOfAttempts).append("</span>");
 		//status
 		renderItemStatus(sb, itemSessionState, options, translator);
 		
