@@ -43,7 +43,9 @@ import uk.ac.ed.ph.jqtiplus.running.ItemProcessingContext;
 import uk.ac.ed.ph.jqtiplus.running.ItemSessionController;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
+import uk.ac.ed.ph.jqtiplus.state.TestPartSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNode;
+import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
 
 /**
@@ -71,8 +73,6 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 	    		RenderingRequest options;
 	        	if (testEventType == CandidateTestEventType.REVIEW_ITEM) {
 	            	options = RenderingRequest.getItemReview();
-	    			AssessmentRenderer renderHints = new AssessmentRenderer(renderer);
-	    			renderTestEvent(testSessionController, renderHints, sb, component, ubu, translator, options);
 	            }  else if (testEventType == CandidateTestEventType.SOLUTION_ITEM) {
 	            	options = RenderingRequest.getItemSolution();
 	            } else {
@@ -141,42 +141,98 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 	
 	private void renderNavigationAssessmentItem(StringOutput sb, AssessmentTreeComponent component, TestPlanNode itemNode,
 			Translator translator, RenderingRequest options) {
-
+		sb.append("<li class='o_assessmentitem'>");
+		renderAssessmentItemLink(sb, component, itemNode);
+		renderAssessmentItemAttempts(sb, component, itemNode, translator);
+		renderItemStatus(sb, component, itemNode, translator, options);
+		renderAssessmentItemMark(sb, component, itemNode);
+		sb.append("</li>");
+	}
+	
+	/**
+	 * 
+	 * @param sb
+	 * @param component
+	 * @param itemNode
+	 * @return The event used or null
+	 */
+	private Event renderAssessmentItemLink(StringOutput sb, AssessmentTreeComponent component, TestPlanNode itemNode) {
+		String key = itemNode.getKey().toString();
 		Form form = component.getQtiItem().getRootForm();
 		String dispatchId = component.getQtiItem().getFormDispatchId();
-		TestPart currentTestPart = component.getTestSessionController().getCurrentTestPart();
-		boolean enable = currentTestPart == null
-				|| currentTestPart.getNavigationMode() == NavigationMode.NONLINEAR;
+		TestSessionController testSessionController = component.getTestSessionController();
 		
-		String key = itemNode.getKey().toString();
-		sb.append("<li class='o_assessmentitem'>");
-		if(enable) {
+		TestSessionState testSessionState = testSessionController.getTestSessionState();
+		TestPart testPart = testSessionController.getCurrentTestPart();
+		TestPlanNodeKey currentTestPartKey = testSessionState.getCurrentTestPartKey();
+		TestPartSessionState currentTestPartSessionState = testSessionState.getTestPartSessionStates().get(currentTestPartKey);
+
+		Event event;
+		if(testPart == null || testPart.getNavigationMode() == NavigationMode.NONLINEAR) {
+			if(testSessionState.isEnded() || currentTestPartSessionState.isEnded()) {
+				if(itemNode.getEffectiveItemSessionControl().isAllowReview() || itemNode.getEffectiveItemSessionControl().isShowFeedback()) {
+					event = Event.reviewItem;
+				} else {
+					event = null;
+				}
+			} else {
+				event = Event.selectItem;
+			}
+		} else {
+			event = null;
+		}
+	
+		if(event == null) {
+			sb.append("<span class='o_assessmentitem_nav_disabled'>");
+		} else {
 			sb.append("<a href='#' onclick=\"")
 			  .append(FormJSHelper.getXHRFnCallFor(form, dispatchId, 1, true, true,
-					new NameValuePair("cid", Event.selectItem.name()), new NameValuePair("item", key)))
+					new NameValuePair("cid", event.name()), new NameValuePair("item", key)))
 			  .append(";\" class=''>");
-		} else {
-			sb.append("<span class='o_assessmentitem_nav_disabled'>");
 		}
 		sb.append("<span class='questionTitle'>").append(itemNode.getSectionPartTitle()).append("</span>");
 
-
-		ItemProcessingContext itemProcessingContext = component.getItemSessionState(itemNode);
-		ItemSessionState itemSessionState = itemProcessingContext.getItemSessionState();;
-		if(enable) {
-			sb.append("</a>");
-		} else {
+		if(event == null) {
 			sb.append("</span>");
+		} else {
+			sb.append("</a>");
 		}
-
+		return event;
+	}
+	
+	private void renderItemStatus(StringOutput sb, AssessmentTreeComponent component, TestPlanNode itemNode,
+			Translator translator, RenderingRequest options) {
+		ItemProcessingContext itemProcessingContext = component.getItemSessionState(itemNode);
+		ItemSessionState itemSessionState = itemProcessingContext.getItemSessionState();
+		renderItemStatus(sb, itemSessionState, options, translator);
+	}
+	
+	private void renderAssessmentItemMark(StringOutput sb, AssessmentTreeComponent component, TestPlanNode itemNode) {	
+		String key = itemNode.getKey().toString();
+		Form form = component.getQtiItem().getRootForm();
+		String dispatchId = component.getQtiItem().getFormDispatchId();
+		boolean mark = component.getCandidateSessionContext().isMarked(key);
+		
+		sb.append("<a href='#' onclick=\"")
+		  .append(FormJSHelper.getXHRFnCallFor(form, dispatchId, 1, true, true,
+				new NameValuePair("cid", Event.mark.name()), new NameValuePair("item", key)))
+		  .append("; o_toggleMark(this); return false;\" class='o_assessmentitem_marks'><i class='o_icon ")
+		  .append("o_icon_bookmark", "o_icon_bookmark_add", mark)
+		  .append("'>&nbsp;</i></a>");
+	}
+	
+	private void renderAssessmentItemAttempts(StringOutput sb, AssessmentTreeComponent component, TestPlanNode itemNode,
+			Translator translator) {
+		ItemProcessingContext itemProcessingContext = component.getItemSessionState(itemNode);
+		ItemSessionState itemSessionState = itemProcessingContext.getItemSessionState();
+		
 		//attempts
 		int numOfAttempts = itemSessionState.getNumAttempts();
 		int maxAttempts = 0;
 		if(itemProcessingContext instanceof ItemSessionController) {
 			ItemSessionController itemSessionController = (ItemSessionController)itemProcessingContext;
 			maxAttempts = itemSessionController.getItemSessionControllerSettings().getMaxAttempts();
-		}
-		
+		}		
 		sb.append("<span class='o_assessmentitem_attempts'");
 		if(maxAttempts > 0) {
 			String title = translator.translate("attemptsleft", new String[] { Integer.toString((maxAttempts - numOfAttempts)) });
@@ -186,18 +242,9 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 			sb.append(">");
 		}
 		sb.append(numOfAttempts).append("</span>");
-		//status
-		renderItemStatus(sb, itemSessionState, options, translator);
 		
-		boolean mark = component.getCandidateSessionContext().isMarked(key);
-		sb.append("<a href='#' onclick=\"")
-		  .append(FormJSHelper.getXHRFnCallFor(form, dispatchId, 1, true, true,
-				new NameValuePair("cid", Event.mark.name()), new NameValuePair("item", key)))
-		  .append("; o_toggleMark(this); return false;\" class='o_assessmentitem_marks'><i class='o_icon ")
-		  .append("o_icon_bookmark", "o_icon_bookmark_add", mark)
-		  .append("'>&nbsp;</i></a>");
-
-		sb.append("</li>");
+		
+		
 	}
 	
 	@Override

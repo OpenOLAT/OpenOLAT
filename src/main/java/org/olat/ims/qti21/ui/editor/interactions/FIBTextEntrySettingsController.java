@@ -105,11 +105,11 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 				try {
 					Integer.parseInt(expectedLengthEl.getValue());
 				} catch(NumberFormatException e) {
-					expectedLengthEl.setErrorKey("error.integer", null);
+					expectedLengthEl.setErrorKey("form.error.nointeger", null);
 					allOk &= false;
 				}
 			} else {
-				expectedLengthEl.setErrorKey("error.integer", null);
+				expectedLengthEl.setErrorKey("form.error.nointeger", null);
 				allOk &= false;
 			}
 		}

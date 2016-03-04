@@ -36,6 +36,9 @@ public class QTI21DeliveryOptions {
 	
 	private boolean showTitles;
 	private boolean personalNotes;
+	
+	private boolean blockAfterSuccess;
+	private int maxAttempts;
 
 	public boolean isEnableCancel() {
 		return enableCancel;
@@ -85,6 +88,22 @@ public class QTI21DeliveryOptions {
 		this.personalNotes = personalNotes;
 	}
 	
+	public boolean isBlockAfterSuccess() {
+		return blockAfterSuccess;
+	}
+
+	public void setBlockAfterSuccess(boolean blockAfterSuccess) {
+		this.blockAfterSuccess = blockAfterSuccess;
+	}
+
+	public int getMaxAttempts() {
+		return maxAttempts;
+	}
+
+	public void setMaxAttempts(int maxAttempts) {
+		this.maxAttempts = maxAttempts;
+	}
+
 	public static final QTI21DeliveryOptions defaultSettings() {
 		QTI21DeliveryOptions defaultSettings = new QTI21DeliveryOptions();
 		defaultSettings.enableCancel = false;
@@ -93,6 +112,8 @@ public class QTI21DeliveryOptions {
 		defaultSettings.displayQuestionProgress = false;
 		defaultSettings.showTitles = true;
 		defaultSettings.personalNotes = false;
+		defaultSettings.blockAfterSuccess = false;
+		defaultSettings.maxAttempts = 0;
 		return defaultSettings;
 	}
 
@@ -105,6 +126,8 @@ public class QTI21DeliveryOptions {
 		clone.displayQuestionProgress = displayQuestionProgress;
 		clone.showTitles = showTitles;
 		clone.personalNotes = personalNotes;
+		clone.blockAfterSuccess = blockAfterSuccess;
+		clone.maxAttempts = maxAttempts;
 		return clone;
 	}
 }

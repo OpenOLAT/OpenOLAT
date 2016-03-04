@@ -1179,7 +1179,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		
 		@Override
 		protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
-			//super.propagateDirtinessToContainer(fiSrc, fe);
+			if(!"mark".equals(fe.getCommand())) {
+				super.propagateDirtinessToContainer(fiSrc, fe);
+			}
 		}
 
 		@Override
@@ -1198,6 +1200,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				final TestPartSessionState currentTestPartSessionState = testSessionState.getTestPartSessionStates().get(currentTestPartKey);
 				if(!currentTestPartSessionState.isEnded()) {
 					fireEvent(ureq, new QTIWorksAssessmentTestEvent(QTIWorksAssessmentTestEvent.Event.endTestPart, endTestPartButton));
+					qtiEl.getComponent().setDirty(true);
+					qtiTreeEl.getComponent().setDirty(true);
 				}
 			}
 		}
@@ -1374,6 +1378,20 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		
 		public void setNumOfAnsweredItems(int numOfAnsweredItems) {
 			this.numOfAnsweredItems = numOfAnsweredItems;
+		}
+		
+		public boolean maySuspendTest() {
+			TestSessionState testSessionState = testSessionController.getTestSessionState();
+			CandidateSessionContext candidateSessionContext = AssessmentTestDisplayController.this;
+			return deliveryOptions.isEnableSuspend() && !candidateSessionContext.isTerminated()
+					&& !testSessionState.isExited() && !testSessionState.isEnded();
+		}
+		
+		public boolean mayCancelTest() {
+			TestSessionState testSessionState = testSessionController.getTestSessionState();
+			CandidateSessionContext candidateSessionContext = AssessmentTestDisplayController.this;
+			return deliveryOptions.isEnableCancel() &&  !candidateSessionContext.isTerminated()
+					&& !testSessionState.isExited() && !testSessionState.isEnded();
 		}
 		
 		public boolean mayEndCurrentTestPart() {

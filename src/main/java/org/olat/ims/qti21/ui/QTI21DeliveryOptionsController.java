@@ -22,9 +22,12 @@ package org.olat.ims.qti21.ui;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -32,6 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.repository.RepositoryEntry;
@@ -48,10 +52,13 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] onValues = new String[]{ "" };
 	
-	private MultipleSelectionElement enableCancelEl, enableSuspendEl;
-	private MultipleSelectionElement displayQuestionProgressEl, displayScoreProgressEl;
 	private MultipleSelectionElement showTitlesEl;
 	private MultipleSelectionElement personalNotesEl;
+	private MultipleSelectionElement enableCancelEl, enableSuspendEl;
+	private MultipleSelectionElement limitAttemptsEl, blockAfterSuccessEl;
+	private MultipleSelectionElement displayQuestionProgressEl, displayScoreProgressEl;
+	
+	private TextElement maxAttemptsEl;
 	
 	private final RepositoryEntry testEntry;
 	private final QTI21DeliveryOptions deliveryOptions;
@@ -69,7 +76,23 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("tab.options");
+
+		limitAttemptsEl = uifactory.addCheckboxesHorizontal("limitAttempts", "qti.form.limit.attempts", formLayout, onKeys, onValues);
+		limitAttemptsEl.addActionListener(FormEvent.ONCLICK);
+		String maxAttemptsValue = "";
+		int maxAttempts =  deliveryOptions.getMaxAttempts();
+		if(maxAttempts > 0) {
+			limitAttemptsEl.select(onKeys[0], true);
+		}
+		maxAttemptsEl = uifactory.addTextElement("maxAttempts", "qti.form.attempts", 8, maxAttemptsValue, formLayout);	
+		maxAttemptsEl.setDisplaySize(2);
+		maxAttemptsEl.setVisible(maxAttempts > 0);
 		
+		blockAfterSuccessEl = uifactory.addCheckboxesHorizontal("blockAfterSuccess", "qti.form.block.afterSuccess", formLayout, onKeys, onValues);
+		if(deliveryOptions.isBlockAfterSuccess()) {
+			blockAfterSuccessEl.select(onKeys[0], true);
+		}
+
 		showTitlesEl = uifactory.addCheckboxesHorizontal("showTitles", "qti.form.questiontitle", formLayout, onKeys, onValues);
 		if(deliveryOptions.isShowTitles()) {
 			showTitlesEl.select(onKeys[0], true);
@@ -117,7 +140,43 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	}
 
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		if(limitAttemptsEl.isAtLeastSelected(1)) {
+			maxAttemptsEl.clearError();
+			if(StringHelper.containsNonWhitespace(maxAttemptsEl.getValue())) {
+				try {
+					Integer.parseInt(maxAttemptsEl.getValue());
+				} catch(NumberFormatException e) {
+					maxAttemptsEl.setErrorKey("form.error.nointeger", null);
+					allOk &= false;
+				}
+			} else {
+				maxAttemptsEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+		}
+
+		return allOk & super.validateFormLogic(ureq);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(limitAttemptsEl == source) {
+			maxAttemptsEl.setVisible(limitAttemptsEl.isAtLeastSelected(1));
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
+		if(limitAttemptsEl.isAtLeastSelected(1)) {
+			deliveryOptions.setMaxAttempts(Integer.parseInt(maxAttemptsEl.getValue()));
+		} else {
+			deliveryOptions.setMaxAttempts(0);
+		}
+		deliveryOptions.setBlockAfterSuccess(blockAfterSuccessEl.isAtLeastSelected(1));
 		deliveryOptions.setShowTitles(showTitlesEl.isAtLeastSelected(1));
 		deliveryOptions.setPersonalNotes(personalNotesEl.isAtLeastSelected(1));
 		deliveryOptions.setEnableCancel(enableCancelEl.isAtLeastSelected(1));

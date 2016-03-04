@@ -164,17 +164,9 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	
 	protected void renderItemStatus(StringOutput sb, ItemSessionState itemSessionState, RenderingRequest options, Translator translator) {
 		if(options != null && options.isSolutionMode()) {
-			sb.append("<span class='o_assessmentitem_status review'>Model Solution</span>");
+			sb.append("<span class='o_assessmentitem_status review'>").append(translator.translate("assessment.item.status.modelSolution")).append("</span>");
 		} else if(options != null && options.isReviewMode()) {
-			if(!(itemSessionState.getUnboundResponseIdentifiers().isEmpty() && itemSessionState.getInvalidResponseIdentifiers().isEmpty())) {
-				sb.append("<span class='o_assessmentitem_status reviewInvalid'>Review (Invalid Answer)</span>");
-			} else if(itemSessionState.isResponded()) {
-				sb.append("<span class='o_assessmentitem_status review'>Review</span>");
-			} else if(itemSessionState.getEntryTime() != null) {
-				sb.append("<span class='o_assessmentitem_status reviewNotAnswered'>Review (Not Answered)</span>");
-			} else {
-				sb.append("<span class='o_assessmentitem_status reviewNotSeen'>Review (Not Seen)</span>");
-			}
+			renderItemReviewStatus(sb, itemSessionState, translator);
 		} else if(itemSessionState.getEndTime() != null) {
 			sb.append("<span class='o_assessmentitem_status ended'>").append(translator.translate("assessment.item.status.finished")).append("</span>");
 		} else if(!(itemSessionState.getUnboundResponseIdentifiers().isEmpty() && itemSessionState.getInvalidResponseIdentifiers().isEmpty())) {
@@ -185,6 +177,18 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			sb.append("<span class='o_assessmentitem_status notAnswered'>").append(translator.translate("assessment.item.status.notAnswered")).append("</span>");
 		} else {
 			sb.append("<span class='o_assessmentitem_status notPresented'>").append(translator.translate("assessment.item.status.notSeen")).append("</span>");
+		}
+	}
+	
+	protected void renderItemReviewStatus(StringOutput sb, ItemSessionState itemSessionState, Translator translator) {
+		if(!(itemSessionState.getUnboundResponseIdentifiers().isEmpty() && itemSessionState.getInvalidResponseIdentifiers().isEmpty())) {
+			sb.append("<span class='o_assessmentitem_status reviewInvalid'>").append(translator.translate("assessment.item.status.reviewInvalidAnswer")).append("</span>");
+		} else if(itemSessionState.isResponded()) {
+			sb.append("<span class='o_assessmentitem_status review'>").append(translator.translate("assessment.item.status.review")).append("</span>");
+		} else if(itemSessionState.getEntryTime() != null) {
+			sb.append("<span class='o_assessmentitem_status reviewNotAnswered'>").append(translator.translate("assessment.item.status.reviewNotAnswered")).append("</span>");
+		} else {
+			sb.append("<span class='o_assessmentitem_status reviewNotSeen'>").append(translator.translate("assessment.item.status.reviewNotSeen")).append("</span>");
 		}
 	}
 	

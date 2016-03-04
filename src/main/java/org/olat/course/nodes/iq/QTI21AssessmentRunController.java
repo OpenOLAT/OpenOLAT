@@ -43,9 +43,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.CourseFactory;
 import org.olat.course.DisposedCourseRestartController;
-import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.CourseNode;
@@ -60,6 +58,7 @@ import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.QTI21Event;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -86,6 +85,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private final ModuleConfiguration config;
 	private final UserCourseEnvironment userCourseEnv;
 	private final IQTESTCourseNode courseNode;
+	private final RepositoryEntry testEntry;
+	private final QTI21DeliveryOptions deliveryOptions;
 	
 	private AssessmentTestDisplayController displayCtrl;
 	private LayoutMain3ColsController displayContainerController;
@@ -102,9 +103,11 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		this.userCourseEnv = userCourseEnv;
 		userSession = ureq.getUserSession();
 		config = courseNode.getModuleConfiguration();
+		testEntry = courseNode.getReferencedRepositoryEntry();
 		singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
-		
 		mainVC = createVelocityContainer("assessment_run");
+		
+		deliveryOptions = getDeliveryOptions();
 		init();
 		initAssessment(ureq);
 		putInitialPanel(mainVC);
@@ -122,33 +125,45 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		mainVC.contextPut("enableScoreInfo", new Boolean(enableScoreInfo));	
 	   
 	    // configuration data
-		mainVC.contextPut("attemptsConfig", config.get(IQEditController.CONFIG_KEY_ATTEMPTS));
+		int maxAttempts = deliveryOptions.getMaxAttempts();
+		if(maxAttempts > 0) {
+			mainVC.contextPut("attemptsConfig", new Integer(maxAttempts));
+		} else {
+			mainVC.contextPut("attemptsConfig", Boolean.FALSE);
+		}
 	    // user data
 	    
-		ScoreEvaluation scoreEval = courseNode.getUserScoreEvaluation(userCourseEnv);
-		
-		//block if test passed (and config set to check it)
-		boolean blockAfterSuccess = config.getBooleanSafe(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS);
-		Boolean blocked = Boolean.FALSE;
-		if(blockAfterSuccess) {
-			Boolean passed = scoreEval.getPassed();
-			if(passed != null && passed.booleanValue()) {
+		AssessmentEntry assessmentEntry = courseNode.getUserAssessmentEntry(userCourseEnv);
+		if(assessmentEntry == null) {
+			mainVC.contextPut("blockAfterSuccess", Boolean.FALSE);
+			mainVC.contextPut("score", null);
+			mainVC.contextPut("hasPassedValue", Boolean.FALSE);
+			mainVC.contextPut("passed", Boolean.FALSE);
+			mainVC.contextPut("comment", null);
+			mainVC.contextPut("attempts", 0);
+		} else {
+
+			Boolean passed = assessmentEntry.getPassed();
+			//block if test passed (and config set to check it)
+			Boolean blocked = Boolean.FALSE;
+			boolean blockAfterSuccess = config.getBooleanSafe(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS);
+			if(blockAfterSuccess && passed != null && passed.booleanValue()) {
 				blocked = Boolean.TRUE;
 			}
+			mainVC.contextPut("blockAfterSuccess", blocked);
+			
+			Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
+			mainVC.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
+			mainVC.contextPut("hasPassedValue", (passed == null ? Boolean.FALSE : Boolean.TRUE));
+			mainVC.contextPut("passed", passed);
+			StringBuilder comment = Formatter.stripTabsAndReturns(courseNode.getUserUserComment(userCourseEnv));
+			mainVC.contextPut("comment", StringHelper.xssScan(comment));
+			Integer attempts = assessmentEntry.getAttempts();
+			mainVC.contextPut("attempts", attempts == null ? new Integer(0) : attempts);
+
+			UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
+			mainVC.contextPut("log", am.getUserNodeLog(courseNode, identity));
 		}
-		mainVC.contextPut("blockAfterSuccess", blocked );
-		
-		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
-		mainVC.contextPut("score", AssessmentHelper.getRoundedScore(scoreEval.getScore()));
-		mainVC.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
-		mainVC.contextPut("passed", scoreEval.getPassed());
-		StringBuilder comment = Formatter.stripTabsAndReturns(courseNode.getUserUserComment(userCourseEnv));
-		mainVC.contextPut("comment", StringHelper.xssScan(comment));
-		Integer attempts = courseNode.getUserAttempts(userCourseEnv);
-		mainVC.contextPut("attempts", attempts == null ? new Integer(0) : attempts);
-		
-		UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
-		mainVC.contextPut("log", am.getUserNodeLog(courseNode, identity));
 						
 		exposeResults(ureq);
 	}
@@ -240,10 +255,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		
-		RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
+		
 		RepositoryEntry courseRe = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		QTI21DeliveryOptions options = getDeliveryOptions(testEntry);
-		displayCtrl = new AssessmentTestDisplayController(ureq, bwControl, this, testEntry, courseRe, courseNode.getIdent(), options);
+		displayCtrl = new AssessmentTestDisplayController(ureq, bwControl, this, testEntry, courseRe, courseNode.getIdent(), deliveryOptions);
 		listenTo(displayCtrl);
 		if(displayCtrl.isTerminated()) {
 			//do nothing
@@ -252,16 +266,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			// this is the case if no more attempts or security check was unsuccessfull
 			displayContainerController = new LayoutMain3ColsController(ureq, getWindowControl(), displayCtrl);
 			listenTo(displayContainerController); // autodispose
-			
-			//need to wrap a course restart controller again, because IQDisplay
-			//runs on top of GUIStack
-			Long courseResId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
-			ICourse course = CourseFactory.loadCourse(courseResId);
-			RepositoryEntry courseRepositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			
+
 			Panel empty = new Panel("empty");//empty panel set as "menu" and "tool"
-			Controller courseCloser = new DisposedCourseRestartController(ureq, getWindowControl(), courseRepositoryEntry);
-			Controller disposedRestartController = new LayoutMain3ColsController(ureq, getWindowControl(), empty, courseCloser.getInitialComponent(), "disposed course while in assessment run " + courseResId);
+			Controller courseCloser = new DisposedCourseRestartController(ureq, getWindowControl(), courseRe);
+			Controller disposedRestartController = new LayoutMain3ColsController(ureq, getWindowControl(), empty, courseCloser.getInitialComponent(), "disposed");
 			displayContainerController.setDisposedMessageController(disposedRestartController);
 			
 			boolean fullWindow = config.getBooleanSafe(IQEditController.CONFIG_FULLWINDOW);
@@ -269,7 +277,6 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				displayContainerController.setAsFullscreen(ureq);
 			}
 			displayContainerController.activate();
-			
 
 			assessmentStopped = false;		
 			singleUserEventCenter.registerFor(this, getIdentity(), assessmentInstanceOres);
@@ -277,23 +284,20 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		}
 	}
 	
-	private QTI21DeliveryOptions getDeliveryOptions(RepositoryEntry testEntry) {
+	private QTI21DeliveryOptions getDeliveryOptions() {
 		QTI21DeliveryOptions testOptions = qtiService.getDeliveryOptions(testEntry);
-		QTI21DeliveryOptions deliveryOptions = testOptions.clone();
-		deliveryOptions.setShowTitles(mergeBoolean(config.getBooleanEntry(IQEditController.CONFIG_KEY_QUESTIONTITLE), testOptions.isShowTitles()));
-		deliveryOptions.setPersonalNotes(mergeBoolean(config.getBooleanEntry(IQEditController.CONFIG_KEY_MEMO), testOptions.isPersonalNotes()));
-		deliveryOptions.setEnableCancel(mergeBoolean(config.getBooleanEntry(IQEditController.CONFIG_KEY_ENABLECANCEL), testOptions.isEnableCancel()));
-		deliveryOptions.setEnableSuspend(mergeBoolean(config.getBooleanEntry(IQEditController.CONFIG_KEY_ENABLESUSPEND), testOptions.isEnableSuspend()));
-		deliveryOptions.setDisplayQuestionProgress(mergeBoolean(config.getBooleanEntry(IQEditController.CONFIG_KEY_QUESTIONPROGRESS), testOptions.isDisplayQuestionProgress()));
-		deliveryOptions.setDisplayScoreProgress(mergeBoolean(config.getBooleanEntry(IQEditController.CONFIG_KEY_SCOREPROGRESS), testOptions.isDisplayScoreProgress()));
-		return deliveryOptions;
+		QTI21DeliveryOptions finalOptions = testOptions.clone();
+		finalOptions.setMaxAttempts(config.getIntegerSafe(IQEditController.CONFIG_KEY_ATTEMPTS, testOptions.getMaxAttempts()));
+		finalOptions.setBlockAfterSuccess(config.getBooleanSafe(IQEditController.CONFIG_KEY_QUESTIONTITLE, testOptions.isBlockAfterSuccess()));
+		finalOptions.setShowTitles(config.getBooleanSafe(IQEditController.CONFIG_KEY_QUESTIONTITLE, testOptions.isShowTitles()));
+		finalOptions.setPersonalNotes(config.getBooleanSafe(IQEditController.CONFIG_KEY_MEMO, testOptions.isPersonalNotes()));
+		finalOptions.setEnableCancel(config.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLECANCEL, testOptions.isEnableCancel()));
+		finalOptions.setEnableSuspend(config.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLESUSPEND, testOptions.isEnableSuspend()));
+		finalOptions.setDisplayQuestionProgress(config.getBooleanSafe(IQEditController.CONFIG_KEY_QUESTIONPROGRESS, testOptions.isDisplayQuestionProgress()));
+		finalOptions.setDisplayScoreProgress(config.getBooleanSafe(IQEditController.CONFIG_KEY_SCOREPROGRESS, testOptions.isDisplayScoreProgress()));
+		return finalOptions;
 	}
-	
-	private boolean mergeBoolean(Boolean conf, boolean options) {
-		if(conf != null) return conf.booleanValue();
-		return options;
-	}
-	
+
 	/**
 	 * Remove the runtime from the GUI stack only.
 	 * @param ureq

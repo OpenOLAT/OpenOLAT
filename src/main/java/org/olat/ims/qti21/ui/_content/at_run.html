@@ -3,15 +3,15 @@
 		<h3>$r.escapeHtml($title)</h3>
 		<div class="o_button_group o_button_group_right">
 		#if(${qtiWorksStatus.mayCloseTest()} && $r.available("closeTest") && $r.visible("closeTest"))
-				$r.render("closeTest")
+			$r.render("closeTest")
 		#elseif(${qtiWorksStatus.mayEndCurrentTestPart()} && $r.available("endTest") && $r.visible("endTest"))
 			$r.render("endTest")
 		#end
 
-		#if($r.available("cancelTest") && $r.visible("cancelTest"))
+		#if(${qtiWorksStatus.mayCancelTest()} && $r.available("cancelTest") && $r.visible("cancelTest"))
 			$r.render("cancelTest")
 		#end
-		#if($r.available("suspendTest") && $r.visible("suspendTest"))
+		#if(${qtiWorksStatus.maySuspendTest()} && $r.available("suspendTest") && $r.visible("suspendTest"))
 			$r.render("suspendTest")
 		#end
 		</div>

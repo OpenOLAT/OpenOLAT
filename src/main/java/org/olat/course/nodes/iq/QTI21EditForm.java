@@ -20,14 +20,18 @@
 package org.olat.course.nodes.iq;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.modules.ModuleConfiguration;
 
@@ -47,9 +51,11 @@ public class QTI21EditForm extends FormBasicController {
 	private MultipleSelectionElement showTitlesEl;
 	private MultipleSelectionElement personalNotesEl;
 	private MultipleSelectionElement enableCancelEl, enableSuspendEl;
+	private MultipleSelectionElement limitAttemptsEl, blockAfterSuccessEl;
 	private MultipleSelectionElement displayQuestionProgressEl, displayScoreProgressEl;
 	
-
+	private TextElement maxAttemptsEl;
+	
 	private final boolean needManulCorrection;
 	private final ModuleConfiguration modConfig;
 	private final QTI21DeliveryOptions deliveryOptions;
@@ -90,41 +96,58 @@ public class QTI21EditForm extends FormBasicController {
 			}
 		}
 		
+		limitAttemptsEl = uifactory.addCheckboxesHorizontal("limitAttempts", "qti.form.limit.attempts", formLayout, onKeys, onValues);
+		limitAttemptsEl.addActionListener(FormEvent.ONCLICK);
+		String maxAttemptsValue = "";
+		int maxAttempts = modConfig.getIntegerSafe(IQEditController.CONFIG_KEY_ATTEMPTS, deliveryOptions.getMaxAttempts());
+		if(maxAttempts > 0) {
+			limitAttemptsEl.select(onKeys[0], true);
+		}
+		maxAttemptsEl = uifactory.addTextElement("maxAttempts", "qti.form.attempts", 8, maxAttemptsValue, formLayout);	
+		maxAttemptsEl.setDisplaySize(2);
+		maxAttemptsEl.setVisible(maxAttempts > 0);
+		
+		boolean blockAfterSuccess = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS, deliveryOptions.isBlockAfterSuccess());
+		blockAfterSuccessEl = uifactory.addCheckboxesHorizontal("blockAfterSuccess", "qti.form.block.afterSuccess", formLayout, onKeys, onValues);
+		if(blockAfterSuccess) {
+			blockAfterSuccessEl.select(onKeys[0], true);
+		}
+		
 		boolean fullWindow = modConfig.getBooleanSafe(IQEditController.CONFIG_FULLWINDOW);
 		fullWindowEl = uifactory.addCheckboxesHorizontal("fullwindow", "qti.form.fullwindow", formLayout, new String[]{"x"}, new String[]{""});
 		fullWindowEl.select("x", fullWindow);
 
-		boolean showTitles = mergeBoolean(modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_QUESTIONTITLE), deliveryOptions.isDisplayQuestionProgress());
+		boolean showTitles = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_QUESTIONTITLE, deliveryOptions.isDisplayQuestionProgress());
 		showTitlesEl = uifactory.addCheckboxesHorizontal("showTitles", "qti.form.questiontitle", formLayout, onKeys, onValues);
 		if(showTitles) {
 			showTitlesEl.select(onKeys[0], true);
 		}
 
-		boolean personalNotes = mergeBoolean(modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_MEMO), deliveryOptions.isDisplayQuestionProgress());
+		boolean personalNotes = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_MEMO, deliveryOptions.isDisplayQuestionProgress());
 		personalNotesEl = uifactory.addCheckboxesHorizontal("personalNotes", "qti.form.auto.memofield", formLayout, onKeys, onValues);
 		if(personalNotes) {
 			personalNotesEl.select(onKeys[0], true);
 		}
 
-		boolean questionProgress = mergeBoolean(modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_QUESTIONPROGRESS), deliveryOptions.isDisplayQuestionProgress());
+		boolean questionProgress = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_QUESTIONPROGRESS, deliveryOptions.isDisplayQuestionProgress());
 		displayQuestionProgressEl = uifactory.addCheckboxesHorizontal("questionProgress", "qti.form.questionprogress", formLayout, onKeys, onValues);
 		if(questionProgress) {
 			displayQuestionProgressEl.select(onKeys[0], true);
 		}
 		
-		boolean questionScore = mergeBoolean(modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_SCOREPROGRESS), deliveryOptions.isDisplayScoreProgress());
+		boolean questionScore = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_SCOREPROGRESS, deliveryOptions.isDisplayScoreProgress());
 		displayScoreProgressEl = uifactory.addCheckboxesHorizontal("scoreProgress", "qti.form.scoreprogress", formLayout, onKeys, onValues);
 		if(questionScore) {
 			displayScoreProgressEl.select(onKeys[0], true);
 		}
 
-		boolean enableSuspend = mergeBoolean(modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_ENABLESUSPEND), deliveryOptions.isEnableSuspend());
+		boolean enableSuspend = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLESUSPEND, deliveryOptions.isEnableSuspend());
 		enableSuspendEl = uifactory.addCheckboxesHorizontal("suspend", "qti.form.enablesuspend", formLayout, onKeys, onValues);
 		if(enableSuspend) {
 			enableSuspendEl.select(onKeys[0], true);
 		}
 
-		boolean enableCancel = mergeBoolean(modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_ENABLECANCEL), deliveryOptions.isEnableCancel());
+		boolean enableCancel = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLECANCEL, deliveryOptions.isEnableCancel());
 		enableCancelEl = uifactory.addCheckboxesHorizontal("cancel", "qti.form.enablecancel", formLayout, onKeys, onValues);
 		if(enableCancel) {
 			enableCancelEl.select(onKeys[0], true);
@@ -133,14 +156,39 @@ public class QTI21EditForm extends FormBasicController {
 		uifactory.addFormSubmitButton("submit", formLayout);
 	}
 	
-	private boolean mergeBoolean(Boolean config, boolean options) {
-		if(config != null) return config.booleanValue();
-		return options;
-	}
-	
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		if(limitAttemptsEl.isAtLeastSelected(1)) {
+			maxAttemptsEl.clearError();
+			if(StringHelper.containsNonWhitespace(maxAttemptsEl.getValue())) {
+				try {
+					Integer.parseInt(maxAttemptsEl.getValue());
+				} catch(NumberFormatException e) {
+					maxAttemptsEl.setErrorKey("form.error.nointeger", null);
+					allOk &= false;
+				}
+			} else {
+				maxAttemptsEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+		}
+
+		return allOk & super.validateFormLogic(ureq);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(limitAttemptsEl == source) {
+			maxAttemptsEl.setVisible(limitAttemptsEl.isAtLeastSelected(1));
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
@@ -149,6 +197,13 @@ public class QTI21EditForm extends FormBasicController {
 		if(correctionModeEl.isOneSelected()) {
 			modConfig.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, correctionModeEl.getSelectedKey());
 		}
+		if(limitAttemptsEl.isSelected(0)) {
+			int maxAttempts = Integer.parseInt(maxAttemptsEl.getValue());
+			modConfig.setIntValue(IQEditController.CONFIG_KEY_ATTEMPTS, maxAttempts);
+		} else {
+			modConfig.setIntValue(IQEditController.CONFIG_KEY_ATTEMPTS, 0);
+		}
+		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS, blockAfterSuccessEl.isSelected(0));
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_QUESTIONTITLE, showTitlesEl.isSelected(0));
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_MEMO, personalNotesEl.isSelected(0));
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_ENABLECANCEL, enableCancelEl.isSelected(0));

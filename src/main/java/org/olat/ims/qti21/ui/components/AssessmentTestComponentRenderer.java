@@ -457,12 +457,14 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 					-> renderReview(renderer, sb, component, testPartNode, ubu, translator));
 
 		//controls
+		/*
 		sb.append("<div class='o_button_group'>");
 		String title = component.hasMultipleTestParts()
 				? translator.translate("assessment.test.end.testPart") : translator.translate("assessment.test.end.test");
 		renderControl(sb, component, title, "o_sel_end_testpart",
 				new NameValuePair("cid", Event.advanceTestPart.name()));
 		sb.append("</div>");
+		*/
 		
 		sb.append("</div>");
 	}
@@ -480,20 +482,22 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	
 	private void renderReviewTestPart(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode node,
 			URLBuilder ubu, Translator translator) {
-		//".//qw:node[@type='ASSESSMENT_ITEM_REF' and (@allowReview='true' or @showFeedback='true')]" as="element(qw:node)*"/>
-		boolean hasReviewableItems = node.searchDescendants(TestNodeType.ASSESSMENT_ITEM_REF)
-				.stream().anyMatch(itemNode
-						-> itemNode.getEffectiveItemSessionControl().isAllowReview()
-						|| itemNode.getEffectiveItemSessionControl().isShowFeedback());
-		if(hasReviewableItems) {
-			sb.append("<h2>Review your responses</h2>");
-			sb.append("<p>You may review your responses to some (or all) questions. These are listed below.</p>");
-			sb.append("<ul class='o_testpartnavigation'>");
-			
-			node.getChildren().forEach((childNode)
-				-> renderReview(renderer, sb, component, childNode, ubu, translator));
-	
-			sb.append("</ul>");
+		if(component.isRenderNavigation() || true) {
+			//".//qw:node[@type='ASSESSMENT_ITEM_REF' and (@allowReview='true' or @showFeedback='true')]" as="element(qw:node)*"/>
+			boolean hasReviewableItems = node.searchDescendants(TestNodeType.ASSESSMENT_ITEM_REF)
+					.stream().anyMatch(itemNode
+							-> itemNode.getEffectiveItemSessionControl().isAllowReview()
+							|| itemNode.getEffectiveItemSessionControl().isShowFeedback());
+			if(hasReviewableItems) {
+				sb.append("<h2>").append(translator.translate("review.responses")).append("</h2>");
+				sb.append("<p>").append(translator.translate("review.responses.desc")).append("</p>");
+				sb.append("<ul class='o_testpartnavigation'>");
+				
+				node.getChildren().forEach((childNode)
+					-> renderReview(renderer, sb, component, childNode, ubu, translator));
+		
+				sb.append("</ul>");
+			}
 		}
 	}
 	
@@ -539,16 +543,16 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			  .append(itemNode.getSectionPartTitle()).append("</span>");
 
 			if(!reviewable) {
-				sb.append("<span class='itemStatus reviewNotAllowed'>Not Reviewable</span>");
+				sb.append("<span class='itemStatus reviewNotAllowed'>").append(translator.translate("assessment.item.status.reviewNot")).append("</span>");
 			} else if(itemSessionState.getUnboundResponseIdentifiers().size() > 0
 					|| itemSessionState.getInvalidResponseIdentifiers().size() > 0) {
-				sb.append("<span class='itemStatus reviewInvalid'>Review (Invalid Answer)</span>");
+				sb.append("<span class='itemStatus reviewInvalid'>").append(translator.translate("assessment.item.status.reviewInvalidAnswer")).append("</span>");
 			} else if(itemSessionState.isResponded()) {
 				sb.append("<span class='itemStatus review'>").append(translator.translate("assessment.item.status.review")).append("</span>");
 			} else if(itemSessionState.getEntryTime() != null) {
-				sb.append("<span class='itemStatus reviewNotAnswered'>Review (Not Answered)</span>");
+				sb.append("<span class='itemStatus reviewNotAnswered'>").append(translator.translate("assessment.item.status.reviewNotAnswered")).append("</span>");
 			} else {
-				sb.append("<span class='itemStatus reviewNotSeen'>Review (Not Seen)</span>");
+				sb.append("<span class='itemStatus reviewNotSeen'>").append(translator.translate("assessment.item.status.reviewNotSeen")).append("</span>");
 			}
 			
 			sb.append("</button></li>");

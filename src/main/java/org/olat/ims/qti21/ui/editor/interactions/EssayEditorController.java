@@ -131,7 +131,7 @@ public class EssayEditorController extends FormBasicController {
 		integerEl.clearError();
 		if(StringHelper.containsNonWhitespace(integerEl.getValue())) {
 			if(!StringHelper.isLong(integerEl.getValue())) {
-				integerEl.setErrorKey("error.integer", null);
+				integerEl.setErrorKey("form.error.nointeger", null);
 				allOk &= false;
 			}
 		}

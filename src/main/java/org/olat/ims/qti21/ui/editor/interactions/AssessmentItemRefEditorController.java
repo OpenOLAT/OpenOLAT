@@ -89,7 +89,7 @@ public abstract class AssessmentItemRefEditorController extends FormBasicControl
 				try {
 					Integer.parseInt(maxAttemptsEl.getValue());
 				} catch(NumberFormatException e) {
-					maxAttemptsEl.setErrorKey("error.integer", null);
+					maxAttemptsEl.setErrorKey("form.error.nointeger", null);
 					allOk &= false;
 				}
 			}
