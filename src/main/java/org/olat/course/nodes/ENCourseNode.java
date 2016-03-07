@@ -27,8 +27,11 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -53,6 +56,10 @@ import org.olat.course.properties.PersistingCoursePropertyManager;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupShort;
+import org.olat.group.area.BGArea;
+import org.olat.group.area.BGAreaManager;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 
@@ -66,6 +73,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public class ENCourseNode extends AbstractAccessableCourseNode {
 	private static final String PACKAGE = Util.getPackageName(ENCourseNode.class);
+	private static final String PACKAGE_COND = Util.getPackageName(ConditionEditController.class);
 
 	/**
 	 * property name for the initial enrollment date will be set only the first
@@ -186,44 +194,28 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 		oneClickStatusCache = null;
 		// only here we know which translator to take for translating condition
 		// error messages
-		String translatorStr = Util.getPackageName(ConditionEditController.class);
 
-		List<StatusDescription> condErrs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		List<StatusDescription> condErrs = isConfigValidWithTranslator(cev, PACKAGE_COND, getConditionExpressions());
 		List<StatusDescription> missingNames = new ArrayList<StatusDescription>();
 		/*
 		 * check group and area names for existence
 		 */
-		String nodeId = getIdent();
 		
 		ModuleConfiguration mc = getModuleConfiguration();
-		String areaStr = (String) mc.get(CONFIG_AREANAME);
-		if (areaStr != null) {
-			String[] areas = areaStr.split(",");
-			for (int i = 0; i < areas.length; i++) {
-				String trimmed = areas[i] != null ?
-						FilterFactory.getHtmlTagsFilter().filter(areas[i]).trim() : areas[i];
-				if (!trimmed.equals("") && !cev.existsArea(trimmed)) {
-					StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.notfound.name", "solution.checkgroupmanagement",
-							new String[] { "NONE", trimmed }, translatorStr);
-					sd.setDescriptionForUnit(nodeId);
-					missingNames.add(sd);
-				}
-			}
+		String areaNames = (String) mc.get(CONFIG_AREANAME);
+		List<Long> areaKeys = mc.getList(ENCourseNode.CONFIG_AREA_IDS, Long.class);
+		List<String> missingAreas = getMissingAreas(areaKeys, areaNames, cev);
+		if(missingAreas.size() > 0) {
+			missingNames.add(addStatusErrorMissing(missingAreas));
 		}
-		String groupStr = (String) mc.get(CONFIG_GROUPNAME);
-		if (groupStr != null) {
-			String[] groups = groupStr.split(",");
-			for (int i = 0; i < groups.length; i++) {
-				String trimmed = groups[i] != null ?
-						FilterFactory.getHtmlTagsFilter().filter(groups[i]).trim() : groups[i];
-				if (!trimmed.equals("") && !cev.existsGroup(trimmed)) {
-					StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.notfound.name", "solution.checkgroupmanagement",
-							new String[] { "NONE", trimmed }, translatorStr);
-					sd.setDescriptionForUnit(nodeId);
-					missingNames.add(sd);
-				}
-			}
+		
+		String groupNames = (String) mc.get(CONFIG_GROUPNAME);
+		List<Long> groupKeys = mc.getList(ENCourseNode.CONFIG_GROUP_IDS, Long.class);
+		List<String> missingGroups = getMissingBusinessGroups(groupKeys, groupNames, cev);
+		if(missingGroups.size() > 0) {
+			missingNames.add(addStatusErrorMissing(missingGroups));
 		}
+		
 		missingNames.addAll(condErrs);
 		/*
 		 * sort -> Errors > Warnings > Infos and remove NOERRORS, if
@@ -231,6 +223,122 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 		 */
 		oneClickStatusCache = StatusDescriptionHelper.sort(missingNames);
 		return oneClickStatusCache;
+	}
+	
+	private StatusDescription addStatusErrorMissing(List<String> missingObjects) {
+		String labelKey = missingObjects.size() == 1 ? "error.notfound.name" : "error.notfound.names";
+		StringBuilder missing = new StringBuilder();
+		for(String missingObject:missingObjects) {
+			if(missing.length() > 0) missing.append(", ");
+			missing.append(missingObject);
+		}
+		
+		StatusDescription sd = new StatusDescription(StatusDescription.WARNING, labelKey, "solution.checkgroupmanagement",
+				new String[] { "NONE", missing.toString() }, PACKAGE_COND);
+		sd.setDescriptionForUnit(getIdent());
+		return sd;
+	}
+	
+	public List<String> getMissingAreas(List<Long> areaKeys, String areaNames, CourseEditorEnv cev) {
+		List<String> missingNames = new ArrayList<>();
+		if(areaKeys == null || areaKeys.isEmpty()) {
+			if (areaNames != null) {
+				String[] areas = areaNames.split(",");
+				for (int i = 0; i < areas.length; i++) {
+					String trimmed = areas[i] != null ?
+							FilterFactory.getHtmlTagsFilter().filter(areas[i]).trim() : areas[i];
+					if (!trimmed.equals("") && !cev.existsGroup(trimmed)) {
+						missingNames.add(trimmed);
+					}
+				}
+			}
+		} else {
+			Set<Long> missingAreas = new HashSet<Long>();
+			List<BGArea> existingAreas =  CoreSpringFactory.getImpl(BGAreaManager.class).loadAreas(areaKeys);
+			
+			List<String> knowNames = new ArrayList<>();
+			if (areaNames != null) {
+				String[] areas = areaNames.split(",");
+				for (int i = 0; i < areas.length; i++) {
+					String trimmed = areas[i] != null ? FilterFactory.getHtmlTagsFilter().filter(areas[i]).trim() : areas[i];
+					knowNames.add(trimmed);
+				}
+			}
+			
+			a_a:
+			for(Long areaKey:areaKeys) {
+				for(BGArea area:existingAreas) {
+					if(area.getKey().equals(areaKey)) {
+						String trimmed = area.getName() != null ? FilterFactory.getHtmlTagsFilter().filter(area.getName()).trim() : area.getName();
+						knowNames.remove(trimmed);
+						continue a_a;
+					}
+				}
+				missingAreas.add(areaKey);
+			}
+			
+			if(missingAreas.size() > 0 ) {
+				if(knowNames.size() > 0) {
+					missingNames.addAll(knowNames);
+				} else {
+					for(Long missingArea:missingAreas) {
+						missingNames.add(missingArea.toString());
+					}
+				}
+			}
+		}
+		return missingNames;
+	}
+	
+	public List<String> getMissingBusinessGroups(List<Long> groupKeys, String groupNames, CourseEditorEnv cev) {
+		List<String> missingNames = new ArrayList<>();
+		if(groupKeys == null || groupKeys.isEmpty()) {
+			if (groupNames != null) {
+				String[] groups = groupNames.split(",");
+				for (int i = 0; i < groups.length; i++) {
+					String trimmed = groups[i] != null ?
+							FilterFactory.getHtmlTagsFilter().filter(groups[i]).trim() : groups[i];
+					if (!trimmed.equals("") && !cev.existsGroup(trimmed)) {
+						missingNames.add(trimmed);
+					}
+				}
+			}
+		} else {
+			Set<Long> missingGroups = new HashSet<Long>();
+			List<BusinessGroupShort> existingGroups =  CoreSpringFactory.getImpl(BusinessGroupService.class).loadShortBusinessGroups(groupKeys);
+			
+			List<String> knowNames = new ArrayList<>();
+			if (groupNames != null) {
+				String[] groups = groupNames.split(",");
+				for (int i = 0; i < groups.length; i++) {
+					String trimmed = groups[i] != null ? FilterFactory.getHtmlTagsFilter().filter(groups[i]).trim() : groups[i];
+					knowNames.add(trimmed);
+				}
+			}
+			
+			a_a:
+			for(Long groupKey:groupKeys) {
+				for(BusinessGroupShort group:existingGroups) {
+					if(group.getKey().equals(groupKey)) {
+						String trimmed = group.getName() != null ? FilterFactory.getHtmlTagsFilter().filter(group.getName()).trim() : group.getName();
+						knowNames.remove(trimmed);
+						continue a_a;
+					}
+				}
+				missingGroups.add(groupKey);
+			}
+			
+			if(missingGroups.size() > 0 ) {
+				if(knowNames.size() > 0) {
+					missingNames.addAll(knowNames);
+				} else {
+					for(Long missingGroup:missingGroups) {
+						missingNames.add(missingGroup.toString());
+					}
+				}
+			}
+		}
+		return missingNames;
 	}
 
 	/**

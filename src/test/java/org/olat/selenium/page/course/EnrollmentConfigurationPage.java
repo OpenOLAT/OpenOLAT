@@ -84,6 +84,7 @@ public class EnrollmentConfigurationPage {
 		By createGroupBy = By.cssSelector("div.o_button_group_right a");
 		browser.findElement(createGroupBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		
 		//fill the form
 		By nameBy = By.cssSelector(".o_sel_group_edit_title input[type='text']");

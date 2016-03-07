@@ -274,14 +274,9 @@ public class PortfolioPage {
 	 * @return
 	 */
 	public PortfolioPage selectMapInEditor(String mapTitle) {
-		By mapNodeBy = By.cssSelector("div.o_ep_toc_editor span.o_tree_level_label_open.o_tree_l1>a");
-		WebElement selectedNode = null;
-		List<WebElement> level1Nodes = browser.findElements(mapNodeBy);
-		for(WebElement level1Node:level1Nodes) {
-			if(level1Node.getText().contains(mapTitle)) {
-				selectedNode = level1Node;
-			}
-		}
+		By mapNodeBy = By.xpath("//div[contains(@class,'o_ep_toc_editor')]//span[contains(@class,'o_tree_level_label_open')][contains(@class,'o_tree_l1')]//a//span[text()[contains(.,'" + mapTitle + "')]]");
+		OOGraphene.waitElement(mapNodeBy, 5, browser);
+		WebElement selectedNode = browser.findElement(mapNodeBy);
 		Assert.assertNotNull(selectedNode);
 		selectedNode.click();
 		OOGraphene.waitBusy(browser);
@@ -290,9 +285,8 @@ public class PortfolioPage {
 	
 	public PortfolioPage selectMapInEditor() {
 		By mapNodeBy = By.cssSelector("div.o_ep_toc_editor span.o_tree_link.o_tree_l1.o_tree_l1>a");
-		List<WebElement> level1Nodes = browser.findElements(mapNodeBy);
-		Assert.assertFalse(level1Nodes.isEmpty());
-		level1Nodes.get(0).click();
+		OOGraphene.waitElement(mapNodeBy, 5, browser);
+		browser.findElement(mapNodeBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -320,9 +314,8 @@ public class PortfolioPage {
 	 */
 	public PortfolioPage selectFirstPageInEditor() {
 		By pageNodeBy = By.cssSelector("div.o_ep_toc_editor span.o_tree_level_label_leaf.o_tree_l2>a");
-		List<WebElement> level2Nodes = browser.findElements(pageNodeBy);
-		Assert.assertFalse(level2Nodes.isEmpty());
-		level2Nodes.get(0).click();
+		OOGraphene.waitElement(pageNodeBy, 5, browser);
+		browser.findElement(pageNodeBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

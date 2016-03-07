@@ -102,6 +102,7 @@ public class ForumPage {
 		By newThreadBy = By.className("o_sel_forum_thread_new");
 		browser.findElement(newThreadBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		
 		//fill the form
 		By titleBy = By.cssSelector("div.modal-content form div.o_sel_forum_message_title input[type='text']");

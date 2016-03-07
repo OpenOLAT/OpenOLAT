@@ -49,6 +49,11 @@ public class OOGraphene {
 	private static final By closeBlueBoxButtonBy = By.cssSelector("div.o_alert_info div.o_sel_info_message i.o_icon.o_icon_close");
 	private static final By closeModalDialogButtonBy = By.cssSelector("div.modal-dialog div.modal-header button.close");
 	
+	public static void waitModalDialog(WebDriver browser) {
+		By modalBy = By.cssSelector("div.modal-dialog div.modal-body");
+		waitElement(modalBy, 5, browser);
+	}
+	
 	public static void waitBusy(WebDriver browser) {
 		Graphene.waitModel(browser).pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new BusyPredicate());
 	}
