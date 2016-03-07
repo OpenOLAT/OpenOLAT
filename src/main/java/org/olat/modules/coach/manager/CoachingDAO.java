@@ -527,19 +527,38 @@ public class CoachingDAO {
 	
 	private boolean getCoursesStatisticsUserInfosForOwner(Identity coach, Map<Long,CourseStatEntry> map) {
 		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
-		sb.append("select")
-		  .append("  sg_re.repositoryentry_id as re_id,")
-		  .append("  count(distinct sg_participant.fk_identity_id) as student_id,")
-		  .append("  count(distinct pg_initial_launch.id) as pg_id")
-		  .append(" from o_repositoryentry sg_re ")
-		  .append(" inner join o_re_to_group owngroup on (owngroup.fk_entry_id = sg_re.repositoryentry_id and owngroup.r_defgroup=").appendTrue().append(")")
-		  .append(" inner join o_bs_group_member sg_coach on (sg_coach.fk_group_id=owngroup.fk_group_id and sg_coach.g_role = 'owner')")
-		  .append(" inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)")
-		  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant')")
-		  .append(" left join o_as_user_course_infos pg_initial_launch")
-		  .append("   on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)")
-		  .append(" where sg_coach.fk_identity_id=:coachKey and sg_re.accesscode >= ").append(RepositoryEntry.ACC_OWNERS)
-		  .append(" group by sg_re.repositoryentry_id");
+		if(dbInstance.isMySQL()) {
+			sb.append("select")
+			  .append("  sg_re.repositoryentry_id as re_id,")
+			  .append("  count(distinct sg_participant.fk_identity_id) as student_id,")
+			  .append("  count(distinct pg_initial_launch.id) as pg_id")
+			  .append(" from o_repositoryentry sg_re ")
+			  .append(" inner join o_re_to_group owngroup on (owngroup.fk_entry_id = sg_re.repositoryentry_id and owngroup.r_defgroup=").appendTrue().append(")")
+			  .append(" inner join o_bs_group_member sg_coach on (sg_coach.fk_group_id=owngroup.fk_group_id and sg_coach.g_role = 'owner')")
+			  .append(" inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)")
+			  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant')")
+			  .append(" left join o_as_user_course_infos pg_initial_launch")
+			  .append("   on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)")
+			  .append(" where sg_coach.fk_identity_id=:coachKey and sg_re.accesscode >= ").append(RepositoryEntry.ACC_OWNERS)
+			  .append(" group by sg_re.repositoryentry_id");
+		} else {
+			sb.append("select")
+			  .append("  sg_re.repositoryentry_id as re_id,")
+			  .append("  count(distinct sg_participant.fk_identity_id) as student_id,")
+			  .append("  count(distinct pg_initial_launch.id) as pg_id")
+			  .append(" from o_repositoryentry sg_re ")
+			  .append(" inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)")
+			  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant')")
+			  .append(" left join o_as_user_course_infos pg_initial_launch")
+			  .append("   on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)")
+			  .append(" where sg_re.accesscode >= ").append(RepositoryEntry.ACC_OWNERS).append(" and sg_re.fk_olatresource in (")
+			  .append("  select sg_res.resource_id from o_olatresource sg_res where sg_res.resname = 'CourseModule'")
+			  .append(" ) and exists (")
+			  .append("  select owngroup.id from o_re_to_group owngroup inner join o_bs_group_member sg_owner on (sg_owner.fk_group_id=owngroup.fk_group_id)")
+			  .append("  where owngroup.fk_entry_id = sg_re.repositoryentry_id and owngroup.r_defgroup=").appendTrue().append(" and sg_owner.g_role='owner' and sg_owner.fk_identity_id=:coachKey")
+			  .append(" )")
+			  .append(" group by sg_re.repositoryentry_id");
+		}
 
 		List<?> rawList = dbInstance.getCurrentEntityManager()
 				.createNativeQuery(sb.toString())
@@ -669,20 +688,39 @@ public class CoachingDAO {
 	
 	private boolean getStudentsStastisticInfosForOwner(IdentityRef coach, Map<Long, StudentStatEntry> map) {
 		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
-		sb.append("select")
-		  .append("  sg_participant.fk_identity_id as part_id,")
-		  .append("  ").appendToArray("sg_re.repositoryentry_id").append(" as re_ids,")
-		  .append("  ").appendToArray("pg_initial_launch.id").append(" as pg_ids")
-		  .append(" from o_repositoryentry sg_re")
-		  .append(" inner join o_olatresource sg_res on (sg_res.resource_id = sg_re.fk_olatresource and sg_res.resname = 'CourseModule')")
-		  .append(" inner join o_re_to_group owngroup on (owngroup.fk_entry_id = sg_re.repositoryentry_id and owngroup.r_defgroup=").appendTrue().append(")")
-		  .append(" inner join o_bs_group_member sg_owner on (sg_owner.fk_group_id=owngroup.fk_group_id and sg_owner.g_role = 'owner')")
-		  .append(" inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)")
-		  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant')")
-		  .append(" left join o_as_user_course_infos pg_initial_launch")
-		  .append("   on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)")
-		  .append(" where sg_owner.fk_identity_id=:coachKey and sg_re.accesscode >= ").append(RepositoryEntry.ACC_OWNERS)
-		  .append(" group by sg_participant.fk_identity_id");
+		if(dbInstance.isMySQL()) {
+			sb.append("select")
+			  .append("  sg_participant.fk_identity_id as part_id,")
+			  .append("  ").appendToArray("sg_re.repositoryentry_id").append(" as re_ids,")
+			  .append("  ").appendToArray("pg_initial_launch.id").append(" as pg_ids")
+			  .append(" from o_repositoryentry sg_re")
+			  .append(" inner join o_olatresource sg_res on (sg_res.resource_id = sg_re.fk_olatresource and sg_res.resname = 'CourseModule')")
+			  .append(" inner join o_re_to_group owngroup on (owngroup.fk_entry_id = sg_re.repositoryentry_id and owngroup.r_defgroup=").appendTrue().append(")")
+			  .append(" inner join o_bs_group_member sg_owner on (sg_owner.fk_group_id=owngroup.fk_group_id and sg_owner.g_role = 'owner')")
+			  .append(" inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)")
+			  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant')")
+			  .append(" left join o_as_user_course_infos pg_initial_launch")
+			  .append("   on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)")
+			  .append(" where sg_owner.fk_identity_id=:coachKey and sg_re.accesscode >= ").append(RepositoryEntry.ACC_OWNERS)
+			  .append(" group by sg_participant.fk_identity_id");
+		} else {
+			sb.append("select")
+			  .append("  sg_participant.fk_identity_id as part_id,")
+			  .append("  ").appendToArray("sg_re.repositoryentry_id").append(" as re_ids,")
+			  .append("  ").appendToArray("pg_initial_launch.id").append(" as pg_ids")
+			  .append(" from o_repositoryentry sg_re")
+			  .append(" inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)")
+			  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant')")
+			  .append(" left join o_as_user_course_infos pg_initial_launch")
+			  .append("   on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)")
+			  .append(" where sg_re.accesscode >= ").append(RepositoryEntry.ACC_OWNERS).append(" and sg_re.fk_olatresource in (")
+			  .append("  select sg_res.resource_id from o_olatresource sg_res where sg_res.resname = 'CourseModule'")
+			  .append(" ) and exists (")
+			  .append("  select owngroup.id from o_re_to_group owngroup inner join o_bs_group_member sg_owner on (sg_owner.fk_group_id=owngroup.fk_group_id)")
+			  .append("  where owngroup.fk_entry_id = sg_re.repositoryentry_id and owngroup.r_defgroup=").appendTrue().append(" and sg_owner.g_role='owner' and sg_owner.fk_identity_id=:coachKey")
+			  .append(" )")
+			  .append(" group by sg_participant.fk_identity_id");
+		}
 		
 		List<?> rawList = dbInstance.getCurrentEntityManager()
 				.createNativeQuery(sb.toString())
