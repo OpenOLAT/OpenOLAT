@@ -141,7 +141,14 @@ public class ICalServlet extends HttpServlet {
 	private void getIcalDocument(String requestUrl, HttpServletResponse response)
 	throws ValidationException, IOException {
 		// get the individual path tokens
-		String pathInfo = requestUrl.replaceAll(".ics", "");
+		String pathInfo;
+		int icsIndex = requestUrl.indexOf(".ics");
+		if(icsIndex > 0) {
+			pathInfo = requestUrl.substring(0, icsIndex);
+		} else {
+			pathInfo = requestUrl;
+		}
+		
 		String[] pathInfoTokens = pathInfo.split("/");
 		if(pathInfoTokens.length < 4) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, requestUrl);
