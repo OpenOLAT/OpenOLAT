@@ -449,29 +449,33 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	}
 	
 	protected void confirmDelete(UserRequest ureq, List<MemberView> members) {
-		int numOfOwners =
-				repoEntry == null ? businessGroupService.countMembers(businessGroup, GroupRoles.coach.name())
-				: repositoryService.countMembers(repoEntry, GroupRoles.owner.name());
-		
-		int numOfRemovedOwner = 0;
-		List<Long> identityKeys = new ArrayList<Long>();
-		for(MemberView member:members) {
-			identityKeys.add(member.getIdentityKey());
-			if(member.getMembership().isOwner()) {
-				numOfRemovedOwner++;
-			}
-		}
-		if(numOfRemovedOwner == 0 || numOfOwners - numOfRemovedOwner > 0) {
-			List<Identity> ids = securityManager.loadIdentityByKeys(identityKeys);
-			leaveDialogBox = new MemberLeaveConfirmationController(ureq, getWindowControl(), ids);
-			listenTo(leaveDialogBox);
-			
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), leaveDialogBox.getInitialComponent(),
-					true, translate("edit.member"));
-			cmc.activate();
-			listenTo(cmc);
+		if(members.isEmpty()) {
+			showWarning("error.select.one.user");
 		} else {
-			showWarning("error.atleastone");
+			int numOfOwners =
+					repoEntry == null ? businessGroupService.countMembers(businessGroup, GroupRoles.coach.name())
+					: repositoryService.countMembers(repoEntry, GroupRoles.owner.name());
+			
+			int numOfRemovedOwner = 0;
+			List<Long> identityKeys = new ArrayList<Long>();
+			for(MemberView member:members) {
+				identityKeys.add(member.getIdentityKey());
+				if(member.getMembership().isOwner()) {
+					numOfRemovedOwner++;
+				}
+			}
+			if(numOfRemovedOwner == 0 || numOfOwners - numOfRemovedOwner > 0) {
+				List<Identity> ids = securityManager.loadIdentityByKeys(identityKeys);
+				leaveDialogBox = new MemberLeaveConfirmationController(ureq, getWindowControl(), ids);
+				listenTo(leaveDialogBox);
+				
+				cmc = new CloseableModalController(getWindowControl(), translate("close"), leaveDialogBox.getInitialComponent(),
+						true, translate("edit.member"));
+				cmc.activate();
+				listenTo(cmc);
+			} else {
+				showWarning("error.atleastone");
+			}
 		}
 	}
 	
@@ -488,14 +492,18 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	}
 	
 	protected void openEdit(UserRequest ureq, List<MemberView> members) {
-		List<Long> identityKeys = getMemberKeys(members);
-		List<Identity> identities = securityManager.loadIdentityByKeys(identityKeys);
-		editMembersCtrl = new EditMembershipController(ureq, getWindowControl(), identities, repoEntry, businessGroup);
-		listenTo(editMembersCtrl);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), editMembersCtrl.getInitialComponent(),
-				true, translate("edit.member"));
-		cmc.activate();
-		listenTo(cmc);
+		if(members.isEmpty()) {
+			showWarning("error.select.one.user");
+		} else {
+			List<Long> identityKeys = getMemberKeys(members);
+			List<Identity> identities = securityManager.loadIdentityByKeys(identityKeys);
+			editMembersCtrl = new EditMembershipController(ureq, getWindowControl(), identities, repoEntry, businessGroup);
+			listenTo(editMembersCtrl);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), editMembersCtrl.getInitialComponent(),
+					true, translate("edit.member"));
+			cmc.activate();
+			listenTo(cmc);
+		}
 	}
 	
 	protected void doSearch(String search) {
