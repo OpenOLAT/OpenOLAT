@@ -19,14 +19,20 @@
  */
 package org.olat.ims.qti21.manager;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionImpl;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -44,12 +50,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class AssessmentTestSessionDAO {
 	
+
+	private final DateFormat formater = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
+	
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private QTI21Storage storage;
 	
-
 	public AssessmentTestSession createAndPersistTestSession(RepositoryEntry testEntry,
 			RepositoryEntry repositoryEntry, String subIdent,
 			AssessmentEntry assessmentEntry, Identity identity,
@@ -66,7 +72,7 @@ public class AssessmentTestSessionDAO {
 		testSession.setAuthorMode(authorMode);
 		testSession.setExploded(false);
 		testSession.setIdentity(identity);
-		testSession.setStorage(storage.getRelativeDir());
+		testSession.setStorage(createSessionStorage(testSession));
 		dbInstance.getCurrentEntityManager().persist(testSession);
 		return testSession;
 	}
@@ -103,6 +109,65 @@ public class AssessmentTestSessionDAO {
 		
 		List<AssessmentTestSession> lastSessions = query.setMaxResults(1).getResultList();
 		return lastSessions == null || lastSessions.isEmpty() ? null : lastSessions.get(0);
+	}
+	
+	/**
+	 * Create a folder for a session in bcroot.
+	 * 
+	 * 
+	 * @param session
+	 * @return
+	 */
+	public File getSessionStorage(AssessmentTestSession session) {
+		OlatRootFolderImpl rootContainer = getQtiSerializationPath();
+		File directory = new File(rootContainer.getBasefile(), session.getStorage());
+		if(!directory.exists()) {
+			directory.mkdirs();
+		}
+		return directory;
+	}
+
+	/**
+	 * Create a folder for a session in bcroot/qtiassessment. The format
+	 * is for tests in course:<br>
+	 * bcroot/qtiassessment/{course repository primary key}/{course node}/{identity primary key}_{timestamp}_{test primary key}<br>
+	 * and for standalone tests:<br>
+	 * bcroot/qtiassessment/{test primary key}/{identity primary key}_{timestamp}<br>
+	 * 
+	 * @param session
+	 * @return
+	 */
+	protected String createSessionStorage(AssessmentTestSessionImpl session) {
+		File rootDir = getQtiSerializationPath().getBasefile();
+		
+		String datePart;
+		synchronized(formater) {
+			datePart = formater.format(session.getCreationDate());
+		}
+		String userPart = session.getIdentity().getKey() + "_" + datePart;
+
+		File storage = rootDir;
+		if(session.getRepositoryEntry() != null
+				&& !session.getRepositoryEntry().equals(session.getTestEntry())) {
+			storage = new File(storage, session.getRepositoryEntry().getKey().toString());
+			if(StringHelper.containsNonWhitespace(session.getSubIdent())) {
+				storage = new File(storage, session.getSubIdent());
+			}
+			userPart += "-" + session.getTestEntry().getKey().toString();
+		} else {
+			storage = new File(storage, session.getTestEntry().getKey().toString());
+		}
+		
+		storage = new File(storage, userPart);
+		storage.mkdirs();
+		
+		Path relativePath = rootDir.toPath().relativize(storage.toPath());
+		String relativePathString = relativePath.toString();
+		return relativePathString;
+	}
+	
+    private OlatRootFolderImpl getQtiSerializationPath() {
+    	return new OlatRootFolderImpl("/qtiassessment/", null);
 	}
 	
 	public AssessmentTestSession update(AssessmentTestSession testSession) {

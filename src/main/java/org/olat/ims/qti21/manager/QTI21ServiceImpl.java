@@ -146,8 +146,6 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	@Autowired
 	private AssessmentTestMarksDAO testMarksDao;
 	@Autowired
-	private QTI21Storage storage;
-	@Autowired
 	private QTI21Module qtiModule;
 	@Autowired
 	private CoordinatorManager coordinatorManager;
@@ -464,7 +462,7 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	 */
 	@Override
 	public void cancelTestSession(AssessmentTestSession candidateSession, TestSessionState testSessionState) {
-		final File myStore = storage.getDirectory(candidateSession.getStorage());
+		final File myStore = testSessionDao.getSessionStorage(candidateSession);
         final File sessionState = new File(myStore, "testSessionState.xml");
         final File resultFile = getAssessmentResultFile(candidateSession);
 
@@ -532,7 +530,7 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
     }
     
     private File getAssessmentResultFile(final AssessmentTestSession candidateSession) {
-    	File myStore = storage.getDirectory(candidateSession.getStorage());
+    	File myStore = testSessionDao.getSessionStorage(candidateSession);
         return new File(myStore, "assessmentResult.xml");
     }
 
@@ -571,7 +569,7 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
     }
     
     private File getTestSessionStateFile(AssessmentTestSession candidateSession) {
-    	File myStore = storage.getDirectory(candidateSession.getStorage());
+    	File myStore = testSessionDao.getSessionStorage(candidateSession);
         return new File(myStore, "testSessionState.xml");
     }
 	
@@ -595,7 +593,7 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
     
     private File getItemSessionStateFile(CandidateEvent candidateEvent) {
     	AssessmentTestSession candidateSession = candidateEvent.getCandidateSession();
-    	File myStore = storage.getDirectory(candidateSession.getStorage());
+    	File myStore = testSessionDao.getSessionStorage(candidateSession);
         return new File(myStore, "itemSessionState.xml");
     }
     
@@ -656,7 +654,7 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 
 	@Override
 	public String importFileSubmission(AssessmentTestSession candidateSession, MultipartFileInfos multipartFile) {
-		File myStore = storage.getDirectory(candidateSession.getStorage());
+		File myStore = testSessionDao.getSessionStorage(candidateSession);
         File submissionDir = new File(myStore, "submissions");
         if(!submissionDir.exists()) {
         	submissionDir.mkdir();
