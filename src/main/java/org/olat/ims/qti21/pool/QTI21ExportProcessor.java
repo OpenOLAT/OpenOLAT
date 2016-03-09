@@ -42,8 +42,10 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
+import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.manager.QPoolFileStorage;
+import org.olat.modules.qpool.model.QItemType;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
@@ -76,9 +78,28 @@ public class QTI21ExportProcessor {
 
 		String rootDir = "qitem_" + qitem.getKey();
 		File[] items = rootDirectory.listFiles();
-		addMetadata(qitem, rootDirectory, zout);
+		File imsmanifest = new File(rootDirectory, "imsmanifest.xml");
+		ManifestBuilder manifestBuilder;
+		if(imsmanifest.exists()) {
+			manifestBuilder = ManifestBuilder.read(imsmanifest);
+		} else {
+			manifestBuilder = new ManifestBuilder();
+		}
+		enrichWithMetadata(qitem, manifestBuilder);
+		
+		try {
+			zout.putNextEntry(new ZipEntry(rootDir + "/imsmanifest.xml"));
+			manifestBuilder.write(new ShieldOutputStream(zout));
+			zout.closeEntry();
+		} catch (Exception e) {
+			log.error("", e);
+			e.printStackTrace();
+		}
+		
 		for(File item:items) {
-			ZipUtil.addFileToZip(rootDir + "/" + item.getName(), item, zout);
+			if(!"imsmanifest.xml".equals(item.getName())) {
+				ZipUtil.addFileToZip(rootDir + "/" + item.getName(), item, zout);
+			}
 		}
 	}
 	
@@ -115,8 +136,13 @@ public class QTI21ExportProcessor {
 		}
 	}
 	
-	public void addMetadata(QuestionItemFull item, File rootDirectory, ZipOutputStream zout) {
-		
+	public void enrichWithMetadata(QuestionItemFull qitem, ManifestBuilder manifestBuilder) {
+		ResourceType resource = manifestBuilder.getResourceTypeByHref(qitem.getRootFilename());
+		if(resource == null) {
+			resource = manifestBuilder.appendAssessmentItem(qitem.getRootFilename());
+		}
+		ManifestMetadataBuilder metadataBuilder = manifestBuilder.getMetadataBuilder(resource, true);
+		enrichWithMetadata(qitem, metadataBuilder);		
 	}
 	
 	public void assembleTest(List<QuestionItemFull> fullItems, File directory) {
@@ -209,14 +235,80 @@ public class QTI21ExportProcessor {
 		if(!StringHelper.containsNonWhitespace(lang)) {
 			lang = locale.getLanguage();
 		}
+		
+		//general
 		if(StringHelper.containsNonWhitespace(qitem.getTitle())) {
 			metadata.setTitle(qitem.getTitle(), lang);
 		}
 		if(StringHelper.containsNonWhitespace(qitem.getDescription())) {
 			metadata.setDescription(qitem.getDescription(), lang);
 		}
+		if(StringHelper.containsNonWhitespace(qitem.getKeywords())) {
+			//general and classification too
+			metadata.setGeneralKeyword(qitem.getKeywords(), lang);
+		}
+		if(StringHelper.containsNonWhitespace(qitem.getCoverage())) {
+			metadata.setCoverage(qitem.getCoverage(), lang);
+		}
 		
+		//educational
+		if(qitem.getEducationalContext() != null) {
+			String level = qitem.getEducationalContext().getLevel();
+			metadata.setEducationalContext(level, lang);
+		}
+		if(qitem.getEducationalLearningTime() != null) {
+			String time = qitem.getEducationalLearningTime();
+			metadata.setEducationalLearningTime(time);
+		}
+		if(qitem.getLanguage() != null) {
+			String language = qitem.getLanguage();
+			metadata.setLanguage(language, lang);
+		}
 		
+		//classification
+		qitem.getTaxonomicPath();
+		
+		QItemType itemType = qitem.getType();
+		System.out.println(itemType);
+		
+		//life-cycle
+		if(StringHelper.containsNonWhitespace(qitem.getItemVersion())) {
+			metadata.setLifecycleVersion(qitem.getItemVersion());
+		}
+
+		// rights
+		if(qitem.getLicense() != null && StringHelper.containsNonWhitespace(qitem.getLicense().getLicenseText())) {
+			metadata.setLicense(qitem.getLicense().getLicenseText());
+		}
+		
+		//qti metadata
+		if(StringHelper.containsNonWhitespace(qitem.getEditor()) || StringHelper.containsNonWhitespace(qitem.getEditorVersion())) {
+			metadata.setQtiMetadataTool(qitem.getEditor(), null, qitem.getEditorVersion());
+		}
+		
+		//openolat metadata
+		metadata.setOpenOLATMetadataQuestionType(qitem.getItemType());
+		if(qitem.getAssessmentType() != null) {//summative, formative, both
+			metadata.setOpenOLATMetadataAssessmentType(qitem.getAssessmentType());
+		}
+		if(qitem.getDifficulty() != null) {
+			metadata.setOpenOLATMetadataMasterDifficulty(qitem.getDifficulty().doubleValue());
+		}
+		if(qitem.getDifferentiation() != null) {
+			metadata.setOpenOLATMetadataMasterDiscriminationIndex(qitem.getDifferentiation().doubleValue());
+		}
+		if(qitem.getNumOfAnswerAlternatives() >= 0) {
+			metadata.setOpenOLATMetadataMasterDistractors(qitem.getNumOfAnswerAlternatives());
+		}
+		if(qitem.getStdevDifficulty() != null) {
+			metadata.setOpenOLATMetadataMasterStandardDeviation(qitem.getStdevDifficulty().doubleValue());
+		}
+		if(qitem.getUsage() >= 0) {
+			metadata.setOpenOLATMetadataUsage(qitem.getUsage());
+		}
+		if(StringHelper.containsNonWhitespace(qitem.getMasterIdentifier())) {
+			metadata.setOpenOLATMetadataMasterIdentifier(qitem.getMasterIdentifier());
+		}
 	}
 
 	private static final class AssessmentItemsAndResources {

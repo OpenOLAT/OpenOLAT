@@ -200,7 +200,7 @@ public class AssessmentItemAndMetadata {
 	
 	public void transfer(ManifestMetadataBuilder metadata, Locale locale) {
 		if(questionType != null) {
-			metadata.setOpenOLATMetadata(questionType.getPrefix());
+			metadata.setOpenOLATMetadataQuestionType(questionType.getPrefix());
 		}
 		metadata.setTechnicalFormat(ManifestBuilder.ASSESSMENTITEM_MIMETYPE);
 		if(StringHelper.containsNonWhitespace(item.getTitle())) {

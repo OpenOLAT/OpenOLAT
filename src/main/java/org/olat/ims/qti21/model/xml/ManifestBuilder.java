@@ -81,7 +81,7 @@ public class ManifestBuilder {
 		}
 	}
 
-	private ManifestType manifest;
+	private final ManifestType manifest;
 
 	public ManifestBuilder() {
 		manifest = cpObjectFactory.createManifestType();
@@ -173,16 +173,15 @@ public class ManifestBuilder {
 	}
 	
 	public String appendAssessmentItem() {
-		String itemId = "id" + UUID.randomUUID().toString();
+		String itemId = IdentifierGenerator.newAsString("item");
         String itemFileName = itemId + ".xml";
 		appendAssessmentItem(itemId, itemFileName);
 		return itemFileName;
 	}
 	
-	public String appendAssessmentItem(String itemFileName) {
+	public ResourceType appendAssessmentItem(String itemFileName) {
 		String itemId = IdentifierGenerator.newAsString("item");
-		appendAssessmentItem(itemId, itemFileName);
-        return itemFileName;
+		return appendAssessmentItem(itemId, itemFileName);
 	}
 	
 	public ManifestMetadataBuilder getResourceBuilderByIdentifier(String resourceId) {
@@ -227,7 +226,7 @@ public class ManifestBuilder {
 		return null;
 	}
 	
-	private ResourceType appendAssessmentItem(String itemId, String itemFileName) {
+	public ResourceType appendAssessmentItem(String itemId, String itemFileName) {
         ResourceType itemResourceType = cpObjectFactory.createResourceType();
         itemResourceType.setIdentifier(itemId);
         itemResourceType.setType("imsqti_item_xmlv2p1");
@@ -297,9 +296,10 @@ public class ManifestBuilder {
 			Marshaller marshaller = context.createMarshaller();
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 			marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, SCHEMA_LOCATIONS);
-			marshaller.marshal(manifest, out);
+			marshaller.marshal(cpObjectFactory.createManifest(manifest), out);
 		} catch (JAXBException e) {
 			log.error("", e);
+			e.printStackTrace();
 		}
 	}
 	

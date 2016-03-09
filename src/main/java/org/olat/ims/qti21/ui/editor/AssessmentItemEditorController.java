@@ -283,9 +283,9 @@ public class AssessmentItemEditorController extends BasicController {
 		metadataBuilder.setTechnicalFormat(ManifestBuilder.ASSESSMENTITEM_MIMETYPE);		
 		metadataBuilder.setQtiMetadata(itemBuilder.getInteractionNames());
 		if(itemBuilder != null) {
-			metadataBuilder.setOpenOLATMetadata(itemBuilder.getQuestionType().getPrefix());
+			metadataBuilder.setOpenOLATMetadataQuestionType(itemBuilder.getQuestionType().getPrefix());
 		} else {
-			metadataBuilder.setOpenOLATMetadata(QTI21QuestionType.unkown.getPrefix());
+			metadataBuilder.setOpenOLATMetadataQuestionType(QTI21QuestionType.unkown.getPrefix());
 		}
 	}
 }

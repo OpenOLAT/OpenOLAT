@@ -260,7 +260,7 @@ public class QTI12To21Converter {
 		ManifestMetadataBuilder metadata = manifest.getResourceBuilderByHref(itemFile.getName());
 		metadata.setTechnicalFormat(ManifestBuilder.ASSESSMENTITEM_MIMETYPE);
 		metadata.setQtiMetadata(itemBuilder.getInteractionNames());
-		metadata.setOpenOLATMetadata(itemBuilder.getQuestionType().getPrefix());
+		metadata.setOpenOLATMetadataQuestionType(itemBuilder.getQuestionType().getPrefix());
 		metadata.setTitle(item.getTitle(), locale.getLanguage());
 		metadata.setDescription(item.getObjectives(), locale.getLanguage());
 	}
