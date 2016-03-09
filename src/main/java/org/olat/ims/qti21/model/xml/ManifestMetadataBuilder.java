@@ -21,25 +21,31 @@ package org.olat.ims.qti21.model.xml;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
 import org.olat.imscp.xml.manifest.ManifestMetadataType;
 import org.olat.imscp.xml.manifest.MetadataType;
+import org.olat.imsmd.xml.manifest.ClassificationType;
 import org.olat.imsmd.xml.manifest.ContextType;
 import org.olat.imsmd.xml.manifest.CopyrightandotherrestrictionsType;
 import org.olat.imsmd.xml.manifest.CoverageType;
 import org.olat.imsmd.xml.manifest.DescriptionType;
 import org.olat.imsmd.xml.manifest.EducationalType;
+import org.olat.imsmd.xml.manifest.EntryType;
 import org.olat.imsmd.xml.manifest.GeneralType;
 import org.olat.imsmd.xml.manifest.KeywordType;
 import org.olat.imsmd.xml.manifest.LangstringType;
 import org.olat.imsmd.xml.manifest.LifecycleType;
 import org.olat.imsmd.xml.manifest.LomType;
+import org.olat.imsmd.xml.manifest.PurposeType;
 import org.olat.imsmd.xml.manifest.RightsType;
 import org.olat.imsmd.xml.manifest.SourceType;
 import org.olat.imsmd.xml.manifest.StringType;
+import org.olat.imsmd.xml.manifest.TaxonType;
+import org.olat.imsmd.xml.manifest.TaxonpathType;
 import org.olat.imsmd.xml.manifest.TechnicalType;
 import org.olat.imsmd.xml.manifest.TitleType;
 import org.olat.imsmd.xml.manifest.TypicallearningtimeType;
@@ -123,24 +129,37 @@ public class ManifestMetadataBuilder {
 		}
 	}
 	
-	public String getGeneralKeyword() {
+	public String getGeneralKeywords() {
 		GeneralType general = getGeneral(false);
 		if(general != null) {
-			KeywordType type = getFromAny(KeywordType.class, general.getContent());
-			return type == null ? null : getFirstString(type.getLangstring());
+			StringBuilder keywords = new StringBuilder();
+			for(Object any:general.getContent()) {
+				if(any instanceof JAXBElement<?>
+					&& ((JAXBElement<?>)any).getValue().getClass().equals(KeywordType.class)) {
+					KeywordType keywordType = (KeywordType)((JAXBElement<?>)any).getValue();
+					List<LangstringType> langStrings = keywordType.getLangstring();
+					for(LangstringType langString:langStrings) {
+						String keyword = langString.getValue();
+						if(keywords.length() > 0) keywords.append(" ");
+						keywords.append(keyword);
+					}
+				}
+			}
+			return keywords.toString();
 		}
 		return null;
 	}
 	
-	public void setGeneralKeyword(String keywords, String lang) {
+	public void setGeneralKeywords(String keywords, String lang) {
 		GeneralType general = getGeneral(true);
 		if(general != null) {
-			KeywordType type = getFromAny(KeywordType.class, general.getContent());
-			if(type == null) {
-				type = mdObjectFactory.createKeywordType();
+			clearFromAny(KeywordType.class, general.getContent());
+			for(StringTokenizer tokenizer = new StringTokenizer(keywords, " "); tokenizer.hasMoreTokens(); ) {
+				String keyword = tokenizer.nextToken();
+				KeywordType type = mdObjectFactory.createKeywordType();
 				general.getContent().add(mdObjectFactory.createKeyword(type));
+				createOrUpdateFirstLangstring(type.getLangstring(), keyword, lang);
 			}
-			createOrUpdateFirstLangstring(type.getLangstring(), keywords, lang);
 		}
 	}
 	
@@ -211,7 +230,7 @@ public class ManifestMetadataBuilder {
 	}
 	
 	public void setLicense(String license) {
-		RightsType rights = this.getRights(true);
+		RightsType rights = getRights(true);
 		if(rights != null) {
 			CopyrightandotherrestrictionsType type = getFromAny(CopyrightandotherrestrictionsType.class, rights.getContent());
 			if(type == null) {
@@ -226,8 +245,36 @@ public class ManifestMetadataBuilder {
 			type.setValue(valueType);
 		}
 	}
-
 	
+	/**
+	 * Set a taxonomy path of purpose "discipline"
+	 * @param taxonomyPath
+	 * @param lang
+	 */
+	public void setClassificationTaxonomy(String taxonomyPath, String lang) {
+		ClassificationType classification = getClassification("discipline", lang, true);
+		if(classification != null) {
+			TaxonpathType taxonpathType = mdObjectFactory.createTaxonpathType();
+			clearFromAny(TaxonpathType.class, classification.getContent());
+			classification.getContent().add(mdObjectFactory.createTaxonpath(taxonpathType));
+			taxonpathType.getTaxon().clear();
+			
+			SourceType sourceType = mdObjectFactory.createSourceType();
+			sourceType.setLangstring(createString("Unkown", "en"));
+			taxonpathType.setSource(sourceType);
+			
+			for(StringTokenizer tokenizer = new StringTokenizer(taxonomyPath, "/"); tokenizer.hasMoreTokens(); ) {
+				String level = tokenizer.nextToken();
+				
+				TaxonType taxonType = mdObjectFactory.createTaxonType();
+				EntryType entryType = mdObjectFactory.createEntryType();
+				createOrUpdateFirstLangstring(entryType.getLangstring(), level, lang);
+				taxonType.setEntry(entryType);
+				taxonpathType.getTaxon().add(taxonType);
+			}
+		}
+	}
+
 	public void createOrUpdateFirstLangstring(List<LangstringType> langStrings, String value, String lang) {
 		if(langStrings.isEmpty()) {
 			langStrings.add(createString(value, lang));
@@ -242,6 +289,18 @@ public class ManifestMetadataBuilder {
 		string.setLang(lang);
 		string.setValue(value);
 		return string;
+	}
+	
+	public SourceType createSource(String value, String lang) {
+		SourceType sourceType = mdObjectFactory.createSourceType();
+		sourceType.setLangstring(createString(value, lang));
+		return sourceType;
+	}
+	
+	public ValueType createValue(String value, String lang) {
+		ValueType valueType = mdObjectFactory.createValueType();
+		valueType.setLangstring(createString(value, lang));
+		return valueType;
 	}
 	
 	public String getFirstString(List<LangstringType> langStrings) {
@@ -262,6 +321,34 @@ public class ManifestMetadataBuilder {
 			lom.setRights(rights);
 		}
 		return rights;
+	}
+	
+	public ClassificationType getClassification(String purpose, String lang, boolean create) {
+		LomType lom = getLom(create);
+		if(lom == null) return null;
+
+		ClassificationType classification = null;
+		List<ClassificationType> classifications = lom.getClassification();
+		for(ClassificationType cl:classifications) {
+			PurposeType purposeType = getFromAny(PurposeType.class, cl.getContent());
+			if(purposeType != null && purposeType.getValue() != null && purposeType.getValue().getLangstring() != null) {
+				String value = purposeType.getValue().getLangstring().getValue();
+				if(value != null && value.equals(purpose)) {
+					classification = cl;
+					break;
+				}
+			}	
+		}
+		
+		if(classification == null && create) {
+			classification = mdObjectFactory.createClassificationType();
+			PurposeType purposeType = mdObjectFactory.createPurposeType();
+			purposeType.setSource(createSource("LOMv1.0", lang));
+			purposeType.setValue(createValue(purpose, lang));
+			classification.getContent().add(mdObjectFactory.createPurpose(purposeType));
+			lom.getClassification().add(classification);
+		}
+		return classification;
 	}
 	
 	public TechnicalType getTechnical(boolean create) {
@@ -456,6 +543,16 @@ public class ManifestMetadataBuilder {
 			Object any = anyIterator.next();
 			if(any instanceof JAXBElement<?>
 				&& ((JAXBElement<?>)any).getName().getLocalPart().equals(type)) {
+				anyIterator.remove();
+			}
+		}
+	}
+	
+	private void clearFromAny(Class<?> type, List<Object> anyList) {
+		for(Iterator<Object> anyIterator=anyList.iterator(); anyIterator.hasNext(); ) {
+			Object any = anyIterator.next();
+			if(any instanceof JAXBElement<?>
+				&& ((JAXBElement<?>)any).getValue().getClass().equals(type)) {
 				anyIterator.remove();
 			}
 		}

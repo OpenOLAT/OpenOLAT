@@ -22,6 +22,7 @@ package org.olat.ims.qti21.pool;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -45,8 +46,9 @@ import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.manager.QPoolFileStorage;
-import org.olat.modules.qpool.model.QItemType;
 
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
@@ -85,7 +87,13 @@ public class QTI21ExportProcessor {
 		} else {
 			manifestBuilder = new ManifestBuilder();
 		}
-		enrichWithMetadata(qitem, manifestBuilder);
+		
+		File resourceFile = new File(rootDirectory, qitem.getRootFilename());
+		URI assessmentItemUri = resourceFile.toURI();
+		
+		ResolvedAssessmentItem resolvedAssessmentItem = qtiService
+				.loadAndResolveAssessmentItem(assessmentItemUri, rootDirectory);
+		enrichWithMetadata(qitem, resolvedAssessmentItem, manifestBuilder);
 		
 		try {
 			zout.putNextEntry(new ZipEntry(rootDir + "/imsmanifest.xml"));
@@ -93,7 +101,6 @@ public class QTI21ExportProcessor {
 			zout.closeEntry();
 		} catch (Exception e) {
 			log.error("", e);
-			e.printStackTrace();
 		}
 		
 		for(File item:items) {
@@ -136,13 +143,13 @@ public class QTI21ExportProcessor {
 		}
 	}
 	
-	public void enrichWithMetadata(QuestionItemFull qitem, ManifestBuilder manifestBuilder) {
+	public void enrichWithMetadata(QuestionItemFull qitem, ResolvedAssessmentItem resolvedAssessmentItem, ManifestBuilder manifestBuilder) {
 		ResourceType resource = manifestBuilder.getResourceTypeByHref(qitem.getRootFilename());
 		if(resource == null) {
 			resource = manifestBuilder.appendAssessmentItem(qitem.getRootFilename());
 		}
 		ManifestMetadataBuilder metadataBuilder = manifestBuilder.getMetadataBuilder(resource, true);
-		enrichWithMetadata(qitem, metadataBuilder);		
+		enrichWithMetadata(qitem, resolvedAssessmentItem, metadataBuilder);		
 	}
 	
 	public void assembleTest(List<QuestionItemFull> fullItems, File directory) {
@@ -163,16 +170,17 @@ public class QTI21ExportProcessor {
 			for(QuestionItemFull qitem:fullItems) {
 				String rootFilename = qitem.getRootFilename();
 				File resourceDirectory = qpoolFileStorage.getDirectory(qitem.getDirectory());
-				File itemFile = new File(resourceDirectory, rootFilename);
+				File itemFile = new File(resourceDirectory, qitem.getRootFilename());
 				String itemFilename = itemFile.getName();
-				
+				ResolvedAssessmentItem resolvedAssessmentItem = qtiService.loadAndResolveAssessmentItem(itemFile.toURI(), resourceDirectory);
+
 				//enrichScore(itemEl);
 				//collectResources(itemEl, container, materials);
 				FileUtils.bcopy(itemFile, new File(directory, rootFilename), "");
 				AssessmentTestFactory.appendAssessmentItem(section, itemFilename);
 				manifest.appendAssessmentItem(itemFilename);
 				ManifestMetadataBuilder metadata = manifest.getResourceBuilderByHref(itemFilename);
-				enrichWithMetadata(qitem, metadata);
+				enrichWithMetadata(qitem, resolvedAssessmentItem, metadata);
 			}
 
 			try(FileOutputStream out = new FileOutputStream(new File(directory, assessmentTestFilename))) {
@@ -203,11 +211,12 @@ public class QTI21ExportProcessor {
 
 			//assessment items
 			for(QuestionItemFull qitem:fullItems) {
-				String rootFilename = qitem.getRootFilename();
 				File resourceDirectory = qpoolFileStorage.getDirectory(qitem.getDirectory());
-				File itemFile = new File(resourceDirectory, rootFilename);
+				File itemFile =  new File(resourceDirectory, qitem.getRootFilename());
 				String itemFilename = itemFile.getName();
-				
+
+				ResolvedAssessmentItem resolvedAssessmentItem = qtiService.loadAndResolveAssessmentItem(itemFile.toURI(), resourceDirectory);
+
 				//enrichScore(itemEl);
 				//collectResources(itemEl, container, materials);
 
@@ -215,7 +224,7 @@ public class QTI21ExportProcessor {
 				AssessmentTestFactory.appendAssessmentItem(section, itemFilename);
 				manifest.appendAssessmentItem(itemFilename);
 				ManifestMetadataBuilder metadata = manifest.getResourceBuilderByHref(itemFilename);
-				enrichWithMetadata(qitem, metadata);
+				enrichWithMetadata(qitem, resolvedAssessmentItem, metadata);
 			}
 
 			zout.putNextEntry(new ZipEntry(assessmentTestFilename));
@@ -230,7 +239,7 @@ public class QTI21ExportProcessor {
 		}
 	}
 
-	private void enrichWithMetadata(QuestionItemFull qitem, ManifestMetadataBuilder metadata) {
+	private void enrichWithMetadata(QuestionItemFull qitem, ResolvedAssessmentItem resolvedAssessmentItem, ManifestMetadataBuilder metadata) {
 		String lang = qitem.getLanguage();
 		if(!StringHelper.containsNonWhitespace(lang)) {
 			lang = locale.getLanguage();
@@ -245,7 +254,7 @@ public class QTI21ExportProcessor {
 		}
 		if(StringHelper.containsNonWhitespace(qitem.getKeywords())) {
 			//general and classification too
-			metadata.setGeneralKeyword(qitem.getKeywords(), lang);
+			metadata.setGeneralKeywords(qitem.getKeywords(), lang);
 		}
 		if(StringHelper.containsNonWhitespace(qitem.getCoverage())) {
 			metadata.setCoverage(qitem.getCoverage(), lang);
@@ -266,10 +275,9 @@ public class QTI21ExportProcessor {
 		}
 		
 		//classification
-		qitem.getTaxonomicPath();
-		
-		QItemType itemType = qitem.getType();
-		System.out.println(itemType);
+		if(qitem.getTaxonomicPath() != null) {
+			metadata.setClassificationTaxonomy(qitem.getTaxonomicPath(), lang);
+		}
 		
 		//life-cycle
 		if(StringHelper.containsNonWhitespace(qitem.getItemVersion())) {
@@ -284,6 +292,16 @@ public class QTI21ExportProcessor {
 		//qti metadata
 		if(StringHelper.containsNonWhitespace(qitem.getEditor()) || StringHelper.containsNonWhitespace(qitem.getEditorVersion())) {
 			metadata.setQtiMetadataTool(qitem.getEditor(), null, qitem.getEditorVersion());
+		}
+		
+		if(resolvedAssessmentItem != null) {
+			AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
+			List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
+			List<String> interactionNames = new ArrayList<>(interactions.size());
+			for(Interaction interaction:interactions) {
+				interactionNames.add(interaction.getQtiClassName());
+			}
+			metadata.setQtiMetadata(interactionNames);
 		}
 		
 		//openolat metadata
