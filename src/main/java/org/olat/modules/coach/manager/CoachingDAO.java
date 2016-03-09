@@ -919,7 +919,7 @@ public class CoachingDAO {
 	
 	private NativeQueryBuilder appendUsersStatisticsSearchParams(SearchCoachedIdentityParams params, Map<String,Object> queryParams, NativeQueryBuilder sb) {
 		if(params.getIdentityKey() != null) {
-			sb.append(" and id_participant.id like :identityKey");
+			sb.append(" and id_participant.id=:identityKey");
 			queryParams.put("identityKey", params.getIdentityKey());
 		}
 		
