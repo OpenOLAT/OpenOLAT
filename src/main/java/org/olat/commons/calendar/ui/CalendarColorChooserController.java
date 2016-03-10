@@ -41,8 +41,9 @@ public class CalendarColorChooserController extends BasicController {
 	private final CalendarPersonalConfigurationRow row;
 
 	private static final String[] colors = new String[]{
-		"o_cal_green", "o_cal_blue", "o_cal_orange",
-		"o_cal_yellow", "o_cal_red", "o_cal_rebeccapurple", "o_cal_grey"
+		"o_cal_green", "o_cal_lime", "o_cal_blue", "o_cal_orange", "o_cal_fuchsia",
+		"o_cal_yellow", "o_cal_red", "o_cal_rebeccapurple", "o_cal_navy", "o_cal_olive",
+		"o_cal_maroon", "o_cal_grey"
 	};
 
 	public CalendarColorChooserController(UserRequest ureq, WindowControl wControl,
