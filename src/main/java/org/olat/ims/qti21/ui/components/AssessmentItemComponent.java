@@ -43,6 +43,11 @@ public class AssessmentItemComponent extends AssessmentObjectComponent {
 		this.qtiItem = qtiItem;
 	}
 	
+	@Override
+	public String relativePathTo(ResolvedAssessmentItem item) {
+		return "";
+	}
+	
 	public ResolvedAssessmentItem getResolvedAssessmentItem() {
 		return resolvedAssessmentItem;
 	}
@@ -51,6 +56,7 @@ public class AssessmentItemComponent extends AssessmentObjectComponent {
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 	}
 
+	@Override
 	public AssessmentItemFormItem getQtiItem() {
 		return qtiItem;
 	}
@@ -67,7 +73,6 @@ public class AssessmentItemComponent extends AssessmentObjectComponent {
 	public void setItemSessionController(ItemSessionController itemSessionController) {
 		this.itemSessionController = itemSessionController;
 	}
-
 
 	@Override
 	public AssessmentItemComponentRenderer getHTMLRendererSingleton() {

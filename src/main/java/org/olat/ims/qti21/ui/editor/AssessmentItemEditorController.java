@@ -20,7 +20,6 @@
 package org.olat.ims.qti21.ui.editor;
 
 import java.io.File;
-import java.net.URI;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -30,6 +29,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.QTI21QuestionTypeDetector;
@@ -77,6 +77,10 @@ public class AssessmentItemEditorController extends BasicController {
 	private AssessmentItemDisplayController displayCtrl;
 	private Controller itemEditor, scoreEditor, feedbackEditor;
 	
+	private final File itemFile;
+	private final File rootDirectory;
+	private final VFSContainer rootContainer;
+	
 	private AssessmentItemBuilder itemBuilder;
 	private ManifestMetadataBuilder metadataBuilder;
 	
@@ -87,9 +91,13 @@ public class AssessmentItemEditorController extends BasicController {
 	
 	
 	public AssessmentItemEditorController(UserRequest ureq, WindowControl wControl,
-			ResolvedAssessmentItem resolvedAssessmentItem, File unzippedDirectory, File itemFile) {
+			ResolvedAssessmentItem resolvedAssessmentItem,
+			File rootDirectory, VFSContainer rootContainer, File itemFile) {
 		super(ureq, wControl);
 		this.itemRef = null;
+		this.itemFile = itemFile;
+		this.rootDirectory = rootDirectory;
+		this.rootContainer = rootContainer;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		
 		mainVC = createVelocityContainer("assessment_item_editor");
@@ -99,7 +107,7 @@ public class AssessmentItemEditorController extends BasicController {
 
 		initItemEditor(ureq);
 		
-		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(), resolvedAssessmentItem, unzippedDirectory, itemFile);
+		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
 		listenTo(displayCtrl);
 		tabbedPane.addTab("Preview", displayCtrl.getInitialComponent());
 		
@@ -108,10 +116,13 @@ public class AssessmentItemEditorController extends BasicController {
 	
 	public AssessmentItemEditorController(UserRequest ureq, WindowControl wControl, RepositoryEntry testEntry,
 			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef, ManifestMetadataBuilder metadataBuilder,
-			File unzippedDirectory) {
+			File rootDirectory, VFSContainer rootContainer, File itemFile) {
 		super(ureq, wControl);
 		this.itemRef = itemRef;
 		this.metadataBuilder = metadataBuilder;
+		this.itemFile = itemFile;
+		this.rootDirectory = rootDirectory;
+		this.rootContainer = rootContainer;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		
 		mainVC = createVelocityContainer("assessment_item_editor");
@@ -123,7 +134,7 @@ public class AssessmentItemEditorController extends BasicController {
 		
 		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), testEntry, null, testEntry);
 		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(),
-				testEntry, assessmentEntry, true, resolvedAssessmentItem, itemRef, unzippedDirectory);
+				testEntry, assessmentEntry, true, resolvedAssessmentItem, itemRef, rootDirectory);
 		listenTo(displayCtrl);
 		tabbedPane.addTab("Preview", displayCtrl.getInitialComponent());
 		
@@ -167,7 +178,8 @@ public class AssessmentItemEditorController extends BasicController {
 
 	private AssessmentItemBuilder initSingleChoiceEditors(UserRequest ureq, AssessmentItem item) {
 		SingleChoiceAssessmentItemBuilder scItemBuilder = new SingleChoiceAssessmentItemBuilder(item, qtiService.qtiSerializer());
-		itemEditor = new SingleChoiceEditorController(ureq, getWindowControl(), scItemBuilder);
+		itemEditor = new SingleChoiceEditorController(ureq, getWindowControl(), scItemBuilder,
+				rootDirectory, rootContainer, itemFile);
 		listenTo(itemEditor);
 		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), scItemBuilder, itemRef);
 		listenTo(scoreEditor);
@@ -182,7 +194,8 @@ public class AssessmentItemEditorController extends BasicController {
 	
 	private AssessmentItemBuilder initMultipleChoiceEditors(UserRequest ureq, AssessmentItem item) {
 		MultipleChoiceAssessmentItemBuilder mcItemBuilder = new MultipleChoiceAssessmentItemBuilder(item, qtiService.qtiSerializer());
-		itemEditor = new MultipleChoiceEditorController(ureq, getWindowControl(), mcItemBuilder);
+		itemEditor = new MultipleChoiceEditorController(ureq, getWindowControl(), mcItemBuilder,
+				rootDirectory, rootContainer, itemFile);
 		listenTo(itemEditor);
 		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), mcItemBuilder, itemRef);
 		listenTo(scoreEditor);
@@ -197,7 +210,8 @@ public class AssessmentItemEditorController extends BasicController {
 	
 	private AssessmentItemBuilder initKPrimChoiceEditors(UserRequest ureq, AssessmentItem item) {
 		KPrimAssessmentItemBuilder kprimItemBuilder = new KPrimAssessmentItemBuilder(item, qtiService.qtiSerializer());
-		itemEditor = new KPrimEditorController(ureq, getWindowControl(), kprimItemBuilder);
+		itemEditor = new KPrimEditorController(ureq, getWindowControl(), kprimItemBuilder,
+				rootDirectory, rootContainer, itemFile);
 		listenTo(itemEditor);
 		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), kprimItemBuilder, itemRef);
 		listenTo(scoreEditor);
@@ -212,7 +226,8 @@ public class AssessmentItemEditorController extends BasicController {
 	
 	private AssessmentItemBuilder initFIBEditors(UserRequest ureq, AssessmentItem item) {
 		FIBAssessmentItemBuilder kprimItemBuilder = new FIBAssessmentItemBuilder(item, qtiService.qtiSerializer());
-		itemEditor = new FIBEditorController(ureq, getWindowControl(), kprimItemBuilder);
+		itemEditor = new FIBEditorController(ureq, getWindowControl(), kprimItemBuilder,
+				rootDirectory, rootContainer, itemFile);
 		listenTo(itemEditor);
 		scoreEditor = new FIBScoreController(ureq, getWindowControl(), kprimItemBuilder, itemRef);
 		listenTo(scoreEditor);
@@ -227,7 +242,8 @@ public class AssessmentItemEditorController extends BasicController {
 	
 	private AssessmentItemBuilder initEssayEditors(UserRequest ureq, AssessmentItem item) {
 		EssayAssessmentItemBuilder essayItemBuilder = new EssayAssessmentItemBuilder(item, qtiService.qtiSerializer());
-		itemEditor = new EssayEditorController(ureq, getWindowControl(), essayItemBuilder);
+		itemEditor = new EssayEditorController(ureq, getWindowControl(), essayItemBuilder,
+				rootDirectory, rootContainer, itemFile);
 		listenTo(itemEditor);
 		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), essayItemBuilder, itemRef);
 		listenTo(scoreEditor);
@@ -271,8 +287,6 @@ public class AssessmentItemEditorController extends BasicController {
 		if(itemBuilder != null) {
 			itemBuilder.build();
 		}
-		URI itemUri = resolvedAssessmentItem.getItemLookup().getSystemId();
-		File itemFile = new File(itemUri);
 		qtiService.updateAssesmentObject(itemFile, resolvedAssessmentItem);
 	}
 

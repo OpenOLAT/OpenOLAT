@@ -19,6 +19,7 @@
  */
 package org.olat.ims.qti21.ui.editor.interactions;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,11 +33,11 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
@@ -65,12 +66,19 @@ public class KPrimEditorController extends FormBasicController {
 	private final List<KprimWrapper> choiceWrappers = new ArrayList<>();
 
 	private int count = 0;
+	private final File itemFile;
+	private final File rootDirectory;
+	private final VFSContainer rootContainer;
 	private final KPrimAssessmentItemBuilder itemBuilder;
 	
-	public KPrimEditorController(UserRequest ureq, WindowControl wControl, KPrimAssessmentItemBuilder itemBuilder) {
+	public KPrimEditorController(UserRequest ureq, WindowControl wControl, KPrimAssessmentItemBuilder itemBuilder,
+			File rootDirectory, VFSContainer rootContainer, File itemFile) {
 		super(ureq, wControl, "simple_choices_editor");
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
+		this.itemFile = itemFile;
 		this.itemBuilder = itemBuilder;
+		this.rootDirectory = rootDirectory;
+		this.rootContainer = rootContainer;
 		initForm(ureq);
 	}
 
@@ -84,13 +92,12 @@ public class KPrimEditorController extends FormBasicController {
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), metadata);
 		titleEl.setMandatory(true);
 		
+		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
+		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
+		
 		String description = itemBuilder.getQuestion();
-		textEl = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", description, 8, -1, true, null, null,
+		textEl = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", description, 8, -1, true, itemContainer, null,
 				metadata, ureq.getUserSession(), getWindowControl());
-		RichTextConfiguration richTextConfig = textEl.getEditorConfiguration();
-		richTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
-				
-		//points -> in other controller
 		
 		//shuffle
 		String[] yesnoValues = new String[]{ translate("yes"), translate("no") };

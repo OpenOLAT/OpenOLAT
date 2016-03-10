@@ -36,9 +36,9 @@ import org.olat.ims.qti21.ui.CandidateSessionContext;
 import org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event;
 
 import uk.ac.ed.ph.jqtiplus.node.content.variable.PrintedVariable;
-import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.test.NavigationMode;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.running.ItemProcessingContext;
 import uk.ac.ed.ph.jqtiplus.running.ItemSessionController;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
@@ -249,8 +249,8 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 	
 	@Override
 	protected void renderPrintedVariable(AssessmentRenderer renderer, StringOutput sb,
-			AssessmentObjectComponent component, AssessmentItem assessmentItem, ItemSessionState itemSessionState,
+			AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState,
 			PrintedVariable printedVar) {
-
+		//
 	}
 }

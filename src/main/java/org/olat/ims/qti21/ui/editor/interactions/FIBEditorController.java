@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti21.ui.editor.interactions;
 
+import java.io.File;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -33,6 +35,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
@@ -52,13 +55,20 @@ public class FIBEditorController extends FormBasicController {
 
 	private CloseableModalController cmc;
 	private FIBTextEntrySettingsController gapEntrySettingsCtrl;
-	
+
+	private final File itemFile;
+	private final File rootDirectory;
+	private final VFSContainer rootContainer;
 	private final FIBAssessmentItemBuilder itemBuilder;
 	
-	public FIBEditorController(UserRequest ureq, WindowControl wControl, FIBAssessmentItemBuilder itemBuilder) {
+	public FIBEditorController(UserRequest ureq, WindowControl wControl, FIBAssessmentItemBuilder itemBuilder,
+			File rootDirectory, VFSContainer rootContainer, File itemFile) {
 		super(ureq, wControl, "fib");
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
+		this.itemFile = itemFile;
 		this.itemBuilder = itemBuilder;
+		this.rootDirectory = rootDirectory;
+		this.rootContainer = rootContainer;
 		initForm(ureq);
 	}
 
@@ -72,13 +82,15 @@ public class FIBEditorController extends FormBasicController {
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), metadata);
 		titleEl.setMandatory(true);
 		
+		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
+		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
+		
 		String description = itemBuilder.getQuestion();
-		textEl = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", description, 8, -1, true, null, null,
+		textEl = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", description, 8, -1, true, itemContainer, null,
 				metadata, ureq.getUserSession(), getWindowControl());
 		textEl.addActionListener(FormEvent.ONCLICK);
 		RichTextConfiguration richTextConfig = textEl.getEditorConfiguration();
 		richTextConfig.enableQTITools();
-		richTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
 		
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

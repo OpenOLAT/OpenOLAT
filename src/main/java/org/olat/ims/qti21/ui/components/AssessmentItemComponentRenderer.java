@@ -40,6 +40,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.template.declaration.TemplateDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.outcome.declaration.OutcomeDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.running.ItemSessionController;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
@@ -162,19 +163,20 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 			URLBuilder ubu, Translator translator) {
 		
 		final AssessmentItem assessmentItem = component.getAssessmentItem();
+		final ResolvedAssessmentItem resolvedAssessmentItem = component.getResolvedAssessmentItem();
 
 		//title + status
 		sb.append("<h1 class='itemTitle'>");
 		renderItemStatus(renderer, sb, itemSessionState, translator);
-		sb.append(assessmentItem.getTitle()).append("</h1>");
-		sb.append("<div id='itemBody'>");
+		sb.append(assessmentItem.getTitle()).append("</h1>")
+		  .append("<div id='itemBody'>");
 		
 		//TODO prompt
 	
 
 		//render itemBody
 		assessmentItem.getItemBody().getBlocks().forEach((block)
-				-> renderBlock(renderer, sb, component, assessmentItem, itemSessionState, block, ubu, translator));
+				-> renderBlock(renderer, sb, component, resolvedAssessmentItem, itemSessionState, block, ubu, translator));
 
 		//comment
 		renderComment(renderer, sb, component, itemSessionState, translator);
@@ -190,7 +192,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 
 		// Display active modal feedback (only after responseProcessing)
 		if(itemSessionState.getSessionStatus() == SessionStatus.FINAL) {
-			renderTestItemModalFeedback(renderer, sb, component, assessmentItem, itemSessionState, ubu, translator);
+			renderTestItemModalFeedback(renderer, sb, component, resolvedAssessmentItem, itemSessionState, ubu, translator);
 		}
 	}
     
@@ -203,8 +205,8 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 	}
 	
 	@Override
-	protected void renderPrintedVariable(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem, ItemSessionState itemSessionState,
-			PrintedVariable printedVar) {
+	protected void renderPrintedVariable(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem,
+			ItemSessionState itemSessionState, PrintedVariable printedVar) {
 
 		Identifier identifier = printedVar.getIdentifier();
 		Value templateValue = itemSessionState.getTemplateValues().get(identifier);
@@ -212,10 +214,12 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		
 		sb.append("<span class='printedVariable'>");
 		if(outcomeValue != null) {
-			OutcomeDeclaration outcomeDeclaration = assessmentItem.getOutcomeDeclaration(identifier);
+			OutcomeDeclaration outcomeDeclaration = resolvedAssessmentItem.getRootNodeLookup()
+					.extractIfSuccessful().getOutcomeDeclaration(identifier);
 			renderPrintedVariable(renderer, sb, printedVar, outcomeDeclaration, outcomeValue);
 		} else if(templateValue != null) {
-			TemplateDeclaration templateDeclaration = assessmentItem.getTemplateDeclaration(identifier);
+			TemplateDeclaration templateDeclaration = resolvedAssessmentItem.getRootNodeLookup()
+					.extractIfSuccessful().getTemplateDeclaration(identifier);
 			renderPrintedVariable(renderer, sb, printedVar, templateDeclaration, templateValue);
 		} else {
 			sb.append("(variable ").append(identifier.toString()).append(" was not found)");

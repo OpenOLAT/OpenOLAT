@@ -19,6 +19,9 @@
  */
 package org.olat.ims.qti21.ui.components;
 
+import java.io.File;
+import java.net.URI;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.olat.ims.qti21.ui.components.AssessmentObjectComponentRenderer.RenderingRequest;
@@ -28,6 +31,7 @@ import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
@@ -101,6 +105,22 @@ public class AssessmentTestComponent extends AssessmentObjectComponent  {
 
 	public void setResolvedAssessmentTest(ResolvedAssessmentTest resolvedAssessmentTest) {
 		this.resolvedAssessmentTest = resolvedAssessmentTest;
+	}
+	
+	@Override
+	public String relativePathTo(ResolvedAssessmentItem resolvedAssessmentItem) {
+		URI itemUri = resolvedAssessmentItem.getItemLookup().getSystemId();
+		File itemFile = new File(itemUri);
+		URI testUri = resolvedAssessmentTest.getTestLookup().getSystemId();
+		File testFile = new File(testUri);
+		Path relativePath = testFile.toPath().getParent().relativize(itemFile.toPath().getParent());
+		String relativePathString = relativePath.toString();
+		if(relativePathString.isEmpty()) {
+			return relativePathString;
+		} else if(relativePathString.endsWith("/")) {
+			return relativePathString;
+		}
+		return relativePathString.concat("/");
 	}
 
 	public AssessmentTest getAssessmentTest() {

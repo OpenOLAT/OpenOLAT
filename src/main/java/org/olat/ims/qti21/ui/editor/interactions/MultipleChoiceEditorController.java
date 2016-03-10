@@ -19,6 +19,7 @@
  */
 package org.olat.ims.qti21.ui.editor.interactions;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,12 +33,12 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
@@ -64,15 +65,24 @@ public class MultipleChoiceEditorController extends FormBasicController {
 	private FormLayoutContainer answersCont;
 	private final List<SimpleChoiceWrapper> choiceWrappers = new ArrayList<>();
 	
+	private final File itemFile;
+	private final File rootDirectory;
+	private final VFSContainer rootContainer;
+	
 	private int count = 0;
 	private final MultipleChoiceAssessmentItemBuilder itemBuilder;
 	
 	private static final String[] yesnoKeys = new String[]{ "y", "n"};
 
-	public MultipleChoiceEditorController(UserRequest ureq, WindowControl wControl, MultipleChoiceAssessmentItemBuilder itemBuilder) {
+	public MultipleChoiceEditorController(UserRequest ureq, WindowControl wControl,
+			MultipleChoiceAssessmentItemBuilder itemBuilder,
+			File rootDirectory, VFSContainer rootContainer, File itemFile) {
 		super(ureq, wControl, "simple_choices_editor");
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
+		this.itemFile = itemFile;
+		this.rootDirectory = rootDirectory;
+		this.rootContainer = rootContainer;
 		initForm(ureq);
 	}
 
@@ -88,13 +98,12 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), metadata);
 		titleEl.setMandatory(true);
 		
+		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
+		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
+		
 		String description = itemBuilder.getQuestion();
-		textEl = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", description, 8, -1, true, null, null,
+		textEl = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", description, 8, -1, true, itemContainer, null,
 				metadata, ureq.getUserSession(), getWindowControl());
-		RichTextConfiguration richTextConfig = textEl.getEditorConfiguration();
-		richTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
-				
-		//points -> in other controller
 		
 		//shuffle
 		String[] yesnoValues = new String[]{ translate("yes"), translate("no") };

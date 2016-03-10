@@ -69,7 +69,6 @@ import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.CandidateTestEventType;
 import org.olat.ims.qti21.model.ResponseLegality;
 import org.olat.ims.qti21.model.jpa.CandidateEvent;
-import org.olat.ims.qti21.ui.rendering.XmlUtilities;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -110,6 +109,7 @@ import uk.ac.ed.ph.jqtiplus.value.NumberValue;
 import uk.ac.ed.ph.jqtiplus.value.RecordValue;
 import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 import uk.ac.ed.ph.jqtiplus.value.Value;
+import uk.ac.ed.ph.jqtiplus.xmlutils.XmlFactories;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ClassPathResourceLocator;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltSerializationOptions;
@@ -362,8 +362,8 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
     private Document loadStateDocument(AssessmentTestSession candidateSession) {
         File sessionFile = getTestSessionStateFile(candidateSession);
         if(sessionFile.exists()) {
-	        DocumentBuilder documentBuilder = XmlUtilities.createNsAwareDocumentBuilder();
 	        try {
+		        DocumentBuilder documentBuilder = XmlFactories.newDocumentBuilder();
 	            return documentBuilder.parse(sessionFile);
 	        } catch (final Exception e) {
 	            throw new OLATRuntimeException("Could not parse serailized state XML. This is an internal error as we currently don't expose this data to clients", e);

@@ -344,7 +344,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 
 		//render itemBody
 		assessmentItem.getItemBody().getBlocks().forEach((block)
-				-> renderBlock(renderer, sb, component, assessmentItem, itemSessionState, block, ubu, translator));
+				-> renderBlock(renderer, sb, component, resolvedAssessmentItem, itemSessionState, block, ubu, translator));
 
 		//comment
 		renderComment(renderer, sb, component, itemSessionState, translator);
@@ -359,12 +359,12 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 
 		// Display active modal feedback (only after responseProcessing)
 		if(component.isItemFeedbackAllowed(itemNode, assessmentItem, options)) {
-			renderTestItemModalFeedback(renderer, sb, component, assessmentItem, itemSessionState, ubu, translator);
+			renderTestItemModalFeedback(renderer, sb, component, resolvedAssessmentItem, itemSessionState, ubu, translator);
 		}
 	}
 	
 	@Override
-	protected void renderPrintedVariable(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem,
+	protected void renderPrintedVariable(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem,
 			ItemSessionState itemSessionState, PrintedVariable printedVar) {
 		
 		AssessmentTestComponent testCmp = (AssessmentTestComponent)component;
@@ -380,10 +380,12 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			Value templateValue = itemSessionState.getTemplateValues().get(identifier);
 			Value outcomeValue = itemSessionState.getOutcomeValues().get(identifier);
 			if(outcomeValue != null) {
-				OutcomeDeclaration outcomeDeclaration = assessmentItem.getOutcomeDeclaration(identifier);
+				OutcomeDeclaration outcomeDeclaration = resolvedAssessmentItem.getRootNodeLookup()
+						.extractIfSuccessful().getOutcomeDeclaration(identifier);
 				renderPrintedVariable(renderer, sb, printedVar, outcomeDeclaration, outcomeValue);
 			} else if(templateValue != null) {
-				TemplateDeclaration templateDeclaration = assessmentItem.getTemplateDeclaration(identifier);
+				TemplateDeclaration templateDeclaration = resolvedAssessmentItem.getRootNodeLookup()
+						.extractIfSuccessful().getTemplateDeclaration(identifier);
 				renderPrintedVariable(renderer, sb, printedVar, templateDeclaration, templateValue);
 			} else {
 				sb.append("(variable ").append(identifier.toString()).append(" was not found)");
@@ -394,9 +396,9 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	
 	@Override
 	protected void renderMath(AssessmentRenderer renderer, StringOutput out, AssessmentObjectComponent component,
-			AssessmentItem assessmentItem, ItemSessionState itemSessionState, QtiNode mathElement) {
-		if(assessmentItem != null) {
-			super.renderMath(renderer, out, component, assessmentItem, itemSessionState, mathElement);
+			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, QtiNode mathElement) {
+		if(resolvedAssessmentItem != null) {
+			super.renderMath(renderer, out, component, resolvedAssessmentItem, itemSessionState, mathElement);
 		} else if(mathElement instanceof ForeignElement) {
 			ForeignElement fElement = (ForeignElement)mathElement;
 			boolean mi = fElement.getQtiClassName().equals("mi");
@@ -414,15 +416,15 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 						substituteMi(out, outcomeValue);
 					}
 				} else {
-					renderStartHtmlTag(out, component, fElement, null);
+					renderStartHtmlTag(out, component, resolvedAssessmentItem, fElement, null);
 					fElement.getChildren().forEach((child)
-							-> renderMath(renderer, out, component, assessmentItem, itemSessionState, child));
+							-> renderMath(renderer, out, component, resolvedAssessmentItem, itemSessionState, child));
 					renderEndTag(out, fElement);
 				}
 			} else {
-				renderStartHtmlTag(out, component, fElement, null);
+				renderStartHtmlTag(out, component, resolvedAssessmentItem, fElement, null);
 				fElement.getChildren().forEach((child)
-						-> renderMath(renderer, out, component, assessmentItem, itemSessionState, child));
+						-> renderMath(renderer, out, component, resolvedAssessmentItem, itemSessionState, child));
 				renderEndTag(out, fElement);
 			}
 		} else if(mathElement instanceof TextRun) {

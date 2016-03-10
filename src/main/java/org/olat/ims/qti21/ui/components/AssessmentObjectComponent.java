@@ -36,6 +36,7 @@ import org.olat.ims.qti21.ui.CandidateSessionContext;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.FeedbackElement;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
 import uk.ac.ed.ph.jqtiplus.node.test.VisibilityMode;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.value.Value;
@@ -77,6 +78,8 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 	public void setAssessmentObjectUri(URI assessmentObjectUri) {
 		this.assessmentObjectUri = assessmentObjectUri;
 	}
+	
+	public abstract String relativePathTo(ResolvedAssessmentItem resolvedAssessmentItem);
 	
 	public ResourceLocator getResourceLocator() {
 		return resourceLocator;

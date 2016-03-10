@@ -29,6 +29,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.ui.editor.AssessmentItemEditorController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
@@ -65,6 +66,7 @@ public class QTI21EditorController extends BasicController implements QPoolItemE
 		mainVC = createVelocityContainer("pool_editor");
 		
 		File resourceDirectory = qpoolService.getRootDirectory(questionItem);
+		VFSContainer resourceContainer = qpoolService.getRootContainer(questionItem);
 		resourceFile = qpoolService.getRootFile(questionItem);
 		URI assessmentItemUri = resourceFile.toURI();
 		
@@ -72,7 +74,7 @@ public class QTI21EditorController extends BasicController implements QPoolItemE
 				.loadAndResolveAssessmentItem(assessmentItemUri, resourceDirectory);
 		
 		editorCtrl = new AssessmentItemEditorController(ureq, wControl,
-				resolvedAssessmentItem, resourceDirectory, resourceFile);
+				resolvedAssessmentItem, resourceDirectory, resourceContainer, resourceFile);
 		listenTo(editorCtrl);
 		mainVC.put("editor", editorCtrl.getInitialComponent());
 		

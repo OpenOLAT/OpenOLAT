@@ -19,17 +19,19 @@
  */
 package org.olat.ims.qti21.ui.editor.interactions;
 
+import java.io.File;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
@@ -47,13 +49,20 @@ public class EssayEditorController extends FormBasicController {
 	private TextElement placeholderEl;
 	private TextElement widthEl, heightEl, minWordsEl, maxWordsEl;
 	private RichTextElement textEl;
-	
+
+	private final File itemFile;
+	private final File rootDirectory;
+	private final VFSContainer rootContainer;
 	private final EssayAssessmentItemBuilder itemBuilder;
 	
-	public EssayEditorController(UserRequest ureq, WindowControl wControl, EssayAssessmentItemBuilder itemBuilder) {
+	public EssayEditorController(UserRequest ureq, WindowControl wControl, EssayAssessmentItemBuilder itemBuilder,
+			File rootDirectory, VFSContainer rootContainer, File itemFile) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
+		this.itemFile = itemFile;
 		this.itemBuilder = itemBuilder;
+		this.rootDirectory = rootDirectory;
+		this.rootContainer = rootContainer;
 		initForm(ureq);
 	}
 
@@ -62,11 +71,12 @@ public class EssayEditorController extends FormBasicController {
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), formLayout);
 		titleEl.setMandatory(true);
 		
+		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
+		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
+
 		String description = itemBuilder.getQuestion();
-		textEl = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", description, 8, -1, true, null, null,
+		textEl = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", description, 8, -1, true, itemContainer, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
-		RichTextConfiguration richTextConfig = textEl.getEditorConfiguration();
-		richTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
 		
 		String placeholder = itemBuilder.getPlaceholder();
 		placeholderEl = uifactory.addTextElement("placeholder", "fib.placeholder", 256, placeholder, formLayout);

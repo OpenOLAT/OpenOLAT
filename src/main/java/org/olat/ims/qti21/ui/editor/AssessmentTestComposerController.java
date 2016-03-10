@@ -55,6 +55,7 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
@@ -128,6 +129,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private final LayoutMain3ColsController columnLayoutCtr;
 	
 	private final File unzippedDirRoot;
+	private final VFSContainer unzippedContRoot;
+	
 	private final RepositoryEntry testEntry;
 	private ManifestBuilder manifestBuilder;
 	private ResolvedAssessmentTest resolvedAssessmentTest;
@@ -161,6 +164,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 
 		FileResourceManager frm = FileResourceManager.getInstance();
 		unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
+		unzippedContRoot = frm.unzipContainerResource(testEntry.getOlatResource());
 		updateTreeModel();
 		manifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
 		
@@ -536,8 +540,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		}
 		
 		//persist metadata
-		manifestBuilder.write(new File(unzippedDirRoot, "imsmanifest.xml"));
 		
+		doSaveManifest();
 		updateTreeModel();
 		
 		TreeNode newItemNode = menuTree.getTreeModel().getNodeById(firstItemId);
@@ -562,7 +566,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
 
 		manifestBuilder.appendAssessmentItem(itemFile.getName());
-		manifestBuilder.write(new File(unzippedDirRoot, "imsmanifest.xml"));
+		doSaveManifest();
 		return itemRef;
 	}
 	
@@ -651,7 +655,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
 
 			manifestBuilder.appendAssessmentItem(itemFile.getName());
-			manifestBuilder.write(new File(unzippedDirRoot, "imsmanifest.xml"));
+			doSaveManifest();
 			
 			updateTreeModel();
 			
@@ -685,7 +689,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	}
 	
 	private void doSaveManifest() {
-		this.manifestBuilder.write(new File(unzippedDirRoot, "imsmanifest.xml"));
+		manifestBuilder.write(new File(unzippedDirRoot, "imsmanifest.xml"));
 	}
 	
 	private void doUpdate(Identifier identifier, String newTitle) {
@@ -730,9 +734,11 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				currentEditorCtrl = new BadResourceController(ureq, getWindowControl(),
 						item.getItemLookup().getBadResourceException(), unzippedDirRoot, itemRef.getHref());
 			} else {
+				URI itemUri = resolvedAssessmentTest.getSystemIdByItemRefMap().get(itemRef);
+				File itemFile = new File(itemUri);
 				ManifestMetadataBuilder metadata = getMetadataBuilder(itemRef);
 				currentEditorCtrl = new AssessmentItemEditorController(ureq, getWindowControl(), testEntry,
-						item, itemRef, metadata, unzippedDirRoot);
+						item, itemRef, metadata, unzippedDirRoot, unzippedContRoot, itemFile);
 			}
 		}
 		
@@ -765,8 +771,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			itemRef.setIdentifier(Identifier.parseString(itemId));
 			itemFile = new File(unzippedDirRoot, itemId + ".xml");
 			itemRef.setHref(new URI(itemFile.getName()));
-			
-			
+
 			try(OutputStream out = new FileOutputStream(itemFile)) {
 				//make the copy
 				qtiService.qtiSerializer().serializeJqtiObject(originalAssessmentItem, out);
@@ -786,7 +791,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
 
 				manifestBuilder.appendAssessmentItem(itemFile.getName());
-				manifestBuilder.write(new File(unzippedDirRoot, "imsmanifest.xml"));
+				doSaveManifest();
 			} catch (Exception e) {
 				logError("", e);
 			}
@@ -840,7 +845,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		URI testUri = resolvedAssessmentTest.getTestLookup().getSystemId();
 		File testFile = new File(testUri);
 		qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
-		manifestBuilder.write(new File(unzippedDirRoot, "imsmanifest.xml"));
+		doSaveManifest();
 		updateTreeModel();
 
 		if(selectedNode != null && selectedNode.getParent() != null) {

@@ -40,6 +40,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.item.template.declaration.TemplateDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.test.VisibilityMode;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.types.ResponseData;
@@ -517,7 +518,7 @@ public class AssessmentRenderFunctions {
 	 * @return
 	 */
 	@SuppressWarnings({ "rawtypes" })
-	public static final String getHtmlAttributeValue(AssessmentObjectComponent component, Attribute attribute) {
+	public static final String getHtmlAttributeValue(AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem, Attribute attribute) {
 		String value;
 		String name = attribute.getLocalName();
 		switch(name) {
@@ -530,7 +531,7 @@ public class AssessmentRenderFunctions {
 			case "href":
 			case "src":
 				String uri = getDomAttributeValue(attribute);
-				value = convertLink(component, uri);
+				value = convertLink(component, resolvedAssessmentItem, uri);
 				break;
 			default:
 				value = null;
@@ -564,11 +565,14 @@ public class AssessmentRenderFunctions {
     </xsl:choose>
   </xsl:function>
 	 */
-	public static final String convertLink(AssessmentObjectComponent component, String uri) {
+	public static final String convertLink(AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem, String uri) {
 		if(uri.startsWith("http:") || uri.startsWith("https:") || uri.startsWith("mailto:")) {
 			return uri;
 		}
-		uri = component.getMapperUri() + "/file?href=" + uri;
+		
+		String relativePath = component.relativePathTo(resolvedAssessmentItem);
+		uri = component.getMapperUri() + "/file?href=" + relativePath + uri;
+		System.out.println("Rewrite: " + uri);
 		return uri;
 	}
 

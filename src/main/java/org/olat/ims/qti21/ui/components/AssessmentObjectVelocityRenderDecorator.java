@@ -67,6 +67,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.content.Gap;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.AssociableHotspot;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.HotspotChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.types.ResponseData;
@@ -96,20 +97,22 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	
 	private final AssessmentItem assessmentItem;
 	private final ItemSessionState itemSessionState;
+	private final ResolvedAssessmentItem resolvedAssessmentItem;
 	
 	private final AssessmentObjectComponent avc;
 	
 	
 	public AssessmentObjectVelocityRenderDecorator(AssessmentRenderer renderer, StringOutput target, AssessmentObjectComponent vc,
-			AssessmentItem assessmentItem, ItemSessionState itemSessionState, URLBuilder ubu, Translator translator) {
+			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, URLBuilder ubu, Translator translator) {
 		super(renderer.getRenderer(), vc, target);
 		this.avc = vc;
 		this.ubu = ubu;
 		this.target = target;
 		this.renderer = renderer;
 		this.translator = translator;
-		this.assessmentItem = assessmentItem;
 		this.itemSessionState = itemSessionState;
+		this.resolvedAssessmentItem = resolvedAssessmentItem;
+		this.assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 	}
 
 	public boolean isSolutionMode() {
@@ -126,11 +129,11 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	}
 	
 	public String convertLink(String uri) {
-		return AssessmentRenderFunctions.convertLink(avc, uri);
+		return AssessmentRenderFunctions.convertLink(avc, resolvedAssessmentItem, uri);
 	}
 	
 	public String convertLinkFull(String uri) {
-		return AssessmentRenderFunctions.convertLink(avc, uri);
+		return AssessmentRenderFunctions.convertLink(avc, resolvedAssessmentItem, uri);
 	}
 	
 	public boolean isNullValue(Value value) {
@@ -477,14 +480,14 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	public String renderPrompt(Prompt prompt) {
 		if(prompt != null) {
 			prompt.getInlineStatics().forEach((inline)
-					->	avc.getHTMLRendererSingleton().renderInline(renderer, target, avc, assessmentItem, itemSessionState, inline, ubu, translator));
+					->	avc.getHTMLRendererSingleton().renderInline(renderer, target, avc, resolvedAssessmentItem, itemSessionState, inline, ubu, translator));
 		}
 		return "";
 	}
 	
 	public String renderBlock(Block block) {
 		if(block != null) {
-			avc.getHTMLRendererSingleton().renderBlock(renderer, target, avc, assessmentItem, itemSessionState, block, ubu, translator);
+			avc.getHTMLRendererSingleton().renderBlock(renderer, target, avc, resolvedAssessmentItem, itemSessionState, block, ubu, translator);
 		}
 		return "";
 	}
@@ -492,7 +495,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	public String renderBlockStatics(List<BlockStatic> blockStaticList) {
 		if(blockStaticList != null && blockStaticList.size() > 0) {
 			blockStaticList.forEach((block)
-					-> avc.getHTMLRendererSingleton().renderBlock(renderer, target, avc, assessmentItem, itemSessionState, block, ubu, translator));
+					-> avc.getHTMLRendererSingleton().renderBlock(renderer, target, avc, resolvedAssessmentItem, itemSessionState, block, ubu, translator));
 		}
 		return "";
 	}
@@ -500,7 +503,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	public String renderFlowStatics(List<FlowStatic> flowStaticList) {
 		if(flowStaticList != null && flowStaticList.size() > 0) {
 			flowStaticList.forEach((flow)
-					-> avc.getHTMLRendererSingleton().renderFlow(renderer, target, avc, assessmentItem, itemSessionState, flow, ubu, translator));
+					-> avc.getHTMLRendererSingleton().renderFlow(renderer, target, avc, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
 		}
 		return "";
 	}
@@ -508,14 +511,14 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	public String renderTextOrVariables(List<TextOrVariable> textOrVariables) {
 		if(textOrVariables != null && textOrVariables.size() > 0) {
 			textOrVariables.forEach((textOrVariable)
-					-> avc.getHTMLRendererSingleton().renderTextOrVariable(renderer, target, avc, assessmentItem, itemSessionState, textOrVariable));
+					-> avc.getHTMLRendererSingleton().renderTextOrVariable(renderer, target, avc, resolvedAssessmentItem, itemSessionState, textOrVariable));
 		}
 		return "";
 	}
 	
 	public String renderFlow(Flow flow) {
 		if(flow != null) {
-			avc.getHTMLRendererSingleton().renderFlow(renderer, target, avc, assessmentItem, itemSessionState, flow, ubu, translator);
+			avc.getHTMLRendererSingleton().renderFlow(renderer, target, avc, resolvedAssessmentItem, itemSessionState, flow, ubu, translator);
 		}
 		return "";
 	}
