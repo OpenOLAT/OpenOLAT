@@ -1,31 +1,69 @@
+/* width of calendar color indicator */
+$o-cal-color-width : 20px;
+
 /* calender colors for events: must be the last thing in the file !! */
 .o_cal_orange { background: #ffc266; border-color: #ff9900; color: #5D5D5D; }
 .o_cal_orange .o_cal_wv_event_header {background: #ff9900;}
 .o_cal_orange a { color: #5D5D5D ! important; } 
+.o_cal_class.o_cal_orange { border-left: $o-cal-color-width solid #ffc266;}
 
 .o_cal_green { background: #66c266; border-color: #009900; color: #FFF; }
 .o_cal_green .o_cal_wv_event_header {background: #009900;}
 .o_cal_green a { color: #FFF ! important; } 
+.o_cal_class.o_cal_green { border-left: $o-cal-color-width solid #66c266;}
 
 .o_cal_blue { background: #4d6e9f; border-color: #2e5894; color: #FFF;}
 .o_cal_blue .o_cal_wv_event_header {background: #2e5894;}
 .o_cal_blue a { color: #FFF ! important; } 
+.o_cal_class.o_cal_blue { border-left: $o-cal-color-width solid #4d6e9f;}
 
 .o_cal_yellow { background: #ffe066; border-color: #ffcc00; color: #5D5D5D; }
 .o_cal_yellow .o_cal_wv_event_header {background: #ffcc00;}
 .o_cal_yellow a { color: #5D5D5D! important; }
+.o_cal_class.o_cal_yellow { border-left: $o-cal-color-width solid #ffe066;}
 
 .o_cal_red { background: #c26666; border-color: #990000; color: #FFF; }
 .o_cal_red .o_cal_wv_event_header {background: #990000;}
 .o_cal_red a { color: #FFF ! important; }
+.o_cal_class.o_cal_red { border-left: $o-cal-color-width solid #c26666;}
 
 .o_cal_rebeccapurple { background: #663399; border-color: #663399; color: #FFF; }
 .o_cal_rebeccapurple .o_cal_wv_event_header {background: #663399;}
 .o_cal_rebeccapurple a { color: #FFF ! important; }
+.o_cal_class.o_cal_rebeccapurple { border-left: $o-cal-color-width solid #663399;}
+
+
+.o_cal_fuchsia { background: #FF00FF; border-color: #dd00dd; color: #FFF; }
+.o_cal_fuchsia .o_cal_wv_event_header {background: #FF00FF;}
+.o_cal_fuchsia a { color: #FFF ! important; } 
+.o_cal_class.o_cal_fuchsia { border-left: $o-cal-color-width solid #FF00FF;}
+
+.o_cal_olive { background: #808000; border-color: #636300; color: #FFF; }
+.o_cal_olive .o_cal_wv_event_header {background: #808000;}
+.o_cal_olive a { color: #FFF ! important; } 
+.o_cal_class.o_cal_olive { border-left: $o-cal-color-width solid #808000;}
+
+.o_cal_navy { background: #000080; border-color: #000057; color: #FFF; }
+.o_cal_navy .o_cal_wv_event_header {background: #000080;}
+.o_cal_navy a { color: #FFF ! important; } 
+.o_cal_class.o_cal_navy { border-left: $o-cal-color-width solid #000080;}
+
+.o_cal_maroon { background: #800000; border-color: #740000; color: #FFF; }
+.o_cal_maroon .o_cal_wv_event_header {background: #800000;}
+.o_cal_maroon a { color: #FFF ! important; } 
+.o_cal_class.o_cal_maroon { border-left: $o-cal-color-width solid #800000;}
+
+.o_cal_lime { background: #00FF00; border-color: #00e200; color: #004d00; }
+.o_cal_lime .o_cal_wv_event_header {background: #00FF00;}
+.o_cal_lime a { color: #004d00 ! important; } 
+.o_cal_class.o_cal_lime { border-left: $o-cal-color-width solid #00FF00;}
 
 .o_cal_grey { background: #DDDAAA; border-color: #5D5D5D; color: #FFF; }
 .o_cal_grey .o_cal_wv_event_header {background: #5D5D5D;}
 .o_cal_grey a { color: #FFF ! important; }
+.o_cal_class.o_cal_grey { border-left: $o-cal-color-width solid #DDDAAA;}				
+
+
 
 .o_sel_calendar_print_chooser {
 	padding-right:4em;
@@ -88,4 +126,93 @@
 	&.fc-state-active {
 		@include button-variant($btn-primary-color, $btn-primary-bg, $btn-primary-border);
 	}
+}
+
+/*
+ * Print view
+ */
+body.o_cal_print {
+	fieldset {
+		border: none;
+		margin-bottom: 2em;
+	}
+	legend {
+		font-size: 2em;
+		font-weight: bold;
+		span {
+			display: block;
+			font-size: $font-size-base;
+			font-weight: normal;
+		}
+	}
+	
+	ul.o_cal_wv_list {
+		list-style-type: none;
+		padding: 0;
+		>li {
+			page-break-inside : avoid;
+			margin-bottom: 2em;
+		}
+		.o_cal_date {
+			font-size: 1.25em;
+			font-weight: bold;
+			padding: 0.5em 0 0.5em 0;
+		}
+		ul.o_cal_events {
+			list-style-type: none;
+			padding: 0.5em 0 0 0;
+			li.o_cal_event {
+				position: relative;
+				left: ($o-cal-color-width + 10px);
+				page-break-inside : avoid;
+				clear: both;				
+				margin-bottom: 1.5em;
+				padding-right: ($o-cal-color-width + 10px);
+
+
+				.o_cal_time {
+					float: left;
+					font-weight: bold;
+					margin-right: 1em;
+				}
+				.o_cal_subject {
+					font-weight: bold;
+					
+					p {
+						margin: 0;
+					}
+
+				}
+				
+				.o_cal_location,
+				.o_cal_description {
+					clear: both;				
+				}
+			}
+		}
+	}
+	/* show calendar color as a border (background color is not printed) */
+	.o_cal_class {
+		position: absolute;
+		left: -($o-cal-color-width + 10px);
+		width: $o-cal-color-width;
+	}
+	
+	/* the calendar legend - color info */
+	#o_cal_config {
+		legend {
+			font-size: 1.25em;
+		}
+		.o_cal_config_calendar {
+			margin: 0;
+			padding: 0;
+		}
+		.o_cal_config_calendar {
+			position: relative;
+			left: ($o-cal-color-width + 10px);
+			float: none;
+			padding-right: ($o-cal-color-width + 10px);
+		}
+	}
+	
 }
