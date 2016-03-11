@@ -1,7 +1,6 @@
 /**
- * The math edtor plugin offers a latex-formula real-time authoring environment.
- * See how it looks as you type. The plugin uses jsMath for format the latex
- * forulas
+ * The math editor plugin offers a latex-formula real-time authoring environment.
+ * See how it looks as you type. The plugin uses MathJax to format the tex formulas.
  * 
  * 18.06.2009 timo.wuersch@frentix.com
  */
@@ -16,6 +15,16 @@
 		 * @param {string} url Absolute URL to where the plugin is located.
 		 */
 		init : function(ed, url) {
+			
+			MathJax.Hub.Config({
+				extensions: ["jsMath2jax.js"],
+				jsMath2jax: {
+					preview: "none"
+				},
+				tex2jax: {
+					ignoreClass: "math"
+				}
+			});
 			
 			var cachedTrans;
 			// Load the OLAT translator.
@@ -32,59 +41,30 @@
 			
 			function insertLatex() {
 		        // Initialize local variables
-		        var latexCode = win.find('#latex')[0].value();
+		        var tex = win.find('#latex')[0].value();
 		        var contentNode = ed.selection.getNode();
 
 		        // Check whether the selection is a jsMath objet by looking at its class attribute
 		        if ((contentNode != null) && (/mceItemJSMath/.test(ed.dom.getAttrib(contentNode, "class")))) {
-		            ed.dom.setAttrib(contentNode, "title", latexCode);
-		            ed.dom.setAttrib(contentNode, "alt", escape(latexCode));
+		            ed.dom.setAttrib(contentNode, "data-mathtex", tex);
+		            ed.dom.setAttrib(contentNode, "title", escape(tex));
 		            ed.execCommand("mceRepaint");
 		        } else {
-		        	var htmlCode = '<img src="' + ed.getParam("olatsmileys_transparentImage") + '" class="mceItemJSMath" title="' + latexCode + '" alt="' + escape(latexCode) + '" width="32" height="32"/>';
+		        	var htmlCode = '<img src="' + tinymce.Env.transparentSrc + '" class="mce-shim mceItemJSMath" data-mathtex="' + tex + '" title="' + escape(tex) + '" width="32" height="32"/>';
 		            ed.execCommand("mceInsertContent", false, htmlCode);
 		        }
 			}
 			
 			function updatePreview() {
-			    // Get the offscreen preview element and the latex code.
-			    var offscreenPreview = jQuery("#mathpreviewOffscreen");
-			    var latexCode = win.find('#latex')[0].value();
-			    
-			    // Copy the latex code into the offscreen preview DIV.
-			    offscreenPreview.text(latexCode);
-			    // Set the class of the offscreen preview DIV to "math" so that jsMath will recognize it.
-			    offscreenPreview.addClass("math");
-
-			    BFormatter.formatLatexFormulas('mathpreviewOffscreen');
-			    
-			    // After the offscreen preview has been rendered, copy it onscreen
-			    setTimeout(function() {
-			        jsMath.Synchronize(copyPreviewToScreen);
-			    }, 100);
-			}
-			
-			function copyPreviewToScreen() {
-			    // Get the offscreen and onscreen previews
-			    var offscreenPreview = jQuery("#mathpreviewOffscreen");
-			    var offscreenPreviewDown = jQuery("#mathpreviewOffscreen *:first-child");
-			    var preview = jQuery("#mathpreviewFormula");
-			    var errorMessage = jQuery("#mathpreviewErrorMessage");
-
-			    // Check wheter we have a rendered formula, an error message, or nothing
-			    if (offscreenPreviewDown.length > 0) {
-			        if (offscreenPreviewDown.get(0).nodeName == "NOBR") {
-			            // We have a formula
-			            preview.html(offscreenPreview.html());
-			            errorMessage.html("");
-			        } else if (offscreenPreviewDown.nodeName == "SPAN") {
-			            if (offscreenPreviewDown.hasClass("error")) {
-			                errorMessage.html(offscreenPreview.html());
-			            }
-			        }
+			    var tex = win.find('#latex')[0].value();
+			    var math = MathJax.Hub.getAllJax("mathpreviewFormula")[0];
+			    if(typeof math === "undefined") {
+			    	MathJax.Hub.Queue(function() {
+			    		jQuery("#mathpreviewFormula .math").text(tex);
+			    		MathJax.Hub.Typeset("#mathpreviewFormula");
+			    	});	
 			    } else {
-			        // We have nothing.
-			        preview.html(offscreenPreview.html());
+			    	MathJax.Hub.Queue(["Text", math, tex]);
 			    }
 			}
 			
@@ -93,8 +73,7 @@
 					title: translator().translate('olatmatheditor.formulaTabTitle'),
 					minWidth: 540,
 					body: [{
-							//type: 'form',
-					    	type: 'panel',
+					    	type: 'container',
 					    	layout: 'flex',
 							direction: 'column',
 							align: 'stretch',
@@ -104,7 +83,7 @@
 					    	   { type: 'label', text: translator().translate('olatmatheditor.latexGroupTitle') },
 					    	   { name: 'latex', type: 'textbox', multiline:true, flex:1, minHeight:120, onkeyup: updatePreview },
 					    	   { name: 'preview', type: 'panel', label: '', flex:1, minHeight:120,
-					    		 html:'<div id="mathpreviewFormula" class="math" style="width:100%; height=100%;"></div><div id="mathpreviewErrorMessage" class="math"></div><div id="mathpreviewOffscreen" class="math" style="display:none;"></div>'
+					    		 html:'<div id="mathpreviewFormula" style="width:100%; height=100%;"><div class="math"></div></div><div id="mathpreviewErrorMessage"></div>'
 							   }
 					    	]
 					   }],
@@ -112,9 +91,9 @@
 				});
 				
 				var selectedNode = ed.selection.getNode();
-		        if ((selectedNode.nodeName.toLowerCase() == "img") && (selectedNode.className == "mceItemJSMath")) {
-		            var latexCode = unescape(selectedNode.alt);
-		            win.find('#latex')[0].value(latexCode);
+		        if ((selectedNode.nodeName.toLowerCase() == "img") && (selectedNode.className.indexOf("mceItemJSMath") >= 0)) {
+		            var tex = jQuery(selectedNode).attr('data-mathtex');
+		            win.find('#latex')[0].value(tex);
 		            updatePreview();
 		        }
 			}
@@ -122,8 +101,8 @@
 			// Register plugin button
 			ed.addButton('olatmatheditor', {
 				title : translator().translate('olatmatheditor.desc'),
-				//cmd : 'mceJsmath',
-				image : url + '/img/sigma.png',
+				icon : 'math',
+				stateSelector: ['img[data-mathtex]', 'span[data-mathtex]'],
 				onclick: showDialog,
 				onPostRender: function() {
 			        var ctrl = this;
@@ -139,8 +118,8 @@
 			});
 			ed.addMenuItem('olatmatheditor', {
 				text : translator().translate('olatmatheditor.desc'),
-				//cmd : 'mceJsmath',
-				image : url + '/img/sigma.png',
+				icon : 'math',
+				stateSelector: ['img[data-mathtex]', 'span[data-mathtex]'],
 				onclick: showDialog,
 				context: 'insert',
 			});
@@ -159,7 +138,14 @@
 				tinymce.each(ed.dom.select("span.math"), function(node) {
     		         // ...and for each of these, create an IMG...
 					 var latex = node.innerHTML;
-					 var img = ed.dom.create("img", {"class" : "mceItemJSMath", width : "32", height : "32", src : ed.getParam("olatsmileys_transparentImage"), title : latex, alt : node.title});
+					 var img = ed.dom.create("img", {
+						 "class": "mce-shim mceItemJSMath",
+						 width: "32",
+						 height: "32",
+						 src: tinymce.Env.transparentSrc,
+						 "data-mathtex": latex,
+						 "title": node.title
+					 });
 					 //  ...and replace the SPAN by the IMG.
 					 ed.dom.replace(img, node);
 			     });
@@ -173,7 +159,10 @@
 				// Find all IMGs of class "mceItemJSMath"...
 				tinymce.each(ed.dom.select("img.mceItemJSMath"), function(node) {
 					// ...and for each of these, create a SPAN...
-					var span = ed.dom.create("span", {"class" : "math", title : node.alt}, node.title);
+					var span = ed.dom.create("span", {
+						"class": "math",
+						title : node.title
+					}, jQuery(node).attr('data-mathtex'));
 					// ...and replace the IMG by the SPAN.
 					ed.dom.replace(span, node);
 				});
@@ -206,7 +195,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : "1.1.1"
+				version : "1.2"
 			};
 		}
 	});

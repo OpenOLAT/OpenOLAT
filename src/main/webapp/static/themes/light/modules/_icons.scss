@@ -129,7 +129,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_managed:before { content: $fa-var-retweet; color: $text-muted}
 .o_icon_manual:before { content: $fa-var-book; cursor: help;}
 .o_icon_mail:before { content: $fa-var-envelope-o; }
-.o_icon_math:before { content: $fa-var-slack; }
+.o_icon_math:before { content: "\u03A3"; }
 .o_icon_membersmanagement:before { content: $fa-var-users;}
 .o_icon_menuhandel:before { content: $fa-var-bars;}
 .o_icon_message:before { content: $fa-var-envelope;}
@@ -500,6 +500,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_mailto:before { content: $fa-var-envelope-square;}
 .o_icon_link:before { content: $fa-var-link;}
 .o_icon_yahoo:before { content: $fa-var-yahoo;}
+
 
 /* do not move link icons */
 a.o_icon {

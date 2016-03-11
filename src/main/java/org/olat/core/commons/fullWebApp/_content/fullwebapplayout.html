@@ -51,8 +51,6 @@ function o_start(){
 }
 /* ]]> */
 </script>
-<script type="text/javascript" src='//cdn.mathjax.org/mathjax/2.1-latest/MathJax.js?config=MML_HTMLorMML'></script>
-<script type="text/javascript" src='$r.staticLink("js/jsMath/easy/load.js")'></script>
 ## jQuery libraries
 <!--[if lt IE 9]>
 	<script type="text/javascript" src='$r.staticLink("js/jquery/jquery-1.9.1.min.js")'></script>
@@ -93,7 +91,7 @@ function o_start(){
 	<script type="text/javascript" src='$r.staticLink("js/js.plugins.min.js")'></script>
 	<script type="text/javascript" src='$r.staticLink("movie/player.min.js")'></script>
 #end
-
+<script type="text/javascript" src='${r.mathJaxCdn()}2.6-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 <script type="text/javascript" src='$r.staticLink("assessment/rendering/javascript/AsciiMathInputController.js")'></script>
 <script type="text/javascript" src='$r.staticLink("assessment/rendering/javascript/UpConversionAjaxController.js")'></script>
 
@@ -119,6 +117,16 @@ function o_start(){
 	jQuery(window).on("popstate", function(e) {
 		if(e.originalEvent.state && e.originalEvent.state.businessPath) {
 			window.location.href = e.originalEvent.state.businessPath;
+		}
+	});
+## same configuration in 
+	MathJax.Hub.Config({
+		extensions: ["jsMath2jax.js"],
+		jsMath2jax: {
+			preview: "none"
+		},
+		tex2jax: {
+			ignoreClass: "math"
 		}
 	});
 /* ]]> */

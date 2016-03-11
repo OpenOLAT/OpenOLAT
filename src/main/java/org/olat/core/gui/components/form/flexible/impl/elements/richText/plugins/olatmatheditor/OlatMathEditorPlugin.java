@@ -59,9 +59,6 @@ public class OlatMathEditorPlugin extends TinyMCECustomPlugin {
 		if (!params.containsKey(PARAM_TRANSPARENT_IMAGE)) {
 			// Get static URI for transparent GIF.
 			params.put(PARAM_TRANSPARENT_IMAGE, StaticMediaDispatcher.createStaticURIFor("images/transparent.gif", false));
-			
-			// Get static URI for jsMath library.
-			params.put(PARAM_JS_MATH_LIB_BASE_PATH, StaticMediaDispatcher.createStaticURIFor("js/jsMath/", false));
 		}
 		return params;
 	}

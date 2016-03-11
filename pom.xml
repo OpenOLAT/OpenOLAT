@@ -224,6 +224,13 @@
 											</includes>
 										</aggregation>
 										<aggregation>
+											<output>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/plugins/olatqti/plugin.min.js</output>
+											<removeIncluded>false</removeIncluded>
+											<includes>
+												<include>${basedir}/target/jquery/tinymce4/tinymce/plugins/olatqti/plugin.min.js</include>
+											</includes>
+										</aggregation>
+										<aggregation>
 											<output>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/plugins/olatmovieviewer/plugin.min.js</output>
 											<removeIncluded>false</removeIncluded>
 											<includes>

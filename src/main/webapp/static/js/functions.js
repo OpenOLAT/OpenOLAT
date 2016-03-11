@@ -206,23 +206,24 @@ var BFormatter = {
 	// process element with given dom id using jsmath
 	formatLatexFormulas : function(domId) {
 		try {
-			if (window.jsMath) { // only when js math available
-				if (jsMath.loaded && jsMath.tex2math && jsMath.tex2math.loaded) {
-					jsMath.Process();
-				} else { // not yet loaded (autoload), load first
-					jsMath.Autoload.LoadJsMath();
-					// retry formatting when ready (recursively until loaded)
-					setTimeout(function() {
-						BFormatter.formatLatexFormulas(domId);
-					}, 100);
-				}
+			if (MathJax && MathJax.isReady) {
+				jQuery(function() {
+					MathJax.Hub.Queue(function() {
+						if(jQuery('#' + domId + ' .MathJax').length == 0) {
+							MathJax.Hub.Typeset(domId)
+						}
+					});
+				})
+			} else { // not yet loaded (autoload), load first
+				setTimeout(function() {
+					BFormatter.formatLatexFormulas(domId);
+				}, 100);
 			}
 		} catch(e) {
 			if (window.console) console.log("error in BFormatter.formatLatexFormulas: ", e);
 		}
 	}
 };
-
 
 function o_init() {
 	try {

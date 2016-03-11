@@ -159,8 +159,8 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 
 		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
 		jsa.addRequiredStaticJsFile("assessment/rendering/javascript/QtiWorksRendering.js");
-		//jsa.addRequiredStaticJsFile("assessment/rendering/javascript/AsciiMathInputController.js");
-		//jsa.addRequiredStaticJsFile("assessment/rendering/javascript/UpConversionAjaxController.js");
+		jsa.addRequiredStaticJsFile("assessment/rendering/javascript/AsciiMathInputController.js");
+		jsa.addRequiredStaticJsFile("assessment/rendering/javascript/UpConversionAjaxController.js");
 		
 		jsa.addRequiredStaticJsFile("js/jquery/maphilight/jquery.maphilight.js");
 		jsa.addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.11.4.custom.qti.min.js");

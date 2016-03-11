@@ -525,9 +525,9 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 
 		String page;
 		if(interaction instanceof MathEntryInteraction) {
-			page = getInteractionTemplate(interaction);
+			page = velocity_root.concat("/mathEntryInteraction.html");
 		} else {
-			page = velocity_root + "/unsupportedCustomInteraction.html";
+			page = velocity_root.concat("/unsupportedCustomInteraction.html");
 		}
 		renderVelocity(renderer, sb, interaction, ctx, page, resolvedAssessmentItem, itemSessionState, component, ubu, translator);
 	}

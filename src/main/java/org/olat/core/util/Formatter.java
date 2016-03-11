@@ -601,7 +601,7 @@ public class Formatter {
 	public static String formatLatexFormulas(String htmlFragment) {
 		if (htmlFragment == null) return "";
 		// optimize, reduce jsmath calls on client
-		if ((htmlFragment.contains("class='math'") || htmlFragment.contains("class=\"math\""))) {
+		if (htmlFragment.contains("<math") || htmlFragment.contains("class='math'") || htmlFragment.contains("class=\"math\"")) {
 			// add math wrapper
 			String domid = "mw_" + CodeHelper.getRAMUniqueID();
 			String elem = htmlFragment.contains("<div") ? "div" : "span";
