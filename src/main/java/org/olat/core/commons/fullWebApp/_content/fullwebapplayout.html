@@ -40,7 +40,7 @@ o_info.zseed = 0;
 #if($enforceTopFrame)
 if (top!=self){top.location=self.location+"?o_winrndo=1";}
 #end
-function o_start(){
+function o_start() {
 	o_init();
 	## js B
 	$r.renderBodyOnLoadJSFunctionCall()
@@ -48,6 +48,20 @@ function o_start(){
 	## Set flag that bodyOnLoad has already been called and the page is fully loaded. 
 	## Needed to identify if call like Ext.onRead() makes any sense (often not the case in AJAX mode)
 	o_info.initialPageLoadFinished = true;
+}
+function o_mathjax() {
+	jQuery.getScript("${r.mathJaxCdn()}2.6-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML", function() {
+    	MathJax.Hub.Config({
+			extensions: ["jsMath2jax.js"],
+			showProcessingMessages: false,
+			jsMath2jax: {
+				preview: "none"
+			},
+			tex2jax: {
+				ignoreClass: "math"
+			}
+		});
+    });
 }
 /* ]]> */
 </script>
@@ -91,7 +105,6 @@ function o_start(){
 	<script type="text/javascript" src='$r.staticLink("js/js.plugins.min.js")'></script>
 	<script type="text/javascript" src='$r.staticLink("movie/player.min.js")'></script>
 #end
-<script type="text/javascript" src='${r.mathJaxCdn()}2.6-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 <script type="text/javascript" src='$r.staticLink("assessment/rendering/javascript/AsciiMathInputController.js")'></script>
 <script type="text/javascript" src='$r.staticLink("assessment/rendering/javascript/UpConversionAjaxController.js")'></script>
 
@@ -120,15 +133,14 @@ function o_start(){
 		}
 	});
 ## same configuration in 
-	MathJax.Hub.Config({
-		extensions: ["jsMath2jax.js"],
-		jsMath2jax: {
-			preview: "none"
-		},
-		tex2jax: {
-			ignoreClass: "math"
+jQuery(function() {
+	if ((window.unsafeWindow == null ? window : unsafeWindow).MathJax == null) {
+		var count = jQuery('div.math,span.math,math,div.mathEntryInteraction').length;
+		if (count > 0) {
+		    o_mathjax();
 		}
-	});
+	}
+});
 /* ]]> */
 </script>
 

@@ -206,7 +206,9 @@ var BFormatter = {
 	// process element with given dom id using jsmath
 	formatLatexFormulas : function(domId) {
 		try {
-			if (MathJax && MathJax.isReady) {
+			if(typeof MathJax === "undefined") {
+				o_mathjax();//will render the whole page
+			} else if (MathJax && MathJax.isReady) {
 				jQuery(function() {
 					MathJax.Hub.Queue(function() {
 						if(jQuery('#' + domId + ' .MathJax').length == 0) {

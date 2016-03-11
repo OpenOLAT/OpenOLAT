@@ -37,6 +37,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.SimpleHtmlParser;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -584,10 +585,13 @@ public class IFrameDeliveryMapper implements Mapper {
 		}
 		
 		public void appendJsMath() {
-			append("<script type=\"text/javascript\" src=\"//cdn.mathjax.org/mathjax/2.6-latest/MathJax.js?config=TeX-AMS_HTML\"></script>\n");
+			append("<script type=\"text/javascript\" src=\"");
+			append(WebappHelper.getMathJaxCdn());
+			append("2.6-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML\"></script>\n");
 			append("<script type=\"text/javascript\">\n");
 			append("MathJax.Hub.Config({\n");	
 			append(" extensions: [\"jsMath2jax.js\"],\n");
+			append(" showProcessingMessages: false,\n");
 			append(" jsMath2jax: {\n");
 			append("   preview: \"none\"\n");
 			append(" },\n");
