@@ -498,10 +498,17 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		} else {
 			List<Long> identityKeys = getMemberKeys(members);
 			List<Identity> identities = securityManager.loadIdentityByKeys(identityKeys);
-			editMembersCtrl = new EditMembershipController(ureq, getWindowControl(), identities, repoEntry, businessGroup);
-			listenTo(editMembersCtrl);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), editMembersCtrl.getInitialComponent(),
-					true, translate("edit.member"));
+			if(identities.size() == 1) {
+				editSingleMemberCtrl = new EditSingleMembershipController(ureq, getWindowControl(), identities.get(0), repoEntry, businessGroup, false);
+				listenTo(editSingleMemberCtrl);
+				cmc = new CloseableModalController(getWindowControl(), translate("close"), editSingleMemberCtrl.getInitialComponent(),
+						true, translate("edit.member"));
+			} else {
+				editMembersCtrl = new EditMembershipController(ureq, getWindowControl(), identities, repoEntry, businessGroup);
+				listenTo(editMembersCtrl);
+				cmc = new CloseableModalController(getWindowControl(), translate("close"), editMembersCtrl.getInitialComponent(),
+						true, translate("edit.member"));
+			}
 			cmc.activate();
 			listenTo(cmc);
 		}

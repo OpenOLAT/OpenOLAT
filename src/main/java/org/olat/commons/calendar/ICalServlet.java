@@ -29,9 +29,15 @@ package org.olat.commons.calendar;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -46,17 +52,27 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nManager;
 
+import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.CalendarOutputter;
+import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.Calendar;
+import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentList;
+import net.fortuna.ical4j.model.Parameter;
 import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.ValidationException;
 import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.component.VTimeZone;
+import net.fortuna.ical4j.model.parameter.TzId;
+import net.fortuna.ical4j.model.property.CalScale;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Url;
+import net.fortuna.ical4j.model.property.Version;
 import net.fortuna.ical4j.model.property.XProperty;
+import net.fortuna.ical4j.util.ResourceLoader;
 import net.fortuna.ical4j.util.Strings;
 
 
@@ -72,6 +88,9 @@ public class ICalServlet extends HttpServlet {
 
 	private static final long serialVersionUID = -155266285395912535L;
 	private static final OLog log = Tracing.createLoggerFor(ICalServlet.class);
+	
+	private final int cacheAge = 60 * 60 * 12;
+	private static final ConcurrentMap<String,VTimeZone> outlookVTimeZones = new ConcurrentHashMap<>();
 	
 	/** collection of iCal feed prefixs **/
 	public static final String[] SUPPORTED_PREFIX = {
@@ -113,7 +132,7 @@ public class ICalServlet extends HttpServlet {
 				return; // error
 			}
 
-			getIcalDocument(requestUrl, response);
+			getIcalDocument(requestUrl, request, response);
 		} catch (ValidationException e) {
 			log.warn("Validation Error when generate iCal stream for path::" + request.getPathInfo(), e);
 			response.sendError(HttpServletResponse.SC_CONFLICT, requestUrl);
@@ -138,7 +157,7 @@ public class ICalServlet extends HttpServlet {
 	 * @param pathInfo
 	 * @return Calendar
 	 */
-	private void getIcalDocument(String requestUrl, HttpServletResponse response)
+	private void getIcalDocument(String requestUrl, HttpServletRequest request, HttpServletResponse response)
 	throws ValidationException, IOException {
 		// get the individual path tokens
 		String pathInfo;
@@ -182,6 +201,7 @@ public class ICalServlet extends HttpServlet {
 		
 		try {
 			response.setCharacterEncoding("UTF-8");
+			setCacheControl(response);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -195,7 +215,7 @@ public class ICalServlet extends HttpServlet {
 				log.warn("Authenticity Check failed for the ical feed path: " + pathInfo);
 				response.sendError(HttpServletResponse.SC_UNAUTHORIZED, requestUrl);
 			} else {
-				generateAggregatedCalendar(config.getIdentity(), response);
+				generateAggregatedCalendar(config.getIdentity(), request, response);
 			}
 		} else if (calendarManager.calendarExists(calendarType, calendarID)) {
 			// check the authentication token
@@ -215,23 +235,36 @@ public class ICalServlet extends HttpServlet {
 		}
 	}
 	
-	private void generateAggregatedCalendar(Identity identity, HttpServletResponse response) throws IOException {
+	private void setCacheControl(HttpServletResponse httpResponse) {
+		long expiry = new Date().getTime() + cacheAge * 1000;
+	    httpResponse.setDateHeader("Expires", expiry);
+	    httpResponse.setHeader("Cache-Control", "max-age="+ cacheAge);
+	}
+	
+	private void generateAggregatedCalendar(Identity identity, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		PersonalCalendarManager homeCalendarManager = CoreSpringFactory.getImpl(PersonalCalendarManager.class);
 		if(identity == null) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
 		} else {
 			List<CalendarFileInfos> iCalFiles = homeCalendarManager.getListOfCalendarsFiles(identity);
 			DBFactory.getInstance().commitAndCloseSession();
+			boolean outlook = isOutlook(request);
 			
 			Writer out = response.getWriter();
 			out.write(Calendar.BEGIN);
 			out.write(':');
 			out.write(Calendar.VCALENDAR);
 			out.write(Strings.LINE_SEPARATOR);
+			out.write(Version.VERSION_2_0.toString());
+			out.write(CalScale.GREGORIAN.toString());
 
+			Set<String> timezoneIds = new HashSet<>();
 			int numOfFiles = iCalFiles.size();
 			for(int i=0; i<numOfFiles; i++) {
-				outputCalendar(iCalFiles.get(i), out);
+				outputCalendar(iCalFiles.get(i), out, outlook, timezoneIds);
+			}
+			if(outlook) {
+				outputTimeZoneForOutlook(timezoneIds, out);
 			}
 			
 			out.write(Calendar.END);
@@ -240,7 +273,31 @@ public class ICalServlet extends HttpServlet {
 		}
 	}
 	
-	private void outputCalendar(CalendarFileInfos fileInfos, Writer out) throws IOException {
+	private boolean isOutlook(HttpServletRequest request) {
+		String userAgent = request.getHeader("User-Agent");
+		if(userAgent != null && userAgent.indexOf("Microsoft Outlook") >= 0) {
+			return true;
+		}
+		return false;
+	}
+	
+	private void outputTimeZoneForOutlook(Set<String> timezoneIds,  Writer out) {
+		for(String timezoneId:timezoneIds) {
+			if(StringHelper.containsNonWhitespace(timezoneId)) {
+				try {
+					VTimeZone vTimeZone = getOutlookVTimeZone(timezoneId);
+					if(vTimeZone != null) {
+						out.write(vTimeZone.toString());
+					}
+				} catch (IOException | ParserException e) {
+					log.error("", e);
+				}
+			}
+		}
+	}
+	
+	private void outputCalendar(CalendarFileInfos fileInfos, Writer out, boolean outlook, Set<String> timezoneIds)
+	throws IOException {
 		try {
 			CalendarManager calendarManager = CoreSpringFactory.getImpl(CalendarManager.class);
 			Calendar calendar = calendarManager.readCalendar(fileInfos.getCalendarFile());
@@ -251,12 +308,29 @@ public class ICalServlet extends HttpServlet {
 			
 			ComponentList events = calendar.getComponents();
 			for (final Iterator<?> i = events.iterator(); i.hasNext();) {
-				String event = i.next().toString();
+				Object comp = i.next();
+				String event = comp.toString();
+				if (outlook && comp instanceof VEvent) {
+					event = quoteTimeZone(event, (VEvent)comp, timezoneIds);
+				}
 				out.write(event);
 			}
 		} catch (IOException | OLATRuntimeException e) {
 			log.error("", e);
 		}
+	}
+	
+	private String quoteTimeZone(String event, VEvent vEvent, Set<String> timezoneIds) {
+		if(vEvent == null || vEvent.getStartDate().getTimeZone() == null
+				|| vEvent.getStartDate().getTimeZone().getVTimeZone() == null) {
+			return event;
+		}
+
+		String timezoneId = vEvent.getStartDate().getTimeZone().getID();
+		timezoneIds.add(timezoneId);
+		TzId tzId = (TzId)vEvent.getStartDate().getParameter(Parameter.TZID);
+		String tzidReplacement = "TZID=\"" + timezoneId + "\"";	
+		return event.replace(tzId.toString(), tzidReplacement);
 	}
 	
 	private void updateUUID(Calendar calendar, String prefix) {
@@ -312,4 +386,23 @@ public class ICalServlet extends HttpServlet {
 			}
 		}
 	}
+	
+	/**
+     * Load the VTimeZone for Outlook. ical4j use a static map to reuse the TimeZone objects, we need to load
+     * and save our specialized TimeZone in a separate map.
+     */
+    private VTimeZone getOutlookVTimeZone(final String id) throws IOException, ParserException {
+    	return outlookVTimeZones.computeIfAbsent(id, (timeZoneId) -> {
+        	try {
+				URL resource = ResourceLoader.getResource("zoneinfo-outlook/" + id + ".ics");
+				CalendarBuilder builder = new CalendarBuilder();
+				Calendar calendar = builder.build(resource.openStream());
+				VTimeZone vTimeZone = (VTimeZone)calendar.getComponent(Component.VTIMEZONE);
+				return vTimeZone;
+			} catch (Exception e) {
+				log.error("", e);
+				return null;
+			}
+    	});
+    }
 }
