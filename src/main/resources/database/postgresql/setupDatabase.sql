@@ -1269,7 +1269,7 @@ create table o_qti_assessmenttest_session (
    q_duration int8,
    q_score decimal default null,
    q_passed bool default null,
-   q_storage varchar(32),
+   q_storage varchar(1024),
    fk_reference_entry int8 not null,
    fk_entry int8,
    q_subident varchar(64),
@@ -1286,7 +1286,7 @@ create table o_qti_assessmentitem_session (
    q_duration int8,
    q_score decimal default null,
    q_passed bool default null,
-   q_storage varchar(32),
+   q_storage varchar(1024),
    fk_assessmenttest_session int8 not null,
    primary key (id)
 );

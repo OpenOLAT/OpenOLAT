@@ -38,7 +38,6 @@ public class OlatMathEditorPlugin extends TinyMCECustomPlugin {
 	/**
 	 * Params handed over to the js code
 	 */
-	private static final String PARAM_JS_MATH_LIB_BASE_PATH = "jsMathLibBasePath";
 	private static final String PARAM_TRANSPARENT_IMAGE = "transparentImage";
 
 	/** The TinyMCE plugin name */

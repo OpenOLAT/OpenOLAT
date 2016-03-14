@@ -102,7 +102,11 @@ public class TinyConfig {
 	
 	public String getTool1() {
 		return tool1;
-	}	
+	}
+	
+	public boolean isMathEnabled() {
+		return plugins != null && plugins.indexOf("olatmatheditor") >= 0;
+	}
 	
 	public TinyConfig enableCode() {
 		return enableFeature("code");

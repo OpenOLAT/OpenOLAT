@@ -1276,7 +1276,7 @@ create table o_qti_assessmenttest_session (
    q_finish_time date,
    q_termination_time date,
    q_duration number(20),
-   q_storage varchar2(32 char),
+   q_storage varchar2(1024 char),
    fk_identity number(20) not null,
    fk_entry number(20) not null,
    fk_course number(20),

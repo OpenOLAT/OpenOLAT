@@ -139,14 +139,16 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 	 *      java.lang.String, java.lang.String, java.lang.String)
 	 */
 	private void addRequiredJsFile(String jsFileName, String fileEncoding, String AJAXAddJsCode) {
-
-
 		StringOutput sb = new StringOutput(50);
-		Renderer.renderStaticURI(sb, jsFileName);
-		String jsPath = sb.toString();
+		String jsPath;
+		if(jsFileName.startsWith("http:") || jsFileName.startsWith("https:") || jsFileName.startsWith("//")) {
+			jsPath = jsFileName;
+		} else {
+			Renderer.renderStaticURI(sb, jsFileName);
+			jsPath = sb.toString();
+		}
 
 		if (!curJsList.contains(jsPath)) {
-			//System.out.println("reqJs:"+jsPath);
 			curJsList.add(jsPath);
 			jsPathToJsFileName.put(jsPath, jsFileName);
 			if (StringHelper.containsNonWhitespace(AJAXAddJsCode)) {
