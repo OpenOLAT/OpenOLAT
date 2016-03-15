@@ -36,7 +36,7 @@ import org.olat.core.util.Util;
 import org.olat.ims.qti21.model.xml.ScoreBuilder;
 import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.AbstractEntry;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
@@ -99,7 +99,7 @@ public class FIBScoreController extends AssessmentItemRefEditorController {
 		formLayout.add(scoreCont);
 		scoreCont.setLabel(null, null);
 		
-		for(TextEntry entry:itemBuilder.getTextEntries()) {
+		for(AbstractEntry entry:itemBuilder.getTextEntries()) {
 			String points = "";
 			Double score = entry.getScore();
 			if(score != null) {
@@ -173,7 +173,7 @@ public class FIBScoreController extends AssessmentItemRefEditorController {
 			for(TextEntryWrapper wrapper:wrappers) {
 				String pointsStr = wrapper.getPointsEl().getValue();
 				Double points = new Double(pointsStr);
-				wrapper.getTextEntry().setScore(points);
+				wrapper.getEntry().setScore(points);
 			}
 		} else {
 			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.allCorrectAnswers);
@@ -190,10 +190,10 @@ public class FIBScoreController extends AssessmentItemRefEditorController {
 	public final class TextEntryWrapper {
 		
 		private final String summary;
-		private final TextEntry entry;
+		private final AbstractEntry entry;
 		private final TextElement pointsEl;
 		
-		public TextEntryWrapper(TextEntry entry, TextElement pointsEl) {
+		public TextEntryWrapper(AbstractEntry entry, TextElement pointsEl) {
 			this.entry = entry;
 			this.pointsEl = pointsEl;
 			pointsEl.setUserObject(this);
@@ -212,7 +212,7 @@ public class FIBScoreController extends AssessmentItemRefEditorController {
 			return pointsEl;
 		}
 		
-		public TextEntry getTextEntry() {
+		public AbstractEntry getEntry() {
 			return entry;
 		}
 	}

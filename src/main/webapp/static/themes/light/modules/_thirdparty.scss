@@ -156,7 +156,7 @@ label.mce-label {
 	font-weight: normal;
 }
 
-i.mce-ico.mce-i-media, i.mce-ico.mce-i-movie, i.mce-ico.mce-i-help, i.mce-ico.mce-i-gaptext, i.mce-ico.mce-i-edit {
+i.mce-ico.mce-i-media, i.mce-ico.mce-i-movie, i.mce-ico.mce-i-help, i.mce-ico.mce-i-gaptext,i.mce-ico.mce-i-gapnumerical, i.mce-ico.mce-i-edit {
 	display: inline-block;
 	font: normal normal normal #{$fa-font-size-base}/1 FontAwesome; // shortening font declaration
 	font-size: inherit; // can't have font-size inherit on line above, so need to override
@@ -176,6 +176,9 @@ i.mce-ico.mce-i-movie:before {
 
 i.mce-ico.mce-i-gaptext:before {
 	content: $fa-var-ellipsis-h;
+}
+i.mce-ico.mce-i-gapnumerical:before {
+	content: $fa-var-calculator;
 }
 i.mce-ico.mce-i-math:before {
 	content: '\03A3';

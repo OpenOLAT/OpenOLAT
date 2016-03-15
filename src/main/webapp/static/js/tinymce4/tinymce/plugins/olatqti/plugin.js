@@ -62,7 +62,15 @@
 				return cachedCoreTrans;
 			}
 	
-			function showDialog(e) {
+			function showTextDialog(e) {
+				showDialog(e, "string")
+			}
+			
+			function showNumericalDialog(e) {
+				showDialog(e, "float")
+			}
+
+			function showDialog(e, gapType) {
 				var newEntry = false;
 				var responseIdentifier;
 				if(typeof lastSelectedGap != 'undefined') {
@@ -80,7 +88,7 @@
 				    });
 					
 					var responseIdentifier = "RESPONSE_" + (counter + 1);
-					var placeholder = createPlaceholder(responseIdentifier);
+					var placeholder = createPlaceholder(responseIdentifier, gapType);
 					var holderHtml = new tinymce.html.Serializer().serialize(placeholder);
 					ed.insertContent(holderHtml);
 					newEntry = true;
@@ -88,14 +96,21 @@
 				
 				var ffxhrevent = ed.getParam("ffxhrevent");
 				o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2, false, false,
-						'cmd', 'gapentry', 'responseIdentifier', responseIdentifier, 'newEntry', newEntry);
+						'cmd', 'gapentry', 'responseIdentifier', responseIdentifier, 'newEntry', newEntry, 'gapType', gapType);
 			}
 
-			ed.addButton('olatqti', {
+			ed.addButton('olatqtifibtext', {
 				title : translator().translate('new.fib'),
 				icon : 'gaptext',
-				stateSelector: ['img[data-qti]', 'span[data-qti]'],
-				onclick: showDialog
+				stateSelector: ['img[data-qti-gap-type=string]', 'span[data-qti-gap-type=string]'],
+				onclick: showTextDialog
+			});
+			
+			ed.addButton('olatqtifibnumerical', {
+				title : translator().translate('new.fib') + ' Numerical',
+				icon : 'gapnumerical',
+				stateSelector: ['img[data-qti-gap-type=float]', 'span[data-qti-gap-type=float]'],
+				onclick: showNumericalDialog
 			});
 			
 			ed.addButton('editgap', {
@@ -104,11 +119,18 @@
 				onclick: showDialog
 			});
 			
-			ed.addMenuItem('olatqti', {
+			ed.addMenuItem('olatqtifibtext', {
 				text : translator().translate('new.fib'),
+				icon : 'gapnumerical',
+				stateSelector: ['img[data-qti-gap-type=string]', 'span[data-qti-gap-type=string]'],
+				onclick: showNumericalDialog
+			});
+			
+			ed.addMenuItem('olatqtifibnumerical', {
+				text : translator().translate('new.fib.numerical') + ' Numerical',
 				icon : 'gaptext',
-				stateSelector: ['img[data-qti]', 'span[data-qti]'],
-				onclick: showDialog
+				stateSelector: ['img[data-qti-gap-type=float]', 'span[data-qti-gap-type=float]'],
+				onclick: showTextDialog
 			});
 			
 			ed.on('NodeChange', function(e) {
@@ -125,7 +147,7 @@
 				return ed.dom.is(img, 'img[data-qti]');
 			}
 			
-			function createPlaceholder(responseIdentifier) {
+			function createPlaceholder(responseIdentifier, gapType) {
 				var placeholder = new tinymce.html.Node('img', 1);
 				placeholder.attr({
 					width: "32",
@@ -133,6 +155,7 @@
 					src : tinymce.Env.transparentSrc,
 					"data-qti": "textentryinteraction",
 					"data-qti-gap-identifier": responseIdentifier,
+					"data-qti-gap-type": gapType,
 					"data-mce-placeholder": "",
 					"data-mce-resize" : "false",
 					"data-textentryinteraction": "empty",
@@ -155,7 +178,11 @@
 						node = nodes[i];
 						if (node.name == 'textentryinteraction') {
 							var responseIdentifier = node.attr('responseidentifier');
-							var placeHolder = createPlaceholder(responseIdentifier);
+							var gapType = node.attr('openolattype');
+							if(typeof gapType === "undefined") {
+								gapType = "string";
+							}
+							var placeHolder = createPlaceholder(responseIdentifier, gapType);
 							node.replace(placeHolder);
 						}
 					}

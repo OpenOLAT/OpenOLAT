@@ -456,11 +456,13 @@ public class AssessmentRenderFunctions {
 		List<String> checks = new ArrayList<>(3);
         // NB: We don't presently do any JS checks for numeric values bound to records, as the JS isn't currently
         // clever enough to handle all numeric formats (e.g. 4e12)
-		if(declaration.getBaseType().isFloat()) {
-			checks.add("float");
-		}
-		if(declaration.getBaseType().isInteger()) {
-			checks.add("integer");
+		if(declaration != null) {
+			if(declaration.getBaseType().isFloat()) {
+				checks.add("float");
+			}
+			if(declaration.getBaseType().isInteger()) {
+				checks.add("integer");
+			}
 		}
 		if(StringHelper.containsNonWhitespace(patternMask)) {
 			checks.add("regex");

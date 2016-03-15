@@ -180,6 +180,20 @@ public class AssessmentItemFactory {
 		return textInteraction;
 	}
 	
+	public static ResponseDeclaration createNumericalEntryResponseDeclaration(AssessmentItem assessmentItem,
+			Identifier declarationId, double response) {
+		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
+		responseDeclaration.setIdentifier(declarationId);
+		responseDeclaration.setCardinality(Cardinality.SINGLE);
+		responseDeclaration.setBaseType(BaseType.FLOAT);
+		
+		//correct response
+		CorrectResponse correctResponse = new CorrectResponse(responseDeclaration);
+		responseDeclaration.setCorrectResponse(correctResponse);
+		appendFloatValue(correctResponse, response);
+		return responseDeclaration;
+	}
+	
 	public static ResponseDeclaration createTextEntryResponseDeclaration(AssessmentItem assessmentItem,
 			Identifier declarationId, String response, Double score, boolean caseSensitive,
 			List<TextEntryAlternative> alternatives) {
@@ -422,6 +436,13 @@ public class AssessmentItemFactory {
 	private static void appendStringValue(CorrectResponse correctResponse, String response) {
 		FieldValue fieldValue = new FieldValue(correctResponse);
 		StringValue identifierValue = new StringValue(response);
+		fieldValue.setSingleValue(identifierValue);
+		correctResponse.getFieldValues().add(fieldValue);
+	}
+	
+	private static void appendFloatValue(CorrectResponse correctResponse, double response) {
+		FieldValue fieldValue = new FieldValue(correctResponse);
+		FloatValue identifierValue = new FloatValue(response);
 		fieldValue.setSingleValue(identifierValue);
 		correctResponse.getFieldValues().add(fieldValue);
 	}

@@ -38,6 +38,8 @@ import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.AbstractEntry;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.NumericalEntry;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
@@ -54,7 +56,8 @@ public class FIBEditorController extends FormBasicController {
 	private RichTextElement textEl;
 
 	private CloseableModalController cmc;
-	private FIBTextEntrySettingsController gapEntrySettingsCtrl;
+	private FIBTextEntrySettingsController textEntrySettingsCtrl;
+	private FIBNumericalEntrySettingsController numericalEntrySettingsCtrl;
 
 	private final File itemFile;
 	private final File rootDirectory;
@@ -85,8 +88,8 @@ public class FIBEditorController extends FormBasicController {
 		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
 		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 		
-		String description = itemBuilder.getQuestion();
-		textEl = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", description, 8, -1, true, itemContainer, null,
+		String question = itemBuilder.getQuestion();
+		textEl = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", question, 8, -1, true, itemContainer, null,
 				metadata, ureq.getUserSession(), getWindowControl());
 		textEl.addActionListener(FormEvent.ONCLICK);
 		RichTextConfiguration richTextConfig = textEl.getEditorConfiguration();
@@ -106,7 +109,10 @@ public class FIBEditorController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(gapEntrySettingsCtrl == source) {
+		if(textEntrySettingsCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+		} else if(numericalEntrySettingsCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
 		} else if(cmc == source) {
@@ -116,9 +122,11 @@ public class FIBEditorController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(gapEntrySettingsCtrl);
+		removeAsListenerAndDispose(numericalEntrySettingsCtrl);
+		removeAsListenerAndDispose(textEntrySettingsCtrl);
 		removeAsListenerAndDispose(cmc);
-		gapEntrySettingsCtrl = null;
+		numericalEntrySettingsCtrl = null;
+		textEntrySettingsCtrl = null;
 		cmc = null;
 	}
 
@@ -128,7 +136,8 @@ public class FIBEditorController extends FormBasicController {
 			String cmd = event.getCommand();
 			if("gapentry".equals(cmd)) {
 				String responseIdentifier = ureq.getParameter("responseIdentifier");
-				doGapEntry(ureq, responseIdentifier);
+				String type = ureq.getParameter("gapType");
+				doGapEntry(ureq, responseIdentifier, type);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -150,20 +159,32 @@ public class FIBEditorController extends FormBasicController {
 		//
 	}
 
-	private void doGapEntry(UserRequest ureq, String responseIdentifier) {
-		removeAsListenerAndDispose(cmc);
-		removeAsListenerAndDispose(gapEntrySettingsCtrl);
+	private void doGapEntry(UserRequest ureq, String responseIdentifier, String type) {
+		if(textEntrySettingsCtrl != null || numericalEntrySettingsCtrl != null) return;
 		
-		TextEntry interaction = itemBuilder.getTextEntry(responseIdentifier);
+		AbstractEntry interaction = itemBuilder.getEntry(responseIdentifier);
 		if(interaction == null) {
-			interaction = itemBuilder.createTextEntry(responseIdentifier);
+			if("string".equalsIgnoreCase(type)) {
+				interaction = itemBuilder.createTextEntry(responseIdentifier);
+			} else if("float".equalsIgnoreCase(type)) {
+				interaction = itemBuilder.createNumericalEntry(responseIdentifier);
+			}
 		}
 		
-		gapEntrySettingsCtrl = new FIBTextEntrySettingsController(ureq, getWindowControl(), interaction);
-		listenTo(gapEntrySettingsCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), gapEntrySettingsCtrl.getInitialComponent(), true, translate("title.add") );
-		cmc.activate();
-		listenTo(cmc);
+		if(interaction instanceof TextEntry) {
+			textEntrySettingsCtrl = new FIBTextEntrySettingsController(ureq, getWindowControl(), (TextEntry)interaction);
+			listenTo(textEntrySettingsCtrl);
+			
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), textEntrySettingsCtrl.getInitialComponent(), true, translate("title.add") );
+			cmc.activate();
+			listenTo(cmc);
+		} else if(interaction instanceof NumericalEntry) {
+			numericalEntrySettingsCtrl = new FIBNumericalEntrySettingsController(ureq, getWindowControl(), (NumericalEntry)interaction);
+			listenTo(numericalEntrySettingsCtrl);
+			
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), numericalEntrySettingsCtrl.getInitialComponent(), true, translate("title.add") );
+			cmc.activate();
+			listenTo(cmc);
+		}
 	}
 }
