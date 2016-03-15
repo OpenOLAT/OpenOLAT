@@ -65,6 +65,7 @@ public class GroupTaskConfigurationPage {
 		By chooseGroupBy = By.cssSelector("a.o_form_groupchooser");
 		browser.findElement(chooseGroupBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		return this;
 	}
 	
@@ -72,6 +73,7 @@ public class GroupTaskConfigurationPage {
 		By createGroupBy = By.cssSelector("div.o_button_group_right a");
 		browser.findElement(createGroupBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		
 		//fill the form
 		By nameBy = By.cssSelector(".o_sel_group_edit_title input[type='text']");

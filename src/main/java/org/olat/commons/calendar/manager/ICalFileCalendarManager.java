@@ -244,9 +244,10 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		return cal;
 	}
 
-  /**
-   * Internal read calendar file from filesystem
-   */
+	/**
+	 * Internal read calendar file from filesystem. It doesn't
+	 * use the cache and return a not shared calendar.
+	 */
 	@Override
 	public Calendar readCalendar(String type, String calendarID) {
 		if(log.isDebug()) {
