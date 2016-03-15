@@ -118,8 +118,15 @@ public class TinyConfig {
 				.enableFeature("olatmovieviewer");
 	}
 	
-	public TinyConfig enableQTITools() {
-		return enableFeature("olatqti");
+	public TinyConfig enableQTITools(boolean textEntry, boolean numericalInput) {
+		TinyConfig config = enableFeature("olatqti");
+		if(!textEntry) {
+			config = config.disableButtons("olatqtifibtext");
+		}
+		if(!numericalInput) {
+			config = config.disableButtons("olatqtifibnumerical");
+		}
+		return config;
 	}
 	
 	/**
@@ -142,6 +149,15 @@ public class TinyConfig {
 	
 	public TinyConfig disableMathEditor() {
 		return disableFeature("olatmatheditor");
+	}
+	
+	public TinyConfig disableButtons(String button) {
+		TinyConfig config = this;
+		if(tool1.contains(button)) {
+			String clonedTools =  tool1.replace(button, "");
+			config = new TinyConfig(plugins, menu, clonedTools);
+		}
+		return config;
 	}
 	
 	public TinyConfig enableFeature(String feature) {

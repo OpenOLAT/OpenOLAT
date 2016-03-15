@@ -38,6 +38,8 @@ import java.util.concurrent.atomic.DoubleAdder;
 import javax.xml.transform.stream.StreamResult;
 
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
@@ -89,27 +91,36 @@ import uk.ac.ed.ph.jqtiplus.value.StringValue;
  *
  */
 public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
+	
+	private static final OLog log = Tracing.createLoggerFor(FIBAssessmentItemBuilder.class);
 
 	private String question;
 	private ScoreEvaluation scoreEvaluation;
 	private Map<String, AbstractEntry> responseIdentifierToTextEntry;
 	
-	public FIBAssessmentItemBuilder(QtiSerializer qtiSerializer) {
-		super(createAssessmentItem(), qtiSerializer);
+	private QTI21QuestionType questionType = QTI21QuestionType.fib;
+	
+	public FIBAssessmentItemBuilder(EntryType type, QtiSerializer qtiSerializer) {
+		super(createAssessmentItem(type), qtiSerializer);
 	}
 	
 	public FIBAssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
 		super(assessmentItem, qtiSerializer);
 	}
 	
-	private static AssessmentItem createAssessmentItem() {
+	private static AssessmentItem createAssessmentItem(EntryType type) {
 		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.fib, "FIB");
 		
 		//define the response
 		Identifier responseDeclarationId = Identifier.assumedLegal("RESPONSE_1");
-		ResponseDeclaration responseDeclaration = createTextEntryResponseDeclaration(assessmentItem, responseDeclarationId,
-				"gap", Collections.emptyList());
-		assessmentItem.getNodeGroups().getResponseDeclarationGroup().getResponseDeclarations().add(responseDeclaration);
+		if(type == EntryType.numerical) {
+			ResponseDeclaration responseDeclaration = createNumericalEntryResponseDeclaration(assessmentItem, responseDeclarationId, 42);
+			assessmentItem.getNodeGroups().getResponseDeclarationGroup().getResponseDeclarations().add(responseDeclaration);
+		} else {
+			ResponseDeclaration responseDeclaration = createTextEntryResponseDeclaration(assessmentItem, responseDeclarationId,
+					"gap", Collections.emptyList());
+			assessmentItem.getNodeGroups().getResponseDeclarationGroup().getResponseDeclarations().add(responseDeclaration);
+		}
 	
 		//outcomes
 		appendDefaultOutcomeDeclarations(assessmentItem, 1.0d);
@@ -128,6 +139,31 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		super.extract();
 		extractQuestions();
 		extractEntriesSettingsFromResponseDeclaration();
+		extractQuestionType();
+	}
+	
+	/**
+	 * Use the extracted entries to calculate the type, fib or numerical.
+	 */
+	private void extractQuestionType() {
+		int text = 0;
+		int numerical = 0;
+		for(Map.Entry<String, AbstractEntry> textEntryEntry:responseIdentifierToTextEntry.entrySet()) {
+			AbstractEntry entry = textEntryEntry.getValue();
+			if(entry instanceof TextEntry) {
+				text++;
+			} else if(entry instanceof NumericalEntry) {
+				numerical++;
+			}
+		}
+		
+		if(text > 0 && numerical == 0) {
+			questionType = QTI21QuestionType.fib;
+		} else if(text == 0 && numerical > 0) {
+			questionType = QTI21QuestionType.numerical;
+		} else {
+			questionType = QTI21QuestionType.fib;
+		}
 	}
 	
 	private void extractQuestions() {
@@ -332,8 +368,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 						try {
 							textEntry.setScore(mapEntry.getMappedValue());
 						} catch (QtiAttributeException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							log.error("", e);
 						}
 					}
 					countAlternatives.incrementAndGet();
@@ -350,7 +385,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 
 	@Override
 	public QTI21QuestionType getQuestionType() {
-		return QTI21QuestionType.fib;
+		return questionType;
 	}
 	
 	@Override
@@ -381,6 +416,24 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 	
 	public List<AbstractEntry> getTextEntries() {
 		return new ArrayList<>(responseIdentifierToTextEntry.values());
+	}
+	
+	public boolean hasNumericalInputs() {
+		for(Map.Entry<String, AbstractEntry> textEntryEntry:responseIdentifierToTextEntry.entrySet()) {
+			if(textEntryEntry.getValue() instanceof NumericalEntry) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean hasTextEntry() {
+		for(Map.Entry<String, AbstractEntry> textEntryEntry:responseIdentifierToTextEntry.entrySet()) {
+			if(textEntryEntry.getValue() instanceof TextEntry) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public String generateResponseIdentifier() {
@@ -962,5 +1015,10 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		public void setScore(double score) {
 			this.score = score;
 		}
+	}
+	
+	public enum EntryType {
+		text,
+		numerical
 	}
 }

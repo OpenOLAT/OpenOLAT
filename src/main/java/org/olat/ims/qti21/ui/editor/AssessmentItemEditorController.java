@@ -157,7 +157,8 @@ public class AssessmentItemEditorController extends BasicController {
 		switch(type) {
 			case sc: itemBuilder = initSingleChoiceEditors(ureq, item); break;
 			case mc: itemBuilder = initMultipleChoiceEditors(ureq, item); break;
-			case fib: itemBuilder = initFIBEditors(ureq, item); break;
+			case fib: itemBuilder = initFIBEditors(ureq, type, item); break;
+			case numerical: itemBuilder = initFIBEditors(ureq, type, item); break;
 			case kprim: itemBuilder = initKPrimChoiceEditors(ureq, item); break;
 			case essay: itemBuilder = initEssayEditors(ureq, item); break;
 			default: initItemCreatedByUnkownEditor(ureq); break;
@@ -224,9 +225,9 @@ public class AssessmentItemEditorController extends BasicController {
 		return kprimItemBuilder;
 	}
 	
-	private AssessmentItemBuilder initFIBEditors(UserRequest ureq, AssessmentItem item) {
+	private AssessmentItemBuilder initFIBEditors(UserRequest ureq, QTI21QuestionType preferedType, AssessmentItem item) {
 		FIBAssessmentItemBuilder kprimItemBuilder = new FIBAssessmentItemBuilder(item, qtiService.qtiSerializer());
-		itemEditor = new FIBEditorController(ureq, getWindowControl(), kprimItemBuilder,
+		itemEditor = new FIBEditorController(ureq, getWindowControl(), preferedType, kprimItemBuilder,
 				rootDirectory, rootContainer, itemFile);
 		listenTo(itemEditor);
 		scoreEditor = new FIBScoreController(ureq, getWindowControl(), kprimItemBuilder, itemRef);

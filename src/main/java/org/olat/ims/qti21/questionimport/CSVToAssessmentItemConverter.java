@@ -31,6 +31,7 @@ import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
@@ -280,7 +281,7 @@ public class CSVToAssessmentItemConverter {
 			AssessmentItemBuilder itemBuilder;
 			switch(type) {
 				case "fib": {
-					FIBAssessmentItemBuilder fibItemBuilder = new FIBAssessmentItemBuilder(qtiSerializer);
+					FIBAssessmentItemBuilder fibItemBuilder = new FIBAssessmentItemBuilder(EntryType.text, qtiSerializer);
 					fibItemBuilder.setQuestion("");
 					fibItemBuilder.clearTextEntries();
 					fibItemBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);

@@ -62,14 +62,17 @@ public class FIBEditorController extends FormBasicController {
 	private final File itemFile;
 	private final File rootDirectory;
 	private final VFSContainer rootContainer;
+	private final QTI21QuestionType preferredType;
 	private final FIBAssessmentItemBuilder itemBuilder;
 	
-	public FIBEditorController(UserRequest ureq, WindowControl wControl, FIBAssessmentItemBuilder itemBuilder,
+	public FIBEditorController(UserRequest ureq, WindowControl wControl,
+			QTI21QuestionType preferredType, FIBAssessmentItemBuilder itemBuilder,
 			File rootDirectory, VFSContainer rootContainer, File itemFile) {
-		super(ureq, wControl, "fib");
+		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemFile = itemFile;
 		this.itemBuilder = itemBuilder;
+		this.preferredType = preferredType;
 		this.rootDirectory = rootDirectory;
 		this.rootContainer = rootContainer;
 		initForm(ureq);
@@ -77,23 +80,33 @@ public class FIBEditorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer metadata = FormLayoutContainer.createDefaultFormLayout("metadata", getTranslator());
-		metadata.setRootForm(mainForm);
-		formLayout.add(metadata);
-		formLayout.add("metadata", metadata);
-		
-		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), metadata);
+		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), formLayout);
 		titleEl.setMandatory(true);
 		
 		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
 		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 		
 		String question = itemBuilder.getQuestion();
-		textEl = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", question, 8, -1, true, itemContainer, null,
-				metadata, ureq.getUserSession(), getWindowControl());
+		textEl = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", question, 16, -1, true, itemContainer, null,
+				formLayout, ureq.getUserSession(), getWindowControl());
 		textEl.addActionListener(FormEvent.ONCLICK);
 		RichTextConfiguration richTextConfig = textEl.getEditorConfiguration();
-		richTextConfig.enableQTITools();
+		
+		boolean hasNumericals = itemBuilder.hasNumericalInputs();
+		boolean hasTexts = itemBuilder.hasTextEntry();
+		if(!hasNumericals && !hasTexts) {
+			if(preferredType == QTI21QuestionType.numerical) {
+				hasNumericals = true;
+				hasTexts = false;
+			} else if(preferredType == QTI21QuestionType.fib) {
+				hasNumericals = false;
+				hasTexts = true;
+			} else {
+				hasNumericals = true;
+				hasTexts = true;
+			}
+		}
+		richTextConfig.enableQTITools(hasTexts, hasNumericals);
 		
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

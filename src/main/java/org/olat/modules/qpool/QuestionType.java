@@ -32,6 +32,7 @@ public enum QuestionType {
 	SC,
 	KPRIM,
 	ESSAY,
+	NUMERICAL,
 	UNKOWN
 
 }

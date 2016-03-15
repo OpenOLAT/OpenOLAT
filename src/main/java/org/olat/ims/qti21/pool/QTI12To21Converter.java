@@ -59,6 +59,7 @@ import org.olat.ims.qti21.model.xml.ModalFeedbackBuilder;
 import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
@@ -379,7 +380,7 @@ public class QTI12To21Converter {
 	}
 	
 	private AssessmentItemBuilder convertFIB(Item item) {
-		FIBAssessmentItemBuilder itemBuilder = new FIBAssessmentItemBuilder(qtiSerializer);
+		FIBAssessmentItemBuilder itemBuilder = new FIBAssessmentItemBuilder(EntryType.text, qtiSerializer);
 		itemBuilder.setQuestion("");
 		itemBuilder.clearTextEntries();
 		convertItemBasics(item, itemBuilder);

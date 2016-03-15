@@ -30,6 +30,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
+import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 
 /**
@@ -93,7 +94,7 @@ public class QTI21QuestionTypeDetector {
 			} else if(!choice && match && !textEntry && !essay && !unkown) {
 				return getTypeOfMatch(item);
 			} else if(!choice && !match && textEntry && !essay && !unkown) {
-				return QTI21QuestionType.fib;
+				return getTypeOfTextEntryInteraction(item);
 			} else if(!choice && !match && !textEntry && essay && !unkown) {
 				return QTI21QuestionType.essay;
 			} else {
@@ -102,6 +103,31 @@ public class QTI21QuestionTypeDetector {
 		} else {
 			return QTI21QuestionType.unkown;
 		}
+	}
+	
+	private static final QTI21QuestionType getTypeOfTextEntryInteraction(AssessmentItem item) {
+		if(item.getResponseDeclarations().size() > 0) {
+			int text = 0;
+			int numerical = 0;
+			int unkown = 0;
+			for(ResponseDeclaration responseDeclaration:item.getResponseDeclarations()) {
+				if(responseDeclaration.hasBaseType(BaseType.STRING)) {
+					text++;
+				} else if(responseDeclaration.hasBaseType(BaseType.FLOAT)) {
+					numerical++;
+				} else {
+					unkown++;
+				}
+			}
+		
+			if(text == 0 && numerical > 0 && unkown == 0) {
+				return QTI21QuestionType.numerical;
+			}
+			if(text > 0 && unkown == 0) {
+				return QTI21QuestionType.fib;
+			}
+		}
+		return QTI21QuestionType.unkown;
 	}
 	
 	private static final QTI21QuestionType getTypeOfMatch(AssessmentItem item) {
