@@ -35,6 +35,7 @@ import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.ui.ResponseInfos;
 import org.olat.ims.qti.statistics.ui.Series;
 import org.olat.ims.qti21.QTI21StatisticsManager;
+import org.olat.ims.qti21.model.statistics.AbstractTextEntryInteractionStatistics;
 import org.olat.ims.qti21.model.statistics.TextEntryInteractionStatistics;
 import org.olat.ims.qti21.ui.statistics.QTI21AssessmentItemStatisticsController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
@@ -91,7 +92,7 @@ public class TextEntryInteractionsStatisticsController extends BasicController {
 	}
 	
 	private Series getFIB() {
-		List<TextEntryInteractionStatistics> processedAnswers = qtiStatisticsManager
+		List<AbstractTextEntryInteractionStatistics> processedAnswers = qtiStatisticsManager
 				.getTextEntryInteractionsStatistic(itemRef.getIdentifier().toString(), assessmentItem, interactions, resourceResult.getSearchParams());
 
 		boolean survey = QTIType.survey.equals(resourceResult.getType());
@@ -102,20 +103,23 @@ public class TextEntryInteractionsStatisticsController extends BasicController {
 		String color = survey ? null : "green";
 		BarSeries d1 = new BarSeries(cssColor, color, null);
 		List<ResponseInfos> responseInfos = new ArrayList<>();
-		for (TextEntryInteractionStatistics entry : processedAnswers) {
+		for (AbstractTextEntryInteractionStatistics entry : processedAnswers) {
 			String label = Integer.toString(++i);
 			String answerString = entry.getCorrectResponse();
 			d1.add(entry.getNumOfCorrect(), label, cssColor);
 			
 			StringBuilder text = new StringBuilder();
 			text.append(answerString);
-			if(entry.getAlternatives().size() > 1) {
-				text.append(" [");
-				for(int j=1; j<entry.getAlternatives().size(); j++) {
-					if(j > 1) text.append(", ");
-					text.append(entry.getAlternatives().get(j));
+			if(entry instanceof TextEntryInteractionStatistics) {
+				TextEntryInteractionStatistics textEntry = (TextEntryInteractionStatistics)entry;
+				if(textEntry.getAlternatives().size() > 1) {
+					text.append(" [");
+					for(int j=1; j<textEntry.getAlternatives().size(); j++) {
+						if(j > 1) text.append(", ");
+						text.append(textEntry.getAlternatives().get(j));
+					}
+					text.append("]");
 				}
-				text.append("]");
 			}
 			
 			Float score = entry.getPoints() == null ? null : entry.getPoints().floatValue();

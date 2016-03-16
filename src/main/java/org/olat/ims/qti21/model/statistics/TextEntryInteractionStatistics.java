@@ -19,7 +19,6 @@
  */
 package org.olat.ims.qti21.model.statistics;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
@@ -30,70 +29,26 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TextEntryInteractionStatistics {
-	
-	private final Identifier responseIdentifier;
+public class TextEntryInteractionStatistics extends AbstractTextEntryInteractionStatistics {
 	
 	private final boolean caseSensitive;
-	private final String correctResponse;
 	private final List<String> alternatives;
-	private final List<String> wrongAnswers = new ArrayList<>();
-	
-	private long numOfCorrect = 0l;
-	private long numOfIncorrect = 0l;
-	private final Double points;
 	
 	public TextEntryInteractionStatistics(Identifier responseIdentifier,
 			boolean caseSensitive, String correctResponse, List<String> alternatives, Double points) {
-		this.responseIdentifier = responseIdentifier;
+		super(responseIdentifier, correctResponse, points);
 		this.caseSensitive = caseSensitive;
-		this.correctResponse = correctResponse;
 		this.alternatives = alternatives;
-		this.points = points;
 	}
 
-	public Identifier getResponseIdentifier() {
-		return responseIdentifier;
-	}
-	
-	public String getCorrectResponse() {
-		return correctResponse;
-	}
-	
 	public List<String> getAlternatives() {
 		return alternatives;
 	}
 
-	public long getNumOfCorrect() {
-		return numOfCorrect;
-	}
-	
-	public void addCorrect(long correct) {
-		this.numOfCorrect += correct;
-	}
-	
-	public long getNumOfIncorrect() {
-		return numOfIncorrect;
-	}
-	
-	public void addIncorrect(long incorrect) {
-		this.numOfIncorrect += incorrect;
-	}
-	
-	public Double getPoints() {
-		return points;
-	}
-
-	public List<String> getWrongAnswers() {
-		return wrongAnswers;
-	}
-	
-	public void addWrongResponses(String response) {
-		wrongAnswers.add(response);
-	}
-
+	@Override
 	public boolean matchResponse(String value) {
-		if(matchString(correctResponse, value)) {
+		String cResponse = getCorrectResponse();
+		if(matchString(cResponse, value)) {
 			return true;
 		}
 		for(String alternative:alternatives) {

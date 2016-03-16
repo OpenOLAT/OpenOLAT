@@ -25,9 +25,9 @@ import java.util.List;
 import org.olat.ims.qti.statistics.model.StatisticAssessment;
 import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
+import org.olat.ims.qti21.model.statistics.AbstractTextEntryInteractionStatistics;
 import org.olat.ims.qti21.model.statistics.KPrimStatistics;
 import org.olat.ims.qti21.model.statistics.SimpleChoiceStatistics;
-import org.olat.ims.qti21.model.statistics.TextEntryInteractionStatistics;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
@@ -71,7 +71,7 @@ public interface QTI21StatisticsManager {
 	public List<KPrimStatistics> getKPrimStatistics(String itemRefIdent,
 			AssessmentItem item, MatchInteraction interaction, QTI21StatisticSearchParams searchParams);
 	
-	public List<TextEntryInteractionStatistics> getTextEntryInteractionsStatistic(String itemRefIdent,
+	public List<AbstractTextEntryInteractionStatistics> getTextEntryInteractionsStatistic(String itemRefIdent,
 			AssessmentItem item, List<TextEntryInteraction> interactions, QTI21StatisticSearchParams searchParams);
 
 }

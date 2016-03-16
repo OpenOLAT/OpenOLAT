@@ -27,6 +27,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.DoubleAdder;
 
 import javax.persistence.TypedQuery;
 
@@ -37,9 +39,13 @@ import org.olat.ims.qti.statistics.model.StatisticAssessment;
 import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
+import org.olat.ims.qti21.model.statistics.AbstractTextEntryInteractionStatistics;
 import org.olat.ims.qti21.model.statistics.KPrimStatistics;
+import org.olat.ims.qti21.model.statistics.NumericalInputInteractionStatistics;
 import org.olat.ims.qti21.model.statistics.SimpleChoiceStatistics;
 import org.olat.ims.qti21.model.statistics.TextEntryInteractionStatistics;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.NumericalEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -328,44 +334,22 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 	}
 	
 	@Override
-	public List<TextEntryInteractionStatistics> getTextEntryInteractionsStatistic(String itemRefIdent, AssessmentItem item, List<TextEntryInteraction> interactions,
+	public List<AbstractTextEntryInteractionStatistics> getTextEntryInteractionsStatistic(String itemRefIdent, AssessmentItem item, List<TextEntryInteraction> interactions,
 			QTI21StatisticSearchParams searchParams) {
 
-		List<TextEntryInteractionStatistics> options = new ArrayList<>();
-		Map<String, TextEntryInteractionStatistics> optionMap = new HashMap<>();
+		List<AbstractTextEntryInteractionStatistics> options = new ArrayList<>();
+		Map<String, AbstractTextEntryInteractionStatistics> optionMap = new HashMap<>();
 
 		for(TextEntryInteraction interaction:interactions) {
 			Identifier responseIdentifier = interaction.getResponseIdentifier();
 			ResponseDeclaration responseDeclaration = item.getResponseDeclaration(responseIdentifier);
 			
 			if(responseDeclaration.hasBaseType(BaseType.STRING)) {
-				String correctResponse = null;
-				boolean caseSensitive = true;
-				double points = Double.NaN;
-				List<String> alternatives = new ArrayList<>();
-
-				List<MapEntry> mapEntries = responseDeclaration.getMapping().getMapEntries();
-				for(MapEntry mapEntry:mapEntries) {
-					SingleValue mapKey = mapEntry.getMapKey();
-					if(mapKey instanceof StringValue) {
-						String value = ((StringValue)mapKey).stringValue();
-						if(correctResponse == null) {
-							correctResponse = value;
-							points = mapEntry.getMappedValue();
-						} else {
-							alternatives.add(value);
-						}
-					}
-					
-					caseSensitive &= mapEntry.getCaseSensitive();
-				}
-
-				if(points == -1.0d) {
-					points = 0.0d;//all score
-				}
-
-				TextEntryInteractionStatistics stats
-					= new TextEntryInteractionStatistics(responseIdentifier, caseSensitive, correctResponse, alternatives, points);
+				TextEntryInteractionStatistics stats = getTextEntryInteractionSettings(responseIdentifier, responseDeclaration);
+				optionMap.put(responseIdentifier.toString(), stats);
+				options.add(stats);
+			} else if(responseDeclaration.hasBaseType(BaseType.FLOAT)) {
+				NumericalInputInteractionStatistics stats = getNumericalInputInteractionSettings(responseIdentifier, responseDeclaration, item);
 				optionMap.put(responseIdentifier.toString(), stats);
 				options.add(stats);
 			}
@@ -377,7 +361,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			for(RawData data:datas) {
 				Long count = data.getCount();
 				if(count != null && count.longValue() > 0) {
-					TextEntryInteractionStatistics stats = optionMap.get(responseIdentifier);
+					AbstractTextEntryInteractionStatistics stats = optionMap.get(responseIdentifier);
 					String response = data.getStringuifiedResponse();
 					if(response != null && response.length() >= 2 && response.startsWith("[") && response.endsWith("]")) {
 						response = response.substring(1, response.length() - 1);
@@ -394,6 +378,57 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		}
 
 		return options;
+	}
+	
+	private NumericalInputInteractionStatistics getNumericalInputInteractionSettings(Identifier responseIdentifier, ResponseDeclaration responseDeclaration, AssessmentItem item) {
+		NumericalEntry numericalEntry = new NumericalEntry(responseIdentifier);
+		FIBAssessmentItemBuilder.extractNumericalEntrySettings(item, numericalEntry, responseDeclaration, new AtomicInteger(), new DoubleAdder());
+
+		String correctResponse = "";
+		Double solution = numericalEntry.getSolution();
+		if(numericalEntry.getSolution() != null) {
+			correctResponse = solution.toString();
+		}
+		
+		double points = Double.NaN;
+		if(numericalEntry.getScore() == null) {
+			points = 0.0d;//all score
+		} else  {
+			points = numericalEntry.getScore().doubleValue();
+		}
+
+		return new NumericalInputInteractionStatistics(responseIdentifier, correctResponse, solution,
+				numericalEntry.getToleranceMode(), numericalEntry.getLowerTolerance(), numericalEntry.getUpperTolerance(),
+				points);
+	}
+	
+	private TextEntryInteractionStatistics getTextEntryInteractionSettings(Identifier responseIdentifier, ResponseDeclaration responseDeclaration) {
+		String correctResponse = null;
+		boolean caseSensitive = true;
+		double points = Double.NaN;
+		List<String> alternatives = new ArrayList<>();
+
+		List<MapEntry> mapEntries = responseDeclaration.getMapping().getMapEntries();
+		for(MapEntry mapEntry:mapEntries) {
+			SingleValue mapKey = mapEntry.getMapKey();
+			if(mapKey instanceof StringValue) {
+				String value = ((StringValue)mapKey).stringValue();
+				if(correctResponse == null) {
+					correctResponse = value;
+					points = mapEntry.getMappedValue();
+				} else {
+					alternatives.add(value);
+				}
+			}
+			
+			caseSensitive &= mapEntry.getCaseSensitive();
+		}
+
+		if(points == -1.0d) {
+			points = 0.0d;//all score
+		}
+
+		return new TextEntryInteractionStatistics(responseIdentifier, caseSensitive, correctResponse, alternatives, points);
 	}
 	
 	private List<RawData> getRawDatas(String itemRefIdent, String responseIdentifier, QTI21StatisticSearchParams searchParams) {

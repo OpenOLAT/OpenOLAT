@@ -5,8 +5,8 @@
 	#foreach($responseInfo in $series.responseInfos)
 		<li class="o_qti_statistics-correct">
 			<strong>$responseInfo.label</strong>
+			<span class="o_qti_statistics_answer"><strong>$responseInfo.text</strong></span>
 			#if($responseInfo.wrongAnswersAvailable)
-				<span class="o_qti_statistics_answer"><strong>$responseInfo.text</strong></span>
 				<p class="o_qti_statistics_wrong_answer">#if($responseInfo.survey)
 				<i>$r.translate("fib.answer")</i>
 				#else

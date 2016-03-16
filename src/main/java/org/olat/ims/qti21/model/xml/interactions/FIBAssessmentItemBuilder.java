@@ -203,7 +203,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 					} else if(responseDeclaration.hasBaseType(BaseType.FLOAT) && responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
 						NumericalEntry numericalEntry = new NumericalEntry(textInteraction);
 						entry = numericalEntry;
-						extractNumericalEntrySettings(numericalEntry, responseDeclaration, countAlternatives, mappedScore);
+						extractNumericalEntrySettings(assessmentItem, numericalEntry, responseDeclaration, countAlternatives, mappedScore);
 						
 						String marker = "responseIdentifier=\"" + interaction.getResponseIdentifier().toString() + "\"";
 						question = question.replace(marker, marker + " openolatType=\"float\"");
@@ -219,7 +219,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		scoreEvaluation = hasMapping ? ScoreEvaluation.perAnswer : ScoreEvaluation.allCorrectAnswers;
 	}
 	
-	private void extractNumericalEntrySettings(NumericalEntry numericalEntry, ResponseDeclaration responseDeclaration,
+	public static void extractNumericalEntrySettings(AssessmentItem item, NumericalEntry numericalEntry, ResponseDeclaration responseDeclaration,
 			AtomicInteger countAlternatives, DoubleAdder mappedScore) {
 		
 		Double solution = null;
@@ -234,7 +234,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		}
 		
 		//search the equal
-		List<ResponseRule> responseRules = assessmentItem.getResponseProcessing().getResponseRules();
+		List<ResponseRule> responseRules = item.getResponseProcessing().getResponseRules();
 
 		a_a:
 		for(ResponseRule responseRule:responseRules) {
@@ -285,7 +285,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		}
 	}
 	
-	private boolean extractNumericalEntrySettings(NumericalEntry numericalEntry, Equal equal) {
+	private static boolean extractNumericalEntrySettings(NumericalEntry numericalEntry, Equal equal) {
 		Expression variableOrCorrect = equal.getExpressions().get(0);
 		Expression correctOrVariable = equal.getExpressions().get(1);
 		
@@ -801,7 +801,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		}
 	}
 	
-	public abstract class AbstractEntry {
+	public static abstract class AbstractEntry {
 		
 		private Identifier responseIdentifier;
 		private String placeholder;
@@ -848,7 +848,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		}
 	}
 	
-	public class NumericalEntry extends AbstractEntry {
+	public static class NumericalEntry extends AbstractEntry {
 		
 		private Double solution;
 		
@@ -897,7 +897,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		}
 	}
 	
-	public class TextEntry extends AbstractEntry {
+	public static class TextEntry extends AbstractEntry {
 
 		private boolean caseSensitive;
 		
@@ -995,7 +995,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		}
 	}
 	
-	public class TextEntryAlternative {
+	public static class TextEntryAlternative {
 		
 		private String alternative;
 		private double score;
