@@ -529,6 +529,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			if(event.equals(AccessEvent.ACCESS_OK_EVENT)) {
 				reSecurity = repositoryManager.isAllowed(ureq, getRepositoryEntry());
 				launchContent(ureq, reSecurity);
+				initToolbar();
 				cleanUp();
 			} else if(event.equals(AccessEvent.ACCESS_FAILED_EVENT)) {
 				String msg = ((AccessEvent)event).getMessage();
