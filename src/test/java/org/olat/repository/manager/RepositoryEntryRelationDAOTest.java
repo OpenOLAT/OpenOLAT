@@ -179,8 +179,12 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	    dbInstance.commitAndCloseSession();
 	    
 		//get the number of members
-	    int numOfMembers = repositoryService.countMembers(Collections.singletonList(re));
+	    int numOfMembers = repositoryService.countMembers(Collections.singletonList(re), null);
 		Assert.assertEquals(4, numOfMembers);
+		
+		//get the number of members without id1
+	    int numOfMembersWithExclude = repositoryService.countMembers(Collections.singletonList(re), id1);
+		Assert.assertEquals(3, numOfMembersWithExclude);
 	}
 	
 	@Test

@@ -1031,9 +1031,12 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 				Long originalGroupKey = project.getProjectGroup().getKey();
 				Long copiedGroupKey = envMapper.toGroupKeyFromOriginalKey(originalGroupKey);
 				
+				Identity author = envMapper.getAuthor();
 				BusinessGroup projectGroup = bgs.loadBusinessGroup(copiedGroupKey);
-				if(envMapper.getAuthor() != null) {
-					Identity author = envMapper.getAuthor();
+				if (projectGroup == null) {
+					projectGroup = projectGroupManager.createProjectGroupFor(projectBrokerId, author, project.getTitle(), project.getDescription(), course.getResourceableId());
+				}
+				if(author != null) {
 					bgs.addOwners(author, null, Collections.singletonList(author), projectGroup, null);
 				}
 				
