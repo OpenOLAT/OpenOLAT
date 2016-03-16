@@ -635,7 +635,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		
 		boolean calendarIsEnabled =  !assessmentLock && !isGuestOnly && calendarModule.isEnabled()
 				&& calendarModule.isEnableCourseToolCalendar() && reSecurity.canLaunch();
-		if (calendarIsEnabled) {
+		if (calendarIsEnabled && getUserCourseEnvironment() != null) {
 			calendarLink = LinkFactory.createToolLink("calendar",translate("command.calendar"), this, "o_icon_calendar");
 			calendarLink.setPopup(new LinkPopupSettings(950, 750, "cal"));
 			calendarLink.setVisible(cc.isCalendarEnabled());
@@ -660,7 +660,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
 		boolean chatIsEnabled = !assessmentLock && !isGuestOnly && imModule.isEnabled()
 				&& imModule.isCourseEnabled() && reSecurity.canLaunch();
-		if(chatIsEnabled) {
+		if(chatIsEnabled && getUserCourseEnvironment() != null) {
 			chatLink = LinkFactory.createToolLink("chat",translate("command.coursechat"), this, "o_icon_chat");
 			chatLink.setVisible(CourseModule.isCourseChatEnabled() && cc.isChatEnabled());
 			toolbarPanel.addTool(chatLink);
