@@ -238,7 +238,7 @@ public class RepositoryEntryRelationDAO {
 		return count == null ? 0 : count.intValue();
 	}
 	
-	public int countMembers(List<? extends RepositoryEntryRef> res) {
+	public int countMembers(List<? extends RepositoryEntryRef> res, Identity excludeMe) {
 		if(res == null || res.isEmpty()) return 0;
 		
 		List<Long> repoKeys = new ArrayList<>(res.size());
@@ -252,11 +252,18 @@ public class RepositoryEntryRelationDAO {
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as members")
 		  .append(" where v.key in (:repoKeys)");
+		if(excludeMe != null) {
+			sb.append(" and not(members.identity.key=:identityKey)");
+		}
 
-		Number count = dbInstance.getCurrentEntityManager()
+		TypedQuery<Number> countQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)
-				.setParameter("repoKeys", repoKeys)
-				.getSingleResult();
+				.setParameter("repoKeys", repoKeys);
+		if(excludeMe != null) {
+			countQuery.setParameter("identityKey", excludeMe.getKey());
+		}
+		
+		Number count = countQuery.getSingleResult();
 		return count == null ? 0 : count.intValue();
 	}
 	
