@@ -190,6 +190,8 @@ public class CoursePageFragment {
 		browser.findElement(editCourseBy).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.closeBlueMessageWindow(browser);
+		By dropdownModifyNodeBy = By.cssSelector("a.o_sel_course_editor_change_node");
+		OOGraphene.waitElement(dropdownModifyNodeBy, 5, browser);
 		return new CourseEditorPageFragment(browser);
 	}
 	
