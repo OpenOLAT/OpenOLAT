@@ -1,9 +1,17 @@
-<h2><i class="o_icon o_icon_group"> </i> $r.translate("grouprun.details.title")</h2>
-<h5>$r.translate("grouprun.details.name")</h5>	
-<p>$r.escapeHtml($BuddyGroup.getName())</p>
-#if ($BuddyGroup.getDescription()) 
-  #if ($BuddyGroup.getDescription() != "")
-	<h5>$r.translate("grouprun.details.description")</h5>
-	<p>$r.formatLatexFormulas($BuddyGroup.getDescription())</p>
-  #end	
-#end
+<div class="o_group_details">
+	<h2><i class="o_icon o_icon_group"> </i> $r.translate("grouprun.details.title")</h2>
+	<div class="o_block_large o_name">
+		<h5>$r.translate("grouprun.details.name")</h5>	
+		<div class="o_block">$r.escapeHtml($BuddyGroup.getName())</div>
+	</div>
+	#if ($BuddyGroup.getDescription()) 
+	  #if ($BuddyGroup.getDescription() != "")
+	  	<div class="o_block_large o_desc o_user_content_block">
+			<h5>$r.translate("grouprun.details.description")</h5>
+			<div class="o_block">
+				$r.formatLatexFormulas($BuddyGroup.getDescription())
+			</div>
+	  	</div>
+	  #end	
+	#end
+</div>

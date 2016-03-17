@@ -181,12 +181,16 @@ body.o_cal_print {
 					p {
 						margin: 0;
 					}
-
 				}
 				
 				.o_cal_location,
-				.o_cal_description {
+				.o_cal_description,
+				.o_cal_freebusy {
 					clear: both;				
+				}
+				
+				.o_cal_freebusy {
+					font-style: italic;
 				}
 			}
 		}

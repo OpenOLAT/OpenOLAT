@@ -42,7 +42,7 @@ public class TitledWrapperHelper {
 			return controller;
 		} else if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_CONTENT.equals(displayOption)) {
 			TitleInfo titleInfo = new TitleInfo(null, courseNode.getShortTitle(), null, courseNode.getIdent());
-			titleInfo.setDescriptionCssClass("o_objectives");
+			titleInfo.setDescriptionCssClass("o_objectives o_user_content_block");
 			if (StringHelper.containsNonWhitespace(iconCssClass)) {
 				titleInfo.setIconCssClass(iconCssClass);
 			}
@@ -50,7 +50,7 @@ public class TitledWrapperHelper {
 			return titledController; 
 		} else if (CourseNode.DISPLAY_OPTS_TITLE_CONTENT.equals(displayOption)) {
 			TitleInfo titleInfo = new TitleInfo(null, courseNode.getLongTitle(), null, courseNode.getIdent());
-			titleInfo.setDescriptionCssClass("o_objectives");
+			titleInfo.setDescriptionCssClass("o_objectives o_user_content_block");
 			if (StringHelper.containsNonWhitespace(iconCssClass)) {
 				titleInfo.setIconCssClass(iconCssClass);
 			}
@@ -66,7 +66,7 @@ public class TitledWrapperHelper {
 			}
 			
 			TitleInfo titleInfo = new TitleInfo(null, title, description, courseNode.getIdent());
-			titleInfo.setDescriptionCssClass("o_objectives");
+			titleInfo.setDescriptionCssClass("o_objectives o_user_content_block");
 			if (StringHelper.containsNonWhitespace(iconCssClass)) {
 				titleInfo.setIconCssClass(iconCssClass);
 			}
@@ -82,7 +82,7 @@ public class TitledWrapperHelper {
 			}
 			
 			TitleInfo titleInfo = new TitleInfo(null, title, description, courseNode.getIdent());
-			titleInfo.setDescriptionCssClass("o_objectives");
+			titleInfo.setDescriptionCssClass("o_objectives o_user_content_block");
 			if (StringHelper.containsNonWhitespace(iconCssClass)) {
 				titleInfo.setIconCssClass(iconCssClass);
 			}
