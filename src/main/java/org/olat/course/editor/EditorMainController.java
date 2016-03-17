@@ -106,8 +106,6 @@ import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.PublishTreeModel;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryRef;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.ToolbarAware;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -191,7 +189,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private MultiSPController multiSPChooserCtr;
 
 	private final OLATResourceable ores;
-	private RepositoryEntryRef repoEntry;
+	private RepositoryEntry repoEntry;
 	
 	private static final OLog log = Tracing.createLoggerFor(EditorMainController.class);
 	private final static String RELEASE_LOCK_AT_CATCH_EXCEPTION = "Must release course lock since an exception occured in " + EditorMainController.class;
@@ -206,15 +204,15 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	 * @param wControl The window controller
 	 * @param course The course
 	 */
-	public EditorMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar, OLATResourceable ores, CourseNode selectedNode) {
+	public EditorMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar, ICourse course, CourseNode selectedNode) {
 		super(ureq,wControl);
-		this.ores = ores;	
+		this.ores = OresHelper.clone(course);	
 		this.stackPanel = toolbar;
 
 		// OLAT-4955: setting the stickyActionType here passes it on to any controller defined in the scope of the editor,
 		//            basically forcing any logging action called within the course editor to be of type 'admin'
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
-		addLoggingResourceable(LoggingResourceable.wrap(CourseFactory.loadCourse(ores)));
+		addLoggingResourceable(LoggingResourceable.wrap(course));
 		
 		// try to acquire edit lock for this course.			
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(ores, ureq.getIdentity(), CourseFactory.COURSE_EDITOR_LOCK);
@@ -235,14 +233,15 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				MainPanel empty = new MainPanel("empty");
 				putInitialPanel(empty);
 			} else {
-				ICourse course = CourseFactory.openCourseEditSession(ores.getResourceableId());
+				course = CourseFactory.openCourseEditSession(ores.getResourceableId());
+				CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
+				repoEntry = cgm.getCourseEntry();
+				
 				main = createVelocityContainer("index");
 				//must be true for deleted course node
 				main.setDomReplacementWrapperRequired(true);
 				
-				OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", ores.getResourceableId());
-				RepositoryEntry repo = RepositoryManager.getInstance().lookupRepositoryEntry(courseOres, false);
-				Controller courseCloser = new DisposedCourseRestartController(ureq, wControl, repo);
+				Controller courseCloser = new DisposedCourseRestartController(ureq, wControl, repoEntry);
 				Controller disposedRestartController = new LayoutMain3ColsController(ureq, wControl, courseCloser);
 				setDisposedMsgController(disposedRestartController);
 				
@@ -266,10 +265,9 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				 * XSTREAM constructors are not called, but transient data must be
 				 * caculated and initialized
 				 */
-				cetm = CourseFactory.getCourseEditSession(ores.getResourceableId()).getEditorTreeModel();
-				CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-				repoEntry = cgm.getCourseEntry();
-				CourseEditorEnv cev = new CourseEditorEnvImpl(cetm, cgm, ureq.getLocale());
+				cetm = course.getEditorTreeModel();
+	
+				CourseEditorEnv cev = new CourseEditorEnvImpl(cetm, cgm, getLocale());
 				euce = new EditorUserCourseEnvironmentImpl(cev, getWindowControl());
 				euce.getCourseEditorEnv().setCurrentCourseNodeId(null);
 				
@@ -277,7 +275,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				menuTree.setOpenNodeIds(Collections.singleton(cetm.getRootNode().getIdent()));
 				menuTree.addListener(this);
 	
-				tabbedNodeConfig = new TabbedPane("tabbedNodeConfig", ureq.getLocale());
+				tabbedNodeConfig = new TabbedPane("tabbedNodeConfig", getLocale());
 				tabbedNodeConfig.setElementCssClass("o_node_config");
 				main.put(tabbedNodeConfig.getComponentName(), tabbedNodeConfig);
 				
@@ -316,7 +314,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				// validate course and update course status
 				euce.getCourseEditorEnv().validateCourse();
 				StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
-				updateCourseStatusMessages(ureq.getLocale(), courseStatus);
+				updateCourseStatusMessages(getLocale(), courseStatus);
 	
 				// add as listener to course so we are being notified about course events:
 				// - deleted events
@@ -357,8 +355,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				doQuickPublish(ureq, course);
 				immediateClose = false;
 			}
-		} catch (CorruptedCourseException e) {
-			logError("", e);
+		} catch (CorruptedCourseException | NullPointerException e) {
+			logError("Error request on close: " + ores, e);
 		}
 		return immediateClose;
 	}
