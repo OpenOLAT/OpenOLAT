@@ -118,11 +118,6 @@ public class UpdateIdentity implements Identity {
 	}
 
 	@Override
-	public void setLastLogin(Date loginDate) {
-		//
-	}
-
-	@Override
 	public Integer getStatus() {
 		return identity.getStatus();
 	}

@@ -97,11 +97,6 @@ public class TransientIdentity implements Identity, User {
 	}
 
 	@Override
-	public void setLastLogin(Date loginDate) {
-		//
-	}
-
-	@Override
 	public Integer getStatus() {
 		return null;
 	}

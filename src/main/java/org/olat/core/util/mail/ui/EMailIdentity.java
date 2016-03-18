@@ -80,10 +80,6 @@ public class EMailIdentity implements Identity {
 	}
 
 	@Override
-	public void setLastLogin(Date loginDate) {/**/
-	}
-
-	@Override
 	public Integer getStatus() {
 		return null;
 	}

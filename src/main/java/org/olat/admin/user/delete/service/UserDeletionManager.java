@@ -381,15 +381,14 @@ public class UserDeletionManager extends BasicManager {
 	 * Re-activate an identity, lastLogin = now, reset deleteemaildate = null.
 	 * @param identity
 	 */
-	public Identity setIdentityAsActiv(final Identity anIdentity) {
-		final Identity reloadedIdentity = securityManager.setIdentityLastLogin(anIdentity);
-
-		LifeCycleManager lifeCycleManagerForIdenitiy = LifeCycleManager.createInstanceFor(reloadedIdentity);
+	public Identity setIdentityAsActiv(final Identity identity) {
+		securityManager.setIdentityLastLogin(identity);
+		LifeCycleManager lifeCycleManagerForIdenitiy = LifeCycleManager.createInstanceFor(identity);
 		if (lifeCycleManagerForIdenitiy.hasLifeCycleEntry(SEND_DELETE_EMAIL_ACTION)) {
-			logAudit("User-Deletion: Remove from delete-list identity=" + reloadedIdentity);
+			logAudit("User-Deletion: Remove from delete-list identity=" + identity);
 			lifeCycleManagerForIdenitiy.deleteTimestampFor(SEND_DELETE_EMAIL_ACTION);
 		}
-		return reloadedIdentity;
+		return identity;
 	}
 
 	/**

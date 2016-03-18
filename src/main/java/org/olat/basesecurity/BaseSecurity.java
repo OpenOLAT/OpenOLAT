@@ -613,7 +613,7 @@ public interface BaseSecurity {
 	 * @param identity
 	 * @return
 	 */
-	public Identity setIdentityLastLogin(Identity identity);
+	public void setIdentityLastLogin(IdentityRef identity);
 	
 	/**
 	 * Set the identity name. 
