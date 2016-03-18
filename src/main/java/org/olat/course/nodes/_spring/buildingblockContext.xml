@@ -89,6 +89,10 @@
 		</property>
 	</bean>
 	
+	<bean id="video" class="org.olat.course.nodes.video.VideoCourseNodeConfiguration" scope="prototype">
+		<property name="order" value="220" />
+	</bean>
+	
 	<bean id="ita" class="org.olat.course.nodes.gta.GTACourseNodeConfiguration" scope="prototype">
 		<constructor-arg index="0" value="true" />
 		<property name="order" value="131" />

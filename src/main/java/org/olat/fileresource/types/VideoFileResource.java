@@ -27,35 +27,38 @@ package org.olat.fileresource.types;
 
 import java.io.File;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.modules.video.VideoModule;
+
 /**
- * Initial Date:  Apr 6, 2004
+ * Initial Date:  Mar 27, 2015
  *
- * @author Mike Stock
+ * @author Dirk Furrer
  */
-public class MovieFileResource extends FileResource {
+public class VideoFileResource extends FileResource {
+
+
+	private static VideoModule videomodule = CoreSpringFactory.getImpl(VideoModule.class);
 
 	/**
 	 * Movie file resource dientifier.
 	 */
-	public static final String TYPE_NAME = "FileResource.MOVIE";
+	public static final String TYPE_NAME = "FileResource.VIDEO";
 
-	public MovieFileResource() {
+	public VideoFileResource() {
 		super(TYPE_NAME);
 	}
-	
+
 	/**
-	 * @param f
+	 * @param f file to validate
 	 * @return True if is of type.
 	 */
 	public static boolean validate(File f) {
 		return validate(f.getName());
 	}
-	
+
 	public static boolean validate(String filename) {
 		String f = filename.toLowerCase();
-		return f.endsWith(".avi") || f.endsWith(".mpeg") ||
-				f.endsWith(".mpg") || f.endsWith(".qt") ||
-				f.endsWith(".rm") || f.endsWith(".ram") ||
-				f.endsWith(".m4v");
+		return videomodule.isEnabled() && (f.endsWith(".mp4")|| f.endsWith(".mov"));
 	}
 }

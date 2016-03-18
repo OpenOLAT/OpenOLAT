@@ -1,0 +1,43 @@
+
+#if($image)
+	<img src="$mediaUrl/$filename" />
+#elseif($movie)
+	<div class="olatFlashMovieViewer">
+		<video id="$r.getId("o_vid")" width="$width" height="$height" poster="$mediaUrl/poster.jpg" controls  #if( $autoplay ) autoplay #end>
+	    	<source type="video/mp4" src="$mediaUrl/$filename" />
+	  		#if( $trackfiles )
+		  		#foreach( $track in $trackfiles.keySet())
+		  		<track kind="subtitles" src="$mediaUrl/$trackfiles.get($track)" srclang="$track" />
+		  		#end
+		  	#end
+		</video>
+
+
+		<script defer="defer" type="text/javascript">
+		// <![CDATA[
+		// using jQuery
+		jQuery('#$r.getId("o_vid")').mediaelementplayer({
+			success: function (mediaElement, domObject) {
+		        // add event listener
+		        mediaElement.addEventListener('ended', function(e) {
+		        	if (!o_info.linkbusy) {
+						window.suppressOlatOnUnloadOnce = true;
+						o_beforeserver();
+						$r.javaScriptBgCommand("ended");
+					}
+
+		        }, false);
+		    }
+
+
+		});
+		// ]]>
+		</script>
+	</div>
+#elseif($r.available("content"))
+	<div class="o_content clearfix">$r.render("content")</div>
+#end
+$r.render("commentsAndRating")
+#if($description)
+$description
+#end

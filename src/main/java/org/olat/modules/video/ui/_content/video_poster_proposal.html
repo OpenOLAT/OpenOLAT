@@ -1,0 +1,5 @@
+#foreach( $poster in $pics.entrySet())
+<div>
+<img src="$poster.key" height="400px" width="400px" />$r.render($poster.value)
+</div>
+#end
