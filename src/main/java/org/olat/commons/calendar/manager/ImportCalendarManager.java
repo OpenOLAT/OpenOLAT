@@ -46,6 +46,7 @@ import org.olat.commons.calendar.model.ImportedCalendar;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarComparator;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -69,6 +70,10 @@ import net.fortuna.ical4j.model.Calendar;
 public class ImportCalendarManager {
 	private static final OLog log = Tracing.createLoggerFor(ImportCalendarManager.class);
 	
+	private static final int RELOAD_INTERVAL = 3600000;
+	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private CalendarModule calendarModule;
 	@Autowired
@@ -147,20 +152,11 @@ public class ImportCalendarManager {
 
 			List<ImportedCalendar> importedCalendars = importedCalendarDao.getImportedCalendars(identity);
 			for (ImportedCalendar importedCalendar: importedCalendars) {
-				String calendarId = importedCalendar.getCalendarId();
-				String url = importedCalendar.getUrl();
-
 				if(reload) {
-					Date lastUpdate = importedCalendar.getLastUpdate();
-					if (url != null && (timestamp - lastUpdate.getTime() > 3600000)) {
-						log.info("Calendar reload started from url=" + url);
-						reloadCalendarFromUrl(url, CalendarManager.TYPE_USER, calendarId);
-						importedCalendar.setLastUpdate(new Date());
-						importedCalendar = importedCalendarDao.update(importedCalendar);
-						log.info("Calendar reloaded from url=" + url);
-					}
+					reloadImportCalendar(importedCalendar, timestamp);
 				}
-				
+
+				String calendarId = importedCalendar.getCalendarId();
 				KalendarRenderWrapper calendarWrapper = calendarManager.getImportedCalendar(identity, calendarId);
 				calendarWrapper.setDisplayName(importedCalendar.getDisplayName());
 				calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
@@ -177,34 +173,37 @@ public class ImportCalendarManager {
 	}
 	
 	public List<CalendarFileInfos> getImportedCalendarInfosForIdentity(Identity identity, boolean reload) {
-		// initialize the calendars list
-
 		List<CalendarFileInfos> calendars = new ArrayList<CalendarFileInfos>();
 		if(calendarModule.isEnabled() && calendarModule.isEnablePersonalCalendar()) {
 			long timestamp = System.currentTimeMillis();
 
 			List<ImportedCalendar> importedCalendars = importedCalendarDao.getImportedCalendars(identity);
 			for (ImportedCalendar importedCalendar: importedCalendars) {
-				String calendarId = importedCalendar.getCalendarId();
-				String url = importedCalendar.getUrl();
-
 				if(reload) {
-					Date lastUpdate = importedCalendar.getLastUpdate();
-					if (url != null && (timestamp - lastUpdate.getTime() > 3600000)) {
-						log.info("Calendar reload started from url=" + url);
-						reloadCalendarFromUrl(url, CalendarManager.TYPE_USER, calendarId);
-						importedCalendar.setLastUpdate(new Date());
-						importedCalendar = importedCalendarDao.update(importedCalendar);
-						log.info("Calendar reloaded from url=" + url);
-					}
+					reloadImportCalendar(importedCalendar, timestamp);
 				}
-
+				String calendarId = importedCalendar.getCalendarId();
 				File calendarFile = calendarManager.getCalendarFile(CalendarManager.TYPE_USER, calendarId);
 				CalendarFileInfos calendarInfos = new CalendarFileInfos(calendarId, CalendarManager.TYPE_USER, calendarFile);
 				calendars.add(calendarInfos);
 			}
 		}
 		return calendars;
+	}
+	
+	private void reloadImportCalendar(ImportedCalendar importedCalendar, long timestamp) {
+		String url = importedCalendar.getUrl();
+		Date lastUpdate = importedCalendar.getLastUpdate();
+		if (url != null && (timestamp - lastUpdate.getTime() > RELOAD_INTERVAL)) {
+			log.info("Calendar reload started from url=" + url);
+			importedCalendar.setLastUpdate(new Date());
+			importedCalendar = importedCalendarDao.update(importedCalendar);
+			dbInstance.commit();
+			
+			String calendarId = importedCalendar.getCalendarId();
+			reloadCalendarFromUrl(url, CalendarManager.TYPE_USER, calendarId);
+			log.info("Calendar reloaded from url=" + url);
+		}
 	}
 
 	/**
