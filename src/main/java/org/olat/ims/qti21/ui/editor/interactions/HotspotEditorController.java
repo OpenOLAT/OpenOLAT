@@ -22,7 +22,12 @@ package org.olat.ims.qti21.ui.editor.interactions;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -52,10 +57,14 @@ import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.ims.qti21.model.QTI21QuestionType;
+import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Shape;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.HotspotChoice;
 
 /**
  * 
@@ -86,6 +95,7 @@ public class HotspotEditorController extends FormBasicController {
 	
 	private File backgroundImage;
 	private File initialBackgroundImage;
+	private Map<String,HotspotWrapper> wrapperMap = new HashMap<>();
 	
 	private final String backgroundMapperUri;
 	
@@ -125,6 +135,15 @@ public class HotspotEditorController extends FormBasicController {
 		JSAndCSSFormItem js = new JSAndCSSFormItem("js", new String[] { "js/jquery/openolat/jquery.drawing.js" });
 		formLayout.add(js);
 		formLayout.add(hotspotsCont);
+		
+		List<HotspotChoice> choices = itemBuilder.getHotspotChoices();
+		List<HotspotWrapper> choiceWrappers = new ArrayList<>();
+		for(HotspotChoice choice:choices) {
+			HotspotWrapper spot = new HotspotWrapper(choice);
+			choiceWrappers.add(spot);
+			wrapperMap.put(spot.getIdentifier(), spot);
+		}
+		hotspotsCont.contextPut("hotspots", choiceWrappers);
 		
 		initialBackgroundImage = getCurrentBackground();
 		backgroundEl = uifactory.addFileElement(getWindowControl(), "form.imd.background", "form.imd.background", formLayout);
@@ -224,7 +243,9 @@ public class HotspotEditorController extends FormBasicController {
 			hotspotsCont.contextRemove("filename");
 		}
 	}
+	
 
+	
 	@Override
 	protected void formOK(UserRequest ureq) {
 		itemBuilder.setTitle(titleEl.getValue());
@@ -251,8 +272,77 @@ public class HotspotEditorController extends FormBasicController {
 			}
 			itemBuilder.setBackground(filename, mimeType, height, width);
 		}
+		updateHotspots(ureq);
 		
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), QTI21QuestionType.hotspot));
+	}
+	
+	private void updateHotspots(UserRequest ureq) {
+		for(Enumeration<String> parameterNames = ureq.getHttpReq().getParameterNames(); parameterNames.hasMoreElements(); ) {
+			String name = parameterNames.nextElement();
+			String value = ureq.getHttpReq().getParameter(name);
+			if(name.endsWith("_shape")) {
+				String hotspotIdentifier = name.substring(0, name.length() - 6);
+				HotspotWrapper spot = getOrCreateHotspots(hotspotIdentifier);
+				spot.setShape(value);
+			} else if(name.endsWith("_coords")) {
+				String hotspotIdentifier = name.substring(0, name.length() - 7);
+				HotspotWrapper spot = getOrCreateHotspots(hotspotIdentifier);
+				spot.setCoords(value);
+			}
+		}
+		
+		List<HotspotWrapper> choiceWrappers = new ArrayList<>();
+		for(HotspotWrapper choiceWrapper:wrapperMap.values()) {
+			choiceWrappers.add(choiceWrapper);
+		}
+		hotspotsCont.contextPut("hotspots", choiceWrappers);
+	}
+	
+	private HotspotWrapper getOrCreateHotspots(String hotspotIdentifier) {
+		HotspotWrapper wrapper = wrapperMap.get(hotspotIdentifier);
+		if(wrapper == null) {
+			HotspotChoice choice = itemBuilder.createHotspotChoice(hotspotIdentifier);
+			wrapper = new HotspotWrapper(choice);
+			wrapperMap.put(hotspotIdentifier, wrapper);
+		}
+		return wrapper;
+	}
+	
+	public static class HotspotWrapper {
+
+		private final HotspotChoice choice;
+		
+		public HotspotWrapper(HotspotChoice choice) {
+			this.choice = choice;
+		}
+
+		public String getIdentifier() {
+			return choice.getIdentifier().toString();
+		}
+
+		public String getShape() {
+			return choice.getShape().toQtiString();
+		}
+		
+		public void setShape(String shape) {
+			if("circle".equals(shape)) {
+				choice.setShape(Shape.CIRCLE);
+			} else if("rect".equals(shape)) {
+				choice.setShape(Shape.RECT);
+			} else if("poly".equals(shape)) {
+				choice.setShape(Shape.POLY);
+			}
+		}
+
+		public String getCoords() {
+			return AssessmentItemFactory.coordsString(choice.getCoords());
+		}
+
+		public void setCoords(String coords) {
+			List<Integer> coordList = AssessmentItemFactory.coordsList(coords);
+			choice.setCoords(coordList);
+		}
 	}
 	
 	private static class BackgroundMapper implements Mapper {

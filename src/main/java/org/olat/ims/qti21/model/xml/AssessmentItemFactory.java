@@ -27,6 +27,7 @@ import static org.olat.ims.qti21.QTI21Constants.SCORE_IDENTIFIER;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
@@ -916,5 +917,27 @@ public class AssessmentItemFactory {
 		TextRun text = new TextRun(paragraph, content);
 		paragraph.getInlines().add(text);
 		return paragraph;
+	}
+	
+	public static String coordsString(List<Integer> coords) {
+		StringBuilder sb = new StringBuilder();
+		if(coords != null && coords.size() > 0) {
+			for(Integer coord:coords) {
+				if(sb.length() > 0) sb.append(",");
+				sb.append(coord.intValue());
+			}
+		}
+		return sb.toString();
+	}
+	
+	public static List<Integer> coordsList(String coords) {
+		List<Integer> list = new ArrayList<>();
+		if(StringHelper.containsNonWhitespace(coords)) {
+			for(StringTokenizer tokenizer = new StringTokenizer(coords, ","); tokenizer.hasMoreElements(); ) {
+				String coord = tokenizer.nextToken();
+				list.add(new Integer(Math.round(Float.parseFloat(coord))));
+			}
+		}
+		return list;
 	}
 }

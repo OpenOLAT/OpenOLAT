@@ -43,6 +43,17 @@ a.o_chelp {
 	color: $o-chelp-tooltip-color;
 }
 
+/* drawing */
+.o_draw_circle {
+	border: $o-drawing-border-width solid $o-drawing-border-color;
+	border-radius: 50%;
+	position: absolute !important;
+}
+
+.o_draw_rectangle {
+	border: $o-drawing-border-width solid $o-drawing-border-color;
+	position: absolute !important;
+}
 
 
 /* iframe display controller - used to deliver all course contents */

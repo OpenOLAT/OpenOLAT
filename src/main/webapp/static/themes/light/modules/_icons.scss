@@ -361,6 +361,10 @@ $fa-css-prefix: "o_icon" !default;
 .o_forum_marked_icon:before { content: $fa-var-bookmark; }
 .o_forum_new_icon:before { content: $fa-var-asterisk; }
 
+/* drawing */
+.o_icon_circle:before { content: $fa-var-circle-o; }
+.o_icon_rectangle:before { content: $fa-var-square-o; }
+
 /* tests icons */
 .o_mi_qpool_import:before { content: $fa-var-database; }
 .o_mi_qtisection:before { content: $fa-var-cubes; }

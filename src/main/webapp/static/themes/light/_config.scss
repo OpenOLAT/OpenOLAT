@@ -431,6 +431,10 @@ $o-step-done-marker-color	: $brand-success !default;
 $o-step-meta-color			: $text-muted !default;
 $o-step-meta-size			: $font-size-small !default;
 
+/* Drawing */
+$o-drawing-border-color		: $brand-primary;
+$o-drawing-border-width		: 4px !default;
+
 /* other configurations */
 $o-portrait-radius				: 50% !default;
 $o-portrait-border				: none !default;

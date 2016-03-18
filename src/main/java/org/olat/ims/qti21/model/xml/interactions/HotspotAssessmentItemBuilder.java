@@ -41,6 +41,7 @@ import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.object.Object;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.HotspotChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseProcessing;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseRule;
@@ -153,6 +154,17 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder {
 	@Override
 	public void setQuestion(String question) {
 		this.question = question;
+	}
+	
+	public List<HotspotChoice> getHotspotChoices() {
+		return hotspotInteraction.getHotspotChoices();
+	}
+	
+	public HotspotChoice createHotspotChoice(String id) {
+		HotspotChoice choice = new HotspotChoice(hotspotInteraction);
+		choice.setFixed(Boolean.FALSE);
+		choice.setIdentifier(Identifier.parseString(id));
+		return choice;
 	}
 
 	@Override
