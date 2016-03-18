@@ -72,9 +72,10 @@ public interface Identity extends CreateInfo, IdentityRef, Persistable {
 	 */
 	public Date getLastLogin();
 
+
 	/**
 	 * @return Current identity status 
 	 */
 	public Integer getStatus();
-
+	
 }

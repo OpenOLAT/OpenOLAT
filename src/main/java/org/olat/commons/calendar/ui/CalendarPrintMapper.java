@@ -198,8 +198,14 @@ public class CalendarPrintMapper implements Mapper {
 
 	private void renderEvent(StringBuilder sb, KalendarEventRenderWrapper eventWrapper, Date dayStart, Date dayEnd) {
 		KalendarEvent event = eventWrapper.getEvent();
-		boolean hidden = eventWrapper.getCalendarAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY
-				&& !eventWrapper.getKalendarRenderWrapper().isImported() && event.getClassification() != KalendarEvent.CLASS_PUBLIC;
+		
+		// check if event is private and user allowed to see it 
+		if (event.getClassification() == KalendarEvent.CLASS_PRIVATE 
+			&& !eventWrapper.getKalendarRenderWrapper().isPrivateEventsVisible()) {
+			return;
+		}
+
+		// Show all PUBLIC and FREEBUSY events
 		String escapedSubject = Formatter.escWithBR(event.getSubject()).toString();
 		escapedSubject = escapedSubject.replace('\r', ' ');
 		sb.append("<li class=\"o_cal_event\">\n");
@@ -223,32 +229,38 @@ public class CalendarPrintMapper implements Mapper {
 			sb.append(StringHelper.formatLocaleTime(end, translator.getLocale()));
 		}
 		sb.append("</span></div>\n");
-		// event name (subject)
-		// firefox doesn't break lines with only <br />, we need <p>
-		sb.append("<div class=\"o_cal_subject\"><p>");
-		if (hidden) {
-			sb.append("-");
-		} else {
+		
+		// Show calendar data only when user allowed to see private data, or the event is 
+		// public or the calendar is imported (because the free/busy flag is not standard 
+		// and should not be applied to imported calendars)
+		if (eventWrapper.getKalendarRenderWrapper().isPrivateEventsVisible() 
+			|| event.getClassification() == KalendarEvent.CLASS_PUBLIC
+			|| eventWrapper.getKalendarRenderWrapper().isImported()) {
+			// event name (subject)
+			// firefox doesn't break lines with only <br />, we need <p>
+			sb.append("<div class=\"o_cal_subject\"><p>");
 			sb.append(escapedSubject.replace("<br />", "</p><p>"));
-		}
-		sb.append("</p></div>\n");
-		// location
-		if (StringHelper.containsNonWhitespace(event.getLocation())) {
-			sb.append("<div class=\"o_cal_location\"><span>\n<strong>");
-			sb.append(translator.translate("cal.form.location") + "</strong>: ");
-			if (!hidden) {
+			sb.append("</p></div>\n");
+			// location
+			if (StringHelper.containsNonWhitespace(event.getLocation())) {
+				sb.append("<div class=\"o_cal_location\"><span>\n<strong>");
+				sb.append(translator.translate("cal.form.location") + "</strong>: ");
 				sb.append(StringHelper.escapeHtml(event.getLocation()));
+				sb.append("</span></div>\n");
 			}
-			sb.append("</span></div>\n");
-		}
-		// description
-		if (StringHelper.containsNonWhitespace(event.getDescription())) {
-			sb.append("<div class=\"o_cal_description\"><span>\n<strong>");
-			sb.append(translator.translate("cal.form.description") + "</strong>: ");
-			if (!hidden) {
+			// description
+			if (StringHelper.containsNonWhitespace(event.getDescription())) {
+				sb.append("<div class=\"o_cal_description\"><span>\n<strong>");
+				sb.append(translator.translate("cal.form.description") + "</strong>: ");
 				sb.append(StringHelper.escapeHtml(event.getDescription()));
-			}
-			sb.append("</span></div>\n");
+				sb.append("</span></div>\n");
+			}			
+		} else {
+			// for free-busy events where user has not the right to see the private stuff
+			// show only a message
+			sb.append("<div class=\"o_cal_freebusy\"><p>");
+			sb.append(translator.translate("cal.form.subject.hidden"));
+			sb.append("</p></div>\n");
 		}
 		sb.append("</li>\n");
 	}

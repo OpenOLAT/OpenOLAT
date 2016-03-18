@@ -116,22 +116,24 @@ public class IdentityImpl extends PersistentObject implements Identity, Identity
 	 * 
 	 * @param user The user to set
 	 */
+	@SuppressWarnings("unused")
 	private void setUser(User user) {
 		this.user = user;
 	}
 
 	/**
-	 * Set new last login value
+	 * for hibernate only.
 	 * 
 	 * @param newLastLogin  The new last login date
 	 */
-	public void setLastLogin(Date newLastLogin) {
+	private void setLastLogin(Date newLastLogin) {
 		this.lastLogin = newLastLogin;
 	}
 
 	/**
 	 * @see java.lang.Object#toString()
 	 */
+	@Override
 	public String toString() {
 		return "Identity[name=" + name + "], " + super.toString();
 	}
@@ -155,6 +157,7 @@ public class IdentityImpl extends PersistentObject implements Identity, Identity
 	 * Compares the usernames.
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
+	@Override
 	public boolean equals(Object obj) {
 		if(this == obj)
 			return true;
@@ -165,11 +168,11 @@ public class IdentityImpl extends PersistentObject implements Identity, Identity
 		return this.getName().equals(identity.getName());
 	}
 
+	@Override
 	public int hashCode() {
 		int hash = 7;
 		hash = 31 * hash;
 		hash = 31 * hash + (null == this.getName() ? 0 : this.getName().hashCode());
 		return hash;
 	}
-
 }

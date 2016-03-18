@@ -61,6 +61,7 @@ public class GroupsPage {
 		WebElement createButton = browser.findElement(createBy);
 		createButton.click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		By popupBy = By.cssSelector("div.modal-content fieldset.o_sel_group_edit_group_form");
 		OOGraphene.waitElement(popupBy, 5, browser);
 		
@@ -75,7 +76,7 @@ public class GroupsPage {
 		WebElement submitButton = browser.findElement(submitBy);
 		submitButton.click();
 		OOGraphene.waitBusy(browser);
-		By groupNameBy = By.xpath("//div[@id='o_main_center_content_inner']//p[contains(text(),'" + name+ "')]");
+		By groupNameBy = By.xpath("//div[@id='o_main_center_content_inner']//div[contains(@class,'o_name')]//div[contains(text(),'" + name+ "')]");
 		OOGraphene.waitElement(groupNameBy, 2, browser);
 		
 		return new GroupPage(browser);
@@ -118,11 +119,8 @@ public class GroupsPage {
 	 */
 	public GroupPage selectGroup(String name) {
 		selectGroupInTable(name);
-		
-		//By groupNameBy = By.xpath("//div[contains(@class,'o_tree')]//a/span[contains(text(),'" + name+ "')]");
-		By groupNameBy = By.xpath("//div[@id='o_main_center_content_inner']//p[contains(text(),'" + name+ "')]");
+		By groupNameBy = By.xpath("//div[@id='o_main_center_content_inner']//div[contains(@class,'o_name')]//div[contains(text(),'" + name+ "')]");
 		OOGraphene.waitElement(groupNameBy, browser);
-		
 		return new GroupPage(browser);
 	}
 	

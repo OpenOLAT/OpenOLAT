@@ -1904,12 +1904,13 @@ public class BaseSecurityManager implements BaseSecurity {
 	}
 	
 	@Override
-	public Identity setIdentityLastLogin(Identity identity) {
-		IdentityImpl reloadedIdentity = loadForUpdate(identity); 
-		reloadedIdentity.setLastLogin(new Date());
-		reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+	public void setIdentityLastLogin(IdentityRef identity) {
+		dbInstance.getCurrentEntityManager()
+				.createNamedQuery("updateIdentityLastLogin")
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("now", new Date())
+				.executeUpdate();
 		dbInstance.commit();
-		return reloadedIdentity;
 	}
 	
 	@Override
