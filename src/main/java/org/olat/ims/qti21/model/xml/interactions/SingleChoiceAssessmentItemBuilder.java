@@ -46,6 +46,7 @@ import uk.ac.ed.ph.jqtiplus.node.expression.operator.Sum;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseCondition;
@@ -131,7 +132,7 @@ public class SingleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuild
 	}
 
 	@Override
-	public boolean isCorrect(SimpleChoice choice) {
+	public boolean isCorrect(Choice choice) {
 		return correctAnswer != null && correctAnswer.equals(choice.getIdentifier());
 	}
 	

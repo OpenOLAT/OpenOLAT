@@ -40,7 +40,7 @@ public class TinyConfig {
 	}
 	//standard profile
 	static {
-		String plugins =   "contextmenu,colorpicker,textcolor,hr,olatsmileys,paste,link,charmap,quotespliter,olatmatheditor,tabfocus,visualchars,visualblocks,noneditable";
+		String plugins =   "contextmenu,colorpicker,textcolor,hr,olatsmileys,paste,link,charmap,quotespliter,tabfocus,visualchars,visualblocks,noneditable";
 		String[] menu = {
 				"edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall searchreplace'}",
 			  "insert: {title: 'Insert', items: 'olatmovieviewer media image link | olatmatheditor hr charmap insertdatetime olatsmileys'}",
@@ -52,7 +52,7 @@ public class TinyConfig {
 	}
 	//full profile
 	static {
-		String plugins =   "contextmenu,colorpicker,textcolor,hr,olatsmileys,paste,link,charmap,quotespliter,olatmatheditor,tabfocus,visualchars,visualblocks,noneditable,table";
+		String plugins =   "contextmenu,colorpicker,textcolor,hr,olatsmileys,paste,link,charmap,quotespliter,tabfocus,visualchars,visualblocks,noneditable,table";
 		String[] menu = {
 				"edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall searchreplace'}",
 			  "insert: {title: 'Insert', items: 'olatmovieviewer media image link | olatmatheditor hr charmap insertdatetime olatsmileys'}",
@@ -65,7 +65,7 @@ public class TinyConfig {
 	}
 	//file profile
 	static {
-		String plugins =   "colorpicker,textcolor,hr,link,charmap,image,olatmatheditor,importcss,insertdatetime,code,table,tabfocus,visualchars,visualblocks,noneditable,fullscreen,contextmenu,anchor,olatmovieviewer,searchreplace,olatsmileys,paste,media";
+		String plugins =   "colorpicker,textcolor,hr,link,charmap,image,importcss,insertdatetime,code,table,tabfocus,visualchars,visualblocks,noneditable,fullscreen,contextmenu,anchor,olatmovieviewer,searchreplace,olatsmileys,paste,media";
 		String[] menu = {
 				"edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall searchreplace'}",
 			  "insert: {title: 'Insert', items: 'olatmovieviewer media image link | olatmatheditor hr charmap anchor insertdatetime olatsmileys'}",

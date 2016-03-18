@@ -20,7 +20,12 @@
 package org.olat.ims.qti21.model.xml.interactions;
 
 
-import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.*;
+import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendChoiceInteraction;
+import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendDefaultItemBody;
+import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendDefaultOutcomeDeclarations;
+import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendSimpleChoice;
+import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createMultipleChoiceCorrectResponseDeclaration;
+import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createResponseProcessing;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,6 +50,7 @@ import uk.ac.ed.ph.jqtiplus.node.expression.operator.Sum;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseCondition;
@@ -143,7 +149,7 @@ public class MultipleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBui
 	}
 
 	@Override
-	public boolean isCorrect(SimpleChoice choice) {
+	public boolean isCorrect(Choice choice) {
 		return correctAnswers.contains(choice.getIdentifier());
 	}
 	

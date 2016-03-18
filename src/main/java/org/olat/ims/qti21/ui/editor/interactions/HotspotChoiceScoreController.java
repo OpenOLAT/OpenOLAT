@@ -35,16 +35,15 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
-import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ScoreBuilder;
-import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder.ScoreEvaluation;
+import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.SyncAssessmentItem;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.HotspotChoice;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 
 /**
@@ -53,7 +52,7 @@ import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ChoiceScoreController extends AssessmentItemRefEditorController implements SyncAssessmentItem {
+public class HotspotChoiceScoreController extends AssessmentItemRefEditorController implements SyncAssessmentItem {
 	
 	private static final String[] modeKeys = new String[]{
 			ScoreEvaluation.allCorrectAnswers.name(), ScoreEvaluation.perAnswer.name()
@@ -63,13 +62,14 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 	private TextElement maxScoreEl;
 	private SingleSelection assessmentModeEl;
 	private FormLayoutContainer scoreCont;
-	private final List<SimpleChoiceWrapper> wrappers = new ArrayList<>();
+	private final List<HotspotChoiceWrapper> wrappers = new ArrayList<>();
 	
-	private ChoiceAssessmentItemBuilder itemBuilder;
+	private HotspotAssessmentItemBuilder itemBuilder;
 	
 	private int counter = 0;
 	
-	public ChoiceScoreController(UserRequest ureq, WindowControl wControl, ChoiceAssessmentItemBuilder itemBuilder, AssessmentItemRef itemRef) {
+	public HotspotChoiceScoreController(UserRequest ureq, WindowControl wControl,
+			HotspotAssessmentItemBuilder itemBuilder, AssessmentItemRef itemRef) {
 		super(ureq, wControl, itemRef);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
@@ -103,8 +103,8 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		formLayout.add(scoreCont);
 		scoreCont.setLabel(null, null);
 		
-		for(SimpleChoice choice:itemBuilder.getSimpleChoices()) {
-			SimpleChoiceWrapper wrapper = createSimpleChoiceWrapper(choice);
+		for(HotspotChoice choice:itemBuilder.getHotspotChoices()) {
+			HotspotChoiceWrapper wrapper = createHotspotChoiceWrapper(choice);
 			wrappers.add(wrapper);
 		}
 		scoreCont.contextPut("choices", wrappers);
@@ -120,16 +120,16 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 	@Override
 	public void sync(UserRequest ureq, AssessmentItemBuilder assessmentItemBuilder) {
 		if(itemBuilder == assessmentItemBuilder) {
-			for(SimpleChoice choice:itemBuilder.getSimpleChoices()) {
-				SimpleChoiceWrapper wrapper = getSimpleChoiceWrapper(choice);
+			for(HotspotChoice choice:itemBuilder.getHotspotChoices()) {
+				HotspotChoiceWrapper wrapper = getHotspotChoiceWrapper(choice);
 				if(wrapper == null) {
-					wrappers.add(createSimpleChoiceWrapper(choice));
+					wrappers.add(createHotspotChoiceWrapper(choice));
 				}
 			}
 		}
 	}
 	
-	private SimpleChoiceWrapper createSimpleChoiceWrapper(SimpleChoice choice) {
+	private HotspotChoiceWrapper createHotspotChoiceWrapper(HotspotChoice choice) {
 		String points = "";
 		Double score = itemBuilder.getMapping(choice.getIdentifier());
 		if(score != null) {
@@ -139,11 +139,11 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		TextElement pointEl = uifactory.addTextElement(pointElId, null, 5, points, scoreCont);
 		pointEl.setDisplaySize(5);
 		scoreCont.add(pointElId, pointEl);
-		return new SimpleChoiceWrapper(choice, pointEl);
+		return new HotspotChoiceWrapper(choice, pointEl);
 	}
 	
-	private SimpleChoiceWrapper getSimpleChoiceWrapper(SimpleChoice choice) {
-		for(SimpleChoiceWrapper wrapper:wrappers) {
+	private HotspotChoiceWrapper getHotspotChoiceWrapper(HotspotChoice choice) {
+		for(HotspotChoiceWrapper wrapper:wrappers) {
 			if(wrapper.getChoice() == choice) {
 				return wrapper;
 			}
@@ -157,7 +157,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		allOk &= validateDouble(maxScoreEl);
 
 		if(assessmentModeEl.isOneSelected() && assessmentModeEl.isSelected(1)) {
-			for(SimpleChoiceWrapper wrapper:wrappers) {
+			for(HotspotChoiceWrapper wrapper:wrappers) {
 				allOk &= validateDouble(wrapper.getPointsEl());
 			}
 		}
@@ -202,7 +202,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		if(assessmentModeEl.isOneSelected() && assessmentModeEl.isSelected(1)) {
 			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
 			itemBuilder.clearMapping();
-			for(SimpleChoiceWrapper wrapper:wrappers) {
+			for(HotspotChoiceWrapper wrapper:wrappers) {
 				String pointsStr = wrapper.getPointsEl().getValue();
 				Double points = new Double(pointsStr);
 				itemBuilder.setMapping(wrapper.getChoice().getIdentifier(), points);
@@ -220,18 +220,18 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		//
 	}
 	
-	public final class SimpleChoiceWrapper {
+	public final class HotspotChoiceWrapper {
 		
 		private final String summary;
-		private final SimpleChoice choice;
+		private final HotspotChoice choice;
 		private final TextElement pointsEl;
 		
-		public SimpleChoiceWrapper(SimpleChoice choice, TextElement pointsEl) {
+		public HotspotChoiceWrapper(HotspotChoice choice, TextElement pointsEl) {
 			this.choice = choice;
 			this.pointsEl = pointsEl;
 			pointsEl.setUserObject(this);
 			if(choice != null) {
-				String answer = new AssessmentHtmlBuilder().flowStaticString(choice.getFlowStatics());
+				String answer = choice.getHotspotLabel();
 				answer = FilterFactory.getHtmlTagAndDescapingFilter().filter(answer);
 				answer = answer.trim();
 				summary = Formatter.truncate(answer, 128);
@@ -252,7 +252,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 			return pointsEl;
 		}
 		
-		public SimpleChoice getChoice() {
+		public HotspotChoice getChoice() {
 			return choice;
 		}
 	}

@@ -34,6 +34,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.Container;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.translator.Translator;
@@ -142,6 +143,16 @@ public class TabbedPane extends Container implements Activateable2 {
 		return tabPanes.size() - 1;
 	}
 	
+	public int addTab(String displayName, Controller controller) {
+		TabPane tab = new TabPane(displayName, controller);
+		tabPanes.add(tab);
+		if (selectedPane == -1) {
+			selectedPane = 0; // if no pane has been selected, select the first one
+			super.put("atp", tab.getComponent()); 
+		}
+		return tabPanes.size() - 1;
+	}
+	
 	public boolean containsTab(Component component) {
 		boolean found = false;
 		for(int i=tabPanes.size(); i-->0; ) {
@@ -239,6 +250,20 @@ public class TabbedPane extends Container implements Activateable2 {
 	public int getSelectedPane() {
 		return selectedPane;
 	}
+	
+	/**
+	 * Return the selected controller only if you used
+	 * the addTab with a controller as parameter!
+	 * 
+	 * @return
+	 */
+	public Controller getSelectedController() {
+		int index = getSelectedPane();
+		if(index >= 0 && index < this.tabPanes.size()) {
+			return tabPanes.get(index).getController();
+		}
+		return null;
+	}
 
 	/**
 	 * @deprecated
@@ -306,10 +331,18 @@ public class TabbedPane extends Container implements Activateable2 {
 		private boolean enabled;
 		private final String displayName;
 		private Component component;
+		private Controller controller;
 		
 		public TabPane(String displayName, Component component) {
 			this.displayName = displayName;
 			this.component = component;
+			this.enabled = true;
+		}
+		
+		public TabPane(String displayName, Controller controller) {
+			this.displayName = displayName;
+			this.controller = controller;
+			this.component = controller.getInitialComponent();
 			this.enabled = true;
 		}
 		
@@ -323,6 +356,20 @@ public class TabbedPane extends Container implements Activateable2 {
 		
 		public String getDisplayName() {
 			return displayName;
+		}
+		
+		public Controller getController() {
+			return controller;
+		}
+		
+		public void setController(Controller controller) {
+			if(controller == null) {
+				controller = null;
+				component = null;
+			} else {
+				this.controller = controller;
+				this.component = controller.getInitialComponent();
+			}
 		}
 		
 		public Component getComponent() {

@@ -40,6 +40,7 @@ import uk.ac.ed.ph.jqtiplus.node.expression.operator.Not;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.ToleranceMode;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.Mapping;
@@ -131,7 +132,7 @@ public abstract class ChoiceAssessmentItemBuilder extends AssessmentItemBuilder 
 		return choiceInteraction;
 	}
 	
-	public abstract boolean isCorrect(SimpleChoice choice);
+	public abstract boolean isCorrect(Choice choice);
 	
 	public boolean isShuffle() {
 		return shuffle;

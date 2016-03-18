@@ -138,7 +138,7 @@ public class AssessmentItemEditorController extends BasicController {
 		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(),
 				testEntry, assessmentEntry, true, resolvedAssessmentItem, itemRef, rootDirectory);
 		listenTo(displayCtrl);
-		tabbedPane.addTab("Preview", displayCtrl.getInitialComponent());
+		tabbedPane.addTab("Preview", displayCtrl);
 		
 		putInitialPanel(mainVC);
 	}
@@ -170,14 +170,14 @@ public class AssessmentItemEditorController extends BasicController {
 		if(metadataBuilder != null) {
 			metadataEditor = new MetadataEditorController(ureq, getWindowControl(), metadataBuilder);
 			listenTo(metadataEditor);
-			tabbedPane.addTab(translate("form.metadata"), metadataEditor.getInitialComponent());
+			tabbedPane.addTab(translate("form.metadata"), metadataEditor);
 		}
 	}
 	
 	private void initItemCreatedByUnkownEditor(UserRequest ureq) {
 		itemEditor = new UnkownItemEditorController(ureq, getWindowControl());
 		listenTo(itemEditor);
-		tabbedPane.addTab("Unkown", itemEditor.getInitialComponent());
+		tabbedPane.addTab("Unkown", itemEditor);
 	}
 
 	private AssessmentItemBuilder initSingleChoiceEditors(UserRequest ureq, AssessmentItem item) {
@@ -190,9 +190,9 @@ public class AssessmentItemEditorController extends BasicController {
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), scItemBuilder, false, true, true);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.choice"), itemEditor.getInitialComponent());
-		tabbedPane.addTab(translate("form.score"), scoreEditor.getInitialComponent());
-		tabbedPane.addTab(translate("form.feedback"), feedbackEditor.getInitialComponent());
+		tabbedPane.addTab(translate("form.choice"), itemEditor);
+		tabbedPane.addTab(translate("form.score"), scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
 		return scItemBuilder;
 	}
 	
@@ -206,9 +206,9 @@ public class AssessmentItemEditorController extends BasicController {
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), mcItemBuilder, false, true, true);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.choice"), itemEditor.getInitialComponent());
-		tabbedPane.addTab(translate("form.score"), scoreEditor.getInitialComponent());
-		tabbedPane.addTab(translate("form.feedback"), feedbackEditor.getInitialComponent());
+		tabbedPane.addTab(translate("form.choice"), itemEditor);
+		tabbedPane.addTab(translate("form.score"), scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
 		return mcItemBuilder;
 	}
 	
@@ -222,9 +222,9 @@ public class AssessmentItemEditorController extends BasicController {
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), kprimItemBuilder, false, true, true);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.choice"), itemEditor.getInitialComponent());
-		tabbedPane.addTab(translate("form.score"), scoreEditor.getInitialComponent());
-		tabbedPane.addTab(translate("form.feedback"), feedbackEditor.getInitialComponent());
+		tabbedPane.addTab(translate("form.choice"), itemEditor);
+		tabbedPane.addTab(translate("form.score"), scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
 		return kprimItemBuilder;
 	}
 	
@@ -238,9 +238,9 @@ public class AssessmentItemEditorController extends BasicController {
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), kprimItemBuilder, false, true, true);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.choice"), itemEditor.getInitialComponent());
-		tabbedPane.addTab(translate("form.score"), scoreEditor.getInitialComponent());
-		tabbedPane.addTab(translate("form.feedback"), feedbackEditor.getInitialComponent());
+		tabbedPane.addTab(translate("form.choice"), itemEditor);
+		tabbedPane.addTab(translate("form.score"), scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
 		return kprimItemBuilder;
 	}
 	
@@ -254,9 +254,9 @@ public class AssessmentItemEditorController extends BasicController {
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), hotspotItemBuilder, false, true, true);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.choice"), itemEditor.getInitialComponent());
-		tabbedPane.addTab(translate("form.score"), scoreEditor.getInitialComponent());
-		tabbedPane.addTab(translate("form.feedback"), feedbackEditor.getInitialComponent());
+		tabbedPane.addTab(translate("form.choice"), itemEditor);
+		tabbedPane.addTab(translate("form.score"), scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
 		return hotspotItemBuilder;
 	}
 	
@@ -270,15 +270,20 @@ public class AssessmentItemEditorController extends BasicController {
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), essayItemBuilder, true, false, false);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.choice"), itemEditor.getInitialComponent());
-		tabbedPane.addTab(translate("form.score"), scoreEditor.getInitialComponent());
-		tabbedPane.addTab(translate("form.feedback"), feedbackEditor.getInitialComponent());
+		tabbedPane.addTab(translate("form.choice"), itemEditor);
+		tabbedPane.addTab(translate("form.score"), scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
 		return essayItemBuilder;
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if(tabbedPane == source) {
+			Controller selectedCtrl = tabbedPane.getSelectedController();
+			if(selectedCtrl instanceof SyncAssessmentItem) {
+				((SyncAssessmentItem)selectedCtrl).sync(ureq, itemBuilder);
+			}
+		}
 	}
 	
 	@Override

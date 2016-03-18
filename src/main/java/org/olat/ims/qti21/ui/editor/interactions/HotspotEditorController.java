@@ -39,6 +39,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -46,6 +47,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSFormItem;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
@@ -56,6 +58,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
@@ -65,6 +68,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Shape;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.HotspotChoice;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
  * 
@@ -86,6 +90,7 @@ public class HotspotEditorController extends FormBasicController {
 	private RichTextElement textEl;
 	private FileElement backgroundEl;
 	private FormLayoutContainer hotspotsCont;
+	private FormLink newCircleButton, newRectButton;
 	
 	private final HotspotAssessmentItemBuilder itemBuilder;
 	
@@ -95,7 +100,8 @@ public class HotspotEditorController extends FormBasicController {
 	
 	private File backgroundImage;
 	private File initialBackgroundImage;
-	private Map<String,HotspotWrapper> wrapperMap = new HashMap<>();
+	
+	private List<HotspotWrapper> choiceWrappers = new ArrayList<>();
 	
 	private final String backgroundMapperUri;
 	
@@ -136,12 +142,15 @@ public class HotspotEditorController extends FormBasicController {
 		formLayout.add(js);
 		formLayout.add(hotspotsCont);
 		
+		newCircleButton = uifactory.addFormLink("new.circle", "new.circle", null, hotspotsCont, Link.BUTTON);
+		newCircleButton.setIconLeftCSS("o_icon o_icon-lg o_icon_circle");
+		newRectButton = uifactory.addFormLink("new.rectangle", "new.rectangle", null, hotspotsCont, Link.BUTTON);
+		newRectButton.setIconLeftCSS("o_icon o_icon-lg o_icon_rectangle");
+
 		List<HotspotChoice> choices = itemBuilder.getHotspotChoices();
-		List<HotspotWrapper> choiceWrappers = new ArrayList<>();
 		for(HotspotChoice choice:choices) {
 			HotspotWrapper spot = new HotspotWrapper(choice);
 			choiceWrappers.add(spot);
-			wrapperMap.put(spot.getIdentifier(), spot);
 		}
 		hotspotsCont.contextPut("hotspots", choiceWrappers);
 		
@@ -193,7 +202,13 @@ public class HotspotEditorController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(backgroundEl == source) {
+		if(newCircleButton == source) {
+			createHotspotChoice(Shape.CIRCLE, "60,60,25");
+			updateHotspots(ureq);
+		} else if(newRectButton == source) {
+			createHotspotChoice(Shape.RECT, "50,50,100,100");
+			updateHotspots(ureq);
+		} else if(backgroundEl == source) {
 			//upload in itemDirectory;
 			if(FileElementEvent.DELETE.equals(event.getCommand())) {
 				if(backgroundEl.getUploadFile() != null && backgroundEl.getUploadFile() != backgroundEl.getInitialFile()) {
@@ -211,8 +226,16 @@ public class HotspotEditorController extends FormBasicController {
 				backgroundImage = backgroundEl.moveUploadFileTo(itemFile.getParentFile());
 			}
 			updateBackground();
+			updateHotspots(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void createHotspotChoice(Shape shape, String coords) {
+		Identifier identifier = IdentifierGenerator.newNumberAsIdentifier("hc");
+		HotspotChoice choice = itemBuilder.createHotspotChoice(identifier, shape, coords);
+		HotspotWrapper wrapper = new HotspotWrapper(choice);
+		choiceWrappers.add(wrapper);
 	}
 	
 	private void updateBackground() {
@@ -243,8 +266,6 @@ public class HotspotEditorController extends FormBasicController {
 			hotspotsCont.contextRemove("filename");
 		}
 	}
-	
-
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -278,37 +299,30 @@ public class HotspotEditorController extends FormBasicController {
 	}
 	
 	private void updateHotspots(UserRequest ureq) {
+		Map<String,HotspotWrapper> wrapperMap = new HashMap<>();
+		for(HotspotWrapper wrapper:choiceWrappers) {
+			wrapperMap.put(wrapper.getIdentifier(), wrapper);
+		}
+		
 		for(Enumeration<String> parameterNames = ureq.getHttpReq().getParameterNames(); parameterNames.hasMoreElements(); ) {
 			String name = parameterNames.nextElement();
 			String value = ureq.getHttpReq().getParameter(name);
 			if(name.endsWith("_shape")) {
 				String hotspotIdentifier = name.substring(0, name.length() - 6);
-				HotspotWrapper spot = getOrCreateHotspots(hotspotIdentifier);
-				spot.setShape(value);
+				HotspotWrapper spot = wrapperMap.get(hotspotIdentifier);
+				if(spot != null) {
+					spot.setShape(value);
+				}
 			} else if(name.endsWith("_coords")) {
 				String hotspotIdentifier = name.substring(0, name.length() - 7);
-				HotspotWrapper spot = getOrCreateHotspots(hotspotIdentifier);
-				spot.setCoords(value);
+				HotspotWrapper spot = wrapperMap.get(hotspotIdentifier);
+				if(spot != null) {
+					spot.setCoords(value);
+				}
 			}
 		}
-		
-		List<HotspotWrapper> choiceWrappers = new ArrayList<>();
-		for(HotspotWrapper choiceWrapper:wrapperMap.values()) {
-			choiceWrappers.add(choiceWrapper);
-		}
-		hotspotsCont.contextPut("hotspots", choiceWrappers);
 	}
-	
-	private HotspotWrapper getOrCreateHotspots(String hotspotIdentifier) {
-		HotspotWrapper wrapper = wrapperMap.get(hotspotIdentifier);
-		if(wrapper == null) {
-			HotspotChoice choice = itemBuilder.createHotspotChoice(hotspotIdentifier);
-			wrapper = new HotspotWrapper(choice);
-			wrapperMap.put(hotspotIdentifier, wrapper);
-		}
-		return wrapper;
-	}
-	
+
 	public static class HotspotWrapper {
 
 		private final HotspotChoice choice;

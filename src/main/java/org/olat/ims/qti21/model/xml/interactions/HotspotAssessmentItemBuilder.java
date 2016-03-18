@@ -26,7 +26,9 @@ import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendHotspotIn
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createHotspotEntryResponseDeclarationSingle;
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createResponseProcessing;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.transform.stream.StreamResult;
 
@@ -35,10 +37,12 @@ import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
+import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder.ScoreEvaluation;
 
 import uk.ac.ed.ph.jqtiplus.node.content.ItemBody;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.object.Object;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Shape;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.HotspotChoice;
@@ -59,7 +63,9 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder {
 	
 	private String question;
 	private Identifier responseIdentifier;
+	protected ScoreEvaluation scoreEvaluation;
 	private HotspotInteraction hotspotInteraction;
+	protected Map<Identifier,Double> scoreMapping;
 	
 	public HotspotAssessmentItemBuilder(QtiSerializer qtiSerializer) {
 		super(createAssessmentItem(), qtiSerializer);
@@ -140,6 +146,39 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder {
 			graphichObject.setWidth(null);
 		}
 	}
+	
+	public boolean isCorrect(HotspotChoice choice) {
+		return false;
+	}
+	
+	public ScoreEvaluation getScoreEvaluationMode() {
+		return scoreEvaluation;
+	}
+
+	public void setScoreEvaluationMode(ScoreEvaluation scoreEvaluation) {
+		this.scoreEvaluation = scoreEvaluation;
+	}
+	
+	public Double getMapping(Identifier identifier) {
+		Double score = null;
+		if(scoreMapping != null) {
+			score = scoreMapping.get(identifier);
+		}
+		return score;
+	}
+	
+	public void clearMapping() {
+		if(scoreMapping != null) {
+			scoreMapping.clear();
+		}
+	}
+	
+	public void setMapping(Identifier identifier, Double score) {
+		if(scoreMapping == null) {
+			scoreMapping = new HashMap<>();
+		}
+		scoreMapping.put(identifier, score);
+	}
 
 	@Override
 	public QTI21QuestionType getQuestionType() {
@@ -160,10 +199,13 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder {
 		return hotspotInteraction.getHotspotChoices();
 	}
 	
-	public HotspotChoice createHotspotChoice(String id) {
+	public HotspotChoice createHotspotChoice(Identifier identifier, Shape shape, String coords) {
 		HotspotChoice choice = new HotspotChoice(hotspotInteraction);
 		choice.setFixed(Boolean.FALSE);
-		choice.setIdentifier(Identifier.parseString(id));
+		choice.setIdentifier(identifier);
+		choice.setShape(shape);
+		choice.setCoords(AssessmentItemFactory.coordsList(coords));
+		hotspotInteraction.getHotspotChoices().add(choice);
 		return choice;
 	}
 
