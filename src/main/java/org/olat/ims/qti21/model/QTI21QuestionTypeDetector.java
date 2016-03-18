@@ -26,6 +26,7 @@ import org.olat.ims.qti21.QTI21Constants;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
@@ -69,6 +70,7 @@ public class QTI21QuestionTypeDetector {
 			boolean match = false;
 			boolean textEntry = false;
 			boolean essay = false;
+			boolean hotspot = false;
 			boolean unkown = false;
 			
 			if(interactions != null && interactions.size() > 0) {
@@ -81,7 +83,9 @@ public class QTI21QuestionTypeDetector {
 						essay = true;
 					} else if(interaction instanceof TextEntryInteraction) {
 						textEntry = true;
-					} else {
+					} else if(interaction instanceof HotspotInteraction) {
+						hotspot = true;
+					}  else {
 						unkown = true;
 					}	
 				}	
@@ -89,14 +93,16 @@ public class QTI21QuestionTypeDetector {
 			
 			if(unkown) {
 				return QTI21QuestionType.unkown;
-			} else if(choice && !match && !textEntry && !essay && !unkown) {
+			} else if(choice && !match && !textEntry && !essay && !hotspot && !unkown) {
 				return getTypeOfChoice(item);
-			} else if(!choice && match && !textEntry && !essay && !unkown) {
+			} else if(!choice && match && !textEntry && !essay && !hotspot && !unkown) {
 				return getTypeOfMatch(item);
-			} else if(!choice && !match && textEntry && !essay && !unkown) {
+			} else if(!choice && !match && textEntry && !essay && !hotspot && !unkown) {
 				return getTypeOfTextEntryInteraction(item);
-			} else if(!choice && !match && !textEntry && essay && !unkown) {
+			} else if(!choice && !match && !textEntry && essay && !hotspot && !unkown) {
 				return QTI21QuestionType.essay;
+			} else if(!choice && !match && !textEntry && !essay && hotspot && !unkown) {
+				return QTI21QuestionType.hotspot;
 			} else {
 				return QTI21QuestionType.unkown;
 			}

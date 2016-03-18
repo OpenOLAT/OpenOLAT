@@ -38,6 +38,7 @@ import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
@@ -47,6 +48,7 @@ import org.olat.ims.qti21.ui.editor.interactions.ChoiceScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.EssayEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.FIBEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.FIBScoreController;
+import org.olat.ims.qti21.ui.editor.interactions.HotspotEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.KPrimEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.MultipleChoiceEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.SingleChoiceEditorController;
@@ -160,6 +162,7 @@ public class AssessmentItemEditorController extends BasicController {
 			case fib: itemBuilder = initFIBEditors(ureq, type, item); break;
 			case numerical: itemBuilder = initFIBEditors(ureq, type, item); break;
 			case kprim: itemBuilder = initKPrimChoiceEditors(ureq, item); break;
+			case hotspot: itemBuilder = initHotspotEditors(ureq, item); break;
 			case essay: itemBuilder = initEssayEditors(ureq, item); break;
 			default: initItemCreatedByUnkownEditor(ureq); break;
 		}
@@ -239,6 +242,22 @@ public class AssessmentItemEditorController extends BasicController {
 		tabbedPane.addTab(translate("form.score"), scoreEditor.getInitialComponent());
 		tabbedPane.addTab(translate("form.feedback"), feedbackEditor.getInitialComponent());
 		return kprimItemBuilder;
+	}
+	
+	private AssessmentItemBuilder initHotspotEditors(UserRequest ureq, AssessmentItem item) {
+		HotspotAssessmentItemBuilder hotspotItemBuilder = new HotspotAssessmentItemBuilder(item, qtiService.qtiSerializer());
+		itemEditor = new HotspotEditorController(ureq, getWindowControl(), hotspotItemBuilder,
+				rootDirectory, rootContainer, itemFile);
+		listenTo(itemEditor);
+		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), hotspotItemBuilder, itemRef);
+		listenTo(scoreEditor);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), hotspotItemBuilder, false, true, true);
+		listenTo(feedbackEditor);
+		
+		tabbedPane.addTab(translate("form.choice"), itemEditor.getInitialComponent());
+		tabbedPane.addTab(translate("form.score"), scoreEditor.getInitialComponent());
+		tabbedPane.addTab(translate("form.feedback"), feedbackEditor.getInitialComponent());
+		return hotspotItemBuilder;
 	}
 	
 	private AssessmentItemBuilder initEssayEditors(UserRequest ureq, AssessmentItem item) {

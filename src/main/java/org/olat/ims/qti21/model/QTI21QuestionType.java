@@ -33,6 +33,7 @@ public enum QTI21QuestionType {
 	kprim(true, "kprim", QuestionType.KPRIM),
 	fib(true, "fib", QuestionType.FIB),
 	numerical(true, "numerical", QuestionType.NUMERICAL),
+	hotspot(true, "hotspot", QuestionType.HOTSPOT),
 	essay(true, "essay", QuestionType.ESSAY),
 	unkown(false, null, null);
 	

@@ -69,6 +69,7 @@ import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
+import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
@@ -116,7 +117,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private final MenuTree menuTree;
 	private final Dropdown addItemTools, changeItemTools;
 	private final Link newSectionLink, newSingleChoiceLink, newMultipleChoiceLink, newKPrimLink,
-		newFIBLink, newNumericalLink, newEssayLink;
+		newFIBLink, newNumericalLink, newHotspotLink, newEssayLink;
 	private final Link importFromPoolLink, importFromTableLink;
 	private final Link deleteLink, copyLink;
 	private final TooledStackedPanel toolbar;
@@ -195,6 +196,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		newNumericalLink = LinkFactory.createToolLink("new.fib.numerical", translate("new.fib.numerical"), this, "o_mi_qtinumerical");
 		newNumericalLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newNumericalLink);
+		
+		newHotspotLink = LinkFactory.createToolLink("new.hotspot", translate("new.hotspot"), this, "o_mi_qtihotspot");
+		newHotspotLink.setDomReplacementWrapperRequired(false);
+		addItemTools.addComponent(newHotspotLink);
 		
 		newEssayLink = LinkFactory.createToolLink("new.essay", translate("new.essay"), this, "o_mi_qtiessay");
 		newEssayLink.setDomReplacementWrapperRequired(false);
@@ -348,6 +353,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new FIBAssessmentItemBuilder(EntryType.text, qtiService.qtiSerializer()));
 		} else if(newNumericalLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new FIBAssessmentItemBuilder(EntryType.numerical, qtiService.qtiSerializer()));
+		} else if(newHotspotLink == source) {
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new HotspotAssessmentItemBuilder(qtiService.qtiSerializer()));
 		} else if(newEssayLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new EssayAssessmentItemBuilder(qtiService.qtiSerializer()));
 		} else if(importFromPoolLink == source) {

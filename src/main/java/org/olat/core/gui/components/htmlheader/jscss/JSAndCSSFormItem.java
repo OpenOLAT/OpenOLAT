@@ -17,23 +17,45 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.core.gui.components.htmlheader.jscss;
+
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 
 /**
  * 
- * Initial date: 20.02.2013<br>
+ * Initial date: 17.03.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum QuestionType {
+public class JSAndCSSFormItem extends FormItemImpl {
 
-	MC,
-	FIB,
-	SC,
-	KPRIM,
-	ESSAY,
-	NUMERICAL,
-	HOTSPOT,
-	UNKOWN
+	private final JSAndCSSComponent component;
+	
+	public JSAndCSSFormItem(String name, String[] jsPath) {
+		super(name);
+		component = new JSAndCSSComponent(name, jsPath, null);
+	}
+
+	@Override
+	protected Component getFormItemComponent() {
+		return component;
+	}
+
+	@Override
+	protected void rootFormAvailable() {
+		//
+	}
+
+	@Override
+	public void evalFormRequest(UserRequest ureq) {
+		//
+	}
+
+	@Override
+	public void reset() {
+		//
+	}
 
 }

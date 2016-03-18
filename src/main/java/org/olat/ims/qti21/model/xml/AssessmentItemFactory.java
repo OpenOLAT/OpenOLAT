@@ -43,6 +43,7 @@ import uk.ac.ed.ph.jqtiplus.group.outcome.declaration.OutcomeDeclarationGroup;
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.content.ItemBody;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.TextRun;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.object.Object;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Correct;
@@ -53,17 +54,20 @@ import uk.ac.ed.ph.jqtiplus.node.expression.operator.IsNull;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Lt;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Match;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Multiple;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Shape;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Sum;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleMatchSet;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.HotspotChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.Mapping;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
@@ -167,6 +171,53 @@ public class AssessmentItemFactory {
 		// outcome feedback
 		OutcomeDeclaration feedbackOutcomeDeclaration = createOutcomeDeclarationForFeedbackBasic(assessmentItem);
 		outcomeDeclarations.getOutcomeDeclarations().add(feedbackOutcomeDeclaration);
+	}
+	
+	/*
+	<responseDeclaration identifier="RESPONSE" cardinality="single" baseType="identifier">
+		<correctResponse>
+			<value>Choice0</value>
+		</correctResponse>
+	</responseDeclaration>
+	*/
+	public static ResponseDeclaration createHotspotEntryResponseDeclarationSingle(AssessmentItem assessmentItem,
+			Identifier responseIdentifier, Identifier correctAnswerIdentifier) {
+		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
+		responseDeclaration.setIdentifier(responseIdentifier);
+		responseDeclaration.setCardinality(Cardinality.SINGLE);
+		responseDeclaration.setBaseType(BaseType.IDENTIFIER);
+		
+		//correct response
+		CorrectResponse correctResponse = new CorrectResponse(responseDeclaration);
+		responseDeclaration.setCorrectResponse(correctResponse);
+		appendIdentifierValue(correctResponse, correctAnswerIdentifier);
+		return responseDeclaration;
+	}
+	
+	public static HotspotInteraction appendHotspotInteraction(ItemBody itemBody, Identifier responseDeclarationId, Identifier correctResponseId) {
+		HotspotInteraction hotspotInteraction = new HotspotInteraction(itemBody);
+		hotspotInteraction.setResponseIdentifier(responseDeclarationId);
+		hotspotInteraction.setMaxChoices(1);
+		itemBody.getBlocks().add(hotspotInteraction);
+		
+		Object graphicObject = new Object(hotspotInteraction);
+		graphicObject.setType("image/png");
+		graphicObject.setWidth("400");
+		graphicObject.setHeight("320");
+		hotspotInteraction.setObject(graphicObject);
+		
+		HotspotChoice choice = new HotspotChoice(hotspotInteraction);
+		choice.setIdentifier(correctResponseId);
+		choice.setFixed(Boolean.FALSE);
+		choice.setShape(Shape.CIRCLE);
+		List<Integer> coords = new ArrayList<>();
+		coords.add(new Integer(77));
+		coords.add(new Integer(115));
+		coords.add(new Integer(8));
+		choice.setCoords(coords);
+		hotspotInteraction.getHotspotChoices().add(choice);
+		
+		return hotspotInteraction;
 	}
 	
 	public static TextEntryInteraction appendTextEntryInteraction(ItemBody itemBody, Identifier responseDeclarationId) {

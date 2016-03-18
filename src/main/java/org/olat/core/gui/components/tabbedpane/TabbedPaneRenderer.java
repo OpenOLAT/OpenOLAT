@@ -26,7 +26,6 @@
 
 package org.olat.core.gui.components.tabbedpane;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
@@ -74,7 +73,7 @@ public class TabbedPaneRenderer implements ComponentRenderer {
 					sb.append(">").append(tabName).append("</a></li>");				
 				} else {
 					// disabled panels can not be clicked, but for layout reason needs still a a href
-					sb.append(" class='disabled'><a href='javascript:;' title='").append(StringEscapeUtils.escapeHtml(translator.translate("disabled"))).append("'>").append(tabName).append("</a></li>");
+					sb.append(" class='disabled'><a href='javascript:;' title='").append(StringHelper.escapeHtml(translator.translate("disabled"))).append("'>").append(tabName).append("</a></li>");
 				}
 			}
 			else {
@@ -85,9 +84,10 @@ public class TabbedPaneRenderer implements ComponentRenderer {
 
 		// now let the selected component render itself
 		Component paneToRender = tb.getTabAt(selPane);
-		if (paneToRender == null) throw new RuntimeException("a tabbed pane must not be null, but a component");
 		sb.append("<div class='o_tabbed_pane_content'>");
-		renderer.render(sb, paneToRender, null);
+		if (paneToRender != null) {
+			renderer.render(sb, paneToRender, null);
+		}
 		sb.append("</div></div>");
 	}
 	
