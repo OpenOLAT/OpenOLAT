@@ -69,7 +69,7 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 	private final boolean saveAndClose;
 	private final ModuleConfiguration config;
 	private final CheckListCourseNode courseNode;
-	private final UserCourseEnvironment userCourseEnv;
+	private final UserCourseEnvironment assessedUserCourseEnv;
 	private final OLATResourceable courseOres;
 	private final Identity assessedIdentity;
 	private final CheckboxList checkboxList;
@@ -82,13 +82,13 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 	
 	public AssessedIdentityCheckListController(UserRequest ureq, WindowControl wControl,
 			Identity assessedIdentity, OLATResourceable courseOres,
-			UserCourseEnvironment userCourseEnv, CheckListCourseNode courseNode, boolean saveAndClose) {
+			UserCourseEnvironment assessedUserCourseEnv, CheckListCourseNode courseNode, boolean saveAndClose) {
 		super(ureq, wControl);
 
 		this.courseNode = courseNode;
 		this.courseOres = courseOres;
 		this.saveAndClose = saveAndClose;
-		this.userCourseEnv = userCourseEnv;
+		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		config = courseNode.getModuleConfiguration();
 		Boolean hasScore = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 		withScore = (hasScore == null || hasScore.booleanValue());	
@@ -278,7 +278,7 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 		}
 		checkboxManager.check(courseOres, courseNode.getIdent(), batchElements);
 		
-		courseNode.updateScoreEvaluation(userCourseEnv, assessedIdentity);
+		courseNode.updateScoreEvaluation(assessedUserCourseEnv, assessedIdentity);
 	}
 	
 	private void doUpdateCheck(CheckboxWrapper wrapper, boolean check) {
