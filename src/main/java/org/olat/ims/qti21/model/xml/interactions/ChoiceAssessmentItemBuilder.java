@@ -190,6 +190,15 @@ public abstract class ChoiceAssessmentItemBuilder extends AssessmentItemBuilder 
 		return choices;
 	}
 	
+	public SimpleChoice getSimpleChoice(Identifier identifier) {
+		for(SimpleChoice choice:choices) {
+			if(choice.getIdentifier().equals(identifier)) {
+				return choice;
+			}
+		}
+		return null;
+	}
+	
 	public void addSimpleChoice(SimpleChoice choice) {
 		if(choices == null) {
 			choices = new ArrayList<>();
@@ -203,7 +212,7 @@ public abstract class ChoiceAssessmentItemBuilder extends AssessmentItemBuilder 
 	
 	public void clearSimpleChoices() {
 		if(choices != null) {
-			choices.clear();;
+			choices.clear();
 		}
 	}
 

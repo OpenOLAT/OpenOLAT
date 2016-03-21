@@ -418,6 +418,10 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		return new ArrayList<>(responseIdentifierToTextEntry.values());
 	}
 	
+	public AbstractEntry getTextEntry(String responseIdentifier) {
+		return responseIdentifierToTextEntry.get(responseIdentifier);
+	}
+	
 	public boolean hasNumericalInputs() {
 		for(Map.Entry<String, AbstractEntry> textEntryEntry:responseIdentifierToTextEntry.entrySet()) {
 			if(textEntryEntry.getValue() instanceof NumericalEntry) {
@@ -503,7 +507,6 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 				}
 			}
 		}
-
 	}
 
 	@Override
@@ -517,13 +520,22 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 
 		//transfer text entry to the interactions
 		List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
+		List<String> usedResponseIdentifiers = new ArrayList<>(interactions.size());
 		for(Interaction interaction:interactions) {
 			if(interaction instanceof TextEntryInteraction && interaction.getResponseIdentifier() != null) {
 				TextEntryInteraction textEntryInteraction = (TextEntryInteraction)interaction;
-				AbstractEntry entry = responseIdentifierToTextEntry.get(interaction.getResponseIdentifier().toString());
+				String responseIdentifier = interaction.getResponseIdentifier().toString();
+				AbstractEntry entry = responseIdentifierToTextEntry.get(responseIdentifier);
 				textEntryInteraction.setPlaceholderText(entry.getPlaceholder());
 				textEntryInteraction.setExpectedLength(entry.getExpectedLength());
+				usedResponseIdentifiers.add(responseIdentifier);
 			}
+		}
+		
+		List<String> mappedResponseIdentifiers = new ArrayList<>(responseIdentifierToTextEntry.keySet());
+		mappedResponseIdentifiers.removeAll(usedResponseIdentifiers);
+		for(String mappedResponseIdentifier:mappedResponseIdentifiers) {
+			responseIdentifierToTextEntry.remove(mappedResponseIdentifier);
 		}
 	}
 

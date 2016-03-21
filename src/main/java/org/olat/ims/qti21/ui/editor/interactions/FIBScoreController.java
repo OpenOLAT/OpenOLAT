@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.ui.editor.interactions;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -33,14 +34,17 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ScoreBuilder;
 import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.AbstractEntry;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
+import org.olat.ims.qti21.ui.editor.SyncAssessmentItem;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
  * 
@@ -48,7 +52,7 @@ import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FIBScoreController extends AssessmentItemRefEditorController {
+public class FIBScoreController extends AssessmentItemRefEditorController implements SyncAssessmentItem {
 	
 	private static final String[] modeKeys = new String[]{
 			ScoreEvaluation.allCorrectAnswers.name(), ScoreEvaluation.perAnswer.name()
@@ -100,16 +104,7 @@ public class FIBScoreController extends AssessmentItemRefEditorController {
 		scoreCont.setLabel(null, null);
 		
 		for(AbstractEntry entry:itemBuilder.getTextEntries()) {
-			String points = "";
-			Double score = entry.getScore();
-			if(score != null) {
-				points = score.toString();
-			}
-			String pointElId = "points_" + counter++;
-			TextElement pointEl = uifactory.addTextElement(pointElId, null, 5, points, scoreCont);
-			pointEl.setDisplaySize(5);
-			scoreCont.add(pointElId, pointEl);
-			wrappers.add(new TextEntryWrapper(entry, pointEl));
+			wrappers.add(createTextEntryWrapper(entry));
 		}
 		scoreCont.contextPut("choices", wrappers);
 		scoreCont.setVisible(assessmentModeEl.isSelected(1));
@@ -119,6 +114,47 @@ public class FIBScoreController extends AssessmentItemRefEditorController {
 		buttonsContainer.setRootForm(mainForm);
 		formLayout.add(buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
+	}
+
+	@Override
+	public void sync(UserRequest ureq, AssessmentItemBuilder assessmentItemBuilder) {
+		if(itemBuilder == assessmentItemBuilder) {
+			for(AbstractEntry entry:itemBuilder.getTextEntries()) {
+				TextEntryWrapper wrapper = getTextEntryWrapper(entry);
+				if(wrapper == null) {
+					wrappers.add(createTextEntryWrapper(entry));
+				}
+			}
+			
+			for(Iterator<TextEntryWrapper> wrapperIt=wrappers.iterator(); wrapperIt.hasNext(); ) {
+				Identifier responseIdentifier = wrapperIt.next().getEntry().getResponseIdentifier();
+				if(itemBuilder.getTextEntry(responseIdentifier.toString()) == null) {
+					wrapperIt.remove();
+				}
+			}
+		}
+	}
+	
+	private TextEntryWrapper getTextEntryWrapper(AbstractEntry entry) {
+		for(TextEntryWrapper wrapper:wrappers) {
+			if(wrapper.getEntry() == entry) {
+				return wrapper;
+			}
+		}
+		return null;
+	}
+	
+	private TextEntryWrapper createTextEntryWrapper(AbstractEntry entry) {
+		String points = "";
+		Double score = entry.getScore();
+		if(score != null) {
+			points = score.toString();
+		}
+		String pointElId = "points_" + counter++;
+		TextElement pointEl = uifactory.addTextElement(pointElId, null, 5, points, scoreCont);
+		pointEl.setDisplaySize(5);
+		scoreCont.add(pointElId, pointEl);
+		return new TextEntryWrapper(entry, pointEl);
 	}
 
 	@Override

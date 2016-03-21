@@ -230,9 +230,9 @@ public abstract class AssessmentItemBuilder {
 		
 		List<ResponseDeclaration> responseDeclarations = assessmentItem.getResponseDeclarations();
 		responseDeclarations.clear();
-		
-		buildResponseDeclaration();
+
 		buildItemBody();
+		buildResponseDeclaration();
 		buildModalFeedback(outcomeDeclarations, responseRules);
 		buildScores(outcomeDeclarations, responseRules);
 		buildMainScoreRule(outcomeDeclarations, responseRules);

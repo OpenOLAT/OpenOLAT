@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.ui.editor.interactions;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -46,6 +47,7 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
  * 
@@ -92,6 +94,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 				translate("form.score.assessment.per.answer")
 		};
 		assessmentModeEl = uifactory.addRadiosHorizontal("assessment.mode", "form.score.assessment.mode", formLayout, modeKeys, modeValues);
+		assessmentModeEl.addActionListener(FormEvent.ONCHANGE);
 		if(itemBuilder.getScoreEvaluationMode() == ScoreEvaluation.perAnswer) {
 			assessmentModeEl.select(ScoreEvaluation.perAnswer.name(), true);
 		} else {
@@ -124,6 +127,13 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 				SimpleChoiceWrapper wrapper = getSimpleChoiceWrapper(choice);
 				if(wrapper == null) {
 					wrappers.add(createSimpleChoiceWrapper(choice));
+				}
+			}
+			
+			for(Iterator<SimpleChoiceWrapper> wrapperIt=wrappers.iterator(); wrapperIt.hasNext(); ) {
+				Identifier choiceIdentifier = wrapperIt.next().getChoice().getIdentifier();
+				if(itemBuilder.getSimpleChoice(choiceIdentifier) == null) {
+					wrapperIt.remove();
 				}
 			}
 		}
