@@ -858,7 +858,7 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	 * @see org.olat.course.assessment.AssessmentManager#saveScoreEvaluation(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.core.id.Identity, org.olat.course.run.scoring.ScoreEvaluation)
 	 */
 	public void saveScoreEvaluation(final CourseNode courseNode, final Identity identity, final Identity assessedIdentity, final ScoreEvaluation scoreEvaluation, 
-			final UserCourseEnvironment userCourseEnv, final boolean incrementUserAttempts) {
+			final UserCourseEnvironment assessedUserCourseEnv, final boolean incrementUserAttempts) {
 		final ICourse course = CourseFactory.loadCourse(ores);
 		final CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		final RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -880,10 +880,10 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 					attempts = incrementNodeAttemptsProperty(courseNode, assessedIdentity, cpm);
 				}
 				if(courseNode instanceof AssessableCourseNode) {
-				  userCourseEnv.getScoreAccounting().scoreInfoChanged((AssessableCourseNode)courseNode, scoreEvaluation);
+					assessedUserCourseEnv.getScoreAccounting().scoreInfoChanged((AssessableCourseNode)courseNode, scoreEvaluation);
 				  // Update users efficiency statement
 				  EfficiencyStatementManager esm =	EfficiencyStatementManager.getInstance();
-				  esm.updateUserEfficiencyStatement(userCourseEnv);
+				  esm.updateUserEfficiencyStatement(assessedUserCourseEnv);
 				}
 				
 				if(passed != null && passed.booleanValue() && course.getCourseConfig().isAutomaticCertificationEnabled()) {
