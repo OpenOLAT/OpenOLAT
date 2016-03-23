@@ -687,8 +687,8 @@ public class Formatter {
 	private static final Pattern sadPattern = Pattern.compile("(\\:-*\\()");
 	private static final Pattern smilePattern = Pattern.compile("(\\:-*\\))");
 	private static final Pattern tonguePattern = Pattern.compile("(\\:-*P)");
-	private static final Pattern upPattern = Pattern.compile("(\\+(\\s|$))");
-	private static final Pattern downPattern = Pattern.compile("(-(\\s|$))");
+	private static final Pattern upPattern = Pattern.compile("((^\\s*(\\+)\\s*$)|(\\(\\+\\)))");
+	private static final Pattern downPattern = Pattern.compile("((^\\s*(-)\\s*$)|(\\(\\-\\)))");
 	
 	private static final StringOutput emptyGifUrl = new StringOutput();
 	static {
