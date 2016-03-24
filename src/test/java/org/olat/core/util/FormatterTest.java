@@ -79,5 +79,40 @@ public class FormatterTest {
 		Assert.assertEquals(formatter.formatDate(baseThreeM), formatter.formatDateRelative(base, 0,3,0));
 	}
 
+	@Test
+	public void testUpAndDown() {
+		// only one key stroke
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("+").indexOf("<") == 0);
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("-").indexOf("<") == 0);
+
+		// space after +/- => should render up or down icon
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("+ ").indexOf("<") == 0);
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("- ").indexOf("<") == 0);
+
+		// text after +/- => should NOT render up or down icon
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("+trallala").indexOf("<") == -1);
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("-lustig").indexOf("<") == -1);
+
+		// text before +/- => should NOT render up or down icon
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("trallala-").indexOf("<") == -1);
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("trallala- ").indexOf("<") == -1);
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("trallala -").indexOf("<") == -1);
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("trallala - ").indexOf("<") == -1);
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("trallala-lustig").indexOf("<") == -1);
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("trallala - lustig").indexOf("<") == -1);
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("lustig+").indexOf("<") == -1);
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("lustig+ ").indexOf("<") == -1);
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("lustig +").indexOf("<") == -1);
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("lustig + ").indexOf("<") == -1);
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("lustig+trallala").indexOf("<") == -1);
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("lustig + trallala").indexOf("<") == -1);
+		
+		// in text, render only when in braces like this (+).
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("trallala (-) lustig").indexOf("<") == 9);
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("I think it is (-).").indexOf("<") == 14);
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("lustig (+) trallala").indexOf("<") == 7);
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("I think it is (+).").indexOf("<") == 14);
+	}
+
 
 }
