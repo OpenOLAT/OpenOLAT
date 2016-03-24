@@ -182,8 +182,6 @@ public class VideoHandler extends FileHandler {
 		return re;
 	}
 
-
-
 	@Override
 	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
 		return FileResourceManager.getInstance().getAsDownloadeableMediaResource(res);

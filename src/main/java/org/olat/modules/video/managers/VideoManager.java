@@ -22,10 +22,12 @@ package org.olat.modules.video.managers;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.video.models.VideoQualityVersion;
 import org.olat.resource.OLATResource;
 
 /**
@@ -76,5 +78,6 @@ public abstract class VideoManager extends BasicManager {
 	public abstract String getDescription(OLATResource video);
 
 	public abstract boolean optimizeVideoRessource(OLATResource video);
-
+	
+	public abstract List<VideoQualityVersion> getQualityVersions(OLATResource video);
 }

@@ -19,6 +19,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.video.managers.VideoManager;
 import org.olat.modules.video.models.VideoQualityTableModel;
+import org.olat.modules.video.models.VideoQualityVersion;
 import org.olat.modules.video.models.VideoQualityTableModel.QualityTableCols;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +62,14 @@ public class VideoQualityTableFormController extends FormBasicController {
 		Size origSize = videoManager.getVideoSize(videoResource);
 
 		FormLink viewButton = uifactory.addFormLink("view", "viewQuality", "quality.view", "qulaity.view", null, Link.LINK);
+		
 		rows.add(new QualityTableRow("original", origSize.getWidth() +"x"+ origSize.getHeight(),  FileUtils.byteCountToDisplaySize(videoManager.getVideoFile(videoResource).length()), "mp4",viewButton));
+		
+		List<VideoQualityVersion> versions = videoManager.getQualityVersions(videoResource);
+		for(VideoQualityVersion version:versions){
+			rows.add(new QualityTableRow(version.getType(), version.getDimension().getWidth() +"x"+ version.getDimension().getHeight(),  version.getFileSize(), version.getFormat(),viewButton));
+		}
+		
 		tableModel.setObjects(rows);
 		tableEl = uifactory.addTableElement(getWindowControl(), "qualities", tableModel, getTranslator(), generalCont);
 		tableEl.setCustomizeColumns(false);

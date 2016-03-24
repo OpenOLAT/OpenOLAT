@@ -8,10 +8,12 @@ import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.io.FileUtils;
 import org.jcodec.api.FrameGrab;
 import org.jcodec.common.FileChannelWrapper;
 import org.olat.core.commons.services.image.Size;
@@ -21,6 +23,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.video.models.VideoMetadata;
+import org.olat.modules.video.models.VideoQualityVersion;
 import org.olat.resource.OLATResource;
 import org.springframework.stereotype.Service;
 
@@ -162,7 +165,7 @@ public class VideoManagerImpl extends VideoManager {
 		}catch(	Exception e){
 			return false;
 		}
-		//TODO: throw right exception
+		//TODO: throw correct exception
 	}
 
 	@Override
@@ -213,15 +216,23 @@ public class VideoManagerImpl extends VideoManager {
 		File file = getVideoFile(video);
 		File videoResourceFileroot = fileResourceManager.getFileResourceRoot(video);
 		File optimizedFolder = new File(videoResourceFileroot, "optimizedVideoData");
+		File metaDataFile = new File(optimizedFolder,"optimizedVideo_metadata.xml");
 		optimizedFolder.mkdirs();
 
 		ArrayList<String> cmd = new ArrayList<String>();
 
+		//create Metadata
+		List<VideoQualityVersion> versions = getQualityVersions(video);
+		versions.add(new VideoQualityVersion("normal", FileUtils.byteCountToDisplaySize(file.length()), getVideoSize(video), "mp4"));
+		XStreamHelper.writeObject(XStreamHelper.createXStreamInstance(), metaDataFile, versions);
+		
+		//start transcoding with handbrake
 		cmd.add("HandBrakeCLI");
-		cmd.add("-i "+file.getAbsolutePath());
-		cmd.add("-o "+optimizedFolder.getAbsolutePath()+"/optimized_"+file.getName());
+		cmd.add("-i"+file.getAbsolutePath());
+		cmd.add("-o"+optimizedFolder.getAbsolutePath()+"/optimized_"+file.getName());
 		cmd.add("--optimize");
-		cmd.add("--preset Normal");
+		cmd.add("--preset");
+		cmd.add("Normal");
 
 		ProcessBuilder pb = new ProcessBuilder(cmd);
 		pb.directory(optimizedFolder);
@@ -230,27 +241,36 @@ public class VideoManagerImpl extends VideoManager {
 		pb.inheritIO();
 
 
-		 try {
-				logInfo("+--------------------------HANDBRAKE STARTS TRANSCODING------------------------------------+");
-	            Runtime.getRuntime().exec("HandBrakeCLI "+" -i "+file.getAbsolutePath()+" -o "+optimizedFolder.getAbsolutePath()+"/optimized_"+file.getName()+" --optimize"+" --preset Normal");
-				logInfo("+---------------------------HANDBRAKE TRANSCODING DONE-------------------------------------+");
-				return true;
-		 } catch (Exception e) {
-	            System.err.println("Unable to do videotranscoding");
-				return false;
-	     }
-
 		 
-//		try {
-//			logInfo("+--------------------------HANDBRAKE STARTS TRANSCODING------------------------------------+");
-//			Process process = pb.start();
-//			process.waitFor();
-//			logInfo("+---------------------------HANDBRAKE TRANSCODING DONE-------------------------------------+");
-//			return true;
-//		} catch (Exception e) {
-//			return false;
-//		}
+		try {
+			logInfo("+--------------------------HANDBRAKE STARTS TRANSCODING------------------------------------+");
+			Process process = pb.start();
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
 
+	}
+	
+	@Override
+	public List<VideoQualityVersion> getQualityVersions(OLATResource video){
+		File videoResourceFileroot = fileResourceManager.getFileResourceRoot(video);
+		File optimizedFolder = new File(videoResourceFileroot, "optimizedVideoData");
+		File metaDataFile = new File(optimizedFolder,"optimizedVideo_metadata.xml");
+		List<VideoQualityVersion> versions;
+		
+		if(!metaDataFile.exists()){
+			try {
+				metaDataFile.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			versions = new ArrayList<VideoQualityVersion>();
+		}else{
+			Object fileContent = XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataFile);
+			versions = (List<VideoQualityVersion>) fileContent;
+		}
+		return versions;
 	}
 
 }

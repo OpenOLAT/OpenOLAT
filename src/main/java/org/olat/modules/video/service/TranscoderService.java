@@ -12,10 +12,10 @@ public class TranscoderService{
 	private static String transcodingProvider;
 
     private static TranscoderService service;
-    private ServiceLoader<Transcoder> loader;
+    private static ServiceLoader<Transcoder> loader;
 
     private TranscoderService() {
-        loader = ServiceLoader.load(Transcoder.class);
+    		loader = ServiceLoader.load(Transcoder.class);
     }
 
     public static synchronized TranscoderService getInstance() {
@@ -24,4 +24,12 @@ public class TranscoderService{
         }
         return service;
     }
+    
+//    public static Transcoder getTrascoder(){
+//    	
+//        for (Transcoder transcoder : loader) {
+//        	return transcoder;
+//        }
+//        
+//    }
 }
