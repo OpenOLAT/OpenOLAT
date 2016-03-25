@@ -137,6 +137,7 @@ public class ProfileFormController extends FormBasicController {
 			Identity identityToModify, boolean isAdministrativeUser) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		setFormStyle("o_user_profile_form");
 		
 		this.identityToModify = identityToModify;
 		this.isAdministrativeUser = isAdministrativeUser;
@@ -221,6 +222,7 @@ public class ProfileFormController extends FormBasicController {
 		// add the "about me" text field.
 		FormLayoutContainer groupContainer = FormLayoutContainer.createDefaultFormLayout("group.about", getTranslator());
 		groupContainer.setFormTitle(translate("form.group.about"));
+		groupContainer.setElementCssClass("o_user_aboutme");
 		formLayout.add(groupContainer);
 		
 		HomePageConfig conf = hpcm.loadConfigFor(identityToModify.getName());

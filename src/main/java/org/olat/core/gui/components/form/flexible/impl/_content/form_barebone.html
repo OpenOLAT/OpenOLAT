@@ -1,5 +1,7 @@
+#if ($off_css_class) <div class='$off_css_class'> #end
 #foreach ($item in $formitemnames)
 	#if ($f.isVisible($item))
 		$r.render(${item})
 	#end
 #end
+#if ($off_css_class) </div> #end
