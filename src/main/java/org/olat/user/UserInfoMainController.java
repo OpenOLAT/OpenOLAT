@@ -263,6 +263,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 				gtn.setTitle(translate("menu.calendar"));
 				gtn.setUserObject(CMD_CALENDAR);
 				gtn.setAltText(translate("menu.calendar.alt"));
+				gtn.setCssClass("o_visiting_card_calendar");
 				root.addChild(gtn);
 			}
 	
@@ -270,6 +271,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 			gtn.setTitle(translate("menu.folder"));
 			gtn.setUserObject(CMD_FOLDER);
 			gtn.setAltText(translate("menu.folder.alt"));
+			gtn.setCssClass("o_visiting_card_folder");
 			root.addChild(gtn);
 		}	
 		if ( !isDeleted) {
@@ -277,6 +279,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 			gtn.setTitle(translate("menu.contact"));
 			gtn.setUserObject(CMD_CONTACT);
 			gtn.setAltText(translate("menu.contact.alt"));
+			gtn.setCssClass("o_visiting_card_contact");
 			root.addChild(gtn);
 		}
 		if ( !isDeleted && ! isInvitee) {
@@ -286,6 +289,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 				gtn.setTitle(translate("menu.portfolio"));
 				gtn.setUserObject(CMD_PORTFOLIO);
 				gtn.setAltText(translate("menu.portfolio.alt"));
+				gtn.setCssClass("o_visiting_card_portfolio");
 				root.addChild(gtn);
 			}
 		}			
