@@ -89,9 +89,11 @@ public class FormatterTest {
 		Assert.assertTrue(Formatter.formatEmoticonsAsImages("+ ").indexOf("<") == 0);
 		Assert.assertTrue(Formatter.formatEmoticonsAsImages("- ").indexOf("<") == 0);
 
-		// text after +/- => should NOT render up or down icon
+		// text after +/- => should NOT render up or down icon, is probably an enumeration
 		Assert.assertTrue(Formatter.formatEmoticonsAsImages("+trallala").indexOf("<") == -1);
 		Assert.assertTrue(Formatter.formatEmoticonsAsImages("-lustig").indexOf("<") == -1);
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("+ trallala").indexOf("<") == -1);
+		Assert.assertTrue(Formatter.formatEmoticonsAsImages("- lustig").indexOf("<") == -1);
 
 		// text before +/- => should NOT render up or down icon
 		Assert.assertTrue(Formatter.formatEmoticonsAsImages("trallala-").indexOf("<") == -1);
