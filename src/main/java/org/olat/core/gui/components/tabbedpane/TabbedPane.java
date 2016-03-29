@@ -280,6 +280,7 @@ public class TabbedPane extends Container implements Activateable2 {
 	/**
 	 * @see org.olat.core.gui.components.Component#getExtendedDebugInfo()
 	 */
+	@Override
 	public String getExtendedDebugInfo() {
 		return "selectedPane:" + selectedPane;
 	}
@@ -293,7 +294,8 @@ public class TabbedPane extends Container implements Activateable2 {
 		if (wasEnabled != enabled) {
 			setDirty(true);
 		}
-		tabPanes.get(pane).setEnabled(!enabled);
+		tabPanes.get(pane).setEnabled(enabled);
+		setDirty(true);
 	}
 
 	/**
@@ -328,7 +330,7 @@ public class TabbedPane extends Container implements Activateable2 {
 	
 	private static class TabPane {
 		
-		private boolean enabled;
+		private boolean enabled = true;
 		private final String displayName;
 		private Component component;
 		private Controller controller;
