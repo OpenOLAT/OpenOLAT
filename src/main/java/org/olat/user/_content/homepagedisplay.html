@@ -1,57 +1,36 @@
 <div class="o_visitingcard clearfix well"><div class="o_scrollblock">
-	<h2>
-		<i class="o_icon o_icon_visitingcard"></i>
-		$r.translate("menu.homepage") $userFullname
-	</h2>
+	<h2><i class="o_icon o_icon_visitingcard"></i> $r.translate("menu.homepage") $userFullname</h2>
 	#if ($deleted) 
-		<p class="o_warning">
-			$r.translate("user.deleted")
-		</p>
+		<p class="o_warning">$r.translate("user.deleted")</p>
 	#end
 
 	<div class="o_visitingcard_content">
-		<div class="o_visitingcard_image o_block">
-			$r.render("image")
-		</div>
+		<div class="o_visitingcard_image o_block">$r.render("image")</div>
 		
 		<table class="table table-condensed table-striped">
 			#if($r.available("im.link"))
 			<tr class="o_im_status">
-				<th>
-					<label>
-						$r.translate("status")
-					</label>
-				</th>
-				<td>
-					<div id="o_im_buddy">
-						$r.render("im.link")
-					</div>
-				</td>
+				<th>$r.translate("status")</th>
+				<td colspan="3"><div id="o_im_buddy">$r.render("im.link")</div></td>
 			</tr>			
 			#end
 	
-			#foreach( $propertyHandler in $userPropertyHandlers )
+			#foreach($propertyHandler in $userPropertyHandlers )
 			<tr>
-				<th>
-					<label>
-						$r.translate($propertyHandler.i18nFormElementLabelKey())
-					</label>
-				</th>
-				<td>
-					$!propertyHandler.getUserPropertyAsHTML($user, $locale)
-				</td>
+				<th>$r.translate($propertyHandler.i18nFormElementLabelKey()) </th>
+				#if($propertyHandler.name == "userInterests" && $userSearchedInterestsHandler)
+					<td>$!propertyHandler.getUserPropertyAsHTML($user, $locale)</td>
+					<th>$r.translate($userSearchedInterestsHandler.i18nFormElementLabelKey())</th>
+					<td>$!userSearchedInterestsHandler.getUserPropertyAsHTML($user, $locale)</td>
+				#else
+					<td colspan="3">$!propertyHandler.getUserPropertyAsHTML($user, $locale)</td>
+				#end
 			</tr>
 			#end		
-		#if ( $homepageConfig.getTextAboutMe() && ($homepageConfig.getTextAboutMe() != "") )
+		#if( $homepageConfig.getTextAboutMe() && ($homepageConfig.getTextAboutMe() != "") )
 		<tr valign="top" class="o_user_aboutme">
-			<th>
-				<label>
-					$r.translate("form.text")
-				</label>
-			</th>
-			<td>
-				$!r.formatLatexFormulas($homepageConfig.getTextAboutMe())
-			</td>
+			<th>$r.translate("form.text")</th>
+			<td colspan="3">$!r.formatLatexFormulas($homepageConfig.getTextAboutMe())</td>
 		</tr>		
 		#end
 		</table>

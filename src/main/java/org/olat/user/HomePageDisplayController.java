@@ -91,13 +91,24 @@ public class HomePageDisplayController extends BasicController {
 		// do the looping in the velocity context
 		List<UserPropertyHandler> userPropertyHandlers
 			= new ArrayList<UserPropertyHandler>(userManager.getUserPropertyHandlersFor(usageIdentifyer, false));
+		UserPropertyHandler userSearchedInterestsHandler = null;
+		UserPropertyHandler userInterestsHandler = null;
 		for(Iterator<UserPropertyHandler> propIt=userPropertyHandlers.iterator(); propIt.hasNext(); ) {
 			UserPropertyHandler prop = propIt.next();
 			if(!hpc.isEnabled(prop.getName()) && !userManager.isMandatoryUserProperty(usageIdentifyer, prop)) {
 				propIt.remove();
+			} else if("userInterests".equals(prop.getName())) {
+				userInterestsHandler = prop;
+			} else if("userSearchedInterests".equals(prop.getName())) {
+				userSearchedInterestsHandler = prop;
 			}
 		}
+		if(userInterestsHandler != null && userSearchedInterestsHandler != null) {
+			userPropertyHandlers.remove(userSearchedInterestsHandler);
+		}
+		
 		mainVC.contextPut("userPropertyHandlers", userPropertyHandlers);
+		mainVC.contextPut("userSearchedInterestsHandler", userSearchedInterestsHandler);
 		mainVC.contextPut("homepageConfig", hpc);	
 		
 		// Add external link to visiting card
