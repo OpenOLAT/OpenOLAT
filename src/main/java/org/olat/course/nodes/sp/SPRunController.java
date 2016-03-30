@@ -25,6 +25,8 @@
 
 package org.olat.course.nodes.sp;
 
+import java.util.UUID;
+
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
@@ -87,7 +89,8 @@ public class SPRunController extends BasicController {
 	private CustomLinkTreeModel linkTreeModel;
 	private CloneController cloneC;
 
-	private UserCourseEnvironment userCourseEnv;
+	private final String frameId;
+	private final UserCourseEnvironment userCourseEnv;
 	
 	private static final String[] EDITABLE_TYPES = new String[] { "html", "htm", "xml", "xhtml" };
 
@@ -102,11 +105,13 @@ public class SPRunController extends BasicController {
 	 * @param courseNode
 	 * @param courseFolderPath The course folder which contains the single page html file
 	 */
-	public SPRunController(WindowControl wControl, UserRequest ureq, UserCourseEnvironment userCourseEnv, SPCourseNode courseNode, VFSContainer courseFolderContainer) {
+	public SPRunController(WindowControl wControl, UserRequest ureq,
+			UserCourseEnvironment userCourseEnv, SPCourseNode courseNode, VFSContainer courseFolderContainer) {
 		super(ureq,wControl);
 		this.courseNode = courseNode;
 		this.config = courseNode.getModuleConfiguration();
 		this.userCourseEnv = userCourseEnv;
+		this.frameId = userCourseEnv.getCourseEditorEnv() == null ? null : UUID.randomUUID().toString();
 				
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
 
@@ -186,7 +191,7 @@ public class SPRunController extends BasicController {
 
 		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(SPEditController.CONFIG_KEY_DELIVERYOPTIONS);
 		spCtr = new SinglePageController(ureq, getWindowControl(), courseFolderContainer, fileName,
-				allowRelativeLinks, ores, deliveryOptions);
+				allowRelativeLinks, frameId, ores, deliveryOptions);
 		spCtr.setAllowDownload(true);
 		
 		// only for inline integration: register for controller event to forward a olatcmd to the course,

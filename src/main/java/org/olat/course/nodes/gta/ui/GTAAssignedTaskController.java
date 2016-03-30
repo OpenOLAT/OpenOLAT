@@ -176,7 +176,7 @@ public class GTAAssignedTaskController extends BasicController {
 		
 		VFSContainer tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
 		viewTaskCtrl = new SinglePageController(ureq, getWindowControl(), tasksContainer, taskFile.getName(),
-				false, null, TaskHelper.getStandardDeliveryOptions());
+				false, null, null, TaskHelper.getStandardDeliveryOptions());
 		listenTo(viewTaskCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), viewTaskCtrl.getInitialComponent(), true, taskFile.getName());
