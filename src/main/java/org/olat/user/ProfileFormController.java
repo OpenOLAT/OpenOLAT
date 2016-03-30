@@ -84,15 +84,17 @@ public class ProfileFormController extends FormBasicController {
 	private static final String usageIdentifier= ProfileFormController.class.getCanonicalName();
 	private static final String SEPARATOR = "\n____________________________________________________________________\n";
 
-	private final Map<String, FormItem> formItems = new HashMap<String, FormItem>();
-	private final Map<String, String> formContext = new HashMap<String, String>();
+	private final Map<String, FormItem> formItems = new HashMap<>();
+	private final Map<String, String> formContext = new HashMap<>();
 	private RichTextElement textAboutMe;
 
 	private Identity identityToModify;
 	private DialogBoxController dialogCtr;
 
+	private FileElement logoUpload;
 	private FileElement portraitUpload;
 	
+	private final boolean logoEnabled;
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
@@ -141,6 +143,7 @@ public class ProfileFormController extends FormBasicController {
 		
 		this.identityToModify = identityToModify;
 		this.isAdministrativeUser = isAdministrativeUser;
+		this.logoEnabled = UserModule.isLogoByProfileEnabled();
 		
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifier, isAdministrativeUser);
 		initForm(ureq);
@@ -254,6 +257,25 @@ public class ProfileFormController extends FormBasicController {
 			portraitUpload.setInitialFile(portraitFile);
 		}
 		portraitUpload.limitToMimeType(mimeTypes, null, null);
+		
+		if(logoEnabled) {
+			//upload image
+			groupContainer = FormLayoutContainer.createDefaultFormLayout("logoupload", getTranslator());
+			groupContainer.setFormTitle(translate("logo.header"));
+			formLayout.add(groupContainer);
+
+			File logoFile = dps.getBigLogo(identityToModify.getName());
+			logoUpload = uifactory.addFileElement(getWindowControl(), "logo.select", "logo.select", groupContainer);
+			logoUpload.setMaxUploadSizeKB(10000, null, null);
+			logoUpload.setPreview(ureq.getUserSession(), true);
+			logoUpload.addActionListener(FormEvent.ONCHANGE);
+			logoUpload.setHelpTextKey("ul.select.fhelp", null);
+			logoUpload.setDeleteEnabled(true);
+			if(logoFile != null) {
+				logoUpload.setInitialFile(logoFile);
+			}
+			logoUpload.limitToMimeType(mimeTypes, null, null);
+		}
 		
 		// Create submit and cancel buttons
 		FormLayoutContainer buttonLayoutWrappper = FormLayoutContainer.createDefaultFormLayout("buttonLayoutWrappper", getTranslator());
@@ -377,6 +399,26 @@ public class ProfileFormController extends FormBasicController {
 			} else if (portraitUpload.isUploadSuccess()) {
 				flc.setDirty(true);
 			}
+		} else if (source == logoUpload) {
+			if(event instanceof FileElementEvent) {
+				if(FileElementEvent.DELETE.equals(event.getCommand())) {
+					File img = dps.getBigLogo(identityToModify.getName());
+					if(logoUpload.getUploadFile() != null) {
+						logoUpload.reset();
+						if(img != null) {
+							logoUpload.setInitialFile(img);
+						}
+					} else if(img != null) {
+						dps.deleteLogo(identityToModify);
+						logoUpload.setInitialFile(null);
+						notifyPortraitChanged();
+					}
+					flc.setDirty(true);
+					
+				}
+			} else if (logoUpload.isUploadSuccess()) {
+				flc.setDirty(true);
+			}
 		}
 
 		super.formInnerEvent(ureq, source, event);
@@ -404,6 +446,15 @@ public class ProfileFormController extends FormBasicController {
 		if(uploadedImage != null) {
 			dps.setPortrait(uploadedImage, uploadedFilename, identityToModify.getName());
 			notifyPortraitChanged();
+		}
+		
+		if(logoUpload != null) {
+			File uploadedLogo = logoUpload.getUploadFile();
+			String uploadedLogoname = logoUpload.getUploadFileName();
+			if(uploadedLogo != null) {
+				dps.setLogo(uploadedLogo, uploadedLogoname, identityToModify.getName());
+				notifyPortraitChanged();
+			}
 		}
 		
 		// Store the "about me" text.

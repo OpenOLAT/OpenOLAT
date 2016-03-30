@@ -69,6 +69,7 @@ public class UserModule extends AbstractOLATModule {
 	private static boolean pwdchangeallowed;
 	private static boolean pwdchangeallowedLDAP;
 	private static String adminUserName;
+	private static boolean enabledLogoByProfile;
 	private List<DefaultUser> defaultUsers;
 	private List<DefaultUser> testUsers;
 	private static OLog log = Tracing.createLoggerFor(UserModule.class);
@@ -144,6 +145,7 @@ public class UserModule extends AbstractOLATModule {
 
 		// Autogeneration of test users
 		hasTestUsers = getBooleanConfigParameter("generateTestUsers", true);
+		enabledLogoByProfile = "enabled".equals(getStringConfigParameter("logoByProfileEnabled", "disabled", true));
 		
 		// Check if default users exists, if not create them
 		securityManager = BaseSecurityManager.getInstance();
@@ -321,6 +323,10 @@ public class UserModule extends AbstractOLATModule {
 	 */
 	private static boolean isAnyPwdchangeallowed() {
 		return pwdchangeallowed;
+	}
+	
+	public static boolean isLogoByProfileEnabled() {
+		return enabledLogoByProfile;
 	}
 	
 	public static String getAdminUserName() {
