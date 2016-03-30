@@ -120,7 +120,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_link:before { content: $fa-var-link; }
 .o_icon_link_extern:before { content: $fa-var-external-link; }
 .o_icon_list:before { content: $fa-var-list; }
-.o_icon_list_num :before { content: $fa-var-list-ol; }
+.o_icon_list_num:before { content: $fa-var-list-ol; }
 .o_icon_lifecycle:before { content: $fa-var-calendar;}
 .o_icon_locked:before { content: $fa-var-lock;}
 .o_icon_login:before { content: $fa-var-sign-in;}
