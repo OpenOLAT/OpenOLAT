@@ -53,6 +53,7 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.assessment.manager.AssessmentModeDAO;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.certificate.CertificatesManager;
@@ -227,10 +228,16 @@ public class RepositoryServiceImpl implements RepositoryService {
 	
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(sourceEntry);
 		copyEntry = handler.copy(author, sourceEntry, copyEntry);
-		
-		
+
 		//copy the image
 		RepositoryManager.getInstance().copyImage(sourceEntry, copyEntry);
+		
+		//copy media container
+		VFSContainer sourceMediaContainer = handler.getMediaContainer(sourceEntry);
+		if(sourceMediaContainer != null) {
+			VFSContainer targetMediaContainer = handler.getMediaContainer(copyEntry);
+			VFSManager.copyContent(sourceMediaContainer, targetMediaContainer);
+		}
 
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CREATE, getClass(),
 				LoggingResourceable.wrap(copyEntry, OlatResourceableType.genRepoEntry));
