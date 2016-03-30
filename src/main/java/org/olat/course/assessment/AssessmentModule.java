@@ -131,12 +131,11 @@ public class AssessmentModule extends AbstractSpringModule implements GenericEve
 	public void event(Event event) {
 		if (event instanceof PublishEvent) {
 			PublishEvent pe = (PublishEvent) event;
-			//FIXME: LD: temporary introduced the (pe.getCommand() == PublishEvent.EVENT_IDENTIFIER) to filter the events from the same VM
-			if (pe.getState() == PublishEvent.PRE_PUBLISH && pe.getEventIdentifier() == PublishEvent.EVENT_IDENTIFIER) {
+			if (pe.getState() == PublishEvent.PRE_PUBLISH && pe.isEventOnThisNode()) {
 				// PRE PUBLISH -> check node for changes
 				addToUpcomingWork(pe);
 				return;
-			} else if (pe.getState() == PublishEvent.PUBLISH && pe.getEventIdentifier() == PublishEvent.EVENT_IDENTIFIER) {
+			} else if (pe.getState() == PublishEvent.PUBLISH && pe.isEventOnThisNode()) {
 				// a publish event, check if it matches a previous checked
 				prepareUpdate(pe.getPublishedCourseResId());
 			}

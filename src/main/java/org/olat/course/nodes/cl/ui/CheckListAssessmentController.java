@@ -71,6 +71,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.cl.CheckboxManager;
@@ -95,6 +96,8 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
+ * This is the coach view.
+ * 
  * Initial date: 07.02.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
@@ -114,7 +117,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 	private final OLATResourceable courseOres;
 	private final CheckListCourseNode courseNode;
 	private final ModuleConfiguration config;
-	private final UserCourseEnvironment userCourseEnv;
+	private final UserCourseEnvironment coachCourseEnv;
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 
@@ -142,7 +145,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 	 * @param wControl
 	 * @param courseNode
 	 */
-	public CheckListAssessmentController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
+	public CheckListAssessmentController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment coachCourseEnv,
 			OLATResourceable courseOres, CheckListCourseNode courseNode) {
 		super(ureq, wControl, "assessment_list");
 
@@ -157,7 +160,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		
 		this.courseOres = courseOres;
 		this.courseNode = courseNode;
-		this.userCourseEnv = userCourseEnv;
+		this.coachCourseEnv = coachCourseEnv;
 		config = courseNode.getModuleConfiguration();
 		CheckboxList configCheckboxList = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
 		if(configCheckboxList == null) {
@@ -242,8 +245,8 @@ public class CheckListAssessmentController extends FormBasicController implement
 		List<CheckListAssessmentRow> datas = loadDatas();
 		model = new CheckListAssessmentDataModel(checkboxList, datas, columnsModel);
 		table = uifactory.addTableElement(getWindowControl(), "checkbox-list", model, getTranslator(), formLayout);
-		if(userCourseEnv instanceof UserCourseEnvironmentImpl) {
-			UserCourseEnvironmentImpl env = (UserCourseEnvironmentImpl)userCourseEnv;
+		if(coachCourseEnv instanceof UserCourseEnvironmentImpl) {
+			UserCourseEnvironmentImpl env = (UserCourseEnvironmentImpl)coachCourseEnv;
 			List<BusinessGroup> coachedGroups = env.getCoachedGroups();
 			List<FlexiTableFilter> filters = new ArrayList<>(coachedGroups.size() + 1);
 			filters.add(new FlexiTableFilter(translate("filter.all"), "all"));
@@ -275,11 +278,11 @@ public class CheckListAssessmentController extends FormBasicController implement
 	}
 	
 	private List<CheckListAssessmentRow> loadDatas() {
-		if(!(userCourseEnv instanceof UserCourseEnvironmentImpl)) {
+		if(!(coachCourseEnv instanceof UserCourseEnvironmentImpl)) {
 			return Collections.emptyList();
 		}
 
-		UserCourseEnvironmentImpl env = (UserCourseEnvironmentImpl)userCourseEnv;
+		UserCourseEnvironmentImpl env = (UserCourseEnvironmentImpl)coachCourseEnv;
 		List<Checkbox> checkboxColl = checkboxList.getList();
 		int numOfCheckbox = checkboxList.getNumOfCheckbox();
 		
@@ -299,7 +302,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		}
 
 		List<BusinessGroup> coachedGroups = courseAdmin ?
-				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups()
+				coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups()
 				: env.getCoachedGroups();
 		List<AssessmentData> dataList = checkboxManager.getAssessmentDatas(courseOres, courseNode.getIdent(), courseTutor || courseAdmin ? re : null, coachedGroups);
 		List<CheckListAssessmentRow> boxList = getAssessmentDataViews(dataList, checkboxColl);
@@ -480,7 +483,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 
 		List<CheckListAssessmentRow> rows = model.getObjects();
 		boxAssessmentCtrl = new CheckboxAssessmentController(ureq, getWindowControl(), checkboxList, rows,
-				courseOres, userCourseEnv, courseNode);
+				courseOres, courseNode);
 		listenTo(boxAssessmentCtrl);
 
 		String title = translate("box.assessment");
@@ -556,9 +559,11 @@ public class CheckListAssessmentController extends FormBasicController implement
 		if(assessedIdentityToUpdate.size() > 0) {
 			DBFactory.getInstance().commit();
 			
+			ICourse course = CourseFactory.loadCourse(courseOres);
 			List<Identity> identities = securityManager.loadIdentityByKeys(assessedIdentityToUpdate);
 			for(Identity identity:identities) {
-				courseNode.updateScoreEvaluation(userCourseEnv, identity);
+				UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
+				courseNode.updateScoreEvaluation(assessedUserCourseEnv, identity);
 			}
 		}
 		
@@ -622,9 +627,11 @@ public class CheckListAssessmentController extends FormBasicController implement
 	private void doOpenEdit(UserRequest ureq, CheckListAssessmentRow row) {
 		if(editCtrl != null) return;
 		
+		ICourse course = CourseFactory.loadCourse(courseOres);
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
+		UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
 		editCtrl = new AssessedIdentityOverviewController(ureq, getWindowControl(), assessedIdentity,
-				courseOres, userCourseEnv, courseNode);
+				courseOres, assessedUserCourseEnv, courseNode);
 		listenTo(editCtrl);
 
 		String title = courseNode.getShortTitle();

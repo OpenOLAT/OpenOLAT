@@ -242,6 +242,8 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 */
 	@Override
 	public List<BusinessGroup> getOwnedBusinessGroups(Identity identity) {
+		if(identity == null) return new ArrayList<>();
+		
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, true, false);
 		List<BusinessGroup> allGroups =
 				businessGroupService.findBusinessGroups(params, getCourseEntry(), 0, -1);
@@ -253,6 +255,8 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 */
 	@Override
 	public List<BusinessGroup> getParticipatingBusinessGroups(Identity identity) {
+		if(identity == null) return new ArrayList<>();
+		
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, false, true);
 		List<BusinessGroup> allGroups =
 				businessGroupService.findBusinessGroups(params, getCourseEntry(), 0, -1);

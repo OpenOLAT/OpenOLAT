@@ -110,7 +110,7 @@ public class MembersMailController extends FormBasicController {
 	private RepositoryService repositoryService;
 	
 	public MembersMailController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
-			List<Member> ownerList, List<Member> coachList, List<Member> participantList) {
+			List<Member> ownerList, List<Member> coachList, List<Member> participantList, String bodyTemplate) {
 		super(ureq, wControl, Util.createPackageTranslator(MailHelper.class, ureq.getLocale()));
 		
 		this.courseEnv = courseEnv;
@@ -119,6 +119,11 @@ public class MembersMailController extends FormBasicController {
 		this.participantList = participantList;
 		this.contactAttachmentMaxSizeInMb = mailModule.getMaxSizeForAttachement();
 		initForm(ureq);
+		
+		// preset body template if set
+		if (StringHelper.containsNonWhitespace(bodyTemplate)) {
+			bodyEl.setValue(bodyTemplate);			
+		}
 	}
 
 	@Override

@@ -55,6 +55,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.MSCourseNode;
@@ -98,17 +100,14 @@ public class CheckboxAssessmentController extends FormBasicController {
 	private int currentCheckboxIndex = 0;
 	private final OLATResourceable courseOres;
 	private final CheckListCourseNode courseNode;
-	private final UserCourseEnvironment userCourseEnv;
 	
 	public CheckboxAssessmentController(UserRequest ureq, WindowControl wControl, CheckboxList checkboxList,
-			List<CheckListAssessmentRow> initialRows, OLATResourceable courseOres,
-			UserCourseEnvironment userCourseEnv, CheckListCourseNode courseNode) {
+			List<CheckListAssessmentRow> initialRows, OLATResourceable courseOres, CheckListCourseNode courseNode) {
 		super(ureq, wControl, "assessment_per_box");
 		this.courseNode = courseNode;
 		this.courseOres = courseOres;
 		this.initialRows = initialRows;
 		this.checkboxList = checkboxList;
-		this.userCourseEnv = userCourseEnv;
 
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
 		Boolean hasScore = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
@@ -379,9 +378,11 @@ public class CheckboxAssessmentController extends FormBasicController {
 		
 		if(assessedIdentityToUpdate.size() > 0) {
 			DBFactory.getInstance().commit();
+			ICourse course = CourseFactory.loadCourse(courseOres);
 			
 			List<Identity> identities = securityManager.loadIdentityByKeys(assessedIdentityToUpdate);
 			for(Identity identity:identities) {
+				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
 				courseNode.updateScoreEvaluation(userCourseEnv, identity);
 			}
 		}

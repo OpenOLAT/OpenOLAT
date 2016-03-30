@@ -722,7 +722,9 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		
 		if(nextSlot == null) {
 			//begin a new round
-			nextSlot = slots[0];
+			if (slots.length > 0) {
+				nextSlot = slots[0];
+			}
 		}
 		return nextSlot;
 	}

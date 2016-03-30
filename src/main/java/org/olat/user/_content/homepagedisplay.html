@@ -16,7 +16,7 @@
 		
 		<table class="table table-condensed table-striped">
 			#if($r.available("im.link"))
-			<tr>
+			<tr class="o_im_status">
 				<th>
 					<label>
 						$r.translate("status")
@@ -43,7 +43,7 @@
 			</tr>
 			#end		
 		#if ( $homepageConfig.getTextAboutMe() && ($homepageConfig.getTextAboutMe() != "") )
-		<tr valign="top">
+		<tr valign="top" class="o_user_aboutme">
 			<th>
 				<label>
 					$r.translate("form.text")
@@ -58,7 +58,7 @@
 	</div>
 </div></div>
 
-<div class="o_extlink clearfix o_block_large_bottom">
+<div class="o_visitingcard_link o_extlink clearfix o_block_large_bottom">
 	<h5>$r.translate("extlink")</h5>
 	<div class="o_copy_code o_nowrap">
 		<a href="javascript:;" id="o_extlink" data-original-title="" title=""><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode"></i></a>

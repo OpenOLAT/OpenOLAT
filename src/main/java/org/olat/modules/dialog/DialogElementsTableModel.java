@@ -173,7 +173,7 @@ public class DialogElementsTableModel extends BaseTableDataModelWithoutFilter<Di
 				Object entry = table.getTableDataModel().getValueAt(sortedRow, getDataColumn());
 	
 				StringOutput link = new StringOutput();
-				ubu.buildURI(link, new String[] { Table.COMMANDLINK_ROWACTION_CLICKED, Table.COMMANDLINK_ROWACTION_ID }, new String[] { String.valueOf(row), DialogElementsController.ACTION_SHOW_FILE }); // url
+				ubu.buildURI(link, new String[] { Table.COMMANDLINK_ROWACTION_CLICKED, Table.COMMANDLINK_ROWACTION_ID }, new String[] { String.valueOf(sortedRow), DialogElementsController.ACTION_SHOW_FILE }); // url
 				sb.append("<a href=\"javascript:o_openPopUp('").append(link).append(entry.toString()).append("','fileview','600','700','no')\">")
 				  .append(entry.toString())
 				  .append("</a>");

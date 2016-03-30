@@ -60,19 +60,19 @@ public class AssessedIdentityOverviewController extends BasicController {
 	private final Identity assessedIdentity;
 	private final OLATResourceable courseOres;
 	private final CheckListCourseNode courseNode;
-	private final UserCourseEnvironment userCourseEnv;
+	private final UserCourseEnvironment assessedUserCourseEnv;
 	
 	private boolean changes = false;
 	
 	public AssessedIdentityOverviewController(UserRequest ureq, WindowControl wControl,
 			Identity assessedIdentity, OLATResourceable courseOres,
-			UserCourseEnvironment userCourseEnv, CheckListCourseNode courseNode) {
+			UserCourseEnvironment assessedUserCourseEnv, CheckListCourseNode courseNode) {
 		super(ureq, wControl);
 		
 		this.courseNode = courseNode;
 		this.courseOres = courseOres;
 		this.assessedIdentity = assessedIdentity;
-		this.userCourseEnv = userCourseEnv;
+		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		
 		mainVC = createVelocityContainer("user_assessment");
 		
@@ -150,7 +150,7 @@ public class AssessedIdentityOverviewController extends BasicController {
 	private void doOpenCheckList(UserRequest ureq) {
 		if(listCtrl == null) {
 			listCtrl = new AssessedIdentityCheckListController(ureq, getWindowControl(), assessedIdentity,
-					courseOres, userCourseEnv, courseNode, true);
+					courseOres, assessedUserCourseEnv, courseNode, true);
 			listenTo(listCtrl);
 		}
 		mainVC.put("segmentCmp", listCtrl.getInitialComponent());
