@@ -71,6 +71,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.ui.main.CourseMembership;
+import org.olat.group.ui.main.CourseMembershipComparator;
 import org.olat.group.ui.main.EditSingleMembershipController;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.repository.RepositoryEntry;
@@ -101,6 +102,7 @@ public class CourseOverviewController extends BasicController  {
 	private final Link addAsOwner, addAsTutor, addAsParticipant;
 	private TableController courseListCtr;
 	private MembershipDataModel tableDataModel;
+	private final CourseMembershipComparator membershipComparator = new CourseMembershipComparator();
 	
 	private CloseableModalController cmc;
 	private DialogBoxController confirmSendMailBox;
@@ -147,7 +149,19 @@ public class CourseOverviewController extends BasicController  {
 		courseListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(MSCols.externalRef.i18n(), MSCols.externalRef.ordinal(),
 				TABLE_ACTION_LAUNCH, getLocale()));
 		CustomCellRenderer roleRenderer = new CourseRoleCellRenderer();
-		courseListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(MSCols.role.i18n(), MSCols.role.ordinal(), null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer));
+		courseListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(MSCols.role.i18n(), MSCols.role.ordinal(), null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer){
+			@Override
+			public int compareTo(int rowa, int rowb) {
+				CourseMemberView cmv1 = (CourseMemberView)table.getTableDataModel().getValueAt(rowa,dataColumn);
+				CourseMemberView cmv2 = (CourseMemberView)table.getTableDataModel().getValueAt(rowb,dataColumn);
+				if(cmv1 == null || cmv1.getMembership() == null) {
+					return -1;
+				} else if(cmv2 == null || cmv2.getMembership() == null) {
+					return 1;
+				}
+				return membershipComparator.compare(cmv1.getMembership(), cmv2.getMembership());
+			}
+		});
 		courseListCtr.addColumnDescriptor(new DefaultColumnDescriptor(MSCols.firstTime.i18n(), MSCols.firstTime.ordinal(), null, getLocale()));
 		if(isLastVisitVisible) {
 			courseListCtr.addColumnDescriptor(new DefaultColumnDescriptor(MSCols.lastTime.i18n(), MSCols.lastTime.ordinal(), null, getLocale()));
@@ -806,4 +820,5 @@ public class CourseOverviewController extends BasicController  {
 			return !RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.membersmanagement);
 		}
 	}
+
 }
