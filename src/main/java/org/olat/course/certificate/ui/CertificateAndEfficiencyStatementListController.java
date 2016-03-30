@@ -172,15 +172,18 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		}
 		
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName.i18n(), Cols.displayName.ordinal()));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.score.i18n(), Cols.score.ordinal()));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName.i18n(), Cols.displayName.ordinal(),
+				true, Cols.displayName.name()));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.score.i18n(), Cols.score.ordinal(),
+				true, Cols.score.name()));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passed.i18n(), Cols.passed.ordinal(),
-				new PassedCellRenderer()));
+				true, Cols.passed.name(), new PassedCellRenderer()));
 		tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.show",
 				translate("table.header.show"), CMD_SHOW));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lastModified.i18n(), Cols.lastModified.ordinal()));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lastModified.i18n(), Cols.lastModified.ordinal(),
+				true, Cols.lastModified.name()));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.certificate.i18n(), Cols.certificate.ordinal(),
-				new DownloadCertificateCellRenderer(assessedIdentity)));
+				true, Cols.certificate.name(), new DownloadCertificateCellRenderer(assessedIdentity)));
 		tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.launchcourse",
 				translate("table.header.launchcourse"), CMD_LAUNCH_COURSE));
 		tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.delete",
@@ -194,7 +197,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 					new StaticFlexiCellRenderer(CMD_ARTEFACT, new AsArtefactCellRenderer())));
 		}
 		
-		tableModel = new CertificateAndEfficiencyStatementListModel(tableColumnModel);
+		tableModel = new CertificateAndEfficiencyStatementListModel(tableColumnModel, getLocale());
 		loadModel();
 		tableEl = uifactory.addTableElement(getWindowControl(), "certificates", tableModel, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_sel_certificates_table");
