@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.admin.quota.QuotaImpl;
@@ -256,6 +258,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private Set<String> deletableMediaFiles;
 	private StepsMainRunController importTableWizard;
 	private InsertNodeController moveCtrl, copyCtrl, insertCtrl;
+	private CountDownLatch exportLatch;
 
 	@Autowired
 	private UserManager userManager;
@@ -1024,7 +1027,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private void doExportDocx(UserRequest ureq) {
 		AssessmentNode rootNode = (AssessmentNode)menuTreeModel.getRootNode();
 		VFSContainer editorContainer = qtiPackage.getBaseDir();
-		MediaResource mr = new QTIWordExport(rootNode, editorContainer, getLocale(), "UTF-8");
+		exportLatch = new CountDownLatch(1);
+		MediaResource mr = new QTIWordExport(rootNode, editorContainer, getLocale(), "UTF-8", exportLatch);
 		ureq.getDispatchResult().setResultingMediaResource(mr);
 	}
 	
@@ -1179,6 +1183,13 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	@Override
 	public boolean requestForClose(UserRequest ureq) {		
 		// enter save/discard dialog if not already in it
+		if(exportLatch != null) {
+			try {
+				exportLatch.await(30, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				logError("", e);
+			}
+		}
 		if (cmcExit == null) {
 			exitVC = createVelocityContainer("exitDialog");
 			exitPanel = new Panel("exitPanel");
