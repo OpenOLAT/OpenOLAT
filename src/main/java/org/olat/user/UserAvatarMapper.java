@@ -25,6 +25,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
+import org.olat.user.DisplayPortraitController.Display;
 
 /**
  * 
@@ -39,8 +40,14 @@ public class UserAvatarMapper implements Mapper {
 	private final UserManager userManager;
 	private final DisplayPortraitManager portraitManager;
 	private final boolean useLarge;
+	private final Display displayImage;
 	
 	public UserAvatarMapper(boolean useLargePortrait) {
+		this(useLargePortrait, Display.portrait);
+	}
+	
+	public UserAvatarMapper(boolean useLargePortrait, Display displayImage) {
+		this.displayImage = displayImage;
 		useLarge = useLargePortrait;
 		portraitManager = DisplayPortraitManager.getInstance();
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
@@ -58,11 +65,19 @@ public class UserAvatarMapper implements Mapper {
 				String idKey = relPath.substring(0, endKeyIndex);
 				Long key = Long.parseLong(idKey);
 				String username = userManager.getUsername(key);
-				if (useLarge) {
-					return portraitManager.getBigPortraitResource(username);					
-				} else {					
-					return portraitManager.getSmallPortraitResource(username);
-				}
+				if(displayImage == Display.portrait) {
+					if (useLarge) {
+						return portraitManager.getBigPortraitResource(username);					
+					} else {					
+						return portraitManager.getSmallPortraitResource(username);
+					}
+				} else if(displayImage == Display.logo) {
+					if (useLarge) {
+						return portraitManager.getBigLogoResource(username);					
+					} else {					
+						return portraitManager.getSmallLogoResource(username);
+					}
+				} 
 			}
 		}
 		return null;

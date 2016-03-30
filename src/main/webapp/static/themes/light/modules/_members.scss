@@ -2,7 +2,18 @@
 	text-align:center;
 }
 
+.o_bcard_logo {
+	position: absolute;
+	top:19px;
+	right:19px;
+}
+
+.o_bcard_title_with_logo {
+	padding-right: 86px;
+}
+
 .o_visitingcard .o_portrait_avatar,
+.o_visitingcard .o_portrait_logo,
 .o_visitingcard .o_portrait_dummy,
 .o_visitingcard .o_portrait_dummy_female_big,
 .o_visitingcard .o_portrait_dummy_male_big,
@@ -10,8 +21,13 @@
 
 @media (max-width: $screen-xs-max) { 
 	.o_visitingcard .o_portrait_avatar,
+	.o_visitingcard .o_portrait_logo,
 	.o_visitingcard .o_portrait_dummy,
 	.o_visitingcard .o_portrait_dummy_female_big,
 	.o_visitingcard .o_portrait_dummy_male_big,
 	.o_visitingcard .o_portrait_anonymous { width: 50px; height: 50px; margin: 5px 5px 0 0;}
+	
+	.o_bcard_title_with_logo {
+		padding-right: 70px;
+	}
 }

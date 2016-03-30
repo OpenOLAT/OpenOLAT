@@ -61,6 +61,8 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 	// The following class names refer to CSS class names in olat.css 
 	public static final String AVATAR_BIG_CSS_CLASS = "o_portrait_avatar";
 	public static final String AVATAR_SMALL_CSS_CLASS = "o_portrait_avatar_small";
+	public static final String LOGO_BIG_CSS_CLASS = "o_portrait_logo";
+	public static final String LOGO_SMALL_CSS_CLASS = "o_portrait_logo_small";
 	public static final String ANONYMOUS_BIG_CSS_CLASS = "o_portrait_anonymous";
 	public static final String ANONYMOUS_SMALL_CSS_CLASS = "o_portrait_anonymous_small";
 	public static final String DUMMY_BIG_CSS_CLASS = "o_portrait_dummy";
@@ -102,6 +104,20 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 	}
 	public MediaResource getBigPortraitResource(Long identityKey) {
 		return getPortraitResource(identityKey, PORTRAIT_BIG_FILENAME);
+	}
+	
+	public MediaResource getSmallLogoResource(String username) {
+		return getPortraitResource(username, LOGO_SMALL_FILENAME);
+	}
+	public MediaResource getSmallLogoResource(Long identityKey) {
+		return getPortraitResource(identityKey, LOGO_SMALL_FILENAME);
+	}
+	
+	public MediaResource getBigLogoResource(String String) {
+		return getPortraitResource(String, LOGO_BIG_FILENAME);
+	}
+	public MediaResource getBigLogoResource(Long identityKey) {
+		return getPortraitResource(identityKey, LOGO_BIG_FILENAME);
 	}
 	
 	/**
