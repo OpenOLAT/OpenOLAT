@@ -220,7 +220,13 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// add text marker wrapper controller to implement course glossary
 		// textMarkerCtr must be created before the toolC!
 		CourseConfig cc = uce.getCourseEnvironment().getCourseConfig();
-		glossaryMarkerCtr = CourseGlossaryFactory.createGlossaryMarkupWrapper(ureq, wControl, contentP, cc);	
+		glossaryMarkerCtr = CourseGlossaryFactory.createGlossaryMarkupWrapper(ureq, wControl, contentP, cc);
+		
+		MenuTree layoutTree = luTree;
+		if(!cc.isMenuEnabled() && !uce.isAdmin()) {
+			layoutTree = null;
+		}
+		
 		if (glossaryMarkerCtr != null) {
 			listenTo(glossaryMarkerCtr);
 			// enable / disable glossary highlighting according to user prefs
@@ -237,9 +243,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			} else {
 				glossaryMarkerCtr.setTextMarkingEnabled(state.booleanValue());
 			}
-			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), luTree, glossaryMarkerCtr.getInitialComponent(), "course" + course.getResourceableId());				
+			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), layoutTree, glossaryMarkerCtr.getInitialComponent(), "course" + course.getResourceableId());				
 		} else {
-			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), luTree, contentP, "courseRun" + course.getResourceableId());							
+			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), layoutTree, contentP, "courseRun" + course.getResourceableId());							
 		}
 		listenTo(columnLayoutCtr);
 
