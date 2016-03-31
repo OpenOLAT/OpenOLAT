@@ -5,8 +5,11 @@
 	#end
 
 	<div class="o_visitingcard_content">
-		<div class="o_visitingcard_image o_block">$r.render("image")</div>
-		
+		<div class="o_visitingcard_image o_block">$r.render("image")
+		#if($r.available("logo"))
+			<div class="o_visitingcard_logo">$r.render("logo")</div>
+		#end
+		</div>
 		<table class="table table-condensed table-striped">
 			#if($r.available("im.link"))
 			<tr class="o_im_status">

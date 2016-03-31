@@ -49,6 +49,7 @@ import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.instantMessaging.model.Buddy;
+import org.olat.user.DisplayPortraitController.Display;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -120,7 +121,15 @@ public class HomePageDisplayController extends BasicController {
 		Controller dpc = new DisplayPortraitController(ureq, getWindowControl(), homeIdentity, true, false);
 		listenTo(dpc); // auto dispose
 		mainVC.put("image", dpc.getInitialComponent());
+
+		if(UserModule.isLogoByProfileEnabled()) {
+			Controller dlc = new DisplayPortraitController(ureq, getWindowControl(), homeIdentity, true, false, false, Display.logo);
+			listenTo(dlc); // auto dispose
+			mainVC.put("logo", dlc.getInitialComponent());
+		}
+		
 		putInitialPanel(mainVC);
+		
 		
 		if(imModule.isEnabled() && imModule.isPrivateEnabled()) {
 			InstantMessagingService imService = CoreSpringFactory.getImpl(InstantMessagingService.class);

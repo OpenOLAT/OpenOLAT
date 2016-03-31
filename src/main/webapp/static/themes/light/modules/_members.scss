@@ -12,6 +12,16 @@
 	padding-right: 86px;
 }
 
+.o_visitingcard_image.o_block {
+	position: relative;
+}
+
+.o_visitingcard_content .o_visitingcard_logo {
+	position: absolute;
+	top: 0px;
+	right: 0px;
+}
+
 .o_visitingcard .o_portrait_avatar,
 .o_visitingcard .o_portrait_logo,
 .o_visitingcard .o_portrait_dummy,
