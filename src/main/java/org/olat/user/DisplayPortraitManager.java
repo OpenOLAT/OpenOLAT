@@ -72,9 +72,15 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 	public static final String DUMMY_MALE_BIG_CSS_CLASS = "o_portrait_dummy_male_big";
 	public static final String DUMMY_MALE_SMALL_CSS_CLASS = "o_portrait_dummy_male_small";
 	
+	public static final int HEIGHT_BIG = 100;  // 4-8 kbytes (jpeg)
+	public static final int HEIGHT_SMALL = 30; // 2-4
+	
 	// If you change the following widths, don't forget to change them in basemod.scss as well.
-	public static final int WIDTH_PORTRAIT_BIG = 100;  // 4-8 kbytes (jpeg)
-	public static final int WIDTH_PORTRAIT_SMALL = 30; // 2-4
+	public static final int WIDTH_PORTRAIT_BIG = HEIGHT_BIG;  // 4-8 kbytes (jpeg)
+	public static final int WIDTH_PORTRAIT_SMALL = HEIGHT_SMALL; // 2-4
+	
+	public static final int WIDTH_LOGO_BIG = HEIGHT_BIG * 4;  // 4-8 kbytes (jpeg)
+	public static final int WIDTH_LOGO_SMALL = HEIGHT_SMALL * 4; // 2-4
 	
 	/**
 	 * [spring]
@@ -177,14 +183,17 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 	}
 	
 	public void setPortrait(File file, String filename, String username) {
-		setImage(file, filename, username, PORTRAIT_PREFIX_FILENAME, PORTRAIT_BIG_FILENAME, PORTRAIT_SMALL_FILENAME);
+		setImage(file, filename, username, PORTRAIT_PREFIX_FILENAME, PORTRAIT_BIG_FILENAME, PORTRAIT_SMALL_FILENAME,
+				WIDTH_PORTRAIT_BIG, WIDTH_PORTRAIT_SMALL);
 	}
 	
 	public void setLogo(File file, String filename, String username) {
-		setImage(file, filename, username, LOGO_PREFIX_FILENAME, LOGO_BIG_FILENAME, LOGO_SMALL_FILENAME);
+		setImage(file, filename, username, LOGO_PREFIX_FILENAME, LOGO_BIG_FILENAME, LOGO_SMALL_FILENAME,
+				WIDTH_LOGO_BIG, WIDTH_LOGO_SMALL);
 	}
 
-	private void setImage(File file, String filename, String username, String prefix, String largeImagePrefix, String smallImagePrefix) {
+	private void setImage(File file, String filename, String username, String prefix, String largeImagePrefix, String smallImagePrefix,
+			int maxBigWidth, int maxSmallWidth) {
 		File directory = getPortraitDir(username);
 		if(directory != null) {
 			for(File currentImage:directory.listFiles()) {
@@ -208,9 +217,9 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 		File bigFile = new File(directory, largeImagePrefix + "." + extension);
 		File smallFile = new File(directory, smallImagePrefix + "." + extension);
 		ImageService imageHelper = CoreSpringFactory.getImpl(ImageService.class);
-		Size size = imageHelper.scaleImage(file, extension, bigFile, WIDTH_PORTRAIT_BIG, WIDTH_PORTRAIT_BIG, false);
+		Size size = imageHelper.scaleImage(file, extension, bigFile, maxBigWidth, HEIGHT_BIG , false);
 		if(size != null){
-			size = imageHelper.scaleImage(file, extension, smallFile, WIDTH_PORTRAIT_SMALL, WIDTH_PORTRAIT_SMALL, false);
+			size = imageHelper.scaleImage(file, extension, smallFile, maxSmallWidth, HEIGHT_SMALL, false);
 		}
 	}
 
