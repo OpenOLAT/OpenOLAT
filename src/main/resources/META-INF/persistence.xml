@@ -152,6 +152,9 @@
 		<class>org.olat.modules.fo.model.MessagePeekviewImpl</class>
 		<class>org.olat.modules.fo.model.ReadMessageImpl</class>
 		<class>org.olat.modules.fo.model.MessageStatistics</class>
+		<class>org.olat.modules.gotomeeting.model.GoToMeetingImpl</class>
+		<class>org.olat.modules.gotomeeting.model.GoToOrganizerImpl</class>
+		<class>org.olat.modules.gotomeeting.model.GoToRegistrantImpl</class>
 		<class>org.olat.modules.qpool.model.PoolImpl</class>
 		<class>org.olat.modules.qpool.model.PoolToItem</class>
 		<class>org.olat.modules.qpool.model.PoolItemShortView</class>

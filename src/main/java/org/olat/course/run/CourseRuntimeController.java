@@ -375,6 +375,17 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		
 		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 		UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
+		
+		if(!course.getCourseConfig().isToolbarEnabled() && !reSecurity.isEntryAdmin() && !reSecurity.isCourseCoach() && !reSecurity.isGroupCoach()
+				&& !hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) && !hasCourseRight(CourseRights.RIGHT_MEMBERMANAGEMENT)
+				&& !hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) && !hasCourseRight(CourseRights.RIGHT_ARCHIVING)
+					&& !hasCourseRight(CourseRights.RIGHT_STATISTICS) && !hasCourseRight(CourseRights.RIGHT_DB)
+					&& !hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
+			toolbarPanel.setToolbarEnabled(false);
+		} else {
+			toolbarPanel.setToolbarEnabled(true);
+		}
+		
 		if(!isAssessmentLock()) {
 			initTools(toolsDropdown, course, uce);
 			initSettingsTools(settingsDropdown);

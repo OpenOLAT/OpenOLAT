@@ -84,12 +84,15 @@ public class CourseOptionsController extends FormBasicController {
 	private static final OLog log = Tracing.createLoggerFor(CourseOptionsController.class);
 	private static final String COMMAND_REMOVE = "command.glossary.remove";
 	private static final String COMMAND_ADD = "command.glossary.add";
+	
+	private static final String[] onKeys = new String[] {"xx"};
+	private static final String[] onValues = new String[] {""};
 
-	private SelectionElement calendarEl, chatEl;
+	private SelectionElement menuEl, toolbarEl, calendarEl, chatEl;
 	private FormLink addGlossaryCommand, removeGlossaryCommand;
 	private StaticTextElement glossaryNameEl;
 	private FormLink saveButton;
-	private FormLayoutContainer saveCont;
+	private FormLayoutContainer saveCont, calendarCont, chatCont, glossaryCont;
 	
 	private FormLink addFolderCommand, removeFolderCommand;
 	private StaticTextElement folderNameEl;
@@ -122,7 +125,8 @@ public class CourseOptionsController extends FormBasicController {
 		this.entry = entry;
 		
 		this.editable = editable;
-		initForm (ureq);
+		initForm(ureq);
+		updateToolbar();
 
 		//glossary setup
 		boolean managedGlossary = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.glossary);
@@ -166,35 +170,55 @@ public class CourseOptionsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
+		FormLayoutContainer menuCont = FormLayoutContainer.createDefaultFormLayout("menutool", getTranslator());
+		menuCont.setRootForm(mainForm);
+		formLayout.add(menuCont);
+
+		menuEl = uifactory.addCheckboxesHorizontal("menuIsOn", "chkbx.menu.onoff", menuCont, onKeys, onValues);
+		menuEl.select(onKeys[0], courseConfig.isMenuEnabled());
+		
+		toolbarEl = uifactory.addCheckboxesHorizontal("toolbarIsOn", "chkbx.toolbar.onoff", menuCont, onKeys, onValues);
+		toolbarEl.select(onKeys[0], courseConfig.isToolbarEnabled());
+		toolbarEl.addActionListener(FormEvent.ONCHANGE);
+
+		boolean canHideToolbar = true;
 		if(calendarModule.isEnabled() && calendarModule.isEnableCourseToolCalendar()) {
 			//calendar
-			FormLayoutContainer calCont = FormLayoutContainer.createDefaultFormLayout("cal", getTranslator());
-			calCont.setRootForm(mainForm);
-			formLayout.add(calCont);
-			calCont.setFormContextHelp("Course Settings#_optionen");
+			calendarCont = FormLayoutContainer.createDefaultFormLayout("cal", getTranslator());
+			calendarCont.setRootForm(mainForm);
+			formLayout.add(calendarCont);
+			calendarCont.setFormContextHelp("Course Settings#_optionen");
 
 			boolean calendarEnabled = courseConfig.isCalendarEnabled();
 			boolean managedCal = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.calendar);
-			calendarEl = uifactory.addCheckboxesHorizontal("calIsOn", "chkbx.calendar.onoff", calCont, new String[] {"xx"}, new String[] {""});
+			calendarEl = uifactory.addCheckboxesHorizontal("calIsOn", "chkbx.calendar.onoff", calendarCont, onKeys, onValues);
 			calendarEl.addActionListener(FormEvent.ONCHANGE);
 			calendarEl.select("xx", calendarEnabled);
 			calendarEl.setEnabled(editable && !managedCal);
+			
+			if(managedCal && calendarEnabled) {
+				canHideToolbar &= false;
+			}
 		}
 		
 		//chat
-		FormLayoutContainer chatCont = FormLayoutContainer.createDefaultFormLayout("chat", getTranslator());
+		chatCont = FormLayoutContainer.createDefaultFormLayout("chat", getTranslator());
 		chatCont.setRootForm(mainForm);
 		formLayout.add(chatCont);
 
 		boolean chatEnabled = courseConfig.isChatEnabled();
 		boolean managedChat = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.chat);
-		chatEl = uifactory.addCheckboxesHorizontal("chatIsOn", "chkbx.chat.onoff", chatCont, new String[] {"xx"}, new String[] {""});
+		chatEl = uifactory.addCheckboxesHorizontal("chatIsOn", "chkbx.chat.onoff", chatCont, onKeys, onValues);
 		chatEl.addActionListener(FormEvent.ONCHANGE);
 		chatEl.select("xx", chatEnabled);
 		chatEl.setEnabled(editable && !managedChat);
 		
+		if(managedChat && chatEnabled) {
+			canHideToolbar &= false;
+		}
+		
 		//glossary
-		FormLayoutContainer glossaryCont = FormLayoutContainer.createDefaultFormLayout("glossary", getTranslator());
+		glossaryCont = FormLayoutContainer.createDefaultFormLayout("glossary", getTranslator());
 		glossaryCont.setRootForm(mainForm);
 		formLayout.add(glossaryCont);
 
@@ -208,6 +232,11 @@ public class CourseOptionsController extends FormBasicController {
 		removeGlossaryCommand.setVisible(editable && !managedGlossary);
 		addGlossaryCommand = uifactory.addFormLink(COMMAND_ADD, buttonsCont, Link.BUTTON);
 		addGlossaryCommand.setVisible(editable && !managedGlossary);
+		
+		if(managedGlossary && StringHelper.containsNonWhitespace(courseConfig.getGlossarySoftKey())) {
+			canHideToolbar &= false;
+		}
+		toolbarEl.setEnabled(canHideToolbar);
 		
 		//shared folder
 		boolean managedFolder = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.resourcefolder);
@@ -310,11 +339,24 @@ public class CourseOptionsController extends FormBasicController {
 				doRemoveSharedFolder();
 				setSaveButtonDirty();
 			}
+		} else if(toolbarEl == source) {
+			if(!toolbarEl.isSelected(0)) {
+				showWarning("chkbx.toolbar.off.warning");
+			}
+			updateToolbar();
+			setSaveButtonDirty();
 		} else if (source instanceof SelectionElement) {
 			setSaveButtonDirty();
 		} else if(saveButton == source) {
 			doSave(ureq);
 		}
+	}
+	
+	private void updateToolbar() {
+		boolean enabled = toolbarEl.isSelected(0);
+		calendarCont.setVisible(enabled);
+		chatCont.setVisible(enabled);
+		glossaryCont.setVisible(enabled);
 	}
 
 
@@ -383,19 +425,22 @@ public class CourseOptionsController extends FormBasicController {
 		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
 		courseConfig = course.getCourseEnvironment().getCourseConfig();
 		
-
+		boolean menuEnabled = menuEl.isSelected(0);
+		courseConfig.setMenuEnabled(menuEnabled);
+		boolean toolbarEnabled = toolbarEl.isSelected(0);
+		courseConfig.setToolbarEnabled(toolbarEnabled);
 		
 		boolean enableChat = chatEl.isSelected(0);
 		boolean updateChat = courseConfig.isChatEnabled() != enableChat;
-		courseConfig.setChatIsEnabled(enableChat);
+		courseConfig.setChatIsEnabled(enableChat && toolbarEnabled);
 		
 		boolean enableCalendar = calendarEl == null ? false : calendarEl.isSelected(0);
 		boolean updateCalendar = courseConfig.isCalendarEnabled() != enableCalendar && calendarModule.isEnableCourseToolCalendar();
-		courseConfig.setCalendarEnabled(enableCalendar);
+		courseConfig.setCalendarEnabled(enableCalendar && toolbarEnabled);
 		
 		String currentGlossarySoftKey = courseConfig.getGlossarySoftKey();
 		RepositoryEntry glossary = (RepositoryEntry)glossaryNameEl.getUserObject();
-		String newGlossarySoftKey = glossary == null ? null : glossary.getSoftkey();
+		String newGlossarySoftKey = (glossary == null || !toolbarEnabled) ? null : glossary.getSoftkey();
 		boolean updateGlossary = (currentGlossarySoftKey == null && newGlossarySoftKey != null)
 			|| (currentGlossarySoftKey != null && newGlossarySoftKey == null)
 			|| (newGlossarySoftKey != null && !newGlossarySoftKey.equals(currentGlossarySoftKey));
@@ -411,6 +456,8 @@ public class CourseOptionsController extends FormBasicController {
 				|| (currentFolderSoftKey != null && !currentFolderSoftKey.equals(newFolderSoftKey));
 
 		courseConfig.setSharedFolderSoftkey(newFolderSoftKey);
+		
+		
 
 		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);

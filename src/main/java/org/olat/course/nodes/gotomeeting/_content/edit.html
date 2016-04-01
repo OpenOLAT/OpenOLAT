@@ -1,0 +1,5 @@
+#if($error)
+	<div class="o_warning">$r.translate($error)</div>
+#elseif($r.available("editMeetings"))
+	$r.render("editMeetings")
+#end

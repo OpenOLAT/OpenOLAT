@@ -81,6 +81,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 	private final VelocityContainer myContent;
 	private CustomLinkTreeModel customLinkTreeModel;
 
+	private final String frameId;
 	private final DeliveryOptions deliveryOptions;
 	
 	private String g_curURI;
@@ -104,7 +105,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
 			boolean allowRelativeLinks) {
 		//default behavior is to show the home link in a single page
-		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, null, null);
+		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, null, null, null);
 	}
 
 	 /**
@@ -129,7 +130,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 	  * 
 	  */
 	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
-			boolean allowRelativeLinks, OLATResourceable contextResourcable, DeliveryOptions config) {
+			boolean allowRelativeLinks, String frameId, OLATResourceable contextResourcable, DeliveryOptions config) {
 		super(ureq, wControl);
 		
 		SimpleStackedPanel mainP = new SimpleStackedPanel("iframemain");
@@ -142,6 +143,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 		this.g_allowRelativeLinks = allowRelativeLinks;
 		this.g_fileName = fileName;
 		this.g_rootContainer = rootContainer;
+		this.frameId = frameId;
 		boolean jumpIn = false;
 		
 		// strip beginning slash
@@ -188,7 +190,8 @@ public class SinglePageController extends BasicController implements CloneableCo
 		// g_new_rootContainer : the given rootcontainer or adjusted in case when relativelinks are not allowed		
 		
 		// Display in iframe when
-		idc = new IFrameDisplayController(ureq, getWindowControl(), g_new_rootContainer, contextResourcable, deliveryOptions);
+		idc = new IFrameDisplayController(ureq, getWindowControl(), g_new_rootContainer,
+				frameId, contextResourcable, deliveryOptions, false);
 		listenTo(idc);
 			
 		idc.setCurrentURI(startURI);
@@ -296,7 +299,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 	 */
 	@Override
 	public Controller cloneController(UserRequest ureq, WindowControl control) {
-		return new SinglePageController(ureq, control, g_rootContainer, g_fileName, g_allowRelativeLinks, null, deliveryOptions);
+		return new SinglePageController(ureq, control, g_rootContainer, g_fileName, g_allowRelativeLinks, frameId, null, deliveryOptions);
 	}
 
 	/**

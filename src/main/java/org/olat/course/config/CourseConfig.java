@@ -72,7 +72,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	/**
 	 * current config file version
 	 */
-	transient private final static int CURRENTVERSION = 10;
+	transient private final static int CURRENTVERSION = 11;
 	/**
 	 * Log levels
 	 */
@@ -99,6 +99,15 @@ public class CourseConfig implements Serializable, Cloneable {
 	transient public static final String RECERTIFICATION_ENABLED = "RECERTIFICATION_ENABLED";
 	transient public static final String RECERTIFICATION_TIMELAPSE = "RECERTIFICATION_TIMELAPSE";
 	transient public static final String RECERTIFICATION_TIMELAPSE_UNIT = "RECERTIFICATION_TIMELAPSE_UNIT";
+	
+	/**
+	 * The menu is enabled by default
+	 */
+	transient public static final String MENU_ENABLED = "MENU_ENABLED";
+	/**
+	 * The toolbar is enabled by default
+	 */
+	transient public static final String TOOLBAR_ENABLED = "TOOLBAR_ENABLED";
 	
 	/**
 	 * course calendar
@@ -164,6 +173,10 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.remove(KEY_LOGLEVEL_ADMIN);
 		configuration.remove(KEY_LOGLEVEL_USER);
 		configuration.remove(KEY_LOGLEVEL_STATISTIC);
+		
+
+		configuration.put(MENU_ENABLED, Boolean.TRUE);
+		configuration.put(TOOLBAR_ENABLED, Boolean.TRUE);
 
 		this.version = CURRENTVERSION;
 	}
@@ -241,7 +254,13 @@ public class CourseConfig implements Serializable, Cloneable {
 				if (!configuration.containsKey(RECERTIFICATION_TIMELAPSE)) configuration.put(RECERTIFICATION_TIMELAPSE, new Integer(0));
 				this.version = 10;
 			}
-
+			
+			if (version == 10) {
+				if (!configuration.containsKey(MENU_ENABLED)) configuration.put(MENU_ENABLED, Boolean.TRUE);
+				if (!configuration.containsKey(TOOLBAR_ENABLED)) configuration.put(TOOLBAR_ENABLED, Boolean.TRUE);
+				this.version = 11;
+			}
+			
 			/*
 			 * after resolving the issues, the version number is merged to the
 			 * CURRENTVERSION !! leave this!
@@ -485,6 +504,24 @@ public class CourseConfig implements Serializable, Cloneable {
 	public void setCalendarEnabled(boolean b) {
 		configuration.put(KEY_CALENDAR_ENABLED, new Boolean(b));
 	}
+	
+	public boolean isMenuEnabled() {
+		Boolean bool = (Boolean) configuration.get(MENU_ENABLED);
+		return bool.booleanValue();
+	}
+	
+	public void setMenuEnabled(boolean b) {
+		configuration.put(MENU_ENABLED, new Boolean(b));
+	}
+	
+	public boolean isToolbarEnabled() {
+		Boolean bool = (Boolean) configuration.get(TOOLBAR_ENABLED);
+		return bool.booleanValue();
+	}
+	
+	public void setToolbarEnabled(boolean b) {
+		configuration.put(TOOLBAR_ENABLED, new Boolean(b));
+	}
 
 	/**
 	 * Creates a deep clone for the current object.
@@ -506,6 +543,8 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setRecertificationEnabled(isRecertificationEnabled());
 		clone.setRecertificationTimelapse(getRecertificationTimelapse());
 		clone.setRecertificationTimelapseUnit(getRecertificationTimelapseUnit());
+		clone.setMenuEnabled(isMenuEnabled());
+		clone.setToolbarEnabled(isMenuEnabled());
 		return clone;
 	}
 

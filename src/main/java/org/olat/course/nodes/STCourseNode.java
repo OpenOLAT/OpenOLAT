@@ -28,6 +28,7 @@ package org.olat.course.nodes;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -160,8 +161,9 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 			}
 			DeliveryOptions deliveryOptions = (DeliveryOptions)getModuleConfiguration().get(SPEditController.CONFIG_KEY_DELIVERYOPTIONS);
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, userCourseEnv.getCourseEnvironment().getCourseResourceableId());
+			String frameId = userCourseEnv.getCourseEditorEnv() == null ? null : UUID.randomUUID().toString();
 			SinglePageController spCtr = new SinglePageController(ureq, wControl, userCourseEnv.getCourseEnvironment().getCourseFolderContainer(),
-					relPath, allowRelativeLinks.booleanValue(), ores, deliveryOptions);
+					relPath, allowRelativeLinks.booleanValue(), frameId, ores, deliveryOptions);
 			// check if user is allowed to edit the page in the run view
 			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
 			boolean hasEditRights = (cgm.isIdentityCourseAdministrator(ureq.getIdentity()) 

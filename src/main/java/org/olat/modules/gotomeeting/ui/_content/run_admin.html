@@ -1,0 +1,11 @@
+<div class="clearfix">
+#if($r.available("meeting"))
+	$r.render("backLink")
+	$r.render("meeting")
+#else
+	$r.render("segments") <br/>	
+	#if($r.available("segmentCmp"))
+		$r.render("segmentCmp")
+	#end
+#end
+</div>

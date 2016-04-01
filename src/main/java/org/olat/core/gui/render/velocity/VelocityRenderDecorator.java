@@ -632,6 +632,16 @@ public class VelocityRenderDecorator implements Closeable {
 	}
 	
 	/**
+	 * @param componentName
+	 * @return true if the component with name componentName is a child of the current container and if this
+	 * component is visible and enabled
+	 */
+	public boolean enabled(String componentName) {
+		Component source = renderer.findComponent(componentName);
+		return (source != null && source.isVisible() && source.isEnabled());
+	}
+	
+	/**
 	 * Return the component
 	 * @param componentName
 	 * @return

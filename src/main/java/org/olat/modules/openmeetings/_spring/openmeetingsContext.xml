@@ -49,7 +49,7 @@
 			</bean>
 		</property>
 		<property name="navigationKey" value="openmeetings" />
-		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
+		<property name="parentTreeNodeIdentifier" value="externalToolsParent" /> 
 		<property name="i18nActionKey" value="admin.menu.title"/>
 		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
 		<property name="translationPackage" value="org.olat.modules.openmeetings.ui"/>
@@ -58,7 +58,6 @@
 				<value>org.olat.admin.SystemAdminMainController</value>		
 			</list>
 		</property>
-		
 	</bean>
 
 </beans>

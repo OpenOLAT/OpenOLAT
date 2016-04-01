@@ -266,6 +266,7 @@ ul.o_dropdown {
 .o_portrait_dummy,
 .o_portrait_dummy_female_big,
 .o_portrait_dummy_male_big,
+.o_portrait_logo,
 .o_portrait_anonymous 			 {width: 100px; height: 100px;}
 .o_portrait_dummy                {background-image: url('#{$o-images-path}portrait/dummy.png');}
 .o_portrait_dummy_female_big     {background-image: url('#{$o-images-path}portrait/dummy_female_big.png');}
@@ -276,6 +277,7 @@ ul.o_dropdown {
 .o_portrait_dummy_small,
 .o_portrait_dummy_female_small,
 .o_portrait_dummy_male_small,
+.o_portrait_logo_small,
 .o_portrait_anonymous_small 	 {width: 30px; height: 30px;}
 .o_portrait_dummy_small          {background-image: url('#{$o-images-path}portrait/dummy_small.png');}
 .o_portrait_dummy_female_small   {background-image: url('#{$o-images-path}portrait/dummy_female_small.png');}
