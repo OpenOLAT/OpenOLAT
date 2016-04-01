@@ -27,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.course.assessment.ui.AssessmentModeListModel.Cols;
 import org.olat.modules.gotomeeting.GoToOrganizer;
 import org.olat.user.UserManager;
 
@@ -114,7 +113,7 @@ public class GoToOrganizerTableModel extends DefaultFlexiTableDataModel<GoToOrga
 		@Override
 		protected void sort(List<GoToOrganizer> rows) {
 			int columnIndex = getColumnIndex();
-			Cols column = Cols.values()[columnIndex];
+			OrganizerCols column = OrganizerCols.values()[columnIndex];
 			switch(column) {
 				default: {
 					super.sort(rows);

@@ -27,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.course.assessment.ui.AssessmentModeListModel.Cols;
 import org.olat.modules.gotomeeting.model.GoToRecordingsG2T;
 
 /**
@@ -97,7 +96,7 @@ public class GoToRecordingsTableModel extends DefaultFlexiTableDataModel<GoToRec
 		@Override
 		protected void sort(List<GoToRecordingsG2T> rows) {
 			int columnIndex = getColumnIndex();
-			Cols column = Cols.values()[columnIndex];
+			RecordingsCols column = RecordingsCols.values()[columnIndex];
 			switch(column) {
 				default: {
 					super.sort(rows);
