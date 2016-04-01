@@ -381,11 +381,11 @@ create table hibernate_unique_key (
 );
 
 create table o_lifecycle (
-   id bigint not null,
+   id int8 not null,
    version int4 not null,
    creationdate timestamp,
    persistenttypename varchar(50) not null,
-   persistentref bigint not null,
+   persistentref int8 not null,
    action varchar(50) not null,
    lctimestamp timestamp,
    uservalue text,
@@ -473,7 +473,7 @@ create table o_checkpoint (
 );
 
 create table o_checkpoint_results (
-   checkpoint_result_id bigint not null,
+   checkpoint_result_id int8 not null,
    version int4 not null,
    lastmodified timestamp not null,
    result bool not null,
@@ -1138,6 +1138,55 @@ create table o_cer_certificate (
    primary key (id)
 );
 
+-- gotomeeting
+create table o_goto_organizer (
+   id int8 not null,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   g_name varchar(128) default null,
+   g_account_key varchar(128) default null,
+   g_access_token varchar(128) not null,
+   g_renew_date timestamp not null,
+   g_organizer_key varchar(128) not null,
+   g_username varchar(128) not null,
+   g_firstname varchar(128) default null,
+   g_lastname varchar(128) default null,
+   g_email varchar(128) default null,
+   fk_identity int8 default null,
+   primary key (id)
+);
+
+create table o_goto_meeting (
+   id int8 not null,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   g_external_id varchar(128) default null,
+   g_type varchar(16) not null,
+   g_meeting_key varchar(128) not null,
+   g_name varchar(255) default null,
+   g_description varchar(2000) default null,
+   g_start_date timestamp default null,
+   g_end_date timestamp default null,
+   fk_organizer_id int8 not null,
+   fk_entry_id int8 default null,
+   g_sub_ident varchar(64) default null,
+   fk_group_id int8 default null,
+   primary key (id)
+);
+
+create table o_goto_registrant (
+   id int8 not null,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   g_status varchar(16) default null,
+   g_join_url varchar(1024) default null,
+   g_confirm_url varchar(1024) default null,
+   g_registrant_key varchar(64) default null,
+   fk_meeting_id int8 not null,
+   fk_identity_id int8 not null,
+   primary key (id)
+);
+
 -- calendar
 create table o_cal_use_config (
    id int8 not null,
@@ -1267,9 +1316,9 @@ create table o_qp_item (
    q_coverage varchar(1024),
    q_additional_informations varchar(256),
    q_language varchar(16),
-   fk_edu_context bigint,
+   fk_edu_context int8,
    q_educational_learningtime varchar(32),
-   fk_type bigint,
+   fk_type int8,
    q_difficulty decimal(10,9),
    q_stdev_difficulty decimal(10,9),
    q_differentiation decimal(10,9),
@@ -1343,7 +1392,7 @@ create table o_qp_item_type (
 );
 
 create table o_qp_license (
-   id bigint not null,
+   id int8 not null,
    creationdate timestamp not null,
    q_license varchar(256) not null,
    q_text varchar(2048),
@@ -1419,7 +1468,7 @@ create table o_rem_reminder (
    r_sendtime varchar(16),
    r_configuration text,
    r_email_body text,
-   fk_creator bigint not null,
+   fk_creator int8 not null,
    fk_entry int8 not null,
    primary key (id)
 );
@@ -2072,6 +2121,24 @@ create index idx_cal_imp_cal_type_idx on o_cal_import (c_calendar_type);
 
 create index idx_cal_imp_to_cal_id_idx on o_cal_import_to (c_to_calendar_id);
 create index idx_cal_imp_to_cal_type_idx on o_cal_import_to (c_to_calendar_type);
+
+-- gotomeeting
+alter table o_goto_organizer add constraint goto_organ_owner_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_goto_organ_owner_idx on o_goto_organizer(fk_identity);
+create index idx_goto_organ_okey_idx on o_goto_organizer(g_organizer_key);
+create index idx_goto_organ_uname_idx on o_goto_organizer(g_username);
+
+alter table o_goto_meeting add constraint goto_meet_repoentry_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
+create index idx_goto_meet_repoentry_idx on o_goto_meeting(fk_entry_id);
+alter table o_goto_meeting add constraint goto_meet_busgrp_idx foreign key (fk_group_id) references o_gp_business (group_id);
+create index idx_goto_meet_busgrp_idx on o_goto_meeting(fk_group_id);
+alter table o_goto_meeting add constraint goto_meet_organizer_idx foreign key (fk_organizer_id) references o_goto_organizer (id);
+create index idx_goto_meet_organizer_idx on o_goto_meeting(fk_organizer_id);
+
+alter table o_goto_registrant add constraint goto_regis_meeting_idx foreign key (fk_meeting_id) references o_goto_meeting (id);
+create index idx_goto_regis_meeting_idx on o_goto_registrant(fk_meeting_id);
+alter table o_goto_registrant add constraint goto_regis_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
+create index idx_goto_regis_ident_idx on o_goto_registrant(fk_identity_id);
 
 -- mapper
 create index o_mapper_uuid_idx on o_mapper (mapper_uuid);

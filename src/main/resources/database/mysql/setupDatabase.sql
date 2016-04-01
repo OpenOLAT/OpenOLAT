@@ -1140,6 +1140,54 @@ create table o_cer_certificate (
    primary key (id)
 );
 
+create table o_goto_organizer (
+   id bigint not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   g_name varchar(128) default null,
+   g_account_key varchar(128) default null,
+   g_access_token varchar(128) not null,
+   g_renew_date datetime not null,
+   g_organizer_key varchar(128) not null,
+   g_username varchar(128) not null,
+   g_firstname varchar(128) default null,
+   g_lastname varchar(128) default null,
+   g_email varchar(128) default null,
+   fk_identity bigint default null,
+   primary key (id)
+);
+
+create table o_goto_meeting (
+   id bigint not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   g_external_id varchar(128) default null,
+   g_type varchar(16) not null,
+   g_meeting_key varchar(128) not null,
+   g_name varchar(255) default null,
+   g_description varchar(2000) default null,
+   g_start_date datetime default null,
+   g_end_date datetime default null,
+   fk_organizer_id bigint not null,
+   fk_entry_id bigint default null,
+   g_sub_ident varchar(64) default null,
+   fk_group_id bigint default null,
+   primary key (id)
+);
+
+create table o_goto_registrant (
+   id bigint not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   g_status varchar(16) default null,
+   g_join_url varchar(1024) default null,
+   g_confirm_url varchar(1024) default null,
+   g_registrant_key varchar(64) default null,
+   fk_meeting_id bigint not null,
+   fk_identity_id bigint not null,
+   primary key (id)
+);
+
 -- calendar
 create table o_cal_use_config (
    id bigint not null,
@@ -1771,6 +1819,9 @@ alter table o_cer_template ENGINE = InnoDB;
 alter table o_cer_certificate ENGINE = InnoDB;
 alter table o_rem_reminder ENGINE = InnoDB;
 alter table o_rem_sent_reminder ENGINE = InnoDB;
+alter table o_goto_organizer ENGINE = InnoDB;
+alter table o_goto_meeting ENGINE = InnoDB;
+alter table o_goto_registrant ENGINE = InnoDB;
 
 -- rating
 alter table o_userrating add constraint FKF26C8375236F20X foreign key (creator_id) references o_bs_identity (id);
@@ -2064,6 +2115,18 @@ create index eff_statement_repo_key_idx on o_as_eff_statement (course_repo_key);
 alter table o_as_user_course_infos add index user_course_infos_id_cstr (fk_identity), add constraint user_course_infos_id_cstr foreign key (fk_identity) references o_bs_identity (id);
 alter table o_as_user_course_infos add index user_course_infos_res_cstr (fk_resource_id), add constraint user_course_infos_res_cstr foreign key (fk_resource_id) references o_olatresource (resource_id);
 alter table o_as_user_course_infos add unique (fk_identity, fk_resource_id);
+
+-- gotomeeting
+alter table o_goto_organizer add constraint goto_organ_owner_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_goto_organ_okey_idx on o_goto_organizer(g_organizer_key);
+create index idx_goto_organ_uname_idx on o_goto_organizer(g_username);
+
+alter table o_goto_meeting add constraint goto_meet_repoentry_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
+alter table o_goto_meeting add constraint goto_meet_busgrp_idx foreign key (fk_group_id) references o_gp_business (group_id);
+alter table o_goto_meeting add constraint goto_meet_organizer_idx foreign key (fk_organizer_id) references o_goto_organizer (id);
+
+alter table o_goto_registrant add constraint goto_regis_meeting_idx foreign key (fk_meeting_id) references o_goto_meeting (id);
+alter table o_goto_registrant add constraint goto_regis_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
 
 -- calendar
 alter table o_cal_use_config add constraint cal_u_conf_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);

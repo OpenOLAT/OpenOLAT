@@ -1,0 +1,24 @@
+<h3>$r.escapeHtml($title)</h3>
+#if($errorMessage && !${errorMessage.isEmpty()})
+	<div class="o_error">$errorMessage</div>
+#end
+<div class="o_button_group o_button_group_right">
+	$r.render("recordings")
+</div>
+
+<div><i class="o_icon o_icon_lifecycle"> </i> $start - $end</div>
+<div class="o_block_large o_info">$r.xssScan($description)</div>
+<div class="o_button_group">
+#if($r.available("training.start") && $r.visible("training.start"))
+	$r.render("training.start")
+#end
+#if($r.available("training.register") && $r.visible("training.register"))
+	$r.render("training.register")
+#end
+#if($r.available("training.confirm") && $r.visible("training.confirm"))
+	$r.render("training.confirm")
+#end
+#if($r.available("training.join") && $r.visible("training.join"))
+	$r.render("training.join")
+#end
+</div>

@@ -222,8 +222,10 @@ var BPlayer = {
 				config.provider = "sound";
 			} else if(config.file.indexOf('vimeo.com') > -1) {
 				mimeType = "video/vimeo";
-			} else if(config.file.indexOf('youtube.com') > -1 || config.file.indexOf('youtube.be')) {
+			} else if(config.file.indexOf('youtube.com') > -1 || config.file.indexOf('youtube.be') > -1) {
 				mimeType = "video/youtube";
+			} else if(extension.indexOf('mp4?') == 0) {
+				mimeType = "video/mp4";
 			} else {
 				alert('Something go badly wrong!' + config.provider + "  " + extension);
 			}

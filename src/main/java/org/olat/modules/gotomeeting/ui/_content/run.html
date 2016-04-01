@@ -1,0 +1,8 @@
+<div class="clearfix">
+#if($r.available("meeting"))
+	$r.render("backLink")
+	$r.render("meeting")
+#else
+	$r.render("meetings")
+#end
+</div>
