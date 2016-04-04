@@ -22,6 +22,11 @@
 	right: 0px;
 }
 
+/* hide visiting card logo, no icon found yet */
+.o_visitingcard .o_icon_visitingcard {
+	display: none;
+}
+
 .o_visitingcard .o_portrait_avatar,
 .o_visitingcard .o_portrait_dummy,
 .o_visitingcard .o_portrait_dummy_female_big,
@@ -43,3 +48,16 @@
 		padding-right: 70px;
 	}
 }
+
+/* iphone 6 */
+@media (max-width: 414px) { 
+	.o_visitingcard_logo img { max-width:260px; }
+}	
+/* iphone 6 */
+@media (max-width: 375px) { 
+	.o_visitingcard_logo img { max-width:220px; }
+}	
+/* iphone 4/5 */
+@media (max-width: 320px) { 
+	.o_visitingcard_logo img { max-width:180px; }
+}	
