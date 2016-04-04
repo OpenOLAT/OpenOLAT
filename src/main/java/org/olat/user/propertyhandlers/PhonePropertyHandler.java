@@ -40,7 +40,7 @@ import org.olat.core.util.StringHelper;
 public class PhonePropertyHandler extends Generic127CharTextPropertyHandler {
 	
 	// Regexp to define valid phone numbers
-	private static final Pattern VALID_PHONE_PATTERN_IP = Pattern.compile( "[0-9/\\-+' ]+" );
+	private static final Pattern VALID_PHONE_PATTERN_IP = Pattern.compile( "[0-9/\\-+'\\(\\)\\. e(ext\\.*)(extension)]+" );
 	
 	/* (non-Javadoc)
 	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#addFormItem(java.util.Locale, org.olat.core.id.User, java.lang.String, boolean, org.olat.core.gui.components.form.flexible.FormItemContainer)
@@ -85,7 +85,7 @@ public class PhonePropertyHandler extends Generic127CharTextPropertyHandler {
 		
 		if (StringHelper.containsNonWhitespace(value)) {
 			// check phone address syntax
-			if (!VALID_PHONE_PATTERN_IP.matcher(value).matches()) {
+			if (!VALID_PHONE_PATTERN_IP.matcher(value.toLowerCase()).matches()) {
 				formItem.setErrorKey(i18nFormElementLabelKey() + ".error.valid", null);
 				return false;
 			}
@@ -103,7 +103,7 @@ public class PhonePropertyHandler extends Generic127CharTextPropertyHandler {
 		
 		if (StringHelper.containsNonWhitespace(value)) {			
 			// check phone address syntax
-			if ( ! VALID_PHONE_PATTERN_IP.matcher(value).matches()) {
+			if ( ! VALID_PHONE_PATTERN_IP.matcher(value.toLowerCase()).matches()) {
 				validationError.setErrorKey(i18nFormElementLabelKey()+ ".error.valid");
 				return false;
 			}
