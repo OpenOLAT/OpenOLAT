@@ -125,10 +125,12 @@ public class HomePageDisplayController extends BasicController {
 
 		if(UserModule.isLogoByProfileEnabled()) {
 			File logo = DisplayPortraitManager.getInstance().getBigLogo(homeIdentity.getName());
-			ImageComponent logoCmp = new ImageComponent(ureq.getUserSession(), "logo");
-			logoCmp.setMedia(logo);
-			logoCmp.setMaxWithAndHeightToFitWithin(300, 66);
-			mainVC.put("logo", logoCmp);
+			if (logo != null) {
+				ImageComponent logoCmp = new ImageComponent(ureq.getUserSession(), "logo");
+				logoCmp.setMedia(logo);
+				logoCmp.setMaxWithAndHeightToFitWithin(300, 66);
+				mainVC.put("logo", logoCmp);				
+			}
 		}
 		
 		putInitialPanel(mainVC);
