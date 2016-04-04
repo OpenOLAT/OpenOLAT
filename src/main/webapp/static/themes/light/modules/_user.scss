@@ -19,10 +19,11 @@
 
 div.o_skype_button {
 	display:inline-block;
+	p {
+		margin: 0 0 0 0;	
+		a img {
+			margin:0 !important;
+			vertical-align:middle !important;
+		}
+	}
 }
-
-div.o_skype_button p a img {
-	margin:0 !important;
-	vertical-align:middle !important;
-}
-

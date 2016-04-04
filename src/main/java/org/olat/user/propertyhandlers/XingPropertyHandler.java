@@ -42,7 +42,7 @@ import org.olat.user.UserManager;
 public class XingPropertyHandler extends Generic127CharTextPropertyHandler {
 
 	public static final int XING_NAME_MAX_LENGTH = 320;
-	public static final String XING_NAME_VALIDATION_URL = "http://www.xing.com/profile/";
+	public static final String XING_NAME_PROFILE_URL = "http://www.xing.com/profile/";
 
 	/**
 	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#isValidValue(java.lang.String,
@@ -82,12 +82,12 @@ public class XingPropertyHandler extends Generic127CharTextPropertyHandler {
 	 */
 	@Override
 	public String getUserPropertyAsHTML(User user, Locale locale) {
-		// FXOLAT-343 ::  can't search by user-email on xing... just link to xing-homepage
 		String xingname = getUserProperty(user, locale);
 		if (StringHelper.containsNonWhitespace(xingname)) {
+			xingname = StringHelper.escapeHtml(xingname);
 			StringBuilder sb = new StringBuilder();
-			sb.append("<a href=\"http://www.xing.com\" target=\"_blank\">")
-			  .append(StringHelper.escapeHtml(xingname))
+			sb.append("<a href=\"").append(XING_NAME_PROFILE_URL).append(xingname).append("\" target=\"_blank\"><i class='o_icon o_icon-fw o_icon_xing'>&nbsp;</i>")
+			  .append(xingname)
 			  .append("</a>");
 			return sb.toString();
 		} else {
