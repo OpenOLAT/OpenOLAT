@@ -31,8 +31,6 @@
 .o_visitingcard .o_portrait_dummy_male_big,
 .o_visitingcard .o_portrait_anonymous { width: 66px; height: 66px; margin-right: 10px;}
 
-.o_visitingcard_logo img { max-width:400px; max-height: 66px; margin-right: 10px;}
-
 @media (max-width: $screen-xs-max) { 
 	.o_visitingcard .o_portrait_avatar,
 	.o_visitingcard .o_portrait_dummy,
@@ -46,7 +44,6 @@
 	}
 	
 	/* Additional logo is also smaller */
-	.o_visitingcard_logo img { max-width:300px; max-height: 50px; margin: 5px 0 0 5px;}
 	.o_visitingcard_logo,
 	.o_bcard_logo {
 		height: 50px; 
@@ -54,7 +51,6 @@
 		img {
 			/* tricky: scale to match new max height */
 			position: relative;
-			width: auto;
 			transform: scale( (50/66) ); 	/* scale to fit to new box size... */
 			top: -8px; 						/* .. and move 8px down (16px divided by 2 for top and bottom) */
 		}
