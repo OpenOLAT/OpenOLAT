@@ -62,12 +62,19 @@ public class PhonePropertyHandler extends Generic127CharTextPropertyHandler {
 		if (StringHelper.containsNonWhitespace(phonenr)) {
 			phonenr = StringHelper.escapeHtml(phonenr);
 			StringBuffer sb = new StringBuffer();
-			sb.append("<a href=\"callto:")
-			  .append(phonenr).append("\"><i class='o_icon o_icon_phone'> </i> ")
+			sb.append("<a href=\"tel:")
+			  .append(normalizePhonenumber(phonenr)).append("\"><i class='o_icon o_icon_phone'> </i> ")
 			  .append(phonenr).append("</a>");
 			return sb.toString();
 		}
 		return null;
+	}
+	
+	public static String normalizePhonenumber(String phonenr){
+		phonenr=phonenr.split("[A-Za-z]")[0]; //just take the first sequence before a alphabetic character appears
+		phonenr=phonenr.replaceAll("\\(.*\\)", ""); // remove brackets and their contents
+		phonenr=phonenr.replaceAll("[\\s/'\\-\\.,]", ""); //remove bad chars
+		return phonenr;
 	}
 	
 	/* (non-Javadoc)
