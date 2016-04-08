@@ -128,7 +128,7 @@ public class HomePageDisplayController extends BasicController {
 			if (logo != null) {
 				ImageComponent logoCmp = new ImageComponent(ureq.getUserSession(), "logo");
 				logoCmp.setMedia(logo);
-				logoCmp.setMaxWithAndHeightToFitWithin(300, 66);
+				logoCmp.setMaxWithAndHeightToFitWithin(200, 66);
 				mainVC.put("logo", logoCmp);				
 			}
 		}
