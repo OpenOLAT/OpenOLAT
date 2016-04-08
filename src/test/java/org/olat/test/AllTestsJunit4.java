@@ -156,6 +156,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.reminder.manager.ReminderRuleEngineTest.class,
 	org.olat.properties.PropertyTest.class,
 	org.olat.search.service.document.file.FileDocumentFactoryTest.class,
+	org.olat.search.service.indexer.repository.course.SPCourseNodeIndexerTest.class,
 	org.olat.search.service.document.file.PDFDocumentTest.class,
 	org.olat.search.service.document.file.OfficeDocumentTest.class,
 	org.olat.core.commons.services.notifications.manager.NotificationsManagerTest.class,
