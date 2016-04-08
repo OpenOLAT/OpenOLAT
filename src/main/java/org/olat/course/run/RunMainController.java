@@ -833,11 +833,21 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				if (cn != null) {
 					addLoggingResourceable(LoggingResourceable.wrap(cn));
 				}
-				
+				// consume our entry
 				if(entries.size() > 1) {
 					entries = entries.subList(1, entries.size());
 				}
 				updateTreeAndContent(ureq, cn, null, entries, firstEntry.getTransientState());
+			} else if (currentCourseNode.equals(cn)) {
+				// consume our entry
+				if(entries.size() > 1) {
+					entries = entries.subList(1, entries.size());
+				}
+				// the node to be activated is the one that is already on the screen
+				if (currentNodeController instanceof Activateable2) {
+					Activateable2 activateable = (Activateable2) currentNodeController;
+					activateable.activate(ureq, entries, state);
+				}
 			}
 		}
 	}
