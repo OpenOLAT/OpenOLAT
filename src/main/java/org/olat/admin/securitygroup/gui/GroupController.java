@@ -462,7 +462,7 @@ public class GroupController extends BasicController {
 	
 	private void doAddUsers(UserRequest ureq) {
 		removeAsListenerAndDispose(usc);
-		usc = new UserSearchController(ureq, getWindowControl(), true, true);			
+		usc = new UserSearchController(ureq, getWindowControl(), true, true, false);			
 		listenTo(usc);
 		
 		Component usersearchview = usc.getInitialComponent();

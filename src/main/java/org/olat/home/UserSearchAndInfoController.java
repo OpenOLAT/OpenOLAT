@@ -53,7 +53,7 @@ public class UserSearchAndInfoController extends BasicController {
 	
 	public UserSearchAndInfoController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		userCtrl = new UserSearchController(ureq, wControl);
+		userCtrl = new UserSearchController(ureq, wControl, false, false, true);
 		listenTo(userCtrl);
 		putInitialPanel(userCtrl.getInitialComponent());
 	}

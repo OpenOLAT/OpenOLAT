@@ -63,7 +63,7 @@ import org.olat.core.id.Identity;
 public class DeletableUserSearchController extends UserSearchController {
 	
 	public DeletableUserSearchController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, true, true);
+		super(ureq, wControl, true, true, false);
 	}
 	
 	/**

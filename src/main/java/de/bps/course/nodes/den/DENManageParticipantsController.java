@@ -270,7 +270,7 @@ public class DENManageParticipantsController extends BasicController {
 		if(source == addParticipantButton) {
 			//open user search controller to manually add users in date
 			removeAsListenerAndDispose(userSearchCntrl);
-			userSearchCntrl = new UserSearchController(ureq, getWindowControl(), true, true);
+			userSearchCntrl = new UserSearchController(ureq, getWindowControl(), true, true, false);
 			listenTo(userSearchCntrl);
 			
 			removeAsListenerAndDispose(userSearchCMC);

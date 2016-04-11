@@ -28,7 +28,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -57,12 +56,13 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class UserSearchForm extends FormBasicController {
 	
-	private final boolean isAdminProps, cancelButton;
+	private final boolean isAdminProps, cancelButton, allowReturnKey;
 	private FormLink searchButton;
 	
 	protected TextElement login;
 	protected List<UserPropertyHandler> userPropertyHandlers;
-	protected Map <String,FormItem>propFormItems;
+	protected Map<String,FormItem> propFormItems;
+
 	
 	/**
 	 * @param name
@@ -70,7 +70,7 @@ public class UserSearchForm extends FormBasicController {
 	 * @param isAdmin if true, no field must be filled in at all, otherwise
 	 *          validation takes place
 	 */
-	public UserSearchForm(UserRequest ureq, WindowControl wControl, boolean isAdminProps, boolean cancelButton) {
+	public UserSearchForm(UserRequest ureq, WindowControl wControl, boolean isAdminProps, boolean cancelButton, boolean allowReturnKey) {
 		super(ureq, wControl);
 		
 		UserManager um = UserManager.getInstance();
@@ -79,19 +79,7 @@ public class UserSearchForm extends FormBasicController {
 		
 		this.isAdminProps = isAdminProps;
 		this.cancelButton = cancelButton;
-	
-		initForm(ureq);
-	}
-	
-	public UserSearchForm(UserRequest ureq, WindowControl wControl, boolean isAdminProps, boolean cancelButton, Form rootForm) {
-		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
-		
-		UserManager um = UserManager.getInstance();
-		Translator decoratedTranslator = um.getPropertyHandlerTranslator(this.getTranslator());
-		setTranslator(decoratedTranslator);
-		
-		this.isAdminProps = isAdminProps;
-		this.cancelButton = cancelButton;
+		this.allowReturnKey = allowReturnKey;
 	
 		initForm(ureq);
 	}
@@ -219,7 +207,9 @@ public class UserSearchForm extends FormBasicController {
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//fireEvent (ureq, Event.DONE_EVENT);
+		if(allowReturnKey) {
+			fireEvent (ureq, Event.DONE_EVENT);
+		}
 	}
 	
 	@Override
