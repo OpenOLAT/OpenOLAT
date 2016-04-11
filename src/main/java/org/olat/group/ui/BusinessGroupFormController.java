@@ -341,7 +341,17 @@ public class BusinessGroupFormController extends FormBasicController {
 				return false;
 			}
 		} else {
-			if (businessGroupName.hasError()) return false; // auto-validations from form, return false, because of that clearError()-calls everywhere...
+			String groupName = businessGroupName.getValue();
+			if (groupName.getBytes().length > BusinessGroup.MAX_GROUP_NAME_LENGTH) {
+				businessGroupName.setErrorKey("create.form.error.nameTooLong", new String[] { BusinessGroup.MAX_GROUP_NAME_LENGTH + ""});
+				return false;				
+			} else if (!(groupName).matches(BusinessGroup.VALID_GROUPNAME_REGEXP)) {							
+				businessGroupName.setErrorKey("create.form.error.illegalName", new String[] {});
+				return false;
+			}
+			if (businessGroupName.hasError()) {
+				return false; // auto-validations from form, return false, because of that clearError()-calls everywhere...
+			}
 		}
 		// all group name tests passed
 		businessGroupName.clearError();

@@ -87,6 +87,7 @@ public class MemberListWithOriginFilterController extends AbstractMemberListCont
 				searchParams.setRepoOrigin(false);
 				searchParams.setGroupOrigin(true);
 			}
+			membersTable.deselectAll();
 			reloadModel();
 		} else {
 			super.formInnerEvent(ureq, source, event);

@@ -476,6 +476,8 @@ public class ProfileFormController extends FormBasicController {
 
 				identityToModify = updateIdentityFromFormData(identityToModify);
 				changedEmail = identityToModify.getUser().getProperty("email", null);
+				//if ((currentEmail == null && StringHelper.containsNonWhitespace(changedEmail))
+				//		|| (currentEmail != null && !currentEmail.equals(changedEmail))) {
 				if (!currentEmail.equals(changedEmail)) {
 					// allow an admin to change email without verification workflow. usermanager is only permitted to do so, if set by config.
 					if ( !(ureq.getUserSession().getRoles().isOLATAdmin()
@@ -510,9 +512,8 @@ public class ProfileFormController extends FormBasicController {
 		if (emailChanged) {
 			removeAsListenerAndDispose(dialogCtr);
 
-			String changerEMail = ureq.getIdentity().getUser().getProperty("email", ureq.getLocale());
 			String dialogText = "";
-			if(changerEMail != null && changerEMail.length() > 0 && changerEMail.equals(currentEmail)) {
+			if(identityToModify.equals(ureq.getIdentity())) {
 				dialogText = translate("email.change.dialog.text");
 			} else {
 				dialogText = translate("email.change.dialog.text.usermanager");

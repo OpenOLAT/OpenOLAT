@@ -78,4 +78,22 @@ public class UserPropertiesTest {
 		assertFalse(phoneHandler.isValidValue(null, "+41 43 frentix GmbH", error, null));
 	}
 
+	@Test
+	public void testPhonePropertyHandlerHTMLnormalizer() {
+		// test for valid phone number formats
+		assertTrue(PhonePropertyHandler.normalizePhonenumber("043 544 90 00").equals("0435449000"));
+		assertTrue(PhonePropertyHandler.normalizePhonenumber("043/544'90'00").equals("0435449000"));
+		assertTrue(PhonePropertyHandler.normalizePhonenumber("043-544-90-00").equals("0435449000"));
+		assertTrue(PhonePropertyHandler.normalizePhonenumber("043.544.90.00").equals("0435449000"));
+		assertTrue(PhonePropertyHandler.normalizePhonenumber("+41 43 544 90 00").equals("+41435449000"));
+		assertTrue(PhonePropertyHandler.normalizePhonenumber("+41 (0)43 544 90 00").equals("+41435449000"));
+		assertTrue(PhonePropertyHandler.normalizePhonenumber("+41 43 544 90 00 x0").equals("+41435449000"));
+		assertTrue(PhonePropertyHandler.normalizePhonenumber("+41 43 544 90 00 ext. 0").equals("+41435449000"));
+		assertTrue(PhonePropertyHandler.normalizePhonenumber("+41 43 544 90 00 ext0").equals("+41435449000"));
+		assertTrue(PhonePropertyHandler.normalizePhonenumber("+41 43 544 90 00 ext 0").equals("+41435449000"));
+		assertTrue(PhonePropertyHandler.normalizePhonenumber("+41 43 544 90 00 extension 0").equals("+41435449000"));
+		assertTrue(PhonePropertyHandler.normalizePhonenumber("+41 43 544 90 00 Extension 0").equals("+41435449000"));
+		assertTrue(PhonePropertyHandler.normalizePhonenumber("+41 43 544 90 00 ext. 0").equals("+41435449000"));
+	}
+
 }

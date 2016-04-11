@@ -180,7 +180,7 @@ public class BGUserManagementController extends BasicController {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(addCtrl);
 		
-		addCtrl = new UserSearchController(ureq, getWindowControl(), true, true);	
+		addCtrl = new UserSearchController(ureq, getWindowControl(), true, true, false);	
 		addCtrl.setUserObject(type);
 		listenTo(addCtrl);
 		String title;
