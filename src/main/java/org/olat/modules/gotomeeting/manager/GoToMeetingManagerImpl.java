@@ -514,7 +514,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 	public void deleteAll(RepositoryEntryRef entry, String subIdent, BusinessGroupRef businessGroup) {
 		List<GoToMeeting> trainings = meetingDao.getMeetings(GoToType.training, entry, subIdent, businessGroup);
 		for(GoToMeeting training:trainings) {
-			deleteTraining(training, new GoToError());
+			delete(training);
 		}
 	}
 
