@@ -43,6 +43,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
@@ -107,7 +108,8 @@ public class LinkFileCombiCalloutController extends BasicController {
 	 *            in HTML editor
 	 */
 	
-	public LinkFileCombiCalloutController(UserRequest ureq, WindowControl wControl, VFSContainer baseContainer,String relFilePath, boolean relFilPathIsProposal, boolean allowEditorRelativeLinks, CustomLinkTreeModel customLinkTreeModel) {
+	public LinkFileCombiCalloutController(UserRequest ureq, WindowControl wControl, VFSContainer baseContainer, String relFilePath,
+			boolean relFilPathIsProposal, boolean allowEditorRelativeLinks, CustomLinkTreeModel customLinkTreeModel) {
 		super(ureq, wControl);
 		this.baseContainer = baseContainer;
 		this.relFilPathIsProposal = relFilPathIsProposal;
@@ -134,7 +136,6 @@ public class LinkFileCombiCalloutController extends BasicController {
 
 		// Load file from configuration and update links
 		setRelFilePath(relFilePath);
-		
 	}
 
 	@Override
@@ -413,14 +414,17 @@ public class LinkFileCombiCalloutController extends BasicController {
 	
 	public void setRelFilePath(String relFilePath) {
 		this.relFilePath = relFilePath;
-		if(StringHelper.containsNonWhitespace(relFilePath)){
-			file = (VFSLeaf) baseContainer.resolve(relFilePath);
-			if (file == null && !this.relFilPathIsProposal) {
-				// System assumed that this page would exist. Maybe deleted by
-				// someone in folder. Tell user and offer to create the page
-				// again. 
-				this.relFilPathIsProposal = true;				
-				contentVC.contextPut("deleted", Boolean.valueOf(true));
+		if(StringHelper.containsNonWhitespace(relFilePath)) {
+			VFSItem item = baseContainer.resolve(relFilePath);
+			if(!(item instanceof VFSContainer)) {
+				file = (VFSLeaf)item;
+				if (file == null && !this.relFilPathIsProposal) {
+					// System assumed that this page would exist. Maybe deleted by
+					// someone in folder. Tell user and offer to create the page
+					// again. 
+					this.relFilPathIsProposal = true;				
+					contentVC.contextPut("deleted", Boolean.valueOf(true));
+				}
 			}
 		}
 		// Update all links in the GUI
