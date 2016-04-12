@@ -59,9 +59,6 @@ public class GoToRecordingController extends BasicController {
 		mainVC.contextPut("recordingUrl", url);
 		mainVC.contextPut("width", "1024");
 		mainVC.contextPut("height", "768");
-
-		System.out.println(url);
-		
 		putInitialPanel(mainVC);
 	}
 	

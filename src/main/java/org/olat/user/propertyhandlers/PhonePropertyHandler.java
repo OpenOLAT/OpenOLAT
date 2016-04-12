@@ -40,7 +40,7 @@ import org.olat.core.util.StringHelper;
 public class PhonePropertyHandler extends Generic127CharTextPropertyHandler {
 	
 	// Regexp to define valid phone numbers
-	private static final Pattern VALID_PHONE_PATTERN_IP = Pattern.compile( "[0-9/\\-+' ]+" );
+	private static final Pattern VALID_PHONE_PATTERN_IP = Pattern.compile( "[0-9/\\-+'\\(\\)\\. e(ext\\.*)(extension)]+" );
 	
 	/* (non-Javadoc)
 	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#addFormItem(java.util.Locale, org.olat.core.id.User, java.lang.String, boolean, org.olat.core.gui.components.form.flexible.FormItemContainer)
@@ -62,12 +62,19 @@ public class PhonePropertyHandler extends Generic127CharTextPropertyHandler {
 		if (StringHelper.containsNonWhitespace(phonenr)) {
 			phonenr = StringHelper.escapeHtml(phonenr);
 			StringBuffer sb = new StringBuffer();
-			sb.append("<a href=\"callto:")
-			  .append(phonenr).append("\"><i class='o_icon o_icon_phone'> </i> ")
+			sb.append("<a href=\"tel:")
+			  .append(normalizePhonenumber(phonenr)).append("\"><i class='o_icon o_icon_phone'> </i> ")
 			  .append(phonenr).append("</a>");
 			return sb.toString();
 		}
 		return null;
+	}
+	
+	public static String normalizePhonenumber(String phonenr){
+		phonenr=phonenr.split("[A-Za-z]")[0]; //just take the first sequence before a alphabetic character appears
+		phonenr=phonenr.replaceAll("\\(.*\\)", ""); // remove brackets and their contents
+		phonenr=phonenr.replaceAll("[\\s/'\\-\\.,]", ""); //remove bad chars
+		return phonenr;
 	}
 	
 	/* (non-Javadoc)
@@ -85,7 +92,7 @@ public class PhonePropertyHandler extends Generic127CharTextPropertyHandler {
 		
 		if (StringHelper.containsNonWhitespace(value)) {
 			// check phone address syntax
-			if (!VALID_PHONE_PATTERN_IP.matcher(value).matches()) {
+			if (!VALID_PHONE_PATTERN_IP.matcher(value.toLowerCase()).matches()) {
 				formItem.setErrorKey(i18nFormElementLabelKey() + ".error.valid", null);
 				return false;
 			}
@@ -103,7 +110,7 @@ public class PhonePropertyHandler extends Generic127CharTextPropertyHandler {
 		
 		if (StringHelper.containsNonWhitespace(value)) {			
 			// check phone address syntax
-			if ( ! VALID_PHONE_PATTERN_IP.matcher(value).matches()) {
+			if ( ! VALID_PHONE_PATTERN_IP.matcher(value.toLowerCase()).matches()) {
 				validationError.setErrorKey(i18nFormElementLabelKey()+ ".error.valid");
 				return false;
 			}

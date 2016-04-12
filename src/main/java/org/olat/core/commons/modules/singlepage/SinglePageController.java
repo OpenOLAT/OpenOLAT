@@ -26,6 +26,8 @@
 
 package org.olat.core.commons.modules.singlepage;
 
+import java.util.List;
+
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.gui.UserRequest;
@@ -41,12 +43,14 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.clone.CloneableController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.gui.control.generic.iframe.NewIframeUriEvent;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
@@ -67,7 +71,7 @@ import org.olat.core.util.vfs.VFSContainer;
  *
  * @author gnaegi 
  */
-public class SinglePageController extends BasicController implements CloneableController {
+public class SinglePageController extends BasicController implements CloneableController, Activateable2 {
 
 	private static final OLog log = Tracing.createLoggerFor(SinglePageController.class);
 	
@@ -168,6 +172,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 		}
 		
 		// adjust root folder if security does not allow using ../.. etc.
+		// *** IF YOU CHANGE THIS LOGIC, do also change it in SPCourseNodeIndexer! ***
 		if (!allowRelativeLinks && !jumpIn) {
 			// start uri is filename without relative path.
 			// the relative path of the file is added to the vfs rootcontainer
@@ -302,6 +307,14 @@ public class SinglePageController extends BasicController implements CloneableCo
 		return new SinglePageController(ureq, control, g_rootContainer, g_fileName, g_allowRelativeLinks, frameId, null, deliveryOptions);
 	}
 
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty() || idc == null) return;
+		// delegate to iframe controller
+		idc.activate(ureq, entries, state);
+	}
+
+	
 	/**
 	 * Set a scale factor to enlarge / shrink the entire page. This is handy when
 	 * a preview of a page should be displayed.

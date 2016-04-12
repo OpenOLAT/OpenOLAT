@@ -377,9 +377,12 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			//do nothing
 		} else {
 			for(Integer i:selections) {
-				MemberView row = memberListModel.getObject(i.intValue());
-				if(row != null) {
-					rows.add(row);
+				int index = i.intValue();
+				if(index >= 0 && index < memberListModel.getRowCount()) {
+					MemberView row = memberListModel.getObject(index);
+					if(row != null) {
+						rows.add(row);
+					}
 				}
 			}
 		}

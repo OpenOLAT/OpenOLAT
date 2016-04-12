@@ -24,7 +24,8 @@
 }
 
 .o_search_result_highlight {
-	font-weight: bold;
+	font-weight: $o-search-highlight-font-weight;
+	background-color: $o-search-highlight-color;
 }
 .o_search_result_context {
 	color: $o-search-context-color; 

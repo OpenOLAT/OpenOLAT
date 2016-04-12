@@ -1,14 +1,20 @@
 <div class="o_visitingcard clearfix well"><div class="o_scrollblock">
-	<h2><i class="o_icon o_icon_visitingcard"></i> $r.translate("menu.homepage") $userFullname</h2>
+	<h2><i class="o_icon o_icon_visitingcard"> </i>$r.translate("menu.homepage") $userFullname</h2>
 	#if ($deleted) 
 		<p class="o_warning">$r.translate("user.deleted")</p>
 	#end
 
 	<div class="o_visitingcard_content">
-		<div class="o_visitingcard_image o_block">$r.render("image")
-		#if($r.available("logo"))
-			<div class="o_visitingcard_logo">$r.render("logo")</div>
-		#end
+		<div class="o_visitingcard_image o_block o_clearfix">	
+			<div class="pull-left">$r.render("image")</div>
+			#if($r.available("logo") && $r.visible("logo"))
+				<div class="pull-right">
+					<div class="o_visitingcard_logo">
+						<span class='o_image_vertical_center_helper'></span>
+						$r.render("logo")
+					</div>
+				</div>
+			#end
 		</div>
 		<table class="table table-condensed table-striped">
 			#if($r.available("im.link"))

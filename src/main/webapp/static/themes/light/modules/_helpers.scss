@@ -191,6 +191,16 @@
 	max-width: 100%;
 }
 
+/* vertical centered helper */
+.o_image_vertical_center_helper {
+	display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+    & +.o_image img {
+    	vertical-align: middle;
+    }
+}
+
 /* Hyphenated text */
 .o_with_hyphens, %o_with_hyphens {	
 	-webkit-hyphens: auto;

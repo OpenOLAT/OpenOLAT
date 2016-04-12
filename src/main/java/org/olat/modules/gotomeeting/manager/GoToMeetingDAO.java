@@ -22,6 +22,7 @@ package org.olat.modules.gotomeeting.manager;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
@@ -141,6 +142,25 @@ public class GoToMeetingDAO {
 			query.setParameter("groupKey", businessGroup.getKey());
 		}
 		return query.getResultList();
+	}
+	
+	public List<GoToMeeting> getMeetingsOverlap(GoToType type, GoToOrganizer organizer, Date start, Date end) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select meeting from gotomeeting meeting")
+		  .append(" inner join meeting.organizer organizer on organizer.key=:organizerKey")
+		  .append(" where meeting.type=:type")
+		  .append(" and ((meeting.startDate<=:start and meeting.endDate>=:start)")
+		  .append(" or (meeting.startDate<=:end and meeting.endDate>=:end)")
+		  .append(" or (meeting.startDate>=:start and meeting.endDate<=:end))");
+
+		List<GoToMeeting> meetings = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), GoToMeeting.class)
+			.setParameter("organizerKey", organizer.getKey())
+			.setParameter("type", type.name())
+			.setParameter("start", start, TemporalType.TIMESTAMP)
+			.setParameter("end", end, TemporalType.TIMESTAMP)
+			.getResultList();
+		return meetings;
 	}
 	
 	public GoToMeeting update(GoToMeeting meeting) {

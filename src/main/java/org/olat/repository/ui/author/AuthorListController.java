@@ -749,6 +749,9 @@ public class AuthorListController extends FormBasicController implements Activat
 		for(AuthoringEntryRow row:rows) {
 			RepositoryEntry sourceEntry = repositoryService.loadByKey(row.getKey());
 			String displayname = "Copy of " + sourceEntry.getDisplayname();
+			if(displayname.length() > 99) {
+				displayname = displayname.substring(0, 99);
+			}
 			repositoryService.copy(sourceEntry, getIdentity(), displayname);
 		}
 		

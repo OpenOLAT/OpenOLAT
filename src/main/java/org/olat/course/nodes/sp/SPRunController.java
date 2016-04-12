@@ -25,6 +25,7 @@
 
 package org.olat.course.nodes.sp;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
@@ -44,9 +45,12 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.clone.CloneController;
 import org.olat.core.gui.control.generic.clone.CloneLayoutControllerCreatorCallback;
 import org.olat.core.gui.control.generic.clone.CloneableController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
@@ -75,7 +79,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author Felix Jost
  */
-public class SPRunController extends BasicController {
+public class SPRunController extends BasicController implements Activateable2 {
 	
 	private SPCourseNode courseNode;
 	private Panel main;
@@ -232,6 +236,15 @@ public class SPRunController extends BasicController {
 			throw new AssertException("Controller must be cloneable");
 		}
 	}
+	
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty() || spCtr == null) return;
+		// delegate to single page controller
+		spCtr.activate(ureq, entries, state);
+	}
+
 	
 	/**
 	 * 

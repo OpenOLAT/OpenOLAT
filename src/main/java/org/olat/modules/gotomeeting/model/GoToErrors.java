@@ -28,9 +28,11 @@ package org.olat.modules.gotomeeting.model;
 public enum GoToErrors {
 	Unkown(""),
 	DuplicateRegistrant(""),
+	OrganizerOverlap("error.organizer.overbooked"),
 	TrainingOver("error.code.TrainingOver"),
-	InvalidRequest(""),
-	NoSuchTraining("error.code.NoSuchTraining");
+	InvalidRequest("error.code.unkown"),
+	NoSuchTraining("error.code.NoSuchTraining"),
+	TrainingInSession("error.code.TrainingInSession");
 	
 	private final String i18nKey;
 	

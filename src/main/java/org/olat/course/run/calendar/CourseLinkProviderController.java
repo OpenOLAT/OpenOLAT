@@ -76,7 +76,7 @@ public class CourseLinkProviderController extends FormBasicController implements
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, ureq.getLocale(), getTranslator()));
 
 		this.ores = course;
-		availableCourses = new ArrayList<ICourse>(courses);
+		availableCourses = new ArrayList<>(courses);
 		courseNodeTreeModel = new CourseNodeSelectionTreeModel(courses);
 
 		initForm(ureq);
@@ -156,7 +156,10 @@ public class CourseLinkProviderController extends FormBasicController implements
 	@Override
 	public void setKalendarEvent(KalendarEvent kalendarEvent) {
 		this.kalendarEvent = kalendarEvent;
+		//clear all selections
 		clearSelection(courseNodeTreeModel.getRootNode());
+		multiSelectTree.deselectAll();
+		
 		for (KalendarEventLink link: kalendarEvent.getKalendarEventLinks()) {
 			if (link.getProvider().equals(COURSE_LINK_PROVIDER)) {
 				String nodeId = link.getId();

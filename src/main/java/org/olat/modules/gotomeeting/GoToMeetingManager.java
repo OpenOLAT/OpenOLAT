@@ -77,6 +77,16 @@ public interface GoToMeetingManager {
 	 */
 	public boolean removeOrganizer(GoToOrganizer organizer);
 	
+	/**
+	 * Check if the organizer is available between the 2 specified dates.
+	 * 
+	 * @param organizer
+	 * @param start
+	 * @param end
+	 * @return
+	 */
+	public boolean checkOrganizerAvailability(GoToOrganizer organizer, Date start, Date end);
+	
 	
 	public GoToMeeting scheduleTraining(GoToOrganizer organizer, String name, String externalId, String description, Date start, Date end,
 			RepositoryEntry resourceOwner, String subIdentifier, BusinessGroup businessGroup, GoToError error);

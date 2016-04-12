@@ -20,7 +20,10 @@
 package org.olat.modules.gotomeeting.ui;
 
 import java.util.Date;
+import java.util.List;
 
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
+import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -30,13 +33,17 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.util.Formatter;
 import org.olat.modules.gotomeeting.GoToMeeting;
 import org.olat.modules.gotomeeting.GoToMeetingManager;
 import org.olat.modules.gotomeeting.GoToRegistrant;
 import org.olat.modules.gotomeeting.model.GoToError;
+import org.olat.modules.gotomeeting.model.GoToErrors;
+import org.olat.modules.gotomeeting.model.GoToRecordingsG2T;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -88,6 +95,9 @@ public class GoToMeetingController extends BasicController {
 		if(error.hasError() && error.getError() != null) {
 			mainVC.contextPut("errorMessage", translate(error.getError().i18nKey()));
 		}
+		
+		List<GoToRecordingsG2T> recordings = meetingMgr.getRecordings(meeting, error);
+		openRecordingsLink.setVisible(recordings.size() > 0);
 
 		Date start = meeting.getStartDate();
 		Date end = meeting.getEndDate();
@@ -117,7 +127,6 @@ public class GoToMeetingController extends BasicController {
 			} else if(ended) {
 				startLink.setVisible(false);
 				registerLink.setVisible(false);
-				
 			} else if(registrant == null) {
 				startLink.setVisible(false);
 				registerLink.setVisible(true);
@@ -133,9 +142,9 @@ public class GoToMeetingController extends BasicController {
 			joinLink.setVisible(false);
 		} else if(canStart) {
 			if(registrant == null) {
-				registerLink.setVisible(true);
+				registerLink.setVisible(false);
 				confirmLink.setVisible(false);
-				joinLink.setVisible(false);
+				joinLink.setVisible(true);
 			} else {
 				registerLink.setVisible(false);
 				confirmLink.setVisible(false);
@@ -198,6 +207,10 @@ public class GoToMeetingController extends BasicController {
 		if(startUrl != null) {
 			RedirectMediaResource redirect = new RedirectMediaResource(startUrl);
 			ureq.getDispatchResult().setResultingMediaResource(redirect);
+		} else if(error.getError() == GoToErrors.TrainingInSession) {
+			String joinUrl = registrant.getJoinUrl();
+			RedirectMediaResource redirect = new RedirectMediaResource(joinUrl);
+			ureq.getDispatchResult().setResultingMediaResource(redirect);
 		}
 	}
 	
@@ -226,12 +239,45 @@ public class GoToMeetingController extends BasicController {
 	}
 
 	private void doJoin(UserRequest ureq) {
+		boolean join = false;
+		GoToError error = new GoToError();
+		if(registrant == null) {
+			registrant = meetingMgr.registerTraining(meeting, getIdentity(), error);
+		}
 		if(registrant != null) {
 			String joinUrl = registrant.getJoinUrl();
 			if(joinUrl != null) {
 				RedirectMediaResource redirect = new RedirectMediaResource(joinUrl);
 				ureq.getDispatchResult().setResultingMediaResource(redirect);
+				join = true;
 			}
+		}
+		if(!join) {
+			final String errorMessage;
+			if(error.hasError()) {
+				if(error.getError() != null) {
+					errorMessage = translate(error.getError().i18nKey());
+				} else {
+					errorMessage = translate("error.code.unkown");
+				}
+			} else {
+				errorMessage = translate("error.code.unkown");
+			}
+			
+			ControllerCreator creator =  BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, new ControllerCreator() {
+				@Override
+				public Controller createController(UserRequest lureq, WindowControl lwControl) {
+					// Wrap in column layout, popup window needs a layout controller
+					String title = "";
+					String text = errorMessage;
+					Controller ctr = MessageUIFactory.createErrorMessage(lureq, lwControl, title, text);
+					LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, ctr);
+					layoutCtr.addDisposableChildController(ctr);
+					return layoutCtr;
+				}
+			});
+	
+			openInNewBrowserWindow(ureq, creator);
 		}
 		updateButtons();
 	}

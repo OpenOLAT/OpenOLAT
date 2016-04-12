@@ -1277,6 +1277,12 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 					continue;
 				}
 				
+				CourseNode cn = course.getEditorTreeModel().getCourseNode(element.getUserdata());
+				if(cn == null) {
+					logError("Cannot find course element " + element.getUserdata() + " in course " + course, null);
+					continue;
+				}
+
 				String courseTitle = course.getCourseTitle();
 				StringBuilder stakeHolders = new StringBuilder();
 				
@@ -1299,7 +1305,6 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 					}
 				}
 
-				CourseNode cn = course.getEditorTreeModel().getCourseNode(element.getUserdata());
 				String courseNodeTitle = cn.getShortTitle();
 				result.append(translate("qti.restricted.course", StringHelper.escapeHtml(courseTitle)));
 				result.append(translate("qti.restricted.node", StringHelper.escapeHtml(courseNodeTitle)));

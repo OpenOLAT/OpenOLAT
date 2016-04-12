@@ -134,13 +134,22 @@ public class GoToTrainingWebService {
 			GoToMeeting meeting = null;
 			GoToError error = new GoToError();
 			if(training.getKey() == null) {
+				boolean organizerFound = false;
 				List<GoToOrganizer> organizers = meetingManager.getSystemOrganizers();
 				for(GoToOrganizer organizer:organizers) {
-					meeting = meetingManager.scheduleTraining(organizer, training.getName(), training.getExternalId(), "-",
-						training.getStart(), training.getEnd(), entry, subIdentifier, null, error);
-					if(!error.hasError()) {
-						break;
+					boolean available = meetingManager.checkOrganizerAvailability(organizer, training.getStart(), training.getEnd());
+					if(available) {
+						meeting = meetingManager.scheduleTraining(organizer, training.getName(), training.getExternalId(), "-",
+							training.getStart(), training.getEnd(), entry, subIdentifier, null, error);
+						organizerFound = true;
+						if(!error.hasError()) {
+							break;
+						}
 					}
+				}
+				
+				if(!organizerFound) {
+					error.setError(GoToErrors.OrganizerOverlap);
 				}
 			} else {
 				meeting = meetingManager.getMeetingByExternalId(training.getExternalId());

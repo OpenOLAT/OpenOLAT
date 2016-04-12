@@ -33,6 +33,12 @@ import org.junit.Test;
  */
 public class GoToTimezoneIDsTest {
 	
+	/**
+	 * 
+	 * This only test if all the time zone defined in GoToMeeting are avaliable in Java.
+	 * 
+	 * @throws JSONException
+	 */
 	@Test
 	public void timeZoneIds() throws JSONException {
 		for(String id:GoToTimezoneIDs.TIMEZONE_IDS) {

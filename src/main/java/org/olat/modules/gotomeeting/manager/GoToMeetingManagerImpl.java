@@ -123,6 +123,11 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 		}
 		return false;
 	}
+	
+	public boolean checkOrganizerAvailability(GoToOrganizer organizer, Date start, Date end) {
+		List<GoToMeeting> meetings = meetingDao.getMeetingsOverlap(GoToType.training, organizer, start, end);
+		return meetings.isEmpty();
+	}
 
 	@Override
 	public GoToMeeting scheduleTraining(GoToOrganizer organizer, String name, String externalId, String description, Date start, Date end,
@@ -362,8 +367,8 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 		GoToMeeting reloadMeeting = meetingDao.loadMeetingByKey(meeting.getKey());
 		if(reloadMeeting != null) {
 			GoToTrainingG2T trainingVo = getTraining(meeting, error);
-			if(trainingVo != null) {
-				//update training perhaps
+			if(trainingVo == null) {
+				log.error("Training not found");
 			}
 		}
 		return reloadMeeting;
@@ -447,7 +452,6 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 			int status = response.getStatusLine().getStatusCode();
 			if(status == 200) {//deleted
 				String content = EntityUtils.toString(response.getEntity());
-				System.out.println(content);
 				List<GoToRecordingsG2T> recordings = GoToJsonUtil.parseRecordings(content);
 				return recordings;
 			} else {
@@ -514,7 +518,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 	public void deleteAll(RepositoryEntryRef entry, String subIdent, BusinessGroupRef businessGroup) {
 		List<GoToMeeting> trainings = meetingDao.getMeetings(GoToType.training, entry, subIdent, businessGroup);
 		for(GoToMeeting training:trainings) {
-			deleteTraining(training, new GoToError());
+			delete(training);
 		}
 	}
 

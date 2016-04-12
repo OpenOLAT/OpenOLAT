@@ -184,6 +184,19 @@ public class XSSFilterTest {
 	}
 	
 	@Test
+	public void test_link_htmlEntities() {
+		testsToRun = 1;
+		t("<a href=\"http://www.schreinersicht.ch/artikel/Mehr_als_nur_S&amp;gen--496\">new window link</a>", "<a href=\"http://www.schreinersicht.ch/artikel/Mehr_als_nur_S&amp;gen--496\">new window link</a>");
+		t("<a href=\"http://www.schreinersicht.ch/artikel/Mehr_als_nur_S&auml;gen--496\">new window link</a>", "<a href=\"http://www.schreinersicht.ch/artikel/Mehr_als_nur_S&auml;gen--496\">new window link</a>");
+		t("<a href=\"http://www.schreinersicht.ch/artikel/Mehr_als_nur_S&aacute;gen--496\">new window link</a>", "<a href=\"http://www.schreinersicht.ch/artikel/Mehr_als_nur_S&aacute;gen--496\">new window link</a>");
+		
+		//escape unkown entity
+		t("<a href=\"http://www.schreinersicht.ch/artikel/Mehr_als_nur_S&xss;gen--496\">new window link</a>", "<a href=\"http://www.schreinersicht.ch/artikel/Mehr_als_nur_S&amp;xss;gen--496\">new window link</a>");
+		//check if escaped result is allowed
+		t("<a href=\"http://www.schreinersicht.ch/artikel/Mehr_als_nur_S&amp;xss;gen--496\">new window link</a>", "<a href=\"http://www.schreinersicht.ch/artikel/Mehr_als_nur_S&amp;xss;gen--496\">new window link</a>");
+	}
+	
+	@Test
 	public void test_link_complexer(){
 		testsToRun = 1;
 		t("<a class=\"o_icon_link_extern\" target=\"_blank\" href=\"http://www.frentix.com\" onclick=\"javascript:alert('hallo');\" title=\"a good link\">a complicated link</a>",

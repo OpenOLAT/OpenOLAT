@@ -27,6 +27,7 @@
 package org.olat.core.gui.control.generic.iframe;
 
 import java.io.File;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -39,9 +40,13 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.textmarker.TextMarkerManagerImpl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.event.MultiUserEvent;
@@ -60,7 +65,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
  *         
  * @author guido
  */
-public class IFrameDisplayController extends BasicController implements GenericEventListener {
+public class IFrameDisplayController extends BasicController implements GenericEventListener, Activateable2 {
 	private static final String NEW_URI_EVENT = "newUriEvent";
 	protected static final String FILE_SUFFIX_HTM = "htm";
 	protected static final String FILE_SUFFIX_JS = ".js";
@@ -433,4 +438,15 @@ public class IFrameDisplayController extends BasicController implements GenericE
 			getWindowControl().getWindowBackOffice().removeCycleListener(this);
 		}
 	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		Long id = entries.get(0).getOLATResourceable().getResourceableId();
+		if(id == 0) {
+			String path = BusinessControlFactory.getInstance().getPath(entries.get(0));
+			changeCurrentURI(path, false);
+		}
+	}
+
 }

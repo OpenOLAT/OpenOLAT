@@ -20,6 +20,7 @@
 package org.olat.modules.gotomeeting.manager;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -79,7 +80,36 @@ public class GoToRegistrantDAOTest extends OlatTestCase {
 		GoToRegistrant reloadRegistrant = registrantDao.getRegistrant(training, trainee);
 		Assert.assertNotNull(reloadRegistrant);
 		Assert.assertEquals(registrant, reloadRegistrant);
-		
 	}
-
+	
+	@Test
+	public void getRegistrants() {
+		String token = UUID.randomUUID().toString();
+		Identity trainee = JunitTestHelper.createAndPersistIdentityAsRndUser("trainee-3");
+		
+		GoToOrganizer organizer = organizerDao
+				.createOrganizer(null, token, token, token, null, null, null, null, 10l, null);
+		Assert.assertNotNull(organizer);
+		
+		Date start = new Date();
+		Date end = new Date();
+		String trainingKey = Long.toString(CodeHelper.getForeverUniqueID());
+		GoToMeeting training = meetingDao
+				.createTraining("New training", null, "Very interessant", trainingKey, start, end, organizer, null, null, null);
+		dbInstance.commit();
+		
+		//create registrant
+		String registrantKey = Long.toString(CodeHelper.getForeverUniqueID());
+		String joinUrl = "http://openolat.com/join/" + registrantKey;
+		String confirmUrl = "http://openolat.com/confirm/" + registrantKey;
+		GoToRegistrant registrant = registrantDao.createRegistrant(training, trainee, registrantKey, joinUrl, confirmUrl);
+		Assert.assertNotNull(registrant);
+		dbInstance.commit();
+		
+		//load
+		List<GoToRegistrant> reloadRegistrants = registrantDao.getRegistrants(trainee, null, null, null);
+		Assert.assertNotNull(reloadRegistrants);
+		Assert.assertEquals(1, reloadRegistrants.size());
+		Assert.assertEquals(registrant, reloadRegistrants.get(0));
+	}
 }

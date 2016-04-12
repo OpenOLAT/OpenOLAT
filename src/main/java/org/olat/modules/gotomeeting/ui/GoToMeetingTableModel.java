@@ -27,8 +27,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.gotomeeting.GoToMeeting;
+import org.olat.modules.gotomeeting.GoToOrganizer;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -63,6 +65,23 @@ public class GoToMeetingTableModel extends DefaultFlexiTableDataModel<GoToMeetin
 			case name: return meeting.getName();
 			case start: return meeting.getStartDate();
 			case end: return meeting.getEndDate();
+			case organizer: {
+				GoToOrganizer organizer = meeting.getOrganizer();
+				String name = "";
+				if(organizer != null) {
+					if(StringHelper.containsNonWhitespace(organizer.getName())) {
+						name = organizer.getName();
+					} else if(StringHelper.containsNonWhitespace(organizer.getLastName())) {
+						if(StringHelper.containsNonWhitespace(organizer.getFirstName())) {
+							name += organizer.getFirstName() + " ";
+						}
+						name += organizer.getLastName();
+					} else if(StringHelper.containsNonWhitespace(organizer.getUsername())) {
+						name = organizer.getUsername();
+					}
+				}
+				return name;
+			}
 			case resource: {
 				RepositoryEntry entry = meeting.getEntry();
 				if(entry != null) {
@@ -89,6 +108,7 @@ public class GoToMeetingTableModel extends DefaultFlexiTableDataModel<GoToMeetin
 		name("meeting.name"),
 		start("meeting.start"),
 		end("meeting.end"),
+		organizer("meeting.organizer"),
 		resource("meeting.resource");
 		
 		private final String i18nHeaderKey;

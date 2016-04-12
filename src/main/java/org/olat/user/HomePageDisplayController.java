@@ -25,6 +25,7 @@
 
 package org.olat.user;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -32,6 +33,7 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -49,7 +51,6 @@ import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.instantMessaging.model.Buddy;
-import org.olat.user.DisplayPortraitController.Display;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -123,9 +124,13 @@ public class HomePageDisplayController extends BasicController {
 		mainVC.put("image", dpc.getInitialComponent());
 
 		if(UserModule.isLogoByProfileEnabled()) {
-			Controller dlc = new DisplayPortraitController(ureq, getWindowControl(), homeIdentity, true, false, false, Display.logo);
-			listenTo(dlc); // auto dispose
-			mainVC.put("logo", dlc.getInitialComponent());
+			File logo = DisplayPortraitManager.getInstance().getBigLogo(homeIdentity.getName());
+			if (logo != null) {
+				ImageComponent logoCmp = new ImageComponent(ureq.getUserSession(), "logo");
+				logoCmp.setMedia(logo);
+				logoCmp.setMaxWithAndHeightToFitWithin(200, 66);
+				mainVC.put("logo", logoCmp);				
+			}
 		}
 		
 		putInitialPanel(mainVC);
