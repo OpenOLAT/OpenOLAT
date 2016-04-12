@@ -37,6 +37,7 @@ import org.olat.modules.gotomeeting.GoToMeeting;
 import org.olat.modules.gotomeeting.GoToMeetingManager;
 import org.olat.modules.gotomeeting.GoToRegistrant;
 import org.olat.modules.gotomeeting.model.GoToError;
+import org.olat.modules.gotomeeting.model.GoToErrors;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -197,6 +198,10 @@ public class GoToMeetingController extends BasicController {
 		String startUrl = meetingMgr.startTraining(meeting, error);
 		if(startUrl != null) {
 			RedirectMediaResource redirect = new RedirectMediaResource(startUrl);
+			ureq.getDispatchResult().setResultingMediaResource(redirect);
+		} else if(error.getError() == GoToErrors.TrainingInSession) {
+			String joinUrl = registrant.getJoinUrl();
+			RedirectMediaResource redirect = new RedirectMediaResource(joinUrl);
 			ureq.getDispatchResult().setResultingMediaResource(redirect);
 		}
 	}

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.gotomeeting.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -81,6 +82,9 @@ public class GoToRecordingsController extends FormBasicController {
 		tableModel = new GoToRecordingsTableModel(columnsModel);
 		GoToError error = new GoToError();
 		List<GoToRecordingsG2T> recordings = meetingMgr.getRecordings(meeting, error);
+		if(recordings == null) {
+			recordings = new ArrayList<>(1);
+		}
 		tableModel.setObjects(recordings);
 		tableEl = uifactory.addTableElement(getWindowControl(), "recordings", tableModel, getTranslator(), formLayout);
 		tableEl.setEmtpyTableMessageKey("recordings.empty");

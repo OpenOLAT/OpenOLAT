@@ -82,7 +82,7 @@ public class GoToMeetingsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MeetingsCols.name.i18nHeaderKey(), MeetingsCols.name.ordinal(), true, MeetingsCols.name.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MeetingsCols.start.i18nHeaderKey(), MeetingsCols.start.ordinal(), true, MeetingsCols.start.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MeetingsCols.end.i18nHeaderKey(), MeetingsCols.end.ordinal(), true, MeetingsCols.end.name()));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("select", translate("select"), "select"));
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("select", translate("select"), "select-upcoming"));
 
 		upcomingTableModel = new GoToMeetingTableModel(columnsModel);
 		upcomingTableEl = uifactory.addTableElement(getWindowControl(), "upcomingmeetings", upcomingTableModel, getTranslator(), formLayout);
@@ -91,6 +91,13 @@ public class GoToMeetingsController extends FormBasicController {
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		sortOptions.setDefaultOrderBy(new SortKey(MeetingsCols.start.name(), true));
 		upcomingTableEl.setSortSettings(sortOptions);
+		
+		
+		FlexiTableColumnModel pastColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		pastColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MeetingsCols.name.i18nHeaderKey(), MeetingsCols.name.ordinal(), true, MeetingsCols.name.name()));
+		pastColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MeetingsCols.start.i18nHeaderKey(), MeetingsCols.start.ordinal(), true, MeetingsCols.start.name()));
+		pastColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MeetingsCols.end.i18nHeaderKey(), MeetingsCols.end.ordinal(), true, MeetingsCols.end.name()));
+		pastColumnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("select", translate("select"), "select-past"));
 
 		pastTableModel = new GoToMeetingTableModel(columnsModel);
 		pastTableEl = uifactory.addTableElement(getWindowControl(), "pastmeetings", pastTableModel, getTranslator(), formLayout);
@@ -138,7 +145,7 @@ public class GoToMeetingsController extends FormBasicController {
 		if(upcomingTableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
-				if("select".equals(se.getCommand())) {
+				if("select-upcoming".equals(se.getCommand())) {
 					GoToMeeting meeting = upcomingTableModel.getObject(se.getIndex());
 					fireEvent(ureq, new SelectGoToMeetingEvent(meeting));
 				}
@@ -146,7 +153,7 @@ public class GoToMeetingsController extends FormBasicController {
 		} else if(pastTableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
-				if("select".equals(se.getCommand())) {
+				if("select-past".equals(se.getCommand())) {
 					GoToMeeting meeting = pastTableModel.getObject(se.getIndex());
 					fireEvent(ureq, new SelectGoToMeetingEvent(meeting));
 				}
