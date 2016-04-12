@@ -123,6 +123,11 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 		}
 		return false;
 	}
+	
+	public boolean checkOrganizerAvailability(GoToOrganizer organizer, Date start, Date end) {
+		List<GoToMeeting> meetings = meetingDao.getMeetingsOverlapp(GoToType.training, organizer, start, end);
+		return meetings.isEmpty();
+	}
 
 	@Override
 	public GoToMeeting scheduleTraining(GoToOrganizer organizer, String name, String externalId, String description, Date start, Date end,

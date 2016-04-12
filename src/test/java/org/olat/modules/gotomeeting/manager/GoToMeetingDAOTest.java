@@ -19,6 +19,7 @@
  */
 package org.olat.modules.gotomeeting.manager;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -100,5 +101,85 @@ public class GoToMeetingDAOTest extends OlatTestCase {
 		Assert.assertNotNull(meetings);
 		Assert.assertEquals(1, meetings.size());
 		Assert.assertTrue(meetings.contains(training));
+	}
+	
+	
+	@Test
+	public void getMeetingsOverlapp() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		
+		String username = UUID.randomUUID().toString();
+		String accessToken = UUID.randomUUID().toString();
+		String organizerKey = UUID.randomUUID().toString();
+		
+		GoToOrganizer organizer = organizerDao
+				.createOrganizer(null, username, accessToken, organizerKey, "Michael", "Wolgemut", null, null, 10l, null);
+		Assert.assertNotNull(organizer);
+
+		Calendar cal = Calendar.getInstance();
+		cal.set(2016, 8, 12, 12, 0, 0);
+		Date start = cal.getTime();
+		cal.set(2016, 8, 12, 18, 0, 0);
+		Date end = cal.getTime();
+		String trainingKey = Long.toString(CodeHelper.getForeverUniqueID());
+		GoToMeeting training = meetingDao.createTraining("New training", null, "Very interessant", trainingKey, start, end,
+				organizer, entry, "d9914", null);
+		dbInstance.commit();
+		Assert.assertNotNull(training);
+
+		//check organizer availability (same date)
+		List<GoToMeeting> overlaps = meetingDao.getMeetingsOverlapp(GoToType.training, organizer, start, end);
+		Assert.assertNotNull(overlaps);
+		Assert.assertEquals(1, overlaps.size());
+
+		//check organizer availability (end overlap)
+		cal.set(2016, 8, 12, 10, 0, 0);
+		Date start_1 = cal.getTime();
+		cal.set(2016, 8, 12, 14, 0, 0);
+		Date end_1 = cal.getTime();
+		List<GoToMeeting> overlaps_1 = meetingDao.getMeetingsOverlapp(GoToType.training, organizer, start_1, end_1);
+		Assert.assertEquals(1, overlaps_1.size());
+		
+		//check organizer availability (start overlap)
+		cal.set(2016, 8, 12, 14, 0, 0);
+		Date start_2 = cal.getTime();
+		cal.set(2016, 8, 12, 20, 0, 0);
+		Date end_2 = cal.getTime();
+		List<GoToMeeting> overlaps_2 = meetingDao.getMeetingsOverlapp(GoToType.training, organizer, start_2, end_2);
+		Assert.assertEquals(1, overlaps_2.size());
+		
+		//check organizer availability (within)
+		cal.set(2016, 8, 12, 14, 0, 0);
+		Date start_3 = cal.getTime();
+		cal.set(2016, 8, 12, 15, 0, 0);
+		Date end_3 = cal.getTime();
+		List<GoToMeeting> overlaps_3 = meetingDao.getMeetingsOverlapp(GoToType.training, organizer, start_3, end_3);
+		Assert.assertNotNull(overlaps_3);
+		Assert.assertEquals(1, overlaps_3.size());
+		
+		//check organizer availability (start before, end after)
+		cal.set(2016, 8, 12, 10, 0, 0);
+		Date start_4 = cal.getTime();
+		cal.set(2016, 8, 12, 22, 0, 0);
+		Date end_4 = cal.getTime();
+		List<GoToMeeting> overlaps_4 = meetingDao.getMeetingsOverlapp(GoToType.training, organizer, start_4, end_4);
+		Assert.assertNotNull(overlaps_4);
+		Assert.assertEquals(1, overlaps_4.size());
+		
+		//check organizer availability (in past)
+		cal.set(2016, 8, 12, 9, 0, 0);
+		Date start_5 = cal.getTime();
+		cal.set(2016, 8, 12, 11, 0, 0);
+		Date end_5 = cal.getTime();
+		List<GoToMeeting> overlaps_5 = meetingDao.getMeetingsOverlapp(GoToType.training, organizer, start_5, end_5);
+		Assert.assertEquals(0, overlaps_5.size());
+		
+		//check organizer availability (in future)
+		cal.set(2016, 8, 12, 20, 0, 0);
+		Date start_6= cal.getTime();
+		cal.set(2016, 8, 12, 21, 0, 0);
+		Date end_6 = cal.getTime();
+		List<GoToMeeting> overlaps_6 = meetingDao.getMeetingsOverlapp(GoToType.training, organizer, start_6, end_6);
+		Assert.assertEquals(0, overlaps_6.size());
 	}
 }

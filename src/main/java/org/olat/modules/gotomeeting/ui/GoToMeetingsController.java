@@ -19,6 +19,8 @@
  */
 package org.olat.modules.gotomeeting.ui;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
@@ -56,8 +58,8 @@ public class GoToMeetingsController extends FormBasicController {
 	private final RepositoryEntry entry;
 	private final BusinessGroup businessGroup;
 	
-	private FlexiTableElement tableEl;
-	private GoToMeetingTableModel tableModel;
+	private FlexiTableElement upcomingTableEl, pastTableEl;
+	private GoToMeetingTableModel upcomingTableModel, pastTableModel;
 	
 	@Autowired
 	private GoToMeetingManager meetingMgr;
@@ -82,21 +84,48 @@ public class GoToMeetingsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MeetingsCols.end.i18nHeaderKey(), MeetingsCols.end.ordinal(), true, MeetingsCols.end.name()));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("select", translate("select"), "select"));
 
-		tableModel = new GoToMeetingTableModel(columnsModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "meetings", tableModel, getTranslator(), formLayout);
-		tableEl.setEmtpyTableMessageKey("table.empty");
+		upcomingTableModel = new GoToMeetingTableModel(columnsModel);
+		upcomingTableEl = uifactory.addTableElement(getWindowControl(), "upcomingmeetings", upcomingTableModel, getTranslator(), formLayout);
+		upcomingTableEl.setEmtpyTableMessageKey("table.empty");
 		
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
-		sortOptions.setDefaultOrderBy(new SortKey(MeetingsCols.start.name(), false));
-		tableEl.setSortSettings(sortOptions);
+		sortOptions.setDefaultOrderBy(new SortKey(MeetingsCols.start.name(), true));
+		upcomingTableEl.setSortSettings(sortOptions);
+
+		pastTableModel = new GoToMeetingTableModel(columnsModel);
+		pastTableEl = uifactory.addTableElement(getWindowControl(), "pastmeetings", pastTableModel, getTranslator(), formLayout);
+
+		FlexiTableSortOptions pastSortOptions = new FlexiTableSortOptions();
+		pastSortOptions.setDefaultOrderBy(new SortKey(MeetingsCols.start.name(), false));
+		pastTableEl.setSortSettings(sortOptions);
+
 		updateModel();
 	}
 	
 	protected void updateModel() {
 		List<GoToMeeting> meetings = meetingMgr.getMeetings(GoToType.training, entry, subIdent, businessGroup);
-		tableModel.setObjects(meetings);
-		tableEl.reloadData();
-		tableEl.reset();
+		
+		List<GoToMeeting> upcomingMeetings = new ArrayList<>();
+		List<GoToMeeting> pastMeetings = new ArrayList<>();
+		
+		Date now = new Date();
+		for(GoToMeeting meeting:meetings) {
+			Date endDate = meeting.getEndDate();
+			if(now.after(endDate)) {
+				pastMeetings.add(meeting);
+			} else {
+				upcomingMeetings.add(meeting);
+			}
+		}
+		
+		upcomingTableModel.setObjects(upcomingMeetings);
+		upcomingTableEl.reloadData();
+		upcomingTableEl.reset();
+		
+		pastTableModel.setObjects(pastMeetings);
+		pastTableEl.reloadData();
+		pastTableEl.reset();
+		pastTableEl.setVisible(pastMeetings.size() > 0);
 	}
 
 	@Override
@@ -106,11 +135,19 @@ public class GoToMeetingsController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(tableEl == source) {
+		if(upcomingTableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				if("select".equals(se.getCommand())) {
-					GoToMeeting meeting = tableModel.getObject(se.getIndex());
+					GoToMeeting meeting = upcomingTableModel.getObject(se.getIndex());
+					fireEvent(ureq, new SelectGoToMeetingEvent(meeting));
+				}
+			}
+		} else if(pastTableEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				if("select".equals(se.getCommand())) {
+					GoToMeeting meeting = pastTableModel.getObject(se.getIndex());
 					fireEvent(ureq, new SelectGoToMeetingEvent(meeting));
 				}
 			}

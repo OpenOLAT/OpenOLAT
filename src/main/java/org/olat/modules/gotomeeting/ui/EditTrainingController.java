@@ -160,6 +160,19 @@ public class EditTrainingController extends FormBasicController {
 			if(!organizersEl.isOneSelected()) {
 				organizersEl.setErrorKey("form.mandatory.hover", null);
 				allOk &= false;
+			} else {
+				Date start = startDateEl.getDate();
+				Date end = endDateEl.getDate();
+				
+				String selectedKeyStr = organizersEl.getSelectedKey();
+				int selectedIndex = Integer.parseInt(selectedKeyStr);
+				GoToOrganizer organizer = availablesOrganizers.get(selectedIndex);
+				if(start != null && end != null && organizer != null) {
+					if(!meetingManager.checkOrganizerAvailability(organizer, start, end)) {
+						organizersEl.setErrorKey("error.organizer.overbooked", null);
+						allOk &= false;
+					}
+				}
 			}
 		}
 		
