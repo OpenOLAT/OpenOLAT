@@ -29,6 +29,8 @@ import org.junit.Test;
 
 /**
  * 
+ * This mostly test that the date returned by the GoTo server are parseable.
+ * 
  * Initial date: 23.03.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *

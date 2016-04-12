@@ -125,7 +125,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 	}
 	
 	public boolean checkOrganizerAvailability(GoToOrganizer organizer, Date start, Date end) {
-		List<GoToMeeting> meetings = meetingDao.getMeetingsOverlapp(GoToType.training, organizer, start, end);
+		List<GoToMeeting> meetings = meetingDao.getMeetingsOverlap(GoToType.training, organizer, start, end);
 		return meetings.isEmpty();
 	}
 

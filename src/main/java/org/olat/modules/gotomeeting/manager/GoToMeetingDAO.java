@@ -144,14 +144,14 @@ public class GoToMeetingDAO {
 		return query.getResultList();
 	}
 	
-	public List<GoToMeeting> getMeetingsOverlapp(GoToType type, GoToOrganizer organizer, Date start, Date end) {
+	public List<GoToMeeting> getMeetingsOverlap(GoToType type, GoToOrganizer organizer, Date start, Date end) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select meeting from gotomeeting meeting")
 		  .append(" inner join meeting.organizer organizer on organizer.key=:organizerKey")
 		  .append(" where meeting.type=:type")
-		  .append(" and ((meeting.startDate<:start and meeting.endDate>:start)")
-		  .append(" or (meeting.startDate<:end and meeting.endDate>:end)")
-		  .append(" or (meeting.startDate>:start and meeting.endDate<:end))");
+		  .append(" and ((meeting.startDate<=:start and meeting.endDate>=:start)")
+		  .append(" or (meeting.startDate<=:end and meeting.endDate>=:end)")
+		  .append(" or (meeting.startDate>=:start and meeting.endDate<=:end))");
 
 		List<GoToMeeting> meetings = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), GoToMeeting.class)
