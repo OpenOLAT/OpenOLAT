@@ -367,8 +367,8 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 		GoToMeeting reloadMeeting = meetingDao.loadMeetingByKey(meeting.getKey());
 		if(reloadMeeting != null) {
 			GoToTrainingG2T trainingVo = getTraining(meeting, error);
-			if(trainingVo != null) {
-				//update training perhaps
+			if(trainingVo == null) {
+				log.error("Training not found");
 			}
 		}
 		return reloadMeeting;
@@ -452,7 +452,6 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 			int status = response.getStatusLine().getStatusCode();
 			if(status == 200) {//deleted
 				String content = EntityUtils.toString(response.getEntity());
-				System.out.println(content);
 				List<GoToRecordingsG2T> recordings = GoToJsonUtil.parseRecordings(content);
 				return recordings;
 			} else {

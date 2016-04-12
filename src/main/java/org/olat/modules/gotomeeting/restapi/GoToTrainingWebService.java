@@ -145,8 +145,6 @@ public class GoToTrainingWebService {
 						if(!error.hasError()) {
 							break;
 						}
-					} else {
-						System.out.println("");
 					}
 				}
 				
