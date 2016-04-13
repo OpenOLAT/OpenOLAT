@@ -99,7 +99,8 @@ public class ResumeController extends FormBasicController {
 		if(source.equals(noButton)){
 			savePreferences(ureq, "none");			
 			fireEvent (ureq, new Event("no"));
-		} else if(source.equals(landingButton)){		
+		} else if(source.equals(landingButton)){
+			savePreferences(ureq, "none");		
 			fireEvent (ureq, new Event("landing"));
 		}
 	}

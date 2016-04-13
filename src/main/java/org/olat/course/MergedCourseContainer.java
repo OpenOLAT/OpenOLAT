@@ -81,11 +81,12 @@ public class MergedCourseContainer extends MergeSource {
 	
 	protected void init(PersistingCourseImpl persistingCourse) {
 		super.init();
+		RepositoryEntry re = null;
 
 		if(identityEnv == null || identityEnv.getRoles().isOLATAdmin()) {
 			addContainersChildren(persistingCourse.getIsolatedCourseFolder(), true);
 		} else {
-			RepositoryEntry re = persistingCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			re = persistingCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			RepositoryEntrySecurity reSecurity = RepositoryManager.getInstance()
 					.isAllowed(identityEnv.getIdentity(), identityEnv.getRoles(), re);
 			if(reSecurity.isEntryAdmin()) {
@@ -93,18 +94,25 @@ public class MergedCourseContainer extends MergeSource {
 			}
 		}
 			
-		// grab any shared folder that is configured
+		// grab any shared folder that is configured, but only when in unchecked
+		// security mode (no identity environment) or when the user has course
+		// admin rights
 		OlatRootFolderImpl sharedFolder = null;
 		String sfSoftkey = persistingCourse.getCourseConfig().getSharedFolderSoftkey();
 		if (StringHelper.containsNonWhitespace(sfSoftkey) && !CourseConfig.VALUE_EMPTY_SHAREDFOLDER_SOFTKEY.equals(sfSoftkey)) {
-			OLATResource sharedResource = CoreSpringFactory.getImpl(RepositoryService.class)
-					.loadRepositoryEntryResourceBySoftKey(sfSoftkey);
-			if (sharedResource != null) {
-				sharedFolder = SharedFolderManager.getInstance().getSharedFolder(sharedResource);
-				if (sharedFolder != null) {
-					sharedFolder.setLocalSecurityCallback(new ReadOnlyCallback());
-					//add local course folder's children as read/write source and any sharedfolder as subfolder
-					addContainer(new NamedContainerImpl("_sharedfolder", sharedFolder));
+			if (re == null) {
+				// reuse if already loaded, else load
+				re = persistingCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry();				
+			}
+			if(identityEnv == null || identityEnv.getRoles().isOLATAdmin() || RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identityEnv.getIdentity(), re)) {
+				OLATResource sharedResource = CoreSpringFactory.getImpl(RepositoryService.class).loadRepositoryEntryResourceBySoftKey(sfSoftkey);
+				if (sharedResource != null) {
+					sharedFolder = SharedFolderManager.getInstance().getSharedFolder(sharedResource);
+					if (sharedFolder != null) {
+						sharedFolder.setLocalSecurityCallback(new ReadOnlyCallback());
+						//add local course folder's children as read/write source and any sharedfolder as subfolder
+						addContainer(new NamedContainerImpl("_sharedfolder", sharedFolder));
+					}
 				}
 			}
 		}
