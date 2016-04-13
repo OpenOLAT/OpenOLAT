@@ -58,6 +58,13 @@ public class AdministrationPage {
 		return this;
 	}
 	
+	public AdministrationPage selectModules() {
+		By systemLinkby = By.xpath("//div[contains(@class,'o_tree')]//a[contains(@onclick,'modulesParent')]");
+		browser.findElement(systemLinkby).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
 	public AdministrationPage clearCache(String cacheName) {
 		selectSystemInfo();
 		
@@ -81,6 +88,25 @@ public class AdministrationPage {
 		WebElement yesLink = browser.findElement(By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@href,'link_0')]"));
 		yesLink.click();
 		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public AdministrationPage openGroupSettings() {
+		selectModules();
+		
+		WebElement groupLink = browser.findElement(By.cssSelector(".o_sel_group span.o_tree_level_label_leaf>a"));
+		groupLink.click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public AdministrationPage setGroupConfirmationForUser(boolean mandatory) {
+		By membershipConfirmationBy = By.cssSelector("input[name='mandatory.membership'][value='users']");
+		OOGraphene.waitElement(membershipConfirmationBy, 5, browser);
+		WebElement membershipConfirmationEl = browser.findElement(membershipConfirmationBy);
+		OOGraphene.check(membershipConfirmationEl, new Boolean(mandatory));
+		OOGraphene.waitBusy(browser);
+		
 		return this;
 	}
 }

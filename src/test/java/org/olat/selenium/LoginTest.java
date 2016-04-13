@@ -38,6 +38,7 @@ import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
 import org.olat.selenium.page.Student;
 import org.olat.selenium.page.core.AdministrationMessagesPage;
+import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
@@ -109,6 +110,43 @@ public class LoginTest {
 		loginPage.assertOnLoginPage();
 		//login
 		loginPage.loginAs(user.getLogin(), user.getPassword());
+	}
+	
+	/**
+	 * Jump to notifications in home, go to the courses and return
+	 * to home's notification with an url.
+	 * 
+	 * @see https://jira.openolat.org/browse/OO-1962
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void login_jumpInHome(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		//create a random user
+		UserRestClient userClient = new UserRestClient(deploymentUrl);
+		UserVO user = userClient.createRandomUser();
+
+		//load dmz
+		loginPage.assertOnLoginPage();
+		
+		String jumpToNotificationsUrl = deploymentUrl.toString() + "url/HomeSite/" + user.getKey() + "/notifications/0";
+		browser.get(jumpToNotificationsUrl);
+		loginPage.loginAs(user.getLogin(), user.getPassword());
+		//must see the notification
+		new UserToolsPage(browser).assertOnNotifications();
+		
+		//go to courses
+		NavigationPage navBar = new NavigationPage(browser);
+		navBar.openMyCourses();
+		
+		//use url to go to notifications
+		String goToNotificationsUrl = deploymentUrl.toString() + "auth/HomeSite/" + user.getKey() + "/notifications/0";
+		browser.get(goToNotificationsUrl);
+		//must see the notification
+		new UserToolsPage(browser).assertOnNotifications();
 	}
 	
 	/**

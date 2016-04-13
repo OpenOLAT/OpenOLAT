@@ -96,6 +96,14 @@ public class LoginPage {
 		return this;
 	}
 	
+	public LoginPage assertOnMembershipConfirmation() {
+		By reservationBy = By.cssSelector("div.o_reservation");
+		OOGraphene.waitElement(reservationBy, 5, browser);
+		WebElement reservationEl = browser.findElement(reservationBy);
+		Assert.assertTrue(reservationEl.isDisplayed());
+		return this;
+	}
+	
 	public LoginPage waitOnMaintenanceMessage(String text) {
 		OOGraphene.waitElement(maintenanceMessageBy, 10, browser);
 		return assertOnMaintenanceMessage(text);
@@ -206,6 +214,17 @@ public class LoginPage {
 			resume.click();
 			OOGraphene.waitBusy(browser);
 		}
+		return this;
+	}
+	
+	public LoginPage confirmMembership() {
+		By acceptLinkBy = By.xpath("//div[contains(@class,'o_reservation')]//a[i[contains(@class,'o_icon_accept')]]");
+		browser.findElement(acceptLinkBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By okBy = By.cssSelector("button.btn.btn-primary");
+		browser.findElement(okBy).click();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 }
