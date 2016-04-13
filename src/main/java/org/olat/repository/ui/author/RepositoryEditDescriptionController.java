@@ -231,18 +231,20 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			dateTypesEl.addActionListener(FormEvent.ONCHANGE);
 	
 			List<RepositoryEntryLifecycle> cycles = lifecycleDao.loadPublicLifecycle();
-			List<RepositoryEntryLifecycle> filteredCycles = new ArrayList<RepositoryEntryLifecycle>();
+			List<RepositoryEntryLifecycle> filteredCycles = new ArrayList<>();
 			//just make the upcomming and acutual running cycles or the pre-selected visible in the UI
-			for(RepositoryEntryLifecycle cycle:cycles){
-				if(LocalDateTime.now().isBefore(LocalDateTime.ofInstant(cycle.getValidTo().toInstant(), ZoneId.systemDefault())) || repositoryEntry.getLifecycle().equals(cycle)){
+			LocalDateTime now = LocalDateTime.now();
+			for(RepositoryEntryLifecycle cycle:cycles) {
+				if(cycle.getValidTo() == null
+						|| now.isBefore(LocalDateTime.ofInstant(cycle.getValidTo().toInstant(), ZoneId.systemDefault()))
+						|| (repositoryEntry.getLifecycle() != null && repositoryEntry.getLifecycle().equals(cycle))) {
 					filteredCycles.add(cycle);
 				}
 			}
+			
 			String[] publicKeys = new String[filteredCycles.size()];
 			String[] publicValues = new String[filteredCycles.size()];
-			int count = 0;
-
-						
+			int count = 0;		
 			for(RepositoryEntryLifecycle cycle:filteredCycles) {
 					publicKeys[count] = cycle.getKey().toString();
 					
