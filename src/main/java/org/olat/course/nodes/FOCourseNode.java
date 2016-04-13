@@ -177,48 +177,92 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	 */
 	public Forum loadOrCreateForum(final CourseEnvironment courseEnv) {
 		updateModuleConfigDefaults(false);				
-		final ForumManager fom = ForumManager.getInstance();
-		final CoursePropertyManager cpm = courseEnv.getCoursePropertyManager();
-		final CourseNode thisCourseNode = this;
-		Forum theForum = null;
-			
-		Property forumKeyProp = cpm.findCourseNodeProperty(thisCourseNode, null, null, FORUM_KEY);
-		//System.out.println("System.out.println - findCourseNodeProperty");
-		if(forumKeyProp!=null) {
-			// Forum does already exist, load forum with key from properties
-			Long forumKey = forumKeyProp.getLongValue();
-			theForum = fom.loadForum(forumKey);
-			if (theForum == null) { throw new OLATRuntimeException(FOCourseNode.class, "Tried to load forum with key " + forumKey.longValue() + " in course "
-				+ courseEnv.getCourseResourceableId() + " for node " + thisCourseNode.getIdent()
-				+ " as defined in course node property but forum manager could not load forum.", null); }
-		} else {
-			//creates resourceable from FOCourseNode.class and the current node id as key
-			OLATResourceable courseNodeResourceable = OresHelper.createOLATResourceableInstance(FOCourseNode.class, new Long(this.getIdent()));
-			//o_clusterOK by:ld 
-			theForum = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(courseNodeResourceable, new SyncerCallback<Forum>(){
-				@Override
-				public Forum execute() {
-					Forum forum = null;
-					Long forumKey;
-					Property forumKeyProperty = cpm.findCourseNodeProperty(thisCourseNode, null, null, FORUM_KEY);			  
-					if (forumKeyProperty == null) {
-						// First call of forum, create new forum and save forum key as property			  	
-						forum = fom.addAForum();
-						forumKey = forum.getKey();
-						forumKeyProperty = cpm.createCourseNodePropertyInstance(thisCourseNode, null, null, FORUM_KEY, null, forumKey, null, null);
-						cpm.saveProperty(forumKeyProperty);	
-					} else {
-						// Forum does already exist, load forum with key from properties
-						forumKey = forumKeyProperty.getLongValue();
-						forum = fom.loadForum(forumKey);
-						if (forum == null) { throw new OLATRuntimeException(FOCourseNode.class, "Tried to load forum with key " + forumKey.longValue() + " in course "
-							+ courseEnv.getCourseResourceableId() + " for node " + thisCourseNode.getIdent()
-							+ " as defined in course node property but forum manager could not load forum.", null); }
-						}
-					return forum;
-		  }});
+
+		Forum forum = null;	
+		List<Property> forumKeyProps = courseEnv.getCoursePropertyManager()
+				.findCourseNodeProperties(this, null, null, FORUM_KEY);
+		if(forumKeyProps == null || forumKeyProps.isEmpty()) {
+			forum = createForum(courseEnv);
+		} else if(forumKeyProps.size() == 1) {
+			forum = loadForum(courseEnv, forumKeyProps.get(0));
+		} else if (forumKeyProps.size() > 1) {
+			forum = saveMultiForums(courseEnv);
 		}
-		return theForum;
+		return forum;
+	}
+	
+	private Forum saveMultiForums(final CourseEnvironment courseEnv) {
+		final ForumManager fom = CoreSpringFactory.getImpl(ForumManager.class);
+		final OLATResourceable courseNodeResourceable = OresHelper.createOLATResourceableInstance(FOCourseNode.class, new Long(getIdent()));
+		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(courseNodeResourceable, new SyncerCallback<Forum>(){
+			@Override
+			public Forum execute() {
+				List<Property> forumKeyProps = courseEnv.getCoursePropertyManager()
+						.findCourseNodeProperties(FOCourseNode.this, null, null, FORUM_KEY);
+				Forum masterForum;
+				if(forumKeyProps.size() == 1) {
+					masterForum = loadForum(courseEnv, forumKeyProps.get(0));
+				} else if(forumKeyProps.size() > 1) {
+					Long masterForumKey = forumKeyProps.get(0).getLongValue();
+					List<Long> forumsToMerge = new ArrayList<>();
+					for(int i=1; i<forumKeyProps.size(); i++) {
+						forumsToMerge.add(forumKeyProps.get(i).getLongValue());
+					}
+					fom.mergeForums(masterForumKey, forumsToMerge);
+					masterForum = fom.loadForum(masterForumKey);
+					for(int i=1; i<forumKeyProps.size(); i++) {
+						courseEnv.getCoursePropertyManager().deleteProperty(forumKeyProps.get(i));
+					}
+				} else {
+					masterForum = null;
+				}
+				return masterForum;
+			}
+		});
+	}
+	
+	private Forum loadForum(CourseEnvironment courseEnv, Property prop) {
+		final ForumManager fom = CoreSpringFactory.getImpl(ForumManager.class);
+		Long forumKey = prop.getLongValue();
+		Forum forum = fom.loadForum(forumKey);
+		if (forum == null) {
+			throw new OLATRuntimeException(FOCourseNode.class, "Tried to load forum with key " + forumKey.longValue() + " in course "
+					+ courseEnv.getCourseResourceableId() + " for node " + getIdent()
+					+ " as defined in course node property but forum manager could not load forum.", null);
+		}
+		return forum;
+	}
+	
+	private Forum createForum(final CourseEnvironment courseEnv) {
+		final ForumManager fom = CoreSpringFactory.getImpl(ForumManager.class);
+		//creates resourceable from FOCourseNode.class and the current node id as key
+		OLATResourceable courseNodeResourceable = OresHelper.createOLATResourceableInstance(FOCourseNode.class, new Long(getIdent()));
+		//o_clusterOK by:ld 
+		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(courseNodeResourceable, new SyncerCallback<Forum>(){
+			@Override
+			public Forum execute() {
+				Forum forum;
+				CoursePropertyManager cpm = courseEnv.getCoursePropertyManager();
+				Property forumKeyProperty = cpm.findCourseNodeProperty(FOCourseNode.this, null, null, FORUM_KEY);			  
+				if (forumKeyProperty == null) {
+					// First call of forum, create new forum and save forum key as property			  	
+					forum = fom.addAForum();
+					Long forumKey = forum.getKey();
+					forumKeyProperty = cpm.createCourseNodePropertyInstance(FOCourseNode.this, null, null, FORUM_KEY, null, forumKey, null, null);
+					cpm.saveProperty(forumKeyProperty);	
+				} else {
+					// Forum does already exist, load forum with key from properties
+					Long forumKey = forumKeyProperty.getLongValue();
+					forum = fom.loadForum(forumKey);
+					if (forum == null) {
+						throw new OLATRuntimeException(FOCourseNode.class, "Tried to load forum with key " + forumKey.longValue() + " in course "
+								+ courseEnv.getCourseResourceableId() + " for node " + getIdent()
+								+ " as defined in course node property but forum manager could not load forum.", null);
+					}
+				}
+				return forum;
+			}
+		});
 	}
 
 	@Override
