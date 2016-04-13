@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -197,9 +198,21 @@ public class SecurityManagerTest extends OlatTestCase {
 		assertEquals(testLogin,authentication.getAuthusername());
 	}
 
-	@Test public void testFindAuthenticationByAuthusername() {
+	@Test
+	public void testFindAuthenticationByAuthusername() {
 		Authentication authentication = securityManager.findAuthenticationByAuthusername(testLogin, BaseSecurityModule.getDefaultAuthProviderIdentifier());
 		assertEquals(testLogin,authentication.getAuthusername());
+	}
+	
+	@Test
+	public void testFindAuthenticationByAuthusername_attack() {
+		String testLoginHacked = "*est-logi*";
+		Authentication authentication1 = securityManager.findAuthenticationByAuthusername(testLoginHacked, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+		Assert.assertNull(authentication1);
+		
+		String testLoginHacked2 = "$est-login";
+		Authentication authentication2 = securityManager.findAuthenticationByAuthusername(testLoginHacked2, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+		Assert.assertNull(authentication2);	
 	}
 
 	@Test @Ignore
