@@ -34,8 +34,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.EfficiencyStatementManager;
-import org.olat.course.assessment.manager.UserCourseInformationsManager;
-import org.olat.course.assessment.manager.UserCourseInformationsManagerImpl;
 import org.olat.course.assessment.model.UserCourseInfosImpl;
 import org.olat.course.assessment.model.UserEfficiencyStatementImpl;
 import org.olat.properties.Property;
@@ -73,8 +71,6 @@ public class OLATUpgrade_8_1_0 extends OLATUpgrade {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private EfficiencyStatementManager efficiencyStatementManager;
-	@Autowired
-	private UserCourseInformationsManager userCourseInformationsManager;
 	@Autowired
 	private OLATResourceManager resourceManager;
 	@Autowired
@@ -206,7 +202,7 @@ public class OLATUpgrade_8_1_0 extends OLATUpgrade {
 				uhd.setBooleanDataValue(TASK_LAUNCH_DATES, false);	
 			} else {
 				for(SimpleProp prop:props) {
-					Date d = ((UserCourseInformationsManagerImpl)userCourseInformationsManager).getInitialLaunchDate(prop.resourceId, prop.identityKey);
+					Date d = getInitialLaunchDate(prop.resourceId, prop.identityKey);
 					if(d == null) {
 						createUserCourseInformation(prop);
 					}
@@ -219,6 +215,29 @@ public class OLATUpgrade_8_1_0 extends OLATUpgrade {
 				uhd.setBooleanDataValue(TASK_LAUNCH_DATES, true);
 			}
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+	}
+	
+	private Date getInitialLaunchDate(Long courseResourceId, Long identityKey) {
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select infos.initialLaunch from ").append(UserCourseInfosImpl.class.getName()).append(" as infos ")
+			  .append(" inner join infos.resource as resource")
+			  .append(" where infos.identity.key=:identityKey and resource.resId=:resId and resource.resName='CourseModule'");
+
+			List<Date> infoList = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), Date.class)
+					.setParameter("identityKey", identityKey)
+					.setParameter("resId", courseResourceId)
+					.getResultList();
+
+			if(infoList.isEmpty()) {
+				return null;
+			}
+			return infoList.get(0);
+		} catch (Exception e) {
+			log.error("Cannot retrieve course informations for: " + courseResourceId, e);
+			return null;
 		}
 	}
 	

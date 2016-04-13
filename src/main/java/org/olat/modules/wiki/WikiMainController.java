@@ -178,7 +178,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 	
 	private CloseableModalController cmc;
 	
-	WikiMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores,
+	public WikiMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores,
 			WikiSecurityCallback securityCallback, String initialPageName) {
 		super(ureq, wControl);
 		
