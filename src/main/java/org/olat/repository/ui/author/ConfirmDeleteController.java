@@ -85,7 +85,7 @@ public class ConfirmDeleteController extends FormBasicController {
 		
 		this.rows = rows;
 		this.notAllDeleteable = notAllDeleteable;
-		numOfMembers = repositoryService.countMembers(rows);
+		numOfMembers = repositoryService.countMembers(rows, getIdentity());
 		references = referenceManager.getReferencesInfos(rows, getIdentity(), ureq.getUserSession().getRoles());
 		if(references.size() > 1) {
 			Collections.sort(references, new ReferenceInfosComparator(Collator.getInstance(getLocale())));

@@ -52,6 +52,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
@@ -375,7 +376,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(mailCtrl);
 		
-		mailCtrl = new MembersMailController(ureq, getWindowControl(), courseEnv, ownerList, coachList, participantList);
+		mailCtrl = new MembersMailController(ureq, getWindowControl(), courseEnv, ownerList, coachList, participantList, createBodyTemplate());
 		listenTo(mailCtrl);
 		
 		String title = translate("members.email.title");
@@ -405,7 +406,8 @@ public class MembersCourseNodeRunController extends FormBasicController {
 			
 			ContactMessage cmsg = new ContactMessage(ureq.getIdentity());
 			cmsg.addEmailTo(contactList);
-			
+			// preset body template from i18n
+			cmsg.setBodyText(createBodyTemplate());
 			emailController = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
 			listenTo(emailController);
 			
@@ -414,6 +416,16 @@ public class MembersCourseNodeRunController extends FormBasicController {
 			listenTo(cmc);
 			cmc.activate();
 		}
+	}
+	
+	private String createBodyTemplate() {
+		String courseName = courseEnv.getCourseTitle();
+		// Build REST URL to course element, use hack via group manager to access repo entry
+		StringBuilder courseLink = new StringBuilder();
+		RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
+		courseLink.append(Settings.getServerContextPathURI())
+			.append("/url/RepositoryEntry/").append(entry.getKey());
+		return translate("email.body.template", new String[]{courseName, courseLink.toString()});		
 	}
 	
 	protected void doOpenHomePage(Member member, UserRequest ureq) {

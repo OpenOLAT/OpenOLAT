@@ -1009,4 +1009,27 @@ public class ForumManager {
 		m.setNumOfWords(txtService.wordCount(unQuotedBody, suggestedLocale));
 		m.setNumOfCharacters(txtService.characterCount(unQuotedBody, suggestedLocale));
 	}
+	
+	public int mergeForums(Long masterForumKey, List<Long> forumsToMerge) {
+		int rows = 0;
+		if(forumsToMerge.size() > 0) {
+			for(Long forumToMerge:forumsToMerge) {
+				String updateMsg = "update fomessage set forum.key=:masterKey where forum.key=:mergerKey";
+				rows += dbInstance.getCurrentEntityManager()
+					.createQuery(updateMsg)
+					.setParameter("masterKey", masterForumKey)
+					.setParameter("mergerKey", forumToMerge)
+					.executeUpdate();
+				
+				
+				String updateReadMsg = "update foreadmessage set forum.key=:masterKey where forum.key=:mergerKey";
+				rows += dbInstance.getCurrentEntityManager()
+					.createQuery(updateReadMsg)
+					.setParameter("masterKey", masterForumKey)
+					.setParameter("mergerKey", forumToMerge)
+					.executeUpdate();
+			}
+		}
+		return rows;
+	}
 }

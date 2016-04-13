@@ -529,6 +529,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			if(event.equals(AccessEvent.ACCESS_OK_EVENT)) {
 				reSecurity = repositoryManager.isAllowed(ureq, getRepositoryEntry());
 				launchContent(ureq, reSecurity);
+				initToolbar();
 				cleanUp();
 			} else if(event.equals(AccessEvent.ACCESS_FAILED_EVENT)) {
 				String msg = ((AccessEvent)event).getMessage();
@@ -560,6 +561,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			} else if(event == Event.DONE_EVENT) {
 				popToRoot(ureq);
 				cleanUp();
+				if(getRuntimeController() == null) {
+					doRun(ureq, reSecurity);
+				}
 			}
 		} else if(closeCtrl == source) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {

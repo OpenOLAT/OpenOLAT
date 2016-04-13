@@ -154,7 +154,7 @@ public class SegmentViewComponent extends AbstractComponent  {
 		String cmd = ureq.getParameter(VelocityContainer.COMMAND_ID);
 		int count = 0;
 		for(Component segment:segments) {
-			if(cmd.equals(segment.getComponentName())) {
+			if(segment.getComponentName().equals(cmd)) {
 				boolean selected = selectedSegments.contains(segment);
 				if(selected) {
 					if(isAllowNoSelection() || selectedSegments.size() > 1) {

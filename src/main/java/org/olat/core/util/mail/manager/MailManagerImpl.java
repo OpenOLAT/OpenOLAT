@@ -110,6 +110,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.sun.mail.smtp.SMTPMessage;
+
 /**
  * 
  * Description:<br>
@@ -1597,7 +1599,18 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	}
 
 	@Override
-	public void sendMessage(MimeMessage msg, MailerResult result){
+	public void sendMessage(MimeMessage msg, MailerResult result) {
+		String smtpFrom = WebappHelper.getMailConfig("smtpFrom");
+		if(StringHelper.containsNonWhitespace(smtpFrom)) {
+			try {
+				SMTPMessage smtpMsg = new SMTPMessage(msg);
+				smtpMsg.setEnvelopeFrom(smtpFrom);
+				msg = smtpMsg;
+			} catch (MessagingException e) {
+				log.error("", e);
+			}
+		}
+
 		try{
 			if(Settings.isJUnitTest()) {
 				//we want not send really e-mails

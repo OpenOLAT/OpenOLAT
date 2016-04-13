@@ -39,7 +39,7 @@ public class UserAvatarMapper implements Mapper {
 	private final UserManager userManager;
 	private final DisplayPortraitManager portraitManager;
 	private final boolean useLarge;
-	
+
 	public UserAvatarMapper(boolean useLargePortrait) {
 		useLarge = useLargePortrait;
 		portraitManager = DisplayPortraitManager.getInstance();

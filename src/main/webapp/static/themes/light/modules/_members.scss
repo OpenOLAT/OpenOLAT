@@ -2,6 +2,29 @@
 	text-align:center;
 }
 
+/* Additional user logo on business card */
+.o_bcard_logo {
+	margin-left: 10px;
+	height: 66px;
+}
+/* when profile and logo is shown, put user name on new line */
+.o_bcard_title_with_logo {
+	clear: both;
+	padding: 20px 0 0 0;
+}
+
+
+/* User profile image */
+.o_visitingcard_image,
+.o_visitingcard_logo {
+	height: 66px;
+}
+
+/* hide visiting card logo, no icon found yet */
+.o_visitingcard .o_icon_visitingcard {
+	display: none;
+}
+
 .o_visitingcard .o_portrait_avatar,
 .o_visitingcard .o_portrait_dummy,
 .o_visitingcard .o_portrait_dummy_female_big,
@@ -14,4 +37,44 @@
 	.o_visitingcard .o_portrait_dummy_female_big,
 	.o_visitingcard .o_portrait_dummy_male_big,
 	.o_visitingcard .o_portrait_anonymous { width: 50px; height: 50px; margin: 5px 5px 0 0;}
+
+	.o_visitingcard_image,
+	.o_visitingcard_logo {
+		height: 50px;
+	}
+	
+	/* Additional logo is also smaller */
+	.o_visitingcard_logo,
+	.o_bcard_logo {
+		height: 50px; 
+		margin: 5px 0 0 5px;
+		img {
+			/* tricky: scale to match new max height */
+			position: relative;
+			transform: scale( (50/66) ); 	/* scale to fit to new box size... */
+			top: -8px; 						/* .. and move 8px down (16px divided by 2 for top and bottom) */
+		}
+	}	
 }
+
+/* iphone 6 */
+@media (max-width: 414px) { 
+	.o_visitingcard_logo img { 
+		max-width:260px; 
+	}
+}	
+/* iphone 6 */
+@media (max-width: 375px) { 
+	.o_visitingcard_logo img { 
+		max-width:220px; 
+	}
+}	
+/* iphone 4/5 */
+@media (max-width: 320px) { 
+	.o_visitingcard_logo img { 
+		max-width:180px; 
+	}
+	.o_bcard_logo img { 
+		max-width:150px; 
+	}
+}	

@@ -1741,6 +1741,17 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<dependency>
+			<groupId>org.mnode.ical4j</groupId>
+			<artifactId>ical4j-zoneinfo-outlook</artifactId>
+			<version>1.0.4</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 		<dependency><!-- Velocity dependency -->
 			<groupId>oro</groupId>
 			<artifactId>oro</artifactId>

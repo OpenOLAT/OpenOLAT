@@ -89,8 +89,8 @@ public class CalendarPrintMapper implements Mapper {
 		  .append("Calendar")
 		  .append("</title>")
 		  .append("<meta http-equiv='Content-type' content='text/html; charset=utf-8' />")
-		  .append("<link href='").append(themeBaseUri).append("all/content.css' rel='stylesheet' type='text/css' />\n")
-		  .append("<link href='").append(themeBaseUri).append("layout.css' rel='stylesheet' type='text/css' />\n")
+		  .append("<link href='").append(themeBaseUri).append("theme.css' rel='stylesheet' type='text/css' />\n")
+		  .append("<!--[if IE 9]><link id='o_theme_css_ie' href='").append(themeBaseUri).append("theme_ie_completions.css' rel='stylesheet' type='text/css' /><![endif]-->\n")
 		  .append("</head><body class='o_cal_print' onload='window.focus();window.print()'>");
 		
 		//collect all events
@@ -151,9 +151,11 @@ public class CalendarPrintMapper implements Mapper {
 	
 	private void renderEvents(StringBuilder sb, List<KalendarEventRenderWrapper> eventList, Date dateFrom , Date dateTo) {
 		sb.append("<div class='o_cal_wv_print'><fieldset>")
-		  .append("<legend>").append(StringHelper.formatLocaleDateFull(dateFrom, translator.getLocale()))
+		  .append("<legend>").append(translator.translate("cal.print.title"))
+		  .append("<span>")
+		  .append(StringHelper.formatLocaleDateFull(dateFrom, translator.getLocale()))
 		  .append(" - ").append(StringHelper.formatLocaleDateFull(dateTo, translator.getLocale()))
-		  .append("</legend>")
+		  .append("</span></legend>")
 		  .append("<ul class='o_cal_wv_list'>");
 		
 		Collections.sort(eventList, new KalendarEventDateComparator());
@@ -196,11 +198,18 @@ public class CalendarPrintMapper implements Mapper {
 
 	private void renderEvent(StringBuilder sb, KalendarEventRenderWrapper eventWrapper, Date dayStart, Date dayEnd) {
 		KalendarEvent event = eventWrapper.getEvent();
-		boolean hidden = eventWrapper.getCalendarAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY
-				&& !eventWrapper.getKalendarRenderWrapper().isImported() && event.getClassification() != KalendarEvent.CLASS_PUBLIC;
+		
+		// check if event is private and user allowed to see it 
+		if (event.getClassification() == KalendarEvent.CLASS_PRIVATE 
+			&& !eventWrapper.getKalendarRenderWrapper().isPrivateEventsVisible()) {
+			return;
+		}
+
+		// Show all PUBLIC and FREEBUSY events
 		String escapedSubject = Formatter.escWithBR(event.getSubject()).toString();
 		escapedSubject = escapedSubject.replace('\r', ' ');
 		sb.append("<li class=\"o_cal_event\">\n");
+		sb.append("<div class=\"o_cal_class " + eventWrapper.getCssClass() + "\">&nbsp;</div>\n");
 		// time
 		sb.append("<div class=\"o_cal_time\"><span>\n");
 		if (event.isAllDayEvent()) {
@@ -220,23 +229,38 @@ public class CalendarPrintMapper implements Mapper {
 			sb.append(StringHelper.formatLocaleTime(end, translator.getLocale()));
 		}
 		sb.append("</span></div>\n");
-		// event name (subject)
-		// firefox doesn't break lines with only <br />, we need <p>
-		sb.append("<div class=\"o_cal_subject " + eventWrapper.getCssClass() + "\"><p>");
-		if (hidden) {
-			sb.append("-");
-		} else {
+		
+		// Show calendar data only when user allowed to see private data, or the event is 
+		// public or the calendar is imported (because the free/busy flag is not standard 
+		// and should not be applied to imported calendars)
+		if (eventWrapper.getKalendarRenderWrapper().isPrivateEventsVisible() 
+			|| event.getClassification() == KalendarEvent.CLASS_PUBLIC
+			|| eventWrapper.getKalendarRenderWrapper().isImported()) {
+			// event name (subject)
+			// firefox doesn't break lines with only <br />, we need <p>
+			sb.append("<div class=\"o_cal_subject\"><p>");
 			sb.append(escapedSubject.replace("<br />", "</p><p>"));
-		}
-		sb.append("</p></div>\n");
-		// location
-		if (StringHelper.containsNonWhitespace(event.getLocation())) {
-			sb.append("<div class=\"o_cal_location\"><span>\n");
-			sb.append(translator.translate("cal.form.location") + ": ");
-			if (!hidden) {
+			sb.append("</p></div>\n");
+			// location
+			if (StringHelper.containsNonWhitespace(event.getLocation())) {
+				sb.append("<div class=\"o_cal_location\"><span>\n<strong>");
+				sb.append(translator.translate("cal.form.location") + "</strong>: ");
 				sb.append(StringHelper.escapeHtml(event.getLocation()));
+				sb.append("</span></div>\n");
 			}
-			sb.append("</span></div>\n");
+			// description
+			if (StringHelper.containsNonWhitespace(event.getDescription())) {
+				sb.append("<div class=\"o_cal_description\"><span>\n<strong>");
+				sb.append(translator.translate("cal.form.description") + "</strong>: ");
+				sb.append(StringHelper.escapeHtml(event.getDescription()));
+				sb.append("</span></div>\n");
+			}			
+		} else {
+			// for free-busy events where user has not the right to see the private stuff
+			// show only a message
+			sb.append("<div class=\"o_cal_freebusy\"><p>");
+			sb.append(translator.translate("cal.form.subject.hidden"));
+			sb.append("</p></div>\n");
 		}
 		sb.append("</li>\n");
 	}
@@ -268,8 +292,8 @@ public class CalendarPrintMapper implements Mapper {
 	private void renderCalendar(StringBuilder sb, List<KalendarRenderWrapper> calendarWrapperList, boolean imported) {
 		for(KalendarRenderWrapper calendarWrapper:calendarWrapperList) {
 			if(calendarWrapper.isImported() == imported) {
-			String cssClass = calendarWrapper.getCssClass();
-				sb.append("<div class='o_cal_config_row'><div class='o_cal_config_calendar ").append(cssClass).append("'>")
+				sb.append("<div class='o_cal_config_row'><div class='o_cal_config_calendar'>")
+				  .append("<div class='o_cal_class " + calendarWrapper.getCssClass() + "'>&nbsp;</div>\n")
 				  .append(StringHelper.escapeHtml(calendarWrapper.getDisplayName()))
 				  .append("</div></div>");
 			}

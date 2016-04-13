@@ -10,7 +10,7 @@
     
     <version name="version" access="field" column="version" type="int"/>
 	<property  name="creationDate" column="creationdate" type="timestamp" />
- 	<property  name="lastLogin" column="lastlogin" type="timestamp" />
+ 	<property  name="lastLogin" column="lastlogin" update="false" type="timestamp" />
  	<property  name="externalId" column="external_id" type="string" />
  	
     <property name="name" type="string">

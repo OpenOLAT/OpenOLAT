@@ -76,6 +76,7 @@ import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.cal.CourseCalendars;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.modules.gotomeeting.restapi.GoToTrainingWebService;
 import org.olat.modules.vitero.restapi.ViteroBookingWebService;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
@@ -168,6 +169,14 @@ public class CourseWebService {
 	@Path("vitero/{subIdentifier}")
 	public ViteroBookingWebService getViteroWebService(@PathParam("subIdentifier") String subIdentifier) {
 		ViteroBookingWebService service = new ViteroBookingWebService(courseOres, subIdentifier);
+		CoreSpringFactory.autowireObject(service);
+		return service;
+	}
+	
+	@Path("gotomeeting/{subIdentifier}")
+	public GoToTrainingWebService getGoToMeetingWebService(@PathParam("subIdentifier") String subIdentifier) {
+		RepositoryEntry courseRe = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		GoToTrainingWebService service = new GoToTrainingWebService(courseRe, subIdentifier);
 		CoreSpringFactory.autowireObject(service);
 		return service;
 	}

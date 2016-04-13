@@ -40,8 +40,9 @@ import org.olat.home.HomeSite;
 /**
  * <h3>Description:</h3>
  * <p>
- * This class offers a way to launch the users homepage (alias visiting card)
- * controller in a new tab
+ * This class offers a way to launch the users home page (alias visiting card), home site
+ * or the home of the logged in user in a new tab or (in the case of the logged in user)
+ * in its user's tools.
  * <p>
  * Initial Date: 21.08.2009 <br>
  * 
@@ -64,7 +65,7 @@ public class IdentityContextEntryControllerCreator extends DefaultContextEntryCo
 	 */
 	@Override
 	public Controller createController(List<ContextEntry> ces, UserRequest ureq, WindowControl wControl) {
-		Identity id = getIdentity(ces.get(0));
+		Identity id = getIdentity(ces.get(0), ureq);
 		if (id == null) {
 			return null;
 		}
@@ -74,7 +75,7 @@ public class IdentityContextEntryControllerCreator extends DefaultContextEntryCo
 	@Override
 	public String getSiteClassName(List<ContextEntry> ces, UserRequest ureq) {
 		Long resId = ces.get(0).getOLATResourceable().getResourceableId();
-		if(resId != null && resId.equals(ureq.getIdentity().getKey())) {
+		if(resId != null && (resId.longValue() == 0l || resId.equals(ureq.getIdentity().getKey()))) {
 			return HomeSite.class.getName();
 		}
 		return null;
@@ -85,7 +86,7 @@ public class IdentityContextEntryControllerCreator extends DefaultContextEntryCo
 			ContextEntry mainEntry, List<ContextEntry> entries) {
 		
 		Long resId = mainEntry.getOLATResourceable().getResourceableId();
-		if(resId != null && resId.equals(ureq.getIdentity().getKey())) {
+		if(resId != null && (resId.longValue() == 0l || resId.equals(ureq.getIdentity().getKey()))) {
 			if(entries.isEmpty()) {//rewrite
 				OLATResourceable homeOres = OresHelper.createOLATResourceableInstance("HomeSite", resId);
 				entries.add(BusinessControlFactory.getInstance().createContextEntry(homeOres));
@@ -102,14 +103,14 @@ public class IdentityContextEntryControllerCreator extends DefaultContextEntryCo
 	 */
 	@Override
 	public String getTabName(ContextEntry ce, UserRequest ureq) {
-		Identity id = getIdentity(ce);
+		Identity id = getIdentity(ce, ureq);
 		if (id == null) return null;
 		return UserManagerImpl.getInstance().getUserDisplayName(id);
 	}
 
 	@Override
 	public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-		return getIdentity(ce) != null;
+		return getIdentity(ce, ureq) != null;
 	}
 	
 	/**
@@ -118,17 +119,17 @@ public class IdentityContextEntryControllerCreator extends DefaultContextEntryCo
 	 * @param ce
 	 * @return the identity or NULL if not found
 	 */
-	private Identity getIdentity(ContextEntry ce) {
+	private Identity getIdentity(ContextEntry ce, UserRequest ureq) {
 		if(identity == null) {
 			OLATResourceable resource = ce.getOLATResourceable();
 			Long key = resource.getResourceableId();
-			if (key == null || key.equals(0)) {
-				log.error("Can not load identity with key::" + key);
-				return null;
-			}
-			identity = BaseSecurityManager.getInstance().loadIdentityByKey(key);
-			if (identity == null) {
-				log.error("Can not load identity with key::" + key);
+			if (key == null || key.longValue() == 0l) {
+				identity = ureq.getIdentity();
+			} else {
+				identity = BaseSecurityManager.getInstance().loadIdentityByKey(key);
+				if (identity == null) {
+					log.error("Can not load identity with key::" + key);
+				}
 			}
 		}
 		return identity;

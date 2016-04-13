@@ -66,8 +66,8 @@ public class DisplayPortraitController extends BasicController implements Generi
 	private final OLATResourceable listenerOres;
 	
 	private final boolean useLarge;
-	private final boolean displayPortraitImage;
 	private final boolean isAnonymous;
+	private final boolean displayPortraitImage;
 	
 	/**
 	 * most common used constructor<br />
@@ -82,8 +82,9 @@ public class DisplayPortraitController extends BasicController implements Generi
 	 * @param canLinkToHomePage
 	 *            if set to true, the portrait is linked to the users homepage
 	 */
-	public DisplayPortraitController(UserRequest ureq, WindowControl wControl, Identity portraitIdent, boolean useLarge, boolean canLinkToHomePage) { 
-		this(ureq,wControl,portraitIdent,useLarge,canLinkToHomePage,false,true);
+	public DisplayPortraitController(UserRequest ureq, WindowControl wControl, Identity portraitIdent,
+			boolean useLarge, boolean canLinkToHomePage) { 
+		this(ureq, wControl, portraitIdent, useLarge, canLinkToHomePage, false, true);
 	}
 	
 	/**
@@ -106,12 +107,12 @@ public class DisplayPortraitController extends BasicController implements Generi
 	 *            if set to false, the portrait image will not be displayed
 	 */
 	public DisplayPortraitController(UserRequest ureq, WindowControl wControl, Identity portraitIdent,
-			boolean useLarge, boolean canLinkToHomePage, boolean displayUserFullName, boolean displayPortraitImage ) { 
+			boolean useLarge, boolean canLinkToHomePage, boolean displayUserFullName, boolean displayPortraitImage) { 
 		super(ureq, wControl);
 		myContent = createVelocityContainer("displayportrait");
 		myContent.contextPut("canLinkToHomePage", canLinkToHomePage ? Boolean.TRUE : Boolean.FALSE);
 		if (portraitIdent == null) throw new AssertException("identity can not be null!");
-		
+
 		this.useLarge = useLarge;
 		this.portraitIdent = portraitIdent;
 		this.displayPortraitImage = displayPortraitImage;
@@ -126,9 +127,9 @@ public class DisplayPortraitController extends BasicController implements Generi
 		myContent.contextPut("fullName", fullName);		
 		String altText = translate("title.homepage") + ": " + fullName;
 		myContent.contextPut("altText", StringEscapeUtils.escapeHtml(altText));
+		putInitialPanel(myContent);
 		
 		loadPortrait();
-		putInitialPanel(myContent);
 
 		listenerOres = OresHelper.createOLATResourceableInstance("portrait", getIdentity().getKey());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, portraitIdent, listenerOres);
@@ -140,18 +141,18 @@ public class DisplayPortraitController extends BasicController implements Generi
 	}
 	
 	private void loadPortrait() {
-		File portrait = null;
-		if(displayPortraitImage){
+		File image = null;
+		if(displayPortraitImage) {
 			GenderPropertyHandler genderHander = (GenderPropertyHandler) UserManager.getInstance().getUserPropertiesConfig().getPropertyHandler(UserConstants.GENDER);
 			String gender = "-"; // use as default
 			if (genderHander != null) {
 				gender = genderHander.getInternalValue(portraitIdent.getUser());
 			}
 			
-			if (useLarge){
-				portrait = DisplayPortraitManager.getInstance().getBigPortrait(portraitIdent.getName());
-				if (portrait != null) {
-					myContent.contextPut("portraitCssClass", DisplayPortraitManager.AVATAR_BIG_CSS_CLASS);					
+			if (useLarge) {
+				image = DisplayPortraitManager.getInstance().getBigPortrait(portraitIdent.getName());
+				if (image != null) {
+					myContent.contextPut("portraitCssClass", DisplayPortraitManager.AVATAR_BIG_CSS_CLASS);
 				} else if (isAnonymous) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.ANONYMOUS_BIG_CSS_CLASS);
 				} else if (gender.equals("-")) {
@@ -162,8 +163,8 @@ public class DisplayPortraitController extends BasicController implements Generi
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_FEMALE_BIG_CSS_CLASS);
 				}
 			} else {
-				portrait = DisplayPortraitManager.getInstance().getSmallPortrait(portraitIdent.getName());
-				if (portrait != null) {
+				image = DisplayPortraitManager.getInstance().getSmallPortrait(portraitIdent.getName());
+				if (image != null) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.AVATAR_SMALL_CSS_CLASS);					
 				} else if (isAnonymous) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.ANONYMOUS_SMALL_CSS_CLASS);
@@ -176,7 +177,7 @@ public class DisplayPortraitController extends BasicController implements Generi
 				}
 			}
 			
-			if (portrait != null) {
+			if (image != null) {
 				myContent.contextPut("mapperUrl", mapper.createPathFor(mapperPath, portraitIdent));
 			} else {
 				myContent.contextRemove("mapperUrl");
@@ -185,7 +186,7 @@ public class DisplayPortraitController extends BasicController implements Generi
 			myContent.contextRemove("mapperUrl");
 		}
 		
-		myContent.contextPut("hasPortrait", (portrait != null) ? Boolean.TRUE : Boolean.FALSE);
+		myContent.contextPut("hasPortrait", (image != null) ? Boolean.TRUE : Boolean.FALSE);
 	}
 
 	@Override

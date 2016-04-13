@@ -33,6 +33,7 @@
 package de.tuchemnitz.wizard.workflows.coursecreation;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
@@ -102,7 +103,8 @@ public class CourseCreationMailHelper {
 			body += translator.translate("mail.body.4.6", new String[] {Integer.toString(++counter)});
 		}
 		body += translator.translate("mail.body.5");
-		body += translator.translate("mail.body.6");
+		String url = CoreSpringFactory.getImpl(HelpModule.class).getHelpProvider().getURL(ureq.getLocale(), "");
+		body += translator.translate("mail.body.6", new String[]{ url });
 		body += translator.translate("mail.body.greetings");
 		
 		MailBundle bundle = new MailBundle();

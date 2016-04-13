@@ -51,13 +51,15 @@ public class SitesAdminController  extends BasicController  {
 
 	private final SiteDefinitions sitesModule;
 	
-	private final Link orderLink, courseSite1Link, courseSite2Link;
+	private final Link orderLink, courseSite1Link, courseSite2Link, courseSite3Link, courseSite4Link;
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 	
 	private SitesConfigurationController orderCtrl;
 	private CourseSiteAdminController courseSite1Ctrl;
 	private CourseSiteAdminController courseSite2Ctrl;
+	private CourseSiteAdminController courseSite3Ctrl;
+	private CourseSiteAdminController courseSite4Ctrl;
 	
 	public SitesAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -72,9 +74,12 @@ public class SitesAdminController  extends BasicController  {
 		
 		courseSite1Link = LinkFactory.createLink("site.courseSite1", mainVC, this);
 		segmentView.addSegment(courseSite1Link, false);
-		
 		courseSite2Link = LinkFactory.createLink("site.courseSite2", mainVC, this);
 		segmentView.addSegment(courseSite2Link, false);
+		courseSite3Link = LinkFactory.createLink("site.courseSite3", mainVC, this);
+		segmentView.addSegment(courseSite3Link, false);
+		courseSite4Link = LinkFactory.createLink("site.courseSite4", mainVC, this);
+		segmentView.addSegment(courseSite4Link, false);
 		
 		doOpenAccountSettings(ureq);
 		
@@ -99,6 +104,10 @@ public class SitesAdminController  extends BasicController  {
 					doCourseSite1Settings(ureq);
 				} else if (clickedLink == courseSite2Link){
 					doCourseSite2Settings(ureq);
+				} else if (clickedLink == courseSite3Link){
+					doCourseSite3Settings(ureq);
+				} else if (clickedLink == courseSite4Link){
+					doCourseSite4Settings(ureq);
 				}
 			}
 		}
@@ -113,6 +122,14 @@ public class SitesAdminController  extends BasicController  {
 		} else if(source == courseSite2Ctrl) {
 			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				sitesModule.setConfigurationCourseSite2(courseSite2Ctrl.saveConfiguration());
+			}
+		} else if(source == courseSite3Ctrl) {
+			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				sitesModule.setConfigurationCourseSite3(courseSite3Ctrl.saveConfiguration());
+			}
+		} else if(source == courseSite4Ctrl) {
+			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				sitesModule.setConfigurationCourseSite4(courseSite4Ctrl.saveConfiguration());
 			}
 		}
 		super.event(ureq, source, event);
@@ -150,5 +167,29 @@ public class SitesAdminController  extends BasicController  {
 			listenTo(courseSite2Ctrl);
 		}
 		mainVC.put("segmentCmp", courseSite2Ctrl.getInitialComponent());
+	}
+	
+	private void doCourseSite3Settings(UserRequest ureq) {
+		if(courseSite3Ctrl == null) {
+			CourseSiteConfiguration siteConfiguration = sitesModule.getConfigurationCourseSite3();
+			if(siteConfiguration == null) {
+				siteConfiguration = new CourseSiteConfiguration();
+			}
+			courseSite3Ctrl = new CourseSiteAdminController(ureq, getWindowControl(), siteConfiguration);
+			listenTo(courseSite3Ctrl);
+		}
+		mainVC.put("segmentCmp", courseSite3Ctrl.getInitialComponent());
+	}
+	
+	private void doCourseSite4Settings(UserRequest ureq) {
+		if(courseSite4Ctrl == null) {
+			CourseSiteConfiguration siteConfiguration = sitesModule.getConfigurationCourseSite4();
+			if(siteConfiguration == null) {
+				siteConfiguration = new CourseSiteConfiguration();
+			}
+			courseSite4Ctrl = new CourseSiteAdminController(ureq, getWindowControl(), siteConfiguration);
+			listenTo(courseSite4Ctrl);
+		}
+		mainVC.put("segmentCmp", courseSite4Ctrl.getInitialComponent());
 	}
 }

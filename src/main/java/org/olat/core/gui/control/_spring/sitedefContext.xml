@@ -20,6 +20,16 @@
 	   <property name="order" value="2" />
 	   <property name="defaultSiteSecurityCallbackBeanId" value="defaultSiteSecurityCallback"/>
 	</bean>
+	
+	<bean id="coursesite_infos_3" class="org.olat.course.site.CourseSiteDef3">
+	   <property name="order" value="2" />
+	   <property name="defaultSiteSecurityCallbackBeanId" value="defaultSiteSecurityCallback"/>
+	</bean>
+	
+	<bean id="coursesite_infos_4" class="org.olat.course.site.CourseSiteDef4">
+	   <property name="order" value="2" />
+	   <property name="defaultSiteSecurityCallbackBeanId" value="defaultSiteSecurityCallback"/>
+	</bean>
 		
 	<bean id="olatsites_portal" class="org.olat.core.gui.control.generic.portal.PortalSiteDef">
 	   <property name="order" value="3" />

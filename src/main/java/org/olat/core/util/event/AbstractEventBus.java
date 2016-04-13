@@ -122,51 +122,58 @@ public abstract class AbstractEventBus implements EventBus {
 		final Long oresId = ores.getResourceableId();
 		final String typeName = ores.getResourceableTypeName();
 
-		GenericEventListener[] liArr = null;
+		GenericEventListener[] listenersArr = null;
+		GenericEventListener[] listenersTypeArr = null;
 		synchronized (infocenter) {  
-			if (oresId == null) {
-				EventAgency ea = typeInfocenter.get(typeName);
-				if (ea != null) { // we are the first listener -> create an agency
-					liArr = ea.getListeners();
-				}
-			} else {
+			if (oresId != null) {
 				String oresStr = typeName + "::" + oresId;
 				EventAgency ea = infocenter.get(oresStr);
 				if (ea != null) {
-					liArr = ea.getListeners();
+					listenersArr = ea.getListeners();
 				}
 			}
+			EventAgency ea = typeInfocenter.get(typeName);
+			if (ea != null) {
+				listenersTypeArr = ea.getListeners();
+			}
 		}
+
+		doFire(event, listenersArr);
+		doFire(event, listenersTypeArr);
+	}
+	
+	private final void doFire(final MultiUserEvent event, final GenericEventListener[] liArr) {
+		if(liArr == null) return;
 		
-		if(liArr != null) {
-			for (int i = 0; i < liArr.length; i++) {
-				try {
-					final GenericEventListener listener = liArr[i];
-					
-					//make sure GenericEvents are only sent when controller is not yet disposed
-					if (listener instanceof Controller) {
-						Controller dCtrl = (Controller)listener;
-						if (!dCtrl.isDisposed()) {
-							ThreadLocalUserActivityLoggerInstaller.runWithUserActivityLogger(new Runnable() {
-								public void run() {
-									listener.event(event);
-								}
-							}, UserActivityLoggerImpl.newLoggerForEventBus(dCtrl));
-						}
-					} else if(listener != null) {
-						if(log.isDebug()){
-							log.debug("fireEvent: Non-Controller: "+listener);
-						}
-						//is there a need to differ the events sent on one VM and in cluster mode?
+		for (int i = 0; i < liArr.length; i++) {
+			try {
+				final GenericEventListener listener = liArr[i];
+				
+				//make sure GenericEvents are only sent when controller is not yet disposed
+				if (listener instanceof Controller) {
+					Controller dCtrl = (Controller)listener;
+					if (!dCtrl.isDisposed()) {
 						ThreadLocalUserActivityLoggerInstaller.runWithUserActivityLogger(new Runnable() {
+							@Override
 							public void run() {
 								listener.event(event);
 							}
-						}, ThreadLocalUserActivityLoggerInstaller.createEmptyUserActivityLogger());
+						}, UserActivityLoggerImpl.newLoggerForEventBus(dCtrl));
 					}
-				} catch (RuntimeException e) {
-					log.error("Error while sending generic event: "+liArr[i], e);
+				} else if(listener != null) {
+					if(log.isDebug()){
+						log.debug("fireEvent: Non-Controller: "+listener);
+					}
+					//is there a need to differ the events sent on one VM and in cluster mode?
+					ThreadLocalUserActivityLoggerInstaller.runWithUserActivityLogger(new Runnable() {
+						@Override
+						public void run() {
+							listener.event(event);
+						}
+					}, ThreadLocalUserActivityLoggerInstaller.createEmptyUserActivityLogger());
 				}
+			} catch (RuntimeException e) {
+				log.error("Error while sending generic event: "+liArr[i], e);
 			}
 		}
 	}

@@ -10,13 +10,6 @@
 	<div class="row o_block_bottom">
 		<div class="col-xs-12 col-md-10">
 			<div class="form-inline">
-				#if ($f.hasError($target))
-					$r.render($targetErr)	
-				#end
-				#if ($f.hasError($descr))
-					$r.render($descrErr)	
-				#end
-			
 				<div class="form-group">
 					<label class="sr-only" for="$f.getItemId($lTargetInputList.get($iter).getName())">$r.translate("ll.table.target")</label>
 				  	#if($r.available($lCustomMediaButtonList.get($iter).getName()) && $r.visible($lCustomMediaButtonList.get($iter).getName()))
@@ -39,6 +32,12 @@
 				  	$r.render($lDescriptionInputList.get($iter).getName())
 				</div>
 			</div>
+			#if ($f.hasError($target))
+				$r.render($targetErr)	
+			#end
+			#if ($f.hasError($descr))
+				$r.render($descrErr)	
+			#end
 			<div class="o_block">
 			  	<label class="sr-only" for="$f.getItemId($lCommentInputList.get($iter).getName())">$r.translate("ll.table.comment")</label>
 			  	$r.render($lCommentInputList.get($iter).getName())

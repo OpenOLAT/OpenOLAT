@@ -135,9 +135,10 @@ public interface RepositoryService {
 	/**
 	 * Count all members (following up to business groups wainting list)
 	 * @param res
+	 * @param excludeMe Exclude to user which call the method (optional)
 	 * @return
 	 */
-	public int countMembers(List<? extends RepositoryEntryRef> res);
+	public int countMembers(List<? extends RepositoryEntryRef> res, Identity excludeMe);
 	
 	/**
 	 * Return the smallest enrollment date.

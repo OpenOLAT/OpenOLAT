@@ -26,6 +26,8 @@
 
 package org.olat.core.commons.modules.singlepage;
 
+import java.util.List;
+
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.gui.UserRequest;
@@ -41,12 +43,14 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.clone.CloneableController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.gui.control.generic.iframe.NewIframeUriEvent;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
@@ -67,7 +71,7 @@ import org.olat.core.util.vfs.VFSContainer;
  *
  * @author gnaegi 
  */
-public class SinglePageController extends BasicController implements CloneableController {
+public class SinglePageController extends BasicController implements CloneableController, Activateable2 {
 
 	private static final OLog log = Tracing.createLoggerFor(SinglePageController.class);
 	
@@ -81,6 +85,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 	private final VelocityContainer myContent;
 	private CustomLinkTreeModel customLinkTreeModel;
 
+	private final String frameId;
 	private final DeliveryOptions deliveryOptions;
 	
 	private String g_curURI;
@@ -104,7 +109,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
 			boolean allowRelativeLinks) {
 		//default behavior is to show the home link in a single page
-		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, null, null);
+		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, null, null, null);
 	}
 
 	 /**
@@ -129,7 +134,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 	  * 
 	  */
 	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
-			boolean allowRelativeLinks, OLATResourceable contextResourcable, DeliveryOptions config) {
+			boolean allowRelativeLinks, String frameId, OLATResourceable contextResourcable, DeliveryOptions config) {
 		super(ureq, wControl);
 		
 		SimpleStackedPanel mainP = new SimpleStackedPanel("iframemain");
@@ -142,6 +147,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 		this.g_allowRelativeLinks = allowRelativeLinks;
 		this.g_fileName = fileName;
 		this.g_rootContainer = rootContainer;
+		this.frameId = frameId;
 		boolean jumpIn = false;
 		
 		// strip beginning slash
@@ -166,6 +172,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 		}
 		
 		// adjust root folder if security does not allow using ../.. etc.
+		// *** IF YOU CHANGE THIS LOGIC, do also change it in SPCourseNodeIndexer! ***
 		if (!allowRelativeLinks && !jumpIn) {
 			// start uri is filename without relative path.
 			// the relative path of the file is added to the vfs rootcontainer
@@ -188,7 +195,8 @@ public class SinglePageController extends BasicController implements CloneableCo
 		// g_new_rootContainer : the given rootcontainer or adjusted in case when relativelinks are not allowed		
 		
 		// Display in iframe when
-		idc = new IFrameDisplayController(ureq, getWindowControl(), g_new_rootContainer, contextResourcable, deliveryOptions);
+		idc = new IFrameDisplayController(ureq, getWindowControl(), g_new_rootContainer,
+				frameId, contextResourcable, deliveryOptions, false);
 		listenTo(idc);
 			
 		idc.setCurrentURI(startURI);
@@ -296,9 +304,17 @@ public class SinglePageController extends BasicController implements CloneableCo
 	 */
 	@Override
 	public Controller cloneController(UserRequest ureq, WindowControl control) {
-		return new SinglePageController(ureq, control, g_rootContainer, g_fileName, g_allowRelativeLinks, null, deliveryOptions);
+		return new SinglePageController(ureq, control, g_rootContainer, g_fileName, g_allowRelativeLinks, frameId, null, deliveryOptions);
 	}
 
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty() || idc == null) return;
+		// delegate to iframe controller
+		idc.activate(ureq, entries, state);
+	}
+
+	
 	/**
 	 * Set a scale factor to enlarge / shrink the entire page. This is handy when
 	 * a preview of a page should be displayed.

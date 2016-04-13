@@ -1,0 +1,6 @@
+<h3>$r.translate("meetings.upcoming")</h3>
+$r.render("upcomingmeetings")
+#if($r.visible("pastmeetings"))
+	<h3>$r.translate("meetings.past")</h3>
+	$r.render("pastmeetings")
+#end

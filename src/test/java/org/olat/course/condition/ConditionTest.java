@@ -66,6 +66,272 @@ public class ConditionTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void testTrueFalse(){
+		UserCourseEnvironment uce = getUserDemoCourseEnvironment();
+		ConditionInterpreter interpreter = new ConditionInterpreter(uce);
+		
+		String condition = "true";
+		boolean result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(result);
+		
+		condition = "TRUE";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(result);
+		
+		condition = "false";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(result);
+		
+		condition = "FALSE";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(result);
+	}
+
+	@Test
+	public void testHasPropertyFunction() throws Exception {
+		UserCourseEnvironment uce = getUserDemoCourseEnvironment();
+		ConditionInterpreter interpreter = new ConditionInterpreter(uce);
+
+		String condition = "hasUserProperty(\"firstName\", \"firstcondition\")";
+		boolean result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+
+		condition = "hasUserProperty(\"firstName\", \"\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+		
+		condition = "hasUserProperty(\"firstName\", \"firstcondition \")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+		
+		condition = "hasUserProperty(\"firstName\", \" firstcondition\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "hasUserProperty(\"firstName\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "hasUserProperty(\"firstName\", \"firstcondition\", \"firstcondition\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "hasUserProperty(\"firstName\", \"someThing\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "hasUserProperty(\"firstName\", \"firstconditiongugus\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "hasUserProperty(\"firstName\", \"gugusfirstcondition\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "hasUserProperty(\"lastName\", \"firstcondition\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+	}
+
+	@Test
+	public void testHasNotPropertyFunction() throws Exception {
+		UserCourseEnvironment uce = getUserDemoCourseEnvironment();
+		ConditionInterpreter interpreter = new ConditionInterpreter(uce);
+
+		String condition = "hasNotUserProperty(\"firstName\", \"firstcondition\")";
+		boolean result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "hasNotUserProperty(\"firstName\", \"\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "hasNotUserProperty(\"firstName\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "hasNotUserProperty(\"firstName\", \"firstcondition\", \"firstcondition\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "hasNotUserProperty(\"firstName\", \"someThing\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+
+		condition = "hasNotUserProperty(\"firstName\", \"firstconditiongugus\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+
+		condition = "hasNotUserProperty(\"firstName\", \"gugusfirstcondition\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+
+		condition = "hasNotUserProperty(\"lastName\", \"firstcondition\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+	}
+
+	@Test
+	public void testUserPropertyStartswithFunction() throws Exception {
+		UserCourseEnvironment uce = getUserDemoCourseEnvironment();
+		ConditionInterpreter interpreter = new ConditionInterpreter(uce);
+
+		String condition = "userPropertyStartswith(\"firstName\", \"firs\")";
+		boolean result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+
+		condition = "userPropertyStartswith(\"firstName\", \"firstcondition\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+		
+		condition = "userPropertyStartswith(\"firstName\", \"\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "userPropertyStartswith(\"firstName\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "userPropertyStartswith(\"firstName\", \"firstcondition\", \"firstcondition\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "userPropertyStartswith(\"firstName\", \"someThing\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "userPropertyStartswith(\"firstName\", \"firstconditiongugus\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "userPropertyStartswith(\"firstName\", \"gugusfirstcondition\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "userPropertyStartswith(\"lastName\", \"firstcondition\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+	}
+
+	@Test
+	public void testUserPropertyEndswithFunction() throws Exception {
+		UserCourseEnvironment uce = getUserDemoCourseEnvironment();
+		ConditionInterpreter interpreter = new ConditionInterpreter(uce);
+		
+		String condition = "userPropertyEndswith(\"firstName\", \"ondition\")";
+		boolean result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+		
+		condition = "userPropertyEndswith(\"firstName\", \"\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "userPropertyEndswith(\"firstName\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "userPropertyEndswith(\"firstName\", \"firstcondition\", \"firstcondition\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "userPropertyEndswith(\"firstName\", \"someThing\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "userPropertyEndswith(\"firstName\", \"firstconditiongugus\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "userPropertyEndswith(\"firstName\", \"gugusfirstcondition\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "userPropertyEndswith(\"lastName\", \"firstcondition\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+	}
+
+	@Test
+	public void testIsInUserPropertyFunction() throws Exception {
+		UserCourseEnvironment uce = getUserDemoCourseEnvironment();
+		ConditionInterpreter interpreter = new ConditionInterpreter(uce);
+
+		String condition = "isInUserProperty(\"firstName\", \"firstcondition\")";
+		boolean result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+		
+		condition = "isInUserProperty(\"firstName\", \"stcondit\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+
+		condition = "isInUserProperty(\"firstName\", \"\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "isInUserProperty(\"firstName\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "isInUserProperty(\"firstName\", \"firstcondition\", \"firstcondition\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "isInUserProperty(\"firstName\", \"someThing\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "isInUserProperty(\"firstName\", \"firstconditiongugus\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "isInUserProperty(\"firstName\", \"gugusfirstcondition\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "isInUserProperty(\"lastName\", \"firstcondition\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+	}
+
+	@Test
+	public void testIsNotInUserPropertyFunction() throws Exception {
+		UserCourseEnvironment uce = getUserDemoCourseEnvironment();
+		ConditionInterpreter interpreter = new ConditionInterpreter(uce);
+
+		String condition = "isNotInUserProperty(\"firstName\", \"stcondit\")";
+		boolean result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "isNotInUserProperty(\"firstName\", \"\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "isNotInUserProperty(\"firstName\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "isNotInUserProperty(\"firstName\", \"firstcondition\", \"firstcondition\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "isNotInUserProperty(\"firstName\", \"someThing\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+
+		condition = "isNotInUserProperty(\"firstName\", \"firstconditiongugus\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+
+		condition = "isNotInUserProperty(\"firstName\", \"gugusfirstcondition\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+
+		condition = "isNotInUserProperty(\"lastName\", \"firstcondition\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+	}
+
+	@Test
 	public void syntaxProposal() throws Exception {
 		UserCourseEnvironment uce = getUserDemoCourseEnvironment();
 		ConditionInterpreter interpreter = new ConditionInterpreter(uce);

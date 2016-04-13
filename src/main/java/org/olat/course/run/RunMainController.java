@@ -220,7 +220,13 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// add text marker wrapper controller to implement course glossary
 		// textMarkerCtr must be created before the toolC!
 		CourseConfig cc = uce.getCourseEnvironment().getCourseConfig();
-		glossaryMarkerCtr = CourseGlossaryFactory.createGlossaryMarkupWrapper(ureq, wControl, contentP, cc);	
+		glossaryMarkerCtr = CourseGlossaryFactory.createGlossaryMarkupWrapper(ureq, wControl, contentP, cc);
+		
+		MenuTree layoutTree = luTree;
+		if(!cc.isMenuEnabled() && !uce.isAdmin()) {
+			layoutTree = null;
+		}
+		
 		if (glossaryMarkerCtr != null) {
 			listenTo(glossaryMarkerCtr);
 			// enable / disable glossary highlighting according to user prefs
@@ -237,9 +243,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			} else {
 				glossaryMarkerCtr.setTextMarkingEnabled(state.booleanValue());
 			}
-			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), luTree, glossaryMarkerCtr.getInitialComponent(), "course" + course.getResourceableId());				
+			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), layoutTree, glossaryMarkerCtr.getInitialComponent(), "course" + course.getResourceableId());				
 		} else {
-			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), luTree, contentP, "courseRun" + course.getResourceableId());							
+			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), layoutTree, contentP, "courseRun" + course.getResourceableId());							
 		}
 		listenTo(columnLayoutCtr);
 
@@ -827,11 +833,21 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				if (cn != null) {
 					addLoggingResourceable(LoggingResourceable.wrap(cn));
 				}
-				
+				// consume our entry
 				if(entries.size() > 1) {
 					entries = entries.subList(1, entries.size());
 				}
 				updateTreeAndContent(ureq, cn, null, entries, firstEntry.getTransientState());
+			} else if (currentCourseNode.equals(cn)) {
+				// consume our entry
+				if(entries.size() > 1) {
+					entries = entries.subList(1, entries.size());
+				}
+				// the node to be activated is the one that is already on the screen
+				if (currentNodeController instanceof Activateable2) {
+					Activateable2 activateable = (Activateable2) currentNodeController;
+					activateable.activate(ureq, entries, state);
+				}
 			}
 		}
 	}

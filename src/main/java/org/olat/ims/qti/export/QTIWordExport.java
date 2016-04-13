@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -75,11 +76,14 @@ public class QTIWordExport implements MediaResource {
 	private AssessmentNode rootNode;
 	private VFSContainer mediaContainer;
 	private Locale locale;
+	private final CountDownLatch latch;
 	
-	public QTIWordExport(AssessmentNode rootNode, VFSContainer mediaContainer, Locale locale, String encoding) {
+	public QTIWordExport(AssessmentNode rootNode, VFSContainer mediaContainer,
+			Locale locale, String encoding, CountDownLatch latch) {
 		this.encoding = encoding;
 		this.locale = locale;
 		this.rootNode = rootNode;
+		this.latch = latch;
 		this.mediaContainer = mediaContainer;
 	}
 	
@@ -145,6 +149,7 @@ public class QTIWordExport implements MediaResource {
 		} catch (Exception e) {
 			log.error("", e);
 		} finally {
+			latch.countDown();
 			IOUtils.closeQuietly(zout);
 		}
 	}

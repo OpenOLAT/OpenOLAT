@@ -19,7 +19,7 @@
 		</div>
 		#end
 		#if($description && $description.length() > 0)
-		<div class="o_desc">
+		<div class="o_desc o_user_content_block">
 			$description
 		</div>
 		#end
@@ -173,19 +173,19 @@
 		## START LEFT COLUMN		
 		<div class="col-xs-12 #if($hasMetaData) col-sm-7 col-md-8 #end o_maincolumn">
 			#if($objectives)
-				<div class="o_objectives clearfix">
+				<div class="o_objectives o_user_content_block clearfix">
 					<h3>$r.translate("cif.objectives")</h3>
 					$objectives
 				</div>
 			#end		
 			#if($requirements)
-				<div class="o_requirements clearfix">
+				<div class="o_requirements o_user_content_block clearfix">
 					<h3>$r.translate("cif.requirements")</h3>
 					$requirements
 				</div>
 			#end
 			#if($credits)
-				<div class="o_credits clearfix">
+				<div class="o_credits o_user_content_block clearfix">
 					<h3>$r.translate("cif.credits")</h3>
 					$credits
 				</div>

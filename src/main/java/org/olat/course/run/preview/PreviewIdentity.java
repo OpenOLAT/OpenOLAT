@@ -142,11 +142,6 @@ public final class PreviewIdentity implements Identity, User {
 	}
 
 	@Override
-	public void setLastLogin(Date loginDate) {
-		//
-	}
-
-	@Override
 	public Integer getStatus() {
 		return Identity.STATUS_ACTIV;
 	}

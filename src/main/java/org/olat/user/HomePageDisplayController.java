@@ -25,6 +25,7 @@
 
 package org.olat.user;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -32,6 +33,7 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -91,13 +93,24 @@ public class HomePageDisplayController extends BasicController {
 		// do the looping in the velocity context
 		List<UserPropertyHandler> userPropertyHandlers
 			= new ArrayList<UserPropertyHandler>(userManager.getUserPropertyHandlersFor(usageIdentifyer, false));
+		UserPropertyHandler userSearchedInterestsHandler = null;
+		UserPropertyHandler userInterestsHandler = null;
 		for(Iterator<UserPropertyHandler> propIt=userPropertyHandlers.iterator(); propIt.hasNext(); ) {
 			UserPropertyHandler prop = propIt.next();
 			if(!hpc.isEnabled(prop.getName()) && !userManager.isMandatoryUserProperty(usageIdentifyer, prop)) {
 				propIt.remove();
+			} else if("userInterests".equals(prop.getName())) {
+				userInterestsHandler = prop;
+			} else if("userSearchedInterests".equals(prop.getName())) {
+				userSearchedInterestsHandler = prop;
 			}
 		}
+		if(userInterestsHandler != null && userSearchedInterestsHandler != null) {
+			userPropertyHandlers.remove(userSearchedInterestsHandler);
+		}
+		
 		mainVC.contextPut("userPropertyHandlers", userPropertyHandlers);
+		mainVC.contextPut("userSearchedInterestsHandler", userSearchedInterestsHandler);
 		mainVC.contextPut("homepageConfig", hpc);	
 		
 		// Add external link to visiting card
@@ -109,7 +122,19 @@ public class HomePageDisplayController extends BasicController {
 		Controller dpc = new DisplayPortraitController(ureq, getWindowControl(), homeIdentity, true, false);
 		listenTo(dpc); // auto dispose
 		mainVC.put("image", dpc.getInitialComponent());
+
+		if(UserModule.isLogoByProfileEnabled()) {
+			File logo = DisplayPortraitManager.getInstance().getBigLogo(homeIdentity.getName());
+			if (logo != null) {
+				ImageComponent logoCmp = new ImageComponent(ureq.getUserSession(), "logo");
+				logoCmp.setMedia(logo);
+				logoCmp.setMaxWithAndHeightToFitWithin(200, 66);
+				mainVC.put("logo", logoCmp);				
+			}
+		}
+		
 		putInitialPanel(mainVC);
+		
 		
 		if(imModule.isEnabled() && imModule.isPrivateEnabled()) {
 			InstantMessagingService imService = CoreSpringFactory.getImpl(InstantMessagingService.class);

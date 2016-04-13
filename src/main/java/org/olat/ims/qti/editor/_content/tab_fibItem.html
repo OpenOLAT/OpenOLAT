@@ -87,6 +87,8 @@
 				<td>
 					#if(!$isRestrictedEdit)
 					<input type="text" name="points_q$count" value="$content.getPoints()" size="5" onchange="return setFormDirty('ofo_tab_fibitem')" onclick="return setFormDirty('ofo_tab_fibitem')"/>
+					#else
+					$content.getPoints()
 					#end
 				</td>
 				#end

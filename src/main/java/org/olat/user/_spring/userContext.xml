@@ -15,20 +15,19 @@
 
 <bean id="userModule" class="org.olat.user.UserModule" 
 	depends-on="notificationsManager, database, baseSecurityManager, triggerI18nModuleInit">
-<!-- default auth string -->
-<constructor-arg index="0" value="${default.auth.provider.identifier}" />
-<constructor-arg index="1" ref="userManager" />
-<constructor-arg index="2" ref="afterLoginInterceptionManager" />
-
-<property name="persistedProperties">
-  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
-    <constructor-arg index="0" ref="coordinatorManager"/>
-    <constructor-arg index="1" ref="userModule" />
-  </bean>
-</property>
-
-<!-- provide an admin user-->
-<property name="defaultUsers">
+	<!-- default auth string -->
+	<constructor-arg index="0" value="${default.auth.provider.identifier}" />
+	<constructor-arg index="1" ref="userManager" />
+	<constructor-arg index="2" ref="afterLoginInterceptionManager" />
+	<property name="persistedProperties">
+	  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
+	    <constructor-arg index="0" ref="coordinatorManager"/>
+	    <constructor-arg index="1" ref="userModule" />
+	  </bean>
+	</property>
+	
+	<!-- provide an admin user-->
+	<property name="defaultUsers">
         <list>
                 <bean class="org.olat.user.DefaultUser">
                         <!-- constructor arg is userName -->
@@ -41,10 +40,10 @@
                         <property name="admin" value="true" />
                 </bean>
         </list>
-</property>
+	</property>
 
-<!-- provide some test users -->
-<property name="testUsers">
+	<!-- provide some test users -->
+	<property name="testUsers">
         <list>
                 <bean class="org.olat.user.DefaultUser">
                         <!-- constructor arg is userName -->
@@ -134,8 +133,8 @@
                        <property name="admin" value="false" />
                </bean>
            </list>
-</property>
-<property name="loginBlacklist">
+	</property>
+	<property name="loginBlacklist">
 		<list>
 			<!--
 			Use regexp to define logins which are not allowed.
@@ -176,11 +175,10 @@
 			<value>[\.\-_].*</value>
 			<value>[\.\-_]*</value>
 		</list>
-</property> 
+	</property> 
 	<property name="afterLoginConfig">
 		<ref bean="org.olat.user.AfterLoginConfig"/>
 	</property>
-
 </bean>
 
 	<bean id="org.olat.user.AfterLoginConfig" class="org.olat.login.AfterLoginConfig" scope="prototype">	
@@ -253,6 +251,7 @@
                     passwordChangeAllowed=${password.change.allowed}
                     passwordChangeAllowedLDAP=${ldap.propagatePasswordChangedOnLdapServer}
                     adminUserName=administrator
+                    logoByProfileEnabled=${user.logoByProfile}
             </value>
 	    </property>
 	</bean>

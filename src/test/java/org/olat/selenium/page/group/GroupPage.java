@@ -292,7 +292,7 @@ public class GroupPage {
 	}
 	
 	public GroupPage assertOnInfosPage(String name) {
-		By groupNameBy = By.xpath("//div[@id='o_main_center_content_inner']//p[contains(text(),'" + name+ "')]");
+		By groupNameBy = By.xpath("//div[@id='o_main_center_content_inner']//div[contains(@class,'o_name')]//div[contains(text(),'" + name + "')]");
 		List<WebElement> groupNameEls = browser.findElements(groupNameBy);
 		Assert.assertFalse(groupNameEls.isEmpty());
 		return this;

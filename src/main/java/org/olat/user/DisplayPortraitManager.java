@@ -51,11 +51,18 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 
 	private static DisplayPortraitManager singleton;
 	
-	private static final String PORTRAIT_BIG_FILENAME = "portrait_big";
-	private static final String PORTRAIT_SMALL_FILENAME = "portrait_small";
+	private static final String LOGO_PREFIX_FILENAME = "logo";
+	private static final String LOGO_BIG_FILENAME = LOGO_PREFIX_FILENAME + "_big";
+	private static final String LOGO_SMALL_FILENAME = LOGO_PREFIX_FILENAME + "_small";
+
+	private static final String PORTRAIT_PREFIX_FILENAME = "portrait";
+	private static final String PORTRAIT_BIG_FILENAME = PORTRAIT_PREFIX_FILENAME + "_big";
+	private static final String PORTRAIT_SMALL_FILENAME = PORTRAIT_PREFIX_FILENAME + "_small";
 	// The following class names refer to CSS class names in olat.css 
 	public static final String AVATAR_BIG_CSS_CLASS = "o_portrait_avatar";
 	public static final String AVATAR_SMALL_CSS_CLASS = "o_portrait_avatar_small";
+	public static final String LOGO_BIG_CSS_CLASS = "o_portrait_logo";
+	public static final String LOGO_SMALL_CSS_CLASS = "o_portrait_logo_small";
 	public static final String ANONYMOUS_BIG_CSS_CLASS = "o_portrait_anonymous";
 	public static final String ANONYMOUS_SMALL_CSS_CLASS = "o_portrait_anonymous_small";
 	public static final String DUMMY_BIG_CSS_CLASS = "o_portrait_dummy";
@@ -65,9 +72,15 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 	public static final String DUMMY_MALE_BIG_CSS_CLASS = "o_portrait_dummy_male_big";
 	public static final String DUMMY_MALE_SMALL_CSS_CLASS = "o_portrait_dummy_male_small";
 	
+	public static final int HEIGHT_BIG = 100;  // 4-8 kbytes (jpeg)
+	public static final int HEIGHT_SMALL = 30; // 2-4
+	
 	// If you change the following widths, don't forget to change them in basemod.scss as well.
-	public static final int WIDTH_PORTRAIT_BIG = 100;  // 4-8 kbytes (jpeg)
-	public static final int WIDTH_PORTRAIT_SMALL = 30; // 2-4
+	public static final int WIDTH_PORTRAIT_BIG = HEIGHT_BIG;  // 4-8 kbytes (jpeg)
+	public static final int WIDTH_PORTRAIT_SMALL = HEIGHT_SMALL; // 2-4
+	
+	public static final int WIDTH_LOGO_BIG = HEIGHT_BIG * 4;  // 4-8 kbytes (jpeg)
+	public static final int WIDTH_LOGO_SMALL = HEIGHT_SMALL * 4; // 2-4
 	
 	/**
 	 * [spring]
@@ -99,6 +112,20 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 		return getPortraitResource(identityKey, PORTRAIT_BIG_FILENAME);
 	}
 	
+	public MediaResource getSmallLogoResource(String username) {
+		return getPortraitResource(username, LOGO_SMALL_FILENAME);
+	}
+	public MediaResource getSmallLogoResource(Long identityKey) {
+		return getPortraitResource(identityKey, LOGO_SMALL_FILENAME);
+	}
+	
+	public MediaResource getBigLogoResource(String String) {
+		return getPortraitResource(String, LOGO_BIG_FILENAME);
+	}
+	public MediaResource getBigLogoResource(Long identityKey) {
+		return getPortraitResource(identityKey, LOGO_BIG_FILENAME);
+	}
+	
 	/**
 	 * Get the portrait media resource by identity name (username)
 	 * @param identity
@@ -127,13 +154,20 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 		return null;
 	}
 
-	
 	public File getSmallPortrait(String username) {
 		return getPortraitFile(username, PORTRAIT_SMALL_FILENAME);
 	}
 	
 	public File getBigPortrait(String username) {
 		return getPortraitFile(username, PORTRAIT_BIG_FILENAME);
+	}
+	
+	public File getSmallLogo(String username) {
+		return getPortraitFile(username, LOGO_SMALL_FILENAME);
+	}
+	
+	public File getBigLogo(String username) {
+		return getPortraitFile(username, LOGO_BIG_FILENAME);
 	}
 
 	private File getPortraitFile(String username, String prefix) {
@@ -149,14 +183,25 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 	}
 	
 	public void setPortrait(File file, String filename, String username) {
-		//first remove old ones
-		File portraitDir = getPortraitDir(username);
-		if(portraitDir != null) {
-			for(File currentPortrait:portraitDir.listFiles()) {
-				if(currentPortrait.equals(file)) {
+		setImage(file, filename, username, PORTRAIT_PREFIX_FILENAME, PORTRAIT_BIG_FILENAME, PORTRAIT_SMALL_FILENAME,
+				WIDTH_PORTRAIT_BIG, WIDTH_PORTRAIT_SMALL);
+	}
+	
+	public void setLogo(File file, String filename, String username) {
+		setImage(file, filename, username, LOGO_PREFIX_FILENAME, LOGO_BIG_FILENAME, LOGO_SMALL_FILENAME,
+				WIDTH_LOGO_BIG, WIDTH_LOGO_SMALL);
+	}
+
+	private void setImage(File file, String filename, String username, String prefix, String largeImagePrefix, String smallImagePrefix,
+			int maxBigWidth, int maxSmallWidth) {
+		File directory = getPortraitDir(username);
+		if(directory != null) {
+			for(File currentImage:directory.listFiles()) {
+				if(currentImage.equals(file)) {
 					continue;
+				} else if(currentImage.getName().startsWith(prefix)) {
+					currentImage.delete();
 				}
-				currentPortrait.delete();
 			}
 		}
 		
@@ -169,17 +214,33 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 				extension = "png";
 			}
 		}
-		File pBigFile = new File(portraitDir, DisplayPortraitManager.PORTRAIT_BIG_FILENAME + "." + extension);
-		File pSmallFile = new File(portraitDir, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME + "." + extension);
+		File bigFile = new File(directory, largeImagePrefix + "." + extension);
+		File smallFile = new File(directory, smallImagePrefix + "." + extension);
 		ImageService imageHelper = CoreSpringFactory.getImpl(ImageService.class);
-		Size size = imageHelper.scaleImage(file, extension, pBigFile, DisplayPortraitManager.WIDTH_PORTRAIT_BIG, DisplayPortraitManager.WIDTH_PORTRAIT_BIG, false);
+		Size size = imageHelper.scaleImage(file, extension, bigFile, maxBigWidth, HEIGHT_BIG , false);
 		if(size != null){
-			size = imageHelper.scaleImage(file, extension, pSmallFile, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL, false);
+			size = imageHelper.scaleImage(file, extension, smallFile, maxSmallWidth, HEIGHT_SMALL, false);
 		}
 	}
-	
+
 	public void deletePortrait(Identity identity) {
-		FileUtils.deleteDirsAndFiles(getPortraitDir(identity.getName()), true, true);
+		deleteImages(identity, PORTRAIT_PREFIX_FILENAME);
+	}
+	
+	public void deleteLogo(Identity identity) {
+		deleteImages(identity, LOGO_PREFIX_FILENAME);
+	}
+	
+	private void deleteImages(Identity identity, String prefix) {
+		File directory = getPortraitDir(identity.getName());
+		if(directory != null && directory.exists()) {
+			for(File file:directory.listFiles()) {
+				String filename = file.getName();
+				if(filename.startsWith(prefix)) {
+					file.delete();
+				}
+			}
+		}
 	}
 	
 	/**

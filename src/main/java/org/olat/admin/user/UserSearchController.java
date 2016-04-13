@@ -105,7 +105,7 @@ public class UserSearchController extends BasicController {
 	private TableController tableCtr;
 	private TableGuiConfiguration tableConfig;
 	private UserTableDataModel tdm;
-	private List<Identity> foundIdentities = new ArrayList<Identity>();
+	private List<Identity> foundIdentities = new ArrayList<>();
 	private boolean useMultiSelect = false;
 	private Object userObject;
 	
@@ -127,7 +127,7 @@ public class UserSearchController extends BasicController {
 	 * @param wControl
 	 */
 	public UserSearchController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, false, false);
+		this(ureq, wControl, false, false, false);
 	}
 	
 	
@@ -137,7 +137,7 @@ public class UserSearchController extends BasicController {
 	 * @param cancelbutton
 	 */
 	public UserSearchController(UserRequest ureq, WindowControl wControl, boolean cancelbutton) {
-		this(ureq, wControl, cancelbutton, false);
+		this(ureq, wControl, cancelbutton, false, false);
 	}
 
 	/**
@@ -149,7 +149,7 @@ public class UserSearchController extends BasicController {
 	 * @param actionKeyChooseFinish
 	 */
 	public UserSearchController(UserRequest ureq, WindowControl windowControl, boolean cancelbutton, boolean userMultiSelect, String actionKeyChooseFinish) {
-		this(ureq, windowControl, cancelbutton, userMultiSelect);
+		this(ureq, windowControl, cancelbutton, userMultiSelect, false);
 		this.actionKeyChoose = actionKeyChooseFinish;
 	}
 
@@ -160,7 +160,7 @@ public class UserSearchController extends BasicController {
 	 * @param userMultiSelect
 	 * @param statusEnabled
 	 */
-	public UserSearchController(UserRequest ureq, WindowControl wControl, boolean cancelbutton, boolean userMultiSelect) {
+	public UserSearchController(UserRequest ureq, WindowControl wControl, boolean cancelbutton, boolean userMultiSelect, boolean allowReturnKey) {
 		super(ureq, wControl);
 		this.useMultiSelect = userMultiSelect;
 		this.actionKeyChoose = ACTION_KEY_CHOOSE;
@@ -182,7 +182,7 @@ public class UserSearchController extends BasicController {
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
-		searchform = new UserSearchForm(ureq, wControl, isAdministrativeUser, cancelbutton);
+		searchform = new UserSearchForm(ureq, wControl, isAdministrativeUser, cancelbutton, allowReturnKey);
 		listenTo(searchform);
 		searchPanel.setContent(searchform.getInitialComponent());
 	
