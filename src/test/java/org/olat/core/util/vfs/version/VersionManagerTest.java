@@ -29,8 +29,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
@@ -80,16 +82,34 @@ public class VersionManagerTest extends OlatTestCase {
 		
 		SimpleVersionConfig versionConfig = (SimpleVersionConfig)CoreSpringFactory.getBean("versioningConfigurator");
 		versionConfig.setMaxNumberOfVersionsProperty(new Long(10));
-		sleep(2000);
-		
+		waitForCondition(new SetMaxNumberOfVersions(versionConfig,  10l), 2000);
 		setuped = true;
 	}
 	
 	@After
 	public void resetMaxVersions() {
-		versioningConfigurator.setMaxNumberOfVersionsProperty(new Long(10));
-		sleep(2000);
-		versioningConfigurator.getMaxNumberOfVersionsProperty();
+		Long maxNumberOfVersions = versioningConfigurator.getMaxNumberOfVersionsProperty();
+		if(maxNumberOfVersions == null || maxNumberOfVersions.longValue() != 10) {
+			versioningConfigurator.setMaxNumberOfVersionsProperty(new Long(10));
+			waitForCondition(new SetMaxNumberOfVersions(versioningConfigurator,  10l), 2000);
+		}
+	}
+	
+	private static class SetMaxNumberOfVersions implements Callable<Boolean> {
+		
+		private final Long maxNumOfVersions;
+		private final SimpleVersionConfig versioningConfig;
+		
+		public SetMaxNumberOfVersions(SimpleVersionConfig versioningConfig, Long maxNumOfVersions) {
+			this.versioningConfig = versioningConfig;
+			this.maxNumOfVersions = maxNumOfVersions;
+		}
+
+		@Override
+		public Boolean call() throws Exception {
+			Long currentValue = versioningConfig.getMaxNumberOfVersionsProperty();
+			return currentValue != null && currentValue.longValue() == maxNumOfVersions.longValue();
+		}
 	}
 	
 	@Test
@@ -149,7 +169,7 @@ public class VersionManagerTest extends OlatTestCase {
 	@Test
 	public void testOverflow_lowLevel() throws IOException {
 		versioningConfigurator.setMaxNumberOfVersionsProperty(new Long(3));
-		sleep(1000);
+		waitForCondition(new SetMaxNumberOfVersions(versioningConfigurator, 3l), 2000);
 		
 		//create a file
 		OlatRootFolderImpl rootTest = new OlatRootFolderImpl("/test_" + UUID.randomUUID(), null);
@@ -186,7 +206,7 @@ public class VersionManagerTest extends OlatTestCase {
 	@Test
 	public void testOverflow_lowLevel_deactivated() throws IOException {
 		versioningConfigurator.setMaxNumberOfVersionsProperty(new Long(0));
-		sleep(1000);
+		waitForCondition(new SetMaxNumberOfVersions(versioningConfigurator,  0l), 2000);
 		
 		//create a file
 		OlatRootFolderImpl rootTest = new OlatRootFolderImpl("/test_" + UUID.randomUUID(), null);
@@ -259,6 +279,13 @@ public class VersionManagerTest extends OlatTestCase {
 		Assert.assertEquals(3, revisions.size());
 	}
 	
+	/**
+	 * The test create an original file and 3 revisions with exactly
+	 * the same content. We delete the original and the first version.
+	 * We check that version 2 and 3 survives and that the file exists.
+	 * 
+	 * @throws IOException
+	 */
 	@Test
 	public void testDeleteRevisions_withSameFile() throws IOException {
 		OlatRootFolderImpl rootTest = new OlatRootFolderImpl("/ver-" + UUID.randomUUID(), null);
@@ -270,7 +297,6 @@ public class VersionManagerTest extends OlatTestCase {
 		IOUtils.closeQuietly(in);
 		assertFalse(byteCopied == 0);
 		assertTrue(file instanceof Versionable);
-		
 		
 		//save a first version
 		Versionable versionedFile = (Versionable)file;
@@ -298,6 +324,91 @@ public class VersionManagerTest extends OlatTestCase {
 		List<VFSRevision> revisions = reloadedVersionedFile.getVersions().getRevisions();
 		Assert.assertNotNull(revisions);
 		Assert.assertEquals(1, revisions.size());
+		//check surviving versions
+		Assert.assertEquals("Version 2", revisions.get(0).getComment());
+		Assert.assertEquals("Version 3", reloadedVersionedFile.getVersions().getComment());
+		//check that the last backup file exists
+		RevisionFileImpl revision2 = (RevisionFileImpl)revisions.get(0);
+		VFSLeaf revision2File = revision2.getFile();
+		Assert.assertNotNull(revision2File);
+		Assert.assertTrue(revision2File.exists());
+		
+		//check if there is only one backup file
+		VFSContainer versionContainer = versionManager.getCanonicalVersionFolder(file.getParentContainer(), false);
+		Assert.assertNotNull(versionContainer);
+		List<VFSItem> items = versionContainer.getItems(new SystemItemFilter());
+		Assert.assertNotNull(items);
+		Assert.assertEquals(2, items.size());
+	}
+	
+	/**
+	 * The test create an original file and 5 versions. It manually
+	 * delete the physical back up file. We delete the versions
+	 * of the orginal, 1 and 2. At the end, there is only version 4
+	 * and 5.
+	 * 
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void testDeleteRevisions_withMissingRevisionFile() throws IOException {
+		OlatRootFolderImpl rootTest = new OlatRootFolderImpl("/ver-" + UUID.randomUUID(), null);
+		String filename = getRandomName();
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		OutputStream out = file.getOutputStream(false);
+		InputStream in = new ByteArrayInputStream("Hello original".getBytes());
+		int byteCopied = IOUtils.copy(in, out);
+		IOUtils.closeQuietly(in);
+		assertFalse(byteCopied == 0);
+		assertTrue(file instanceof Versionable);
+		
+		//save a first version
+		Versionable versionedFile = (Versionable)file;
+		InputStream in1 = new ByteArrayInputStream("Hello version 1".getBytes());
+		versionedFile.getVersions().addVersion(id2, "Version 1", in1);
+		IOUtils.closeQuietly(in1);
+		
+		//save a second version
+		InputStream in2 = new ByteArrayInputStream("Hello version 2".getBytes());
+		versionedFile.getVersions().addVersion(id2, "Version 2", in2);
+		IOUtils.closeQuietly(in2);
+		
+		//save a third version
+		InputStream in3 = new ByteArrayInputStream("Hello version 3".getBytes());
+		versionedFile.getVersions().addVersion(id2, "Version 3", in3);
+		IOUtils.closeQuietly(in3);
+		
+		//save a fourth version
+		InputStream in4 = new ByteArrayInputStream("Hello version 4".getBytes());
+		versionedFile.getVersions().addVersion(id2, "Version 4", in4);
+		IOUtils.closeQuietly(in4);
+		
+		//save a fourth version
+		InputStream in5 = new ByteArrayInputStream("Hello version 5".getBytes());
+		versionedFile.getVersions().addVersion(id2, "Version 5", in5);
+		IOUtils.closeQuietly(in5);
+		
+		//delete a specific
+		VFSRevision rev3 = versionedFile.getVersions().getRevisions().get(3);
+		RevisionFileImpl toDeleteVersionImpl = (RevisionFileImpl)rev3;
+		VFSContainer versionContainerAlt = versionManager.getCanonicalVersionFolder(rootTest, false);
+		VFSItem itemToDelete = versionContainerAlt.resolve(toDeleteVersionImpl.getFilename());
+		itemToDelete.deleteSilently();
+		
+		//delete revisions
+		List<VFSRevision> toDelete = new ArrayList<>(versionedFile.getVersions().getRevisions().subList(0, 3));
+		versionManager.deleteRevisions(versionedFile, toDelete);
+		
+		//check number of versions
+		VFSItem reloadFile = rootTest.resolve(filename);
+		assertTrue(reloadFile instanceof Versionable);
+		Versionable reloadedVersionedFile = (Versionable)reloadFile;
+		List<VFSRevision> revisions = reloadedVersionedFile.getVersions().getRevisions();
+		Assert.assertNotNull(revisions);
+		Assert.assertEquals(1, revisions.size());
+		VFSRevision revision = revisions.get(0);
+		Assert.assertEquals("Version 4", revision.getComment());
+		Assert.assertEquals("Version 5", reloadedVersionedFile.getVersions().getComment());
 		
 		//check if there is only one backup file
 		VFSContainer versionContainer = versionManager.getCanonicalVersionFolder(file.getParentContainer(), false);

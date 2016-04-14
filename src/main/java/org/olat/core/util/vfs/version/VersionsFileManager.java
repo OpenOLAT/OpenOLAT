@@ -411,12 +411,18 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 			}
 		}
 		
+		List<RevisionFileImpl> missingFiles = new ArrayList<>();
 		for(VFSRevision survivingVersion:allVersions) {
 			RevisionFileImpl survivingVersionImpl = (RevisionFileImpl)survivingVersion;
 			VFSLeaf revFile = survivingVersionImpl.getFile();
-			if(filenamesToDelete.containsKey(revFile.getName())) {
+			if(revFile == null) {
+				missingFiles.add(survivingVersionImpl);//file is missing
+			} else if(filenamesToDelete.containsKey(revFile.getName())) {
 				filenamesToDelete.remove(revFile.getName());
 			}
+		}
+		if(missingFiles.size() > 0) {
+			allVersions.removeAll(missingFiles);
 		}
 		
 		for(VFSLeaf fileToDelete:filenamesToDelete.values()) {
