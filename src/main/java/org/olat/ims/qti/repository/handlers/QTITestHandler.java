@@ -150,7 +150,7 @@ public class QTITestHandler extends QTIHandler {
 					Controller runController;
 					OLATResource res = entry.getOlatResource();
 					CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
-						.updateUserCourseInformations(entry.getOlatResource(), ureq.getIdentity());
+						.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
 					if (OnyxModule.isOnyxTest(res)) {
 						// <OLATCE-1054>
 						runController = new OnyxRunController(uureq, wwControl, entry, false);

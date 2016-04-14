@@ -196,7 +196,7 @@ public class GlossaryHandler implements RepositoryHandler {
 					}
 
 					CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
-						.updateUserCourseInformations(entry.getOlatResource(), ureq.getIdentity());
+						.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
 					return new GlossaryMainController(wwControl, uureq, glossaryFolder, entry.getOlatResource(), secCallback, false);	
 				}
 			});

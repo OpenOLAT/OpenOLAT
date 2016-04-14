@@ -150,7 +150,7 @@ public class QTISurveyHandler extends QTIHandler {
 					Controller runController;
 					OLATResource res = entry.getOlatResource();
 					CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
-						.updateUserCourseInformations(entry.getOlatResource(), ureq.getIdentity());
+						.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
 					if (OnyxModule.isOnyxTest(res)) {
 						runController = new OnyxRunController(uureq, wwControl, entry, false);
 					} else {

@@ -175,7 +175,7 @@ public class SCORMCPHandler extends FileHandler {
 						RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
 					OLATResource res = entry.getOlatResource();
 					CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
-						.updateUserCourseInformations(res, ureq.getIdentity());
+						.updateUserCourseInformations(res, uureq.getIdentity());
 					File cpRoot = FileResourceManager.getInstance().unzipFileResource(res);
 					MainLayoutController realController = ScormMainManager.getInstance().createScormAPIandDisplayController(uureq, wwControl, true, null, cpRoot,
 							res.getResourceableId(), null, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT, false, null, false, false, false, null);
