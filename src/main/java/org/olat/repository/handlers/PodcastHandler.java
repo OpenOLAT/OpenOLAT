@@ -169,7 +169,7 @@ public class PodcastHandler implements RepositoryHandler {
 				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
 						RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
 					CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
-						.updateUserCourseInformations(entry.getOlatResource(), ureq.getIdentity());
+						.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
 					return new FeedMainController(entry.getOlatResource(), uureq, wwControl, null, null,
 						PodcastUIFactory.getInstance(uureq.getLocale()), callback, null);
 				}

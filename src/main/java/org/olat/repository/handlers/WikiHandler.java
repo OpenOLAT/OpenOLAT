@@ -241,7 +241,7 @@ public class WikiHandler implements RepositoryHandler {
 				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
 						RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
 					CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
-						.updateUserCourseInformations(entry.getOlatResource(), ureq.getIdentity());
+						.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
 					Controller controller;
 					if (ce != null ) { //jump to a certain context
 						OLATResourceable ores = ce.getOLATResourceable();

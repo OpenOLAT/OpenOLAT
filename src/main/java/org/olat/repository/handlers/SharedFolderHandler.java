@@ -174,7 +174,7 @@ public class SharedFolderHandler implements RepositoryHandler {
 						OLATResource res = entry.getOlatResource();
 						VFSContainer sfContainer = SharedFolderManager.getInstance().getSharedFolder(res);
 						CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
-							.updateUserCourseInformations(res, ureq.getIdentity());
+							.updateUserCourseInformations(res, uureq.getIdentity());
 						
 						Controller sfdCtr;
 						if(sfContainer == null || !sfContainer.exists()) {

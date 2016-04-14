@@ -230,7 +230,7 @@ public class PortfolioHandler implements RepositoryHandler {
 					PortfolioStructureMap map = (PortfolioStructureMap)ePFMgr
 						.loadPortfolioStructure(entry.getOlatResource());
 					CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
-						.updateUserCourseInformations(entry.getOlatResource(), ureq.getIdentity());
+						.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
 					EPSecurityCallback secCallback = EPSecurityCallbackFactory.getSecurityCallback(uureq, map, ePFMgr);
 					return new EPMapViewController(uureq, wwControl, map, false, false, secCallback);
 				}
