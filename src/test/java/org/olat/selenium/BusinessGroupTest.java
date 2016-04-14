@@ -371,7 +371,13 @@ public class BusinessGroupTest {
 	 * 
 	 * A standard user create a group and add a participant.
 	 * The participant log-in and confirm its membership and
-	 * visit the group.
+	 * visit the group.<br>
+	 * 
+	 * A first user log in, confirm the membership and search
+	 * the group.<br>
+	 * 
+	 * A second user log in but with a rest url to the group
+	 * and jump to the group after confirming the membership.
 	 * 
 	 * @param loginPage
 	 * @throws IOException
@@ -381,9 +387,11 @@ public class BusinessGroupTest {
 	@RunAsClient
 	public void confirmMembershipByGroup(@InitialPage LoginPage loginPage,
 			@Drone @User WebDriver ryomouBrowser,
-			@Drone @Participant WebDriver participantBrowser)
+			@Drone @Participant WebDriver participantBrowser,
+			@Drone @Student WebDriver reiBrowser)
 	throws IOException, URISyntaxException {
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser();
 		
 		//admin make the confirmation of membership mandatory
@@ -409,12 +417,20 @@ public class BusinessGroupTest {
 			.openGroups(ryomouBrowser)
 			.createGroup(groupName, "Confirmation group");
 		
-		MembersWizardPage members = group
-				.openAdministration()
-				.openAdminMembers()
-				.addMember();
-			
-		members.searchMember(participant, false)
+		String groupUrl = group
+			.openAdministration()
+			.getGroupURL();
+		
+		group.openAdminMembers()
+			.addMember()
+			.searchMember(participant, false)
+			.next()
+			.next()
+			.next()
+			.finish();
+		
+		group.addMember()
+			.searchMember(rei, false)
 			.next()
 			.next()
 			.next()
@@ -429,6 +445,18 @@ public class BusinessGroupTest {
 		NavigationPage participantNavBar = new NavigationPage(participantBrowser);
 		participantNavBar
 			.openGroups(participantBrowser)
+			.selectGroup(groupName)
+			.assertOnInfosPage(groupName);
+		
+		//second participant log in with rest url
+		reiBrowser.get(groupUrl);
+		new LoginPage(reiBrowser)
+			.loginAs(rei.getLogin(), rei.getPassword())
+			.assertOnMembershipConfirmation()
+			.confirmMembership();
+		NavigationPage reiNavBar = new NavigationPage(reiBrowser);
+		reiNavBar
+			.openGroups(reiBrowser)
 			.selectGroup(groupName)
 			.assertOnInfosPage(groupName);
 		
