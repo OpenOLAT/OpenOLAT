@@ -85,9 +85,10 @@ public interface ICourse extends OLATResourceable {
 	public OlatRootFolderImpl getCourseBaseContainer();
 	
 	/**
-	 * Return the container to the coursefolder of this course.
-	 * (E.g. "COURSEBASEPATH/coursefolder/"). This is for administration
-	 * use. There is no permission check.
+	 * Return the container to the coursefolder of this course. (E.g.
+	 * "COURSEBASEPATH/coursefolder/"). !! This is for administration or
+	 * internal use!! There is no permission check, make sure your controller
+	 * does check if user is allowed to see stuff, e.g. shared folder
 	 * 
 	 * @return the container to the coursefolder of this course
 	 */
@@ -95,7 +96,7 @@ public interface ICourse extends OLATResourceable {
 	
 	/**
 	 * The course folder that the user specified by its identity environment
-	 * can see and use.
+	 * can see and use. Used by WebDAV access.
 	 * 
 	 * @param identityEnv
 	 * @return The aggreagted course folder

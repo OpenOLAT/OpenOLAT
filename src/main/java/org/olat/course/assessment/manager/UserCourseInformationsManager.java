@@ -35,21 +35,24 @@ import org.olat.resource.OLATResource;
  */
 public interface UserCourseInformationsManager {
 	
-	public UserCourseInformations getUserCourseInformations(Long courseResourceId, IdentityRef identity);
+	public UserCourseInformations getUserCourseInformations(OLATResource resource, IdentityRef identity);
 
 	public List<UserCourseInformations> getUserCourseInformations(IdentityRef identity, List<OLATResource> resources);
 	
-	public List<UserCourseInformations> getUserCourseInformations(List<Long> keys);
-	
-	
 	public void updateUserCourseInformations(OLATResource courseResource, Identity identity);
 	
-	public Date getInitialLaunchDate(Long courseResourceId, IdentityRef identity);
+	public Date getInitialLaunchDate(OLATResource resource, IdentityRef identity);
 	
-	public Date getRecentLaunchDate(Long courseResourceId, IdentityRef identity);
+	public Date getRecentLaunchDate(OLATResource resource, IdentityRef identity);
 	
-
-	public Map<Long,Date> getRecentLaunchDates(Long courseResourceId, List<Identity> identities);
+	/**
+	 * Get all last launch date for all visitors.
+	 * @param resource
+	 * @return
+	 */
+	public Map<Long,Date> getRecentLaunchDates(OLATResource resource);
+	
+	public Map<Long,Date> getRecentLaunchDates(OLATResource resource, List<Identity> identities);
 	
 	/**
 	 * Return the initial launch dates of a list of users.
@@ -57,7 +60,7 @@ public interface UserCourseInformationsManager {
 	 * @param identities
 	 * @return
 	 */
-	public Map<Long,Date> getInitialLaunchDates(Long courseResourceId, List<Identity> identities);
+	public Map<Long,Date> getInitialLaunchDates(OLATResource resource, List<Identity> identities);
 	
 	/**
 	 * Return all initial launch dates of a course.

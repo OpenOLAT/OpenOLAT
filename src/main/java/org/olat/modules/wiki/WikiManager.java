@@ -44,7 +44,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
@@ -55,7 +54,6 @@ import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.cache.CacheWrapper;
-import org.olat.core.util.controller.OLATResourceableListeningWrapperController;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.resource.OresHelper;
@@ -138,19 +136,6 @@ public class WikiManager {
 	 */
 	public WikiMainController createWikiMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, WikiSecurityCallback securityCallback, String initialPageName) {
 		return new WikiMainController(ureq, wControl, ores, securityCallback, initialPageName);
-	}
-	
-	/**
-	 * brasato:::: to discuss, are two methods needed at all? probably not, unless there are cases to launch this controller without an ores known.
-	 * such as contentPackacking which requires only a fileroot (but this file directory depends on a ores in the end)
-	 * 
-	 * create a wikiMaincontroller which disposes itself when the associated olatresourceable is disposed.
-	 */
-	public Controller createWikiMainControllerDisposeOnOres(UserRequest ureq, WindowControl wControl, OLATResourceable ores, WikiSecurityCallback securityCallback, String initialPageName) {
-		Controller controller = new WikiMainController(ureq, wControl, ores, securityCallback, initialPageName);
-		//fxdiff BAKS-7 Resume function
-		OLATResourceableListeningWrapperController dwc = new OLATResourceableListeningWrapperController(ureq, wControl, ores, controller, null, ureq.getIdentity());
-		return dwc;
 	}
 
 	// ---- end controller factory -----

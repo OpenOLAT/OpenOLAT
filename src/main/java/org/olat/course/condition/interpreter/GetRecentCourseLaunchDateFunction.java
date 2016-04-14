@@ -58,7 +58,7 @@ public class GetRecentCourseLaunchDateFunction extends AbstractFunction {
 		}
 
 		UserCourseInformationsManager mgr = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
-		UserCourseInformations infos = mgr.getUserCourseInformations(getUserCourseEnv().getCourseEnvironment().getCourseResourceableId(), getUserCourseEnv().getIdentityEnvironment().getIdentity());
+		UserCourseInformations infos = mgr.getUserCourseInformations(getUserCourseEnv().getCourseEnvironment().getCourseGroupManager().getCourseResource(), getUserCourseEnv().getIdentityEnvironment().getIdentity());
 		if (infos != null) {
 			return Double.valueOf(infos.getRecentLaunch().getTime());
 		} else {

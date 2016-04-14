@@ -49,6 +49,7 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.Util;
+import org.olat.core.util.controller.OLATResourceableListeningWrapperController;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
@@ -59,11 +60,13 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.filters.VFSItemSuffixFilter;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.WikiResource;
 import org.olat.modules.wiki.Wiki;
 import org.olat.modules.wiki.WikiContainer;
+import org.olat.modules.wiki.WikiMainController;
 import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiPage;
 import org.olat.modules.wiki.WikiSecurityCallback;
@@ -237,17 +240,18 @@ public class WikiHandler implements RepositoryHandler {
 				@Override
 				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
 						RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
+					CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
+						.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
 					Controller controller;
-					if ( ce != null ) { //jump to a certain context
+					if (ce != null ) { //jump to a certain context
 						OLATResourceable ores = ce.getOLATResourceable();
 						String typeName = ores.getResourceableTypeName();
 						String page = typeName.substring("page=".length());
-						controller = WikiManager.getInstance().createWikiMainControllerDisposeOnOres(uureq, wwControl, entry.getOlatResource(), callback, page);
+						controller = new WikiMainController(uureq, wwControl, entry.getOlatResource(), callback, page); 
 					} else {
-						controller = WikiManager.getInstance().createWikiMainControllerDisposeOnOres(uureq, wwControl, entry.getOlatResource(), callback, null);
+						controller = new WikiMainController(uureq, wwControl, entry.getOlatResource(), callback, null);
 					}
-					
-					return controller;
+					return new OLATResourceableListeningWrapperController(ureq, wControl, entry.getOlatResource(), controller, null, ureq.getIdentity());
 				}
 			});
 

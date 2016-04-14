@@ -62,10 +62,17 @@ public class LoginPage {
 	private WebDriver browser;
 	
 	public static LoginPage getLoginPage(WebDriver browser, URL deployemntUrl) {
-		LoginPage page = new LoginPage();
-		page.browser = browser;
-		page.browser.navigate().to(deployemntUrl);
+		LoginPage page = new LoginPage(browser);
+		browser.navigate().to(deployemntUrl);
 		return page;
+	}
+	
+	public LoginPage() {
+		//
+	}
+	
+	public LoginPage(WebDriver browser) {
+		this.browser = browser;
 	}
 
 	public LoginPage assertOnLoginPage() {

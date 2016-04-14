@@ -46,6 +46,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.portfolio.EPSecurityCallback;
@@ -226,7 +227,10 @@ public class PortfolioHandler implements RepositoryHandler {
 				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
 						RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
 					EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
-					PortfolioStructureMap map = (PortfolioStructureMap)ePFMgr.loadPortfolioStructure(entry.getOlatResource());
+					PortfolioStructureMap map = (PortfolioStructureMap)ePFMgr
+						.loadPortfolioStructure(entry.getOlatResource());
+					CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
+						.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
 					EPSecurityCallback secCallback = EPSecurityCallbackFactory.getSecurityCallback(uureq, map, ePFMgr);
 					return new EPMapViewController(uureq, wwControl, map, false, false, secCallback);
 				}

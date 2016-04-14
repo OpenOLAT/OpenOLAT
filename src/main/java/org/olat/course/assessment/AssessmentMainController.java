@@ -710,7 +710,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 						initialLaunchDate = initialLaunchDates.get(identityKeyFromEvent);
 					} else {
 						UserCourseInformationsManager userCourseInformationsManager = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
-						initialLaunchDate = userCourseInformationsManager.getInitialLaunchDate(ores.getResourceableId(),  uce.getIdentityEnvironment().getIdentity());
+						initialLaunchDate = userCourseInformationsManager.getInitialLaunchDate(re.getOlatResource(), uce.getIdentityEnvironment().getIdentity());
 					}
 					AssessedIdentityWrapper wrappedIdFromModel = AssessmentHelper.wrapIdentity(uce, initialLaunchDate, currentCourseNode);
 					wrappersToUpdate.add(wrappedIdFromModel);
@@ -1403,7 +1403,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 				course.getCourseEnvironment().getAssessmentManager().preloadCache(identities);
 	
 				UserCourseInformationsManager mgr = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
-				initialLaunchDates.putAll(mgr.getInitialLaunchDates(course.getResourceableId(), identities));
+				initialLaunchDates.putAll(mgr.getInitialLaunchDates(re.getOlatResource(), identities));
 				
 				for (Identity identity : identities) {
 					AssessmentHelper.wrapIdentity(identity, localUserCourseEnvironmentCache, initialLaunchDates, course, null);

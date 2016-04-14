@@ -180,6 +180,18 @@ public class GroupPage {
 		return this;
 	}
 	
+	/**
+	 * Grap the REST url of the group (only, you need
+	 * to be in administration > description changes.
+	 * @return
+	 */
+	public String getGroupURL() {
+		By urlBy = By.cssSelector("p.o_sel_group_url");
+		WebElement urlEl = browser.findElement(urlBy);
+		String url = urlEl.getText();
+		return url;
+	}
+	
 	public void close() {
 		By closeBy = By.cssSelector("a i.o_icon_close_tool");
 		browser.findElement(closeBy).click();
