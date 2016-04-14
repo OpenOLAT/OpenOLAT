@@ -1,9 +1,12 @@
 package org.olat.modules.video.models;
 
+import java.io.File;
+
 import org.olat.core.commons.services.image.Size;
 
 public class VideoQualityVersion{
 	// Properties
+	File file;
 	String type;
 	String fileSize;
 	Size dimension;
@@ -55,5 +58,13 @@ public class VideoQualityVersion{
 
 	public void setIsTransforming(boolean isTranscoding) {
 		this.isTransforming = isTranscoding;
+	}
+	
+	public File getFile(){
+		return file;
+	}
+	
+	public void setFile(File file){
+		this.file = file;
 	}
 }

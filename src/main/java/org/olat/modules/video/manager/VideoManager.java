@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.video.managers;
+package org.olat.modules.video.manager;
 
 import java.io.File;
 import java.io.IOException;

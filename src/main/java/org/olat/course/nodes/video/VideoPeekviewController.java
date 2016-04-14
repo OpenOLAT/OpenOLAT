@@ -8,7 +8,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.modules.video.managers.MediaMapper;
+import org.olat.modules.video.manager.MediaMapper;
 
 public class VideoPeekviewController  extends BasicController implements Controller{
 

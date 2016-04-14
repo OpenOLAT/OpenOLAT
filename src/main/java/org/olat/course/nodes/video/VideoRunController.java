@@ -121,13 +121,13 @@ public class VideoRunController extends BasicController {
 		}
 		switch(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT,"none")){
 		case "resourceDescription":
-				videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoNode.getReferencedRepositoryEntry(), config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), videoNode.getIdent(), false, "");
+				videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoNode.getReferencedRepositoryEntry(), config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), videoNode.getIdent(), false, false, "");
 				break;
 		case "customDescription":
-				videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoNode.getReferencedRepositoryEntry(), config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), videoNode.getIdent(), true, config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT));
+				videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoNode.getReferencedRepositoryEntry(), config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), videoNode.getIdent(), true, false, config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT));
 				break;
 		case "none":
-				videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoNode.getReferencedRepositoryEntry(), config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), videoNode.getIdent(), true, "");
+				videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoNode.getReferencedRepositoryEntry(), config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), videoNode.getIdent(), true, false, "");
 				break;
 		}
 		

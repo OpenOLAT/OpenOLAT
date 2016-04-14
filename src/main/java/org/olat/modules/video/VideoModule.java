@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
+ *
  * Initial date: 23.2.2016<br>
  * @author dfakae, dirk.furrer@frentix.com, http://www.frentix.com
  *

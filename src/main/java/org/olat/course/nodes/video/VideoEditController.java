@@ -37,7 +37,7 @@ import org.olat.course.nodes.VideoCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.VideoFileResource;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.video.managers.VideoManager;
+import org.olat.modules.video.manager.VideoManager;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -171,13 +171,13 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 			switch(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT)){
 
 			case "resourceDescription":
-					previewController = new VideoDisplayController(ureq, getWindowControl(), re, config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), "", false, "");
+					previewController = new VideoDisplayController(ureq, getWindowControl(), re, config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), "", false,false, "");
 					break;
 			case "customDescription":
-					previewController = new VideoDisplayController(ureq, getWindowControl(), re, config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), "", true, config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT));
+					previewController = new VideoDisplayController(ureq, getWindowControl(), re, config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), "", true,false, config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT));
 					break;
 			case "none":
-					previewController = new VideoDisplayController(ureq, getWindowControl(), re, config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), "", true, "");
+					previewController = new VideoDisplayController(ureq, getWindowControl(), re, config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), "", true,false, "");
 					break;
 			}
 			cmc = new CloseableModalController(

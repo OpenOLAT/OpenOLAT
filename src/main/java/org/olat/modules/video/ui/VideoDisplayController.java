@@ -43,8 +43,8 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.fileresource.FileResourceManager;
-import org.olat.modules.video.managers.MediaMapper;
-import org.olat.modules.video.managers.VideoManager;
+import org.olat.modules.video.manager.MediaMapper;
+import org.olat.modules.video.manager.VideoManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,11 +65,15 @@ public class VideoDisplayController extends BasicController {
 	public static final Event ENDED_EVENT = new Event("videoEnded");
 
 
+	public VideoDisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean autoWidth) {
+		this(ureq, wControl, entry, false, false, false, null, false, autoWidth, null);
+	}
+	
 	public VideoDisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
-		this(ureq, wControl, entry, false, false, false, null, false, null);
+		this(ureq, wControl, entry, false, false, false, null, false, false, null);
 	}
 
-	public VideoDisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Boolean autoplay, Boolean showComments, Boolean showRating, String OresSubPath, boolean customDescription, String descriptionText) {
+	public VideoDisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Boolean autoplay, Boolean showComments, Boolean showRating, String OresSubPath, boolean customDescription, boolean autoWidth, String descriptionText) {
 		super(ureq, wControl);
 
 		mainVC = createVelocityContainer("video_run");
@@ -96,7 +100,10 @@ public class VideoDisplayController extends BasicController {
 			mainVC.contextPut("movie", filename);
 			mainVC.contextPut("mediaUrl", mediaUrl);
 			Size realSize = movieService.getSize(video, extension);
-			if(realSize != null) {
+			if(autoWidth){
+				mainVC.contextPut("height", 480);
+				mainVC.contextPut("width", "100%");
+			} else if(realSize != null) {
 				mainVC.contextPut("height", realSize.getHeight());
 				mainVC.contextPut("width", realSize.getWidth());
 			} else {

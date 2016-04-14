@@ -8,7 +8,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.fileresource.FileResourceManager;
-import org.olat.modules.video.managers.VideoManager;
+import org.olat.modules.video.manager.VideoManager;
 import org.olat.resource.OLATResource;
 
 public class HandbrakeTranscoder implements Transcoder {
@@ -37,7 +37,6 @@ public class HandbrakeTranscoder implements Transcoder {
 		pb.redirectErrorStream(true);
 		pb.inheritIO();
 
-
 		 try {
 				logger.info("+--------------------------HANDBRAKE STARTS TRANSCODING------------------------------------+");
 	            Runtime.getRuntime().exec("HandBrakeCLI "+" -i "+file.getAbsolutePath()+" -o "+optimizedFolder.getAbsolutePath()+"/optimized_"+file.getName()+" --optimize"+" --preset Normal");
@@ -48,7 +47,6 @@ public class HandbrakeTranscoder implements Transcoder {
 				return false;
 	     }
 	}
-
 
 	private boolean transcodeVideoRessourceLow(OLATResource video) {
 		// TODO Auto-generated method stub

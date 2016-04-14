@@ -5,7 +5,7 @@
   http://www.springframework.org/schema/beans
   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-<bean id="videoManager" class="org.olat.modules.video.managers.VideoManagerImpl">
+<bean id="videoManager" class="org.olat.modules.video.manager.VideoManagerImpl">
 </bean>
 
 <bean id="transcodingService" class="org.olat.modules.video.service.TranscoderService">

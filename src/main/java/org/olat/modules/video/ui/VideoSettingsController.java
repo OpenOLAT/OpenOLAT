@@ -101,7 +101,7 @@ public class VideoSettingsController extends BasicController {
 
 	private void doOpenQualityConfig(UserRequest ureq) {
 		if(qualityEditController == null) {
-			qualityEditController = new VideoQualityTableFormController(ureq, getWindowControl(), entry.getOlatResource());
+			qualityEditController = new VideoQualityTableFormController(ureq, getWindowControl(), entry);
 		}
 		mainVC.put("segmentCmp", qualityEditController.getInitialComponent());
 	}

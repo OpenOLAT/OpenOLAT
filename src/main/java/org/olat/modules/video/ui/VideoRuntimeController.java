@@ -28,11 +28,9 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.video.managers.VideoManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -45,9 +43,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 
 	private Link settingsLink;
-
-	@Autowired
-	private VideoManager videoManager;
 
 	public VideoRuntimeController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {

@@ -60,7 +60,7 @@ import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.VideoFileResource;
 import org.olat.modules.video.VideoModule;
-import org.olat.modules.video.managers.VideoManager;
+import org.olat.modules.video.manager.VideoManager;
 import org.olat.modules.video.models.VideoMetadata;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoRuntimeController;
@@ -74,7 +74,7 @@ import org.olat.resource.OLATResourceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
-/**
+/** 
  * Initial Date:  Mar 27, 2015
  *
  * @author Dirk Furrer

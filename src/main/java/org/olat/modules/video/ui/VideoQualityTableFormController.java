@@ -6,10 +6,12 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -17,27 +19,37 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.video.managers.VideoManager;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.modules.video.manager.VideoManager;
 import org.olat.modules.video.models.VideoQualityTableModel;
-import org.olat.modules.video.models.VideoQualityVersion;
 import org.olat.modules.video.models.VideoQualityTableModel.QualityTableCols;
+import org.olat.modules.video.models.VideoQualityVersion;
+import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
-
+/**
+ * table to show the different available qualityversions of a video ressource 
+ * @author Dirk Furrer
+ *
+ */
 public class VideoQualityTableFormController extends FormBasicController {
 
 	private FlexiTableElement tableEl;
 	private VideoQualityTableModel tableModel;
+	private FormLink viewButton;
+	private CloseableModalController cmc;
 
 	@Autowired
 	private VideoManager videoManager;
 	private OLATResource videoResource;
+	private RepositoryEntry videoEntry;
 
 
-	public VideoQualityTableFormController(UserRequest ureq, WindowControl wControl, OLATResource videoResource) {
+	public VideoQualityTableFormController(UserRequest ureq, WindowControl wControl, RepositoryEntry videoEntry) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
-		this.videoResource = videoResource;
+		this.videoResource = videoEntry.getOlatResource();
+		this.videoEntry = videoEntry;
 		initForm(ureq);
 	}
 
@@ -58,21 +70,30 @@ public class VideoQualityTableFormController extends FormBasicController {
 		tableModel = new VideoQualityTableModel(columnsModel, getTranslator());
 
 		List<QualityTableRow> rows = new ArrayList<QualityTableRow>();
-
 		Size origSize = videoManager.getVideoSize(videoResource);
-
-		FormLink viewButton = uifactory.addFormLink("view", "viewQuality", "quality.view", "qulaity.view", null, Link.LINK);
 		
+		viewButton = uifactory.addFormLink("view", "viewQuality", "quality.view", "qulaity.view", null, Link.LINK);
 		rows.add(new QualityTableRow("original", origSize.getWidth() +"x"+ origSize.getHeight(),  FileUtils.byteCountToDisplaySize(videoManager.getVideoFile(videoResource).length()), "mp4",viewButton));
 		
 		List<VideoQualityVersion> versions = videoManager.getQualityVersions(videoResource);
 		for(VideoQualityVersion version:versions){
+			viewButton = uifactory.addFormLink(version.getType(), "viewQuality", "quality.view", "qulaity.view", null, Link.LINK);
 			rows.add(new QualityTableRow(version.getType(), version.getDimension().getWidth() +"x"+ version.getDimension().getHeight(),  version.getFileSize(), version.getFormat(),viewButton));
 		}
 		
 		tableModel.setObjects(rows);
 		tableEl = uifactory.addTableElement(getWindowControl(), "qualities", tableModel, getTranslator(), generalCont);
 		tableEl.setCustomizeColumns(false);
+	}
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source == viewButton){
+			
+			VideoDisplayController videoDispController = new VideoDisplayController(ureq, getWindowControl(), videoEntry, true);
+			cmc = new CloseableModalController(getWindowControl(), "close", videoDispController.getInitialComponent());
+			cmc.activate();
+		}
 	}
 
 	@Override

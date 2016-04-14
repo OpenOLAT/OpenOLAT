@@ -1,4 +1,4 @@
-package org.olat.modules.video.managers;
+package org.olat.modules.video.manager;
 
 import java.awt.image.BufferedImage;
 import java.io.File;

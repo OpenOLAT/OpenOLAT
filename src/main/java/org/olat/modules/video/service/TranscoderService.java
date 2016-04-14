@@ -1,7 +1,6 @@
 package org.olat.modules.video.service;
 
-import java.util.ServiceLoader;
-
+import org.olat.core.CoreSpringFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -12,24 +11,16 @@ public class TranscoderService{
 	private static String transcodingProvider;
 
     private static TranscoderService service;
-    private static ServiceLoader<Transcoder> loader;
 
     private TranscoderService() {
-    		loader = ServiceLoader.load(Transcoder.class);
     }
 
     public static synchronized TranscoderService getInstance() {
         if (service == null) {
-            service = new TranscoderService();
+            service =  CoreSpringFactory.getImpl(TranscoderService.class);
         }
         return service;
     }
     
-//    public static Transcoder getTrascoder(){
-//    	
-//        for (Transcoder transcoder : loader) {
-//        	return transcoder;
-//        }
-//        
-//    }
+
 }
