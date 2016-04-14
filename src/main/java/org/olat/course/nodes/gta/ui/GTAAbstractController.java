@@ -343,7 +343,7 @@ public abstract class GTAAbstractController extends BasicController {
 				}
 				case courseLaunch: {
 					referenceDate = userCourseInformationsManager
-							.getInitialLaunchDate(courseEnv.getCourseResourceableId(), assessedIdentity);
+							.getInitialLaunchDate(courseEnv.getCourseGroupManager().getCourseResource(), assessedIdentity);
 					break;
 				}
 				case enrollment: {

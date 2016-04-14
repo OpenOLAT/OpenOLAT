@@ -62,10 +62,17 @@ public class LoginPage {
 	private WebDriver browser;
 	
 	public static LoginPage getLoginPage(WebDriver browser, URL deployemntUrl) {
-		LoginPage page = new LoginPage();
-		page.browser = browser;
-		page.browser.navigate().to(deployemntUrl);
+		LoginPage page = new LoginPage(browser);
+		browser.navigate().to(deployemntUrl);
 		return page;
+	}
+	
+	public LoginPage() {
+		//
+	}
+	
+	public LoginPage(WebDriver browser) {
+		this.browser = browser;
 	}
 
 	public LoginPage assertOnLoginPage() {
@@ -93,6 +100,14 @@ public class LoginPage {
 		WebElement messageEl = browser.findElement(maintenanceMessageBy);
 		String message = messageEl.getText();
 		Assert.assertTrue(message.contains(text));
+		return this;
+	}
+	
+	public LoginPage assertOnMembershipConfirmation() {
+		By reservationBy = By.cssSelector("div.o_reservation");
+		OOGraphene.waitElement(reservationBy, 5, browser);
+		WebElement reservationEl = browser.findElement(reservationBy);
+		Assert.assertTrue(reservationEl.isDisplayed());
 		return this;
 	}
 	
@@ -206,6 +221,17 @@ public class LoginPage {
 			resume.click();
 			OOGraphene.waitBusy(browser);
 		}
+		return this;
+	}
+	
+	public LoginPage confirmMembership() {
+		By acceptLinkBy = By.xpath("//div[contains(@class,'o_reservation')]//a[i[contains(@class,'o_icon_accept')]]");
+		browser.findElement(acceptLinkBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By okBy = By.cssSelector("button.btn.btn-primary");
+		browser.findElement(okBy).click();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 }

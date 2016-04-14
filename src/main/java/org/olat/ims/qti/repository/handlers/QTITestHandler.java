@@ -41,6 +41,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.ims.qti.QTIRuntimeController;
@@ -148,6 +149,8 @@ public class QTITestHandler extends QTIHandler {
 						RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
 					Controller runController;
 					OLATResource res = entry.getOlatResource();
+					CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
+						.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
 					if (OnyxModule.isOnyxTest(res)) {
 						// <OLATCE-1054>
 						runController = new OnyxRunController(uureq, wwControl, entry, false);

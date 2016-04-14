@@ -132,6 +132,7 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 				translate("enrolment.email.administrators")
 		};
 		membershipEl = uifactory.addCheckboxesVertical("mandatory.membership", privacyOptionsContainer, enrollmentKeys, membershipValues, 1);
+		membershipEl.setElementCssClass("o_select_membership_confirmation");
 		membershipEl.select("users", "true".equals(module.getAcceptMembershipForUsers()));
 		membershipEl.select("authors", "true".equals(module.getAcceptMembershipForAuthors()));
 		membershipEl.select("usermanagers", "true".equals(module.getAcceptMembershipForUsermanagers()));

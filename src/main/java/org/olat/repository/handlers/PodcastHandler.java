@@ -42,6 +42,7 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.PodcastFileResource;
@@ -167,6 +168,8 @@ public class PodcastHandler implements RepositoryHandler {
 				@Override
 				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
 						RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
+					CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
+						.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
 					return new FeedMainController(entry.getOlatResource(), uureq, wwControl, null, null,
 						PodcastUIFactory.getInstance(uureq.getLocale()), callback, null);
 				}

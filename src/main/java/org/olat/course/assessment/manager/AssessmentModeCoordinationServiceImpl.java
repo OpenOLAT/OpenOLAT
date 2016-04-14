@@ -326,7 +326,9 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		mode = assessmentModeManager.getAssessmentModeById(mode.getKey());
 		Set<Long> assessedIdentityKeys = assessmentModeManager.getAssessedIdentityKeys(mode);
 		if(mode.getFollowupTime() > 0) {
-			Date followupTime = assessmentModeManager.evaluateFollowupTime(now(), mode.getFollowupTime());
+			Date now = new Date();
+			Date followupTime = assessmentModeManager.evaluateFollowupTime(now, mode.getFollowupTime());
+			((AssessmentModeImpl)mode).setEnd(now);
 			((AssessmentModeImpl)mode).setEndWithFollowupTime(followupTime);
 			mode.setStatus(Status.followup);
 			mode = dbInstance.getCurrentEntityManager().merge(mode);

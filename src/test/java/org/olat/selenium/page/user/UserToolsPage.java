@@ -66,6 +66,18 @@ public class UserToolsPage {
 	}
 	
 	/**
+	 * Check if the notification panel is displayed in home.
+	 * @return
+	 */
+	public UserToolsPage assertOnNotifications() {
+		By notificationPanelBy = By.cssSelector("div.o_notifications_news_wrapper");
+		OOGraphene.waitElement(notificationPanelBy, 5, browser);
+		WebElement notificationPanel = browser.findElement(notificationPanelBy);
+		Assert.assertTrue(notificationPanel.isDisplayed());
+		return this;
+	}
+	
+	/**
 	 * Open the user menu with the tools.
 	 * 
 	 * @return The user menu page

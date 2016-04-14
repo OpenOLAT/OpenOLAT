@@ -206,6 +206,17 @@ public class SecurityManagerTest extends OlatTestCase {
 		Authentication authentication = securityManager.findAuthenticationByAuthusername(testLogin, BaseSecurityModule.getDefaultAuthProviderIdentifier());
 		Assert.assertEquals(testLogin,authentication.getAuthusername());
 	}
+	
+	@Test
+	public void testFindAuthenticationByAuthusername_attack() {
+		String testLoginHacked = "*est-logi*";
+		Authentication authentication1 = securityManager.findAuthenticationByAuthusername(testLoginHacked, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+		Assert.assertNull(authentication1);
+		
+		String testLoginHacked2 = "$est-login";
+		Authentication authentication2 = securityManager.findAuthenticationByAuthusername(testLoginHacked2, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+		Assert.assertNull(authentication2);	
+	}
 
 	@Test
 	public void testUpdateLatLogin() {

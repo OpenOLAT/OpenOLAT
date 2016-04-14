@@ -49,6 +49,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.AnimationFileResource;
 import org.olat.fileresource.types.DocFileResource;
@@ -219,6 +220,8 @@ public class WebDocumentHandler extends FileHandler {
 			@Override
 			public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
 					RepositoryEntry entry, RepositoryEntrySecurity rereSecurity, AssessmentMode assessmentMode) {
+				CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
+					.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
 				return new WebDocumentRunController(uureq, wwControl, entry);
 			}
 		});

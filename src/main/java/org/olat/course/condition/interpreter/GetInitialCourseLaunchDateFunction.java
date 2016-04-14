@@ -60,7 +60,7 @@ public class GetInitialCourseLaunchDateFunction extends AbstractFunction {
 
 		//the real function evaluation which is used during run time
 		UserCourseInformationsManager mgr = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
-		UserCourseInformations infos = mgr.getUserCourseInformations(getUserCourseEnv().getCourseEnvironment().getCourseResourceableId(), getUserCourseEnv().getIdentityEnvironment().getIdentity());
+		UserCourseInformations infos = mgr.getUserCourseInformations(getUserCourseEnv().getCourseEnvironment().getCourseGroupManager().getCourseResource(), getUserCourseEnv().getIdentityEnvironment().getIdentity());
 		if (infos != null) {
 			return Double.valueOf(infos.getInitialLaunch().getTime());
 		} else {

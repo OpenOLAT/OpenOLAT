@@ -58,6 +58,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.resource.OLATResource;
 import org.olat.user.UserInfoMainController;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,7 +103,7 @@ public class GlossaryMainController extends BasicController implements Activatea
 	@Autowired
 	private BaseSecurity securityManager;
 
-	public GlossaryMainController(WindowControl control, UserRequest ureq, VFSContainer glossaryFolder, OLATResourceable res,
+	public GlossaryMainController(WindowControl control, UserRequest ureq, VFSContainer glossaryFolder, OLATResource res,
 			GlossarySecurityCallback glossarySecCallback, boolean eventProfil) {
 		super(ureq, control);
 		this.glossarySecCallback = glossarySecCallback;

@@ -22,6 +22,7 @@ package org.olat.group.ui.main;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -83,6 +84,7 @@ import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.session.UserSessionManager;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.member.MemberListController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
@@ -167,6 +169,8 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private UserCourseInformationsManager userInfosMgr;
 	@Autowired
 	private BusinessGroupModule groupModule;
 	@Autowired
@@ -737,7 +741,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 				: businessGroupService.findBusinessGroups(null, repoEntry, 0, -1);
 				
 		List<Long> groupKeys = new ArrayList<Long>();
-		Map<Long,BusinessGroupShort> keyToGroupMap = new HashMap<Long,BusinessGroupShort>();
+		Map<Long,BusinessGroupShort> keyToGroupMap = new HashMap<>();
 		for(BusinessGroup group:groups) {
 			groupKeys.add(group.getKey());
 			keyToGroupMap.put(group.getKey(), group);
@@ -747,7 +751,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			businessGroupService.getBusinessGroupsMembership(groups);
 
 		//get identities
-		Set<Long> identityKeys = new HashSet<Long>();
+		Set<Long> identityKeys = new HashSet<>();
 		for(RepositoryEntryMembership membership: repoMemberships) {
 			identityKeys.add(membership.getIdentityKey());
 		}
@@ -757,18 +761,18 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		
 		List<Identity> identities;
 		if(identityKeys.isEmpty()) {
-			identities = new ArrayList<Identity>(0);
+			identities = new ArrayList<>(0);
 		} else  {
 			identities = filterIdentities(params, identityKeys);
 		}
 
-		Map<Long,MemberView> keyToMemberMap = new HashMap<Long,MemberView>();
-		List<MemberView> memberList = new ArrayList<MemberView>();
+		Map<Long,MemberView> keyToMemberMap = new HashMap<>();
+		List<MemberView> memberList = new ArrayList<>();
 		Locale locale = getLocale();
 
 		//reservations
 		if(params.isPending()) {
-			List<OLATResource> resourcesForReservations = new ArrayList<OLATResource>();
+			List<OLATResource> resourcesForReservations = new ArrayList<>();
 			if(repoEntry != null) {
 				resourcesForReservations.add(repoEntry.getOlatResource());
 			}
@@ -802,7 +806,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		}
 		
 		Long me = getIdentity().getKey();
-		Set<Long> loadStatus = new HashSet<Long>();
+		Set<Long> loadStatus = new HashSet<>();
 		for(Identity identity:identities) {
 			MemberView member = new MemberView(identity, userPropertyHandlers, locale);
 			if(chatEnabled) {
@@ -820,7 +824,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		}
 		
 		if(loadStatus.size() > 0) {
-			List<Long> statusToLoadList = new ArrayList<Long>(loadStatus);
+			List<Long> statusToLoadList = new ArrayList<>(loadStatus);
 			Map<Long,String> statusMap = imService.getBuddyStatus(statusToLoadList);
 			for(Long toLoad:statusToLoadList) {
 				String status = statusMap.get(toLoad);
@@ -871,6 +875,15 @@ public abstract class AbstractMemberListController extends FormBasicController i
 				if(membership.isParticipant()) {
 					memberView.getMembership().setRepoParticipant(true);
 				}
+			}
+		}
+		
+		if(repoEntry != null) {
+			Map<Long,Date> lastLaunchDates = userInfosMgr.getRecentLaunchDates(repoEntry.getOlatResource());
+			for(MemberView memberView:keyToMemberMap.values()) {
+				Long identityKey = memberView.getIdentityKey();
+				Date date = lastLaunchDates.get(identityKey);
+				memberView.setLastTime(date);
 			}
 		}
 		

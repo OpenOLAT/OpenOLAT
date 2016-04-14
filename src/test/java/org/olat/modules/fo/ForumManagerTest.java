@@ -26,6 +26,7 @@
 
 package org.olat.modules.fo;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -1057,5 +1058,67 @@ public class ForumManagerTest extends OlatTestCase {
 		//delete the forum
 		forumManager.deleteForum(fo.getKey());
 		dbInstance.commit();
+	}
+	
+	@Test
+	public void mergeForums() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-9");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-10");
+		
+		Forum masterForum = forumManager.addAForum();
+		dbInstance.commit();
+		
+		Message topMessage = forumManager.createMessage(masterForum, id1, false);
+		topMessage.setTitle("Future deleted forum part. 1");
+		topMessage.setBody("Future deleted  stuff");
+		forumManager.addTopMessage(topMessage);
+		dbInstance.commit();
+
+		Message reply = forumManager.createMessage(masterForum, id2, false);
+		reply.setTitle("Future deleted forum part. 2");
+		reply.setBody("Future deleted  stuff");
+		forumManager.replyToMessage(reply, topMessage);
+		dbInstance.commit();
+		
+		//forum to merge in master
+		Forum altForum = forumManager.addAForum();
+		dbInstance.commit();
+		
+		Message topAltMessage = forumManager.createMessage(altForum, id1, false);
+		topAltMessage.setTitle("Future deleted forum part. 1");
+		topAltMessage.setBody("Future deleted  stuff");
+		forumManager.addTopMessage(topAltMessage);
+		dbInstance.commit();
+
+		Message replyAlt = forumManager.createMessage(altForum, id2, false);
+		replyAlt.setTitle("Future deleted forum part. 2");
+		replyAlt.setBody("Future deleted  stuff");
+		forumManager.replyToMessage(replyAlt, topAltMessage);
+		dbInstance.commitAndCloseSession();
+		
+		//merge
+		List<Long> forumsToMerge = new ArrayList<>();
+		forumsToMerge.add(altForum.getKey());
+		int changed = forumManager.mergeForums(masterForum.getKey(), forumsToMerge);
+		dbInstance.commit();
+		Assert.assertEquals(2, changed);
+		
+		//check that the merged forum is empty
+		List<MessageLight> altMessages = forumManager.getLightMessagesByForum(altForum);
+		Assert.assertNotNull(altMessages);
+		Assert.assertTrue(altMessages.isEmpty());
+		
+		//check that the target forum has all messages
+		List<Message> messages = forumManager.getMessagesByForum(masterForum);
+		Assert.assertNotNull(messages);
+		Assert.assertEquals(4, messages.size());
+		//paranoia check
+		Assert.assertTrue(messages.contains(topMessage));
+		Assert.assertTrue(messages.contains(reply));
+		Assert.assertTrue(messages.contains(topAltMessage));
+		Assert.assertTrue(messages.contains(replyAlt));
+		for(Message message:messages) {
+			Assert.assertEquals(message.getForum(), masterForum);
+		}
 	}
 }

@@ -56,6 +56,7 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.GlossaryResource;
@@ -174,6 +175,8 @@ public class GlossaryHandler implements RepositoryHandler {
 	 */
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re, RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl) {
+		
+		
 		return new GlossaryRuntimeController(ureq, wControl, re, reSecurity,
 			new RuntimeControllerCreator() {
 				@Override
@@ -191,6 +194,9 @@ public class GlossaryHandler implements RepositoryHandler {
 					} else {
 						secCallback = new GlossarySecurityCallbackImpl(false, owner, editableByUser, uureq.getIdentity().getKey());
 					}
+
+					CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
+						.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
 					return new GlossaryMainController(wwControl, uureq, glossaryFolder, entry.getOlatResource(), secCallback, false);	
 				}
 			});

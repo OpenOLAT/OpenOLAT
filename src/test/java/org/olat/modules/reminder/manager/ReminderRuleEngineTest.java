@@ -67,6 +67,7 @@ import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
+import org.olat.resource.OLATResource;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -321,16 +322,15 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//create user course infos
-		Long courseResId = course.getCourseEnvironment().getCourseResourceableId();
 		userCourseInformationsManager.updateUserCourseInformations(re.getOlatResource(), id1);
 		userCourseInformationsManager.updateUserCourseInformations(re.getOlatResource(), id2);
 		userCourseInformationsManager.updateUserCourseInformations(re.getOlatResource(), id3);
 		dbInstance.commit();
 		
 		//fake the date
-		updateInitialLaunchDate(courseResId, id1, -5, Calendar.DATE);
-		updateInitialLaunchDate(courseResId, id2, -35, Calendar.DATE);
-		updateInitialLaunchDate(courseResId, id3, -75, Calendar.DATE);
+		updateInitialLaunchDate(re.getOlatResource(), id1, -5, Calendar.DATE);
+		updateInitialLaunchDate(re.getOlatResource(), id2, -35, Calendar.DATE);
+		updateInitialLaunchDate(re.getOlatResource(), id3, -75, Calendar.DATE);
 		dbInstance.commitAndCloseSession();
 		
 		List<Identity> identities = new ArrayList<>();
@@ -403,8 +403,8 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 		}
 	}
 	
-	private void updateInitialLaunchDate(Long courseResId, Identity id, int amount, int field) {
-		UserCourseInfosImpl userCourseInfos = (UserCourseInfosImpl)userCourseInformationsManager.getUserCourseInformations(courseResId, id);
+	private void updateInitialLaunchDate(OLATResource courseRes, Identity id, int amount, int field) {
+		UserCourseInfosImpl userCourseInfos = (UserCourseInfosImpl)userCourseInformationsManager.getUserCourseInformations(courseRes, id);
 		Date initialLaunch = userCourseInfos.getInitialLaunch();
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(initialLaunch);
@@ -442,16 +442,15 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//create user course infos
-		Long courseResId = course.getCourseEnvironment().getCourseResourceableId();
 		userCourseInformationsManager.updateUserCourseInformations(re.getOlatResource(), id1);
 		userCourseInformationsManager.updateUserCourseInformations(re.getOlatResource(), id2);
 		userCourseInformationsManager.updateUserCourseInformations(re.getOlatResource(), id3);
 		dbInstance.commit();
 		
 		//fake the date
-		updateRecentLaunchDate(courseResId, id1, -5, Calendar.DATE);
-		updateRecentLaunchDate(courseResId, id2, -35, Calendar.DATE);
-		updateRecentLaunchDate(courseResId, id3, -75, Calendar.DATE);
+		updateRecentLaunchDate(re.getOlatResource(), id1, -5, Calendar.DATE);
+		updateRecentLaunchDate(re.getOlatResource(), id2, -35, Calendar.DATE);
+		updateRecentLaunchDate(re.getOlatResource(), id3, -75, Calendar.DATE);
 		dbInstance.commitAndCloseSession();
 		
 		List<Identity> identities = new ArrayList<>();
@@ -524,8 +523,8 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 		}
 	}
 	
-	private void updateRecentLaunchDate(Long courseResId, Identity id, int amount, int field) {
-		UserCourseInfosImpl userCourseInfos = (UserCourseInfosImpl)userCourseInformationsManager.getUserCourseInformations(courseResId, id);
+	private void updateRecentLaunchDate(OLATResource courseRes, Identity id, int amount, int field) {
+		UserCourseInfosImpl userCourseInfos = (UserCourseInfosImpl)userCourseInformationsManager.getUserCourseInformations(courseRes, id);
 		Date recentLaunch = userCourseInfos.getRecentLaunch();
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(recentLaunch);

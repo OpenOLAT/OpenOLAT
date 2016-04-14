@@ -79,7 +79,7 @@ public class MemberInfoController extends FormBasicController {
 		
 		if(repoEntry != null){
 			repoEntryKey = repoEntry.getKey();
-			courseInfos = userCourseInfosMgr.getUserCourseInformations(repoEntry.getOlatResource().getResourceableId(), identity);
+			courseInfos = userCourseInfosMgr.getUserCourseInformations(repoEntry.getOlatResource(), identity);
 		}
 		initForm(ureq);
 	}

@@ -88,6 +88,7 @@ import org.olat.repository.manager.CatalogManager;
 import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoyUIFactory;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessResult;
@@ -429,14 +430,14 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			layoutCont.contextPut("failed", failed);
 			layoutCont.contextPut("score", score);
 			
-			Long courseResId = entry.getOlatResource().getResourceableId();
-			Date recentLaunch = userCourseInfosManager.getRecentLaunchDate(courseResId, getIdentity());
+            OLATResource ores = entry.getOlatResource();
+			Date recentLaunch = userCourseInfosManager.getRecentLaunchDate(ores, getIdentity());
 			layoutCont.contextPut("recentLaunch", recentLaunch);
 			
 			// show how many users are currently using this resource
             String numUsers;
-            OLATResourceable ores = entry.getOlatResource();
             int cnt = 0;
+			Long courseResId = entry.getOlatResource().getResourceableId();
             OLATResourceable courseRunOres = OresHelper.createOLATResourceableInstance(RunMainController.ORES_TYPE_COURSE_RUN, courseResId);
             if (ores != null) cnt = coordinatorManager.getCoordinator().getEventBus().getListeningIdentityCntFor(courseRunOres);
             numUsers = String.valueOf(cnt);

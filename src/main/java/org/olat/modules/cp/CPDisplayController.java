@@ -99,7 +99,7 @@ public class CPDisplayController extends BasicController implements Activateable
 	
 	private CPSelectPrintPagesController printController;
 	private CloseableModalController printPopup;
-
+	
 	/**
 	 * @param ureq
 	 * @param cpRoot

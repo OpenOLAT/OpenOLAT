@@ -42,6 +42,7 @@ import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
 import org.olat.selenium.page.Student;
 import org.olat.selenium.page.User;
+import org.olat.selenium.page.core.AdministrationPage;
 import org.olat.selenium.page.core.IMPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
@@ -361,6 +362,106 @@ public class BusinessGroupTest {
 				.assertMembersInOwnerList(author)
 				.assertMembersInParticipantList(participant)
 				.assertMembersInWaitingList(student);
+	}
+	
+	/**
+	 * First, an administrator make in administration part
+	 * the confirmation of group's membership mandatory if
+	 * the group is created by a standard user.<br>
+	 * 
+	 * A standard user create a group and add a participant.
+	 * The participant log-in and confirm its membership and
+	 * visit the group.<br>
+	 * 
+	 * A first user log in, confirm the membership and search
+	 * the group.<br>
+	 * 
+	 * A second user log in but with a rest url to the group
+	 * and jump to the group after confirming the membership.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void confirmMembershipByGroup(@InitialPage LoginPage loginPage,
+			@Drone @User WebDriver ryomouBrowser,
+			@Drone @Participant WebDriver participantBrowser,
+			@Drone @Student WebDriver reiBrowser)
+	throws IOException, URISyntaxException {
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser();
+		
+		//admin make the confirmation of membership mandatory
+		//for groups created by standard users.
+		loginPage
+			.loginAs("administrator", "openolat")
+			.resume();
+		AdministrationPage administration = new NavigationPage(browser)
+			.openAdministration()
+			.openGroupSettings()
+			.setGroupConfirmationForUser(true);
+		
+		//a standard user create a group
+		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		ryomouLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		
+		//go to groups
+		String groupName = "Group-1-" + UUID.randomUUID();
+		NavigationPage rymouNavBar = new NavigationPage(ryomouBrowser);
+		GroupPage group = rymouNavBar
+			.openGroups(ryomouBrowser)
+			.createGroup(groupName, "Confirmation group");
+		
+		String groupUrl = group
+			.openAdministration()
+			.getGroupURL();
+		
+		group.openAdminMembers()
+			.addMember()
+			.searchMember(participant, false)
+			.next()
+			.next()
+			.next()
+			.finish();
+		
+		group.addMember()
+			.searchMember(rei, false)
+			.next()
+			.next()
+			.next()
+			.finish();
+		
+		//participant login
+		LoginPage participantLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		participantLoginPage
+			.loginAs(participant.getLogin(), participant.getPassword())
+			.assertOnMembershipConfirmation()
+			.confirmMembership();
+		NavigationPage participantNavBar = new NavigationPage(participantBrowser);
+		participantNavBar
+			.openGroups(participantBrowser)
+			.selectGroup(groupName)
+			.assertOnInfosPage(groupName);
+		
+		//second participant log in with rest url
+		reiBrowser.get(groupUrl);
+		new LoginPage(reiBrowser)
+			.loginAs(rei.getLogin(), rei.getPassword())
+			.assertOnMembershipConfirmation()
+			.confirmMembership();
+		NavigationPage reiNavBar = new NavigationPage(reiBrowser);
+		reiNavBar
+			.openGroups(reiBrowser)
+			.selectGroup(groupName)
+			.assertOnInfosPage(groupName);
+		
+		//reset the settings
+		administration.setGroupConfirmationForUser(false);
 	}
 	
 	/**
