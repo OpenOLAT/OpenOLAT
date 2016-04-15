@@ -49,20 +49,27 @@ function o_start() {
 	## Needed to identify if call like Ext.onRead() makes any sense (often not the case in AJAX mode)
 	o_info.initialPageLoadFinished = true;
 }
-function o_mathjax() {
-	jQuery.getScript("${r.mathJaxCdn()}2.6-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML", function() {
-    	MathJax.Hub.Config({
-			extensions: ["jsMath2jax.js"],
-			messageStyle: 'none',
-			showProcessingMessages: false,
-			jsMath2jax: {
-				preview: "none"
-			},
-			tex2jax: {
-				ignoreClass: "math"
-			}
-		});
-    });
+function o_mathjax(fct_success) {
+	jQuery.ajax("${r.mathJaxCdn()}2.6-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML", {
+		cache: true,
+		dataType: "script",
+		success: function() {
+	    	MathJax.Hub.Config({
+				extensions: ["jsMath2jax.js"],
+				messageStyle: 'none',
+				showProcessingMessages: false,
+				jsMath2jax: {
+					preview: "none"
+				},
+				tex2jax: {
+					ignoreClass: "math"
+				}
+			});
+	    	if(!(typeof fct_success === "undefined")) {
+	    		fct_success();
+	    	}
+		}
+	});
 }
 /* ]]> */
 </script>

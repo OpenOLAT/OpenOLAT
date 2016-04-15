@@ -35,7 +35,6 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSContainer;
 
 /**
@@ -111,9 +110,6 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 		super.validate(ureq, vr);
 		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
 		jsa.addRequiredStaticJsFile("js/tinymce4/BTinyHelper.js");
-		if(element.getEditorConfiguration().isMathEnabled()) {
-			jsa.addRequiredStaticJsFile(WebappHelper.getMathJaxCdn() + "2.6-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML");
-		}
 	}
 
 	@Override
