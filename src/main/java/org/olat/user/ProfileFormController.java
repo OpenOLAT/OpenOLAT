@@ -53,6 +53,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
@@ -476,12 +477,10 @@ public class ProfileFormController extends FormBasicController {
 
 				identityToModify = updateIdentityFromFormData(identityToModify);
 				changedEmail = identityToModify.getUser().getProperty("email", null);
-				//if ((currentEmail == null && StringHelper.containsNonWhitespace(changedEmail))
-				//		|| (currentEmail != null && !currentEmail.equals(changedEmail))) {
-				if (!currentEmail.equals(changedEmail)) {
+				if ((currentEmail == null && StringHelper.containsNonWhitespace(changedEmail))
+						|| (currentEmail != null && !currentEmail.equals(changedEmail))) {
 					// allow an admin to change email without verification workflow. usermanager is only permitted to do so, if set by config.
-					if ( !(ureq.getUserSession().getRoles().isOLATAdmin()
-							|| (BaseSecurityModule.USERMANAGER_CAN_BYPASS_EMAILVERIFICATION && ureq.getUserSession().getRoles().isUserManager() ))) {
+					if ( !(ureq.getUserSession().getRoles().isOLATAdmin() || (BaseSecurityModule.USERMANAGER_CAN_BYPASS_EMAILVERIFICATION && ureq.getUserSession().getRoles().isUserManager()))) {
 						emailChanged = true;
 						// change email address to old address until it is verified
 						identityToModify.getUser().setProperty("email", currentEmail);
