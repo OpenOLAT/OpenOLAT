@@ -139,6 +139,15 @@ public class DisplayMemberSwitchForm extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source == openOwners && openOwners.isSelected(0)){
+			showOwners.select("show_owners", true);
+		}
+		if(source == openPartips && openPartips.isSelected(0)){
+			showPartips.select("show_participants", true);
+		}
+		if(source == openWaitingList && openWaitingList.isSelected(0)){
+			showWaitingList.select("show_waiting_list", true);
+		}
 		fireEvent (ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -153,10 +162,13 @@ public class DisplayMemberSwitchForm extends FormBasicController {
 
 		openOwners = uifactory.addCheckboxesHorizontal("OpenOwners", "chkBox.open.owners", formLayout, new String[]{"open_owners"}, new String[]{""});
 		openOwners.setVisible(hasOwners);
+		openOwners.setHelpText(translate("chkBox.open.owners.help"));
 		openPartips = uifactory.addCheckboxesHorizontal("OpenPartips", "chkBox.open.partips", formLayout, new String[]{"open_participants"}, new String[]{""});
 		openPartips.setVisible(hasPartips);
+		openPartips.setHelpText(translate("chkBox.open.partips.help"));
 		openWaitingList = uifactory.addCheckboxesHorizontal("OpenWaitingList", "chkBox.open.waitingList", formLayout, new String[]{"open_waiting_list"}, new String[]{""});
 		openWaitingList.setVisible(hasWaitingList);
+		openWaitingList.setHelpText(translate("chkBox.open.waitingList.help"));
 
 		downloadList = uifactory.addCheckboxesHorizontal("DownloadList", "chkBox.open.downloadList", formLayout, new String[]{"download_list"}, new String[]{""});
 
