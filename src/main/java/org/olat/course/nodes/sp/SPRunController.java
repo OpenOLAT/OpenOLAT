@@ -26,7 +26,6 @@
 package org.olat.course.nodes.sp;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -93,7 +92,6 @@ public class SPRunController extends BasicController implements Activateable2 {
 	private CustomLinkTreeModel linkTreeModel;
 	private CloneController cloneC;
 
-	private final String frameId;
 	private final UserCourseEnvironment userCourseEnv;
 	
 	private static final String[] EDITABLE_TYPES = new String[] { "html", "htm", "xml", "xhtml" };
@@ -115,7 +113,6 @@ public class SPRunController extends BasicController implements Activateable2 {
 		this.courseNode = courseNode;
 		this.config = courseNode.getModuleConfiguration();
 		this.userCourseEnv = userCourseEnv;
-		this.frameId = userCourseEnv.getCourseEditorEnv() == null ? null : UUID.randomUUID().toString();
 				
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
 
@@ -195,7 +192,7 @@ public class SPRunController extends BasicController implements Activateable2 {
 
 		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(SPEditController.CONFIG_KEY_DELIVERYOPTIONS);
 		spCtr = new SinglePageController(ureq, getWindowControl(), courseFolderContainer, fileName,
-				allowRelativeLinks, frameId, ores, deliveryOptions);
+				allowRelativeLinks, null, ores, deliveryOptions, userCourseEnv.getCourseEnvironment().isPreview());
 		spCtr.setAllowDownload(true);
 		
 		// only for inline integration: register for controller event to forward a olatcmd to the course,

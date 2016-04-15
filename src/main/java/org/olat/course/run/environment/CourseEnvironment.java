@@ -50,6 +50,12 @@ public interface CourseEnvironment {
 	 * @return The current time in millis
 	 */
 	public long getCurrentTimeMillis();
+	
+	/**
+	 * Some code need to know if the course is in preview mode.
+	 * @return
+	 */
+	public boolean isPreview();
 
 	/**
 	 * Get the course group management environment
