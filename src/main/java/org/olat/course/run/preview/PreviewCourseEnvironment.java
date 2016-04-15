@@ -78,6 +78,11 @@ final class PreviewCourseEnvironment implements CourseEnvironment {
 	public long getCurrentTimeMillis() {
 		return simulatedDateTime;
 	}
+	
+	@Override
+	public boolean isPreview() {
+		return true;
+	}
 
 	/**
 	 * @see org.olat.course.run.environment.CourseEnvironment#getCourseGroupManager()

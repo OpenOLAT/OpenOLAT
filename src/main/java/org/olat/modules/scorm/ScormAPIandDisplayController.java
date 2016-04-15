@@ -176,7 +176,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 				&& packageConfig != null) {
 			deliveryOptions = packageConfig.getDeliveryOptions();
 		}
-		iframectr = new IFrameDisplayController(ureq, wControl, new LocalFolderImpl(cpRoot), SCORM_CONTENT_FRAME,  courseOres, deliveryOptions, true);
+		iframectr = new IFrameDisplayController(ureq, wControl, new LocalFolderImpl(cpRoot), SCORM_CONTENT_FRAME, courseOres, deliveryOptions, true, previewMode);
 		listenTo(iframectr);
 		myContent.contextPut("frameId", SCORM_CONTENT_FRAME);
 		
