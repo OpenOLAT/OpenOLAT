@@ -53,6 +53,7 @@ function o_mathjax() {
 	jQuery.getScript("${r.mathJaxCdn()}2.6-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML", function() {
     	MathJax.Hub.Config({
 			extensions: ["jsMath2jax.js"],
+			messageStyle: 'none',
 			showProcessingMessages: false,
 			jsMath2jax: {
 				preview: "none"

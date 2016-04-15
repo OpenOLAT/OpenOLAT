@@ -26,7 +26,11 @@
 	jQuery(function() {
 		//because we use ajax to render the page
 		var math = document.getElementById("qtiworks_id_mathEntryPreview_${responseIdentifier}");
-		MathJax.Hub.Queue(["Typeset",MathJax.Hub,math]);
+		if(typeof MathJax === "undefined") {
+			o_mathjax();
+		} else {
+			MathJax.Hub.Queue(["Typeset",MathJax.Hub,math]);
+		}
 	});
 	QtiWorksRendering.registerReadyCallback(function() {
 		var inputControlId = 'qtiworks_id_mathEntryInput_$responseIdentifier';
