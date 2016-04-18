@@ -28,8 +28,8 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
-import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder.ScoreEvaluation;
+import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
@@ -391,7 +391,7 @@ public class CSVToAssessmentItemConverter {
 		
 		double points = parseFloat(parts[1], 1.0f);
 		AssessmentItemBuilder itemBuilder = currentItem.getItemBuilder();
-		if (itemBuilder instanceof ChoiceAssessmentItemBuilder) {
+		if (itemBuilder instanceof SimpleChoiceAssessmentItemBuilder) {
 			itemBuilder.setMinScore(0.0d);
 			itemBuilder.setMaxScore(points);
 		} else if(itemBuilder instanceof FIBAssessmentItemBuilder) {
@@ -407,11 +407,11 @@ public class CSVToAssessmentItemConverter {
 		
 		try {
 			AssessmentItemBuilder itemBuilder = currentItem.getItemBuilder();
-			if (itemBuilder instanceof ChoiceAssessmentItemBuilder) {
+			if (itemBuilder instanceof SimpleChoiceAssessmentItemBuilder) {
 				double point = parseFloat(parts[0], 1.0f);
 				String content = parts[1];
 
-				ChoiceAssessmentItemBuilder choiceBuilder = (ChoiceAssessmentItemBuilder)itemBuilder;
+				SimpleChoiceAssessmentItemBuilder choiceBuilder = (SimpleChoiceAssessmentItemBuilder)itemBuilder;
 				ChoiceInteraction interaction = choiceBuilder.getChoiceInteraction();
 				SimpleChoice newChoice = AssessmentItemFactory
 						.createSimpleChoice(interaction, content, choiceBuilder.getQuestionType().getPrefix());

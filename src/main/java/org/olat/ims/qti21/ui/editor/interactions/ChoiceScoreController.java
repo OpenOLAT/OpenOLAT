@@ -39,8 +39,8 @@ import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ScoreBuilder;
-import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder.ScoreEvaluation;
+import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.SyncAssessmentItem;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
@@ -67,11 +67,11 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 	private FormLayoutContainer scoreCont;
 	private final List<SimpleChoiceWrapper> wrappers = new ArrayList<>();
 	
-	private ChoiceAssessmentItemBuilder itemBuilder;
+	private SimpleChoiceAssessmentItemBuilder itemBuilder;
 	
 	private int counter = 0;
 	
-	public ChoiceScoreController(UserRequest ureq, WindowControl wControl, ChoiceAssessmentItemBuilder itemBuilder, AssessmentItemRef itemRef) {
+	public ChoiceScoreController(UserRequest ureq, WindowControl wControl, SimpleChoiceAssessmentItemBuilder itemBuilder, AssessmentItemRef itemRef) {
 		super(ureq, wControl, itemRef);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;

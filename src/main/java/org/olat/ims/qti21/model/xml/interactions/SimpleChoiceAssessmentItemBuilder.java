@@ -62,7 +62,7 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public abstract class ChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
+public abstract class SimpleChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
 
 	protected boolean shuffle;
 	protected String question;
@@ -72,7 +72,7 @@ public abstract class ChoiceAssessmentItemBuilder extends AssessmentItemBuilder 
 	protected ChoiceInteraction choiceInteraction;
 	protected Map<Identifier,Double> scoreMapping;
 	
-	public ChoiceAssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
+	public SimpleChoiceAssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
 		super(assessmentItem, qtiSerializer);
 	}
 	

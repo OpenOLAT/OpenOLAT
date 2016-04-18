@@ -78,7 +78,7 @@ import uk.ac.ed.ph.jqtiplus.value.Value;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MultipleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuilder {
+public class MultipleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentItemBuilder {
 	
 	private List<Identifier> correctAnswers;
 	
