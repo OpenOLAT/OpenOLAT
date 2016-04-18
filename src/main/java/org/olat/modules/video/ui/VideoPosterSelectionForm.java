@@ -87,6 +87,7 @@ public class VideoPosterSelectionForm extends BasicController {
 				proposalLayout.contextPut("serverUrl", serverUrl);
 
 				Link button = LinkFactory.createButton(String.valueOf(x), proposalLayout, this);
+				button.setCustomEnabledLinkCSS("o_video_poster_selct");
 				button.setCustomDisplayText(translate("poster.select"));
 				buttons.put(button, posterProposal);
 //				.addFormLink(posterProposal.getName(), "selectPoster", "track.delete", "track.delete", null, Link.BUTTON);

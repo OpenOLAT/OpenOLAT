@@ -1,0 +1,43 @@
+.o_video {
+
+}
+
+.o_video_poster_select {
+	text-align: center;
+	.o_video_poster {
+		position: relative;
+		display: inline-block;
+		width: 400px;
+		max-width: 100%;
+		height: 225px;
+		margin: 5px;
+		background-size: cover;
+		background-repeat: no-repeat;
+		
+		a {
+			position: absolute;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			border: 1px solid #eee;
+			
+			span {
+				position: absolute;
+				bottom: 0;
+				width: 100%;
+				display: block;
+				line-height: 3em;
+				background: #FFF;
+				opacity: 0.8;
+			}
+			&:hover {
+				border: 1px solid #bbb;
+				span {
+					opacity: 0.9;			
+				}
+			}
+		}	
+	}
+	
+}

@@ -1,5 +1,8 @@
-#foreach( $poster in $pics.entrySet())
-<div>
-<img src="$poster.key" height="400px" width="400px" />$r.render($poster.value)
+<div class="o_video_poster_select">
+	<h2>$r.translate("poster.select")</h2>
+	#foreach( $poster in $pics.entrySet())
+	<div class="o_video_poster" style="background-image: url('$poster.key')">
+		$r.render($poster.value)
+	</div>
+	#end
 </div>
-#end
