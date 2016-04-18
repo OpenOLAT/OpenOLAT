@@ -193,10 +193,7 @@ public class ResumeSessionController extends BasicController {
 			} else if("no".equals(cmd)) {
 				//nothing to do
 			} else if(StringHelper.containsNonWhitespace(redirect.getRedirectUrl())) {
-				String bc = redirect.getRedirectUrl();
-				if(bc.indexOf("]") < 0) {
-					bc = BusinessControlFactory.getInstance().formatFromURI(bc);
-				}
+				String bc = redirect.getFormattedRedirectUrl();
 				launch(ureq, bc);
 			}
 			terminateInterception(ureq);
@@ -297,6 +294,11 @@ public class ResumeSessionController extends BasicController {
 			
 		} else {
 			cmc.deactivate();
+			if(StringHelper.containsNonWhitespace(redirect.getRedirectUrl())) {
+				String bc = redirect.getFormattedRedirectUrl();
+				launch(ureq, bc);
+				redirect(ureq, redirect.getRedirectUrl());
+			}
 			terminateInterception(ureq);
 		}
 	}
@@ -360,18 +362,12 @@ public class ResumeSessionController extends BasicController {
 	private boolean isREST(UserRequest ureq) {
 		UserSession usess = ureq.getUserSession();
 		if(usess.getEntry("AuthDispatcher:businessPath") != null) return true;
-		if(usess.getEntry("AuthDispatcher:entryUrl") != null) return true;
 		return false;
 	}
 	
 	private String getRESTRedirectURL(UserRequest ureq) {
 		UserSession usess = ureq.getUserSession();
-		
 		String url = (String)usess.getEntry("AuthDispatcher:businessPath");
-		if(url == null) {
-			url = (String)usess.getEntry("AuthDispatcher:entryUrl");
-		}
-		
 		List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(url);
 		return BusinessControlFactory.getInstance().getAsRestPart(ces, true);
 	}
@@ -450,6 +446,18 @@ public class ResumeSessionController extends BasicController {
 
 		public String getRedirectUrl() {
 			return redirectUrl;
+		}
+		
+		/**
+		 * 
+		 * @return A business path formatted like [xy:0]
+		 */
+		public String getFormattedRedirectUrl() {
+			String bc = redirectUrl;
+			if(bc.indexOf("]") < 0) {
+				bc = BusinessControlFactory.getInstance().formatFromURI(bc);
+			}
+			return bc;
 		}
 
 		public String getLandingPage() {

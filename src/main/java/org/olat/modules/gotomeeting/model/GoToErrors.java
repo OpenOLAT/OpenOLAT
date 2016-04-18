@@ -32,7 +32,8 @@ public enum GoToErrors {
 	TrainingOver("error.code.TrainingOver"),
 	InvalidRequest("error.code.unkown"),
 	NoSuchTraining("error.code.NoSuchTraining"),
-	TrainingInSession("error.code.TrainingInSession");
+	TrainingInSession("error.code.TrainingInSession"),
+	InvalidTrainingDatesMaxDuration("error.code.InvalidTrainingDatesMaxDuration");
 	
 	private final String i18nKey;
 	

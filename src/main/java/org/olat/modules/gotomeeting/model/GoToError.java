@@ -29,6 +29,7 @@ public class GoToError {
 	
 	private int errorCode;
 	private GoToErrors error;
+	private String description;
 	
 	public GoToError() {
 		//
@@ -56,5 +57,13 @@ public class GoToError {
 
 	public void setError(GoToErrors error) {
 		this.error = error;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 }

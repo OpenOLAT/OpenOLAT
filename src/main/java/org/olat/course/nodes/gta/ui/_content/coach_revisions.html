@@ -18,4 +18,10 @@
 		$r.render("coach.close.revision.button")
 	#end
 	</div>
+#else
+	<div class="o_button_group">
+	#if($r.available("coach.collect.revisions"))
+		$r.render("coach.collect.revisions")
+	#end
+	</div>
 #end

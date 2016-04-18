@@ -36,6 +36,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.gotomeeting.GoToMeeting;
 import org.olat.modules.gotomeeting.GoToMeetingManager;
@@ -43,7 +44,7 @@ import org.olat.modules.gotomeeting.GoToOrganizer;
 import org.olat.modules.gotomeeting.model.GoToError;
 import org.olat.modules.gotomeeting.model.GoToErrors;
 import org.olat.modules.gotomeeting.model.GoToType;
-import org.olat.modules.vitero.ui.ViteroBookingsController;
+import org.olat.modules.gotomeeting.ui.GoToMeetingRunController;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -214,8 +215,11 @@ public class GoToTrainingWebService {
 	private GoToErrorVO goToErrorVO(GoToError error) {
 		String msg = "";
 		if(error.getError() != null) {
-			msg = Util.createPackageTranslator(ViteroBookingsController.class, Locale.ENGLISH)
+			msg = Util.createPackageTranslator(GoToMeetingRunController.class, Locale.ENGLISH)
 				.translate(error.getError().i18nKey());
+		}
+		if(!StringHelper.containsNonWhitespace(msg) || msg.length() > 1024) {
+			msg = error.getDescription();
 		}
 		return new GoToErrorVO(error, msg);
 	}

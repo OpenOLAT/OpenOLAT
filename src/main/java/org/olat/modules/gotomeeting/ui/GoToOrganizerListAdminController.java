@@ -138,6 +138,7 @@ public class GoToOrganizerListAdminController extends FormBasicController {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
 				GoToOrganizer organizer = (GoToOrganizer)confirmRemoveOrganizer.getUserObject();
 				doRemoveOrganizer(organizer);
+				updateModel();
 			}
 			cleanUp();
 		} else if(cmc == source) {

@@ -106,15 +106,7 @@ public class RESTDispatcher implements Dispatcher {
 			log.warn("URL is not valid: "+restPart);
 			return;
 		}
-		String businessPath = "";
-		for (int i = 0; i < split.length; i=i+2) {
-			String key = split[i];
-			if(key != null && key.startsWith("path=")) {
-				key = key.replace("~~", "/");
-			}
-			String value = split[i+1];
-			businessPath += "[" + key + ":" + value +"]";
-		}
+		String businessPath = BusinessControlFactory.getInstance().formatFromSplittedURI(split);
 		if(log.isDebug()) {
 			log.debug("REQUEST URI: " + origUri);
 			log.debug("REQUEST PREFIX " + restPart);

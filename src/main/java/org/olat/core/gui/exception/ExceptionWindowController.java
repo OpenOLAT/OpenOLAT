@@ -243,6 +243,11 @@ public class ExceptionWindowController extends DefaultChiefController {
 	}
 
 	@Override
+	public boolean isLoginInterceptionInProgress() {
+		return false;
+	}
+
+	@Override
 	public void addBodyCssClass(String cssClass) {
 		//
 	}

@@ -485,12 +485,17 @@ public abstract class GTAAbstractController extends BasicController {
 				gtaNode.incrementUserAttempts(uce);
 			}
 		} else {
-			if(userCourseEnv == null) {
-				ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
-				userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
-			}
-			gtaNode.incrementUserAttempts(userCourseEnv);
+			UserCourseEnvironment assessedUserCourseEnv = getAssessedUserCourseEnvironment();
+			gtaNode.incrementUserAttempts(assessedUserCourseEnv);
 		}
+	}
+	
+	protected UserCourseEnvironment getAssessedUserCourseEnvironment() {
+		if(userCourseEnv == null) {
+			ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
+			userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
+		}
+		return userCourseEnv;
 	}
 	
 	@Override
