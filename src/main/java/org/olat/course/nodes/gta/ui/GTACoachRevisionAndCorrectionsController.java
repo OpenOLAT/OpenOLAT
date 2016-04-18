@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -37,6 +38,10 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
@@ -44,7 +49,10 @@ import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -56,10 +64,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class GTACoachRevisionAndCorrectionsController extends BasicController {
 	
 	private final VelocityContainer mainVC;
-	private Link returnToRevisionsButton, closeRevisionsButton;
+	private Link returnToRevisionsButton, closeRevisionsButton, collectButton;
 	private DirectoryController revisionsCtrl, correctionsCtrl;
 	private SubmitDocumentsController uploadCorrectionsCtrl;
-	private DialogBoxController confirmCloseRevisionProcessCtrl, confirmReturnToRevisionsCtrl;
+	private DialogBoxController confirmCloseRevisionProcessCtrl, confirmReturnToRevisionsCtrl, confirmCollectCtrl;
 	
 	private Task assignedTask;
 	private final int currentIteration;
@@ -68,18 +76,25 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 	private final Identity assessedIdentity;
 	private final BusinessGroup assessedGroup;
 	private final CourseEnvironment courseEnv;
+	private final UserCourseEnvironment assessedUserCourseEnv;
 	
 	@Autowired
 	private GTAManager gtaManager;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	public GTACoachRevisionAndCorrectionsController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
-			Task assignedTask, GTACourseNode gtaNode, BusinessGroup assessedGroup, Identity assessedIdentity) {
+			Task assignedTask, GTACourseNode gtaNode, BusinessGroup assessedGroup,
+			Identity assessedIdentity, UserCourseEnvironment assessedUserCourseEnv) {
 		super(ureq, wControl);
 		this.gtaNode = gtaNode;
 		this.courseEnv = courseEnv;
 		this.assignedTask = assignedTask;
 		this.assessedGroup = assessedGroup;
 		this.assessedIdentity = assessedIdentity;
+		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		this.businessGroupTask = GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE));
 		currentIteration = assignedTask.getRevisionLoop();
 		
@@ -100,6 +115,9 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 	private void initRevisionProcess(UserRequest ureq) {
 		List<String> revisionStepNames = new ArrayList<>();
 		mainVC.contextPut("previousRevisions", revisionStepNames);
+		if(collectButton != null) {
+			mainVC.remove(collectButton);//reset collect
+		}
 		
 		if(assignedTask.getRevisionLoop() > 1) {
 			for(int i=1 ; i<assignedTask.getRevisionLoop(); i++ ) {
@@ -111,6 +129,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 		if(status == TaskProcess.revision) {
 			//assessed user can return some revised documents
 			setRevisions(ureq, "revisions", currentIteration);
+			setCollectRevisions();
 		} else if(status == TaskProcess.correction) {
 			//coach can return some corrections
 			setRevisions(ureq, "revisions", currentIteration);
@@ -119,6 +138,11 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 			int lastIteration = assignedTask.getRevisionLoop();
 			setRevisionIteration(ureq, lastIteration, revisionStepNames);
 		}
+	}
+	
+	private void setCollectRevisions() {
+		collectButton = LinkFactory.createButton("coach.collect.revisions", mainVC, this);
+		collectButton.setUserObject(assignedTask);
 	}
 	
 	private void setRevisionIteration(UserRequest ureq, int iteration, List<String> revisionStepNames) {
@@ -237,6 +261,11 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 				doCloseRevisionProcess();
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
+		} else if(confirmCollectCtrl == source) {
+			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				doCollect();
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -247,6 +276,8 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 			doConfirmReturnToRevisions(ureq);
 		} else if(closeRevisionsButton == source) {
 			doConfirmCloseRevisionProcess(ureq);
+		} else if(collectButton == source) {
+			doConfirmCollect(ureq);
 		}
 	}
 	
@@ -270,6 +301,39 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 
 		confirmReturnToRevisionsCtrl = activateOkCancelDialog(ureq, title, text, confirmReturnToRevisionsCtrl);	
 		listenTo(confirmReturnToRevisionsCtrl);
+	}
+	
+	private void doConfirmCollect(UserRequest ureq) {
+		String toName = null;
+		if (assessedGroup != null) {
+			toName = assessedGroup.getName();
+		} else if (assessedIdentity != null) {
+			toName = userManager.getUserDisplayName(assessedIdentity);			
+		}
+		
+		String title = translate("coach.collect.revisions.confirm.title");
+		String text = translate("coach.collect.revisions.confirm.text", new String[]{ toName });
+		text = "<div class='o_warning'>" + text + "</div>";
+		confirmCollectCtrl = activateOkCancelDialog(ureq, title, text, confirmCollectCtrl);
+		listenTo(confirmCollectCtrl);
+	}
+	
+	private void doCollect() {
+		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.correction);
+		gtaManager.log("Collect revision", "revision collected", assignedTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
+
+		ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
+		if(businessGroupTask) {
+			List<Identity> identities = businessGroupService.getMembers(assessedGroup, GroupRoles.participant.name());
+			AssessmentManager assessmentManager = courseEnv.getAssessmentManager();
+			assessmentManager.preloadCache(identities);
+			for(Identity identity:identities) {
+				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
+				gtaNode.incrementUserAttempts(userCourseEnv);
+			}
+		} else {
+			gtaNode.incrementUserAttempts(assessedUserCourseEnv);
+		}
 	}
 	
 	private void doReturnToRevisions() {
