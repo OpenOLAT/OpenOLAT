@@ -22,7 +22,6 @@ package org.olat.selenium.page.course;
 import java.net.URL;
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
 import org.olat.restapi.support.vo.CourseVO;
@@ -58,17 +57,11 @@ public class CoursePageFragment {
 	public static final By treeContainerBy = By.id("o_main_left_content");
 	public static final By efficiencyStatementsBy = By.className(" o_sel_course_options_certificates");
 	
-	@Drone
 	private WebDriver browser;
-	
-	public CoursePageFragment() {
-		//
-	}
 	
 	public CoursePageFragment(WebDriver browser) {
 		this.browser = browser;
 	}
-	
 	
 	public static CoursePageFragment getCourse(WebDriver browser, URL deploymentUrl, CourseVO course) {
 		browser.navigate().to(deploymentUrl.toExternalForm() + "url/RepositoryEntry/" + course.getRepoEntryKey());
@@ -204,8 +197,9 @@ public class CoursePageFragment {
 		browser.findElement(membersCourseBy).click();
 		OOGraphene.waitBusy(browser);
 
-		WebElement main = browser.findElement(By.id("o_main"));
-		return Graphene.createPageFragment(MembersPage.class, main);
+		By mainId = By.id("o_main");
+		OOGraphene.waitElement(mainId, 5, browser);
+		return new MembersPage(browser);
 	}
 	
 	public AssessmentToolPage assessmentTool() {
@@ -238,8 +232,9 @@ public class CoursePageFragment {
 		browser.findElement(accessConfigBy).click();
 		OOGraphene.waitBusy(browser);
 
-		WebElement main = browser.findElement(By.id("o_main_container"));
-		return Graphene.createPageFragment(RepositoryAccessPage.class, main);
+		By mainId = By.id("o_main_container");
+		OOGraphene.waitElement(mainId, 5, browser);
+		return new RepositoryAccessPage(browser);
 	}
 	
 	public EfficiencyStatementConfigurationPage efficiencyStatementConfiguration() {

@@ -21,7 +21,6 @@ package org.olat.selenium.page.repository;
 
 import java.io.File;
 
-import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
 import org.olat.selenium.page.course.CourseWizardPage;
 import org.olat.selenium.page.graphene.OOGraphene;
@@ -114,9 +113,8 @@ public class AuthoringEnvPage {
 		submit.click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitElement(RepositoryEditDescriptionPage.generaltabBy, browser);
-		
-		WebElement main = browser.findElement(By.id("o_main_wrapper"));
-		return Graphene.createPageFragment(RepositoryEditDescriptionPage.class, main);
+		return new RepositoryEditDescriptionPage(browser)
+				.assertOnGeneralTab();
 	}
 	
 	/**

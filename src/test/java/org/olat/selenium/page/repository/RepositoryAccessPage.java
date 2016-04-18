@@ -21,7 +21,6 @@ package org.olat.selenium.page.repository;
 
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
 import org.olat.selenium.page.core.BookingPage;
 import org.olat.selenium.page.graphene.OOGraphene;
@@ -38,12 +37,7 @@ import org.openqa.selenium.support.ui.Select;
  */
 public class RepositoryAccessPage {
 	
-	@Drone
 	private WebDriver browser;
-	
-	public RepositoryAccessPage() {
-		//
-	}
 	
 	public RepositoryAccessPage(WebDriver browser) {
 		this.browser = browser;

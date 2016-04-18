@@ -21,7 +21,6 @@ package org.olat.selenium.page.repository;
 
 import java.util.List;
 
-import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -97,8 +96,9 @@ public class CPPage {
 		browser.findElement(accessConfigBy).click();
 		OOGraphene.waitBusy(browser);
 
-		WebElement main = browser.findElement(By.id("o_main_container"));
-		return Graphene.createPageFragment(RepositoryAccessPage.class, main);
+		By mainId = By.id("o_main_container");
+		OOGraphene.waitElement(mainId, 5, browser);
+		return new RepositoryAccessPage(browser);
 	}
 	
 	/**
