@@ -328,6 +328,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 			GoToErrorG2T errorVo = GoToJsonUtil.parseError(responseString);
 			if(errorVo != null) {
 				error.setError(errorVo.getErrorCode());
+				error.setDescription(errorVo.getDescription());
 			}
 		} catch (Exception e) {
 			log.error("", e);
@@ -501,6 +502,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 				if(errorVo.getErrorCode() == GoToErrors.NoSuchTraining
 						|| errorVo.getErrorCode() == GoToErrors.InvalidRequest) {
 					error.setError(errorVo.getErrorCode());
+					error.setDescription(errorVo.getDescription());
 				} else {
 					log.error("deleteTraining return " + status + ": " + content);
 				}
